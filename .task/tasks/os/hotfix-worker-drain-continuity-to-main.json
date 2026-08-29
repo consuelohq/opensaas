@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/hotfix-worker-drain-continuity-to-main",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2134,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2134",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2134",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2134/hotfix-worker-drain-continuity-to-main",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2134",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2134/hotfix-worker-drain-continuity-to-main",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-hotfix-worker-drain-continuity-to-main",
+  "taskSession": "tsk_01202fadcea1",
+  "tmuxSession": "opensaas-os-hotfix-worker-drain-continuity-to-main-01202fad",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-hotfix-worker-drain-continuity-to-main/.task/os/hotfix-worker-drain-continuity-to-main/session.json",
+  "createdAt": "2026-08-16T06:09:18.768Z"
+}

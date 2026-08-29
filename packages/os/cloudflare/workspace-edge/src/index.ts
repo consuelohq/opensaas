@@ -26,7 +26,10 @@ import {
   INSTALL_DASHBOARD_API_ROUTES,
   isInstallId,
 } from '../../../scripts/lib/install-telemetry-contract';
-import { createInternalUserDashboardPageHandler } from '../../../scripts/lib/internal-user-dashboard';
+import {
+  createInternalUserDashboardPageHandler,
+  INTERNAL_DASHBOARD_ENROLLMENT_RESET_PATH,
+} from '../../../scripts/lib/internal-user-dashboard';
 import {
   handleSemanticEmbeddingGatewayRequest,
   type SemanticEmbeddingGatewayEnvironment,
@@ -73,6 +76,79 @@ export type WorkspaceEdgeHandlerOptions = {
   internalDashboardService?: InstallControlPlaneService;
   authorizeInternalDashboard?: InstallDashboardAuthorizer;
 };
+
+const AUTHORITY_ENROLLMENT_RESET_PATH =
+  '/internal/install-control-plane/enrollment/reset' as const;
+const INTERNAL_DASHBOARD_ORIGIN =
+  `https://${INSTALL_INTERNAL_DASHBOARD_HOST}` as const;
+
+const ENROLLMENT_RESET_ERROR_MESSAGES: Record<string, string> = {
+  forbidden: 'Enrollment reset is not authorized.',
+  workspace_route_registry_unavailable:
+    'The workspace route registry is unavailable. Try again shortly.',
+  invalid_enrollment_reset_target:
+    'A valid workspace host and optional workspace ID are required.',
+  enrollment_owner_not_found:
+    'No enrollment owner was found for this workspace.',
+  ambiguous_enrollment_owner:
+    'Multiple enrollment owners were found for this workspace.',
+  ambiguous_enrollment_workspace:
+    'Multiple workspace enrollments were found for this host.',
+  enrollment_workspace_id_not_found:
+    'No workspace ID was found for this enrollment.',
+  enrollment_target_mismatch:
+    'The enrollment target does not match the registered workspace.',
+  enrollment_route_mismatch:
+    'The enrollment route does not match the registered workspace.',
+};
+
+function normalizedEnrollmentResetError(value: unknown): {
+  error: { code: string; message: string };
+} {
+  if (
+    typeof value === 'object' &&
+    value !== null &&
+    'error' in value &&
+    typeof value.error === 'object' &&
+    value.error !== null &&
+    'code' in value.error &&
+    typeof value.error.code === 'string' &&
+    'message' in value.error &&
+    typeof value.error.message === 'string'
+  ) {
+    return {
+      error: {
+        code: value.error.code,
+        message: value.error.message,
+      },
+    };
+  }
+
+  const legacyCode =
+    typeof value === 'object' &&
+    value !== null &&
+    'error' in value &&
+    typeof value.error === 'string'
+      ? value.error
+      : undefined;
+  if (!legacyCode) {
+    return {
+      error: {
+        code: 'ENROLLMENT_RESET_FAILED',
+        message: 'Enrollment reset failed.',
+      },
+    };
+  }
+
+  return {
+    error: {
+      code: legacyCode.toUpperCase(),
+      message:
+        ENROLLMENT_RESET_ERROR_MESSAGES[legacyCode] ??
+        `Enrollment reset failed: ${legacyCode.replaceAll('_', ' ')}.`,
+    },
+  };
+}
 
 const errorMessage = (error: unknown): string =>
   error instanceof Error ? error.message : String(error);
@@ -166,6 +242,133 @@ function forbiddenInternalDashboardResponse(): Response {
   });
 }
 
+function workspaceSessionRequiredResponse(request: Request): Response {
+  const url = new URL(request.url);
+  const acceptsHtml =
+    request.method === 'GET' &&
+    (request.headers.get('accept') ?? '').includes('text/html');
+  if (acceptsHtml) {
+    const login = new URL(
+      '/login/google/start',
+      'https://os.consuelohq.com',
+    );
+    login.searchParams.set('purpose', 'web');
+    login.searchParams.set('return_to', `${url.pathname}${url.search}`);
+    return new Response(null, {
+      status: 302,
+      headers: {
+        location: login.toString(),
+        'cache-control': 'no-store',
+        'x-content-type-options': 'nosniff',
+      },
+    });
+  }
+  return new Response(JSON.stringify({ error: 'workspace_session_required' }), {
+    status: 401,
+    headers: {
+      'content-type': 'application/json; charset=utf-8',
+      'cache-control': 'no-store',
+      'x-content-type-options': 'nosniff',
+    },
+  });
+}
+
+function isInternalDashboardPagePath(pathname: string): boolean {
+  return (
+    pathname === '/' ||
+    pathname === '/users' ||
+    pathname.startsWith('/users/') ||
+    pathname === '/installs' ||
+    pathname.startsWith('/installs/') ||
+    pathname === '/devices' ||
+    pathname === '/errors' ||
+    pathname === '/internal/assets/dashboard.css' ||
+    pathname === '/internal/assets/dashboard.js'
+  );
+}
+
+async function validateWorkspaceBrowserSession(input: {
+  request: Request;
+  stub?: AuthorityStub;
+  internalAuthSecret?: string;
+  workspaceHost: string;
+  workspaceId?: string;
+}): Promise<Response | undefined> {
+  const internalAuthSecret = input.internalAuthSecret?.trim();
+  if (!input.stub || !internalAuthSecret) return undefined;
+  try {
+    const headers = new Headers({
+      'x-consuelo-internal-auth-secret': internalAuthSecret,
+      'x-consuelo-workspace-host': input.workspaceHost.toLowerCase(),
+    });
+    if (input.workspaceId?.trim()) {
+      headers.set('x-consuelo-workspace-id', input.workspaceId.trim());
+    }
+    const cookie = input.request.headers.get('cookie');
+    if (cookie) headers.set('cookie', cookie);
+    return await input.stub.fetch(
+      new Request('https://os.consuelohq.com/internal/auth/session/validate', {
+        method: 'POST',
+        headers,
+      }),
+    );
+  } catch {
+    return undefined;
+  }
+}
+
+async function startPrivateSiteHandoff(input: {
+  request: Request;
+  stub?: AuthorityStub;
+  internalAuthSecret?: string;
+}): Promise<Response> {
+  if (input.request.method !== 'GET') {
+    return new Response(JSON.stringify({ error: 'method_not_allowed' }), {
+      status: 405,
+      headers: {
+        'content-type': 'application/json; charset=utf-8',
+        'cache-control': 'no-store',
+        allow: 'GET',
+      },
+    });
+  }
+  const incoming = new URL(input.request.url);
+  const targetHost = incoming.searchParams.get('target_host')?.trim().toLowerCase() ?? '';
+  if (targetHost !== INSTALL_INTERNAL_DASHBOARD_HOST) {
+    return new Response(JSON.stringify({ error: 'handoff_target_denied' }), {
+      status: 403,
+      headers: {
+        'content-type': 'application/json; charset=utf-8',
+        'cache-control': 'no-store',
+      },
+    });
+  }
+  const internalAuthSecret = input.internalAuthSecret?.trim();
+  if (!input.stub || !internalAuthSecret) return closedAuthResponse();
+  const headers = new Headers({
+    'content-type': 'application/x-www-form-urlencoded',
+    'x-consuelo-internal-auth-secret': internalAuthSecret,
+    'x-consuelo-workspace-host': incoming.hostname.toLowerCase(),
+    'x-consuelo-target-workspace-host': targetHost,
+  });
+  const cookie = input.request.headers.get('cookie');
+  if (cookie) headers.set('cookie', cookie);
+  const body = new URLSearchParams({
+    return_to: incoming.searchParams.get('return_to') ?? '/',
+  }).toString();
+  try {
+    return await input.stub.fetch(
+      new Request('https://os.consuelohq.com/internal/auth/session/handoff', {
+        method: 'POST',
+        headers,
+        body,
+      }),
+    );
+  } catch {
+    return closedAuthResponse();
+  }
+}
+
 async function proxyInstallDiagnosticRequest(input: {
   request: Request;
   stub?: AuthorityStub;
@@ -238,6 +441,150 @@ async function proxyInstallDiagnosticRequest(input: {
       if (value) headers.set(name, value);
     }
     return new Response(response.body, { status: response.status, headers });
+  } catch {
+    return closedAuthResponse();
+  }
+}
+
+function validEnrollmentResetTarget(value: unknown): value is {
+  workspace_host: string;
+  workspace_id?: string;
+} {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const target = value as Record<string, unknown>;
+  if (
+    typeof target.workspace_host !== 'string' ||
+    target.workspace_host.length > 253 ||
+    !/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*\.consuelohq\.com$/.test(
+      target.workspace_host,
+    )
+  ) {
+    return false;
+  }
+  return (
+    target.workspace_id === undefined ||
+    (typeof target.workspace_id === 'string' &&
+      target.workspace_id.trim().length > 0 &&
+      target.workspace_id.length <= 256)
+  );
+}
+
+async function proxyEnrollmentResetRequest(input: {
+  request: Request;
+  stub?: AuthorityStub;
+  internalAuthSecret?: string;
+  authorize: InstallDashboardAuthorizer;
+}): Promise<Response | undefined> {
+  const incoming = new URL(input.request.url);
+  if (incoming.pathname !== INTERNAL_DASHBOARD_ENROLLMENT_RESET_PATH) {
+    return undefined;
+  }
+  if (input.request.method !== 'POST') {
+    return new Response(JSON.stringify({
+      error: {
+        code: 'METHOD_NOT_ALLOWED',
+        message: 'Enrollment reset requires POST.',
+      },
+    }), {
+      status: 405,
+      headers: {
+        'content-type': 'application/json; charset=utf-8',
+        'cache-control': 'no-store',
+        allow: 'POST',
+      },
+    });
+  }
+  let authorized = false;
+  try {
+    authorized = await input.authorize(input.request);
+  } catch {
+    authorized = false;
+  }
+  if (!authorized) return forbiddenInternalDashboardResponse();
+  if (
+    input.request.headers.get('origin') !== INTERNAL_DASHBOARD_ORIGIN ||
+    input.request.headers.get('x-consuelo-dashboard-action') !==
+      'enrollment-reset'
+  ) {
+    return forbiddenInternalDashboardResponse();
+  }
+  const internalAuthSecret = input.internalAuthSecret?.trim();
+  if (!input.stub || !internalAuthSecret) return closedAuthResponse();
+
+  let target: unknown;
+  try {
+    const raw = await input.request.text();
+    if (raw.length > 4096) {
+      return new Response(JSON.stringify({
+          error: {
+            code: 'PAYLOAD_TOO_LARGE',
+            message: 'Enrollment reset payload exceeds the 4096 byte limit.',
+          },
+        }), {
+        status: 413,
+        headers: {
+          'content-type': 'application/json; charset=utf-8',
+          'cache-control': 'no-store',
+        },
+      });
+    }
+    target = JSON.parse(raw);
+  } catch {
+    target = undefined;
+  }
+  if (!validEnrollmentResetTarget(target)) {
+    return new Response(JSON.stringify({
+        error: {
+          code: 'INVALID_ENROLLMENT_TARGET',
+          message:
+            'A valid Consuelo workspace host and optional workspace ID are required.',
+        },
+      }), {
+      status: 400,
+      headers: {
+        'content-type': 'application/json; charset=utf-8',
+        'cache-control': 'no-store',
+      },
+    });
+  }
+
+  try {
+    const response = await input.stub.fetch(
+      new Request(`https://os.consuelohq.com${AUTHORITY_ENROLLMENT_RESET_PATH}`, {
+        method: 'POST',
+        headers: {
+          accept: 'application/json',
+          'content-type': 'application/json',
+          'x-consuelo-internal-auth-secret': internalAuthSecret,
+        },
+        body: JSON.stringify(target),
+      }),
+    );
+    if (response.ok) {
+      return new Response(response.body, {
+        status: response.status,
+        headers: {
+          'content-type':
+            response.headers.get('content-type') ??
+            'application/json; charset=utf-8',
+          'cache-control': 'no-store',
+          'x-content-type-options': 'nosniff',
+        },
+      });
+    }
+
+    const authorityError = await response.json().catch(() => undefined);
+    return new Response(
+      JSON.stringify(normalizedEnrollmentResetError(authorityError)),
+      {
+        status: response.status,
+        headers: {
+          'content-type': 'application/json; charset=utf-8',
+          'cache-control': 'no-store',
+          'x-content-type-options': 'nosniff',
+        },
+      },
+    );
   } catch {
     return closedAuthResponse();
   }
@@ -317,6 +664,23 @@ export function createWorkspaceEdgeHandler(
           }),
         })
       : undefined);
+  const internalDashboardAccessValues = [
+    env.OS_INTERNAL_DASHBOARD_ACCESS_TEAM_DOMAIN?.trim() ?? '',
+    env.OS_INTERNAL_DASHBOARD_ACCESS_AUD?.trim() ?? '',
+    internalDashboardAllowedEmails(
+      env.OS_INTERNAL_DASHBOARD_ALLOWED_EMAILS,
+    ).join(','),
+  ];
+  const configuredInternalDashboardAccessValues =
+    internalDashboardAccessValues.filter(Boolean).length;
+  const internalDashboardAccessState = options.authorizeInternalDashboard
+    ? 'configured'
+    : configuredInternalDashboardAccessValues === 0
+      ? 'disabled'
+      : configuredInternalDashboardAccessValues ===
+          internalDashboardAccessValues.length
+        ? 'configured'
+        : 'partial';
   const authorizeInternalDashboard =
     options.authorizeInternalDashboard ??
     createCloudflareAccessDashboardAuthorizer({
@@ -361,29 +725,27 @@ export function createWorkspaceEdgeHandler(
       workspaceId,
       workspaceHost,
     }) => {
-      const internalAuthSecret =
-        env.WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET?.trim();
-      if (!stub || !internalAuthSecret) return false;
-      const headers = new Headers({
-        'x-consuelo-internal-auth-secret': internalAuthSecret,
-        'x-consuelo-workspace-id': workspaceId,
-        'x-consuelo-workspace-host': workspaceHost,
+      const response = await validateWorkspaceBrowserSession({
+        request,
+        stub,
+        internalAuthSecret: env.WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET,
+        workspaceId,
+        workspaceHost,
       });
-      const cookie = request.headers.get('cookie');
-      if (cookie) headers.set('cookie', cookie);
-      const response = await stub.fetch(
-        new Request(
-          'https://os.consuelohq.com/internal/auth/session/validate',
-          { method: 'POST', headers },
-        ),
-      );
-      return response.status === 204;
+      return response?.status === 204;
     },
   });
 
   return async (request: Request): Promise<Response> => {
     try {
       const url = new URL(request.url);
+      if (url.pathname === '/auth/handoff/start') {
+        return await startPrivateSiteHandoff({
+          request,
+          stub,
+          internalAuthSecret: env.WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET,
+        });
+      }
       const embeddingResponse = await handleSemanticEmbeddingGatewayRequest({
         request,
         env,
@@ -402,32 +764,57 @@ export function createWorkspaceEdgeHandler(
         return await stub.fetch(request);
       }
       if (url.hostname.toLowerCase() === INSTALL_INTERNAL_DASHBOARD_HOST) {
-        if (
+        const internalDashboardRequest =
           url.pathname === INSTALL_DASHBOARD_API_PREFIX ||
-          url.pathname.startsWith(`${INSTALL_DASHBOARD_API_PREFIX}/`)
+          url.pathname.startsWith(`${INSTALL_DASHBOARD_API_PREFIX}/`) ||
+          isInternalDashboardPagePath(url.pathname);
+        if (
+          internalDashboardRequest &&
+          internalDashboardAccessState === 'partial'
         ) {
-          const diagnostic = await proxyInstallDiagnosticRequest({
+          return closedAuthResponse();
+        }
+        if (
+          internalDashboardRequest &&
+          internalDashboardAccessState === 'configured'
+        ) {
+          const sessionValidation = await validateWorkspaceBrowserSession({
             request,
             stub,
             internalAuthSecret: env.WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET,
-            authorize: authorizeInternalDashboard,
+            workspaceHost: INSTALL_INTERNAL_DASHBOARD_HOST,
           });
-          if (diagnostic) return diagnostic;
-          if (!internalDashboardHandler) return closedAuthResponse();
-          return await internalDashboardHandler(request);
-        }
-        const internalDashboardPage =
-          url.pathname === '/users' ||
-          url.pathname.startsWith('/users/') ||
-          url.pathname === '/installs' ||
-          url.pathname.startsWith('/installs/') ||
-          url.pathname === '/devices' ||
-          url.pathname === '/errors' ||
-          url.pathname === '/internal/assets/dashboard.css' ||
-          url.pathname === '/internal/assets/dashboard.js';
-        if (internalDashboardPage) {
-          if (!internalDashboardPageHandler) return closedAuthResponse();
-          return await internalDashboardPageHandler(request);
+          if (!sessionValidation) return closedAuthResponse();
+          if (sessionValidation.status !== 204) {
+            return sessionValidation.status === 401
+              ? workspaceSessionRequiredResponse(request)
+              : closedAuthResponse();
+          }
+          if (
+            url.pathname === INSTALL_DASHBOARD_API_PREFIX ||
+            url.pathname.startsWith(`${INSTALL_DASHBOARD_API_PREFIX}/`)
+          ) {
+            const enrollmentReset = await proxyEnrollmentResetRequest({
+              request,
+              stub,
+              internalAuthSecret: env.WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET,
+              authorize: authorizeInternalDashboard,
+            });
+            if (enrollmentReset) return enrollmentReset;
+            const diagnostic = await proxyInstallDiagnosticRequest({
+              request,
+              stub,
+              internalAuthSecret: env.WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET,
+              authorize: authorizeInternalDashboard,
+            });
+            if (diagnostic) return diagnostic;
+            if (!internalDashboardHandler) return closedAuthResponse();
+            return await internalDashboardHandler(request);
+          }
+          if (isInternalDashboardPagePath(url.pathname)) {
+            if (!internalDashboardPageHandler) return closedAuthResponse();
+            return await internalDashboardPageHandler(request);
+          }
         }
       }
       if (url.pathname.startsWith('/gateway/nodes/')) {

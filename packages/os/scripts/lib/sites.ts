@@ -9,9 +9,11 @@ import {
   refreshArtifactsSite,
   type ArtifactCatalog,
 } from './artifacts';
+import { loadGlobalYamlConfig } from './consuelo-home';
 import { buildObservabilityTracesSite } from './observability-traces-site';
 import { materializeConfigurationSite } from './settings-materialization';
 import { renderConfigurationSite } from './settings-site';
+import type { WorkspaceChromeOptions } from './workspace-chrome';
 
 export type SitesAction = {
   type: 'create_dir' | 'create_file';
@@ -551,11 +553,19 @@ function baseStyles(): string {
   `;
 }
 
-function buildSitesIndex(): string {
+function loadWorkspaceChromeOptions(home: string): WorkspaceChromeOptions {
+  const configPath = path.join(home, 'consuelo.yaml');
+  if (!fs.existsSync(configPath)) return {};
+  const config = loadGlobalYamlConfig(configPath);
+  const extraSections = config.launcher?.extraSections ?? [];
+  return extraSections.length > 0 ? { extraSections } : {};
+}
+
+function buildSitesIndex(chromeOptions: WorkspaceChromeOptions = {}): string {
   // The workspace root is the operational home for an authenticated OS workspace.
   // Keep it identical to Overview so every daemon refresh, update, and restart converges
   // on the same default page instead of resurrecting Nodes or the retired local launcher.
-  return renderConfigurationSite('configuration');
+  return renderConfigurationSite('configuration', chromeOptions);
 }
 
 function buildPagesIndex(registry: SitePageRegistry): string {
@@ -631,6 +641,7 @@ export function getSitesPaths(home: string): SitesPaths {
 
 export function materializeSites(options: MaterializeSitesOptions): MaterializeSitesResult {
   const paths = getSitesPaths(options.home);
+  const chromeOptions = loadWorkspaceChromeOptions(options.home);
   const actions: SitesAction[] = [];
   for (const dirPath of [paths.sitesDir, paths.pagesDir, paths.pagesDataDir, paths.artifactsDir, paths.artifactsDataDir, paths.tracesDir, paths.diffsDir, paths.docsDir, paths.configurationDir, paths.configurationDataDir, paths.toolsDir, paths.nodesDir, paths.environmentsDir, paths.secretsDir]) {
     addDirectoryAction(actions, dirPath, options.dryRun);
@@ -651,14 +662,14 @@ export function materializeSites(options: MaterializeSitesOptions): MaterializeS
   if (!options.dryRun) {
     fs.writeFileSync(
       paths.indexPath,
-      buildSitesIndex(),
+      buildSitesIndex(chromeOptions),
       { mode: 0o600 },
     );
     fs.writeFileSync(path.join(paths.pagesDir, 'index.html'), buildPagesIndex(registry), { mode: 0o600 });
     refreshArtifactsSite(options.home, data);
-    fs.writeFileSync(paths.tracesIndexPath, buildObservabilityTracesSite(), { mode: 0o600 });
+    fs.writeFileSync(paths.tracesIndexPath, buildObservabilityTracesSite(chromeOptions), { mode: 0o600 });
     for (const site of RESERVED_SITES) fs.writeFileSync(path.join(paths.sitesDir, site.slug, 'index.html'), buildReservedSitePage(site), { mode: 0o600 });
-    materializeConfigurationSite(options.home);
+    materializeConfigurationSite(options.home, undefined, chromeOptions);
   }
   return {
     sitesDir: paths.sitesDir,

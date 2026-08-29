@@ -1,0 +1,7 @@
+{
+  "files": [
+    "packages/os/scripts/migrations/reconcile-caddy-worker-pool.ts",
+    "packages/os/tests/lifecycle-restart-contract.test.ts"
+  ],
+  "updatedAt": "2026-08-16T04:49:48.129Z"
+}

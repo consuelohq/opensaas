@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { createOsDeviceAuthorityHandler } from '../cloudflare/os-device-authority/src/app';
+import { createCheckoutObservability } from '../cloudflare/os-device-authority/src/services/checkout-observability';
 import { createMemoryDeviceGrantStore } from '../cloudflare/os-device-authority/src/stores';
 import { hash } from '../cloudflare/os-device-authority/src/utils';
 import { createMemoryInstallControlPlaneRepository } from '../scripts/lib/install-control-plane';
@@ -138,7 +139,7 @@ function form(values: Record<string, string>): RequestInit {
   };
 }
 
-function createFixture(input: { pricing?: boolean; stripe?: boolean } = {}): {
+function createFixture(input: { pricing?: boolean; stripe?: boolean; checkoutObservability?: ReturnType<typeof createCheckoutObservability> } = {}): {
   store: MemoryStore;
   repository: Repository;
   handler: AuthorityHandler;
@@ -162,6 +163,7 @@ function createFixture(input: { pricing?: boolean; stripe?: boolean } = {}): {
       googleOAuthClientId: 'test-google-client-id',
       googleOAuthClientSecret: 'test-google-client-secret',
       fetchImpl: googleFetch(() => nonce.value, stripeRequests),
+      checkoutObservability: input.checkoutObservability,
       ...(input.pricing
         ? {
             managedCloudPricing: {
@@ -621,7 +623,18 @@ describe('cloud-first web onboarding', () => {
   });
 
   it('fulfills one paid checkout only after a valid Stripe webhook and is idempotent', async () => {
-    const fixture = createFixture({ pricing: true, stripe: true });
+    const posthogBodies: string[] = [];
+    let posthogSequence = 0;
+    const checkoutObservability = createCheckoutObservability({
+      posthogApiKey: 'phc_checkout_test',
+      posthogHost: 'https://posthog.test',
+      fetchImpl: async (_input, init) => {
+        posthogBodies.push(String(init?.body ?? ''));
+        return new Response(null, { status: 200 });
+      },
+      idFactory: () => `evt_checkout_${++posthogSequence}`,
+    });
+    const fixture = createFixture({ pricing: true, stripe: true, checkoutObservability });
     const signedUp = await signup(fixture);
     const cookie = authorityCookie(signedUp.token);
     const checkout = await fixture.handler(
@@ -686,6 +699,15 @@ describe('cloud-first web onboarding', () => {
     expect(first.status).toBe(200);
     const second = await sendWebhook();
     expect(second.status).toBe(200);
+    const completionInsertIds = posthogBodies
+      .map((body) => JSON.parse(body) as { batch?: Array<{ event?: string; properties?: Record<string, unknown> }> })
+      .flatMap((body) => body.batch ?? [])
+      .filter((event) => event.event === 'consuelo_os_checkout_completed')
+      .map((event) => event.properties?.$insert_id);
+    expect(completionInsertIds).toEqual([
+      'stripe:evt_paid_1:checkout_completed',
+      'stripe:evt_paid_1:checkout_completed',
+    ]);
 
     const status = await fixture.handler(
       new Request(`${origin}/onboarding/checkout/status?session_id=cs_test_performance`, {

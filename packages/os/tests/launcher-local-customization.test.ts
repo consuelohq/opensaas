@@ -12,7 +12,7 @@ beforeEach(() => {
   home = mkdtempSync(join(tmpdir(), 'consuelo-launcher-customization-'));
   mkdirSync(join(home, 'node', 'db'), { recursive: true });
   writeFileSync(join(home, 'config.json'), JSON.stringify({
-    workspace: { host: 'internal.consuelohq.com' },
+    workspace: { host: 'one.consuelohq.com' },
     agents: [],
   }));
 });
@@ -21,8 +21,8 @@ afterEach(() => {
   rmSync(home, { recursive: true, force: true });
 });
 
-describe('workspace root isolation from legacy launcher customization', () => {
-  it('never lets legacy launcher extra sections replace the Overview workspace root', () => {
+describe('workspace chrome launcher customization', () => {
+  it('migrates launcher extra sections into the current workspace route menu on every shared Site', () => {
     writeFileSync(
       join(home, 'consuelo.yaml'),
       [
@@ -45,15 +45,29 @@ describe('workspace root isolation from legacy launcher customization', () => {
       dryRun: false,
     });
 
-    const html = readFileSync(join(home, 'sites', 'index.html'), 'utf8');
-    expect(html).toContain('<title>Overview - Consuelo OS</title>');
-    expect(html).toContain('data-workspace-shell');
-    expect(html).toContain('<h1>Overview</h1>');
-    expect(html).not.toContain('<h2 class="section-title">Internal</h2>');
-    expect(html).not.toContain('href="https://internal.consuelohq.com/users"');
+    for (const relativePath of [
+      'sites/index.html',
+      'sites/configuration/index.html',
+      'sites/tools/index.html',
+      'sites/traces/index.html',
+    ]) {
+      const html = readFileSync(join(home, relativePath), 'utf8');
+      expect(html).toContain('data-workspace-route-trigger');
+      expect(html).toContain('data-custom-route-group="internal"');
+      expect(html).toContain('>Internal</p>');
+      expect(html).toContain('>Users &amp; installs</span>');
+      expect(html).toContain('/auth/handoff/start?target_host=internal.consuelohq.com&amp;return_to=%2Fusers');
+      expect(html).not.toContain('<h2 class="section-title">Internal</h2>');
+      expect(html).not.toContain('href="https://internal.consuelohq.com/users"');
+    }
+
+    const root = readFileSync(join(home, 'sites', 'index.html'), 'utf8');
+    expect(root).toContain('<title>Overview - Consuelo OS</title>');
+    expect(root).toContain('data-workspace-shell');
+    expect(root).toContain('<h1>Overview</h1>');
   });
 
-  it('keeps the Overview workspace root stable when no launcher overlay exists', () => {
+  it('keeps the stock workspace menu unchanged when no launcher overlay exists', () => {
     writeFileSync(
       join(home, 'consuelo.yaml'),
       [
@@ -77,7 +91,7 @@ describe('workspace root isolation from legacy launcher customization', () => {
     expect(html).toContain('<title>Overview - Consuelo OS</title>');
     expect(html).toContain('data-workspace-route-trigger');
     expect(html).not.toContain('Welcome to Consuelo OS');
-    expect(html).not.toContain('<h2 class="section-title">Internal</h2>');
-    expect(html).not.toContain('https://internal.consuelohq.com/users');
+    expect(html).not.toContain('data-custom-route-group=');
+    expect(html).not.toContain('internal.consuelohq.com/users');
   });
 });

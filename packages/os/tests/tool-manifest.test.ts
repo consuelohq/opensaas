@@ -25,13 +25,14 @@ type SearchResult = {
 
 const packageRoot = join(import.meta.dirname, '..');
 const baselineDefinitions = (JSON.parse(readFileSync(join(import.meta.dirname, 'fixtures/tool-package-baseline.json'), 'utf8')) as { definitions: JsonObject[] }).definitions;
-const expectedCodeCallDescription = "Run focused repo-scoped Python, Bun, or Bash programs where runtime output is the evidence: tests, package scripts, typechecks, syntax checks, exact CLI reproduction, small diagnostics, and bounded data shaping inside the active task worktree. Prefer compact packets with paths, line spans, and extracted snippets over raw file dumps.";
+const expectedCodeCallDescription = "Run focused Python, Bun, or Bash programs where runtime output is the evidence. Use taskSession for edits inside Consuelo-managed repositories and workSession for scoped edits in ordinary folders on the owning node. Work-session execution is write-contained to its persisted session path on supported nodes and rejects managed repos/worktrees; mac.call remains the emergency host escape hatch. Prefer compact packets with paths, line spans, and extracted snippets over raw file dumps.";
 
 const expectedDescriptions = {
   'code.call': expectedCodeCallDescription,
   explore: 'a repo-aware investigation policy for coding agents. It retrieves the dependency graph and returns the current hypotheses, readiness, uncertainty, next evidence action, and whether the investigation is edit-ready.',
-  'fs.trash': 'An agent safe file deletion path. Prefered over rm rf',
-  'task.start': "Call this directly at the beginning of every scoped repo task, before tools.search or any search for task-start tooling. It creates the task branch, worktree, task PR, and real taskSession, then returns the selected workflow bundle and post-start lifecycle guidance.",
+  'fs.trash': 'move files to trash inside an authorized task worktree or work-session directory',
+  'session.start': 'Canonical session constructor. Use kind=task for managed repo work that needs a branch/worktree/PR, or kind=work for scoped ordinary filesystem work on the owning node.',
+  'task.start': 'Compatibility alias for session.start({ kind: \"task\" }). Existing callers remain supported; new agents should prefer session.start for task creation.',
 } as const;
 const removedCoreToolNames = [
   'context',
@@ -81,6 +82,8 @@ const retainedCoreToolNames = [
   'fs.apply_patch',
   'fs.trash',
   'github',
+  'google',
+  'session.start',
   'task.start',
   'review.run',
   'stream.context',
@@ -250,7 +253,7 @@ describe('tool manifest generator', () => {
     expect(registry.report.oldRegularToolCount).toBe(0);
     expect(registry.report.oldDevToolCount).toBe(baselineDefinitions.length);
     expect(registry.report.duplicateNames).toEqual([]);
-    expect(registry.full.tools.map((entry) => entry.name)).toEqual(expect.arrayContaining(['batch', 'code.run', 'media.svg.convert']));
+    expect(registry.full.tools.map((entry) => entry.name)).toEqual(expect.arrayContaining(['batch', 'code.run', 'google', 'media.svg.convert']));
     expect(registry.full.tools.every((entry) => entry.kind === 'facade-tool')).toBe(true);
     expect(registry.full.tools.every((entry) => entry.sourcePath.startsWith('packages/os/tools/'))).toBe(true);
   });

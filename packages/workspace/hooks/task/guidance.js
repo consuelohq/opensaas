@@ -1,5 +1,6 @@
-const TASK_FLOW_ANCHOR = 'stream.context → task.start → scoped workpad + test-first contract → decision-engine research → focused red test or no-test waiver → implementation → focused green test → validation / verify → task.push → task.pr → stream review PR → task.finish';
-const TASK_SESSION_ANCHOR = 'For task-scoped work, `task.start` returns `data.taskSession`.';
+const TASK_FLOW_ANCHOR = 'stream.context → session.start({ kind: \"task\" }) → scoped workpad + test-first contract → decision-engine research → focused red test or no-test waiver → implementation → focused green test → validation / verify → task.push → task.pr → stream review PR → task.finish';
+const TASK_SESSION_ANCHOR = 'For task-scoped work, `session.start({ kind: \"task\" })` returns `data.taskSession`.';
+const TASK_SESSION_COMPATIBILITY_ANCHOR = '`session.start({ kind: \"task\" })` is the canonical constructor for repository tasks. `task.start` remains a compatibility alias for existing callers.';
 const TOP_LEVEL_SESSION_ANCHOR = 'Pass `taskSession` at the top level of every task-scoped `workspace.call`:';
 const TEST_FIRST_ANCHOR = 'For non-trivial code changes, implementation must not begin until the scoped workpad contains a Test-first contract and either:';
 const FOCUSED_RED_ANCHOR = 'a focused test has been written or updated and run red, or';
@@ -47,7 +48,8 @@ function buildBeforeTaskStart(options) {
     ],
     actions: [
       workspaceCall('stream.context', { area }),
-      workspaceCall('task.start', {
+      workspaceCall('session.start', {
+        kind: 'task',
         area,
         title: options.title || '<task title>',
         startFrom: options.startFrom || 'main',
@@ -55,7 +57,8 @@ function buildBeforeTaskStart(options) {
     ],
     notes: [
       'Use stream.list first only when the correct stream area is unknown.',
-      'Confirm stream branch, open task PRs, recent stream commits, worktrees, and obvious conflicts before task.start.',
+      'Confirm stream branch, open task PRs, recent stream commits, worktrees, and obvious conflicts before session.start.',
+      'task.start remains a compatibility alias for existing callers.',
     ],
   };
 }
@@ -70,10 +73,11 @@ function buildAfterTaskStart(options) {
     skillAnchors: [
       TASK_FLOW_ANCHOR,
       TASK_SESSION_ANCHOR,
+      TASK_SESSION_COMPATIBILITY_ANCHOR,
       TOP_LEVEL_SESSION_ANCHOR,
       WORKPAD_ANCHOR,
       'Agents must update the workpad at these checkpoints:',
-      '1. Immediately after `task.start`',
+      '1. Immediately after `session.start({ kind: \"task\" })`',
     ],
     actions: [
       workspaceCall('fs.read', { path: 'AGENTS.md' }, taskSession),
@@ -164,6 +168,7 @@ function buildUnknownTaskTool(options) {
     skillAnchors: [
       'Use `tools.search` when a workflow/provider/tool is not in core steering.',
       TASK_SESSION_ANCHOR,
+      TASK_SESSION_COMPATIBILITY_ANCHOR,
       TOP_LEVEL_SESSION_ANCHOR,
     ],
     actions: [

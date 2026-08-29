@@ -9,6 +9,14 @@ import { createReloadServiceController } from '../scripts/lib/lifecycle';
 const osRoot = resolve(import.meta.dirname, '..');
 const source = (path: string): string => readFileSync(resolve(osRoot, path), 'utf8');
 
+const switchCase = (contents: string, label: string): string => {
+  const start = contents.indexOf(`case '${label}':`);
+  if (start < 0) return '';
+  const remainder = contents.slice(start);
+  const nextCaseOffset = remainder.slice(1).search(/\n\s*(?:case '[^']+':|default:)/);
+  return nextCaseOffset < 0 ? remainder : remainder.slice(0, nextCaseOffset + 1);
+};
+
 describe('lifecycle restart parity', () => {
   it('preserves reply-safe detached reload and canonical launchd/direct execution', () => {
     const reload = source('scripts/consuelo-reload.js');
@@ -21,6 +29,22 @@ describe('lifecycle restart parity', () => {
     expect(reload).toContain('if (useLaunchd && existsSync(PLIST))');
     expect(reload).toContain('bootstrapLaunchAgent();');
     expect(reload).toContain('startDirect();');
+  });
+
+  it('should refresh managed Sites when service transitions succeed', () => {
+    const reload = source('scripts/consuelo-reload.js');
+
+    expect(reload).toContain("const SITES_SCRIPT = path.join(OS_DIR, 'scripts', 'os.ts');");
+    expect(reload).toContain(
+      "const BUN_EXECUTABLE = process.env.BUN_BIN || (process.versions.bun ? process.execPath : 'bun');",
+    );
+    expect(reload).toContain('function refreshManagedSitesBestEffort()');
+    expect(reload).toContain(
+      "execFileSync(BUN_EXECUTABLE, [SITES_SCRIPT, 'sites', 'refresh', '--json']",
+    );
+    expect(switchCase(reload, 'rolling-reload-now')).toContain('refreshManagedSitesBestEffort();');
+    expect(switchCase(reload, 'reload-now')).toContain('refreshManagedSitesBestEffort();');
+    expect(switchCase(reload, 'restart-now')).toContain('refreshManagedSitesBestEffort();');
   });
 
   it('preserves conflicting-label cleanup, TERM-to-KILL escalation, and bounded named health acceptance', () => {
@@ -209,11 +233,7 @@ describe('lifecycle restart parity', () => {
       ]) {
         expect(launchctl).toContainEqual({
           command: 'launchctl',
-          args: ['bootout', 'gui/501/' + label],
-        });
-        expect(launchctl).toContainEqual({
-          command: 'launchctl',
-          args: ['bootstrap', 'gui/501', join(launchAgents, label + '.plist')],
+          args: ['print', 'gui/501/' + label],
         });
         expect(launchctl).toContainEqual({
           command: 'launchctl',
@@ -225,7 +245,66 @@ describe('lifecycle restart parity', () => {
     }
   });
 
-  it('retries a transient macOS gateway bootstrap after bootout settles', async () => {
+  it('does not synchronously restart the watchdog that invoked canonical restart', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-restart-from-watchdog-'));
+    const launchAgents = join(home, 'Library', 'LaunchAgents');
+    mkdirSync(launchAgents, { recursive: true });
+    writeFileSync(join(launchAgents, 'com.consuelo.watchdog.plist'), '<plist/>\n');
+    const calls: Array<{ command: string; args: string[] }> = [];
+    try {
+      const controller = createReloadServiceController({
+        osRoot,
+        platform: 'darwin',
+        environment: { HOME: home, XPC_SERVICE_NAME: 'com.consuelo.watchdog' },
+        userId: 501,
+        run: async (command, args) => {
+          calls.push({ command, args });
+          return { exitCode: 0, stdout: '', stderr: '' };
+        },
+      });
+
+      await controller.restart({ waitForCompletion: true });
+
+      expect(JSON.stringify(calls.filter((call) => call.command === 'launchctl')))
+        .not.toContain('com.consuelo.watchdog');
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
+  });
+
+  it('reloads an already-loaded sidecar definition before kickstart', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-restart-loaded-sidecar-'));
+    const launchAgents = join(home, 'Library', 'LaunchAgents');
+    mkdirSync(launchAgents, { recursive: true });
+    const label = 'com.consuelo.availability';
+    writeFileSync(join(launchAgents, label + '.plist'), '<plist/>\n');
+    const launchctl: string[][] = [];
+    try {
+      const controller = createReloadServiceController({
+        osRoot,
+        platform: 'darwin',
+        environment: { HOME: home },
+        userId: 501,
+        run: async (command, args) => {
+          if (command === 'launchctl') launchctl.push(args);
+          return { exitCode: 0, stdout: '', stderr: '' };
+        },
+      });
+
+      await controller.restart({ waitForCompletion: true });
+
+      expect(launchctl).toEqual([
+        ['print', 'gui/501/' + label],
+        ['bootout', 'gui/501/' + label],
+        ['bootstrap', 'gui/501', join(launchAgents, label + '.plist')],
+        ['kickstart', '-k', 'gui/501/' + label],
+      ]);
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
+  });
+
+  it('retries a transient macOS gateway bootstrap while a missing job settles', async () => {
     const home = mkdtempSync(join(tmpdir(), 'consuelo-restart-gateway-retry-'));
     const launchAgents = join(home, 'Library', 'LaunchAgents');
     mkdirSync(launchAgents, { recursive: true });
@@ -301,6 +380,42 @@ describe('lifecycle restart parity', () => {
                 stdout: '',
                 stderr: 'Bootstrap failed: 5: Input/output error',
               };
+            }
+          }
+          return { exitCode: 0, stdout: '', stderr: '' };
+        },
+      });
+
+      await expect(controller.restart({ waitForCompletion: true })).resolves.toBeUndefined();
+      expect(kickstartAttempts).toBe(2);
+      expect(sleepCalls).toEqual([200]);
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
+  });
+
+  it('retries launchd operation-in-progress while restarting the watchdog', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-restart-watchdog-kickstart-retry-'));
+    const launchAgents = join(home, 'Library', 'LaunchAgents');
+    mkdirSync(launchAgents, { recursive: true });
+    const label = 'com.consuelo.watchdog';
+    writeFileSync(join(launchAgents, label + '.plist'), '<plist/>\n');
+    let kickstartAttempts = 0;
+    const sleepCalls: number[] = [];
+    try {
+      const controller = createReloadServiceController({
+        osRoot,
+        platform: 'darwin',
+        environment: { HOME: home },
+        userId: 501,
+        sleep: async (milliseconds) => {
+          sleepCalls.push(milliseconds);
+        },
+        run: async (command, args) => {
+          if (command === 'launchctl' && args[0] === 'kickstart') {
+            kickstartAttempts += 1;
+            if (kickstartAttempts === 1) {
+              return { exitCode: 37, stdout: '', stderr: '' };
             }
           }
           return { exitCode: 0, stdout: '', stderr: '' };
@@ -441,12 +556,11 @@ describe('lifecycle restart parity', () => {
     );
   });
 
-  it('reapplies reconciled Caddy config with a zero-downtime config-file signal', () => {
+  it('signals Caddy only when worker topology actually changes', () => {
     const migration = source('scripts/migrations/reconcile-caddy-worker-pool.ts');
 
-    expect(migration).toContain("['launchctl', 'kill', 'SIGUSR1', service]");
-    expect(migration).toContain("result.reason !== 'gateway-not-configured'");
-    expect(migration).not.toContain("if (result.changed && process.platform === 'darwin')");
+    expect(migration).toContain("if (!input.result.changed || input.result.reason === 'gateway-not-configured') return");
+    expect(migration).toContain("runLaunchctl(['kill', 'SIGUSR1', service])");
     expect(migration).not.toContain("['launchctl', 'kickstart', '-k', service]");
   });
 

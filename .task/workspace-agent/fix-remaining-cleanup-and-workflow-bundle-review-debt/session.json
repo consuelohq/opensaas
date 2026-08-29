@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_1c81ec78e6d1",
+  "tmuxSession": "opensaas-workspace-agent-fix-remaining-cleanup-and-workflow-bundle-review-1c81ec78",
+  "area": "workspace-agent",
+  "stream": "stream/workspace-agent",
+  "taskBranch": "task/workspace-agent/fix-remaining-cleanup-and-workflow-bundle-review-debt",
+  "branch": "task/workspace-agent/fix-remaining-cleanup-and-workflow-bundle-review-debt",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agent-fix-remaining-cleanup-and-workflow-bundle-review-debt",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agent-fix-remaining-cleanup-and-workflow-bundle-review-debt",
+  "prNumber": 2130,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2130",
+  "createdAt": "2026-08-16T05:07:00.369Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agent-fix-remaining-cleanup-and-workflow-bundle-review-debt/.task/workspace-agent/fix-remaining-cleanup-and-workflow-bundle-review-debt/session.json"
+}

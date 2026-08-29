@@ -3,6 +3,13 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import {
+  renderWorkspaceChromeBar,
+  workspaceChromeClientScript,
+  workspaceRouteSwitcherStyles,
+  workspaceWindowShellStyles,
+} from './workspace-chrome';
+
 export type ArtifactTemplate =
   | 'research'
   | 'spec'
@@ -309,6 +316,56 @@ function replaceDirectory(sourceDir: string, destinationDir: string): void {
   fs.cpSync(sourceDir, destinationDir, { recursive: true, errorOnExist: true });
 }
 
+function currentArtifactMaterializations(
+  home: string,
+  artifacts: ArtifactRecord[],
+): Array<{ artifact: ArtifactRecord; sourceDir: string }> {
+  return artifacts.map((artifact) => {
+    const sourceDir = artifactVersionDir(home, artifact.path, artifact.currentVersionId);
+    if (!fs.existsSync(sourceDir) || !fs.statSync(sourceDir).isDirectory()) {
+      throw new Error(
+        `current artifact version is missing for ${artifact.path}: ${artifact.currentVersionId}`,
+      );
+    }
+    return { artifact, sourceDir };
+  });
+}
+
+function replaceArtifactCurrentDirectory(input: {
+  home: string;
+  routePath: string;
+  sourceDir: string;
+  catalog: ArtifactCatalog;
+}): void {
+  const routePath = normalizeRoutePath(input.routePath);
+  const descendantPrefix = `${routePath}/`;
+  const descendants = Object.values(input.catalog.artifacts)
+    .filter((artifact) => artifact.path.startsWith(descendantPrefix))
+    .sort((left, right) => left.path.length - right.path.length);
+  const materializations = currentArtifactMaterializations(input.home, descendants);
+
+  replaceDirectory(input.sourceDir, artifactCurrentDir(input.home, routePath));
+  for (const { artifact, sourceDir } of materializations) {
+    replaceDirectory(sourceDir, artifactCurrentDir(input.home, artifact.path));
+  }
+}
+
+export function reconcileArtifactCurrentTree(
+  home: string,
+  catalog = readArtifactCatalog(home),
+): number {
+  const currentRoot = path.join(artifactsRoot(home), 'current');
+  const artifacts = Object.values(catalog.artifacts)
+    .sort((left, right) => left.path.length - right.path.length);
+  const materializations = currentArtifactMaterializations(home, artifacts);
+
+  fs.rmSync(currentRoot, { recursive: true, force: true });
+  for (const { artifact, sourceDir } of materializations) {
+    replaceDirectory(sourceDir, artifactCurrentDir(home, artifact.path));
+  }
+  return artifacts.length;
+}
+
 function listTreeFiles(root: string): string[] {
   if (!fs.existsSync(root)) return [];
   const files: string[] = [];
@@ -362,7 +419,9 @@ function displayFilter(entry: ArtifactEntry): string {
 
 function renderArtifactsIndex(catalog: ArtifactCatalog): string {
   const logoDataUri = consueloMarkDataUri();
-  const entries = [...catalog.entries].sort((left, right) => right.updatedAt.localeCompare(left.updatedAt));
+  const entries = catalog.entries
+    .filter((entry) => !entry.path.startsWith('/daily-schedules/'))
+    .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt));
   const cards = entries.map((entry) => `
         <article class="post-item" data-template="${escapeHtml(displayFilter(entry))}" data-category="${escapeHtml(entry.category)}">
           <h3><a href="${escapeHtml(entry.url)}">${escapeHtml(entry.title)}</a></h3>
@@ -395,11 +454,13 @@ function renderArtifactsIndex(catalog: ArtifactCatalog): string {
   <link rel="icon" type="image/png" href="${logoDataUri}" />
   <link rel="apple-touch-icon" href="${logoDataUri}" />
   <style>
-    :root { color-scheme: light; --paper:#f6efe4; --surface:#fff9f0; --ink:#251d17; --muted:#6f6256; --quiet:#9b8d7f; --line:#decfbc; --soft:#efe3d2; --accent:#78533d; --accent-strong:#e98262; --accent-soft:#ead5bd; --shadow:0 18px 60px rgba(55,37,20,.14); }
-    @media (prefers-color-scheme: dark) { :root { color-scheme:dark; --paper:#0f0f0d; --surface:#191814; --ink:#f2eee6; --muted:#b5aea2; --quiet:#7e776d; --line:#37322b; --soft:#221f1a; --accent:#f0c66d; --accent-strong:#ff8b68; --accent-soft:#352a1c; --shadow:0 28px 90px rgba(0,0,0,.42); } }
+    :root { color-scheme: light; --paper:#f6efe4; --surface:#fff9f0; --ink:#251d17; --muted:#6f6256; --quiet:#9b8d7f; --line:#decfbc; --soft:#efe3d2; --accent:#78533d; --accent-strong:#e98262; --accent-soft:#ead5bd; --shadow:0 18px 60px rgba(55,37,20,.14); --site-color-paper:var(--paper); --site-color-ink:var(--ink); --site-color-canvas:#e9e4dc; }
+    @media (prefers-color-scheme: dark) { :root { color-scheme:dark; --paper:#0f0f0d; --surface:#191814; --ink:#f2eee6; --muted:#b5aea2; --quiet:#7e776d; --line:#37322b; --soft:#221f1a; --accent:#f0c66d; --accent-strong:#ff8b68; --accent-soft:#352a1c; --shadow:0 28px 90px rgba(0,0,0,.42); --site-color-canvas:#0d0d0c; } }
     * { box-sizing:border-box; }
-    html { scroll-behavior:smooth; background:var(--paper); }
-    body { margin:0; font-family:"Geist Mono","Geist",ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace; color:var(--ink); background:var(--paper); }
+    ${workspaceWindowShellStyles()}
+    ${workspaceRouteSwitcherStyles()}
+    html { scroll-behavior:smooth; }
+    body { font-family:"Geist Mono","Geist",ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace; }
     ::selection { background:var(--accent-soft); color:var(--ink); }
     .shell { max-width:720px; margin:0 auto; padding:0 22px 40px; }
     .topbar { position:sticky; top:0; z-index:20; display:flex; align-items:center; justify-content:space-between; gap:18px; min-height:74px; border-bottom:1px solid var(--line); background:color-mix(in srgb,var(--paper) 86%,transparent); backdrop-filter:blur(18px); }
@@ -429,24 +490,30 @@ function renderArtifactsIndex(catalog: ArtifactCatalog): string {
   </style>
 </head>
 <body>
-  <div class="shell">
-    <div class="topbar">
-      <a class="brand" href="/artifacts">
-        <img data-consuelo-logo src="${logoDataUri}" alt="Consuelo" width="24" height="24" />
-        <span>Consuelo Artifacts</span>
-      </a>
-      <nav class="nav" aria-label="Primary"><a href="#recently-updated">Recently Updated</a><button type="button" data-search-toggle>Search</button></nav>
+  <div class="workspace-window" data-workspace-shell>
+    ${renderWorkspaceChromeBar('artifacts', 'Artifacts')}
+    <div class="workspace-view" data-workspace-view>
+      <div class="shell">
+        <div class="topbar">
+          <a class="brand" href="/artifacts">
+            <img data-consuelo-logo src="${logoDataUri}" alt="Consuelo" width="24" height="24" />
+            <span>Consuelo Artifacts</span>
+          </a>
+          <nav class="nav" aria-label="Primary"><a href="#recently-updated">Recently Updated</a><button type="button" data-search-toggle>Search</button></nav>
+        </div>
+        <header class="hero">
+          <h1>Artifacts</h1>
+          <p class="lead">Durable sites, guides, specifications, plans, reports, files, and generated outputs from Consuelo.</p>
+          <div class="filter-row" aria-label="Filters"><span class="filter-label">Filters:</span><button class="active" data-filter="all">All</button><button data-filter="website">Website</button><button data-filter="guide">Guide</button><button data-filter="spec">Spec</button><button data-filter="plan">Plan</button><button data-filter="uncategorized">Uncategorized</button></div>
+          <label class="search-row" hidden><span class="filter-label">Search:</span><input class="search-input" type="search" placeholder="filter artifacts" autocomplete="off" /></label>
+        </header>
+        <section class="section" id="recently-updated"><h2>Recently Updated</h2><div class="post-list" data-results>${cards || '<p class="empty">No artifacts published yet.</p>'}</div></section>
+        <footer>© ${new Date(catalog.updatedAt).getUTCFullYear() || new Date().getUTCFullYear()} Consuelo. All rights reserved.</footer>
+      </div>
     </div>
-    <header class="hero">
-      <h1>Artifacts</h1>
-      <p class="lead">Durable sites, guides, specifications, plans, reports, files, and generated outputs from Consuelo.</p>
-      <div class="filter-row" aria-label="Filters"><span class="filter-label">Filters:</span><button class="active" data-filter="all">All</button><button data-filter="website">Website</button><button data-filter="guide">Guide</button><button data-filter="spec">Spec</button><button data-filter="plan">Plan</button><button data-filter="uncategorized">Uncategorized</button></div>
-      <label class="search-row" hidden><span class="filter-label">Search:</span><input class="search-input" type="search" placeholder="filter artifacts" autocomplete="off" /></label>
-    </header>
-    <section class="section" id="recently-updated"><h2>Recently Updated</h2><div class="post-list" data-results>${cards || '<p class="empty">No artifacts published yet.</p>'}</div></section>
-    <footer>© ${new Date(catalog.updatedAt).getUTCFullYear() || new Date().getUTCFullYear()} Consuelo. All rights reserved.</footer>
   </div>
   <script type="application/json" id="artifact-search-data">${searchData}</script>
+  <script>${workspaceChromeClientScript()}</script>
   <script>
     const items = Array.from(document.querySelectorAll('.post-item'));
     const buttons = Array.from(document.querySelectorAll('[data-filter]'));
@@ -516,8 +583,12 @@ export function publishArtifact(input: PublishArtifactInput): PublishArtifactRes
   const versionDir = artifactVersionDir(input.home, routePath, versionId);
   copyPublishTarget(input.target, versionDir);
   const digest = digestTree(versionDir);
-  const currentDir = artifactCurrentDir(input.home, routePath);
-  replaceDirectory(versionDir, currentDir);
+  replaceArtifactCurrentDirectory({
+    home: input.home,
+    routePath,
+    sourceDir: versionDir,
+    catalog,
+  });
 
   const category = input.category?.trim() || pathSegments(routePath)[0] || 'uncategorized';
   const template = input.template ?? 'uncategorized';
@@ -586,7 +657,12 @@ export function rollbackArtifact(input: RollbackArtifactInput): PublishArtifactR
   const versionDir = artifactVersionDir(input.home, artifact.path, versionId);
   fs.mkdirSync(path.dirname(versionDir), { recursive: true });
   fs.cpSync(sourceDir, versionDir, { recursive: true, errorOnExist: true });
-  replaceDirectory(versionDir, artifactCurrentDir(input.home, artifact.path));
+  replaceArtifactCurrentDirectory({
+    home: input.home,
+    routePath: artifact.path,
+    sourceDir: versionDir,
+    catalog,
+  });
 
   const version: ArtifactVersion = {
     ...target,

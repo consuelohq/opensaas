@@ -2,13 +2,13 @@
 title: Workflows
 description: Use manifest-backed workflow bundles for repeated, ordered repository work.
 status: preview
-verifiedAt: 2026-08-11
+verifiedAt: 2026-08-15
 evidence:
   - source: packages/workspace/tooling/workflows.json
     tests:
       - packages/os/tests/workflow-intent.test.ts
       - packages/os/tests/task-manifest-workflow-roles.test.ts
-    runtime: The current workflow registry and task workflow roles were inspected on 2026-08-11.
+    runtime: The current workflow registry, canonical session constructor, task compatibility alias, and task hook roles were verified on 2026-08-15.
 ---
 
 A **workflow bundle** maps a repeated kind of work to ordered roles, typed tools, and lifecycle events. It is different from a skill: a skill teaches judgment and procedure, while a workflow bundle registers a concrete lifecycle/tool sequence.
@@ -19,7 +19,7 @@ The current registry exposes the **task** workflow, with aliases such as `repo` 
 
 ```text
 stream context
-  → task start
+  → session start (`kind: task`)
   → scoped workpad and test contract
   → research
   → red test or documented waiver
@@ -31,7 +31,7 @@ stream context
   → finish
 ```
 
-`task.start` returns a `taskSession` tied to an isolated branch and worktree. Pass that session to task-scoped tools. Workflow hooks add lifecycle guidance; they do not replace validation or review.
+`session.start({ kind: "task" })` is the canonical task constructor and returns a `taskSession` tied to an isolated branch and worktree. `task.start` remains a compatibility alias for existing callers. Pass the returned session to task-scoped tools. Use `session.start({ kind: "work", path })` for ordinary node-local filesystem work outside managed repositories; it creates metadata and affinity only, not a branch, worktree, or PR. Workflow hooks add lifecycle guidance; they do not replace validation or review.
 
 ## Workflow versus skill
 

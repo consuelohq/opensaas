@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_fdaa1f3e0fdd",
+  "tmuxSession": "opensaas-os-restore-internal-dashboard-browser-auth-handoff-fdaa1f3e",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/restore-internal-dashboard-browser-auth-handoff",
+  "branch": "task/os/restore-internal-dashboard-browser-auth-handoff",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-restore-internal-dashboard-browser-auth-handoff",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-restore-internal-dashboard-browser-auth-handoff",
+  "prNumber": 2147,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2147",
+  "createdAt": "2026-08-16T22:16:27.043Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-restore-internal-dashboard-browser-auth-handoff/.task/os/restore-internal-dashboard-browser-auth-handoff/session.json"
+}

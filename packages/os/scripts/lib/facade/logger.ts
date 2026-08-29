@@ -31,6 +31,8 @@ export function logToolExecution(entry: {
   branch?: string;
   taskSession?: string;
   worktree?: string;
+  workSession?: string;
+  workPath?: string;
   mcpTraceId?: string;
   command: string;
   implementationCommand?: string;
@@ -78,6 +80,8 @@ export function logToolExecution(entry: {
     taskSession: entry.taskSession,
     branch: entry.branch,
     worktree: entry.worktree,
+    workSession: entry.workSession,
+    workPath: entry.workPath,
     status: entry.ok ? 'ok' : 'error',
     ok: entry.ok,
     code: entry.code,

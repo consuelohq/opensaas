@@ -14,6 +14,7 @@ type RichExploreResult = {
   score: number;
   retrieval_support: number;
   calibration_status: string;
+  belief_prior: number;
   symbol: string;
   chunk_type: string;
   file_outline: string;
@@ -26,6 +27,7 @@ type RichExploreResult = {
   package: string;
   changed_in_branch: boolean;
   evidence_state: string | null;
+  information_value: number;
   reason: string;
   preview: string;
   graph_connections: string[];
@@ -134,6 +136,7 @@ function richPayload(): RichExplorePayload {
       score: 0.92 - (index * 0.04),
       retrieval_support: index === 0 ? 0.8636 : 0.325,
       calibration_status: 'provisional',
+      belief_prior: 0.75 - (index * 0.03),
       symbol: `exampleSymbol${index}`,
       chunk_type: index % 2 === 0 ? 'function' : 'class',
       file_outline: Array.from({ length: 12 }, (_, outlineIndex) => `Symbol${index}_${outlineIndex}`).join(' '),
@@ -150,6 +153,7 @@ function richPayload(): RichExplorePayload {
       package: 'os',
       changed_in_branch: index === 0,
       evidence_state: index === 0 ? 'read' : null,
+      information_value: 0.82 - (index * 0.03),
       reason: `hybrid match: ${index % 2 === 0 ? 'function' : 'class'} exampleSymbol${index}`,
       preview: `export function exampleSymbol${index}() { ${'return dependencyAwareValue; '.repeat(18)} }`,
       graph_connections: graphConnections,
@@ -352,6 +356,7 @@ describe('Explore compact response contract', () => {
       evidence_state: rich.results[0].evidence_state,
       retrieval_support: rich.results[0].retrieval_support,
       calibration_status: 'provisional',
+      information_value: rich.results[0].information_value,
       has_test: true,
       changed_in_branch: true,
       is_implementation: true,
@@ -361,7 +366,7 @@ describe('Explore compact response contract', () => {
     expect(first.connections).toEqual(rich.results[0].typed_edges.slice(0, 3).map(({ path, type }) => ({ path, type })));
     expect(first.preview.length).toBeLessThanOrEqual(240);
 
-    for (const diagnosticField of ['typed_edges', 'score_parts', 'file_outline', 'file_size', 'chunk_count', 'last_modified', 'graph_connections', 'package']) {
+    for (const diagnosticField of ['typed_edges', 'score_parts', 'file_outline', 'file_size', 'chunk_count', 'last_modified', 'graph_connections', 'belief_prior', 'package']) {
       expect(first).not.toHaveProperty(diagnosticField);
     }
     expect(rich).toEqual(before);

@@ -24,7 +24,7 @@ export const toolSchemas = [
         "fs",
         "apply_patch"
       ],
-      "description": "apply an anchored patch file with embedded task-worktree-relative paths",
+      "description": "apply an anchored patch inside an authorized task worktree or work-session directory",
       "category": "filesystem",
       "underlying": "workspace fs.apply_patch",
       "capabilities": {
@@ -257,7 +257,7 @@ export const toolSchemas = [
         "fs",
         "trash"
       ],
-      "description": "An agent safe file deletion path. Prefered over rm rf",
+      "description": "move files to trash inside an authorized task worktree or work-session directory",
       "category": "filesystem",
       "underlying": "workspace fs.trash",
       "capabilities": {
@@ -300,7 +300,7 @@ export const toolSchemas = [
         "fs",
         "write"
       ],
-      "description": "write a file in a task worktree",
+      "description": "write a file inside an authorized task worktree or work-session directory",
       "category": "filesystem",
       "underlying": "workspace fs.write",
       "capabilities": {

@@ -16,7 +16,7 @@ function out(s = '') { process.stdout.write(s + '\n'); }
 function err(s = '') { process.stderr.write(s + '\n'); process.exitCode = 1; }
 
 function readStdin() {
-  try { return fs.readFileSync('/dev/stdin', 'utf8'); } catch { return ''; }
+  try { return fs.readFileSync(0, 'utf8'); } catch { return ''; }
 }
 
 function resolve(p) { return path.resolve(process.cwd(), p); }
@@ -530,17 +530,6 @@ function readPatchPayload({ patchText, patchFile }) {
   return stdinContent;
 }
 
-function assertSafePatchPath(rawPath) {
-  if (!rawPath || typeof rawPath !== 'string') throw new Error('unsafe patch path: empty path');
-  if (path.isAbsolute(rawPath)) throw new Error(`unsafe patch path: ${rawPath}`);
-  const parts = rawPath.split(/[\\/]+/).filter(Boolean);
-  if (parts.includes('..') || parts.includes('.git')) throw new Error(`unsafe patch path: ${rawPath}`);
-  const resolved = resolve(rawPath);
-  const relative = path.relative(process.cwd(), resolved);
-  if (relative.startsWith('..') || path.isAbsolute(relative)) throw new Error(`unsafe patch path: ${rawPath}`);
-  return { rawPath, resolved };
-}
-
 function parsePatchHeader(line, prefix) {
   if (!line.startsWith(prefix)) return null;
   return line.slice(prefix.length).trim();
@@ -690,7 +679,10 @@ function conflictForPatchPath(existing, incoming) {
   return `conflicting patch operations for ${incoming.rawPath} and ${existing.path}`;
 }
 
-function applyPatchOperations(operations) {
+function applyPatchOperations(operations, resolveMutationPath) {
+  if (typeof resolveMutationPath !== 'function') {
+    throw new Error('apply-patch requires a bounded mutation-path resolver');
+  }
   const plannedWrites = new Map();
   const plannedDeletes = new Map();
   const touched = [];
@@ -725,7 +717,7 @@ function applyPatchOperations(operations) {
   }
 
   for (const operation of operations) {
-    const target = assertSafePatchPath(operation.path);
+    const target = resolveMutationPath(operation.path);
     if (operation.type === 'add') {
       if (fs.existsSync(target.resolved) || plannedWrites.has(target.resolved)) throw new Error(`patch target already exists: ${operation.path}`);
       if (plannedDeletes.has(target.resolved)) throw new Error(conflictForPatchPath(plannedDeletes.get(target.resolved), target));
@@ -741,7 +733,7 @@ function applyPatchOperations(operations) {
     if (operation.type === 'update') {
       const updatedContent = applyUpdateHunks(operation.path, plannedContent(target), operation.hunks);
       if (operation.moveTo) {
-        const moveTarget = assertSafePatchPath(operation.moveTo);
+        const moveTarget = resolveMutationPath(operation.moveTo);
         if (target.resolved === moveTarget.resolved) throw new Error(`conflicting patch operations for ${operation.path} and ${operation.moveTo}`);
         if (fs.existsSync(moveTarget.resolved) || plannedWrites.has(moveTarget.resolved)) throw new Error(`patch move target already exists: ${operation.moveTo}`);
         if (plannedDeletes.has(moveTarget.resolved)) throw new Error(conflictForPatchPath(plannedDeletes.get(moveTarget.resolved), moveTarget));
@@ -792,7 +784,7 @@ function applyPlannedPatchMutations(plan) {
   }
 }
 
-function cmdApplyPatch(argv) {
+async function cmdApplyPatch(argv) {
   if (argv.includes('--help')) { applyPatchHelp(); return; }
 
   const dryRun = argv.includes('--dry-run');
@@ -810,8 +802,12 @@ function cmdApplyPatch(argv) {
   if (payload === null) return;
 
   try {
+    const { resolveBoundedMutationPath } = await import('./lib/fs/mutation-path.ts');
     const operations = parseApplyPatch(payload);
-    const plan = applyPatchOperations(operations);
+    const plan = applyPatchOperations(
+      operations,
+      (rawPath) => resolveBoundedMutationPath(rawPath, { root: process.cwd() }),
+    );
 
     out(`── apply-patch ──`);
     out(`operations: ${operations.length}`);
@@ -879,7 +875,7 @@ function cmdHttp(argv) {
 
 // ── trash ──
 
-function cmdTrash(argv) {
+async function cmdTrash(argv) {
   if (argv.includes('--help') || argv.length === 0) {
     out('usage: bun run fs -- trash <path> [path...]');
     out('');
@@ -891,10 +887,15 @@ function cmdTrash(argv) {
     out('  trash a.ts b.ts c.ts');
     return;
   }
+  const { resolveBoundedMutationPath } = await import('./lib/fs/mutation-path.ts');
   for (const target of argv) {
     if (target.startsWith('-')) continue;
     try {
-      execFileSync('trash', [target], { encoding: 'utf8' });
+      const bounded = resolveBoundedMutationPath(target, {
+        root: process.cwd(),
+        mustExist: true,
+      });
+      execFileSync('trash', [bounded.resolved], { encoding: 'utf8' });
       out(`trashed: ${target}`);
     } catch (e) {
       err(`failed to trash ${target}: ${e.message}`);
@@ -918,9 +919,9 @@ async function main() {
     case 'list': cmdList(rest); break;
     case 'write': await cmdWrite(rest); break;
     case 'patch': cmdPatch(rest); break;
-    case 'apply-patch': cmdApplyPatch(rest); break;
+    case 'apply-patch': await cmdApplyPatch(rest); break;
     case 'http': cmdHttp(rest); break;
-    case 'trash': cmdTrash(rest); break;
+    case 'trash': await cmdTrash(rest); break;
     default:
       err(`unknown command: ${command}`);
       mainHelp();

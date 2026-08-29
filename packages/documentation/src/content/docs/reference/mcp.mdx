@@ -17,7 +17,9 @@ evidence:
 
 Consuelo OS exposes Model Context Protocol through local stdio for supported coding agents and HTTPS for approved hosted agents.
 
-When the hosted workspace route can reach more than one node, Consuelo resolves the destination before the selected node executes the MCP request. That routing decision is a Consuelo workspace concern, not a new MCP protocol primitive. Default, explicit, and task-owned routing are documented in [Routing work](/nodes/routing/).
+When the hosted workspace route can reach more than one node, Consuelo resolves the destination before the selected node executes the MCP request. That routing decision is a Consuelo workspace concern, not a new MCP protocol primitive. Default, explicit, task-owned, and work-session-owned routing use the same node-routing layer.
+
+Facade call envelopes may carry a top-level `taskSession` or `workSession`, but never both. A task session follows the node that owns the task worktree. A work session follows the node that owns its local work-session metadata. The filesystem path for a work session stays on that node; central affinity stores only the session identity and owning node.
 
 ## Initialize
 
@@ -107,6 +109,7 @@ Before JSON-RPC execution, route validation can return:
 | --- | --- |
 | `INVALID_MCP_REQUEST` | Body is not a JSON-RPC request object. |
 | `INVALID_MCP_TOOL_CALL` | `tools/call` has no non-empty tool name. |
+| `INVALID_SESSION_ROUTE` | The request supplies conflicting task/work session routing authority. |
 | `UNKNOWN_MCP_METHOD` | Method is outside the supported set. |
 | `UNSUPPORTED_MCP_TOOL` | Name resolves to a non-skill surface; only OS skills are callable. |
 
@@ -122,4 +125,4 @@ Authentication failures keep their HTTP status contract; for example, a missing 
 
 Authorization, missing scopes, expired credentials, and signed-transport errors are defined in [Security reference](/secure/security-reference/).
 
-Node selection can also fail before JSON-RPC execution. `WORKSPACE_NODE_OFFLINE`, `NODE_ROUTE_MISMATCH`, and `TASK_NODE_MISMATCH` are workspace routing errors; they are not MCP method errors. See [Result and error formats](/reference/result-and-error-formats/#node-routing-errors).
+Node selection can also fail before JSON-RPC execution. `WORKSPACE_NODE_OFFLINE`, `NODE_ROUTE_MISMATCH`, `TASK_NODE_MISMATCH`, `WORK_SESSION_NODE_MISMATCH`, `TASK_WORKSPACE_MISMATCH`, and `WORK_SESSION_WORKSPACE_MISMATCH` are workspace routing errors; they are not MCP method errors. See [Result and error formats](/reference/result-and-error-formats/#node-routing-errors).

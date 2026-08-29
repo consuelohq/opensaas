@@ -113,8 +113,8 @@ test('GitHub Actions production release uses dedicated Cloudflare credentials fo
   );
   expect(osPackage.scripts['cloudflare:workspace-edge:migrate']).toContain('--remote');
   expect(osReleaseScript).toContain("'os:release-workspace-edge'");
-  expect(osReleaseScript.indexOf("runScript('os:release-device-auth', options)")).toBeLessThan(
-    osReleaseScript.lastIndexOf("'os:release-workspace-edge'"),
+  expect(osReleaseScript.indexOf("'os:release-workspace-edge'")).toBeLessThan(
+    osReleaseScript.indexOf("runScript('os:release-device-auth', options)"),
   );
   expect(osReleaseScript).toContain('CLOUDFLARE_WORKSPACE_EDGE_API_TOKEN');
   expect(osReleaseScript).toContain('CLOUDFLARE_API_TOKEN: workspaceEdgeToken');

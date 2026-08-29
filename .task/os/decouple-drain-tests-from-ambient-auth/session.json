@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_74e42d23bee0",
+  "tmuxSession": "opensaas-os-decouple-drain-tests-from-ambient-auth-74e42d23",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/decouple-drain-tests-from-ambient-auth",
+  "branch": "task/os/decouple-drain-tests-from-ambient-auth",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-decouple-drain-tests-from-ambient-auth",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-decouple-drain-tests-from-ambient-auth",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2153,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2153",
+  "createdAt": "2026-08-17T00:50:09.364Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-decouple-drain-tests-from-ambient-auth/.task/os/decouple-drain-tests-from-ambient-auth/session.json"
+}

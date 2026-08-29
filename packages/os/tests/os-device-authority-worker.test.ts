@@ -17,6 +17,7 @@ import {
 import {
   createInMemoryWorkspaceRouteD1,
   migrateWorkspaceRouteD1,
+  resolveWorkspaceRouteFromD1,
   upsertWorkspaceHostnameInD1,
 } from '../scripts/lib/workspace-cloudflare-d1-route-registry';
 import {
@@ -1644,6 +1645,228 @@ describe('os device authority worker', () => {
     expect(routeRegistry.statements[1]).not.toContain(
       'workspace.consuelohq.com',
     );
+  });
+
+  it('should reset a stale workspace enrollment so the next approval requires workspace selection', async () => {
+    const store = new DurableStore(createSharedDurableStorage());
+    const workspaceHost = 'trident.consuelohq.com';
+    const workspaceId = 'workspace_trident';
+    const accountId = 'account_google_123';
+    const nowMs = Date.parse('2026-08-17T00:00:00.000Z');
+    await store.putAccountWorkspace({
+      accountId,
+      workspaceId,
+      workspaceSlug: 'trident',
+      workspaceHost,
+      homeNodeId: 'trident',
+      defaultNodeId: 'trident',
+      updatedAt: nowMs,
+    });
+    await store.putWorkspaceMembership({
+      accountId,
+      workspaceId,
+      workspaceSlug: 'trident',
+      workspaceHost,
+      status: 'active',
+      createdAt: nowMs,
+      updatedAt: nowMs,
+    });
+    await store.putWorkspaceNode({
+      accountId,
+      workspaceId,
+      workspaceSlug: 'trident',
+      workspaceHost,
+      nodeId: 'trident',
+      nodeName: 'local',
+      role: 'home',
+      connectorId: 'connector_trident',
+      connectorStatus: 'disconnected',
+      state: 'active',
+      devicePublicKeyThumbprint: 'thumbprint-trident',
+      createdAt: nowMs,
+      updatedAt: nowMs,
+    });
+
+    const routeRegistry = createInMemoryWorkspaceRouteD1();
+    await migrateWorkspaceRouteD1(routeRegistry);
+    await upsertWorkspaceHostnameInD1(routeRegistry, {
+      workspaceId,
+      workspaceSlug: 'trident',
+      hostname: workspaceHost,
+      baseDomain: 'consuelohq.com',
+      provider: 'cloudflare',
+      owner: 'consuelo-os-cloud',
+      status: 'active',
+      routes: [
+        {
+          surface: 'os',
+          pathPrefix: '/',
+          auth: 'signed-connector',
+          status: 'active',
+          target: {
+            kind: 'os-connector',
+            connectorId: 'connector_trident',
+            connectorStatus: 'disconnected',
+            tunnelOriginUrl: 'https://connector-trident.consuelohq.com',
+          },
+        },
+      ],
+    });
+
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      origin,
+      now: () => nowMs,
+      approvalAssertionSecret,
+      workspaceRouteRegistry: routeRegistry,
+      operatorEnrollmentResetSecret: 'operator-reset-secret',
+    });
+
+    const deniedReset = await handler(
+      new Request(`${origin}/internal/install-control-plane/enrollment/reset`, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ workspace_host: workspaceHost, workspace_id: workspaceId }),
+      }),
+    );
+    expect(deniedReset.status).toBe(403);
+
+    const reset = await handler(
+      new Request(`${origin}/internal/install-control-plane/enrollment/reset`, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-consuelo-enrollment-reset-secret': 'operator-reset-secret',
+        },
+        body: JSON.stringify({ workspace_host: workspaceHost, workspace_id: workspaceId }),
+      }),
+    );
+    expect(reset.status).toBe(200);
+    await expect(reset.json()).resolves.toMatchObject({
+      status: 'reset',
+      workspace_host: workspaceHost,
+      workspace_id: workspaceId,
+      nodes_removed: 1,
+      route_revoked: true,
+    });
+    await expect(store.byAccountWorkspace(accountId)).resolves.toBeUndefined();
+    await expect(store.listWorkspaceMemberships(accountId)).resolves.toEqual([]);
+    await expect(store.listWorkspaceNodesByHost(workspaceHost)).resolves.toEqual([]);
+    await expect(
+      resolveWorkspaceRouteFromD1(routeRegistry, { host: workspaceHost, path: '/' }),
+    ).resolves.toMatchObject({
+      allowed: false,
+      status: 404,
+      errorCode: 'WORKSPACE_HOSTNAME_NOT_FOUND',
+    });
+
+    const repeatedReset = await handler(
+      new Request(`${origin}/internal/install-control-plane/enrollment/reset`, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-consuelo-enrollment-reset-secret': 'operator-reset-secret',
+        },
+        body: JSON.stringify({ workspace_host: workspaceHost, workspace_id: workspaceId }),
+      }),
+    );
+    expect(repeatedReset.status).toBe(200);
+    await expect(repeatedReset.json()).resolves.toMatchObject({
+      status: 'already_reset',
+      workspace_host: workspaceHost,
+      workspace_id: workspaceId,
+      nodes_removed: 0,
+      route_revoked: true,
+    });
+
+    const deviceKeyPair = generateWorkspaceDeviceKeyPair();
+    const codeResponse = await handler(
+      new Request(CONSUELO_DEVICE_CODE_URL, {
+        method: 'POST',
+        ...form({
+          client_id: 'consuelo-os-installer',
+          scope: 'workspace:read os:connector:register',
+          device_public_key_jwk: deviceKeyPair.publicKeyJwk,
+          device_key_algorithm: 'Ed25519',
+        }),
+      }),
+    );
+    const codeJson = (await codeResponse.json()) as Record<string, string | number>;
+    const approve = await handler(
+      new Request(`${origin}/login/device/approve`, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/x-www-form-urlencoded',
+          'x-consuelo-account-assertion': await authAssertion({
+            accountId,
+            authMethod: 'google',
+            expiresAt: '2026-08-17T00:20:00.000Z',
+          }),
+        },
+        body: new URLSearchParams({
+          user_code: String(codeJson.user_code).replace('-', ''),
+        }).toString(),
+      }),
+    );
+    expect(approve.status).toBe(200);
+    await expect(approve.json()).resolves.toMatchObject({
+      status: 'workspace_required',
+      account_id: accountId,
+    });
+  });
+
+  it('should refuse an enrollment reset when one workspace host has multiple account owners', async () => {
+    const store = createMemoryDeviceGrantStore();
+    const workspaceHost = 'shared.consuelohq.com';
+    const nowMs = Date.parse('2026-08-17T00:00:00.000Z');
+    for (const [accountId, nodeId] of [
+      ['account_a', 'node-a'],
+      ['account_b', 'node-b'],
+    ] as const) {
+      await store.putWorkspaceNode({
+        accountId,
+        workspaceId: 'workspace_shared',
+        workspaceSlug: 'shared',
+        workspaceHost,
+        nodeId,
+        nodeName: nodeId,
+        role: 'home',
+        connectorStatus: 'disconnected',
+        state: 'active',
+        devicePublicKeyThumbprint: `thumbprint-${nodeId}`,
+        createdAt: nowMs,
+        updatedAt: nowMs,
+      });
+    }
+    const routeRegistry = createInMemoryWorkspaceRouteD1();
+    await migrateWorkspaceRouteD1(routeRegistry);
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      origin,
+      now: () => nowMs,
+      workspaceRouteRegistry: routeRegistry,
+      operatorEnrollmentResetSecret: 'operator-reset-secret',
+    });
+
+    const response = await handler(
+      new Request(`${origin}/internal/install-control-plane/enrollment/reset`, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-consuelo-enrollment-reset-secret': 'operator-reset-secret',
+        },
+        body: JSON.stringify({
+          workspace_host: workspaceHost,
+          workspace_id: 'workspace_shared',
+        }),
+      }),
+    );
+
+    expect(response.status).toBe(409);
+    await expect(response.json()).resolves.toEqual({
+      error: 'ambiguous_enrollment_owner',
+    });
+    await expect(store.listWorkspaceNodesByHost(workspaceHost)).resolves.toHaveLength(2);
   });
 
   it('should register the approved workspace host route after auth-first workspace selection', async () => {

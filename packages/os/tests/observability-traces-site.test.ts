@@ -8,6 +8,7 @@ import { describe, expect, it } from 'vitest';
 import {
   buildObservabilityTracesClientScript,
   buildObservabilityTracesSite,
+  resolveObservabilitySessionValue,
 } from '../scripts/lib/observability-traces-site';
 
 const canonicalAssetDir = resolve(
@@ -37,8 +38,9 @@ describe('Observability Traces canonical Trace Burn surface', () => {
     expect(html).toContain('data-show-filters');
     expect(html).toContain('data-trace-count');
     expect(html).toContain(
-      '<div class="trxHead"><div></div><div>Time</div><div>Tool</div><div>Latency</div><div>Tokens</div><div>Branch</div><div>Input</div><div>Output</div><div>Node</div><div>Trace</div><div>Status</div><div>Cost</div></div>',
+      '<div class="trxHead"><div></div><div>Time</div><div>Tool</div><div>Latency</div><div>Tokens</div><div>Session</div><div>Input</div><div>Output</div><div>Node</div><div>Trace</div><div>Status</div><div>Cost</div></div>',
     );
+    expect(html).toContain('<div>Status</div>');
     expect(html).toContain('consuelo-trace-node-observability');
     expect(html).toContain('data-workspace-route-trigger');
     expect(html).toContain('aria-label="Workspace routes"');
@@ -74,7 +76,8 @@ describe('Observability Traces canonical Trace Burn surface', () => {
     const html = buildObservabilityTracesSite();
 
     expect(html).toContain('id="consuelo-trace-workspace-integration"');
-    expect(html).toContain('Inspect live traces and tool execution.');
+    expect(html).toContain('<span>Tracing</span>');
+    expect(html).not.toContain('Inspect live tool traces.');
     expect(html).not.toContain('Inspect live agent and tool execution.');
     expect(html).toContain('#tbmLiveTraceModal[aria-hidden="false"]');
     expect(html).toContain('display:flex!important');
@@ -98,6 +101,7 @@ describe('Observability Traces canonical Trace Burn surface', () => {
     expect(html).toContain(
       '#tbmLiveTraceModal .trxHead,#tbmLiveTraceModal .trxRow{min-width:1620px!important;grid-template-columns:34px 108px 150px 78px 76px 260px 240px 240px 140px 140px 70px 84px!important}',
     );
+    expect(html).toContain('#tbmLiveTraceModal .trxBody{transition:none!important}');
     expect(html).toContain(
       '#tbmLiveTraceModal[aria-hidden="false"] .trxShell:not(.closed) .trxRail{display:block!important;position:fixed!important;',
     );
@@ -105,6 +109,61 @@ describe('Observability Traces canonical Trace Burn surface', () => {
     expect(html).toContain(
       '#tbmLiveTraceModal[aria-hidden="false"] .trxShell:not(.closed) .tiInspector{width:100%!important;max-width:100%!important;',
     );
+  });
+
+  it('follows system light/dark mode with the launcher palette and preserves tracing hierarchy', () => {
+    const html = buildObservabilityTracesSite();
+
+    expect(html).toContain('id="consuelo-trace-system-theme"');
+    expect(html).toContain('<meta name="color-scheme" content="light dark">');
+    expect(html).toContain('<meta name="theme-color" content="#f4efe7" media="(prefers-color-scheme: light)">');
+    expect(html).toContain('<meta name="theme-color" content="#080706" media="(prefers-color-scheme: dark)">');
+    expect(html).not.toContain('<meta name="theme-color" content="#14120f">');
+    expect(html).toContain('--trace-bg:#f4efe7');
+    expect(html).toContain('--trace-cream:#29251f');
+    expect(html).toContain('--trace-muted:#756d63');
+    expect(html).toContain('--ti-bg:#f4efe7');
+    expect(html).toContain('--ti-panel:#fff9f0');
+    expect(html).toContain('.trxFilterPanel{background:var(--trace-panel)!important');
+    expect(html).toContain('.trxFilterSearch{background:var(--trace-bg)!important');
+    expect(html).toContain('.tiCodeValue,#tbmLiveTraceModal .tiWorkpadValue,#tbmLiveTraceModal .tiRawJson,#tbmLiveTraceModal .tiValue-string{background:var(--trace-bg)!important;color:var(--ti-text)!important}');
+    expect(html).toContain('@media (prefers-color-scheme: dark)');
+    expect(html).toContain('--trace-bg:#080706');
+    expect(html).toContain('--trace-cream:#f3ead3');
+    expect(html).toContain('.trxLatency,#tbmLiveTraceModal .trxTokens,#tbmLiveTraceModal .trxJson');
+    expect(html).toContain('.trxToolName,#tbmLiveTraceModal .trxCost');
+    expect(html).toContain('--branch-color-light');
+    expect(html).toContain('--branch-color-dark');
+
+    const virtualListSource = readFileSync(
+      resolve(osTraceInspectorDir, 'virtual-list-browser.ts'),
+      'utf8',
+    );
+    expect(virtualListSource).toContain('badge.className = `trxStatus ${status}`');
+    expect(virtualListSource).not.toContain('marker.hidden = true');
+  });
+
+  it('projects task branches and work filesystem paths into the same Session value', () => {
+    expect(resolveObservabilitySessionValue({
+      workPath: '/Users/ko/Developer/raycast-extension',
+      branch: 'task/workspace-agent/example',
+      taskSession: 'tsk_example',
+      workSession: 'wrk_example',
+    })).toBe('tsk_example + wrk_example');
+    expect(resolveObservabilitySessionValue({
+      branch: 'task/workspace-agent/example',
+      taskSession: 'tsk_example',
+    })).toBe('task/workspace-agent/example');
+    expect(resolveObservabilitySessionValue({ workSession: 'wrk_example' })).toBe('wrk_example');
+    expect(resolveObservabilitySessionValue({ branch: 'no-branch', workSession: 'wrk_example' })).toBe('wrk_example');
+    expect(resolveObservabilitySessionValue({ taskSession: 'tsk_conflict', workSession: 'wrk_conflict' })).toBe('tsk_conflict + wrk_conflict');
+    expect(resolveObservabilitySessionValue({})).toBe('no-branch');
+  });
+
+  it('labels the existing branch facet as Sessions', () => {
+    const source = readFileSync(resolve(osTraceInspectorDir, 'virtual-list-browser.ts'), 'utf8');
+    expect(source).toContain("createFilterSection('branches', 'Sessions'");
+    expect(source).not.toContain("createFilterSection('branches', 'Branches'");
   });
 
   it('uses the exact v38 interaction assets with only same-origin gateway transport', () => {

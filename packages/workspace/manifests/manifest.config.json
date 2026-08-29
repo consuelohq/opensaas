@@ -19,6 +19,7 @@
       "context",
       "explore",
       "github",
+      "session.start",
       "task.start",
       "review.run",
       "tools.search",

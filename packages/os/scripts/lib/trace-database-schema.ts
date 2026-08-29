@@ -7,6 +7,7 @@ const require = createRequire(import.meta.url);
 export type TraceStatement = {
   run: (...values: unknown[]) => unknown;
   all: (...values: unknown[]) => unknown[];
+  get: (...values: unknown[]) => unknown;
 };
 
 export type TraceDatabase = {
@@ -20,6 +21,20 @@ type TraceDatabaseConstructor = new (
   options?: { create?: boolean; readonly?: boolean },
 ) => TraceDatabase;
 
+type NodeTraceStatement = {
+  run: (...values: unknown[]) => unknown;
+  all: (...values: unknown[]) => unknown[];
+  get: (...values: unknown[]) => unknown;
+};
+
+type NodeTraceDatabase = {
+  exec: (sql: string) => void;
+  prepare: (sql: string) => NodeTraceStatement;
+  close: () => void;
+};
+
+type NodeTraceDatabaseConstructor = new (filename: string) => NodeTraceDatabase;
+
 const TRACE_COLUMNS: Array<{ name: string; alterSql: string }> = [
   { name: 'id', alterSql: 'ALTER TABLE tool_traces ADD COLUMN id TEXT;' },
   { name: 'ts', alterSql: 'ALTER TABLE tool_traces ADD COLUMN ts TEXT;' },
@@ -30,6 +45,8 @@ const TRACE_COLUMNS: Array<{ name: string; alterSql: string }> = [
   { name: 'task_session', alterSql: 'ALTER TABLE tool_traces ADD COLUMN task_session TEXT;' },
   { name: 'branch', alterSql: 'ALTER TABLE tool_traces ADD COLUMN branch TEXT;' },
   { name: 'worktree', alterSql: 'ALTER TABLE tool_traces ADD COLUMN worktree TEXT;' },
+  { name: 'work_session', alterSql: 'ALTER TABLE tool_traces ADD COLUMN work_session TEXT;' },
+  { name: 'work_path', alterSql: 'ALTER TABLE tool_traces ADD COLUMN work_path TEXT;' },
   { name: 'requested_node_id', alterSql: 'ALTER TABLE tool_traces ADD COLUMN requested_node_id TEXT;' },
   { name: 'resolved_node_id', alterSql: 'ALTER TABLE tool_traces ADD COLUMN resolved_node_id TEXT;' },
   { name: 'resolved_node_name', alterSql: 'ALTER TABLE tool_traces ADD COLUMN resolved_node_name TEXT;' },
@@ -51,8 +68,28 @@ const TRACE_COLUMNS: Array<{ name: string; alterSql: string }> = [
 
 export function openTraceDatabase(dbPath: string): TraceDatabase {
   fs.mkdirSync(path.dirname(dbPath), { recursive: true });
-  const { Database } = require('bun:sqlite') as { Database: TraceDatabaseConstructor };
-  const db = new Database(dbPath, { create: true });
+  let db: TraceDatabase;
+  if (typeof (globalThis as { Bun?: unknown }).Bun !== 'undefined') {
+    const { Database } = require('bun:sqlite') as { Database: TraceDatabaseConstructor };
+    db = new Database(dbPath, { create: true });
+  } else {
+    const { DatabaseSync } = require('node:sqlite') as {
+      DatabaseSync: NodeTraceDatabaseConstructor;
+    };
+    const database = new DatabaseSync(dbPath);
+    db = {
+      exec: (sql) => database.exec(sql),
+      query: (sql) => {
+        const statement = database.prepare(sql);
+        return {
+          run: (...values) => statement.run(...values),
+          all: (...values) => statement.all(...values),
+          get: (...values) => statement.get(...values),
+        };
+      },
+      close: () => database.close(),
+    };
+  }
   db.exec('PRAGMA busy_timeout = 1000;');
   return db;
 }
@@ -69,6 +106,8 @@ export function ensureToolTraceSchema(db: TraceDatabase): void {
       task_session TEXT,
       branch TEXT,
       worktree TEXT,
+      work_session TEXT,
+      work_path TEXT,
       requested_node_id TEXT,
       resolved_node_id TEXT,
       resolved_node_name TEXT,
@@ -105,6 +144,7 @@ export function ensureToolTraceSchema(db: TraceDatabase): void {
     CREATE INDEX IF NOT EXISTS tool_traces_tool_idx ON tool_traces(tool);
     CREATE INDEX IF NOT EXISTS tool_traces_status_idx ON tool_traces(status);
     CREATE INDEX IF NOT EXISTS tool_traces_task_session_idx ON tool_traces(task_session);
+    CREATE INDEX IF NOT EXISTS tool_traces_work_session_idx ON tool_traces(work_session);
     CREATE INDEX IF NOT EXISTS tool_traces_branch_idx ON tool_traces(branch);
     CREATE INDEX IF NOT EXISTS tool_traces_resolved_node_id_idx ON tool_traces(resolved_node_id);
     CREATE INDEX IF NOT EXISTS tool_traces_route_source_idx ON tool_traces(route_source);

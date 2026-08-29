@@ -350,6 +350,22 @@ async function handleHeartbeat(
     body.connectorStatus === 'disconnected'
       ? body.connectorStatus
       : undefined;
+  const normalizedPlatformField = (value: unknown): string | undefined => {
+    if (typeof value !== 'string') return undefined;
+    const normalized = value.trim().toLowerCase();
+    return /^[a-z0-9._-]{1,32}$/.test(normalized) ? normalized : undefined;
+  };
+  const hasPlatform = Object.hasOwn(body, 'platform');
+  const platform = normalizedPlatformField(body.platform);
+  const hasArchitecture = Object.hasOwn(body, 'architecture');
+  const architecture = normalizedPlatformField(body.architecture);
+  if ((hasPlatform && !platform) || (hasArchitecture && !architecture)) {
+    return errorResponse(
+      400,
+      'INVALID_HEARTBEAT_PLATFORM',
+      'Heartbeat platform and architecture must use safe platform identifiers.',
+    );
+  }
   const capabilities = Array.isArray(body.capabilities)
     ? [
         ...new Set(
@@ -414,6 +430,8 @@ async function handleHeartbeat(
     ...node,
     capabilities,
     ...(hasAgents ? { agents } : {}),
+    ...(platform ? { platform } : {}),
+    ...(architecture ? { architecture } : {}),
     connectorStatus,
     lastSeenAt: nowMs,
     updatedAt: nowMs,

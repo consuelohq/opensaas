@@ -58,6 +58,11 @@ export class OsDeviceGrantDurableObject {
       approvalAssertionSecret: env.OS_DEVICE_AUTH_ASSERTION_SECRET,
       googleOAuthClientId: env.GOOGLE_OAUTH_CLIENT_ID,
       googleOAuthClientSecret: env.GOOGLE_OAUTH_CLIENT_SECRET,
+      googleWorkspaceOAuthClientId: env.GOOGLE_WORKSPACE_OAUTH_CLIENT_ID,
+      googleWorkspaceOAuthClientSecret: env.GOOGLE_WORKSPACE_OAUTH_CLIENT_SECRET,
+      githubAppId: env.GITHUB_APP_ID,
+      githubAppSlug: env.GITHUB_APP_SLUG,
+      githubAppPrivateKey: env.GITHUB_APP_PRIVATE_KEY,
       workspaceRouteRegistry: env.WORKSPACE_ROUTE_REGISTRY,
       workspaceConnectorProvisioner: createWorkspaceConnectorProvisionerFromEnv(
         env,
@@ -65,6 +70,7 @@ export class OsDeviceGrantDurableObject {
       ),
       workspaceEdgeInternalSigningSecret:
         env.WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET,
+      operatorEnrollmentResetSecret: env.OS_ENROLLMENT_RESET_SECRET,
       operationalLogger: env.OS_DEVICE_AUTH_LOGGER,
       managedCloudProvisionerSecret: env.OS_MANAGED_CLOUD_PROVISIONER_SECRET,
       managedCloudEnrollmentSecret: env.OS_MANAGED_CLOUD_ENROLLMENT_SECRET,

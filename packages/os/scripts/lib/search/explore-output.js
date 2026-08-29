@@ -37,6 +37,7 @@ function compactExploreResult(result) {
     evidence_state: result.evidence_state ?? null,
     retrieval_support: result.retrieval_support ?? null,
     calibration_status: result.calibration_status ?? null,
+    information_value: result.information_value ?? null,
     reason: result.reason || '',
     preview: String(result.preview || '').slice(0, COMPACT_PREVIEW_LIMIT),
     lines: result.lines || null,

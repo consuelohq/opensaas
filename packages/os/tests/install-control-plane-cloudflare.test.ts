@@ -312,9 +312,20 @@ describe('workspace edge private dashboard interception', () => {
       ingestedAt: '2026-08-13T16:00:01.000Z',
     });
     const service = createInstallControlPlaneService({ repository });
+    const sessionCookie = '__Host-consuelo_os_session=target-session';
     const env = {
       WORKSPACE_ROUTE_REGISTRY: routeRegistry,
       CONSUELO_EDGE_SIGNING_SECRET: 'edge-signing-secret',
+      WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET: 'internal-secret',
+      OS_DEVICE_AUTHORITY: {
+        idFromName: (name: string) => name,
+        get: () => ({
+          fetch: async (request: Request) =>
+            (request.headers.get('cookie') ?? '').includes(sessionCookie)
+              ? new Response(null, { status: 204 })
+              : Response.json({ error: 'workspace_session_required' }, { status: 401 }),
+        }),
+      },
     };
 
     const denied = createWorkspaceEdgeHandler(env, {
@@ -323,7 +334,9 @@ describe('workspace edge private dashboard interception', () => {
       now: () => Date.parse('2026-08-13T17:00:00.000Z'),
     });
     const deniedResponse = await denied(
-      new Request(`https://internal.consuelohq.com${INSTALL_DASHBOARD_API_ROUTES.overview}`),
+      new Request(`https://internal.consuelohq.com${INSTALL_DASHBOARD_API_ROUTES.overview}`, {
+        headers: { cookie: sessionCookie },
+      }),
     );
     expect(deniedResponse.status).toBe(403);
 
@@ -333,7 +346,9 @@ describe('workspace edge private dashboard interception', () => {
       now: () => Date.parse('2026-08-13T17:00:00.000Z'),
     });
     const response = await allowed(
-      new Request(`https://internal.consuelohq.com${INSTALL_DASHBOARD_API_ROUTES.overview}?window=30d`),
+      new Request(`https://internal.consuelohq.com${INSTALL_DASHBOARD_API_ROUTES.overview}?window=30d`, {
+        headers: { cookie: sessionCookie },
+      }),
     );
     expect(response.status).toBe(200);
     await expect(response.json()).resolves.toMatchObject({ installs: { started: 1 } });

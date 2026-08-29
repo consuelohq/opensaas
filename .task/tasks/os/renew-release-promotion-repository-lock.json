@@ -1,0 +1,20 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/renew-release-promotion-repository-lock",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2229,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2229",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2229",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2229/renew-release-promotion-repository-lock",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2229",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2229/renew-release-promotion-repository-lock",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-renew-release-promotion-repository-lock",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_34327b5c9131",
+  "tmuxSession": "opensaas-os-renew-release-promotion-repository-lock-34327b5c",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-renew-release-promotion-repository-lock/.task/os/renew-release-promotion-repository-lock/session.json",
+  "createdAt": "2026-08-26T18:43:55.293Z"
+}

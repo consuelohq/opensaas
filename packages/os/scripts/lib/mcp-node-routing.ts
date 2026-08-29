@@ -3,7 +3,7 @@ type JsonObject = Record<string, unknown>;
 export const MCP_NODE_CONTEXT_HEADER = 'x-consuelo-node-context';
 export const MCP_ROUTE_SOURCE_HEADER = 'x-consuelo-route-source';
 
-export type McpNodeRouteSource = 'default' | 'explicit' | 'task';
+export type McpNodeRouteSource = 'default' | 'explicit' | 'task' | 'work';
 
 export type McpNodeSummary = {
   nodeId: string;
@@ -50,15 +50,27 @@ export function normalizeMcpTaskSession(value: unknown): string | undefined | nu
   return taskSession.length > 0 && taskSession.length <= 240 ? taskSession : null;
 }
 
+export function normalizeMcpWorkSession(value: unknown): string | undefined | null {
+  if (value === undefined) return undefined;
+  if (typeof value !== 'string') return null;
+  const workSession = value.trim();
+  return workSession.length > 0 && workSession.length <= 240 ? workSession : null;
+}
+
 export type McpNodeRoutingInspection =
   | {
       ok: true;
       nodeId?: string;
       taskSession?: string;
+      workSession?: string;
       facadeTool?: string;
       getSteering: boolean;
     }
-  | { ok: false; code: 'INVALID_NODE_ROUTE'; message: string };
+  | {
+      ok: false;
+      code: 'INVALID_NODE_ROUTE' | 'INVALID_SESSION_ROUTE';
+      message: string;
+    };
 
 export function inspectMcpNodeRoutingBody(body: string): McpNodeRoutingInspection {
   let parsed: unknown;
@@ -92,6 +104,21 @@ export function inspectMcpNodeRoutingBody(body: string): McpNodeRoutingInspectio
       message: 'call taskSession must be a non-empty task session identifier.',
     };
   }
+  const workSession = normalizeMcpWorkSession(args.workSession);
+  if (workSession === null) {
+    return {
+      ok: false,
+      code: 'INVALID_SESSION_ROUTE',
+      message: 'call workSession must be a non-empty work session identifier.',
+    };
+  }
+  if (taskSession && workSession) {
+    return {
+      ok: false,
+      code: 'INVALID_SESSION_ROUTE',
+      message: 'call may provide taskSession or workSession, but not both.',
+    };
+  }
   const facadeTool = typeof args.tool === 'string' && args.tool.trim()
     ? args.tool.trim()
     : undefined;
@@ -100,6 +127,7 @@ export function inspectMcpNodeRoutingBody(body: string): McpNodeRoutingInspectio
     getSteering: false,
     ...(nodeId ? { nodeId } : {}),
     ...(taskSession ? { taskSession } : {}),
+    ...(workSession ? { workSession } : {}),
     ...(facadeTool ? { facadeTool } : {}),
   };
 }
@@ -135,7 +163,8 @@ export function decodeMcpNodeRoutingContext(value: string | null): McpNodeRoutin
     if (
       parsed.routeSource !== 'default' &&
       parsed.routeSource !== 'explicit' &&
-      parsed.routeSource !== 'task'
+      parsed.routeSource !== 'task' &&
+      parsed.routeSource !== 'work'
     ) return null;
     if (!Array.isArray(parsed.nodes) || parsed.nodes.length > 32) return null;
     const nodes: McpNodeSummary[] = [];

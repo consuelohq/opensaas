@@ -1,0 +1,15 @@
+{
+  "files": [
+    ".task/os/preserve-real-mcp-calls-during-worker-drain/workpad.md",
+    "packages/os/manifests/generated/core.manifest.json",
+    "packages/os/manifests/generated/tool.manifest.json",
+    "packages/os/scripts/consuelo-reload.js",
+    "packages/os/scripts/lib/mcp-gateway.ts",
+    "packages/os/scripts/lib/worker-pool.ts",
+    "packages/os/scripts/server/main.ts",
+    "packages/os/scripts/server/supervisor.ts",
+    "packages/os/tests/health-readiness.test.ts",
+    "packages/os/tests/mcp-gateway.test.ts"
+  ],
+  "updatedAt": "2026-08-17T01:35:20.889Z"
+}

@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/promote-partial-install-recovery-cli",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2259,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2259",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-promote-partial-install-recovery-cli",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_37252b94f772",
+  "tmuxSession": "opensaas-os-promote-partial-install-recovery-cli-37252b94",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-promote-partial-install-recovery-cli/.task/session.json",
+  "createdAt": "2026-08-29T00:29:23.548Z"
+}

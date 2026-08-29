@@ -1,0 +1,8 @@
+{
+  "files": [
+    "packages/os/cloudflare/os-device-authority/src/services/mcp-proxy.ts",
+    "packages/os/tests/workspace-node-registry-routing.test.ts",
+    "packages/workspace/test-selection.rules.json"
+  ],
+  "updatedAt": "2026-08-29T00:11:00.239Z"
+}

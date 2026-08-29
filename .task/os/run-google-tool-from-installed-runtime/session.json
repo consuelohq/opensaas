@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_aba08d2319a7",
+  "tmuxSession": "opensaas-os-run-google-tool-from-installed-runtime-aba08d23",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/run-google-tool-from-installed-runtime",
+  "branch": "task/os/run-google-tool-from-installed-runtime",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-run-google-tool-from-installed-runtime",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-run-google-tool-from-installed-runtime",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2212,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2212",
+  "createdAt": "2026-08-26T06:19:41.546Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-run-google-tool-from-installed-runtime/.task/os/run-google-tool-from-installed-runtime/session.json"
+}

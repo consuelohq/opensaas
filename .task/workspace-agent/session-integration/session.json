@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_c8f1ab688842",
+  "tmuxSession": "opensaas-workspace-agent-session-integration-c8f1ab68",
+  "area": "workspace-agent",
+  "stream": "stream/workspace-agent",
+  "taskBranch": "task/workspace-agent/session-integration",
+  "branch": "task/workspace-agent/session-integration",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agent-session-integration",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agent-session-integration",
+  "prNumber": 2036,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2036",
+  "createdAt": "2026-08-15T06:54:58.693Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agent-session-integration/.task/workspace-agent/session-integration/session.json"
+}

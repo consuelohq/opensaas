@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agent",
+  "stream": "stream/workspace-agent",
+  "taskBranch": "task/workspace-agent/durable-task-worktrees",
+  "baseBranch": "stream/workspace-agent",
+  "sourceBranch": "stream/workspace-agent",
+  "startFrom": "stream",
+  "prNumber": 2001,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2001",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2001",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2001/durable-task-worktrees",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2001",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2001/durable-task-worktrees",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agent-durable-task-worktrees",
+  "taskSession": "tsk_b9fb50d59f47",
+  "tmuxSession": "opensaas-workspace-agent-durable-task-worktrees-b9fb50d5",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agent-durable-task-worktrees/.task/workspace-agent/durable-task-worktrees/session.json",
+  "createdAt": "2026-08-15T03:04:32.094Z"
+}

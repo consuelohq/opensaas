@@ -75,4 +75,45 @@ describe('runtime ingress dependency convergence', () => {
     expect(persist).not.toContain('BUN_BIN');
     expect(persist).not.toContain('PORTLESS_BIN');
   });
+
+  it('rewrites persisted Cloudflared connector definitions to the managed binary path', () => {
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-cloudflared-plist-reconcile-'));
+    try {
+      const managed = join(home, 'cloudflared-managed');
+      const plist = join(home, 'com.consuelo.os.cloudflared.connector-test.plist');
+      writeExecutable(managed, '#!/bin/sh\nexit 0\n');
+      writeFileSync(plist, `<?xml version="1.0" encoding="UTF-8"?>
+<plist version="1.0"><dict>
+<key>Label</key><string>com.consuelo.os.cloudflared.connector-test</string>
+<key>ProgramArguments</key><array>
+<string>/opt/homebrew/bin/cloudflared</string>
+<string>tunnel</string><string>run</string>
+</array>
+</dict></plist>
+`);
+      const installer = readFileSync(resolve(osRoot, 'scripts', 'install-system-daemons.sh'), 'utf8');
+      const xmlEscape = extractShellFunction(installer, 'xml_escape');
+      const reconcile = extractShellFunction(installer, 'reconcile_cloudflared_plist_binary');
+      const result = spawnSync('/bin/bash', ['-c', [
+        'set -euo pipefail',
+        'dry_run=0',
+        'log() { :; }',
+        xmlEscape,
+        reconcile,
+        'CLOUDFLARED_BIN="$MANAGED"',
+        'reconcile_cloudflared_plist_binary "$PLIST"',
+      ].join('\n')], {
+        encoding: 'utf8',
+        env: { ...process.env, MANAGED: managed, PLIST: plist },
+      });
+      expect(result.status, result.stderr).toBe(0);
+      const rewritten = readFileSync(plist, 'utf8');
+      expect(rewritten).toContain(`<string>${managed}</string>`);
+      expect(rewritten).not.toContain('/opt/homebrew/bin/cloudflared');
+      expect(installer).toContain('reconcile_cloudflared_plist_binary "$plist"');
+    } finally {
+      removeSafeTempDir(home, 'consuelo-cloudflared-plist-reconcile-');
+    }
+  });
+
 });

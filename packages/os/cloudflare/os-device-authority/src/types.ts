@@ -49,6 +49,7 @@ export type Grant = {
   devicePublicKeyThumbprint: string;
   lastPoll?: number;
   accountId?: string;
+  accountEmail?: string;
   accountAuthMethod?: StrongerAuthMethod;
   connectorToken?: string;
   connectorExpiresAt?: number;
@@ -133,6 +134,25 @@ export type WorkspaceTaskAffinity = {
 export type WorkspaceTaskAffinityClaim = {
   status: 'created' | 'existing' | 'conflict';
   affinity: WorkspaceTaskAffinity;
+};
+
+export type WorkspaceSessionKind = 'task' | 'work';
+
+export type WorkspaceSessionAffinity = {
+  accountId: string;
+  workspaceId?: string;
+  workspaceHost: string;
+  sessionKind: WorkspaceSessionKind;
+  sessionId: string;
+  ownerNodeId: string;
+  createdAt: number;
+  updatedAt: number;
+  expiresAt?: number;
+};
+
+export type WorkspaceSessionAffinityClaim = {
+  status: 'created' | 'existing' | 'conflict';
+  affinity: WorkspaceSessionAffinity;
 };
 
 export type WorkspaceAgentName =
@@ -312,6 +332,43 @@ export type McpOAuthRefreshToken = {
   issuedAt: number;
 };
 
+export type GitHubSourceControlRepository = {
+  id: number;
+  nameWithOwner: string;
+  defaultBranch: string;
+};
+
+export type GitHubSourceControlInstallState = {
+  state: string;
+  workspaceId: string;
+  workspaceHost: string;
+  nodeId: string;
+  returnPath: string;
+  expiresAt: number;
+};
+
+export type GitHubSourceControlConnection = {
+  connectionId: string;
+  workspaceId: string;
+  workspaceHost: string;
+  installationId: number;
+  accountLogin: string;
+  repositorySelection: 'all' | 'selected';
+  repositories: GitHubSourceControlRepository[];
+  createdAt: number;
+  updatedAt: number;
+};
+
+export type GitHubSourceControlHandoff = {
+  tokenHash: string;
+  connectionId: string;
+  workspaceId: string;
+  workspaceHost: string;
+  nodeId: string;
+  returnPath: string;
+  expiresAt: number;
+};
+
 export type WorkspaceRouteRegistryBinding = WorkspaceRouteD1Database;
 export type DefaultSiteSnapshot = {
   key: string;
@@ -371,8 +428,25 @@ export type Store = {
     tokenHash: string,
   ): Promise<McpOAuthRefreshToken | undefined>;
   delMcpOAuthRefreshToken(tokenHash: string): Promise<void>;
+  putGitHubSourceControlInstallState(state: GitHubSourceControlInstallState): Promise<void>;
+  byGitHubSourceControlInstallState(state: string): Promise<GitHubSourceControlInstallState | undefined>;
+  delGitHubSourceControlInstallState(state: string): Promise<void>;
+  putGitHubSourceControlConnection(connection: GitHubSourceControlConnection): Promise<void>;
+  byGitHubSourceControlConnection(connectionId: string): Promise<GitHubSourceControlConnection | undefined>;
+  putGitHubSourceControlHandoff(handoff: GitHubSourceControlHandoff): Promise<void>;
+  consumeGitHubSourceControlHandoff(input: {
+    tokenHash: string;
+    workspaceId: string;
+    nodeId: string;
+    nowMs: number;
+  }): Promise<GitHubSourceControlHandoff | undefined>;
   putAccountWorkspace(workspace: AccountWorkspace): Promise<void>;
   byAccountWorkspace(accountId: string): Promise<AccountWorkspace | undefined>;
+  resetWorkspaceEnrollment(input: {
+    accountId: string;
+    workspaceId: string;
+    workspaceHost: string;
+  }): Promise<{ nodesRemoved: number }>;
   createWorkspaceCloudTrial(
     trial: WorkspaceCloudTrial,
   ): Promise<WorkspaceCloudTrial>;
@@ -433,6 +507,23 @@ export type Store = {
     accountId: string;
     workspaceHost: string;
     taskSession: string;
+    ownerNodeId: string;
+  }): Promise<boolean>;
+  byWorkspaceSessionAffinity(input: {
+    accountId: string;
+    workspaceHost: string;
+    sessionKind: WorkspaceSessionKind;
+    sessionId: string;
+    nowMs?: number;
+  }): Promise<WorkspaceSessionAffinity | undefined>;
+  claimWorkspaceSessionAffinity(
+    affinity: WorkspaceSessionAffinity,
+  ): Promise<WorkspaceSessionAffinityClaim>;
+  releaseWorkspaceSessionAffinity(input: {
+    accountId: string;
+    workspaceHost: string;
+    sessionKind: WorkspaceSessionKind;
+    sessionId: string;
     ownerNodeId: string;
   }): Promise<boolean>;
   putNodeBootstrapCredential(
@@ -500,8 +591,14 @@ export type Env = {
   OS_DEVICE_AUTH_ASSERTION_SECRET?: string;
   GOOGLE_OAUTH_CLIENT_ID?: string;
   GOOGLE_OAUTH_CLIENT_SECRET?: string;
+  GOOGLE_WORKSPACE_OAUTH_CLIENT_ID?: string;
+  GOOGLE_WORKSPACE_OAUTH_CLIENT_SECRET?: string;
+  GITHUB_APP_ID?: string;
+  GITHUB_APP_SLUG?: string;
+  GITHUB_APP_PRIVATE_KEY?: string;
   WORKSPACE_ROUTE_REGISTRY?: WorkspaceRouteRegistryBinding;
   WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET?: string;
+  OS_ENROLLMENT_RESET_SECRET?: string;
   OS_DEVICE_AUTH_DEFAULT_SITE_SNAPSHOT_KEY?: string;
   OS_DEVICE_AUTH_DEFAULT_SITE_SNAPSHOT_VERSION_ID?: string;
   CLOUDFLARE_ACCOUNT_ID?: string;
@@ -555,6 +652,7 @@ export type CheckoutTelemetryEvent = {
   errorCode?: string;
   durationMs?: number;
   cloudflareRayId?: string;
+  dedupeKey?: string;
 };
 
 export type CheckoutObservability = {
@@ -585,10 +683,16 @@ export type DeviceAuthorityRuntime = {
   approvalAssertionSecret?: string;
   googleOAuthClientId?: string;
   googleOAuthClientSecret?: string;
+  googleWorkspaceOAuthClientId?: string;
+  googleWorkspaceOAuthClientSecret?: string;
+  githubAppId?: string;
+  githubAppSlug?: string;
+  githubAppPrivateKey?: string;
   fetchImpl: typeof fetch;
   workspaceRouteRegistry?: WorkspaceRouteRegistryBinding;
   workspaceConnectorProvisioner?: WorkspaceConnectorProvisioner;
   workspaceEdgeInternalSigningSecret?: string;
+  operatorEnrollmentResetSecret?: string;
   defaultSiteSnapshot?: DefaultSiteSnapshot;
   managedCloudPricing?: ManagedCloudPricingRuntime;
   managedCloudProvisionerSecret?: string;

@@ -1,0 +1,12 @@
+{
+  "files": [
+    "packages/os/package.json",
+    "packages/os/scripts/lib/facade/executor.ts",
+    "packages/os/scripts/lib/facade/schemas.ts",
+    "packages/os/tests/code-call-parity.test.ts",
+    "packages/os/tests/code-call.test.ts",
+    "packages/os/tests/session-start-foundation.test.ts",
+    "packages/os/tools/codemode/schema.ts"
+  ],
+  "updatedAt": "2026-08-15T02:54:51.787Z"
+}

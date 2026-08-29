@@ -8,7 +8,10 @@ import {
   type TraceTableFilterState,
   type TraceTableRecord,
 } from '../scripts/lib/trace-site-inspector/table-formatters';
-import { childTraceRecords } from '../scripts/lib/trace-site-inspector/model';
+import {
+  branchName,
+  childTraceRecords,
+} from '../scripts/lib/trace-site-inspector/model';
 import {
   deriveTraceHistoryCursor,
   parseTraceHistoryResponse,
@@ -135,6 +138,34 @@ describe('OS-owned Trace Burn table formatting', () => {
       routeSource: 'task',
       routeLabel: 'Task',
     });
+  });
+
+  it('uses the work-session path as the existing session label and inherits it into batch children', () => {
+    const parent = record({
+      workSession: 'wrk_raycast',
+      workPath: '/Users/[user]/Developer/raycast-extensions/example',
+      batchResultsJson: JSON.stringify([
+        { tool: 'fs.read', ok: true, code: 'OK', input: { path: 'package.json' } },
+      ]),
+    });
+
+    expect(branchName(parent)).toBe('/Users/[user]/Developer/raycast-extensions/example');
+    const child = childTraceRecords(parent)[0];
+    expect(child).toMatchObject({
+      workSession: 'wrk_raycast',
+      workPath: '/Users/[user]/Developer/raycast-extensions/example',
+    });
+    expect(branchName(child)).toBe('/Users/[user]/Developer/raycast-extensions/example');
+    expect(traceFilterFacets([parent]).branches).toEqual([
+      { value: '/Users/[user]/Developer/raycast-extensions/example', count: 1 },
+    ]);
+  });
+
+  it('keeps the existing task branch fallback for task-session traces', () => {
+    expect(branchName(record({
+      branch: 'task/workspace-agent/session-observability',
+      taskSession: 'tsk_session_observability',
+    }))).toBe('task/workspace-agent/session-observability');
   });
 
   it('should expose only non-empty node and route facets when traces include mixed routing metadata', () => {

@@ -9,6 +9,7 @@ export type ErrorCode =
   | 'NOT_FOUND'
   | 'TASK_SESSION_NOT_FOUND'
   | 'TASK_SESSION_REQUIRED'
+  | 'WORK_SESSION_NOT_FOUND'
   | 'DRY_RUN'
   | 'CLI_MISSING'
   | 'UNSUPPORTED_VERSION'
@@ -141,6 +142,7 @@ export type ExecuteToolOptions = {
   now?: () => number;
   randomUUID?: () => string;
   logMode?: LogMode;
+  timeoutMs?: number;
 };
 
 export type BatchExecutionContext = {

@@ -121,4 +121,13 @@ describe('OS log redaction', () => {
     });
     expectNoForbiddenLeaks(redacted);
   });
+
+  it('preserves structured correlation identifiers even when their UUID tail resembles a phone number', () => {
+    const requestId = '5e4c1d30-87c1-4e73-a42b-aa0240204048';
+    const redacted = redactJson({ requestId, traceId: 'trc_example123', phone: '+1 (415) 555-1212' });
+    expect(redacted.requestId).toBe(requestId);
+    expect(redacted.traceId).toBe('trc_example123');
+    expect(redacted.phone).toBe('[REDACTED_PHONE:1212]');
+  });
+
 });

@@ -17,6 +17,12 @@ import {
   INTERNAL_DASHBOARD_FIXTURES,
   type InternalDashboardFixtures,
 } from './internal-user-dashboard-fixtures';
+import {
+  renderWorkspaceChromeBar,
+  workspaceChromeClientScript,
+  workspaceRouteSwitcherStyles,
+  workspaceWindowShellStyles,
+} from './workspace-chrome';
 
 export { INTERNAL_DASHBOARD_FIXTURES } from './internal-user-dashboard-fixtures';
 
@@ -29,6 +35,9 @@ export type InternalDashboardRoute =
   | { kind: 'errors'; nav: 'errors' }
   | { kind: 'user-detail'; nav: 'users'; id: string }
   | { kind: 'install-detail'; nav: 'installs'; id: string };
+
+export const INTERNAL_DASHBOARD_ENROLLMENT_RESET_PATH =
+  '/api/internal/os/v1/enrollment/reset' as const;
 
 export const INTERNAL_DASHBOARD_API_REQUESTS = {
   overview: [
@@ -121,17 +130,23 @@ export const INTERNAL_DASHBOARD_CSS = `
   --dash-display: "Bodoni Moda", "Palatino Linotype", Palatino, Georgia, serif;
   --dash-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --dash-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
-  background: #151515;
+  --site-color-paper: var(--dash-bg);
+  --site-color-canvas: #0d0d0c;
+  --site-color-ink: var(--dash-text);
   color: var(--dash-text);
   font-family: var(--dash-sans);
 }
 * { box-sizing: border-box; }
-html { background: var(--dash-bg); min-width: 320px; }
-body { margin: 0; min-width: 320px; min-height: 100vh; background: var(--dash-bg); color: var(--dash-text); }
+html { min-width: 320px; }
+body { min-width: 320px; color: var(--dash-text); }
 a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 4px; }
 a:hover { color: var(--dash-link); }
 a:focus-visible, button:focus-visible { outline: 2px solid var(--dash-accent); outline-offset: 3px; }
 button, input, select { font: inherit; }
+.enrollment-reset { border: 1px solid var(--dash-rule); border-radius: 4px; background: transparent; color: var(--dash-link); padding: 6px 9px; cursor: pointer; }
+.enrollment-reset:hover { border-color: currentColor; }
+.enrollment-reset:disabled { color: var(--dash-muted); cursor: wait; opacity: .7; }
+.enrollment-reset-status { display: block; min-height: 1.3em; margin-top: 5px; color: var(--dash-muted); font-size: 11px; line-height: 1.3; }
 code { font-family: var(--dash-mono); overflow-wrap: anywhere; }
 .dashboard-shell { width: min(1320px, 100%); margin: 0 auto; padding: 30px 40px 72px; }
 .dashboard-masthead { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 24px; padding-bottom: 20px; border-bottom: 1px solid var(--dash-rule); }
@@ -295,8 +310,8 @@ code { font-family: var(--dash-mono); overflow-wrap: anywhere; }
     --dash-warn: #785f2d;
     --dash-bad: #9e3f39;
     --dash-link: #7d302b;
+    --site-color-canvas: #e9e4dc;
   }
-  html, body { background: #fffff8; }
 }
 `;
 
@@ -317,8 +332,54 @@ export const INTERNAL_DASHBOARD_JAVASCRIPT = `
     const active = root.querySelector('.dashboard-nav a[aria-current="page"]');
     if (active instanceof HTMLElement) { event.preventDefault(); active.focus(); }
   });
+  root.querySelectorAll('[data-enrollment-reset]').forEach((candidate) => {
+    if (!(candidate instanceof HTMLButtonElement)) return;
+    candidate.addEventListener('click', async () => {
+      const workspaceHost = candidate.dataset.workspaceHost || '';
+      const workspaceId = candidate.dataset.workspaceId || '';
+      const status = candidate.parentElement?.querySelector('[data-enrollment-reset-status]');
+      if (!workspaceHost || !workspaceId) return;
+      if (!window.confirm('Reset this workspace enrollment? Existing nodes and the routed hostname will be revoked. The canonical user is preserved.')) return;
+      candidate.disabled = true;
+      if (status instanceof HTMLElement) status.textContent = 'Resetting enrollment…';
+      try {
+        const response = await fetch('${INTERNAL_DASHBOARD_ENROLLMENT_RESET_PATH}', {
+          method: 'POST',
+          credentials: 'same-origin',
+          cache: 'no-store',
+          headers: {
+            'content-type': 'application/json',
+            'x-consuelo-dashboard-action': 'enrollment-reset',
+          },
+          body: JSON.stringify({ workspace_host: workspaceHost, workspace_id: workspaceId }),
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          const errorMessage = result && typeof result.error === 'object' && result.error && typeof result.error.message === 'string'
+            ? result.error.message
+            : 'Enrollment reset failed';
+          if (status instanceof HTMLElement) status.textContent = errorMessage;
+          candidate.disabled = false;
+          return;
+        }
+        if (status instanceof HTMLElement) status.textContent = 'Enrollment reset. Reloading…';
+        window.setTimeout(() => window.location.reload(), 500);
+      } catch {
+        if (status instanceof HTMLElement) status.textContent = 'Enrollment reset failed';
+        candidate.disabled = false;
+      }
+    });
+  });
 })();
 `;
+
+export function internalDashboardStyles(): string {
+  return `${workspaceWindowShellStyles()}\n${workspaceRouteSwitcherStyles()}\n${INTERNAL_DASHBOARD_CSS}`;
+}
+
+export function internalDashboardJavascript(): string {
+  return `${workspaceChromeClientScript()}\n${INTERNAL_DASHBOARD_JAVASCRIPT}`;
+}
 
 function escapeHtml(value: unknown): string {
   return String(value ?? '').replace(/[&<>"']/g, (character) => ({
@@ -512,10 +573,23 @@ function installTable(installs: InstallDashboardInstallSummary[]): string {
   return desktop + mobile;
 }
 
+function enrollmentResetControl(
+  device: InstallDashboardDeviceSummary,
+): string {
+  if (
+    !device.workspaceHost ||
+    !device.workspaceId ||
+    device.state === 'revoked'
+  ) {
+    return '—';
+  }
+  return `<span><button class="enrollment-reset" type="button" data-enrollment-reset data-workspace-host="${escapeHtml(device.workspaceHost)}" data-workspace-id="${escapeHtml(device.workspaceId)}">Reset workspace enrollment</button><span class="enrollment-reset-status" data-enrollment-reset-status role="status" aria-live="polite"></span></span>`;
+}
+
 function deviceTable(devices: InstallDashboardDeviceSummary[]): string {
   if (!devices.length) return '<p class="table-empty">No devices match this view.</p>';
   const desktop = `<div class="data-table-wrap"><table class="data-table" aria-label="Registered Consuelo OS devices">
-    <thead><tr><th>Device</th><th>State</th><th>Connector</th><th>User</th><th>Release channel</th><th>Agents</th><th>Last seen</th></tr></thead>
+    <thead><tr><th>Device</th><th>State</th><th>Connector</th><th>User</th><th>Release channel</th><th>Agents</th><th>Last seen</th><th>Enrollment</th></tr></thead>
     <tbody>${devices.map((device) => `<tr>
       <td class="primary-cell"><strong>${escapeHtml(device.displayName ?? device.nodeId)}</strong><small>${escapeHtml(device.nodeId)}</small></td>
       <td>${statusMarkup(device.state)}</td>
@@ -524,11 +598,13 @@ function deviceTable(devices: InstallDashboardDeviceSummary[]): string {
       <td>${escapeHtml(device.channel ?? '—')}</td>
       <td>${escapeHtml(device.agents.join(', ') || 'None')}</td>
       <td>${escapeHtml(formatDateTime(device.lastSeenAt))}</td>
+      <td>${enrollmentResetControl(device)}</td>
     </tr>`).join('')}</tbody>
   </table></div>`;
   const mobile = `<div class="mobile-list" aria-label="Registered Consuelo OS devices">${devices.map((device) => `<article class="mobile-item">
     <div class="mobile-item-top"><h3>${escapeHtml(device.displayName ?? device.nodeId)}</h3>${statusMarkup(device.state)}</div>
     <div class="mobile-item-meta"><span>Connector<b>${escapeHtml(titleCase(device.connectorStatus ?? 'unknown'))}</b></span><span>Channel<b>${escapeHtml(device.channel ?? '—')}</b></span><span>Agents<b>${escapeHtml(device.agents.join(', ') || 'None')}</b></span><span>Last seen<b>${escapeHtml(formatDateTime(device.lastSeenAt))}</b></span></div>
+    <div>${enrollmentResetControl(device)}</div>
   </article>`).join('')}</div>`;
   return desktop + mobile;
 }
@@ -726,10 +802,10 @@ export function renderInternalUserDashboard(options: InternalUserDashboardRender
   const fixtures = options.fixtures ?? INTERNAL_DASHBOARD_FIXTURES;
   const inline = options.assetMode === 'inline';
   const styles = inline
-    ? `<style>${INTERNAL_DASHBOARD_CSS}</style>`
+    ? `<style>${internalDashboardStyles()}</style>`
     : `<link rel="stylesheet" href="/internal/assets/dashboard.css?v=${INTERNAL_DASHBOARD_ASSET_VERSION}">`;
   const script = inline
-    ? `<script>${INTERNAL_DASHBOARD_JAVASCRIPT}</script>`
+    ? `<script>${internalDashboardJavascript().replaceAll('</script', '<\\/script')}</script>`
     : `<script defer src="/internal/assets/dashboard.js?v=${INTERNAL_DASHBOARD_ASSET_VERSION}"></script>`;
   const fixtureFlag =
     options.dataMode ?? (options.fixtureMode === true ? 'fixture' : 'contract');
@@ -752,14 +828,19 @@ export function renderInternalUserDashboard(options: InternalUserDashboardRender
   ${styles}
 </head>
 <body>
-  <div class="dashboard-shell" data-internal-dashboard data-data-mode="${fixtureFlag}">
-    <header class="dashboard-masthead">
-      <div class="dashboard-brand"><a href="/users">Consuelo OS</a><span>Internal</span></div>
-      <div class="dashboard-stamp">Read only · generated <time data-generated-relative datetime="${escapeHtml(generatedAt)}">${escapeHtml(formatDateTime(generatedAt))}</time></div>
-    </header>
-    ${navMarkup(route.nav)}
-    <main class="dashboard-main" id="main-content">${pageMarkup(route, fixtures)}</main>
-    ${footer}
+  <div class="workspace-window" data-workspace-shell>
+    ${renderWorkspaceChromeBar('internal', 'Internal')}
+    <div class="workspace-view" data-workspace-view>
+      <div class="dashboard-shell" data-internal-dashboard data-data-mode="${fixtureFlag}">
+        <header class="dashboard-masthead">
+          <div class="dashboard-brand"><a href="/users">Consuelo OS</a><span>Internal</span></div>
+          <div class="dashboard-stamp">Read only · generated <time data-generated-relative datetime="${escapeHtml(generatedAt)}">${escapeHtml(formatDateTime(generatedAt))}</time></div>
+        </header>
+        ${navMarkup(route.nav)}
+        <main class="dashboard-main" id="main-content">${pageMarkup(route, fixtures)}</main>
+        ${footer}
+      </div>
+    </div>
   </div>
   ${script}
 </body>
@@ -867,12 +948,12 @@ export function createInternalUserDashboardPageHandler(input: {
       });
     }
     if (url.pathname === '/internal/assets/dashboard.css') {
-      return new Response(INTERNAL_DASHBOARD_CSS, {
+      return new Response(internalDashboardStyles(), {
         headers: internalDashboardResponseHeaders('text/css; charset=utf-8'),
       });
     }
     if (url.pathname === '/internal/assets/dashboard.js') {
-      return new Response(INTERNAL_DASHBOARD_JAVASCRIPT, {
+      return new Response(internalDashboardJavascript(), {
         headers: internalDashboardResponseHeaders(
           'text/javascript; charset=utf-8',
         ),

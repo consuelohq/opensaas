@@ -628,11 +628,14 @@ describe('MCP gateway adapter', () => {
       executeFacadeTool,
     });
 
-    expect(executeFacadeTool).toHaveBeenCalledWith('explore', {
-      query: 'status',
-      taskSession: 'tsk_test',
-      timeout: 12_000,
-    });
+    expect(executeFacadeTool).toHaveBeenCalledWith(
+      'explore',
+      {
+        query: 'status',
+        taskSession: 'tsk_test',
+      },
+      { timeoutMs: 12_000 },
+    );
     expect(response).toMatchObject({
       jsonrpc: '2.0',
       id: 'call-1',
@@ -817,6 +820,7 @@ describe('MCP gateway server route', () => {
         arguments: {
           tool: 'explore',
           nodeId: 'node_cloud_test',
+          timeout: 12_000,
           input: { query: 'status' },
         },
       },
@@ -853,6 +857,7 @@ describe('MCP gateway server route', () => {
         defaultNodeId: 'node_home_test',
         routeSource: 'explicit',
       },
+      { timeoutMs: 12_000 },
     );
   });
 

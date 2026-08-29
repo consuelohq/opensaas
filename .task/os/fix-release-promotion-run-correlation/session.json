@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_a13e4ce1969e",
+  "tmuxSession": "opensaas-os-fix-release-promotion-run-correlation-a13e4ce1",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-release-promotion-run-correlation",
+  "branch": "task/os/fix-release-promotion-run-correlation",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-release-promotion-run-correlation",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-release-promotion-run-correlation",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2188,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2188",
+  "createdAt": "2026-08-26T03:16:03.439Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-release-promotion-run-correlation/.task/os/fix-release-promotion-run-correlation/session.json"
+}

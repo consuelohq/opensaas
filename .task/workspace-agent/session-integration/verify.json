@@ -1,0 +1,727 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace-agent/session-integration",
+  "base": "origin/stream/workspace-agent",
+  "headSha": "d846591cb7411b08160010797deeacff49deec02",
+  "changeHash": "83475602dfc06666222d088ec08d14acf8f2681e2537e0321e67203e035fe9dc",
+  "changedFiles": [
+    "areas/workspace-agents/AGENTS.md",
+    "packages/documentation/src/content/docs/build/skills/bundled/task.mdx",
+    "packages/documentation/src/content/docs/build/workflows.mdx",
+    "packages/documentation/src/content/docs/reference/tools.mdx",
+    "packages/os/TOOLS.md",
+    "packages/os/hooks/task/guidance.js",
+    "packages/os/hooks/task/workflow.js",
+    "packages/os/manifests/generated/core.manifest.json",
+    "packages/os/manifests/generated/tool.manifest.json",
+    "packages/os/scripts/lib/facade/schemas.ts",
+    "packages/os/scripts/lib/observability-traces-site.ts",
+    "packages/os/scripts/lib/work-session-fs.ts",
+    "packages/os/scripts/lib/work-session-protection.ts",
+    "packages/os/scripts/lib/work-session.ts",
+    "packages/os/scripts/session-start.ts",
+    "packages/os/skills/task/SKILL.md",
+    "packages/os/steering/system_prompt.md",
+    "packages/os/tests/fixtures/tool-package-baseline.json",
+    "packages/os/tests/observability-traces-site.test.ts",
+    "packages/os/tests/session-integration-guidance.test.ts",
+    "packages/os/tests/session-start-foundation.test.ts",
+    "packages/os/tests/task-hook-workflow-contract.test.ts",
+    "packages/os/tests/task-hooks.test.ts",
+    "packages/os/tests/tool-manifest.test.ts",
+    "packages/os/tests/work-session-code-call.test.ts",
+    "packages/os/tools/task-lifecycle/schema.ts",
+    "packages/os/workflows/generated/workflow-bundles.json",
+    "packages/workspace/TOOLS.md",
+    "packages/workspace/hooks/task/guidance.js",
+    "packages/workspace/hooks/task/workflow.js",
+    "packages/workspace/manifests/core-manifest.json",
+    "packages/workspace/manifests/manifest.config.json",
+    "packages/workspace/manifests/tool-manifest.json",
+    "packages/workspace/manifests/workflow-bundles.json",
+    "packages/workspace/package.json",
+    "packages/workspace/scripts/generate-docs.ts",
+    "packages/workspace/scripts/lib/facade/schemas.ts",
+    "packages/workspace/scripts/session-start.ts",
+    "packages/workspace/senior-engineer.md",
+    "packages/workspace/src/generated/workspace.d.ts",
+    "packages/workspace/task.md",
+    "packages/workspace/test-selection.registry.json",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/session-start-compatibility.test.ts",
+    "packages/workspace/tests/task-hook-workflow-contract.test.ts",
+    "packages/workspace/tests/task-hooks.test.ts",
+    "packages/workspace/tests/test-selection.test.js",
+    "packages/workspace/tests/tool-manifest.test.ts",
+    "packages/workspace/tests/workflow-intent.test.ts",
+    "packages/workspace/tooling/tool-manifest.json"
+  ],
+  "verifiedAt": "2026-08-15T08:00:29.300Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/workspace-agent/session-integration.json",
+        ".task/workspace-agent/session-integration/current.json",
+        ".task/workspace-agent/session-integration/evidence-log.json",
+        ".task/workspace-agent/session-integration/read-log.json",
+        ".task/workspace-agent/session-integration/session.json",
+        ".task/workspace-agent/session-integration/verify.json",
+        ".task/workspace-agent/session-integration/workpad.md",
+        "areas/workspace-agents/AGENTS.md",
+        "packages/documentation/src/content/docs/build/skills/bundled/task.mdx",
+        "packages/documentation/src/content/docs/build/workflows.mdx",
+        "packages/documentation/src/content/docs/reference/tools.mdx",
+        "packages/os/TOOLS.md",
+        "packages/os/hooks/task/guidance.js",
+        "packages/os/hooks/task/workflow.js",
+        "packages/os/manifests/generated/core.manifest.json",
+        "packages/os/manifests/generated/tool.manifest.json",
+        "packages/os/scripts/lib/facade/schemas.ts",
+        "packages/os/scripts/lib/observability-traces-site.ts",
+        "packages/os/scripts/lib/work-session-fs.ts",
+        "packages/os/scripts/lib/work-session-protection.ts",
+        "packages/os/scripts/lib/work-session.ts",
+        "packages/os/scripts/session-start.ts",
+        "packages/os/skills/task/SKILL.md",
+        "packages/os/steering/system_prompt.md",
+        "packages/os/tests/fixtures/tool-package-baseline.json",
+        "packages/os/tests/observability-traces-site.test.ts",
+        "packages/os/tests/session-integration-guidance.test.ts",
+        "packages/os/tests/session-start-foundation.test.ts",
+        "packages/os/tests/task-hook-workflow-contract.test.ts",
+        "packages/os/tests/task-hooks.test.ts",
+        "packages/os/tests/tool-manifest.test.ts",
+        "packages/os/tests/work-session-code-call.test.ts",
+        "packages/os/tools/task-lifecycle/schema.ts",
+        "packages/os/workflows/generated/workflow-bundles.json",
+        "packages/workspace/TOOLS.md",
+        "packages/workspace/hooks/task/guidance.js",
+        "packages/workspace/hooks/task/workflow.js",
+        "packages/workspace/manifests/core-manifest.json",
+        "packages/workspace/manifests/manifest.config.json",
+        "packages/workspace/manifests/tool-manifest.json",
+        "packages/workspace/manifests/workflow-bundles.json",
+        "packages/workspace/package.json",
+        "packages/workspace/scripts/generate-docs.ts",
+        "packages/workspace/scripts/lib/facade/schemas.ts",
+        "packages/workspace/scripts/session-start.ts",
+        "packages/workspace/senior-engineer.md",
+        "packages/workspace/src/generated/workspace.d.ts",
+        "packages/workspace/task.md",
+        "packages/workspace/test-selection.registry.json",
+        "packages/workspace/test-selection.rules.json",
+        "packages/workspace/tests/session-start-compatibility.test.ts",
+        "packages/workspace/tests/task-hook-workflow-contract.test.ts",
+        "packages/workspace/tests/task-hooks.test.ts",
+        "packages/workspace/tests/test-selection.test.js",
+        "packages/workspace/tests/tool-manifest.test.ts",
+        "packages/workspace/tests/workflow-intent.test.ts",
+        "packages/workspace/tooling/tool-manifest.json"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-facade",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Workspace facade and manifest changes must prove typed tool input contracts.",
+          "matchedFiles": [
+            "packages/workspace/manifests/manifest.config.json",
+            "packages/workspace/package.json",
+            "packages/workspace/scripts/lib/facade/schemas.ts",
+            "packages/workspace/src/generated/workspace.d.ts",
+            "packages/workspace/tooling/tool-manifest.json"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "workspace-session-integration",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Session constructor, canonical guidance, task-start compatibility, and workspace fallback changes must prove the integrated task/work session contract.",
+          "matchedFiles": [
+            "packages/os/hooks/task/guidance.js",
+            "packages/os/hooks/task/workflow.js",
+            "packages/os/scripts/lib/observability-traces-site.ts",
+            "packages/os/scripts/lib/work-session.ts",
+            "packages/os/scripts/session-start.ts",
+            "packages/os/skills/task/SKILL.md",
+            "packages/os/steering/system_prompt.md",
+            "packages/os/tests/observability-traces-site.test.ts",
+            "packages/os/tests/session-integration-guidance.test.ts",
+            "packages/os/tests/task-hook-workflow-contract.test.ts",
+            "packages/os/tests/task-hooks.test.ts",
+            "packages/os/tools/task-lifecycle/schema.ts",
+            "packages/workspace/hooks/task/guidance.js",
+            "packages/workspace/hooks/task/workflow.js",
+            "packages/workspace/scripts/session-start.ts",
+            "packages/workspace/senior-engineer.md",
+            "packages/workspace/task.md"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "workspace-test-selection",
+          "critical": true,
+          "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy.",
+          "matchedFiles": [
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-work-session-fs",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Work-session filesystem authority must prove trusted session-root routing, escape resistance, generated tool contracts, and unchanged task-session filesystem behavior without selecting unrelated package-wide OS tests.",
+          "matchedFiles": [
+            "packages/os/TOOLS.md",
+            "packages/os/manifests/generated/core.manifest.json",
+            "packages/os/manifests/generated/tool.manifest.json",
+            "packages/os/scripts/lib/facade/schemas.ts",
+            "packages/os/scripts/lib/work-session-fs.ts",
+            "packages/os/scripts/lib/work-session-protection.ts",
+            "packages/os/tests/fixtures/tool-package-baseline.json",
+            "packages/os/tests/session-start-foundation.test.ts",
+            "packages/os/tests/tool-manifest.test.ts",
+            "packages/os/workflows/generated/workflow-bundles.json"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-work-session-code-call",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Work-session Code Call and MCP routing must prove bounded execution, protected Consuelo state, session-authority validation, public schema limits, and generated error-code parity without selecting unrelated package-wide OS tests.",
+          "matchedFiles": [
+            "packages/os/scripts/lib/work-session-protection.ts",
+            "packages/os/tests/work-session-code-call.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "workspace-audit-docs",
+          "critical": false,
+          "reason": "Workspace script/docs changes should keep audit behavior covered.",
+          "matchedFiles": [
+            "packages/workspace/TOOLS.md"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-lifecycle-update-handoff",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Lifecycle updater, detached handoff, platform restart, and discoverable lifecycle-tool changes must run the exact lifecycle/facade/tool contracts without selecting unrelated flaky package-wide OS tests.",
+          "matchedFiles": [
+            "packages/os/TOOLS.md",
+            "packages/os/manifests/generated/tool.manifest.json",
+            "packages/os/scripts/lib/facade/schemas.ts",
+            "packages/os/tests/fixtures/tool-package-baseline.json",
+            "packages/os/tests/tool-manifest.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "server-ci-task-contract",
+          "critical": true,
+          "reason": "Server CI changes must scope lint and typecheck to directly changed Twenty server runtime files while retaining dependency propagation.",
+          "matchedFiles": [
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace facade input contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/facade/facade.test.ts",
+            "--test-name-pattern",
+            "validates input"
+          ],
+          "ruleId": "workspace-facade",
+          "critical": true
+        },
+        {
+          "name": "workspace facade manifest contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/tool-manifest.test.ts",
+            "packages/workspace/tests/workflow-intent.test.ts",
+            "packages/workspace/tests/session-start-compatibility.test.ts"
+          ],
+          "ruleId": "workspace-facade",
+          "critical": true
+        },
+        {
+          "name": "workspace session integration contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/session-integration-guidance.test.ts",
+            "packages/os/tests/session-start-foundation.test.ts",
+            "packages/os/tests/task-hook-workflow-contract.test.ts",
+            "packages/os/tests/task-hooks.test.ts",
+            "packages/workspace/tests/task-hook-workflow-contract.test.ts",
+            "packages/workspace/tests/task-hooks.test.ts",
+            "packages/workspace/tests/workflow-intent.test.ts",
+            "packages/workspace/tests/session-start-compatibility.test.ts",
+            "packages/os/tests/observability-traces-site.test.ts"
+          ],
+          "ruleId": "workspace-session-integration",
+          "critical": true
+        },
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true
+        },
+        {
+          "name": "OS work-session filesystem authority contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/work-session-fs.test.ts",
+            "packages/os/tests/fs-write.test.ts",
+            "packages/os/tests/session-start-foundation.test.ts",
+            "packages/os/tests/tool-manifest.test.ts"
+          ],
+          "ruleId": "os-work-session-fs",
+          "critical": true
+        },
+        {
+          "name": "OS task-session filesystem compatibility contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/facade/facade.test.ts",
+            "-t",
+            "fs\\.(apply_patch|write)"
+          ],
+          "ruleId": "os-work-session-fs",
+          "critical": true
+        },
+        {
+          "name": "OS work-session filesystem syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "ruleId": "os-work-session-fs",
+          "critical": true
+        },
+        {
+          "name": "OS work-session Code Call and MCP authority contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/work-session-code-call.test.ts",
+            "packages/os/tests/session-start-foundation.test.ts",
+            "packages/os/tests/generated-error-code-parity.test.ts",
+            "packages/os/tests/mcp-gateway.test.ts"
+          ],
+          "ruleId": "os-work-session-code-call",
+          "critical": true
+        },
+        {
+          "name": "workspace audit tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/audit/audit.test.ts"
+          ],
+          "ruleId": "workspace-audit-docs",
+          "critical": false
+        },
+        {
+          "name": "OS lifecycle update handoff contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/lifecycle-engine.test.ts",
+            "packages/os/tests/lifecycle-facade.test.ts",
+            "packages/os/tests/native-lifecycle-operation.test.ts",
+            "packages/os/tests/lifecycle-tool-surface.test.ts",
+            "packages/os/tests/cli-update-routing.test.ts",
+            "packages/os/tests/linux-platform.test.ts",
+            "packages/os/tests/windows-platform.test.ts",
+            "packages/os/tests/tool-manifest.test.ts",
+            "packages/os/tests/tool-package-layout.test.ts",
+            "packages/os/tests/lifecycle-restart-contract.test.ts"
+          ],
+          "ruleId": "os-lifecycle-update-handoff",
+          "critical": true
+        },
+        {
+          "name": "OS lifecycle facade snapshots",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/facade/facade.test.ts",
+            "-t",
+            "lifecycle\\.(status|update)"
+          ],
+          "ruleId": "os-lifecycle-update-handoff",
+          "critical": true
+        },
+        {
+          "name": "changed server task selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "TypeORM CLI compatibility contract",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace facade input contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/facade/facade.test.ts",
+            "--test-name-pattern",
+            "validates input"
+          ],
+          "ruleId": "workspace-facade",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 233,
+          "outputTail": "383Z\"}\n(pass) typed facade executor > validates input for task.exec [0.13ms]\n(pass) typed facade executor > validates input for task.finish\n{\"level\":\"error\",\"tool\":\"task.init\",\"command\":\"workspace task.init\",\"implementationCommand\":\"workspace task.init\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-15T08:00:13.383Z\"}\n(pass) typed facade executor > validates input for task.init [0.26ms]\n(pass) typed facade executor > validates input for task.merge [0.10ms]\n(pass) typed facade executor > validates input for task.pr [0.15ms]\n(pass) typed facade executor > validates input for task.prs\n{\"level\":\"error\",\"tool\":\"task.push\",\"command\":\"workspace task.push\",\"implementationCommand\":\"workspace task.push\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-15T08:00:13.383Z\"}\n(pass) typed facade executor > validates input for task.push [0.27ms]\n{\"level\":\"error\",\"tool\":\"session.start\",\"command\":\"workspace session.start\",\"implementationCommand\":\"workspace session.start\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-15T08:00:13.384Z\"}\n(pass) typed facade executor > validates input for session.start [0.56ms]\n{\"level\":\"error\",\"tool\":\"task.start\",\"command\":\"workspace task.start\",\"implementationCommand\":\"workspace task.start\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-15T08:00:13.384Z\"}\n(pass) typed facade executor > validates input for task.start [0.29ms]\n(pass) typed facade executor > validates input for taskMeta.smoke\n{\"level\":\"error\",\"tool\":\"tmp\",\"command\":\"workspace tmp\",\"implementationCommand\":\"workspace tmp\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-15T08:00:13.384Z\"}\n(pass) typed facade executor > validates input for tmp [0.22ms]\n{\"level\":\"error\",\"tool\":\"tools.search\",\"command\":\"workspace tools.search\",\"implementationCommand\":\"workspace tools.search\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-15T08:00:13.385Z\"}\n(pass) typed facade executor > validates input for tools.search [0.25ms]\n(pass) typed facade executor > validates input for verify [0.10ms]\n(pass) typed facade executor > validates input for wait [0.14ms]\n(pass) typed facade executor > validates input for website.deploy [0.07ms]\n{\"level\":\"error\",\"tool\":\"subagent\",\"command\":\"workspace subagent\",\"implementationCommand\":\"workspace subagent\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-15T08:00:13.385Z\"}\n(pass) typed facade executor > validates input for subagent [0.32ms]\n{\"level\":\"error\",\"tool\":\"media.svg\",\"command\":\"workspace media.svg\",\"implementationCommand\":\"workspace media:svg\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-15T08:00:13.386Z\"}\n(pass) typed facade executor > validates input for media.svg [0.39ms]\n\n 106 pass\n 371 filtered out\n 0 fail\n 57 expect() calls\nRan 106 tests across 1 file. [225.00ms]\n"
+        },
+        {
+          "name": "workspace facade manifest contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/tool-manifest.test.ts",
+            "packages/workspace/tests/workflow-intent.test.ts",
+            "packages/workspace/tests/session-start-compatibility.test.ts"
+          ],
+          "ruleId": "workspace-facade",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 552,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agent-session-integration\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/workflow-intent.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 33\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/workspace/tests/tool-manifest.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 39\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/workspace/tests/session-start-compatibility.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 184\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m3 passed\u001b[39m\u001b[22m\u001b[90m (3)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m20 passed\u001b[39m\u001b[22m\u001b[90m (20)\u001b[39m\n\u001b[2m   Start at \u001b[22m 04:00:13\n\u001b[2m   Duration \u001b[22m 338ms\u001b[2m (transform 133ms, setup 0ms, import 253ms, tests 256ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "workspace session integration contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/session-integration-guidance.test.ts",
+            "packages/os/tests/session-start-foundation.test.ts",
+            "packages/os/tests/task-hook-workflow-contract.test.ts",
+            "packages/os/tests/task-hooks.test.ts",
+            "packages/workspace/tests/task-hook-workflow-contract.test.ts",
+            "packages/workspace/tests/task-hooks.test.ts",
+            "packages/workspace/tests/workflow-intent.test.ts",
+            "packages/workspace/tests/session-start-compatibility.test.ts",
+            "packages/os/tests/observability-traces-site.test.ts"
+          ],
+          "ruleId": "workspace-session-integration",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 695,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agent-session-integration\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/task-hooks.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/session-integration-guidance.test.ts \u001b[2m(\u001b[22m\u001b[2m1 test\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/task-hook-workflow-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m12 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 17\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/task-hooks.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/workspace/tests/task-hook-workflow-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m12 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 22\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/observability-traces-site.test.ts \u001b[2m(\u001b[22m\u001b[2m11 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 30\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/workspace/tests/workflow-intent.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 33\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/session-start-foundation.test.ts \u001b[2m(\u001b[22m\u001b[2m10 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 37\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/workspace/tests/session-start-compatibility.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 181\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m9 passed\u001b[39m\u001b[22m\u001b[90m (9)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m66 passed\u001b[39m\u001b[22m\u001b[90m (66)\u001b[39m\n\u001b[2m   Start at \u001b[22m 04:00:14\n\u001b[2m   Duration \u001b[22m 426ms\u001b[2m (transform 652ms, setup 0ms, import 871ms, tests 327ms, environment 1ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 2705,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agent-session-integration\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/test-selection.test.js \u001b[2m(\u001b[22m\u001b[2m40 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 2393\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m discovers and seeds the existing test inventory \u001b[33m 1147\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m40 passed\u001b[39m\u001b[22m\u001b[90m (40)\u001b[39m\n\u001b[2m   Start at \u001b[22m 04:00:14\n\u001b[2m   Duration \u001b[22m 2.47s\u001b[2m (transform 13ms, setup 0ms, import 20ms, tests 2.39s, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS work-session filesystem authority contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/work-session-fs.test.ts",
+            "packages/os/tests/fs-write.test.ts",
+            "packages/os/tests/session-start-foundation.test.ts",
+            "packages/os/tests/tool-manifest.test.ts"
+          ],
+          "ruleId": "os-work-session-fs",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 2164,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agent-session-integration\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/session-start-foundation.test.ts \u001b[2m(\u001b[22m\u001b[2m10 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 48\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/tool-manifest.test.ts \u001b[2m(\u001b[22m\u001b[2m17 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 82\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/fs-write.test.ts \u001b[2m(\u001b[22m\u001b[2m13 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 410\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/work-session-fs.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 1372\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m applies patches and trashes files inside the trusted work-session root \u001b[33m 531\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m4 passed\u001b[39m\u001b[22m\u001b[90m (4)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m49 passed\u001b[39m\u001b[22m\u001b[90m (49)\u001b[39m\n\u001b[2m   Start at \u001b[22m 04:00:17\n\u001b[2m   Duration \u001b[22m 1.91s\u001b[2m (transform 792ms, setup 0ms, import 1.36s, tests 1.91s, environment 0ms)\u001b[22m\n\n{\"level\":\"warn\",\"event\":\"trace.persistence_failed\",\"code\":\"TRACE_PERSISTENCE_FAILED\",\"message\":\"Cannot find module 'bun:sqlite'\\nRequire stack:\\n- /[REDACTED_SECRET].ts\",\"ts\":\"2026-08-15T08:00:18.269Z\"}\n"
+        },
+        {
+          "name": "OS task-session filesystem compatibility contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/facade/facade.test.ts",
+            "-t",
+            "fs\\.(apply_patch|write)"
+          ],
+          "ruleId": "os-work-session-fs",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 922,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agent-session-integration\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/facade/facade.test.ts \u001b[2m(\u001b[22m\u001b[2m709 tests\u001b[22m\u001b[2m | \u001b[22m\u001b[33m702 skipped\u001b[39m\u001b[2m)\u001b[22m\u001b[32m 238\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m7 passed\u001b[39m\u001b[22m\u001b[2m | \u001b[22m\u001b[33m702 skipped\u001b[39m\u001b[90m (709)\u001b[39m\n\u001b[2m   Start at \u001b[22m 04:00:19\n\u001b[2m   Duration \u001b[22m 685ms\u001b[2m (transform 188ms, setup 0ms, import 383ms, tests 238ms, environment 0ms)\u001b[22m\n\n{\"level\":\"error\",\"tool\":\"fs.patch\",\"command\":\"workspace fs.patch\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"NOT_FOUND\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-15T08:00:20.176Z\"}\n{\"level\":\"warn\",\"event\":\"trace.persistence_failed\",\"code\":\"TRACE_PERSISTENCE_FAILED\",\"message\":\"Cannot find module 'bun:sqlite'\\nRequire stack:\\n- /[REDACTED_SECRET].ts\",\"ts\":\"2026-08-15T08:00:20.177Z\"}\n{\"level\":\"error\",\"tool\":\"fs.apply_patch\",\"command\":\"workspace fs.apply_patch\",\"implementationCommand\":\"workspace fs.apply_patch\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-15T08:00:20.179Z\"}\n{\"level\":\"error\",\"tool\":\"fs.write\",\"command\":\"workspace fs.write\",\"implementationCommand\":\"workspace fs.write\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-15T08:00:20.181Z\"}\n{\"level\":\"info\",\"tool\":\"fs.apply_patch\",\"branch\":\"task/workspace-agents/test\",\"command\":\"workspace fs.apply_patch '{\\\"taskSession\\\":\\\"tsk_apply_patch_test\\\",\\\"dryRun\\\":true,\\\"patchText\\\":\\\"*** Begin Patch\\\\n*** End Patch\\\",\\\"branch\\\":\\\"task/workspace-agents/test\\\",\\\"taskWorktree\\\":\\\"/[REDACTED_SECRET]\\\"}'\",\"implementationCommand\":\"bun run task:fs -- --branch task/workspace-agents/test apply-patch --patch-text *** Begin Patch\\n*** End Patch --dry-run\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-15T08:00:20.258Z\"}\n{\"level\":\"info\",\"tool\":\"fs.write\",\"branch\":\"task/workspace-agents/test\",\"command\":\"workspace fs.write '{\\\"taskSession\\\":\\\"tsk_fs_write_test\\\",\\\"path\\\":\\\"tmp/example.txt\\\",\\\"contentFile\\\":\\\"/tmp/payload.txt\\\",\\\"force\\\":true,\\\"mkdirs\\\":true,\\\"branch\\\":\\\"task/workspace-agents/test\\\",\\\"taskWorktree\\\":\\\"/[REDACTED_SECRET]\\\"}'\",\"implementationCommand\":\"bun run task:fs -- --branch task/workspace-agents/test write tmp/example.txt --content-file /tmp/payload.txt --force --mkdirs\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-15T08:00:20.326Z\"}\n{\"level\":\"info\",\"tool\":\"fs.write\",\"branch\":\"task/workspace-agents/test\",\"command\":\"workspace fs.write '{\\\"taskSession\\\":\\\"tsk_fs_write_append_test\\\",\\\"path\\\":\\\"tmp/example.txt\\\",\\\"content\\\":\\\"payload\\\",\\\"append\\\":true,\\\"branch\\\":\\\"task/workspace-agents/test\\\",\\\"taskWorktree\\\":\\\"/[REDACTED_SECRET]\\\"}'\",\"implementationCommand\":\"bun run task:fs -- --branch task/workspace-agents/test write tmp/example.txt --content payload --append\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-15T08:00:20.409Z\"}\n"
+        },
+        {
+          "name": "OS work-session filesystem syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "ruleId": "os-work-session-fs",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1705,
+          "outputTail": "workspace script syntax checks passed\n"
+        },
+        {
+          "name": "OS work-session Code Call and MCP authority contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/work-session-code-call.test.ts",
+            "packages/os/tests/session-start-foundation.test.ts",
+            "packages/os/tests/generated-error-code-parity.test.ts",
+            "packages/os/tests/mcp-gateway.test.ts"
+          ],
+          "ruleId": "os-work-session-code-call",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 2600,
+          "outputTail": ".08s, environment 0ms)\u001b[22m\n\n{\"level\":\"error\",\"tool\":\"code.call\",\"command\":\"workspace code.call\",\"implementationCommand\":\"os code.call\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_12[REDACTED_PHONE:1234]\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-15T08:00:22.909Z\"}\n{\"level\":\"warn\",\"event\":\"trace.persistence_failed\",\"code\":\"TRACE_PERSISTENCE_FAILED\",\"message\":\"Cannot find module 'bun:sqlite'\\nRequire stack:\\n- /[REDACTED_SECRET].ts\",\"ts\":\"2026-08-15T08:00:22.910Z\"}\n{\"level\":\"warn\",\"event\":\"trace.persistence_failed\",\"code\":\"TRACE_PERSISTENCE_FAILED\",\"message\":\"Cannot find module 'bun:sqlite'\\nRequire stack:\\n- /[REDACTED_SECRET].ts\",\"ts\":\"2026-08-15T08:00:23.106Z\"}\n{\"level\":\"info\",\"tool\":\"code.call\",\"command\":\"workspace code.call\",\"implementationCommand\":\"os code.call\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_12[REDACTED_PHONE:1234]\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-15T08:00:23.109Z\"}\n(node:89921) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n{\"level\":\"info\",\"tool\":\"code.call\",\"command\":\"workspace code.call\",\"implementationCommand\":\"os code.call\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_12[REDACTED_PHONE:1234]\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-15T08:00:23.240Z\"}\n{\"level\":\"info\",\"tool\":\"code.call\",\"command\":\"workspace code.call\",\"implementationCommand\":\"os code.call\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_12[REDACTED_PHONE:1234]\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-15T08:00:23.363Z\"}\n{\"level\":\"error\",\"tool\":\"code.call\",\"command\":\"workspace code.call\",\"implementationCommand\":\"os code.call\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_12[REDACTED_PHONE:1234]\",\"ok\":false,\"code\":\"PERMISSION_DENIED\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-15T08:00:23.446Z\"}\n{\"level\":\"error\",\"tool\":\"code.call\",\"command\":\"workspace code.call\",\"implementationCommand\":\"os code.call\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_12[REDACTED_PHONE:1234]\",\"ok\":false,\"code\":\"PERMISSION_DENIED\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-15T08:00:23.518Z\"}\n{\"level\":\"error\",\"tool\":\"code.call\",\"command\":\"workspace code.call\",\"implementationCommand\":\"os code.call\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_12[REDACTED_PHONE:1234]\",\"ok\":false,\"code\":\"COMMAND_FAILED\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-15T08:00:23.742Z\"}\n{\"level\":\"error\",\"tool\":\"code.call\",\"command\":\"workspace code.call\",\"implementationCommand\":\"os code.call\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_12[REDACTED_PHONE:1234]\",\"ok\":false,\"code\":\"COMMAND_FAILED\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-15T08:00:23.961Z\"}\n{\"level\":\"error\",\"tool\":\"code.call\",\"command\":\"workspace code.call\",\"implementationCommand\":\"os code.call\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_12[REDACTED_PHONE:1234]\",\"ok\":false,\"code\":\"COMMAND_FAILED\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-15T08:00:24.181Z\"}\n{\"level\":\"error\",\"tool\":\"code.call\",\"command\":\"workspace code.call\",\"implementationCommand\":\"os code.call\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_12[REDACTED_PHONE:1234]\",\"ok\":false,\"code\":\"COMMAND_FAILED\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-15T08:00:24.400Z\"}\n"
+        },
+        {
+          "name": "workspace audit tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/audit/audit.test.ts"
+          ],
+          "ruleId": "workspace-audit-docs",
+          "critical": false,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 413,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agent-session-integration\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/audit/audit.test.ts \u001b[2m(\u001b[22m\u001b[2m1 test\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 105\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m   Start at \u001b[22m 04:00:24\n\u001b[2m   Duration \u001b[22m 183ms\u001b[2m (transform 16ms, setup 0ms, import 21ms, tests 105ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS lifecycle update handoff contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/lifecycle-engine.test.ts",
+            "packages/os/tests/lifecycle-facade.test.ts",
+            "packages/os/tests/native-lifecycle-operation.test.ts",
+            "packages/os/tests/lifecycle-tool-surface.test.ts",
+            "packages/os/tests/cli-update-routing.test.ts",
+            "packages/os/tests/linux-platform.test.ts",
+            "packages/os/tests/windows-platform.test.ts",
+            "packages/os/tests/tool-manifest.test.ts",
+            "packages/os/tests/tool-package-layout.test.ts",
+            "packages/os/tests/lifecycle-restart-contract.test.ts"
+          ],
+          "ruleId": "os-lifecycle-update-handoff",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 2618,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agent-session-integration\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/linux-platform.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 11\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/cli-update-routing.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/windows-platform.test.ts \u001b[2m(\u001b[22m\u001b[2m18 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 13\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/lifecycle-restart-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/lifecycle-facade.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 16\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/lifecycle-tool-surface.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 25\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/native-lifecycle-operation.test.ts \u001b[2m(\u001b[22m\u001b[2m16 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 42\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/tool-manifest.test.ts \u001b[2m(\u001b[22m\u001b[2m17 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 83\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/tool-package-layout.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 418\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m generates full, core, and workflow outputs deterministically with no committed drift \u001b[33m 406\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/lifecycle-engine.test.ts \u001b[2m(\u001b[22m\u001b[2m61 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 1662\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m10 passed\u001b[39m\u001b[22m\u001b[90m (10)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m144 passed\u001b[39m\u001b[22m\u001b[90m (144)\u001b[39m\n\u001b[2m   Start at \u001b[22m 04:00:25\n\u001b[2m   Duration \u001b[22m 2.34s\u001b[2m (transform 2.36s, setup 0ms, import 3.76s, tests 2.28s, environment 1ms)\u001b[22m\n\n{\"level\":\"info\",\"tool\":\"lifecycle.status\",\"branch\":\"\",\"command\":\"workspace lifecycle.status\",\"implementationCommand\":\"bun run lifecycle -- status --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-15T08:00:26.051Z\"}\n{\"level\":\"warn\",\"event\":\"trace.persistence_failed\",\"code\":\"TRACE_PERSISTENCE_FAILED\",\"message\":\"Cannot find module 'bun:sqlite'\\nRequire stack:\\n- /[REDACTED_SECRET].ts\",\"ts\":\"2026-08-15T08:00:26.052Z\"}\n{\"level\":\"info\",\"tool\":\"lifecycle.update\",\"branch\":\"\",\"command\":\"workspace lifecycle.update '{\\\"channel\\\":\\\"canary\\\"}'\",\"implementationCommand\":\"bun run lifecycle -- update --channel canary --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-15T08:00:26.056Z\"}\n{\"level\":\"error\",\"tool\":\"lifecycle.update\",\"command\":\"workspace lifecycle.update\",\"implementationCommand\":\"workspace lifecycle.update\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-15T08:00:26.058Z\"}\n{\"level\":\"info\",\"tool\":\"lifecycle.update\",\"command\":\"workspace lifecycle.update\",\"implementationCommand\":\"workspace lifecycle.update\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"DRY_RUN\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-15T08:00:26.061Z\"}\n"
+        },
+        {
+          "name": "OS lifecycle facade snapshots",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/facade/facade.test.ts",
+            "-t",
+            "lifecycle\\.(status|update)"
+          ],
+          "ruleId": "os-lifecycle-update-handoff",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 706,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agent-session-integration\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/facade/facade.test.ts \u001b[2m(\u001b[22m\u001b[2m709 tests\u001b[22m\u001b[2m | \u001b[22m\u001b[33m700 skipped\u001b[39m\u001b[2m)\u001b[22m\u001b[32m 14\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m9 passed\u001b[39m\u001b[22m\u001b[2m | \u001b[22m\u001b[33m700 skipped\u001b[39m\u001b[90m (709)\u001b[39m\n\u001b[2m   Start at \u001b[22m 04:00:27\n\u001b[2m   Duration \u001b[22m 463ms\u001b[2m (transform 190ms, setup 0ms, import 385ms, tests 14ms, environment 0ms)\u001b[22m\n\n{\"level\":\"info\",\"tool\":\"lifecycle.status\",\"branch\":\"\",\"command\":\"workspace lifecycle.status\",\"implementationCommand\":\"bun run lifecycle -- status --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-15T08:00:28.435Z\"}\n{\"level\":\"warn\",\"event\":\"trace.persistence_failed\",\"code\":\"TRACE_PERSISTENCE_FAILED\",\"message\":\"Cannot find module 'bun:sqlite'\\nRequire stack:\\n- /[REDACTED_SECRET].ts\",\"ts\":\"2026-08-15T08:00:28.437Z\"}\n{\"level\":\"info\",\"tool\":\"lifecycle.update\",\"branch\":\"\",\"command\":\"workspace lifecycle.update '{\\\"channel\\\":\\\"stable\\\"}'\",\"implementationCommand\":\"bun run lifecycle -- update --channel stable --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-15T08:00:28.438Z\"}\n{\"level\":\"error\",\"tool\":\"lifecycle.status\",\"branch\":\"\",\"command\":\"workspace lifecycle.status\",\"implementationCommand\":\"bun run lifecycle -- status --json\",\"durationMs\":0,\"exitCode\":2,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"COMMAND_FAILED\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-15T08:00:28.440Z\"}\n{\"level\":\"error\",\"tool\":\"lifecycle.update\",\"branch\":\"\",\"command\":\"workspace lifecycle.update '{\\\"channel\\\":\\\"stable\\\"}'\",\"implementationCommand\":\"bun run lifecycle -- update --channel stable --json\",\"durationMs\":0,\"exitCode\":2,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"COMMAND_FAILED\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-15T08:00:28.441Z\"}\n{\"level\":\"error\",\"tool\":\"lifecycle.status\",\"branch\":\"\",\"command\":\"workspace lifecycle.status\",\"implementationCommand\":\"bun run lifecycle -- status --json\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"TIMEOUT\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-15T08:00:28.442Z\"}\n{\"level\":\"error\",\"tool\":\"lifecycle.update\",\"branch\":\"\",\"command\":\"workspace lifecycle.update '{\\\"channel\\\":\\\"stable\\\"}'\",\"implementationCommand\":\"bun run lifecycle -- update --channel stable --json\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"TIMEOUT\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-15T08:00:28.443Z\"}\n{\"level\":\"info\",\"tool\":\"lifecycle.update\",\"command\":\"workspace lifecycle.update\",\"implementationCommand\":\"workspace lifecycle.update\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"DRY_RUN\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-15T08:00:28.444Z\"}\n"
+        },
+        {
+          "name": "changed server task selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 66,
+          "outputTail": "No changed Twenty server runtime files require lint or typecheck.\nRunning server lint and baseline-aware typecheck for 1 directly changed file(s).\nTwenty server typecheck matched 1 known baseline diagnostic(s).\nRunning server lint and baseline-aware typecheck for 1 directly changed file(s).\nNo changed Twenty server schema files require GraphQL generation.\nNo changed Twenty server runtime files require migration generation.\nNo changesgeneratedTwenty server migration drift matched 2 known baseline operation(s).\ngeneratedgenerated✔ parseCliArguments resolves comparison SHAs (0.574084ms)\n✔ parseCliArguments selects GraphQL generation mode (0.051625ms)\n✔ parseCliArguments selects migration generation mode (0.057958ms)\n✔ filterServerTaskFiles excludes root and config-only triggers (0.100166ms)\n✔ filterGraphqlGenerationFiles keeps only server schema and generated files (0.064583ms)\n✔ buildEslintArguments selects the owning project config and stdin filename (0.048625ms)\n✔ ESLint diagnostic comparison tracks new error multiplicity without line numbers (0.163ms)\n✔ runChangedFileLint accepts base-existing errors and rejects a new changed-file error (0.634333ms)\n✔ runChangedFileLint allows explicit lint baseline debt but rejects diagnostics beyond it (0.322542ms)\n✔ buildTypecheckArguments uses standard TypeScript without emitting (0.076667ms)\n✔ TypeScript diagnostic baseline comparison rejects only new diagnostic keys (0.173833ms)\n✔ runChangedServerTask skips Nx for config-only changes (0.301583ms)\n✔ runChangedServerTask executes lint and baseline-aware typecheck for server runtime changes (0.085041ms)\n✔ runChangedServerTask rejects a new TypeScript diagnostic outside the baseline (0.083333ms)\n✔ server lint configuration resolves the existing workspace rules project (0.150791ms)\n✔ runGraphqlGenerationCheck skips generation without schema changes (0.064041ms)\n✔ runGraphqlGenerationCheck generates and verifies committed outputs (0.146708ms)\n✔ runMigrationGenerationCheck skips generation without server runtime changes (0.076708ms)\n✔ runMigrationGenerationCheck accepts a no-change TypeORM exit (0.08975ms)\n✔ runMigrationGenerationCheck accepts and removes exact known migration drift (0.17025ms)\n✔ runMigrationGenerationCheck rejects changed drift beyond the baseline (0.113625ms)\n✔ runMigrationGenerationCheck rejects and removes generated drift (0.11125ms)\nℹ tests 22\nℹ suites 0\nℹ pass 22\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 40.903375\n"
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 138,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/workspace/tests/github-workflow-policy.test.js:\n(pass) GitHub workflow policy > does not include retired automation workflows [0.06ms]\n(pass) GitHub workflow policy > does not reference retired CI credentials or the disabled Chromatic job [0.76ms]\n(pass) GitHub workflow policy > does not retain privileged allowlist entries for deleted workflows [0.06ms]\n(pass) GitHub workflow policy > runs typecheck and test from the filtered frontend file set [0.04ms]\n(pass) GitHub workflow policy > installs Bun and scopes shared tasks to changed frontend files [0.03ms]\n(pass) GitHub workflow policy > scopes native OS distribution tests to relevant changed files [0.04ms]\n(pass) GitHub workflow policy > runs Docker Compose CI with the pgvector PostgreSQL image required by migrations [0.02ms]\n(pass) GitHub workflow policy > uses available hosted runners for the Server and Front build pipelines [0.05ms]\n(pass) GitHub workflow policy > builds Consuelo backend workspace dependencies before server typecheck [0.03ms]\n(pass) GitHub workflow policy > installs Bun before the Server unit-test job runs Bun package tests [0.03ms]\n(pass) GitHub workflow policy > allows enough time for Danger dependency installation and execution [0.02ms]\n(pass) GitHub workflow policy > explicitly allowlists the API breaking-changes workflow write permissions [0.02ms]\n\n 12 pass\n 0 fail\n 53 expect() calls\nRan 12 tests across 1 file. [132.00ms]\n"
+        },
+        {
+          "name": "TypeORM CLI compatibility contract",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 446,
+          "outputTail": "✔ Twenty server uses the Node 24-compatible TypeORM ts-node wrapper (0.312833ms)\n✔ the configured TypeORM wrapper resolves from the installed package (386.996625ms)\nℹ tests 2\nℹ suites 0\nℹ pass 2\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 421.03625\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

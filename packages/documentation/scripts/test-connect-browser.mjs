@@ -19,7 +19,7 @@ const routes = [
   ['Cursor', '/connect/agents/cursor/'],
   ['OpenCode', '/connect/agents/opencode/'],
   ['Gemini', '/connect/agents/gemini/'],
-  ['Bring your own', '/connect/agents/create-your-own/'],
+  ['Create your own', '/connect/agents/create-your-own/'],
   ['Applications', '/connect/apps-and-services/'],
   ['Cloudflare', '/connect/apps-and-services/cloudflare/'],
   ['Datadog', '/connect/apps-and-services/datadog/'],
@@ -42,7 +42,7 @@ const routes = [
   ['Supabase', '/connect/apps-and-services/supabase/'],
   ['Twilio', '/connect/apps-and-services/twilio/'],
   ['Vercel', '/connect/apps-and-services/vercel/'],
-  ['Bring your own', '/connect/apps-and-services/create-your-own/'],
+  ['Create your own', '/connect/apps-and-services/create-your-own/'],
 ];
 
 async function waitForServer() {
@@ -106,7 +106,7 @@ try {
     if (!(await page.getByRole('button', { name: 'Copy page' }).isVisible())) throw new Error(`Copy page is hidden on ${viewport.name}`);
     if (viewport.name === 'mobile') {
       await page.locator('button[aria-controls="starlight__sidebar"]').click();
-      if (!(await page.locator('#starlight__sidebar').getByRole('link', { name: 'Bring your own', exact: true }).last().isVisible())) throw new Error('Applications Bring your own navigation is unavailable on mobile');
+      if (!(await page.locator('#starlight__sidebar').getByRole('link', { name: 'Create your own', exact: true }).last().isVisible())) throw new Error('Applications Create your own navigation is unavailable on mobile');
       await page.keyboard.press('Escape');
     }
     viewportChecks.push({ name: viewport.name, overflow });

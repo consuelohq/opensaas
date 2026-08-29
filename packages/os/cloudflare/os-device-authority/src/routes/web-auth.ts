@@ -42,6 +42,7 @@ const AUTHORITY_SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 const WORKSPACE_HANDOFF_TTL_MS = 60 * 1000;
 const WORKSPACE_SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 const INTERNAL_AUTH_HEADER = 'x-consuelo-internal-auth-secret';
+const PRIVATE_INTERNAL_SITE_HOST = 'internal.consuelohq.com';
 
 function cookieValue(request: Request, name: string): string {
   const raw = request.headers.get('cookie') ?? '';
@@ -197,22 +198,21 @@ async function authoritySession(
   }
 }
 
-async function issueHandoff(input: {
+async function issueWorkspaceHandoff(input: {
   runtime: DeviceAuthorityRuntime;
-  session: AuthoritySession;
-  membership: WorkspaceMembership;
+  accountId: string;
+  workspaceId: string;
+  workspaceHost: string;
   returnPath: string;
 }): Promise<Response> {
   try {
     const token = rand('wlh', 32);
     const nowMs = input.runtime.now();
-    const workspaceHost = canonicalWorkspaceHost(
-      input.membership.workspaceHost,
-    );
+    const workspaceHost = canonicalWorkspaceHost(input.workspaceHost);
     await input.runtime.store.putWorkspaceLoginHandoff({
       tokenHash: await hash(token),
-      accountId: input.session.accountId,
-      workspaceId: input.membership.workspaceId,
+      accountId: input.accountId,
+      workspaceId: input.workspaceId,
       workspaceHost,
       returnPath: normalizeAuthReturnPath(input.returnPath),
       nonce: rand('handoff_nonce', 16),
@@ -228,6 +228,21 @@ async function issueHandoff(input: {
   } catch {
     return json({ error: 'handoff_unavailable' }, { status: 503 });
   }
+}
+
+async function issueHandoff(input: {
+  runtime: DeviceAuthorityRuntime;
+  session: AuthoritySession;
+  membership: WorkspaceMembership;
+  returnPath: string;
+}): Promise<Response> {
+  return issueWorkspaceHandoff({
+    runtime: input.runtime,
+    accountId: input.session.accountId,
+    workspaceId: input.membership.workspaceId,
+    workspaceHost: input.membership.workspaceHost,
+    returnPath: input.returnPath,
+  });
 }
 
 async function pendingCloudOnboardingResponse(input: {
@@ -894,6 +909,29 @@ async function handleWebAuthRequest(
     });
   }
 
+  if (url.pathname === '/internal/auth/session/handoff') {
+    if (request.method !== 'POST') return methodNotAllowed('POST');
+    const auth = await authenticateInternalWorkspaceSession(request, runtime, {
+      requireWorkspaceId: false,
+    });
+    if (!auth.ok) return auth.response;
+    const targetHost = request.headers
+      .get('x-consuelo-target-workspace-host')
+      ?.trim()
+      .toLowerCase() ?? '';
+    if (targetHost !== PRIVATE_INTERNAL_SITE_HOST) {
+      return json({ error: 'handoff_target_denied' }, { status: 403 });
+    }
+    const body = await params(request);
+    return issueWorkspaceHandoff({
+      runtime,
+      accountId: auth.session.accountId,
+      workspaceId: auth.session.workspaceId,
+      workspaceHost: targetHost,
+      returnPath: body.get('return_to') ?? '/',
+    });
+  }
+
   if (url.pathname === '/auth/consume') {
     if (request.method !== 'GET') return methodNotAllowed('GET');
     const token = url.searchParams.get('handoff') ?? '';
@@ -954,7 +992,12 @@ async function handleWebAuthRequest(
 
   if (url.pathname === '/internal/auth/session/validate') {
     if (request.method !== 'POST') return methodNotAllowed('POST');
-    const auth = await authenticateInternalWorkspaceSession(request, runtime);
+    const requireWorkspaceId = Boolean(
+      request.headers.get('x-consuelo-workspace-id')?.trim(),
+    );
+    const auth = await authenticateInternalWorkspaceSession(request, runtime, {
+      requireWorkspaceId,
+    });
     if (!auth.ok) return auth.response;
     return new Response(null, {
       status: 204,
@@ -987,6 +1030,7 @@ export function registerWebAuthRoutes(
     '/onboarding/checkout/status',
     '/webhooks/stripe',
     '/webhooks/stripe-synthetic',
+    '/internal/auth/session/handoff',
     '/internal/auth/session/validate',
   ]) {
     app.all(path, (context) => handleWebAuthRequest(context.req.raw, runtime));

@@ -13,7 +13,7 @@ const connectPages = [
   ['connect/agents/cursor.mdx', 'Cursor'],
   ['connect/agents/opencode.mdx', 'OpenCode'],
   ['connect/agents/gemini.mdx', 'Gemini'],
-  ['connect/agents/create-your-own.mdx', 'Bring your own'],
+  ['connect/agents/create-your-own.mdx', 'Create your own'],
   ['connect/apps-and-services/index.mdx', 'Applications'],
   ['connect/apps-and-services/google-workspace.mdx', 'Google Workspace'],
   ['connect/apps-and-services/gmail.mdx', 'Gmail'],
@@ -36,7 +36,7 @@ const connectPages = [
   ['connect/apps-and-services/hubspot.mdx', 'HubSpot'],
   ['connect/apps-and-services/stripe.mdx', 'Stripe'],
   ['connect/apps-and-services/twilio.mdx', 'Twilio'],
-  ['connect/apps-and-services/create-your-own.mdx', 'Bring your own'],
+  ['connect/apps-and-services/create-your-own.mdx', 'Create your own'],
 ] as const;
 
 describe('Connect documentation contract', () => {
@@ -72,7 +72,7 @@ describe('Connect documentation contract', () => {
       "label: 'Supabase'",
       "label: 'Twilio'",
       "label: 'Vercel'",
-      "label: 'Bring your own'",
+      "label: 'Create your own'",
     ];
     let previousIndex = -1;
     for (const needle of orderedLabels) {
@@ -158,7 +158,7 @@ describe('Connect documentation contract', () => {
     expect(overview).toContain('Native Consuelo tool');
     expect(overview).not.toContain('Productivity and communication');
     const applicationTitles = [...overview.matchAll(/<Card title="([^"]+)"/g)].map((match) => match[1]);
-    const appOnly = applicationTitles.filter((label) => label !== 'Bring your own');
+    const appOnly = applicationTitles.filter((label) => label !== 'Create your own');
     expect(appOnly).toEqual([...appOnly].sort((left, right) => left.localeCompare(right)));
 
     const google = read('src/content/docs/connect/apps-and-services/google-workspace.mdx');

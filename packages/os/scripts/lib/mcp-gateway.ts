@@ -5,7 +5,7 @@ import {
   modernMcpRoutingFromBody,
   stampModernMcpResult,
 } from './mcp-protocol';
-import { normalizeMcpNodeId } from './mcp-node-routing';
+import { normalizeMcpNodeId, normalizeMcpWorkSession } from './mcp-node-routing';
 
 type JsonObject = Record<string, unknown>;
 type JsonRpcId = string | number | null;
@@ -20,7 +20,12 @@ type FacadeCall = {
   tool: string;
   input: JsonObject;
   taskSession?: string;
+  workSession?: string;
   timeout?: number;
+};
+
+export type McpFacadeExecutionOptions = {
+  timeoutMs?: number;
 };
 
 export type McpGatewayScopeResolution =
@@ -38,7 +43,11 @@ export type McpGatewayScopeResolution =
 
 type McpGatewayHandlerInput = {
   getSteering: () => Promise<string>;
-  executeFacadeTool: (toolName: string, input: JsonObject) => Promise<unknown>;
+  executeFacadeTool: (
+    toolName: string,
+    input: JsonObject,
+    execution?: McpFacadeExecutionOptions,
+  ) => Promise<unknown>;
 };
 
 const MCP_READ_METHODS = new Set([
@@ -88,6 +97,12 @@ const MCP_TOOL_DESCRIPTORS: JsonObject[] = [
           type: 'string',
           minLength: 1,
           description: 'Required task session for task-scoped tools.',
+        },
+        workSession: {
+          type: 'string',
+          minLength: 1,
+          maxLength: 240,
+          description: 'Work session used to route non-task work to its owning node.',
         },
         nodeId: {
           type: 'string',
@@ -157,7 +172,7 @@ function hasOnlyKeys(value: JsonObject, keys: readonly string[]): boolean {
 
 function parseFacadeCall(params: unknown): FacadeCall | null {
   const args = toolArgumentsFromParams(params);
-  if (!args || !hasOnlyKeys(args, ['tool', 'input', 'taskSession', 'nodeId', 'timeout'])) return null;
+  if (!args || !hasOnlyKeys(args, ['tool', 'input', 'taskSession', 'workSession', 'nodeId', 'timeout'])) return null;
 
   const tool = typeof args.tool === 'string' ? args.tool.trim() : '';
   if (!tool) return null;
@@ -173,6 +188,10 @@ function parseFacadeCall(params: unknown): FacadeCall | null {
     return null;
   }
 
+  const workSession = normalizeMcpWorkSession(args.workSession);
+  if (workSession === null) return null;
+  if (typeof taskSession === 'string' && workSession) return null;
+
   if (normalizeMcpNodeId(args.nodeId) === null) return null;
 
   const timeout = args.timeout;
@@ -187,6 +206,7 @@ function parseFacadeCall(params: unknown): FacadeCall | null {
     tool,
     input: callInput,
     ...(typeof taskSession === 'string' ? { taskSession: taskSession.trim() } : {}),
+    ...(workSession ? { workSession } : {}),
     ...(typeof timeout === 'number' ? { timeout } : {}),
   };
 }
@@ -200,7 +220,7 @@ function facadeToolInput(call: FacadeCall): JsonObject {
   return {
     ...call.input,
     ...(call.taskSession ? { taskSession: call.taskSession } : {}),
-    ...(call.timeout ? { timeout: call.timeout } : {}),
+    ...(call.workSession ? { workSession: call.workSession } : {}),
   };
 }
 
@@ -389,7 +409,10 @@ export async function handleMcpGatewayJsonRpc(
     const call = parseFacadeCall(request.params);
     if (!call) return jsonRpcError(request.id, -32602, 'Invalid call arguments.');
 
-    const output = await input.executeFacadeTool(call.tool, facadeToolInput(call));
+    const toolInput = facadeToolInput(call);
+    const output = typeof call.timeout === 'number'
+      ? await input.executeFacadeTool(call.tool, toolInput, { timeoutMs: call.timeout })
+      : await input.executeFacadeTool(call.tool, toolInput);
     return result({
       content: [{ type: 'text', text: outputText(output) }],
       isError: outputIsError(output),

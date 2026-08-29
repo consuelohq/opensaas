@@ -1,0 +1,536 @@
+{
+  "version": 1,
+  "worktree_id": "task/workspace-agent/task-worktree-eviction",
+  "events": [
+    {
+      "id": "9126432a-214d-4128-85af-4b33ea72d64a",
+      "occurred_at": "2026-08-15T03:51:19.991Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/workspace-agent/task-worktree-eviction/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/task-worktree-eviction",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/task-worktree-eviction"
+      }
+    },
+    {
+      "id": "5eb23542-f364-4dff-8680-9ec98a38cf54",
+      "occurred_at": "2026-08-15T03:52:17.349Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/paths.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/task-worktree-eviction",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/task-worktree-eviction"
+      }
+    },
+    {
+      "id": "640c2b75-4547-49ba-972a-8c88323dd0bf",
+      "occurred_at": "2026-08-15T03:52:23.672Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-start.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/task-worktree-eviction",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/task-worktree-eviction"
+      }
+    },
+    {
+      "id": "5f6c7707-24c8-4eaa-93a9-f97e6f1baf82",
+      "occurred_at": "2026-08-15T03:53:37.262Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/task-registry.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/task-worktree-eviction",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/task-worktree-eviction"
+      }
+    },
+    {
+      "id": "6a19f50c-326a-42fb-99ae-c78d2b1da499",
+      "occurred_at": "2026-08-15T03:53:40.351Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/paths.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/task-worktree-eviction",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/task-worktree-eviction"
+      }
+    },
+    {
+      "id": "300d4ef3-29ac-4868-b447-fd5695bccf1a",
+      "occurred_at": "2026-08-15T03:53:46.831Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-cleanup.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/task-worktree-eviction",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/task-worktree-eviction"
+      }
+    },
+    {
+      "id": "aa05aab4-64cc-413d-b3b9-3052aca0f571",
+      "occurred_at": "2026-08-15T03:53:53.709Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/task-session.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/task-worktree-eviction",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/task-worktree-eviction"
+      }
+    },
+    {
+      "id": "673f2ba6-810a-4197-8f20-857c9a80b84b",
+      "occurred_at": "2026-08-15T03:53:57.319Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-finish.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/task-worktree-eviction",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/task-worktree-eviction"
+      }
+    },
+    {
+      "id": "28c2fb04-7f71-4daf-870b-520c33129fb2",
+      "occurred_at": "2026-08-15T03:54:03.333Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/durable-task-worktrees.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/task-worktree-eviction",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/task-worktree-eviction"
+      }
+    },
+    {
+      "id": "4ea4b347-7dca-485a-b3da-f488f17ba0ae",
+      "occurred_at": "2026-08-15T03:54:19.410Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/task-worktree-eviction",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/task-worktree-eviction"
+      }
+    },
+    {
+      "id": "4a5f36a3-4376-41f5-b26d-672c7edc6866",
+      "occurred_at": "2026-08-15T03:55:26.977Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/git.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/task-worktree-eviction",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/task-worktree-eviction"
+      }
+    },
+    {
+      "id": "49d4d406-a658-4ede-89f4-842e191312cc",
+      "occurred_at": "2026-08-15T03:56:16.220Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/task-session.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/task-worktree-eviction",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/task-worktree-eviction"
+      }
+    },
+    {
+      "id": "46d89d66-e897-4275-8f2c-0f63dbef7870",
+      "occurred_at": "2026-08-15T03:58:25.104Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/server/supervisor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/task-worktree-eviction",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/task-worktree-eviction"
+      }
+    },
+    {
+      "id": "b01fe431-d086-4db7-bff0-36419c136e10",
+      "occurred_at": "2026-08-15T04:00:15.322Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-start.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/task-worktree-eviction",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/task-worktree-eviction"
+      }
+    },
+    {
+      "id": "d09a6e56-858a-47c1-9fbc-b9c0ec1f16a3",
+      "occurred_at": "2026-08-15T04:02:17.716Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-cleanup.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/task-worktree-eviction",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/task-worktree-eviction"
+      }
+    },
+    {
+      "id": "0a239f9e-90a4-4fe4-8c52-7aeb6f0643c7",
+      "occurred_at": "2026-08-15T04:02:44.612Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-finish.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/task-worktree-eviction",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/task-worktree-eviction"
+      }
+    },
+    {
+      "id": "07f90b2e-12d2-415a-a142-114f915b4acb",
+      "occurred_at": "2026-08-15T04:03:26.591Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/distribution/runtime-bundle.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/task-worktree-eviction",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/task-worktree-eviction"
+      }
+    },
+    {
+      "id": "5e5cf8c2-dbd0-46c7-8ae3-e2133feeacd4",
+      "occurred_at": "2026-08-15T04:04:29.460Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/task-worktree-eviction.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/task-worktree-eviction",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/task-worktree-eviction"
+      }
+    },
+    {
+      "id": "e0837063-605e-4cea-b19d-bd13f45e2823",
+      "occurred_at": "2026-08-15T04:06:23.852Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/task-registry.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/task-worktree-eviction",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/task-worktree-eviction"
+      }
+    },
+    {
+      "id": "bea6099b-46af-4f09-a624-01f931621e43",
+      "occurred_at": "2026-08-15T04:06:29.407Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/task-session.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/task-worktree-eviction",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/task-worktree-eviction"
+      }
+    },
+    {
+      "id": "d013c351-77a3-4407-be1f-32a38a95aa81",
+      "occurred_at": "2026-08-15T04:07:07.299Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/task-worktree-eviction",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/task-worktree-eviction"
+      }
+    },
+    {
+      "id": "61c033ee-36aa-4472-acd5-b0b8c738a8da",
+      "occurred_at": "2026-08-15T04:07:21.523Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/task-start.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/task-worktree-eviction",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/task-worktree-eviction"
+      }
+    },
+    {
+      "id": "5b70fb86-ffbe-4e04-9f28-621809a8022a",
+      "occurred_at": "2026-08-15T04:07:33.746Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/task-cleanup.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/task-worktree-eviction",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/task-worktree-eviction"
+      }
+    },
+    {
+      "id": "c5f5bbf2-e977-41c1-b13b-281fcf80a901",
+      "occurred_at": "2026-08-15T04:07:49.691Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/task-finish.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/task-worktree-eviction",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/task-worktree-eviction"
+      }
+    },
+    {
+      "id": "c0203966-d3c3-4378-bffd-95697b7e97e3",
+      "occurred_at": "2026-08-15T04:08:06.843Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/server/supervisor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/task-worktree-eviction",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/task-worktree-eviction"
+      }
+    },
+    {
+      "id": "9ba1d6c5-0ee2-478b-b075-547b24363356",
+      "occurred_at": "2026-08-15T04:10:02.070Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/distribution/runtime-bundle.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/task-worktree-eviction",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/task-worktree-eviction"
+      }
+    },
+    {
+      "id": "dcd8548c-68c1-4e83-9380-7c1cba238cdc",
+      "occurred_at": "2026-08-15T04:10:15.743Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/test-selection.rules.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/task-worktree-eviction",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/task-worktree-eviction"
+      }
+    },
+    {
+      "id": "fb9639c6-406a-4fd2-bffd-18a87bd61d23",
+      "occurred_at": "2026-08-15T04:11:21.716Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/test-selection.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/task-worktree-eviction",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/task-worktree-eviction"
+      }
+    },
+    {
+      "id": "68f7a1bf-550a-4ad3-8928-fa5ddf5af453",
+      "occurred_at": "2026-08-15T04:12:06.766Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/task-session.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/task-worktree-eviction",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/task-worktree-eviction"
+      }
+    },
+    {
+      "id": "d3316d8f-0b53-461f-8175-bb795da90e11",
+      "occurred_at": "2026-08-15T04:12:36.898Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/SCRIPTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/task-worktree-eviction",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/task-worktree-eviction"
+      }
+    },
+    {
+      "id": "8a0292f3-0ccb-48e9-99fb-bca566ccd07e",
+      "occurred_at": "2026-08-15T04:13:09.127Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/SCRIPTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/task-worktree-eviction",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/task-worktree-eviction"
+      }
+    },
+    {
+      "id": "84c67b80-7c2d-493d-9fa7-33ee9f852881",
+      "occurred_at": "2026-08-15T04:13:40.211Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/git.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/task-worktree-eviction",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/task-worktree-eviction"
+      }
+    },
+    {
+      "id": "1b5b88d1-16d8-40ed-87df-600ed61cbd53",
+      "occurred_at": "2026-08-15T04:14:41.755Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/workspace-agent/task-worktree-eviction/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/task-worktree-eviction",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/task-worktree-eviction"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-15T04:14:41.826Z"
+}

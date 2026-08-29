@@ -2,6 +2,7 @@
   "name": "openworkspace",
   "private": true,
   "scripts": {
+    "session:start": "bun ./scripts/session-start.ts",
     "task:start": "bun ./scripts/task-start.js",
     "task:pr": "bun ./scripts/task-pr.js",
     "task:prs": "bun ./scripts/task-prs.js",

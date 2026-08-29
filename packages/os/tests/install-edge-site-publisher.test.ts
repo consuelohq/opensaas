@@ -83,7 +83,6 @@ function makeHome(html = '<!doctype html><title>Internal workspace</title><main>
   const home = fs.mkdtempSync(path.join(os.tmpdir(), 'consuelo-install-edge-publish-'));
   const sitePaths = [
     ['index.html'],
-    ['artifacts', 'index.html'],
     ['traces', 'index.html'],
     ['docs', 'index.html'],
     ['configuration', 'index.html'],
@@ -126,7 +125,6 @@ contractDescribe('install edge site publisher', () => {
     expect(first.verifyUrl).toBe('https://internal.consuelohq.com/');
     expect(first.verifiedUrls).toEqual([
       'https://internal.consuelohq.com/',
-      'https://internal.consuelohq.com/artifacts',
       'https://internal.consuelohq.com/observability',
       'https://internal.consuelohq.com/observability/traces',
       'https://internal.consuelohq.com/traces',
@@ -139,7 +137,10 @@ contractDescribe('install edge site publisher', () => {
       'https://internal.consuelohq.com/environments',
       'https://internal.consuelohq.com/secrets',
     ]);
-    expect(first.snapshots.map((snapshot) => snapshot.siteId)).toEqual(['launcher', 'artifacts', 'traces', 'traces', 'traces', 'traces', 'traces', 'docs', 'configuration', 'tools', 'nodes', 'environments', 'secrets']);
+    expect(first.snapshots.map((snapshot) => snapshot.siteId)).toEqual(['launcher', 'traces', 'traces', 'traces', 'traces', 'traces', 'docs', 'configuration', 'tools', 'nodes', 'environments', 'secrets']);
+    expect(first.snapshots.some((snapshot) => snapshot.siteId === 'artifacts')).toBe(false);
+    expect(first.routeSql).toContain('\"pathPrefix\":\"/artifacts\"');
+    expect(first.routeSql).toContain('\"serviceName\":\"artifacts-sites-read-layer\"');
     expect(new Set(first.snapshots.map((snapshot) => snapshot.versionId))).toEqual(
       new Set([first.versionId]),
     );
@@ -165,6 +166,25 @@ contractDescribe('install edge site publisher', () => {
     for (const snapshot of first.snapshots) {
       expect(first.routeSql).toContain(snapshot.contentHash);
     }
+  });
+
+  it('rejects an edge publication identity that conflicts with the installed OS auth identity', async () => {
+    const publisher = await loadPublisher();
+    const home = makeHome();
+    const authPath = path.join(home, 'node', 'security', 'generated', 'auth.json');
+    fs.mkdirSync(path.dirname(authPath), { recursive: true });
+    fs.writeFileSync(authPath, JSON.stringify({
+      workspaceId: 'workspace_internal',
+      workspaceSlug: 'internal',
+      workspaceHost: 'internal.consuelohq.com',
+    }), 'utf8');
+
+    expect(() => publisher.createWorkspaceEdgeSnapshotPlan({
+      home,
+      workspaceId: 'unrelated_application_workspace',
+      workspaceSlug: 'internal',
+      workspaceHost: 'internal.consuelohq.com',
+    })).toThrow('edge publication workspaceId does not match the installed OS auth identity');
   });
 
   it('uploads R2, upserts D1, warms the edge route, and returns install-safe metadata', async () => {
@@ -254,7 +274,6 @@ contractDescribe('install edge site publisher', () => {
       verifyUrl: 'https://internal.consuelohq.com/',
       verifiedUrls: [
         'https://internal.consuelohq.com/',
-        'https://internal.consuelohq.com/artifacts',
         'https://internal.consuelohq.com/observability',
         'https://internal.consuelohq.com/observability/traces',
         'https://internal.consuelohq.com/traces',
