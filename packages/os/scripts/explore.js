@@ -196,7 +196,9 @@ function toJsonResult(args, results, indexResult) {
       files_indexed: indexResult.filesIndexed,
       chunks_embedded: indexResult.chunksEmbedded,
       chunks_deferred: indexResult.chunksDeferred || 0,
-      embedding_status: indexResult.embeddingFailure ? 'degraded' : 'ready',
+      embedding_status: indexResult.embeddingFailure || indexResult.retrievalDiagnostics?.semanticAvailable === false
+        ? 'degraded'
+        : 'ready',
     },
   };
 }
@@ -271,6 +273,7 @@ async function main() {
 
   let indexResult;
   let results;
+  let retrievalDiagnostics = { semanticAvailable: true, lexicalAvailable: true };
   try {
     indexResult = await ensureIndex({
       cwd: process.env.CONSUELO_TOOL_CALLER_CWD || process.cwd(),
@@ -284,11 +287,14 @@ async function main() {
       changedOnly: args.changedOnly,
       depth: args.depth,
       worktreeId: indexResult.worktreeId,
+      onRetrievalDiagnostics: (diagnostics) => {
+        retrievalDiagnostics = diagnostics;
+      },
     });
   } catch {
     throw new Error('explore failed');
   }
-  const payload = toJsonResult(args, results, indexResult);
+  const payload = toJsonResult(args, results, { ...indexResult, retrievalDiagnostics });
   const previousState = readExploreState(indexResult.repoRoot) || {};
   const shouldPreserveHypotheses = previousState.query === args.question && previousState.hypothesis_version === 1;
   const hypotheses = buildInvestigationHypotheses(payload.results, shouldPreserveHypotheses ? previousState.hypotheses : []);

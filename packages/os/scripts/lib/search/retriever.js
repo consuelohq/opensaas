@@ -368,6 +368,10 @@ async function retrieve(store, repoRoot, query, options = {}) {
     recencyByPath,
   });
 
+  if (typeof options.onRetrievalDiagnostics === 'function') {
+    options.onRetrievalDiagnostics({ semanticAvailable, lexicalAvailable });
+  }
+
   return rankCandidatesWithFusion(scoredCandidates, { budget, query }).map((candidate) => {
     const { bestChunkEvidence, retrievalTypes, ...outputCandidate } = candidate;
     return {

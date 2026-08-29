@@ -180,7 +180,7 @@ async function indexChunkEmbeddings(store, chunks, options) {
         }
       } catch (error /* unknown */) {
         skippedCount += uncached.length;
-        processedCount += batch.length;
+        const remainingAfterBatch = Math.max(0, chunks.length - (index + batch.length));
         const message = error instanceof Error ? error.message : String(error);
         if (!options.json) {
           writeStderr(`warning: semantic hydration paused after provider failure: ${message}`);
@@ -188,7 +188,7 @@ async function indexChunkEmbeddings(store, chunks, options) {
         return {
           embeddedCount,
           skippedCount,
-          deferredCount: Math.max(0, chunks.length - processedCount),
+          deferredCount: uncached.length + remainingAfterBatch,
           failure: message,
         };
       }
