@@ -2,6 +2,14 @@ const { execFileSync } = require('child_process');
 
 const { embedText } = require('../index/embedder');
 const { scoreCandidate, getReason } = require('./ranker');
+const {
+  buildLexicalSearchTerms,
+  candidateMatchesOutputScope,
+  candidateMatchesSeedScope,
+  extractExplicitScope,
+  rankCandidatesWithFusion,
+  tokenizeQuery,
+} = require('./retrieval-policy');
 
 function distanceToSimilarity(distance) {
   const parsed = Number(distance);
@@ -43,50 +51,13 @@ function buildRecencyLookup(repoRoot) {
 }
 
 function toPreview(content) {
-  return content
+  return String(content || '')
     .split('\n')
     .map((line) => line.trim())
     .filter(Boolean)
     .slice(0, 3)
     .join(' ')
     .slice(0, 240);
-}
-
-function mergeSearchRows(rows) {
-  const candidates = new Map();
-
-  for (const row of rows) {
-    const similarity = distanceToSimilarity(row.distance);
-    const existing = candidates.get(row.filePath);
-
-    if (!existing) {
-      candidates.set(row.filePath, {
-        path: row.filePath,
-        embeddingSimilarity: similarity,
-        bestChunkName: row.name,
-        bestChunkType: row.chunkType,
-        preview: toPreview(row.content),
-        startLine: row.startLine,
-        endLine: row.endLine,
-        graphConnections: [],
-        includedBy: 'semantic',
-        reasonSimilarity: similarity,
-      });
-      continue;
-    }
-
-    existing.embeddingSimilarity = Math.max(existing.embeddingSimilarity, similarity);
-    if (shouldReplaceBestChunk(row, similarity, existing)) {
-      existing.bestChunkName = row.name;
-      existing.bestChunkType = row.chunkType;
-      existing.preview = toPreview(row.content);
-      existing.startLine = row.startLine;
-      existing.endLine = row.endLine;
-      existing.reasonSimilarity = similarity;
-    }
-  }
-
-  return candidates;
 }
 
 function getChunkTypePriority(chunkType) {
@@ -107,16 +78,68 @@ function getChunkTypePriority(chunkType) {
   }
 }
 
-function shouldReplaceBestChunk(row, similarity, existing) {
-  const currentReasonSimilarity = existing.reasonSimilarity ?? existing.embeddingSimilarity;
-  if (Math.abs(similarity - currentReasonSimilarity) <= 0.05) {
+function getRowEvidence(row) {
+  if (row.retrievalType === 'semantic') return distanceToSimilarity(row.distance);
+  return Math.min(1, Number(row.lexicalSupport || 0) / 10);
+}
+
+function shouldReplaceBestChunk(row, evidence, existing) {
+  const currentEvidence = Number(existing.bestChunkEvidence || 0);
+  if (Math.abs(evidence - currentEvidence) <= 0.05) {
     const rowPriority = getChunkTypePriority(row.chunkType);
     const existingPriority = getChunkTypePriority(existing.bestChunkType);
     if (rowPriority !== existingPriority) return rowPriority > existingPriority;
-    return similarity > currentReasonSimilarity;
+    return evidence > currentEvidence;
+  }
+  return evidence > currentEvidence;
+}
+
+function applyBestChunk(candidate, row, evidence) {
+  candidate.bestChunkName = row.name || null;
+  candidate.bestChunkType = row.chunkType || null;
+  candidate.preview = toPreview(row.content);
+  candidate.startLine = row.startLine || 1;
+  candidate.endLine = row.endLine || row.startLine || 1;
+  candidate.bestChunkEvidence = evidence;
+}
+
+function mergeSearchRows(rows) {
+  const candidates = new Map();
+
+  for (const row of rows) {
+    const retrievalType = row.retrievalType || 'semantic';
+    const semanticSimilarity = retrievalType === 'semantic' ? distanceToSimilarity(row.distance) : 0;
+    const lexicalSupport = retrievalType === 'lexical' || retrievalType === 'scope'
+      ? Number(row.lexicalSupport || 0)
+      : 0;
+    const evidence = getRowEvidence(row);
+    const existing = candidates.get(row.filePath);
+
+    if (!existing) {
+      const candidate = {
+        path: row.filePath,
+        embeddingSimilarity: semanticSimilarity,
+        semanticSimilarity,
+        lexicalSupport,
+        graphConnections: [],
+        includedBy: retrievalType,
+        retrievalTypes: new Set([retrievalType]),
+      };
+      applyBestChunk(candidate, row, evidence);
+      candidates.set(row.filePath, candidate);
+      continue;
+    }
+
+    existing.semanticSimilarity = Math.max(existing.semanticSimilarity || 0, semanticSimilarity);
+    existing.embeddingSimilarity = existing.semanticSimilarity;
+    existing.lexicalSupport = Math.max(existing.lexicalSupport || 0, lexicalSupport);
+    existing.retrievalTypes = existing.retrievalTypes || new Set([existing.includedBy || retrievalType]);
+    existing.retrievalTypes.add(retrievalType);
+    if (retrievalType === 'lexical' || retrievalType === 'scope') existing.includedBy = retrievalType;
+    if (shouldReplaceBestChunk(row, evidence, existing)) applyBestChunk(existing, row, evidence);
   }
 
-  return similarity > currentReasonSimilarity;
+  return candidates;
 }
 
 function expandGraph(store, candidates, depth, limit) {
@@ -144,14 +167,19 @@ function expandGraph(store, candidates, depth, limit) {
       addedCount += 1;
       candidates.set(connection.path, {
         path: connection.path,
-        embeddingSimilarity: Math.max(0, (currentCandidate?.embeddingSimilarity || 0) * 0.85),
+        embeddingSimilarity: 0,
+        semanticSimilarity: 0,
+        lexicalSupport: 0,
+        bestChunkEvidence: 0,
         bestChunkName: connection.symbol || null,
         bestChunkType: null,
         preview: '',
         startLine: 1,
         endLine: 1,
         graphConnections: [current.filePath],
-        includedBy: connection.edgeType,
+        includedBy: connection.edgeType || 'graph',
+        retrievalTypes: new Set(['graph']),
+        graphDepth: current.depth + 1,
       });
       queue.push({ filePath: connection.path, depth: current.depth + 1 });
     }
@@ -198,13 +226,8 @@ function attachCandidateMetadata(store, candidates) {
       type: edge.edge_type,
     };
 
-    if (pathSet.has(edge.source_path)) {
-      edgesByPath.get(edge.source_path).push(normalizedEdge);
-    }
-
-    if (pathSet.has(edge.target_path)) {
-      edgesByPath.get(edge.target_path).push(normalizedEdge);
-    }
+    if (pathSet.has(edge.source_path)) edgesByPath.get(edge.source_path).push(normalizedEdge);
+    if (pathSet.has(edge.target_path)) edgesByPath.get(edge.target_path).push(normalizedEdge);
   }
 
   for (const candidate of candidates.values()) {
@@ -225,20 +248,13 @@ function attachCandidateMetadata(store, candidates) {
   }
 }
 
-function tokenizeQuery(query) {
-  return query
-    .toLowerCase()
-    .split(/[^a-z0-9]+/)
-    .filter((token) => token.length >= 3);
-}
-
 function pathMatchesQuery(filePath, queryTokens) {
   const normalizedPath = filePath.toLowerCase();
   return queryTokens.length === 0 || queryTokens.some((token) => normalizedPath.includes(token));
 }
 
 function getClusterConnectedPaths(scoredCandidates, query) {
-  const queryTokens = tokenizeQuery(query);
+  const tokens = tokenizeQuery(query);
   const topPaths = new Set(scoredCandidates
     .slice()
     .sort((left, right) => right.score - left.score)
@@ -254,8 +270,8 @@ function getClusterConnectedPaths(scoredCandidates, query) {
         topPaths.has(edge.sourcePath)
         && topPaths.has(edge.targetPath)
         && edge.sourcePath !== edge.targetPath
-        && pathMatchesQuery(edge.sourcePath, queryTokens)
-        && pathMatchesQuery(edge.targetPath, queryTokens)
+        && pathMatchesQuery(edge.sourcePath, tokens)
+        && pathMatchesQuery(edge.targetPath, tokens)
       ) {
         connectedPaths.add(edge.sourcePath);
         connectedPaths.add(edge.targetPath);
@@ -269,41 +285,64 @@ function getClusterConnectedPaths(scoredCandidates, query) {
 function scoreCandidates(candidates, context) {
   const initiallyScored = candidates.map((candidate) => {
     const scored = scoreCandidate(candidate, context);
-    return {
-      ...candidate,
-      rankingScore: scored.rankingScore,
-      score: scored.score,
-      scoreParts: scored.parts,
-    };
+    return { ...candidate, rankingScore: scored.rankingScore, score: scored.score, scoreParts: scored.parts };
   });
   const clusterConnectedPaths = getClusterConnectedPaths(initiallyScored, context.query);
 
   return candidates.map((candidate) => {
     candidate.connectedToOtherTopResults = clusterConnectedPaths.has(candidate.path);
     const scored = scoreCandidate(candidate, context);
-    return {
-      ...candidate,
-      rankingScore: scored.rankingScore,
-      score: scored.score,
-      scoreParts: scored.parts,
-    };
+    return { ...candidate, rankingScore: scored.rankingScore, score: scored.score, scoreParts: scored.parts };
   });
+}
+
+function candidateReason(candidate) {
+  const retrievalTypes = candidate.retrievalTypes || new Set([candidate.includedBy || 'semantic']);
+  const hasSemantic = retrievalTypes.has('semantic');
+  const hasLexical = retrievalTypes.has('lexical') || retrievalTypes.has('scope');
+  const base = getReason(candidate);
+  if (hasSemantic && hasLexical) return base.replace(/^semantic match:/, 'hybrid match:');
+  if (hasLexical) return base.replace(/^semantic match:/, 'lexical match:');
+  return base;
 }
 
 async function retrieve(store, repoRoot, query, options = {}) {
   const budget = options.budget || 10;
   const depth = options.depth ?? 2;
-  let rows;
+  const explicitScope = extractExplicitScope(query);
+  const lexicalTerms = Array.from(new Set([
+    ...explicitScope.symbols,
+    ...buildLexicalSearchTerms(query),
+  ])).slice(0, 24);
+  const hasPathScope = explicitScope.pathPrefixes.length > 0 || explicitScope.exactPaths.length > 0;
+
+  let semanticRows = [];
+  let semanticAvailable = true;
   try {
     const queryVector = await embedText(query, { kind: 'query' });
-    rows = store.searchChunks(queryVector, budget * 3);
-  } catch (error /* unknown */) {
-    const details = error instanceof Error ? error.stack || error.message : String(error);
-    throw new Error(`retrieval failed: ${details}`, { cause: error });
+    semanticRows = store.searchChunks(queryVector, budget * (hasPathScope ? 12 : 4))
+      .map((row) => ({ ...row, retrievalType: 'semantic' }));
+  } catch {
+    semanticAvailable = false;
   }
-  const candidates = mergeSearchRows(rows);
-  const graphCandidateLimit = budget * 2;
-  expandGraph(store, candidates, depth, graphCandidateLimit);
+
+  let lexicalRows = [];
+  let lexicalAvailable = typeof store.searchChunksByText === 'function';
+  if (lexicalAvailable) {
+    try {
+      lexicalRows = store.searchChunksByText(lexicalTerms, budget * (hasPathScope ? 60 : 30))
+        .map((row) => ({ ...row, retrievalType: 'lexical' }));
+    } catch {
+      lexicalAvailable = false;
+      lexicalRows = [];
+    }
+  }
+
+  const seedRows = [...semanticRows, ...lexicalRows]
+    .filter((row) => candidateMatchesSeedScope(row, explicitScope));
+  const candidates = mergeSearchRows(seedRows);
+
+  expandGraph(store, candidates, depth, budget * 2);
   hydrateGraphCandidates(store, candidates);
   attachCandidateMetadata(store, candidates);
 
@@ -315,37 +354,49 @@ async function retrieve(store, repoRoot, query, options = {}) {
   const deletedOverlayPaths = store.getDeletedOverlayPaths(options.worktreeId);
 
   let ranked = Array.from(candidates.values())
-    .filter((candidate) => !deletedOverlayPaths.has(candidate.path));
+    .filter((candidate) => !deletedOverlayPaths.has(candidate.path))
+    .filter((candidate) => candidateMatchesOutputScope(candidate, explicitScope));
 
-  if (options.changedOnly) {
-    ranked = ranked.filter((candidate) => changedPaths.has(candidate.path));
-  }
+  if (options.changedOnly) ranked = ranked.filter((candidate) => changedPaths.has(candidate.path));
 
-  ranked = scoreCandidates(ranked, {
-      changedPaths,
-      edgeCounts,
-      graphQualityScores,
-      query,
-      recentPaths,
-      recencyByPath,
-    })
-    .map((candidate) => {
-    const { reasonSimilarity, ...outputCandidate } = candidate;
+  const scoredCandidates = scoreCandidates(ranked, {
+    changedPaths,
+    edgeCounts,
+    graphQualityScores,
+    query,
+    recentPaths,
+    recencyByPath,
+  });
 
+  return rankCandidatesWithFusion(scoredCandidates, { budget, query }).map((candidate) => {
+    const { bestChunkEvidence, retrievalTypes, ...outputCandidate } = candidate;
     return {
       ...outputCandidate,
       changedInBranch: changedPaths.has(candidate.path),
       lastModified: recencyByPath.get(candidate.path) || null,
-      score: candidate.score,
-      scoreParts: candidate.scoreParts,
-      reason: getReason(candidate),
+      rankingScore: candidate.fusionScore,
+      score: candidate.fusionRelevance,
+      scoreParts: {
+        ...candidate.scoreParts,
+        preFusionHeuristicScore: candidate.score,
+        retrievalFusion: {
+          channels: candidate.fusionChannels,
+          ranks: candidate.fusionRanks,
+          score: candidate.fusionScore,
+          relevance: candidate.fusionRelevance,
+          semanticAvailable,
+          lexicalAvailable,
+        },
+      },
+      reason: candidateReason(candidate),
+      retrievalTypes: Array.from(retrievalTypes || [candidate.includedBy || 'semantic']),
     };
-  }).sort((left, right) => (right.rankingScore || right.score) - (left.rankingScore || left.score)).slice(0, budget);
-
-  return ranked;
+  });
 }
 
 module.exports = {
   buildRecencyLookup,
+  distanceToSimilarity,
+  mergeSearchRows,
   retrieve,
 };

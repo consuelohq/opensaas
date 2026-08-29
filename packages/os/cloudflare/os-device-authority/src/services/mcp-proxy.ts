@@ -3,11 +3,13 @@ import {
   type WorkspaceRouteD1Resolution,
 } from '../../../../scripts/lib/workspace-cloudflare-d1-route-registry';
 import { resolveCentralMcpFacadeScope } from '../../../../scripts/lib/tool-scope-authorization';
+import { MODERN_MCP_PROTOCOL_VERSION } from '../../../../scripts/lib/mcp-protocol';
 import {
   encodeMcpNodeRoutingContext,
   inspectMcpNodeRoutingBody,
   normalizeMcpTaskSession,
   normalizeMcpWorkSession,
+  stripMcpRoutingNodeId,
   MCP_NODE_CONTEXT_HEADER,
   MCP_ROUTE_SOURCE_HEADER,
   type McpNodeRoutingContext,
@@ -21,7 +23,7 @@ import type {
 } from '../types';
 import { hasGrantedScope, hash } from '../utils';
 import { mcpResourceUrl } from './mcp-oauth';
-import { workspaceDefaultNodeId, workspaceNodePresence } from './nodes';
+import { safeWorkspaceNode, workspaceDefaultNodeId, workspaceNodePresence } from './nodes';
 import { WORKSPACE_SESSION_AFFINITY_TTL_MS } from '../stores';
 
 export function bearerToken(request: Request): string | undefined {
@@ -49,9 +51,16 @@ export function centralMcpSafeError(input: {
   status: number;
   code: string;
   message?: string;
+  details?: Record<string, unknown>;
 }): Response {
   return json(
-    { error: { code: input.code, message: input.message ?? input.code } },
+    {
+      error: {
+        ...(input.details ?? {}),
+        code: input.code,
+        message: input.message ?? input.code,
+      },
+    },
     { status: input.status },
   );
 }
@@ -96,6 +105,11 @@ type CentralMcpFacadeOutcome = {
   taskSession?: string;
   workSession?: string;
 };
+
+const EXPLICIT_NODE_LIFECYCLE_RECOVERY_TOOLS = new Set([
+  'lifecycle.status',
+  'lifecycle.update',
+]);
 
 function isJsonObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -188,6 +202,7 @@ export async function edgeSignature(input: {
 
 export async function centralMcpProxyRequest(input: {
   request: Request;
+  body?: string;
   resolution: Extract<WorkspaceRouteD1Resolution, { allowed: true }>;
   upstreamUrl: string;
   routeSource?: McpNodeRouteSource;
@@ -208,6 +223,7 @@ export async function centralMcpProxyRequest(input: {
     headers.delete('x-consuelo-node-id');
     headers.delete(MCP_NODE_CONTEXT_HEADER);
     headers.delete(MCP_ROUTE_SOURCE_HEADER);
+    if (input.body !== undefined) headers.delete('content-length');
 
     headers.set('x-consuelo-workspace-id', input.resolution.workspaceId);
     headers.set('x-consuelo-hostname', input.resolution.hostname);
@@ -257,7 +273,7 @@ export async function centralMcpProxyRequest(input: {
     };
 
     if (input.request.method !== 'GET' && input.request.method !== 'HEAD') {
-      init.body = input.request.body;
+      init.body = input.body ?? input.request.body;
       init.duplex = 'half';
     }
 
@@ -305,14 +321,24 @@ async function centralMcpNodeRoutingContext(input: {
         return leftPriority - rightPriority || left.createdAt - right.createdAt;
       })
       .slice(0, 32)
-      .map((node) => ({
-        nodeId: node.nodeId,
-        displayName: (node.displayName ?? node.nodeName).trim().slice(0, 120),
-        role: node.role,
-        platform: (node.platform ?? 'unknown').trim().slice(0, 40),
-        presence: workspaceNodePresence(node, input.nowMs),
-        state: (node.state ?? 'active').trim().slice(0, 40),
-      }));
+      .map((node) => {
+        const safe = safeWorkspaceNode(node, input.nowMs);
+        return {
+          nodeId: node.nodeId,
+          displayName: (node.displayName ?? node.nodeName).trim().slice(0, 120),
+          role: node.role,
+          platform: (node.platform ?? 'unknown').trim().slice(0, 40),
+          channel: safe.channel,
+          ...(safe.osVersion ? { osVersion: safe.osVersion } : {}),
+          ...(safe.mcpProtocolVersion
+            ? { mcpProtocolVersion: safe.mcpProtocolVersion }
+            : {}),
+          readiness: safe.readiness,
+          compatibility: safe.compatibility,
+          presence: workspaceNodePresence(node, input.nowMs),
+          state: (node.state ?? 'active').trim().slice(0, 40),
+        };
+      });
     return {
       version: 1,
       workspaceId: input.workspaceId,
@@ -428,9 +454,10 @@ export async function proxyCentralMcpRequest(input: {
     }
 
     const inboundUrl = new URL(input.request.url);
-    const routingInspection = inspectMcpNodeRoutingBody(
-      input.request.method === 'POST' ? await input.request.clone().text() : '',
-    );
+    const requestBody = input.request.method === 'POST'
+      ? await input.request.clone().text()
+      : '';
+    const routingInspection = inspectMcpNodeRoutingBody(requestBody);
     if (!routingInspection.ok) {
       return centralMcpSafeError({
         status: 400,
@@ -510,6 +537,71 @@ export async function proxyCentralMcpRequest(input: {
       });
     }
 
+    const resolvedNode = resolution.nodeId
+      ? await input.store.byWorkspaceNode(stored.accountId, resolution.nodeId)
+      : undefined;
+    if (resolution.nodeId && !resolvedNode) {
+      return centralMcpSafeError({
+        status: 409,
+        code: 'WORKSPACE_NODE_NOT_READY',
+        message: 'The routed node is not available for OS execution.',
+        details: { nodeId: resolution.nodeId },
+      });
+    }
+    if (resolution.nodeId && resolvedNode) {
+      const safeNode = safeWorkspaceNode(resolvedNode, input.nowMs);
+      if (safeNode.state === 'revoked') {
+        return centralMcpSafeError({
+          status: 404,
+          code: 'WORKSPACE_NODE_REVOKED',
+          message: 'The requested node has been revoked.',
+          details: { nodeId: resolution.nodeId },
+        });
+      }
+      const strictReadiness = routeSource === 'explicit';
+      const lifecycleRecovery =
+        strictReadiness &&
+        routingInspection.facadeTool !== undefined &&
+        EXPLICIT_NODE_LIFECYCLE_RECOVERY_TOOLS.has(routingInspection.facadeTool);
+      if (
+        !lifecycleRecovery &&
+        (
+          safeNode.compatibility === 'incompatible'
+          || (strictReadiness && safeNode.compatibility !== 'compatible')
+        )
+      ) {
+        return centralMcpSafeError({
+          status: 409,
+          code: 'WORKSPACE_NODE_UPDATE_REQUIRED',
+          message: 'The requested node must update before it can run this OS call.',
+          details: {
+            nodeId: resolution.nodeId,
+            osVersion: safeNode.osVersion,
+            mcpProtocolVersion: safeNode.mcpProtocolVersion,
+            requiredProtocolVersion: MODERN_MCP_PROTOCOL_VERSION,
+          },
+        });
+      }
+      if (
+        !lifecycleRecovery &&
+        (
+          safeNode.readiness === 'not_ready'
+          || (strictReadiness && safeNode.readiness !== 'ready')
+        )
+      ) {
+        return centralMcpSafeError({
+          status: 409,
+          code: 'WORKSPACE_NODE_NOT_READY',
+          message: 'The requested node is online but not ready for OS execution.',
+          details: {
+            nodeId: resolution.nodeId,
+            osVersion: safeNode.osVersion,
+            readiness: safeNode.readiness,
+          },
+        });
+      }
+    }
+
     if (
       sessionAffinity?.workspaceId &&
       sessionAffinity.workspaceId !== resolution.workspaceId &&
@@ -580,6 +672,9 @@ export async function proxyCentralMcpRequest(input: {
 
     const proxyRequest = await centralMcpProxyRequest({
       request: input.request,
+      ...(input.request.method === 'POST'
+        ? { body: stripMcpRoutingNodeId(requestBody) }
+        : {}),
       resolution,
       upstreamUrl: centralMcpUpstreamUrl({
         tunnelOriginUrl: resolution.target.tunnelOriginUrl,

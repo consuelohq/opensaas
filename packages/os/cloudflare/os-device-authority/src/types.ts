@@ -111,6 +111,10 @@ export type WorkspaceNode = {
   capabilities?: string[];
   agents?: WorkspaceAgentName[];
   connectorStatus?: 'connected' | 'disconnected';
+  osVersion?: string;
+  bundleId?: string;
+  mcpProtocolVersion?: string;
+  mcpReady?: boolean;
   state?: 'active' | 'revoked';
   devicePublicKeyJwk?: string;
   devicePublicKeyThumbprint: string;

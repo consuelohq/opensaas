@@ -1,0 +1,14 @@
+{
+  "files": [
+    ".task/explore/e2-retrieval-science-and-rank-fusion/workpad.md",
+    "packages/os/SCRIPTS.md",
+    "packages/os/scripts/explore-bench.js",
+    "packages/os/scripts/lib/index/embedding-config.js",
+    "packages/os/scripts/lib/index/indexer.js",
+    "packages/os/scripts/lib/search/retriever.js",
+    "packages/os/scripts/task-push.js",
+    "packages/workspace/scripts/verify.js",
+    "packages/workspace/test-selection.rules.json"
+  ],
+  "updatedAt": "2026-08-15T10:56:57.565Z"
+}

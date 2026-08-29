@@ -762,7 +762,6 @@ function appendRootCells(button: HTMLElement, row: TraceRecord): void {
   const status = formatted.statusLabel;
   const sourceTool = clean(row.name ?? row.traceName ?? row.tool) || 'trace';
   applySessionColor(button, branch);
-  appendStatusMarker(button, status);
 
   appendCell(button, '', '', (cell) => {
     const check = document.createElement('span');
@@ -798,6 +797,7 @@ function appendRootCells(button: HTMLElement, row: TraceRecord): void {
   );
   appendNodeCell(button, formatted.nodeLabel, formatted.routeLabel, formatted.nodeId);
   appendCell(button, 'trxJson trxTraceCell', itemTraceId(row));
+  appendStatusCell(button, status);
   appendCell(
     button,
     'trxCost',
@@ -816,7 +816,6 @@ function appendChildCells(
   const sourceTool = clean(child.tool ?? child.name ?? child.label) || 'child';
   button.style.setProperty('--depth', String(child.__traceDepth));
   applySessionColor(button, branch);
-  appendStatusMarker(button, status);
 
   appendCell(button, 'trxTreeCell', '');
   appendCell(button, 'trxStart mono', '');
@@ -852,6 +851,7 @@ function appendChildCells(
   );
   appendNodeCell(button, formatted.nodeLabel, formatted.routeLabel, formatted.nodeId);
   appendCell(button, 'trxJson trxTraceCell', clean(child.traceId));
+  appendStatusCell(button, status);
   appendCell(button, 'trxCost', traceCostLabel(child));
 }
 
@@ -1101,12 +1101,13 @@ function applySessionColor(element: HTMLElement, value: string): void {
   element.style.setProperty('--branch-color-light', tone.light);
 }
 
-function appendStatusMarker(row: HTMLElement, status: string): void {
-  const marker = document.createElement('span');
-  marker.className = `trxStatus ${status}`;
-  marker.hidden = true;
-  marker.setAttribute('aria-hidden', 'true');
-  row.append(marker);
+function appendStatusCell(row: HTMLElement, status: string): void {
+  appendCell(row, '', '', (cell) => {
+    const badge = document.createElement('span');
+    badge.className = `trxStatus ${status}`;
+    badge.textContent = status;
+    cell.append(badge);
+  });
 }
 
 function traceCostLabel(row: TraceRecord): string {

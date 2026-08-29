@@ -1,0 +1,19 @@
+{
+  "area": "explore",
+  "stream": "stream/explore",
+  "taskBranch": "task/explore/e6-explore-challenger-promotion-gate",
+  "baseBranch": "stream/explore",
+  "sourceBranch": "stream/explore",
+  "startFrom": "stream",
+  "prNumber": 2107,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2107",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2107",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2107/e6-explore-challenger-promotion-gate",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2107",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2107/e6-explore-challenger-promotion-gate",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-explore-e6-explore-challenger-promotion-gate",
+  "taskSession": "tsk_cfc93f8a4f86",
+  "tmuxSession": "opensaas-explore-e6-explore-challenger-promotion-gate-cfc93f8a",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-explore-e6-explore-challenger-promotion-gate/.task/explore/e6-explore-challenger-promotion-gate/session.json",
+  "createdAt": "2026-08-16T03:02:31.949Z"
+}

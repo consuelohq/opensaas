@@ -221,6 +221,10 @@ describe('configuration site', () => {
     expect(nodesHtml).toContain('Unavailable');
     expect(nodesHtml).toContain('Live pricing is unavailable');
     expect(nodesHtml).toContain('Make default');
+    expect(nodesHtml).toContain('node.readiness');
+    expect(nodesHtml).toContain('node.osVersion');
+    expect(nodesHtml).toContain("node.compatibility === 'compatible'");
+    expect(nodesHtml).toContain("node.readiness === 'ready'");
     expect(nodesHtml).not.toContain('Provisioning coming soon');
     expect(nodesHtml).toContain('/gateway/nodes/provision');
     expect(nodesHtml).toContain('/gateway/nodes/provisioning');

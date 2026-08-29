@@ -114,20 +114,59 @@ describe('OS fs.search structured ripgrep service', () => {
     }
   });
 
-  it('propagates ripgrep transport errors', () => {
+  it('falls back to portable search when ripgrep is unavailable', () => {
     const root = fixtureRoot();
     try {
       mkdirSync(path.join(root, 'missing-bin'));
-      writeFileSync(path.join(root, 'a.ts'), 'needle\n');
+      writeFileSync(path.join(root, 'a.ts'), 'before\nneedle one\nafter\nneedle two\n');
+      writeFileSync(path.join(root, 'b.md'), 'needle markdown\n');
 
-      const result = runSearch(root, ['needle', '.', '--json'], {
+      const result = runSearch(root, [
+        'needle',
+        '.',
+        '--include',
+        '*.ts',
+        '--context',
+        '1',
+        '--then-read',
+        '--json',
+      ], {
         ...process.env,
         PATH: path.join(root, 'missing-bin'),
       });
 
-      expect(result.status).not.toBe(0);
-      expect(result.json).toBeNull();
-      expect(result.stderr).toContain('error: search failed: Unable to run ripgrep');
+      expect(result.status).toBe(0);
+      expect(result.stderr).toBe('');
+      expect(result.json).toMatchObject({
+        type: 'search-results',
+        pattern: 'needle',
+        root: '.',
+        truncated: false,
+      });
+      expect(result.json.matches).toEqual([
+        {
+          type: 'match',
+          path: 'a.ts',
+          line: 2,
+          text: 'needle one',
+          before: [{ line: 1, text: 'before' }],
+          after: [{ line: 3, text: 'after' }],
+        },
+        {
+          type: 'match',
+          path: 'a.ts',
+          line: 4,
+          text: 'needle two',
+          before: [{ line: 3, text: 'after' }],
+        },
+      ]);
+      expect(result.json.reads).toEqual([
+        expect.objectContaining({
+          path: 'a.ts',
+          ok: true,
+          ranges: [{ from: 1, to: 5 }],
+        }),
+      ]);
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
