@@ -280,7 +280,7 @@ describe('workspace node heartbeat script', () => {
         'https://os.consuelohq.com/workspace/nodes/heartbeat',
       ]);
       expect(heartbeatBodies).toHaveLength(2);
-      expect(heartbeatBodies[0]?.mcpReady).toBeUndefined();
+      expect(heartbeatBodies[0]).toMatchObject({ mcpReady: false });
       expect(heartbeatBodies[1]).toMatchObject({ mcpReady: false });
       expect(result).toMatchObject({
         nodeId: 'node_home',
