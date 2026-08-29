@@ -522,6 +522,43 @@ describe('test selection registry', () => {
     )).toBe(true);
   });
 
+  it('uses focused MCP call-timeout envelope contracts instead of the broad OS package suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/lib/mcp-gateway.ts',
+      '--changed-file',
+      'packages/os/scripts/server/routes/mcp.ts',
+      '--changed-file',
+      'packages/os/scripts/server/services/call-service.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/facade/executor.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/facade/types.ts',
+      '--changed-file',
+      'packages/os/tests/mcp-gateway.test.ts',
+      '--changed-file',
+      'packages/os/tests/facade/facade.test.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-mcp-call-timeout-envelope');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(suiteNames).toEqual(expect.arrayContaining([
+      'OS MCP call-timeout envelope contracts',
+      'OS MCP call-timeout facade contracts',
+    ]));
+    expect(suiteNames.some((name) =>
+      name === 'OS MCP call-timeout syntax contracts'
+      || name === 'OS MCP admission syntax contracts'
+      || name === 'OS ChatGPT node-routing syntax contracts'
+    )).toBe(true);
+    expect(suiteNames).not.toContain('@consuelo/os package test');
+  });
+
   it('uses focused launcher copy interaction contracts instead of the broad OS package suite', () => {
     const result = run([
       'check',

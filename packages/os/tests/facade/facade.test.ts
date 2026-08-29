@@ -229,6 +229,23 @@ describe('typed facade executor', () => {
     expect(observedTimeoutMs).toBe(600_000);
   });
 
+  it('uses a call execution timeout without adding timeout to typed tool input', async () => {
+    let observedTimeoutMs = 0;
+    const result = await executeTool('session.start', {
+      kind: 'work',
+      path: '/tmp/session-runtime-scope',
+    }, {
+      ...stableOptions(async (_plan, timeoutMs) => {
+        observedTimeoutMs = timeoutMs;
+        return { stdout: JSON.stringify({ ok: true }), stderr: '', exitCode: 0 };
+      }),
+      timeoutMs: 12_000,
+    });
+
+    expect(result.code).not.toBe('VALIDATION_ERROR');
+    expect(observedTimeoutMs).toBe(12_000);
+  });
+
   it('plans canonical memory search through the memory runtime', async () => {
     const plans: CommandPlan[] = [];
     const result = await executeTool('memory', {
@@ -1372,6 +1389,27 @@ describe('typed facade executor', () => {
       expect(result.ok).toBe(true);
       expect(result.code).toBe('OK');
       expect(result.data?.stdout?.trim()).toBe('standalone');
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('applies a call execution timeout to the internal code.call runtime', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-code-call-envelope-timeout-'));
+    try {
+      const result = await executeTool('code.call', {
+        language: 'python',
+        mode: 'read',
+        code: 'import time\ntime.sleep(2)',
+        cwd: tempRoot,
+      }, {
+        ...stableOptions(successfulRunner()),
+        cwd: tempRoot,
+        timeoutMs: 50,
+      });
+
+      expect(result.ok).toBe(false);
+      expect(result.code).toBe('TIMEOUT');
     } finally {
       rmSync(tempRoot, { recursive: true, force: true });
     }
