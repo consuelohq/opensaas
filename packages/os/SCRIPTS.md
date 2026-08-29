@@ -224,7 +224,7 @@ every script below follows this format: purpose → usage → helpers → failur
 
 ### fs — safe file operations
 
-wraps bat (read), rg (search), eza/fd (list), xh (http), trash (delete). no heredocs, no quoting bugs. operates on the repo root by default. for worktree files, use `task:fs` instead.
+wraps bat (read), rg (search), eza/fd when available (list), xh (http), trash (delete). list/list-find fall back to built-in Node filesystem traversal when eza or fd is unavailable, so the typed filesystem surface stays usable on clean Linux nodes and CI. no heredocs, no quoting bugs. operates on the repo root by default. for worktree files, use `task:fs` instead.
 
 **read**
 
@@ -257,6 +257,8 @@ bun run fs -- list packages/ --dirs --depth 1          # directories only
 bun run fs -- list packages/ --find "*.test.ts"        # find files by glob
 bun run fs -- list packages/ --find "queue" --type f   # find by name fragment
 ```
+
+`fs list` prefers eza and `fs list --find` prefers fd for rich/fast output. If either helper is missing, the command automatically uses a dependency-free filesystem fallback with the same path, depth, type, extension, hidden-file, tree, and find intent rather than failing the tool call.
 
 **write**
 

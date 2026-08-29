@@ -370,7 +370,63 @@ function testSuiteTimeoutMs() {
   return Number.isFinite(value) && value > 0 ? value : 300000;
 }
 
+function suiteNeedsOsDependencies(suite) {
+  const command = Array.isArray(suite?.command) ? suite.command : [];
+  return String(suite?.ruleId || '').startsWith('os-')
+    || command.some((argument) => argument === 'packages/os' || String(argument).startsWith('packages/os/'));
+}
+
+function osDependenciesAreReady(root) {
+  const osRoot = path.join(root, 'packages', 'os');
+  const packageJsonPath = path.join(osRoot, 'package.json');
+  const nodeModulesPath = path.join(osRoot, 'node_modules');
+  if (!fs.existsSync(packageJsonPath) || !fs.existsSync(nodeModulesPath)) return false;
+
+  const packageJson = readJson(packageJsonPath, {});
+  const requiresTreeSitter = Boolean(
+    packageJson?.dependencies?.['tree-sitter']
+      || packageJson?.devDependencies?.['tree-sitter'],
+  );
+  return !requiresTreeSitter
+    || fs.existsSync(path.join(nodeModulesPath, 'tree-sitter', 'package.json'));
+}
+
+function prepareOsDependencies(root, suites) {
+  if (!suites.some(suiteNeedsOsDependencies) || osDependenciesAreReady(root)) return null;
+
+  const osRoot = path.join(root, 'packages', 'os');
+  const command = ['bun', 'install', '--frozen-lockfile'];
+  const started = Date.now();
+  const result = spawnSync(command[0], command.slice(1), {
+    cwd: osRoot,
+    encoding: 'utf8',
+    maxBuffer: 1024 * 1024 * 8,
+    timeout: testSuiteTimeoutMs(),
+    env: process.env,
+  });
+  const timedOut = result.error && result.error.code === 'ETIMEDOUT';
+  const signaled = Boolean(result.signal);
+  if (result.status === 0 && !timedOut && !signaled) return null;
+
+  const output = `${result.stdout || ''}${result.stderr || ''}${timedOut ? '\n[test-selection] OS dependency install timed out\n' : ''}${signaled ? `\n[test-selection] OS dependency install terminated by signal ${result.signal}\n` : ''}`;
+  return {
+    name: 'OS test dependency preparation',
+    command,
+    ruleId: 'os-dependency-preflight',
+    critical: true,
+    status: 'failed',
+    exitCode: result.status,
+    signal: result.signal || null,
+    error: result.error ? { code: result.error.code, message: result.error.message } : null,
+    durationMs: Date.now() - started,
+    outputTail: output.slice(-4000),
+  };
+}
+
 function runSuites(root, suites, base) {
+  const dependencyFailure = prepareOsDependencies(root, suites);
+  if (dependencyFailure) return [dependencyFailure];
+
   const results = [];
   for (const suite of suites) {
     const started = Date.now();
