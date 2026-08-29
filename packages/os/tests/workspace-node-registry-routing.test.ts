@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { createOsDeviceAuthorityHandler } from '../cloudflare/os-device-authority/src/app';
 import { registerApprovedWorkspaceRoute } from '../cloudflare/os-device-authority/src/services/connectors';
+import { reconcileWorkspaceRouteState } from '../cloudflare/os-device-authority/src/services/connectors';
 import { prepareGrantApproval } from '../cloudflare/os-device-authority/src/services/grants';
 import {
   createMemoryDeviceGrantStore,
@@ -207,6 +208,68 @@ async function seedRoutes(
     ],
   } as Parameters<typeof upsertWorkspaceHostnameInD1>[1]);
 }
+
+describe('workspace route default reconciliation', () => {
+  it.each([
+    ['not ready', { mcpReady: false }],
+    ['incompatible', { mcpProtocolVersion: '2024-11-05', mcpReady: true }],
+  ])('should choose a ready fallback when the current node is %s', async (_label, currentPatch) => {
+    const homeKey = generateWorkspaceDeviceKeyPair();
+    const memberKey = generateWorkspaceDeviceKeyPair();
+    const routes = createInMemoryWorkspaceRouteD1();
+    await migrateWorkspaceRouteD1(routes);
+    const home = node({
+      nodeId: 'node-home',
+      displayName: 'Mac Mini',
+      role: 'home',
+      connectorId: 'connector_node_home',
+      publicKeyJwk: homeKey.publicKeyJwk,
+      publicKeyThumbprint: await devicePublicKeyThumbprint(homeKey.publicKeyJwk),
+    });
+    const member = {
+      ...node({
+        nodeId: 'node-member',
+        displayName: 'Cloud node',
+        role: 'member',
+        connectorId: 'connector_node_member',
+        publicKeyJwk: memberKey.publicKeyJwk,
+        publicKeyThumbprint: await devicePublicKeyThumbprint(memberKey.publicKeyJwk),
+      }),
+      ...currentPatch,
+    } as WorkspaceNode;
+
+    const result = await reconcileWorkspaceRouteState({
+      routeRegistry: routes,
+      workspace: {
+        accountId,
+        workspaceId,
+        workspaceSlug,
+        workspaceHost,
+        homeNodeId: 'node-home',
+        defaultNodeId: 'node-missing',
+        updatedAt: baseNow,
+      },
+      nodes: [home, member],
+      currentNodeId: 'node-member',
+      nowMs: baseNow,
+    });
+
+    expect(result).toMatchObject({
+      defaultNodeId: 'node-home',
+      defaultNodeChanged: true,
+    });
+    await expect(
+      resolveWorkspaceRouteFromD1(routes, {
+        host: workspaceHost,
+        path: '/mcp',
+        nowMs: baseNow,
+      }),
+    ).resolves.toMatchObject({
+      allowed: true,
+      nodeId: 'node-home',
+    });
+  });
+});
 
 describe('workspace node identity', () => {
   it('registers new nodes offline until a signed heartbeat arrives', async () => {
@@ -1924,6 +1987,9 @@ describe('workspace node management and presence', () => {
         nonce: input.nonce,
         connectorStatus: 'connected',
         capabilities: ['mcp', 'tools'],
+        osVersion: '0.1.85',
+        mcpProtocolVersion: '2026-07-28',
+        mcpReady: true,
       });
       const signature = createDevicePublicKeyProof({
         deviceKeyPair: input.key,
