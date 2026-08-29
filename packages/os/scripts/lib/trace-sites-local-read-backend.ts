@@ -20,6 +20,7 @@ import {
 } from './trace-database-schema';
 import { compileTraceHistorySearch } from './trace-search-query';
 import { estimateTraceCost } from './trace-cost-estimator';
+import { resolveTraceSessionIdentity } from './trace-session-identity';
 
 export type LocalTraceSitesReadBackendOptions = {
   dbPath: string;
@@ -344,7 +345,7 @@ function historyRowFromTraceRow(row: TraceRow): TraceSitesGatewayHistoryRow {
     time: cleanString(row.ts),
     name: tool,
     traceName: tool,
-    branch: traceSessionValue(row, 'no-branch', false),
+    branch: traceSessionValue(row, 'no-branch'),
     taskSession: cleanString(row.task_session),
     worktree: sanitizeLocalTraceText(cleanString(row.worktree)),
     workSession: cleanString(row.work_session),
@@ -415,6 +416,19 @@ export function sanitizeTraceHistoryRowForTest(
   row: TraceRow,
 ): TraceSitesGatewayHistoryRow {
   return historyRowFromTraceRow(row);
+}
+
+export function sanitizeTraceDashboardEventForTest(
+  row: TraceRow,
+): TraceSitesDashboardEvent {
+  return rowToDashboardEvent(row, {
+    workspaceId: 'workspace_test',
+    workspaceHost: 'test.consuelohq.com',
+    site: 'trace',
+    sourceMode: 'local-networked',
+    cursor: '0',
+    limit: 1,
+  });
 }
 
 const TRACE_PRIVATE_PAYLOAD_FIELD_PATTERN = /^(?:(?:system|user|developer)?prompt|instructions?|messages|environment|env)$/i;
@@ -559,16 +573,11 @@ function cleanString(value: unknown): string {
 function traceSessionValue(
   row: TraceRow,
   fallback: string,
-  preferWorkPath = true,
 ): string {
-  if (preferWorkPath) {
-    const workPath = sanitizeLocalTraceText(cleanString(row.work_path));
-    if (workPath) return workPath;
-  }
-  const branch = cleanString(row.branch);
-  if (branch && branch !== 'no-branch' && branch !== '(no branch)') return branch;
-  const taskSession = cleanString(row.task_session);
-  const workSession = cleanString(row.work_session);
-  if (taskSession && workSession) return `${taskSession} + ${workSession}`;
-  return taskSession || workSession || fallback;
+  return resolveTraceSessionIdentity({
+    workPath: sanitizeLocalTraceText(cleanString(row.work_path)),
+    branch: cleanString(row.branch),
+    taskSession: cleanString(row.task_session),
+    workSession: cleanString(row.work_session),
+  }, fallback);
 }

@@ -111,6 +111,7 @@ describe('test selection registry', () => {
     expect(rule).toBeDefined();
     expect(rule.source).toContain('packages/os/scripts/lib/trace-site-inspector/**');
     expect(rule.source).toContain('packages/os/scripts/lib/trace-cost-estimator.ts');
+    expect(rule.source).toContain('packages/os/scripts/lib/trace-session-identity.ts');
     expect(serialized).not.toContain('packages/workspace/scripts/trace-site-inspector');
     expect(serialized).not.toContain('packages/workspace/tests/trace-site-inspector');
     expect(serialized).not.toContain('trace-gateway-service.test.ts');
@@ -1364,10 +1365,19 @@ describe('test selection registry', () => {
       const data = json(result);
       const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
       const suites = data.selectedSuites.map((suite) => suite.name);
+      const isolationSuite = data.selectedSuites.find(
+        (suite) => suite.name === 'OS test-environment isolation contracts',
+      );
 
       expect(matchedRuleIds).toContain('os-test-environment-isolation');
       expect(suites).toContain('OS test-environment isolation contracts');
       expect(suites).not.toContain('@consuelo/os package test');
+      expect(isolationSuite?.command).toEqual(expect.arrayContaining([
+        '--root',
+        'packages/os',
+        '--config',
+        'vitest.config.ts',
+      ]));
     }
   });
 
