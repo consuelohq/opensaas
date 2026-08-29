@@ -15,7 +15,9 @@ started: 2026-08-29
 
 ## files changed
 
-- none yet
+- `packages/os/cloudflare/os-device-authority/src/services/mcp-proxy.ts`
+- `packages/os/tests/workspace-node-registry-routing.test.ts`
+
 
 ## key decisions
 
@@ -88,3 +90,4 @@ live context: `cloud-1` is already installed on canary 0.1.93, but its authorita
 
 - 2026-08-29 07:34:59 `review.run`: passed — OK
 - 2026-08-29 07:35:13 `verify`: passed — OK
+- 2026-08-29 07:36:46 `verify`: passed — OK

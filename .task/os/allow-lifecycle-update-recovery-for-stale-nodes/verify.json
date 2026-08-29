@@ -4,13 +4,13 @@
   "mode": "full",
   "branch": "task/os/allow-lifecycle-update-recovery-for-stale-nodes",
   "base": "origin/main",
-  "headSha": "80cdfbb1c6c94724408deee188e3e49274e69961",
-  "changeHash": "8dea629b081ce0e7c85eff8505b044ce3efc18a51d66de8211009b582163e6ae",
+  "headSha": "daf91c62ec94e402e750f9270fe0591f1122ff92",
+  "changeHash": "833ba8021d7556cc5e2f48482aa69dbaef6ac17cc8950734410149ec7f7279ab",
   "changedFiles": [
     "packages/os/cloudflare/os-device-authority/src/services/mcp-proxy.ts",
     "packages/os/tests/workspace-node-registry-routing.test.ts"
   ],
-  "verifiedAt": "2026-08-29T07:35:13.607Z",
+  "verifiedAt": "2026-08-29T07:36:45.981Z",
   "review": {
     "skipped": false,
     "passed": true,
@@ -26,6 +26,7 @@
       "changedFiles": [
         ".task/os/allow-lifecycle-update-recovery-for-stale-nodes/evidence-log.json",
         ".task/os/allow-lifecycle-update-recovery-for-stale-nodes/read-log.json",
+        ".task/os/allow-lifecycle-update-recovery-for-stale-nodes/verify.json",
         ".task/os/allow-lifecycle-update-recovery-for-stale-nodes/workpad.md",
         ".task/tasks/os/allow-lifecycle-update-recovery-for-stale-nodes.json",
         "packages/os/cloudflare/os-device-authority/src/services/mcp-proxy.ts",
@@ -97,8 +98,8 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 950,
-          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-allow-lifecycle-update-recovery-for-stale-nodes/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/cloudflare-d1-route-registry.test.ts \u001b[2m(\u001b[22m\u001b[2m11 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 16\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m11 passed\u001b[39m\u001b[22m\u001b[90m (11)\u001b[39m\n\u001b[2m   Start at \u001b[22m 03:35:10\n\u001b[2m   Duration \u001b[22m 88ms\u001b[2m (transform 30ms, setup 15ms, import 13ms, tests 16ms, environment 0ms)\u001b[22m\n\n"
+          "durationMs": 267,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-allow-lifecycle-update-recovery-for-stale-nodes/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/cloudflare-d1-route-registry.test.ts \u001b[2m(\u001b[22m\u001b[2m11 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 15\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m11 passed\u001b[39m\u001b[22m\u001b[90m (11)\u001b[39m\n\u001b[2m   Start at \u001b[22m 03:36:43\n\u001b[2m   Duration \u001b[22m 81ms\u001b[2m (transform 29ms, setup 15ms, import 13ms, tests 15ms, environment 0ms)\u001b[22m\n\n"
         },
         {
           "name": "OS hosted-site lifecycle and node routing contracts",
@@ -117,8 +118,8 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 2708,
-          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-allow-lifecycle-update-recovery-for-stale-nodes/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/workspace-node-registry-routing.test.ts \u001b[2m(\u001b[22m\u001b[2m51 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 69\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/lifecycle-engine.test.ts \u001b[2m(\u001b[22m\u001b[2m66 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 1719\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m activates after production provisioning without leaving runtime/current as a directory \u001b[33m 315\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m117 passed\u001b[39m\u001b[22m\u001b[90m (117)\u001b[39m\n\u001b[2m   Start at \u001b[22m 03:35:11\n\u001b[2m   Duration \u001b[22m 2.35s\u001b[2m (transform 442ms, setup 24ms, import 810ms, tests 1.79s, environment 0ms)\u001b[22m\n\n$ vitest run tests/lifecycle-engine.test.ts tests/workspace-node-registry-routing.test.ts\n"
+          "durationMs": 2413,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-allow-lifecycle-update-recovery-for-stale-nodes/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/workspace-node-registry-routing.test.ts \u001b[2m(\u001b[22m\u001b[2m51 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 68\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/lifecycle-engine.test.ts \u001b[2m(\u001b[22m\u001b[2m66 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 1646\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m117 passed\u001b[39m\u001b[22m\u001b[90m (117)\u001b[39m\n\u001b[2m   Start at \u001b[22m 03:36:43\n\u001b[2m   Duration \u001b[22m 2.25s\u001b[2m (transform 434ms, setup 23ms, import 791ms, tests 1.71s, environment 0ms)\u001b[22m\n\n$ vitest run tests/lifecycle-engine.test.ts tests/workspace-node-registry-routing.test.ts\n"
         }
       ],
       "failedSuites": []
