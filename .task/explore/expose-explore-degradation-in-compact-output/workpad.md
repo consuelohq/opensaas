@@ -80,3 +80,27 @@ no-test waiver: not applicable.
 ## workspace-owned: activity log
 
 - 2026-08-29 08:12:33 fs.write: `.task/explore/expose-explore-degradation-in-compact-output/workpad.md`
+- 2026-08-29 08:13:45 fs.write: `.task/explore/expose-explore-degradation-in-compact-output/workpad.md`
+
+## workspace-owned: files read
+
+- `packages/os/scripts/lib/search/explore-output.js`
+- `packages/os/tests/explore-output-contract.test.ts`
+
+## implementation status
+
+- Added `chunks_deferred` and `embedding_status` to compact Explore `index_stats`; full detail remains pass-through.
+- Added a degraded compact-output regression with `chunks_deferred: 42` and `embedding_status: 'degraded'`.
+
+## validation evidence
+
+- Red: focused output contract failed exactly because compact output omitted both degradation fields; 5/6 tests passed.
+- Green: focused output contract 6/6.
+- Full Explore critical suite: 13 files / 93 tests green after restoring the task worktree's standard `packages/os/node_modules` dependency view. The first broad run's 4 failures were all environment-only `tree-sitter` resolution errors; no product assertion failed after dependencies were visible.
+- Diff scope is limited to compact output projection + output contract test + task metadata.
+
+## current status
+
+Third Codex P1 is fixed locally. Next: strict review, canonical verify, publish #2303 into `stream/explore`, then resume PR #2300 final CI/review and Canary release/live smoke.
+
+- 2026-08-29 08:13:45 append: `.task/explore/expose-explore-degradation-in-compact-output/workpad.md`
