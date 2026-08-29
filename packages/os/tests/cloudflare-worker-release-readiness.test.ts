@@ -46,6 +46,8 @@ describe('Cloudflare Worker release readiness', () => {
                 { name: 'WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET' },
                 { name: 'OS_MANAGED_CLOUD_PROVISIONER_SECRET' },
                 { name: 'OS_MANAGED_CLOUD_ENROLLMENT_SECRET' },
+                { name: 'GITHUB_APP_CLIENT_ID' },
+                { name: 'GITHUB_APP_CLIENT_SECRET' },
               ] }),
               stderr: '',
             }
@@ -58,6 +60,19 @@ describe('Cloudflare Worker release readiness', () => {
       '--config',
       'cloudflare/os-device-authority/wrangler.toml',
     ]);
+  });
+
+  it('rejects Device Authority deployment when GitHub OAuth client credentials are missing', () => {
+    expect(() => assertRequiredCloudflareWorkerSecrets(
+      'os-device-authority',
+      JSON.stringify({ secrets: [
+        { name: 'CLOUDFLARE_API_TOKEN' },
+        { name: 'WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET' },
+        { name: 'OS_MANAGED_CLOUD_PROVISIONER_SECRET' },
+        { name: 'OS_MANAGED_CLOUD_ENROLLMENT_SECRET' },
+        { name: 'GITHUB_APP_CLIENT_ID' },
+      ] }),
+    )).toThrow('Device authority secret GITHUB_APP_CLIENT_SECRET is not configured');
   });
 
   it('rejects malformed metadata without exposing secret values', () => {
