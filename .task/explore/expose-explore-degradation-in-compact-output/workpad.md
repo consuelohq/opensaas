@@ -81,6 +81,7 @@ no-test waiver: not applicable.
 
 - 2026-08-29 08:12:33 fs.write: `.task/explore/expose-explore-degradation-in-compact-output/workpad.md`
 - 2026-08-29 08:13:45 fs.write: `.task/explore/expose-explore-degradation-in-compact-output/workpad.md`
+- 2026-08-29 08:15:00 fs.write: `.task/explore/expose-explore-degradation-in-compact-output/workpad.md`
 
 ## workspace-owned: files read
 
@@ -104,3 +105,26 @@ no-test waiver: not applicable.
 Third Codex P1 is fixed locally. Next: strict review, canonical verify, publish #2303 into `stream/explore`, then resume PR #2300 final CI/review and Canary release/live smoke.
 
 - 2026-08-29 08:13:45 append: `.task/explore/expose-explore-degradation-in-compact-output/workpad.md`
+
+## workspace-owned: validation evidence
+
+- Red: focused output contract failed exactly because compact output omitted both degradation fields; 5/6 tests passed.
+- Green: focused output contract 6/6.
+- Full Explore critical suite: 13 files / 93 tests green after restoring the task worktree's standard `packages/os/node_modules` dependency view. The first broad run's 4 failures were all environment-only `tree-sitter` resolution errors; no product assertion failed after dependencies were visible.
+- Diff scope is limited to compact output projection + output contract test + task metadata.
+- 2026-08-29 08:14:11 `review.run`: passed — OK
+- 2026-08-29 08:14:54 `verify`: passed — OK
+
+## final gate
+
+- Strict review: 0 issues / 0 blockers.
+- Canonical verify: full mode, passed, `publishValid=true`, DB risks/findings 0.
+- Full Explore critical suite: 13 files / 93 tests green.
+- Third Codex P1 is covered: compact facade output exposes both semantic hydration status and deferred chunks.
+- Non-blocking docs opportunity is inherited from the earlier decision-engine tool execution-scope change; this output-only follow-up adds no new tool action or input.
+
+## publish recovery
+
+This task was intentionally synchronized with `origin/stream/explore` before production edits because task bootstrap started from `main`. As with the two preceding review fixes, the task GitHub-API push path cannot represent local merge ancestry. Safest path: commit the verified task metadata, scoped Git push of this task branch only, then return to `task.push`/`task.pr` for lifecycle completion.
+
+- 2026-08-29 08:15:00 append: `.task/explore/expose-explore-degradation-in-compact-output/workpad.md`
