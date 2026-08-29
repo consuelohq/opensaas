@@ -645,7 +645,7 @@ describe('lifecycle restart parity', () => {
       },
     });
 
-    await expect(controller.preflight()).rejects.toThrow(/legacy.*LaunchDaemon|administrator|sudo/i);
+    await expect(controller.preflight()).rejects.toThrow(/legacy.*LaunchDaemon|administrator/i);
     expect(calls).toEqual([
       {
         command: 'bash',
