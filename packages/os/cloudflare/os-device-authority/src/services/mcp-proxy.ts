@@ -534,6 +534,14 @@ export async function proxyCentralMcpRequest(input: {
     const resolvedNode = resolution.nodeId
       ? await input.store.byWorkspaceNode(stored.accountId, resolution.nodeId)
       : undefined;
+    if (resolution.nodeId && !resolvedNode) {
+      return centralMcpSafeError({
+        status: 409,
+        code: 'WORKSPACE_NODE_NOT_READY',
+        message: 'The routed node is not available for OS execution.',
+        details: { nodeId: resolution.nodeId },
+      });
+    }
     if (resolution.nodeId && resolvedNode) {
       const safeNode = safeWorkspaceNode(resolvedNode, input.nowMs);
       const strictReadiness = routeSource === 'explicit';
