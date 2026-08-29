@@ -135,7 +135,7 @@ function main() {
     return;
   }
 
-  const repoRoot = resolveGitRoot(process.cwd());
+  const repoRoot = resolveGitRoot(process.env.CONSUELO_TOOL_CALLER_CWD || process.cwd());
   appendManualEvidence(repoRoot, args);
   const rawState = readExploreState(repoRoot);
   if (!rawState) {
