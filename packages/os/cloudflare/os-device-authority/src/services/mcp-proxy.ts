@@ -550,6 +550,14 @@ export async function proxyCentralMcpRequest(input: {
     }
     if (resolution.nodeId && resolvedNode) {
       const safeNode = safeWorkspaceNode(resolvedNode, input.nowMs);
+      if (safeNode.state === 'revoked') {
+        return centralMcpSafeError({
+          status: 404,
+          code: 'WORKSPACE_NODE_REVOKED',
+          message: 'The requested node has been revoked.',
+          details: { nodeId: resolution.nodeId },
+        });
+      }
       const strictReadiness = routeSource === 'explicit';
       const lifecycleRecovery =
         strictReadiness &&
