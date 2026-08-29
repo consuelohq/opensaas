@@ -5,6 +5,7 @@ import {
   type WorkspaceNodeHeartbeatConfig,
 } from '../scripts/lib/workspace-node-heartbeat-client';
 import { generateWorkspaceDeviceKeyPair } from '../scripts/lib/workspace-device-login-client';
+import { MODERN_MCP_PROTOCOL_VERSION } from '../scripts/lib/mcp-protocol';
 import { b64Decode } from '../cloudflare/os-device-authority/src/utils';
 
 const baseNow = Date.parse('2026-07-22T20:00:00.000Z');
@@ -100,9 +101,19 @@ describe('workspace node heartbeat client', () => {
       },
     });
 
-    const first = await client.send();
+    const first = await client.send({
+      osVersion: '0.1.85',
+      bundleId: 'bundle-cloud-ready',
+      mcpProtocolVersion: MODERN_MCP_PROTOCOL_VERSION,
+      mcpReady: false,
+    });
     nowMs += 30_000;
-    const second = await client.send();
+    const second = await client.send({
+      osVersion: '0.1.85',
+      bundleId: 'bundle-cloud-ready',
+      mcpProtocolVersion: MODERN_MCP_PROTOCOL_VERSION,
+      mcpReady: true,
+    });
 
     expect(first).toEqual({
       nodeId: 'node_member',
@@ -136,6 +147,10 @@ describe('workspace node heartbeat client', () => {
         connectorStatus: 'connected',
         capabilities: ['mcp', 'tools'],
         agents: ['codex', 'opencode'],
+        osVersion: '0.1.85',
+        bundleId: 'bundle-cloud-ready',
+        mcpProtocolVersion: MODERN_MCP_PROTOCOL_VERSION,
+        mcpReady: index === 1,
       });
       const signature = request.headers.get('x-consuelo-node-signature');
       expect(signature).toBeTruthy();

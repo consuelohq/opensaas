@@ -242,6 +242,7 @@ describe('workspace node heartbeat script', () => {
         signingKeyJwk: keys.signingKeyJwk,
       }));
       const requests: string[] = [];
+      const heartbeatBodies: Array<Record<string, unknown>> = [];
 
       const result = await sendWorkspaceNodeHeartbeatFromConfig(configPath, {
         detectAgents: () => [],
@@ -250,6 +251,10 @@ describe('workspace node heartbeat script', () => {
           requests.push(url);
           if (url.endsWith('/health')) return new Response('ok');
           if (url.endsWith('/workspace/nodes/heartbeat')) {
+            const heartbeatRequest = request instanceof Request ? request : new Request(request);
+            heartbeatBodies.push(
+              await heartbeatRequest.clone().json() as Record<string, unknown>,
+            );
             return Response.json({
               nodeId: 'node_home',
               presence: 'online',
@@ -272,7 +277,11 @@ describe('workspace node heartbeat script', () => {
         'https://c-0123456789abcdef0123456789abcdef.consuelohq.com/health',
         'https://os.consuelohq.com/workspace/nodes/heartbeat',
         'https://c-0123456789abcdef0123456789abcdef.consuelohq.com/mcp',
+        'https://os.consuelohq.com/workspace/nodes/heartbeat',
       ]);
+      expect(heartbeatBodies).toHaveLength(2);
+      expect(heartbeatBodies[0]?.mcpReady).toBeUndefined();
+      expect(heartbeatBodies[1]).toMatchObject({ mcpReady: false });
       expect(result).toMatchObject({
         nodeId: 'node_home',
         presence: 'online',

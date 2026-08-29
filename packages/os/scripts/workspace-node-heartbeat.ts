@@ -13,7 +13,11 @@ import {
   createWorkspaceNodeHeartbeatClient,
   type WorkspaceNodeHeartbeatConfig,
   type WorkspaceNodeHeartbeatResult,
+  type WorkspaceNodeHeartbeatRuntimeStatus,
 } from './lib/workspace-node-heartbeat-client';
+import { MODERN_MCP_PROTOCOL_VERSION } from './lib/mcp-protocol';
+import { RUNTIME_BUNDLE_MANIFEST_PATH } from './lib/distribution/runtime-bundle';
+import { resolveLifecyclePaths } from './lib/lifecycle/paths';
 import { reconcileGatewayWorkspaceEdgeProxyAuth } from './lib/security-gateway';
 import { createWorkspaceEdgeNodeHeaders } from './lib/workspace-edge-node-auth';
 import { writeStoredWorkspaceNodeSnapshot } from './lib/workspace-node-snapshot-cache';
@@ -57,6 +61,35 @@ function resolveOsHome(
   const explicit = config.osHome?.trim();
   if (explicit) return path.resolve(explicit);
   return path.resolve(path.dirname(configPath), '..', '..', '..');
+}
+
+export function heartbeatRuntimeStatus(input: {
+  configPath: string;
+  config: WorkspaceNodeHeartbeatFileConfig;
+}): WorkspaceNodeHeartbeatRuntimeStatus {
+  const status: WorkspaceNodeHeartbeatRuntimeStatus = {
+    mcpProtocolVersion: MODERN_MCP_PROTOCOL_VERSION,
+  };
+  try {
+    const paths = resolveLifecyclePaths(resolveOsHome(input.configPath, input.config));
+    const manifest = JSON.parse(
+      fs.readFileSync(path.join(paths.currentLink, RUNTIME_BUNDLE_MANIFEST_PATH), 'utf8'),
+    ) as Record<string, unknown>;
+    if (
+      manifest.kind === 'consuelo-runtime-bundle'
+      && typeof manifest.version === 'string'
+      && manifest.version.trim()
+      && typeof manifest.bundleId === 'string'
+      && manifest.bundleId.trim()
+    ) {
+      status.osVersion = manifest.version.trim();
+      status.bundleId = manifest.bundleId.trim();
+    }
+  } catch {
+    // Release identity is telemetry. Protocol identity remains authoritative even if a
+    // partially installed or test runtime does not expose a current bundle manifest.
+  }
+  return status;
 }
 
 export function verifiedHeartbeatAgentNames(input: {
@@ -235,7 +268,8 @@ export async function sendWorkspaceNodeHeartbeatFromConfig(
       agents,
       fetchImpl: input.fetchImpl,
     });
-    const result = await client.send();
+    const runtimeStatus = heartbeatRuntimeStatus({ configPath, config });
+    const result = await client.send(runtimeStatus);
     reconcileHeartbeatEdgeProxyAuth({ configPath, config, result });
     const mcpReadinessRequired = Boolean(config.connectorHealthUrl?.trim());
     const mcpReady = mcpReadinessRequired
@@ -245,17 +279,20 @@ export async function sendWorkspaceNodeHeartbeatFromConfig(
           fetchImpl: input.fetchImpl,
         })
       : undefined;
+    const readinessResult = mcpReadinessRequired
+      ? await client.send({ ...runtimeStatus, mcpReady })
+      : result;
     const acceptedResult = mcpReadinessRequired
       ? {
-          ...result,
-          routeReady: result.routeReady && mcpReady === true,
+          ...readinessResult,
+          routeReady: readinessResult.routeReady && mcpReady === true,
           mcpReady,
         }
-      : result;
-    if (result.workspace) {
+      : readinessResult;
+    if (readinessResult.workspace) {
       writeStoredWorkspaceNodeSnapshot({
         home: resolveOsHome(configPath, config),
-        workspace: result.workspace,
+        workspace: readinessResult.workspace,
         expectedWorkspaceId: config.workspaceId,
         expectedCurrentNodeId: config.nodeId,
       });
