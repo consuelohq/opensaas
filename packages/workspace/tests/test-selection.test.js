@@ -582,6 +582,8 @@ describe('test selection registry', () => {
       '--changed-file',
       'packages/os/cloudflare/os-device-authority/src/services/connectors.ts',
       '--changed-file',
+      'packages/os/cloudflare/os-device-authority/src/services/mcp-proxy.ts',
+      '--changed-file',
       'packages/os/scripts/lib/lifecycle/engine.ts',
       '--changed-file',
       'packages/os/scripts/lib/workspace-cloudflare-d1-route-registry.ts',

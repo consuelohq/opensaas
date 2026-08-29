@@ -1,0 +1,168 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/self-heal-session-affinity-workspace-drift",
+  "events": [
+    {
+      "id": "bb0af828-aac3-48eb-8e90-f50351c393f8",
+      "occurred_at": "2026-08-29T00:07:36.252Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/self-heal-session-affinity-workspace-drift/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/self-heal-session-affinity-workspace-drift",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/self-heal-session-affinity-workspace-drift"
+      }
+    },
+    {
+      "id": "9cf88c08-7492-4606-9096-62071e7ebfcf",
+      "occurred_at": "2026-08-29T00:07:45.805Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/cloudflare/os-device-authority/src/types.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/self-heal-session-affinity-workspace-drift",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/self-heal-session-affinity-workspace-drift"
+      }
+    },
+    {
+      "id": "9a542091-b8ba-454f-acab-550ece9ea54b",
+      "occurred_at": "2026-08-29T00:07:50.677Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/workspace-node-registry-routing.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/self-heal-session-affinity-workspace-drift",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/self-heal-session-affinity-workspace-drift"
+      }
+    },
+    {
+      "id": "37b3e9c9-4d29-4445-b68c-f75ddb162e95",
+      "occurred_at": "2026-08-29T00:08:12.888Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/workspace-node-registry-routing.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/self-heal-session-affinity-workspace-drift",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/self-heal-session-affinity-workspace-drift"
+      }
+    },
+    {
+      "id": "347ce688-8c03-4d31-82cf-b91d7d91e827",
+      "occurred_at": "2026-08-29T00:08:31.446Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/workspace-node-registry-routing.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/self-heal-session-affinity-workspace-drift",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/self-heal-session-affinity-workspace-drift"
+      }
+    },
+    {
+      "id": "e84a9d59-7280-42c1-bd7e-fb538ee58482",
+      "occurred_at": "2026-08-29T00:09:32.170Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/cloudflare/os-device-authority/src/services/mcp-proxy.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/self-heal-session-affinity-workspace-drift",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/self-heal-session-affinity-workspace-drift"
+      }
+    },
+    {
+      "id": "1bcff009-69e0-4b79-8e4e-ca95c0a6313b",
+      "occurred_at": "2026-08-29T00:09:36.451Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/cloudflare/os-device-authority/src/services/mcp-proxy.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/self-heal-session-affinity-workspace-drift",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/self-heal-session-affinity-workspace-drift"
+      }
+    },
+    {
+      "id": "3ada52d2-29ec-427a-a2f8-f8af1fd5fbdc",
+      "occurred_at": "2026-08-29T00:09:39.941Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/cloudflare/os-device-authority/src/services/mcp-proxy.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/self-heal-session-affinity-workspace-drift",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/self-heal-session-affinity-workspace-drift"
+      }
+    },
+    {
+      "id": "ea43ed18-7e4c-4393-a18d-c25419db713b",
+      "occurred_at": "2026-08-29T00:10:47.453Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/test-selection.rules.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/self-heal-session-affinity-workspace-drift",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/self-heal-session-affinity-workspace-drift"
+      }
+    },
+    {
+      "id": "1146e523-2da3-4a85-a710-31ca34cb5ba1",
+      "occurred_at": "2026-08-29T00:11:00.406Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/test-selection.rules.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/self-heal-session-affinity-workspace-drift",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/self-heal-session-affinity-workspace-drift"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-29T00:11:00.564Z"
+}
