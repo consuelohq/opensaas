@@ -15,13 +15,49 @@ import {
 } from '../../scripts/lib/distribution/release-channel-provider';
 
 const roots: string[] = [];
-const bunExecutable = spawnSync('which', ['bun'], { encoding: 'utf8' }).stdout.trim();
+const RELEASE_PROVIDER_CREDENTIAL_KEYS = [
+  'CLOUDFLARE_ACCOUNT_ID',
+  'CLOUDFLARE_OS_RELEASE_API_TOKEN',
+  'CONSUELO_OS_RELEASE_R2_BUCKET',
+  'CONSUELO_OS_RELEASE_SIGNING_KEY_ID',
+  'CONSUELO_OS_RELEASE_SIGNING_PRIVATE_KEY',
+  'CONSUELO_OS_RELEASE_SIGNING_PUBLIC_KEY',
+  'CONSUELO_OS_RELEASE_TRUSTED_PUBLIC_KEYS',
+  'GH_TOKEN',
+  'GITHUB_REPOSITORY',
+  'GITHUB_TOKEN',
+] as const;
+const RELEASE_CLI_RUNTIME_ENVIRONMENT_KEYS = [
+  'PATH',
+  'HOME',
+  'TMPDIR',
+  'TEMP',
+  'TMP',
+  'USERPROFILE',
+  'SystemRoot',
+  'SYSTEMROOT',
+  'ComSpec',
+  'COMSPEC',
+  'PATHEXT',
+] as const;
+
+function resolveBunExecutable(): string {
+  const locator = process.platform === 'win32' ? 'where.exe' : 'which';
+  const result = spawnSync(locator, ['bun'], { encoding: 'utf8' });
+  if (result.error) throw result.error;
+  if (result.status !== 0) {
+    throw new Error(`failed to resolve Bun with ${locator}: ${result.stderr.trim()}`);
+  }
+  const executable = result.stdout.split(/\r?\n/).find((line) => line.trim())?.trim();
+  if (!executable) throw new Error('bun executable is required for release CLI tests');
+  return executable;
+}
+
+const bunExecutable = resolveBunExecutable();
 
 function isolatedReleaseCliEnvironment(overrides: Record<string, string> = {}): NodeJS.ProcessEnv {
-  const env: NodeJS.ProcessEnv = {
-    PATH: '/usr/bin:/bin',
-  };
-  for (const key of ['HOME', 'TMPDIR'] as const) {
+  const env: NodeJS.ProcessEnv = {};
+  for (const key of RELEASE_CLI_RUNTIME_ENVIRONMENT_KEYS) {
     if (process.env[key]) env[key] = process.env[key];
   }
   return { ...env, ...overrides };
@@ -40,6 +76,7 @@ function runCli(args: string[], env: Record<string, string> = {}) {
     [resolve(import.meta.dirname, '../../scripts/release-channels.ts'), ...args],
     { encoding: 'utf8', env: isolatedReleaseCliEnvironment(env) },
   );
+  if (result.error) throw result.error;
   return {
     exitCode: result.status,
     stderr: Buffer.from(result.stderr ?? ''),
@@ -55,19 +92,12 @@ describe('release channel CLI', () => {
   it('never inherits release-provider credentials into CLI subprocess tests', () => {
     const env = isolatedReleaseCliEnvironment();
 
-    for (const key of [
-      'CLOUDFLARE_ACCOUNT_ID',
-      'CLOUDFLARE_OS_RELEASE_API_TOKEN',
-      'CONSUELO_OS_RELEASE_R2_BUCKET',
-      'CONSUELO_OS_RELEASE_SIGNING_KEY_ID',
-      'CONSUELO_OS_RELEASE_SIGNING_PRIVATE_KEY',
-      'CONSUELO_OS_RELEASE_SIGNING_PUBLIC_KEY',
-      'CONSUELO_OS_RELEASE_TRUSTED_PUBLIC_KEYS',
-      'GH_TOKEN',
-      'GITHUB_REPOSITORY',
-      'GITHUB_TOKEN',
-    ]) {
+    for (const key of RELEASE_PROVIDER_CREDENTIAL_KEYS) {
       expect(env[key]).toBeUndefined();
+    }
+    if (process.env.PATH) expect(env.PATH).toBe(process.env.PATH);
+    if (process.platform === 'win32' && process.env.SystemRoot) {
+      expect(env.SystemRoot).toBe(process.env.SystemRoot);
     }
   });
 
