@@ -90,6 +90,37 @@ afterEach(() => {
 });
 
 describe('work-session filesystem mutation authority', () => {
+  it('uses the work-session path as the relative context for read, list, and search', async () => {
+    const root = makeRoot();
+    const workPath = join(root, 'notes');
+    const { home, metadata } = makeWorkSession(root, workPath);
+    writeFileSync(join(workPath, 'session-note.txt'), 'session needle\n');
+
+    const read = await executeTool('fs.read', {
+      workSession: metadata.workSession,
+      path: 'session-note.txt',
+      full: true,
+    }, options(home));
+    const list = await executeTool('fs.list', {
+      workSession: metadata.workSession,
+      path: '.',
+      depth: 1,
+    }, options(home));
+    const search = await executeTool('fs.search', {
+      workSession: metadata.workSession,
+      pattern: 'session needle',
+      paths: ['.'],
+      maxResults: 5,
+    }, options(home));
+
+    expect(read.ok).toBe(true);
+    expect(JSON.stringify(read.data)).toContain('session needle');
+    expect(list.ok).toBe(true);
+    expect(JSON.stringify(list.data)).toContain('session-note.txt');
+    expect(search.ok).toBe(true);
+    expect(JSON.stringify(search.data)).toContain('session-note.txt');
+  });
+
   it('writes relative to the trusted work-session root without a taskSession', async () => {
     const root = makeRoot();
     const workPath = join(root, 'raycast-extension');

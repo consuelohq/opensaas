@@ -151,11 +151,15 @@ async function seedWorkspace(
 async function seedRoutes(
   db: ReturnType<typeof createInMemoryWorkspaceRouteD1>,
   nowMs = baseNow,
-  presence?: { homeLastSeenAt?: number; memberLastSeenAt?: number },
+  presence?: {
+    homeLastSeenAt?: number;
+    memberLastSeenAt?: number;
+    routeWorkspaceId?: string;
+  },
 ): Promise<void> {
   await migrateWorkspaceRouteD1(db);
   await upsertWorkspaceHostnameInD1(db, {
-    workspaceId,
+    workspaceId: presence?.routeWorkspaceId ?? workspaceId,
     workspaceSlug,
     hostname: workspaceHost,
     baseDomain: 'consuelohq.com',
@@ -2399,6 +2403,221 @@ describe('multi-node connector routing', () => {
       'https://home.connector.test/mcp',
     ]);
     expect(routeSources).toEqual(['default', 'task']);
+  });
+
+  it('should self-heal task affinity when only the resolved workspace ID drifts', async () => {
+    const store = createMemoryDeviceGrantStore();
+    await seedWorkspace(store);
+    await authorizeWorkspace(store, 'central-task-workspace-drift-token', {
+      scopes: ['route:/mcp:read', 'mcp:call'],
+    });
+    const taskSession = 'tsk_workspace_drift';
+    await store.claimWorkspaceTaskAffinity({
+      accountId,
+      workspaceId: 'workspace_previous_identity',
+      workspaceHost,
+      taskSession,
+      ownerNodeId: 'node-home',
+      createdAt: baseNow - 10_000,
+      updatedAt: baseNow - 10_000,
+    });
+    const db = createInMemoryWorkspaceRouteD1();
+    const routeWorkspaceId = 'workspace_rotated_identity';
+    await seedRoutes(db, baseNow, { routeWorkspaceId });
+    const upstreams: string[] = [];
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      origin,
+      now: () => baseNow,
+      workspaceRouteRegistry: db,
+      fetchImpl: async (request) => {
+        const upstream = request instanceof Request ? request : new Request(request);
+        upstreams.push(upstream.url);
+        const payload = await upstream.clone().json() as { id?: unknown };
+        return Response.json({
+          jsonrpc: '2.0',
+          id: payload.id ?? null,
+          result: {
+            content: [{ type: 'text', text: JSON.stringify({ ok: true, code: 'OK', data: {} }) }],
+            isError: false,
+          },
+        });
+      },
+    });
+
+    const response = await handler(new Request(`${origin}/mcp`, {
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer central-task-workspace-drift-token',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0', id: 32, method: 'tools/call',
+        params: {
+          name: 'call',
+          arguments: {
+            tool: 'fs.read',
+            input: { path: 'README.md' },
+            taskSession,
+          },
+        },
+      }),
+    }));
+
+    expect(response.status).toBe(200);
+    expect(upstreams).toEqual(['https://home.connector.test/mcp']);
+    await expect(store.byWorkspaceTaskAffinity({
+      accountId,
+      workspaceHost,
+      taskSession,
+      nowMs: baseNow,
+    })).resolves.toMatchObject({
+      workspaceId: routeWorkspaceId,
+      ownerNodeId: 'node-home',
+    });
+  });
+
+  it('should self-heal work-session affinity when only the resolved workspace ID drifts', async () => {
+    const store = createMemoryDeviceGrantStore();
+    await seedWorkspace(store);
+    await authorizeWorkspace(store, 'central-work-session-workspace-drift-token', {
+      scopes: ['route:/mcp:read', 'mcp:call'],
+    });
+    const workSession = 'wrk_workspace_drift';
+    await store.claimWorkspaceSessionAffinity({
+      accountId,
+      workspaceId: 'workspace_previous_identity',
+      workspaceHost,
+      sessionKind: 'work',
+      sessionId: workSession,
+      ownerNodeId: 'node-home',
+      createdAt: baseNow - 10_000,
+      updatedAt: baseNow - 10_000,
+    });
+    const db = createInMemoryWorkspaceRouteD1();
+    const routeWorkspaceId = 'workspace_rotated_identity';
+    await seedRoutes(db, baseNow, { routeWorkspaceId });
+    const upstreams: string[] = [];
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      origin,
+      now: () => baseNow,
+      workspaceRouteRegistry: db,
+      fetchImpl: async (request) => {
+        const upstream = request instanceof Request ? request : new Request(request);
+        upstreams.push(upstream.url);
+        const payload = await upstream.clone().json() as { id?: unknown };
+        return Response.json({
+          jsonrpc: '2.0',
+          id: payload.id ?? null,
+          result: {
+            content: [{ type: 'text', text: JSON.stringify({ ok: true, code: 'OK', data: {} }) }],
+            isError: false,
+          },
+        });
+      },
+    });
+
+    const response = await handler(new Request(`${origin}/mcp`, {
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer central-work-session-workspace-drift-token',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0', id: 33, method: 'tools/call',
+        params: {
+          name: 'call',
+          arguments: {
+            tool: 'fs.read',
+            input: { path: 'README.md' },
+            workSession,
+          },
+        },
+      }),
+    }));
+
+    expect(response.status).toBe(200);
+    expect(upstreams).toEqual(['https://home.connector.test/mcp']);
+    await expect(store.byWorkspaceSessionAffinity({
+      accountId,
+      workspaceHost,
+      sessionKind: 'work',
+      sessionId: workSession,
+      nowMs: baseNow,
+    })).resolves.toMatchObject({
+      workspaceId: routeWorkspaceId,
+      ownerNodeId: 'node-home',
+    });
+  });
+
+  it('should fail closed when workspace-drift affinity reconciliation conflicts', async () => {
+    const backingStore = createMemoryDeviceGrantStore();
+    await seedWorkspace(backingStore);
+    await authorizeWorkspace(backingStore, 'central-task-workspace-drift-conflict-token', {
+      scopes: ['route:/mcp:read', 'mcp:call'],
+    });
+    const taskSession = 'tsk_workspace_drift_conflict';
+    const staleAffinity = {
+      accountId,
+      workspaceId: 'workspace_previous_identity',
+      workspaceHost,
+      taskSession,
+      ownerNodeId: 'node-home',
+      createdAt: baseNow - 10_000,
+      updatedAt: baseNow - 10_000,
+    };
+    await backingStore.claimWorkspaceTaskAffinity(staleAffinity);
+    const store = {
+      ...backingStore,
+      async claimWorkspaceTaskAffinity() {
+        return {
+          status: 'conflict' as const,
+          affinity: {
+            ...staleAffinity,
+            ownerNodeId: 'node-member',
+          },
+        };
+      },
+    };
+    const db = createInMemoryWorkspaceRouteD1();
+    await seedRoutes(db, baseNow, { routeWorkspaceId: 'workspace_rotated_identity' });
+    let upstreamCalls = 0;
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      origin,
+      now: () => baseNow,
+      workspaceRouteRegistry: db,
+      fetchImpl: async () => {
+        upstreamCalls += 1;
+        return Response.json({ ok: true });
+      },
+    });
+
+    const response = await handler(new Request(`${origin}/mcp`, {
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer central-task-workspace-drift-conflict-token',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0', id: 34, method: 'tools/call',
+        params: {
+          name: 'call',
+          arguments: {
+            tool: 'fs.read',
+            input: { path: 'README.md' },
+            taskSession,
+          },
+        },
+      }),
+    }));
+
+    expect(response.status).toBe(409);
+    await expect(response.json()).resolves.toMatchObject({
+      error: { code: 'TASK_WORKSPACE_MISMATCH' },
+    });
+    expect(upstreamCalls).toBe(0);
   });
 
   it('should reject explicit node targeting when it conflicts with the task owner', async () => {
