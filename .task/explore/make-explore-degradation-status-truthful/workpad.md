@@ -82,3 +82,37 @@ no-test waiver: not applicable.
 ## workspace-owned: activity log
 
 - 2026-08-29 08:24:19 fs.write: `.task/explore/make-explore-degradation-status-truthful/workpad.md`
+- 2026-08-29 08:26:01 fs.write: `.task/explore/make-explore-degradation-status-truthful/workpad.md`
+
+## workspace-owned: files read
+
+- `packages/os/scripts/explore.js`
+- `packages/os/scripts/lib/index/indexer.js`
+- `packages/os/scripts/lib/search/retriever.js`
+- `packages/os/tests/explore-index-hydration-fallback.test.ts`
+- `packages/os/tests/explore-retriever-fallback.test.ts`
+
+## workspace-owned: validation evidence
+
+- 2026-08-29 08:25:52 `checkFiles`: passed — OK
+
+## implementation status
+
+- Failed document-hydration batches now report `chunks_deferred` as the failed uncached items in the current batch plus every later unprocessed item; cached vectors already attached in the current batch are not misclassified.
+- `retrieve()` reports `{ semanticAvailable, lexicalAvailable }` through an optional internal `onRetrievalDiagnostics` callback without changing its result-array API or ranking behavior.
+- Explore folds query-time semantic availability into top-level `index_stats.embedding_status`, so lexical fallback after a query-embedding failure is visible in default compact output.
+
+## validation evidence
+
+- Focused red: 2 intended failures only — failed hydration returned `chunks_deferred: 0`; query-time semantic fallback returned `embedding_status: "ready"`. The other 11 focused tests were green.
+- Focused green: hydration fallback + retriever fallback + compact output = 3 files / 13 tests.
+- Full Explore critical suite: 13 files / 94 tests green.
+- `checkFiles` passed for Explore, indexer, retriever, and the hydration integration test.
+- `git diff --check` clean.
+- Diff is limited to truthful degradation diagnostics/accounting, the integration regressions, and task metadata; retrieval ranking/fusion behavior is unchanged.
+
+## current status
+
+Both final Codex P2 findings are fixed locally with behavior coverage. Next: commit the task delta on top of the pre-synced stream, strict review, canonical verify, publish #2304 into `stream/explore`, then rerun the final PR #2300 CI/Codex gate before Canary release and live baselines.
+
+- 2026-08-29 08:26:01 append: `.task/explore/make-explore-degradation-status-truthful/workpad.md`
