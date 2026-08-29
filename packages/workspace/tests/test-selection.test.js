@@ -523,6 +523,27 @@ describe('test selection registry', () => {
     )).toBe(true);
   });
 
+  it('should route cloud execution support files to focused critical suites when changed independently', () => {
+    for (const [changedFile, expectedRule] of [
+      [
+        'packages/os/cloudflare/os-device-authority/src/services/nodes.ts',
+        'os-managed-cloud-one-click-provisioning',
+      ],
+      [
+        'packages/os/scripts/lib/mcp-node-routing.ts',
+        'os-chatgpt-node-routing-facade',
+      ],
+    ]) {
+      const data = json(run(['check', '--changed-file', changedFile, '--json']));
+      expect(data.matchedRules.map((rule) => rule.id), changedFile).toContain(
+        expectedRule,
+      );
+      expect(data.selectedSuites.map((suite) => suite.name), changedFile).not.toContain(
+        '@consuelo/os package test',
+      );
+    }
+  });
+
   it('uses focused MCP call-timeout envelope contracts instead of the broad OS package suite', () => {
     const result = run([
       'check',
@@ -1006,6 +1027,58 @@ describe('test selection registry', () => {
 
     expect(data.failedSuites).toHaveLength(0);
     expect(data.runResults[0]?.status).toBe('passed');
+  });
+
+  it('should run a suite from its declared cwd when the registry sets cwd', () => {
+    const registryPath = path.join(
+      os.tmpdir(),
+      `test-selection-cwd-${Date.now()}.json`,
+    );
+    const expectedCwd = path.join(process.cwd(), 'packages/workspace');
+    fs.writeFileSync(
+      registryPath,
+      JSON.stringify({
+        version: 1,
+        rules: [
+          {
+            id: 'suite-cwd-rule',
+            source: ['packages/cwd-fixture/**'],
+            critical: true,
+            origin: 'test',
+            tests: [
+              {
+                name: 'suite cwd fixture',
+                cwd: 'packages/workspace',
+                command: [
+                  process.execPath,
+                  '-e',
+                  `if (process.cwd() !== ${JSON.stringify(expectedCwd)}) process.exit(1)`,
+                ],
+              },
+            ],
+          },
+        ],
+      }),
+    );
+
+    const result = run([
+      'check',
+      '--registry',
+      registryPath,
+      '--changed-file',
+      'packages/cwd-fixture/src/index.ts',
+      '--run',
+      '--json',
+    ]);
+    const data = JSON.parse(result.stdout);
+
+    expect(result.status).toBe(0);
+    expect(data.failedSuites).toHaveLength(0);
+    expect(data.runResults[0]).toMatchObject({
+      name: 'suite cwd fixture',
+      cwd: 'packages/workspace',
+      status: 'passed',
+    });
   });
 
   it('fails timed out suite commands', () => {
