@@ -269,9 +269,13 @@ export async function sendWorkspaceNodeHeartbeatFromConfig(
       fetchImpl: input.fetchImpl,
     });
     const runtimeStatus = heartbeatRuntimeStatus({ configPath, config });
-    const result = await client.send(runtimeStatus);
-    reconcileHeartbeatEdgeProxyAuth({ configPath, config, result });
     const mcpReadinessRequired = Boolean(config.connectorHealthUrl?.trim());
+    const result = await client.send(
+      mcpReadinessRequired
+        ? { ...runtimeStatus, mcpReady: false }
+        : runtimeStatus,
+    );
+    reconcileHeartbeatEdgeProxyAuth({ configPath, config, result });
     const mcpReady = mcpReadinessRequired
       ? await probeHeartbeatMcpReadiness({
           config,
