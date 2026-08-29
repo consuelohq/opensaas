@@ -20,13 +20,13 @@ export function nodesSiteStyles(): string {
     .node-search-wrap span { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--site-color-muted); font: 10px/1 var(--site-font-mono); text-transform: uppercase; pointer-events: none; }
     #node-search { min-height: 38px; padding-left: 66px; }
     .node-inventory { display: grid; }
-    .node-list-header, .node-row { display: grid; grid-template-columns: minmax(190px, 1.35fr) 92px minmax(120px, .72fr) 120px 138px minmax(100px, .58fr); gap: 14px; align-items: center; }
+    .node-list-header, .node-row { display: grid; grid-template-columns: minmax(190px, 1.35fr) 82px minmax(110px, .7fr) minmax(110px, .72fr) 120px 118px 112px minmax(100px, .58fr); gap: 14px; align-items: center; }
     .node-list-header { min-height: 34px; border-bottom: 1px solid var(--site-color-line); color: var(--site-color-muted); font: 10px/1 var(--site-font-mono); text-transform: uppercase; letter-spacing: .04em; }
     .node-row { min-height: 62px; padding: 8px 0; border-bottom: 1px solid var(--site-color-line); }
     .node-row[hidden] { display: none; }
     .node-name { min-width: 0; display: grid; gap: 4px; }
     .node-name strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 15px; font-weight: 500; }
-    .node-name code, .node-meta-text, .node-seen { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--site-color-muted); font: 10px/1.35 var(--site-font-mono); }
+    .node-name code, .node-meta-text, .node-release, .node-seen { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--site-color-muted); font: 10px/1.35 var(--site-font-mono); }
     .node-role, .node-state { font: 10px/1.35 var(--site-font-mono); text-transform: uppercase; }
     .node-role { color: var(--site-color-muted); }
     .node-state { display: inline-flex; align-items: center; gap: 7px; color: var(--site-color-muted); }
@@ -66,9 +66,11 @@ export function nodesSiteStyles(): string {
       .node-name { grid-column: 1; grid-row: 1; }
       .node-role { grid-column: 1; grid-row: 2; }
       .node-meta-text { grid-column: 1; grid-row: 3; }
-      .node-seen { grid-column: 1; grid-row: 4; }
+      .node-release { grid-column: 1; grid-row: 4; }
+      .node-seen { grid-column: 1; grid-row: 5; }
       .node-state { grid-column: 2; grid-row: 1; justify-self: end; }
-      .node-row-actions { grid-column: 2; grid-row: 2 / span 3; align-self: center; }
+      .node-readiness { grid-column: 2; grid-row: 2; justify-self: end; }
+      .node-row-actions { grid-column: 2; grid-row: 3 / span 3; align-self: center; }
       .node-plan-card { grid-template-columns: minmax(0, 1fr) auto; }
       .node-plan-spec { grid-column: 1; }
       .plan-price { grid-column: 2; grid-row: 1 / span 2; }
@@ -109,7 +111,7 @@ export function renderNodesContent(): string {
           </div>
           <p id="node-feedback" class="node-feedback" aria-live="polite"></p>
           <div id="node-list" class="node-inventory" role="table" aria-label="Workspace nodes">
-            <div class="node-list-header" role="row"><span role="columnheader">Node</span><span role="columnheader">Role</span><span role="columnheader">Platform</span><span role="columnheader">Seen</span><span role="columnheader">Status</span><span aria-hidden="true"></span></div>
+            <div class="node-list-header" role="row"><span role="columnheader">Node</span><span role="columnheader">Role</span><span role="columnheader">Platform</span><span role="columnheader">OS</span><span role="columnheader">Seen</span><span role="columnheader">Presence</span><span role="columnheader">Readiness</span><span aria-hidden="true"></span></div>
             <div id="node-rows" role="rowgroup"></div>
           </div>
         </section>
@@ -148,6 +150,7 @@ export function nodesClientScript(): string {
 
     const prettyPlatform = (value) => value === 'darwin' ? 'macOS' : value === 'linux' ? 'Linux' : value === 'win32' || value === 'windows' ? 'Windows' : (value || 'Unknown');
     const prettyPresence = (value) => value === 'online' ? 'Online' : value === 'stale' ? 'Stale' : 'Offline';
+    const prettyReadiness = (value) => value === 'ready' ? 'Ready' : value === 'not_ready' ? 'Not ready' : 'Unknown';
     const readableDate = (value) => { const date = new Date(String(value || '')); if (!Number.isFinite(date.getTime())) return '—'; return new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(date); };
     const csrfToken = () => { const part = document.cookie.split(';').map((value) => value.trim()).find((value) => value.startsWith('__Host-consuelo_os_csrf=')); return part ? decodeURIComponent(part.slice(part.indexOf('=') + 1)) : ''; };
     const selectedPlanId = () => { const input = document.querySelector('input[name="cloud-plan"]:checked'); return input instanceof HTMLInputElement ? input.value : ''; };
@@ -158,18 +161,22 @@ export function nodesClientScript(): string {
       const isDefault = currentNodeSnapshot && currentNodeSnapshot.defaultNodeId === node.nodeId;
       const isCurrent = currentNodeSnapshot && currentNodeSnapshot.currentNodeId === node.nodeId;
       const online = node.presence === 'online' && node.state === 'active';
+      const executionReady = online && node.compatibility === 'compatible' && node.readiness === 'ready';
       const tags = [isDefault ? 'Default' : '', isCurrent ? 'Current' : ''].filter(Boolean).join(' · ');
       const role = tags || (node.role === 'home' ? 'Home' : 'Member');
       const action = isDefault
         ? '<button type="button" disabled>Default</button>'
-        : '<button type="button" data-make-default="' + escapeHtml(node.nodeId) + '" ' + (online ? '' : 'disabled') + '>Make default</button>';
-      const search = [node.displayName, node.nodeId, node.platform, node.channel, role, node.presence].join(' ').toLowerCase();
+        : '<button type="button" data-make-default="' + escapeHtml(node.nodeId) + '" ' + (executionReady ? '' : 'disabled') + '>Make default</button>';
+      const release = (node.osVersion || 'Unknown') + ' · ' + (node.channel || 'standard');
+      const search = [node.displayName, node.nodeId, node.platform, node.channel, node.osVersion, node.readiness, node.compatibility, role, node.presence].join(' ').toLowerCase();
       return '<div class="node-row" role="row" data-node-search="' + escapeHtml(search) + '">' +
         '<div class="node-name" role="cell"><strong>' + escapeHtml(node.displayName || node.nodeId) + '</strong><code>' + escapeHtml(node.nodeId) + '</code></div>' +
         '<span class="node-role" role="cell">' + escapeHtml(role) + '</span>' +
-        '<span class="node-meta-text" role="cell">' + escapeHtml(prettyPlatform(node.platform)) + ' · ' + escapeHtml(node.channel || 'standard') + '</span>' +
+        '<span class="node-meta-text" role="cell">' + escapeHtml(prettyPlatform(node.platform)) + '</span>' +
+        '<span class="node-release" role="cell">' + escapeHtml(release) + '</span>' +
         '<span class="node-seen" role="cell">' + escapeHtml(readableDate(node.lastSeenAt)) + '</span>' +
         '<span class="node-state" role="cell" data-presence="' + escapeHtml(node.presence || 'offline') + '">' + escapeHtml(prettyPresence(node.presence)) + '</span>' +
+        '<span class="node-readiness node-role" role="cell">' + escapeHtml(prettyReadiness(node.readiness)) + '</span>' +
         '<span class="node-row-actions" role="cell">' + action + '</span>' +
         '</div>';
     };

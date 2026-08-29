@@ -1717,7 +1717,8 @@
         "packages/os/scripts/lib/mcp-gateway.ts",
         "packages/os/scripts/os.ts",
         "packages/os/tests/mcp-gateway.test.ts",
-        "packages/os/tests/os-get-steering-trace.test.ts"
+        "packages/os/tests/os-get-steering-trace.test.ts",
+        "packages/os/scripts/lib/mcp-node-routing.ts"
       ],
       "tests": [
         {
@@ -2037,7 +2038,8 @@
         "packages/os/scripts/lib/google-cloud-public-pricing-refresh.ts",
         "packages/os/scripts/lib/managed-cloud-public-pricing.ts",
         "packages/os/scripts/lib/nodes-site.ts",
-        "packages/os/tests/managed-cloud-public-pricing.test.ts"
+        "packages/os/tests/managed-cloud-public-pricing.test.ts",
+        "packages/os/cloudflare/os-device-authority/src/services/nodes.ts"
       ],
       "tests": [
         {
@@ -2176,57 +2178,62 @@
       "tests": [
         {
           "name": "OS native lifecycle node discovery contracts",
+          "cwd": "packages/os",
           "command": [
             "node",
-            "node_modules/vitest/vitest.mjs",
+            "../../node_modules/vitest/vitest.mjs",
             "run",
-            "packages/os/tests/native-lifecycle-endpoint.test.ts",
+            "tests/native-lifecycle-endpoint.test.ts",
             "--config",
-            "packages/os/vitest.config.ts"
+            "vitest.config.ts"
           ]
         },
         {
           "name": "OS node heartbeat script contracts",
+          "cwd": "packages/os",
           "command": [
             "node",
-            "node_modules/vitest/vitest.mjs",
+            "../../node_modules/vitest/vitest.mjs",
             "run",
-            "packages/os/tests/workspace-node-heartbeat-script.test.ts",
+            "tests/workspace-node-heartbeat-script.test.ts",
             "--config",
-            "packages/os/vitest.config.ts"
+            "vitest.config.ts"
           ]
         },
         {
           "name": "OS operator login contracts",
+          "cwd": "packages/os",
           "command": [
             "node",
-            "node_modules/vitest/vitest.mjs",
+            "../../node_modules/vitest/vitest.mjs",
             "run",
-            "packages/os/tests/operator-login.test.ts",
+            "tests/operator-login.test.ts",
             "--config",
-            "packages/os/vitest.config.ts"
+            "vitest.config.ts"
           ]
         },
         {
           "name": "OS node heartbeat client contracts",
+          "cwd": "packages/os",
           "command": [
             "node",
-            "node_modules/vitest/vitest.mjs",
+            "../../node_modules/vitest/vitest.mjs",
             "run",
-            "packages/os/tests/workspace-node-heartbeat-client.test.ts",
+            "tests/workspace-node-heartbeat-client.test.ts",
             "--config",
-            "packages/os/vitest.config.ts"
+            "vitest.config.ts"
           ]
         },
         {
           "name": "OS workspace node routing contracts",
+          "cwd": "packages/os",
           "command": [
             "node",
-            "node_modules/vitest/vitest.mjs",
+            "../../node_modules/vitest/vitest.mjs",
             "run",
-            "packages/os/tests/workspace-node-registry-routing.test.ts",
+            "tests/workspace-node-registry-routing.test.ts",
             "--config",
-            "packages/os/vitest.config.ts"
+            "vitest.config.ts"
           ]
         },
         {

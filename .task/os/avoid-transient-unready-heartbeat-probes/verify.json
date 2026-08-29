@@ -1,0 +1,260 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/avoid-transient-unready-heartbeat-probes",
+  "base": "origin/stream/os",
+  "headSha": "42a1503edbde0bc0a7035bb1604600f128743bea",
+  "changeHash": "90157bf80baa11efc5c38fae75a30c8cbb315671592165e7998a082d99264e6f",
+  "changedFiles": [
+    "packages/os/scripts/workspace-node-heartbeat.ts",
+    "packages/os/tests/workspace-node-heartbeat-script.test.ts"
+  ],
+  "verifiedAt": "2026-08-29T06:37:56.445Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/avoid-transient-unready-heartbeat-probes/evidence-log.json",
+        ".task/os/avoid-transient-unready-heartbeat-probes/read-log.json",
+        ".task/os/avoid-transient-unready-heartbeat-probes/workpad.md",
+        ".task/tasks/os/avoid-transient-unready-heartbeat-probes.json",
+        "packages/os/scripts/workspace-node-heartbeat.ts",
+        "packages/os/tests/workspace-node-heartbeat-script.test.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "os-native-menu-node-discovery",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Native menu lifecycle/auth/heartbeat changes must prove read-only enrolled-node discovery, privileged operator mutations, refresh-token persistence, heartbeat snapshot safety, and lifecycle presentation without selecting the historically red unrelated OS package suite.",
+          "matchedFiles": [
+            "packages/os/scripts/workspace-node-heartbeat.ts",
+            "packages/os/tests/workspace-node-heartbeat-script.test.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "OS native lifecycle node discovery contracts",
+          "cwd": "packages/os",
+          "command": [
+            "node",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/native-lifecycle-endpoint.test.ts",
+            "--config",
+            "vitest.config.ts"
+          ],
+          "ruleId": "os-native-menu-node-discovery",
+          "critical": true
+        },
+        {
+          "name": "OS node heartbeat script contracts",
+          "cwd": "packages/os",
+          "command": [
+            "node",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/workspace-node-heartbeat-script.test.ts",
+            "--config",
+            "vitest.config.ts"
+          ],
+          "ruleId": "os-native-menu-node-discovery",
+          "critical": true
+        },
+        {
+          "name": "OS operator login contracts",
+          "cwd": "packages/os",
+          "command": [
+            "node",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/operator-login.test.ts",
+            "--config",
+            "vitest.config.ts"
+          ],
+          "ruleId": "os-native-menu-node-discovery",
+          "critical": true
+        },
+        {
+          "name": "OS node heartbeat client contracts",
+          "cwd": "packages/os",
+          "command": [
+            "node",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/workspace-node-heartbeat-client.test.ts",
+            "--config",
+            "vitest.config.ts"
+          ],
+          "ruleId": "os-native-menu-node-discovery",
+          "critical": true
+        },
+        {
+          "name": "OS workspace node routing contracts",
+          "cwd": "packages/os",
+          "command": [
+            "node",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/workspace-node-registry-routing.test.ts",
+            "--config",
+            "vitest.config.ts"
+          ],
+          "ruleId": "os-native-menu-node-discovery",
+          "critical": true
+        },
+        {
+          "name": "OS native menu node discovery syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "ruleId": "os-native-menu-node-discovery",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "OS native lifecycle node discovery contracts",
+          "command": [
+            "node",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/native-lifecycle-endpoint.test.ts",
+            "--config",
+            "vitest.config.ts"
+          ],
+          "cwd": "packages/os",
+          "ruleId": "os-native-menu-node-discovery",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 916,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-avoid-transient-unready-heartbeat-probes/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/native-lifecycle-endpoint.test.ts \u001b[2m(\u001b[22m\u001b[2m13 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 143\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m13 passed\u001b[39m\u001b[22m\u001b[90m (13)\u001b[39m\n\u001b[2m   Start at \u001b[22m 02:37:52\n\u001b[2m   Duration \u001b[22m 770ms\u001b[2m (transform 250ms, setup 12ms, import 562ms, tests 143ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS node heartbeat script contracts",
+          "command": [
+            "node",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/workspace-node-heartbeat-script.test.ts",
+            "--config",
+            "vitest.config.ts"
+          ],
+          "cwd": "packages/os",
+          "ruleId": "os-native-menu-node-discovery",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 470,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-avoid-transient-unready-heartbeat-probes/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/workspace-node-heartbeat-script.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 21\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m8 passed\u001b[39m\u001b[22m\u001b[90m (8)\u001b[39m\n\u001b[2m   Start at \u001b[22m 02:37:53\n\u001b[2m   Duration \u001b[22m 305ms\u001b[2m (transform 87ms, setup 12ms, import 217ms, tests 21ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS operator login contracts",
+          "command": [
+            "node",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/operator-login.test.ts",
+            "--config",
+            "vitest.config.ts"
+          ],
+          "cwd": "packages/os",
+          "ruleId": "os-native-menu-node-discovery",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 267,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-avoid-transient-unready-heartbeat-probes/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/operator-login.test.ts \u001b[2m(\u001b[22m\u001b[2m18 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 42\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m18 passed\u001b[39m\u001b[22m\u001b[90m (18)\u001b[39m\n\u001b[2m   Start at \u001b[22m 02:37:53\n\u001b[2m   Duration \u001b[22m 127ms\u001b[2m (transform 18ms, setup 12ms, import 20ms, tests 42ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS node heartbeat client contracts",
+          "command": [
+            "node",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/workspace-node-heartbeat-client.test.ts",
+            "--config",
+            "vitest.config.ts"
+          ],
+          "cwd": "packages/os",
+          "ruleId": "os-native-menu-node-discovery",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 292,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-avoid-transient-unready-heartbeat-probes/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/workspace-node-heartbeat-client.test.ts \u001b[2m(\u001b[22m\u001b[2m6 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 16\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m6 passed\u001b[39m\u001b[22m\u001b[90m (6)\u001b[39m\n\u001b[2m   Start at \u001b[22m 02:37:53\n\u001b[2m   Duration \u001b[22m 121ms\u001b[2m (transform 41ms, setup 12ms, import 40ms, tests 16ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS workspace node routing contracts",
+          "command": [
+            "node",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/workspace-node-registry-routing.test.ts",
+            "--config",
+            "vitest.config.ts"
+          ],
+          "cwd": "packages/os",
+          "ruleId": "os-native-menu-node-discovery",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 512,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-avoid-transient-unready-heartbeat-probes/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/workspace-node-registry-routing.test.ts \u001b[2m(\u001b[22m\u001b[2m48 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 58\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m48 passed\u001b[39m\u001b[22m\u001b[90m (48)\u001b[39m\n\u001b[2m   Start at \u001b[22m 02:37:54\n\u001b[2m   Duration \u001b[22m 368ms\u001b[2m (transform 207ms, setup 12ms, import 245ms, tests 58ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS native menu node discovery syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "cwd": ".",
+          "ruleId": "os-native-menu-node-discovery",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1612,
+          "outputTail": "workspace script syntax checks passed\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
