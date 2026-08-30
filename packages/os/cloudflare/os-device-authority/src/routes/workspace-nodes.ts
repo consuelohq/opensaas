@@ -15,6 +15,7 @@ import {
   workspaceDefaultNodeId,
   workspaceNodeId,
   workspaceNodeListPayload,
+  workspaceNodeReadiness,
 } from '../services/nodes';
 import type {
   AccountWorkspace,
@@ -240,6 +241,14 @@ async function handleSelectDefault(
     ) {
       return errorResponse(404, 'WORKSPACE_NODE_NOT_FOUND', 'The requested active node was not found.');
     }
+    const safeNode = safeWorkspaceNode(node, runtime.now());
+    if (safeNode.readiness !== 'ready' || safeNode.compatibility !== 'compatible') {
+      return errorResponse(
+        409,
+        'WORKSPACE_NODE_NOT_READY',
+        'The requested node is not ready for OS execution.',
+      );
+    }
     await persistDefaultNode({ runtime, workspace: auth.workspace, nodeId });
     return json({ defaultNodeId: nodeId }, { headers: jsonHeaders });
   } catch {
@@ -394,6 +403,36 @@ async function handleHeartbeat(
       'Heartbeat agents must contain only known agent identifiers.',
     );
   }
+  const normalizedRuntimeField = (
+    value: unknown,
+    maximumLength: number,
+  ): string | undefined => {
+    if (typeof value !== 'string') return undefined;
+    const normalized = value.trim();
+    return normalized.length > 0 && normalized.length <= maximumLength
+      ? normalized
+      : undefined;
+  };
+  const hasOsVersion = Object.hasOwn(body, 'osVersion');
+  const osVersion = normalizedRuntimeField(body.osVersion, 80);
+  const hasBundleId = Object.hasOwn(body, 'bundleId');
+  const bundleId = normalizedRuntimeField(body.bundleId, 160);
+  const hasMcpProtocolVersion = Object.hasOwn(body, 'mcpProtocolVersion');
+  const mcpProtocolVersion = normalizedRuntimeField(body.mcpProtocolVersion, 80);
+  const hasMcpReady = Object.hasOwn(body, 'mcpReady');
+  const mcpReady = typeof body.mcpReady === 'boolean' ? body.mcpReady : undefined;
+  if (
+    (hasOsVersion && !osVersion)
+    || (hasBundleId && !bundleId)
+    || (hasMcpProtocolVersion && !mcpProtocolVersion)
+    || (hasMcpReady && mcpReady === undefined)
+  ) {
+    return errorResponse(
+      400,
+      'INVALID_HEARTBEAT_RUNTIME',
+      'Heartbeat runtime identity or readiness is invalid.',
+    );
+  }
   const nowMs = runtime.now();
   if (
     !workspaceId ||
@@ -432,6 +471,10 @@ async function handleHeartbeat(
     ...(hasAgents ? { agents } : {}),
     ...(platform ? { platform } : {}),
     ...(architecture ? { architecture } : {}),
+    osVersion: hasOsVersion ? osVersion : undefined,
+    bundleId: hasBundleId ? bundleId : undefined,
+    mcpProtocolVersion: hasMcpProtocolVersion ? mcpProtocolVersion : undefined,
+    mcpReady: hasMcpReady ? mcpReady : undefined,
     connectorStatus,
     lastSeenAt: nowMs,
     updatedAt: nowMs,
@@ -480,9 +523,6 @@ async function handleHeartbeat(
   }
   try {
     await runtime.store.putWorkspaceNode(updated);
-    if (connectorStatus === 'connected' && (!runtime.workspaceRouteRegistry || routeReady)) {
-      await runtime.store.markManagedCloudProvisioningReadyByNode({ nodeId, nowMs });
-    }
   } catch (error: unknown) {
     if (runtime.workspaceRouteRegistry) {
       await updateWorkspaceNodeTargetInD1(runtime.workspaceRouteRegistry, {
@@ -495,6 +535,13 @@ async function handleHeartbeat(
       });
     }
     throw error;
+  }
+  if (
+    connectorStatus === 'connected'
+    && (!runtime.workspaceRouteRegistry || routeReady)
+    && workspaceNodeReadiness(updated, nowMs) === 'ready'
+  ) {
+    await runtime.store.markManagedCloudProvisioningReadyByNode({ nodeId, nowMs });
   }
   const safeNode = safeWorkspaceNode(updated, nowMs);
   const connectorId = updated.connectorId?.trim();
@@ -677,15 +724,23 @@ async function handleInternalSelectDefault(
     const node = workspace && nodeId
       ? await runtime.store.byWorkspaceNode(auth.session.accountId, nodeId)
       : undefined;
+    const safeNode = node ? safeWorkspaceNode(node, runtime.now()) : undefined;
     if (
       !workspace ||
       workspace.workspaceHost !== auth.session.workspaceHost ||
       !node ||
       node.workspaceHost !== workspace.workspaceHost ||
       (node.state ?? 'active') !== 'active' ||
-      safeWorkspaceNode(node, runtime.now()).presence !== 'online'
+      safeNode?.presence !== 'online'
     ) {
       return errorResponse(404, 'WORKSPACE_NODE_NOT_AVAILABLE', 'The requested online node was not found.');
+    }
+    if (safeNode.readiness !== 'ready' || safeNode.compatibility !== 'compatible') {
+      return errorResponse(
+        409,
+        'WORKSPACE_NODE_NOT_READY',
+        'The requested node is not ready for OS execution.',
+      );
     }
     await persistDefaultNode({ runtime, workspace, nodeId });
     return json({ defaultNodeId: nodeId }, { headers: jsonHeaders });

@@ -1,0 +1,19 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/tighten-stripe-billing-grace-semantics",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 1814,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1814",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1814",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1814/tighten-stripe-billing-grace-semantics",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1814",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1814/tighten-stripe-billing-grace-semantics",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-tighten-stripe-billing-grace-semantics",
+  "taskSession": "tsk_11dc4ad34fb7",
+  "tmuxSession": "opensaas-dialer-tighten-stripe-billing-grace-semantics-11dc4ad3",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-tighten-stripe-billing-grace-semantics/.task/dialer/tighten-stripe-billing-grace-semantics/session.json",
+  "createdAt": "2026-08-10T02:02:10.635Z"
+}

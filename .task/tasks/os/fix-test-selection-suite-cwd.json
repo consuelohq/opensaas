@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-test-selection-suite-cwd",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2286,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2286",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-test-selection-suite-cwd",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_941ec7fe0e9f",
+  "tmuxSession": "opensaas-os-fix-test-selection-suite-cwd-941ec7fe",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-test-selection-suite-cwd/.task/session.json",
+  "createdAt": "2026-08-29T06:01:40.416Z"
+}

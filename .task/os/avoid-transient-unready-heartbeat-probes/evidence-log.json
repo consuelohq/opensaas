@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/avoid-transient-unready-heartbeat-probes",
+  "events": [
+    {
+      "id": "0194f3ec-5a1c-447e-90aa-09b99f08522d",
+      "occurred_at": "2026-08-29T06:35:16.246Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/workspace-node-heartbeat.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/avoid-transient-unready-heartbeat-probes",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/avoid-transient-unready-heartbeat-probes"
+      }
+    },
+    {
+      "id": "0035a80e-01bd-4dba-bd65-b0e070b0fed0",
+      "occurred_at": "2026-08-29T06:35:33.842Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/workspace-node-heartbeat-client.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/avoid-transient-unready-heartbeat-probes",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/avoid-transient-unready-heartbeat-probes"
+      }
+    },
+    {
+      "id": "1296c8fa-b926-415a-8d30-7c08dee69268",
+      "occurred_at": "2026-08-29T06:35:38.308Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/workspace-node-heartbeat-script.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/avoid-transient-unready-heartbeat-probes",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/avoid-transient-unready-heartbeat-probes"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-29T06:35:38.395Z"
+}

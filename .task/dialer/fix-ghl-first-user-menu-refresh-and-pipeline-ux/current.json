@@ -1,0 +1,19 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/fix-ghl-first-user-menu-refresh-and-pipeline-ux",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 1810,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1810",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1810",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1810/fix-ghl-first-user-menu-refresh-and-pipeline-ux",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1810",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1810/fix-ghl-first-user-menu-refresh-and-pipeline-ux",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-fix-ghl-first-user-menu-refresh-and-pipeline-ux",
+  "taskSession": "tsk_bca635d46d0e",
+  "tmuxSession": "opensaas-dialer-fix-ghl-first-user-menu-refresh-and-pipeline-ux-bca635d4",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-fix-ghl-first-user-menu-refresh-and-pipeline-ux/.task/dialer/fix-ghl-first-user-menu-refresh-and-pipeline-ux/session.json",
+  "createdAt": "2026-08-10T01:42:24.298Z"
+}

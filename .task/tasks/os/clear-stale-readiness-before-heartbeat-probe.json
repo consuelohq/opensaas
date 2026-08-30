@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/clear-stale-readiness-before-heartbeat-probe",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2282,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2282",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-clear-stale-readiness-before-heartbeat-probe",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_17bdc69141de",
+  "tmuxSession": "opensaas-os-clear-stale-readiness-before-heartbeat-probe-17bdc691",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-clear-stale-readiness-before-heartbeat-probe/.task/session.json",
+  "createdAt": "2026-08-29T04:35:46.001Z"
+}
