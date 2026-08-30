@@ -161,15 +161,11 @@ try {
 
 process.on('beforeExit', () => {
   if (finished) return;
-  if (provider && provider.exitCode === null && !provider.killed) {
-    setImmediate(() => undefined);
-    return;
-  }
   const exitCode = provider?.exitCode ?? 1;
   finish(
-    exitCode === 0 ? 'completed' : 'failed',
+    requestedOutcome ?? (exitCode === 0 ? 'completed' : 'failed'),
     exitCode,
-    null,
+    provider?.signalCode ?? null,
     'runner event loop drained before provider close',
   );
 });
