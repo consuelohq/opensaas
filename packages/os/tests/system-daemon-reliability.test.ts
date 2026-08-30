@@ -549,4 +549,54 @@ describe('macOS runtime service reliability', () => {
     ]);
     expect(result.stdout).toContain('public connector route reconciliation failed');
   });
+
+  it('should not restart when public heartbeat is rate-limited', () => {
+    const fixtureRoot = temporaryDirectory('consuelo-watchdog-public-route-429-');
+    const fakeBin = join(fixtureRoot, 'bin');
+    const home = join(fixtureRoot, 'home');
+    const consueloHome = join(home, '.consuelo');
+    const eventLog = join(fixtureRoot, 'events.log');
+    const heartbeatConfig = join(
+      consueloHome,
+      'node',
+      'security',
+      'generated',
+      'workspace-node-heartbeat.json',
+    );
+    mkdirSync(fakeBin, { recursive: true });
+    mkdirSync(join(consueloHome, 'bin'), { recursive: true });
+    mkdirSync(join(consueloHome, 'node', 'security', 'generated'), {
+      recursive: true,
+    });
+    writeFileSync(heartbeatConfig, '{}');
+    writeExecutable(join(fakeBin, 'lsof'), '#!/bin/bash\nexit 0\n');
+    writeExecutable(join(fakeBin, 'curl'), '#!/bin/bash\nexit 0\n');
+    writeExecutable(
+      join(fakeBin, 'bun'),
+      '#!/bin/bash\nprintf "heartbeat\n" >> "$WATCHDOG_EVENT_LOG"\nprintf "workspace node heartbeat failed with HTTP 429\n" >&2\nexit 1\n',
+    );
+    writeExecutable(
+      join(consueloHome, 'bin', 'consuelo'),
+      '#!/bin/bash\nprintf "restart %s\n" "$*" >> "$WATCHDOG_EVENT_LOG"\n',
+    );
+
+    const result = run('bash', [resolve(osRoot, 'scripts/workspace-watchdog.sh')], {
+      ...process.env,
+      HOME: home,
+      CONSUELO_HOME: consueloHome,
+      WORKSPACE_WATCHDOG_PATH: `${fakeBin}:/usr/bin:/bin:/usr/sbin:/sbin`,
+      WORKSPACE_WATCHDOG_BUN_BIN: join(fakeBin, 'bun'),
+      WORKSPACE_WATCHDOG_DISABLE_EXTERNAL: '1',
+      WORKSPACE_WATCHDOG_PUBLIC_ROUTE_FAILURE_THRESHOLD: '1',
+      WORKSPACE_WATCHDOG_MIN_RESTART_GAP_SECONDS: '0',
+      WATCHDOG_EVENT_LOG: eventLog,
+    });
+
+    expect(result.status, `${result.stdout}\n${result.stderr}`).toBe(0);
+    expect(readFileSync(eventLog, 'utf8').trim().split('\n')).toEqual([
+      'heartbeat',
+    ]);
+    expect(result.stdout).toContain('public connector heartbeat rate-limited');
+    expect(result.stdout).not.toContain('restarting com.consuelo.system');
+  });
 });
