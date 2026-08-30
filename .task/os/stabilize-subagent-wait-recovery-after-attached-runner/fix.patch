@@ -1,0 +1,10 @@
+*** Begin Patch
+*** Update File: packages/os/scripts/lib/subagent/runner.ts
+@@
+     ...(error ? { error } : {}),
+     endedAt: Date.now(),
+   });
+-  process.exit(exitCode);
++  process.exitCode = exitCode;
+ }
+*** End Patch

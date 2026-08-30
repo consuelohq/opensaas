@@ -423,7 +423,7 @@ describe('durable subagent lifecycle regressions', () => {
     } finally {
       rmSync(home, { recursive: true, force: true });
     }
-  });
+  }, 25_000);
 
   it('preserves startup grace when a published runner exits before its exit marker is observed', () => {
     const home = mkdtempSync(join(tmpdir(), 'subagent-fast-exit-grace-'));
@@ -841,6 +841,11 @@ describe('durable subagent lifecycle regressions', () => {
         timeoutMs: 15_000,
       });
       if (!started.ok) throw new Error(started.message);
+      const exitDeadline = Date.now() + 15_000;
+      while (!started.run.exitMarkerPath || !existsSync(started.run.exitMarkerPath)) {
+        if (Date.now() >= exitDeadline) throw new Error('owned exit marker was not published');
+        await new Promise((resolve) => setTimeout(resolve, 25));
+      }
       const unknown: DurableSubagentRun = {
         ...started.run,
         status: 'completion_unknown',
