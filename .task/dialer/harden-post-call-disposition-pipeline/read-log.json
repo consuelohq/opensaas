@@ -1,0 +1,12 @@
+{
+  "files": [
+    "package.json",
+    "packages/agent/src/pi-extensions/__tests__/crm-tools.test.ts",
+    "packages/api/package.json",
+    "packages/api/src/routes/__tests__/ghl.spec.ts",
+    "packages/api/src/routes/calls.ts",
+    "packages/api/src/services/post-call-analysis.ts",
+    "packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts"
+  ],
+  "updatedAt": "2026-05-26T18:48:53.325Z"
+}
