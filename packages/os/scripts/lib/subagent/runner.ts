@@ -140,9 +140,16 @@ try {
       signal,
     ));
     provider.stdin?.end(fs.readFileSync(launch.stdinPath));
-  } finally {
-    fs.closeSync(stdoutFd);
-    fs.closeSync(stderrFd);
+    const closeLogFds = () => {
+      try { fs.closeSync(stdoutFd); } catch {}
+      try { fs.closeSync(stderrFd); } catch {}
+    };
+    provider.once('close', closeLogFds);
+    provider.once('error', closeLogFds);
+  } catch (setupError: unknown) {
+    try { fs.closeSync(stdoutFd); } catch {}
+    try { fs.closeSync(stderrFd); } catch {}
+    throw setupError;
   }
 } catch (error: unknown) {
   if (provider && !finished) {

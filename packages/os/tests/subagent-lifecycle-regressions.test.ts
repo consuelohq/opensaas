@@ -773,6 +773,58 @@ describe('durable subagent lifecycle regressions', () => {
     }
   }, 25_000);
 
+  it('recovers completion_unknown from an owned exit marker when persisted pid is missing', () => {
+    const home = mkdtempSync(join(tmpdir(), 'os-lifecycle-pidless-exit-'));
+    const environment = makeEnvironment(home);
+    const runId = 'run_aaabbbcccdddeeeeffff0000';
+    const runDirectory = resolveSubagentRunDirectory(runId, environment);
+    mkdirSync(runDirectory, { recursive: true });
+    const stdoutLogPath = join(runDirectory, 'stdout.jsonl');
+    const stderrLogPath = join(runDirectory, 'stderr.log');
+    const exitMarkerPath = join(runDirectory, 'exit.json');
+    const ownerToken = 'owner-pidless-exit';
+    writeFileSync(stdoutLogPath, '{"finalMessage":"pidless complete"}\n');
+    writeFileSync(stderrLogPath, '');
+    writeFileSync(exitMarkerPath, JSON.stringify({
+      runId,
+      ownerToken,
+      runnerPid: 65535,
+      outcome: 'completed',
+      exitCode: 0,
+      endedAt: Date.now(),
+    }, null, 2));
+    const run: DurableSubagentRun = {
+      runId,
+      traceId: 'trc_pidless_exit',
+      fingerprint: 'pidless-exit',
+      provider: 'codex',
+      policy: 'read',
+      cwd: home,
+      instructionPath: join(runDirectory, 'instruction.md'),
+      command: ['codex', 'exec'],
+      ownerToken,
+      exitMarkerPath,
+      status: 'completion_unknown',
+      timeoutMs: 5_000,
+      startedAt: Date.now() - 10_000,
+      updatedAt: Date.now(),
+      stdoutLogPath,
+      stderrLogPath,
+      error: 'runner pid was not persisted before exit',
+    };
+    writeFileSync(join(runDirectory, 'state.json'), JSON.stringify(run, null, 2));
+    try {
+      const reconciled = reconcileDurableSubagentRun(run, environment, (stdout) => ({
+        completed: stdout.includes('pidless complete'),
+        finalMessage: stdout.includes('pidless complete') ? 'pidless complete' : undefined,
+      }));
+      expect(reconciled.status).toBe('completed');
+      expect(reconciled.finalMessage).toBe('pidless complete');
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
+  });
+
   it('keeps waiting through completion_unknown until an owned exit marker arrives', async () => {
     const home = mkdtempSync(join(tmpdir(), 'os-lifecycle-wait-unknown-'));
     const instructionPath = join(home, 'instructions.md');
