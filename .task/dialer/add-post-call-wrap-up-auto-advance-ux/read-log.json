@@ -1,0 +1,20 @@
+{
+  "files": [
+    "packages/twenty-front/package.json",
+    "packages/twenty-front/src/modules/dialer/components/OpportunityCallAnalyticsTab.tsx",
+    "packages/twenty-front/src/modules/dialer/components/OpportunityCallingWorkspace.tsx",
+    "packages/twenty-front/src/modules/dialer/components/PostCallWrapUpModal.tsx",
+    "packages/twenty-front/src/modules/dialer/components/__tests__/PostCallWrapUpModal.test.tsx",
+    "packages/twenty-front/src/modules/dialer/hooks/useOpportunityQueueWorkspace.ts",
+    "packages/twenty-front/src/modules/dialer/hooks/usePostCallAnalysis.ts",
+    "packages/twenty-front/src/modules/dialer/testing/renderWithRecoil.tsx",
+    "packages/twenty-front/src/modules/dialer/types/coaching.ts",
+    "packages/twenty-front/src/modules/dialer/types/dialer.ts",
+    "packages/twenty-front/src/modules/dialer/types/queue.ts",
+    "packages/twenty-front/src/modules/ui/layout/modal/components/Modal.tsx",
+    "packages/twenty-front/src/modules/ui/layout/modal/hooks/useModal.tsx",
+    "packages/twenty-ui/src/input/components/Checkbox.tsx",
+    "packages/twenty-ui/src/input/index.ts"
+  ],
+  "updatedAt": "2026-05-27T03:15:05.795Z"
+}

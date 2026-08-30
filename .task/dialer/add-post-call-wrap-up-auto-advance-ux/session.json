@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_616e6939174d",
+  "tmuxSession": "opensaas-dialer-add-post-call-wrap-up-auto-advance-ux-616e6939",
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/add-post-call-wrap-up-auto-advance-ux",
+  "branch": "task/dialer/add-post-call-wrap-up-auto-advance-ux",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-add-post-call-wrap-up-auto-advance-ux",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-add-post-call-wrap-up-auto-advance-ux",
+  "prNumber": 610,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/610",
+  "createdAt": "2026-05-27T02:58:41.283Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-add-post-call-wrap-up-auto-advance-ux/.task/dialer/add-post-call-wrap-up-auto-advance-ux/session.json"
+}
