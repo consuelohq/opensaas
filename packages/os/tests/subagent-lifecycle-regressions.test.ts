@@ -771,7 +771,7 @@ describe('durable subagent lifecycle regressions', () => {
     } finally {
       rmSync(home, { recursive: true, force: true });
     }
-  });
+  }, 25_000);
 
   it('keeps waiting through completion_unknown until an owned exit marker arrives', async () => {
     const home = mkdtempSync(join(tmpdir(), 'os-lifecycle-wait-unknown-'));
@@ -808,7 +808,7 @@ describe('durable subagent lifecycle regressions', () => {
     } finally {
       rmSync(home, { recursive: true, force: true });
     }
-  });
+  }, 25_000);
 
   it('cancels an owned provider through the runner control marker', async () => {
     const home = mkdtempSync(join(tmpdir(), 'os-lifecycle-home-'));

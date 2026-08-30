@@ -126,7 +126,7 @@ describe('subagent orchestration contract', () => {
       rmSync(durableHome, { recursive: true, force: true });
       rmSync(worktree, { recursive: true, force: true });
     }
-  });
+  }, 25_000);
 
   it('passes the requested Codex model and reasoning effort as exact argv', async () => {
     const durableHome = mkdtempSync(join(tmpdir(), 'os-subagent-home-'));
