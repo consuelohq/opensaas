@@ -7,7 +7,7 @@ import { createLocalTraceSitesReadBackend } from '../../lib/trace-sites-local-re
 import { resolveCanonicalTraceDbPath } from '../../lib/trace-persistence';
 import { loadAuthConfigForRequest } from '../middleware/auth';
 
-let traceGatewayEndpointCache: TraceSitesGatewayLiveEndpoints | null = null;
+const traceGatewayEndpointCache = new Map<string, TraceSitesGatewayLiveEndpoints>();
 
 type TraceWorkspaceHostResolutionInput = {
   request: Request;
@@ -34,8 +34,12 @@ export function resolveTraceWorkspaceHost(
 }
 
 export function traceGatewayEndpoints(): TraceSitesGatewayLiveEndpoints {
-  traceGatewayEndpointCache ??= createTraceSitesGatewayLiveEndpoints({
-    backend: createLocalTraceSitesReadBackend({ dbPath: resolveCanonicalTraceDbPath() }),
+  const dbPath = resolveCanonicalTraceDbPath();
+  const cached = traceGatewayEndpointCache.get(dbPath);
+  if (cached) return cached;
+
+  const created = createTraceSitesGatewayLiveEndpoints({
+    backend: createLocalTraceSitesReadBackend({ dbPath }),
     resolveScope: (traceRequest) => {
       const scope = traceGatewayScopeFromHeaders(traceRequest);
       const config = loadAuthConfigForRequest();
@@ -52,5 +56,6 @@ export function traceGatewayEndpoints(): TraceSitesGatewayLiveEndpoints {
       };
     },
   });
-  return traceGatewayEndpointCache;
+  traceGatewayEndpointCache.set(dbPath, created);
+  return created;
 }
