@@ -99,8 +99,8 @@
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
     },
     "scripts/confidence-score.js": {
-      "status": "same",
-      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
+      "status": "changed-needs-review",
+      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible. Same-path OS and workspace copies now differ, so the status was corrected to changed-needs-review."
     },
     "scripts/confirm.js": {
       "status": "changed-needs-review",
@@ -164,8 +164,12 @@
       "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
     },
     "scripts/exploit.js": {
-      "status": "same",
-      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
+      "status": "changed-needs-review",
+      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible. Same-path OS and workspace copies now differ, so the status was corrected to changed-needs-review."
+    },
+    "scripts/explore-bench.js": {
+      "status": "changed-needs-review",
+      "reason": "Same-path workspace and OS copies exist but this path was missing from the committed script-parity baseline."
     },
     "scripts/explore.js": {
       "status": "changed-needs-review",
@@ -476,6 +480,10 @@
     "scripts/lib/environment-sites-gateway-endpoints.ts": {
       "status": "os-only-intentional",
       "reason": "scripts/lib/environment-sites-gateway-endpoints.ts is an intentional OS-owned runtime, build, support, or test asset with no workspace counterpart."
+    },
+    "scripts/lib/explore-bench.js": {
+      "status": "changed-needs-review",
+      "reason": "Same-path workspace and OS copies exist but this path was missing from the committed script-parity baseline."
     },
     "scripts/lib/facade/batch.ts": {
       "status": "same",
@@ -1066,6 +1074,10 @@
       "status": "changed-needs-review",
       "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
     },
+    "scripts/lib/search/retrieval-policy.js": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned helper added after the last script-parity baseline refresh; keep it in the OS inventory and review if a workspace twin is required."
+    },
     "scripts/lib/search/retriever.js": {
       "status": "changed-needs-review",
       "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
@@ -1134,9 +1146,41 @@
       "status": "same",
       "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
     },
+    "scripts/lib/state/explore-calibration.v1.json": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned helper added after the last script-parity baseline refresh; keep it in the OS inventory and review if a workspace twin is required."
+    },
+    "scripts/lib/state/explore-hypothesis-model.js": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned helper added after the last script-parity baseline refresh; keep it in the OS inventory and review if a workspace twin is required."
+    },
+    "scripts/lib/state/explore-policy.js": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned helper added after the last script-parity baseline refresh; keep it in the OS inventory and review if a workspace twin is required."
+    },
+    "scripts/lib/state/explore-promotion-criteria.v1.json": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned helper added after the last script-parity baseline refresh; keep it in the OS inventory and review if a workspace twin is required."
+    },
+    "scripts/lib/state/explore-promotion-evidence.v1.json": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned helper added after the last script-parity baseline refresh; keep it in the OS inventory and review if a workspace twin is required."
+    },
+    "scripts/lib/state/explore-promotion-gate.js": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned helper added after the last script-parity baseline refresh; keep it in the OS inventory and review if a workspace twin is required."
+    },
+    "scripts/lib/state/explore-read-cost-model.v1.json": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned helper added after the last script-parity baseline refresh; keep it in the OS inventory and review if a workspace twin is required."
+    },
     "scripts/lib/state/explore-state.js": {
       "status": "changed-needs-review",
       "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
+    },
+    "scripts/lib/state/explore-voi-policy.js": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned helper added after the last script-parity baseline refresh; keep it in the OS inventory and review if a workspace twin is required."
     },
     "scripts/lib/steering-skills.ts": {
       "status": "os-only-needs-review",
@@ -1256,16 +1300,16 @@
       "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
     },
     "scripts/lib/task-worktree-eviction.js": {
-      "status": "same",
-      "reason": "scripts/lib/task-worktree-eviction.js is byte-identical in both workspace and OS script trees, so parity classifies it as shared unchanged implementation."
+      "status": "changed-needs-review",
+      "reason": "scripts/lib/task-worktree-eviction.js is byte-identical in both workspace and OS script trees, so parity classifies it as shared unchanged implementation. Same-path OS and workspace copies now differ, so the status was corrected to changed-needs-review."
     },
     "scripts/lib/task-worktree-gc-scheduler.ts": {
       "status": "os-only-needs-review",
       "reason": "scripts/lib/task-worktree-gc-scheduler.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
     },
     "scripts/lib/task-worktree-gc.js": {
-      "status": "same",
-      "reason": "scripts/lib/task-worktree-gc.js is byte-identical in both workspace and OS script trees, so parity classifies it as shared unchanged implementation."
+      "status": "changed-needs-review",
+      "reason": "scripts/lib/task-worktree-gc.js is byte-identical in both workspace and OS script trees, so parity classifies it as shared unchanged implementation. Same-path OS and workspace copies now differ, so the status was corrected to changed-needs-review."
     },
     "scripts/lib/tool-scope-authorization.ts": {
       "status": "os-only-intentional",
@@ -1290,6 +1334,10 @@
     "scripts/lib/trace-search-query.ts": {
       "status": "os-only-needs-review",
       "reason": "scripts/lib/trace-search-query.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+    },
+    "scripts/lib/trace-session-identity.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned helper added after the last script-parity baseline refresh; keep it in the OS inventory and review if a workspace twin is required."
     },
     "scripts/lib/trace-site-inspector/browser.ts": {
       "status": "os-only-needs-review",
@@ -1386,10 +1434,6 @@
     "scripts/lib/verify-run-state.js": {
       "status": "os-only-intentional",
       "reason": "scripts/lib/verify-run-state.js is an intentional OS-owned runtime, build, support, or test asset with no workspace counterpart."
-    },
-    "scripts/lib/visible-dialer-steering.ts": {
-      "status": "os-only-needs-review",
-      "reason": "scripts/lib/visible-dialer-steering.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
     },
     "scripts/lib/windows-platform.ts": {
       "status": "os-only-needs-review",
