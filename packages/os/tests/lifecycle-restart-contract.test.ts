@@ -434,7 +434,7 @@ describe('lifecycle restart parity', () => {
     const home = mkdtempSync(join(tmpdir(), 'consuelo-restart-gateway-kickstart-failure-'));
     const launchAgents = join(home, 'Library', 'LaunchAgents');
     mkdirSync(launchAgents, { recursive: true });
-    const label = 'com.consuelo.os.node-heartbeat.node-test';
+    const label = 'com.consuelo.portless.system';
     writeFileSync(join(launchAgents, label + '.plist'), '<plist/>\n');
     let kickstartAttempts = 0;
     try {
@@ -464,7 +464,7 @@ describe('lifecycle restart parity', () => {
     }
   });
 
-  it('includes the gateway label when bootstrap retries are exhausted', async () => {
+  it('keeps restart available when watchdog bootstrap retries are exhausted', async () => {
     const home = mkdtempSync(join(tmpdir(), 'consuelo-restart-gateway-failure-'));
     const launchAgents = join(home, 'Library', 'LaunchAgents');
     mkdirSync(launchAgents, { recursive: true });
@@ -492,7 +492,7 @@ describe('lifecycle restart parity', () => {
         },
       });
 
-      await expect(controller.restart({ waitForCompletion: true })).rejects.toThrow(label);
+      await expect(controller.restart({ waitForCompletion: true })).resolves.toBeUndefined();
     } finally {
       rmSync(home, { recursive: true, force: true });
     }

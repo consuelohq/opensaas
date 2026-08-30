@@ -3,7 +3,7 @@ const path = require('path');
 
 const { getConsueloHome } = require('./paths');
 const { listDurableTaskSessionMetadata } = require('./task-registry');
-const { evictDurableTaskWorktree, getTaskInactivityAgeMs } = require('./task-worktree-eviction');
+const { evictDurableTaskWorktree, getTaskInactivityAgeMs, pruneExpiredTaskRecoveryArchives } = require('./task-worktree-eviction');
 
 const DEFAULT_TASK_EVICTION_IDLE_MS = 24 * 60 * 60 * 1000;
 const DEFAULT_TASK_GC_INTERVAL_MS = 60 * 60 * 1000;
@@ -33,6 +33,7 @@ function runTaskWorktreeGc(options = {}) {
     evicted: [],
     skipped: [],
     errors: [],
+    prunedArchives: [],
   };
 
   for (const metadata of listDurableTaskSessionMetadata({ home })) {
@@ -75,6 +76,8 @@ function runTaskWorktreeGc(options = {}) {
       if (options.onError) options.onError(error, metadata);
     }
   }
+  const pruned = pruneExpiredTaskRecoveryArchives({ home, now: nowMs });
+  result.prunedArchives = pruned.removed;
   return result;
 }
 

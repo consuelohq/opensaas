@@ -244,11 +244,16 @@ reconcile_public_route() {
     return 1
   fi
 
-  local output
+  local output stderr_file
+  stderr_file="$state_dir/heartbeat.stderr"
   if ! output="$(
     CONSUELO_HOME="$consuelo_home" \
-      "$bun_bin" "$heartbeat_script" --config "$heartbeat_config" 2>/dev/null
+      "$bun_bin" "$heartbeat_script" --config "$heartbeat_config" 2>"$stderr_file"
   )"; then
+    if grep -q 'HTTP 429' "$stderr_file" 2>/dev/null; then
+      log "public connector heartbeat rate-limited; skipping restart"
+      return 0
+    fi
     return 1
   fi
   case "$output" in
