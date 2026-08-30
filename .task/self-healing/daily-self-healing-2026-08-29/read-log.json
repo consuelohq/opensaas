@@ -1,0 +1,17 @@
+{
+  "files": [
+    ".task/self-healing/daily-self-healing-2026-08-29/verify.json",
+    ".task/self-healing/daily-self-healing-2026-08-29/workpad.md",
+    "packages/os/scripts/lib/monitor-errors.ts",
+    "packages/os/scripts/mac.js",
+    "packages/os/scripts/server/services/oauth-introspection.ts",
+    "packages/os/tests/monitor-errors-report.test.ts",
+    "packages/os/tests/monitor-errors.test.ts",
+    "packages/workspace/scripts/lib/verification.js",
+    "packages/workspace/scripts/task-push.js",
+    "packages/workspace/scripts/test-selection.js",
+    "packages/workspace/test-selection.registry.json",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "updatedAt": "2026-08-30T02:35:25.720Z"
+}

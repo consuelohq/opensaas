@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "worktree_id": "task/self-healing/daily-self-healing-2026-08-29",
+  "events": [
+    {
+      "id": "b324ca30-9e12-4b21-9d49-72bb8d694c38",
+      "occurred_at": "2026-08-30T02:34:06.567Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/self-healing/daily-self-healing-2026-08-29/verify.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/daily-self-healing-2026-08-29",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/daily-self-healing-2026-08-29"
+      }
+    },
+    {
+      "id": "69f9b308-d226-4cde-aeb3-369a6a229539",
+      "occurred_at": "2026-08-30T02:34:52.853Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-push.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/daily-self-healing-2026-08-29",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/daily-self-healing-2026-08-29"
+      }
+    },
+    {
+      "id": "190aa227-3ea3-4785-9ec5-4c556f1f6d05",
+      "occurred_at": "2026-08-30T02:34:58.465Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/verification.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/daily-self-healing-2026-08-29",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/daily-self-healing-2026-08-29"
+      }
+    },
+    {
+      "id": "51c3bd76-5565-4d21-adff-5e34322914c7",
+      "occurred_at": "2026-08-30T02:35:25.806Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/monitor-errors-report.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/daily-self-healing-2026-08-29",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/daily-self-healing-2026-08-29"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-30T02:35:25.891Z"
+}

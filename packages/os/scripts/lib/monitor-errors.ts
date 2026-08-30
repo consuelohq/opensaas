@@ -214,6 +214,19 @@ export function classifyTraceFailure(
     const stderr = failure.stderr.toLowerCase();
     if (
       failure.tool === 'github' &&
+      (stderr.includes('is still in progress; logs will be available when it is complete') ||
+        stderr.includes('no checks reported on the') ||
+        stderr.includes('no required checks reported on the'))
+    ) {
+      return classified(
+        failure,
+        'caller-input',
+        false,
+        'GitHub checks or logs were requested before the workflow exposed the requested data',
+      );
+    }
+    if (
+      failure.tool === 'github' &&
       (stderr.includes('cannot cancel a workflow run that is completed') ||
         stderr.includes('cannot cancel a workflow run that has not been queued yet'))
     ) {
@@ -242,6 +255,53 @@ export function classifyTraceFailure(
         'transient',
         false,
         'release reached the lifecycle concurrency guard while another native lifecycle operation was still active',
+      );
+    }
+    if (
+      failure.tool === 'task.push' &&
+      (stderr.includes('publish-valid verify required before task:push:') ||
+        (stderr.includes('local task branch is not synced with origin/') &&
+          stderr.includes('sync the task worktree before running task:push')))
+    ) {
+      return classified(
+        failure,
+        'expected-policy',
+        false,
+        'task.push correctly refused to publish without a current verify stamp or synchronized task branch',
+      );
+    }
+    if (
+      failure.tool === 'session.start' &&
+      (stderr.includes('work session path does not exist:') || stderr.includes('missing required --area'))
+    ) {
+      return classified(
+        failure,
+        'caller-input',
+        false,
+        'session.start rejected missing caller-provided task or work-session prerequisites',
+      );
+    }
+    if (
+      failure.tool === 'session.start' &&
+      stderr.includes('work sessions cannot edit the managed repository or its task worktrees') &&
+      stderr.includes('use a tasksession for repository edits')
+    ) {
+      return classified(
+        failure,
+        'expected-policy',
+        false,
+        'session.start correctly blocked a work session from editing a managed repository or task worktree',
+      );
+    }
+    if (
+      failure.tool === 'task.pr' &&
+      (stderr.includes('non-metadata conflicts present') || stderr.includes('pull request has merge conflicts'))
+    ) {
+      return classified(
+        failure,
+        'caller-input',
+        false,
+        'task.pr reached a substantive branch merge conflict that must be reconciled before promotion',
       );
     }
     if (
