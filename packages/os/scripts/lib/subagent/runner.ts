@@ -64,7 +64,7 @@ function finish(
     ...(error ? { error } : {}),
     endedAt: Date.now(),
   });
-  process.exitCode = exitCode;
+  process.exit(exitCode);
 }
 
 function terminate(outcome: 'timed_out' | 'cancelled'): void {
@@ -99,7 +99,7 @@ try {
     provider = spawn(launch.command[0], launch.command.slice(1), {
       cwd: launch.cwd,
       env: process.env,
-      detached: true,
+      detached: false,
       stdio: ['pipe', stdoutFd, stderrFd],
     }) as ProviderChild;
     writeMarker(launch.ownerMarkerPath, {
