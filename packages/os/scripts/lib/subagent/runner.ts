@@ -64,7 +64,7 @@ function finish(
     ...(error ? { error } : {}),
     endedAt: Date.now(),
   });
-  process.exit(exitCode);
+  process.exitCode = exitCode;
 }
 
 function terminate(outcome: 'timed_out' | 'cancelled'): void {

@@ -1,0 +1,14 @@
+*** Begin Patch
+*** Update File: packages/os/tests/subagent-lifecycle-regressions.test.ts
+@@
+       expect(waited.run.status).toBe('completed');
+     } finally {
+       rmSync(home, { recursive: true, force: true });
+     }
+-  });
+-
+-  it('preserves startup grace when a published runner exits before its exit marker is observed', () => {
++  }, 25_000);
++
++  it('preserves startup grace when a published runner exits before its exit marker is observed', () => {
+*** End Patch
