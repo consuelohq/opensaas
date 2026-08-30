@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_ec5aa3bba2d3",
+  "tmuxSession": "opensaas-workspace-agents-installer-compact-output-ec5aa3bb",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/installer-compact-output",
+  "branch": "task/workspace-agents/installer-compact-output",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-installer-compact-output",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-installer-compact-output",
+  "prNumber": 1066,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1066",
+  "createdAt": "2026-06-15T06:42:19.528Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-installer-compact-output/.task/workspace-agents/installer-compact-output/session.json"
+}
