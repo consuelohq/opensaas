@@ -236,6 +236,7 @@ export function startDurableSubagentRun(
       runId,
       ownerToken,
       exitMarkerPath: starting.exitMarkerPath || path.join(runDir, 'exit.json'),
+      stdoutLogPath,
       runnerPid: child.pid,
     });
     child.unref();
@@ -684,6 +685,7 @@ function attachRunnerExitFallback(
     runId: string;
     ownerToken: string;
     exitMarkerPath: string;
+    stdoutLogPath: string;
     runnerPid?: number;
   },
 ): void {
@@ -705,18 +707,34 @@ function attachRunnerExitFallback(
   child.once('exit', writeFallback);
 }
 
+function inferFallbackOutcome(input: {
+  code: number | null;
+  signal: NodeJS.Signals | null;
+  stdoutLogPath: string;
+}): 'completed' | 'failed' {
+  if (input.signal) return 'failed';
+  if (input.code === 0 || input.code === null) return 'completed';
+  try {
+    if (fs.statSync(input.stdoutLogPath).size > 0) return 'completed';
+  } catch {
+    // Missing stdout means the provider never published output.
+  }
+  return 'failed';
+}
+
 function writeFallbackExitMarkerIfMissing(input: {
   runId: string;
   ownerToken: string;
   exitMarkerPath: string;
+  stdoutLogPath: string;
   runnerPid?: number;
   code: number | null;
   signal: NodeJS.Signals | null;
 }): void {
   if (fs.existsSync(input.exitMarkerPath)) return;
   const runnerPid = typeof input.runnerPid === 'number' ? input.runnerPid : 0;
-  const exitCode = input.code ?? 1;
-  const outcome = input.code === 0 && !input.signal ? 'completed' : 'failed';
+  const outcome = inferFallbackOutcome(input);
+  const exitCode = outcome === 'completed' ? 0 : (input.code ?? 1);
   writeJsonFile(input.exitMarkerPath, {
     runId: input.runId,
     ownerToken: input.ownerToken,
@@ -724,7 +742,9 @@ function writeFallbackExitMarkerIfMissing(input: {
     outcome,
     exitCode,
     ...(input.signal ? { signal: input.signal } : {}),
-    error: 'runner process exited without writing a durable exit marker',
+    ...(outcome === 'failed'
+      ? { error: 'runner process exited without writing a durable exit marker' }
+      : {}),
     endedAt: Date.now(),
   });
 }
