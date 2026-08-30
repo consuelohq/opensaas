@@ -825,6 +825,49 @@ describe('durable subagent lifecycle regressions', () => {
     }
   });
 
+  it('writes a parent fallback exit marker when the runner dies without publishing one', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'os-lifecycle-fallback-exit-'));
+    const instructionPath = join(home, 'instructions.md');
+    try {
+      const executable = writeExecutable(home, 'slow-fallback-provider', [
+        '#!/bin/sh',
+        'sleep 8',
+      ].join(String.fromCharCode(10)));
+      writeFileSync(instructionPath, 'instruction');
+      const environment = makeEnvironment(home);
+      const started = startDurableSubagentRun({
+        ...startInput(executable, home, instructionPath, 'req-fallback-exit'),
+        env: environment,
+        timeoutMs: 15_000,
+      });
+      if (!started.ok) throw new Error(started.message);
+      expect(typeof started.run.pid).toBe('number');
+      const exitMarkerPath = started.run.exitMarkerPath;
+      expect(typeof exitMarkerPath).toBe('string');
+      if (started.run.pid) {
+        try { process.kill(started.run.pid, 'SIGKILL'); } catch {
+          // Runner may have already exited; fallback still has to publish the marker.
+        }
+      }
+      const waited = await waitForDurableSubagentRun(started.run, environment, 15_000, () => ({ completed: false }));
+      expect(waited.timedOut, waited.run.status + ' ' + (waited.run.error || '')).toBe(false);
+      expect(waited.run.status).toBe('failed');
+      expect(existsSync(exitMarkerPath as string)).toBe(true);
+      const marker = JSON.parse(readFileSync(exitMarkerPath as string, 'utf8')) as {
+        runId?: unknown;
+        ownerToken?: unknown;
+        runnerPid?: unknown;
+        outcome?: unknown;
+      };
+      expect(marker.runId).toBe(started.run.runId);
+      expect(marker.ownerToken).toBe(started.run.ownerToken);
+      expect(typeof marker.runnerPid).toBe('number');
+      expect(marker.outcome).toBe('failed');
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
+  }, 25_000);
+
   it('keeps waiting through completion_unknown until an owned exit marker arrives', async () => {
     const home = mkdtempSync(join(tmpdir(), 'os-lifecycle-wait-unknown-'));
     const instructionPath = join(home, 'instructions.md');

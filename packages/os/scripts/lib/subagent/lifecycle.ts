@@ -232,6 +232,12 @@ export function startDurableSubagentRun(
       stdio: 'ignore',
     });
     child.on('error', () => undefined);
+    attachRunnerExitFallback(child, {
+      runId,
+      ownerToken,
+      exitMarkerPath: starting.exitMarkerPath || path.join(runDir, 'exit.json'),
+      runnerPid: child.pid,
+    });
     child.unref();
     const running: DurableSubagentRun = {
       ...starting,
@@ -670,6 +676,57 @@ function readJsonObject(filePath: string): Record<string, unknown> | null {
   } catch {
     return null;
   }
+}
+
+function attachRunnerExitFallback(
+  child: ReturnType<typeof spawn>,
+  input: {
+    runId: string;
+    ownerToken: string;
+    exitMarkerPath: string;
+    runnerPid?: number;
+  },
+): void {
+  const writeFallback = (code: number | null, signal: NodeJS.Signals | null) => {
+    try {
+      writeFallbackExitMarkerIfMissing({
+        ...input,
+        code,
+        signal,
+      });
+    } catch {
+      // Parent fallback must not throw into the unref'd spawn handle.
+    }
+  };
+  if (child.exitCode !== null || child.signalCode) {
+    writeFallback(child.exitCode, child.signalCode);
+    return;
+  }
+  child.once('exit', writeFallback);
+}
+
+function writeFallbackExitMarkerIfMissing(input: {
+  runId: string;
+  ownerToken: string;
+  exitMarkerPath: string;
+  runnerPid?: number;
+  code: number | null;
+  signal: NodeJS.Signals | null;
+}): void {
+  if (fs.existsSync(input.exitMarkerPath)) return;
+  const runnerPid = typeof input.runnerPid === 'number' ? input.runnerPid : 0;
+  const exitCode = input.code ?? 1;
+  const outcome = input.code === 0 && !input.signal ? 'completed' : 'failed';
+  writeJsonFile(input.exitMarkerPath, {
+    runId: input.runId,
+    ownerToken: input.ownerToken,
+    runnerPid,
+    outcome,
+    exitCode,
+    ...(input.signal ? { signal: input.signal } : {}),
+    error: 'runner process exited without writing a durable exit marker',
+    endedAt: Date.now(),
+  });
 }
 
 function writeJsonFile(filePath: string, value: unknown): void {
