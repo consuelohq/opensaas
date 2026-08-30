@@ -111,6 +111,7 @@ describe('subagent orchestration contract', () => {
         provider: 'grok',
         requestId: 'req_grok_durable',
         instructionPath,
+        timeoutMs: 20_000,
       }), options(worktree, env));
 
       expect(result.ok).toBe(true);

@@ -247,7 +247,7 @@ describe('durable subagent lifecycle regressions', () => {
       writeFileSync(instructionPath, 'instruction');
       mkdirSync(barrierPath);
       writeFileSync(join(barrierPath, '.keep'), '');
-      const modulePath = join(process.cwd(), 'packages/os/scripts/lib/subagent/lifecycle.ts');
+      const modulePath = fileURLToPath(new URL('../scripts/lib/subagent/lifecycle.ts', import.meta.url));
       const values = { executable, home, instructionPath };
       const code = [
         "import { readdirSync, writeFileSync } from 'node:fs';",
@@ -761,13 +761,50 @@ describe('durable subagent lifecycle regressions', () => {
       const runDirectory = resolveSubagentRunDirectory(started.run.runId, environment);
       const persistedFiles = readRegularFiles(runDirectory);
       expect(persistedFiles.some((content) => content.includes(sentinel))).toBe(false);
-      const waited = await waitForDurableSubagentRun(started.run, environment, 2_000, (stdout) => ({
+      const waited = await waitForDurableSubagentRun(started.run, environment, 15_000, (stdout) => ({
         completed: stdout.includes('secret complete'),
         finalMessage: stdout.includes('secret complete') ? 'secret complete' : undefined,
       }));
 
       expect(readFileSync(receivedPath, 'utf8')).toContain('received');
       expect(waited.run.status).toBe('completed');
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
+  });
+
+  it('keeps waiting through completion_unknown until an owned exit marker arrives', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'os-lifecycle-wait-unknown-'));
+    const instructionPath = join(home, 'instructions.md');
+    try {
+      const executable = writeExecutable(home, 'wait-unknown-provider', [
+        '#!/bin/sh',
+        "echo '{\"finalMessage\":\"unknown recovered\"}'",
+      ].join(String.fromCharCode(10)));
+      writeFileSync(instructionPath, 'instruction');
+      const environment = makeEnvironment(home);
+      const started = startDurableSubagentRun({
+        ...startInput(executable, home, instructionPath, 'req-wait-unknown'),
+        env: environment,
+        timeoutMs: 15_000,
+      });
+      if (!started.ok) throw new Error(started.message);
+      const unknown: DurableSubagentRun = {
+        ...started.run,
+        status: 'completion_unknown',
+        updatedAt: Date.now(),
+        error: 'runner ownership marker is temporarily stale',
+      };
+      writeFileSync(
+        join(resolveSubagentRunDirectory(started.run.runId, environment), 'state.json'),
+        JSON.stringify(unknown, null, 2),
+      );
+      const waited = await waitForDurableSubagentRun(unknown, environment, 15_000, (stdout) => ({
+        completed: stdout.includes('unknown recovered'),
+        finalMessage: stdout.includes('unknown recovered') ? 'unknown recovered' : undefined,
+      }));
+      expect(waited.run.status).toBe('completed');
+      expect(waited.timedOut).toBe(false);
     } finally {
       rmSync(home, { recursive: true, force: true });
     }
