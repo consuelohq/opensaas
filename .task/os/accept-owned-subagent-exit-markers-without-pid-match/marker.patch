@@ -1,0 +1,17 @@
+*** Begin Patch
+*** Update File: packages/os/scripts/lib/subagent/lifecycle.ts
+@@
+ function isOwnedExitMarker(
+   run: DurableSubagentRun,
+   marker: {
+     runId: string;
+     ownerToken: string;
+     runnerPid: number;
+   },
+ ): boolean {
+-  return marker.runId === run.runId && marker.ownerToken === run.ownerToken && marker.runnerPid === run.pid;
++  if (marker.runId !== run.runId || marker.ownerToken !== run.ownerToken) return false;
++  if (typeof run.pid !== 'number') return true;
++  return marker.runnerPid === run.pid;
+ }
+*** End Patch

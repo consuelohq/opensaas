@@ -658,7 +658,8 @@ function isOwnedExitMarker(
     runnerPid: number;
   },
 ): boolean {
-  return marker.runId === run.runId && marker.ownerToken === run.ownerToken && marker.runnerPid === run.pid;
+  if (marker.runId !== run.runId || marker.ownerToken !== run.ownerToken) return false;
+  return true;
 }
 
 function readJsonObject(filePath: string): Record<string, unknown> | null {
