@@ -1,0 +1,16 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/keep-github-connect-resilient-to-invalid-owner-hints",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 2275,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2275",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-keep-github-connect-resilient-to-invalid-owner-hints",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_1d9c2b102787",
+  "tmuxSession": "opensaas-workspace-agents-keep-github-connect-resilient-to-invalid-owner-h-1d9c2b10",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-keep-github-connect-resilient-to-invalid-owner-hints/.task/session.json",
+  "createdAt": "2026-08-29T02:27:37.673Z"
+}

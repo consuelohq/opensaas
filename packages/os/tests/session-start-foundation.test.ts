@@ -9,6 +9,7 @@ import {
   DurableStore,
 } from '../cloudflare/os-device-authority/src/stores';
 import { proxyCentralMcpRequest } from '../cloudflare/os-device-authority/src/services/mcp-proxy';
+import type { WorkspaceNode } from '../cloudflare/os-device-authority/src/types';
 import { hash } from '../cloudflare/os-device-authority/src/utils';
 import { getInputSchema } from '../scripts/lib/facade/schemas';
 import {
@@ -38,6 +39,42 @@ afterEach(() => {
     if (root) removeSafeTempDir(root, 'consuelo-session-foundation-');
   }
 });
+
+function readyWorkspaceNode(input: {
+  accountId: string;
+  workspaceId: string;
+  workspaceHost: string;
+  nodeId: string;
+  connectorId: string;
+  nowMs: number;
+}): WorkspaceNode {
+  return {
+    accountId: input.accountId,
+    workspaceId: input.workspaceId,
+    workspaceSlug: input.workspaceHost.split('.')[0] || 'workspace',
+    workspaceHost: input.workspaceHost,
+    nodeId: input.nodeId,
+    nodeName: input.nodeId,
+    displayName: input.nodeId,
+    role: input.nodeId === 'node-home' ? 'home' : 'member',
+    platform: 'darwin',
+    architecture: 'arm64',
+    channel: 'canary',
+    osVersion: '0.1.85',
+    bundleId: `bundle-${input.nodeId}`,
+    mcpProtocolVersion: '2026-07-28',
+    mcpReady: true,
+    connectorId: input.connectorId,
+    capabilities: ['mcp', 'tools'],
+    connectorStatus: 'connected',
+    state: 'active',
+    devicePublicKeyJwk: '{}',
+    devicePublicKeyThumbprint: `thumb-${input.nodeId}`,
+    createdAt: input.nowMs,
+    updatedAt: input.nowMs,
+    lastSeenAt: input.nowMs,
+  };
+}
 
 function callBody(argumentsInput: Record<string, unknown>): string {
   return JSON.stringify({
@@ -351,6 +388,23 @@ describe('session.start foundation', () => {
       expiresAt: nowMs + 60_000,
     });
 
+    await store.putWorkspaceNode(readyWorkspaceNode({
+      accountId,
+      workspaceId,
+      workspaceHost,
+      nodeId: 'node-home',
+      connectorId: 'connector_node_home',
+      nowMs,
+    }));
+    await store.putWorkspaceNode(readyWorkspaceNode({
+      accountId,
+      workspaceId,
+      workspaceHost,
+      nodeId: 'node-member',
+      connectorId: 'connector_node_member',
+      nowMs,
+    }));
+
     const routeRegistry = createInMemoryWorkspaceRouteD1();
     await migrateWorkspaceRouteD1(routeRegistry);
     await upsertWorkspaceHostnameInD1(routeRegistry, {
@@ -443,6 +497,14 @@ describe('session.start foundation', () => {
       issuedAt: nowMs,
       expiresAt: nowMs + 60_000,
     });
+    await store.putWorkspaceNode(readyWorkspaceNode({
+      accountId,
+      workspaceId,
+      workspaceHost,
+      nodeId: 'node-home',
+      connectorId: 'connector_node_home',
+      nowMs,
+    }));
     const routeRegistry = createInMemoryWorkspaceRouteD1();
     await migrateWorkspaceRouteD1(routeRegistry);
     await upsertWorkspaceHostnameInD1(routeRegistry, {

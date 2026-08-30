@@ -594,7 +594,13 @@ function configurationClientScript(): string {
         ? 'GitHub connected · ' + currentSourceControl.repositories.length + ' repositor' + (currentSourceControl.repositories.length === 1 ? 'y' : 'ies') + (currentSourceControl.configured ? ' ready' : ' selected')
         : 'Connect GitHub to choose repositories');
       const connect = byId('source-control-connect-github');
-      if (connect) connect.textContent = currentSourceControl.repositories.length ? 'Manage GitHub access' : 'Connect GitHub';
+      if (connect) {
+        const hasRepositories = currentSourceControl.repositories.length > 0;
+        connect.textContent = hasRepositories ? 'Manage GitHub access' : 'Connect GitHub';
+        connect.setAttribute('href', hasRepositories
+          ? '/gateway/configuration/source-control/github/connect?return_to=%2Fconfiguration&mode=manage'
+          : '/gateway/configuration/source-control/github/connect?return_to=%2Fconfiguration');
+      }
       bindSourceControlRows();
     }
 

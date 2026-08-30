@@ -61,7 +61,7 @@ export const toolSchemas = [
       "methodPath": [
         "confidenceScore"
       ],
-      "description": "score confidence from evidence state",
+      "description": "compatibility view of the readiness already returned by Explore's unified investigation policy",
       "category": "decision engine",
       "underlying": "workspace confidenceScore",
       "capabilities": {
@@ -137,7 +137,7 @@ export const toolSchemas = [
       "methodPath": [
         "decideNext"
       ],
-      "description": "recommend the next action from evidence state",
+      "description": "compatibility view of the next evidence action already returned by Explore's unified investigation policy",
       "category": "decision engine",
       "underlying": "workspace decideNext",
       "capabilities": {
@@ -174,7 +174,7 @@ export const toolSchemas = [
       "methodPath": [
         "exploit"
       ],
-      "description": "select the highest-confidence editing target",
+      "description": "compatibility alias for Explore's edit target; without an explicit override it only selects when Explore is edit-ready",
       "category": "decision engine",
       "underlying": "workspace exploit",
       "capabilities": {
@@ -211,7 +211,7 @@ export const toolSchemas = [
       "methodPath": [
         "explore"
       ],
-      "description": "a repo-aware decision search tool for coding agents. It answers where to spend attention and what files or paths are likely relevant to a given request.",
+      "description": "a repo-aware investigation policy for coding agents. It retrieves the dependency graph and returns the current hypotheses, readiness, uncertainty, next evidence action, and whether the investigation is edit-ready.",
       "category": "decision engine",
       "underlying": "workspace explore",
       "capabilities": {

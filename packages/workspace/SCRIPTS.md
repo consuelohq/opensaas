@@ -499,7 +499,7 @@ writes `packages/workspace/test-selection.registry.json` from repo test discover
 
 ### test-selection:check — check affected test selection
 
-selects registry-owned suites for changed files and can run them with `--run`. `verify` uses this command internally.
+selects registry-owned suites for changed files and can run them with `--run`. `verify` uses this command internally. When a selected suite executes OS-owned code from a clean checkout, the runner first ensures `packages/os` dependencies are installed with the frozen Bun lockfile; this keeps workspace-triggered CI self-contained instead of relying on a separate workflow install step.
 
 ---
 
@@ -520,7 +520,7 @@ bun run test-selection:check -- --base origin/main --run --json
 bun run test-selection:nightly -- --json
 ```
 
-`verify` runs the registry check with `--run`. If changed code selects zero suites, verify reports the reason. Critical surfaces such as workspace gate scripts, task routing, trace rendering, API, dialer, and server code must have mapped tests. Nightly reports are written to `/tmp/opensaas-test-reports/latest.md` and `/tmp/opensaas-test-reports/latest.json`.
+`verify` runs the registry check with `--run`. Before running any selected OS suite, test selection checks the OS package dependency sentinel and performs `bun install --frozen-lockfile` in `packages/os` only when those dependencies are absent. If that preparation fails, it is reported as a critical `OS test dependency preparation` failure and no OS suite is run against a partial install. If changed code selects zero suites, verify reports the reason. Critical surfaces such as workspace gate scripts, task routing, trace rendering, API, dialer, and server code must have mapped tests. Nightly reports are written to `/tmp/opensaas-test-reports/latest.md` and `/tmp/opensaas-test-reports/latest.json`.
 
 ---
 

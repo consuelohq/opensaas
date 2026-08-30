@@ -242,6 +242,145 @@ describe('OS self-healing trace classification', () => {
     ).toMatchObject({ classification: 'defect-candidate', actionable: true });
   });
 
+  it('keeps GitHub not-yet-readable workflow state non-actionable without masking wrapper defects', () => {
+    for (const stderr of [
+      'job 99123 is still in progress; logs will be available when it is complete',
+      "no checks reported on the 'stream/os' branch",
+      "no required checks reported on the 'stream/os' branch",
+    ]) {
+      expect(
+        classifyTraceFailure(
+          failure({
+            tool: 'github',
+            code: 'COMMAND_FAILED',
+            occurrences: 8,
+            affectedSessions: 3,
+            stderr,
+          }),
+          undefined,
+        ),
+      ).toMatchObject({ classification: 'caller-input', actionable: false });
+    }
+
+    expect(
+      classifyTraceFailure(
+        failure({
+          tool: 'github',
+          code: 'COMMAND_FAILED',
+          occurrences: 8,
+          affectedSessions: 3,
+          stderr: 'error: github wrapper exited before invoking gh',
+        }),
+        undefined,
+      ),
+    ).toMatchObject({ classification: 'defect-candidate', actionable: true });
+  });
+
+  it('keeps task.push publish-valid and branch-sync guards as expected policy', () => {
+    for (const stderr of [
+      'publish-valid verify required before task:push: missing .task/example/verify.json stamp. run: bun run verify',
+      'publish-valid verify required before task:push: verify head mismatch: abc != def. run: bun run verify',
+      'local task branch is not synced with origin/task/os/example (local abc != remote def); sync the task worktree before running task:push',
+    ]) {
+      expect(
+        classifyTraceFailure(
+          failure({
+            tool: 'task.push',
+            code: 'COMMAND_FAILED',
+            occurrences: 10,
+            affectedSessions: 4,
+            stderr,
+          }),
+          undefined,
+        ),
+      ).toMatchObject({ classification: 'expected-policy', actionable: false });
+    }
+
+    expect(
+      classifyTraceFailure(
+        failure({
+          tool: 'task.push',
+          code: 'COMMAND_FAILED',
+          occurrences: 10,
+          affectedSessions: 4,
+          stderr: 'task push failed to serialize the GitHub request',
+        }),
+        undefined,
+      ),
+    ).toMatchObject({ classification: 'defect-candidate', actionable: true });
+  });
+
+  it('keeps session.start caller and managed-repository preconditions out of the defect bucket', () => {
+    for (const stderr of [
+      'work session path does not exist: /tmp/consuelo-missing-work-session',
+      'missing required --area\ntask session start failed: task-start exited with code 1',
+    ]) {
+      expect(
+        classifyTraceFailure(
+          failure({
+            tool: 'session.start',
+            code: 'COMMAND_FAILED',
+            occurrences: 7,
+            stderr,
+          }),
+          undefined,
+        ),
+      ).toMatchObject({ classification: 'caller-input', actionable: false });
+    }
+
+    expect(
+      classifyTraceFailure(
+        failure({
+          tool: 'session.start',
+          code: 'COMMAND_FAILED',
+          occurrences: 7,
+          stderr: 'Work sessions cannot edit the managed repository or its task worktrees (/tmp/example). Use a taskSession for repository edits.',
+        }),
+        undefined,
+      ),
+    ).toMatchObject({ classification: 'expected-policy', actionable: false });
+
+    expect(
+      classifyTraceFailure(
+        failure({
+          tool: 'session.start',
+          code: 'COMMAND_FAILED',
+          occurrences: 7,
+          stderr: 'session start metadata store failed to parse its state',
+        }),
+        undefined,
+      ),
+    ).toMatchObject({ classification: 'defect-candidate', actionable: true });
+  });
+
+  it('keeps task.pr substantive merge-conflict state non-actionable without masking lifecycle defects', () => {
+    expect(
+      classifyTraceFailure(
+        failure({
+          tool: 'task.pr',
+          code: 'COMMAND_FAILED',
+          occurrences: 9,
+          affectedSessions: 6,
+          stderr: 'task PR merge failed and metadata recovery did not apply: non-metadata conflicts present (original: github PUT /repos/consuelohq/opensaas/pulls/2301/merge -> 405 Pull Request has merge conflicts)',
+        }),
+        undefined,
+      ),
+    ).toMatchObject({ classification: 'caller-input', actionable: false });
+
+    expect(
+      classifyTraceFailure(
+        failure({
+          tool: 'task.pr',
+          code: 'COMMAND_FAILED',
+          occurrences: 9,
+          affectedSessions: 6,
+          stderr: 'task PR merge failed because the metadata updater crashed',
+        }),
+        undefined,
+      ),
+    ).toMatchObject({ classification: 'defect-candidate', actionable: true });
+  });
+
   it('keeps obvious caller-caused filesystem command failures out of the defect bucket', () => {
     expect(
       classifyTraceFailure(

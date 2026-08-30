@@ -51,11 +51,12 @@ describe('configuration site', () => {
     expect(html).toContain('href="/tools"');
     expect(html).toContain('href="/nodes"');
     expect(html).toContain('href="/secrets"');
-    expect(html).toContain('>Overview</span><small>Workspace health and context.</small>');
+    expect(html).toContain('>Overview</span>');
+    expect(html).not.toContain('Workspace health and context.');
     expect(html).toContain('href="https://docs.consuelohq.com/"');
     expect(html).toContain('target="_blank" rel="noopener noreferrer" href="https://docs.consuelohq.com/"');
-    expect(html).toContain('>Artifacts</span><small>Browse generated agent work.</small>');
-    expect(html).toContain('>Code</span><small>Review code changes safely.</small>');
+    expect(html).toContain('>Artifacts</span>');
+    expect(html).toContain('>Code</span>');
     expect(html).toContain('data-route-group="Connect"');
     expect(html).toContain('>ChatGPT<');
     expect(html).toContain('href="https://chatgpt.com/plugins#settings/Connectors?create-connector=true&amp;redirectAfter=%2Fplugins"');
@@ -117,6 +118,7 @@ describe('configuration site', () => {
     expect(html).toContain('id="source-control-repository-list"');
     expect(html).toContain('/gateway/configuration/source-control');
     expect(html).toContain('/gateway/configuration/source-control/github/connect');
+    expect(html).toContain('mode=manage');
     expect(html).toContain('/gateway/configuration/source-control/github/complete');
     expect(html).toContain('Connect GitHub');
     expect(html).not.toContain('id="source-control-form"');
@@ -215,6 +217,10 @@ describe('configuration site', () => {
     expect(nodesHtml).toContain('Unavailable');
     expect(nodesHtml).toContain('Live pricing is unavailable');
     expect(nodesHtml).toContain('Make default');
+    expect(nodesHtml).toContain('node.readiness');
+    expect(nodesHtml).toContain('node.osVersion');
+    expect(nodesHtml).toContain("node.compatibility === 'compatible'");
+    expect(nodesHtml).toContain("node.readiness === 'ready'");
     expect(nodesHtml).not.toContain('Provisioning coming soon');
     expect(nodesHtml).toContain('/gateway/nodes/provision');
     expect(nodesHtml).toContain('/gateway/nodes/provisioning');

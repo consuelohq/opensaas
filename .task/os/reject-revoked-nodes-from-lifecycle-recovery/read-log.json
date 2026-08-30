@@ -1,0 +1,10 @@
+{
+  "files": [
+    "packages/os/scripts/lib/dangerous-material-policy.ts",
+    "packages/os/scripts/lib/workspace-cloudflare-d1-route-registry.ts",
+    "packages/os/skills/task/SKILL.md",
+    "packages/os/tests/workspace-node-registry-routing.test.ts",
+    "packages/workspace/scripts/check-syntax.js"
+  ],
+  "updatedAt": "2026-08-29T08:04:05.883Z"
+}

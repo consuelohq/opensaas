@@ -24,6 +24,10 @@ type FacadeCall = {
   timeout?: number;
 };
 
+export type McpFacadeExecutionOptions = {
+  timeoutMs?: number;
+};
+
 export type McpGatewayScopeResolution =
   | {
       ok: true;
@@ -39,7 +43,11 @@ export type McpGatewayScopeResolution =
 
 type McpGatewayHandlerInput = {
   getSteering: () => Promise<string>;
-  executeFacadeTool: (toolName: string, input: JsonObject) => Promise<unknown>;
+  executeFacadeTool: (
+    toolName: string,
+    input: JsonObject,
+    execution?: McpFacadeExecutionOptions,
+  ) => Promise<unknown>;
 };
 
 const MCP_READ_METHODS = new Set([
@@ -213,7 +221,6 @@ function facadeToolInput(call: FacadeCall): JsonObject {
     ...call.input,
     ...(call.taskSession ? { taskSession: call.taskSession } : {}),
     ...(call.workSession ? { workSession: call.workSession } : {}),
-    ...(call.timeout ? { timeout: call.timeout } : {}),
   };
 }
 
@@ -402,7 +409,10 @@ export async function handleMcpGatewayJsonRpc(
     const call = parseFacadeCall(request.params);
     if (!call) return jsonRpcError(request.id, -32602, 'Invalid call arguments.');
 
-    const output = await input.executeFacadeTool(call.tool, facadeToolInput(call));
+    const toolInput = facadeToolInput(call);
+    const output = typeof call.timeout === 'number'
+      ? await input.executeFacadeTool(call.tool, toolInput, { timeoutMs: call.timeout })
+      : await input.executeFacadeTool(call.tool, toolInput);
     return result({
       content: [{ type: 'text', text: outputText(output) }],
       isError: outputIsError(output),
