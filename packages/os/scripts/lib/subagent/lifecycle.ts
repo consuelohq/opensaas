@@ -563,6 +563,9 @@ function isDurableWaitSettled(run: DurableSubagentRun): boolean {
     if (isProcessAlive(run.pid)) return false;
     return Date.now() - run.updatedAt >= EXIT_MARKER_HANDOFF_GRACE_MS;
   }
+  if (run.error === FALLBACK_EXIT_MARKER_ERROR) {
+    return Date.now() - run.updatedAt >= EXIT_MARKER_HANDOFF_GRACE_MS;
+  }
   return Date.now() - run.startedAt >= STARTUP_GRACE_MS;
 }
 
