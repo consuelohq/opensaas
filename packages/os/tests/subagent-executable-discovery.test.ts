@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { chmodSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
@@ -21,8 +22,8 @@ function stableOptions(cwd: string, env: NodeJS.ProcessEnv) {
       branch: explicitBranch || 'task/os/subagent-executable-discovery',
       source: explicitBranch ? 'explicit' : 'test',
     }),
-    now: () => 1000,
-    randomUUID: () => 'abc123def4567890abc123def4567890',
+    now: () => Date.now(),
+    randomUUID,
     currentTask: null,
     candidates: [] as Array<{ branch: string; area: string; worktree: string }>,
   };
@@ -61,7 +62,12 @@ async function runGrok(root: string, env: NodeJS.ProcessEnv) {
     policy: 'read',
     instructionPath: writeInstruction(root),
     outputFormat: 'json',
-  }, stableOptions(root, env));
+  }, stableOptions(root, {
+    ...env,
+    HOME: env.HOME || root,
+    CONSUELO_HOME: env.CONSUELO_HOME || root,
+    CONSUELO_OS_HOME: env.CONSUELO_OS_HOME || root,
+  }));
 }
 
 describe('Grok subagent executable discovery', () => {

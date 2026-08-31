@@ -17,6 +17,9 @@ const MAC_RESTARTABLE_SIDECAR_SERVICE_LABELS = new Set([
 const MAC_RESTARTABLE_SIDECAR_SERVICE_PREFIXES = [
   'com.consuelo.os.node-heartbeat.',
 ];
+const MAC_BEST_EFFORT_SIDECAR_SERVICE_LABELS = new Set([
+  'com.consuelo.watchdog',
+]);
 const MAC_GATEWAY_BOOTSTRAP_ATTEMPTS = 4;
 const MAC_GATEWAY_BOOTSTRAP_RETRY_MS = 200;
 const MAC_GATEWAY_KICKSTART_ATTEMPTS = 4;
@@ -91,6 +94,10 @@ function installedMacRestartableSidecarLaunchAgents(environment?: NodeJS.Process
     // Tearing down that same job from consuelo restart races launchd and returns 5 or 37.
     .filter(({ label }) => !invokingServiceLabel || label !== invokingServiceLabel)
     .sort((left, right) => left.label.localeCompare(right.label));
+}
+
+function isBestEffortMacSidecar(label: string): boolean {
+  return MAC_BEST_EFFORT_SIDECAR_SERVICE_LABELS.has(label);
 }
 export function createReloadServiceController(input: {
   osRoot: string;
@@ -273,6 +280,9 @@ export function createReloadServiceController(input: {
               const result = lastBootstrap ?? loaded;
               const detail = result.stderr.trim() || result.stdout.trim()
                 || 'launchctl bootstrap exited ' + String(result.exitCode);
+              if (isBestEffortMacSidecar(gateway.label)) {
+                continue;
+              }
               throw new Error('gateway bootstrap failed for ' + gateway.label + ': ' + detail);
             }
 
@@ -307,6 +317,9 @@ export function createReloadServiceController(input: {
               };
               const detail = result.stderr.trim() || result.stdout.trim()
                 || 'launchctl kickstart exited ' + String(result.exitCode);
+              if (isBestEffortMacSidecar(gateway.label)) {
+                continue;
+              }
               throw new Error('gateway kickstart failed for ' + gateway.label + ': ' + detail);
             }
           }

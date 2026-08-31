@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-pr-2310-setup-failure-cleanup-ordering",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2333,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2333",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-pr-2310-setup-failure-cleanup-ordering",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_f89c1becb3a2",
+  "tmuxSession": "opensaas-os-fix-pr-2310-setup-failure-cleanup-ordering-f89c1bec",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-pr-2310-setup-failure-cleanup-ordering/.task/session.json",
+  "createdAt": "2026-08-31T20:47:46.758Z"
+}
