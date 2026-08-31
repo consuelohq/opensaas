@@ -262,29 +262,49 @@ describe('Consuelo website structure', () => {
     expect(tokens).not.toContain('#5379AE');
   });
 
-  test('should provide a compact six-feature media grid and accessible FAQ when rendering the product panel', () => {
+  test('should give CONNECT a documentary evidence figure while keeping the six-feature grid responsive', () => {
     const panel = readSource('src/components/home/HomeFeaturePreview.astro');
     const media = readSource('src/components/home/FeatureMedia.astro');
+    const evidence = readSource('src/components/home/FeatureEvidenceFigure.astro');
     const faq = readSource('src/components/home/HomeFaq.astro');
     const content = readSource('src/data/home-content.ts');
 
     expect(panel).toContain('grid-template-columns: repeat(3, minmax(0, 1fr))');
+    expect(panel).toContain('@media (max-width: 1120px)');
+    expect(panel).toContain('grid-template-columns: repeat(2, minmax(0, 1fr))');
+    expect(panel).toContain('<FeatureEvidenceFigure');
+    expect(panel).toContain('evidence={item.evidence}');
     expect(panel).toContain('<FeatureMedia');
     expect(panel).toContain('imageSrc={item.assetSrc}');
     expect(panel).not.toContain("item.assetSrc ?? ''");
     expect(panel).toContain('<HomeFaq');
+
+    expect(evidence).toContain('<figure class="feature-evidence"');
+    expect(evidence).toContain('aspect-ratio: 4 / 3');
+    expect(evidence).toContain('data-agent={agent.label}');
+    expect(evidence).toContain('FIG. {evidence.figureNumber}');
+    expect(evidence).toContain('evidence.sequence.map');
+    expect(evidence).not.toContain('position: absolute;\n    inset: 0;\n    color: white');
+
     expect(media).toContain('aspect-ratio: 475 / 178');
     expect(media).toContain('<video autoplay muted loop playsinline');
     expect(media).toContain('class="feature-media__poster"');
     expect(media).toContain('.feature-media__video');
     expect(media).toContain('display: none;');
+
     expect(faq).toContain('<details data-home-faq-item>');
     expect(faq).toContain('<summary>');
     expect(faq).toContain('color: var(--site-color-muted);');
     expect(panel).toContain('color: var(--site-color-art-muted);');
     expect(panel).not.toContain('#15156f');
     expect(faq).not.toContain('#25256f');
-    expect(content).toContain('assetSrc: string;');
+
+    expect(content).toContain('evidence?: HomeFeatureEvidence;');
+    expect(content).toContain("figureNumber: '01'");
+    expect(content).toContain("label: 'ChatGPT'");
+    expect(content).toContain("label: 'Codex'");
+    expect(content).toContain("label: 'Claude'");
+    expect(content).toContain("label: 'Cursor'");
     expect(content).toContain("label: 'CONTROL'");
     expect(content).toContain("label: 'OBSERVE'");
     expect(content).toContain("label: 'SWITCH'");
