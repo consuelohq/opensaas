@@ -305,14 +305,18 @@ describe('Consuelo website structure', () => {
     expect(content).toContain("videoSrc: '/media/home/connect-live-session.mp4'");
     expect(content).toContain("posterSrc: '/media/home/connect-live-session-poster.webp'");
     expect(content).toContain("label: 'ChatGPT'");
+    expect(content).toContain("label: 'Grok'");
     expect(content).toContain("label: 'Codex'");
-    expect(content).toContain("label: 'Claude'");
-    expect(content).toContain("label: 'Cursor'");
+    expect(content).toContain("label: 'OpenCode'");
+    expect(content).not.toContain("{ label: 'Claude' },");
+    expect(content).not.toContain("{ label: 'Cursor' },");
     expect(content).toContain("label: 'CONTROL'");
     expect(content).toContain("label: 'OBSERVE'");
     expect(content).toContain("label: 'SWITCH'");
     expectFile('public/media/home/connect-live-session.mp4');
     expectFile('public/media/home/connect-live-session-poster.webp');
+    expectFile('motion/connect/index.html');
+    expectFile('motion/connect/hyperframes.json');
   });
 
   test('should expose the approved navigation when rendering the OS header', () => {

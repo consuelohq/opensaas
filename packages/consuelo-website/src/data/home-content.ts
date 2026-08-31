@@ -539,9 +539,9 @@ export const homeFeaturePreviewItems: HomeFeaturePreviewItem[] = [
       posterSrc: '/media/home/connect-live-session-poster.webp',
       sequence: [
         { label: 'ChatGPT' },
+        { label: 'Grok' },
         { label: 'Codex' },
-        { label: 'Claude' },
-        { label: 'Cursor' },
+        { label: 'OpenCode' },
       ],
     },
   },
