@@ -23,4 +23,15 @@ describe('session integration guidance', () => {
     expect(taskSkill).toContain('session.start({ kind: "work", path })');
     expect(taskSkill).toContain('must never be used to edit the managed default repository or a registered task worktree');
   });
+
+  it('uses a shell language for literal package commands', () => {
+    const taskSkill = read('packages/os/skills/task/SKILL.md');
+    const literalPackageCommand = 'code: \"bun --cwd packages/workspace test\"';
+    const commandOffset = taskSkill.indexOf(literalPackageCommand);
+    const examplePrefix = taskSkill.slice(Math.max(0, commandOffset - 160), commandOffset);
+
+    expect(commandOffset).toBeGreaterThan(-1);
+    expect(examplePrefix).toContain('language: \"bash\"');
+    expect(examplePrefix).not.toContain('language: \"bun\"');
+  });
 });

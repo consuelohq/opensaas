@@ -585,6 +585,55 @@ describe('durable subagent lifecycle regressions', () => {
     }
   });
 
+  it('stops waiting when completion_unknown has a dead runner and no exit marker', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'subagent-dead-runner-no-marker-'));
+    const environment = makeEnvironment(home);
+    const runId = 'run_111111112222222233333333';
+    const runDirectory = resolveSubagentRunDirectory(runId, environment);
+    mkdirSync(runDirectory, { recursive: true });
+    const stdoutLogPath = join(runDirectory, 'stdout.jsonl');
+    const stderrLogPath = join(runDirectory, 'stderr.log');
+    const run: DurableSubagentRun = {
+      runId,
+      traceId: 'trc_dead_runner_no_marker',
+      fingerprint: 'dead-runner-no-marker',
+      provider: 'codex',
+      policy: 'read',
+      cwd: home,
+      instructionPath: join(runDirectory, 'instruction.md'),
+      command: ['codex', 'exec'],
+      pid: 98_765_431,
+      ownerToken: 'owner-dead-runner-no-marker',
+      exitMarkerPath: join(runDirectory, 'exit.json'),
+      status: 'completion_unknown',
+      timeoutMs: 30_000,
+      startedAt: Date.now() - 10_000,
+      updatedAt: Date.now(),
+      stdoutLogPath,
+      stderrLogPath,
+      error: 'runner exited without a durable exit marker; no provider was respawned',
+    };
+    writeFileSync(stdoutLogPath, '');
+    writeFileSync(stderrLogPath, '');
+    writeFileSync(join(runDirectory, 'state.json'), JSON.stringify(run, null, 2));
+
+    try {
+      const startedAt = Date.now();
+      const waited = await waitForDurableSubagentRun(
+        run,
+        environment,
+        250,
+        () => ({ completed: false }),
+      );
+
+      expect(Date.now() - startedAt).toBeLessThan(150);
+      expect(waited.run.status).toBe('completion_unknown');
+      expect(waited.timedOut).toBe(false);
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
+  });
+
   it('parses the full durable log while keeping attachment log reads bounded', () => {
     const home = mkdtempSync(join(tmpdir(), 'subagent-full-parse-'));
     const environment = makeEnvironment(home);

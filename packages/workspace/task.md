@@ -197,7 +197,7 @@ await workspace.call({
   tool: "code.call",
   taskSession,
   input: {
-    language: "bun",
+    language: "bash",
     mode: "verify",
     code: "bun --cwd packages/workspace test",
     maxResultChars: 20000,
