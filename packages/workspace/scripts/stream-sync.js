@@ -15,7 +15,10 @@ const {
   runGit,
   setBranchUpstream,
 } = require('./lib/git');
-const { restoreWorktreeAfterFailedMerge } = require('./lib/stream-sync-cleanup');
+const {
+  removeStaleGeneratedSyncWorktree,
+  restoreWorktreeAfterFailedMerge,
+} = require('./lib/stream-sync-cleanup');
 const {
   DEFAULT_MAIN_BRANCH,
   getWorktreeRoot,
@@ -237,7 +240,14 @@ async function main() {
   }
   pruneWorktrees(repoRoot);
 
-  const existingWorktree = getWorktreeForBranch(repoRoot, streamBranch);
+  let existingWorktree = getWorktreeForBranch(repoRoot, streamBranch);
+
+  if (
+    existingWorktree &&
+    removeStaleGeneratedSyncWorktree(repoRoot, existingWorktree.path, streamBranch, getWorktreeRoot())
+  ) {
+    existingWorktree = null;
+  }
 
   if (!existingWorktree) {
     createOrResetLocalBranch(repoRoot, streamBranch, `origin/${streamBranch}`);

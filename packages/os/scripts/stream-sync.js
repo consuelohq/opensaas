@@ -15,7 +15,10 @@ const {
   runGit,
   setBranchUpstream,
 } = require('./lib/git');
-const { restoreWorktreeAfterFailedMerge } = require('./lib/stream-sync-cleanup');
+const {
+  removeStaleGeneratedSyncWorktree,
+  restoreWorktreeAfterFailedMerge,
+} = require('./lib/stream-sync-cleanup');
 const {
   DEFAULT_MAIN_BRANCH,
   getWorktreeRoot,
@@ -225,7 +228,18 @@ async function main() {
     throw new Error(`origin/${streamBranch} is missing`);
   }
 
-  createOrResetLocalBranch(repoRoot, streamBranch, `origin/${streamBranch}`);
+  let existingWorktree = getWorktreeForBranch(repoRoot, streamBranch);
+
+  if (
+    existingWorktree &&
+    removeStaleGeneratedSyncWorktree(repoRoot, existingWorktree.path, streamBranch, getWorktreeRoot())
+  ) {
+    existingWorktree = null;
+  }
+
+  if (!existingWorktree) {
+    createOrResetLocalBranch(repoRoot, streamBranch, `origin/${streamBranch}`);
+  }
 
   try {
     setBranchUpstream(repoRoot, streamBranch, `origin/${streamBranch}`);
@@ -233,7 +247,6 @@ async function main() {
     // ignore upstream wiring failures on older local setups
   }
 
-  const existingWorktree = getWorktreeForBranch(repoRoot, streamBranch);
   const worktreePath = existingWorktree ? existingWorktree.path : createTemporaryStreamWorktree(repoRoot, streamBranch);
   const createdTemporaryWorktree = !existingWorktree;
 

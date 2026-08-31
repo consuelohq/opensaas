@@ -310,6 +310,41 @@ describe('OS self-healing trace classification', () => {
     ).toMatchObject({ classification: 'defect-candidate', actionable: true });
   });
 
+  it('keeps deterministic task.push invocation mistakes in the caller-input bucket without masking missing remote branches', () => {
+    for (const stderr of [
+      'provide --changed, --files, or --files-json',
+      'commit message does not match conventional format: Keep public connector available through restart',
+    ]) {
+      expect(
+        classifyTraceFailure(
+          failure({
+            tool: 'task.push',
+            code: 'COMMAND_FAILED',
+            occurrences: 5,
+            affectedBranches: 4,
+            affectedSessions: 4,
+            stderr,
+          }),
+          undefined,
+        ),
+      ).toMatchObject({ classification: 'caller-input', actionable: false });
+    }
+
+    expect(
+      classifyTraceFailure(
+        failure({
+          tool: 'task.push',
+          code: 'COMMAND_FAILED',
+          occurrences: 3,
+          affectedBranches: 3,
+          affectedSessions: 3,
+          stderr: 'remote branch not found: task/os/example',
+        }),
+        undefined,
+      ),
+    ).toMatchObject({ classification: 'defect-candidate', actionable: true });
+  });
+
   it('keeps session.start caller and managed-repository preconditions out of the defect bucket', () => {
     for (const stderr of [
       'work session path does not exist: /tmp/consuelo-missing-work-session',
@@ -390,6 +425,19 @@ describe('OS self-healing trace classification', () => {
           occurrences: 6,
           affectedSessions: 3,
           stderr: 'error: patch hunk did not match: .task/example/workpad.md',
+        }),
+        undefined,
+      ),
+    ).toMatchObject({ classification: 'caller-input', actionable: false });
+
+    expect(
+      classifyTraceFailure(
+        failure({
+          tool: 'fs.apply_patch',
+          code: 'COMMAND_FAILED',
+          occurrences: 2,
+          affectedSessions: 2,
+          stderr: 'error: invalid patch: missing *** Begin Patch',
         }),
         undefined,
       ),
