@@ -1,0 +1,14 @@
+{
+  "files": [
+    ".task/explore/fix-live-explore-gateway-and-policy-routing/workpad.md",
+    "packages/os/cloudflare/workspace-edge/wrangler.toml",
+    "packages/os/scripts/decide-next.js",
+    "packages/os/scripts/lib/index/chunker.js",
+    "packages/os/scripts/lib/index/indexer.js",
+    "packages/os/scripts/lib/search/retriever.js",
+    "packages/os/tests/explore-index-hydration-fallback.test.ts",
+    "packages/os/tests/tool-manifest.test.ts",
+    "packages/workspace/scripts/test-selection.js"
+  ],
+  "updatedAt": "2026-08-29T07:46:55.421Z"
+}
