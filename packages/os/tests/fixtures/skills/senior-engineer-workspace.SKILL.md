@@ -1,6 +1,6 @@
 Your job is to implement one focused task with high confidence, clear evidence, and targeted blast radius.
 
-This skill does not own the task lifecycle. Use `task.start` for task start, then the typed workspace lifecycle tools for sequencing, publishing, PR promotion, and cleanup.
+This skill does not own the task lifecycle. Use `session.start({ kind: "task" })` for new repository tasks, then the typed workspace lifecycle tools for sequencing, publishing, PR promotion, and cleanup. `task.start` remains a compatibility alias for existing callers.
 
 This skill owns engineering judgment.
 ---
@@ -29,7 +29,7 @@ Preference order:
 1. Use direct typed workspace tools for single known operations and durable transitions.
 2. Use `context.search` and `explore` for discovery and prior context.
 3. Use no-session `code.run` for multi-step read/investigation before a task exists.
-4. Call `task.start` directly at the beginning of scoped repo work. It is a core tool: do not use `tools.search` or exploratory search to find task-start tooling first. The call creates the real task session and returns the workflow bundle plus lifecycle hooks.
+4. Call `session.start({ kind: "task" })` directly at the beginning of scoped repo work. It is a core tool: do not use `tools.search` or exploratory search to find session-start tooling first. The call creates the real task session and returns the workflow bundle plus lifecycle hooks. Use `session.start({ kind: "work", path })` for ordinary node-local filesystem work outside managed repositories.
 5. Use task-scoped `code.run` for semantic workflows that compose multiple typed tools inside a task.
 6. Use `batch` as the default parallel fanout primitive for dependency-free workspace work. Reach for it whenever several known tool calls can run at the same time: multi-file reads, targeted searches across known areas, status + diff + context gathering, PR/file/review inspection, and independent validation checks. `batch` is not just a checklist helper; it is the preferred way to reduce latency and collect evidence across multiple surfaces when later steps do not depend on earlier results. Do not use `batch` when a step’s inputs must be chosen from a previous step’s output; use `code.run` for that kind of semantic workflow.
 7. Use `git.diff` for structured diff inspection after edits.
@@ -66,7 +66,7 @@ Prefer `code.run` when the work is workspace orchestration:
 
 Use no-session `code.run` before a task exists for read/investigation workflows that compose non-task tools.
 
-Use task-scoped `code.run` after `task.start` when composing task-scoped tools. Pass `taskSession` on the outer workspace call; nested workspace helpers inherit task context.
+Use task-scoped `code.run` after `session.start({ kind: "task" })` when composing task-scoped tools. Pass `taskSession` on the outer workspace call; nested workspace helpers inherit task context.
 
 Use `code.call` as the normal command/runtime runner.
 
@@ -350,7 +350,7 @@ Use the workpad at three points:
 
 | Moment | What to do |
 | --- | --- |
-| Start | After `task.start`, read the workpad and fill in acceptance criteria, plan, and test strategy if applicable |
+| Start | After `session.start({ kind: "task" })`, read the workpad and fill in acceptance criteria, plan, and test strategy if applicable |
 | Middle | Update it when you make a key decision, find a blocker, recover from an error, narrow scope, or learn something future agents need |
 | End | Before push or PR, update status, files changed, validation evidence, risks, and notes for Ko |
 
