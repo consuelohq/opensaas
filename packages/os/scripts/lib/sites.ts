@@ -563,7 +563,7 @@ function loadWorkspaceChromeOptions(home: string): WorkspaceChromeOptions {
 
 function buildSitesIndex(chromeOptions: WorkspaceChromeOptions = {}): string {
   // The workspace root is the operational home for an authenticated OS workspace.
-  // Keep it identical to Overview so every daemon refresh, update, and restart converges
+  // Keep it identical to Home so every daemon refresh, update, and restart converges
   // on the same default page instead of resurrecting Nodes or the retired local launcher.
   return renderConfigurationSite('configuration', chromeOptions);
 }

@@ -39,7 +39,7 @@ const PAGE_COPY: Record<ConfigurationPageId, {
   description: string;
 }> = {
   configuration: {
-    title: 'Overview',
+    title: 'Home',
     description: 'See live workspace activity, operating readiness, and the agent surfaces available here.',
   },
   tools: {
@@ -546,7 +546,7 @@ function configurationClientScript(): string {
     function initOverviewHeatmap() {
       if (!byId('overview-heatmap-grid')) return;
       const cached = readOverviewHeatmapCache();
-      if (cached) renderOverviewHeatmap(cached);
+      renderOverviewHeatmap(cached || aggregateOverviewHeatmap([]));
       void refreshOverviewHeatmap();
       window.setInterval(() => { if (!document.hidden) void refreshOverviewHeatmap(); }, OVERVIEW_HEATMAP_REFRESH_MS);
       document.addEventListener('visibilitychange', () => { if (!document.hidden) void refreshOverviewHeatmap(); });
@@ -1173,7 +1173,7 @@ function renderOverviewPanels(): string {
           <div class="overview-context">
             <div class="overview-context-copy">
               <h2>One workspace, directly readable</h2>
-              <p>Overview shows live activity and operating posture first. Detailed configuration stays below, while Nodes, Tools, Secrets, and Tracing remain focused work surfaces.</p>
+              <p>Home shows live activity and operating posture first. Detailed configuration stays below, while Nodes, Tools, Secrets, and Tracing remain focused work surfaces.</p>
             </div>
             <a class="overview-context-link" target="_blank" rel="noopener noreferrer" href="https://docs.consuelohq.com/">Open Documentation →</a>
           </div>

@@ -38,7 +38,7 @@ type WorkspaceRoute = {
 const WORKSPACE_ROUTES: WorkspaceRoute[] = [
   {
     id: 'overview',
-    label: 'Overview',
+    label: 'Home',
     href: '/configuration',
     group: null,
     description: 'Workspace health and context.',
@@ -216,10 +216,10 @@ export function renderWorkspaceChromeBar(
   const menuShortcut = traceCompat ? '' : ' data-workspace-menu-shortcut';
   const fullscreenControl = traceCompat ? '' : ' data-workspace-fullscreen';
   const overviewRoute = WORKSPACE_ROUTES.find((route) => route.id === 'overview');
-  if (!overviewRoute) throw new Error('Workspace Overview route is required.');
+  if (!overviewRoute) throw new Error('Workspace Home route is required.');
   return `<div class="trxChrome" data-workspace-chrome>
     <div class="trxDots" aria-label="Window controls">
-      <button class="trxDot red" type="button" data-window-control="close" data-close-traces data-workspace-home aria-label="Go to Overview"></button>
+      <button class="trxDot red" type="button" data-window-control="close" data-close-traces data-workspace-home aria-label="Go to Home"></button>
       <button class="trxDot yellow" type="button" data-window-control="sidebar"${menuShortcut} aria-label="${traceCompat ? 'Toggle trace sidebar' : 'Open workspace routes'}"></button>
       <button class="trxDot green" type="button" data-window-control="fullscreen"${fullscreenControl} aria-label="Toggle fullscreen"></button>
     </div>
