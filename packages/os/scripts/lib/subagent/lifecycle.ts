@@ -410,7 +410,7 @@ export async function waitForDurableSubagentRun(
 ): Promise<{ run: DurableSubagentRun; timedOut: boolean }> {
   const deadline = Date.now() + Math.max(0, waitMs);
   let current = reconcileDurableSubagentRun(run, env, parser);
-  while (!isDurableWaitSettled(current.status) && Date.now() < deadline) {
+  while (!isDurableWaitSettled(current) && Date.now() < deadline) {
     try {
       await new Promise((resolve) => setTimeout(resolve, Math.min(50, Math.max(1, deadline - Date.now()))));
       const read = readDurableSubagentRun(current.runId, env);
@@ -431,7 +431,7 @@ export async function waitForDurableSubagentRun(
       return { run: unknown, timedOut: false };
     }
   }
-  return { run: current, timedOut: !isDurableWaitSettled(current.status) };
+  return { run: current, timedOut: !isDurableWaitSettled(current) };
 }
 
 export function cancelDurableSubagentRun(
@@ -545,8 +545,18 @@ function isTerminal(status: DurableSubagentStatus): boolean {
   return status === 'completed' || status === 'failed' || status === 'timed_out' || status === 'completion_unknown';
 }
 
-function isDurableWaitSettled(status: DurableSubagentStatus): boolean {
-  return status === 'completed' || status === 'failed' || status === 'timed_out' || status === 'cancelled';
+function isDurableWaitSettled(run: DurableSubagentRun): boolean {
+  if (
+    run.status === 'completed' ||
+    run.status === 'failed' ||
+    run.status === 'timed_out' ||
+    run.status === 'cancelled'
+  ) {
+    return true;
+  }
+  if (run.status !== 'completion_unknown') return false;
+  if (run.pid) return !isProcessAlive(run.pid);
+  return Date.now() - run.startedAt >= STARTUP_GRACE_MS;
 }
 
 function isProcessAlive(pid: number): boolean {
