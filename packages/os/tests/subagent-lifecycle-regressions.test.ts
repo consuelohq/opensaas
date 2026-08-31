@@ -772,6 +772,7 @@ describe('durable subagent lifecycle regressions', () => {
 
       expect(waited.run.status).toBe('completed');
       expect(waited.run.finalMessage).toBe('pidless marker handoff complete');
+      expect(waited.run.error).toBeUndefined();
       expect(waited.timedOut).toBe(false);
     } finally {
       await markerPublished;

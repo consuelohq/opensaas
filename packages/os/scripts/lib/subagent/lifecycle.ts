@@ -696,6 +696,9 @@ function reconcileOwnedExitMarker(
     ...(typeof parsed.stderrChars === 'number' ? { stderrChars: parsed.stderrChars } : {}),
     ...(terminalError ? { error: terminalError } : exit.error ? { error: exit.error } : {}),
   };
+  if (exit.outcome === 'completed' && !terminalError && !exit.error) {
+    delete updated.error;
+  }
   return persistReconciledState(statePath, run, updated, true);
 }
 
