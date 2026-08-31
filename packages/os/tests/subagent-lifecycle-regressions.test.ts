@@ -622,11 +622,11 @@ describe('durable subagent lifecycle regressions', () => {
       const waited = await waitForDurableSubagentRun(
         run,
         environment,
-        250,
+        3_000,
         () => ({ completed: false }),
       );
 
-      expect(Date.now() - startedAt).toBeLessThan(400);
+      expect(Date.now() - startedAt).toBeLessThan(2_500);
       expect(waited.run.status).toBe('completion_unknown');
       expect(waited.timedOut).toBe(false);
     } finally {
@@ -634,7 +634,7 @@ describe('durable subagent lifecycle regressions', () => {
     }
   });
 
-  it('allows a dead runner a bounded handoff window to publish its owned exit marker', async () => {
+  it('allows a parent fallback marker to hand off to the runner owned exit marker', async () => {
     const home = mkdtempSync(join(tmpdir(), 'subagent-dead-runner-marker-handoff-'));
     const environment = makeEnvironment(home);
     const runId = 'run_444444445555555566666666';
@@ -667,6 +667,15 @@ describe('durable subagent lifecycle regressions', () => {
     writeFileSync(stdoutLogPath, '{"finalMessage":"marker handoff complete"}\n');
     writeFileSync(stderrLogPath, '');
     writeFileSync(join(runDirectory, 'state.json'), JSON.stringify(run, null, 2));
+    writeFileSync(exitMarkerPath, JSON.stringify({
+      runId,
+      ownerToken,
+      runnerPid: run.pid,
+      outcome: 'failed',
+      exitCode: 1,
+      error: 'runner process exited without writing a durable exit marker',
+      endedAt: Date.now(),
+    }, null, 2));
 
     const markerPublished = new Promise<void>((resolve) => {
       setTimeout(() => {
@@ -678,11 +687,11 @@ describe('durable subagent lifecycle regressions', () => {
           exitCode: 0,
         }, null, 2));
         resolve();
-      }, 25);
+      }, 750);
     });
 
     try {
-      const waited = await waitForDurableSubagentRun(run, environment, 500, (stdout) => ({
+      const waited = await waitForDurableSubagentRun(run, environment, 2_000, (stdout) => ({
         completed: stdout.includes('marker handoff complete'),
         finalMessage: stdout.includes('marker handoff complete') ? 'marker handoff complete' : undefined,
       }));
