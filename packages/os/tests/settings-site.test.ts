@@ -36,7 +36,7 @@ describe('configuration site', () => {
 
     expect(snapshot.skills).toEqual([]);
     expect(snapshot.runBooks.length).toBeGreaterThan(0);
-    expect(html).toContain('<title>Overview - Consuelo OS</title>');
+    expect(html).toContain('<title>Home - Consuelo OS</title>');
     expect(html).toContain('<link rel="icon" href="https://consuelohq.com/favicon.svg" type="image/svg+xml" />');
     expect(html).toContain('<link rel="icon" href="https://consuelohq.com/favicon-32x32.png" sizes="32x32" type="image/png" />');
     expect(html).toContain('<link rel="apple-touch-icon" href="https://consuelohq.com/apple-touch-icon.png" />');
@@ -51,7 +51,10 @@ describe('configuration site', () => {
     expect(html).toContain('href="/tools"');
     expect(html).toContain('href="/nodes"');
     expect(html).toContain('href="/secrets"');
-    expect(html).toContain('>Overview</span>');
+    expect(html).toContain('>Home</span>');
+    expect(html).toContain('<h1>Home</h1>');
+    expect(html).toContain('Home shows live activity and operating posture first.');
+    expect(html).not.toContain('Overview shows live activity and operating posture first.');
     expect(html).not.toContain('Workspace health and context.');
     expect(html).toContain('href="https://docs.consuelohq.com/"');
     expect(html).toContain('target="_blank" rel="noopener noreferrer" href="https://docs.consuelohq.com/"');
@@ -106,6 +109,7 @@ describe('configuration site', () => {
     expect(html).toContain("credentials: 'same-origin'");
     expect(html).toContain("cache: 'no-store'");
     expect(html).toContain('sessionStorage.setItem(OVERVIEW_HEATMAP_CACHE_KEY');
+    expect(html).toContain('renderOverviewHeatmap(cached || aggregateOverviewHeatmap([]));');
     expect(html).toContain('tabindex="0"');
     expect(html).toContain("matchMedia('(prefers-reduced-motion: reduce)')");
     expect(html).toContain('globalThis.gsap');
