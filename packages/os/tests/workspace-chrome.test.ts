@@ -4,7 +4,7 @@ import { renderWorkspaceChromeBar } from '../scripts/lib/workspace-chrome';
 
 describe('workspace chrome custom routes', () => {
   it('renders validated launcher sections in the current route menu and turns the private dashboard link into a same-origin handoff', () => {
-    const html = renderWorkspaceChromeBar('overview', 'Overview', {
+    const html = renderWorkspaceChromeBar('overview', 'Home', {
       extraSections: [
         {
           id: 'internal',
@@ -20,6 +20,8 @@ describe('workspace chrome custom routes', () => {
     });
 
     expect(html).toContain('data-custom-route-group="internal"');
+    expect(html).toContain('>Home</span>');
+    expect(html).toContain('aria-label="Go to Home"');
     expect(html).toContain('>Internal &lt;ops&gt;</p>');
     expect(html).not.toContain('<ops>');
     expect(html).toContain('>Users &amp; installs</span>');

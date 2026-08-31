@@ -62,9 +62,9 @@ describe('workspace chrome launcher customization', () => {
     }
 
     const root = readFileSync(join(home, 'sites', 'index.html'), 'utf8');
-    expect(root).toContain('<title>Overview - Consuelo OS</title>');
+    expect(root).toContain('<title>Home - Consuelo OS</title>');
     expect(root).toContain('data-workspace-shell');
-    expect(root).toContain('<h1>Overview</h1>');
+    expect(root).toContain('<h1>Home</h1>');
   });
 
   it('keeps the stock workspace menu unchanged when no launcher overlay exists', () => {
@@ -88,7 +88,7 @@ describe('workspace chrome launcher customization', () => {
     });
 
     const html = readFileSync(join(home, 'sites', 'index.html'), 'utf8');
-    expect(html).toContain('<title>Overview - Consuelo OS</title>');
+    expect(html).toContain('<title>Home - Consuelo OS</title>');
     expect(html).toContain('data-workspace-route-trigger');
     expect(html).not.toContain('Welcome to Consuelo OS');
     expect(html).not.toContain('data-custom-route-group=');

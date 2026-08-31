@@ -50,7 +50,7 @@ function node(input: {
 
 describe('internal launcher regression contracts', () => {
   it('keeps the owner route before configure in a title-only responsive menu', () => {
-    const html = renderWorkspaceChromeBar('overview', 'Overview', {
+    const html = renderWorkspaceChromeBar('overview', 'Home', {
       extraSections: [
         {
           id: 'internal',
