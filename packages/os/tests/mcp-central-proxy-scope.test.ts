@@ -1,4 +1,6 @@
 import { describe, expect, test } from 'bun:test';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 
 import {
   centralMcpOperationScope,
@@ -33,10 +35,10 @@ describe('central MCP proxy scope enforcement', () => {
   });
 
   test('should keep the central read-only classifier aligned when the facade manifest changes', async () => {
-    const manifest = await Bun.file(new URL(
+    const manifest = JSON.parse(readFileSync(fileURLToPath(new URL(
       '../manifests/generated/tool.manifest.json',
       import.meta.url,
-    )).json() as {
+    )), 'utf8')) as {
       tools: Array<{
         name: string;
         kind: string;
