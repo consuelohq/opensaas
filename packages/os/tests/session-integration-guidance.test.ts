@@ -1,8 +1,9 @@
 import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
-const root = process.cwd();
+const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 const read = (path: string) => readFileSync(join(root, path), 'utf8');
 
 describe('session integration guidance', () => {
@@ -22,6 +23,4 @@ describe('session integration guidance', () => {
     expect(taskSkill).toContain('session.start({ kind: "work", path })');
     expect(taskSkill).toContain('must never be used to edit the managed default repository or a registered task worktree');
   });
-
-
 });
