@@ -69,4 +69,11 @@ describe('session integration guidance', () => {
       expect(guidance).toContain('process.exit(proc.exitCode ?? 1)');
     }
   });
+
+  it('recommends supported typed patch transport', () => {
+    const taskSkill = read('packages/os/skills/task/SKILL.md');
+
+    expect(taskSkill).not.toContain('fs.patch');
+    expect(taskSkill).toContain('fs.apply_patch with patchText or patchFile');
+  });
 });
