@@ -264,7 +264,8 @@ type WorkerExecutionContext = {
 
 const DEFAULT_OWNER = 'consuelohq';
 const DEFAULT_REPO = 'opensaas';
-const COCKPIT_ORIGIN = 'https://diffs.consuelohq.com';
+const WORKSPACE_DIFFS_ORIGIN = 'https://internal.consuelohq.com/diffs';
+const LEGACY_WORKER_ORIGIN = 'https://diffs.consuelohq.com';
 const MAX_PAGES = 10;
 const INDEX_OPEN_PULL_LIMIT = 75;
 const INDEX_RECENT_PULL_LIMIT = 75;
@@ -392,7 +393,7 @@ export function parseRepoLocator(input: string, defaultRepo = `${DEFAULT_OWNER}/
 }
 
 export function buildDiffCockpitUrl(locator: PullRequestLocator): string {
-  return `${COCKPIT_ORIGIN}/${encodeURIComponent(locator.owner)}/${encodeURIComponent(
+  return `${WORKSPACE_DIFFS_ORIGIN}/${encodeURIComponent(locator.owner)}/${encodeURIComponent(
     locator.repo,
   )}/pull/${locator.number}`;
 }
@@ -2293,7 +2294,7 @@ async function handleGithubWebhook(deps: GithubWebhookDeps): Promise<Response> {
     return internalJson({ ok: false, error: 'missing pull request locator' }, 400);
   }
   try {
-    const invalidated = await invalidatePullRequestReviewCache(deps.edgeCache, COCKPIT_ORIGIN, { owner, repo: repoName, number: pullNumber });
+    const invalidated = await invalidatePullRequestReviewCache(deps.edgeCache, LEGACY_WORKER_ORIGIN, { owner, repo: repoName, number: pullNumber });
     return internalJson({ ok: true, event, action, invalidated: [invalidated.path], edgeInvalidated: invalidated.edgeInvalidated });
   } catch (error: unknown) {
     return internalJson({ ok: false, error: getErrorMessage(error) }, 502);

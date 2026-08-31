@@ -42,7 +42,7 @@ do not answer architecture questions from memory. search memory, read files, the
 
 ### diff_cockpit — open the live PR review cockpit
 
-Operator launcher for the Cloudflare-hosted live PR review cockpit. The script opens a canonical `diffs.consuelohq.com` URL in Arc and does not generate a static tmp review page. The first phase supports a single PR route with live GitHub data, a file tree, a diff/code review surface, and a right review drawer that stays closed by default.
+Operator launcher for the authenticated Consuelo OS Diffs surface. The script opens the canonical `internal.consuelohq.com/diffs` URL in Arc and does not generate a static tmp review page. The review surface uses the workspace's configured GitHub connection.
 
 ```bash
 bun run diff_cockpit -- 708
@@ -53,15 +53,12 @@ bun run diff_cockpit -- consuelohq/opensaas/pull/708
 
 Default repo for bare PR numbers: `consuelohq/opensaas`. Override it with `--repo owner/repo`.
 
-Related package commands:
+The shared rendering/loading package is tested locally but is not deployed as its own Worker:
 
 ```bash
-cd packages/diff-cockpit && bun run dev
-cd packages/diff-cockpit && bun run deploy
 cd packages/diff-cockpit && bun run test
+cd packages/diff-cockpit && bun run typecheck
 ```
-
-Deploy target: `diffs.consuelohq.com` via Cloudflare Workers. Provide `GITHUB_TOKEN` or `GH_TOKEN` to the Worker when private repo access or higher GitHub API limits are needed.
 
 ### os:release — release all public Consuelo OS surfaces
 
