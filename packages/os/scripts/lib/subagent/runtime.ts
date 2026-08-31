@@ -562,8 +562,10 @@ function durableSubagentParser(provider: SubagentProvider, traceId: string) {
   return (stdout: string, stderr: string) => {
     const parsed = parseSubagentOutput(provider, stdout);
     const events = parseSubagentTraceEvents(provider, stdout);
+    const terminalError = provider === 'grok' ? grokCompletionFailure(stdout) : undefined;
     return {
-      completed: Boolean(parsed.finalMessage),
+      completed: Boolean(parsed.finalMessage) && !terminalError,
+      ...(terminalError ? { terminalError } : {}),
       ...(parsed.finalMessage ? { finalMessage: parsed.finalMessage } : {}),
       ...(parsed.usage ? { usage: parsed.usage } : {}),
       summary: buildSubagentRunSummary({ traceId, events, finalMessage: parsed.finalMessage, stdout: `${stdout}${stderr}` }),
@@ -1287,19 +1289,6 @@ async function executeGrokSubagent(
   if (input.action === 'run') {
     const waited = await waitForDurableSubagentRun(run, context.env, input.timeoutMs, durableSubagentParser('grok', context.traceId));
     run = waited.run;
-    if (run.status === 'completed') {
-      const logs = readDurableSubagentLogs(run, { full: true });
-      const grokError = grokCompletionFailure(logs.stdout);
-      if (grokError) {
-        run = {
-          ...run,
-          status: 'failed',
-          exitCode: 1,
-          error: grokError,
-          updatedAt: Date.now(),
-        };
-      }
-    }
     return durableSubagentResult(entry, context, run, input.action, waited.timedOut ? 'TIMEOUT' : durableTerminalOutcomeCode(run));
   }
   return durableSubagentResult(entry, context, run, input.action, 'OK');

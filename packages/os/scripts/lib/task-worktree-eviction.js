@@ -136,6 +136,9 @@ function pruneExpiredTaskRecoveryArchives(options = {}) {
   const nowMs = nowValue instanceof Date ? nowValue.getTime() : Number(nowValue);
   if (!Number.isFinite(nowMs)) throw new Error('task recovery archive now must resolve to a timestamp');
   const root = path.join(path.resolve(home), 'node', 'tasks', 'archives');
+  const protectedSnapshotRoots = new Set(
+    (options.protectedSnapshotRoots || []).map((value) => path.resolve(String(value))),
+  );
   const removed = [];
   if (!fs.existsSync(root)) return { removed };
   for (const sessionName of fs.readdirSync(root)) {
@@ -148,6 +151,7 @@ function pruneExpiredTaskRecoveryArchives(options = {}) {
       let snapshotStat;
       try { snapshotStat = fs.lstatSync(snapshotRoot); } catch { continue; }
       if (!snapshotStat.isDirectory()) continue;
+      if (protectedSnapshotRoots.has(path.resolve(snapshotRoot))) continue;
       if (nowMs - snapshotStat.mtimeMs < maxAgeMs) continue;
       fs.rmSync(snapshotRoot, { recursive: true, force: true });
       removed.push(snapshotRoot);
@@ -257,7 +261,7 @@ function createVerifiedTaskRecoveryArchive(input) {
       worktreePath,
       createdAt: timestamp,
       headSha: stateBefore.headSha,
-      anchorSha: resolveBundleAnchorSha(repoRoot, stateBefore.remoteSha) || stateBefore.remoteSha || null,
+      anchorSha: anchorSha || null,
       checkpointSha,
       treeSha,
       exportedRef,

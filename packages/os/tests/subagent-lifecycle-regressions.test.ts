@@ -825,6 +825,65 @@ describe('durable subagent lifecycle regressions', () => {
     }
   });
 
+  it('persists parser terminal failures from a completed provider exit', () => {
+    const home = mkdtempSync(join(tmpdir(), 'os-lifecycle-parser-terminal-'));
+    const environment = makeEnvironment(home);
+    const runId = 'run_aaaabbbbccccddddeeee0000';
+    const runDirectory = resolveSubagentRunDirectory(runId, environment);
+    mkdirSync(runDirectory, { recursive: true });
+    const stdoutLogPath = join(runDirectory, 'stdout.jsonl');
+    const stderrLogPath = join(runDirectory, 'stderr.log');
+    const exitMarkerPath = join(runDirectory, 'exit.json');
+    const ownerToken = 'owner-parser-terminal';
+    writeFileSync(stdoutLogPath, '{"text":"partial","stopReason":"Cancelled"}\n');
+    writeFileSync(stderrLogPath, '');
+    writeFileSync(exitMarkerPath, JSON.stringify({
+      runId,
+      ownerToken,
+      runnerPid: 65534,
+      outcome: 'completed',
+      exitCode: 0,
+      endedAt: Date.now(),
+    }, null, 2));
+    const run: DurableSubagentRun = {
+      runId,
+      traceId: 'trc_parser_terminal',
+      fingerprint: 'parser-terminal',
+      provider: 'grok',
+      policy: 'read',
+      cwd: home,
+      instructionPath: join(runDirectory, 'instruction.md'),
+      command: ['grok'],
+      ownerToken,
+      exitMarkerPath,
+      status: 'running',
+      timeoutMs: 5_000,
+      startedAt: Date.now() - 1_000,
+      updatedAt: Date.now(),
+      stdoutLogPath,
+      stderrLogPath,
+    };
+    writeFileSync(join(runDirectory, 'state.json'), JSON.stringify(run, null, 2));
+    try {
+      const reconciled = reconcileDurableSubagentRun(run, environment, () => ({
+        completed: false,
+        terminalError: 'grok provider ended with stop reason Cancelled',
+      }));
+      expect(reconciled.status).toBe('failed');
+      expect(reconciled.exitCode).toBe(1);
+      expect(reconciled.error).toBe(
+        'grok provider ended with stop reason Cancelled',
+      );
+      const persisted = JSON.parse(
+        readFileSync(join(runDirectory, 'state.json'), 'utf8'),
+      ) as DurableSubagentRun;
+      expect(persisted.status).toBe('failed');
+      expect(persisted.error).toBe(reconciled.error);
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
+  });
+
   it('writes a parent fallback exit marker when the runner dies without publishing one', async () => {
     const home = mkdtempSync(join(tmpdir(), 'os-lifecycle-fallback-exit-'));
     const instructionPath = join(home, 'instructions.md');
@@ -842,6 +901,7 @@ describe('durable subagent lifecycle regressions', () => {
       });
       if (!started.ok) throw new Error(started.message);
       expect(typeof started.run.pid).toBe('number');
+      const providerPid = await waitForProviderPid(started.run);
       const exitMarkerPath = started.run.exitMarkerPath;
       expect(typeof exitMarkerPath).toBe('string');
       if (started.run.pid) {
@@ -863,10 +923,40 @@ describe('durable subagent lifecycle regressions', () => {
       expect(marker.ownerToken).toBe(started.run.ownerToken);
       expect(typeof marker.runnerPid).toBe('number');
       expect(marker.outcome).toBe('failed');
+      expect(await waitForProcessGroupExit(providerPid)).toBe(true);
     } finally {
       rmSync(home, { recursive: true, force: true });
     }
   }, 25_000);
+
+  it('keeps a nonzero runner exit failed even when stdout is present', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'os-lifecycle-nonzero-output-'));
+    const instructionPath = join(home, 'instructions.md');
+    try {
+      const executable = writeExecutable(home, 'nonzero-provider', [
+        '#!/bin/sh',
+        'echo "partial provider output"',
+        'exit 1',
+      ].join(String.fromCharCode(10)));
+      writeFileSync(instructionPath, 'instruction');
+      const environment = makeEnvironment(home);
+      const started = startDurableSubagentRun({
+        ...startInput(executable, home, instructionPath, 'req-nonzero-output'),
+        env: environment,
+      });
+      if (!started.ok) throw new Error(started.message);
+      const waited = await waitForDurableSubagentRun(
+        started.run,
+        environment,
+        5_000,
+        () => ({ completed: false }),
+      );
+      expect(waited.run.status).toBe('failed');
+      expect(waited.run.exitCode).toBe(1);
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
+  });
 
   it('keeps waiting through completion_unknown until an owned exit marker arrives', async () => {
     const home = mkdtempSync(join(tmpdir(), 'os-lifecycle-wait-unknown-'));
@@ -874,6 +964,7 @@ describe('durable subagent lifecycle regressions', () => {
     try {
       const executable = writeExecutable(home, 'wait-unknown-provider', [
         '#!/bin/sh',
+        'while [ ! -f release-provider ]; do sleep 0.02; done',
         "echo '{\"finalMessage\":\"unknown recovered\"}'",
       ].join(String.fromCharCode(10)));
       writeFileSync(instructionPath, 'instruction');
@@ -884,11 +975,7 @@ describe('durable subagent lifecycle regressions', () => {
         timeoutMs: 15_000,
       });
       if (!started.ok) throw new Error(started.message);
-      const exitDeadline = Date.now() + 15_000;
-      while (!started.run.exitMarkerPath || !existsSync(started.run.exitMarkerPath)) {
-        if (Date.now() >= exitDeadline) throw new Error('owned exit marker was not published');
-        await new Promise((resolve) => setTimeout(resolve, 25));
-      }
+      expect(started.run.exitMarkerPath && existsSync(started.run.exitMarkerPath)).toBe(false);
       const unknown: DurableSubagentRun = {
         ...started.run,
         status: 'completion_unknown',
@@ -899,10 +986,14 @@ describe('durable subagent lifecycle regressions', () => {
         join(resolveSubagentRunDirectory(started.run.runId, environment), 'state.json'),
         JSON.stringify(unknown, null, 2),
       );
-      const waited = await waitForDurableSubagentRun(unknown, environment, 15_000, (stdout) => ({
+      const wait = waitForDurableSubagentRun(unknown, environment, 15_000, (stdout) => ({
         completed: stdout.includes('unknown recovered'),
         finalMessage: stdout.includes('unknown recovered') ? 'unknown recovered' : undefined,
       }));
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      expect(started.run.exitMarkerPath && existsSync(started.run.exitMarkerPath)).toBe(false);
+      writeFileSync(join(home, 'release-provider'), 'release\n');
+      const waited = await wait;
       expect(waited.run.status).toBe('completed');
       expect(waited.timedOut).toBe(false);
     } finally {

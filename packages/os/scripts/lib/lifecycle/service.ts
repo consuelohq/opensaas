@@ -97,8 +97,7 @@ function installedMacRestartableSidecarLaunchAgents(environment?: NodeJS.Process
 }
 
 function isBestEffortMacSidecar(label: string): boolean {
-  return MAC_BEST_EFFORT_SIDECAR_SERVICE_LABELS.has(label)
-    || MAC_RESTARTABLE_SIDECAR_SERVICE_PREFIXES.some((prefix) => label.startsWith(prefix));
+  return MAC_BEST_EFFORT_SIDECAR_SERVICE_LABELS.has(label);
 }
 export function createReloadServiceController(input: {
   osRoot: string;

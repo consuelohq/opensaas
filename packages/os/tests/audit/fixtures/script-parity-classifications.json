@@ -100,7 +100,7 @@
     },
     "scripts/confidence-score.js": {
       "status": "changed-needs-review",
-      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible. Same-path OS and workspace copies now differ, so the status was corrected to changed-needs-review."
+      "reason": "Same-path OS and workspace copies differ and require explicit review before syncing or porting."
     },
     "scripts/confirm.js": {
       "status": "changed-needs-review",
@@ -165,7 +165,7 @@
     },
     "scripts/exploit.js": {
       "status": "changed-needs-review",
-      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible. Same-path OS and workspace copies now differ, so the status was corrected to changed-needs-review."
+      "reason": "Same-path OS and workspace copies differ and require explicit review before syncing or porting."
     },
     "scripts/explore-bench.js": {
       "status": "changed-needs-review",
@@ -1301,7 +1301,7 @@
     },
     "scripts/lib/task-worktree-eviction.js": {
       "status": "changed-needs-review",
-      "reason": "scripts/lib/task-worktree-eviction.js is byte-identical in both workspace and OS script trees, so parity classifies it as shared unchanged implementation. Same-path OS and workspace copies now differ, so the status was corrected to changed-needs-review."
+      "reason": "Same-path OS and workspace copies differ and require explicit review before syncing or porting."
     },
     "scripts/lib/task-worktree-gc-scheduler.ts": {
       "status": "os-only-needs-review",
@@ -1309,7 +1309,7 @@
     },
     "scripts/lib/task-worktree-gc.js": {
       "status": "changed-needs-review",
-      "reason": "scripts/lib/task-worktree-gc.js is byte-identical in both workspace and OS script trees, so parity classifies it as shared unchanged implementation. Same-path OS and workspace copies now differ, so the status was corrected to changed-needs-review."
+      "reason": "Same-path OS and workspace copies differ and require explicit review before syncing or porting."
     },
     "scripts/lib/tool-scope-authorization.ts": {
       "status": "os-only-intentional",

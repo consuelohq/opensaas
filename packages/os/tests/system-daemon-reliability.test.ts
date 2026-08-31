@@ -518,6 +518,9 @@ describe('macOS runtime service reliability', () => {
     mkdirSync(join(consueloHome, 'node', 'security', 'generated'), {
       recursive: true,
     });
+    const watchdogState = join(consueloHome, 'node', 'runtime', 'watchdog');
+    mkdirSync(watchdogState, { recursive: true });
+    writeFileSync(join(watchdogState, 'public-route-failure-count'), '2\n');
     writeFileSync(heartbeatConfig, '{}');
     writeExecutable(join(fakeBin, 'lsof'), '#!/bin/bash\nexit 0\n');
     writeExecutable(join(fakeBin, 'curl'), '#!/bin/bash\nexit 0\n');
@@ -537,7 +540,7 @@ describe('macOS runtime service reliability', () => {
       WORKSPACE_WATCHDOG_PATH: `${fakeBin}:/usr/bin:/bin:/usr/sbin:/sbin`,
       WORKSPACE_WATCHDOG_BUN_BIN: join(fakeBin, 'bun'),
       WORKSPACE_WATCHDOG_DISABLE_EXTERNAL: '1',
-      WORKSPACE_WATCHDOG_PUBLIC_ROUTE_FAILURE_THRESHOLD: '1',
+      WORKSPACE_WATCHDOG_PUBLIC_ROUTE_FAILURE_THRESHOLD: '3',
       WORKSPACE_WATCHDOG_MIN_RESTART_GAP_SECONDS: '0',
       WATCHDOG_EVENT_LOG: eventLog,
     });
@@ -555,6 +558,7 @@ describe('macOS runtime service reliability', () => {
     const fakeBin = join(fixtureRoot, 'bin');
     const home = join(fixtureRoot, 'home');
     const consueloHome = join(home, '.consuelo');
+    const watchdogState = join(consueloHome, 'node', 'runtime', 'watchdog');
     const eventLog = join(fixtureRoot, 'events.log');
     const heartbeatConfig = join(
       consueloHome,
@@ -568,6 +572,8 @@ describe('macOS runtime service reliability', () => {
     mkdirSync(join(consueloHome, 'node', 'security', 'generated'), {
       recursive: true,
     });
+    mkdirSync(watchdogState, { recursive: true });
+    writeFileSync(join(watchdogState, 'public-route-failure-count'), '2\n');
     writeFileSync(heartbeatConfig, '{}');
     writeExecutable(join(fakeBin, 'lsof'), '#!/bin/bash\nexit 0\n');
     writeExecutable(join(fakeBin, 'curl'), '#!/bin/bash\nexit 0\n');
@@ -598,5 +604,8 @@ describe('macOS runtime service reliability', () => {
     ]);
     expect(result.stdout).toContain('public connector heartbeat rate-limited');
     expect(result.stdout).not.toContain('restarting com.consuelo.system');
+    expect(
+      readFileSync(join(watchdogState, 'public-route-failure-count'), 'utf8'),
+    ).toBe('2\n');
   });
 });
