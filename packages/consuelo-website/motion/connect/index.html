@@ -124,29 +124,6 @@
         position: absolute;
         inset: 0;
         pointer-events: none;
-        border: 12px solid var(--blue);
-      }
-
-      .scene-overlay::before,
-      .scene-overlay::after {
-        content: "";
-        position: absolute;
-        z-index: 2;
-        background: var(--blue);
-      }
-
-      .scene-overlay::before {
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 12px;
-      }
-
-      .scene-overlay::after {
-        right: 0;
-        bottom: 0;
-        width: 12px;
-        height: 100%;
       }
 
       .surface-tag {
@@ -248,58 +225,6 @@
         opacity: 0.72;
       }
 
-      .transition-wipe {
-        position: absolute;
-        inset: -1px;
-        z-index: 10;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        overflow: hidden;
-        color: var(--paper);
-        background: var(--blue);
-        transform: translateX(-100%);
-      }
-
-      .transition-wipe::before,
-      .transition-wipe::after {
-        content: "";
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        width: 14px;
-        background: var(--paper);
-      }
-
-      .transition-wipe::before {
-        left: 26px;
-      }
-
-      .transition-wipe::after {
-        right: 26px;
-      }
-
-      .transition-wipe__label {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 10px;
-        font-family: var(--mono);
-        font-size: 28px;
-        line-height: 1;
-        font-weight: 700;
-        letter-spacing: 0.13em;
-        text-transform: uppercase;
-      }
-
-      .transition-wipe__label strong {
-        font-family: var(--sans);
-        font-size: 92px;
-        line-height: 0.9;
-        letter-spacing: -0.055em;
-        text-transform: lowercase;
-      }
-
       .outro {
         justify-content: flex-start;
         gap: 56px;
@@ -355,12 +280,12 @@
       id="root"
       data-composition-id="main"
       data-start="0"
-      data-duration="15.2"
+      data-duration="15.8"
       data-width="2032"
       data-height="1192"
       data-fps="30"
     >
-      <section id="intro" class="clip intro" data-layout-allow-occlusion data-layout-allow-overlap data-start="0" data-duration="1.05" data-track-index="3">
+      <section id="intro" class="clip intro" data-layout-allow-occlusion data-layout-allow-overlap data-start="0" data-duration="1.10" data-track-index="3">
         <div class="intro__meta">
           <span>FIG. 01 / CONNECT</span>
           <span>RECORDED PRODUCT EVIDENCE</span>
@@ -373,8 +298,8 @@
         </div>
       </section>
 
-      <video id="chatgpt-video" class="evidence-video" data-start="1.05" data-duration="3.05" data-track-index="0" src=".local-assets/chatgpt.mp4" muted playsinline></video>
-      <section id="chatgpt-overlay" class="clip scene-overlay" data-layout-allow-occlusion data-start="1.05" data-duration="3.05" data-track-index="2">
+      <video id="chatgpt-video" class="evidence-video" data-layout-allow-occlusion data-layout-allow-overlap data-start="0.95" data-duration="3.50" data-track-index="0" src=".local-assets/chatgpt.mp4" muted playsinline></video>
+      <section id="chatgpt-overlay" class="clip scene-overlay" data-layout-allow-occlusion data-layout-allow-overlap data-start="0.95" data-duration="3.20" data-track-index="2">
         <div class="surface-tag"><span class="surface-tag__number">01</span><strong class="surface-tag__name">chatgpt</strong></div>
         <div class="capture-note"><span>recorded session</span><strong>same tool contract</strong></div>
         <div class="sequence-strip">
@@ -385,8 +310,8 @@
         </div>
       </section>
 
-      <video id="grok-video" class="evidence-video" data-start="4.10" data-duration="3.05" data-track-index="0" src=".local-assets/grok.mp4" muted playsinline></video>
-      <section id="grok-overlay" class="clip scene-overlay" data-layout-allow-occlusion data-start="4.10" data-duration="3.05" data-track-index="2">
+      <video id="grok-video" class="evidence-video" data-layout-allow-occlusion data-layout-allow-overlap data-start="4.15" data-duration="3.50" data-track-index="0" src=".local-assets/grok.mp4" muted playsinline></video>
+      <section id="grok-overlay" class="clip scene-overlay" data-layout-allow-occlusion data-layout-allow-overlap data-start="4.15" data-duration="3.20" data-track-index="2">
         <div class="surface-tag"><span class="surface-tag__number">02</span><strong class="surface-tag__name">grok</strong></div>
         <div class="capture-note"><span>recorded session</span><strong>same tool contract</strong></div>
         <div class="sequence-strip">
@@ -397,8 +322,8 @@
         </div>
       </section>
 
-      <video id="codex-video" class="evidence-video" data-start="7.15" data-duration="3.05" data-track-index="0" src=".local-assets/codex.mp4" muted playsinline></video>
-      <section id="codex-overlay" class="clip scene-overlay" data-layout-allow-occlusion data-start="7.15" data-duration="3.05" data-track-index="2">
+      <video id="codex-video" class="evidence-video" data-layout-allow-occlusion data-layout-allow-overlap data-start="7.35" data-duration="3.50" data-track-index="0" src=".local-assets/codex.mp4" muted playsinline></video>
+      <section id="codex-overlay" class="clip scene-overlay" data-layout-allow-occlusion data-layout-allow-overlap data-start="7.35" data-duration="3.20" data-track-index="2">
         <div class="surface-tag"><span class="surface-tag__number">03</span><strong class="surface-tag__name">codex</strong></div>
         <div class="capture-note"><span>recorded session</span><strong>same tool contract</strong></div>
         <div class="sequence-strip">
@@ -409,8 +334,8 @@
         </div>
       </section>
 
-      <video id="opencode-video" class="evidence-video" data-start="10.20" data-duration="3.05" data-track-index="0" src=".local-assets/opencode.mp4" muted playsinline></video>
-      <section id="opencode-overlay" class="clip scene-overlay" data-layout-allow-occlusion data-start="10.20" data-duration="3.05" data-track-index="2">
+      <video id="opencode-video" class="evidence-video" data-layout-allow-occlusion data-layout-allow-overlap data-start="10.55" data-duration="3.50" data-track-index="0" src=".local-assets/opencode.mp4" muted playsinline></video>
+      <section id="opencode-overlay" class="clip scene-overlay" data-layout-allow-occlusion data-layout-allow-overlap data-start="10.55" data-duration="3.20" data-track-index="2">
         <div class="surface-tag"><span class="surface-tag__number">04</span><strong class="surface-tag__name">opencode</strong></div>
         <div class="capture-note"><span>recorded session</span><strong>same tool contract</strong></div>
         <div class="sequence-strip">
@@ -421,23 +346,7 @@
         </div>
       </section>
 
-      <div id="wipe-intro" class="clip transition-wipe" data-layout-allow-overflow data-start="0.76" data-duration="0.42" data-track-index="5">
-        <div class="transition-wipe__label"><span>surface 01</span><strong>chatgpt</strong></div>
-      </div>
-      <div id="wipe-grok" class="clip transition-wipe" data-layout-allow-overflow data-start="3.76" data-duration="0.42" data-track-index="5">
-        <div class="transition-wipe__label"><span>surface 02</span><strong>grok</strong></div>
-      </div>
-      <div id="wipe-codex" class="clip transition-wipe" data-layout-allow-overflow data-start="6.81" data-duration="0.42" data-track-index="5">
-        <div class="transition-wipe__label"><span>surface 03</span><strong>codex</strong></div>
-      </div>
-      <div id="wipe-opencode" class="clip transition-wipe" data-layout-allow-overflow data-start="9.86" data-duration="0.42" data-track-index="5">
-        <div class="transition-wipe__label"><span>surface 04</span><strong>opencode</strong></div>
-      </div>
-      <div id="wipe-outro" class="clip transition-wipe" data-layout-allow-overflow data-start="12.91" data-duration="0.42" data-track-index="5">
-        <div class="transition-wipe__label"><span>fig. 01</span><strong>one workspace</strong></div>
-      </div>
-
-      <section id="outro" class="clip outro" data-start="13.25" data-duration="1.95" data-track-index="3">
+      <section id="outro" class="clip outro" data-layout-allow-occlusion data-layout-allow-overlap data-start="13.75" data-duration="2.05" data-track-index="3">
         <div class="outro__meta"><span>FIG. 01 / RESULT</span><span>CONSUELO OS</span></div>
         <div class="outro__rule"></div>
         <h2 class="outro__statement">one tool contract.<br />the workspace stays put.</h2>
@@ -462,36 +371,34 @@
       tl.from("#intro .intro__dek span", { x: 22, opacity: 0, duration: 0.32, ease: "sine.out" }, 0.38);
 
       const sceneStarts = {
-        chatgpt: 1.05,
-        grok: 4.10,
-        codex: 7.15,
-        opencode: 10.20,
+        chatgpt: 0.95,
+        grok: 4.15,
+        codex: 7.35,
+        opencode: 10.55,
       };
 
+      const sceneDuration = 3.50;
+      const sceneFade = 0.30;
+      const overlayDuration = 3.20;
+      const overlayFade = 0.18;
+
+      tl.to("#intro", { opacity: 0, duration: 0.22, ease: "sine.inOut" }, 0.88);
+
       for (const [id, start] of Object.entries(sceneStarts)) {
-        tl.from(`#${id}-video`, { opacity: 0, scale: 0.992, duration: 0.24, ease: "power2.out" }, start);
-        tl.from(`#${id}-overlay .surface-tag`, { x: -34, opacity: 0, duration: 0.36, ease: "expo.out" }, start + 0.16);
-        tl.from(`#${id}-overlay .capture-note`, { y: -22, opacity: 0, duration: 0.30, ease: "power3.out" }, start + 0.22);
-        tl.from(`#${id}-overlay .sequence-strip`, { y: 28, opacity: 0, duration: 0.34, ease: "back.out(1.2)" }, start + 0.25);
+        tl.from(`#${id}-video`, { opacity: 0, duration: sceneFade, ease: "sine.inOut" }, start);
+        tl.from(`#${id}-overlay`, { opacity: 0, duration: sceneFade, ease: "sine.inOut" }, start);
+        tl.from(`#${id}-overlay .surface-tag`, { y: -12, duration: 0.34, ease: "power3.out" }, start + 0.12);
+        tl.from(`#${id}-overlay .capture-note`, { y: -10, duration: 0.30, ease: "power3.out" }, start + 0.16);
+        tl.from(`#${id}-overlay .sequence-strip`, { y: 16, duration: 0.32, ease: "power3.out" }, start + 0.18);
+        tl.to(`#${id}-video`, { opacity: 0, duration: sceneFade, ease: "sine.inOut" }, start + sceneDuration - sceneFade);
+        tl.to(`#${id}-overlay`, { opacity: 0, duration: overlayFade, ease: "sine.inOut" }, start + overlayDuration - overlayFade);
       }
 
-      const wipes = [
-        ["#wipe-intro", 0.76],
-        ["#wipe-grok", 3.76],
-        ["#wipe-codex", 6.81],
-        ["#wipe-opencode", 9.86],
-        ["#wipe-outro", 12.91],
-      ];
-
-      for (const [selector, start] of wipes) {
-        tl.fromTo(selector, { xPercent: -100 }, { xPercent: 100, duration: 0.42, ease: "power4.inOut" }, start);
-        tl.from(`${selector} .transition-wipe__label`, { scale: 0.93, opacity: 0, duration: 0.18, ease: "power2.out" }, start + 0.10);
-      }
-
-      tl.from("#outro .outro__meta span", { y: 26, opacity: 0, duration: 0.34, stagger: 0.05, ease: "power3.out" }, 13.33);
-      tl.from("#outro .outro__rule", { scaleX: 0, duration: 0.44, ease: "power2.out" }, 13.38);
-      tl.from("#outro .outro__statement", { y: 54, opacity: 0, duration: 0.56, ease: "expo.out" }, 13.48);
-      tl.from("#outro .outro__agent", { y: 24, opacity: 0, duration: 0.32, stagger: 0.05, ease: "power3.out" }, 13.72);
+      tl.from("#outro", { opacity: 0, duration: sceneFade, ease: "sine.inOut" }, 13.75);
+      tl.from("#outro .outro__meta span", { y: 26, opacity: 0, duration: 0.34, stagger: 0.05, ease: "power3.out" }, 13.90);
+      tl.from("#outro .outro__rule", { scaleX: 0, duration: 0.44, ease: "power2.out" }, 13.95);
+      tl.from("#outro .outro__statement", { y: 54, opacity: 0, duration: 0.56, ease: "expo.out" }, 14.05);
+      tl.from("#outro .outro__agent", { y: 24, opacity: 0, duration: 0.32, stagger: 0.05, ease: "power3.out" }, 14.28);
 
       window.__timelines["main"] = tl;
     </script>
