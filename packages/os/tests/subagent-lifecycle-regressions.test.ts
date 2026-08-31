@@ -804,15 +804,15 @@ describe('durable subagent lifecycle regressions', () => {
     mkdirSync(runDirectory, { recursive: true });
     const provider = writeExecutable(home, 'setup-failure-provider', [
       '#!/bin/sh',
-      'sleep 2',
+      "trap 'exit 0' TERM",
+      'while true; do sleep 0.05; done',
     ].join('\n'));
-    const stdinPath = join(runDirectory, 'stdin.txt');
+    const stdinPath = join(runDirectory, 'missing-stdin.txt');
     const stdoutLogPath = join(runDirectory, 'stdout.jsonl');
     const stderrLogPath = join(runDirectory, 'stderr.log');
     const exitMarkerPath = join(runDirectory, 'exit.json');
-    const ownerMarkerPath = join(runDirectory, 'missing-parent', 'owner.json');
+    const ownerMarkerPath = join(runDirectory, 'owner.json');
     const runId = 'run_setup_failure_cleanup';
-    writeFileSync(stdinPath, 'instruction');
     writeFileSync(stdoutLogPath, '');
     writeFileSync(stderrLogPath, '');
     writeFileSync(join(runDirectory, 'launch.json'), JSON.stringify({
