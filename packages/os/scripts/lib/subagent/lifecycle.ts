@@ -108,6 +108,7 @@ export type DurableSubagentReadResult =
 const RUN_ID_PATTERN = /^run_[a-f0-9]{24}$/;
 const MAX_PERSISTED_LOG_CHARS = 8_000;
 const STARTUP_GRACE_MS = 2_000;
+const EXIT_MARKER_HANDOFF_GRACE_MS = 250;
 const RUNNER_PATH = fileURLToPath(new URL('./runner.ts', import.meta.url));
 
 export function deriveSubagentRunId(requestId: string | undefined, fallback: string): string {
@@ -555,7 +556,10 @@ function isDurableWaitSettled(run: DurableSubagentRun): boolean {
     return true;
   }
   if (run.status !== 'completion_unknown') return false;
-  if (run.pid) return !isProcessAlive(run.pid);
+  if (run.pid) {
+    if (isProcessAlive(run.pid)) return false;
+    return Date.now() - run.updatedAt >= EXIT_MARKER_HANDOFF_GRACE_MS;
+  }
   return Date.now() - run.startedAt >= STARTUP_GRACE_MS;
 }
 
