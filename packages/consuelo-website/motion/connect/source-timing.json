@@ -1,9 +1,10 @@
 {
   "canvas": { "width": 2032, "height": 1192, "fps": 30 },
+  "edit": { "startBeatDuration": 0.75, "answerBeatDuration": 2.75, "proxyDuration": 3.5, "interAgentFade": 0.3 },
   "sources": [
-    { "agent": "ChatGPT", "capture": "Screen Recording 2026-08-31 at 17.39.04.mov", "mediaStart": 3.7, "proxyDuration": 3.6 },
-    { "agent": "Grok", "capture": "Screen Recording 2026-08-31 at 18.45.19.mov", "mediaStart": 3.8, "proxyDuration": 3.6 },
-    { "agent": "Codex", "capture": "Screen Recording 2026-08-31 at 18.49.06.mov", "mediaStart": 4.7, "proxyDuration": 3.6 },
-    { "agent": "OpenCode", "capture": "Screen Recording 2026-08-31 at 18.53.42.mov", "mediaStart": 4.7, "proxyDuration": 3.6 }
+    { "agent": "ChatGPT", "capture": "Screen Recording 2026-08-31 at 17.39.04.mov", "startMediaStart": 3.7, "answerMediaStart": 19.55 },
+    { "agent": "Grok", "capture": "Screen Recording 2026-08-31 at 18.45.19.mov", "startMediaStart": 3.8, "answerMediaStart": 25.85 },
+    { "agent": "Codex", "capture": "Screen Recording 2026-08-31 at 18.49.06.mov", "startMediaStart": 4.7, "answerMediaStart": 18.75 },
+    { "agent": "OpenCode", "capture": "Screen Recording 2026-08-31 at 18.53.42.mov", "startMediaStart": 4.7, "answerMediaStart": 10.95 }
   ]
 }
