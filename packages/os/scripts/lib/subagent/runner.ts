@@ -99,7 +99,7 @@ try {
     provider = spawn(launch.command[0], launch.command.slice(1), {
       cwd: launch.cwd,
       env: process.env,
-      detached: false,
+      detached: process.platform !== 'win32',
       stdio: ['pipe', stdoutFd, stderrFd],
     }) as ProviderChild;
     writeMarker(launch.ownerMarkerPath, {
@@ -152,11 +152,22 @@ try {
     throw setupError;
   }
 } catch (error: unknown) {
+  const message = error instanceof Error ? error.message : String(error);
   if (provider && !finished) {
+    let completed = false;
+    const finishSetupFailure = () => {
+      if (completed) return;
+      completed = true;
+      finish('failed', 1, null, message);
+    };
+    provider.once('close', finishSetupFailure);
+    provider.once('error', finishSetupFailure);
     signalProviderProcess(provider, 'SIGTERM');
     scheduleProviderProcessEscalation(provider, 250);
+    setTimeout(finishSetupFailure, 1_000);
+  } else {
+    finish('failed', 1, null, message);
   }
-  finish('failed', 1, null, error instanceof Error ? error.message : String(error));
 }
 
 process.on('beforeExit', () => {

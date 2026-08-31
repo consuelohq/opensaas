@@ -121,7 +121,17 @@ describe('subagent orchestration contract', () => {
         timeoutMs: 20_000,
       }), options(worktree, env));
 
-      expect(result.ok, [result.code, result.data?.status, result.message, result.data?.stderr].filter(Boolean).join(' | ')).toBe(true);
+      expect(
+        result.ok,
+        [
+          result.code,
+          result.data?.status,
+          result.message,
+          result.data?.stderr,
+        ]
+          .filter(Boolean)
+          .join(' | '),
+      ).toBe(true);
       expect(result.code).toBe('OK');
       expect(result.data.status).toBe('completed');
       expect(result.data.capabilities.detachedExecution).toBe(true);

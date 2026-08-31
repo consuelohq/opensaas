@@ -56,6 +56,7 @@ export type DurableSubagentRun = {
 
 export type DurableSubagentParser = (stdout: string, stderr: string) => {
   completed: boolean;
+  terminalError?: string;
   finalMessage?: string;
   summary?: unknown;
   usage?: Record<string, number>;
@@ -236,6 +237,7 @@ export function startDurableSubagentRun(
       runId,
       ownerToken,
       exitMarkerPath: starting.exitMarkerPath || path.join(runDir, 'exit.json'),
+      ownerMarkerPath: starting.ownerMarkerPath || path.join(runDir, 'owner.json'),
       stdoutLogPath,
       runnerPid: child.pid,
     });
@@ -642,17 +644,22 @@ function reconcileOwnedExitMarker(
   parsed: ReturnType<DurableSubagentParser>,
   now: number,
 ): DurableSubagentRun {
+  const terminalError = exit.outcome === 'completed' ? parsed.terminalError : undefined;
   const updated: DurableSubagentRun = {
     ...run,
-    status: exit.outcome,
-    ...(exit.exitCode !== undefined ? { exitCode: exit.exitCode } : {}),
+    status: terminalError ? 'failed' : exit.outcome,
+    ...(terminalError
+      ? { exitCode: 1 }
+      : exit.exitCode !== undefined
+        ? { exitCode: exit.exitCode }
+        : {}),
     updatedAt: now,
     ...(parsed.finalMessage ? { finalMessage: parsed.finalMessage } : {}),
     ...(parsed.summary !== undefined ? { summary: parsed.summary } : {}),
     ...(parsed.usage ? { usage: parsed.usage } : {}),
     ...(typeof parsed.stdoutChars === 'number' ? { stdoutChars: parsed.stdoutChars } : {}),
     ...(typeof parsed.stderrChars === 'number' ? { stderrChars: parsed.stderrChars } : {}),
-    ...(exit.error ? { error: exit.error } : {}),
+    ...(terminalError ? { error: terminalError } : exit.error ? { error: exit.error } : {}),
   };
   return persistReconciledState(statePath, run, updated, true);
 }
@@ -685,6 +692,7 @@ function attachRunnerExitFallback(
     runId: string;
     ownerToken: string;
     exitMarkerPath: string;
+    ownerMarkerPath: string;
     stdoutLogPath: string;
     runnerPid?: number;
   },
@@ -713,25 +721,42 @@ function inferFallbackOutcome(input: {
   stdoutLogPath: string;
 }): 'completed' | 'failed' {
   if (input.signal) return 'failed';
-  if (input.code === 0 || input.code === null) return 'completed';
-  try {
-    if (fs.statSync(input.stdoutLogPath).size > 0) return 'completed';
-  } catch {
-    // Missing stdout means the provider never published output.
-  }
-  return 'failed';
+  return input.code === 0 ? 'completed' : 'failed';
 }
 
 function writeFallbackExitMarkerIfMissing(input: {
   runId: string;
   ownerToken: string;
   exitMarkerPath: string;
+  ownerMarkerPath: string;
   stdoutLogPath: string;
   runnerPid?: number;
   code: number | null;
   signal: NodeJS.Signals | null;
 }): void {
   if (fs.existsSync(input.exitMarkerPath)) return;
+  const owner = readJsonObject(input.ownerMarkerPath);
+  if (
+    owner
+    && owner.runId === input.runId
+    && owner.ownerToken === input.ownerToken
+    && typeof owner.providerPid === 'number'
+  ) {
+    const providerPid = owner.providerPid;
+    const provider = {
+      pid: providerPid,
+      kill(signal: NodeJS.Signals) {
+        try {
+          process.kill(providerPid, signal);
+          return true;
+        } catch {
+          return false;
+        }
+      },
+    };
+    signalProviderProcess(provider, 'SIGTERM');
+    scheduleProviderProcessEscalation(provider, 250);
+  }
   const runnerPid = typeof input.runnerPid === 'number' ? input.runnerPid : 0;
   const outcome = inferFallbackOutcome(input);
   const exitCode = outcome === 'completed' ? 0 : (input.code ?? 1);

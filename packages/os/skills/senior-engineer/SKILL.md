@@ -140,7 +140,7 @@ await os.call({
 })
 ```
 
-Treat `explore` as a prior over where to inspect next. After retrieval narrows the map, use `code.call` in read mode to inspect the likely files, confirm exact symbols, and return a task-shaped evidence packet.
+Treat `explore` as a prior over where to inspect next. After retrieval narrows the map, use `fs.read` and `fs.search` to inspect the likely files, confirm exact symbols, and return a task-shaped evidence packet.
 
 # Decision and evidence principles
 
