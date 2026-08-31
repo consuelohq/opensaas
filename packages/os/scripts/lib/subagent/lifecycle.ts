@@ -108,7 +108,10 @@ export type DurableSubagentReadResult =
 const RUN_ID_PATTERN = /^run_[a-f0-9]{24}$/;
 const MAX_PERSISTED_LOG_CHARS = 8_000;
 const STARTUP_GRACE_MS = 2_000;
-const EXIT_MARKER_HANDOFF_GRACE_MS = 250;
+// On loaded hosts, the detached runner can exit before Node dispatches the
+// parent's exit fallback or the runner's atomic marker rename becomes visible.
+const EXIT_MARKER_HANDOFF_GRACE_MS = 2_000;
+const FALLBACK_EXIT_MARKER_ERROR = 'runner process exited without writing a durable exit marker';
 const RUNNER_PATH = fileURLToPath(new URL('./runner.ts', import.meta.url));
 
 export function deriveSubagentRunId(requestId: string | undefined, fallback: string): string {
@@ -630,6 +633,7 @@ function readExitMarker(run: DurableSubagentRun): {
   outcome: 'completed' | 'failed' | 'timed_out' | 'cancelled';
   exitCode?: number;
   error?: string;
+  endedAt?: number;
 } | null {
   if (!run.exitMarkerPath) return null;
   const value = readJsonObject(run.exitMarkerPath);
@@ -648,6 +652,7 @@ function readExitMarker(run: DurableSubagentRun): {
     outcome: 'completed' | 'failed' | 'timed_out' | 'cancelled';
     exitCode?: number;
     error?: string;
+    endedAt?: number;
   };
 }
 
@@ -658,6 +663,19 @@ function reconcileOwnedExitMarker(
   parsed: ReturnType<DurableSubagentParser>,
   now: number,
 ): DurableSubagentRun {
+  if (exit.error === FALLBACK_EXIT_MARKER_ERROR) {
+    const fallbackMarkerAt = typeof exit.endedAt === 'number' ? exit.endedAt : run.updatedAt;
+    if (now - fallbackMarkerAt < EXIT_MARKER_HANDOFF_GRACE_MS) {
+      const deferred = withParsed(
+        run,
+        'completion_unknown',
+        parsed,
+        fallbackMarkerAt,
+        FALLBACK_EXIT_MARKER_ERROR,
+      );
+      return persistReconciledState(statePath, run, deferred, true);
+    }
+  }
   const terminalError = exit.outcome === 'completed' ? parsed.terminalError : undefined;
   const updated: DurableSubagentRun = {
     ...run,
@@ -782,7 +800,7 @@ function writeFallbackExitMarkerIfMissing(input: {
     exitCode,
     ...(input.signal ? { signal: input.signal } : {}),
     ...(outcome === 'failed'
-      ? { error: 'runner process exited without writing a durable exit marker' }
+      ? { error: FALLBACK_EXIT_MARKER_ERROR }
       : {}),
     endedAt: Date.now(),
   });
