@@ -17,8 +17,8 @@ const posterSrc = evidence.posterSrc ?? imageSrc;
       class="feature-evidence__poster"
       src={posterSrc}
       alt={imageAlt}
-      width="1200"
-      height="900"
+      width="2032"
+      height="1192"
       loading="lazy"
       decoding="async"
     />
@@ -70,7 +70,7 @@ const posterSrc = evidence.posterSrc ?? imageSrc;
   .feature-evidence__stage {
     position: relative;
     width: 100%;
-    aspect-ratio: 4 / 3;
+    aspect-ratio: 2032 / 1192;
     overflow: hidden;
     background: white;
   }
@@ -80,7 +80,7 @@ const posterSrc = evidence.posterSrc ?? imageSrc;
     display: block;
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
   }
 
   .feature-evidence__video {
