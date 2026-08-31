@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/roll-out-observability-gateway-and-internal-workspace-surfaces",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1794,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1794",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1794",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1794/roll-out-observability-gateway-and-internal-workspace-surfaces",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1794",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1794/roll-out-observability-gateway-and-internal-workspace-surfaces",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-roll-out-observability-gateway-and-internal-workspace-surfaces",
+  "taskSession": "tsk_4e5fd8c23e86",
+  "tmuxSession": "opensaas-os-roll-out-observability-gateway-and-internal-work-4e5fd8c2",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-roll-out-observability-gateway-and-internal-workspace-surfaces/.task/os/roll-out-observability-gateway-and-internal-workspace-surfaces/session.json",
+  "createdAt": "2026-08-12T02:45:31.063Z"
+}

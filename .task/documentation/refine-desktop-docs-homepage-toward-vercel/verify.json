@@ -1,0 +1,57 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/documentation/refine-desktop-docs-homepage-toward-vercel",
+  "base": "origin/task/documentation/refine-desktop-docs-homepage-toward-vercel",
+  "headSha": "44778479afcb99136e9252f2a650a87dd758befa",
+  "changeHash": "883f9191485771b96277241db2abd8fed0b6278f757905d66dac95a995fd26b5",
+  "changedFiles": [
+    "packages/documentation/scripts/test-foundation-browser.mjs",
+    "packages/documentation/src/components/PageTitle.astro",
+    "packages/documentation/src/components/Sidebar.astro",
+    "packages/documentation/src/styles/docs.css",
+    "packages/documentation/tests/foundation.test.ts"
+  ],
+  "verifiedAt": "2026-08-15T02:41:09.240Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/documentation/refine-desktop-docs-homepage-toward-vercel/current.json",
+        ".task/documentation/refine-desktop-docs-homepage-toward-vercel/session.json",
+        ".task/documentation/refine-desktop-docs-homepage-toward-vercel/workpad.md",
+        ".task/tasks/documentation/refine-desktop-docs-homepage-toward-vercel.json",
+        "packages/documentation/scripts/test-foundation-browser.mjs",
+        "packages/documentation/src/components/PageTitle.astro",
+        "packages/documentation/src/components/Sidebar.astro",
+        "packages/documentation/src/styles/docs.css",
+        "packages/documentation/tests/foundation.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

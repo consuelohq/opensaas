@@ -16,10 +16,9 @@ import {
   type ManagedComponentProvenance,
   type ManagedComponentSource,
 } from './managed-components';
-import { reconcileVisibleDialerSteering } from './visible-dialer-steering';
 
 export type ManagedComponentProvisionAction = {
-  type: 'create_file' | 'seed_skill' | 'seed_tool' | 'seed_steering';
+  type: 'create_file' | 'seed_skill' | 'seed_tool';
   path: string;
   status: 'planned' | 'created' | 'preserved' | 'updated' | 'skipped';
   message: string;
@@ -141,6 +140,34 @@ function compactSkill(skill: JsonObject): JsonObject {
     if (field in skill) compact[field] = skill[field];
   }
   return compact;
+}
+
+function portableSkillMetadata(skillDir: string, skillName: string): JsonObject {
+  const skill = readJsonObject(path.join(skillDir, 'skill.json'));
+  const entrypoint =
+    typeof skill.entrypoint === 'string' && skill.entrypoint.trim()
+      ? skill.entrypoint.trim()
+      : 'SKILL.md';
+  const load = isJsonObject(skill.load) ? skill.load : {};
+  return {
+    ...skill,
+    entrypoint,
+    load: {
+      ...load,
+      type: typeof load.type === 'string' ? load.type : 'resource',
+      path: `skills/${skillName}/${entrypoint}`,
+    },
+  };
+}
+
+function portableSkillTree(skillDir: string, skillName: string): ComponentTree {
+  const content = treeFromDirectory(skillDir);
+  content['skill.json'] = `${JSON.stringify(
+    portableSkillMetadata(skillDir, skillName),
+    null,
+    2,
+  )}\n`;
+  return content;
 }
 
 function bundledSkillId(skillDir: string): string {
@@ -346,7 +373,8 @@ export function provisionManagedComponentIndexes(input: {
 
   for (const skillDir of listBundledSkillDirs()) {
     const id = bundledSkillId(skillDir);
-    const content = treeFromDirectory(skillDir);
+    const metadata = portableSkillMetadata(skillDir, id);
+    const content = portableSkillTree(skillDir, id);
     const sourcePath = packageRelative(skillDir);
     const source: ManagedComponentSource = {
       id,
@@ -364,7 +392,7 @@ export function provisionManagedComponentIndexes(input: {
         ownership: 'bundled-managed',
         sourcePath,
         contentHash: hashComponentTree(content),
-        ...compactSkill(readJsonObject(path.join(skillDir, 'skill.json'))),
+        ...compactSkill(metadata),
       });
       if (input.dryRun) {
         actions.push({
@@ -410,8 +438,8 @@ export function provisionManagedComponentIndexes(input: {
 
   const legacy = legacyEntries(input.home);
   actions.push(...legacy.actions);
+
   const userRoot = input.userRoot ?? path.join(os.homedir(), 'Consuelo');
-  actions.push(reconcileVisibleDialerSteering({ userRoot, dryRun: input.dryRun }));
   const sourceBundle = runtimeBundleIdentity(runtimeComponents);
   const componentsRoot = path.join(input.home, 'components');
   const skillsIndexPath = path.join(componentsRoot, 'installed-skills.json');

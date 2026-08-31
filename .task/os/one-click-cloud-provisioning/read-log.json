@@ -1,0 +1,17 @@
+{
+  "files": [
+    ".task/os/one-click-cloud-provisioning/workpad.md",
+    "packages/consuelo-website/DESIGN.md",
+    "packages/os/package.json",
+    "packages/os/scripts/lib/node-resource-lock.ts",
+    "packages/os/scripts/lib/operator-login.ts",
+    "packages/os/scripts/login.ts",
+    "packages/os/tests/node-resource-lock.test.ts",
+    "packages/os/tests/operator-login.test.ts",
+    "packages/os/tests/runtime-state.test.ts",
+    "packages/workspace/senior-engineer.md",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "updatedAt": "2026-08-13T19:28:06.779Z"
+}

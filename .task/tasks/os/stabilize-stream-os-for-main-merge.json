@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/stabilize-stream-os-for-main-merge",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1863,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1863",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1863",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1863/stabilize-stream-os-for-main-merge",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1863",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1863/stabilize-stream-os-for-main-merge",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-stabilize-stream-os-for-main-merge",
+  "taskSession": "tsk_f9cadaecd7d0",
+  "tmuxSession": "opensaas-os-stabilize-stream-os-for-main-merge-f9cadaec",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-stabilize-stream-os-for-main-merge/.task/os/stabilize-stream-os-for-main-merge/session.json",
+  "createdAt": "2026-08-12T00:51:56.266Z"
+}

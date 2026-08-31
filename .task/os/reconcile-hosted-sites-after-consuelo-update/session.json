@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_eac1f183ffa5",
+  "tmuxSession": "opensaas-os-reconcile-hosted-sites-after-consuelo-update-eac1f183",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/reconcile-hosted-sites-after-consuelo-update",
+  "branch": "task/os/reconcile-hosted-sites-after-consuelo-update",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-reconcile-hosted-sites-after-consuelo-update",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-reconcile-hosted-sites-after-consuelo-update",
+  "prNumber": 1911,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1911",
+  "createdAt": "2026-08-13T19:11:51.157Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-reconcile-hosted-sites-after-consuelo-update/.task/os/reconcile-hosted-sites-after-consuelo-update/session.json"
+}

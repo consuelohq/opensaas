@@ -2,7 +2,7 @@
 title: MCP
 description: Current MCP protocol, methods, discovery surface, scopes, and errors.
 status: preview
-verifiedAt: 2026-07-13
+verifiedAt: 2026-08-14
 evidence:
   - source: packages/os/scripts/lib/mcp-gateway.ts
     tests:
@@ -11,10 +11,15 @@ evidence:
   - source: packages/os/scripts/server/routes/mcp.ts
     tests:
       - packages/os/tests/local-os-server-hono-architecture.test.ts
-    runtime: HTTP method handling and bearer-versus-signed authorization paths were inspected on 2026-07-13.
+      - packages/os/tests/mcp-gateway.test.ts
+    runtime: HTTP method handling, bearer-versus-signed authorization, request receipts, and pre-auth safety denials were verified on 2026-08-14.
 ---
 
 Consuelo OS exposes Model Context Protocol through local stdio for supported coding agents and HTTPS for approved hosted agents.
+
+When the hosted workspace route can reach more than one node, Consuelo resolves the destination before the selected node executes the MCP request. That routing decision is a Consuelo workspace concern, not a new MCP protocol primitive. Default, explicit, task-owned, and work-session-owned routing use the same node-routing layer.
+
+Facade call envelopes may carry a top-level `taskSession` or `workSession`, but never both. A task session follows the node that owns the task worktree. A work session follows the node that owns its local work-session metadata. The filesystem path for a work session stays on that node; central affinity stores only the session identity and owning node.
 
 ## Initialize
 
@@ -104,6 +109,7 @@ Before JSON-RPC execution, route validation can return:
 | --- | --- |
 | `INVALID_MCP_REQUEST` | Body is not a JSON-RPC request object. |
 | `INVALID_MCP_TOOL_CALL` | `tools/call` has no non-empty tool name. |
+| `INVALID_SESSION_ROUTE` | The request supplies conflicting task/work session routing authority. |
 | `UNKNOWN_MCP_METHOD` | Method is outside the supported set. |
 | `UNSUPPORTED_MCP_TOOL` | Name resolves to a non-skill surface; only OS skills are callable. |
 
@@ -113,4 +119,10 @@ JSON-RPC errors use standard codes for the current cases:
 - `-32601` — method not found;
 - `-32602` — invalid `tools/call` parameters.
 
+Consuelo safety admission can reject an MCP request before authentication or tool execution. Those denials use HTTP 200 with a JSON-RPC server error code of `-32040`, a generic `DANGEROUS_MATERIAL_BLOCKED` data code, and an `x-consuelo-request-id` receipt. The receipt lets operators distinguish a request that reached Consuelo OS and was denied locally from a transport failure that never reached the OS boundary. Raw blocked payloads are not included in this telemetry.
+
+Authentication failures keep their HTTP status contract; for example, a missing bearer credential remains HTTP 401. MCP responses that reach the local OS boundary also carry `x-consuelo-request-id` for correlation.
+
 Authorization, missing scopes, expired credentials, and signed-transport errors are defined in [Security reference](/secure/security-reference/).
+
+Node selection can also fail before JSON-RPC execution. `WORKSPACE_NODE_OFFLINE`, `NODE_ROUTE_MISMATCH`, `TASK_NODE_MISMATCH`, `WORK_SESSION_NODE_MISMATCH`, `TASK_WORKSPACE_MISMATCH`, and `WORK_SESSION_WORKSPACE_MISMATCH` are workspace routing errors; they are not MCP method errors. See [Result and error formats](/reference/result-and-error-formats/#node-routing-errors).

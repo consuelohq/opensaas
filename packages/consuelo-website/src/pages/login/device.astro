@@ -29,7 +29,7 @@ const description = 'Authorize Consuelo OS on this device.';
         class="device-auth__button launch-mono"
         data-device-continue
         data-os-device-approve-link
-        href="https://app.consuelohq.com/auth/google?action=os-device-approval"
+        href="https://os.consuelohq.com/login/google/start"
       >
         Approve with Google
       </a>
@@ -51,7 +51,7 @@ const description = 'Authorize Consuelo OS on this device.';
   }
 
   if (approveLink && normalizedUserCode) {
-    approveLink.href = `https://app.consuelohq.com/auth/google?action=os-device-approval&osDeviceUserCode=${encodeURIComponent(normalizedUserCode)}`;
+    approveLink.href = `https://os.consuelohq.com/login/google/start?user_code=${encodeURIComponent(normalizedUserCode)}`;
   }
 </script>
 

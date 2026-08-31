@@ -1,0 +1,10 @@
+{
+  "files": [
+    ".task/os/polish-tracing-chrome-and-responsive-table/workpad.md",
+    "packages/os/scripts/lib/observability-traces-site.ts",
+    "packages/os/scripts/lib/trace-site-inspector/browser.ts",
+    "packages/os/scripts/lib/workspace-chrome.ts",
+    "packages/os/tests/observability-traces-site.test.ts"
+  ],
+  "updatedAt": "2026-08-15T07:30:47.915Z"
+}

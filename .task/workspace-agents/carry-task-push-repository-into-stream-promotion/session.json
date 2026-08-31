@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_1330d558950b",
+  "tmuxSession": "opensaas-workspace-agents-carry-task-push-repository-into-stream-promotion-1330d558",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/carry-task-push-repository-into-stream-promotion",
+  "branch": "task/workspace-agents/carry-task-push-repository-into-stream-promotion",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-carry-task-push-repository-into-stream-promotion",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-carry-task-push-repository-into-stream-promotion",
+  "prNumber": 1855,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1855",
+  "createdAt": "2026-08-12T00:05:37.269Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-carry-task-push-repository-into-stream-promotion/.task/workspace-agents/carry-task-push-repository-into-stream-promotion/session.json"
+}

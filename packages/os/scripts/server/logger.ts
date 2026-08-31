@@ -36,6 +36,21 @@ function writeLog(entry: Record<string, unknown>): void {
   }
 }
 
+export function logLocalOsServerEvent(
+  event: string,
+  context: LogContext = {},
+  level: 'info' | 'warn' = 'info',
+): void {
+  writeLog({
+    level,
+    service: 'consuelo-os-local-server',
+    event,
+    message: event,
+    context,
+    ts: new Date().toISOString(),
+  });
+}
+
 export function logLocalOsServerError(
   event: string,
   error: unknown,

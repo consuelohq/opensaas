@@ -30,6 +30,7 @@ export const toolHandlers = [
     "name": "confidenceScore",
     "command": {
       "script": "confidence-score",
+      "executionScope": "runtime",
       "branchMode": "none",
       "jsonFlag": "--json",
       "arguments": []
@@ -59,6 +60,7 @@ export const toolHandlers = [
     "name": "decideNext",
     "command": {
       "script": "decide-next",
+      "executionScope": "runtime",
       "branchMode": "none",
       "jsonFlag": "--json",
       "arguments": [
@@ -89,6 +91,7 @@ export const toolHandlers = [
     "name": "exploit",
     "command": {
       "script": "exploit",
+      "executionScope": "runtime",
       "branchMode": "none",
       "jsonFlag": "--json",
       "arguments": [
@@ -108,6 +111,7 @@ export const toolHandlers = [
     "name": "explore",
     "command": {
       "script": "explore",
+      "executionScope": "runtime",
       "branchMode": "none",
       "jsonFlag": "--json",
       "arguments": [
@@ -125,6 +129,11 @@ export const toolHandlers = [
           "source": "changedOnly",
           "flag": "--changed-only",
           "kind": "boolean"
+        },
+        {
+          "source": "detail",
+          "flag": "--detail",
+          "kind": "value"
         },
         {
           "source": "reindex",

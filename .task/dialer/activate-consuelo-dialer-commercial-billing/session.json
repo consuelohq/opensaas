@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_3344fca183ac",
+  "tmuxSession": "opensaas-dialer-activate-consuelo-dialer-commercial-billing-3344fca1",
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/activate-consuelo-dialer-commercial-billing",
+  "branch": "task/dialer/activate-consuelo-dialer-commercial-billing",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-activate-consuelo-dialer-commercial-billing",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-activate-consuelo-dialer-commercial-billing",
+  "prNumber": 1797,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1797",
+  "createdAt": "2026-08-10T00:25:15.694Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-activate-consuelo-dialer-commercial-billing/.task/dialer/activate-consuelo-dialer-commercial-billing/session.json"
+}

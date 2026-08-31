@@ -2,11 +2,12 @@
 
 const fs = require('fs');
 const path = require('path');
+const { execFileSync } = require('child_process');
 
 const {
   DEFAULT_MAIN_BRANCH,
   DEFAULT_REPO,
-  getWorktreeRoot,
+  getTaskWorktreeRoot,
   resolveGitRoot,
   toWorktreeDirectoryName,
 } = require('./lib/paths');
@@ -34,6 +35,7 @@ const {
   setBranchUpstream,
 } = require('./lib/git');
 const { readTaskMeta, saveTaskMetaMemory, writeTaskMeta } = require('./lib/task-meta');
+const { getTaskWorkpadPathFromMeta } = require('./lib/task-workpad');
 const { assertTmuxAvailable, ensureTaskTmuxSession, writeTaskSessionMetadata } = require('./lib/task-session');
 const { compactTaskStartOutput } = require('./lib/task-start-output');
 const { renderHookResult } = require('../hooks/dispatcher.js');
@@ -66,7 +68,7 @@ function printHelp() {
   writeStdout(`  --repo <owner/name>    github repository (default: ${DEFAULT_REPO})`);
   writeStdout('  --body <text>          pull request body text');
   writeStdout('  --body-file <path>     pull request body markdown file');
-  writeStdout('  --worktree-root <dir>  worktree root (default: $WORKSPACE_WORKTREE_ROOT, $OPENSAAS_WORKTREE_ROOT, or os.tmpdir()/opensaas-worktrees)');
+  writeStdout('  --worktree-root <dir>  worktree root (default: $WORKSPACE_WORKTREE_ROOT, $OPENSAAS_WORKTREE_ROOT, or $CONSUELO_HOME/node/tasks/worktrees)');
   writeStdout('  --json                 print machine-readable json');
   writeStdout('  --help                 show this help message');
 }
@@ -265,6 +267,57 @@ function createBootstrapCommit({ repoRoot, worktreePath, taskBranch }) {
   runGit(['-C', worktreePath, 'push', 'origin', taskBranch], { cwd: repoRoot });
 }
 
+function compactResolvedStreamContext(result) {
+  return {
+    area: result?.area || null,
+    stream: result?.stream || null,
+    aheadBehind: result?.aheadBehind || null,
+    openTaskPrCount: Array.isArray(result?.openTaskPullRequests?.pullRequests)
+      ? result.openTaskPullRequests.pullRequests.length
+      : 0,
+    recentWorkpadCount: Array.isArray(result?.recentWorkpads?.workpads)
+      ? result.recentWorkpads.workpads.length
+      : 0,
+  };
+}
+
+function resolveStreamContextBeforeTaskMutation({ repoRoot, args, area, stream }) {
+  const preflight = createWorkflowIntentRuntime().start({
+    workflow: args.workflow,
+    area,
+    title: args.title,
+    hasStreamContext: false,
+  });
+  const requiredAction = preflight.hookResult?.requiredNextAction;
+
+  if (args.workflow !== 'task') return null;
+  if (!requiredAction || requiredAction.tool !== 'stream.context') {
+    throw new Error('task.start preflight did not resolve the required stream.context action');
+  }
+
+  const streamContextScript = path.join(__dirname, 'stream-context.js');
+  try {
+    const stdout = execFileSync(process.execPath, [
+      streamContextScript,
+      '--area', area,
+      '--stream', stream,
+      '--repo', args.repo,
+      '--json',
+    ], {
+      cwd: repoRoot,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    return compactResolvedStreamContext(JSON.parse(stdout));
+  } catch (error) {
+    const stderr = error && typeof error === 'object' && 'stderr' in error
+      ? String(error.stderr || '').trim()
+      : '';
+    const message = stderr || (error instanceof Error ? error.message : String(error));
+    throw new Error(`task.start stream.context preflight failed before mutation: ${message}`);
+  }
+}
+
 async function main() {
   try {
     const args = parseArgs(process.argv.slice(2));
@@ -286,12 +339,20 @@ async function main() {
     const stream = args.stream || getDefaultStreamBranch(area);
     const taskBranch = args.branch || getDefaultTaskBranch(area, args.title);
     const repoRoot = resolveGitRoot(process.cwd());
-    const worktreeRoot = getWorktreeRoot(args.worktreeRoot);
+    const worktreeRoot = getTaskWorktreeRoot(args.worktreeRoot);
+    fs.mkdirSync(worktreeRoot, { recursive: true });
     const token = getToken();
 
     assertStreamBranchName(stream, area);
     assertTaskBranchName(taskBranch, area);
     assertTmuxAvailable();
+
+    const streamContext = resolveStreamContextBeforeTaskMutation({
+      repoRoot,
+      args,
+      area,
+      stream,
+    });
 
     fetchOrigin(repoRoot);
 
@@ -434,6 +495,7 @@ async function main() {
       stream,
       taskBranch,
       worktreePath,
+      repoRoot,
       prNumber: pullRequest.number,
       prUrl: pullRequest.html_url,
     }, taskTmux.created);
@@ -448,6 +510,7 @@ async function main() {
       prNumber: pullRequest.number,
       prUrl: pullRequest.html_url,
       worktreePath,
+      repoRoot,
       taskSession: taskSessionMeta.taskSession,
       tmuxSession: taskSessionMeta.tmuxSession,
       sessionPath: path.join(worktreePath, '.task', 'session.json'),
@@ -468,7 +531,8 @@ async function main() {
     await saveTaskMetaMemory(taskMeta);
 
     // create fresh workpad — always overwrite, never reuse from previous task
-    const workpadPath = path.join(worktreePath, '.task', 'workpad.md');
+    const workpadPath = getTaskWorkpadPathFromMeta(worktreePath, taskMeta);
+    fs.mkdirSync(path.dirname(workpadPath), { recursive: true });
     const slug = taskBranch.split('/').pop();
     const workpad = [
       `# ${args.title}`,
@@ -534,6 +598,7 @@ async function main() {
       createdWorktree,
       bootstrappedBranch,
       createdPr,
+      streamContext,
     };
     const workflowStart = createWorkflowIntentRuntime().start({
       workflow: args.workflow,

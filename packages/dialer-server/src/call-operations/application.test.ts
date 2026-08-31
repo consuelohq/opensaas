@@ -62,6 +62,10 @@ const createHarness = (
     getCallTranscript: () => Effect.succeed([]),
     recordDisposition: () => Effect.void,
     setCrmSyncStatus: () => Effect.void,
+    claimCallRecording: () => Effect.succeed(null),
+    setCallRecordingStarted: () => Effect.void,
+    setCallRecordingFailed: () => Effect.void,
+    recordCallRecordingStatus: () => Effect.void,
   };
   const provider: SpeechToTextProviderService = input.provider ?? {
     transcribe: (request) =>

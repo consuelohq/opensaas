@@ -1,0 +1,15 @@
+{
+  "files": [
+    ".task/os/node-trace-observability-integration/workpad.md",
+    "packages/os/scripts/lib/facade/logger.ts",
+    "packages/os/scripts/lib/observability-traces-site.ts",
+    "packages/os/scripts/lib/trace-persistence.ts",
+    "packages/os/scripts/lib/trace-site-inspector/model.ts",
+    "packages/os/scripts/lib/trace-site-inspector/table-formatters.ts",
+    "packages/os/scripts/lib/trace-sites-local-read-backend.ts",
+    "packages/os/tests/mcp-gateway.test.ts",
+    "packages/os/tests/trace-persistence.test.ts",
+    "packages/os/tests/trace-site-inspector-os-owned.test.ts"
+  ],
+  "updatedAt": "2026-08-12T14:38:04.725Z"
+}

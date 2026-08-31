@@ -86,6 +86,16 @@ describe('OS device authority architecture', () => {
       { method: 'POST', path: '/auth/handoff', trust: 'authority-session' },
       { method: 'GET', path: '/auth/consume', trust: 'public' },
       { method: 'POST', path: '/auth/logout', trust: 'workspace-session' },
+      { method: 'GET', path: '/auth/synthetic/checkout', trust: 'authority-session' },
+      { method: 'POST', path: '/auth/synthetic/checkout/start', trust: 'authority-session' },
+      { method: 'GET', path: '/auth/synthetic/checkout/result', trust: 'authority-session' },
+      { method: 'POST', path: '/webhooks/stripe', trust: 'webhook-signature' },
+      { method: 'POST', path: '/webhooks/stripe-synthetic', trust: 'webhook-signature' },
+      {
+        method: 'POST',
+        path: '/internal/auth/session/handoff',
+        trust: 'internal',
+      },
       {
         method: 'POST',
         path: '/internal/auth/session/validate',
@@ -102,6 +112,21 @@ describe('OS device authority architecture', () => {
         method: 'POST',
         path: '/login/oauth/access_token',
         trust: 'device-proof',
+      },
+      {
+        method: 'POST',
+        path: '/internal/managed-cloud/provisioning/claim',
+        trust: 'internal',
+      },
+      {
+        method: 'POST',
+        path: '/internal/managed-cloud/provisioning/state',
+        trust: 'internal',
+      },
+      {
+        method: 'POST',
+        path: '/managed-cloud/provisioning/enroll',
+        trust: 'node-bootstrap',
       },
       { method: 'GET', path: '/workspace/agents', trust: 'public' },
       {
@@ -332,6 +357,60 @@ describe('OS device authority architecture', () => {
       'wnl:account',
       'wnh:workspace.consuelohq.com',
     ]);
+  });
+
+  it('physically expires abandoned GitHub OAuth install state on the Durable Object alarm', async () => {
+    const values = new Map<string, unknown>();
+    let alarm: number | null = null;
+    const storage = {
+      async get<T>(key: string) {
+        return values.get(key) as T | undefined;
+      },
+      async put<T>(key: string, value: T) {
+        values.set(key, value);
+      },
+      async delete(key: string) {
+        return values.delete(key);
+      },
+      async list<T>({ prefix = '' }: { prefix?: string } = {}) {
+        return new Map(
+          [...values.entries()]
+            .filter(([key]) => key.startsWith(prefix))
+            .map(([key, value]) => [key, value as T]),
+        );
+      },
+      async getAlarm() {
+        return alarm;
+      },
+      async setAlarm(timestamp: number) {
+        alarm = timestamp;
+      },
+      async deleteAlarm() {
+        alarm = null;
+      },
+    };
+    const store = new DurableStore(storage);
+    const state = (suffix: string, expiresAt: number, token?: string) => ({
+      state: `ghs_${suffix}`,
+      workspaceId: 'workspace_internal',
+      workspaceHost: 'internal.consuelohq.com',
+      nodeId: 'node_local',
+      returnPath: '/diffs',
+      repositoryOwners: ['consuelohq'],
+      oauthCodeVerifier: `ghv_${suffix}`,
+      ...(token ? { githubUserAccessToken: token } : {}),
+      expiresAt,
+    });
+
+    await store.putGitHubSourceControlInstallState(state('first', 1_000, 'github-user-token'));
+    await store.putGitHubSourceControlInstallState(state('second', 2_000));
+    expect(alarm).toBe(1_000);
+
+    await store.cleanupExpiredGitHubSourceControlInstallStates(1_500);
+
+    expect(values.has('gss:ghs_first')).toBe(false);
+    expect(values.has('gss:ghs_second')).toBe(true);
+    expect(alarm).toBe(2_000);
   });
 
   it('should redact bearer and query credentials when provisioning fails', () => {

@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/sync-os-stream-with-main-after-cloudflared-definition-convergence",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2127,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2127",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2127",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2127/sync-os-stream-with-main-after-cloudflared-definition-convergence",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2127",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2127/sync-os-stream-with-main-after-cloudflared-definition-convergence",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-sync-os-stream-with-main-after-cloudflared-definition-convergence",
+  "taskSession": "tsk_330117a4eb0d",
+  "tmuxSession": "opensaas-os-sync-os-stream-with-main-after-cloudflared-defin-330117a4",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-sync-os-stream-with-main-after-cloudflared-definition-convergence/.task/os/sync-os-stream-with-main-after-cloudflared-definition-convergence/session.json",
+  "createdAt": "2026-08-16T04:22:59.164Z"
+}

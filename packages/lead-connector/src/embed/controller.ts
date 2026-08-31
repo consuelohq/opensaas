@@ -1,7 +1,10 @@
 import type { LeadConnectorEmbedApi } from './api-client.js';
 import type { LeadConnectorAgentVoice } from './agent-voice.js';
 import { EmbedSessionExpiredError } from './api-client.js';
-import type { LeadConnectorClickToCallTarget } from './protocol.js';
+import {
+  normalizeClickToCallTarget,
+  type LeadConnectorClickToCallTarget,
+} from './protocol.js';
 import {
   createInitialEmbedState,
   isTerminalEmbedSession,
@@ -11,6 +14,8 @@ import {
   type LeadConnectorEmbedState,
 } from './state-machine.js';
 
+import { normalizeAsyncError } from '../errors/normalize-async-error';
+
 export type LeadConnectorEmbedController = ReturnType<
   typeof createLeadConnectorEmbedController
 >;
@@ -18,11 +23,14 @@ export type LeadConnectorEmbedController = ReturnType<
 export const createLeadConnectorEmbedController = (input: {
   api: LeadConnectorEmbedApi;
   voice: LeadConnectorAgentVoice;
+  surface?: 'admin' | 'overlay';
   initialState?: LeadConnectorEmbedState;
 }) => {
   let state = input.initialState ?? createInitialEmbedState();
   let activeVoiceSessionId: string | null = null;
   let activeRecordSessionId: string | null = null;
+  let resourceRefresh: Promise<void> | null = null;
+  let commercialRefresh: Promise<void> | null = null;
   const listeners = new Set<(state: LeadConnectorEmbedState) => void>();
 
   const publish = (): void => {
@@ -74,6 +82,39 @@ export const createLeadConnectorEmbedController = (input: {
     dispatch({ type: 'SESSION_UPDATED', session });
   };
 
+  const projectTransferStatus = (result: Awaited<
+    ReturnType<LeadConnectorEmbedApi['getCallTransferStatus']>
+  >): void => {
+    const transferType = state.transfer.type;
+    const target = state.transfer.target;
+    if (!transferType || !target) return;
+    if (!result.success || result.status === 'failed') {
+      dispatch({
+        type: 'TRANSFER_FAILED',
+        code: 'TRANSFER_FAILED',
+        message: result.error ?? 'Transfer failed',
+      });
+      return;
+    }
+    if (result.status === 'completed') {
+      dispatch({ type: 'TRANSFER_COMPLETED' });
+      return;
+    }
+    if (result.status === 'cancelled') {
+      dispatch({ type: 'TRANSFER_CANCELLED' });
+      return;
+    }
+    dispatch({
+      type: 'TRANSFER_INITIATED',
+      status: result.status,
+      transferType,
+      target,
+      transferId: result.transferId,
+      transferCallSid: result.transferCallSid,
+      conferenceSid: result.conferenceSid,
+    });
+  };
+
   const reportUnexpectedFailure = (error: unknown): void => {
     dispatch({
       type: 'FAILED',
@@ -84,25 +125,46 @@ export const createLeadConnectorEmbedController = (input: {
     });
   };
 
-  const loadResources = async (): Promise<void> => {
-    try {
-      const resources = await run(() =>
-        Promise.all([
-          input.api.listContacts({ limit: 50 }),
-          input.api.searchOpportunities({ limit: 100 }),
-          input.api.listPipelines(),
-        ]).then(([contacts, opportunities, pipelines]) => ({
-          contacts: contacts.contacts,
-          contactTotal: contacts.total,
-          opportunities: opportunities.opportunities,
-          opportunityTotal: opportunities.total,
-          pipelines,
-        })),
-      );
-      if (resources) dispatch({ type: 'RESOURCES_LOADED', ...resources });
-    } catch (error: unknown) {
-      reportUnexpectedFailure(error);
+  const activeResourcePhases = new Set<LeadConnectorEmbedState['phase']>([
+    'starting',
+    'dialing',
+    'ringing',
+    'connected',
+    'paused',
+    'wrapping-up',
+  ]);
+
+  const refreshResources = (options: { force?: boolean } = {}): Promise<void> => {
+    if (!state.sessionToken) return Promise.resolve();
+    if (!options.force && activeResourcePhases.has(state.phase)) {
+      return Promise.resolve();
     }
+    if (resourceRefresh) return resourceRefresh;
+    dispatch({ type: 'RESOURCES_REFRESH_STARTED' });
+    resourceRefresh = (async () => {
+      try {
+        const resources = await run(() =>
+          Promise.all([
+            input.api.listContacts({ limit: 50 }),
+            input.api.searchOpportunities({ limit: 100 }),
+            input.api.listPipelines(),
+          ]).then(([contacts, opportunities, pipelines]) => ({
+            contacts: contacts.contacts,
+            contactTotal: contacts.total,
+            opportunities: opportunities.opportunities,
+            opportunityTotal: opportunities.total,
+            pipelines,
+          })),
+        );
+        if (resources) dispatch({ type: 'RESOURCES_LOADED', ...resources });
+      } catch (error: unknown) {
+        reportUnexpectedFailure(error);
+      } finally {
+        dispatch({ type: 'RESOURCES_REFRESH_FINISHED' });
+        resourceRefresh = null;
+      }
+    })();
+    return resourceRefresh;
   };
 
   const loadCallOperations = async (): Promise<void> => {
@@ -118,6 +180,137 @@ export const createLeadConnectorEmbedController = (input: {
         })),
       );
       if (calls) dispatch({ type: 'CALLS_LOADED', ...calls });
+    } catch (error: unknown) {
+      reportUnexpectedFailure(error);
+    }
+  };
+
+  const loadCommercial = (): Promise<void> => {
+    if (!state.sessionToken) return Promise.resolve();
+    if (commercialRefresh) return commercialRefresh;
+    commercialRefresh = (async () => {
+      try {
+        const caller = await run(() => input.api.getCommercialCallerContext());
+        if (caller) dispatch({ type: 'COMMERCIAL_CALLER_LOADED', caller });
+        if ((input.surface ?? 'overlay') === 'admin') {
+          const dashboard = await run(() => input.api.getCommercialDashboard());
+          if (dashboard) {
+            dispatch({ type: 'COMMERCIAL_DASHBOARD_LOADED', dashboard });
+          }
+        }
+      } catch (error: unknown) {
+        reportUnexpectedFailure(error);
+      } finally {
+        commercialRefresh = null;
+      }
+    })();
+    return commercialRefresh;
+  };
+
+  const startCall = async (
+    strategy: 'single' | 'predictive',
+  ): Promise<void> => {
+    try {
+      if (state.selectedTargets.length === 0) {
+        dispatch({
+          type: 'FAILED',
+          code: 'TARGET_REQUIRED',
+          message:
+            state.setup.mode === 'queue'
+              ? 'Choose a callable pipeline stage'
+              : 'Select a callable contact or enter a phone number',
+          recoverable: true,
+        });
+        return;
+      }
+      const queueMode =
+        state.selectedQueue !== null ||
+        (strategy === 'predictive' && state.selectedTargets.length > 1);
+      const effectiveStrategy = queueMode ? strategy : 'single';
+      dispatch({ type: 'START_REQUESTED', strategy: effectiveStrategy });
+      await input.voice.prepare();
+      const targets = queueMode
+        ? state.selectedTargets
+        : state.selectedTargets.slice(0, 1);
+      const request = queueMode
+        ? {
+            source: 'queue',
+            ...(state.selectedQueue
+              ? {
+                  queueId: `${state.selectedQueue.pipelineId}:${state.selectedQueue.stageId}`,
+                  pipelineId: state.selectedQueue.pipelineId,
+                  stageId: state.selectedQueue.stageId,
+                }
+              : {}),
+            selectionStrategy: effectiveStrategy,
+            requestedFanout:
+              effectiveStrategy === 'single'
+                ? 1
+                : state.selectedQueue
+                  ? state.setup.requestedFanout
+                  : Math.min(3, targets.length),
+            preferLocalPresence: state.setup.preferLocalPresence,
+            ...(state.setup.callerIdNumber
+              ? { callerIdNumber: state.setup.callerIdNumber }
+              : {}),
+            targetPhones: targets.map((target) => target.phone),
+            contactIds: targets
+              .map((target) => target.contactId)
+              .filter((value): value is string => value !== null),
+          }
+        : (() => {
+            const target = targets[0];
+            const opportunity = state.opportunities.find(
+              (item) => item.id === target?.opportunityId,
+            );
+            return {
+              source: 'direct',
+              selectionStrategy: 'single',
+              requestedFanout: 1,
+              preferLocalPresence: state.setup.preferLocalPresence,
+              ...(state.setup.callerIdNumber
+                ? { callerIdNumber: state.setup.callerIdNumber }
+                : {}),
+              targetPhone: target?.phone,
+              contactId: target?.contactId ?? undefined,
+              contactName: target?.name ?? undefined,
+              opportunityId: opportunity?.id,
+              pipelineId: opportunity?.pipelineId ?? undefined,
+              stageId: opportunity?.stageId ?? undefined,
+              opportunitySnapshot: opportunity
+                ? {
+                    id: opportunity.id,
+                    status: opportunity.status,
+                    monetaryValue: opportunity.monetaryValue,
+                    pipelineId: opportunity.pipelineId,
+                    stageId: opportunity.stageId,
+                  }
+                : undefined,
+            };
+          })();
+      const result = await run(() => input.api.startCallSession(request));
+      if (!result) return;
+      const statusId = result.providerGroupId ?? result.sessionId;
+      activeVoiceSessionId = statusId;
+      activeRecordSessionId = result.sessionId;
+      try {
+        await input.voice.connect(statusId);
+        const ready = await run(() => input.api.markAgentReady(statusId));
+        if (!ready) {
+          disconnectVoice();
+          await input.api.terminateCallSession(statusId).catch(() => undefined);
+          return;
+        }
+        if (ready.remainingCleanup > 0) {
+          throw new Error('Agent conference did not become ready');
+        }
+      } catch (error: unknown) {
+        disconnectVoice();
+        await input.api.terminateCallSession(statusId).catch(() => undefined);
+        throw error;
+      }
+      const session = await run(() => input.api.getCallSession(statusId));
+      if (session) projectSession(session);
     } catch (error: unknown) {
       reportUnexpectedFailure(error);
     }
@@ -143,13 +336,161 @@ export const createLeadConnectorEmbedController = (input: {
           token: session.token,
           expiresAt: session.expiresAt,
         });
-        await Promise.all([loadResources(), loadCallOperations()]);
+        await Promise.all([
+          refreshResources({ force: true }),
+          loadCallOperations(),
+          loadCommercial(),
+        ]);
       } catch (error: unknown) {
         reportUnexpectedFailure(error);
       }
     },
-    loadResources,
+    loadResources: () => refreshResources({ force: true }),
+    refreshResources,
     loadCallOperations,
+    loadCommercial,
+    createCheckout: async (quantities: {
+      single: number;
+      standard: number;
+      power: number;
+      additionalNumber: number;
+    }): Promise<string | null> => {
+      try {
+        const result = await run(() =>
+          input.api.createCommercialCheckout({ quantities }),
+        );
+        return result?.url ?? null;
+      } catch (cause: unknown) {
+        throw normalizeAsyncError(cause);
+      }
+    },
+    openBillingPortal: async (): Promise<string | null> => {
+      try {
+        const result = await run(() => input.api.createCommercialBillingPortal());
+        return result?.url ?? null;
+      } catch (cause: unknown) {
+        throw normalizeAsyncError(cause);
+      }
+    },
+    previewBillingChange: async (quantities: {
+      single: number;
+      standard: number;
+      power: number;
+      additionalNumber: number;
+    }) => {
+      try {
+        const preview = await run(() =>
+          input.api.previewCommercialBillingChange({ quantities }),
+        );
+        if (preview) {
+          dispatch({
+            type: 'COMMERCIAL_BILLING_PREVIEWED',
+            quantities,
+            preview,
+          });
+        }
+        return preview;
+      } catch (cause: unknown) {
+        throw normalizeAsyncError(cause);
+      }
+    },
+    clearBillingPreview: (): void => {
+      dispatch({ type: 'COMMERCIAL_BILLING_PREVIEW_CLEARED' });
+    },
+    applyBillingChange: async (inputValue: {
+      quantities: {
+        single: number;
+        standard: number;
+        power: number;
+        additionalNumber: number;
+      };
+      prorationDate: number;
+    }): Promise<void> => {
+      try {
+        const result = await run(() =>
+          input.api.applyCommercialBillingChange(inputValue),
+        );
+        if (result) {
+          dispatch({ type: 'COMMERCIAL_BILLING_PREVIEW_CLEARED' });
+          await loadCommercial();
+        }
+      } catch (cause: unknown) {
+        throw normalizeAsyncError(cause);
+      }
+    },
+    saveSeat: async (inputValue: {
+      userId: string;
+      planCode: 'single' | 'standard' | 'power';
+    }): Promise<void> => {
+      try {
+        const existing: Array<{
+          userId: string;
+          planCode: 'single' | 'standard' | 'power';
+        }> = state.commercialDashboard?.seats.flatMap((seat) => {
+          const userId = String(seat.user_id ?? seat.userId ?? '');
+          const candidatePlan = String(seat.plan_code ?? seat.planCode ?? '');
+          return userId &&
+            (candidatePlan === 'single' ||
+              candidatePlan === 'standard' ||
+              candidatePlan === 'power')
+            ? [{ userId, planCode: candidatePlan }]
+            : [];
+        }) ?? [];
+        const assignments = [
+          ...existing.filter(({ userId }) => userId !== inputValue.userId),
+          inputValue,
+        ];
+        const result = await run(() => input.api.updateCommercialTeam(assignments));
+        if (result) await loadCommercial();
+      } catch (cause: unknown) {
+        throw normalizeAsyncError(cause);
+      }
+    },
+    searchNumbers: async (inputValue: {
+      areaCode?: string;
+      contains?: string;
+      userId: string;
+    }): Promise<void> => {
+      try {
+        const { userId: _userId, ...search } = inputValue;
+        const result = await run(() =>
+          input.api.searchCommercialNumbers({ ...search, limit: 10 }),
+        );
+        if (result) {
+          dispatch({
+            type: 'COMMERCIAL_NUMBER_SEARCHED',
+            numbers: result.numbers,
+            userId: inputValue.userId,
+          });
+        }
+      } catch (cause: unknown) {
+        throw normalizeAsyncError(cause);
+      }
+    },
+    provisionNumber: async (inputValue: {
+      userId: string;
+      phoneNumber: string;
+    }): Promise<void> => {
+      const result = await run(() =>
+        input.api.provisionCommercialNumber(inputValue),
+      );
+      if (result) await loadCommercial();
+    },
+    assignNumber: async (inputValue: {
+      userId: string;
+      phoneNumber: string;
+    }): Promise<void> => {
+      const result = await run(() =>
+        input.api.assignCommercialNumber(inputValue),
+      );
+      if (result) await loadCommercial();
+    },
+    releaseNumber: async (phoneNumber: string): Promise<void> => {
+      const result = await run(() =>
+        input.api.releaseCommercialNumber(phoneNumber),
+      );
+      if (result) await loadCommercial();
+    },
     loadMoreCallHistory: async (): Promise<void> => {
       try {
         const cursor = state.callHistoryCursor;
@@ -232,6 +573,42 @@ export const createLeadConnectorEmbedController = (input: {
         reportUnexpectedFailure(error);
       }
     },
+    updateSetup: (setup: Partial<LeadConnectorEmbedState['setup']>) =>
+      dispatch({ type: 'SETUP_CHANGED', setup }),
+    selectQueue: async (selection: {
+      pipelineId: string;
+      stageId: string;
+    }): Promise<void> => {
+      try {
+        const preview = await run(() =>
+          input.api.resolveQueueCandidates(selection),
+        );
+        if (!preview) return;
+        const targets = preview.candidates.flatMap((candidate) => {
+          const target = normalizeClickToCallTarget({
+            phone: candidate.phone,
+            contactId: candidate.contactId,
+            name: candidate.contactName,
+            opportunityId: candidate.opportunityId,
+          });
+          return target ? [target] : [];
+        });
+        dispatch({
+          type: 'QUEUE_SELECTED',
+          queue: {
+            pipelineId: preview.pipelineId,
+            pipelineName: preview.pipelineName,
+            stageId: preview.stageId,
+            stageName: preview.stageName,
+            opportunityTotal: preview.opportunityTotal,
+            callableTotal: preview.callableTotal,
+          },
+          targets,
+        });
+      } catch (error: unknown) {
+        reportUnexpectedFailure(error);
+      }
+    },
     selectTarget: (target: LeadConnectorClickToCallTarget) => {
       state = selectEmbedTarget(state, target);
       publish();
@@ -240,88 +617,111 @@ export const createLeadConnectorEmbedController = (input: {
       state = removeEmbedTarget(state, dedupeKey);
       publish();
     },
-    startCall: async (strategy: 'single' | 'predictive'): Promise<void> => {
+    startConfiguredCall: async (): Promise<void> => {
+      const strategy =
+        state.setup.mode === 'single' ? 'single' : state.setup.callingMode;
+      await startCall(strategy);
+    },
+    startCall,
+    initiateTransfer: async (inputValue: {
+      type: 'cold' | 'warm';
+      to: string;
+    }): Promise<void> => {
       try {
-        if (state.selectedTargets.length === 0) {
+        const sessionId = state.activeSessionId;
+        const target = inputValue.to.trim();
+        if (!sessionId) {
           dispatch({
             type: 'FAILED',
-            code: 'TARGET_REQUIRED',
-            message: 'Select at least one callable target',
+            code: 'CALL_SESSION_REQUIRED',
+            message: 'A connected call is required to transfer',
             recoverable: true,
           });
           return;
         }
-        dispatch({ type: 'START_REQUESTED', strategy });
-        await input.voice.prepare();
-        const targets =
-          strategy === 'single'
-            ? state.selectedTargets.slice(0, 1)
-            : state.selectedTargets;
-        const request =
-          strategy === 'single'
-            ? (() => {
-                const target = targets[0];
-                const opportunity = state.opportunities.find(
-                  (item) => item.id === target?.opportunityId,
-                );
-                return {
-                  source: 'direct',
-                  selectionStrategy: 'single',
-                  requestedFanout: 1,
-                  targetPhone: target?.phone,
-                  contactId: target?.contactId ?? undefined,
-                  contactName: target?.name ?? undefined,
-                  opportunityId: opportunity?.id,
-                  pipelineId: opportunity?.pipelineId ?? undefined,
-                  stageId: opportunity?.stageId ?? undefined,
-                  opportunitySnapshot: opportunity
-                    ? {
-                        id: opportunity.id,
-                        status: opportunity.status,
-                        monetaryValue: opportunity.monetaryValue,
-                        pipelineId: opportunity.pipelineId,
-                        stageId: opportunity.stageId,
-                      }
-                    : undefined,
-                };
-              })()
-            : {
-                source: 'queue',
-                selectionStrategy: 'predictive',
-                requestedFanout: targets.length,
-                targetPhones: targets.map((target) => target.phone),
-                contactIds: targets
-                  .map((target) => target.contactId)
-                  .filter((value): value is string => value !== null),
-              };
-        const result = await run(() => input.api.startCallSession(request));
-        if (!result) return;
-        const statusId = result.providerGroupId ?? result.sessionId;
-        activeVoiceSessionId = statusId;
-        activeRecordSessionId = result.sessionId;
-        try {
-          await input.voice.connect(statusId);
-          const ready = await run(() => input.api.markAgentReady(statusId));
-          if (!ready) {
-            disconnectVoice();
-            await input.api
-              .terminateCallSession(statusId)
-              .catch(() => undefined);
-            return;
-          }
-          if (ready.remainingCleanup > 0) {
-            throw new Error('Agent conference did not become ready');
-          }
-        } catch (error: unknown) {
-          disconnectVoice();
-          await input.api.terminateCallSession(statusId).catch(() => undefined);
-          throw error;
+        if (!/^\+[1-9]\d{7,14}$/.test(target)) {
+          dispatch({
+            type: 'FAILED',
+            code: 'INVALID_TRANSFER_TARGET',
+            message: 'Enter a valid E.164 transfer number',
+            recoverable: true,
+          });
+          return;
         }
-        const session = await run(() => input.api.getCallSession(statusId));
-        if (session) projectSession(session);
-      } catch (error: unknown) {
-        reportUnexpectedFailure(error);
+        dispatch({
+          type: 'TRANSFER_STARTED',
+          transferType: inputValue.type,
+          target,
+        });
+        const result = await run(() =>
+          input.api.initiateCallTransfer(sessionId, {
+            type: inputValue.type,
+            to: target,
+          }),
+        );
+        if (!result) return;
+        projectTransferStatus(result);
+      } catch (cause: unknown) {
+        throw normalizeAsyncError(cause);
       }
+    },
+    completeTransfer: async (): Promise<void> => {
+      try {
+        const sessionId = state.activeSessionId;
+        const transferId = state.transfer.transferId;
+        if (!sessionId || !transferId || state.transfer.status !== 'consulting') {
+          dispatch({
+            type: 'FAILED',
+            code: 'WARM_TRANSFER_REQUIRED',
+            message: 'A warm consultation is required to complete transfer',
+            recoverable: true,
+          });
+          return;
+        }
+        const result = await run(() =>
+          input.api.completeCallTransfer(sessionId, transferId),
+        );
+        if (!result) return;
+        if (!result.success) {
+          dispatch({
+            type: 'FAILED',
+            code: 'TRANSFER_FAILED',
+            message: result.error ?? 'Transfer completion failed',
+            recoverable: true,
+          });
+          return;
+        }
+        dispatch({ type: 'TRANSFER_COMPLETED' });
+      } catch (cause: unknown) {
+        throw normalizeAsyncError(cause);
+      }
+    },
+    cancelTransfer: async (): Promise<void> => {
+      const sessionId = state.activeSessionId;
+      const transferId = state.transfer.transferId;
+      if (!sessionId || !transferId || state.transfer.status !== 'consulting') {
+        dispatch({
+          type: 'FAILED',
+          code: 'WARM_TRANSFER_REQUIRED',
+          message: 'A warm consultation is required to cancel transfer',
+          recoverable: true,
+        });
+        return;
+      }
+      const result = await run(() =>
+        input.api.cancelCallTransfer(sessionId, transferId),
+      );
+      if (!result) return;
+      if (!result.success) {
+        dispatch({
+          type: 'FAILED',
+          code: 'TRANSFER_FAILED',
+          message: result.error ?? 'Transfer cancellation failed',
+          recoverable: true,
+        });
+        return;
+      }
+      dispatch({ type: 'TRANSFER_CANCELLED' });
     },
     refreshSession: async (): Promise<void> => {
       try {
@@ -329,6 +729,13 @@ export const createLeadConnectorEmbedController = (input: {
         if (!sessionId) return;
         const session = await run(() => input.api.getCallSession(sessionId));
         if (session) projectSession(session);
+        const transferId = state.transfer.transferId;
+        if (state.transfer.status === 'initiating' && transferId) {
+          const transfer = await run(() =>
+            input.api.getCallTransferStatus(sessionId, transferId),
+          );
+          if (transfer) projectTransferStatus(transfer);
+        }
       } catch (error: unknown) {
         reportUnexpectedFailure(error);
       }
@@ -391,7 +798,10 @@ export const createLeadConnectorEmbedController = (input: {
         if (result?.recorded) {
           activeRecordSessionId = null;
           dispatch({ type: 'DISPOSITION_SUBMITTED' });
-          await loadCallOperations();
+          await Promise.all([
+            loadCallOperations(),
+            refreshResources({ force: true }),
+          ]);
         }
       } catch (error: unknown) {
         reportUnexpectedFailure(error);
@@ -403,6 +813,11 @@ export const createLeadConnectorEmbedController = (input: {
       message: string;
       recoverable: boolean;
     }) => dispatch({ type: 'FAILED', ...inputValue }),
+    returnHome: () => {
+      activeRecordSessionId = null;
+      disconnectVoice();
+      dispatch({ type: 'RETURN_HOME' });
+    },
     reset: () => dispatch({ type: 'RESET' }),
   };
 };

@@ -45,6 +45,9 @@ const createDependencies = (): DialerServerDependencies => ({
         event: null,
       }),
     ),
+    disableInstallation: mock(() =>
+      Effect.succeed({ disabled: true as const }),
+    ),
     listContacts: mock(() =>
       Effect.succeed({ contacts: [], total: 0, nextCursor: null }),
     ),
@@ -52,6 +55,18 @@ const createDependencies = (): DialerServerDependencies => ({
       Effect.succeed({ opportunities: [], total: 0 }),
     ),
     listPipelines: mock(() => Effect.succeed([])),
+    resolveQueueCandidates: mock(() =>
+      Effect.succeed({
+        pipelineId: 'pipeline-1',
+        pipelineName: 'Pipeline',
+        stageId: 'stage-1',
+        stageName: 'Stage',
+        opportunityTotal: 0,
+        callableTotal: 0,
+        truncated: false,
+        candidates: [],
+      }),
+    ),
     recordDisposition: mock(() => Effect.succeed({ recorded: true as const })),
     exchangeEmbedBootstrap: mock(() =>
       Effect.succeed({
@@ -59,6 +74,8 @@ const createDependencies = (): DialerServerDependencies => ({
         userId: 'provider-user-1',
         installationId: 'installation-1',
         locationId: 'location-1',
+        role: 'admin',
+        contextType: 'location' as const,
       }),
     ),
     validateEmbedIdentity: mock(() => Effect.succeed(true)),
@@ -169,6 +186,69 @@ describe('dialer-server LeadConnector boundary', () => {
       headers: expect.objectContaining({
         'x-ghl-signature': 'provider-signature',
       }),
+    });
+  });
+
+  it('schedules commercial uninstall before disabling the provider installation', async () => {
+    const dependencies = createDependencies();
+    const operations: string[] = [];
+    dependencies.leadConnector!.processWebhook = mock(() =>
+      Effect.succeed({
+        accepted: true as const,
+        duplicate: false,
+        workspaceId: 'workspace-1',
+        event: {
+          id: 'uninstall-1',
+          type: 'installation.uninstalled' as const,
+          workspaceId: 'workspace-1',
+          locationId: 'location-1',
+          occurredAt: null,
+          data: { appId: 'app-1' },
+        },
+      }),
+    );
+    dependencies.leadConnector!.disableInstallation = mock(() =>
+      Effect.sync(() => {
+        operations.push('disable-installation');
+        return { disabled: true as const };
+      }),
+    );
+    dependencies.commercial = {
+      catalog: () => Effect.die('unused'),
+      createCheckout: () => Effect.die('unused'),
+      createBillingPortal: () => Effect.die('unused'),
+      previewBillingChange: () => Effect.die('unused'),
+      applyBillingChange: () => Effect.die('unused'),
+      dashboard: () => Effect.die('unused'),
+      updateTeam: () => Effect.die('unused'),
+      assignNumber: () => Effect.die('unused'),
+      searchNumbers: () => Effect.die('unused'),
+      provisionNumber: () => Effect.die('unused'),
+      releaseNumber: () => Effect.die('unused'),
+      processStripeWebhook: () => Effect.die('unused'),
+      processInstallationUninstall: mock((event) =>
+        Effect.sync(() => {
+          operations.push(`commercial:${event.id}`);
+          return { duplicate: false, cancellationScheduled: true };
+        }),
+      ),
+      recordProviderCompletion: () => Effect.die('unused'),
+    };
+
+    const response = await createDialerServer(dependencies).request(
+      '/v1/webhooks/leadconnector',
+      { method: 'POST', body: '{}' },
+    );
+
+    expect(response.status).toBe(200);
+    expect(operations).toEqual(['commercial:uninstall-1', 'disable-installation']);
+    expect(
+      dependencies.commercial!.processInstallationUninstall,
+    ).toHaveBeenCalledWith({
+      id: 'uninstall-1',
+      workspaceId: 'workspace-1',
+      locationId: 'location-1',
+      appId: 'app-1',
     });
   });
 

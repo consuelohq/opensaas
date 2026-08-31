@@ -27,7 +27,7 @@ ${XDG_CONFIG_HOME:-~/.config}/systemd/user/consuelo-os.service
 The unit runs the immutable entry point:
 
 ```text
-~/.consuelo/runtime/current/scripts/server/main.ts
+~/.consuelo/runtime/current/scripts/server/supervisor.ts
 ```
 
 It uses an absolute Bun path, a `0077` umask, user-only state, restart-on-failure, `NoNewPrivileges`, and a private temporary directory. It never requires a machine-wide daemon or root-owned service.

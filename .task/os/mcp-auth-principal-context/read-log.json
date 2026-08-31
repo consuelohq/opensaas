@@ -1,0 +1,8 @@
+{
+  "files": [
+    ".task/os/mcp-auth-principal-context/workpad.md",
+    "packages/os/scripts/lib/security-gateway.ts",
+    "packages/os/tests/os-device-authority-worker.test.ts"
+  ],
+  "updatedAt": "2026-08-10T03:39:50.604Z"
+}

@@ -1,0 +1,67 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace-agents/polish-docs-interactions-and-branding",
+  "base": "origin/main",
+  "headSha": "23689717656fad5cfd0f427de7f942c4cde58d12",
+  "changeHash": "40c820a746f30ad1d639cbcb442350d4a005d4b6a1f69b2efaed837b3fdae0f1",
+  "changedFiles": [
+    "packages/documentation/astro.config.mjs",
+    "packages/documentation/scripts/test-foundation-browser.mjs",
+    "packages/documentation/scripts/validate-documentation.mjs",
+    "packages/documentation/src/components/Head.astro",
+    "packages/documentation/src/components/Sidebar.astro",
+    "packages/documentation/src/components/SiteTitle.astro",
+    "packages/documentation/src/lib/translation/source.ts",
+    "packages/documentation/src/styles/docs.css",
+    "packages/documentation/tests/foundation.test.ts"
+  ],
+  "verifiedAt": "2026-08-12T03:46:57.075Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/workspace-agents/polish-docs-interactions-and-branding.json",
+        ".task/workspace-agents/polish-docs-interactions-and-branding/current.json",
+        ".task/workspace-agents/polish-docs-interactions-and-branding/evidence-log.json",
+        ".task/workspace-agents/polish-docs-interactions-and-branding/read-log.json",
+        ".task/workspace-agents/polish-docs-interactions-and-branding/session.json",
+        ".task/workspace-agents/polish-docs-interactions-and-branding/workpad.md",
+        "packages/documentation/astro.config.mjs",
+        "packages/documentation/scripts/test-foundation-browser.mjs",
+        "packages/documentation/scripts/validate-documentation.mjs",
+        "packages/documentation/src/components/Head.astro",
+        "packages/documentation/src/components/Sidebar.astro",
+        "packages/documentation/src/components/SiteTitle.astro",
+        "packages/documentation/src/lib/translation/source.ts",
+        "packages/documentation/src/styles/docs.css",
+        "packages/documentation/tests/foundation.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

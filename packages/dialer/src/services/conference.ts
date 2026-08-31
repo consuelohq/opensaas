@@ -6,7 +6,8 @@ import type {
   TransferOptions,
   TransferResult,
 } from '../types.js';
-import type TwilioClient from 'twilio';
+
+type TwilioClientInstance = import('twilio').Twilio;
 
 const escapeXml = (str: string): string =>
   str
@@ -16,6 +17,9 @@ const escapeXml = (str: string): string =>
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&apos;');
 
+const errorWithCause = (message: string, cause: unknown): Error =>
+  Object.assign(new Error(message), { cause });
+
 /**
  * Conference + transfer orchestration via Twilio REST API.
  *
@@ -23,7 +27,7 @@ const escapeXml = (str: string): string =>
  * can add/remove participants without dropping audio.
  */
 export class ConferenceService {
-  private client: ReturnType<typeof TwilioClient> | null = null;
+  private client: TwilioClientInstance | null = null;
   private credentials: TwilioCredentials;
   private ringingStartTimes = new Map<string, number>();
 
@@ -35,7 +39,7 @@ export class ConferenceService {
     };
   }
 
-  private async getClient(): Promise<ReturnType<typeof TwilioClient>> {
+  private async getClient(): Promise<TwilioClientInstance> {
     if (this.client) return this.client;
     if (!this.credentials.accountSid || !this.credentials.authToken) {
       throw new Error(
@@ -107,31 +111,37 @@ export class ConferenceService {
     conferenceName: string,
     timeoutMs: number = 20000,
   ): Promise<{ sid: string }> {
-    const startTime = Date.now();
-    let delayMs = 500;
-    const maxDelayMs = 2000;
+    try {
+      const startTime = Date.now();
+      let delayMs = 500;
+      const maxDelayMs = 2000;
 
-    while (Date.now() - startTime < timeoutMs) {
-      const conferences = await client.conferences.list({
-        friendlyName: conferenceName,
-        status: 'in-progress',
-        limit: 1,
-      });
+      while (Date.now() - startTime < timeoutMs) {
+        const conferences = await client.conferences.list({
+          friendlyName: conferenceName,
+          status: 'in-progress',
+          limit: 1,
+        });
 
-      if (conferences.length) {
-        return { sid: conferences[0].sid };
+        if (conferences.length) {
+          return { sid: conferences[0].sid };
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
+        delayMs = Math.min(delayMs * 2, maxDelayMs);
       }
 
-      await new Promise((resolve) => setTimeout(resolve, delayMs));
-      delayMs = Math.min(delayMs * 2, maxDelayMs);
+      throw Object.assign(
+        new Error(
+          `Conference "${conferenceName}" not found or not in-progress after ${timeoutMs}ms`,
+        ),
+        { status: 404 },
+      );
+    } catch (cause: unknown) {
+      throw cause instanceof Error
+        ? cause
+        : errorWithCause('CONFERENCE_LOOKUP_FAILED', cause);
     }
-
-    throw Object.assign(
-      new Error(
-        `Conference "${conferenceName}" not found or not in-progress after ${timeoutMs}ms`,
-      ),
-      { status: 404 },
-    );
   }
 
   /** Dial the customer into the conference via REST API */
@@ -360,8 +370,19 @@ export class ConferenceService {
             statusCallback,
           },
         );
-
-      await this.removeParticipant(conferenceSid, options.callSid);
+      try {
+        await this.removeParticipant(conferenceSid, options.callSid);
+      } catch (cause: unknown) {
+        try {
+          await this.removeParticipant(conferenceSid, transferCallSid);
+        } catch (rollbackCause: unknown) {
+          throw errorWithCause('COLD_TRANSFER_AND_ROLLBACK_FAILED', {
+            operation: cause,
+            rollback: rollbackCause,
+          });
+        }
+        throw cause;
+      }
       return {
         success: true,
         transferCallSid,
@@ -399,27 +420,40 @@ export class ConferenceService {
       await this.holdParticipant(conferenceSid, customer.callSid, true);
 
       // add the transfer target
-      const client = await this.getClient();
-      const statusCallback = this.appendTransferId(
-        options.statusCallbackUrl,
-        options.transferId,
-      );
+      let participant: { callSid: string };
+      try {
+        const client = await this.getClient();
+        const statusCallback = this.appendTransferId(
+          options.statusCallbackUrl,
+          options.transferId,
+        );
 
-      const participant = await client
-        .conferences(conferenceSid)
-        .participants.create({
-          to: options.to,
-          from: options.from,
-          endConferenceOnExit: false,
-          label: 'transfer-target',
-          statusCallback,
-          statusCallbackEvent: [
-            'initiated',
-            'ringing',
-            'answered',
-            'completed',
-          ],
-        });
+        participant = await client
+          .conferences(conferenceSid)
+          .participants.create({
+            to: options.to,
+            from: options.from,
+            endConferenceOnExit: false,
+            label: 'transfer-target',
+            statusCallback,
+            statusCallbackEvent: [
+              'initiated',
+              'ringing',
+              'answered',
+              'completed',
+            ],
+          });
+      } catch (cause: unknown) {
+        try {
+          await this.holdParticipant(conferenceSid, customer.callSid, false);
+        } catch (rollbackCause: unknown) {
+          throw errorWithCause('WARM_TRANSFER_AND_RESTORE_FAILED', {
+            operation: cause,
+            rollback: rollbackCause,
+          });
+        }
+        throw cause;
+      }
 
       return {
         success: true,
@@ -482,8 +516,6 @@ export class ConferenceService {
     transferCallSid: string,
   ): Promise<TransferResult> {
     try {
-      await this.removeParticipant(conferenceSid, transferCallSid);
-
       const participants = await this.listParticipants(conferenceSid);
       const customer = participants.find((p) => p.label === 'customer');
       if (!customer) {
@@ -493,6 +525,7 @@ export class ConferenceService {
             'CUSTOMER_NOT_FOUND: transfer cancelled but customer not found to unhold',
         };
       }
+      await this.removeParticipant(conferenceSid, transferCallSid);
       if (customer.hold) {
         await this.holdParticipant(conferenceSid, customer.callSid, false);
       }
@@ -502,6 +535,41 @@ export class ConferenceService {
       const message =
         err instanceof Error ? err.message : 'Cancel transfer failed';
       return { success: false, error: message };
+    }
+  }
+
+  /** Start recording the connected provider call leg. */
+  async startCallRecording(input: {
+    callSid: string;
+    recordingStatusCallbackUrl: string;
+  }): Promise<{ recordingSid: string; status: string }> {
+    try {
+      const client = await this.getClient();
+      const recording = await client
+        .calls(input.callSid)
+        .recordings.create({
+          recordingChannels: 'dual',
+          recordingTrack: 'both',
+          trim: 'do-not-trim',
+          recordingStatusCallback: input.recordingStatusCallbackUrl,
+          recordingStatusCallbackMethod: 'POST',
+          recordingStatusCallbackEvent: [
+            'in-progress',
+            'completed',
+            'absent',
+          ],
+        });
+      return {
+        recordingSid: recording.sid,
+        status: recording.status,
+      };
+    } catch (err: unknown) {
+      Sentry.captureException(err, {
+        extra: { callSid: input.callSid },
+      });
+      const message =
+        err instanceof Error ? err.message : 'Start recording failed';
+      throw new Error(message);
     }
   }
 

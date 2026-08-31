@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_4f5b46fb3ece",
+  "tmuxSession": "opensaas-os-add-skill-cli-from-stream-4f5b46fb",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-skill-cli-from-stream",
+  "branch": "task/os/add-skill-cli-from-stream",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-skill-cli-from-stream",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-skill-cli-from-stream",
+  "prNumber": 1842,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1842",
+  "createdAt": "2026-08-11T21:43:27.137Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-skill-cli-from-stream/.task/os/add-skill-cli-from-stream/session.json"
+}

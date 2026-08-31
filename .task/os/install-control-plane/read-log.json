@@ -1,0 +1,22 @@
+{
+  "files": [
+    ".task/os/install-control-plane/current.json",
+    "packages/os/cloudflare/os-device-authority/src/security/device-auth.ts",
+    "packages/os/cloudflare/os-device-authority/src/services/connectors.ts",
+    "packages/os/cloudflare/os-device-authority/src/services/grants.ts",
+    "packages/os/cloudflare/os-device-authority/src/types.ts",
+    "packages/os/cloudflare/workspace-edge/migrations/0004_install_control_plane.sql",
+    "packages/os/docs/install-control-plane.md",
+    "packages/os/scripts/lib/install-control-plane.ts",
+    "packages/os/scripts/lib/install-telemetry-contract.ts",
+    "packages/os/scripts/lib/workspace-device-authorization.ts",
+    "packages/os/scripts/lib/workspace-device-login-client.ts",
+    "packages/os/tests/install-control-plane-cloudflare.test.ts",
+    "packages/os/tests/install-control-plane-d1.test.ts",
+    "packages/os/tests/os-device-approval-auth-hardening-contract.test.ts",
+    "packages/os/tests/os-device-authority-worker.test.ts",
+    "packages/twenty-server/src/engine/core-modules/auth/services/auth.service.ts",
+    "packages/workspace/scripts/task-push.js"
+  ],
+  "updatedAt": "2026-08-13T18:15:54.743Z"
+}

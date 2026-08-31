@@ -1325,9 +1325,14 @@ async def call(
     tool: str,
     input: Any | None = None,
     taskSession: str | None = None,
+    nodeId: str | None = None,
     timeout: int | None = None,
 ) -> dict[str, Any]:
-    """run a typed workspace tool through the facade. taskSession scopes task work."""
+    """run a typed workspace tool through the facade. taskSession scopes task work.
+
+    nodeId is consumed by the upstream MCP routing layer before this request reaches
+    the selected node, so it must not be forwarded into the inner typed tool input.
+    """
     tool_input = input
     return await asyncio.to_thread(
         _traced_call,

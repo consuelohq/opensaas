@@ -140,7 +140,7 @@ await os.call({
 })
 ```
 
-Treat `explore` as a prior over where to inspect next. After retrieval narrows the map, use `code.call` in read mode to inspect the likely files, confirm exact symbols, and return a task-shaped evidence packet.
+Treat `explore` as the investigation-policy front door. It retrieves the likely dependency graph and returns the current hypothesis, readiness, uncertainty, next evidence action, and edit-readiness. Follow its structured `next_action`, then use `code.call` or task-scoped file tools to inspect the recommended evidence.
 
 # Decision and evidence principles
 
@@ -148,10 +148,10 @@ Use the decision engine to move from uncertainty to evidence-backed action.
 
 The task workflow skill owns the exact loop. This skill owns the judgment standard:
 
-- `explore` is retrieval, not proof.
-- `decideNext` is the policy layer.
-- `confidenceScore` measures evidence quality, not permission to skip tests.
-- `exploit` means the evidence is concentrated enough to stop wandering and edit.
+- `explore` owns retrieval plus the investigation policy. Retrieval support is still not proof.
+- `explore.next_action` is the normal policy interface; `decideNext` is a compatibility projection of the same policy.
+- `explore.readiness` is categorical evidence readiness, not a correctness probability; `confidenceScore` is a compatibility projection.
+- `explore.edit_ready` and `explore.edit_target` tell you when the evidence is concentrated enough to stop wandering and edit; `exploit` is a compatibility alias.
 - `confirm` means belief meets reality.
 - `audit` checks workspace surface truth: scripts, docs, and index freshness.
 
@@ -501,15 +501,15 @@ Validation ladder:
 - `dev` for service-backed local validation.
 - `status` and `doctor` for environment and workspace state.
 
-### Use `code.call` for focused validation only when no more specific typed validation tool exists. 
+### Use `code.call` for focused validation only when no more specific typed validation tool exists.
 
 Good `code.call` validation uses:
-- Python compilation or Python validation scripts with `language: "python"` 
+- Python compilation or Python validation scripts with `language: "python"`
 - focused package test commands with `language: "bun"`
-- build/typecheck/lint/package scripts with `language: "bun"` 
-- codegen or generated-surface commands with `language: "bun"` and `mode: "edit"` when files may change 
-- one-off runtime smoke checks with the most specific runtime 
-- shell-specific checks with `language: "bash"` only when shell semantics are required 
+- build/typecheck/lint/package scripts with `language: "bun"`
+- codegen or generated-surface commands with `language: "bun"` and `mode: "edit"` when files may change
+- one-off runtime smoke checks with the most specific runtime
+- shell-specific checks with `language: "bash"` only when shell semantics are required
 
 | Validation need | Preferred surface |
 | --- | --- |
@@ -700,7 +700,7 @@ When a direct tool call or long inline prompt is blocked, malformed, truncated, 
 
 Use this pattern for legitimate repo/task work when the goal is already approved and the failure is caused by transport/tooling friction.
 
-Don’t report OpenAI safety blocks as the same as workspace safety blocks; they are materially different. 
+Don’t report OpenAI safety blocks as the same as workspace safety blocks; they are materially different.
 
 ### Required blocked report
 

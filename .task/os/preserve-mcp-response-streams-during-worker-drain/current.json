@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/preserve-mcp-response-streams-during-worker-drain",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2143,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2143",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2143",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2143/preserve-mcp-response-streams-during-worker-drain",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2143",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2143/preserve-mcp-response-streams-during-worker-drain",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-preserve-mcp-response-streams-during-worker-drain",
+  "taskSession": "tsk_1dfaf54fe0f7",
+  "tmuxSession": "opensaas-os-preserve-mcp-response-streams-during-worker-drai-1dfaf54f",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-preserve-mcp-response-streams-during-worker-drain/.task/os/preserve-mcp-response-streams-during-worker-drain/session.json",
+  "createdAt": "2026-08-16T06:59:29.768Z"
+}

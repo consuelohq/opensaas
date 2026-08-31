@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/regenerate-cloudflared-connector-definitions-from-managed-runtime-binary",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2124,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2124",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2124",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2124/regenerate-cloudflared-connector-definitions-from-managed-runtime-binary",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2124",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2124/regenerate-cloudflared-connector-definitions-from-managed-runtime-binary",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-regenerate-cloudflared-connector-definitions-from-managed-runtime-binary",
+  "taskSession": "tsk_7aa12e2fc3f9",
+  "tmuxSession": "opensaas-os-regenerate-cloudflared-connector-definitions-fro-7aa12e2f",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-regenerate-cloudflared-connector-definitions-from-managed-runtime-binary/.task/os/regenerate-cloudflared-connector-definitions-from-managed-runtime-binary/session.json",
+  "createdAt": "2026-08-16T04:11:16.934Z"
+}

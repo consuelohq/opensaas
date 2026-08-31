@@ -53,6 +53,7 @@ export const toolSchemas = [
       "defaultTimeout",
       "inputSchema",
       "outputSchema",
+      "search",
       "command",
       "exampleInput",
       "sessionRequired"
@@ -74,6 +75,7 @@ export const toolSchemas = [
       "defaultTimeout": 120000,
       "inputSchema": "PrReviewInput",
       "outputSchema": "RawOutput",
+      "search": { "hidden": true },
       "exampleInput": {
         "pr": 225
       },

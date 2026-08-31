@@ -1,4 +1,6 @@
-export const TRACE_SITE_ASSET_VERSION = '2026-07-23.1';
+import { PRIVATE_WORKSPACE_SESSION_RECOVERY_JAVASCRIPT } from './private-workspace-session-recovery';
+
+export const TRACE_SITE_ASSET_VERSION = '2026-08-13.1';
 
 export const TRACE_SITE_CSS = `
 :root {
@@ -76,7 +78,7 @@ button { font: inherit; }
 }
 `;
 
-export const TRACE_SITE_JAVASCRIPT = `
+export const TRACE_SITE_JAVASCRIPT = `${PRIVATE_WORKSPACE_SESSION_RECOVERY_JAVASCRIPT}
 (() => {
   const root = document.querySelector('[data-trace-app]');
   if (!root) return;

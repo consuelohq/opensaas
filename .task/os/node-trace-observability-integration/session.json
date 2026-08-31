@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_7384aa94d6ba",
+  "tmuxSession": "opensaas-os-node-trace-observability-integration-7384aa94",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/node-trace-observability-integration",
+  "branch": "task/os/node-trace-observability-integration",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-node-trace-observability-integration",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-node-trace-observability-integration",
+  "prNumber": 1891,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1891",
+  "createdAt": "2026-08-12T14:30:03.149Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-node-trace-observability-integration/.task/os/node-trace-observability-integration/session.json"
+}

@@ -1,0 +1,19 @@
+{
+  "files": [
+    ".task/os/add-skill-cli-from-stream/current.json",
+    ".task/os/add-skill-cli-from-stream/session.json",
+    ".task/os/add-skill-cli-from-stream/workpad.md",
+    ".task/tasks/os/add-skill-cli-from-stream.json",
+    "packages/cli/src/commands/queue.ts",
+    "packages/cli/src/index.ts",
+    "packages/os/SCRIPTS.md",
+    "packages/os/scripts/lib/distribution/runtime-bundle.ts",
+    "packages/os/scripts/lib/managed-user-content-release.ts",
+    "packages/os/scripts/lifecycle.ts",
+    "packages/os/tests/distribution/runtime-bundle.test.ts",
+    "packages/os/tests/skills-registry.test.ts",
+    "packages/workspace/scripts/lib/task-meta.js",
+    "packages/workspace/scripts/lib/task-selection.js"
+  ],
+  "updatedAt": "2026-08-11T22:04:02.380Z"
+}

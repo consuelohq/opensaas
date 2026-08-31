@@ -1,0 +1,16 @@
+{
+  "files": [
+    "packages/os/cloudflare/os-device-authority/src/routes/workspace-nodes.ts",
+    "packages/os/cloudflare/os-device-authority/src/services/mcp-proxy.ts",
+    "packages/os/cloudflare/os-device-authority/src/services/nodes.ts",
+    "packages/os/cloudflare/os-device-authority/src/stores.ts",
+    "packages/os/cloudflare/os-device-authority/src/types.ts",
+    "packages/os/tests/launcher-nodes-control-plane.test.ts",
+    "packages/os/tests/settings-site.test.ts",
+    "packages/os/tests/tool-scope-authorization.test.ts",
+    "packages/os/tests/trace-persistence.test.ts",
+    "packages/os/tests/workspace-edge-sites-gateway-integration.test.ts",
+    "packages/os/tests/workspace-node-registry-routing.test.ts"
+  ],
+  "updatedAt": "2026-08-12T18:11:00.745Z"
+}

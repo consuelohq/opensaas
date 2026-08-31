@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_d542ae6bac37",
+  "tmuxSession": "opensaas-os-persist-synthetic-checkout-workspace-allowlist-a-d542ae6b",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/persist-synthetic-checkout-workspace-allowlist-and-production-test-lane",
+  "branch": "task/os/persist-synthetic-checkout-workspace-allowlist-and-production-test-lane",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-persist-synthetic-checkout-workspace-allowlist-and-production-test-lane",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-persist-synthetic-checkout-workspace-allowlist-and-production-test-lane",
+  "prNumber": 2015,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2015",
+  "createdAt": "2026-08-15T04:17:12.059Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-persist-synthetic-checkout-workspace-allowlist-and-production-test-lane/.task/os/persist-synthetic-checkout-workspace-allowlist-and-production-test-lane/session.json"
+}

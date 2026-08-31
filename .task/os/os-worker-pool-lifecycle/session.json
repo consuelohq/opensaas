@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_c36f41f9a950",
+  "tmuxSession": "opensaas-os-os-worker-pool-lifecycle-c36f41f9",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/os-worker-pool-lifecycle",
+  "branch": "task/os/os-worker-pool-lifecycle",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-os-worker-pool-lifecycle",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-os-worker-pool-lifecycle",
+  "prNumber": 1843,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1843",
+  "createdAt": "2026-08-11T21:49:11.701Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-os-worker-pool-lifecycle/.task/os/os-worker-pool-lifecycle/session.json"
+}

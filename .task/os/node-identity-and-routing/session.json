@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_c64f949d0274",
+  "tmuxSession": "opensaas-os-node-identity-and-routing-c64f949d",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/node-identity-and-routing",
+  "branch": "task/os/node-identity-and-routing",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-node-identity-and-routing",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-node-identity-and-routing",
+  "prNumber": 1881,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1881",
+  "createdAt": "2026-08-12T04:28:53.386Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-node-identity-and-routing/.task/os/node-identity-and-routing/session.json"
+}

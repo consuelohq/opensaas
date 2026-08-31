@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_cdedbbd01adf",
+  "tmuxSession": "opensaas-os-reconcile-stale-mcp-security-and-workspace-waf-t-cdedbbd0",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/reconcile-stale-mcp-security-and-workspace-waf-tasks-onto-main",
+  "branch": "task/os/reconcile-stale-mcp-security-and-workspace-waf-tasks-onto-main",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-reconcile-stale-mcp-security-and-workspace-waf-tasks-onto-main",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-reconcile-stale-mcp-security-and-workspace-waf-tasks-onto-main",
+  "prNumber": 1898,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1898",
+  "createdAt": "2026-08-12T23:25:24.416Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-reconcile-stale-mcp-security-and-workspace-waf-tasks-onto-main/.task/os/reconcile-stale-mcp-security-and-workspace-waf-tasks-onto-main/session.json"
+}

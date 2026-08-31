@@ -120,7 +120,7 @@ export const DefaultWithoutSearch: Story = {
     const canvas = within(canvasElement);
 
     expect(await canvas.findByText('Go to People')).toBeVisible();
-    expect(await canvas.findByText('Go to Opportunities')).toBeVisible();
+    expect(await canvas.findByText('Go to Lists')).toBeVisible();
     expect(await canvas.findByText('Go to Settings')).toBeVisible();
     expect(await canvas.findByText('Go to Tasks')).toBeVisible();
     expect(await canvas.findByText('Go to Notes')).toBeVisible();
@@ -131,7 +131,7 @@ export const LimitedPermissions: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     expect(await canvas.findByText('Go to People')).toBeVisible();
-    expect(canvas.queryByText('Go to Opportunities')).not.toBeInTheDocument();
+    expect(canvas.queryByText('Go to Lists')).not.toBeInTheDocument();
     expect(canvas.queryByText('Go to Tasks')).not.toBeInTheDocument();
     expect(await canvas.findByText('Go to Settings')).toBeVisible();
     expect(await canvas.findByText('Go to Notes')).toBeVisible();

@@ -8,6 +8,7 @@ import {
   verifyRuntimeBundleArchive,
   type RuntimeBundleBuildOptions,
   type RuntimeBundleMigration,
+  type RuntimeBundleVendoredSource,
 } from './lib/distribution/runtime-bundle';
 
 type ParsedArguments = {
@@ -58,6 +59,23 @@ function parseMigrations(values: string[] | undefined): RuntimeBundleMigration[]
   });
 }
 
+function parseVendoredSources(
+  values: string[] | undefined,
+): RuntimeBundleVendoredSource[] | undefined {
+  return values?.map((value) => {
+    const separator = value.indexOf('=');
+    if (separator <= 0 || separator === value.length - 1) {
+      throw new Error(
+        '--vendored-source must use archive/path=source/path format',
+      );
+    }
+    return {
+      path: value.slice(0, separator),
+      sourcePath: value.slice(separator + 1),
+    };
+  });
+}
+
 function buildOptions(parsed: ParsedArguments): RuntimeBundleBuildOptions {
   return {
     architecture: optionalFlag(parsed, 'architecture') ?? process.arch,
@@ -69,6 +87,9 @@ function buildOptions(parsed: ParsedArguments): RuntimeBundleBuildOptions {
     platform: optionalFlag(parsed, 'platform') ?? process.platform,
     sourceCommit: requiredFlag(parsed, 'source-commit'),
     sourceRoot: resolve(optionalFlag(parsed, 'source-root') ?? process.cwd()),
+    vendoredSources: parseVendoredSources(
+      repeatedFlag(parsed, 'vendored-source'),
+    ),
     version: requiredFlag(parsed, 'version'),
   };
 }
@@ -84,6 +105,9 @@ function main(argv: string[]): Promise<void> {
     return computeReleaseFingerprint({
       includePaths: repeatedFlag(parsed, 'include-path'),
       sourceRoot: resolve(optionalFlag(parsed, 'source-root') ?? process.cwd()),
+      vendoredSources: parseVendoredSources(
+        repeatedFlag(parsed, 'vendored-source'),
+      ),
     }).then((result) => {
       printJson(result);
     });

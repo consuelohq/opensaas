@@ -6,6 +6,7 @@ import {
   createEd25519ChannelSigner,
   type ChannelManifestPayload,
 } from '../../scripts/lib/distribution/release-channels';
+import { REQUIRED_RUNTIME_RECOVERY_CAPABILITIES } from '../../scripts/lib/distribution/runtime-bundle';
 import { verifySignedReleaseManifest } from '../../scripts/lib/lifecycle/release';
 
 describe('OS distribution lifecycle contracts', () => {
@@ -29,6 +30,7 @@ describe('OS distribution lifecycle contracts', () => {
           architecture: 'arm64',
           archiveDigest: `sha256:${'2'.repeat(64)}`,
           bundleId: `sha256:${'1'.repeat(64)}`,
+          capabilities: [...REQUIRED_RUNTIME_RECOVERY_CAPABILITIES],
           cloudflareObjectKey:
             `bundles/sha256:${'1'.repeat(64)}/consuelo-os-runtime-1.2.3-darwin-arm64.tar.gz`,
           githubAssetName:

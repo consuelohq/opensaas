@@ -62,6 +62,8 @@ describe('LeadConnector embed bootstrap contracts', () => {
       userId: 'provider-user-1',
       installationId: 'installation-1',
       locationId: 'location-1',
+      role: 'user',
+      contextType: 'location',
     });
   });
 
@@ -92,6 +94,8 @@ describe('LeadConnector embed bootstrap contracts', () => {
         userId: 'provider-user-1',
         installationId: 'installation-old',
         locationId: 'location-1',
+        role: 'user',
+        contextType: 'location',
       }).pipe(
         Effect.provide(
           makeLayer(installation({ installationId: 'installation-new' })),

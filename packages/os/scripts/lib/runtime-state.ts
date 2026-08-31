@@ -1,10 +1,67 @@
-import { Database } from 'bun:sqlite';
 import fs from 'node:fs';
+import { createRequire } from 'node:module';
 import path from 'node:path';
 
 import { resolveConsueloHomeLayout } from './consuelo-home';
 import { redactJson, redactText } from './redaction';
 import type { CallOutput } from './types';
+
+const require = createRequire(import.meta.url);
+
+type RuntimeStatementResult = { changes: number };
+type RuntimeStatement = {
+  run: (...values: unknown[]) => RuntimeStatementResult;
+  all: (...values: unknown[]) => unknown[];
+  get: (...values: unknown[]) => unknown;
+};
+type RuntimeDatabase = {
+  exec: (sql: string) => void;
+  query: (sql: string) => RuntimeStatement;
+  close: () => void;
+};
+type RuntimeDatabaseConstructor = new (
+  filename: string,
+  options?: { create?: boolean; readonly?: boolean },
+) => RuntimeDatabase;
+
+type NodeSqliteStatement = {
+  run: (...values: unknown[]) => { changes: number | bigint };
+  all: (...values: unknown[]) => unknown[];
+  get: (...values: unknown[]) => unknown;
+};
+type NodeSqliteDatabase = {
+  exec: (sql: string) => void;
+  prepare: (sql: string) => NodeSqliteStatement;
+  close: () => void;
+};
+type NodeSqliteDatabaseConstructor = new (filename: string) => NodeSqliteDatabase;
+
+function openSqliteDatabase(filename: string): RuntimeDatabase {
+  if (typeof (globalThis as { Bun?: unknown }).Bun !== 'undefined') {
+    const { Database } = require('bun:sqlite') as { Database: RuntimeDatabaseConstructor };
+    return new Database(filename, { create: true });
+  }
+
+  const { DatabaseSync } = require('node:sqlite') as {
+    DatabaseSync: NodeSqliteDatabaseConstructor;
+  };
+  const database = new DatabaseSync(filename);
+  return {
+    exec: (sql) => database.exec(sql),
+    query: (sql) => {
+      const statement = database.prepare(sql);
+      return {
+        run: (...values) => {
+          const result = statement.run(...values);
+          return { changes: Number(result.changes) };
+        },
+        all: (...values) => statement.all(...values),
+        get: (...values) => statement.get(...values),
+      };
+    },
+    close: () => database.close(),
+  };
+}
 
 export type ExecutionStatus = 'started' | 'succeeded' | 'failed';
 
@@ -50,12 +107,32 @@ export type SteeringGuardLookupInput = {
   nowMs: number;
 };
 
+export type SteeringGuardClaimInput = SteeringGuardLookupInput & {
+  traceId: string;
+  reason?: string;
+  decisions: readonly string[];
+};
+
+export type GatewayReplayNonceClaimInput = {
+  home?: string;
+  scope: string;
+  nonce: string;
+  windowMs: number;
+  nowMs: number;
+};
+
+export type GatewayCredentialUsageInput = {
+  home?: string;
+  tokenId: string;
+  nowMs: number;
+};
+
 export function getConsueloHome(): string {
   return resolveConsueloHomeLayout().home;
 }
 
-export function getRuntimePaths(): RuntimePaths {
-  const layout = resolveConsueloHomeLayout();
+export function getRuntimePaths(home?: string): RuntimePaths {
+  const layout = resolveConsueloHomeLayout(home);
   return {
     home: layout.home,
     dbPath: layout.nodeDbPath,
@@ -66,17 +143,18 @@ export function getRuntimePaths(): RuntimePaths {
   };
 }
 
-export function ensureRuntimePaths(): RuntimePaths {
-  const paths = getRuntimePaths();
+export function ensureRuntimePaths(home?: string): RuntimePaths {
+  const paths = getRuntimePaths(home);
   for (const dir of [paths.home, path.dirname(paths.dbPath), paths.artifactsDir, paths.logsDir, paths.runsDir, paths.tmpDir]) {
     fs.mkdirSync(dir, { recursive: true });
   }
   return paths;
 }
 
-function openDatabase(): Database {
-  const paths = ensureRuntimePaths();
-  const db = new Database(paths.dbPath);
+function openDatabase(home?: string): RuntimeDatabase {
+  const paths = ensureRuntimePaths(home);
+  const db = openSqliteDatabase(paths.dbPath);
+  db.exec('PRAGMA busy_timeout = 5000;');
   db.exec(`
     CREATE TABLE IF NOT EXISTS skill_executions (
       trace_id TEXT PRIMARY KEY,
@@ -114,6 +192,23 @@ function openDatabase(): Database {
 
     CREATE INDEX IF NOT EXISTS steering_guard_events_lookup_idx
       ON steering_guard_events(caller_key, tool, created_at_epoch);
+
+    CREATE TABLE IF NOT EXISTS gateway_replay_nonces (
+      scope TEXT NOT NULL,
+      nonce TEXT NOT NULL,
+      seen_at_epoch INTEGER NOT NULL,
+      seen_at TEXT NOT NULL,
+      PRIMARY KEY(scope, nonce)
+    );
+
+    CREATE INDEX IF NOT EXISTS gateway_replay_nonces_seen_idx
+      ON gateway_replay_nonces(seen_at_epoch);
+
+    CREATE TABLE IF NOT EXISTS gateway_credential_usage (
+      token_id TEXT PRIMARY KEY,
+      last_used_at_epoch INTEGER NOT NULL,
+      last_used_at TEXT NOT NULL
+    );
   `);
   return db;
 }
@@ -199,6 +294,110 @@ export function recordSteeringGuardEvent(input: SteeringGuardEventInput): void {
       input.traceId,
       input.reason ?? null,
     );
+  } finally {
+    db.close();
+  }
+}
+
+function withImmediateTransaction<T>(db: RuntimeDatabase, operation: () => T): T {
+  db.exec('BEGIN IMMEDIATE;');
+  try {
+    const result = operation();
+    db.exec('COMMIT;');
+    return result;
+  } catch (error: unknown) {
+    try {
+      db.exec('ROLLBACK;');
+    } catch {
+      // Preserve the original transactional failure.
+    }
+    throw error;
+  }
+}
+
+export function claimSteeringGuardDecision(
+  input: SteeringGuardClaimInput,
+): { decision: string; attempt: number } {
+  if (input.decisions.length === 0) {
+    throw new Error('steering guard decisions must not be empty');
+  }
+  const db = openDatabase();
+  try {
+    return withImmediateTransaction(db, () => {
+      const row = db.query(
+        'SELECT COUNT(*) AS count FROM steering_guard_events WHERE caller_key = ? AND tool = ? AND created_at_epoch >= ? AND created_at_epoch <= ?',
+      ).get(
+        input.callerKey,
+        input.tool,
+        input.nowMs - input.windowMs,
+        input.nowMs,
+      ) as { count: number } | null;
+      const priorCount = Number(row?.count ?? 0);
+      const decisionIndex = Math.min(priorCount, input.decisions.length - 1);
+      const decision = input.decisions[decisionIndex]!;
+      const attempt = priorCount + 1;
+      db.query(
+        'INSERT INTO steering_guard_events(id, created_at_epoch, created_at, caller_key, tool, decision, trace_id, reason) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+      ).run(
+        `${input.traceId}:${decision}`,
+        input.nowMs,
+        new Date(input.nowMs).toISOString(),
+        input.callerKey,
+        input.tool,
+        decision,
+        input.traceId,
+        input.reason ?? null,
+      );
+      return { decision, attempt };
+    });
+  } finally {
+    db.close();
+  }
+}
+
+export function claimGatewayReplayNonce(input: GatewayReplayNonceClaimInput): boolean {
+  const db = openDatabase(input.home);
+  try {
+    return withImmediateTransaction(db, () => {
+      db.query('DELETE FROM gateway_replay_nonces WHERE seen_at_epoch < ?').run(
+        input.nowMs - input.windowMs,
+      );
+      const result = db.query(
+        'INSERT OR IGNORE INTO gateway_replay_nonces(scope, nonce, seen_at_epoch, seen_at) VALUES (?, ?, ?, ?)',
+      ).run(
+        input.scope,
+        input.nonce,
+        input.nowMs,
+        new Date(input.nowMs).toISOString(),
+      );
+      return result.changes === 1;
+    });
+  } finally {
+    db.close();
+  }
+}
+
+export function recordGatewayCredentialUsage(input: GatewayCredentialUsageInput): void {
+  const db = openDatabase(input.home);
+  try {
+    db.query(
+      'INSERT INTO gateway_credential_usage(token_id, last_used_at_epoch, last_used_at) VALUES (?, ?, ?) ON CONFLICT(token_id) DO UPDATE SET last_used_at_epoch = excluded.last_used_at_epoch, last_used_at = excluded.last_used_at WHERE excluded.last_used_at_epoch >= gateway_credential_usage.last_used_at_epoch',
+    ).run(input.tokenId, input.nowMs, new Date(input.nowMs).toISOString());
+  } finally {
+    db.close();
+  }
+}
+
+export function readGatewayCredentialLastUsedAt(input: {
+  home?: string;
+  tokenId: string;
+}): string | null {
+  const db = openDatabase(input.home);
+  try {
+    const row = db.query(
+      'SELECT last_used_at FROM gateway_credential_usage WHERE token_id = ? LIMIT 1',
+    ).get(input.tokenId) as { last_used_at: string } | null;
+    return row?.last_used_at ?? null;
   } finally {
     db.close();
   }

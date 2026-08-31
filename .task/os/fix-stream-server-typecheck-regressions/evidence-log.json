@@ -1,0 +1,360 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/fix-stream-server-typecheck-regressions",
+  "events": [
+    {
+      "id": "c4de72c2-d1ec-4f90-921c-31f297b02354",
+      "occurred_at": "2026-08-14T00:27:19.063Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/infrastructure/twenty-parallel.infrastructure.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-stream-server-typecheck-regressions",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-stream-server-typecheck-regressions"
+      }
+    },
+    {
+      "id": "6e5c60dd-a18c-4234-9bff-a7f4f0c80996",
+      "occurred_at": "2026-08-14T00:27:43.076Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/dialer/src/application/start-dialer-call.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-stream-server-typecheck-regressions",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-stream-server-typecheck-regressions"
+      }
+    },
+    {
+      "id": "bcee7081-684b-424d-9757-449cd46249e5",
+      "occurred_at": "2026-08-14T00:28:04.244Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/dialer/src/application/adapter-application.spec.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-stream-server-typecheck-regressions",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-stream-server-typecheck-regressions"
+      }
+    },
+    {
+      "id": "523b744f-210b-42b5-bf5a-632414777cfe",
+      "occurred_at": "2026-08-14T00:28:17.965Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/dialer-server/src/runtime/railway.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-stream-server-typecheck-regressions",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-stream-server-typecheck-regressions"
+      }
+    },
+    {
+      "id": "d7b01c8e-96c8-4742-baf0-31c1845cead7",
+      "occurred_at": "2026-08-14T00:28:26.339Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/dialer-server/src/runtime/railway.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-stream-server-typecheck-regressions",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-stream-server-typecheck-regressions"
+      }
+    },
+    {
+      "id": "e8b24c48-4a27-4324-bbb7-c3713b26450d",
+      "occurred_at": "2026-08-14T00:28:43.039Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-adapter-boundary.contract.spec.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-stream-server-typecheck-regressions",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-stream-server-typecheck-regressions"
+      }
+    },
+    {
+      "id": "ff50fbe7-dfc9-46cb-81c8-73f2dfec4ca2",
+      "occurred_at": "2026-08-14T00:28:54.110Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/infrastructure/twenty-dialer-call-start.infrastructure.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-stream-server-typecheck-regressions",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-stream-server-typecheck-regressions"
+      }
+    },
+    {
+      "id": "7a203c83-683c-4dad-aaeb-76271a9e7dfd",
+      "occurred_at": "2026-08-14T00:29:10.679Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/dialer/src/dialer.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-stream-server-typecheck-regressions",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-stream-server-typecheck-regressions"
+      }
+    },
+    {
+      "id": "c016b638-6a76-4074-8c8f-47fa17863732",
+      "occurred_at": "2026-08-14T00:30:00.097Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/controllers/parallel.controller.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-stream-server-typecheck-regressions",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-stream-server-typecheck-regressions"
+      }
+    },
+    {
+      "id": "f9c1e3d5-b68e-44d8-965e-58f52f55c13a",
+      "occurred_at": "2026-08-14T00:31:12.128Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/dialer/src/errors/dialer-errors.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-stream-server-typecheck-regressions",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-stream-server-typecheck-regressions"
+      }
+    },
+    {
+      "id": "709fdd42-fdc9-466b-8b9b-f474fd6bc534",
+      "occurred_at": "2026-08-14T00:34:32.626Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.spec.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-stream-server-typecheck-regressions",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-stream-server-typecheck-regressions"
+      }
+    },
+    {
+      "id": "8cf73626-02c0-4041-a169-1a842850cd78",
+      "occurred_at": "2026-08-14T00:34:33.120Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.spec.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-stream-server-typecheck-regressions",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-stream-server-typecheck-regressions"
+      }
+    },
+    {
+      "id": "e6c768aa-b4bd-4ac3-a524-211df131fb1a",
+      "occurred_at": "2026-08-14T00:36:20.951Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/dialer/src/ports/parallel-compatibility.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-stream-server-typecheck-regressions",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-stream-server-typecheck-regressions"
+      }
+    },
+    {
+      "id": "193f80c3-1371-46c9-be71-9dd585f9d446",
+      "occurred_at": "2026-08-14T00:36:21.441Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/infrastructure/twenty-parallel.infrastructure.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-stream-server-typecheck-regressions",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-stream-server-typecheck-regressions"
+      }
+    },
+    {
+      "id": "f2f75763-2622-44a0-b9f6-66f0190641f0",
+      "occurred_at": "2026-08-14T00:36:21.937Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/infrastructure/twenty-dialer-call-start.infrastructure.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-stream-server-typecheck-regressions",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-stream-server-typecheck-regressions"
+      }
+    },
+    {
+      "id": "7fff397d-13f7-49af-bc43-89b7d5eaa911",
+      "occurred_at": "2026-08-14T00:36:22.423Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/infrastructure/twenty-dialer-call-start.infrastructure.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-stream-server-typecheck-regressions",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-stream-server-typecheck-regressions"
+      }
+    },
+    {
+      "id": "369b0e42-00ed-4bb7-8e13-7a071748356d",
+      "occurred_at": "2026-08-14T00:37:00.868Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/dialer/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-stream-server-typecheck-regressions",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-stream-server-typecheck-regressions"
+      }
+    },
+    {
+      "id": "adf26f07-c569-4a86-b119-b848c4c01014",
+      "occurred_at": "2026-08-14T00:37:01.355Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/dialer/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-stream-server-typecheck-regressions",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-stream-server-typecheck-regressions"
+      }
+    },
+    {
+      "id": "7ed2ae6a-d658-4732-9cf7-5c45372c2be4",
+      "occurred_at": "2026-08-14T00:37:24.221Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/tsconfig.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-stream-server-typecheck-regressions",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-stream-server-typecheck-regressions"
+      }
+    },
+    {
+      "id": "1f3a7169-1d0d-49af-b4d3-7a2c95138b73",
+      "occurred_at": "2026-08-14T00:37:24.698Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "tsconfig.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-stream-server-typecheck-regressions",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-stream-server-typecheck-regressions"
+      }
+    },
+    {
+      "id": "e8864e11-7779-49c1-a8e8-df7ac7f6e390",
+      "occurred_at": "2026-08-14T00:39:45.619Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/infrastructure/twenty-dialer-call-start.infrastructure.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-stream-server-typecheck-regressions",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-stream-server-typecheck-regressions"
+      }
+    },
+    {
+      "id": "243701e0-8081-410e-9de2-460a7318b382",
+      "occurred_at": "2026-08-14T00:39:51.668Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-server/src/engine/core-modules/consuelo-api/infrastructure/twenty-dialer-call-start.infrastructure.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-stream-server-typecheck-regressions",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-stream-server-typecheck-regressions"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-14T00:39:51.724Z"
+}

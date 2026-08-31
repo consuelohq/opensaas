@@ -35,6 +35,13 @@ describe('Artifacts strict legacy cutover', () => {
     expect(source('scripts/lib/sites.ts')).not.toContain('OfficeSiteData');
   });
 
+  it('excludes the obsolete metering package from deployed manifests', () => {
+    expect(source('scripts/artifacts-design.ts')).not.toContain(
+      'packages/metering/package.json',
+    );
+    expect(existsSync(resolve(repoRoot, 'packages/metering'))).toBe(false);
+  });
+
   it('keeps canonical artifact runtime independent of workspace fallbacks', () => {
     for (const relativePath of [
       'scripts/artifacts.ts',

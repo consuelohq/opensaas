@@ -1,6 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
+import { modernMcpRoutingHeaders } from './mcp-protocol';
+
 type JsonObject = Record<string, unknown>;
 
 type LocalAgentCredential = {
@@ -153,6 +155,8 @@ export function createLocalAgentMcpBridge(input: {
   return {
     async forward(body: string): Promise<JsonObject[]> {
       const notification = isJsonRpcNotification(body);
+      const modernRoutingHeaders = modernMcpRoutingHeaders(body);
+      const modern = modernRoutingHeaders !== null;
       try {
         const response = await fetchImpl(localUrl, {
           method: 'POST',
@@ -161,13 +165,14 @@ export function createLocalAgentMcpBridge(input: {
             authorization: `Bearer ${credential.bearerToken}`,
             'content-type': 'application/json',
             'x-consuelo-agent-id': input.agentId,
-            ...(mcpSessionId ? { 'mcp-session-id': mcpSessionId } : {}),
+            ...(modernRoutingHeaders ?? {}),
+            ...(!modern && mcpSessionId ? { 'mcp-session-id': mcpSessionId } : {}),
           },
           body,
           signal: AbortSignal.timeout(30_000),
         });
         const nextSessionId = response.headers.get('mcp-session-id');
-        if (nextSessionId) mcpSessionId = nextSessionId;
+        if (!modern && nextSessionId) mcpSessionId = nextSessionId;
         if (notification) return [];
         if (response.status === 204) return [];
         if (!response.ok) {

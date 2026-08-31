@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/task-node-affinity",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1888,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1888",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1888",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1888/task-node-affinity",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1888",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1888/task-node-affinity",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-task-node-affinity",
+  "taskSession": "tsk_04ae093beb6c",
+  "tmuxSession": "opensaas-os-task-node-affinity-04ae093b",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-task-node-affinity/.task/os/task-node-affinity/session.json",
+  "createdAt": "2026-08-12T14:07:16.347Z"
+}

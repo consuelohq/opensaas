@@ -2,6 +2,7 @@
   "name": "openworkspace",
   "private": true,
   "scripts": {
+    "session:start": "bun ./scripts/session-start.ts",
     "task:start": "bun ./scripts/task-start.js",
     "task:pr": "bun ./scripts/task-pr.js",
     "task:prs": "bun ./scripts/task-prs.js",
@@ -38,7 +39,6 @@
     "workspace": "bun ./scripts/workspace.ts",
     "tool-runner": "bun ./scripts/tool-runner.ts",
     "tool-batch": "bun ./scripts/tool-batch.ts",
-    "tools:search": "bun ./scripts/tools-search.ts",
     "generate-tool-manifest": "bun ./scripts/generate-tool-manifest.ts",
     "generate-docs": "bun ./scripts/generate-docs.ts",
     "generate-types": "bun ./scripts/generate-types.ts",
@@ -54,7 +54,8 @@
     "os:release": "bun ./scripts/os-release.ts",
     "os:release-install": "bun ./scripts/os-release-install.ts",
     "os:release-device-auth": "bun ./scripts/os-release-device-auth.ts",
-    "media:svg": "python3 ./scripts/media-svg.py"
+    "media:svg": "python3 ./scripts/media-svg.py",
+    "explore-bench": "DYLD_LIBRARY_PATH=/opt/homebrew/opt/sqlite/lib:$DYLD_LIBRARY_PATH bun ./scripts/explore-bench.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "latest",

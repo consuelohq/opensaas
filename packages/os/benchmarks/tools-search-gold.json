@@ -1,0 +1,867 @@
+{
+  "version": 1,
+  "cases": [
+    {
+      "id": "dep-vercel-logs",
+      "query": "show vercel deployment logs",
+      "source": "gold",
+      "expected": [
+        "deployment.logs"
+      ],
+      "domain": "deployment",
+      "invarianceGroup": "vercel-logs"
+    },
+    {
+      "id": "dep-vercel-logs-2",
+      "query": "can you show me the vercel deployment logs please",
+      "source": "gold",
+      "expected": [
+        "deployment.logs"
+      ],
+      "domain": "deployment",
+      "invarianceGroup": "vercel-logs"
+    },
+    {
+      "id": "dep-railway-logs",
+      "query": "read railway runtime logs",
+      "source": "gold",
+      "expected": [
+        "deployment.logs"
+      ],
+      "domain": "deployment"
+    },
+    {
+      "id": "dep-cf-logs",
+      "query": "cloudflare build logs",
+      "source": "gold",
+      "expected": [
+        "deployment.logs"
+      ],
+      "domain": "deployment"
+    },
+    {
+      "id": "dep-vercel-status",
+      "query": "check vercel deployment status",
+      "source": "gold",
+      "expected": [
+        "deployment.status"
+      ],
+      "domain": "deployment",
+      "contrastGroup": "status-domain"
+    },
+    {
+      "id": "dep-railway-list",
+      "query": "list railway deployments",
+      "source": "gold",
+      "expected": [
+        "deployment.list"
+      ],
+      "domain": "deployment",
+      "contrastGroup": "list-domain"
+    },
+    {
+      "id": "dep-cf-env",
+      "query": "list cloudflare environment variable names",
+      "source": "gold",
+      "expected": [
+        "deployment.environment"
+      ],
+      "domain": "deployment"
+    },
+    {
+      "id": "dep-vercel-deploy",
+      "query": "deploy to vercel",
+      "source": "gold",
+      "expected": [
+        "deployment.deploy"
+      ],
+      "domain": "deployment",
+      "invarianceGroup": "vercel-deploy"
+    },
+    {
+      "id": "dep-vercel-deploy-2",
+      "query": "please deploy the vercel project",
+      "source": "gold",
+      "expected": [
+        "deployment.deploy"
+      ],
+      "domain": "deployment",
+      "invarianceGroup": "vercel-deploy"
+    },
+    {
+      "id": "dep-railway-redeploy",
+      "query": "redeploy railway service",
+      "source": "gold",
+      "expected": [
+        "deployment.deploy"
+      ],
+      "domain": "deployment"
+    },
+    {
+      "id": "dep-r2-list",
+      "query": "r2 object list",
+      "source": "gold",
+      "expected": [
+        "deployment.raw"
+      ],
+      "domain": "deployment",
+      "contrastGroup": "list-domain"
+    },
+    {
+      "id": "dep-d1-query",
+      "query": "wrangler d1 query database",
+      "source": "gold",
+      "expected": [
+        "deployment.raw"
+      ],
+      "domain": "deployment"
+    },
+    {
+      "id": "gh-reviews",
+      "query": "github pr review comments",
+      "source": "gold",
+      "expected": [
+        "github"
+      ],
+      "domain": "github",
+      "invarianceGroup": "github-reviews"
+    },
+    {
+      "id": "gh-coderabbit",
+      "query": "CodeRabbit Codex PR review comments",
+      "source": "gold",
+      "expected": [
+        "github"
+      ],
+      "domain": "github",
+      "invarianceGroup": "github-reviews"
+    },
+    {
+      "id": "gh-checks",
+      "query": "github pr checks status",
+      "source": "gold",
+      "expected": [
+        "github"
+      ],
+      "domain": "github",
+      "contrastGroup": "status-domain"
+    },
+    {
+      "id": "gh-pr-files",
+      "query": "github pull request changed files",
+      "source": "gold",
+      "expected": [
+        "github"
+      ],
+      "domain": "github"
+    },
+    {
+      "id": "gh-pr-list",
+      "query": "list github pull requests",
+      "source": "gold",
+      "expected": [
+        "github"
+      ],
+      "domain": "github",
+      "contrastGroup": "list-domain"
+    },
+    {
+      "id": "git-diff",
+      "query": "git diff",
+      "source": "gold",
+      "expected": [
+        "git.diff"
+      ],
+      "domain": "git"
+    },
+    {
+      "id": "git-diff-stat",
+      "query": "inspect git diff hunks and stats",
+      "source": "gold",
+      "expected": [
+        "git.diff"
+      ],
+      "domain": "git"
+    },
+    {
+      "id": "git-status",
+      "query": "git working tree status",
+      "source": "gold",
+      "expected": [
+        "git.status"
+      ],
+      "domain": "git",
+      "contrastGroup": "status-domain"
+    },
+    {
+      "id": "fs-read",
+      "query": "read file lines",
+      "source": "gold",
+      "expected": [
+        "fs.read"
+      ],
+      "domain": "filesystem",
+      "invarianceGroup": "fs-read"
+    },
+    {
+      "id": "fs-read-2",
+      "query": "open the file and show its contents",
+      "source": "gold",
+      "expected": [
+        "fs.read"
+      ],
+      "domain": "filesystem",
+      "invarianceGroup": "fs-read"
+    },
+    {
+      "id": "fs-search",
+      "query": "grep file contents for pattern",
+      "source": "gold",
+      "expected": [
+        "fs.search"
+      ],
+      "domain": "filesystem",
+      "invarianceGroup": "fs-search"
+    },
+    {
+      "id": "fs-search-2",
+      "query": "search codebase with rg",
+      "source": "gold",
+      "expected": [
+        "fs.search"
+      ],
+      "domain": "filesystem",
+      "invarianceGroup": "fs-search"
+    },
+    {
+      "id": "fs-list",
+      "query": "list directory files",
+      "source": "gold",
+      "expected": [
+        "fs.list"
+      ],
+      "domain": "filesystem",
+      "contrastGroup": "list-domain"
+    },
+    {
+      "id": "fs-patch",
+      "query": "apply anchored patch hunk",
+      "source": "gold",
+      "expected": [
+        "fs.apply_patch"
+      ],
+      "domain": "filesystem"
+    },
+    {
+      "id": "fs-write",
+      "query": "write whole file contents",
+      "source": "gold",
+      "expected": [
+        "fs.write"
+      ],
+      "domain": "filesystem"
+    },
+    {
+      "id": "fs-trash",
+      "query": "trash a file from the task worktree",
+      "source": "gold",
+      "expected": [
+        "fs.trash"
+      ],
+      "domain": "filesystem"
+    },
+    {
+      "id": "code-bun",
+      "query": "run bun package command",
+      "source": "gold",
+      "expected": [
+        "code.call"
+      ],
+      "domain": "codemode"
+    },
+    {
+      "id": "code-typecheck",
+      "query": "run package typecheck",
+      "source": "gold",
+      "expected": [
+        "code.call"
+      ],
+      "domain": "codemode"
+    },
+    {
+      "id": "code-transform",
+      "query": "multi file transformation",
+      "source": "gold",
+      "expected": [
+        "code.call"
+      ],
+      "domain": "codemode"
+    },
+    {
+      "id": "code-summarize",
+      "query": "inspect many files and summarize",
+      "source": "gold",
+      "expected": [
+        "code.call"
+      ],
+      "domain": "codemode"
+    },
+    {
+      "id": "code-generate",
+      "query": "generate files with bun script",
+      "source": "gold",
+      "expected": [
+        "code.call"
+      ],
+      "domain": "codemode"
+    },
+    {
+      "id": "code-program",
+      "query": "run a small javascript program over workspace APIs",
+      "source": "gold",
+      "expected": [
+        "code.run"
+      ],
+      "domain": "codemode"
+    },
+    {
+      "id": "task-current",
+      "query": "current task branch worktree status",
+      "source": "gold",
+      "expected": [
+        "task.current"
+      ],
+      "domain": "task",
+      "contrastGroup": "status-domain"
+    },
+    {
+      "id": "task-start",
+      "query": "start a new task worktree",
+      "source": "gold",
+      "expected": [
+        "task.start"
+      ],
+      "domain": "task",
+      "contrastGroup": "create-domain"
+    },
+    {
+      "id": "task-cleanup",
+      "query": "cleanup abandoned task worktree",
+      "source": "gold",
+      "expected": [
+        "task.cleanup"
+      ],
+      "domain": "task"
+    },
+    {
+      "id": "task-pr",
+      "query": "create task review pr",
+      "source": "gold",
+      "expected": [
+        "task.pr"
+      ],
+      "domain": "task"
+    },
+    {
+      "id": "task-prs",
+      "query": "show task pr links",
+      "source": "gold",
+      "expected": [
+        "task.prs"
+      ],
+      "domain": "task",
+      "contrastGroup": "list-domain"
+    },
+    {
+      "id": "task-merge",
+      "query": "merge the task pull request",
+      "source": "gold",
+      "expected": [
+        "task.merge"
+      ],
+      "domain": "task"
+    },
+    {
+      "id": "task-push",
+      "query": "push task branch changes",
+      "source": "gold",
+      "expected": [
+        "task.push"
+      ],
+      "domain": "task"
+    },
+    {
+      "id": "task-finish",
+      "query": "finish completed task branch",
+      "source": "gold",
+      "expected": [
+        "task.finish"
+      ],
+      "domain": "task"
+    },
+    {
+      "id": "stream-list",
+      "query": "list streams",
+      "source": "gold",
+      "expected": [
+        "stream.list"
+      ],
+      "domain": "stream",
+      "contrastGroup": "list-domain"
+    },
+    {
+      "id": "stream-create",
+      "query": "create a new stream branch",
+      "source": "gold",
+      "expected": [
+        "stream.create"
+      ],
+      "domain": "stream",
+      "contrastGroup": "create-domain"
+    },
+    {
+      "id": "stream-sync",
+      "query": "sync stream branch",
+      "source": "gold",
+      "expected": [
+        "stream.sync"
+      ],
+      "domain": "stream"
+    },
+    {
+      "id": "stream-context",
+      "query": "show stream context",
+      "source": "gold",
+      "expected": [
+        "stream.context"
+      ],
+      "domain": "stream"
+    },
+    {
+      "id": "browser-shot",
+      "query": "take browser screenshot",
+      "source": "gold",
+      "expected": [
+        "browser.screenshot"
+      ],
+      "domain": "browser"
+    },
+    {
+      "id": "browser-open",
+      "query": "open a url in the browser",
+      "source": "gold",
+      "expected": [
+        "browser.open"
+      ],
+      "domain": "browser"
+    },
+    {
+      "id": "browser-click",
+      "query": "click element in browser",
+      "source": "gold",
+      "expected": [
+        "browser.click"
+      ],
+      "domain": "browser"
+    },
+    {
+      "id": "browser-fill",
+      "query": "fill browser form field",
+      "source": "gold",
+      "expected": [
+        "browser.fill"
+      ],
+      "domain": "browser"
+    },
+    {
+      "id": "browser-tabs",
+      "query": "list browser tabs",
+      "source": "gold",
+      "expected": [
+        "browser.tabs"
+      ],
+      "domain": "browser",
+      "contrastGroup": "list-domain"
+    },
+    {
+      "id": "browser-network",
+      "query": "inspect browser network requests",
+      "source": "gold",
+      "expected": [
+        "browser.network"
+      ],
+      "domain": "browser"
+    },
+    {
+      "id": "browser-status",
+      "query": "browser status",
+      "source": "gold",
+      "expected": [
+        "browser.status"
+      ],
+      "domain": "browser",
+      "contrastGroup": "status-domain"
+    },
+    {
+      "id": "browser-trace",
+      "query": "capture browser trace",
+      "source": "gold",
+      "expected": [
+        "browser.trace"
+      ],
+      "domain": "browser"
+    },
+    {
+      "id": "linear-search",
+      "query": "search linear issues",
+      "source": "gold",
+      "expected": [
+        "linear.search"
+      ],
+      "domain": "linear",
+      "invarianceGroup": "linear-search"
+    },
+    {
+      "id": "linear-search-2",
+      "query": "find tickets in linear",
+      "source": "gold",
+      "expected": [
+        "linear.search"
+      ],
+      "domain": "linear",
+      "invarianceGroup": "linear-search"
+    },
+    {
+      "id": "linear-issue",
+      "query": "read linear issue details",
+      "source": "gold",
+      "expected": [
+        "linear.issue"
+      ],
+      "domain": "linear"
+    },
+    {
+      "id": "linear-create",
+      "query": "create linear issue",
+      "source": "gold",
+      "expected": [
+        "linear.createIssue"
+      ],
+      "domain": "linear",
+      "contrastGroup": "create-domain"
+    },
+    {
+      "id": "linear-update",
+      "query": "update a linear issue",
+      "source": "gold",
+      "expected": [
+        "linear.updateIssue"
+      ],
+      "domain": "linear"
+    },
+    {
+      "id": "linear-projects",
+      "query": "list linear projects",
+      "source": "gold",
+      "expected": [
+        "linear.projects"
+      ],
+      "domain": "linear",
+      "contrastGroup": "list-domain"
+    },
+    {
+      "id": "linear-labels",
+      "query": "list linear labels",
+      "source": "gold",
+      "expected": [
+        "linear.labels"
+      ],
+      "domain": "linear"
+    },
+    {
+      "id": "sentry-issues",
+      "query": "list sentry issues",
+      "source": "gold",
+      "expected": [
+        "sentry.issues"
+      ],
+      "domain": "sentry",
+      "contrastGroup": "list-domain"
+    },
+    {
+      "id": "sentry-issue",
+      "query": "inspect sentry issue",
+      "source": "gold",
+      "expected": [
+        "sentry.issue"
+      ],
+      "domain": "sentry"
+    },
+    {
+      "id": "sentry-event",
+      "query": "inspect sentry event",
+      "source": "gold",
+      "expected": [
+        "sentry.event"
+      ],
+      "domain": "sentry"
+    },
+    {
+      "id": "sentry-trace",
+      "query": "show sentry trace",
+      "source": "gold",
+      "expected": [
+        "sentry.trace"
+      ],
+      "domain": "sentry"
+    },
+    {
+      "id": "sentry-projects",
+      "query": "list sentry projects",
+      "source": "gold",
+      "expected": [
+        "sentry.projects"
+      ],
+      "domain": "sentry"
+    },
+    {
+      "id": "media-probe",
+      "query": "probe media file metadata",
+      "source": "gold",
+      "expected": [
+        "media.probe"
+      ],
+      "domain": "media"
+    },
+    {
+      "id": "media-transcribe",
+      "query": "transcribe media audio",
+      "source": "gold",
+      "expected": [
+        "media.transcribe"
+      ],
+      "domain": "media"
+    },
+    {
+      "id": "media-frames",
+      "query": "extract video frames",
+      "source": "gold",
+      "expected": [
+        "media.frames.extract"
+      ],
+      "domain": "media"
+    },
+    {
+      "id": "media-scenes",
+      "query": "detect video scenes",
+      "source": "gold",
+      "expected": [
+        "media.scene.detect"
+      ],
+      "domain": "media"
+    },
+    {
+      "id": "media-clips",
+      "query": "search media clips",
+      "source": "gold",
+      "expected": [
+        "media.clip.search"
+      ],
+      "domain": "media"
+    },
+    {
+      "id": "media-svg",
+      "query": "create or edit svg media",
+      "source": "gold",
+      "expected": [
+        "media.svg"
+      ],
+      "domain": "media"
+    },
+    {
+      "id": "media-compose",
+      "query": "compose media timeline",
+      "source": "gold",
+      "expected": [
+        "media.compose"
+      ],
+      "domain": "media"
+    },
+    {
+      "id": "media-export",
+      "query": "export media output",
+      "source": "gold",
+      "expected": [
+        "media.export"
+      ],
+      "domain": "media"
+    },
+    {
+      "id": "art-publish",
+      "query": "publish design artifact",
+      "source": "gold",
+      "expected": [
+        "artifacts.publish"
+      ],
+      "domain": "artifacts"
+    },
+    {
+      "id": "art-ui-status",
+      "query": "check artifacts ui status",
+      "source": "gold",
+      "expected": [
+        "artifacts.uiStatus"
+      ],
+      "domain": "artifacts",
+      "contrastGroup": "status-domain"
+    },
+    {
+      "id": "art-ui-logs",
+      "query": "show artifacts ui logs",
+      "source": "gold",
+      "expected": [
+        "artifacts.uiLogs"
+      ],
+      "domain": "artifacts"
+    },
+    {
+      "id": "art-design-system",
+      "query": "get artifacts design system",
+      "source": "gold",
+      "expected": [
+        "artifacts.getDesignSystem"
+      ],
+      "domain": "artifacts"
+    },
+    {
+      "id": "art-guide",
+      "query": "generate digital eguide artifact",
+      "source": "gold",
+      "expected": [
+        "artifacts.generateDigitalEguide"
+      ],
+      "domain": "artifacts"
+    },
+    {
+      "id": "mac-process",
+      "query": "inspect mac process",
+      "source": "gold",
+      "expected": [
+        "mac.process"
+      ],
+      "domain": "mac"
+    },
+    {
+      "id": "mac-port",
+      "query": "check mac port",
+      "source": "gold",
+      "expected": [
+        "mac.port"
+      ],
+      "domain": "mac"
+    },
+    {
+      "id": "mac-read",
+      "query": "read a mac host file",
+      "source": "gold",
+      "expected": [
+        "mac.read"
+      ],
+      "domain": "mac"
+    },
+    {
+      "id": "mac-search",
+      "query": "search files on mac host",
+      "source": "gold",
+      "expected": [
+        "mac.search"
+      ],
+      "domain": "mac"
+    },
+    {
+      "id": "memory-search",
+      "query": "search saved memory",
+      "source": "gold",
+      "expected": [
+        "memory"
+      ],
+      "domain": "memory"
+    },
+    {
+      "id": "research-ingest",
+      "query": "ingest research source",
+      "source": "gold",
+      "expected": [
+        "research.ingest"
+      ],
+      "domain": "research"
+    },
+    {
+      "id": "http-request",
+      "query": "make http request",
+      "source": "gold",
+      "expected": [
+        "http"
+      ],
+      "domain": "http"
+    },
+    {
+      "id": "tool-search",
+      "query": "search available tools",
+      "source": "gold",
+      "expected": [
+        "tools.search"
+      ],
+      "domain": "tooling"
+    },
+    {
+      "id": "wait",
+      "query": "wait for timed polling",
+      "source": "gold",
+      "expected": [
+        "wait"
+      ],
+      "domain": "utilities"
+    },
+    {
+      "id": "amb-trace-logs",
+      "query": "trace logs",
+      "source": "gold",
+      "expected": [],
+      "shouldAbstain": true,
+      "domain": "ambiguous"
+    },
+    {
+      "id": "amb-do-thing",
+      "query": "do the thing",
+      "source": "gold",
+      "expected": [],
+      "shouldAbstain": true,
+      "domain": "ambiguous"
+    },
+    {
+      "id": "amb-status",
+      "query": "check status",
+      "source": "gold",
+      "expected": [],
+      "shouldAbstain": true,
+      "domain": "ambiguous"
+    },
+    {
+      "id": "amb-list",
+      "query": "list them",
+      "source": "gold",
+      "expected": [],
+      "shouldAbstain": true,
+      "domain": "ambiguous"
+    },
+    {
+      "id": "amb-open",
+      "query": "open it",
+      "source": "gold",
+      "expected": [],
+      "shouldAbstain": true,
+      "domain": "ambiguous"
+    }
+  ]
+}

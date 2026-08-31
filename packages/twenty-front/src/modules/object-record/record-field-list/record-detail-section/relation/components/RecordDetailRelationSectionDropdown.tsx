@@ -14,6 +14,25 @@ type RecordDetailRelationSectionDropdownProps = {
   dropdownTriggerClickableComponent?: ReactNode;
 };
 
+type RecordDetailRelationSectionDropdownToManyWithImportProps = {
+  dropdownTriggerClickableComponent?: ReactNode;
+  recordId: string;
+};
+
+const RecordDetailRelationSectionDropdownToManyWithImport = ({
+  dropdownTriggerClickableComponent,
+  recordId,
+}: RecordDetailRelationSectionDropdownToManyWithImportProps) => {
+  const { openListMemberImportDialog } = useOpenListMemberImportDialog();
+
+  return (
+    <RecordDetailRelationSectionDropdownToMany
+      dropdownTriggerClickableComponent={dropdownTriggerClickableComponent}
+      onImport={() => openListMemberImportDialog(recordId)}
+    />
+  );
+};
+
 export const RecordDetailRelationSectionDropdown = ({
   loading,
   dropdownTriggerClickableComponent,
@@ -51,13 +70,6 @@ export const RecordDetailRelationSectionDropdown = ({
   const isMembersRelation =
     objectMetadataNameSingular === 'opportunity' && fieldName === 'members';
 
-  const { openListMemberImportDialog } =
-    useOpenListMemberImportDialog();
-
-  const handleImportMembers = isMembersRelation
-    ? () => openListMemberImportDialog(recordId)
-    : undefined;
-
   if (
     loading ||
     isRecordFieldReadOnly ||
@@ -73,10 +85,18 @@ export const RecordDetailRelationSectionDropdown = ({
       />
     );
   } else if (isToManyObjects) {
+    if (isMembersRelation) {
+      return (
+        <RecordDetailRelationSectionDropdownToManyWithImport
+          dropdownTriggerClickableComponent={dropdownTriggerClickableComponent}
+          recordId={recordId}
+        />
+      );
+    }
+
     return (
       <RecordDetailRelationSectionDropdownToMany
         dropdownTriggerClickableComponent={dropdownTriggerClickableComponent}
-        onImport={handleImportMembers}
       />
     );
   } else {

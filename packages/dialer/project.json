@@ -9,7 +9,7 @@
       "cache": true,
       "options": {
         "cwd": "packages/dialer",
-        "commands": ["tsc"]
+        "commands": ["yarn build"]
       }
     },
     "typecheck": {

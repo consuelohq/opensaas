@@ -1,0 +1,35 @@
+---
+title: Memory
+description: Carry durable work state across agents with workpads, handoffs, streams, saved memory, and artifacts.
+status: preview
+verifiedAt: 2026-08-11
+evidence:
+  - source: packages/os/scripts/lib/task-workpad.js
+    tests:
+      - packages/os/tests/task-hook-workflow-contract.test.ts
+    runtime: Current task workpad behavior was inspected on 2026-08-11.
+  - source: packages/os/scripts/lib/streams/context-runtime.ts
+    tests:
+      - packages/os/tests/stream-service.test.ts
+    runtime: Current stream context composition was inspected on 2026-08-11.
+  - source: packages/os/tools/memory/schema.ts
+    tests:
+      - packages/os/tests/memory.test.ts
+    runtime: The current memory tool schema was inspected on 2026-08-11.
+---
+
+Memory in Consuelo OS is the context that survives one agent turn and helps another agent continue correctly. It is not just one database or one tool.
+
+The main continuity surfaces are:
+
+- [Workpads](/memory/workpads/): the live record for a scoped task.
+- [Handoffs](/memory/handoffs/): continuation-ready context intentionally prepared for the next agent.
+- [Streams](/memory/streams/): durable shared work context across related tasks and agents.
+- [Memory tool and traces](/memory/saved-memory-and-traces/): explicit saved memories plus searchable workspace traces.
+- [Files and artifacts](/build/files-and-artifacts/): durable outputs that future work can inspect directly.
+
+## Why several forms of memory exist
+
+Different continuity problems need different shapes. A workpad should evolve while a task is active. A handoff should be concise enough for a zero-context agent to execute. A stream should tell agents what is happening across the whole line of work. Saved memories and artifacts hold information that needs to outlive a specific task.
+
+Used together, these surfaces make agent changes less dependent on one conversation staying open.

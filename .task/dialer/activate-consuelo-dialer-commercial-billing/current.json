@@ -1,0 +1,19 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/activate-consuelo-dialer-commercial-billing",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 1797,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1797",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1797",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1797/activate-consuelo-dialer-commercial-billing",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1797",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1797/activate-consuelo-dialer-commercial-billing",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-activate-consuelo-dialer-commercial-billing",
+  "taskSession": "tsk_3344fca183ac",
+  "tmuxSession": "opensaas-dialer-activate-consuelo-dialer-commercial-billing-3344fca1",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-activate-consuelo-dialer-commercial-billing/.task/dialer/activate-consuelo-dialer-commercial-billing/session.json",
+  "createdAt": "2026-08-10T00:25:15.696Z"
+}

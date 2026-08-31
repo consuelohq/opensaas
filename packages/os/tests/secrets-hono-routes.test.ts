@@ -1,13 +1,16 @@
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import {
-  generateNodeEncryptionKeyPair,
   sealCredential,
 } from '../scripts/lib/node-credential-sealing';
+import {
+  ensureNodeEncryptionKey,
+  loadNodeEncryptionPrivateKey,
+} from '../scripts/lib/node-encryption-key-file';
 import { installSealedCredential } from '../scripts/lib/node-sealed-credential-store';
 import {
   createGatewaySecurityConfig,
@@ -24,20 +27,35 @@ const plaintext = 'credential-value-that-must-never-leave-the-node';
 let home = '';
 let config: GatewaySecurityConfig;
 let token: AgentAppToken;
+let publicKeyJwk = '';
 
-function signedGet(nonce: string, activeToken = token): Request {
-  const route = '/gateway/secrets/bindings';
+function signedRequest(input: {
+  path: string;
+  nonce: string;
+  method?: 'GET' | 'POST';
+  body?: string;
+  activeToken?: AgentAppToken;
+  headers?: Record<string, string>;
+}): Request {
+  const method = input.method ?? 'GET';
+  const body = input.body ?? '';
   const signed = signMachineRequest({
     config,
-    token: activeToken,
-    method: 'GET',
-    path: route,
-    body: '',
+    token: input.activeToken ?? token,
+    method,
+    path: input.path,
+    body,
     timestamp: new Date().toISOString(),
-    nonce,
+    nonce: input.nonce,
   });
-  return new Request('http://127.0.0.1:46321' + route, {
-    headers: signed.headers,
+  return new Request('http://127.0.0.1:46321' + input.path, {
+    method,
+    headers: {
+      ...signed.headers,
+      ...(method === 'POST' ? { 'content-type': 'application/json' } : {}),
+      ...input.headers,
+    },
+    ...(method === 'POST' ? { body } : {}),
   });
 }
 
@@ -57,14 +75,17 @@ beforeEach(() => {
     deviceId: nodeId,
     connectorId: 'connector_secrets_hono',
     connectionId: 'connection_secrets_hono',
-    scopes: ['route:/gateway/secrets:read'],
+    scopes: ['route:/gateway/secrets:read', 'route:/gateway/secrets:write'],
     expiresInSeconds: 300,
   });
   process.env.CONSUELO_HOME = home;
   process.env.CONSUELO_OS_HOME = home;
   process.env.CONSUELO_OS_AUTH_CONFIG = config.generatedAuthPath;
 
-  const keyPair = generateNodeEncryptionKeyPair();
+  const nodeHome = join(home, 'node');
+  const published = ensureNodeEncryptionKey({ nodeHome, workspaceId, nodeId });
+  publicKeyJwk = published.publicKeyJwk;
+  const privateKeyJwk = loadNodeEncryptionPrivateKey({ nodeHome, workspaceId, nodeId });
   for (const recipient of [
     { workspaceId, nodeId, bindingId: 'GITHUB_TOKEN' },
     { workspaceId, nodeId, bindingId: 'TWILIO_AUTH_TOKEN' },
@@ -73,10 +94,10 @@ beforeEach(() => {
   ]) {
     installSealedCredential({
       home,
-      nodePrivateKeyJwk: keyPair.privateKeyJwk,
+      nodePrivateKeyJwk: privateKeyJwk,
       recipient,
       envelope: sealCredential({
-        recipientPublicKeyJwk: keyPair.publicKeyJwk,
+        recipientPublicKeyJwk: publicKeyJwk,
         recipient,
         plaintext,
       }),
@@ -93,7 +114,10 @@ afterEach(() => {
 
 describe('Hono Secrets route', () => {
   it('returns metadata only for the signed workspace and node', async () => {
-    const response = await handleRequest(signedGet('secrets-list-metadata-nonce'));
+    const response = await handleRequest(signedRequest({
+      path: '/gateway/secrets/bindings',
+      nonce: 'secrets-list-metadata-nonce',
+    }));
     expect(response.status).toBe(200);
     const payload = await response.json() as {
       ok: boolean;
@@ -124,36 +148,184 @@ describe('Hono Secrets route', () => {
     }
   });
 
-  it('requires the read scope and has no write or reveal endpoint', async () => {
+  it('returns only the public X25519 setup material for the signed node', async () => {
+    const response = await handleRequest(signedRequest({
+      path: '/gateway/secrets/setup',
+      nonce: 'secrets-setup-public-key-nonce',
+    }));
+    expect(response.status).toBe(200);
+    const payload = await response.json() as {
+      ok: boolean;
+      workspaceId: string;
+      nodeId: string;
+      algorithm: string;
+      publicKeyJwk: string;
+    };
+    expect(payload).toMatchObject({
+      ok: true,
+      workspaceId,
+      nodeId,
+      algorithm: 'X25519',
+      publicKeyJwk,
+    });
+    expect(JSON.parse(payload.publicKeyJwk)).toMatchObject({ kty: 'OKP', crv: 'X25519' });
+    expect(JSON.parse(payload.publicKeyJwk).d).toBeUndefined();
+    expect(JSON.stringify(payload)).not.toMatch(/private|plaintext|ciphertext|authTag|secret-value/i);
+  });
+
+  it('installs a browser-sealed envelope and returns metadata only', async () => {
+    const bindingId = 'STRIPE_SECRET_KEY';
+    const recipient = { workspaceId, nodeId, bindingId };
+    const envelope = sealCredential({
+      recipientPublicKeyJwk: publicKeyJwk,
+      recipient,
+      plaintext,
+    });
+    const body = JSON.stringify({ bindingId, envelope });
+    const response = await handleRequest(signedRequest({
+      path: '/gateway/secrets/install',
+      nonce: 'secrets-install-envelope-nonce',
+      method: 'POST',
+      body,
+      headers: { 'x-consuelo-application-id': 'attacker-controlled-app' },
+    }));
+    expect(response.status).toBe(200);
+    const payload = await response.json() as Record<string, unknown>;
+    expect(payload).toMatchObject({
+      ok: true,
+      binding: {
+        workspaceId,
+        nodeId,
+        bindingId,
+        status: 'set',
+      },
+    });
+    expect(JSON.stringify(payload)).not.toContain(plaintext);
+
+    const auditEvent = JSON.parse(
+      readFileSync(join(home, 'logs', 'control-plane-audit.jsonl'), 'utf8').trim(),
+    ) as Record<string, unknown>;
+    expect(auditEvent).toMatchObject({
+      event: 'credential.installed',
+      actorId: 'caller_secrets_hono',
+      applicationId: 'app_secrets_hono',
+    });
+    expect(auditEvent.applicationId).not.toBe('attacker-controlled-app');
+
+    const listed = await handleRequest(signedRequest({
+      path: '/gateway/secrets/bindings',
+      nonce: 'secrets-list-after-install-nonce',
+    }));
+    const listedPayload = await listed.json() as { bindings: Array<{ bindingId: string }> };
+    expect(listedPayload.bindings.map((binding) => binding.bindingId)).toContain(bindingId);
+  });
+
+  it('rejects plaintext writes and recipient mismatches without echoing the value', async () => {
+    const plaintextBody = JSON.stringify({ bindingId: 'LEAK_ATTEMPT', value: plaintext });
+    const plaintextResponse = await handleRequest(signedRequest({
+      path: '/gateway/secrets/install',
+      nonce: 'secrets-reject-plaintext-nonce',
+      method: 'POST',
+      body: plaintextBody,
+    }));
+    expect(plaintextResponse.status).toBe(400);
+    expect(await plaintextResponse.text()).not.toContain(plaintext);
+
+    const strictBindingId = 'STRICT_ENVELOPE';
+    const strictEnvelope = sealCredential({
+      recipientPublicKeyJwk: publicKeyJwk,
+      recipient: { workspaceId, nodeId, bindingId: strictBindingId },
+      plaintext,
+    });
+    const extraEnvelopeResponse = await handleRequest(signedRequest({
+      path: '/gateway/secrets/install',
+      nonce: 'secrets-reject-extra-envelope-field-nonce',
+      method: 'POST',
+      body: JSON.stringify({
+        bindingId: strictBindingId,
+        envelope: { ...strictEnvelope, plaintext },
+      }),
+    }));
+    expect(extraEnvelopeResponse.status).toBe(400);
+    expect(await extraEnvelopeResponse.text()).not.toContain(plaintext);
+
+    const bodyBinding = 'EXPECTED_BINDING';
+    const envelopeRecipient = { workspaceId, nodeId, bindingId: 'DIFFERENT_BINDING' };
+    const mismatchBody = JSON.stringify({
+      bindingId: bodyBinding,
+      envelope: sealCredential({
+        recipientPublicKeyJwk: publicKeyJwk,
+        recipient: envelopeRecipient,
+        plaintext,
+      }),
+    });
+    const mismatchResponse = await handleRequest(signedRequest({
+      path: '/gateway/secrets/install',
+      nonce: 'secrets-reject-recipient-mismatch-nonce',
+      method: 'POST',
+      body: mismatchBody,
+    }));
+    expect(mismatchResponse.status).toBe(400);
+    expect(await mismatchResponse.text()).not.toContain(plaintext);
+
+    const occupiedBindingId = 'OTHER_WORKSPACE_TOKEN';
+    const occupiedRecipient = { workspaceId, nodeId, bindingId: occupiedBindingId };
+    const occupiedResponse = await handleRequest(signedRequest({
+      path: '/gateway/secrets/install',
+      nonce: 'secrets-reject-cross-workspace-overwrite-nonce',
+      method: 'POST',
+      body: JSON.stringify({
+        bindingId: occupiedBindingId,
+        envelope: sealCredential({
+          recipientPublicKeyJwk: publicKeyJwk,
+          recipient: occupiedRecipient,
+          plaintext,
+        }),
+      }),
+    }));
+    expect(occupiedResponse.status).toBe(400);
+    expect(await occupiedResponse.text()).not.toContain(plaintext);
+  });
+
+  it('requires read/write scopes and still exposes no reveal endpoint', async () => {
     const unsigned = await handleRequest(
       new Request('http://127.0.0.1:46321/gateway/secrets/bindings'),
     );
     expect(unsigned.status).toBe(401);
 
-    const missingScopeToken = issueAgentAppToken({
+    const readOnlyToken = issueAgentAppToken({
       config,
-      callerId: 'caller_no_secret_scope',
-      appId: 'app_no_secret_scope',
-      subjectId: 'subject_no_secret_scope',
+      callerId: 'caller_read_only_secret_scope',
+      appId: 'app_read_only_secret_scope',
+      subjectId: 'subject_read_only_secret_scope',
       deviceId: nodeId,
-      connectorId: 'connector_no_secret_scope',
-      connectionId: 'connection_no_secret_scope',
-      scopes: ['route:/gateway/environments:read'],
+      connectorId: 'connector_read_only_secret_scope',
+      connectionId: 'connection_read_only_secret_scope',
+      scopes: ['route:/gateway/secrets:read'],
       expiresInSeconds: 300,
     });
-    const denied = await handleRequest(
-      signedGet('secrets-missing-scope-nonce', missingScopeToken),
-    );
+    const bindingId = 'WRITE_SCOPE_REQUIRED';
+    const recipient = { workspaceId, nodeId, bindingId };
+    const denied = await handleRequest(signedRequest({
+      path: '/gateway/secrets/install',
+      nonce: 'secrets-missing-write-scope-nonce',
+      method: 'POST',
+      activeToken: readOnlyToken,
+      body: JSON.stringify({
+        bindingId,
+        envelope: sealCredential({
+          recipientPublicKeyJwk: publicKeyJwk,
+          recipient,
+          plaintext,
+        }),
+      }),
+    }));
     expect(denied.status).toBe(403);
     await expect(denied.json()).resolves.toMatchObject({
       error: { code: 'MISSING_SCOPE' },
     });
 
-    for (const path of [
-      '/gateway/secrets/bindings',
-      '/gateway/secrets/reveal',
-      '/gateway/secrets/value',
-    ]) {
+    for (const path of ['/gateway/secrets/reveal', '/gateway/secrets/value']) {
       const write = await handleRequest(new Request('http://127.0.0.1:46321' + path, {
         method: 'POST',
       }));

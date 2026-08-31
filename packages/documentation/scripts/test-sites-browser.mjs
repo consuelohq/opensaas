@@ -53,8 +53,10 @@ try {
 
   const sidebar = page.locator('#starlight__sidebar');
   const groups = sidebar.locator('details');
-  if ((await groups.count()) !== 1) throw new Error(`Expected one expanded Sites group, found ${await groups.count()}`);
-  if (!(await groups.first().evaluate((element) => element.open))) throw new Error('Sites navigation started collapsed');
+  if ((await groups.count()) !== 1) throw new Error(`Expected one top-level Sites group, found ${await groups.count()}`);
+  for (let index = 0; index < await groups.count(); index += 1) {
+    if (!(await groups.nth(index).evaluate((element) => element.open))) throw new Error('Sites navigation started collapsed');
+  }
 
   for (const [label, href] of routes) {
     const response = await fetch(`${origin}${href}`);

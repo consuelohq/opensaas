@@ -121,7 +121,31 @@ describe('call-operations persistence', () => {
     expect(calls[0]?.text).toContain(
       'ON CONFLICT (workspace_id, provider_call_id)',
     );
-    expect(String(calls[0]?.values?.[19])).toContain('CA-1');
-    expect(String(calls[0]?.values?.[19])).toContain('CA-2');
+    expect(String(calls[0]?.values?.[21])).toContain('CA-1');
+    expect(String(calls[0]?.values?.[21])).toContain('CA-2');
+  });
+
+  it('persists recording provider metadata without retaining a raw recording URL', async () => {
+    const calls: Array<{ text: string; values?: readonly unknown[] }> = [];
+    const database: CallOperationsDatabase = {
+      query: async <TRow>(text: string, values?: readonly unknown[]) => {
+        calls.push({ text, values });
+        return { rows: [] as TRow[], rowCount: 0 };
+      },
+    };
+    const repository = createPostgresCallOperationsRepository(database);
+
+    await Effect.runPromise(
+      repository.recordCallRecordingStatus({
+        providerCallId: 'CA-1',
+        recordingSid: 'RE-1',
+        recordingStatus: 'completed',
+        recordingDurationSeconds: 42,
+      }),
+    );
+
+    expect(calls).toHaveLength(1);
+    expect(calls[0]?.text).not.toContain('recording_url');
+    expect(calls[0]?.values).toEqual(['CA-1', 'RE-1', 'completed', 42]);
   });
 });

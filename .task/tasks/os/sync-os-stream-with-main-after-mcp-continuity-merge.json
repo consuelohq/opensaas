@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/sync-os-stream-with-main-after-mcp-continuity-merge",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2098,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2098",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2098",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2098/sync-os-stream-with-main-after-mcp-continuity-merge",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2098",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2098/sync-os-stream-with-main-after-mcp-continuity-merge",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-sync-os-stream-with-main-after-mcp-continuity-merge",
+  "taskSession": "tsk_b372620f6b02",
+  "tmuxSession": "opensaas-os-sync-os-stream-with-main-after-mcp-continuity-me-b372620f",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-sync-os-stream-with-main-after-mcp-continuity-merge/.task/os/sync-os-stream-with-main-after-mcp-continuity-merge/session.json",
+  "createdAt": "2026-08-16T02:11:30.329Z"
+}

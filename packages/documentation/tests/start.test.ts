@@ -10,7 +10,6 @@ const startPages = [
   ['start/install-consuelo-os.mdx', 'Install Consuelo OS'],
   ['start/create-a-workspace.mdx', 'Create a workspace'],
   ['start/connect-your-first-agent.mdx', 'Connect your first agent'],
-  ['start/local-and-consuelo-cloud.mdx', 'Local and Consuelo Cloud'],
   ['start/core-concepts.mdx', 'Core concepts'],
 ] as const;
 
@@ -31,7 +30,7 @@ describe('Start documentation contract', () => {
     for (const [sourcePath] of startPages) {
       const source = read(`src/content/docs/${sourcePath}`);
       expect(source).toContain('status: preview');
-      expect(source).toContain('verifiedAt: 2026-07-13');
+      expect(source).toMatch(/verifiedAt: 2026-0[78]-\d{2}/);
       expect(source).toContain('evidence:');
       expect(source).toContain('source:');
       expect(source).toContain('tests:');
@@ -77,14 +76,13 @@ describe('Start documentation contract', () => {
     expect(agent).toContain('OpenCode');
   });
 
-  test('states the current local and Cloud boundary without implying self-service Cloud install', () => {
-    const source = read('src/content/docs/start/local-and-consuelo-cloud.mdx');
-    expect(source).toContain('Local');
-    expect(source).toContain('Consuelo Cloud');
-    expect(source).toContain('handled by the Consuelo team');
-    expect(source).toContain('https://consuelohq.com/contact/');
-    expect(source).not.toContain('cloud setup completes automatically');
-    expect(source).not.toContain('Cloud installation is self-service');
+  test('teaches current node roles and routing without treating home as the permanent runtime', () => {
+    const concepts = read('src/content/docs/start/core-concepts.mdx');
+    expect(concepts).toContain('default node');
+    expect(concepts).toContain('current node');
+    expect(concepts).toContain('/nodes/');
+    expect(concepts).not.toContain('home node is the authoritative runtime');
+    expect(concepts).not.toContain('is the home node running and healthy');
   });
 
   test('replaces the directly superseded CRM and legacy OS pages with redirects', () => {
@@ -95,7 +93,8 @@ describe('Start documentation contract', () => {
       ['os/getting-started/install.mdx', "'/os/getting-started/install': '/start/install-consuelo-os/'"],
       ['os/getting-started/connect-agents.mdx', "'/os/getting-started/connect-agents': '/start/connect-your-first-agent/'"],
       ['os/getting-started/workspace-launcher.mdx', "'/os/getting-started/workspace-launcher': '/start/create-a-workspace/'"],
-      ['os/concepts/local-and-cloud.mdx', "'/os/concepts/local-and-cloud': '/start/local-and-consuelo-cloud/'"],
+      ['os/concepts/local-and-cloud.mdx', "'/os/concepts/local-and-cloud': '/nodes/'"],
+      ['start/local-and-consuelo-cloud.mdx', "'/start/local-and-consuelo-cloud': '/nodes/'"],
       ['user-guide/introduction.mdx', "'/user-guide/introduction': '/start/'"],
       ['user-guide/getting-started/capabilities/what-is-consuelo.mdx', "'/user-guide/getting-started/capabilities/what-is-consuelo': '/start/'"],
       ['user-guide/getting-started/how-tos/create-workspace.mdx', "'/user-guide/getting-started/how-tos/create-workspace': '/start/create-a-workspace/'"],

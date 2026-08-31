@@ -22,6 +22,7 @@ const eventTypeMap: Record<string, LeadConnectorWebhookEventType> = {
   ContactCreate: 'contact.created',
   ContactDelete: 'contact.deleted',
   ContactUpdate: 'contact.updated',
+  UNINSTALL: 'installation.uninstalled',
   OpportunityCreate: 'opportunity.created',
   OpportunityDelete: 'opportunity.deleted',
   OpportunityUpdate: 'opportunity.updated',
@@ -86,6 +87,16 @@ const translatePayload = (
       'dateAdded',
       'dateUpdated',
     );
+    if (type === 'installation.uninstalled') {
+      return {
+        id: eventId,
+        type,
+        workspaceId,
+        locationId,
+        occurredAt,
+        data: { appId: readString(eventData, 'appId') },
+      };
+    }
     if (type.startsWith('opportunity.')) {
       const monetaryValue = readNumber(eventData, 'monetaryValue');
       return {
@@ -174,7 +185,7 @@ export const processLeadConnectorWebhook = (input: {
         accepted: true as const,
         duplicate: true,
         workspaceId: installation.workspaceId,
-        event: null,
+        event,
       };
     }
     return {

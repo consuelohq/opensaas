@@ -2,23 +2,198 @@
 
 @layer starlight.overrides {
   :root {
+    --docs-paper: #0f0f0d;
+    --docs-ink: #f7efe7;
+    --docs-surface: #191814;
+    --docs-muted: #c3b4a7;
+    --docs-accent: #e06b3e;
+    --docs-secondary: #a5b8a7;
+    --docs-line: rgba(255, 247, 235, 0.14);
+    --docs-line-strong: rgba(255, 247, 235, 0.28);
+    --docs-panel: rgba(255, 247, 235, 0.055);
+
+    --sl-color-black: var(--docs-paper);
+    --sl-color-white: var(--docs-ink);
+    --sl-color-gray-1: color-mix(in srgb, var(--docs-ink) 92%, var(--docs-paper));
+    --sl-color-gray-2: color-mix(in srgb, var(--docs-ink) 78%, var(--docs-paper));
+    --sl-color-gray-3: var(--docs-muted);
+    --sl-color-gray-4: color-mix(in srgb, var(--docs-ink) 38%, var(--docs-paper));
+    --sl-color-gray-5: color-mix(in srgb, var(--docs-ink) 20%, var(--docs-paper));
+    --sl-color-gray-6: var(--docs-surface);
+    --sl-color-gray-7: var(--docs-paper);
+    --sl-color-accent-low: color-mix(in srgb, var(--docs-accent) 18%, var(--docs-paper));
+    --sl-color-accent: var(--docs-accent);
+    --sl-color-accent-high: color-mix(in srgb, var(--docs-accent) 58%, var(--docs-ink));
+    --sl-color-text: var(--docs-muted);
+    --sl-color-text-accent: var(--docs-accent);
+    --sl-color-text-invert: var(--docs-paper);
+    --sl-color-bg: var(--docs-paper);
+    --sl-color-bg-nav: var(--docs-paper);
+    --sl-color-bg-sidebar: var(--docs-paper);
+    --sl-color-bg-inline-code: var(--docs-surface);
+    --sl-color-bg-accent: var(--docs-accent);
+    --sl-color-hairline-light: var(--docs-line);
+    --sl-color-hairline: var(--docs-line);
+    --sl-color-hairline-shade: var(--docs-line);
+    --sl-color-backdrop-overlay: color-mix(in srgb, var(--docs-paper) 72%, transparent);
+
     --sl-content-width: 44rem;
     --sl-content-pad-x: clamp(1.25rem, 3vw, 2.5rem);
     --sl-line-height: 1.7;
     --sl-text-h1: clamp(2.1rem, 4vw, 2.3rem);
+    --sl-mobile-toc-height: 0rem;
+    --docs-focus-ring: color-mix(in srgb, var(--docs-ink) 55%, transparent);
+  }
+
+  :root[data-theme='light'] {
+    --docs-paper: #faf7f2;
+    --docs-ink: #1c1a17;
+    --docs-surface: #fffaf3;
+    --docs-muted: #8a817a;
+    --docs-accent: #c0512f;
+    --docs-secondary: #2f5b4f;
+    --docs-line: rgba(28, 26, 23, 0.14);
+    --docs-line-strong: rgba(28, 26, 23, 0.28);
+    --docs-panel: rgba(28, 26, 23, 0.035);
+
+    --sl-color-black: var(--docs-paper);
+    --sl-color-white: var(--docs-ink);
+    --sl-color-gray-1: color-mix(in srgb, var(--docs-ink) 92%, var(--docs-paper));
+    --sl-color-gray-2: color-mix(in srgb, var(--docs-ink) 78%, var(--docs-paper));
+    --sl-color-gray-3: var(--docs-muted);
+    --sl-color-gray-4: color-mix(in srgb, var(--docs-ink) 38%, var(--docs-paper));
+    --sl-color-gray-5: color-mix(in srgb, var(--docs-ink) 20%, var(--docs-paper));
+    --sl-color-gray-6: var(--docs-surface);
+    --sl-color-gray-7: var(--docs-paper);
+    --sl-color-accent-low: color-mix(in srgb, var(--docs-accent) 14%, var(--docs-paper));
+    --sl-color-accent: var(--docs-accent);
+    --sl-color-accent-high: color-mix(in srgb, var(--docs-accent) 72%, var(--docs-ink));
+    --sl-color-text: var(--docs-muted);
+    --sl-color-text-accent: var(--docs-accent);
+    --sl-color-text-invert: var(--docs-paper);
+    --sl-color-bg: var(--docs-paper);
+    --sl-color-bg-nav: var(--docs-paper);
+    --sl-color-bg-sidebar: var(--docs-paper);
+    --sl-color-bg-inline-code: var(--docs-surface);
+    --sl-color-bg-accent: var(--docs-accent);
+    --sl-color-hairline-light: var(--docs-line);
+    --sl-color-hairline: var(--docs-line);
+    --sl-color-hairline-shade: var(--docs-line);
+    --sl-color-backdrop-overlay: color-mix(in srgb, var(--docs-ink) 18%, transparent);
+    --docs-focus-ring: color-mix(in srgb, var(--docs-ink) 55%, transparent);
+  }
+
+  html,
+  body {
+    background: var(--docs-paper);
+    color: var(--docs-muted);
+  }
+
+  .main-frame {
+    animation: docs-page-in 150ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  @keyframes docs-page-in {
+    from {
+      opacity: 0.94;
+      transform: translateY(2px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   .content-panel {
     padding-block: clamp(2rem, 5vw, 3rem);
   }
 
+  .content-panel + .content-panel {
+    border-top: 0;
+  }
+
+  .page > header.header {
+    border-bottom: 0;
+  }
+
   .sl-markdown-content > :where(p, ul, ol, blockquote) {
     max-width: 65ch;
+  }
+
+  .sl-markdown-content > :where(h1, h2, h3, h4, h5, h6),
+  .sl-markdown-content strong {
+    color: var(--docs-ink);
   }
 
   .sl-markdown-content > :where(h2, h3, h4) {
     max-width: 32ch;
     scroll-margin-top: 6rem;
+  }
+
+  .sl-markdown-content .sl-anchor-link {
+    display: none;
+  }
+
+  .home-install-command {
+    align-items: center;
+    background: var(--docs-surface);
+    border: 1px solid var(--docs-line-strong);
+    border-radius: 0.75rem;
+    box-sizing: border-box;
+    color: var(--docs-ink);
+    display: grid;
+    font-family: var(--__sl-font-mono);
+    font-size: clamp(0.82rem, 2vw, 0.95rem);
+    gap: 0.7rem;
+    grid-template-columns: minmax(0, 1fr) auto;
+    line-height: 1.55;
+    margin-top: 1.1rem;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    padding: 1rem 0.85rem 1rem 1rem;
+    white-space: normal;
+  }
+
+  .home-install-command code {
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    padding: 0;
+  }
+
+  .home-install-command > :first-child {
+    margin: 0;
+    min-width: 0;
+  }
+
+  .home-install-command button {
+    align-items: center;
+    background: transparent;
+    border: 0;
+    color: var(--docs-muted);
+    cursor: pointer;
+    display: inline-flex;
+    height: 2.25rem;
+    justify-content: center;
+    padding: 0.35rem;
+    width: 2.25rem;
+  }
+
+  .home-install-command button:hover,
+  .home-install-command button:focus-visible,
+  .home-install-command button[data-copied='true'] {
+    color: var(--docs-ink);
+  }
+
+  .home-install-command button svg {
+    fill: none;
+    height: 1.15rem;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.65;
+    width: 1.15rem;
   }
 
   .sl-markdown-content > h2 {
@@ -38,6 +213,11 @@
     overflow-x: auto;
   }
 
+  .sl-markdown-content a:not([class]) {
+    color: var(--docs-accent);
+    text-decoration-color: color-mix(in srgb, var(--docs-accent) 62%, transparent);
+  }
+
   #starlight__sidebar a:focus:not(:focus-visible),
   #starlight__sidebar summary:focus:not(:focus-visible) {
     outline: none;
@@ -45,29 +225,44 @@
 
   #starlight__sidebar a:focus-visible,
   #starlight__sidebar summary:focus-visible {
-    outline: 2px solid var(--sl-color-text-accent);
+    outline: 2px solid var(--docs-focus-ring);
+    outline-offset: 2px;
+  }
+
+  html[data-docs-input-modality='pointer']
+    :where(a, button, input, select, summary, [tabindex]):focus,
+  html[data-docs-input-modality='pointer']
+    :where(a, button, input, select, summary, [tabindex]):focus-visible {
+    box-shadow: none !important;
+    outline: none !important;
+  }
+
+  html[data-docs-input-modality='pointer'] #starlight__search input:focus {
+    --pagefind-ui-border: var(--docs-line-strong);
+  }
+
+  html[data-docs-input-modality='pointer']
+    #starlight__search
+    :where(.pagefind-ui__result-title, .pagefind-ui__result-nested):focus-within {
+    outline: none !important;
+  }
+
+  html[data-docs-input-modality='keyboard']
+    :where(a, button, input, select, summary, [tabindex]):focus-visible {
+    outline: 2px solid var(--docs-focus-ring) !important;
     outline-offset: 2px;
   }
 
   #starlight__sidebar a[aria-current='page'] {
-    background: color-mix(
-      in srgb,
-      var(--sl-color-text-accent) 15%,
-      transparent
-    );
-    box-shadow: inset 3px 0 0 var(--sl-color-text-accent);
-    color: var(--sl-color-white);
+    background: var(--docs-panel);
+    box-shadow: none;
+    color: var(--docs-ink);
   }
 
   #starlight__sidebar a[aria-current='page']:hover {
-    background: color-mix(
-      in srgb,
-      var(--sl-color-text-accent) 21%,
-      transparent
-    );
-    color: var(--sl-color-white);
+    background: color-mix(in srgb, var(--docs-ink) 8%, transparent);
+    color: var(--docs-ink);
   }
-
 
   #starlight__sidebar ul ul li {
     border-inline-start: 0;
@@ -75,7 +270,122 @@
     padding-inline-start: 0.75rem;
   }
 
-  @media (min-width: 50rem) {
+  body[data-mobile-menu-expanded],
+  body[data-docs-browse-open],
+  body[data-docs-toc-open] {
+    overflow: hidden;
+  }
+
+  @media (max-width: 71.999rem) {
+    html[data-has-sidebar] {
+      --sl-content-inline-start: 0rem;
+    }
+
+    .main-frame {
+      animation: none;
+    }
+
+    .content-panel {
+      padding-block: 1.5rem 2.5rem;
+    }
+
+    .sl-markdown-content .sl-heading-wrapper > h2 {
+      font-size: 1.5rem;
+      letter-spacing: -0.04em;
+      line-height: 2rem;
+      margin-top: 3rem;
+      word-spacing: 0;
+    }
+
+    .sl-markdown-content .sl-heading-wrapper > h3 {
+      font-size: 1.25rem;
+      letter-spacing: -0.025em;
+      line-height: 1.75rem;
+      margin-top: 2.25rem;
+      word-spacing: 0;
+    }
+
+    .main-frame:has(.docs-home-hero) .content-panel:first-child {
+      padding-top: 2rem;
+    }
+
+    .main-frame:has(.docs-home-hero) .sl-container {
+      max-width: none;
+    }
+
+    html[data-has-sidebar] .page > .header {
+      padding-inline-end: calc(var(--sl-nav-pad-x) + 3rem);
+    }
+
+    html[data-has-sidebar] .page > .main-frame {
+      padding-inline-start: 0;
+    }
+
+    body::after {
+      background: color-mix(in srgb, var(--docs-paper) 62%, transparent);
+      content: '';
+      inset: var(--sl-nav-height) 0 0;
+      opacity: 0;
+      pointer-events: none;
+      position: fixed;
+      transition: opacity 300ms ease;
+      z-index: calc(var(--sl-z-index-menu) - 1);
+    }
+
+    body[data-mobile-menu-expanded]::after {
+      opacity: 1;
+    }
+
+    html[data-has-sidebar] .sidebar-pane {
+      background: var(--docs-paper);
+      border-left: 0;
+      border-right: 0;
+      box-shadow: 0 18px 55px color-mix(in srgb, #000 34%, transparent);
+      height: calc(100vh - var(--sl-nav-height));
+      inset-block: var(--sl-nav-height) 0;
+      left: 0;
+      right: auto;
+      overflow-y: auto;
+      pointer-events: none;
+      position: fixed;
+      transform: none;
+      visibility: hidden;
+      width: min(75vw, 25rem);
+      z-index: var(--sl-z-index-menu);
+    }
+
+    html[data-has-sidebar] .sidebar-content {
+      background: var(--docs-paper);
+      min-height: 100%;
+      padding: 0.5rem 0.5rem max(1rem, env(safe-area-inset-bottom));
+    }
+
+    body[data-mobile-menu-expanded] .sidebar-pane {
+      pointer-events: auto;
+      visibility: visible;
+    }
+  }
+
+  @media (max-width: 35rem) {
+    .sl-markdown-content .sl-heading-wrapper > h2 {
+      font-size: 1.375rem;
+      letter-spacing: -0.025em;
+      line-height: 1.75rem;
+      margin-top: 2.75rem;
+    }
+
+    .sl-markdown-content .sl-heading-wrapper > h3 {
+      font-size: 1.125rem;
+      line-height: 1.625rem;
+      margin-top: 2rem;
+    }
+  }
+
+  @media (min-width: 72rem) {
+    :root {
+      --sl-sidebar-width: 18rem;
+    }
+
     html[data-has-sidebar] .page {
       align-items: stretch;
       display: grid;
@@ -100,10 +410,14 @@
     }
 
     html[data-has-sidebar] .sidebar-pane {
+      background: var(--docs-paper);
+      border-right: 0;
       height: calc(100vh - var(--sl-nav-height));
       inset: auto;
       position: sticky;
       top: var(--sl-nav-height);
+      transform: none !important;
+      visibility: visible !important;
       width: var(--sl-sidebar-width);
     }
 
@@ -113,20 +427,109 @@
       min-width: 0;
       width: 100%;
     }
-  }
 
-  @media (min-width: 72rem) {
+    html[data-has-toc] .main-pane {
+      flex: 1 1 auto;
+      min-width: 0;
+      width: calc(100% - 15rem);
+    }
+
+    .right-sidebar-container {
+      flex: 0 0 15rem;
+      width: 15rem;
+    }
+
     .right-sidebar {
+      border-left: 0;
+      flex: 0 0 15rem;
       height: calc(100vh - var(--sl-nav-height));
+      max-width: 15rem;
       padding-top: 0;
       position: sticky;
       top: var(--sl-nav-height);
+      width: 15rem;
+    }
+
+    .right-sidebar h2 {
+      color: var(--docs-muted);
+      font-size: 0.875rem;
+      font-weight: 400;
+      line-height: 1.25rem;
+    }
+
+    .right-sidebar a {
+      color: var(--docs-muted);
+      transition: color 150ms ease;
+    }
+
+    .right-sidebar a:hover,
+    .right-sidebar a:focus-visible {
+      color: var(--docs-ink);
+    }
+
+    .right-sidebar a[aria-current='true'] {
+      color: var(--docs-ink);
+      font-weight: 500;
+    }
+
+    .main-frame:has(.docs-home-hero) .right-sidebar-container {
+      display: none;
+    }
+
+    .main-frame:has(.docs-home-hero) .main-pane {
+      flex: 1 1 100%;
+      width: 100%;
+    }
+
+    .main-frame:has(.docs-home-hero) .content-panel {
+      padding-inline: 1.5rem;
+    }
+
+    .main-frame:has(.docs-home-hero) .content-panel:first-child {
+      padding-block: 4.5rem 4rem;
+    }
+
+    .main-frame:has(.docs-home-hero) .content-panel:nth-child(2) {
+      padding-block: 2.5rem 3rem;
+    }
+
+    .main-frame:has(.docs-home-hero) .sl-container {
+      margin-inline: 0;
+      max-width: 57.5rem;
+    }
+
+    .main-frame:has(.docs-home-hero) .sl-heading-wrapper:has(> #start-in-one-command),
+    .main-frame:has(.docs-home-hero) .sl-heading-wrapper:has(> #start-in-one-command) + p,
+    .main-frame:has(.docs-home-hero) .sl-heading-wrapper:has(> #start-in-one-command) + p + .home-install-command {
+      display: none;
+    }
+
+    .main-frame:has(.docs-home-hero) .sl-heading-wrapper:has(> #pick-up-where-you-need) {
+      margin-top: 0;
+    }
+
+    .main-frame:has(.docs-home-hero) #pick-up-where-you-need {
+      font-size: 1.75rem;
+      letter-spacing: -0.035em;
+      line-height: 2.125rem;
+    }
+
+    .main-frame:has(.docs-home-hero) .docs-home-install-command {
+      border-color: var(--docs-line);
+      border-radius: 0.625rem;
+      margin-top: 0.5rem;
     }
   }
 
   @media (max-width: 50rem) {
     :root {
-      --sl-content-pad-x: 1.25rem;
+      --sl-content-pad-x: 1.5rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .main-frame {
+      animation: none !important;
     }
   }
 }

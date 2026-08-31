@@ -1,0 +1,11 @@
+{
+  "files": [
+    "packages/os/scripts/lib/caddy-worker-pool-reconciliation.ts",
+    "packages/os/scripts/lib/workspace-edge-node-auth.ts",
+    "packages/os/tests/distribution/release-channel-workflows.test.ts",
+    "packages/os/tests/workspace-edge-sites-gateway-integration.test.ts",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "updatedAt": "2026-08-15T04:34:46.805Z"
+}

@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/install-observability-integrations",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1916,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1916",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1916",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1916/install-observability-integrations",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1916",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1916/install-observability-integrations",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-install-observability-integrations",
+  "taskSession": "tsk_a689b641af72",
+  "tmuxSession": "opensaas-os-install-observability-integrations-a689b641",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-install-observability-integrations/.task/os/install-observability-integrations/session.json",
+  "createdAt": "2026-08-13T20:09:45.699Z"
+}

@@ -1,5 +1,10 @@
 import type { ToolInput } from '../../lib/facade/types';
+import {
+  withTraceRoutingContext,
+  type TraceRoutingContext,
+} from '../../lib/trace-routing-context';
 import type { CallInput } from '../../lib/types';
+import type { McpFacadeExecutionOptions } from '../../lib/mcp-gateway';
 
 import { loadOsRuntime } from './os-runtime';
 
@@ -24,10 +29,20 @@ export async function executeLocalOsCall(input: CallInput) {
   }
 }
 
-export async function executeLocalOsFacadeTool(toolName: string, input: ToolInput) {
+export async function executeLocalOsFacadeTool(
+  toolName: string,
+  input: ToolInput,
+  routing?: TraceRoutingContext,
+  execution?: McpFacadeExecutionOptions,
+) {
   try {
     const { executeTool } = await import('../../lib/facade/executor');
-    return await executeTool(toolName, input, { logMode: 'errors' });
+    return await withTraceRoutingContext(routing, () =>
+      executeTool(toolName, input, {
+        logMode: 'errors',
+        ...(typeof execution?.timeoutMs === 'number' ? { timeoutMs: execution.timeoutMs } : {}),
+      }),
+    );
   } catch (error: unknown) {
     throw error instanceof Error ? error : new Error('OS facade call failed.');
   }

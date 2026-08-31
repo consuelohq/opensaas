@@ -103,40 +103,7 @@ export const rankPredictiveLeadConnectorTargets = async ({
       ),
     ];
     const local = localTimeParts(now, timezone);
-    const sharedHazardResult = await database
-      .query<HazardRow>(
-        `WITH candidate_hazards AS (
-           SELECT
-             attempt_number,
-             answer_rate,
-             sample_size,
-             CASE
-               WHEN hour_of_day = $3 AND day_of_week = $4 THEN 0
-               ELSE 1
-             END AS fallback_priority
-           FROM core.contact_attempt_hazard_hourly_mv
-           WHERE workspace_id::text = $1
-             AND attempt_number = ANY($2::int[])
-         ),
-         selected_priority AS (
-           SELECT attempt_number, MIN(fallback_priority) AS fallback_priority
-           FROM candidate_hazards
-           GROUP BY attempt_number
-         )
-         SELECT
-           hazards.attempt_number,
-           SUM(hazards.answer_rate * hazards.sample_size)
-             / NULLIF(SUM(hazards.sample_size), 0) AS answer_rate,
-           SUM(hazards.sample_size)::int AS sample_size
-         FROM candidate_hazards hazards
-         INNER JOIN selected_priority selected
-           ON selected.attempt_number = hazards.attempt_number
-          AND selected.fallback_priority = hazards.fallback_priority
-         GROUP BY hazards.attempt_number`,
-        [workspaceId, nextAttempts, local.hour, local.dayOfWeek],
-      )
-      .catch(() => ({ rows: [] as HazardRow[] }));
-    const leadConnectorHazardResult = await database
+    const hazardResult = await database
       .query<HazardRow>(
         `WITH candidate_outcomes AS (
            SELECT
@@ -175,37 +142,8 @@ export const rankPredictiveLeadConnectorTargets = async ({
         [workspaceId, nextAttempts, local.hour, local.dayOfWeek, timezone],
       )
       .catch(() => ({ rows: [] as HazardRow[] }));
-    const aggregateByAttempt = new Map<
-      number,
-      { weightedAnswerRate: number; sampleSize: number }
-    >();
-    for (const row of [
-      ...sharedHazardResult.rows,
-      ...leadConnectorHazardResult.rows,
-    ]) {
-      const attemptNumber = Number(row.attempt_number);
-      const sampleSize = Math.max(finiteNumber(row.sample_size, 0), 0);
-      const current = aggregateByAttempt.get(attemptNumber) ?? {
-        weightedAnswerRate: 0,
-        sampleSize: 0,
-      };
-      current.weightedAnswerRate +=
-        Math.max(finiteNumber(row.answer_rate, 0), 0) * sampleSize;
-      current.sampleSize += sampleSize;
-      aggregateByAttempt.set(attemptNumber, current);
-    }
     const hazardsByAttempt = new Map<number, HazardRow>(
-      [...aggregateByAttempt.entries()]
-        .filter(([, aggregate]) => aggregate.sampleSize > 0)
-        .map(([attemptNumber, aggregate]) => [
-          attemptNumber,
-          {
-            attempt_number: attemptNumber,
-            answer_rate:
-              aggregate.weightedAnswerRate / aggregate.sampleSize,
-            sample_size: aggregate.sampleSize,
-          },
-        ]),
+      hazardResult.rows.map((row) => [Number(row.attempt_number), row]),
     );
 
     // Missing learned data must retain the deterministic input order rather than
@@ -218,24 +156,21 @@ export const rankPredictiveLeadConnectorTargets = async ({
       `SELECT
          COALESCE(
            CASE
-             WHEN (dialer_config->>'avgDealValue') ~ '^[0-9]+(\\.[0-9]+)?$'
-              AND (dialer_config->>'avgCloseRate') ~ '^[0-9]+(\\.[0-9]+)?$'
-             THEN (dialer_config->>'avgDealValue')::numeric
-                * (dialer_config->>'avgCloseRate')::numeric
+             WHEN avg_deal_value >= 0 AND avg_close_rate >= 0
+             THEN avg_deal_value * avg_close_rate
              ELSE NULL
            END,
            $2::numeric
          ) AS value_per_connection,
          COALESCE(
            CASE
-             WHEN (dialer_config->>'costPerAttempt') ~ '^[0-9]+(\\.[0-9]+)?$'
-             THEN (dialer_config->>'costPerAttempt')::numeric
+             WHEN cost_per_attempt >= 0 THEN cost_per_attempt
              ELSE NULL
            END,
            $3::numeric
          ) AS cost_per_attempt
-       FROM core.workspace_settings
-       WHERE workspace_id::text = $1
+       FROM dialer_workspace_settings
+       WHERE workspace_id = $1
        LIMIT 1`,
       [
         workspaceId,

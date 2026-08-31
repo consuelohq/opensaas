@@ -17,17 +17,21 @@ import type {
   LeadConnectorError,
   LeadConnectorOpportunity,
   LeadConnectorPipeline,
+  LeadConnectorQueuePreview,
   LeadConnectorWebhookProcessResult,
 } from '@consuelo/lead-connector';
 import type { Effect } from 'effect';
 
 import type { createCallOperationsApplication } from './call-operations/application';
+import type { CommercialRouteDependencies } from './routes/commercial';
 
 export type DialerIdentity = {
   workspaceId: string;
   userId: string;
   installationId?: string;
   locationId?: string;
+  role?: string;
+  contextType?: 'agency' | 'location';
 };
 
 export type DialerServerStartCallCommand = Omit<
@@ -49,7 +53,61 @@ export type DialerServerStartCallCommand = Omit<
       pipelineId?: string | null;
       stageId?: string | null;
     };
+    recordingEnabled?: boolean;
+    transcriptionEnabled?: boolean;
   };
+};
+
+export type DialerTransferStatus =
+  | 'initiating'
+  | 'consulting'
+  | 'completed'
+  | 'cancelled'
+  | 'failed';
+
+export type DialerTransferResult = {
+  success: boolean;
+  transferId: string;
+  transferCallSid?: string;
+  conferenceSid?: string;
+  status: DialerTransferStatus;
+  error?: string;
+};
+
+export type DialerTransferApplication = {
+  initiate: (input: {
+    workspaceId: string;
+    userId: string;
+    sessionId: string;
+    type: 'cold' | 'warm';
+    to: string;
+  }) => Effect.Effect<DialerTransferResult, DialerApplicationError>;
+  getStatus: (input: {
+    workspaceId: string;
+    userId: string;
+    sessionId: string;
+    transferId: string;
+  }) => Effect.Effect<DialerTransferResult, DialerApplicationError>;
+  complete: (input: {
+    workspaceId: string;
+    userId: string;
+    sessionId: string;
+    transferId: string;
+  }) => Effect.Effect<DialerTransferResult, DialerApplicationError>;
+  cancel: (input: {
+    workspaceId: string;
+    userId: string;
+    sessionId: string;
+    transferId: string;
+  }) => Effect.Effect<DialerTransferResult, DialerApplicationError>;
+  processStatusCallback: (input: {
+    transferId: string;
+    callSid: string;
+    callStatus: string;
+  }) => Effect.Effect<
+    { received: true; status: DialerTransferStatus },
+    DialerApplicationError
+  >;
 };
 
 export type DialerServerApplication = {
@@ -88,6 +146,10 @@ export type DialerServerApplication = {
     } | null,
     DialerApplicationError
   >;
+  startCallRecording?: (input: { callSid: string }) => Effect.Effect<
+    { recordingSid: string; status: string },
+    DialerApplicationError | Error
+  >;
 };
 
 export type TwilioSignatureInput = {
@@ -116,6 +178,9 @@ export type LeadConnectorServerApplication = {
     rawBody: string;
     headers: Record<string, string | undefined>;
   }) => Effect.Effect<LeadConnectorWebhookProcessResult, LeadConnectorError>;
+  disableInstallation: (
+    workspaceId: string,
+  ) => Effect.Effect<{ disabled: true }, LeadConnectorError>;
   listContacts: (input: {
     workspaceId: string;
     query?: string;
@@ -129,6 +194,10 @@ export type LeadConnectorServerApplication = {
     },
     LeadConnectorError
   >;
+  getContact?: (input: {
+    workspaceId: string;
+    contactId: string;
+  }) => Effect.Effect<LeadConnectorContact, LeadConnectorError>;
   searchOpportunities: (input: {
     workspaceId: string;
     query?: string;
@@ -143,6 +212,11 @@ export type LeadConnectorServerApplication = {
   listPipelines: (
     workspaceId: string,
   ) => Effect.Effect<LeadConnectorPipeline[], LeadConnectorError>;
+  resolveQueueCandidates: (input: {
+    workspaceId: string;
+    pipelineId: string;
+    stageId: string;
+  }) => Effect.Effect<LeadConnectorQueuePreview, LeadConnectorError>;
   recordDisposition: (input: {
     workspaceId: string;
     contactId: string;
@@ -160,6 +234,7 @@ export type LeadConnectorServerApplication = {
 
 export type DialerServerDependencies = {
   application: DialerServerApplication;
+  transfers?: DialerTransferApplication;
   callOperations?: ReturnType<typeof createCallOperationsApplication>;
   authenticate: (request: Request) => Promise<DialerIdentity | null>;
   verifyTwilioSignature: (input: TwilioSignatureInput) => Promise<boolean>;
@@ -168,4 +243,5 @@ export type DialerServerDependencies = {
     identity: LeadConnectorEmbedIdentity,
   ) => Promise<{ token: string; expiresAt: string }>;
   leadConnector?: LeadConnectorServerApplication;
+  commercial?: CommercialRouteDependencies;
 };

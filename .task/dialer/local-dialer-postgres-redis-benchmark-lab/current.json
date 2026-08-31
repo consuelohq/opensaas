@@ -1,0 +1,22 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/local-dialer-postgres-redis-benchmark-lab",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1988,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1988",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1988",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1988/local-dialer-postgres-redis-benchmark-lab",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1988",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1988/local-dialer-postgres-redis-benchmark-lab",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-local-dialer-postgres-redis-benchmark-lab",
+  "taskSession": "tsk_4bbf8c395936",
+  "tmuxSession": "opensaas-dialer-local-dialer-postgres-redis-benchmark-lab-4bbf8c39",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-local-dialer-postgres-redis-benchmark-lab/.task/dialer/local-dialer-postgres-redis-benchmark-lab/session.json",
+  "createdAt": "2026-08-15T02:22:59.955Z",
+  "branch": "task/dialer/local-dialer-postgres-redis-benchmark-lab",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-local-dialer-postgres-redis-benchmark-lab",
+  "tmuxCreated": true
+}

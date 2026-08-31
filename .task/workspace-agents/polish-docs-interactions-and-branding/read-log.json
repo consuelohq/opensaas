@@ -1,0 +1,12 @@
+{
+  "files": [
+    ".task/workspace-agents/polish-docs-interactions-and-branding/workpad.md",
+    "packages/documentation/package.json",
+    "packages/documentation/scripts/test-foundation-browser.mjs",
+    "packages/documentation/scripts/validate-documentation.mjs",
+    "packages/documentation/src/components/translation/RuntimeLanguageSelect.astro",
+    "packages/documentation/tests/foundation.test.ts",
+    "packages/workspace/senior-engineer.md"
+  ],
+  "updatedAt": "2026-08-12T03:45:17.709Z"
+}

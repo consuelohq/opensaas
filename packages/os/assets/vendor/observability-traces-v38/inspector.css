@@ -1,0 +1,1353 @@
+:root {
+  --ti-bg: #080807;
+  --ti-panel: #0d0c0a;
+  --ti-panel-raised: #12110e;
+  --ti-line: rgba(232, 224, 202, 0.12);
+  --ti-line-strong: rgba(232, 224, 202, 0.2);
+  --ti-text: #eee9dc;
+  --ti-muted: #999285;
+  --ti-faint: #6e695f;
+  --ti-gold: #d7b56d;
+  --ti-green: #9fbd8a;
+  --ti-red: #ef765f;
+  --ti-blue: #86a9d8;
+  --ti-motion: 420ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.trace-system-font .trxShell,
+.trace-system-font .trxShell button,
+.trace-system-font .trxShell input,
+.trace-system-font .trxShell select,
+.trace-system-font .tiInspector,
+.trace-system-font .tiInspector button,
+.trace-system-font .tiInspector input {
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif !important;
+}
+
+.trace-system-font .mono,
+.trace-system-font pre,
+.trace-system-font code,
+.trace-system-font .tiCodeValue {
+  font-family:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+}
+
+.trxTablePane {
+  position: relative;
+  min-width: 0;
+}
+
+.trxShell {
+  grid-template-rows: 38px minmax(0, 1fr) !important;
+}
+
+.trxShell > .trxToolbar {
+  display: none !important;
+}
+
+.trxBody:has(> .trxRail) {
+  display: grid !important;
+  grid-template-columns:
+    minmax(320px, 1fr) 8px
+    minmax(420px, var(--ti-inspector-width)) !important;
+  min-width: 0;
+  min-height: 0;
+  transition: grid-template-columns var(--ti-motion);
+}
+
+.trxShell.closed .trxBody:has(> .trxRail) {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
+.trxFilterPanel {
+  position: absolute;
+  z-index: 80;
+  inset: 0 auto 0 0;
+  box-sizing: border-box;
+  width: clamp(288px, 28vw, 380px);
+  min-width: 0;
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  overflow: hidden;
+  color: var(--ti-text);
+  background: rgba(9, 9, 8, 0.985);
+  border-right: 1px solid var(--ti-line-strong);
+  box-shadow: 22px 0 54px rgba(0, 0, 0, 0.42);
+  animation: trx-filter-enter 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.trxFilterPanel[hidden] {
+  display: none;
+}
+
+@keyframes trx-filter-enter {
+  from {
+    opacity: 0;
+    transform: translateX(-18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.trxFilterHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 14px 12px;
+  border-bottom: 1px solid var(--ti-line);
+}
+
+.trxFilterHeader > div:first-child {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.trxFilterHeader span {
+  color: var(--ti-faint);
+  font-size: 9px;
+  font-weight: 750;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.trxFilterHeader strong {
+  color: var(--ti-text);
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.trxFilterHeaderActions {
+  display: flex;
+  gap: 5px;
+}
+
+.trxFilterHeaderActions button,
+.trxFilterMore,
+.trxFilterPanel > footer button {
+  appearance: none;
+  border: 1px solid var(--ti-line);
+  border-radius: 7px;
+  background: var(--ti-panel);
+  color: var(--ti-muted);
+  cursor: pointer;
+  font: inherit;
+}
+
+.trxFilterHeaderActions button {
+  min-width: 30px;
+  height: 30px;
+  padding: 0 7px;
+}
+
+.trxFilterHeaderActions button:hover,
+.trxFilterHeaderActions button:focus-visible,
+.trxFilterMore:hover,
+.trxFilterMore:focus-visible,
+.trxFilterPanel > footer button:hover,
+.trxFilterPanel > footer button:focus-visible {
+  border-color: var(--ti-line-strong);
+  color: var(--ti-text);
+  outline: none;
+}
+
+.trxFilterSearch {
+  margin: 10px 12px 7px;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 7px;
+  padding: 7px 9px;
+  border: 1px solid var(--ti-line);
+  border-radius: 7px;
+  background: #070706;
+  color: var(--ti-faint);
+}
+
+.trxFilterSearch:focus-within {
+  border-color: rgba(215, 181, 109, 0.55);
+}
+
+.trxFilterSearch input {
+  width: 100%;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--ti-text);
+  font: inherit;
+}
+
+.trxFilterContent {
+  min-width: 0;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  padding: 2px 8px 12px;
+}
+
+.trxFilterSection {
+  min-width: 0;
+  padding: 10px 4px 11px;
+  border-bottom: 1px solid var(--ti-line);
+}
+
+.trxFilterSection h3 {
+  margin: 0 7px 7px;
+  color: var(--ti-muted);
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.trxFilterValues {
+  min-width: 0;
+  display: grid;
+  gap: 1px;
+}
+
+.trxFilterValue {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 7px;
+  border-radius: 6px;
+  color: var(--ti-text);
+  cursor: pointer;
+}
+
+.trxFilterValue:hover {
+  background: var(--ti-panel-raised);
+}
+
+.trxFilterValue input {
+  width: 15px;
+  height: 15px;
+  margin: 0;
+  accent-color: var(--ti-gold);
+  pointer-events: none;
+}
+
+.trxFilterValue > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+}
+
+.trxFilterValue small {
+  color: var(--ti-faint);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+.trxFilterValue [data-trace-filter-only] {
+  appearance: none;
+  padding: 2px 5px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--ti-gold);
+  opacity: 0;
+  cursor: pointer;
+  font: inherit;
+  font-size: 10px;
+}
+
+.trxFilterValue:hover [data-trace-filter-only],
+.trxFilterValue [data-trace-filter-only]:focus-visible {
+  opacity: 1;
+}
+
+.trxFilterMore {
+  margin: 7px 7px 0;
+  padding: 5px 8px;
+  font-size: 10px;
+}
+
+.trxFilterEmpty {
+  margin: 5px 7px;
+  color: var(--ti-faint);
+  font-size: 11px;
+}
+
+.trxFilterPanel > footer {
+  padding: 9px 12px;
+  border-top: 1px solid var(--ti-line);
+  background: var(--ti-panel);
+}
+
+.trxFilterPanel > footer button {
+  padding: 5px 8px;
+  font-size: 10px;
+}
+
+.trxRow .trxCheck {
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.trxRow:hover .trxCheck,
+.trxRow:focus-visible .trxCheck {
+  opacity: 1;
+}
+
+.trxRow.is-error .trxInputCell,
+.trxRow.is-error .trxOutputCell {
+  color: var(--ti-red) !important;
+}
+
+.trxInputCell,
+.trxOutputCell {
+  cursor: help;
+}
+
+.trxHoverCard {
+  position: fixed;
+  z-index: 20000;
+  box-sizing: border-box;
+  width: max-content;
+  max-width: min(680px, calc(100vw - 24px));
+  max-height: min(420px, calc(100vh - 24px));
+  overflow: auto;
+  padding: 10px 12px;
+  border: 1px solid var(--ti-line-strong);
+  border-radius: 8px;
+  background: rgba(14, 13, 11, 0.985);
+  color: var(--ti-text);
+  box-shadow: 0 18px 54px rgba(0, 0, 0, 0.52);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  pointer-events: auto;
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.trxHoverCard[hidden] {
+  display: none;
+}
+
+[data-trace-virtual-list] {
+  position: relative;
+  contain: strict;
+  overflow: auto;
+  overflow-anchor: none;
+  min-height: 0;
+}
+
+[data-trace-virtual-content] {
+  position: relative;
+  width: max-content;
+  min-width: 100%;
+}
+
+[data-trace-virtual-content] > .trxRow {
+  box-sizing: border-box;
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 100%;
+  height: 44px;
+  min-width: 100%;
+  overflow: hidden;
+  will-change: transform;
+}
+
+.trxFooter[data-trace-virtual-footer] > [data-next-page] {
+  display: none !important;
+}
+
+.trxFooter[data-trace-virtual-footer] [data-trace-scroll-top] {
+  appearance: none;
+  border: 1px solid var(--ti-line);
+  border-radius: 999px;
+  background: var(--ti-panel-raised);
+  color: var(--ti-text);
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.trxFooter[data-trace-virtual-footer] [data-trace-scroll-top][hidden] {
+  visibility: hidden;
+}
+
+.trxFooter[data-trace-virtual-footer] {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+}
+
+.trxFooter[data-trace-virtual-footer] > [data-show-filters] {
+  justify-self: start;
+}
+
+.trxFooter[data-trace-virtual-footer] > .trxTraceTotal {
+  justify-self: center;
+}
+
+.trxFooter[data-trace-virtual-footer] > [data-trace-scroll-top] {
+  justify-self: end;
+}
+
+.preview-layout:has(> .trxRail) {
+  --ti-inspector-width: 680px;
+  display: grid !important;
+  grid-template-columns: minmax(320px, 1fr) 8px minmax(
+      420px,
+      var(--ti-inspector-width)
+    );
+  min-width: 0;
+  transition: grid-template-columns var(--ti-motion);
+}
+
+.trxShell:not(:has(> .preview-layout)):has(> .trxRail) {
+  --ti-inspector-width: 680px;
+  display: grid !important;
+  grid-template-columns: minmax(320px, 1fr) 8px minmax(
+      420px,
+      var(--ti-inspector-width)
+    );
+  min-width: 0;
+  transition: grid-template-columns var(--ti-motion);
+}
+
+.trxShell.closed .trxRail,
+.trxShell.closed .tiDivider {
+  display: none !important;
+}
+
+.trxShell.closed > .preview-layout:has(> .trxRail) {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.trxShell.ti-inspector-open .trxRail {
+  display: block !important;
+  min-width: 0;
+}
+
+.tiDivider {
+  position: relative;
+  z-index: 12;
+  display: block;
+  width: 8px;
+  min-width: 8px;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  border-left: 1px solid var(--ti-line);
+  border-right: 1px solid transparent;
+  background: transparent;
+  cursor: col-resize;
+  touch-action: none;
+}
+
+.tiDivider::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 2px;
+  width: 3px;
+  height: 44px;
+  border-radius: 999px;
+  background: rgba(232, 224, 202, 0.2);
+  transform: translateY(-50%) scaleY(0.6);
+  opacity: 0;
+  transition:
+    opacity 160ms ease,
+    transform var(--ti-motion),
+    background 160ms ease;
+}
+
+.tiDivider:hover::after,
+.tiDivider:focus-visible::after,
+.ti-is-resizing .tiDivider::after {
+  opacity: 1;
+  transform: translateY(-50%) scaleY(1);
+  background: var(--ti-gold);
+}
+
+.tiDivider:focus-visible {
+  outline: 2px solid var(--ti-gold);
+  outline-offset: -2px;
+}
+
+.ti-is-resizing,
+.ti-is-resizing * {
+  cursor: col-resize !important;
+  user-select: none !important;
+}
+
+.ti-is-resizing .trxBody,
+.ti-is-resizing .preview-layout {
+  transition: none !important;
+}
+
+.trxRail,
+.trxRailInner,
+[data-inspector] {
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+#tbmLiveTraceModal .trxShell.ti-inspector-fullscreen .trxRail,
+.trxShell.ti-inspector-fullscreen .trxRail {
+  position: fixed !important;
+  inset: 0;
+  z-index: 10000;
+  width: 100vw !important;
+  height: 100dvh !important;
+  animation: ti-enter-fullscreen var(--ti-motion) both;
+}
+
+.trxShell.ti-inspector-fullscreen .tiDivider {
+  display: none;
+}
+
+@keyframes ti-enter-fullscreen {
+  from {
+    opacity: 0.82;
+    transform: translateX(22px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+.tiInspector {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  overflow: hidden;
+  color: var(--ti-text);
+  background: var(--ti-bg);
+  border-left: 1px solid var(--ti-line);
+  font-family:
+    ui-sans-serif,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif;
+  font-size: 13px;
+  line-height: 1.45;
+  animation: ti-inspector-enter var(--ti-motion) both;
+}
+
+@keyframes ti-inspector-enter {
+  from {
+    opacity: 0;
+    transform: translateX(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.tiInspector *,
+.tiInspector *::before,
+.tiInspector *::after {
+  box-sizing: border-box;
+}
+
+.tiInspector button,
+.tiInspector input {
+  font: inherit;
+}
+
+.tiToolbar {
+  position: relative;
+  z-index: 5;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--ti-line);
+  background: rgba(13, 12, 10, 0.96);
+  backdrop-filter: blur(18px);
+}
+
+.tiToolbarIdentity {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+}
+
+.tiHeaderMetrics {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(180px, 2fr) repeat(5, minmax(70px, 1fr));
+  align-items: center;
+  gap: 5px;
+}
+
+.tiHeaderMetric {
+  min-width: 0;
+  display: grid;
+  gap: 1px;
+  padding: 4px 7px;
+  border-left: 1px solid var(--ti-line);
+}
+
+.tiHeaderMetric:first-child {
+  border-left: 0;
+  padding-left: 0;
+}
+
+.tiHeaderMetric small,
+.tiHeaderMetric b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tiHeaderMetric small {
+  color: var(--ti-faint);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.tiHeaderMetric b {
+  color: var(--ti-text);
+  font:
+    650 10px/1.25 ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Monaco,
+    monospace;
+}
+
+.tiHeaderMetric:first-child b {
+  color: var(--ti-gold);
+}
+
+.tiBreadcrumb {
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+  overflow: hidden;
+  color: var(--ti-muted);
+  white-space: nowrap;
+}
+
+.tiBreadcrumb span {
+  color: var(--ti-gold);
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.tiBreadcrumb i {
+  color: var(--ti-faint);
+  font-style: normal;
+}
+
+.tiBreadcrumb b {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--ti-text);
+  text-overflow: ellipsis;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.tiSelectedMeta {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ti-muted);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.tiSelectedMeta strong {
+  max-width: 240px;
+  overflow: hidden;
+  color: var(--ti-text);
+  text-overflow: ellipsis;
+}
+
+.tiStatusDot,
+.tiPeerStatus {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ti-green);
+  box-shadow: 0 0 0 3px rgba(159, 189, 138, 0.1);
+}
+
+.tiStatusDot.error,
+.tiPeerStatus.error {
+  background: var(--ti-red);
+  box-shadow: 0 0 0 3px rgba(239, 118, 95, 0.1);
+}
+
+.tiToolbarActions {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tiModeSwitch {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--ti-line);
+  border-radius: 8px;
+  background: #070706;
+}
+
+.tiModeSwitch button,
+.tiIconButton {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--ti-muted);
+  cursor: pointer;
+}
+
+.tiModeSwitch button {
+  padding: 5px 8px;
+  border-radius: 5px;
+  font-size: 11px;
+}
+
+.tiModeSwitch button.active {
+  color: var(--ti-text);
+  background: var(--ti-panel-raised);
+  box-shadow: inset 0 0 0 1px var(--ti-line);
+}
+
+.tiIconButton {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  font-size: 15px;
+}
+
+.tiIconButton:hover,
+.tiIconButton:focus-visible {
+  color: var(--ti-text);
+  border-color: var(--ti-line-strong);
+  background: var(--ti-panel-raised);
+  outline: none;
+}
+
+.tiCloseButton:hover,
+.tiCloseButton:focus-visible {
+  color: var(--ti-red);
+}
+
+.tiInspectorBody {
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(228px, 31%) minmax(0, 1fr);
+  transition: grid-template-columns var(--ti-motion);
+}
+
+.tiInspector.is-call-rail-collapsed .tiInspectorBody {
+  grid-template-columns: 0 minmax(0, 1fr);
+}
+
+.tiSidebar {
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  border-right: 1px solid var(--ti-line);
+  background: #090907;
+  opacity: 1;
+  transform: translateX(0);
+  transition:
+    opacity 200ms ease,
+    transform var(--ti-motion);
+}
+
+.tiInspector.is-call-rail-collapsed .tiSidebar {
+  opacity: 0;
+  transform: translateX(-18px);
+  pointer-events: none;
+}
+
+.tiCallRail {
+  height: 100%;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  overflow: hidden;
+}
+
+.tiBranchCard > header {
+  min-width: 0;
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 13px 13px 9px;
+}
+
+.tiEyebrow {
+  margin-bottom: 3px;
+  color: var(--ti-faint);
+  font-size: 9px;
+  font-weight: 750;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.tiBranchCard h3 {
+  max-width: 100%;
+  margin: 0;
+  overflow: hidden;
+  color: var(--ti-gold);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.tiBranchCalls {
+  flex: none;
+  padding: 3px 7px;
+  border: 1px solid var(--ti-line);
+  border-radius: 999px;
+  color: var(--ti-muted);
+  font-size: 10px;
+}
+
+.tiBranchTotals,
+.tiFactsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 5px;
+}
+
+.tiBranchTotals {
+  padding: 0 13px 11px;
+}
+
+.tiFact {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+  padding: 7px 8px;
+  border: 1px solid var(--ti-line);
+  border-radius: 7px;
+  background: var(--ti-panel);
+}
+
+.tiFact span {
+  overflow: hidden;
+  color: var(--ti-faint);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 9px;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.tiFact b {
+  overflow: hidden;
+  color: var(--ti-text);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.tiCallSearch {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 10px 11px 8px;
+  padding: 7px 9px;
+  border: 1px solid var(--ti-line);
+  border-radius: 8px;
+  color: var(--ti-faint);
+  background: var(--ti-panel);
+}
+
+.tiCallSearch:focus-within {
+  border-color: rgba(215, 181, 109, 0.58);
+  box-shadow: 0 0 0 3px rgba(215, 181, 109, 0.08);
+}
+
+.tiCallSearch input {
+  min-width: 0;
+  width: 100%;
+  border: 0;
+  outline: 0;
+  color: var(--ti-text);
+  background: transparent;
+  font-size: 11px;
+}
+
+.tiCallSearch input::placeholder {
+  color: var(--ti-faint);
+}
+
+.tiPeerList {
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-color: rgba(232, 224, 202, 0.18) transparent;
+}
+
+.tiPeer {
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  display: grid;
+  grid-template-columns: 9px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 11px 7px 13px;
+  border: 0;
+  border-top: 1px solid rgba(232, 224, 202, 0.07);
+  color: var(--ti-muted);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.tiPeer:hover {
+  background: rgba(215, 181, 109, 0.05);
+}
+
+.tiPeer.active {
+  color: var(--ti-text);
+  background: rgba(215, 181, 109, 0.1);
+  box-shadow: inset 2px 0 0 var(--ti-gold);
+}
+
+.tiPeerChild {
+  padding-left: 25px;
+  background: rgba(255, 255, 255, 0.012);
+}
+
+.tiPeerMain {
+  min-width: 0;
+  display: grid;
+}
+
+.tiPeerMain b,
+.tiPeerMain small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tiPeerMain b {
+  color: var(--ti-text);
+  font-size: 11px;
+  font-weight: 650;
+}
+
+.tiPeerMain small,
+.tiPeerTokens,
+.tiPeerDuration {
+  color: var(--ti-faint);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+  font-size: 9px;
+}
+
+.tiEmptyCompact,
+.tiEmptyValue,
+.tiDataLimit {
+  margin: 0;
+  padding: 14px;
+  color: var(--ti-faint);
+  font-size: 11px;
+}
+
+.tiPreview {
+  min-width: 0;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--ti-bg);
+  scrollbar-color: rgba(232, 224, 202, 0.18) transparent;
+}
+
+.tiContent {
+  width: 100%;
+  min-width: 0;
+  padding: 8px 10px 12px;
+}
+
+.tiSummaryHero {
+  display: grid;
+  gap: 13px;
+  margin-bottom: 10px;
+  padding: 13px;
+  border: 1px solid var(--ti-line);
+  border-radius: 9px;
+  background: linear-gradient(
+    145deg,
+    rgba(215, 181, 109, 0.07),
+    rgba(255, 255, 255, 0.01)
+  );
+}
+
+.tiSummaryHero.is-error {
+  border-color: rgba(239, 118, 95, 0.3);
+  background: linear-gradient(
+    145deg,
+    rgba(239, 118, 95, 0.09),
+    rgba(255, 255, 255, 0.01)
+  );
+}
+
+.tiSummaryHero h2 {
+  margin: 3px 0 5px;
+  color: var(--ti-text);
+  font-size: 16px;
+  font-weight: 680;
+}
+
+.tiSummaryHero p {
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: var(--ti-muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+  font-size: 11px;
+  white-space: pre-wrap;
+}
+
+.tiSummaryStatus {
+  color: var(--ti-gold);
+  font-size: 9px;
+  font-weight: 750;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.tiSummaryHero.is-error .tiSummaryStatus {
+  color: var(--ti-red);
+}
+
+.tiFactsGrid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.tiSection {
+  min-width: 0;
+  margin-top: 10px;
+  overflow: hidden;
+  border: 1px solid var(--ti-line);
+  border-radius: 9px;
+  background: var(--ti-panel);
+}
+
+.tiSection.tone-success {
+  border-color: rgba(159, 189, 138, 0.24);
+}
+
+.tiSection.tone-error {
+  border-color: rgba(239, 118, 95, 0.34);
+}
+
+.tiSection > header {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 11px;
+  border-bottom: 1px solid var(--ti-line);
+  background: var(--ti-panel-raised);
+}
+
+.tiSection h3 {
+  margin: 0;
+  color: var(--ti-text);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.tiSection.tone-error h3 {
+  color: var(--ti-red);
+}
+
+.tiSection > header button {
+  appearance: none;
+  padding: 3px 6px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  color: var(--ti-faint);
+  background: transparent;
+  cursor: pointer;
+  font-size: 9px;
+}
+
+.tiSection > header button:hover,
+.tiSection > header button:focus-visible {
+  border-color: var(--ti-line-strong);
+  color: var(--ti-text);
+  outline: none;
+}
+
+.tiSectionBody {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.tiDataTable {
+  min-width: 0;
+}
+
+.tiDataHead,
+.tiDataRow {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(120px, 34%) minmax(0, 1fr);
+}
+
+.tiDataHead {
+  color: var(--ti-faint);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.tiDataHead span,
+.tiDataRow > * {
+  min-width: 0;
+  padding: 7px 10px;
+  border-bottom: 1px solid rgba(232, 224, 202, 0.07);
+}
+
+.tiDataHead span:first-child,
+.tiDataRow > *:first-child {
+  border-right: 1px solid rgba(232, 224, 202, 0.07);
+}
+
+.tiDataRow:last-of-type > * {
+  border-bottom: 0;
+}
+
+.tiDataPath {
+  display: block;
+  overflow-wrap: anywhere;
+  color: var(--ti-muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+  font-size: 10px;
+}
+
+.tiDataValue {
+  overflow: hidden;
+}
+
+.tiValue {
+  display: block;
+  max-width: 100%;
+  margin: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  color: var(--ti-text);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
+  font-size: 10px;
+  font-style: normal;
+  white-space: pre-wrap;
+}
+
+.tiValue-string {
+  color: #b9d69f;
+}
+
+.tiValue-number {
+  color: var(--ti-blue);
+}
+
+.tiValue-boolean {
+  color: var(--ti-gold);
+}
+
+.tiValue-null {
+  color: var(--ti-faint);
+}
+
+.tiRawJson {
+  max-width: 100%;
+  margin: 0;
+  padding: 12px;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  color: #c9d8bd;
+  font:
+    10px/1.55 ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Monaco,
+    monospace;
+  white-space: pre-wrap;
+}
+
+.tiWorkpadValue {
+  max-width: 100%;
+  min-height: 220px;
+  margin: 0;
+  padding: 14px;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  color: var(--ti-text);
+  background: #090a08;
+  font:
+    11px/1.6 ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    Monaco,
+    monospace;
+  white-space: pre-wrap;
+}
+
+@media (max-width: 1100px) {
+  .preview-layout:has(> .trxRail),
+  .trxShell:not(:has(> .preview-layout)):has(> .trxRail) {
+    grid-template-columns: minmax(300px, 1fr) 8px minmax(
+        420px,
+        var(--ti-inspector-width)
+      );
+  }
+
+  .tiFactsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tiSelectedMeta > span:not(.tiStatusDot):nth-last-child(-n + 2) {
+    display: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .trxShell.ti-inspector-open .trxRail {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    width: 100vw !important;
+    height: 100dvh !important;
+  }
+
+  .trxShell.ti-inspector-open .tiDivider {
+    display: none;
+  }
+
+  .tiToolbar {
+    align-items: flex-start;
+    padding: 10px;
+  }
+
+  .tiToolbarActions {
+    gap: 2px;
+  }
+
+  .tiModeSwitch {
+    display: none;
+  }
+
+  .tiInspectorBody {
+    grid-template-columns: minmax(180px, 34%) minmax(0, 1fr);
+  }
+
+  .tiInspector.is-call-rail-collapsed .tiInspectorBody {
+    grid-template-columns: 0 minmax(0, 1fr);
+  }
+
+  .tiContent {
+    padding: 8px;
+  }
+
+  .tiDataHead,
+  .tiDataRow {
+    grid-template-columns: minmax(96px, 31%) minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 620px) {
+  .tiInspectorBody {
+    display: block;
+    overflow-y: auto;
+  }
+
+  .tiSidebar {
+    height: 42dvh;
+    border-right: 0;
+    border-bottom: 1px solid var(--ti-line);
+  }
+
+  .tiInspector.is-call-rail-collapsed .tiSidebar {
+    display: none;
+  }
+
+  .tiPreview {
+    min-height: 58dvh;
+    overflow: visible;
+  }
+
+  .tiBreadcrumb b {
+    max-width: 170px;
+  }
+
+  .tiSelectedMeta {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --ti-motion: 1ms linear;
+  }
+
+  .tiInspector,
+  .trxShell.ti-inspector-fullscreen .trxRail {
+    animation: none;
+  }
+
+  .tiDivider::after,
+  .tiSidebar,
+  .tiInspectorBody,
+  .preview-layout:has(> .trxRail),
+  .trxShell:not(:has(> .preview-layout)):has(> .trxRail) {
+    transition-duration: 1ms !important;
+  }
+}

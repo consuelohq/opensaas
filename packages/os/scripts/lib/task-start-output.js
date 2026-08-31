@@ -70,13 +70,14 @@ function compactContextInjection(contextInjection) {
   };
 }
 
-function compactSuggestedAction(action, hookResult) {
+function compactAction(action, hookResult, options = {}) {
   if (!isObject(action)) return null;
   return {
     capability: action.capability || null,
     tool: action.tool || null,
     taskSessionPlacement: action.taskSessionPlacement || null,
     taskSession: action.taskSession || null,
+    ...(options.includeInput ? { input: isObject(action.input) ? action.input : {} } : {}),
     tools: recommendedTools(hookResult),
   };
 }
@@ -88,7 +89,8 @@ function compactHookResult(hookResult) {
     stage: hookResult.stage || null,
     event: hookResult.event || null,
     contextInjection: compactContextInjection(hookResult.contextInjection),
-    suggestedNextAction: compactSuggestedAction(hookResult.suggestedNextAction, hookResult),
+    requiredNextAction: compactAction(hookResult.requiredNextAction, hookResult, { includeInput: true }),
+    suggestedNextAction: compactAction(hookResult.suggestedNextAction, hookResult),
     notes: Array.isArray(hookResult.notes) ? hookResult.notes : [],
   };
 }

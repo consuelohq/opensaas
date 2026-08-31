@@ -1,0 +1,16 @@
+{
+  "files": [
+    "packages/os/scripts/artifacts.ts",
+    "packages/os/scripts/generate-tool-manifest.ts",
+    "packages/os/scripts/lib/artifacts-v2.ts",
+    "packages/os/scripts/lib/workspace-cloudflare-d1-route-registry.ts",
+    "packages/os/scripts/lib/workspace-cloudflare-edge-router.ts",
+    "packages/os/scripts/lib/workspace-edge-route-seed.ts",
+    "packages/os/scripts/seed-workspace-edge-route.ts",
+    "packages/os/tests/install-edge-site-publisher.test.ts",
+    "packages/os/tests/tool-manifest.test.ts",
+    "packages/os/tests/tools-search-v3.test.ts",
+    "packages/os/tools/artifacts/manifest.ts"
+  ],
+  "updatedAt": "2026-08-26T05:25:51.283Z"
+}

@@ -1,5 +1,5 @@
 import { type Meta, type StoryObj } from '@storybook/react-vite';
-import { expect, fn, userEvent, within } from 'storybook/test';
+import { expect, fn, userEvent, waitFor, within } from 'storybook/test';
 
 import { TransferModal } from '@/dialer/components/TransferModal';
 
@@ -53,7 +53,9 @@ export const Transferring: Story = {
 
     await userEvent.type(input, '5551234567');
 
-    const transferButton = canvas.getByRole('button', { name: /transfer/i });
+    const transferButton = canvas.getByRole('button', {
+      name: 'Start transfer',
+    });
     await expect(transferButton).toBeDisabled();
   },
 };
@@ -68,7 +70,9 @@ export const ColdTransfer: Story = {
     const input = canvas.getByPlaceholderText('Enter phone number');
     await userEvent.type(input, '5551234567');
 
-    const transferButton = canvas.getByRole('button', { name: /transfer/i });
+    const transferButton = canvas.getByRole('button', {
+      name: 'Start transfer',
+    });
     await userEvent.click(transferButton);
 
     // The modal should show cold transfer description
@@ -88,7 +92,9 @@ export const WarmTransfer: Story = {
     const input = canvas.getByPlaceholderText('Enter phone number');
     await userEvent.type(input, '5551234567');
 
-    const transferButton = canvas.getByRole('button', { name: /transfer/i });
+    const transferButton = canvas.getByRole('button', {
+      name: 'Start transfer',
+    });
     await userEvent.click(transferButton);
 
     // The modal should show warm transfer description
@@ -115,9 +121,14 @@ export const TransferWithEnter: Story = {
     const canvas = within(canvasElement);
     const input = canvas.getByPlaceholderText('Enter phone number');
 
-    await userEvent.type(input, '5551234567');
-    await userEvent.keyboard('{Enter}');
+    await userEvent.type(input, '4155551234');
+    await waitFor(() => {
+      expect(input).toHaveValue('(415) 555-1234');
+    });
+    await userEvent.type(input, '{Enter}');
 
-    await expect(args.onTransfer).toHaveBeenCalledWith('+15551234567', 'warm');
+    await waitFor(() => {
+      expect(args.onTransfer).toHaveBeenCalledWith('+14155551234', 'warm');
+    });
   },
 };

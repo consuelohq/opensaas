@@ -1,0 +1,19 @@
+{
+  "files": [
+    "packages/documentation/package.json",
+    "packages/documentation/src/content/docs/reference/workflows/branch-graph.mdx",
+    "packages/documentation/src/lib/docs-navigation.ts",
+    "packages/documentation/src/lib/legacy-redirects.mjs",
+    "packages/documentation/tests/foundation.test.ts",
+    "packages/documentation/tests/navigation-memory.test.ts",
+    "packages/documentation/tests/reference.test.ts",
+    "packages/os/package.json",
+    "packages/os/skills/branch/SKILL.md",
+    "packages/os/skills/branch/skill.json",
+    "packages/os/tests/branch-skill.test.ts",
+    "packages/workspace/senior-engineer.md",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "updatedAt": "2026-08-15T09:30:24.471Z"
+}

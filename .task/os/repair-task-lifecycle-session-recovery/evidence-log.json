@@ -1,0 +1,472 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/repair-task-lifecycle-session-recovery",
+  "events": [
+    {
+      "id": "c6cff17a-e6fb-4994-90f5-6fb864104143",
+      "occurred_at": "2026-08-14T01:42:17.531Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/repair-task-lifecycle-session-recovery/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/repair-task-lifecycle-session-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/repair-task-lifecycle-session-recovery"
+      }
+    },
+    {
+      "id": "929c30b8-1615-4917-b797-3c2dafa01ba6",
+      "occurred_at": "2026-08-14T01:45:37.742Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/repair-task-lifecycle-session-recovery/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/repair-task-lifecycle-session-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/repair-task-lifecycle-session-recovery"
+      }
+    },
+    {
+      "id": "abd6f716-6fda-40e7-9553-c9ece507448f",
+      "occurred_at": "2026-08-14T01:46:31.576Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/repair-task-lifecycle-session-recovery/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/repair-task-lifecycle-session-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/repair-task-lifecycle-session-recovery"
+      }
+    },
+    {
+      "id": "d79ef995-308e-478b-8b74-7de7b054aeb2",
+      "occurred_at": "2026-08-14T01:46:52.892Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-init.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/repair-task-lifecycle-session-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/repair-task-lifecycle-session-recovery"
+      }
+    },
+    {
+      "id": "c25aa927-ce78-4d31-830f-fab307648de0",
+      "occurred_at": "2026-08-14T01:47:01.851Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/task-init.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/repair-task-lifecycle-session-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/repair-task-lifecycle-session-recovery"
+      }
+    },
+    {
+      "id": "b58e0a2a-2cb1-49ec-9b4a-654eedbf823f",
+      "occurred_at": "2026-08-14T01:47:07.840Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/task-selection.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/repair-task-lifecycle-session-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/repair-task-lifecycle-session-recovery"
+      }
+    },
+    {
+      "id": "76a2bafa-6d84-4e34-aa8e-aacfb8930947",
+      "occurred_at": "2026-08-14T01:47:13.027Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/task-selection.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/repair-task-lifecycle-session-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/repair-task-lifecycle-session-recovery"
+      }
+    },
+    {
+      "id": "9094e02f-59d3-4afc-a216-84cd30de6156",
+      "occurred_at": "2026-08-14T01:47:56.541Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/repair-task-lifecycle-session-recovery/session.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/repair-task-lifecycle-session-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/repair-task-lifecycle-session-recovery"
+      }
+    },
+    {
+      "id": "fb6101b0-630f-4a01-8ab9-d32f38786c92",
+      "occurred_at": "2026-08-14T01:49:38.554Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/repair-task-lifecycle-session-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/repair-task-lifecycle-session-recovery"
+      }
+    },
+    {
+      "id": "23dd8a1e-5bec-4090-b507-b554ef95e6f4",
+      "occurred_at": "2026-08-14T01:49:45.380Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/facade/branch-resolver.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/repair-task-lifecycle-session-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/repair-task-lifecycle-session-recovery"
+      }
+    },
+    {
+      "id": "418dbb65-95e9-4aff-8d2a-b48bdd0f5a17",
+      "occurred_at": "2026-08-14T01:51:05.858Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-init.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/repair-task-lifecycle-session-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/repair-task-lifecycle-session-recovery"
+      }
+    },
+    {
+      "id": "a06368c8-3e87-43f8-a26e-99f0f5367fd6",
+      "occurred_at": "2026-08-14T02:30:31.940Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/senior-engineer.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/repair-task-lifecycle-session-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/repair-task-lifecycle-session-recovery"
+      }
+    },
+    {
+      "id": "690e3438-b290-4dd7-a73b-b448f515ad74",
+      "occurred_at": "2026-08-14T02:32:03.331Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/task-selection.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/repair-task-lifecycle-session-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/repair-task-lifecycle-session-recovery"
+      }
+    },
+    {
+      "id": "131b6b8d-ff99-4b9f-8010-3942ab6ad93f",
+      "occurred_at": "2026-08-14T02:32:19.081Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/facade/facade.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/repair-task-lifecycle-session-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/repair-task-lifecycle-session-recovery"
+      }
+    },
+    {
+      "id": "61cdacbf-3936-4461-b7f8-2aa782e2336a",
+      "occurred_at": "2026-08-14T02:32:25.449Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/task-init.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/repair-task-lifecycle-session-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/repair-task-lifecycle-session-recovery"
+      }
+    },
+    {
+      "id": "7fa820b6-b559-420e-a8c9-5d8f1c388280",
+      "occurred_at": "2026-08-14T02:32:39.777Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/repair-task-lifecycle-session-recovery/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/repair-task-lifecycle-session-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/repair-task-lifecycle-session-recovery"
+      }
+    },
+    {
+      "id": "b8d1ff50-8d68-4341-b3fd-8a036234769f",
+      "occurred_at": "2026-08-14T02:33:17.398Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/repair-task-lifecycle-session-recovery/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/repair-task-lifecycle-session-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/repair-task-lifecycle-session-recovery"
+      }
+    },
+    {
+      "id": "6cf40a84-dc84-4427-a72e-e0c2a71d349e",
+      "occurred_at": "2026-08-14T02:33:43.214Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/repair-task-lifecycle-session-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/repair-task-lifecycle-session-recovery"
+      }
+    },
+    {
+      "id": "fd6039ec-fe2b-47ac-88e5-63f748b69841",
+      "occurred_at": "2026-08-14T02:33:53.277Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/repair-task-lifecycle-session-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/repair-task-lifecycle-session-recovery"
+      }
+    },
+    {
+      "id": "d9e89467-6557-42f9-82d1-65e7a87e2d4f",
+      "occurred_at": "2026-08-14T02:38:30.692Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/repair-task-lifecycle-session-recovery/verify.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/repair-task-lifecycle-session-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/repair-task-lifecycle-session-recovery"
+      }
+    },
+    {
+      "id": "eb9a9f2d-792a-4eb1-a5d9-52f7da33039b",
+      "occurred_at": "2026-08-14T02:38:41.773Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/verify.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/repair-task-lifecycle-session-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/repair-task-lifecycle-session-recovery"
+      }
+    },
+    {
+      "id": "8be6176f-12e7-4501-a983-5d44986ade9b",
+      "occurred_at": "2026-08-14T02:38:50.662Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/test-selection.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/repair-task-lifecycle-session-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/repair-task-lifecycle-session-recovery"
+      }
+    },
+    {
+      "id": "f8c4638a-be3e-48f1-84ff-a661316213ea",
+      "occurred_at": "2026-08-14T02:39:45.847Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/task-session.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/repair-task-lifecycle-session-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/repair-task-lifecycle-session-recovery"
+      }
+    },
+    {
+      "id": "166f7a0f-4125-4fdf-94ef-8ed702b9b6e7",
+      "occurred_at": "2026-08-14T02:39:54.209Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/task-meta.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/repair-task-lifecycle-session-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/repair-task-lifecycle-session-recovery"
+      }
+    },
+    {
+      "id": "2d4f1b73-dc64-4b9c-9ddc-72cde2645280",
+      "occurred_at": "2026-08-14T02:40:37.076Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/repair-task-lifecycle-session-recovery/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/repair-task-lifecycle-session-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/repair-task-lifecycle-session-recovery"
+      }
+    },
+    {
+      "id": "9b78f176-b611-464b-b0b0-4edc29322041",
+      "occurred_at": "2026-08-14T02:41:03.133Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/repair-task-lifecycle-session-recovery/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/repair-task-lifecycle-session-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/repair-task-lifecycle-session-recovery"
+      }
+    },
+    {
+      "id": "9d97adf8-23db-4b11-8f1c-4838c573fa85",
+      "occurred_at": "2026-08-14T02:41:27.325Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/repair-task-lifecycle-session-recovery/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/repair-task-lifecycle-session-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/repair-task-lifecycle-session-recovery"
+      }
+    },
+    {
+      "id": "5cc55d3c-186a-4bd2-bc62-f5a0c9b75353",
+      "occurred_at": "2026-08-14T02:42:13.439Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-push.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/repair-task-lifecycle-session-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/repair-task-lifecycle-session-recovery"
+      }
+    },
+    {
+      "id": "94c23100-b9ec-4af1-b5e6-3b7440a4ae6b",
+      "occurred_at": "2026-08-14T02:43:10.866Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-push.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/repair-task-lifecycle-session-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/repair-task-lifecycle-session-recovery"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-14T02:43:10.922Z"
+}

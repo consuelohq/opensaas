@@ -72,7 +72,7 @@ try {
   }
 
   const contentChecks = [
-    ['/reference/cli/', 'bun ./scripts/os.ts'],
+    ['/reference/cli/', 'consuelo help'],
     ['/reference/configuration/', 'manifest.overlay.json'],
     ['/reference/mcp/', '2024-11-05'],
     ['/reference/tools/', 'sessionRequired'],

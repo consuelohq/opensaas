@@ -3,6 +3,7 @@ import { createRequire } from 'node:module';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { Effect } from 'effect';
 
 import manifestJson from '../../../manifests/generated/tool.manifest.json';
@@ -18,8 +19,14 @@ import { createToolResult, createTraceId, getErrorMessage, isTimeoutError, isToo
 import { logToolExecution } from './logger';
 import { PROCESS_TERMINATION_GRACE_MS, registerProcessTreeCleanup, shouldUseDetachedProcessGroup, terminateProcessTree } from './process-tree';
 import { getInputSchema } from './schemas';
+import { resolveBrowserConfig } from '../browser/config';
 import { executeCodeCall } from '../code-call/runtime';
+import { nodeResourceLockPath, withNodeResourceLock } from '../node-resource-lock';
 import { resolveActiveWorkspaceProjectCwd } from '../workspace-project-cwd';
+import {
+  resolveWorkSessionFsScope,
+  WorkSessionFsScopeError,
+} from '../work-session-fs';
 import type { CodeCallInput } from '../code-call/types';
 import { executeSubagent } from '../subagent/runtime';
 import type {
@@ -35,6 +42,9 @@ import type {
 } from './types';
 const require = createRequire(import.meta.url);
 const { syncTddEvidence, syncTestSelectionEvidence, syncValidationEvidence } = require('../task-workpad');
+const { recoverDurableTaskSession } = require('../task-session');
+const { readDurableTaskSessionMetadata, touchDurableTaskSessionMetadata } = require('../task-registry');
+const { getTaskWorktreeRoot } = require('../paths');
 
 type CanonicalManifestEntry = {
   kind: 'os-skill' | 'facade-tool';
@@ -64,8 +74,43 @@ type TaskSessionMetadata = {
 type TaskSessionResolution =
   | { ok: true; branch: string; metadata: TaskSessionMetadata }
   | { ok: false; code: 'TASK_SESSION_NOT_FOUND' | 'VALIDATION_ERROR'; message: string };
+type WorkSessionResolution =
+  | { ok: true; workSession: string; root: string }
+  | { ok: false; code: 'WORK_SESSION_NOT_FOUND' | 'PERMISSION_DENIED' | 'VALIDATION_ERROR'; message: string };
+
+const runtimePackageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
+function refreshTaskSessionActivity(
+  entry: ToolManifestEntry,
+  resolution: TaskSessionResolution | null,
+  result: ToolResult<unknown>,
+  input: ToolInput,
+  env: NodeJS.ProcessEnv,
+): void {
+  if (!entry.capabilities.mutating || !resolution?.ok || !result.ok || input.dryRun === true) return;
+  try {
+    const home = env.CONSUELO_HOME || env.CONSUELO_OS_HOME;
+    touchDurableTaskSessionMetadata(resolution.metadata.taskSession, home ? { home } : {});
+  } catch (error: unknown) {
+    process.stderr.write(`warning: failed to refresh durable task activity ${resolution.metadata.taskSession}: ${getErrorMessage(error)}\n`);
+  }
+}
 
 const MAX_LOG_COMMAND_CHARS = 4000;
+const WORK_SESSION_FS_MUTATION_TOOLS = new Set(['fs.write', 'fs.apply_patch', 'fs.trash']);
+const WORK_SESSION_FS_CONTEXT_TOOLS = new Set(['fs.read', 'fs.list', 'fs.search']);
+const WORK_SESSION_FS_TOOLS = new Set([
+  ...WORK_SESSION_FS_MUTATION_TOOLS,
+  ...WORK_SESSION_FS_CONTEXT_TOOLS,
+]);
+const WORK_SESSION_AUTHORITY_TOOLS = new Set([...WORK_SESSION_FS_TOOLS, 'code.call']);
+
+function isWorkSessionFsTool(toolName: string): boolean {
+  return WORK_SESSION_FS_TOOLS.has(toolName);
+}
+
+function supportsWorkSessionAuthority(toolName: string): boolean {
+  return WORK_SESSION_AUTHORITY_TOOLS.has(toolName);
+}
 
 export function getToolManifestEntry(toolName: string): ToolManifestEntry | null {
   const directMatch = manifestEntries.find((entry) => entry.name === toolName);
@@ -218,6 +263,26 @@ export async function executeTool<TData = unknown>(
     }
 
     const normalizedInput = normalizeInput(toolName, parsed.data as ToolInput);
+    const taskHandle = typeof normalizedInput.taskSession === 'string' ? normalizedInput.taskSession.trim() : '';
+    const workHandle = typeof normalizedInput.workSession === 'string' ? normalizedInput.workSession.trim() : '';
+    if (taskHandle && workHandle) {
+      const result = createToolResult({
+        ok: false,
+        code: 'VALIDATION_ERROR',
+        message: 'Provide taskSession or workSession, but not both.',
+        data: null,
+        durationMs: elapsedMs(startedAt, options.now),
+        traceId,
+        requestId,
+        now: options.now,
+      });
+      logResult(entry, toolName, result, entry.underlying, undefined, `workspace ${toolName}`, options.logMode, {
+        input,
+        resolvedInput: normalizedInput,
+        env,
+      });
+      return result as ToolResult<TData>;
+    }
     const taskSessionResolution = resolveTaskSessionInput(normalizedInput, cwd, env);
     if (taskSessionResolution && !taskSessionResolution.ok) {
       const result = createToolResult({
@@ -237,7 +302,26 @@ export async function executeTool<TData = unknown>(
       });
       return result as ToolResult<TData>;
     }
-    if (entry.sessionRequired === true && !taskSessionResolution?.ok) {
+    const workSessionResolution = resolveWorkSessionInput(toolName, normalizedInput, cwd, env);
+    if (workSessionResolution && !workSessionResolution.ok) {
+      const result = createToolResult({
+        ok: false,
+        code: workSessionResolution.code,
+        message: workSessionResolution.message,
+        data: null,
+        durationMs: elapsedMs(startedAt, options.now),
+        traceId,
+        requestId,
+        now: options.now,
+      });
+      logResult(entry, toolName, result, entry.underlying, undefined, `workspace ${toolName}`, options.logMode, {
+        input,
+        resolvedInput: normalizedInput,
+        env,
+      });
+      return result as ToolResult<TData>;
+    }
+    if (entry.sessionRequired === true && !taskSessionResolution?.ok && !workSessionResolution?.ok) {
       const recovery = buildTaskSessionRequiredRecovery(toolName, entry, normalizedInput);
       const result = createToolResult({
         ok: false,
@@ -256,11 +340,18 @@ export async function executeTool<TData = unknown>(
       });
       return result as ToolResult<TData>;
     }
-    const scopedInput = taskSessionResolution?.ok ? {
-      ...normalizedInput,
-      branch: taskSessionResolution.branch,
-      taskWorktree: taskSessionResolution.metadata.worktree || taskSessionResolution.metadata.worktreePath,
-    } : normalizedInput;
+    const scopedInput = taskSessionResolution?.ok
+      ? {
+        ...normalizedInput,
+        branch: taskSessionResolution.branch,
+        taskWorktree: taskSessionResolution.metadata.worktree || taskSessionResolution.metadata.worktreePath,
+      }
+      : workSessionResolution?.ok
+        ? {
+          ...normalizedInput,
+          workSessionRoot: workSessionResolution.root,
+        }
+        : normalizedInput;
 
     if (entry.capabilities.mutating && scopedInput.dryRun === true && !entry.command.dryRunFlag) {
       const result = createToolResult({
@@ -281,7 +372,8 @@ export async function executeTool<TData = unknown>(
       return result as ToolResult<TData>;
     }
 
-    const internalResult = await executeInternalTool<TData>(entry, scopedInput, {
+    const internalInput = resolveInternalExecutionInput(entry, scopedInput, options);
+    const internalResult = await executeInternalTool<TData>(entry, internalInput, {
       cwd,
       env,
       rawInput: input,
@@ -291,7 +383,10 @@ export async function executeTool<TData = unknown>(
       requestId,
       options,
     });
-    if (internalResult) return internalResult;
+    if (internalResult) {
+      refreshTaskSessionActivity(entry, taskSessionResolution, internalResult as ToolResult<unknown>, scopedInput, env);
+      return internalResult;
+    }
 
     const branchResolution = resolveBranchIfNeeded(entry, scopedInput, cwd, env, options);
     if (!branchResolution.ok) {
@@ -323,8 +418,14 @@ export async function executeTool<TData = unknown>(
     const facadeCmd = formatFacadeCommand(toolName, commandInput);
     const facadeCmdForLog = formatFacadeCommandForLog(toolName, commandInput);
 
-    const timeoutMs = getTimeoutMs(entry, commandInput);
-    const runResult = await runWithRetry(entry, plan, timeoutMs, runner);
+    const timeoutMs = getTimeoutMs(entry, commandInput, options);
+    const runResult = (toolName === 'browser' || toolName.startsWith('browser.'))
+      ? await withNodeResourceLock({
+        lockPath: nodeResourceLockPath(resolveBrowserConfig(env).profilePath),
+        operationId: `browser:${toolName}`,
+        waitTimeoutMs: timeoutMs,
+      }, () => runWithRetry(entry, plan, timeoutMs, runner))
+      : await runWithRetry(entry, plan, timeoutMs, runner);
     const cleanStderr = stripCommandEcho(runResult.stderr);
     if (runResult.timedOut) {
       const result = createToolResult({
@@ -379,6 +480,7 @@ export async function executeTool<TData = unknown>(
         ...(requestId && !passthrough.requestId ? { requestId } : {}),
       };
       maybeSyncWorkpadValidation(toolName, commandInput, result as ToolResult<unknown>);
+      refreshTaskSessionActivity(entry, taskSessionResolution, result as ToolResult<unknown>, commandInput, env);
       logResult(entry, toolName, result, plannedCommandForLog, branchResolution.branch, facadeCmdForLog, options.logMode, {
         input,
         resolvedInput: commandInput,
@@ -401,6 +503,7 @@ export async function executeTool<TData = unknown>(
       now: options.now,
     });
     maybeSyncWorkpadValidation(toolName, commandInput, result as ToolResult<unknown>);
+    refreshTaskSessionActivity(entry, taskSessionResolution, result as ToolResult<unknown>, commandInput, env);
     logResult(entry, toolName, result, plannedCommandForLog, branchResolution.branch, facadeCmdForLog, options.logMode, {
       input,
       resolvedInput: commandInput,
@@ -528,6 +631,28 @@ function buildTaskSessionRequiredRecovery(toolName: string, entry: ToolManifestE
   const safeInput = sanitizeRecoveryInput(input);
   const repoStateBound = isRepoStateBound(entry);
   const reason = taskSessionRequiredReason(toolName, entry, repoStateBound);
+  if (isWorkSessionFsTool(toolName)) {
+    return {
+      message: `${toolName} requires mutation authority. Use taskSession for managed repository work, or start a work session and pass workSession for ordinary filesystem work.`,
+      data: {
+        tool: toolName,
+        reason,
+        repoStateBound,
+        originalCall: {
+          tool: toolName,
+          input: safeInput,
+        },
+        recovery: {
+          action: 'start_task_or_work_session_then_retry',
+          steps: [
+            'For repository edits, call session.start with kind=task (or task.start for compatibility) and pass the returned taskSession.',
+            'For ordinary filesystem edits, call session.start with kind=work and the directory path, then pass the returned workSession.',
+            `Rerun ${toolName} with the same mutation input and exactly one session authority.`,
+          ],
+        },
+      },
+    };
+  }
   return {
     message: `${toolName} requires taskSession. Start a task with task.start, capture data.taskSession, then rerun ${toolName} with the same input plus taskSession.`,
     data: {
@@ -593,20 +718,24 @@ function compactReviewData(data: unknown): unknown {
   const preExisting = asArray(data.preExisting).map((finding, index) => compactFacadeFinding(finding, index, 'pre_existing'));
   const testResults = asArray(data.testResults);
   const failedSuites = testResults.filter((result) => isRecord(result) && result.passed === false);
+  const documentationCheckRan = Object.prototype.hasOwnProperty.call(data, 'documentationOpportunities');
+  const documentationOpportunities = asArray(data.documentationOpportunities);
+  const checksRun = ['static_rules', 'eslint', 'typecheck', 'spec_compliance'];
+  if (documentationCheckRan) checksRun.push('documentation_opportunities');
+  if (testResults.length > 0) checksRun.push('tests');
   return {
     schema: 'review.summary.v1',
     base: data.base,
     branch: data.branch,
     files: data.files,
     affectedProjects: data.affectedProjects,
-    checksRun: testResults.length > 0
-      ? ['static_rules', 'eslint', 'typecheck', 'spec_compliance', 'tests']
-      : ['static_rules', 'eslint', 'typecheck', 'spec_compliance'],
+    checksRun,
     summary: {
       yourIssues: yours.length,
       preExistingIssues: preExisting.length,
       failedTestSuites: failedSuites.length,
       blockingIssues: yours.length + failedSuites.length,
+      documentationOpportunities: documentationOpportunities.length,
     },
     mustFixTotal: yours.length,
     mustFix: yours.slice(0, FACADE_FINDING_SAMPLE_LIMIT),
@@ -619,6 +748,7 @@ function compactReviewData(data: unknown): unknown {
       preExisting: summarizeFacadeFindings(preExisting).byFile,
     },
     preExistingDigest: summarizeFacadeFindings(preExisting),
+    documentationOpportunities: documentationOpportunities.slice(0, FACADE_FINDING_SAMPLE_LIMIT),
     testSummary: {
       totalSuites: testResults.length,
       passedSuites: testResults.length - failedSuites.length,
@@ -769,9 +899,11 @@ async function executeInternalTool<TData>(
   }
 
   if (internal === 'code.call') {
-    const codeCallInput = typeof input.timeout === 'number'
-      ? input
-      : { ...input, timeout: entry.defaultTimeout };
+    const codeCallInput = typeof context.options.timeoutMs === 'number'
+      ? { ...input, timeout: context.options.timeoutMs }
+      : typeof input.timeout === 'number'
+        ? input
+        : { ...input, timeout: entry.defaultTimeout };
     const result = await executeCodeCall(codeCallInput as CodeCallInput, {
       cwd: context.cwd,
       env: context.env,
@@ -838,11 +970,19 @@ async function executeInternalTool<TData>(
   }
 
   if (internal === 'task.current') {
+    const scopedBranch = typeof input.branch === 'string' ? input.branch : undefined;
+    const scopedWorktree = typeof input.taskWorktree === 'string' ? input.taskWorktree : undefined;
+    const scopedTask = scopedBranch && scopedWorktree ? {
+      branch: scopedBranch,
+      area: getAreaFromBranch(scopedBranch) || 'unknown',
+      worktree: scopedWorktree,
+    } : null;
     const task = getCurrentTask({
+      explicitBranch: scopedBranch,
       cwd: context.cwd,
       env: context.env,
-      currentTask: context.options.currentTask,
-      candidates: context.options.candidates,
+      currentTask: scopedTask ?? context.options.currentTask,
+      candidates: scopedTask ? [scopedTask] : context.options.candidates,
     });
     const result = createToolResult({
       ok: true,
@@ -896,7 +1036,7 @@ async function executeInternalTool<TData>(
       cwd: resolveWorkspaceCommandCwd(context.cwd, 'stream:context'),
       env: { ...context.env },
     };
-    const runResult = await context.runner(plan, entry.defaultTimeout);
+    const runResult = await context.runner(plan, getTimeoutMs(entry, input, context.options));
     const data = parseStdout(runResult.stdout, true).data as Record<string, unknown> | null;
     const aheadBehind = data && typeof data === 'object' ? data.aheadBehind as Record<string, unknown> | undefined : undefined;
     const behind = typeof aheadBehind?.behind === 'number' ? aheadBehind.behind : undefined;
@@ -975,6 +1115,47 @@ function resolveTaskSessionInput(input: ToolInput, cwd: string, env: NodeJS.Proc
   return { ok: true, branch, metadata };
 }
 
+function resolveWorkSessionInput(
+  toolName: string,
+  input: ToolInput,
+  cwd: string,
+  env: NodeJS.ProcessEnv,
+): WorkSessionResolution | null {
+  const workSession = typeof input.workSession === 'string' ? input.workSession.trim() : '';
+  if (!workSession) return null;
+  if (!supportsWorkSessionAuthority(toolName)) {
+    return {
+      ok: false,
+      code: 'VALIDATION_ERROR',
+      message: `${toolName} does not support workSession authority.`,
+    };
+  }
+  if (typeof input.branch === 'string' && input.branch.trim()) {
+    return {
+      ok: false,
+      code: 'VALIDATION_ERROR',
+      message: 'workSession calls cannot also select a task branch. Use taskSession for repository edits.',
+    };
+  }
+  try {
+    const scope = resolveWorkSessionFsScope({
+      workSession,
+      env,
+      managedRepoRoot: cwd,
+    });
+    return { ok: true, workSession: scope.workSession, root: scope.root };
+  } catch (error: unknown) {
+    if (error instanceof WorkSessionFsScopeError) {
+      return { ok: false, code: error.code, message: error.message };
+    }
+    return {
+      ok: false,
+      code: 'VALIDATION_ERROR',
+      message: `Unable to validate workSession: ${getErrorMessage(error)}`,
+    };
+  }
+}
+
 
 function getWorktreeRoot(env: NodeJS.ProcessEnv = process.env): string {
   return env.WORKSPACE_WORKTREE_ROOT || env.OPENSAAS_WORKTREE_ROOT || path.join(os.tmpdir(), 'opensaas-worktrees');
@@ -1006,6 +1187,28 @@ function addSessionCandidates(candidates: Array<{ path: string; warn: boolean }>
 }
 
 function findTaskSessionMetadata(cwd: string, taskSession: string, env: NodeJS.ProcessEnv): TaskSessionMetadata | null {
+  try {
+    const home = env.CONSUELO_HOME || env.CONSUELO_OS_HOME;
+    const registryOptions = home ? { home } : {};
+    const durable = readDurableTaskSessionMetadata(taskSession, registryOptions);
+    const durableWorktree = durable?.worktreePath || durable?.worktree;
+    if (
+      durable
+      && durable.status === 'active'
+      && typeof durableWorktree === 'string'
+      && fs.existsSync(durableWorktree)
+      && isTaskSessionMetadata(durable, taskSession)
+    ) {
+      return durable;
+    }
+    if (durable) {
+      const recovered = recoverDurableTaskSession(taskSession, registryOptions);
+      if (recovered && isTaskSessionMetadata(recovered, taskSession)) return recovered;
+    }
+  } catch (error: unknown) {
+    process.stderr.write(`warning: failed to recover durable task session ${taskSession}: ${getErrorMessage(error)}\n`);
+  }
+
   const candidates: Array<{ path: string; warn: boolean }> = [];
   addSessionCandidates(candidates, cwd, true);
 
@@ -1013,8 +1216,13 @@ function findTaskSessionMetadata(cwd: string, taskSession: string, env: NodeJS.P
     addSessionCandidates(candidates, env.TASK_WORKTREE, true);
   }
 
-  const absoluteWorktreeRoot = getWorktreeRoot(env);
-  if (fs.existsSync(absoluteWorktreeRoot)) {
+  const home = env.CONSUELO_HOME || env.CONSUELO_OS_HOME;
+  const taskWorktreeRoots = Array.from(new Set([
+    getTaskWorktreeRoot(undefined, env),
+    getWorktreeRoot(env),
+  ].filter((value): value is string => typeof value === 'string' && value.length > 0)));
+  for (const absoluteWorktreeRoot of taskWorktreeRoots) {
+    if (!fs.existsSync(absoluteWorktreeRoot)) continue;
     for (const name of fs.readdirSync(absoluteWorktreeRoot)) {
       if (!name.startsWith('task-')) continue;
       addSessionCandidates(candidates, path.join(absoluteWorktreeRoot, name), false);
@@ -1046,6 +1254,9 @@ function resolveBranchIfNeeded(
   env: NodeJS.ProcessEnv,
   options: ExecuteToolOptions,
 ): BranchResolution {
+  if (typeof input.workSessionRoot === 'string' && isWorkSessionFsTool(entry.name)) {
+    return { ok: true, branch: '', source: 'work-session' };
+  }
   const branchMode = entry.command.branchMode || 'none';
   if (branchMode === 'none') return { ok: true, branch: '', source: 'none' };
 
@@ -1077,6 +1288,22 @@ function buildCommandPlan(
   cwd: string,
   env: NodeJS.ProcessEnv,
 ): CommandPlan {
+  if (isWorkSessionFsTool(entry.name) && typeof input.workSessionRoot === 'string') {
+    const args = [path.join(runtimePackageRoot, 'scripts', 'fs.js')];
+    if (entry.command.subcommand) args.push(entry.command.subcommand);
+    for (const argument of entry.command.arguments) appendArgument(args, argument, input);
+    if (entry.command.jsonFlag) args.push(entry.command.jsonFlag);
+    if (entry.command.dryRunFlag && input.dryRun === true) args.push(entry.command.dryRunFlag);
+    return {
+      command: 'bun',
+      args,
+      cwd: input.workSessionRoot,
+      env: {
+        ...env,
+        ...(typeof input.workSession === 'string' ? { WORK_SESSION: input.workSession } : {}),
+      },
+    };
+  }
   const branch = typeof input.branch === 'string' ? input.branch : '';
   const script = entry.command.script === 'task:fs' && !branch ? 'fs' : entry.command.script;
   const args = ['run', script, '--'];
@@ -1096,13 +1323,15 @@ function buildCommandPlan(
 
   if (entry.command.jsonFlag) args.push(entry.command.jsonFlag);
   if (entry.command.dryRunFlag && input.dryRun === true) args.push(entry.command.dryRunFlag);
+  const runtimeScoped = entry.command.executionScope === 'runtime';
 
   return {
     command: 'bun',
     args,
-    cwd: resolveWorkspaceCommandCwd(cwd, script, input),
+    cwd: runtimeScoped ? runtimePackageRoot : resolveWorkspaceCommandCwd(cwd, script, input),
     env: {
       ...env,
+      ...(runtimeScoped ? { CONSUELO_TOOL_CALLER_CWD: cwd } : {}),
       ...(branch ? { TASK_BRANCH: branch } : {}),
       ...(typeof input.taskWorktree === 'string' ? { TASK_WORKTREE: input.taskWorktree } : {}),
     },
@@ -1143,8 +1372,28 @@ function appendArgument(args: string[], argument: CommandArgument, input: ToolIn
   args.push(String(value));
 }
 
-function getTimeoutMs(entry: ToolManifestEntry, input: ToolInput): number {
-  return typeof input.timeout === 'number' ? input.timeout : entry.defaultTimeout;
+function getTimeoutMs(
+  entry: ToolManifestEntry,
+  input: ToolInput,
+  options: ExecuteToolOptions = {},
+): number {
+  if (typeof options.timeoutMs === 'number') return options.timeoutMs;
+  if (typeof input.timeout === 'number') return input.timeout;
+  if (typeof input.timeoutMs === 'number') return input.timeoutMs;
+  return entry.defaultTimeout;
+}
+
+export function resolveInternalExecutionInput(
+  entry: ToolManifestEntry,
+  input: ToolInput,
+  options: ExecuteToolOptions = {},
+): ToolInput {
+  const internal = entry.command.internal;
+  if (internal !== 'deployment' && internal !== 'subagent') return input;
+  return {
+    ...input,
+    timeoutMs: getTimeoutMs(entry, input, options),
+  };
 }
 
 async function runWithRetry(
@@ -1257,6 +1506,7 @@ function resolveGitRoot(cwd: string): string {
 function resolveWorkspaceCommandCwd(cwd: string, script: string, input?: ToolInput): string {
   if ((script === 'code-run' || script === 'code-call') && typeof input?.taskWorktree === 'string') return input.taskWorktree;
   if (!script.startsWith('task:') && !script.startsWith('stream:')) return cwd;
+  if (typeof input?.taskWorktree === 'string') return input.taskWorktree;
   return resolveControllerRoot(cwd) || cwd;
 }
 
@@ -1301,6 +1551,14 @@ function logResult(
     : typeof resolvedInput.worktree === 'string'
       ? resolvedInput.worktree
       : undefined;
+  const workSession = typeof resolvedInput.workSession === 'string'
+    ? resolvedInput.workSession
+    : typeof rawInput.workSession === 'string'
+      ? rawInput.workSession
+      : undefined;
+  const workPath = typeof resolvedInput.workSessionRoot === 'string'
+    ? resolvedInput.workSessionRoot
+    : undefined;
   const mcpTraceId = typeof resolvedInput.mcpTraceId === 'string'
     ? resolvedInput.mcpTraceId
     : typeof resolvedInput.parentTraceId === 'string'
@@ -1325,6 +1583,8 @@ function logResult(
     code: result.code,
     taskSession,
     worktree,
+    workSession,
+    workPath,
     mcpTraceId,
     input: traceContext.input,
     resolvedInput: traceContext.resolvedInput,

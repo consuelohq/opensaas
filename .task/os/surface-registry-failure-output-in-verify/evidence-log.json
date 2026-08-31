@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/surface-registry-failure-output-in-verify",
+  "events": [
+    {
+      "id": "ac828bed-7cdf-4987-9ac8-2f793d83685a",
+      "occurred_at": "2026-08-14T20:48:35.060Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/verification.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/surface-registry-failure-output-in-verify",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/surface-registry-failure-output-in-verify"
+      }
+    },
+    {
+      "id": "7eb86535-ad8d-4a58-9021-642165b91e17",
+      "occurred_at": "2026-08-14T20:48:46.410Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/verify.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/surface-registry-failure-output-in-verify",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/surface-registry-failure-output-in-verify"
+      }
+    },
+    {
+      "id": "020bfc3a-d7a8-40a0-9bc8-62979380396e",
+      "occurred_at": "2026-08-14T20:49:15.675Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/verify.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/surface-registry-failure-output-in-verify",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/surface-registry-failure-output-in-verify"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-14T20:49:15.753Z"
+}

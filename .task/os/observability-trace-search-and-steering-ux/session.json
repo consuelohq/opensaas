@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_7d119440741a",
+  "tmuxSession": "opensaas-os-observability-trace-search-and-steering-ux-7d119440",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/observability-trace-search-and-steering-ux",
+  "branch": "task/os/observability-trace-search-and-steering-ux",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-observability-trace-search-and-steering-ux",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-observability-trace-search-and-steering-ux",
+  "prNumber": 1930,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1930",
+  "createdAt": "2026-08-14T01:16:23.973Z",
+  "tmuxCreated": false,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-observability-trace-search-and-steering-ux/.task/os/observability-trace-search-and-steering-ux/session.json"
+}

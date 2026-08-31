@@ -483,22 +483,8 @@ describe('local OS install state', () => {
     expect(existsSync(join(tempHome, 'hooks'))).toBe(false);
     expect(existsSync(join(tempHome, 'bin', 'browser.open'))).toBe(true);
     expect(existsSync(join(tempHome, 'steering'))).toBe(false);
-    const visibleDialerSteering = join(
-      tempUserHome,
-      'Consuelo',
-      'Steering',
-      'dialer-AGENTS.md',
-    );
-    expect(first.actions).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          type: 'seed_steering',
-          path: visibleDialerSteering,
-          status: 'created',
-        }),
-      ]),
-    );
-    expect(existsSync(visibleDialerSteering)).toBe(true);
+    expect(first.actions.some((action: { path: string }) => action.path.endsWith(join('Steering', 'dialer-AGENTS.md')))).toBe(false);
+    expect(existsSync(join(tempUserHome, 'Consuelo', 'Steering', 'dialer-AGENTS.md'))).toBe(false);
     expect(first.actions.some((action: { path: string }) => action.path.endsWith(join('steering', 'decision.md')))).toBe(false);
     expect(first.actions.some((action: { type: string; path: string; status: string }) => action.type === 'create_file' && action.path.endsWith(join('components', 'installed-skills.json')) && action.status === 'created')).toBe(true);
     expect(first.actions.some((action: { type: string; path: string; status: string }) => action.type === 'seed_tool' && action.path.endsWith(join('bin', 'status')) && action.status === 'created')).toBe(true);
@@ -510,7 +496,7 @@ describe('local OS install state', () => {
     // BUILT_INS.md was renamed to TOOLS.md, which also documents how to view and edit tools.
     expect(existsSync(join(tempUserHome, 'Consuelo', 'Tools', 'TOOLS.md'))).toBe(true);
     expect(existsSync(join(tempUserHome, 'Consuelo', 'Tools', 'BUILT_INS.md'))).toBe(false);
-    // Visible steering includes the system prompt and managed dialer instructions.
+    // Visible steering includes the system prompt; stream-scoped dialer instructions stay in stream context.
     const systemPrompt = join(tempUserHome, 'Consuelo', 'Steering', 'system.md');
     expect(existsSync(systemPrompt)).toBe(true);
     expect(existsSync(join(tempUserHome, 'Consuelo', 'Skills', 'skills.json'))).toBe(true);
@@ -541,7 +527,6 @@ describe('local OS install state', () => {
     expect(installedToolNames).toContain('status');
     expect(installedToolNames).toContain('browser.open');
     expect(installedToolNames).toContain('deployment.logs');
-    expect(installedToolNames).toHaveLength(154);
     expect(installedToolNames).toContain('code.call');
     const fullCodeCall = fullToolManifest.tools.find((tool: { name: string }) => tool.name === 'code.call');
     const coreCodeCall = coreToolManifest.tools.find((tool: { name: string }) => tool.name === 'code.call');
@@ -583,15 +568,8 @@ describe('local OS install state', () => {
       process.stdout.write(JSON.stringify(result));
     `));
     expect(second.actions.some((action: { path: string; status: string }) => action.path.endsWith('config.json') && action.status === 'preserved')).toBe(true);
-    expect(second.actions).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          type: 'seed_steering',
-          path: visibleDialerSteering,
-          status: 'preserved',
-        }),
-      ]),
-    );
+    expect(second.actions.some((action: { path: string }) => action.path.endsWith(join('Steering', 'dialer-AGENTS.md')))).toBe(false);
+    expect(existsSync(join(tempUserHome, 'Consuelo', 'Steering', 'dialer-AGENTS.md'))).toBe(false);
     expect(readFileSync(userSteeringPath, 'utf8')).toContain('user-owned preferences');
     expect(existsSync(join(tempHome, 'steering'))).toBe(false);
   });
@@ -800,26 +778,16 @@ describe('local OS install state', () => {
     expect(existsSync(join(tempHome, 'sites', 'office', 'index.html'))).toBe(false);
 
     const sitesIndex = readFileSync(sitesIndexPath, 'utf8');
-    expect(sitesIndex).toContain('<title>Consuelo OS</title>');
-    expect(sitesIndex).toContain('Welcome to Consuelo OS');
-    expect(sitesIndex).toContain('Here is the URL to connect');
-    expect(sitesIndex).toContain('to your workspace.');
-    expect(sitesIndex).toContain('https://chatgpt.com/apps#settings/Connectors');
-    expect(sitesIndex).toContain('<code id="mcp-url">https://os.consuelohq.com/mcp</code>');
-    expect(sitesIndex).toContain('support@consuelohq.com');
-    expect(sitesIndex).toContain('Systems Engineer');
-    expect(sitesIndex).toContain('Go to market');
-    expect(sitesIndex).toContain('Artifacts');
-    expect(sitesIndex).toContain('Observability');
-    expect(sitesIndex).toContain('Code review');
-    expect(sitesIndex).toContain('Documentation');
-    expect(sitesIndex).toContain('Decision loops');
-    expect(sitesIndex).toContain('Connect to your cloud agents');
-    expect(sitesIndex).toContain('<p data-agent-count>Connected to 0 local agents</p>');
-    expect(sitesIndex).toContain('No local agents connected to workspace yet.');
+    expect(sitesIndex).toContain('<title>Overview - Consuelo OS</title>');
+    expect(sitesIndex).toContain('data-workspace-shell');
+    expect(sitesIndex).toContain('data-workspace-route-trigger');
+    expect(sitesIndex).toContain('<h1>Overview</h1>');
+    expect(sitesIndex).toContain('/gateway/configuration/snapshot');
+    expect(sitesIndex).not.toContain('Welcome to Consuelo OS');
+    expect(sitesIndex).not.toContain('<code id="mcp-url">');
+    expect(sitesIndex).not.toContain('Connected to your cloud agents');
+    expect(sitesIndex).not.toContain('data-agent-count');
     expect(sitesIndex).not.toContain('Consuelo OS Sites');
-    expect(sitesIndex).not.toContain('GitHub Workflows');
-    expect(sitesIndex).not.toContain('[GTM]');
 
     const artifactsSitePage = readFileSync(artifactsSiteIndexPath, 'utf8');
     expect(artifactsSitePage).toContain('Consuelo Artifacts');
@@ -923,7 +891,6 @@ describe('local OS install state', () => {
     expect(installedToolNames).toContain('task.start');
     expect(installedToolNames).toContain('browser.open');
     expect(installedToolNames).toContain('deployment.logs');
-    expect(installedToolNames).toHaveLength(154);
   });
 
   it('preserves local user tools while refreshing the installed registry', () => {

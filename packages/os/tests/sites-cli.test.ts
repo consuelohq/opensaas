@@ -135,13 +135,11 @@ describe('Sites CLI', () => {
     expect(existsSync(refreshResult.artifactsDataPath)).toBe(true);
     expect(existsSync(refreshResult.tracesIndexPath)).toBe(true);
     const tracesHtml = readFileSync(refreshResult.tracesIndexPath, 'utf8');
-    expect(tracesHtml).toContain('<h1>Traces</h1>');
-    expect(tracesHtml).toContain('Live tracing cockpit');
-    expect(tracesHtml).toContain('href="/observability/traces"');
+    expect(tracesHtml).toContain('data-workspace-route-trigger');
+    expect(tracesHtml).toContain('aria-current="page" href="/tracing"');
+    expect(tracesHtml).toContain('<span>Tracing</span>');
+    expect(tracesHtml).toContain('aria-label="Workspace routes"');
     expect(tracesHtml).toContain('/gateway/traces/recent');
-    expect(tracesHtml).toContain('/gateway/traces/summary');
-    expect(tracesHtml).toContain('/gateway/traces/events');
-    expect(tracesHtml).toContain('data-observability-app');
     expect(tracesHtml).not.toContain('Reserved Sites page');
     expect(existsSync(refreshResult.diffsIndexPath)).toBe(true);
     expect(existsSync(refreshResult.docsIndexPath)).toBe(true);
@@ -197,48 +195,24 @@ describe('Sites CLI', () => {
   });
 
 
-  it('renders the first-install launcher onboarding with the local OS connection URL', () => {
-    const refreshResult = runSitesCommand(['refresh', '--json']);
-    const html = readFileSync(refreshResult.indexPath, 'utf8');
+  it('materializes Home as the durable workspace root on every Sites refresh', () => {
+    const first = runSitesCommand(['refresh', '--json']);
+    const firstHtml = readFileSync(first.indexPath, 'utf8');
 
-    for (const marker of [
-      '<title>Consuelo OS</title>',
-      '<div class="identity">Consuelo OS</div>',
-      'Welcome to Consuelo OS',
-      'Here is the URL to connect',
-      'to your workspace.',
-      'https://chatgpt.com/apps#settings/Connectors',
-      '<code id="mcp-url">https://os.consuelohq.com/mcp</code>',
-      'aria-label="Copy MCP URL"',
-      'support@consuelohq.com',
-      'Systems Engineer',
-      'Go to market',
-      'Artifacts',
-      'Observability',
-      'Code review',
-      'Guides and Tips',
-      'Documentation',
-      'Decision loops',
-      'Connect to your cloud agents',
-      'Connected to ',
-      'navigator.clipboard.writeText(value)',
-    ]) {
-      expect(html).toContain(marker);
-    }
+    expect(firstHtml).toContain('<title>Overview - Consuelo OS</title>');
+    expect(firstHtml).toContain('data-workspace-shell');
+    expect(firstHtml).toContain('data-workspace-route-trigger');
+    expect(firstHtml).toContain('aria-current="page" href="/configuration"');
+    expect(firstHtml).toContain('/gateway/configuration/snapshot');
+    expect(firstHtml).not.toContain('Welcome to Consuelo OS');
+    expect(firstHtml).not.toContain('data-agent-count');
 
-    expect(html.match(/target="_blank"/g)?.length).toBe(1);
-    expect(html).toContain('rel="noopener noreferrer"');
-    expect(html).not.toContain('Consuelo OS Sites');
-    expect(html).not.toContain('[GTM]');
-    expect(html).not.toContain('[Office]');
-    expect(html).not.toContain('[Tracing]');
-    expect(html).not.toContain('[Diffs]');
-    expect(html).not.toContain('const siteHotkeys = {');
-    expect(html).not.toContain('Versioned local Sites pages with current pointers');
-    expect(html).not.toContain('<div class="grid">');
+    const second = runSitesCommand(['refresh', '--json']);
+    const secondHtml = readFileSync(second.indexPath, 'utf8');
+    expect(secondHtml).toBe(firstHtml);
   });
 
-  it('materializes launcher links from the configured authenticated workspace host', () => {
+  it('keeps the workspace root on Home regardless of the authenticated workspace host', () => {
     writeFileSync(
       join(tempHome, 'config.json'),
       JSON.stringify({ workspace: { host: 'acme.consuelohq.com' } }, null, 2),
@@ -247,15 +221,19 @@ describe('Sites CLI', () => {
     const refreshResult = runSitesCommand(['refresh', '--json']);
     const html = readFileSync(refreshResult.indexPath, 'utf8');
 
-    for (const route of ['/gtm', '/artifacts', '/observability', '/diffs']) {
-      expect(html).toContain(`href="https://acme.consuelohq.com${route}"`);
-    }
+    expect(html).toContain('<title>Overview - Consuelo OS</title>');
+    expect(html).toContain('href="/configuration"');
+    expect(html).toContain('href="/tracing"');
+    expect(html).toContain('href="/tools"');
+    expect(html).toContain('href="/nodes"');
+    expect(html).toContain('href="/secrets"');
+    expect(html).toContain('href="https://docs.consuelohq.com/"');
+    expect(html).toContain('data-overview-heatmap');
+    expect(html).not.toContain('Welcome to Consuelo OS');
     expect(html).not.toContain('https://sites.consuelohq.com/');
-    expect(html).not.toContain('https://app.consuelohq.com/');
-    expect(html).not.toContain('https://internal.consuelohq.com/');
   });
 
-  it('rewrites legacy ChatGPT MCP URLs before rendering the launcher', () => {
+  it('keeps Sites refresh presentation-only instead of mutating the ChatGPT MCP connection', () => {
     const configPath = join(tempHome, 'node', 'security', 'generated', 'chatgpt-mcp.json');
     mkdirSync(join(tempHome, 'node', 'security', 'generated'), { recursive: true });
     writeFileSync(configPath, JSON.stringify({
@@ -272,12 +250,12 @@ describe('Sites CLI', () => {
 
     const refreshResult = runSitesCommand(['refresh', '--json']);
     const html = readFileSync(refreshResult.indexPath, 'utf8');
-    const migrated = JSON.parse(readFileSync(configPath, 'utf8'));
+    const persisted = JSON.parse(readFileSync(configPath, 'utf8'));
 
-    expect(html).toContain('<code id="mcp-url">https://os.consuelohq.com/mcp</code>');
+    expect(html).toContain('<title>Overview - Consuelo OS</title>');
     expect(html).not.toContain('https://legacy-workspace.consuelohq.com/mcp');
-    expect(migrated).toMatchObject({
-      url: 'https://os.consuelohq.com/mcp',
+    expect(persisted).toMatchObject({
+      url: 'https://legacy-workspace.consuelohq.com/mcp',
       tokenId: 'token_existing',
       bearerToken: 'cst_existing',
     });

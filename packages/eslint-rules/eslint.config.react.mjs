@@ -13,7 +13,7 @@ import unicornPlugin from 'eslint-plugin-unicorn';
 import unusedImportsPlugin from 'eslint-plugin-unused-imports';
 import jsoncParser from 'jsonc-eslint-parser';
 
-const twentyRules = await nxPlugin.loadWorkspaceRules('packages/twenty-eslint-rules');
+const twentyRules = await nxPlugin.loadWorkspaceRules('packages/eslint-rules');
 
 export default [
   // Base JavaScript configuration
@@ -59,7 +59,12 @@ export default [
         'error',
         {
           enforceBuildableLibDependency: true,
-          allow: [],
+          // Nx can misclassify package-export subpaths (for example
+          // `twenty-shared/types` and `twenty-ui/display`) as applications.
+          // These packages are both scope:shared libraries in the project graph,
+          // so allow their public package exports while retaining tag constraints
+          // for every other project import.
+          allow: ['^twenty-shared(?:/.*)?$', '^twenty-ui(?:/.*)?$'],
           depConstraints: [
             {
               sourceTag: 'scope:shared',

@@ -101,7 +101,7 @@ describe('LeadConnector webhook contracts', () => {
       accepted: true,
       duplicate: true,
       workspaceId: 'workspace-1',
-      event: null,
+      event: first.event,
     });
   });
 

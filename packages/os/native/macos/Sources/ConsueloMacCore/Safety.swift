@@ -1,4 +1,34 @@
 import Foundation
+import Darwin
+
+public final class MenuBarInstanceLock: @unchecked Sendable {
+    private let descriptor: Int32
+
+    private init(descriptor: Int32) {
+        self.descriptor = descriptor
+    }
+
+    deinit {
+        _ = flock(descriptor, LOCK_UN)
+        _ = close(descriptor)
+    }
+
+    public static func acquire(name: String = "com.consuelohq.os.menubar.alpha") -> MenuBarInstanceLock? {
+        let safeName = name.map { character in
+            character.isLetter || character.isNumber || character == "." || character == "-" ? character : "_"
+        }
+        let fileName = "\(String(safeName))-\(getuid()).lock"
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent(fileName, isDirectory: false)
+        let descriptor = Darwin.open(url.path, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR)
+        guard descriptor >= 0 else { return nil }
+        _ = fchmod(descriptor, S_IRUSR | S_IWUSR)
+        guard flock(descriptor, LOCK_EX | LOCK_NB) == 0 else {
+            _ = close(descriptor)
+            return nil
+        }
+        return MenuBarInstanceLock(descriptor: descriptor)
+    }
+}
 
 public enum SafeWorkspaceError: Error, Equatable {
     case invalidRoot

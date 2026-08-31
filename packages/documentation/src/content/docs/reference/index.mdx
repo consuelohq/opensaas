@@ -6,10 +6,10 @@ verifiedAt: 2026-07-13
 evidence:
   - source: packages/os/scripts/os.ts
     tests:
-      - packages/os/tests/os-raw-steering.test.ts
+      - packages/os/tests/steering-canonical-source.test.ts
       - packages/os/tests/sites-cli.test.ts
     runtime: The current CLI usage output and JSON command paths were exercised on 2026-07-13.
-  - source: packages/os/manifests/tool.manifest.json
+  - source: packages/os/manifests/generated/tool.manifest.json
     tests:
       - packages/os/tests/tool-manifest.test.ts
     runtime: The generated full and core manifests were parsed and compared with their source schemas on 2026-07-13.

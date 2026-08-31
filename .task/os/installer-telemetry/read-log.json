@@ -1,0 +1,24 @@
+{
+  "files": [
+    ".task/os/installer-telemetry/workpad.md",
+    "packages/os/cloudflare/os-device-authority/src/services/grants.ts",
+    "packages/os/cloudflare/os-device-authority/src/types.ts",
+    "packages/os/docs/install-telemetry-contract.md",
+    "packages/os/package.json",
+    "packages/os/scripts/bootstrap.sh",
+    "packages/os/scripts/install-system-daemons.sh",
+    "packages/os/scripts/install.ts",
+    "packages/os/scripts/lib/install-diagnostics.ts",
+    "packages/os/scripts/lib/install-telemetry-contract.ts",
+    "packages/os/scripts/lib/workspace-device-authorization.ts",
+    "packages/os/scripts/lib/workspace-device-login-client.ts",
+    "packages/os/scripts/onboarding-flow.test.ts",
+    "packages/os/tests/bootstrap-source.test.ts",
+    "packages/os/tests/facade/facade.test.ts",
+    "packages/os/tests/oauth-device-http-client.test.ts",
+    "packages/twenty-server/src/engine/core-modules/auth/services/auth.service.ts",
+    "packages/workspace/scripts/task-push.js",
+    "yarn.lock"
+  ],
+  "updatedAt": "2026-08-13T17:06:13.808Z"
+}

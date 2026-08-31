@@ -1,0 +1,61 @@
+---
+title: Cloud nodes
+description: Understand Consuelo-managed nodes, the current plan picker, and what is and is not self-service today.
+status: preview
+verifiedAt: 2026-08-12
+evidence:
+  - source: packages/os/scripts/lib/settings-site.ts
+    tests:
+      - packages/os/tests/settings-site.test.ts
+      - packages/os/tests/launcher-nodes-control-plane.test.ts
+    runtime: The current Nodes screen exposes managed cloud plans, regions, published quotes, and a disabled provisioning action labeled “Provisioning coming soon.”
+  - source: packages/os/scripts/bootstrap.sh
+    tests:
+      - packages/os/tests/bootstrap-source.test.ts
+      - packages/os/scripts/onboarding-flow.test.ts
+    runtime: The public installer cloud branch still hands setup to Consuelo and exits before local provisioning on 2026-08-12.
+---
+
+A **cloud node** is a Consuelo-managed runtime for your workspace. It is intended for work that should stay available without depending on one person's computer being awake and connected.
+
+Cloud nodes use the same workspace node model as local nodes: once provisioned and online, a cloud node can appear in **Nodes**, receive explicitly targeted work, and become the workspace default.
+
+## What you can do today
+
+The current **Nodes** screen already supports the management side of the experience:
+
+- see local and managed nodes in one list;
+- see whether a node is online, stale, or offline;
+- make an online active node the workspace default;
+- open **Create cloud node** to compare the published managed plans and regions;
+- see a monthly quote when a current rate card is available.
+
+The public plan catalog currently includes Starter, Standard, Performance, Power, and Max. The UI shows customer-facing CPU and memory sizing and keeps provider-specific machine details internal.
+
+## Self-service provisioning is still preview
+
+The important boundary is the final creation step: **the Nodes screen does not provision a cloud node yet.** Its action is disabled and labeled **Provisioning coming soon**.
+
+Likewise, choosing **cloud** in the public installer currently hands setup to Consuelo and exits instead of creating the managed runtime on its own.
+
+So the plan picker is useful for understanding the intended managed option, but it is not a promise that clicking through will create infrastructure today.
+
+## Already provisioned cloud nodes
+
+Consuelo's managed cloud runtime and enrollment path exist behind the product surface. When Consuelo provisions a managed node for a workspace, that node participates in the same routing model as other nodes.
+
+Once it is active and online, you can make it the default so new untargeted OS calls no longer depend on a local Mac. Local nodes can remain in the same workspace for work that needs machine-specific files or applications.
+
+## Pricing and regions
+
+Treat the Nodes screen as the source of truth for the current customer-facing catalog. Quotes are only shown when the selected region has a published rate card; Consuelo does not invent a price when one is unavailable.
+
+Because plans and prices can change, these docs explain the behavior instead of duplicating a price table that could become stale.
+
+## Choose cloud or local by capability
+
+Choose a managed cloud node when you want an always-available runtime and the work does not depend on one person's local machine.
+
+Keep or add a [local node](/nodes/local/) when work needs local files, desktop applications, private network access, or other machine-specific capabilities.
+
+A workspace can use both. [Routing work](/nodes/routing/) explains how Consuelo decides which one runs a call.

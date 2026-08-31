@@ -1,20 +1,18 @@
 ---
 title: Tailscale
-description: Use a private Tailnet for private workspace access and durable internal publishing without confusing it with public ingress.
+description: Use a private Tailnet for internal artifact publishing without confusing it with public workspace ingress.
 status: preview
-verifiedAt: 2026-07-13
+verifiedAt: 2026-08-12
 evidence:
-  - source: packages/os/skills/office/SKILL.md
-    tests:
-      - packages/os/tests/office-skill.test.ts
-    runtime: Current Office publishing guidance and durable private-route workflow were inspected on 2026-07-13.
-  - source: packages/os/TOOLS.md
+  - source: packages/os/scripts/lib/facade/schemas.ts
     tests:
       - packages/os/tests/tool-manifest.test.ts
-    runtime: The generated design.publish tool contract was verified to describe private Tailscale Serve publishing on 2026-07-13.
+    runtime: Current artifact publish and refresh inputs include the Tailscale binary override and were reconciled with the generated tool contract on 2026-08-12.
+  - source: packages/os/TOOLS.md
+    runtime: The generated workspace.artifacts.publish contract describes private Tailscale Serve publishing on 2026-08-12.
 ---
 
-Tailscale gives approved devices a private network path. In Consuelo today it is useful for internal Sites and Office artifacts, and services that should remain inside a **private Tailnet**.
+Tailscale gives approved devices a private network path. In Consuelo today it is useful for artifact publishing that should remain inside a **private Tailnet**.
 
 It is **not the default public MCP ingress**. Public Consuelo workspace routes currently use the managed Cloudflare edge, OAuth or workspace authentication, signed connector requests, and local authorization.
 
@@ -37,7 +35,7 @@ Do not treat “connected to Tailscale” as a blanket admin grant. Use Tailscal
 
 ## Private publishing
 
-Consuelo's design and Office workflows can publish through Tailscale Serve. That keeps the route on the Tailnet while giving it a stable HTTPS address. The durable source and publish metadata should remain with the artifact so the route can be reproduced and audited.
+The current `workspace.artifacts.publish` surface can publish an artifact through Tailscale Serve, and `workspace.artifacts.refresh` can refresh that private publishing surface. That keeps the route on the Tailnet while giving it a stable HTTPS address. The durable source and publish metadata should remain with the artifact so the route can be reproduced and audited.
 
 Do not turn a private Tailnet route into a public publishing path merely to make sharing easier. That changes the trust boundary and should be an explicit product decision.
 

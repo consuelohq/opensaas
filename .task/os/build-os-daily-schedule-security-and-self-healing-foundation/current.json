@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/build-os-daily-schedule-security-and-self-healing-foundation",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1933,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1933",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1933",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1933/build-os-daily-schedule-security-and-self-healing-foundation",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1933",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1933/build-os-daily-schedule-security-and-self-healing-foundation",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-build-os-daily-schedule-security-and-self-healing-foundation",
+  "taskSession": "tsk_12049b349491",
+  "tmuxSession": "opensaas-os-build-os-daily-schedule-security-and-self-healin-12049b34",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-build-os-daily-schedule-security-and-self-healing-foundation/.task/os/build-os-daily-schedule-security-and-self-healing-foundation/session.json",
+  "createdAt": "2026-08-14T01:21:28.155Z"
+}

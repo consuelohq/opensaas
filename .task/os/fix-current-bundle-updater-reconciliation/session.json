@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_39df36e010a2",
+  "tmuxSession": "opensaas-os-fix-current-bundle-updater-reconciliation-39df36e0",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-current-bundle-updater-reconciliation",
+  "branch": "task/os/fix-current-bundle-updater-reconciliation",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-current-bundle-updater-reconciliation",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-current-bundle-updater-reconciliation",
+  "prNumber": 2063,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2063",
+  "createdAt": "2026-08-15T09:35:02.397Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-current-bundle-updater-reconciliation/.task/os/fix-current-bundle-updater-reconciliation/session.json"
+}

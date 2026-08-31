@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/repair-installed-lifecycle-tool-command-routing",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1964,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1964",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1964",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1964/repair-installed-lifecycle-tool-command-routing",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1964",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1964/repair-installed-lifecycle-tool-command-routing",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-installed-lifecycle-tool-command-routing",
+  "taskSession": "tsk_9fb1bdf53396",
+  "tmuxSession": "opensaas-os-repair-installed-lifecycle-tool-command-routing-9fb1bdf5",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-installed-lifecycle-tool-command-routing/.task/os/repair-installed-lifecycle-tool-command-routing/session.json",
+  "createdAt": "2026-08-14T20:04:04.302Z"
+}

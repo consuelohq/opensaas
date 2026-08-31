@@ -1,0 +1,53 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/fix-worker-secret-sync-ordering-in-os-production-release",
+  "base": "origin/stream/os",
+  "headSha": "e9fe64cbef4ce501ef86e177abc4d42245a292b5",
+  "changeHash": "5313d6b0c78cf4a7b2f9ff1bee5299e0ec440d763ea67a1cec65a4794063a6ad",
+  "changedFiles": [
+    ".github/workflows/consuelo-production-release.yaml",
+    "packages/workspace/tests/website-deploy.test.js"
+  ],
+  "verifiedAt": "2026-08-14T07:24:32.176Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".github/workflows/consuelo-production-release.yaml",
+        ".task/os/fix-worker-secret-sync-ordering-in-os-production-release/current.json",
+        ".task/os/fix-worker-secret-sync-ordering-in-os-production-release/evidence-log.json",
+        ".task/os/fix-worker-secret-sync-ordering-in-os-production-release/read-log.json",
+        ".task/os/fix-worker-secret-sync-ordering-in-os-production-release/session.json",
+        ".task/os/fix-worker-secret-sync-ordering-in-os-production-release/workpad.md",
+        ".task/tasks/os/fix-worker-secret-sync-ordering-in-os-production-release.json",
+        "packages/workspace/tests/website-deploy.test.js"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

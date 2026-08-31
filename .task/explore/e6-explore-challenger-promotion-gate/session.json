@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_cfc93f8a4f86",
+  "tmuxSession": "opensaas-explore-e6-explore-challenger-promotion-gate-cfc93f8a",
+  "area": "explore",
+  "stream": "stream/explore",
+  "taskBranch": "task/explore/e6-explore-challenger-promotion-gate",
+  "branch": "task/explore/e6-explore-challenger-promotion-gate",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-explore-e6-explore-challenger-promotion-gate",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-explore-e6-explore-challenger-promotion-gate",
+  "prNumber": 2107,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2107",
+  "createdAt": "2026-08-16T03:02:31.947Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-explore-e6-explore-challenger-promotion-gate/.task/explore/e6-explore-challenger-promotion-gate/session.json"
+}

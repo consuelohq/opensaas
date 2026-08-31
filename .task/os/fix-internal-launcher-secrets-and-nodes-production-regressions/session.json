@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_00ee2f761145",
+  "tmuxSession": "opensaas-os-fix-internal-launcher-secrets-and-nodes-producti-00ee2f76",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-internal-launcher-secrets-and-nodes-production-regressions",
+  "branch": "task/os/fix-internal-launcher-secrets-and-nodes-production-regressions",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-internal-launcher-secrets-and-nodes-production-regressions",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-internal-launcher-secrets-and-nodes-production-regressions",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2190,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2190",
+  "createdAt": "2026-08-26T03:52:43.889Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-internal-launcher-secrets-and-nodes-production-regressions/.task/os/fix-internal-launcher-secrets-and-nodes-production-regressions/session.json"
+}

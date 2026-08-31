@@ -85,7 +85,10 @@ describe('LeadConnector Cloudflare embed edge', () => {
       expect(response.status).toBe(200);
       expect(fixture.originRequests).toHaveLength(0);
       expect(fixture.assetRequests).toHaveLength(1);
-      expect(new URL(fixture.assetRequests[0]!.url).pathname).toBe('/');
+      const shellRequest = new URL(fixture.assetRequests[0]!.url);
+      expect(shellRequest.pathname).toBe('/');
+      expect(shellRequest.searchParams.get('__shell')).toBeTruthy();
+      expect(response.headers.get('cache-control')).toBe('no-store');
       expect(response.headers.get('x-frame-options')).toBeNull();
       expect(response.headers.get('content-security-policy')).toContain(
         'frame-ancestors https://app.leadconnectorhq.com https://app.msgsndr.com https://app.gohighlevel.com',
@@ -116,5 +119,24 @@ describe('LeadConnector Cloudflare embed edge', () => {
     );
     expect(response.headers.get('permissions-policy')).toContain('microphone');
     expectTwilioVoiceConnectivity(response);
+  });
+
+  it('forces the stable marketplace launcher assets to revalidate', async () => {
+    for (const pathname of [
+      '/consuelo-lead-connector-click-to-call.js',
+      '/consuelo-lead-connector-click-to-call.css',
+    ]) {
+      const fixture = createEnvironment();
+      const worker = createLeadConnectorEdgeWorker(
+        fixture.environment.fetchOrigin,
+      );
+      const response = await worker.fetch(
+        new Request(`https://dialer.example.test${pathname}`),
+        fixture.environment,
+      );
+      expect(response.headers.get('cache-control')).toBe(
+        'no-cache, max-age=0, must-revalidate',
+      );
+    }
   });
 });

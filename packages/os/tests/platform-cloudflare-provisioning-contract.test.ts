@@ -249,9 +249,6 @@ contractDescribe('platform Cloudflare provisioning boundary', () => {
         ...(body ? { body } : {}),
       });
 
-      if (request.method === 'GET' && parsedUrl.pathname.endsWith('/accounts/acct1/rules/lists')) {
-        return createJsonResponse([{ id: 'list_123', name: 'mcp_allowed_ips', kind: 'ip' }]);
-      }
       if (request.method === 'GET' && parsedUrl.pathname.endsWith('/zones/zone_123/rulesets/ruleset_123')) {
         return createJsonResponse({
           id: 'ruleset_123',
@@ -299,7 +296,6 @@ contractDescribe('platform Cloudflare provisioning boundary', () => {
       blockRule: { status: 'created' },
     });
     expect(calls.map((call) => `${call.method} ${call.path}`)).toEqual([
-      'GET /client/v4/accounts/acct1/rules/lists',
       'GET /client/v4/zones/zone_123/rulesets/ruleset_123',
       'POST /client/v4/zones/zone_123/rulesets/ruleset_123/rules',
       'POST /client/v4/zones/zone_123/rulesets/ruleset_123/rules',
@@ -414,7 +410,6 @@ contractDescribe('platform Cloudflare provisioning boundary', () => {
       'GET /client/v4/accounts/acct1/rules/lists',
       'GET /chatgpt-connectors.json',
       'POST /client/v4/accounts/acct1/rules/lists/list_123/items',
-      'GET /client/v4/accounts/acct1/rules/lists',
       'GET /client/v4/zones/zone_123/rulesets/ruleset_123',
       'POST /client/v4/zones/zone_123/rulesets/ruleset_123/rules',
       'POST /client/v4/zones/zone_123/rulesets/ruleset_123/rules',

@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-chatgpt-cimd-oauth-reconnect-on-cloudflare",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1974,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1974",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1974",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1974/fix-chatgpt-cimd-oauth-reconnect-on-cloudflare",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1974",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1974/fix-chatgpt-cimd-oauth-reconnect-on-cloudflare",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-chatgpt-cimd-oauth-reconnect-on-cloudflare",
+  "taskSession": "tsk_d12e38b72b8c",
+  "tmuxSession": "opensaas-os-fix-chatgpt-cimd-oauth-reconnect-on-cloudflare-d12e38b7",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-chatgpt-cimd-oauth-reconnect-on-cloudflare/.task/os/fix-chatgpt-cimd-oauth-reconnect-on-cloudflare/session.json",
+  "createdAt": "2026-08-14T22:29:05.207Z"
+}

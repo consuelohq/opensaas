@@ -50,6 +50,7 @@ import { validateBundledSkills } from './skills';
 import { STANDARD_OS_MCP_SCOPES } from './tool-scope-authorization';
 import { planWorkspaceConnectorTransport } from './workspace-connector-transport';
 import { PLACEHOLDER_NODE_ID } from './unenrolled-placeholder-identity';
+import { resolveWorkerPoolConfiguration } from './worker-pool';
 
 export type OsMode = 'local' | 'cloud';
 export type { AgentName, AgentConnectionStatus } from './local-agent-connectivity';
@@ -72,6 +73,7 @@ export type WorkspaceBootstrap = {
   workspaceId: string;
   workspaceSlug: string;
   workspaceHost: string;
+  accountEmail?: string;
   connectorId: string;
   connectorTransport: 'cloudflare-tunnel' | 'websocket-relay';
   nodeId?: string;
@@ -125,6 +127,7 @@ export type OsConfig = {
 export type ProvisionOptions = {
   home?: string;
   userHome?: string;
+  recoveryPackageRoot?: string;
   mode?: OsMode;
   port?: number;
   dryRun?: boolean;
@@ -141,7 +144,6 @@ export type ProvisionAction = {
     | 'preserve_file'
     | 'connect_agent'
     | 'skip_agent'
-    | 'seed_steering'
     | 'seed_skill'
     | 'seed_tool'
     | 'seed_operator'
@@ -538,9 +540,14 @@ function materializeVisibleUserRoot(input: {
   return actions;
 }
 
-function materializeLifecycleCommand(
+function shellSingleQuoted(value: string): string {
+  return `'${value.replaceAll("'", `'"'"'`)}'`;
+}
+
+export function materializeLifecycleCommand(
   home: string,
   dryRun: boolean,
+  options: { recoveryPackageRoot?: string } = {},
 ): ProvisionAction[] {
   const commandPath = path.join(home, 'bin', 'consuelo');
   const source = [
@@ -549,6 +556,7 @@ function materializeLifecycleCommand(
     'OS_HOME="${CONSUELO_HOME:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"',
     'BUN_EXECUTABLE="${BUN_BIN:-}"',
     'PACKAGE_ROOT="${CONSUELO_OS_PACKAGE_ROOT:-}"',
+    `RECOVERY_PACKAGE_ROOT=${shellSingleQuoted(options.recoveryPackageRoot?.trim() ?? '')}`,
     'if [ -f "$OS_HOME/.env" ]; then',
     '  while IFS= read -r line || [ -n "$line" ]; do',
     '    case "$line" in',
@@ -562,6 +570,8 @@ function materializeLifecycleCommand(
     '  LIFECYCLE_SCRIPT="$PACKAGE_ROOT/scripts/lifecycle.ts"',
     'elif [ -f "$OS_HOME/runtime/current/scripts/lifecycle.ts" ]; then',
     '  LIFECYCLE_SCRIPT="$OS_HOME/runtime/current/scripts/lifecycle.ts"',
+    'elif [ -n "$RECOVERY_PACKAGE_ROOT" ] && [ -f "$RECOVERY_PACKAGE_ROOT/scripts/lifecycle.ts" ]; then',
+    '  LIFECYCLE_SCRIPT="$RECOVERY_PACKAGE_ROOT/scripts/lifecycle.ts"',
     'fi',
     'if [ ! -f "$LIFECYCLE_SCRIPT" ]; then',
     '  echo "OS lifecycle runtime is not installed. Run: curl -fsSL https://install.consuelohq.com/os | bash" >&2',
@@ -608,9 +618,21 @@ function materializeLifecycleCommand(
         ? 'created'
         : 'updated';
   if (!dryRun && existing !== source) {
-    fs.mkdirSync(path.dirname(commandPath), { recursive: true });
-    fs.writeFileSync(commandPath, source, { mode: 0o755 });
-    fs.chmodSync(commandPath, 0o755);
+    const commandDirectory = path.dirname(commandPath);
+    fs.mkdirSync(commandDirectory, { recursive: true });
+    const stagingDirectory = fs.mkdtempSync(path.join(commandDirectory, '.consuelo-lifecycle-'));
+    const stagedCommandPath = path.join(stagingDirectory, 'consuelo');
+    try {
+      fs.writeFileSync(stagedCommandPath, source, { mode: 0o755 });
+      fs.chmodSync(stagedCommandPath, 0o755);
+      fs.renameSync(stagedCommandPath, commandPath);
+    } finally {
+      try {
+        fs.rmSync(stagingDirectory, { recursive: true, force: true });
+      } catch {
+        // Best-effort cleanup must not mask the write/rename result.
+      }
+    }
   }
   return [{
     type: 'create_file',
@@ -1071,6 +1093,9 @@ function materializeWorkspaceConnectorBootstrap(input: {
           'https://os.consuelohq.com',
         osHome: input.runtimeHome,
         workspaceId: input.workspaceBootstrap.workspaceId,
+        ...(input.workspaceBootstrap.accountEmail
+          ? { accountEmail: input.workspaceBootstrap.accountEmail }
+          : {}),
         nodeId: input.workspaceBootstrap.nodeId,
         connectorStatus: 'disconnected',
         connectorHealthUrl,
@@ -1163,6 +1188,45 @@ function materializeWorkspaceConnectorBootstrap(input: {
 export function loadOsConfig(home?: string): OsConfig | null {
   const resolvedHome = resolveOsHome(home);
   return readJsonFile<OsConfig>(path.join(resolvedHome, 'config.json'));
+}
+
+export function updateSelectedSkillSelection(input: {
+  home?: string;
+  visibleUserRoot?: string;
+  selectedSkills: readonly string[];
+}): {
+  home: string;
+  configPath: string;
+  selectedSkills: string[];
+  actions: ReturnType<typeof provisionManagedComponentIndexes>;
+} {
+  const home = resolveOsHome(input.home);
+  const configPath = path.join(home, 'config.json');
+  const config = loadOsConfig(home);
+  if (!config) {
+    throw new Error(
+      `Consuelo OS is not installed at ${home}. Run consuelo install first.`,
+    );
+  }
+
+  const selectedSkills = normalizeSelectedSkillNames(input.selectedSkills);
+  const generatedAt = nowIso();
+  const visibleUserRoot = path.resolve(
+    input.visibleUserRoot ?? path.join(os.homedir(), 'Consuelo'),
+  );
+  const actions = provisionManagedComponentIndexes({
+    home,
+    selectedSkills,
+    dryRun: false,
+    generatedAt,
+    userRoot: visibleUserRoot,
+  });
+
+  config.selectedSkills = selectedSkills;
+  config.updatedAt = generatedAt;
+  writeJsonFile(configPath, config, false);
+
+  return { home, configPath, selectedSkills, actions };
 }
 
 export function detectAgents(
@@ -1671,7 +1735,9 @@ export function provisionLocalOs(
   }
 
   actions.push(...materializeVisibleUserRoot({ userRoot, dryRun }));
-  actions.push(...materializeLifecycleCommand(home, dryRun));
+  actions.push(...materializeLifecycleCommand(home, dryRun, {
+    recoveryPackageRoot: options.recoveryPackageRoot,
+  }));
 
   let config = readJsonFile<OsConfig>(configPath);
   if (config) {
@@ -1819,12 +1885,17 @@ export function provisionLocalOs(
   }
 
   if (!dryRun) {
+    const workerPoolConfiguration = resolveWorkerPoolConfiguration({
+      ...process.env,
+      CONSUELO_OS_PORT: String(gatewayPort),
+    });
     const gatewayConfig = createGatewaySecurityConfig({
       home: layout.nodeDir,
       workspaceId: workspaceIdentity.workspaceId,
       workspaceSlug: workspaceIdentity.workspaceSlug,
       workspaceHost: workspaceIdentity.workspaceHost,
       upstreamPort: gatewayPort,
+      upstreamPorts: workerPoolConfiguration.workerPorts,
       ingressPort: DEFAULT_INGRESS_PORT,
       ...(workspaceBootstrap?.nodeId && workspaceBootstrap.edgeRequestSigningSecret
         ? {
@@ -2069,6 +2140,36 @@ export async function runDoctor(home?: string): Promise<DoctorResult> {
     });
   }
 
+  if (process.platform === 'darwin') {
+    const legacyRetirementScript = path.join(
+      PACKAGE_ROOT,
+      'scripts',
+      'retire-legacy-system-daemons.sh',
+    );
+    if (!fs.existsSync(legacyRetirementScript)) {
+      checks.push({
+        name: 'legacy-system-daemons',
+        status: 'unhealthy',
+        message: 'legacy system-daemon retirement adapter is missing',
+      });
+    } else {
+      const legacy = Bun.spawnSync(['bash', legacyRetirementScript, '--check'], {
+        stdout: 'pipe',
+        stderr: 'pipe',
+      });
+      const stdout = legacy.stdout.toString().trim();
+      const stderr = legacy.stderr.toString().trim();
+      checks.push({
+        name: 'legacy-system-daemons',
+        status: legacy.exitCode === 0 ? 'connected' : 'unhealthy',
+        message: legacy.exitCode === 0
+          ? (stdout || 'no legacy root Consuelo LaunchDaemons found')
+          : legacy.exitCode === 2
+            ? `Legacy root Consuelo LaunchDaemons remain. Run once: sudo bash '${legacyRetirementScript}' --apply`
+            : (stderr || stdout || 'legacy system-daemon check exited ' + String(legacy.exitCode)),
+      });
+    }
+  }
   const skillIssues = validateBundledSkills();
   checks.push({
     name: 'skills',

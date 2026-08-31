@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/atomically-replace-lifecycle-recovery-wrapper",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2265,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2265",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-atomically-replace-lifecycle-recovery-wrapper",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_9d654c58dd14",
+  "tmuxSession": "opensaas-os-atomically-replace-lifecycle-recovery-wrapper-9d654c58",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-atomically-replace-lifecycle-recovery-wrapper/.task/session.json",
+  "createdAt": "2026-08-29T01:07:01.605Z"
+}

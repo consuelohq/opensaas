@@ -1,3 +1,4 @@
+import type { McpNodeRoutingContext } from '../../lib/mcp-node-routing';
 import { loadOsRuntime } from './os-runtime';
 
 export async function readLocalOsSteering(): Promise<string> {
@@ -9,10 +10,16 @@ export async function readLocalOsSteering(): Promise<string> {
   }
 }
 
-export async function readGuardedLocalOsSteering(callerKey: string): Promise<string> {
+export async function readGuardedLocalOsSteering(
+  callerKey: string,
+  nodeRouting?: McpNodeRoutingContext,
+): Promise<string> {
   try {
-    const { executeGetSteering } = await loadOsRuntime();
-    return executeGetSteering(undefined, { callerKey });
+    const { executeGetSteering, getSteering } = await loadOsRuntime();
+    return executeGetSteering(
+      () => getSteering({ nodeRouting }),
+      { callerKey },
+    );
   } catch (error: unknown) {
     throw error instanceof Error ? error : new Error('OS steering failed.');
   }

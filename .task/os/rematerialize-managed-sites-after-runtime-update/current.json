@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/rematerialize-managed-sites-after-runtime-update",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1885,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1885",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1885",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1885/rematerialize-managed-sites-after-runtime-update",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1885",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1885/rematerialize-managed-sites-after-runtime-update",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-rematerialize-managed-sites-after-runtime-update",
+  "taskSession": "tsk_465ccb73d61d",
+  "tmuxSession": "opensaas-os-rematerialize-managed-sites-after-runtime-update-465ccb73",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-rematerialize-managed-sites-after-runtime-update/.task/os/rematerialize-managed-sites-after-runtime-update/session.json",
+  "createdAt": "2026-08-12T04:52:05.477Z"
+}

@@ -54,4 +54,4 @@ COPY --from=runtime-dependencies /app/node_modules ./node_modules
 
 EXPOSE 46321
 
-CMD ["bun", "./scripts/server/main.ts"]
+CMD ["bun", "./scripts/server/supervisor.ts"]

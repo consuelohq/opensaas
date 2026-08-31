@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_1c715e6aba15",
+  "tmuxSession": "opensaas-workspace-agents-stabilize-worker-pool-process-contract-for-linux-1c715e6a",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/stabilize-worker-pool-process-contract-for-linux-ci",
+  "branch": "task/workspace-agents/stabilize-worker-pool-process-contract-for-linux-ci",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-stabilize-worker-pool-process-contract-for-linux-ci",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-stabilize-worker-pool-process-contract-for-linux-ci",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2238,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2238",
+  "createdAt": "2026-08-27T01:17:40.614Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-stabilize-worker-pool-process-contract-for-linux-ci/.task/workspace-agents/stabilize-worker-pool-process-contract-for-linux-ci/session.json"
+}

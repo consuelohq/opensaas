@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/align-mcp-oauth-canonical-routing-for-stream-sync",
+  "events": [
+    {
+      "id": "61e42150-a9ce-4583-b11c-f1222efd1b01",
+      "occurred_at": "2026-08-15T01:24:48.464Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/os-device-authority-worker.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/align-mcp-oauth-canonical-routing-for-stream-sync",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/align-mcp-oauth-canonical-routing-for-stream-sync"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-15T01:24:48.545Z"
+}

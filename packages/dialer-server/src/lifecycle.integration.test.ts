@@ -166,6 +166,8 @@ describe('dialer-server in-memory lifecycle', () => {
       handleStatusCallback: (input) =>
         processProviderCallback(input).pipe(Effect.provide(coreLayer)),
       getGroupIdForCall,
+      startCallRecording: () =>
+        Effect.succeed({ recordingSid: 'RE_test', status: 'in-progress' }),
       getGroup: (groupId) =>
         getCallSession(groupId).pipe(Effect.provide(coreLayer)),
       getReleasableNumbers: (group) =>
@@ -223,9 +225,9 @@ describe('dialer-server in-memory lifecycle', () => {
     };
     const runtime: DialerCallRuntimeService = {
       assertSafeTargetsAllowed: () => Effect.void,
-      resolveCallerIds: ({ targetCount }) =>
+      resolveCallerIds: ({ targets }) =>
         Effect.succeed(
-          numbers.slice(0, targetCount).map((number) => number.phoneNumber),
+          numbers.slice(0, targets.length).map((number) => number.phoneNumber),
         ),
       initiateProviderCalls: (input) =>
         Effect.gen(function* () {

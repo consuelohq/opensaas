@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/align-device-authority-observability-config",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1919,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1919",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1919",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1919/align-device-authority-observability-config",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1919",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1919/align-device-authority-observability-config",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-align-device-authority-observability-config",
+  "taskSession": "tsk_259015d76fc8",
+  "tmuxSession": "opensaas-os-align-device-authority-observability-config-259015d7",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-align-device-authority-observability-config/.task/os/align-device-authority-observability-config/session.json",
+  "createdAt": "2026-08-13T21:15:23.876Z"
+}

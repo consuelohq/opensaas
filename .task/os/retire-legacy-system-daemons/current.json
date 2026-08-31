@@ -1,0 +1,15 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/retire-legacy-system-daemons",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1928,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1928",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-retire-legacy-system-daemons",
+  "taskSession": "tsk_c7a753a7f1bc",
+  "tmuxSession": "opensaas-os-retire-legacy-system-daemons-c7a753a7",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-retire-legacy-system-daemons/.task/os/retire-legacy-system-daemons/session.json",
+  "createdAt": "2026-08-14T00:00:45.316Z"
+}

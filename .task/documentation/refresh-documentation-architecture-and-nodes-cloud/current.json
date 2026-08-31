@@ -1,0 +1,19 @@
+{
+  "area": "documentation",
+  "stream": "stream/documentation",
+  "taskBranch": "task/documentation/refresh-documentation-architecture-and-nodes-cloud",
+  "baseBranch": "stream/documentation",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1897,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1897",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1897",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1897/refresh-documentation-architecture-and-nodes-cloud",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1897",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1897/refresh-documentation-architecture-and-nodes-cloud",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-refresh-documentation-architecture-and-nodes-cloud",
+  "taskSession": "tsk_0ba3e0e7716b",
+  "tmuxSession": "opensaas-documentation-refresh-documentation-architecture-and-nodes-clo-0ba3e0e7",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-refresh-documentation-architecture-and-nodes-cloud/.task/documentation/refresh-documentation-architecture-and-nodes-cloud/session.json",
+  "createdAt": "2026-08-12T18:58:54.080Z"
+}

@@ -1,0 +1,98 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/dialer/tighten-stripe-billing-grace-semantics",
+  "base": "origin/stream/dialer",
+  "headSha": "19870a734aaf80b033fd12c73a46c2d0ca4f55f3",
+  "changeHash": "82bb0272b28de0a119a68a22c6472f167dc541b30c8402db434c10a15e7f6a51",
+  "changedFiles": [
+    "packages/dialer-server/src/billing/application.ts",
+    "packages/dialer-server/src/commercial-application.acceptance.test.ts",
+    "packages/dialer-server/src/commercial.acceptance.test.ts",
+    "packages/dialer-server/src/commercial/application.ts"
+  ],
+  "verifiedAt": "2026-08-10T02:06:17.340Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/dialer/tighten-stripe-billing-grace-semantics/current.json",
+        ".task/dialer/tighten-stripe-billing-grace-semantics/evidence-log.json",
+        ".task/dialer/tighten-stripe-billing-grace-semantics/read-log.json",
+        ".task/dialer/tighten-stripe-billing-grace-semantics/session.json",
+        ".task/dialer/tighten-stripe-billing-grace-semantics/workpad.md",
+        ".task/tasks/dialer/tighten-stripe-billing-grace-semantics.json",
+        "packages/dialer-server/src/billing/application.ts",
+        "packages/dialer-server/src/commercial-application.acceptance.test.ts",
+        "packages/dialer-server/src/commercial.acceptance.test.ts",
+        "packages/dialer-server/src/commercial/application.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "dialer-server-package",
+          "critical": true,
+          "reason": "Dialer server changes must prove Hono transport, Twilio boundary, and standalone lifecycle contracts.",
+          "matchedFiles": [
+            "packages/dialer-server/src/billing/application.ts",
+            "packages/dialer-server/src/commercial-application.acceptance.test.ts",
+            "packages/dialer-server/src/commercial.acceptance.test.ts",
+            "packages/dialer-server/src/commercial/application.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "dialer-server Hono contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-server/src"
+          ],
+          "ruleId": "dialer-server-package",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "dialer-server Hono contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-server/src"
+          ],
+          "ruleId": "dialer-server-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 386,
+          "outputTail": "aler-server/src/runtime/embed-session.test.ts:\n(pass) dialer-server embed sessions > issues a short-lived token that authenticates the original workspace and user [0.28ms]\n(pass) dialer-server embed sessions > rejects expired, malformed, and tampered tokens [0.08ms]\n(pass) dialer-server embed sessions > binds sessions to installation and location and revalidates them on every request [0.08ms]\n\npackages/dialer-server/src/runtime/twilio-provider-mode.test.ts:\n(pass) Twilio provider test mode > selects test credentials without exposing the live credential pair [0.03ms]\n(pass) Twilio provider test mode > requires and preserves the exact no-carrier Twilio test From number [0.04ms]\n(pass) Twilio provider test mode > passes the magic From number unchanged into the provider group request [0.04ms]\n(pass) Twilio provider test mode > does not claim carrier delivery or callbacks for test credentials\n\npackages/dialer-server/src/runtime/railway.test.ts:\n(pass) LeadConnector dialer learning > records an atomic attempt and outcome for every completed carrier leg [0.12ms]\n(pass) LeadConnector dialer learning > does not fail carrier callback handling when learning persistence is unavailable [0.05ms]\n(pass) Railway dialer-server runtime composition > selects the test dialer for follow-up operations on test-mode groups [0.12ms]\n(pass) Railway dialer-server runtime composition > keeps existing groups without a provider mode on the live dialer [0.04ms]\n(pass) Railway dialer-server runtime composition > fails closed when a test-mode group outlives its test credentials [0.04ms]\n(pass) Railway dialer-server runtime composition > composes durable LeadConnector configuration and encrypted installation storage [1.36ms]\n(pass) Railway dialer-server runtime composition > ranks predictive LeadConnector targets with shared model data before fanout [2.46ms]\n(pass) Railway dialer-server runtime composition > ranks predictive targets from LeadConnector learned outcomes without Twenty model rows [0.47ms]\n(pass) Railway dialer-server runtime composition > starts a mock standalone call session without Twenty or the compatibility API [0.40ms]\n\npackages/dialer-server/src/runtime/lead-connector-learning.test.ts:\n(pass) LeadConnector learning initialization > creates the attempt ledger before the outcome model tables [0.09ms]\n\npackages/dialer-server/src/call-operations/application.test.ts:\n(pass) Effect call-operations transcription application > keeps inbound and outbound buffers separate and persists provider metadata only [1.16ms]\n(pass) Effect call-operations transcription application > processes duplicate frames once and flushes a terminal remainder once [0.19ms]\n(pass) Effect call-operations transcription application > keeps transcript rows idempotent when a provider stream reconnects [0.22ms]\n(pass) Effect call-operations transcription application > marks transcription failed on provider timeout without failing the call boundary [22.43ms]\n(pass) Effect call-operations transcription application > does not begin provider work when workspace transcription is disabled [0.07ms]\n\npackages/dialer-server/src/call-operations/persistence.test.ts:\n(pass) call-operations persistence > initializes canonical workspace settings, sessions, legs, segments, and transfer-compatible events [0.13ms]\n(pass) call-operations persistence > uses a workspace-scoped idempotent insert for transcript metadata [0.16ms]\n(pass) call-operations persistence > atomically upserts the canonical session and all provider legs [0.13ms]\n(pass) call-operations persistence > persists recording provider metadata without retaining a raw recording URL [0.07ms]\n\npackages/dialer-server/src/call-operations/groq.test.ts:\n(pass) Groq speech-to-text adapter > uses the OpenAI-compatible audio endpoint and returns provider-grounded metadata [0.28ms]\n(pass) Groq speech-to-text adapter > fails closed when credentials are absent [0.08ms]\n\n 126 pass\n 0 fail\n 642 expect() calls\nRan 126 tests across 26 files. [379.00ms]\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

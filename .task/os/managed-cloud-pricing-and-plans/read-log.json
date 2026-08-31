@@ -1,0 +1,8 @@
+{
+  "files": [
+    ".task/os/managed-cloud-pricing-and-plans/workpad.md",
+    "packages/os/package.json",
+    "packages/os/tests/managed-cloud-node-instance-contract.test.ts"
+  ],
+  "updatedAt": "2026-08-12T03:56:19.965Z"
+}

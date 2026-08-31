@@ -23,6 +23,7 @@ const {
 } = require('./lib/paths');
 const { assertStreamBranchName, getDefaultStreamBranch, normalizeArea } = require('./lib/validation');
 const { isOnlyTaskMetadataConflict, resolveTaskMetadataConflicts } = require('./lib/task-meta');
+const { linkTaskWorktreeNodeModules } = require('./lib/task-node-modules');
 
 function writeStdout(value = '') {
   process.stdout.write(`${value}\n`);
@@ -95,6 +96,16 @@ function createTemporaryStreamWorktree(repoRoot, streamBranch) {
   const worktreePath = fs.mkdtempSync(path.join(worktreeRoot, `${toWorktreeDirectoryName(streamBranch)}-sync-`));
   createWorktree(repoRoot, worktreePath, streamBranch);
   return worktreePath;
+}
+
+function resolveMainWorktreeRoot(repoRoot) {
+  const output = runGit(['worktree', 'list', '--porcelain'], { cwd: repoRoot });
+  const blocks = output.split(/\n\n+/).filter(Boolean);
+  const mainBlock = blocks.find((block) => block.includes(`branch refs/heads/${DEFAULT_MAIN_BRANCH}`));
+  const worktreeLine = (mainBlock || blocks[0] || '')
+    .split('\n')
+    .find((line) => line.startsWith('worktree '));
+  return worktreeLine ? worktreeLine.slice('worktree '.length) : repoRoot;
 }
 
 function runMerge(worktreePath, mainBranch) {
@@ -238,6 +249,11 @@ async function main() {
 
   ensureWorktreeClean(worktreePath, `${streamBranch} worktree`);
   runGit(['-C', worktreePath, 'reset', '--hard', `origin/${streamBranch}`], { cwd: repoRoot });
+  linkTaskWorktreeNodeModules({
+    repoRoot: resolveMainWorktreeRoot(repoRoot),
+    worktreePath,
+    writeStderr,
+  });
 
   const mergeResult = runMerge(worktreePath, DEFAULT_MAIN_BRANCH);
   const mergeOutput = [mergeResult.stdout, mergeResult.stderr].filter(Boolean).join('\n').trim();

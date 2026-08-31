@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_034dc088bb30",
+  "tmuxSession": "opensaas-os-cloud-first-auth-onboarding-034dc088",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/cloud-first-auth-onboarding",
+  "branch": "task/os/cloud-first-auth-onboarding",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-cloud-first-auth-onboarding",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-cloud-first-auth-onboarding",
+  "prNumber": 1951,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1951",
+  "createdAt": "2026-08-14T09:00:31.545Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-cloud-first-auth-onboarding/.task/os/cloud-first-auth-onboarding/session.json"
+}

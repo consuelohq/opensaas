@@ -1,0 +1,19 @@
+{
+  "area": "documentation",
+  "stream": "stream/documentation",
+  "taskBranch": "task/documentation/tighten-responsive-browse-menu-toward-vercel",
+  "baseBranch": "stream/documentation",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2022,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2022",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2022",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2022/tighten-responsive-browse-menu-toward-vercel",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2022",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2022/tighten-responsive-browse-menu-toward-vercel",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-tighten-responsive-browse-menu-toward-vercel",
+  "taskSession": "tsk_43337e757b25",
+  "tmuxSession": "opensaas-documentation-tighten-responsive-browse-menu-toward-vercel-43337e75",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-tighten-responsive-browse-menu-toward-vercel/.task/documentation/tighten-responsive-browse-menu-toward-vercel/session.json",
+  "createdAt": "2026-08-15T04:41:19.479Z"
+}

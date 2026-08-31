@@ -1,0 +1,88 @@
+---
+title: Routing work
+description: Understand default, explicit, and task-owned node routing and what happens when a node is unavailable.
+status: preview
+verifiedAt: 2026-08-12
+evidence:
+  - source: packages/os/cloudflare/os-device-authority/src/app.ts
+    tests:
+      - packages/os/tests/workspace-node-registry-routing.test.ts
+      - packages/os/tests/mcp-gateway.test.ts
+    runtime: Default, explicit, and task-owned routing plus mismatch and offline failures were verified on 2026-08-12.
+  - source: packages/os/scripts/os.ts
+    tests:
+      - packages/os/tests/os-get-steering-trace.test.ts
+      - packages/os/tests/trace-persistence.test.ts
+    runtime: Node-routing context in steering and traces was verified on 2026-08-12.
+---
+
+Consuelo chooses a node in three layers: **task owner first, explicit choice second, workspace default last.** The result is predictable routing without silently moving stateful work between computers.
+
+## The routing order
+
+| Route source | When it applies | What Consuelo does |
+| --- | --- | --- |
+| `task` | The call belongs to a task that already owns a node. | Keep the call on that owning node. |
+| `explicit` | The caller requests a specific node and no task ownership conflicts with it. | Route to that requested node. |
+| `default` | No task owner and no explicit node were supplied. | Route to the workspace default node. |
+
+This distinction matters because nodes can have different files and capabilities.
+
+## Default routing: where new work starts
+
+When an agent makes an untargeted OS call, Consuelo resolves it to the workspace `defaultNodeId`.
+
+You can change the default from the **Nodes** screen:
+
+1. Find an active node that is online.
+2. Choose **Make default**.
+3. Wait for the confirmation that the workspace default was updated.
+
+The new choice applies to new untargeted calls. It does not rewrite the history or ownership of work that already started elsewhere.
+
+## Explicit routing: choose this node
+
+A caller can deliberately request a node for work that must run there. Consuelo verifies that the requested node belongs to the same workspace and is eligible to receive the call.
+
+Explicit routing is useful when the capability itself tells you where work belongs—for example, “read the files on my office Mac” or “run this on the managed cloud node.”
+
+If multiple routing hints conflict, Consuelo rejects the request instead of guessing. That failure is surfaced as `NODE_ROUTE_MISMATCH` or, for task ownership conflicts, `TASK_NODE_MISMATCH`.
+
+## Task routing: keep stateful work where it started
+
+A successful `task.start` binds that task session to the node that ran it. Follow-up calls carrying the same `taskSession` continue to that owner.
+
+This remains true even if you change the workspace default afterward.
+
+```text
+Task starts on Node A
+  → Node A owns the task
+Default changes to Node B
+  → new untargeted work can use Node B
+  → the existing task still uses Node A
+```
+
+The rule protects state that cannot safely teleport between nodes: an isolated worktree, local files, a process, or other node-local runtime state.
+
+A successful `task.finish` releases the task affinity. If finishing fails, the ownership is kept so the next call does not accidentally jump to a different node.
+
+## Offline nodes fail closed
+
+If the exact node required by an explicit or task-owned route is offline, Consuelo returns `WORKSPACE_NODE_OFFLINE`. It does **not** silently fall back to a different node.
+
+That is intentional. Another node might be healthy but still lack the files, credentials, branch, process, or local network that the work depends on.
+
+For task-owned work, bring the owner back online or deliberately finish/restart the work. For new untargeted work, choose an online default and retry.
+
+## See why a call went there
+
+Steering and trace records can carry the routing context Consuelo used, including the requested node, resolved node, current/default node, node presence, and route source.
+
+When debugging, ask these questions in order:
+
+1. Was this call part of an existing task?
+2. Did the caller explicitly request a node?
+3. Which node was the workspace default at that moment?
+4. Was the resolved node online?
+
+Use [Traces](/observe/traces/) to inspect the recorded answer instead of inferring routing from where you expected the work to run.

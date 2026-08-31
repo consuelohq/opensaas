@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_cf493c11b9b1",
+  "tmuxSession": "opensaas-os-os-replica-correctness-cf493c11",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/os-replica-correctness",
+  "branch": "task/os/os-replica-correctness",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-os-replica-correctness",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-os-replica-correctness",
+  "prNumber": 1836,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1836",
+  "createdAt": "2026-08-11T20:53:36.703Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-os-replica-correctness/.task/os/os-replica-correctness/session.json"
+}

@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/eliminate-mcp-transport-outages-during-os-updates",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2086,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2086",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2086",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2086/eliminate-mcp-transport-outages-during-os-updates",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2086",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2086/eliminate-mcp-transport-outages-during-os-updates",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-eliminate-mcp-transport-outages-during-os-updates",
+  "taskSession": "tsk_93c047b187f3",
+  "tmuxSession": "opensaas-os-eliminate-mcp-transport-outages-during-os-update-93c047b1",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-eliminate-mcp-transport-outages-during-os-updates/.task/os/eliminate-mcp-transport-outages-during-os-updates/session.json",
+  "createdAt": "2026-08-16T02:02:00.816Z"
+}

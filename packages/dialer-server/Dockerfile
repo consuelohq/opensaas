@@ -1,4 +1,4 @@
-FROM node:22-bookworm-slim AS dependencies
+FROM node:24-bookworm-slim AS dependencies
 WORKDIR /app
 RUN corepack enable
 COPY . .
@@ -7,6 +7,9 @@ RUN yarn install --immutable
 FROM oven/bun:1.3.14 AS build
 WORKDIR /app
 COPY --from=dependencies /app /app
+RUN bun run --cwd packages/logger build
+RUN bun run --cwd packages/dialer build
+RUN bun run --cwd packages/lead-connector build
 RUN bun run --cwd packages/dialer-server build
 
 FROM debian:bookworm-slim AS runtime

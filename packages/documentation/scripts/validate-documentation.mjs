@@ -6,7 +6,6 @@ const selectedSlugs = [
   'start/install-consuelo-os',
   'start/create-a-workspace',
   'start/connect-your-first-agent',
-  'start/local-and-consuelo-cloud',
   'start/core-concepts',
   'connect/index',
   'connect/agents/chatgpt',
@@ -15,11 +14,7 @@ const selectedSlugs = [
   'connect/agents/cursor',
   'connect/agents/opencode',
   'connect/agents/gemini',
-  'connect/agents/other-agents',
-  'connect/nodes/how-nodes-work',
-  'connect/nodes/home-node',
-  'connect/nodes/local-nodes',
-  'connect/nodes/cloud-nodes',
+  'connect/agents/create-your-own',
   'connect/apps-and-services/index',
   'connect/apps-and-services/google-workspace',
   'connect/apps-and-services/gmail',
@@ -41,17 +36,33 @@ const selectedSlugs = [
   'connect/apps-and-services/hubspot',
   'connect/apps-and-services/stripe',
   'connect/apps-and-services/twilio',
-  'connect/apps-and-services/additional-services',
+  'connect/apps-and-services/create-your-own',
+  'nodes/index',
+  'nodes/local',
+  'nodes/cloud',
+  'nodes/routing',
   'build/index',
   'build/tools/how-tools-work',
   'build/tools/workspace',
   'build/tools/browser',
-  'build/tools/office',
+  'build/tools/artifacts',
   'build/tools/media',
   'build/skills/how-skills-work',
   'build/skills/install-a-skill',
   'build/skills/create-a-skill',
   'build/skills/skill-structure',
+  'build/skills/bundled/index',
+  'build/skills/bundled/artifacts',
+  'build/skills/bundled/branch',
+  'build/skills/bundled/browser',
+  'build/skills/bundled/debugger',
+  'build/skills/bundled/handoff',
+  'build/skills/bundled/research-ingest',
+  'build/skills/bundled/senior-engineer',
+  'build/skills/bundled/sites',
+  'build/skills/bundled/skill-creator',
+  'build/skills/bundled/task',
+  'build/skills/bundled/teach',
   'build/steering/how-steering-works',
   'build/steering/workspace-steering',
   'build/steering/project-steering',
@@ -95,6 +106,21 @@ const selectedSlugs = [
   'reference/environment-variables',
   'reference/urls-and-ports',
   'reference/glossary',
+  'tools/subagents',
+];
+
+const removedSlugs = [
+  'os/overview',
+  'os/how-it-works',
+  'os/getting-started/install',
+  'os/getting-started/connect-agents',
+  'os/getting-started/workspace-launcher',
+  'os/concepts/local-and-cloud',
+  'start/local-and-consuelo-cloud',
+  'connect/nodes/how-nodes-work',
+  'connect/nodes/home-node',
+  'connect/nodes/local-nodes',
+  'connect/nodes/cloud-nodes',
   'user-guide/user-stories-use-cases',
   'user-guide/getting-started/capabilities/implementation-services',
   'user-guide/getting-started/capabilities/glossary',
@@ -111,15 +137,6 @@ const selectedSlugs = [
   'developers/api/graphql',
   'developers/api/contacts',
   'developers/api/voice',
-];
-
-const removedSlugs = [
-  'os/overview',
-  'os/how-it-works',
-  'os/getting-started/install',
-  'os/getting-started/connect-agents',
-  'os/getting-started/workspace-launcher',
-  'os/concepts/local-and-cloud',
   'user-guide/introduction',
   'user-guide/getting-started/capabilities/what-is-consuelo',
   'user-guide/getting-started/how-tos/create-workspace',
@@ -203,7 +220,7 @@ assert(
   Boolean(packageJson.scripts?.['test:translation']),
   'package must expose test:translation script',
 );
-for (const script of ['test:foundation', 'test:start', 'test:connect', 'test:connect-browser', 'test:build', 'test:build-browser', 'test:sites', 'test:sites-browser', 'test:observe', 'test:observe-browser', 'test:secure', 'test:secure-browser', 'test:reference', 'test:reference-browser', 'test:review-cleanup', 'test:browser', 'test:boundary']) {
+for (const script of ['test:foundation', 'test:start', 'test:connect', 'test:connect-browser', 'test:nodes', 'test:build', 'test:build-browser', 'test:sites', 'test:sites-browser', 'test:observe', 'test:observe-browser', 'test:secure', 'test:secure-browser', 'test:reference', 'test:reference-browser', 'test:review-cleanup', 'test:browser', 'test:boundary']) {
   assert(Boolean(packageJson.scripts?.[script]), `package must expose ${script} script`);
 }
 assert(existsSync('bun.lock'), 'bun.lock must exist');
@@ -269,8 +286,8 @@ for (const file of translationInvariantFiles) {
 
 const config = read('astro.config.mjs');
 assert(
-  config.includes("title: 'Consuelo Docs'"),
-  'Starlight title must be Consuelo Docs',
+  config.includes("title: 'Consuelo OS'"),
+  'Starlight title must be Consuelo OS',
 );
 assert(
   config.includes('RuntimeLanguageSelect.astro'),
@@ -280,14 +297,21 @@ const navigation = read('src/lib/docs-navigation.ts');
 for (const required of [
   'Start',
   'Connect',
-  'Build with OS',
-  'Sites',
+  'Nodes',
+  'Tools',
+  'Skills',
+  'Steering',
+  'Memory',
   'Observe',
   'Secure',
   'Reference',
 ]) {
   assert(navigation.includes(`label: '${required}'`), `navigation missing ${required}`);
 }
+assert(
+  !navigation.includes("label: 'Build with OS'"),
+  'Build with OS must not remain a top-level navigation section',
+);
 for (const required of [
   'docsSidebar',
   'customCss',

@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/launcher-local-customization",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1906,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1906",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1906",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1906/launcher-local-customization",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1906",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1906/launcher-local-customization",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-launcher-local-customization",
+  "taskSession": "tsk_f600660994d0",
+  "tmuxSession": "opensaas-os-launcher-local-customization-f6006609",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-launcher-local-customization/.task/os/launcher-local-customization/session.json",
+  "createdAt": "2026-08-13T17:52:41.759Z"
+}

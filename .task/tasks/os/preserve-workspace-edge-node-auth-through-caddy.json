@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/preserve-workspace-edge-node-auth-through-caddy",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1987,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1987",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1987",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1987/preserve-workspace-edge-node-auth-through-caddy",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1987",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1987/preserve-workspace-edge-node-auth-through-caddy",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-preserve-workspace-edge-node-auth-through-caddy",
+  "taskSession": "tsk_3334c6b654b6",
+  "tmuxSession": "opensaas-os-preserve-workspace-edge-node-auth-through-caddy-3334c6b6",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-preserve-workspace-edge-node-auth-through-caddy/.task/os/preserve-workspace-edge-node-auth-through-caddy/session.json",
+  "createdAt": "2026-08-15T02:19:30.373Z"
+}

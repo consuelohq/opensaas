@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/caddy-worker-pool-rolling-reload",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1850,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1850",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1850",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1850/caddy-worker-pool-rolling-reload",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1850",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1850/caddy-worker-pool-rolling-reload",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-caddy-worker-pool-rolling-reload",
+  "taskSession": "tsk_9b0ab3a697de",
+  "tmuxSession": "opensaas-os-caddy-worker-pool-rolling-reload-9b0ab3a6",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-caddy-worker-pool-rolling-reload/.task/os/caddy-worker-pool-rolling-reload/session.json",
+  "createdAt": "2026-08-11T23:41:59.815Z"
+}

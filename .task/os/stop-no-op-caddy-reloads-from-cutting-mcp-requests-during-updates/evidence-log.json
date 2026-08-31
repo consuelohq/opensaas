@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/stop-no-op-caddy-reloads-from-cutting-mcp-requests-during-updates",
+  "events": [
+    {
+      "id": "ca721a01-7ee8-42ec-b05b-e37ed11f601b",
+      "occurred_at": "2026-08-16T04:48:11.872Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/migrations/reconcile-caddy-worker-pool.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/stop-no-op-caddy-reloads-from-cutting-mcp-requests-during-updates",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/stop-no-op-caddy-reloads-from-cutting-mcp-requests-during-updates"
+      }
+    },
+    {
+      "id": "b56c37a4-0359-4a6c-b39d-7d1988a20f9a",
+      "occurred_at": "2026-08-16T04:49:48.187Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/lifecycle-restart-contract.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/stop-no-op-caddy-reloads-from-cutting-mcp-requests-during-updates",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/stop-no-op-caddy-reloads-from-cutting-mcp-requests-during-updates"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-16T04:49:48.246Z"
+}

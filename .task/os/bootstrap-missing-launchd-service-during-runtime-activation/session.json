@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_0240f020dfe5",
+  "tmuxSession": "opensaas-os-bootstrap-missing-launchd-service-during-runtime-0240f020",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/bootstrap-missing-launchd-service-during-runtime-activation",
+  "branch": "task/os/bootstrap-missing-launchd-service-during-runtime-activation",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-bootstrap-missing-launchd-service-during-runtime-activation",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-bootstrap-missing-launchd-service-during-runtime-activation",
+  "prNumber": 1917,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1917",
+  "createdAt": "2026-08-13T20:50:07.962Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-bootstrap-missing-launchd-service-during-runtime-activation/.task/os/bootstrap-missing-launchd-service-during-runtime-activation/session.json"
+}

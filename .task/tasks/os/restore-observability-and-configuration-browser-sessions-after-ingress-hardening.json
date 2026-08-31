@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/restore-observability-and-configuration-browser-sessions-after-ingress-hardening",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1913,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1913",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1913",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1913/restore-observability-and-configuration-browser-sessions-after-ingress-hardening",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1913",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1913/restore-observability-and-configuration-browser-sessions-after-ingress-hardening",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-restore-observability-and-configuration-browser-sessions-after-ingress-hardening",
+  "taskSession": "tsk_d270967a68de",
+  "tmuxSession": "opensaas-os-restore-observability-and-configuration-browser--d270967a",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-restore-observability-and-configuration-browser-sessions-after-ingress-hardening/.task/os/restore-observability-and-configuration-browser-sessions-after-ingress-hardening/session.json",
+  "createdAt": "2026-08-13T19:29:01.554Z"
+}

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_3ff01af6f452",
+  "tmuxSession": "opensaas-os-fix-workspace-edge-d1-release-credential-boundar-3ff01af6",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-workspace-edge-d1-release-credential-boundary",
+  "branch": "task/os/fix-workspace-edge-d1-release-credential-boundary",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-workspace-edge-d1-release-credential-boundary",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-workspace-edge-d1-release-credential-boundary",
+  "prNumber": 2081,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2081",
+  "createdAt": "2026-08-15T19:10:48.636Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-workspace-edge-d1-release-credential-boundary/.task/os/fix-workspace-edge-d1-release-credential-boundary/session.json"
+}

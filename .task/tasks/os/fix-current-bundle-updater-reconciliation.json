@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-current-bundle-updater-reconciliation",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2063,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2063",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2063",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2063/fix-current-bundle-updater-reconciliation",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2063",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2063/fix-current-bundle-updater-reconciliation",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-current-bundle-updater-reconciliation",
+  "taskSession": "tsk_39df36e010a2",
+  "tmuxSession": "opensaas-os-fix-current-bundle-updater-reconciliation-39df36e0",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-current-bundle-updater-reconciliation/.task/os/fix-current-bundle-updater-reconciliation/session.json",
+  "createdAt": "2026-08-15T09:35:02.398Z"
+}

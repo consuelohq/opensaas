@@ -1,0 +1,10 @@
+{
+  "files": [
+    ".task/os/mac-menu-update-badge-and-nodes-ui/verify.json",
+    ".task/os/mac-menu-update-badge-and-nodes-ui/workpad.md",
+    "packages/workspace/scripts/test-selection.js",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "updatedAt": "2026-08-13T20:30:42.352Z"
+}

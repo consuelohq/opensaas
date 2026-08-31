@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_940d00b86641",
+  "tmuxSession": "opensaas-explore-explorebench-baseline-and-trace-report-940d00b8",
+  "area": "explore",
+  "stream": "stream/explore",
+  "taskBranch": "task/explore/explorebench-baseline-and-trace-report",
+  "branch": "task/explore/explorebench-baseline-and-trace-report",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-explore-explorebench-baseline-and-trace-report",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-explore-explorebench-baseline-and-trace-report",
+  "prNumber": 2049,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2049",
+  "createdAt": "2026-08-15T08:25:01.489Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-explore-explorebench-baseline-and-trace-report/.task/explore/explorebench-baseline-and-trace-report/session.json"
+}

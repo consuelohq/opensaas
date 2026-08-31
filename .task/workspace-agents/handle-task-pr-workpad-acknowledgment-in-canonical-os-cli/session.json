@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_5fd156085085",
+  "tmuxSession": "opensaas-workspace-agents-handle-task-pr-workpad-acknowledgment-in-canonic-5fd15608",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/handle-task-pr-workpad-acknowledgment-in-canonical-os-cli",
+  "branch": "task/workspace-agents/handle-task-pr-workpad-acknowledgment-in-canonical-os-cli",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-handle-task-pr-workpad-acknowledgment-in-canonical-os-cli",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-handle-task-pr-workpad-acknowledgment-in-canonical-os-cli",
+  "prNumber": 1861,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1861",
+  "createdAt": "2026-08-12T00:41:30.875Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-handle-task-pr-workpad-acknowledgment-in-canonical-os-cli/.task/workspace-agents/handle-task-pr-workpad-acknowledgment-in-canonical-os-cli/session.json"
+}

@@ -1,0 +1,12 @@
+{
+  "files": [
+    ".github/workflows/consuelo-os-distribution-environments.yaml",
+    "package.json",
+    "packages/os/package.json",
+    "packages/os/tests/distribution/release-channel-workflows.test.ts",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/test-selection.test.js",
+    "yarn.lock"
+  ],
+  "updatedAt": "2026-08-13T21:48:17.979Z"
+}

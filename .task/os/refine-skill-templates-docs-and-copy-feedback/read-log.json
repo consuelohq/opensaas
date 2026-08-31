@@ -1,0 +1,30 @@
+{
+  "files": [
+    ".gitattributes",
+    ".task/os/refine-skill-templates-docs-and-copy-feedback/workpad.md",
+    "packages/documentation/AUTHORING.md",
+    "packages/documentation/README.md",
+    "packages/documentation/package.json",
+    "packages/documentation/scripts/test-build-browser.mjs",
+    "packages/documentation/scripts/test-foundation-browser.mjs",
+    "packages/documentation/src/components/PageTitle.astro",
+    "packages/documentation/src/content/docs/build/skills/bundled/branch.mdx",
+    "packages/documentation/src/content/docs/build/skills/bundled/browser.mdx",
+    "packages/documentation/src/content/docs/build/skills/bundled/research-ingest.mdx",
+    "packages/documentation/src/content/docs/build/skills/bundled/task.mdx",
+    "packages/documentation/src/content/docs/build/skills/install-a-skill.mdx",
+    "packages/documentation/src/lib/docs-navigation.ts",
+    "packages/documentation/tests/build.test.ts",
+    "packages/documentation/tests/foundation.test.ts",
+    "packages/os/scripts/generate-skills-registry.ts",
+    "packages/os/skills/branch/SKILL.md",
+    "packages/os/skills/branch/skill.json",
+    "packages/os/skills/browser/SKILL.md",
+    "packages/os/skills/research-ingest/SKILL.md",
+    "packages/os/skills/skills.json",
+    "packages/os/skills/task/SKILL.md",
+    "packages/os/skills/task/skill.json",
+    "packages/os/tests/skills-registry.test.ts"
+  ],
+  "updatedAt": "2026-08-12T01:48:01.169Z"
+}

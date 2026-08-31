@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_4bbf8c395936",
+  "tmuxSession": "opensaas-dialer-local-dialer-postgres-redis-benchmark-lab-4bbf8c39",
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/local-dialer-postgres-redis-benchmark-lab",
+  "branch": "task/dialer/local-dialer-postgres-redis-benchmark-lab",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-local-dialer-postgres-redis-benchmark-lab",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-local-dialer-postgres-redis-benchmark-lab",
+  "prNumber": 1988,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1988",
+  "createdAt": "2026-08-15T02:22:59.955Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-local-dialer-postgres-redis-benchmark-lab/.task/dialer/local-dialer-postgres-redis-benchmark-lab/session.json"
+}

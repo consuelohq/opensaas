@@ -22,7 +22,7 @@ import { footerSections } from '../lib/docs-navigation';
 </section>
 
 <script>
-  const desktopFooterQuery = window.matchMedia('(min-width: 50rem)');
+  const desktopFooterQuery = window.matchMedia('(min-width: 72rem)');
 
   const placeSiteFooter = () => {
     const footer = document.querySelector('[data-docs-site-footer]');
@@ -120,7 +120,7 @@ import { footerSections } from '../lib/docs-navigation';
       outline: none;
     }
 
-    @media (min-width: 50rem) {
+    @media (min-width: 72rem) {
       :global(.page > .docs-site-footer) {
         margin-top: 0;
       }

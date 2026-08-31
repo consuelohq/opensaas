@@ -2,7 +2,7 @@
 title: Core concepts
 description: Learn the small set of concepts behind every Consuelo OS setup.
 status: preview
-verifiedAt: 2026-07-13
+verifiedAt: 2026-08-12
 evidence:
   - source: packages/os/README.md
     tests:
@@ -13,12 +13,17 @@ evidence:
     tests:
       - packages/os/tests/install-workspace-bootstrap-contract.test.ts
     runtime: Workspace, node, tool, skill, artifact, and trace directories verified on 2026-07-13.
+  - source: packages/os/cloudflare/os-device-authority/src/app.ts
+    tests:
+      - packages/os/tests/workspace-node-registry-routing.test.ts
+      - packages/os/tests/launcher-nodes-control-plane.test.ts
+    runtime: Home enrollment, mutable default-node selection, and current routing behavior were verified from the merged node contracts on 2026-08-12.
 ---
 
 Consuelo OS is easier to understand as one path:
 
 ```text
-agent → workspace → home node → tools and skills → files, artifacts, and traces
+agent → workspace → routed node → tools and skills → files, artifacts, and traces
 ```
 
 ## Workspace
@@ -29,11 +34,11 @@ A workspace is not one chat and is not one agent's private project directory. Mu
 
 ## Node
 
-A **node** is a machine running Consuelo OS for a workspace.
+A **node** is a computer or managed runtime running Consuelo OS for a workspace.
 
-The **home node** is the authoritative runtime for that workspace. A local installation makes the current Mac the home node unless managed provisioning says otherwise. Node-specific configuration, credentials, and the SQLite database live under `node/` and are not treated as shared workspace files.
+The first approved node normally receives the `home` enrollment role. The workspace separately has a **default node** for new untargeted work, while the **current node** is the one handling the request you are looking at. Changing the default does not change which node is `home`.
 
-Later sections distinguish home, local, and Cloud nodes in detail.
+Node-local configuration, credentials, database state, files, and running work are not automatically copied between nodes. Read [Nodes](/nodes/) for local versus cloud nodes and the routing model.
 
 ## Agent
 
@@ -112,7 +117,7 @@ When troubleshooting, ask which layer is failing:
 
 1. **Agent:** did its native MCP config load?
 2. **Connection:** can it complete an MCP handshake?
-3. **Node:** is the home node running and healthy?
+3. **Node:** is the node this request needs online and healthy?
 4. **Workspace:** is the expected workspace active?
 5. **Tool or skill:** is the capability installed and permitted?
 6. **Run:** what does the trace show?

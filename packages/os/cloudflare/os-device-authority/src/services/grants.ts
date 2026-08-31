@@ -337,6 +337,8 @@ export function approvedJson(
   return {
     [TOKEN_KEY]: rand('osat', 32),
     token_type: 'bearer',
+    ...(g.canonicalUserId ? { user_id: g.canonicalUserId } : {}),
+    ...(g.accountEmail ? { account_email: g.accountEmail } : {}),
     workspace_id: workspace.workspaceId,
     workspace_slug: workspace.workspaceSlug,
     workspace_host: workspace.workspaceHost,

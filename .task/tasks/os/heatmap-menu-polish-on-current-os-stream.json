@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/heatmap-menu-polish-on-current-os-stream",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2075,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2075",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2075",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2075/heatmap-menu-polish-on-current-os-stream",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2075",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2075/heatmap-menu-polish-on-current-os-stream",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-heatmap-menu-polish-on-current-os-stream",
+  "taskSession": "tsk_ca7ae2297a11",
+  "tmuxSession": "opensaas-os-heatmap-menu-polish-on-current-os-stream-ca7ae229",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-heatmap-menu-polish-on-current-os-stream/.task/os/heatmap-menu-polish-on-current-os-stream/session.json",
+  "createdAt": "2026-08-15T18:30:18.544Z"
+}

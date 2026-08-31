@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/expose-nodeid-on-public-os-plugin-facade",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2004,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2004",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2004",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2004/expose-nodeid-on-public-os-plugin-facade",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2004",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2004/expose-nodeid-on-public-os-plugin-facade",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-expose-nodeid-on-public-os-plugin-facade",
+  "taskSession": "tsk_f919e26f17f8",
+  "tmuxSession": "opensaas-os-expose-nodeid-on-public-os-plugin-facade-f919e26f",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-expose-nodeid-on-public-os-plugin-facade/.task/os/expose-nodeid-on-public-os-plugin-facade/session.json",
+  "createdAt": "2026-08-15T03:33:58.922Z"
+}

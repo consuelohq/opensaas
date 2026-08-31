@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/sync-os-stream-with-main-and-ship-tracing-polish",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2042,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2042",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2042",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2042/sync-os-stream-with-main-and-ship-tracing-polish",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2042",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2042/sync-os-stream-with-main-and-ship-tracing-polish",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-sync-os-stream-with-main-and-ship-tracing-polish",
+  "taskSession": "tsk_f7ee1bd6e6ba",
+  "tmuxSession": "opensaas-os-sync-os-stream-with-main-and-ship-tracing-polish-f7ee1bd6",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-sync-os-stream-with-main-and-ship-tracing-polish/.task/os/sync-os-stream-with-main-and-ship-tracing-polish/session.json",
+  "createdAt": "2026-08-15T07:32:58.405Z"
+}

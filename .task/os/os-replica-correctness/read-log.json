@@ -1,0 +1,23 @@
+{
+  "files": [
+    ".task/os/os-replica-correctness/workpad.md",
+    "packages/os/manifests/generated/tool.manifest.json",
+    "packages/os/scripts/lib/browser/config.ts",
+    "packages/os/scripts/lib/browser/service.ts",
+    "packages/os/scripts/lib/consuelo-home.ts",
+    "packages/os/scripts/lib/environment-control-plane.ts",
+    "packages/os/scripts/lib/facade/executor.ts",
+    "packages/os/scripts/lib/lifecycle/engine.ts",
+    "packages/os/scripts/lib/node-resource-lock.ts",
+    "packages/os/scripts/lib/trace-persistence.ts",
+    "packages/os/tests/audit/fixtures/script-parity-classifications.json",
+    "packages/os/tests/fixtures/os-replica-correctness-worker.ts",
+    "packages/os/tests/fixtures/trace-persistence-runtime.ts",
+    "packages/os/tests/os-replica-correctness.test.ts",
+    "packages/os/tests/safe-temp-cleanup.ts",
+    "packages/workspace/scripts/lib/browser/service.ts",
+    "packages/workspace/scripts/lib/consuelo-home.ts",
+    "packages/workspace/scripts/lib/facade/executor.ts"
+  ],
+  "updatedAt": "2026-08-11T21:15:22.734Z"
+}

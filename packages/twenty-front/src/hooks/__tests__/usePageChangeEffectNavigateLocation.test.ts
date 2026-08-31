@@ -76,8 +76,7 @@ const setupMockRecoil = (
     .mockReturnValueOnce(verifyEmailRedirectPath);
 };
 
-// prettier-ignore
-const testCases: {
+type TestCase = {
   loc: AppPath;
   isLoggedIn: boolean;
   isWorkspaceSuspended: boolean;
@@ -86,7 +85,82 @@ const testCases: {
   objectNamePluralFromParams?: string;
   objectNamePluralFromMetadata?: string;
   verifyEmailRedirectPath?: string;
-}[] = [
+};
+
+const getStandardAppPathTestCases = (loc: AppPath): TestCase[] => [
+  {
+    loc,
+    isLoggedIn: true,
+    isWorkspaceSuspended: false,
+    onboardingStatus: OnboardingStatus.PLAN_REQUIRED,
+    res: AppPath.PlanRequired,
+  },
+  {
+    loc,
+    isLoggedIn: true,
+    isWorkspaceSuspended: true,
+    onboardingStatus: OnboardingStatus.COMPLETED,
+    res: getSettingsPath(SettingsPath.Billing),
+  },
+  {
+    loc,
+    isLoggedIn: false,
+    isWorkspaceSuspended: false,
+    onboardingStatus: undefined,
+    res: AppPath.SignInUp,
+  },
+  {
+    loc,
+    isLoggedIn: true,
+    isWorkspaceSuspended: false,
+    onboardingStatus: OnboardingStatus.WORKSPACE_ACTIVATION,
+    res: AppPath.CreateWorkspace,
+  },
+  {
+    loc,
+    isLoggedIn: true,
+    isWorkspaceSuspended: false,
+    onboardingStatus: OnboardingStatus.PROFILE_CREATION,
+    res: AppPath.CreateProfile,
+  },
+  {
+    loc,
+    isLoggedIn: true,
+    isWorkspaceSuspended: false,
+    onboardingStatus: OnboardingStatus.SYNC_EMAIL,
+    res: AppPath.SyncEmails,
+  },
+  {
+    loc,
+    isLoggedIn: true,
+    isWorkspaceSuspended: false,
+    onboardingStatus: OnboardingStatus.INVITE_TEAM,
+    res: AppPath.InviteTeam,
+  },
+  {
+    loc,
+    isLoggedIn: true,
+    isWorkspaceSuspended: false,
+    onboardingStatus: OnboardingStatus.BOOK_ONBOARDING,
+    res: AppPath.BookCallDecision,
+  },
+  {
+    loc,
+    isLoggedIn: true,
+    isWorkspaceSuspended: false,
+    onboardingStatus: OnboardingStatus.COMPLETED,
+    res: undefined,
+  },
+];
+
+// prettier-ignore
+const testCases: TestCase[] = [
+  ...getStandardAppPathTestCases(AppPath.Home),
+  ...getStandardAppPathTestCases(AppPath.Agent),
+  ...getStandardAppPathTestCases(AppPath.AgentSkills),
+  ...getStandardAppPathTestCases(AppPath.Skills),
+  ...getStandardAppPathTestCases(AppPath.SkillDetail),
+  ...getStandardAppPathTestCases(AppPath.Status),
   { loc: AppPath.Verify, isLoggedIn: true, isWorkspaceSuspended: false, onboardingStatus: OnboardingStatus.PLAN_REQUIRED, res: AppPath.PlanRequired },
   { loc: AppPath.Verify, isLoggedIn: true, isWorkspaceSuspended: true, onboardingStatus: OnboardingStatus.COMPLETED, res: getSettingsPath(SettingsPath.Billing) },
   { loc: AppPath.Verify, isLoggedIn: false, isWorkspaceSuspended: false, onboardingStatus: undefined, res: undefined },

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_817266cdc187",
+  "tmuxSession": "opensaas-os-fix-worker-secret-sync-ordering-in-os-production-817266cd",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-worker-secret-sync-ordering-in-os-production-release",
+  "branch": "task/os/fix-worker-secret-sync-ordering-in-os-production-release",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-worker-secret-sync-ordering-in-os-production-release",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-worker-secret-sync-ordering-in-os-production-release",
+  "prNumber": 1945,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1945",
+  "createdAt": "2026-08-14T07:19:58.692Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-worker-secret-sync-ordering-in-os-production-release/.task/os/fix-worker-secret-sync-ordering-in-os-production-release/session.json"
+}

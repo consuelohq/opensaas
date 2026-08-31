@@ -190,6 +190,8 @@ describe('useParallelDialer', () => {
       selectionStrategy: 'predictive',
       requestedFanout: 2,
       queueId: 'queue-1',
+      contactIds: ['item-1-contact', 'item-2-contact'],
+      targetPhones: ['+13472030054', '+18054259549'],
     });
     expect(result.current.activeCalls).toEqual([
       {

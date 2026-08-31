@@ -1,5 +1,8 @@
-import { type ClientConfig } from '@/client-config/types/ClientConfig';
-import { CaptchaDriverType, SupportDriver } from '~/generated-metadata/graphql';
+import {
+  CaptchaDriverType,
+  type ClientConfig,
+  SupportDriver,
+} from '@/client-config/types/ClientConfig';
 
 export const mockedClientConfig: ClientConfig = {
   aiModels: [],

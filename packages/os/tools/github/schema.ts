@@ -55,6 +55,7 @@ export const toolSchemas = [
       "defaultTimeout",
       "inputSchema",
       "outputSchema",
+      "search",
       "command",
       "exampleInput",
       "sessionRequired"
@@ -76,6 +77,10 @@ export const toolSchemas = [
       "defaultTimeout": 120000,
       "inputSchema": "GithubInput",
       "outputSchema": "RawOutput",
+      "search": {
+        "domainAliases": ["gh"],
+        "keywords": ["coderabbit", "codex", "openai", "chatgpt", "qodo", "pull request", "pr review", "reviews", "comments", "feedback", "checks"]
+      },
       "exampleInput": {
         "operation": "pr.reviews",
         "pr": 436

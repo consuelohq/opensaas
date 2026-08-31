@@ -5,18 +5,20 @@ import { join, relative } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { buildWorkspaceToolManifest, generateWorkspaceToolManifest } from '../scripts/generate-tool-manifest';
+import { getInputSchema, outputTypeSignatures, schemaTypeSignatures } from '../scripts/lib/facade/schemas';
 
 type JsonObject = Record<string, unknown>;
 
 const packageRoot = join(import.meta.dirname, '..');
-const osCoreManifestPath = join(packageRoot, '..', 'os', 'manifests', 'core.manifest.json');
+const osCoreManifestPath = join(packageRoot, '..', 'os', 'manifests', 'generated', 'core.manifest.json');
 const expectedCodeCallDescription = "Run focused repo-scoped Python, Bun, or Bash programs where runtime output is the evidence: tests, package scripts, typechecks, syntax checks, exact CLI reproduction, small diagnostics, and bounded data shaping inside the active task worktree. Prefer compact packets with paths, line spans, and extracted snippets over raw file dumps.";
 
 const expectedDescriptions = {
   'code.call': expectedCodeCallDescription,
   explore: 'a repo-aware decision search tool for coding agents. It answers where to spend attention and what files or paths are likely relevant to a given request.',
   'fs.trash': 'An agent safe file deletion path. Prefered over rm rf',
-  'task.start': "Call this directly at the beginning of every scoped repo task, before tools.search or any search for task-start tooling. It creates the task branch, worktree, task PR, and real taskSession, then returns the selected workflow bundle and post-start lifecycle guidance.",
+  'session.start': 'Canonical session constructor. Use kind=task for managed repo work that needs a branch/worktree/PR, or kind=work for scoped ordinary filesystem work on the owning node.',
+  'task.start': 'Compatibility alias for session.start({ kind: \"task\" }). Existing callers remain supported; new agents should prefer session.start for task creation.',
 } as const;
 const removedCoreToolNames = [
   'fs.list',
@@ -57,6 +59,8 @@ const oldContextToolNames = [
   'context.trace',
 ] as const;
 
+const workspaceOnlyCoreToolNames = ['context'] as const;
+
 const retainedCoreToolNames = [
   'batch',
   'code.call',
@@ -65,6 +69,7 @@ const retainedCoreToolNames = [
   'fs.apply_patch',
   'fs.trash',
   'github',
+  'session.start',
   'task.start',
   'review.run',
   'stream.context',
@@ -171,10 +176,12 @@ describe('workspace tool manifest generator', () => {
     const osCore = JSON.parse(readFileSync(osCoreManifestPath, 'utf8')) as { tools: Array<{ name: string }> };
     const workspaceSource = readJsonArray('tooling/tool-manifest.json');
     const workspaceNames = new Set(workspaceSource.map((entry) => String(entry.name)));
-    const expectedCoreNames = osCore.tools
-      .map((tool) => tool.name)
-      .filter((name) => workspaceNames.has(name))
-      .sort();
+    const expectedCoreNames = [
+      ...osCore.tools
+        .map((tool) => tool.name)
+        .filter((name) => workspaceNames.has(name)),
+      ...workspaceOnlyCoreToolNames,
+    ].sort();
 
     const registry = buildWorkspaceToolManifest({ write: false });
     const coreNames = names(registry.core.tools);
@@ -249,6 +256,38 @@ describe('workspace tool manifest generator', () => {
     }
   });
 
+  it('should keep task.pr command metadata aligned when the CLI exposes the workpad escape hatch', () => {
+    // Arrange
+    const schema = getInputSchema('TaskPrInput');
+    const registry = buildWorkspaceToolManifest({ write: false });
+    const taskPr = registry.full.tools.find((entry) => entry.name === 'task.pr');
+    const generatedTypes = readFileSync(join(packageRoot, 'src/generated/workspace.d.ts'), 'utf8');
+
+    // Act
+    const parsed = schema?.safeParse({ ackWorkpadIncomplete: true, repo: 'example/private-repo' });
+    const command = taskPr?.definition.command;
+
+    // Assert
+    expect(parsed?.success).toBe(true);
+    if (!parsed?.success) throw new Error('TaskPrInput should parse the workpad escape hatch');
+    expect(parsed.data).toEqual(expect.objectContaining({ ackWorkpadIncomplete: true, repo: 'example/private-repo' }));
+    expect(schemaTypeSignatures.TaskPrInput).toContain('ackWorkpadIncomplete?: boolean');
+    expect(schemaTypeSignatures.TaskPrInput).toContain('repo?: string');
+    expect(generatedTypes).toContain('ackWorkpadIncomplete?: boolean');
+    expect(generatedTypes).toContain('repo?: string');
+    expect(command).toMatchObject({ script: 'task:pr' });
+    expect(command?.arguments).toContainEqual({
+      source: 'ackWorkpadIncomplete',
+      flag: '--ack-workpad-incomplete',
+      kind: 'boolean',
+    });
+    expect(command?.arguments).toContainEqual({
+      source: 'repo',
+      flag: '--repo',
+      kind: 'value',
+    });
+  });
+
   it('writes full and core manifests to override output paths', () => {
     const fullOutputPath = join(fixtureRoot, 'tool-manifest.json');
     const coreOutputPath = join(fixtureRoot, 'core-manifest.json');
@@ -271,4 +310,15 @@ describe('workspace tool manifest generator', () => {
     expect(core.tools.map((tool) => tool.name)).toContain('tools.search');
     expect(workflows.sourceManifest).toBe(expectedSourceManifest);
   });
+
+  it('session.start advertises distinct typed task and work success shapes', () => {
+    const sessionStart = buildWorkspaceToolManifest().full.tools.find((entry) => entry.name === 'session.start');
+    expect(sessionStart?.definition.outputSchema).toBe('SessionStartOutput');
+    const signature = outputTypeSignatures.SessionStartOutput;
+    expect(signature).toContain('taskSession');
+    expect(signature).toContain('taskBranch');
+    expect(signature).toContain('workSession');
+    expect(signature).toContain('ownerNodeId');
+  });
+
 });

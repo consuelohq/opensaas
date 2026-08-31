@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_92f163a23d69",
+  "tmuxSession": "opensaas-os-finish-rollback-compatibility-after-stable-topol-92f163a2",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/finish-rollback-compatibility-after-stable-topology",
+  "branch": "task/os/finish-rollback-compatibility-after-stable-topology",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-finish-rollback-compatibility-after-stable-topology",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-finish-rollback-compatibility-after-stable-topology",
+  "prNumber": 2115,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2115",
+  "createdAt": "2026-08-16T03:26:14.099Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-finish-rollback-compatibility-after-stable-topology/.task/os/finish-rollback-compatibility-after-stable-topology/session.json"
+}

@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/address-coderabbit-diffs-review-findings",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 1886,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1886",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1886",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1886/address-coderabbit-diffs-review-findings",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1886",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1886/address-coderabbit-diffs-review-findings",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-address-coderabbit-diffs-review-findings",
+  "taskSession": "tsk_0324d6a4a198",
+  "tmuxSession": "opensaas-workspace-agents-address-coderabbit-diffs-review-findings-0324d6a4",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-address-coderabbit-diffs-review-findings/.task/workspace-agents/address-coderabbit-diffs-review-findings/session.json",
+  "createdAt": "2026-08-12T05:02:07.190Z"
+}

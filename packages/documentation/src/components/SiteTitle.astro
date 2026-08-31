@@ -1,0 +1,51 @@
+<a class="consuelo-site-title" href="/" aria-label="Docs">
+  <img aria-hidden="true" alt="" height="28" src="/favicon.svg" width="28" />
+  <span class="consuelo-site-title-slash" aria-hidden="true">/</span>
+  <span class="consuelo-site-title-label" translate="no">Docs</span>
+</a>
+
+<style>
+  @layer starlight.core {
+    .consuelo-site-title {
+      align-items: center;
+      color: var(--sl-color-white);
+      display: inline-flex;
+      font-size: var(--sl-text-h4);
+      font-weight: 650;
+      gap: 0.55rem;
+      min-width: 0;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .consuelo-site-title:hover,
+    .consuelo-site-title:focus-visible {
+      color: var(--sl-color-white);
+    }
+
+    .consuelo-site-title:hover .consuelo-site-title-label,
+    .consuelo-site-title:focus-visible .consuelo-site-title-label {
+      color: var(--docs-accent);
+    }
+
+    .consuelo-site-title img {
+      border-radius: 0.38rem;
+      display: block;
+      flex: 0 0 auto;
+      height: 1.75rem;
+      width: 1.75rem;
+    }
+
+    .consuelo-site-title-slash {
+      color: var(--sl-color-gray-5);
+      font-weight: 400;
+      margin-inline: 0.05rem;
+    }
+
+    .consuelo-site-title-label {
+      color: var(--sl-color-gray-2);
+      font-weight: 560;
+      transition: color 140ms ease;
+    }
+  }
+</style>

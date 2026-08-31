@@ -883,7 +883,8 @@ Recommended defaults:
 | `code.run` read/verify orchestration | 180s | p99 is about 20s; allow room for composed child calls. |
 | `code.run` edit orchestration | 300s | Edits may call multiple tools and validation smokes. |
 | `batch` read-only inspection | 300s | Usually fast, but p99 can spike when child calls are slow. |
-| `task.start` | 180s | p99 is about 34s; worktree/PR setup can vary. |
+| `session.start` | 180s | Task sessions may create a worktree/PR; work sessions create metadata only. |
+| `task.start` | 180s | Compatibility alias for task-mode `session.start`. |
 | `stream.sync` | 300s | Usually fast; conflicts or fetch state can add time. |
 | `task.push` | 300s | p99 is about 22s; large changed sets or GitHub delay need room. |
 | `task.pr` | 300s | p99 is under 10s; stream promotion can still hit GitHub delay. |
@@ -1037,7 +1038,7 @@ The workspace app exposes two MCP entry points:
 | `workspace.get_steering()` | Load steering and the core manifest once |
 | `workspace.call({ tool, input, taskSession, timeout })` | Run every workspace operation |
 
-All workspace tools, including `code.call`, `batch`, `tools.search`, `task.start`, `stream.context`, and lifecycle tools, are invoked through `workspace.call`.
+All workspace tools, including `code.call`, `batch`, `tools.search`, `session.start`, the compatibility alias `task.start`, `stream.context`, and lifecycle tools, are invoked through `workspace.call`.
 
 ### Bootstrap rule
 
@@ -1052,11 +1053,11 @@ Do not call `get_steering()` again because:
 - Ko says “go fix this.”
 - The agent forgot a tool name.
 - The agent wants the manifest again.
-- A workflow phase says to run `stream.context`, `task.start`, validation, review, or publish.
+- A workflow phase says to run `stream.context`, `session.start`, validation, review, or publish.
 
-`get_steering()` loads the operating manual. It does not start task work. For scoped repo work, call the core `task.start` tool directly; run `stream.context` first only when fresh stream context is needed.
+`get_steering()` loads the operating manual. It does not start task work. For scoped repo work, call `session.start({ kind: "task" })` directly; `task.start` is a compatibility alias; run `stream.context` first only when fresh stream context is needed.
 
-Scoped repo work starts with `task.start`. Use `stream.context` first only when fresh stream context is needed, then continue through the relevant lifecycle tools.
+Scoped repo work starts with `session.start({ kind: "task" })`; `task.start` remains a compatibility alias. Use `stream.context` first only when fresh stream context is needed, then continue through the relevant lifecycle tools.
 
 ### Direct-call rule
 

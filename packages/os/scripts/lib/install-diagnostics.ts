@@ -141,13 +141,20 @@ export function createInstallDiagnostics(input: {
   env?: DiagnosticEnv;
   home: string;
   argv?: string[];
+  captureSupport?: boolean;
 }): InstallDiagnostics {
   const env = input.env ?? process.env;
-  if (!isDevDiagnosticsEnabled(env)) return createNoopDiagnostics();
+  const developmentDiagnostics = isDevDiagnosticsEnabled(env);
+  if (!developmentDiagnostics && !input.captureSupport) return createNoopDiagnostics();
 
   const runId = createRunId();
-  const reportDir = env.CONSUELO_OS_DEV_REPORT_DIR
-    ?? path.join(env.CONSUELO_OS_DEV_REPORTS_DIR ?? path.join(os.homedir(), '.consuelo-dev-reports'), runId);
+  const reportDir = developmentDiagnostics
+    ? env.CONSUELO_OS_DEV_REPORT_DIR
+      ?? path.join(
+        env.CONSUELO_OS_DEV_REPORTS_DIR ?? path.join(os.homedir(), '.consuelo-dev-reports'),
+        runId,
+      )
+    : path.join(os.tmpdir(), 'consuelo-install-reports', runId);
   const eventFile = path.join(reportDir, 'installer-events.jsonl');
   const events: InstallDiagnosticEvent[] = [];
 
@@ -165,7 +172,7 @@ export function createInstallDiagnostics(input: {
   recordEvent({
     type: 'install.start',
     data: {
-      argv: input.argv ?? [],
+      ...(developmentDiagnostics ? { argv: input.argv ?? [] } : {}),
       home: input.home,
       pid: process.pid,
       platform: process.platform,

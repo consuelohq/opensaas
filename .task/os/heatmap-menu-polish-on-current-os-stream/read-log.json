@@ -1,0 +1,12 @@
+{
+  "files": [
+    "packages/os/scripts/lib/observability-traces-site.ts",
+    "packages/os/scripts/lib/settings-site.ts",
+    "packages/os/scripts/lib/sites.ts",
+    "packages/os/scripts/lib/trace-sites-gateway-live-endpoints.ts",
+    "packages/os/scripts/lib/workspace-chrome.ts",
+    "packages/os/tests/launcher-local-customization.test.ts",
+    "packages/os/tests/settings-site.test.ts"
+  ],
+  "updatedAt": "2026-08-15T18:43:45.411Z"
+}

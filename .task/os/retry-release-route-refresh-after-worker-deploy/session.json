@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_0196193d2b0b",
+  "tmuxSession": "opensaas-os-retry-release-route-refresh-after-worker-deploy-0196193d",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/retry-release-route-refresh-after-worker-deploy",
+  "branch": "task/os/retry-release-route-refresh-after-worker-deploy",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-retry-release-route-refresh-after-worker-deploy",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-retry-release-route-refresh-after-worker-deploy",
+  "prNumber": 2056,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2056",
+  "createdAt": "2026-08-15T08:50:36.343Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-retry-release-route-refresh-after-worker-deploy/.task/os/retry-release-route-refresh-after-worker-deploy/session.json"
+}

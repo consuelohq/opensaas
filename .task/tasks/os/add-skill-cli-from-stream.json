@@ -1,0 +1,12 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-skill-cli-from-stream",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1842,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1842",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-skill-cli-from-stream",
+  "createdAt": "2026-08-11T22:03:11.115Z"
+}

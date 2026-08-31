@@ -1,0 +1,49 @@
+---
+title: Memory tool and traces
+description: Save deliberate project memory and inspect trace-backed workspace history.
+status: preview
+verifiedAt: 2026-08-11
+evidence:
+  - source: packages/os/tools/memory/schema.ts
+    tests:
+      - packages/os/tests/memory.test.ts
+      - packages/os/tests/memory-adjacent.test.ts
+    runtime: The current memory facade definition was inspected on 2026-08-11.
+  - source: packages/os/scripts/memory.js
+    tests:
+      - packages/os/tests/memory.test.ts
+    runtime: Current local memory search, read, save, list, category, and trace operations were inspected on 2026-08-11.
+---
+
+The `memory` tool is the explicit saved-memory and trace-inspection surface in Consuelo OS. Use it when information should be retrievable after the current conversation or when you need to inspect recorded workspace execution.
+
+For the broader continuity model, start with [Memory](/memory/). Workpads, handoffs, and stream context are separate memory surfaces with different jobs.
+
+## Save what is worth carrying forward
+
+Useful saved memory includes durable decisions, verified current state, continuation-ready handoffs, and exact references another agent will need. Do not use memory as a dump of conversational noise, secrets, or structured data that already has a better source of truth.
+
+The current tool supports memory operations for searching content, finding by title, reading full results, listing recent memories, and saving new memory. Categories make records such as `handoff` and `workpad` easier to retrieve intentionally.
+
+## Search before duplicating
+
+A typical agent search uses the typed facade:
+
+```json
+{
+  "tool": "memory",
+  "input": {
+    "operation": "search",
+    "keyword": "documentation navigation",
+    "limit": 5
+  }
+}
+```
+
+Read the matching item before saving another version when the existing memory may still be current.
+
+## Trace-backed history
+
+The same facade can inspect local workspace trace rows and filter them by trace ID, tool, status, time window, text, task session, or branch. Use trace history to answer **what actually ran**. Use saved memory to answer **what should another agent know later**.
+
+[Observe](/observe/) covers traces and debugging in more detail. [Streams](/memory/streams/) explains how `stream.context` combines recent workpads, decisions, commits, PRs, and worktrees into shared cross-agent context.

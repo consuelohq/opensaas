@@ -18,7 +18,12 @@ export async function approvalAuth(
 ): Promise<
   | { status: 'missing' }
   | { status: 'weak'; method: string }
-  | { status: 'allowed'; accountId: string; method: StrongerAuthMethod }
+  | {
+      status: 'allowed';
+      accountId: string;
+      workspaceId?: string;
+      method: StrongerAuthMethod;
+    }
 > {
   try {
     const assertion = request.headers.get(AUTH_ASSERTION_HEADER)?.trim() ?? '';
@@ -31,6 +36,7 @@ export async function approvalAuth(
       new TextDecoder().decode(b64Decode(payload)),
     ) as Record<string, unknown>;
     const accountId = stringField(parsed, 'account_id').trim();
+    const workspaceId = stringField(parsed, 'workspace_id').trim();
     const method = stringField(parsed, 'auth_method').trim().toLowerCase();
     const expiresAt = Date.parse(stringField(parsed, 'expires_at'));
     if (
@@ -48,6 +54,7 @@ export async function approvalAuth(
     return {
       status: 'allowed',
       accountId,
+      ...(workspaceId ? { workspaceId } : {}),
       method: method as StrongerAuthMethod,
     };
   } catch (error: unknown) {

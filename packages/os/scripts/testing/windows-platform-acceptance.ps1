@@ -57,7 +57,7 @@ try {
     throw 'Protected service Bun copy failed integrity verification.'
   }
   Copy-Item -LiteralPath $builtService -Destination $serviceHost -Force
-  Set-Content -LiteralPath (Join-Path $release 'scripts\server\main.ts') -Encoding utf8 -Value @'
+  Set-Content -LiteralPath (Join-Path $release 'scripts\server\supervisor.ts') -Encoding utf8 -Value @'
 const server = Bun.serve({
   hostname: '127.0.0.1',
   port: 46321,

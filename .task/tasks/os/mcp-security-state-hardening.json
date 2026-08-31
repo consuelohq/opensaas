@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/mcp-security-state-hardening",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1824,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1824",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-mcp-security-state-hardening",
+  "createdAt": "2026-08-10T04:08:03.006Z",
+  "taskSession": "tsk_7e33fbfef605",
+  "tmuxSession": "opensaas-os-mcp-security-state-hardening-7e33fbfe",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-mcp-security-state-hardening/.task/os/mcp-security-state-hardening/session.json",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1824",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1824",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1824/mcp-security-state-hardening",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1824/mcp-security-state-hardening"
+}

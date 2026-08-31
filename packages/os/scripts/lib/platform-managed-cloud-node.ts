@@ -80,6 +80,7 @@ export type ProvisionManagedCloudNodeInput = {
   zone?: string;
   machineType?: string;
   release: ManagedCloudNodeReleaseBootstrap;
+  provisioningEnrollment?: { jobId: string; enrollmentToken: string };
   dryRun?: boolean;
   client?: ManagedCloudNodeClient;
 };
@@ -104,6 +105,7 @@ export const provisionManagedCloudNode = async (
     zone: input.zone,
     machineType: input.machineType,
     release: input.release,
+    provisioningEnrollment: input.provisioningEnrollment,
   });
   const client =
     input.client ??

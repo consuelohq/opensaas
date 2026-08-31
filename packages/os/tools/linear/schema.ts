@@ -176,6 +176,7 @@ export const toolSchemas = [
       "defaultTimeout",
       "inputSchema",
       "outputSchema",
+      "search",
       "command",
       "exampleInput",
       "sessionRequired"
@@ -198,6 +199,7 @@ export const toolSchemas = [
       "defaultTimeout": 60000,
       "inputSchema": "LinearSearchInput",
       "outputSchema": "RawOutput",
+      "search": {"keywords":["ticket","tickets","issue search","find issues"]},
       "exampleInput": {
         "search": "workspace facade"
       },

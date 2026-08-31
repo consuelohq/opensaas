@@ -1,0 +1,56 @@
+---
+title: Local nodes
+description: Run Consuelo on a computer you operate and understand what stays local to that node.
+status: preview
+verifiedAt: 2026-08-12
+evidence:
+  - source: packages/os/scripts/lib/install-state.ts
+    tests:
+      - packages/os/tests/install-state.test.ts
+      - packages/os/tests/local-agent-connectivity.test.ts
+      - packages/os/tests/os-device-authority-worker.test.ts
+    runtime: Local provisioning, node identity, reconnect behavior, and workspace enrollment were verified from the current installer and node authority contracts on 2026-08-12.
+---
+
+A **local node** is Consuelo OS running on a computer you operate. Use one when work needs files, applications, credentials, or network access that exist on that computer.
+
+Each local node has its own identity and local state. Joining the same workspace does **not** mirror one computer's filesystem onto another.
+
+## Add a local node
+
+For the current self-service path, run the Consuelo OS installer on the Mac you want to add and complete workspace authorization.
+
+1. Install Consuelo OS on the computer.
+2. Sign in to the Consuelo account that can access the workspace.
+3. Choose the existing workspace during authorization.
+4. Let the installer create or reconnect this computer's node identity.
+5. Connect the local agents you want to use on that computer.
+6. Open **Nodes** and confirm the new node appears with the expected presence.
+
+The first approved node is normally enrolled with the `home` role. Later approved computers are normally `member` nodes. Reauthorizing the same computer can reconnect its existing node identity instead of creating a new one.
+
+## What stays on that computer
+
+A local node keeps machine-local runtime state under the Consuelo home, including its node identity, local database, logs, artifacts, and agent configuration. Tools that read the filesystem or interact with local software act on the node where the call actually runs.
+
+That is why routing matters. If `README.md` exists on your desktop Mac but not on your laptop, changing the workspace default can change what an untargeted file call can see.
+
+Do not copy one node's Consuelo home to another computer to make it “the same node.” Enroll the second computer so it receives its own identity.
+
+## Keep remote access healthy
+
+Hosted agents such as ChatGPT need a live route to a node. When you expect a local node to answer remote calls, keep its Consuelo runtime and connector transport running.
+
+The connector is outbound: the local runtime establishes the managed route instead of exposing the computer as a general-purpose public server. See [Nodes and network access](/secure/nodes-and-network-access/) for the security boundary.
+
+## Choose it as the default
+
+If the node is active and online, open **Nodes** and choose **Make default**. New untargeted OS calls will route there.
+
+Changing the default does not transfer an active task away from the node that already owns it. See [Routing work](/nodes/routing/).
+
+## When a local node goes offline
+
+Presence can become stale or offline when recent node proof stops arriving. Consuelo fails requests that require that exact node rather than silently substituting another machine.
+
+For an ordinary new untargeted call, choose an online default node before retrying. For task-owned work, restore the owning node or intentionally finish/restart the work instead of assuming another node has the same local state.

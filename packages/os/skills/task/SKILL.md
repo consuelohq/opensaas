@@ -21,8 +21,10 @@ start → work → publish → clean up
 Canonical flow:
 
 ```text
-stream.context → task.start → scoped workpad + test-first contract → decision-engine research → focused red test or no-test waiver → implementation → focused green test → validation / verify → task.push → task.pr → stream review PR → task.finish
+stream.context → session.start({ kind: "task" }) → scoped workpad + test-first contract → decision-engine research → focused red test or no-test waiver → implementation → focused green test → validation / verify → task.push → task.pr → stream review PR → task.finish
 ```
+`session.start({ kind: "task" })` is the canonical constructor for repository tasks. `task.start` remains a compatibility alias for existing callers. Use `session.start({ kind: "work", path })` only for ordinary node-local filesystem work; a work session must never be used to edit the managed default repository or a registered task worktree.
+
 For non-trivial code changes, implementation must not begin until the scoped workpad contains a Test-first contract and either:
 
 a focused test has been written or updated and run red, or
@@ -47,7 +49,7 @@ await os.call({
 })
 ```
 
-For task-scoped work, `task.start` returns `data.taskSession`.
+For task-scoped work, `session.start({ kind: "task" })` returns `data.taskSession`.
 
 Treat that exact value as the task handle for the rest of the task:
 
@@ -131,8 +133,9 @@ Create one focused task branch:
 
 ```ts
 await os.call({
-  tool: "task.start",
+  tool: "session.start",
   input: {
+    kind: "task",
     area: "<area>",
     title: "<task title>",
     startFrom: "main",
@@ -178,7 +181,7 @@ For diffs, use the workspace/GitHub tool surface where available. Only fall back
 
 `taskSession` is the canonical handle for task-scoped work.
 
-When `task.start` returns:
+When `session.start({ kind: "task" })` returns:
 
 ```ts
 const taskSession = result.data.taskSession
@@ -241,7 +244,7 @@ await os.call({
 
 That should return `VALIDATION_ERROR`.
 
-If a task-scoped call returns `TASK_SESSION_REQUIRED` or `TASK_SESSION_NOT_FOUND`, first check that the exact `taskSession` returned by `task.start` was passed at the top level. Do not switch to branch-threading or root task metadata as the default recovery path.
+If a task-scoped call returns `TASK_SESSION_REQUIRED` or `TASK_SESSION_NOT_FOUND`, first check that the exact `taskSession` returned by `session.start({ kind: "task" })` was passed at the top level. Do not switch to branch-threading or root task metadata as the default recovery path.
 
 Inside `code.run` and `batch`, pass `taskSession` on the outer `os.call`. Nested `workspace.*` calls inherit task context.
 
@@ -265,7 +268,7 @@ Example:
 
 Agents must update the workpad at these checkpoints:
 
-1. Immediately after `task.start`
+1. Immediately after `session.start({ kind: "task" })`
    - acceptance criteria
    - plan
    - initial assumptions
@@ -389,17 +392,7 @@ await os.call({
 })
 ```
 
-Ask for the next best action:
-
-```ts
-await os.call({
-  tool: "decideNext",
-  input: {},
-  timeout: 120,
-})
-```
-
-Read recommended files through task-scoped file tools:
+The `explore` response already contains the dependency map, readiness, uncertainty, `next_action`, and `edit_ready`. Follow `next_action` directly. When it recommends a read, inspect that file through task-scoped file tools:
 
 ```ts
 await os.call({
@@ -410,33 +403,9 @@ await os.call({
 })
 ```
 
-Then rerun the loop:
+Then rerun `explore`. Reads and validation evidence are folded into the same hypothesis/readiness policy automatically. Repeat until `edit_ready` is true; then use `edit_target` as the supported implementation root and preserve the returned dependency map as editing context.
 
-```ts
-await os.call({
-  tool: "decideNext",
-  input: {},
-  timeout: 120,
-})
-
-await os.call({
-  tool: "confidenceScore",
-  input: {},
-  timeout: 120,
-})
-```
-
-Repeat until the implementation path is supported by evidence.
-
-Use `exploit` when the path is clear enough to commit to an editing target:
-
-```ts
-await os.call({
-  tool: "exploit",
-  input: {},
-  timeout: 120,
-})
-```
+`decideNext`, `confidenceScore`, and `exploit` remain available for compatibility with older clients. They are projections of the same Explore policy and are not required in the normal loop. `decideNext` may still be used explicitly when you need its manual evidence-label flags.
 
 Use targeted `fs.search` only after the decision engine has narrowed the direction:
 
@@ -1437,7 +1406,7 @@ Completed tasks may leave scoped metadata on main, such as:
 
 Do not treat `staleTask` as active context. It is historical metadata.
 
-Continue using the explicit `taskSession` returned by `task.start`.
+Continue using the explicit `taskSession` returned by `session.start({ kind: "task" })`.
 
 Only repair metadata when it affects the active task session, the active task worktree, or the current publish/merge operation.
 
@@ -1449,34 +1418,32 @@ Use the decision engine to move from broad uncertainty to evidence-backed action
 
 Normal loop:
 
-1. `explore` to get candidate files and graph context.
-2. `decideNext` to choose the next highest-value action.
-3. `fs.read` the recommended file or section.
-4. Mark evidence when useful with `decideNext` input such as `markRead`, `markRelevant`, or `markIrrelevant`.
-5. Run `confidenceScore`.
-6. Repeat until confidence is high enough to exploit.
-7. Run `exploit` to commit to the implementation path.
-8. After implementation, use real validation plus `confirm` when useful.
+1. `explore` to get ranked candidates, the dependency map, categorical readiness, explicit uncertainty, and the next evidence action.
+2. Follow `explore.policy.next_action` with task-scoped `fs.read`, targeted search, or the requested validation evidence.
+3. Rerun `explore`; it folds the accumulated evidence into the same policy automatically.
+4. Repeat until `explore.policy.edit_ready` is true, then edit `explore.policy.edit_target` with the returned dependency map as context.
+5. After implementation, use real validation plus `confirm` when useful.
 
 Important:
 
-- `explore` is retrieval, not proof.
-- `decideNext` is the policy layer.
-- `confidenceScore` is an evidence check, not permission to skip tests.
-- `exploit` means “stop wandering; edit this path.”
+- `explore` owns retrieval plus the investigation policy; retrieval support is still not proof.
+- `explore.policy.next_action` is the normal policy interface.
+- `explore.policy.readiness` is categorical evidence readiness, not a correctness probability.
+- `explore.policy.edit_ready` / `edit_target` mean “stop wandering; this path has enough evidence to edit.”
+- `decideNext`, `confidenceScore`, and `exploit` are compatibility views over that same policy and should not be called as a normal ceremony.
 - `confirm` means “belief meets reality.”
 - `audit` is for tool/docs/index drift, not general confirmation.
 
-## Explore Is a Discovery Command
+## Explore Is the Investigation Policy Front Door
 
 Use `explore` anywhere you would otherwise start guessing paths, grepping broadly, or asking “where is this implemented?”
 
 Treat it as a workspace navigation primitive alongside `fs.read` and `fs.search`.
 
-- `explore` finds likely files, symbols, tests, docs, and related implementation paths.
+- `explore` finds likely files, symbols, tests, docs, and related implementation paths, then evaluates the current evidence state and returns the next action.
 - `fs.read` verifies actual content.
 - `fs.search` follows up with exact targeted symbol/string lookup after direction is narrowed.
-- `decideNext` decides what evidence/action should come next.
+- `explore.policy.next_action` decides what evidence/action should come next.
 - `confirm` proves behavior against reality.
 
 Do not wait until a formal decision-engine loop to use `explore`.

@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_3a58dd303a3c",
+  "tmuxSession": "opensaas-os-address-stable-os-pr-codex-review-3a58dd30",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/address-stable-os-pr-codex-review",
+  "branch": "task/os/address-stable-os-pr-codex-review",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-address-stable-os-pr-codex-review",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-address-stable-os-pr-codex-review",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2211,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2211",
+  "createdAt": "2026-08-26T06:12:07.505Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-address-stable-os-pr-codex-review/.task/os/address-stable-os-pr-codex-review/session.json"
+}

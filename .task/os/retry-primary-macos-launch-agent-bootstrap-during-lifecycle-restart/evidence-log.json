@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/retry-primary-macos-launch-agent-bootstrap-during-lifecycle-restart",
+  "events": [
+    {
+      "id": "61321f4b-1512-4709-8247-5c6d51de2638",
+      "occurred_at": "2026-08-15T19:41:36.534Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/consuelo-reload.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/retry-primary-macos-launch-agent-bootstrap-during-lifecycle-restart",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/retry-primary-macos-launch-agent-bootstrap-during-lifecycle-restart"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-15T19:41:36.591Z"
+}

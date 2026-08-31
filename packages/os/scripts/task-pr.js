@@ -25,7 +25,7 @@ const {
   mergePullRequest,
   updatePullRequest,
 } = require('./lib/github');
-const { fetchOrigin, getCurrentBranch, runGit } = require('./lib/git');
+const { getCurrentBranch, getRefSha, resolveApiPushSyncTarget, runGit } = require('./lib/git');
 const { resolveGitRoot } = require('./lib/paths');
 const { findActiveTaskResult } = require('./lib/task-selection');
 const {
@@ -41,6 +41,7 @@ const {
   validateBranchMatch,
   writeTaskMeta,
 } = require('./lib/task-meta');
+const { assertWorkpadReady } = require('./lib/task-workpad');
 
 function writeStdout(value = '') {
   process.stdout.write(`${value}\n`);
@@ -68,6 +69,7 @@ function printHelp() {
   writeStdout('  --body-file <path>       final review pr body markdown file');
   writeStdout('  --body-template area     generate an area-context body template for the final review pr');
   writeStdout('  --task-only              stop after creating or refreshing the task/* -> stream/* pr');
+  writeStdout('  --ack-workpad-incomplete allow publish when Ko explicitly approved an incomplete workpad');
   writeStdout('  --draft                  create or keep the final review pr as draft');
   writeStdout('  --no-draft               create the final review pr as ready-for-review (default)');
   writeStdout('  --ready                  convert an existing draft final review pr to ready');
@@ -98,7 +100,8 @@ function parseArgs(argv) {
       flag === '--json' ||
       flag === '--help' ||
       flag === '--ready' ||
-      flag === '--task-only';
+      flag === '--task-only' ||
+      flag === '--ack-workpad-incomplete';
     const value = inlineValue !== undefined ? inlineValue : isBooleanFlag ? undefined : argv[index + 1];
 
     if (!isBooleanFlag && (!value || value.startsWith('--'))) {
@@ -139,6 +142,9 @@ function parseArgs(argv) {
         break;
       case '--task-only':
         args.taskOnly = true;
+        break;
+      case '--ack-workpad-incomplete':
+        args.ackWorkpadIncomplete = true;
         break;
       case '--draft':
         args.draft = true;
@@ -474,18 +480,36 @@ function getConflictFiles(worktreePath) {
   return output ? output.split('\n').filter(Boolean) : [];
 }
 
-function syncTaskBranchWithBaseMetadataConflicts(context) {
+function syncTaskBranchWithBaseMetadataConflicts(context, { repository, token }) {
   if (!context.taskMeta || !context.taskMeta.dir) {
     return { resolved: false, reason: 'no local task metadata record' };
   }
 
   const worktreePath = context.taskMeta.dir;
-  fetchOrigin(worktreePath);
+  const taskTarget = resolveApiPushSyncTarget(worktreePath, context.taskBranch, repository, token);
+  const baseTarget = resolveApiPushSyncTarget(worktreePath, context.streamBranch, repository, token);
+  runGit(['-C', worktreePath, 'fetch', '--no-tags', taskTarget.remote, `refs/heads/${context.taskBranch}:${taskTarget.trackingRef}`], {
+    cwd: worktreePath,
+    env: taskTarget.env,
+  });
+  runGit(['-C', worktreePath, 'fetch', '--no-tags', baseTarget.remote, `refs/heads/${context.streamBranch}:${baseTarget.trackingRef}`], {
+    cwd: worktreePath,
+    env: baseTarget.env,
+  });
+  const localTaskSha = getRefSha(worktreePath, `refs/heads/${context.taskBranch}`);
+  const selectedTaskSha = getRefSha(worktreePath, taskTarget.trackingRef);
+  if (localTaskSha !== selectedTaskSha) {
+    return {
+      resolved: false,
+      reason: 'local task branch differs from selected repository',
+      localTaskSha,
+      selectedTaskSha,
+    };
+  }
 
+  let resolution = { resolved: true, conflictFiles: [], alreadyMergedCleanly: true };
   try {
-    runGit(['-C', worktreePath, 'merge', '--no-ff', '--no-edit', `origin/${context.streamBranch}`], { cwd: worktreePath });
-    runGit(['-C', worktreePath, 'push', 'origin', context.taskBranch], { cwd: worktreePath });
-    return { resolved: true, conflictFiles: [], alreadyMergedCleanly: true };
+    runGit(['-C', worktreePath, 'merge', '--no-ff', '--no-edit', baseTarget.trackingRef], { cwd: worktreePath });
   } catch {
     const conflictFiles = getConflictFiles(worktreePath);
     if (!isOnlyTaskMetadataConflict(conflictFiles)) {
@@ -498,7 +522,7 @@ function syncTaskBranchWithBaseMetadataConflicts(context) {
       };
     }
 
-    const resolution = resolveTaskMetadataConflicts(worktreePath, conflictFiles, {
+    resolution = resolveTaskMetadataConflicts(worktreePath, conflictFiles, {
       currentBranch: context.taskBranch,
       taskBranch: context.taskBranch,
     });
@@ -509,9 +533,13 @@ function syncTaskBranchWithBaseMetadataConflicts(context) {
     }
 
     runGit(['-C', worktreePath, 'commit', '--no-edit'], { cwd: worktreePath });
-    runGit(['-C', worktreePath, 'push', 'origin', context.taskBranch], { cwd: worktreePath });
-    return resolution;
   }
+
+  runGit(['-C', worktreePath, 'push', taskTarget.remote, `${context.taskBranch}:refs/heads/${context.taskBranch}`], {
+    cwd: worktreePath,
+    env: taskTarget.env,
+  });
+  return resolution;
 }
 
 async function mergeTaskPullRequestIfNeeded({ token, repository, taskPr, context }) {
@@ -552,7 +580,7 @@ async function mergeTaskPullRequestIfNeeded({ token, repository, taskPr, context
       throw mergeError;
     }
 
-    const resolution = syncTaskBranchWithBaseMetadataConflicts(context);
+    const resolution = syncTaskBranchWithBaseMetadataConflicts(context, { repository, token });
 
     if (!resolution.resolved) {
       throw new GitHubRequestError(
@@ -681,6 +709,12 @@ async function main() {
   }
 
   const context = getPrContext(args);
+  const workpadReadiness = context.taskMeta?.data
+    ? assertWorkpadReady(context.repoRoot, context.taskMeta.data, { ackIncomplete: args.ackWorkpadIncomplete })
+    : { ok: true };
+  if (!workpadReadiness.ok && args.ackWorkpadIncomplete) {
+    writeStderr(`warning: publishing with incomplete workpad: ${workpadReadiness.path}`);
+  }
   const token = getToken();
   const reviewBody = readReviewBody(args, context);
 

@@ -1,0 +1,23 @@
+---
+title: Skills
+description: Reuse task guidance, scripts, and domain-specific operating instructions across agents.
+status: preview
+verifiedAt: 2026-08-11
+evidence:
+  - source: packages/os/skills/skills.json
+    tests:
+      - packages/os/tests/skill-migration.test.ts
+      - packages/os/tests/onboarding-skills.test.ts
+    runtime: The checked-in skill registry was inspected on 2026-08-11.
+---
+
+A **skill** teaches an agent how to do a larger job well. It can name the right tools, scripts, checks, and output format, but loading a skill does not itself execute those operations.
+
+## Start here
+
+- [How skills work](/build/skills/how-skills-work/) explains discovery and loading.
+- [Install a skill](/build/skills/install-a-skill/) covers adding one to the workspace.
+- [Create a skill](/build/skills/create-a-skill/) covers authoring a new skill.
+- [Skill structure](/build/skills/skill-structure/) describes the files and metadata a skill can contain.
+
+Individual skill reference pages also live in this section. The registry can grow without changing the top-level documentation layout.

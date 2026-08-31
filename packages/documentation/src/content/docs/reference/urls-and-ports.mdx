@@ -2,7 +2,7 @@
 title: URLs and ports
 description: Local gateway, hosted MCP, workspace, trace, and settings endpoints.
 status: preview
-verifiedAt: 2026-07-13
+verifiedAt: 2026-08-12
 evidence:
   - source: packages/os/scripts/server/app.ts
     tests:
@@ -60,7 +60,7 @@ Managed workspace identity uses a host shaped like:
 https://<workspace-slug>.consuelohq.com
 ```
 
-Static Sites snapshots and live OS routes have different authority paths even when they share a workspace identity. A published Site being reachable does not prove the home node is online.
+Static Sites snapshots and live OS routes have different authority paths even when they share a workspace identity. A published Site being reachable does not prove the node required for live work is online.
 
 ## Local status check
 

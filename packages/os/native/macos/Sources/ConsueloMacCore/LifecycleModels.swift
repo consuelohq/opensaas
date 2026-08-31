@@ -418,6 +418,16 @@ public struct LifecycleSnapshot: Codable, Equatable, Sendable {
         try container.encodeIfPresent(workspace, forKey: .workspace)
         try container.encode(connection, forKey: .connection)
     }
+
+    public func isMenuContentEquivalent(to other: LifecycleSnapshot) -> Bool {
+        var left = self
+        var right = other
+        left.sequence = 0
+        right.sequence = 0
+        left.observedAt = ""
+        right.observedAt = ""
+        return left == right
+    }
 }
 
 public enum LifecycleRequest: Equatable, Sendable {

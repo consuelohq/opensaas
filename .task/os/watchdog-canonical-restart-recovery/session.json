@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_1e2b4fdebc9d",
+  "tmuxSession": "opensaas-os-watchdog-canonical-restart-recovery-1e2b4fde",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/watchdog-canonical-restart-recovery",
+  "branch": "task/os/watchdog-canonical-restart-recovery",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-watchdog-canonical-restart-recovery",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-watchdog-canonical-restart-recovery",
+  "prNumber": 1844,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1844",
+  "createdAt": "2026-08-11T22:03:56.175Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-watchdog-canonical-restart-recovery/.task/os/watchdog-canonical-restart-recovery/session.json"
+}

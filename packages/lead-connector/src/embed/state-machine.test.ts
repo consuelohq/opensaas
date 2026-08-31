@@ -121,7 +121,7 @@ describe('LeadConnector embed state machine', () => {
     state = reduceEmbedState(state, { type: 'STOP_REQUESTED' });
     expect(state.phase).toBe('wrapping-up');
     state = reduceEmbedState(state, { type: 'DISPOSITION_SUBMITTED' });
-    expect(state.phase).toBe('completed');
+    expect(state.phase).toBe('ready');
     state = reduceEmbedState(state, {
       type: 'FAILED',
       code: 'NETWORK_ERROR',
@@ -175,6 +175,93 @@ describe('LeadConnector embed state machine', () => {
         stageId: 'stage-1',
       }),
     ).toEqual([opportunities[0]]);
+  });
+
+  it('soft returns home while preserving authentication, resources, and operator preferences', () => {
+    let state = reduceEmbedState(createInitialEmbedState(), {
+      type: 'AUTHENTICATED',
+      token: 'embed-token',
+      expiresAt: '2026-08-04T23:00:00.000Z',
+    });
+    state = reduceEmbedState(state, {
+      type: 'RESOURCES_LOADED',
+      contacts: [],
+      contactTotal: 7,
+      opportunities: [],
+      opportunityTotal: 12,
+      pipelines: [
+        {
+          id: 'pipeline-1',
+          name: 'Marketing Pipeline',
+          stages: [{ id: 'stage-1', name: 'Hot Lead', position: 0 }],
+        },
+      ],
+    });
+    state = reduceEmbedState(state, {
+      type: 'SETUP_CHANGED',
+      setup: {
+        mode: 'queue',
+        callingMode: 'predictive',
+        requestedFanout: 3,
+        preferLocalPresence: true,
+      },
+    });
+    state = reduceEmbedState(state, {
+      type: 'QUEUE_SELECTED',
+      queue: {
+        pipelineId: 'pipeline-1',
+        pipelineName: 'Marketing Pipeline',
+        stageId: 'stage-1',
+        stageName: 'Hot Lead',
+        opportunityTotal: 12,
+        callableTotal: 7,
+      },
+      targets: [target],
+    });
+    state = reduceEmbedState(state, {
+      type: 'SESSION_UPDATED',
+      session: {
+        groupId: 'group-1',
+        status: 'completed',
+        winnerSid: null,
+        winner: null,
+        calls: [],
+      },
+    });
+    state = reduceEmbedState(state, { type: 'RETURN_HOME' });
+
+    expect(state).toMatchObject({
+      phase: 'ready',
+      sessionToken: 'embed-token',
+      contactTotal: 7,
+      opportunityTotal: 12,
+      pipelines: [{ id: 'pipeline-1' }],
+      setup: {
+        mode: 'queue',
+        callingMode: 'predictive',
+        requestedFanout: 3,
+        preferLocalPresence: true,
+      },
+      selectedQueue: {
+        pipelineId: 'pipeline-1',
+        stageId: 'stage-1',
+      },
+      activeSessionId: null,
+      callSession: null,
+      selectedTargets: [target],
+    });
+  });
+
+  it('direct click-to-call switches the setup to Single dial with one line', () => {
+    const state = selectEmbedTarget(createInitialEmbedState(), target);
+    expect(state).toMatchObject({
+      phase: 'target-selected',
+      setup: {
+        mode: 'single',
+        callingMode: 'single',
+        requestedFanout: 1,
+      },
+    });
   });
 
   it('appends cursor-paginated history without duplicating sessions', () => {

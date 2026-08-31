@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "criteriaVersion": 1,
+  "status": "insufficient_evidence",
+  "challengerConfiguration": {
+    "schemaVersion": 1,
+    "criteriaVersion": 1,
+    "status": "insufficient_evidence",
+    "frozen": false,
+    "configurationId": null,
+    "voiVersion": 1,
+    "method": "myopic-empirical-voi-proxy",
+    "promotionAuthority": "e6_gate_only",
+    "readCostModelSchemaVersion": 1,
+    "utilityProfileId": null,
+    "utilityRates": null,
+    "claim": "No explicit frozen E5 utility profile has been configured. Promotion remains blocked until a non-degenerate utility scale is versioned and frozen before confirmatory evidence is collected."
+  },
+  "challengerConfigurationId": null,
+  "analysisMode": "fixed_sample",
+  "plannedEvaluatedCaseCount": 50,
+  "frozen": false,
+  "source": {
+    "caseFile": "packages/os/explore-bench/cases.v1.json",
+    "benchmarkCaseCount": 10,
+    "pairedDecisionArtifact": null
+  },
+  "independentCaseCount": 10,
+  "evaluatedCaseCount": 0,
+  "caseResults": [],
+  "shadowEvidence": {
+    "schemaVersion": 1,
+    "criteriaVersion": 1,
+    "status": "insufficient_evidence",
+    "frozen": false,
+    "challengerConfigurationId": null,
+    "events": [],
+    "claim": "Current E6 operational shadow evidence is intentionally unfrozen and insufficient. Worktree-local live shadow events are diagnostics only and cannot satisfy the promotion gate until a versioned evidence snapshot is explicitly collected and frozen under the same E5 challenger configuration."
+  },
+  "claim": "Current E6 promotion evidence is intentionally insufficient: no frozen E5 utility configuration exists, only 10 independent ExploreBench cases exist, no independent paired E4-control versus E5-challenger fixed-sample benchmark has been recorded, and no frozen operational shadow snapshot has been committed."
+}

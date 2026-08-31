@@ -135,6 +135,7 @@ function main(argv: string[]): void {
       architecture: manifest.architecture,
       archiveDigest,
       bundleId: manifest.bundleId,
+      ...(manifest.capabilities ? { capabilities: [...manifest.capabilities] } : {}),
       platform: manifest.platform,
       releaseFingerprint,
       sourceCommit,
@@ -173,6 +174,7 @@ function main(argv: string[]): void {
       manifest: {
         architecture: manifest.architecture,
         bundleId: manifest.bundleId,
+        ...(manifest.capabilities ? { capabilities: [...manifest.capabilities] } : {}),
         platform: manifest.platform,
         releaseFingerprint,
         schemaVersion: manifest.schemaVersion,

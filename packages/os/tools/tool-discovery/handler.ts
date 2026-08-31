@@ -5,6 +5,7 @@ export const toolHandlers = [
     "name": "tools.search",
     "command": {
       "script": "tools:search",
+      "executionScope": "runtime",
       "branchMode": "none",
       "jsonFlag": "--json",
       "arguments": [
@@ -34,9 +35,9 @@ export const toolHandlers = [
           "kind": "boolean"
         },
         {
-          "source": "noDocs",
-          "flag": "--no-docs",
-          "kind": "boolean"
+          "source": "detail",
+          "flag": "--detail",
+          "kind": "value"
         }
       ]
     }

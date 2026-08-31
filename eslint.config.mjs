@@ -12,7 +12,7 @@ import unusedImportsPlugin from 'eslint-plugin-unused-imports';
 import jsoncParser from 'jsonc-eslint-parser';
 
 const twentyRules = await nxPlugin.loadWorkspaceRules(
-  'packages/twenty-eslint-rules',
+  'packages/eslint-rules',
 );
 
 export default [
@@ -230,7 +230,6 @@ export default [
       'packages/contacts/**/*.ts',
       'packages/analytics/**/*.ts',
       'packages/sdk/**/*.ts',
-      'packages/metering/**/*.ts',
       'packages/logger/**/*.ts',
     ],
     rules: {

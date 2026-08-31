@@ -1,0 +1,971 @@
+---
+title: Tool List
+description: Alphabetical list of every tool in the current Consuelo OS generated manifest.
+status: preview
+verifiedAt: 2026-08-14
+evidence:
+  - source: packages/os/manifests/generated/tool.manifest.json
+    tests:
+      - packages/os/tests/tool-manifest.test.ts
+      - packages/os/tests/tools-search-v2.test.ts
+    runtime: Generated from all 159 named tools in the checked-in manifest and reconciled with the current subagent schema on 2026-08-14.
+---
+
+This page lists all **159 tools** in the current generated Consuelo OS manifest, alphabetically. Use **On this page** as the fast index: every tool below is a real heading, so you can jump directly to it.
+
+For discovery by capability instead of name, use `tools.search`. For the calling model and result envelope, see [How tools work](/build/tools/how-tools-work/).
+
+## `aiReview`
+
+run the AI PR review helper
+
+Category: `review` · Access: `mutating`
+
+## `artifacts.check`
+
+run artifacts package boundary and Railway checks
+
+Category: `artifacts` · Access: `read-only`
+
+## `artifacts.generateDemo`
+
+create a headless Open Design work order for a demo artifact; pass live=true only for a headed UI session
+
+Category: `artifacts` · Access: `mutating`
+
+## `artifacts.generateDigitalEguide`
+
+create a headless Open Design work order for a digital e-guide artifact, optionally using a named Consuelo e-guide template
+
+Category: `artifacts` · Access: `mutating`
+
+## `artifacts.generateEmail`
+
+create a headless Open Design work order for a email artifact; pass live=true only for a headed UI session
+
+Category: `artifacts` · Access: `mutating`
+
+## `artifacts.generateImageBrief`
+
+create a headless Open Design work order for a image/media artifact; pass live=true only for a headed UI session
+
+Category: `artifacts` · Access: `mutating`
+
+## `artifacts.generateMotionFrame`
+
+create a headless Open Design work order for a motion-frame artifact; pass live=true only for a headed UI session
+
+Category: `artifacts` · Access: `mutating`
+
+## `artifacts.generateWebsite`
+
+create a headless Open Design work order for a website artifact; pass live=true only for a headed UI session
+
+Category: `artifacts` · Access: `mutating`
+
+## `artifacts.getDesignSystem`
+
+return base Consuelo DESIGN.md and artifacts AGENTS.md only
+
+Category: `artifacts` · Access: `read-only`
+
+## `artifacts.listDesignSystems`
+
+list Consuelo default design system and upstream reference systems
+
+Category: `artifacts` · Access: `read-only`
+
+## `artifacts.listSkills`
+
+list upstream Open Design skills and Consuelo workflow mappings
+
+Category: `artifacts` · Access: `read-only`
+
+## `artifacts.odBuild`
+
+build the vendored Open Design daemon CLI through the Bun facade
+
+Category: `artifacts` · Access: `mutating`
+
+## `artifacts.publish`
+
+publish a design artifact through private Tailscale Serve and update the artifact catalog
+
+Category: `artifacts` · Access: `mutating`
+
+## `artifacts.railwayCheck`
+
+verify artifacts is excluded from Railway deploy paths
+
+Category: `artifacts` · Access: `read-only`
+
+## `artifacts.refresh`
+
+regenerate and publish the existing Consuelo Artifacts archive without adding an artifact
+
+Category: `artifacts` · Access: `mutating`
+
+## `artifacts.renderHyperframes`
+
+create a headless Open Design work order for a HyperFrames render artifact; pass live=true only for a headed UI session
+
+Category: `artifacts` · Access: `mutating`
+
+## `artifacts.run`
+
+start Open Design daemon and web UI in the foreground through the Bun facade
+
+Category: `artifacts` · Access: `mutating`
+
+## `artifacts.uiBg`
+
+start Open Design managed runtimes in the background through the Bun facade
+
+Category: `artifacts` · Access: `mutating`
+
+## `artifacts.uiLogs`
+
+show Open Design managed runtime logs through the Bun facade
+
+Category: `artifacts` · Access: `read-only`
+
+## `artifacts.uiStatus`
+
+show Open Design managed runtime status through the Bun facade
+
+Category: `artifacts` · Access: `read-only`
+
+## `artifacts.uiStop`
+
+stop Open Design managed runtimes through the Bun facade
+
+Category: `artifacts` · Access: `mutating`
+
+## `artifacts.upstreamStatus`
+
+show vendored Open Design metadata and runtime requirements
+
+Category: `artifacts` · Access: `read-only`
+
+## `audit`
+
+audit workspace scripts, docs, or index freshness
+
+Category: `decision engine` · Access: `read-only`
+
+## `batch`
+
+run multiple workspace tools sequentially or in parallel with compact per-step results
+
+Category: `composed` · Access: `mutating`
+
+## `browser`
+
+run the generic workspace browser wrapper command
+
+Category: `utilities` · Access: `mutating`
+
+## `browser.app`
+
+open app.consuelohq.com with the browser wrapper
+
+Category: `utilities` · Access: `mutating`
+
+## `browser.click`
+
+click a browser element by ref
+
+Category: `utilities` · Access: `mutating`
+
+## `browser.clipboard`
+
+read from or write to the browser clipboard
+
+Category: `utilities` · Access: `mutating`
+
+## `browser.close`
+
+close active browser sessions
+
+Category: `utilities` · Access: `mutating`
+
+## `browser.consuelo`
+
+open consuelo.consuelohq.com with the browser wrapper
+
+Category: `utilities` · Access: `mutating`
+
+## `browser.cookies`
+
+list, set, or clear browser cookies for the current browser session
+
+Category: `utilities` · Access: `mutating`
+
+## `browser.dialog`
+
+accept or dismiss browser dialogs
+
+Category: `utilities` · Access: `mutating`
+
+## `browser.download`
+
+click an element and save the triggered download to a path
+
+Category: `utilities` · Access: `mutating`
+
+## `browser.eval`
+
+execute JavaScript on the current browser page
+
+Category: `utilities` · Access: `mutating`
+
+## `browser.fill`
+
+fill a browser input by ref
+
+Category: `utilities` · Access: `mutating`
+
+## `browser.find`
+
+find an element by role, text, label, placeholder, alt text, title, or test id and run an action
+
+Category: `utilities` · Access: `mutating`
+
+## `browser.get`
+
+get text, html, value, attributes, title, or URL from the current page
+
+Category: `utilities` · Access: `mutating`
+
+## `browser.headed`
+
+open the shared persistent browser visibly when the user must complete login, MFA, CAPTCHA, passkeys, or consent
+
+Category: `utilities` · Access: `mutating`
+
+## `browser.network`
+
+inspect or manage browser network requests, routes, and HAR capture
+
+Category: `utilities` · Access: `mutating`
+
+## `browser.open`
+
+open a URL with the browser wrapper
+
+Category: `utilities` · Access: `mutating`
+
+## `browser.raw`
+
+pass raw arguments through to agent-browser
+
+Category: `utilities` · Access: `mutating`
+
+## `browser.screenshot`
+
+capture a browser screenshot
+
+Category: `utilities` · Access: `read-only`
+
+## `browser.snap`
+
+capture an accessibility snapshot
+
+Category: `utilities` · Access: `read-only`
+
+## `browser.status`
+
+report safe browser daemon and page status without authentication values
+
+Category: `utilities` · Access: `read-only`
+
+## `browser.tabs`
+
+list, create, select, or close browser tabs with stable labels when needed
+
+Category: `utilities` · Access: `mutating`
+
+## `browser.test`
+
+open a URL, wait for load, snapshot, and screenshot
+
+Category: `utilities` · Access: `mutating`
+
+## `browser.trace`
+
+start or stop browser tracing and optionally write a trace file
+
+Category: `utilities` · Access: `mutating`
+
+## `browser.wait`
+
+wait for a selector, duration, text, URL, load state, JavaScript condition, or download
+
+Category: `utilities` · Access: `mutating`
+
+## `checkFiles`
+
+run syntax checks over a set of files through code.call in the task worktree
+
+Category: `composed` · Access: `read-only`
+
+## `code.call`
+
+Run focused repo-scoped Python, Bun, or Bash programs where runtime output is the evidence: tests, package scripts, typechecks, syntax checks, exact CLI reproduction, small diagnostics, and bounded data shaping inside the active task worktree. Prefer compact packets with paths, line spans, and extracted snippets over raw file dumps.
+
+Category: `codemode` · Access: `mutating`
+
+## `code.run`
+
+run a small JavaScript program over workspace APIs for control flow, filtering, summarization, and output reduction
+
+Category: `codemode` · Access: `mutating`
+
+## `confidenceScore`
+
+score confidence from evidence state
+
+Category: `decision engine` · Access: `read-only`
+
+## `confirm`
+
+run verification or targeted validation through confirm
+
+Category: `decision engine` · Access: `read-only`
+
+## `dailySchedules.publish`
+
+publish one dated security or self-healing report/workpad into the private Daily Schedules artifact and refresh its link index
+
+Category: `artifacts` · Access: `mutating`
+
+## `decideNext`
+
+recommend the next action from evidence state
+
+Category: `decision engine` · Access: `read-only`
+
+## `deployment.context`
+
+inspect local Railway, Vercel, or Cloudflare authentication or linked project context without exposing credentials
+
+Category: `deployment` · Access: `read-only`
+
+## `deployment.deploy`
+
+deploy, redeploy, or promote through Railway, Vercel, or Cloudflare; requires explicit local approval before provider execution
+
+Category: `deployment` · Access: `mutating`
+
+## `deployment.detect`
+
+detect the Railway, Vercel, or Cloudflare CLI and report its supported version; returns provider-specific install guidance when missing
+
+Category: `deployment` · Access: `read-only`
+
+## `deployment.environment`
+
+list environment variable names or explicitly approved set/delete mutations for Railway, Vercel, or Cloudflare; secret values are never returned
+
+Category: `deployment` · Access: `mutating`
+
+## `deployment.list`
+
+list Railway, Vercel, or Cloudflare projects, services, deployments, or domains using the selected provider CLI
+
+Category: `deployment` · Access: `read-only`
+
+## `deployment.logs`
+
+read bounded Railway, Vercel, or Cloudflare runtime or build logs without changing provider state
+
+Category: `deployment` · Access: `read-only`
+
+## `deployment.raw`
+
+run an explicitly approved raw Railway, Vercel, or Cloudflare CLI argv without shell evaluation
+
+Category: `deployment` · Access: `mutating`
+
+## `deployment.status`
+
+inspect one Railway, Vercel, or Cloudflare deployment status by deployment id
+
+Category: `deployment` · Access: `read-only`
+
+## `doctor`
+
+run workspace diagnostics
+
+Category: `utilities` · Access: `read-only`
+
+## `editFlow`
+
+run a search-read-patch-verify flow as a composed script
+
+Category: `composed` · Access: `mutating`
+
+## `exploit`
+
+select the highest-confidence editing target
+
+Category: `decision engine` · Access: `read-only`
+
+## `explore`
+
+a repo-aware decision search tool for coding agents. It answers where to spend attention and what files or paths are likely relevant to a given request.
+
+Category: `decision engine` · Access: `read-only`
+
+## `fs.apply_patch`
+
+apply an anchored patch file with embedded task-worktree-relative paths
+
+Category: `filesystem` · Access: `mutating`
+
+## `fs.list`
+
+list or find files in the repo root or a resolved task worktree
+
+Category: `filesystem` · Access: `read-only`
+
+## `fs.read`
+
+read bounded text or supported media from files with pagination, MIME metadata, binary detection, and structured truncation for agent-safe file ingestion
+
+Category: `filesystem` · Access: `read-only`
+
+## `fs.search`
+
+search file contents with ripgrep and return structured bounded matches for agent-safe discovery
+
+Category: `filesystem` · Access: `read-only`
+
+## `fs.trash`
+
+An agent safe file deletion path. Prefered over rm rf
+
+Category: `filesystem` · Access: `mutating`
+
+## `fs.write`
+
+write a file in a task worktree
+
+Category: `filesystem` · Access: `mutating`
+
+## `generate.docs`
+
+generate TOOLS.md from the tool manifest
+
+Category: `generation` · Access: `mutating`
+
+## `generate.types`
+
+generate workspace.d.ts from the tool manifest
+
+Category: `generation` · Access: `mutating`
+
+## `gh`
+
+run the workspace GitHub helper with an explicit action
+
+Category: `github` · Access: `mutating`
+
+## `git.diff`
+
+inspect task or working-tree diffs as bounded structured JSON for agents
+
+Category: `git` · Access: `read-only`
+
+## `git.status`
+
+alias for status; use status directly in new code
+
+Category: `utilities` · Access: `read-only`
+
+## `github`
+
+typed GitHub facade with semantic PR operations; use operation pr.reviews for normalized actionable PR review feedback from CodeRabbit, Codex/OpenAI/ChatGPT, Qodo, and human reviewers
+
+Category: `github` · Access: `mutating`
+
+## `http`
+
+make HTTP requests through the workspace http wrapper (wraps xh)
+
+Category: `http` · Access: `mutating`
+
+## `lifecycle.status`
+
+check Consuelo OS lifecycle and runtime status, including the latest durable update operation
+
+Category: `lifecycle` · Access: `read-only`
+
+## `lifecycle.update`
+
+update or upgrade the installed Consuelo OS runtime with the canonical signed lifecycle updater
+
+Category: `lifecycle` · Access: `mutating`
+
+## `linear.createIssue`
+
+create a Linear issue with DEV/open defaults and the opensaas label
+
+Category: `linear` · Access: `mutating`
+
+## `linear.issue`
+
+read a Linear issue by identifier or id
+
+Category: `linear` · Access: `read-only`
+
+## `linear.labels`
+
+list Linear issue labels for label consistency
+
+Category: `linear` · Access: `read-only`
+
+## `linear.projects`
+
+list Linear projects and ids
+
+Category: `linear` · Access: `read-only`
+
+## `linear.search`
+
+search Linear issues with DEV default team support
+
+Category: `linear` · Access: `read-only`
+
+## `linear.states`
+
+list workflow states for a Linear team
+
+Category: `linear` · Access: `read-only`
+
+## `linear.teams`
+
+list Linear teams and workflow states
+
+Category: `linear` · Access: `read-only`
+
+## `linear.updateIssue`
+
+update Linear issue fields including labels, project, cycle, and parent
+
+Category: `linear` · Access: `mutating`
+
+## `mac.call`
+
+emergency host escape hatch for non-repo Mac commands or recovery when task worktree routing is broken. Do not use `mac.call` for repo-scoped tests, package scripts, builds, typechecks, syntax checks, or validation; use code.call with taskSession instead.
+
+Category: `mac` · Access: `mutating`
+
+## `mac.exec`
+
+legacy alias for mac.call; emergency host escape hatch only. Do not use `mac.call` for repo-scoped tests, package scripts, builds, typechecks, syntax checks, or validation; use code.call with taskSession instead.
+
+Category: `mac` · Access: `mutating`
+
+## `mac.list`
+
+list non-repo files on the Mac
+
+Category: `mac` · Access: `read-only`
+
+## `mac.port`
+
+check or find a local port
+
+Category: `mac` · Access: `read-only`
+
+## `mac.process`
+
+list or kill local Mac processes
+
+Category: `mac` · Access: `mutating`
+
+## `mac.read`
+
+read a non-repo file on the Mac
+
+Category: `mac` · Access: `read-only`
+
+## `mac.search`
+
+search non-repo files on the Mac
+
+Category: `mac` · Access: `read-only`
+
+## `mac.write`
+
+write a non-repo file on the Mac
+
+Category: `mac` · Access: `mutating`
+
+## `media.angle.measure`
+
+Measure joint and segment angles from pose-track artifacts.
+
+Category: `media` · Access: `mutating`
+
+## `media.audio.extract`
+
+Extract audio tracks from source media into deterministic audio artifacts.
+
+Category: `media` · Access: `mutating`
+
+## `media.audio.normalize`
+
+Normalize media audio loudness for rendering and QA workflows.
+
+Category: `media` · Access: `mutating`
+
+## `media.breakdown.plan`
+
+Create a structured data-backed sports-science breakdown plan.
+
+Category: `media` · Access: `mutating`
+
+## `media.camera.motion`
+
+Estimate camera movement separately from subject movement.
+
+Category: `media` · Access: `mutating`
+
+## `media.clip.search`
+
+Search and score candidate video clips for downstream media workflows.
+
+Category: `media` · Access: `read-only`
+
+## `media.compose`
+
+Compose a timeline and media assets into a rendered draft video.
+
+Category: `media` · Access: `mutating`
+
+## `media.doctor`
+
+Check installed media runtime dependencies and optional profile readiness.
+
+Category: `media` · Access: `read-only`
+
+## `media.export`
+
+Package rendered media for YouTube Shorts, TikTok, Reels, and handoff workflows.
+
+Category: `media` · Access: `mutating`
+
+## `media.frames.extract`
+
+Extract selected frames and frame manifests from a media source.
+
+Category: `media` · Access: `mutating`
+
+## `media.ingest`
+
+Ingest a source video or media URL into a deterministic media asset bundle.
+
+Category: `media` · Access: `mutating`
+
+## `media.install`
+
+Create media runtime dependency install plans and guarded install attempts.
+
+Category: `media` · Access: `mutating`
+
+## `media.motion.track`
+
+Track generic motion vectors and features across a video range.
+
+Category: `media` · Access: `mutating`
+
+## `media.object.track`
+
+Track configured objects or regions through a video range.
+
+Category: `media` · Access: `mutating`
+
+## `media.overlay.render`
+
+Render declarative overlay artifacts for composition.
+
+Category: `media` · Access: `mutating`
+
+## `media.pose.estimate`
+
+Estimate human pose landmarks for sports-science analysis.
+
+Category: `media` · Access: `mutating`
+
+## `media.probe`
+
+Inspect a media source with ffprobe and normalize codec, duration, stream, and metadata facts.
+
+Category: `media` · Access: `read-only`
+
+## `media.qa`
+
+Inspect rendered media for dimensions, duration, codec, size, captions, and basic quality checks.
+
+Category: `media` · Access: `read-only`
+
+## `media.scene.detect`
+
+Detect scene boundaries and candidate highlight moments.
+
+Category: `media` · Access: `mutating`
+
+## `media.screenshot.render`
+
+Render a local screenshot into a deterministic social/X-ready PNG with configurable Consuelo themes, spacing, fit, and line patterns.
+
+Category: `media` · Access: `mutating`
+
+## `media.sports-science.metrics`
+
+Compute sports-science metrics from pose and motion artifacts.
+
+Category: `media` · Access: `mutating`
+
+## `media.svg`
+
+Primitive SVG structure, render, measure, edit, and verify tool with snapshots, visible-pixel bounding boxes, editable text operations, and color-scheme rendering.
+
+Category: `media` · Access: `mutating`
+
+## `media.svg.convert`
+
+Convert raster images into SVG assets using exact wrapper and vector trace strategies.
+
+Category: `media` · Access: `mutating`
+
+## `media.timeline.validate`
+
+Validate a media timeline contract and referenced artifacts.
+
+Category: `media` · Access: `read-only`
+
+## `media.transcribe`
+
+Create transcript artifacts from a media audio or video source.
+
+Category: `media` · Access: `mutating`
+
+## `memory`
+
+search, read, save, list, and inspect local project memory and workspace traces
+
+Category: `memory` · Access: `mutating`
+
+## `monitor.errors`
+
+analyze the last 24 hours of canonical Consuelo OS tool traces and classify policy enforcement, caller errors, drift, transient failures, external failures, and defect candidates
+
+Category: `observability` · Access: `read-only`
+
+## `prReview`
+
+legacy wrapper for GitHub PR review feedback; prefer OS github with operation pr.reviews for normalized actionable review comments
+
+Category: `review` · Access: `read-only`
+
+## `research.ingest`
+
+generate a local research packet and autosave its text bundle to memory
+
+Category: `utilities` · Access: `mutating`
+
+## `review.run`
+
+run the workspace review checks
+
+Category: `review` · Access: `read-only`
+
+## `security.scan`
+
+run a defensive repository security scan with Bun audit, OSV-Scanner, Trivy, and Semgrep and return normalized findings plus local evidence paths
+
+Category: `security` · Access: `read-only`
+
+## `sentry.config`
+
+show Sentry API configuration status from Keychain without exposing secrets
+
+Category: `sentry` · Access: `read-only`
+
+## `sentry.event`
+
+retrieve or resolve a Sentry event id, using a project slug when available
+
+Category: `sentry` · Access: `read-only`
+
+## `sentry.issue`
+
+retrieve one Sentry issue by short id or numeric issue id
+
+Category: `sentry` · Access: `read-only`
+
+## `sentry.issueEvent`
+
+retrieve a latest, recommended, oldest, or concrete Sentry event for an issue
+
+Category: `sentry` · Access: `read-only`
+
+## `sentry.issues`
+
+search Sentry issues across the configured organization
+
+Category: `sentry` · Access: `read-only`
+
+## `sentry.projects`
+
+list Sentry projects for the configured organization
+
+Category: `sentry` · Access: `read-only`
+
+## `sentry.trace`
+
+perform a best-effort Sentry trace lookup across organization events and issues
+
+Category: `sentry` · Access: `read-only`
+
+## `server`
+
+manage the workspace MCP server reload/status lifecycle
+
+Category: `utilities` · Access: `mutating`
+
+## `status`
+
+show compact workspace status
+
+Category: `utilities` · Access: `read-only`
+
+## `stream.context`
+
+show recent stream context
+
+Category: `stream` · Access: `read-only`
+
+## `stream.create`
+
+create a durable stream branch with OS and Workspace instruction files
+
+Category: `stream` · Access: `mutating`
+
+## `stream.list`
+
+list stream branches
+
+Category: `stream` · Access: `read-only`
+
+## `stream.sync`
+
+sync a stream branch with main
+
+Category: `stream` · Access: `mutating`
+
+## `subagent`
+
+run or start a subagent from an instruction handoff. Write the handoff to OS tmp first under the canonical opensaas-handoffs root; model and reasoning selection are provider-specific and surfaced explicitly. Edit self-bootstrap may call task.start first, or an existing taskSession may be supplied. task.push publishes only the task branch. task.pr merges to the stream and must not be called when the handoff says stop after push. status/wait/logs attach to an existing run and never spawn; cancel targets runId. requestId makes retries idempotent. Provider capability limitations are returned explicitly and never silently weakened. Return one compact trace-style summary with traceId, files read, files edited, tools called, and token usage.
+
+Category: `subagent` · Access: `mutating`
+
+## `task.cleanup`
+
+preview or remove stale task worktrees and branches
+
+Category: `task lifecycle` · Access: `mutating`
+
+## `task.current`
+
+resolve the current task branch without running a mutating command
+
+Category: `task lifecycle` · Access: `read-only`
+
+## `task.ensureSynced`
+
+check whether the task stream appears synced
+
+Category: `task lifecycle` · Access: `read-only`
+
+## `task.finish`
+
+finish a task branch after merge
+
+Category: `task lifecycle` · Access: `mutating`
+
+## `task.init`
+
+write task metadata for an existing worktree
+
+Category: `task lifecycle` · Access: `mutating`
+
+## `task.merge`
+
+merge a pull request through the workspace task merge script
+
+Category: `task lifecycle` · Access: `mutating`
+
+## `task.pr`
+
+merge task to stream and create or refresh the stream review PR
+
+Category: `task lifecycle` · Access: `mutating`
+
+## `task.prs`
+
+show task and review PR links
+
+Category: `task lifecycle` · Access: `read-only`
+
+## `task.push`
+
+push changed task files to the task branch through GitHub API
+
+Category: `task lifecycle` · Access: `mutating`
+
+## `task.start`
+
+Call this directly at the beginning of every scoped repo task, before tools.search or any search for task-start tooling. It creates the task branch, worktree, task PR, and real taskSession, then returns the selected workflow bundle and post-start lifecycle guidance.
+
+Category: `task lifecycle` · Access: `mutating`
+
+## `taskMeta.smoke`
+
+run the task metadata smoke suite
+
+Category: `task lifecycle` · Access: `read-only`
+
+## `tmp`
+
+run the workspace temp-file helper
+
+Category: `utilities` · Access: `mutating`
+
+## `tools.search`
+
+search Consuelo OS tools with deterministic domain-first retrieval and bounded semantic fallback
+
+Category: `tooling` · Access: `read-only`
+
+## `verify`
+
+run the full task safety gate
+
+Category: `review` · Access: `mutating`
+
+## `wait`
+
+sleep, create detached wait checkpoints, or wait for a PR/deploy
+
+Category: `utilities` · Access: `read-only`
+
+## `website.deploy`
+
+deploy the Consuelo website
+
+Category: `utilities` · Access: `mutating`
+

@@ -1,0 +1,19 @@
+{
+  "area": "documentation",
+  "stream": "stream/documentation",
+  "taskBranch": "task/documentation/refine-docs-navigation-display-translation-and-connect-ia",
+  "baseBranch": "stream/documentation",
+  "sourceBranch": "stream/documentation",
+  "startFrom": "stream",
+  "prNumber": 1942,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1942",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1942",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1942/refine-docs-navigation-display-translation-and-connect-ia",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1942",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1942/refine-docs-navigation-display-translation-and-connect-ia",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-refine-docs-navigation-display-translation-and-connect-ia",
+  "taskSession": "tsk_c981f4a487b0",
+  "tmuxSession": "opensaas-documentation-refine-docs-navigation-display-translation-and-c-c981f4a4",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-refine-docs-navigation-display-translation-and-connect-ia/.task/documentation/refine-docs-navigation-display-translation-and-connect-ia/session.json",
+  "createdAt": "2026-08-14T06:27:02.499Z"
+}

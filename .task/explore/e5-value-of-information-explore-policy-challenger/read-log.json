@@ -1,0 +1,10 @@
+{
+  "files": [
+    ".task/explore-state.json",
+    "packages/os/package.json",
+    "packages/os/scripts/explore.js",
+    "packages/os/scripts/lib/state/evidence-log.js",
+    "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+  ],
+  "updatedAt": "2026-08-16T02:09:10.188Z"
+}

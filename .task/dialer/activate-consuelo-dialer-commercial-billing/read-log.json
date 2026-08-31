@@ -1,0 +1,10 @@
+{
+  "files": [
+    ".task/dialer/activate-consuelo-dialer-commercial-billing/workpad.md",
+    "packages/dialer-server/src/billing/application.ts",
+    "packages/dialer-server/src/commercial/application.ts",
+    "packages/dialer-server/src/plans/catalog.ts",
+    "packages/dialer-server/src/routes/commercial.ts"
+  ],
+  "updatedAt": "2026-08-10T00:37:34.270Z"
+}

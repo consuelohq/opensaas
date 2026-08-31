@@ -134,7 +134,7 @@
       "executor": "nx:run-commands",
       "options": {
         "cwd": "packages/twenty-server",
-        "command": "ts-node --transpile-only -P tsconfig.json ../../node_modules/typeorm/cli.js"
+        "command": "TS_NODE_TRANSPILE_ONLY=true TS_NODE_PROJECT=tsconfig.json npx --no-install typeorm-ts-node-commonjs"
       },
       "dependsOn": ["^build"]
     },

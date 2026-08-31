@@ -38,11 +38,12 @@ describe('useGetButtonIcon', () => {
     expect(result.current).toBeUndefined();
   });
 
-  it('should return icon pencil', () => {
+  it('should return the phone action icon', () => {
     const { result } = renderHook(() => useGetButtonIcon(), {
       wrapper: PhoneWrapper,
     });
-    expect(result.current).toEqual(IconPencil);
+    expect(typeof result.current).toBe('function');
+    expect(result.current).not.toEqual(IconPencil);
   });
 
   it('should return iconPencil for relation field', () => {

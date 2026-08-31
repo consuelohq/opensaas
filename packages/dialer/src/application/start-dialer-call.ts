@@ -38,10 +38,14 @@ const validateInput = (input: StartDialerCallInput): void => {
       'Direct call starts must use single selection strategy',
     );
   }
-  if (input.source === 'queue' && input.selectionStrategy !== 'predictive') {
+  if (
+    input.source === 'queue' &&
+    input.selectionStrategy === 'single' &&
+    input.requestedFanout !== 1
+  ) {
     throw requestError(
-      'INVALID_SELECTION_STRATEGY',
-      'Queue call starts must use predictive selection strategy',
+      'INVALID_REQUESTED_FANOUT',
+      'Single queue starts must request exactly one line',
     );
   }
   if (input.requestedFanout < 1) {
@@ -187,7 +191,8 @@ export const startDialerCall = (command: StartDialerCallCommand) =>
       callerIdNumber: command.input.callerIdNumber,
       callMode,
       enforceScenarioAllowlist,
-      targetCount: uniqueTargets.length,
+      preferLocalPresence: command.input.preferLocalPresence !== false,
+      targets: uniqueTargets,
     });
     const capacity = computeDialerCallCapacity({
       requestedFanout,

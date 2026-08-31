@@ -28,6 +28,7 @@ describe('onboarding skill choices', () => {
     expect(selected).toEqual(getCoreSelectedSkillNames());
     expect(selected).toContain('browser');
     expect(selected).toContain('artifacts');
+    expect(selected).toContain('branch');
     expect(selected).toContain('debugger');
     expect(selected).toContain('handoff');
     expect(selected).toContain('research-ingest');

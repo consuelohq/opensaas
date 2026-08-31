@@ -1,0 +1,55 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/documentation/tighten-responsive-browse-menu-toward-vercel",
+  "base": "origin/main",
+  "headSha": "951b15b7665d4c303f41fb289edbdfb1cf201078",
+  "changeHash": "81682325195632dba389af185b0457b62665b4f9f2f350ae11d629f03b836dde",
+  "changedFiles": [
+    "packages/documentation/scripts/test-foundation-browser.mjs",
+    "packages/documentation/src/components/BrowseMenu.astro",
+    "packages/documentation/tests/foundation.test.ts"
+  ],
+  "verifiedAt": "2026-08-15T04:46:48.182Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/documentation/tighten-responsive-browse-menu-toward-vercel/current.json",
+        ".task/documentation/tighten-responsive-browse-menu-toward-vercel/evidence-log.json",
+        ".task/documentation/tighten-responsive-browse-menu-toward-vercel/read-log.json",
+        ".task/documentation/tighten-responsive-browse-menu-toward-vercel/session.json",
+        ".task/documentation/tighten-responsive-browse-menu-toward-vercel/workpad.md",
+        ".task/tasks/documentation/tighten-responsive-browse-menu-toward-vercel.json",
+        "packages/documentation/scripts/test-foundation-browser.mjs",
+        "packages/documentation/src/components/BrowseMenu.astro",
+        "packages/documentation/tests/foundation.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

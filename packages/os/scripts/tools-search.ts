@@ -23,6 +23,15 @@ type ToolCommandArgument = {
   kind?: string;
   required?: boolean;
 };
+
+type SearchMetadata = {
+  domain?: string;
+  domainAliases?: string[];
+  keywords?: string[];
+  entities?: string[];
+  hidden?: boolean;
+};
+
 type JsonObject = Record<string, unknown>;
 
 type ToolManifestEntry = {
@@ -39,6 +48,7 @@ type ToolManifestEntry = {
     script?: string;
     subcommand?: string;
     internal?: string;
+    executionScope?: 'runtime' | 'workspace';
     branchMode?: string;
     branchArgumentStyle?: string;
     jsonFlag?: string;
@@ -47,6 +57,7 @@ type ToolManifestEntry = {
   };
   exampleInput?: Record<string, unknown>;
   sessionRequired?: boolean;
+  search?: SearchMetadata;
 };
 
 type CanonicalManifestEntry = {
@@ -67,14 +78,17 @@ type CanonicalToolManifest = {
   tools: CanonicalManifestEntry[];
 };
 
-type SearchOptions = {
+type SearchDetail = 'compact' | 'full';
+
+export type SearchOptions = {
   query: string;
-  limit: number;
+  limit?: number;
   category?: string;
   readOnly?: boolean;
   mutating?: boolean;
-  includeDocs: boolean;
+  includeDocs?: boolean;
   includeEmbeddings?: boolean;
+  detail?: SearchDetail;
 };
 
 type ToolDoc = {
@@ -86,6 +100,15 @@ type ToolDoc = {
 type ToolCard = {
   entry: ToolManifestEntry;
   doc?: ToolDoc;
+  domain: string;
+  namespaceTerms: Set<string>;
+  domainTerms: Set<string>;
+  configuredDomainAliases: Set<string>;
+  operationTerms: Set<string>;
+  surfaceOperationTerms: Set<string>;
+  keywordTerms: Set<string>;
+  entityTerms: Set<string>;
+  descriptionTerms: Set<string>;
   text: string;
   hash: string;
   tokens: string[];
@@ -93,10 +116,13 @@ type ToolCard = {
 
 type ScoreParts = {
   exact: number;
+  domain: number;
   name: number;
+  operation: number;
+  entity: number;
+  keyword: number;
   lexical: number;
   bm25: number;
-  intent: number;
   capability: number;
   embedding: number;
 };
@@ -105,45 +131,7 @@ type ScoredTool = {
   card: ToolCard;
   score: number;
   why: string[];
-  meaningfulMatches: number;
-  matchedIntentIds: string[];
   scoreParts: ScoreParts;
-};
-
-type ToolSearchMatch = {
-  name: string;
-  methodPath?: string[];
-  category?: string;
-  score: number;
-  scoreParts: ScoreParts;
-  description?: string;
-  capabilities: ToolCapability;
-  sessionRequired: boolean;
-  inputSchema?: string;
-  outputSchema?: string;
-  inputSignature?: string;
-  outputSignature?: string;
-  exampleInput?: Record<string, unknown>;
-  usage: {
-    workspaceCall: string;
-    script?: string;
-    subcommand?: string;
-    arguments: ToolCommandArgument[];
-  };
-  docs?: ToolDoc;
-  why: string[];
-};
-
-type IntentPack = {
-  id: string;
-  label: string;
-  terms: string[];
-  requireAny?: string[];
-  requireAll?: string[];
-  boost: Record<string, number>;
-  alternatives?: Array<{ intent: string; tools: string[] }>;
-  safeDefault?: string;
-  mutatingGuidance?: string;
 };
 
 type EmbeddingCache = {
@@ -153,403 +141,52 @@ type EmbeddingCache = {
   entries: Record<string, number[]>;
 };
 
-const workspaceRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const manifestPath = path.join(workspaceRoot, 'manifests', 'generated', 'tool.manifest.json');
-const toolsDocPath = path.join(workspaceRoot, 'TOOLS.md');
-const TOOL_CARD_VERSION = 'tools-search-card-v2';
-
-const STOP_WORDS = new Set(['a', 'an', 'the', 'for', 'to', 'of', 'and', 'or', 'no', 'such', 'made', 'up', 'with', 'by', 'in', 'on']);
-const GENERIC_ONLY_TOKENS = new Set(['tool', 'tools', 'search', 'find', 'query', 'lookup', 'file', 'files', 'fs', 'read', 'get', 'view']);
-const READ_INTENT_TOKENS = new Set(['search', 'find', 'lookup', 'read', 'get', 'view', 'check', 'checks', 'status', 'list', 'links', 'logs', 'log', 'trace', 'inspect', 'screenshot', 'show']);
-
-const QUERY_ALIASES: Record<string, string[]> = {
-  abandon: ['cleanup', 'clean', 'remove', 'delete', 'stale', 'worktree', 'branch'],
-  close: ['cleanup', 'finish', 'pr'],
-  cleanup: ['clean', 'remove', 'delete', 'stale', 'worktree', 'branch'],
-  clean: ['cleanup', 'remove', 'delete'],
-  delete: ['cleanup', 'remove', 'trash'],
-  remove: ['cleanup', 'delete', 'trash'],
-  stale: ['cleanup', 'worktree', 'branch'],
-  worktree: ['task', 'branch', 'cleanup'],
-  pr: ['pull', 'request', 'github'],
-  prs: ['pull', 'request', 'github', 'links'],
-  pull: ['pr', 'github'],
-  github: ['gh', 'pr', 'branch', 'repo'],
-  gh: ['github', 'pr'],
-  ticket: ['linear', 'issue'],
-  jira: ['linear', 'issue'],
-  file: ['fs', 'filesystem'],
-  files: ['fs', 'filesystem'],
-  grep: ['fs', 'search', 'ripgrep', 'pattern'],
-  ripgrep: ['grep', 'fs', 'search'],
-  patch: ['fs', 'write', 'edit'],
-  write: ['fs', 'file', 'mutating'],
-  trash: ['fs', 'delete', 'remove'],
-  search: ['find', 'query', 'lookup'],
-  read: ['get', 'fetch', 'view'],
-  trace: ['context', 'logs', 'sentry'],
-  log: ['logs', 'trace'],
-  logs: ['deployment', 'runtime', 'build', 'context', 'sentry'],
-  codex: ['worker', 'cdx'],
-  cdx: ['codex', 'worker'],
-  pi: ['worker', 'mini'],
-  deploy: ['deployment', 'railway', 'vercel', 'cloudflare', 'website', 'server'],
-  redeploy: ['deployment', 'deploy', 'service', 'railway', 'vercel', 'cloudflare'],
-  railway: ['deployment', 'provider', 'hosting'],
-  vercel: ['deployment', 'provider', 'hosting'],
-  cloudflare: ['deployment', 'provider', 'hosting', 'workers'],
-  environment: ['deployment', 'variables', 'config'],
-  variables: ['environment', 'deployment', 'config'],
-  browser: ['page', 'screenshot', 'open'],
-  bun: ['runtime', 'package', 'script', 'code', 'call'],
-  python: ['runtime', 'transform', 'script', 'code', 'call'],
-  bash: ['runtime', 'shell', 'script', 'code', 'call'],
-  typecheck: ['syntax', 'check', 'package', 'script', 'code'],
-  codegen: ['generate', 'generated', 'package', 'script', 'edit', 'code'],
-  generate: ['codegen', 'generated', 'package', 'script', 'edit'],
-  generated: ['codegen', 'generate', 'package', 'script', 'edit'],
-  diagnostic: ['runtime', 'inspect', 'code'],
-  diagnostics: ['runtime', 'inspect', 'code'],
-  summarize: ['structured', 'packet', 'bounded'],
-  summary: ['structured', 'packet', 'bounded'],
-  packet: ['structured', 'bounded', 'json'],
-  codemod: ['transform', 'rewrite', 'edit', 'code'],
-  transformation: ['transform', 'rewrite', 'code'],
-  transform: ['rewrite', 'codemod', 'code'],
-  rewrite: ['transform', 'codemod', 'edit', 'code'],
-  rg: ['ripgrep', 'grep', 'search', 'pattern'],
-  tool: ['manifest', 'schema', 'capability'],
-  tools: ['manifest', 'schema', 'capability'],
+type EmbeddingDiagnostics = {
+  embeddingConfigId: string;
+  cardsEmbedded: number;
+  cardsReused: number;
+  error?: string;
 };
 
-const INTENT_PACKS: IntentPack[] = [
-  {
-    id: 'stream-create',
-    label: 'create a durable stream branch with instructions',
-    terms: ['stream', 'create', 'initialize', 'new', 'branch', 'instructions'],
-    requireAll: ['stream'],
-    requireAny: ['create', 'initialize', 'new'],
-    boost: { 'stream.create': 120, 'stream.list': 18, 'task.start': -25 },
-    alternatives: [
-      { intent: 'inspect existing stream branches', tools: ['stream.list'] },
-      { intent: 'start work on an existing stream', tools: ['task.start'] },
-    ],
-    safeDefault: 'Use stream.list to confirm whether the stream already exists before creating it.',
-    mutatingGuidance: 'stream.create atomically creates the remote stream, instruction files, and local tracking branch.',
-  },
-  {
-    id: 'task-cleanup',
-    label: 'clean up or abandon a task branch/worktree',
-    terms: ['cleanup', 'clean', 'abandon', 'delete', 'remove', 'stale', 'worktree', 'branch'],
-    requireAny: ['cleanup', 'clean', 'abandon', 'delete', 'remove', 'stale'],
-    boost: { 'task.cleanup': 105, 'fs.trash': -35, 'task.pr': 12, 'task.prs': 20, 'task.finish': -60 },
-    alternatives: [
-      { intent: 'inspect task PR links', tools: ['task.prs'] },
-      { intent: 'create or refresh the stream review PR', tools: ['task.pr'] },
-      { intent: 'merge a pull request', tools: ['task.merge'] },
-      { intent: 'finish a merged task branch', tools: ['task.finish'] },
-    ],
-    safeDefault: 'Use task.prs when only inspecting PR state; use task.cleanup only when the user intends branch/worktree cleanup.',
-    mutatingGuidance: 'task.cleanup mutates branches/worktrees unless preview/dry-run flags are used.',
-  },
-  {
-    id: 'task-current',
-    label: 'inspect current task branch or worktree state',
-    terms: ['task', 'current', 'existing', 'branch', 'worktree', 'status'],
-    requireAny: ['current', 'existing', 'status'],
-    boost: { 'task.current': 105, 'task.prs': 12, 'stream.context': 8, 'task.cleanup': -55 },
-    safeDefault: 'Use task.current for inspecting existing task branch/worktree state; use task.cleanup only for explicit cleanup/abandon/delete intent.',
-  },
-  {
-    id: 'task-pr-links',
-    label: 'inspect task and review PR links',
-    terms: ['show', 'list', 'links', 'prs', 'pr'],
-    requireAny: ['show', 'list', 'links', 'prs'],
-    boost: { 'task.prs': 95, 'task.pr': 8, 'task.merge': -14, 'task.cleanup': -24 },
-    alternatives: [
-      { intent: 'create or refresh the stream review PR', tools: ['task.pr'] },
-      { intent: 'merge a pull request', tools: ['task.merge'] },
-    ],
-    safeDefault: 'task.prs is the safe read-only default for inspecting task PR links.',
-  },
-  {
-    id: 'github-pr-feedback',
-    label: 'fetch pull request feedback comments',
-    terms: ['github', 'pr', 'pull', 'request', 'review', 'reviews', 'comment', 'comments', 'feedback', 'inline', 'actionable', 'bot'],
-    requireAny: ['comments', 'comment', 'feedback', 'inline', 'bot'],
-    boost: { github: 120, 'task.pr': -80, 'task.prs': -20, 'task.merge': -30 },
-    alternatives: [
-      { intent: 'inspect task PR links', tools: ['task.prs'] },
-    ],
-    safeDefault: 'Use github operation pr.reviews for pull request feedback comments.',
-  },
-  {
-    id: 'task-pr-create',
-    label: 'create or refresh a stream review PR',
-    terms: ['create', 'refresh', 'review', 'stream', 'pr', 'pull', 'request'],
-    requireAny: ['create', 'refresh', 'review'],
-    boost: { 'task.pr': 90, 'task.prs': 12, 'task.merge': -8, 'task.cleanup': -24 },
-    alternatives: [
-      { intent: 'inspect task PR links', tools: ['task.prs'] },
-      { intent: 'merge a pull request', tools: ['task.merge'] },
-    ],
-  },
-  {
-    id: 'stream-sync',
-    label: 'sync a stream branch',
-    terms: ['stream', 'sync', 'branch', 'latest'],
-    requireAny: ['sync'],
-    boost: { 'stream.sync': 105, 'stream.context': 10, 'task.pr': -30, 'task.cleanup': -40 },
-    safeDefault: 'Use stream.sync for syncing stream branches; use task.pr only when creating or refreshing a review PR.',
-  },
-  {
-    id: 'task-merge',
-    label: 'merge a pull request',
-    terms: ['merge', 'pull', 'request', 'pr', 'squash', 'wait'],
-    requireAny: ['merge', 'squash'],
-    boost: { 'task.merge': 95, 'task.pr': 22, 'task.prs': 8, 'task.cleanup': -20 },
-    alternatives: [
-      { intent: 'create or refresh the stream review PR', tools: ['task.pr'] },
-      { intent: 'inspect task PR links', tools: ['task.prs'] },
-    ],
-  },
-  {
-    id: 'task-finish',
-    label: 'finish a completed task branch',
-    terms: ['finish', 'done', 'complete', 'close', 'task'],
-    requireAny: ['finish', 'done', 'complete'],
-    boost: { 'task.finish': 95, 'task.cleanup': 22, 'task.prs': 8 },
-  },
-  {
-    id: 'code-call-runtime',
-    label: 'run focused repo runtime checks and package scripts',
-    terms: [
-      'run',
-      'command',
-      'cli',
-      'reproduce',
-      'reproduction',
-      'exact',
-      'bun',
-      'python',
-      'bash',
-      'test',
-      'tests',
-      'typecheck',
-      'syntax',
-      'check',
-      'package',
-      'script',
-      'scripts',
-      'diagnostic',
-      'diagnostics',
-      'verify',
-    ],
-    requireAny: [
-      'command',
-      'cli',
-      'reproduce',
-      'reproduction',
-      'bun',
-      'python',
-      'bash',
-      'test',
-      'tests',
-      'typecheck',
-      'syntax',
-      'package',
-      'script',
-      'scripts',
-      'diagnostic',
-      'diagnostics',
-    ],
-    boost: { 'code.call': 125, 'fs.read': -20, 'fs.search': -15, 'fs.list': -15, 'fs.write': -10 },
-    safeDefault: 'code.call is the repo runtime default for package scripts, tests, typechecks, syntax checks, exact CLI reproduction, and focused diagnostics; use task.* and stream.* for lifecycle workflow operations.',
-  },
-  {
-    id: 'code-call-structured-file-work',
-    label: 'run structured multi-file inspection or transformation',
-    terms: [
-      'structured',
-      'summarize',
-      'summary',
-      'packet',
-      'bounded',
-      'shape',
-      'shaping',
-      'transform',
-      'transformation',
-      'rewrite',
-      'codemod',
-      'codegen',
-      'generate',
-      'generated',
-      'multi',
-      'many',
-      'files',
-      'python',
-      'bun',
-      'json',
-      'inspect',
-    ],
-    requireAny: [
-      'structured',
-      'summarize',
-      'summary',
-      'packet',
-      'bounded',
-      'transform',
-      'transformation',
-      'rewrite',
-      'codemod',
-      'codegen',
-      'generate',
-      'generated',
-      'python',
-      'bun',
-      'json',
-    ],
-    boost: { 'code.call': 120, 'fs.read': -20, 'fs.search': -10, 'fs.list': -10, 'fs.write': -10 },
-    safeDefault: 'Use code.call for programmable multi-file inspection, bounded JSON packets, codegen, and deterministic rewrites; use fs.read/fs.search/fs.list for simple literal file operations and fs.apply_patch for anchored patches.',
-  },
-  {
-    id: 'fs-search',
-    label: 'search repo files',
-    terms: ['grep', 'ripgrep', 'rg', 'search', 'find', 'pattern', 'contents', 'files', 'codebase'],
-    requireAny: ['grep', 'ripgrep', 'rg', 'pattern', 'contents'],
-    boost: { 'fs.search': 105, 'tools.search': -35, 'mac.search': 12, 'memory': -18, 'task.cleanup': -45 },
-    safeDefault: 'fs.search is the read-only default for searching repository files.',
-  },
-  {
-    id: 'fs-read',
-    label: 'read file contents',
-    terms: ['read', 'open', 'show', 'lines', 'contents', 'file'],
-    requireAny: ['read', 'open', 'lines'],
-    boost: { 'fs.read': 95, 'mac.read': 12, 'fs.search': 10 },
-  },
-  {
-    id: 'fs-list',
-    label: 'list files or directories',
-    terms: ['list', 'tree', 'folder', 'directory', 'dirs', 'files'],
-    requireAny: ['list', 'tree', 'folder', 'directory'],
-    boost: { 'fs.list': 95, 'mac.list': 10, 'fs.search': 8 },
-  },
-  {
-    id: 'fs-write-patch',
-    label: 'write or patch task worktree files',
-    terms: ['write', 'patch', 'apply', 'anchored', 'anchor', 'hunk', 'edit', 'replace', 'file', 'contents'],
-    requireAny: ['write', 'patch', 'apply', 'anchored', 'anchor', 'hunk', 'edit', 'replace'],
-    boost: { 'fs.apply_patch': 120, 'fs.write': 45, 'fs.trash': 18, 'fs.read': 8, 'code.call': -20 },
-    mutatingGuidance: 'fs.apply_patch is the default for anchored patch/apply/hunk edits; fs.write is for whole-file write/append/overwrite; prefer fs.read/fs.search for investigation.',
-  },
-  {
-    id: 'browser-screenshot',
-    label: 'capture or inspect rendered browser state',
-    terms: ['browser', 'screenshot', 'page', 'rendered', 'snapshot', 'accessibility'],
-    requireAny: ['browser', 'screenshot', 'rendered', 'snapshot'],
-    boost: { 'browser.screenshot': 86, 'browser.test': 72, 'browser.snap': 60, 'browser.open': 32 },
-  },
-  {
-    id: 'linear-issue',
-    label: 'read or search Linear issues',
-    terms: ['linear', 'issue', 'ticket', 'jira', 'dev'],
-    requireAny: ['linear', 'issue', 'ticket', 'jira'],
-    boost: { 'linear.issue': 86, 'linear.search': 72, 'linear.createIssue': -16 },
-  },
-  {
-    id: 'deployment-logs',
-    label: 'inspect Railway, Vercel, or Cloudflare deployment logs',
-    terms: ['deployment', 'provider', 'railway', 'vercel', 'cloudflare', 'logs', 'log', 'errors', 'runtime', 'build'],
-    requireAny: ['logs', 'log', 'errors', 'runtime', 'build'],
-    boost: { 'deployment.logs': 145, 'deployment.status': 24, 'deployment.list': 10, 'task.prs': -120, 'task.pr': -90 },
-    safeDefault: 'deployment.logs is the read-only default for bounded Railway, Vercel, and Cloudflare runtime or build logs.',
-  },
-  {
-    id: 'deployment-status',
-    label: 'inspect Railway, Vercel, or Cloudflare deployment status',
-    terms: ['deployment', 'provider', 'railway', 'vercel', 'cloudflare', 'status', 'check', 'inspect'],
-    requireAll: ['deployment'],
-    requireAny: ['status', 'check', 'inspect'],
-    boost: { 'deployment.status': 135, 'deployment.list': 22, 'deployment.context': 10, 'task.current': -80, 'task.prs': -100 },
-    safeDefault: 'deployment.status reads one provider deployment without changing remote state.',
-  },
-  {
-    id: 'deployment-environment',
-    label: 'inspect or change Railway, Vercel, or Cloudflare environment metadata',
-    terms: ['deployment', 'provider', 'railway', 'vercel', 'cloudflare', 'environment', 'variable', 'variables', 'config', 'names', 'set', 'delete'],
-    requireAny: ['environment', 'variable', 'variables'],
-    boost: { 'deployment.environment': 145, 'deployment.context': 12, 'deployment.list': 8, 'task.prs': -100 },
-    safeDefault: 'Use deployment.environment action list to read variable names; set and delete require explicit approval and never return secret values.',
-    mutatingGuidance: 'deployment.environment set/delete changes provider configuration and requires explicit local approval.',
-  },
-  {
-    id: 'deployment-mutation',
-    label: 'deploy, redeploy, or promote on Railway, Vercel, or Cloudflare',
-    terms: ['deployment', 'provider', 'railway', 'vercel', 'cloudflare', 'deploy', 'redeploy', 'promote', 'service', 'production'],
-    requireAny: ['deploy', 'redeploy', 'promote'],
-    boost: { 'deployment.deploy': 145, 'deployment.status': 18, 'deployment.logs': 8, 'task.prs': -110, 'website.deploy': -25 },
-    mutatingGuidance: 'deployment.deploy changes remote provider state and requires explicit local approval.',
-  },
-];
+const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const manifestPath = path.join(packageRoot, 'manifests', 'generated', 'tool.manifest.json');
+const toolsDocPath = path.join(packageRoot, 'TOOLS.md');
+const TOOL_CARD_VERSION = 'tools-search-card-v3';
+const DEFAULT_LIMIT = 3;
+const MAX_LIMIT = 5;
+const MAX_CANDIDATES = 8;
 
-function parseArgs(argv: string[]): SearchOptions {
-  let query = '';
-  let limit = 8;
-  let category: string | undefined;
-  let readOnly: boolean | undefined;
-  let mutating: boolean | undefined;
-  let includeDocs = true;
-  let includeEmbeddings = true;
+const STOP_WORDS = new Set([
+  'a', 'an', 'the', 'for', 'to', 'of', 'and', 'or', 'no', 'such', 'made', 'up', 'with', 'by', 'in', 'on',
+  'please', 'can', 'could', 'would', 'you', 'me', 'my', 'our', 'this', 'that', 'these', 'those', 'it', 'its', 'them', 'they', 'from', 'into', 'at', 'as',
+]);
 
-  for (let index = 0; index < argv.length; index += 1) {
-    const arg = argv[index];
-    if (arg === '--query' || arg === '-q') {
-      query = argv[index + 1] || '';
-      index += 1;
-      continue;
-    }
-    if (arg === '--limit') {
-      const parsed = Number(argv[index + 1]);
-      if (Number.isFinite(parsed) && parsed > 0) limit = Math.min(Math.floor(parsed), 30);
-      index += 1;
-      continue;
-    }
-    if (arg === '--category') {
-      category = argv[index + 1] || undefined;
-      index += 1;
-      continue;
-    }
-    if (arg === '--read-only') {
-      readOnly = true;
-      continue;
-    }
-    if (arg === '--mutating') {
-      mutating = true;
-      continue;
-    }
-    if (arg === '--no-docs') {
-      includeDocs = false;
-      continue;
-    }
-    if (arg === '--no-embeddings') {
-      includeEmbeddings = false;
-      continue;
-    }
-    if (arg === '--json') continue;
-    if (!arg.startsWith('-') && !query) query = arg;
-  }
+// These words describe generic operations, not domains. They must never establish a domain by themselves.
+const GENERIC_OPERATION_TOKENS = new Set([
+  'search', 'find', 'lookup', 'read', 'get', 'view', 'check', 'checks', 'status', 'list', 'links', 'logs', 'log',
+  'trace', 'inspect', 'show', 'create', 'update', 'delete', 'remove', 'write', 'edit', 'run', 'command', 'commands',
+  'open', 'close', 'start', 'stop', 'sync', 'wait', 'deploy', 'redeploy', 'promote', 'generate', 'build', 'runtime', 'latest',
+]);
 
-  query = query.trim();
-  if (!query) {
-    throw new Error('tools.search requires a query. Example: bun run tools:search -- "linear issue" --json');
-  }
+const GENERIC_DOMAIN_TOKENS = new Set([
+  'tool', 'tools', 'tooling', 'utilities', 'utility', 'workspace', 'wrapper', 'generic', 'operation', 'operations',
+]);
 
-  return { query, limit, category, readOnly, mutating, includeDocs, includeEmbeddings };
-}
+// Common entities can select an operation inside a domain, but must not become domains themselves.
+const GENERIC_ENTITY_TOKENS = new Set([
+  'file', 'files', 'directory', 'directories', 'folder', 'folders',
+  'pr', 'pull', 'request', 'review', 'reviews', 'comment', 'comments', 'feedback',
+  'service', 'services', 'project', 'projects', 'page', 'pages', 'object', 'objects',
+]);
 
-function normalize(value: string): string {
+const DOMAIN_STOP_TOKENS = new Set([
+  ...GENERIC_DOMAIN_TOKENS,
+  ...GENERIC_OPERATION_TOKENS,
+  ...GENERIC_ENTITY_TOKENS,
+]);
+
+function normalizeText(value: string): string {
   return value
-    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
     .replace(/[._:/-]+/g, ' ')
     .replace(/[^a-zA-Z0-9\s]+/g, ' ')
     .replace(/\s+/g, ' ')
@@ -557,56 +194,49 @@ function normalize(value: string): string {
     .toLowerCase();
 }
 
-function tokensFor(value: string): string[] {
-  return normalize(value).split(' ').filter((token) => token.length > 0);
+function normalizeIdentifier(value: string): string {
+  return normalizeText(value.replace(/([a-z0-9])([A-Z])/g, '$1 $2'));
 }
 
-function baseSearchTokens(query: string): string[] {
-  return tokensFor(query).filter((token) => !STOP_WORDS.has(token));
-}
-
-function meaningfulSearchTokens(query: string): string[] {
-  return baseSearchTokens(query).filter((token) => !GENERIC_ONLY_TOKENS.has(token));
-}
-
-function hasReadIntent(query: string): boolean {
-  return baseSearchTokens(query).some((token) => READ_INTENT_TOKENS.has(token));
-}
-
-function allowsGenericOnlySearch(query: string): boolean {
-  return new Set(['file search', 'files search', 'fs search', 'tool search', 'tools search', 'search tools', 'tool', 'tools']).has(normalize(query));
-}
-
-function expandTokens(query: string): string[] {
-  const base = baseSearchTokens(query);
-  const expanded = new Set(base);
-  for (const token of base) {
-    for (const alias of QUERY_ALIASES[token] || []) expanded.add(alias);
+function canonicalToken(token: string): string {
+  if (token === 'prs') return 'pr';
+  if (token.length > 4 && token.endsWith('ies')) return `${token.slice(0, -3)}y`;
+  if (token.length > 3 && token.endsWith('s') && !token.endsWith('ss') && !token.endsWith('us') && !token.endsWith('is') && token !== 'status') {
+    return token.slice(0, -1);
   }
-  return [...expanded];
+  return token;
 }
 
-function meaningfulExpandedTokens(query: string): Set<string> {
-  const meaningful = new Set(meaningfulSearchTokens(query));
-  for (const token of meaningfulSearchTokens(query)) {
-    for (const alias of QUERY_ALIASES[token] || []) meaningful.add(alias);
-  }
-  return meaningful;
+function canonicalTokens(tokens: string[]): string[] {
+  return tokens.map(canonicalToken);
+}
+
+function surfaceTokensForText(value: string): string[] {
+  return normalizeText(value).split(' ').filter((token) => token.length > 0 && !STOP_WORDS.has(token));
+}
+
+function surfaceTokensForIdentifier(value: string): string[] {
+  return normalizeIdentifier(value).split(' ').filter((token) => token.length > 0 && !STOP_WORDS.has(token));
+}
+
+function tokensForText(value: string): string[] {
+  return canonicalTokens(surfaceTokensForText(value));
+}
+
+function tokensForIdentifier(value: string): string[] {
+  return canonicalTokens(surfaceTokensForIdentifier(value));
+}
+
+function meaningfulTokens(query: string): string[] {
+  return tokensForText(query).filter((token) => !GENERIC_OPERATION_TOKENS.has(token));
+}
+
+function setOf(values: Iterable<string>): Set<string> {
+  return new Set([...values].filter(Boolean));
 }
 
 function hashText(value: string): string {
   return createHash('sha256').update(value).digest('hex');
-}
-
-function fuzzyTokenMatch(needle: string, haystack: string): boolean {
-  if (haystack.includes(needle)) return true;
-  if (needle.length < 4) return false;
-  let position = 0;
-  for (const char of haystack) {
-    if (char === needle[position]) position += 1;
-    if (position === needle.length) return true;
-  }
-  return false;
 }
 
 function compactSnippet(value: string, limit = 600): string {
@@ -623,7 +253,6 @@ function readCanonicalManifest(): CanonicalToolManifest {
   if (!isObject(parsed) || !Array.isArray(parsed.tools)) {
     throw new Error(`${manifestPath}: expected generated tool manifest with tools array`);
   }
-
   const manifest = parsed as CanonicalToolManifest;
   const home = resolveOverlayHome();
   if (!fs.existsSync(path.join(home, 'config.json'))) return manifest;
@@ -632,6 +261,10 @@ function readCanonicalManifest(): CanonicalToolManifest {
 
 function stringField(value: unknown): string | undefined {
   return typeof value === 'string' && value.length > 0 ? value : undefined;
+}
+
+function stringArray(value: unknown): string[] {
+  return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string' && item.length > 0) : [];
 }
 
 function booleanField(value: unknown): boolean {
@@ -643,47 +276,30 @@ function osSkillCapabilities(definition: JsonObject): ToolCapability {
   const mutating = booleanField(definition.writesRecords)
     || booleanField(definition.externalSideEffects)
     || ['write', 'execute', 'external', 'admin'].includes(permission);
-
-  return {
-    readOnly: !mutating,
-    mutating,
-    deterministic: false,
-    safeToRetry: !mutating,
-  };
+  return { readOnly: !mutating, mutating, deterministic: false, safeToRetry: !mutating };
 }
 
 function projectOsSkillEntry(entry: CanonicalManifestEntry): ToolManifestEntry {
   const definition = entry.definition;
   const implementation = isObject(definition.implementation) ? definition.implementation : {};
   const implementationScript = stringField(implementation.script);
-
   return {
     name: entry.name,
     methodPath: ['call', entry.name],
     description: entry.description,
     category: entry.category,
-    underlying: implementationScript
-      ? `consuelo-os call ${entry.name} (${implementationScript})`
-      : `consuelo-os call ${entry.name}`,
+    underlying: implementationScript ? `consuelo-os call ${entry.name} (${implementationScript})` : `consuelo-os call ${entry.name}`,
     capabilities: osSkillCapabilities(definition),
     defaultTimeout: 120000,
-    command: {
-      internal: 'os-skill',
-      arguments: [],
-    },
-    exampleInput: {
-      name: entry.name,
-      input: {},
-    },
+    command: { internal: 'os-skill', arguments: [] },
+    exampleInput: { name: entry.name, input: {} },
     sessionRequired: false,
+    ...(isObject(definition.search) ? { search: definition.search as SearchMetadata } : {}),
   };
 }
 
 function projectCanonicalEntry(entry: CanonicalManifestEntry): ToolManifestEntry {
-  if (entry.kind === 'facade-tool') {
-    return entry.definition as ToolManifestEntry;
-  }
-
+  if (entry.kind === 'facade-tool') return entry.definition as ToolManifestEntry;
   return projectOsSkillEntry(entry);
 }
 
@@ -700,55 +316,130 @@ function readToolDocs(): Map<string, ToolDoc> {
     const headingMatch = block.match(/^###\s+([^\n]+)/);
     if (!headingMatch) continue;
     const name = headingMatch[1].trim().replace(/`/g, '');
-    docs.set(name, {
-      heading: headingMatch[0].trim(),
-      snippet: compactSnippet(block),
-      source: 'packages/os/TOOLS.md',
-    });
+    docs.set(name, { heading: headingMatch[0].trim(), snippet: compactSnippet(block), source: 'packages/os/TOOLS.md' });
   }
   return docs;
 }
 
-function toolCardText(entry: ToolManifestEntry, doc?: ToolDoc): string {
-  const args = entry.command?.arguments?.map((arg) => `${arg.source} ${arg.flag || ''} ${arg.kind || ''}`).join(' ') || '';
+function domainFor(entry: ToolManifestEntry): string {
+  const configured = stringField(entry.search?.domain);
+  if (configured) return normalizeText(configured).replace(/\s+/g, '-');
+  if (entry.name.includes('.')) return normalizeIdentifier(entry.name.split('.')[0]).replace(/\s+/g, '-');
+  const category = normalizeText(entry.category || '');
+  if (category && !GENERIC_DOMAIN_TOKENS.has(category)) return category.replace(/\s+/g, '-');
+  return normalizeIdentifier(entry.name).replace(/\s+/g, '-');
+}
+
+function toolCardText(entry: ToolManifestEntry): string {
+  const search = entry.search || {};
   return [
-    `name: ${entry.name}`,
-    `category: ${entry.category || ''}`,
-    `description: ${entry.description || ''}`,
-    `capabilities: readOnly=${entry.capabilities?.readOnly === true} mutating=${entry.capabilities?.mutating === true} deterministic=${entry.capabilities?.deterministic === true} safeToRetry=${entry.capabilities?.safeToRetry === true}`,
-    `input schema: ${entry.inputSchema || ''}`,
-    `output schema: ${entry.outputSchema || ''}`,
-    `method path: ${(entry.methodPath || []).join('.')}`,
-    `script: ${entry.command?.script || ''} ${entry.command?.subcommand || ''}`,
-    `arguments: ${args}`,
-    `example: ${JSON.stringify(entry.exampleInput || {})}`,
-    `docs: ${doc?.snippet || ''}`,
-  ].join('\n');
+    entry.name,
+    entry.category || '',
+    entry.description || '',
+    search.domain || '',
+    ...(search.domainAliases || []),
+    ...(search.keywords || []),
+    ...(search.entities || []),
+  ].join(' ');
 }
 
 function buildCards(manifest: ToolManifestEntry[], docs: Map<string, ToolDoc>): ToolCard[] {
   return manifest.map((entry) => {
-    const doc = docs.get(entry.name);
-    const text = toolCardText(entry, doc);
-    const hash = hashText(JSON.stringify({ version: TOOL_CARD_VERSION, entry, doc, text }));
-    return { entry, doc, text, hash, tokens: tokensFor(text) };
+    const search = entry.search || {};
+    const namespaceTerms = setOf(entry.name.includes('.') ? tokensForIdentifier(entry.name.split('.')[0]) : []);
+    const categoryTerms = tokensForText(entry.category || '').filter((token) => !GENERIC_DOMAIN_TOKENS.has(token));
+    const configuredDomainAliases = setOf(stringArray(search.domainAliases).flatMap(tokensForText));
+    const domainTerms = setOf([
+      ...namespaceTerms,
+      ...categoryTerms,
+      ...tokensForText(search.domain || ''),
+      ...configuredDomainAliases,
+    ]);
+    const leafName = entry.name.split('.').slice(-1)[0] || entry.name;
+    const operationTerms = setOf(tokensForIdentifier(leafName));
+    const surfaceOperationTerms = setOf(surfaceTokensForIdentifier(leafName));
+    const keywordTerms = setOf(stringArray(search.keywords).flatMap(tokensForText));
+    const entityTerms = setOf(stringArray(search.entities).flatMap(tokensForText));
+    const descriptionTerms = setOf(tokensForText(entry.description || ''));
+    const text = toolCardText(entry);
+    const hash = hashText(JSON.stringify({ version: TOOL_CARD_VERSION, name: entry.name, text }));
+    return {
+      entry,
+      doc: docs.get(entry.name),
+      domain: domainFor(entry),
+      namespaceTerms,
+      domainTerms,
+      configuredDomainAliases,
+      operationTerms,
+      surfaceOperationTerms,
+      keywordTerms,
+      entityTerms,
+      descriptionTerms,
+      text,
+      hash,
+      tokens: tokensForText(text),
+    };
   });
 }
 
-function termSet(query: string): Set<string> {
-  return new Set(baseSearchTokens(query));
-}
-function intentMatches(pack: IntentPack, queryTerms: Set<string>): boolean {
-  const hasTerm = pack.terms.some((term) => queryTerms.has(term));
-  if (!hasTerm) return false;
-  if (pack.requireAll?.length && !pack.requireAll.every((term) => queryTerms.has(term))) return false;
-  if (!pack.requireAny?.length) return true;
-  return pack.requireAny.some((term) => queryTerms.has(term));
+function filterByOptions(cards: ToolCard[], options: SearchOptions): ToolCard[] {
+  return cards
+    .filter((card) => !options.category || card.entry.category === options.category)
+    .filter((card) => options.readOnly !== true || card.entry.capabilities?.readOnly === true)
+    .filter((card) => options.mutating !== true || card.entry.capabilities?.mutating === true);
 }
 
-function matchedIntentPacks(query: string): IntentPack[] {
-  const terms = termSet(query);
-  return INTENT_PACKS.filter((pack) => intentMatches(pack, terms));
+type DomainIndex = {
+  hard: Map<string, Set<string>>;
+  soft: Map<string, Set<string>>;
+  softCounts: Map<string, Map<string, number>>;
+};
+
+function addDomain(map: Map<string, Set<string>>, token: string, domain: string, explicit = false): void {
+  if (!token || (!explicit && DOMAIN_STOP_TOKENS.has(token))) return;
+  const values = map.get(token) || new Set<string>();
+  values.add(domain);
+  map.set(token, values);
+}
+
+function buildDomainIndex(cards: ToolCard[]): DomainIndex {
+  const hard = new Map<string, Set<string>>();
+  const soft = new Map<string, Set<string>>();
+  const softCounts = new Map<string, Map<string, number>>();
+  for (const card of cards) {
+    for (const token of card.domainTerms) addDomain(hard, token, card.domain, card.configuredDomainAliases.has(token));
+    const descriptorTokens = new Set([...card.descriptionTerms, ...card.keywordTerms, ...card.entityTerms]);
+    for (const token of descriptorTokens) {
+      if (DOMAIN_STOP_TOKENS.has(token)) continue;
+      addDomain(soft, token, card.domain);
+      const counts = softCounts.get(token) || new Map<string, number>();
+      counts.set(card.domain, (counts.get(card.domain) || 0) + 1);
+      softCounts.set(token, counts);
+    }
+  }
+  return { hard, soft, softCounts };
+}
+
+function detectDomains(query: string, index: DomainIndex): { domains: Set<string>; terms: string[] } {
+  const domains = new Set<string>();
+  const matchedTerms: string[] = [];
+  for (const token of tokensForText(query)) {
+    const hardDomains = index.hard.get(token);
+    if (hardDomains?.size) {
+      for (const domain of hardDomains) domains.add(domain);
+      matchedTerms.push(token);
+      continue;
+    }
+    if (GENERIC_OPERATION_TOKENS.has(token)) continue;
+    const softDomains = index.soft.get(token);
+    if (softDomains?.size !== 1) continue;
+    const domain = [...softDomains][0];
+    const count = index.softCounts.get(token)?.get(domain) || 0;
+    if (count < 2) continue;
+    domains.add(domain);
+    matchedTerms.push(token);
+  }
+  return { domains, terms: [...new Set(matchedTerms)] };
 }
 
 function computeIdf(cards: ToolCard[]): Map<string, number> {
@@ -757,9 +448,7 @@ function computeIdf(cards: ToolCard[]): Map<string, number> {
     for (const token of new Set(card.tokens)) df.set(token, (df.get(token) || 0) + 1);
   }
   const idf = new Map<string, number>();
-  for (const [token, count] of df) {
-    idf.set(token, Math.log(1 + (cards.length - count + 0.5) / (count + 0.5)));
-  }
+  for (const [token, count] of df) idf.set(token, Math.log(1 + (cards.length - count + 0.5) / (count + 0.5)));
   return idf;
 }
 
@@ -779,6 +468,79 @@ function bm25Score(card: ToolCard, queryTokens: string[], idf: Map<string, numbe
   return score;
 }
 
+function overlapCount(tokens: string[], values: Set<string>): number {
+  let count = 0;
+  for (const token of new Set(tokens)) if (values.has(token)) count += 1;
+  return count;
+}
+
+function cheapCandidateScore(card: ToolCard, queryTokens: string[], anchoredDomains: Set<string>, idf: Map<string, number>): number {
+  let score = anchoredDomains.has(card.domain) ? 80 : 0;
+  const nameTerms = setOf(tokensForIdentifier(card.entry.name));
+  for (const token of new Set(queryTokens)) {
+    const weight = Math.max(1, idf.get(token) || 1);
+    const genericScale = (GENERIC_OPERATION_TOKENS.has(token) || GENERIC_ENTITY_TOKENS.has(token))
+      && !anchoredDomains.has(card.domain) ? 0.15 : 1;
+    if (nameTerms.has(token)) score += 20 * weight * genericScale;
+    if (card.operationTerms.has(token)) score += 24 * weight * genericScale;
+    if (card.entityTerms.has(token)) score += 22 * weight * (GENERIC_ENTITY_TOKENS.has(token) ? 0.3 : 1);
+    if (card.keywordTerms.has(token)) score += 16 * weight;
+    if (card.configuredDomainAliases.has(token)) score += 30 * weight;
+    else if (card.domainTerms.has(token)) score += 14 * weight;
+    if (card.descriptionTerms.has(token)) score += 4 * weight;
+  }
+  return score;
+}
+
+function scoreCard(card: ToolCard, options: SearchOptions, anchoredDomains: Set<string>, idf: Map<string, number>, averageLength: number, embeddingScore = 0): ScoredTool {
+  const rawQuery = options.query.trim().toLowerCase();
+  const queryTokens = tokensForText(options.query);
+  const nameTokens = setOf(tokensForIdentifier(card.entry.name));
+  const why: string[] = [];
+  const scoreParts: ScoreParts = { exact: 0, domain: 0, name: 0, operation: 0, entity: 0, keyword: 0, lexical: 0, bm25: 0, capability: 0, embedding: 0 };
+
+  if (card.entry.name.toLowerCase() === rawQuery) {
+    scoreParts.exact = 1000;
+    why.push('exact tool name');
+  }
+  if (anchoredDomains.has(card.domain)) {
+    scoreParts.domain = 90;
+    why.push(`domain: ${card.domain}`);
+  }
+  if (normalizeIdentifier(card.entry.name) === normalizeText(options.query)) scoreParts.name += 90;
+
+  const queryTokenSet = new Set(queryTokens);
+  const surfaceQueryTokenSet = new Set(surfaceTokensForText(options.query));
+  for (const token of queryTokenSet) {
+    const weight = Math.min(3.5, Math.max(1, idf.get(token) || 1));
+    const genericScale = (GENERIC_OPERATION_TOKENS.has(token) || GENERIC_ENTITY_TOKENS.has(token))
+      && !anchoredDomains.has(card.domain) ? 0.15 : 1;
+    if (nameTokens.has(token)) scoreParts.name += 18 * weight * genericScale;
+    if (card.operationTerms.has(token)) scoreParts.operation += 28 * weight * genericScale;
+    if (card.entityTerms.has(token)) scoreParts.entity += 24 * weight * (GENERIC_ENTITY_TOKENS.has(token) ? 0.25 : 1);
+    if (card.keywordTerms.has(token)) scoreParts.keyword += 18 * weight * ((GENERIC_OPERATION_TOKENS.has(token) || GENERIC_ENTITY_TOKENS.has(token)) ? 0.3 : 1);
+    if (card.configuredDomainAliases.has(token)) scoreParts.domain += 34 * weight;
+    else if (card.domainTerms.has(token)) scoreParts.domain += 12 * weight;
+    if (card.descriptionTerms.has(token)) scoreParts.lexical += 4 * weight;
+  }
+  if (card.operationTerms.size > 0 && [...card.operationTerms].every((token) => queryTokenSet.has(token))) {
+    scoreParts.operation += 24;
+  }
+  if (card.surfaceOperationTerms.size > 0 && [...card.surfaceOperationTerms].every((token) => surfaceQueryTokenSet.has(token))) {
+    scoreParts.operation += 30;
+  }
+
+  scoreParts.bm25 = Math.min(40, bm25Score(card, queryTokens, idf, averageLength) * 10);
+  const capabilities = card.entry.capabilities || {};
+  if (options.readOnly === true && capabilities.readOnly === true) scoreParts.capability += 12;
+  if (options.mutating === true && capabilities.mutating === true) scoreParts.capability += 12;
+  scoreParts.embedding = embeddingScore > 0 ? Math.min(35, embeddingScore * 35) : 0;
+  if (scoreParts.embedding > 0) why.push('semantic fallback');
+
+  const score = Object.values(scoreParts).reduce((sum, value) => sum + value, 0);
+  return { card, score, why, scoreParts };
+}
+
 function cosineSimilarity(a: number[] | Float32Array, b: number[] | Float32Array): number {
   const length = Math.min(a.length, b.length);
   let dot = 0;
@@ -794,11 +556,11 @@ function getEmbeddingRuntime(): { embedText: (text: string, options?: Record<str
 }
 
 function embeddingsEnabled(): boolean {
-  return process.env.WORKSPACE_TOOL_SEARCH_EMBEDDINGS !== '0' && process.env.WORKSPACE_TOOL_SEARCH_EMBEDDINGS !== 'false';
+  return process.env.CONSUELO_TOOL_SEARCH_EMBEDDINGS !== '0' && process.env.CONSUELO_TOOL_SEARCH_EMBEDDINGS !== 'false';
 }
 
 function cacheFileFor(configId: string): string {
-  return path.join(os.homedir(), '.cache', 'workspace-tool-search', configId, `${TOOL_CARD_VERSION}.json`);
+  return path.join(os.homedir(), '.cache', 'consuelo-tool-search', configId, `${TOOL_CARD_VERSION}.json`);
 }
 
 function readEmbeddingCache(configId: string): EmbeddingCache {
@@ -810,30 +572,26 @@ function readEmbeddingCache(configId: string): EmbeddingCache {
       return { version: 1, embeddingConfigId: configId, cardVersion: TOOL_CARD_VERSION, entries: {} };
     }
     return parsed;
-  } catch (error: unknown) {
-    void error;
+  } catch {
     return { version: 1, embeddingConfigId: configId, cardVersion: TOOL_CARD_VERSION, entries: {} };
   }
 }
+
 function writeEmbeddingCache(configId: string, cache: EmbeddingCache): void {
   const file = cacheFileFor(configId);
   fs.mkdirSync(path.dirname(file), { recursive: true });
   fs.writeFileSync(file, `${JSON.stringify(cache)}\n`);
 }
 
-async function embeddingScores(query: string, cards: ToolCard[]): Promise<{ scores: Map<string, number>; diagnostics: { embeddingConfigId: string; cardsEmbedded: number; cardsReused: number; error?: string } }> {
-  if (!embeddingsEnabled()) {
-    return { scores: new Map(), diagnostics: { embeddingConfigId: 'disabled', cardsEmbedded: 0, cardsReused: 0 } };
-  }
-
+async function embeddingScores(query: string, cards: ToolCard[]): Promise<{ scores: Map<string, number>; diagnostics: EmbeddingDiagnostics }> {
+  if (!embeddingsEnabled()) return { scores: new Map(), diagnostics: { embeddingConfigId: 'disabled', cardsEmbedded: 0, cardsReused: 0 } };
   try {
     const runtime = getEmbeddingRuntime();
     const cache = readEmbeddingCache(runtime.configId);
     const missing = cards.filter((card) => !cache.entries[card.hash]);
     let cardsEmbedded = 0;
-
     if (missing.length > 0) {
-      const batchSize = Math.max(1, Math.min(Number.parseInt(process.env.WORKSPACE_TOOL_SEARCH_BATCH_SIZE || '32', 10) || 32, 64));
+      const batchSize = Math.max(1, Math.min(Number.parseInt(process.env.CONSUELO_TOOL_SEARCH_BATCH_SIZE || '32', 10) || 32, 64));
       for (let index = 0; index < missing.length; index += batchSize) {
         const batch = missing.slice(index, index + batchSize);
         const vectors = await runtime.embedTexts(batch.map((card) => card.text), { kind: 'document' });
@@ -844,154 +602,65 @@ async function embeddingScores(query: string, cards: ToolCard[]): Promise<{ scor
       }
       writeEmbeddingCache(runtime.configId, cache);
     }
-
     const queryVector = await runtime.embedText(query, { kind: 'query' });
     const scores = new Map<string, number>();
     for (const card of cards) {
       const vector = cache.entries[card.hash];
-      if (!vector) continue;
-      scores.set(card.hash, cosineSimilarity(queryVector, vector));
+      if (vector) scores.set(card.hash, cosineSimilarity(queryVector, vector));
     }
-
-    return {
-      scores,
-      diagnostics: {
-        embeddingConfigId: runtime.configId,
-        cardsEmbedded,
-        cardsReused: cards.length - cardsEmbedded,
-      },
-    };
+    return { scores, diagnostics: { embeddingConfigId: runtime.configId, cardsEmbedded, cardsReused: cards.length - cardsEmbedded } };
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error);
-    return { scores: new Map(), diagnostics: { embeddingConfigId: 'error', cardsEmbedded: 0, cardsReused: 0, error: message } };
+    return { scores: new Map(), diagnostics: { embeddingConfigId: 'error', cardsEmbedded: 0, cardsReused: 0, error: error instanceof Error ? error.message : String(error) } };
   }
 }
 
-function scoreCard(card: ToolCard, options: SearchOptions, docs: Map<string, ToolDoc>, intents: IntentPack[], bm25: number, embeddingScore: number): ScoredTool {
-  const rawQuery = options.query.trim().toLowerCase();
-  const queryTokens = expandTokens(options.query);
-  const meaningfulTokens = meaningfulExpandedTokens(options.query);
-  const entry = card.entry;
-  const name = entry.name || '';
-  const nameLower = name.toLowerCase();
-  const nameTokens = tokensFor(name);
-  const category = (entry.category || '').toLowerCase();
-  const description = normalize(entry.description || '');
-  const schema = normalize(`${entry.inputSchema || ''} ${entry.outputSchema || ''}`);
-  const commandText = normalize(JSON.stringify(entry.command || {}));
-  const exampleText = normalize(JSON.stringify(entry.exampleInput || {}));
-  const docsText = normalize(docs.get(entry.name)?.snippet || '');
-  const why: string[] = [];
-  let meaningfulMatches = 0;
-  const scoreParts: ScoreParts = { exact: 0, name: 0, lexical: 0, bm25: 0, intent: 0, capability: 0, embedding: 0 };
+function confidenceFor(scored: ScoredTool[], anchoredDomains: Set<string>, exact: boolean): 'high' | 'medium' | 'low' {
+  if (exact) return 'high';
+  if (scored.length === 0) return 'low';
+  const top = scored[0].score;
+  const gap = top - (scored[1]?.score || 0);
+  if (anchoredDomains.size > 0 && top >= 90 && gap >= 10) return 'high';
+  if (top >= 80 && gap >= 16) return 'high';
+  if (top >= 48 && gap >= 7) return 'medium';
+  return 'low';
+}
 
-  if (nameLower === rawQuery) {
-    scoreParts.exact += 300;
-    why.push('exact tool name match');
-  }
-  if (rawQuery.length >= 3 && nameLower.includes(rawQuery)) {
-    scoreParts.name += 100;
-    why.push('tool name contains query');
-  }
-  if (category && rawQuery === category) {
-    scoreParts.lexical += 24;
-    why.push('category match');
-  }
-  if (nameTokens.join(' ') === normalize(options.query)) {
-    scoreParts.name += 70;
-    why.push('tool name matches query phrase');
-  }
+function compactCapabilities(capabilities: ToolCapability | undefined): Pick<ToolCapability, 'readOnly' | 'mutating'> {
+  return { readOnly: capabilities?.readOnly === true, mutating: capabilities?.mutating === true };
+}
 
-  for (const token of queryTokens) {
-    if (!token) continue;
-    const isMeaningfulToken = meaningfulTokens.has(token);
-    let tokenMatched = false;
-    if (nameTokens.includes(token)) {
-      scoreParts.name += 22;
-      why.push(`name token: ${token}`);
-      tokenMatched = true;
-    } else if (nameTokens.some((nameToken) => nameToken.startsWith(token))) {
-      scoreParts.name += 16;
-      why.push(`name prefix: ${token}`);
-      tokenMatched = true;
-    } else if (nameTokens.some((nameToken) => fuzzyTokenMatch(token, nameToken))) {
-      scoreParts.name += 6;
-      why.push(`fuzzy name token: ${token}`);
-      tokenMatched = true;
-    }
-
-    if (category.includes(token)) { scoreParts.lexical += 8; why.push(`category token: ${token}`); tokenMatched = true; }
-    if (description.includes(token)) { scoreParts.lexical += 5; tokenMatched = true; }
-    if (schema.includes(token)) { scoreParts.lexical += 4; tokenMatched = true; }
-    if (commandText.includes(token)) { scoreParts.lexical += 3; tokenMatched = true; }
-    if (exampleText.includes(token)) { scoreParts.lexical += 2; tokenMatched = true; }
-    if (docsText.includes(token)) { scoreParts.lexical += 2; tokenMatched = true; }
-    if (isMeaningfulToken && tokenMatched) meaningfulMatches += 1;
-  }
-
-  scoreParts.bm25 = Math.min(60, bm25 * 18);
-  if (scoreParts.bm25 > 0) why.push('bm25 tool-card match');
-
-  const matchedIntentIds: string[] = [];
-  for (const intent of intents) {
-    const boost = intent.boost[entry.name] || 0;
-    if (boost !== 0) {
-      scoreParts.intent += boost;
-      matchedIntentIds.push(intent.id);
-      why.push(`intent: ${intent.label}`);
-    }
-  }
-
-  const capabilities = entry.capabilities || {};
-  if (options.readOnly === true && capabilities.readOnly === true) scoreParts.capability += 12;
-  if (options.mutating === true && capabilities.mutating === true) scoreParts.capability += 12;
-  if (hasReadIntent(options.query)) {
-    if (capabilities.readOnly === true) scoreParts.capability += 14;
-    if (capabilities.mutating === true) scoreParts.capability -= 10;
-  }
-
-  scoreParts.embedding = embeddingScore > 0 ? Math.min(45, embeddingScore * 45) : 0;
-  if (scoreParts.embedding > 0) why.push('embedding tool-card match');
-
-  const score = Object.values(scoreParts).reduce((sum, value) => sum + Number(value), 0);
-  return { card, score, why: [...new Set(why)].slice(0, 10), meaningfulMatches, matchedIntentIds, scoreParts };
+function toCompactMatch(item: ScoredTool): Record<string, unknown> {
+  const entry = item.card.entry;
+  const inputSchema = entry.inputSchema;
+  return {
+    name: entry.name,
+    ...(entry.category ? { category: entry.category } : {}),
+    ...(entry.description ? { description: entry.description } : {}),
+    capabilities: compactCapabilities(entry.capabilities),
+    ...(inputSchema && schemaTypeSignatures[inputSchema] ? { inputSignature: schemaTypeSignatures[inputSchema] } : {}),
+    ...(entry.sessionRequired === true ? { sessionRequired: true } : {}),
+  };
 }
 
 function workspaceCallSnippet(entry: ToolManifestEntry): string {
   const example = entry.exampleInput || {};
-  if (entry.command?.internal === 'os-skill') {
-    return `await workspace.call({ tool: "call", input: ${JSON.stringify(example)} })`;
-  }
-
+  if (entry.command?.internal === 'os-skill') return `await workspace.call({ tool: "call", input: ${JSON.stringify(example)} })`;
   const fields = [`tool: ${JSON.stringify(entry.name)}`, `input: ${JSON.stringify(example)}`];
   if (entry.sessionRequired === true) fields.push('taskSession: "<taskSession>"');
   return `await workspace.call({ ${fields.join(', ')} })`;
 }
 
-function toMatch(item: ScoredTool, includeDocs: boolean): ToolSearchMatch {
+function toFullMatch(item: ScoredTool, includeDocs: boolean): Record<string, unknown> {
   const entry = item.card.entry;
   const inputSchema = entry.inputSchema;
   const outputSchema = entry.outputSchema;
   return {
-    name: entry.name,
+    ...toCompactMatch(item),
     ...(entry.methodPath ? { methodPath: entry.methodPath } : {}),
-    ...(entry.category ? { category: entry.category } : {}),
     score: Math.round(item.score),
-    scoreParts: {
-      exact: Math.round(item.scoreParts.exact),
-      name: Math.round(item.scoreParts.name),
-      lexical: Math.round(item.scoreParts.lexical),
-      bm25: Math.round(item.scoreParts.bm25),
-      intent: Math.round(item.scoreParts.intent),
-      capability: Math.round(item.scoreParts.capability),
-      embedding: Math.round(item.scoreParts.embedding),
-    },
-    ...(entry.description ? { description: entry.description } : {}),
-    capabilities: entry.capabilities || {},
-    sessionRequired: entry.sessionRequired === true,
+    scoreParts: Object.fromEntries(Object.entries(item.scoreParts).map(([key, value]) => [key, Math.round(value)])),
     ...(inputSchema ? { inputSchema } : {}),
     ...(outputSchema ? { outputSchema } : {}),
-    ...(inputSchema && schemaTypeSignatures[inputSchema] ? { inputSignature: schemaTypeSignatures[inputSchema] } : {}),
     ...(outputSchema && outputTypeSignatures[outputSchema] ? { outputSignature: outputTypeSignatures[outputSchema] } : {}),
     ...(entry.exampleInput ? { exampleInput: entry.exampleInput } : {}),
     usage: {
@@ -1005,140 +674,149 @@ function toMatch(item: ScoredTool, includeDocs: boolean): ToolSearchMatch {
   };
 }
 
-function filterByOptions(cards: ToolCard[], options: SearchOptions): ToolCard[] {
-  return cards
-    .filter((card) => !options.category || card.entry.category === options.category)
-    .filter((card) => options.readOnly !== true || card.entry.capabilities?.readOnly === true)
-    .filter((card) => options.mutating !== true || card.entry.capabilities?.mutating === true);
-}
-
-function chooseConfidence(matches: ScoredTool[], ambiguous: boolean): 'high' | 'medium' | 'low' {
-  if (matches.length === 0) return 'low';
-  const top = matches[0].score;
-  const gap = top - (matches[1]?.score || 0);
-  if (!ambiguous && top >= 130 && gap >= 35) return 'high';
-  if (top >= 55) return 'medium';
-  return 'low';
-}
-
-function buildAlternatives(intents: IntentPack[], scored: ScoredTool[], recommended?: string): Array<{ intent: string; tools: string[] }> {
-  const available = new Set(scored.map((item) => item.card.entry.name));
-  const groups: Array<{ intent: string; tools: string[] }> = [];
-  const seen = new Set<string>();
-  for (const intent of intents) {
-    for (const group of intent.alternatives || []) {
-      const tools = group.tools.filter((tool) => tool !== recommended && available.has(tool));
-      if (tools.length === 0) continue;
-      const key = `${group.intent}:${tools.join(',')}`;
-      if (seen.has(key)) continue;
-      seen.add(key);
-      groups.push({ intent: group.intent, tools });
-    }
+function parseArgs(argv: string[]): SearchOptions {
+  let query = '';
+  let limit = DEFAULT_LIMIT;
+  let category: string | undefined;
+  let readOnly: boolean | undefined;
+  let mutating: boolean | undefined;
+  let includeDocs = false;
+  let includeEmbeddings = true;
+  let detail: SearchDetail = 'compact';
+  for (let index = 0; index < argv.length; index += 1) {
+    const arg = argv[index];
+    if (arg === '--query' || arg === '-q') { query = argv[++index] || ''; continue; }
+    if (arg === '--limit') { const parsed = Number(argv[++index]); if (Number.isFinite(parsed) && parsed > 0) limit = Math.min(Math.floor(parsed), MAX_LIMIT); continue; }
+    if (arg === '--category') { category = argv[++index] || undefined; continue; }
+    if (arg === '--read-only') { readOnly = true; continue; }
+    if (arg === '--mutating') { mutating = true; continue; }
+    if (arg === '--full') { detail = 'full'; continue; }
+    if (arg === '--detail') { detail = argv[++index] === 'full' ? 'full' : 'compact'; continue; }
+    if (arg === '--with-docs') { includeDocs = true; continue; }
+    if (arg === '--no-docs') { includeDocs = false; continue; }
+    if (arg === '--no-embeddings') { includeEmbeddings = false; continue; }
+    if (arg === '--json') continue;
+    if (!arg.startsWith('-') && !query) query = arg;
   }
-  return groups.slice(0, 8);
-}
-
-function buildGuidance(matches: ScoredTool[], intents: IntentPack[], ambiguous: boolean): Record<string, unknown> | string {
-  if (matches.length === 0) {
-    return 'No matching tools found. Try broader intent keywords like "github pr", "linear issue", "file search", or "trace logs".';
-  }
-  const top = matches[0];
-  const mutating = top.card.entry.capabilities?.mutating === true;
-  const safeDefaults = intents.map((intent) => intent.safeDefault).filter(Boolean);
-  const mutatingGuidance = intents.map((intent) => intent.mutatingGuidance).filter(Boolean);
-  return {
-    summary: 'Use the recommended tool when its intent matches the user request. Inspect alternatives when ambiguous.',
-    recommendedUse: mutating ? 'Mutating recommendation; use dry-run/preview or get explicit user intent when state change is unclear.' : 'Read-only recommendation is safe for investigation.',
-    ambiguous,
-    safeDefaults,
-    mutatingGuidance,
-  };
+  query = query.trim();
+  if (!query) throw new Error('tools.search requires a query');
+  return { query, limit, category, readOnly, mutating, includeDocs, includeEmbeddings, detail };
 }
 
 async function run(options: SearchOptions): Promise<Record<string, unknown>> {
-  const manifest = readManifest();
-  const docs = options.includeDocs ? readToolDocs() : new Map<string, ToolDoc>();
-  const allCards = buildCards(manifest, docs);
-  const cards = filterByOptions(allCards, options);
-  const intents = matchedIntentPacks(options.query);
-  const queryTokens = expandTokens(options.query);
-  const meaningfulTokens = meaningfulExpandedTokens(options.query);
+  const detail = options.detail || 'compact';
+  const requestedLimit = options.limit ?? DEFAULT_LIMIT;
+  const displayLimit = Math.max(1, Math.min(requestedLimit, MAX_LIMIT));
+  const includeDocs = detail === 'full' && options.includeDocs === true;
+  const docs = includeDocs ? readToolDocs() : new Map<string, ToolDoc>();
+  const allCards = buildCards(readManifest(), docs);
+  const filteredCards = filterByOptions(allCards, options);
+  const exact = filteredCards.find((card) => card.entry.name.toLowerCase() === options.query.trim().toLowerCase());
+  const cards = exact ? filteredCards : filteredCards.filter((card) => card.entry.search?.hidden !== true);
+  const queryTokens = tokensForText(options.query);
+  const meaningful = meaningfulTokens(options.query);
   const idf = computeIdf(cards);
   const averageLength = cards.reduce((sum, card) => sum + card.tokens.length, 0) / Math.max(1, cards.length);
-  let embeddings: Awaited<ReturnType<typeof embeddingScores>>;
-  if (options.includeEmbeddings === false) {
-    embeddings = {
-      scores: new Map(),
-      diagnostics: { embeddingConfigId: 'disabled', cardsEmbedded: 0, cardsReused: 0 },
-    };
+  const domainIndex = buildDomainIndex(cards);
+  const detectedDomains = detectDomains(options.query, domainIndex);
+  let retrievalMode: 'exact' | 'deterministic' | 'semantic-fallback' | 'abstain' = 'deterministic';
+  let candidatesBeforeRanking = 0;
+  let shortlist: ToolCard[] = [];
+  let embeddingDiagnostics: EmbeddingDiagnostics = { embeddingConfigId: 'not-used', cardsEmbedded: 0, cardsReused: 0 };
+  let embeddingMap = new Map<string, number>();
+
+  if (exact) {
+    retrievalMode = 'exact';
+    shortlist = [exact];
+    candidatesBeforeRanking = 1;
+  } else if (meaningful.length === 0) {
+    retrievalMode = 'abstain';
   } else {
-    try {
-      embeddings = await embeddingScores(options.query, cards);
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : String(error);
-      embeddings = {
-        scores: new Map(),
-        diagnostics: { embeddingConfigId: 'error', cardsEmbedded: 0, cardsReused: 0, error: message },
-      };
+    const distinctiveQueryTerms = new Set(queryTokens.filter((token) => !GENERIC_OPERATION_TOKENS.has(token) && !GENERIC_ENTITY_TOKENS.has(token)));
+    const gated = detectedDomains.domains.size > 0
+      ? cards.filter((card) => detectedDomains.domains.has(card.domain)
+        || [...distinctiveQueryTerms].some((token) => card.operationTerms.has(token) || card.keywordTerms.has(token)))
+      : cards;
+    const cheap = gated
+      .map((card) => ({ card, score: cheapCandidateScore(card, queryTokens, detectedDomains.domains, idf) }))
+      .filter((item) => item.score > 0)
+      .sort((a, b) => b.score - a.score || a.card.entry.name.localeCompare(b.card.entry.name));
+    candidatesBeforeRanking = cheap.length;
+    shortlist = cheap.slice(0, MAX_CANDIDATES).map((item) => item.card);
+  }
+
+  let scored = shortlist
+    .map((card) => scoreCard(card, options, detectedDomains.domains, idf, averageLength))
+    .sort((a, b) => b.score - a.score || a.card.entry.name.localeCompare(b.card.entry.name));
+  let confidence = confidenceFor(scored, detectedDomains.domains, Boolean(exact));
+  let ambiguous = scored.length > 1 && scored[0].score - scored[1].score < 10;
+
+  const semanticAllowed = !exact && retrievalMode !== 'abstain' && options.includeEmbeddings !== false && meaningful.length > 0;
+  if (semanticAllowed && (scored.length === 0 || confidence === 'low' || (detectedDomains.domains.size === 0 && ambiguous))) {
+    const eligible = detectedDomains.domains.size > 0 ? cards.filter((card) => detectedDomains.domains.has(card.domain)) : cards;
+    const embeddings = await embeddingScores(options.query, eligible);
+    embeddingDiagnostics = embeddings.diagnostics;
+    if (embeddings.scores.size > 0) {
+      retrievalMode = 'semantic-fallback';
+      embeddingMap = embeddings.scores;
+      const semanticTop = eligible
+        .map((card) => ({ card, score: embeddingMap.get(card.hash) || 0 }))
+        .filter((item) => item.score >= 0.18)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, MAX_CANDIDATES)
+        .map((item) => item.card);
+      const merged = new Map<string, ToolCard>();
+      for (const card of [...shortlist, ...semanticTop]) merged.set(card.entry.name, card);
+      shortlist = [...merged.values()].slice(0, MAX_CANDIDATES);
+      scored = shortlist
+        .map((card) => scoreCard(card, options, detectedDomains.domains, idf, averageLength, embeddingMap.get(card.hash) || 0))
+        .sort((a, b) => b.score - a.score || a.card.entry.name.localeCompare(b.card.entry.name));
+      confidence = confidenceFor(scored, detectedDomains.domains, false);
+      ambiguous = scored.length > 1 && scored[0].score - scored[1].score < 10;
     }
   }
 
-  let scored = cards
-    .map((card) => scoreCard(card, options, docs, intents, bm25Score(card, queryTokens, idf, averageLength), embeddings.scores.get(card.hash) || 0))
-    .filter((item) => item.score >= 20)
-    .filter((item) => {
-      if (meaningfulTokens.size > 0) {
-        return item.meaningfulMatches > 0 || item.matchedIntentIds.length > 0 || item.scoreParts.embedding >= 12 || item.scoreParts.exact > 0;
-      }
-      return allowsGenericOnlySearch(options.query);
-    })
-    .sort((a, b) => b.score - a.score || a.card.entry.name.localeCompare(b.card.entry.name));
-
-  if (scored.length > 0 && scored[0].score < 35) scored = [];
-
-  const recommended = scored[0]?.card.entry.name;
-  const winningIntentId = scored[0]?.matchedIntentIds[0];
-  const detectedIntent = winningIntentId
-    ? INTENT_PACKS.find((intent) => intent.id === winningIntentId)?.label
-    : intents[0]?.label;
-  const alternatives = buildAlternatives(intents, scored, recommended);
-  const ambiguous = alternatives.length > 0 || (scored.length > 1 && scored[0].score - scored[1].score < 18);
-  const confidence = chooseConfidence(scored, ambiguous);
-  const displayLimit = Math.max(1, Math.min(options.limit, 30));
-  const matches = scored.slice(0, displayLimit).map((item) => toMatch(item, options.includeDocs));
-  const catalogHash = hashText(JSON.stringify({ version: TOOL_CARD_VERSION, cards: allCards.map((card) => ({ name: card.entry.name, hash: card.hash })) }));
-  const catalogSource = ['tool.manifest.json', ...(options.includeDocs ? ['TOOLS.md'] : [])];
-
-  return {
+  if (scored.length === 0) retrievalMode = 'abstain';
+  const recommended = confidence === 'low' ? undefined : scored[0]?.card.entry.name;
+  const visibleScored = scored.slice(0, displayLimit);
+  const matches = visibleScored.map((item) => detail === 'full' ? toFullMatch(item, includeDocs) : toCompactMatch(item));
+  const base: Record<string, unknown> = {
     query: options.query,
-    limit: options.limit,
-    searchedCount: cards.length,
-    returnedCount: matches.length,
-    filters: {
-      ...(options.category ? { category: options.category } : {}),
-      ...(options.readOnly ? { readOnly: true } : {}),
-      ...(options.mutating ? { mutating: true } : {}),
-    },
-    totalMatches: scored.length,
     confidence,
     ambiguous,
-    ...(detectedIntent ? { detectedIntent } : {}),
+    retrievalMode,
     ...(recommended ? { recommended } : {}),
     matches,
-    ...(alternatives.length > 0 ? { alternatives } : {}),
-    guidance: buildGuidance(scored, intents, ambiguous),
-    catalog: {
-      source: catalogSource,
+  };
+
+  if (detail === 'full') {
+    const compactPayloadBytes = Buffer.byteLength(JSON.stringify({
+      query: options.query,
+      confidence,
+      ambiguous,
+      retrievalMode,
+      ...(recommended ? { recommended } : {}),
+      matches: visibleScored.map(toCompactMatch),
+    }));
+    const catalogHash = hashText(JSON.stringify({ version: TOOL_CARD_VERSION, cards: allCards.map((card) => ({ name: card.entry.name, hash: card.hash })) }));
+    base.diagnostics = {
+      compactPayloadBytes,
+      domainAnchors: detectedDomains.terms,
+      domains: [...detectedDomains.domains],
+      candidatesBeforeRanking,
+      candidatesRanked: shortlist.length,
+      returnedCount: matches.length,
+      semanticFallback: retrievalMode === 'semantic-fallback',
       catalogHash,
       toolCount: allCards.length,
       searchedCount: cards.length,
       cardVersion: TOOL_CARD_VERSION,
-      embeddingConfigId: embeddings.diagnostics.embeddingConfigId,
-      cardsEmbedded: embeddings.diagnostics.cardsEmbedded,
-      cardsReused: embeddings.diagnostics.cardsReused,
-      ...(embeddings.diagnostics.error ? { embeddingError: embeddings.diagnostics.error } : {}),
-    },
-  };
+      embeddings: embeddingDiagnostics,
+    };
+  }
+
+  if (detail === 'full') (base.diagnostics as Record<string, unknown>).payloadBytes = Buffer.byteLength(JSON.stringify(base));
+  return base;
 }
 
 export async function runToolSearch(options: SearchOptions): Promise<Record<string, unknown>> {
@@ -1150,8 +828,7 @@ if (import.meta.main) {
     const result = await run(parseArgs(Bun.argv.slice(2)));
     process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : String(error);
-    process.stderr.write(`${message}\n`);
+    process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`);
     process.exit(1);
   }
 }

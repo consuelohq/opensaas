@@ -5,7 +5,7 @@ import { isRequestingCaptchaTokenState } from '@/captcha/states/isRequestingCapt
 import { isCaptchaRequiredForPath } from '@/captcha/utils/isCaptchaRequiredForPath';
 import { captchaState } from '@/client-config/states/captchaState';
 import { assertIsDefinedOrThrow, isDefined } from 'twenty-shared/utils';
-import { CaptchaDriverType } from '~/generated-metadata/graphql';
+import { CaptchaDriverType } from '@/client-config/types/ClientConfig';
 
 export const useRequestFreshCaptchaToken = () => {
   const setCaptchaToken = useSetRecoilState(captchaTokenState);
@@ -30,7 +30,7 @@ export const useRequestFreshCaptchaToken = () => {
 
         setIsRequestingCaptchaToken(true);
 
-        let captchaWidget: any;
+        let captchaWidget: string;
         switch (captcha.provider) {
           case CaptchaDriverType.GOOGLE_RECAPTCHA:
             window.grecaptcha

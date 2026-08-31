@@ -140,6 +140,7 @@ async function cursorPageResponse(
     sourceMode: request.sourceMode,
     cursor: request.cursor,
     limit,
+    ...(request.query ? { query: request.query } : {}),
   };
 
   if (
@@ -322,6 +323,7 @@ function readRequestFromUrl(
     sourceMode,
     cursor: url.searchParams.get('cursor') || '000000000000',
     limit,
+    query: url.searchParams.get('query')?.trim() || undefined,
     bridgeConfigured: url.searchParams.get('bridgeConfigured') === 'true',
     includeRawPayload: url.searchParams.get('includeRawPayload') === 'true',
   };

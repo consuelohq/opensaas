@@ -5,7 +5,7 @@ import { useRequestFreshCaptchaToken } from '@/captcha/hooks/useRequestFreshCapt
 import { isRequestingCaptchaTokenState } from '@/captcha/states/isRequestingCaptchaTokenState';
 import { isCaptchaRequiredForPath } from '@/captcha/utils/isCaptchaRequiredForPath';
 import { captchaState } from '@/client-config/states/captchaState';
-import { CaptchaDriverType } from '~/generated-metadata/graphql';
+import { CaptchaDriverType } from '@/client-config/types/ClientConfig';
 
 jest.mock('@/captcha/utils/isCaptchaRequiredForPath');
 

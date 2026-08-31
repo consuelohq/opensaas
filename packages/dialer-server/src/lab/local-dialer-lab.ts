@@ -1,0 +1,557 @@
+import {
+  RedisParallelStore,
+  type CallableTarget,
+  type ParallelTelemetryRecord,
+  type RedisParallelClient,
+} from '@consuelo/dialer';
+import type { LeadConnectorDatabase } from '@consuelo/lead-connector';
+
+import { recordLeadConnectorAttemptTelemetry } from '../runtime/lead-connector-learning';
+import { rankPredictiveLeadConnectorTargets } from '../runtime/predictive-target-ranking';
+
+export type LabScaleName = 'smoke' | 'standard' | 'large';
+
+export type LabScale = {
+  contactCount: number;
+  attemptsPerContact: number;
+  ingestOperations: number;
+  rankingCandidateCounts: number[];
+  rankingIterations: number;
+  redisOperations: number;
+};
+
+const LAB_SCALES: Record<LabScaleName, LabScale> = {
+  smoke: {
+    contactCount: 250,
+    attemptsPerContact: 4,
+    ingestOperations: 50,
+    rankingCandidateCounts: [25, 100, 250],
+    rankingIterations: 3,
+    redisOperations: 50,
+  },
+  standard: {
+    contactCount: 5_000,
+    attemptsPerContact: 4,
+    ingestOperations: 500,
+    rankingCandidateCounts: [100, 1_000, 5_000],
+    rankingIterations: 5,
+    redisOperations: 500,
+  },
+  large: {
+    contactCount: 25_000,
+    attemptsPerContact: 4,
+    ingestOperations: 2_000,
+    rankingCandidateCounts: [1_000, 10_000, 25_000],
+    rankingIterations: 5,
+    redisOperations: 2_000,
+  },
+};
+
+export const resolveLabScale = (name: LabScaleName): LabScale => ({
+  ...LAB_SCALES[name],
+  rankingCandidateCounts: [...LAB_SCALES[name].rankingCandidateCounts],
+});
+
+export type SyntheticDialerContact = {
+  contactId: string;
+  attemptsTotal: number;
+  lastAttemptAt: string | null;
+};
+
+export type SyntheticDialerOutcome = {
+  contactId: string;
+  attemptedAt: string;
+  attemptNumber: number;
+  outcome: 'answered' | 'busy' | 'no-answer' | 'voicemail';
+};
+
+export type SyntheticDialerFixture = {
+  seed: number;
+  baseTime: string;
+  contacts: SyntheticDialerContact[];
+  outcomes: SyntheticDialerOutcome[];
+  workspaceSettings: {
+    avgDealValue: number;
+    avgCloseRate: number;
+    costPerAttempt: number;
+  };
+};
+
+type SyntheticFixtureOptions = {
+  seed: number;
+  contactCount: number;
+  attemptsPerContact: number;
+  baseTime: Date;
+};
+
+const createRandom = (seed: number) => {
+  let state = seed >>> 0;
+  return () => {
+    state = (Math.imul(state, 1_664_525) + 1_013_904_223) >>> 0;
+    return state / 0x1_0000_0000;
+  };
+};
+
+const answerProbability = (attemptNumber: number, hourOfDay: number) => {
+  const attemptBase = [0, 0.42, 0.31, 0.22, 0.15][attemptNumber] ?? 0.1;
+  const peakBonus =
+    (hourOfDay >= 10 && hourOfDay <= 12) ||
+    (hourOfDay >= 15 && hourOfDay <= 17)
+      ? 0.1
+      : 0;
+  return Math.min(attemptBase + peakBonus, 0.9);
+};
+
+export const createSyntheticDialerFixture = ({
+  seed,
+  contactCount,
+  attemptsPerContact,
+  baseTime,
+}: SyntheticFixtureOptions): SyntheticDialerFixture => {
+  if (!Number.isInteger(contactCount) || contactCount < 1) {
+    throw new Error('contactCount must be a positive integer');
+  }
+  if (!Number.isInteger(attemptsPerContact) || attemptsPerContact < 1) {
+    throw new Error('attemptsPerContact must be a positive integer');
+  }
+
+  const random = createRandom(seed);
+  const contacts: SyntheticDialerContact[] = [];
+  const outcomes: SyntheticDialerOutcome[] = [];
+  const baseDay = Date.UTC(
+    baseTime.getUTCFullYear(),
+    baseTime.getUTCMonth(),
+    baseTime.getUTCDate(),
+  );
+
+  for (let index = 0; index < contactCount; index += 1) {
+    const attemptsTotal = index % attemptsPerContact;
+    const lastAttemptAt =
+      attemptsTotal === 0
+        ? null
+        : new Date(
+            baseTime.getTime() -
+              (1 + Math.floor(random() * 96)) * 60 * 60 * 1_000,
+          ).toISOString();
+    contacts.push({
+      contactId: `lab-contact-${String(index).padStart(8, '0')}`,
+      attemptsTotal,
+      lastAttemptAt,
+    });
+
+    const slot = index % (7 * 24);
+    const daysAgo = Math.floor(slot / 24);
+    const hourOfDay = slot % 24;
+    for (let attemptNumber = 1; attemptNumber <= attemptsPerContact; attemptNumber += 1) {
+      const attemptedAt = new Date(
+        baseDay - daysAgo * 24 * 60 * 60 * 1_000 + hourOfDay * 60 * 60 * 1_000,
+      ).toISOString();
+      const roll = random();
+      const probability = answerProbability(attemptNumber, hourOfDay);
+      const nonAnswerOutcomes = ['no-answer', 'busy', 'voicemail'] as const;
+      outcomes.push({
+        contactId: `lab-history-${String(index).padStart(8, '0')}`,
+        attemptedAt,
+        attemptNumber,
+        outcome:
+          roll < probability
+            ? 'answered'
+            : nonAnswerOutcomes[Math.floor(random() * nonAnswerOutcomes.length)],
+      });
+    }
+  }
+
+  return {
+    seed,
+    baseTime: baseTime.toISOString(),
+    contacts,
+    outcomes,
+    workspaceSettings: {
+      avgDealValue: 2_500,
+      avgCloseRate: 0.08,
+      costPerAttempt: 0.03,
+    },
+  };
+};
+
+export type SampleSummary = {
+  samples: number;
+  minMs: number;
+  medianMs: number;
+  p95Ms: number;
+  maxMs: number;
+};
+
+const roundedMilliseconds = (value: number) => Math.round(value * 1_000) / 1_000;
+
+export const summarizeSamples = (samples: number[]): SampleSummary => {
+  if (samples.length === 0) {
+    return { samples: 0, minMs: 0, medianMs: 0, p95Ms: 0, maxMs: 0 };
+  }
+  const sorted = [...samples].sort((left, right) => left - right);
+  const percentile = (fraction: number) =>
+    sorted[Math.min(sorted.length - 1, Math.ceil(sorted.length * fraction) - 1)];
+  return {
+    samples: sorted.length,
+    minMs: roundedMilliseconds(sorted[0]),
+    medianMs: roundedMilliseconds(percentile(0.5)),
+    p95Ms: roundedMilliseconds(percentile(0.95)),
+    maxMs: roundedMilliseconds(sorted[sorted.length - 1]),
+  };
+};
+
+const chunked = <T>(values: T[], size: number): T[][] => {
+  const chunks: T[][] = [];
+  for (let offset = 0; offset < values.length; offset += size) {
+    chunks.push(values.slice(offset, offset + size));
+  }
+  return chunks;
+};
+
+const labFailure = (operation: string, cause: unknown) =>
+  new Error(`Local dialer lab ${operation} failed`, { cause });
+
+export const seedSyntheticDialerFixture = async (
+  database: LeadConnectorDatabase,
+  workspaceId: string,
+  fixture: SyntheticDialerFixture,
+): Promise<void> => {
+  try {
+    await database.query(
+      'DELETE FROM consuelo_lead_connector_call_outcomes WHERE workspace_id = $1',
+      [workspaceId],
+    );
+    await database.query(
+      'DELETE FROM contact_attempt_ledger WHERE workspace_id = $1',
+      [workspaceId],
+    );
+    await database.query(
+      'DELETE FROM dialer_workspace_settings WHERE workspace_id = $1',
+      [workspaceId],
+    );
+
+    await database.query(
+      `INSERT INTO dialer_workspace_settings (
+         workspace_id, avg_deal_value, avg_close_rate, cost_per_attempt
+       ) VALUES ($1, $2, $3, $4)`,
+      [
+        workspaceId,
+        fixture.workspaceSettings.avgDealValue,
+        fixture.workspaceSettings.avgCloseRate,
+        fixture.workspaceSettings.costPerAttempt,
+      ],
+    );
+
+    for (const contacts of chunked(fixture.contacts, 5_000)) {
+      await database.query(
+        `INSERT INTO contact_attempt_ledger (
+           workspace_id, contact_id, last_attempt_at, attempts_total,
+           attempts_today, attempts_this_week, outcomes, day_window_start,
+           week_window_start, updated_at
+         )
+         SELECT
+           $1, rows.contact_id, rows.last_attempt_at, rows.attempts_total,
+           0, rows.attempts_total, '[]'::jsonb,
+           date_trunc('day', $2::timestamptz),
+           date_trunc('week', $2::timestamptz), NOW()
+         FROM UNNEST($3::text[], $4::int[], $5::timestamptz[])
+           AS rows(contact_id, attempts_total, last_attempt_at)`,
+        [
+          workspaceId,
+          fixture.baseTime,
+          contacts.map((contact) => contact.contactId),
+          contacts.map((contact) => contact.attemptsTotal),
+          contacts.map((contact) => contact.lastAttemptAt),
+        ],
+      );
+    }
+
+    for (const outcomes of chunked(fixture.outcomes, 5_000)) {
+      await database.query(
+        `INSERT INTO consuelo_lead_connector_call_outcomes (
+           workspace_id, contact_id, attempted_at, attempt_number, outcome
+         )
+         SELECT $1, rows.contact_id, rows.attempted_at, rows.attempt_number, rows.outcome
+         FROM UNNEST($2::text[], $3::timestamptz[], $4::int[], $5::text[])
+           AS rows(contact_id, attempted_at, attempt_number, outcome)`,
+        [
+          workspaceId,
+          outcomes.map((outcome) => outcome.contactId),
+          outcomes.map((outcome) => outcome.attemptedAt),
+          outcomes.map((outcome) => outcome.attemptNumber),
+          outcomes.map((outcome) => outcome.outcome),
+        ],
+      );
+    }
+  } catch (cause: unknown) {
+    throw labFailure('fixture seeding', cause);
+  }
+};
+
+const elapsedMilliseconds = <T>(operation: () => Promise<T>) => {
+  const startedAt = performance.now();
+  return operation().then((value) => ({
+    value,
+    durationMs: performance.now() - startedAt,
+  }));
+};
+
+const syntheticPhone = (index: number) =>
+  `+1555${String(index).padStart(7, '0')}`;
+
+const benchmarkRanking = async (
+  database: LeadConnectorDatabase,
+  workspaceId: string,
+  fixture: SyntheticDialerFixture,
+  scale: LabScale,
+) => {
+  try {
+    const results: Record<string, SampleSummary> = {};
+    for (const candidateCount of scale.rankingCandidateCounts) {
+      const targets: CallableTarget[] = fixture.contacts
+        .slice(0, candidateCount)
+        .map((contact, index) => ({
+          contactId: contact.contactId,
+          phone: syntheticPhone(index),
+        }));
+      const samples: number[] = [];
+      for (
+        let iteration = 0;
+        iteration < scale.rankingIterations;
+        iteration += 1
+      ) {
+        const measurement = await elapsedMilliseconds(() =>
+          rankPredictiveLeadConnectorTargets({
+            database,
+            workspaceId,
+            targets,
+            timezone: 'UTC',
+            callableWindowEndHour: 20,
+            now: new Date(fixture.baseTime),
+          }),
+        );
+        if (measurement.value.length !== targets.length) {
+          throw new Error(
+            `Ranking returned ${measurement.value.length} targets for ${targets.length} candidates`,
+          );
+        }
+        samples.push(measurement.durationMs);
+      }
+      results[String(candidateCount)] = summarizeSamples(samples);
+    }
+    return results;
+  } catch (cause: unknown) {
+    throw labFailure('predictive ranking benchmark', cause);
+  }
+};
+
+const benchmarkAggregation = async (
+  database: LeadConnectorDatabase,
+  workspaceId: string,
+  iterations: number,
+) => {
+  try {
+    const samples: number[] = [];
+    let groupCount = 0;
+    for (let iteration = 0; iteration < iterations; iteration += 1) {
+      const measurement = await elapsedMilliseconds(() =>
+        database.query<{ attempt_number: number }>(
+          `SELECT
+             attempt_number,
+             EXTRACT(HOUR FROM attempted_at AT TIME ZONE 'UTC')::int AS hour_of_day,
+             EXTRACT(DOW FROM attempted_at AT TIME ZONE 'UTC')::int AS day_of_week,
+             AVG(CASE WHEN outcome = 'answered' THEN 1.0 ELSE 0.0 END)::float AS answer_rate,
+             COUNT(*)::int AS sample_size
+           FROM consuelo_lead_connector_call_outcomes
+           WHERE workspace_id = $1
+           GROUP BY attempt_number, hour_of_day, day_of_week`,
+          [workspaceId],
+        ),
+      );
+      groupCount = measurement.value.rows.length;
+      samples.push(measurement.durationMs);
+    }
+    return { groups: groupCount, latency: summarizeSamples(samples) };
+  } catch (cause: unknown) {
+    throw labFailure('hazard aggregation benchmark', cause);
+  }
+};
+
+const createIngestRecord = (
+  workspaceId: string,
+  index: number,
+  attemptedAt: string,
+): ParallelTelemetryRecord => {
+  const callSid = `lab-call-${index}`;
+  const answered = index % 4 === 0;
+  return {
+    group: {
+      groupId: `lab-ingest-group-${index}`,
+      conferenceName: `lab-conference-${index}`,
+      status: 'completed',
+      winnerSid: answered ? callSid : null,
+      calls: [
+        {
+          callSid,
+          customerNumber: syntheticPhone(index),
+          fromNumber: '+15559999999',
+          position: 0,
+          status: answered ? 'completed' : 'no-answer',
+          amdResult: answered ? 'human' : 'unknown',
+          contactId: `lab-ingest-contact-${String(index).padStart(8, '0')}`,
+          dialStartedAt: attemptedAt,
+        },
+      ],
+      workspaceId,
+      queueId: 'lab-queue',
+      userId: 'lab-user',
+      createdAt: attemptedAt,
+      profile: {
+        id: 'balanced',
+        fanout: 1,
+        staggerMs: 0,
+        amdPolicy: 'human-or-unknown',
+        terminationPolicy: 'winner-take-all',
+      },
+      resolverReason: 'local-lab',
+      cleanupFailures: [],
+      completedAt: attemptedAt,
+    },
+    telemetry: {
+      winnerRate: answered ? 1 : 0,
+      wastedLegs: answered ? 0 : 1,
+      connectLatencyMs: answered ? 800 : null,
+    },
+    success: answered,
+  };
+};
+
+const persistIngestRecords = (
+  database: LeadConnectorDatabase,
+  records: ParallelTelemetryRecord[],
+): Promise<void> =>
+  chunked(records, 25).reduce<Promise<void>>(
+    (operation, batch) =>
+      operation.then(() =>
+        Promise.all(
+          batch.map((record) =>
+            recordLeadConnectorAttemptTelemetry(database, record),
+          ),
+        ).then((stored) => {
+          if (stored.some((value) => !value)) {
+            throw new Error('Synthetic attempt telemetry failed to persist');
+          }
+        }),
+      ),
+    Promise.resolve(),
+  );
+
+const benchmarkIngestion = async (
+  database: LeadConnectorDatabase,
+  workspaceId: string,
+  fixture: SyntheticDialerFixture,
+  operations: number,
+) => {
+  try {
+    const records = Array.from({ length: operations }, (_, index) =>
+      createIngestRecord(workspaceId, index, fixture.baseTime),
+    );
+    const measurement = await elapsedMilliseconds(() =>
+      persistIngestRecords(database, records),
+    );
+    return {
+      operations,
+      durationMs: roundedMilliseconds(measurement.durationMs),
+      operationsPerSecond: roundedMilliseconds(
+        operations / Math.max(measurement.durationMs / 1_000, Number.EPSILON),
+      ),
+    };
+  } catch (cause: unknown) {
+    throw labFailure('attempt ingestion benchmark', cause);
+  }
+};
+
+const benchmarkRedis = async (
+  redis: RedisParallelClient,
+  workspaceId: string,
+  operations: number,
+) => {
+  try {
+    const store = new RedisParallelStore(redis, {
+      keyPrefix: `consuelo:lab:${workspaceId}`,
+      lockTtlMs: 5_000,
+      lockRetryMs: 2,
+      lockTimeoutMs: 1_000,
+    });
+    const samples: number[] = [];
+    for (let index = 0; index < operations; index += 1) {
+      const groupId = `coordination-${index}`;
+      const measurement = await elapsedMilliseconds(() =>
+        store.withGroupLock(groupId, () => Promise.resolve(index)),
+      );
+      samples.push(measurement.durationMs);
+    }
+    return summarizeSamples(samples);
+  } catch (cause: unknown) {
+    throw labFailure('Redis coordination benchmark', cause);
+  }
+};
+
+export type LocalDialerBenchmarkResult = {
+  dataset: {
+    contacts: number;
+    outcomes: number;
+    seed: number;
+  };
+  ranking: Record<string, SampleSummary>;
+  aggregation: Awaited<ReturnType<typeof benchmarkAggregation>>;
+  ingestion: Awaited<ReturnType<typeof benchmarkIngestion>>;
+  redisCoordination: SampleSummary;
+};
+
+export const runLocalDialerBenchmarks = async (options: {
+  database: LeadConnectorDatabase;
+  redis: RedisParallelClient;
+  workspaceId: string;
+  fixture: SyntheticDialerFixture;
+  scale: LabScale;
+}): Promise<LocalDialerBenchmarkResult> => {
+  try {
+    await seedSyntheticDialerFixture(
+      options.database,
+      options.workspaceId,
+      options.fixture,
+    );
+    return {
+      dataset: {
+        contacts: options.fixture.contacts.length,
+        outcomes: options.fixture.outcomes.length,
+        seed: options.fixture.seed,
+      },
+      ranking: await benchmarkRanking(
+        options.database,
+        options.workspaceId,
+        options.fixture,
+        options.scale,
+      ),
+      aggregation: await benchmarkAggregation(
+        options.database,
+        options.workspaceId,
+        options.scale.rankingIterations,
+      ),
+      ingestion: await benchmarkIngestion(
+        options.database,
+        `${options.workspaceId}-ingest`,
+        options.fixture,
+        options.scale.ingestOperations,
+      ),
+      redisCoordination: await benchmarkRedis(
+        options.redis,
+        options.workspaceId,
+        options.scale.redisOperations,
+      ),
+    };
+  } catch (cause: unknown) {
+    throw labFailure('benchmark suite', cause);
+  }
+};

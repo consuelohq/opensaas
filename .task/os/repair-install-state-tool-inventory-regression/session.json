@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_7efe1ba078cb",
+  "tmuxSession": "opensaas-os-repair-install-state-tool-inventory-regression-7efe1ba0",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/repair-install-state-tool-inventory-regression",
+  "branch": "task/os/repair-install-state-tool-inventory-regression",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-install-state-tool-inventory-regression",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-install-state-tool-inventory-regression",
+  "prNumber": 1921,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1921",
+  "createdAt": "2026-08-13T21:54:53.881Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-install-state-tool-inventory-regression/.task/os/repair-install-state-tool-inventory-regression/session.json"
+}

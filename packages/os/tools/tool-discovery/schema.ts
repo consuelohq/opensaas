@@ -23,9 +23,9 @@ export const toolSchemas = [
         "tools",
         "search"
       ],
-      "description": "search workspace tools by intent and return ranked usage guidance",
+      "description": "search Consuelo OS tools with deterministic domain-first retrieval and bounded semantic fallback",
       "category": "tooling",
-      "underlying": "workspace tools.search",
+      "underlying": "Consuelo OS tools.search",
       "capabilities": {
         "readOnly": true,
         "mutating": false,

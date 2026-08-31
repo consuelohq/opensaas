@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/mac-menu-update-badge-and-nodes-ui",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1915,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1915",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1915",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1915/mac-menu-update-badge-and-nodes-ui",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1915",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1915/mac-menu-update-badge-and-nodes-ui",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-mac-menu-update-badge-and-nodes-ui",
+  "taskSession": "tsk_ea456f36b579",
+  "tmuxSession": "opensaas-os-mac-menu-update-badge-and-nodes-ui-ea456f36",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-mac-menu-update-badge-and-nodes-ui/.task/os/mac-menu-update-badge-and-nodes-ui/session.json",
+  "createdAt": "2026-08-13T20:04:57.319Z"
+}

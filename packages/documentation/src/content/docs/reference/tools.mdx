@@ -2,9 +2,9 @@
 title: Tools
 description: Generated facade-tool metadata, typed invocation, and execution policy.
 status: preview
-verifiedAt: 2026-07-13
+verifiedAt: 2026-08-26
 evidence:
-  - source: packages/os/tooling/tool-manifest.schema.json
+  - source: packages/os/manifests/schemas/tool-manifest.schema.json
     tests:
       - packages/os/tests/tool-manifest.test.ts
       - packages/os/tests/facade/facade.test.ts
@@ -13,6 +13,32 @@ evidence:
     tests:
       - packages/os/tests/tools-search-v2.test.ts
     runtime: Tool discovery output was compared with current manifest metadata and schemas on 2026-07-13.
+  - source: packages/os/tools/task-lifecycle/schema.ts
+    tests:
+      - packages/os/tests/session-start-foundation.test.ts
+      - packages/workspace/tests/session-start-compatibility.test.ts
+    runtime: The canonical `session.start` task/work constructor and the `task.start` compatibility alias were exercised through both OS and workspace facade contracts on 2026-08-15.
+  - source: packages/os/tools/security/schema.ts
+    tests:
+      - packages/os/tests/security-scan.test.ts
+      - packages/os/tools/security/handler.test.ts
+    runtime: A repository security scan completed with Bun audit, OSV-Scanner, Trivy, and Semgrep on 2026-08-14; normalized findings and scanner status were returned without publishing native secret-match output.
+  - source: packages/os/tools/monitor/schema.ts
+    tests:
+      - packages/os/tests/monitor-errors.test.ts
+      - packages/os/tools/monitor/handler.test.ts
+    runtime: The canonical Consuelo trace database was analyzed on 2026-08-14 and grouped failures were classified against current tool contracts.
+  - source: packages/os/tools/daily-schedules/schema.ts
+    tests:
+      - packages/os/tests/daily-schedules.test.ts
+      - packages/os/tools/daily-schedules/handler.test.ts
+    runtime: A private Daily Schedules artifact was published, listed in the artifact archive, and checked at desktop and mobile sizes on 2026-08-14.
+  - source: packages/os/tools/release/schema.ts
+    tests:
+      - packages/os/tests/release-tool-surface.test.ts
+      - packages/os/tests/release-orchestrator.test.ts
+      - packages/os/tests/release-script-security.test.ts
+    runtime: The operator release workflow was validated against the signed runtime publication/promotion contracts, main-targeting review-PR guard, and exact-version lifecycle update path on 2026-08-26.
 ---
 
 A facade tool is a typed operation exposed through the workspace tool facade. The generated full manifest marks these entries with `kind: "facade-tool"`.
@@ -90,6 +116,64 @@ Agent clients call the facade with a tool name and typed input. Task-scoped oper
 ```
 
 The facade validates input before executing the backing command. It returns a `ToolResult`, not unstructured terminal prose.
+
+The call envelope also supports a top-level `workSession` for work-session node routing. `taskSession` and `workSession` are mutually exclusive. Adding work-session routing does not by itself grant a tool new filesystem mutation authority: a tool must explicitly support work-session execution before it can use that session for work.
+
+## Starting sessions
+
+`session.start` is the canonical session constructor. `kind: "task"` delegates to the existing task lifecycle and returns `sessionKind: "task"`, `taskSession`, `taskBranch`, and `worktreePath`; `task.start` remains available as a compatibility alias. `kind: "work"` creates metadata only for an existing directory and returns `sessionKind: "work"`, `workSession`, `ownerNodeId`, and `path`. It does not create a branch, worktree, PR, or copied directory.
+
+```json
+{
+  "tool": "session.start",
+  "input": {
+    "kind": "work",
+    "path": "/Users/me/Developer/raycast-extension"
+  }
+}
+```
+
+## Subagents
+
+`subagent` starts or attaches to durable Codex and Grok runs from an instruction handoff. The default tool deadline is 15 minutes so deep reviews can complete without disabling bounded execution. A `start` or bounded `wait` response for a run that is still `starting` or `running` reports `exitCode: 0`; use the returned run `status` to distinguish active work from terminal completion. Provider capability limits remain explicit—for example, Grok rejects unsupported `reasoningEffort` selection instead of silently ignoring it.
+
+## Operator releases
+
+`release` is the canonical Consuelo OS operator release tool. Pass the stream review PR whose base is `main`, not a task PR whose base is a stream. The tool rejects a non-`main` PR before waiting on its checks; for the correct review PR it verifies readiness, merges it, waits for the runtime publication associated with that exact merge SHA, promotes the exact immutable bundle through the requested release channel, and by default updates the current operator node to the exact released version and verifies the installed bundle. Use `releaseOnly: true` when the release should stop after channel promotion.
+
+```json
+{
+  "tool": "release",
+  "input": {
+    "pr": 2185,
+    "channel": "canary"
+  }
+}
+```
+
+The tool is intentionally discoverable for requests such as “release,” “deploy this PR,” “release to canary,” and “release and update.” It keeps GitHub environment approvals, release signing, immutable-bundle verification, and channel transition rules in the existing protected workflows; it never returns release credentials.
+
+## Maintenance and observability examples
+
+The full manifest can expose higher-level maintenance operations in addition to file and task primitives:
+
+| Tool | Behavior |
+| --- | --- |
+| `security.scan` | Runs a defensive scan of the current Git repository with the configured Bun audit, OSV-Scanner, Trivy, and Semgrep binaries. It returns normalized findings, scanner status, local evidence paths, cross-scanner groups, and new/persistent/resolved deltas. It does not accept a remote host target. |
+| `monitor.errors` | Reads the last 24 hours of the canonical Consuelo tool-trace database and compares failures with the current tool contract. Expected policy enforcement and caller-input errors remain distinct from drift, transient failures, external failures, and defect candidates. |
+| `dailySchedules.publish` | Explicitly publishes a dated security scan or maintenance workpad into the private artifact archive and refreshes the Daily Schedules index. Existing entries use artifact version concurrency rather than an unconditional overwrite. |
+
+`security.scan` and `monitor.errors` are read surfaces. Publishing a durable Daily Schedules entry is a separate mutating operation so callers can inspect evidence without creating an artifact as a hidden side effect.
+
+## Node and session routing
+
+When a workspace has more than one node, the OS routing layer can resolve a facade call from task ownership, work-session ownership, an explicit node target, or the workspace default. Task-scoped operations put `taskSession` at the call envelope's top level; work-session calls use `workSession` instead.
+
+Do not assume that changing the default node moves an active task. A successful `task.start` binds that session to the node that started it; follow-up calls carrying the session keep using that owner until the task affinity is successfully released.
+
+A successful `session.start` with `kind: "work"` similarly binds the returned work session to the node that created it. Central routing stores the session-to-node affinity, while the work-session path remains local to the owner node.
+
+See [Routing work](/nodes/routing/) for user-facing behavior and [Result and error formats](/reference/result-and-error-formats/#node-routing-errors) for mismatch and offline failures.
 
 ## Discovery
 

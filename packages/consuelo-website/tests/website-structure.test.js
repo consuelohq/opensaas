@@ -521,6 +521,25 @@ describe('Consuelo website structure', () => {
     expect(layout).toContain('var(--site-color-line)');
   });
 
+  test('should keep the observability traces route owned by the website design system', () => {
+    const route = readSource('src/pages/os/observability/traces.astro');
+    const builderPath = 'packages/os/scripts/lib/observability-traces-site.ts';
+
+    expect(existsSync(join(repoRoot, builderPath)), builderPath).toBe(true);
+    expect(route).toContain("../../../layouts/MarketingLayout.astro");
+    expect(route).toContain(
+      'buildObservabilityTracesClientScript',
+    );
+    expect(route).toContain('<MarketingLayout');
+    expect(route).toContain('class="site-container');
+    expect(route).toContain('class="site-card');
+    expect(route).toContain('var(--site-');
+    expect(route).toContain('@media (prefers-reduced-motion: reduce)');
+    expect(route).not.toContain('buildObservabilityTracesSite()');
+    expect(route).not.toContain('<Fragment set:html={tracesPage} />');
+    expect(route).not.toMatch(/#[0-9a-f]{3,8}\b/i);
+  });
+
   test('should keep the design operator contract on office headless defaults', () => {
     const agentRules = readRepo('areas/consuelo-design/AGENTS.md');
     expect(agentRules).toContain('Default `office.generate*` behavior');

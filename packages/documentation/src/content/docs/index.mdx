@@ -1,5 +1,5 @@
 ---
-title: Your workspace, connected to every agent
+title: Digital workers built on Consuelo
 description: Build your workspace once. Use it from ChatGPT, Codex, Claude, and whatever comes next.
 status: preview
 ---
@@ -7,17 +7,28 @@ status: preview
 import Card from '../../components/mintlify/Card.astro';
 import CardGroup from '../../components/mintlify/CardGroup.astro';
 
-Build your workspace once. Use it from ChatGPT, Codex, Claude, and whatever comes next.
+## Start in one command
 
-```bash
+Install the local OS, then connect whichever agent you already use.
+
+<div class="home-install-command" data-home-install-command data-command={'curl -fsSL https://install.consuelohq.com/os ' + String.fromCharCode(124) + ' bash'}>
 curl -fsSL https://install.consuelohq.com/os | bash
-```
+  <button type="button" aria-label="Copy install command" data-home-install-copy>
+    <svg aria-hidden="true" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" /></svg>
+  </button>
+</div>
+
+## Pick up where you need
 
 <CardGroup cols={2}>
   <Card title="Start" href="/start/">Install Consuelo OS and reach your first working connection.</Card>
-  <Card title="Connect" href="/connect/">Connect agents, services, and nodes.</Card>
-  <Card title="Build with OS" href="/build/">Use tools, skills, steering, workflows, memory, and approvals.</Card>
-  <Card title="Sites" href="/sites/">Create and publish pages from your workspace.</Card>
+  <Card title="Connect" href="/connect/">Connect agents and applications.</Card>
+  <Card title="Nodes" href="/nodes/">Choose where Consuelo runs across local and managed cloud nodes.</Card>
+  <Card title="Tools" href="/tools/">Find the operations agents can call, plus workflows.</Card>
+  <Card title="Sites" href="/sites/">Create, preview, publish, and manage sites from workspace content.</Card>
+  <Card title="Skills" href="/skills/">Install, use, and create reusable agent instructions.</Card>
+  <Card title="Steering" href="/steering/">Control the instructions every agent starts from.</Card>
+  <Card title="Memory" href="/memory/">Carry work across agents with workpads, handoffs, streams, and saved context.</Card>
   <Card title="Observe" href="/observe/">See what ran, what changed, and why.</Card>
   <Card title="Secure" href="/secure/">Control what each agent can reach.</Card>
   <Card title="Reference" href="/reference/">Look up exact commands, settings, schemas, and result formats.</Card>

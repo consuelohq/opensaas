@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_51d020d47941",
+  "tmuxSession": "opensaas-os-address-daemon-lifecycle-review-comments-51d020d4",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/address-daemon-lifecycle-review-comments",
+  "branch": "task/os/address-daemon-lifecycle-review-comments",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-address-daemon-lifecycle-review-comments",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-address-daemon-lifecycle-review-comments",
+  "prNumber": 1832,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1832",
+  "createdAt": "2026-08-11T18:49:07.801Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-address-daemon-lifecycle-review-comments/.task/os/address-daemon-lifecycle-review-comments/session.json"
+}

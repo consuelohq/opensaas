@@ -32,6 +32,7 @@ export type WorkspaceRouteD1RouteTarget =
         | 'environment-sites-read-endpoints'
         | 'environment-sites-write-endpoints'
         | 'secrets-sites-read-endpoints'
+        | 'secrets-sites-write-endpoints'
         | (string & {});
       gatewayRouteFamily: string;
       publicSiteRouteFamily: string;
@@ -745,6 +746,7 @@ export const upsertWorkspaceNodeTargetInD1 = async (
     target: WorkspaceRouteD1NodeTarget;
     makeDefault?: boolean;
     localServiceUrl?: string;
+    refreshSiteSnapshots?: boolean;
   },
 ): Promise<void> => {
   try {
@@ -789,19 +791,38 @@ export const upsertWorkspaceNodeTargetInD1 = async (
     const defaultTarget = targets.find(
       (candidate) => candidate.nodeId === defaultNodeId,
     );
-    const existingRouteKeys = new Set(
-      base.routes.map((route) => `${route.surface}:${route.pathPrefix}`),
+    const incomingControlPlaneRoutes = input.record.routes.filter((route) =>
+      route.target.kind === 'os-connector' ||
+      route.target.kind === 'consuelo-gateway-service' ||
+      route.target.kind === 'redirect',
     );
-    const missingOsRoutes = input.record.routes.filter(
-      (route) =>
-        route.target.kind === 'os-connector' &&
-        !existingRouteKeys.has(`${route.surface}:${route.pathPrefix}`),
+    const incomingSiteSnapshotRoutes = input.refreshSiteSnapshots
+      ? input.record.routes.filter(
+          (route) => route.status === 'active' && route.target.kind === 'site-snapshot',
+        )
+      : [];
+    const incomingRoutePaths = new Set(
+      [...incomingControlPlaneRoutes, ...incomingSiteSnapshotRoutes].map(
+        (route) => route.pathPrefix,
+      ),
     );
-    const routes = [...base.routes, ...missingOsRoutes].map((route) =>
-      route.target.kind === 'os-connector' && defaultTarget
-        ? { ...route, target: connectorTargetForNode(defaultTarget) }
-        : cloneRoute(route),
-    );
+    const preservedPublishedRoutes = base.routes.filter((route) => {
+      if (incomingRoutePaths.has(route.pathPrefix)) return false;
+      return (
+        route.target.kind !== 'os-connector' &&
+        route.target.kind !== 'consuelo-gateway-service' &&
+        route.target.kind !== 'redirect'
+      );
+    });
+    const routes = [
+      ...preservedPublishedRoutes,
+      ...incomingSiteSnapshotRoutes,
+      ...incomingControlPlaneRoutes,
+    ].map((route) =>
+        route.target.kind === 'os-connector' && defaultTarget
+          ? { ...route, target: connectorTargetForNode(defaultTarget) }
+          : cloneRoute(route),
+      );
     await writeCloudflareD1Connector({
       db,
       record: base,

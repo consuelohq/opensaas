@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_7e33fbfef605",
+  "tmuxSession": "opensaas-os-mcp-security-state-hardening-7e33fbfe",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/mcp-security-state-hardening",
+  "branch": "task/os/mcp-security-state-hardening",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-mcp-security-state-hardening",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-mcp-security-state-hardening",
+  "prNumber": 1824,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1824",
+  "createdAt": "2026-08-10T03:52:07.076Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-mcp-security-state-hardening/.task/os/mcp-security-state-hardening/session.json"
+}

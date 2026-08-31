@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_f71cbfe54825",
+  "tmuxSession": "opensaas-os-installer-telemetry-f71cbfe5",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/installer-telemetry",
+  "branch": "task/os/installer-telemetry",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-installer-telemetry",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-installer-telemetry",
+  "prNumber": 1902,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1902",
+  "createdAt": "2026-08-13T16:41:30.958Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-installer-telemetry/.task/os/installer-telemetry/session.json"
+}

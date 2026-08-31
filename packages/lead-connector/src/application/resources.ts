@@ -4,6 +4,7 @@ import type {
   LeadConnectorContact,
   LeadConnectorOpportunity,
   LeadConnectorPipeline,
+  LeadConnectorQueuePreview,
 } from '../contracts/index.js';
 import { LeadConnectorInstallationNotFoundError } from '../errors.js';
 import { LeadConnectorInstallationStore } from '../ports/index.js';
@@ -122,13 +123,25 @@ export const listLeadConnectorContacts = (input: {
     };
   });
 
-export const searchLeadConnectorOpportunities = (input: {
+type LeadConnectorOpportunitySearchItem = {
+  opportunity: LeadConnectorOpportunity;
+  contact: LeadConnectorContact | null;
+};
+
+type LeadConnectorOpportunitySearchPage = {
+  items: LeadConnectorOpportunitySearchItem[];
+  total: number;
+  nextPage: number | null;
+};
+
+const searchLeadConnectorOpportunityPage = (input: {
   workspaceId: string;
   query?: string;
   pipelineId?: string;
   stageId?: string;
   status?: string;
   limit?: number;
+  page?: number;
 }) =>
   Effect.gen(function* () {
     const { installation, accessToken } = yield* getProviderContext(
@@ -141,25 +154,79 @@ export const searchLeadConnectorOpportunities = (input: {
         headers: providerHeaders(accessToken),
         body: {
           locationId: installation.locationId,
-          ...(input.query ? { query: input.query } : {}),
-          ...(input.pipelineId ? { pipelineId: input.pipelineId } : {}),
-          ...(input.stageId ? { pipelineStageId: input.stageId } : {}),
-          ...(input.status ? { status: input.status } : {}),
+          query: input.query ?? '',
+          sort: [{ field: 'date_added', direction: 'desc' }],
+          filters: [
+            ...(input.pipelineId
+              ? [
+                  {
+                    field: 'pipeline_id',
+                    operator: 'eq',
+                    value: [input.pipelineId],
+                  },
+                ]
+              : []),
+            ...(input.stageId
+              ? [
+                  {
+                    field: 'pipeline_stage_id',
+                    operator: 'eq',
+                    value: [input.stageId],
+                  },
+                ]
+              : []),
+            ...(input.status
+              ? [
+                  {
+                    field: 'status',
+                    operator: 'eq',
+                    value: [input.status],
+                  },
+                ]
+              : []),
+          ],
           ...(input.limit ? { limit: input.limit } : {}),
+          ...(input.page ? { page: input.page } : {}),
+          includeTopRelations: true,
         },
       },
       'search-opportunities',
     );
     const body = asRecord(response.body);
-    const opportunities = Array.isArray(body.opportunities)
+    const rawOpportunities = Array.isArray(body.opportunities)
       ? body.opportunities
       : [];
     const meta = asRecord(body.meta);
+    const items = rawOpportunities.map((value) => {
+      const record = asRecord(value);
+      const rawContact = asRecord(record.contact);
+      return {
+        opportunity: mapOpportunity(value),
+        contact:
+          Object.keys(rawContact).length > 0 ? mapContact(rawContact) : null,
+      } satisfies LeadConnectorOpportunitySearchItem;
+    });
     return {
-      opportunities: opportunities.map(mapOpportunity),
-      total: readNumber(meta, 'total') ?? opportunities.length,
-    };
+      items,
+      total: readNumber(meta, 'total') ?? items.length,
+      nextPage: readNumber(meta, 'nextPage', 'next_page'),
+    } satisfies LeadConnectorOpportunitySearchPage;
   });
+
+export const searchLeadConnectorOpportunities = (input: {
+  workspaceId: string;
+  query?: string;
+  pipelineId?: string;
+  stageId?: string;
+  status?: string;
+  limit?: number;
+}) =>
+  searchLeadConnectorOpportunityPage({ ...input, page: 1 }).pipe(
+    Effect.map((result) => ({
+      opportunities: result.items.map((item) => item.opportunity),
+      total: result.total,
+    })),
+  );
 
 export const listLeadConnectorPipelines = (workspaceId: string) =>
   Effect.gen(function* () {
@@ -178,6 +245,141 @@ export const listLeadConnectorPipelines = (workspaceId: string) =>
     const body = asRecord(response.body);
     const pipelines = Array.isArray(body.pipelines) ? body.pipelines : [];
     return pipelines.map(mapPipeline);
+  });
+
+
+export const getLeadConnectorContact = (input: {
+  workspaceId: string;
+  contactId: string;
+}) =>
+  Effect.gen(function* () {
+    const { accessToken } = yield* getProviderContext(input.workspaceId);
+    const response = yield* requestLeadConnector(
+      {
+        method: 'GET',
+        url: yield* providerUrl(
+          `/contacts/${encodeURIComponent(input.contactId)}`,
+        ),
+        headers: providerHeaders(accessToken),
+      },
+      'get-contact',
+    );
+    const body = asRecord(response.body);
+    return mapContact(body.contact ?? response.body);
+  });
+
+const contactDisplayName = (contact: LeadConnectorContact): string => {
+  const composed = [contact.firstName, contact.lastName]
+    .filter((value): value is string => Boolean(value?.trim()))
+    .join(' ')
+    .trim();
+  return contact.name?.trim() || composed || contact.email?.trim() || contact.id;
+};
+
+export const resolveLeadConnectorQueueCandidates = (input: {
+  workspaceId: string;
+  pipelineId: string;
+  stageId: string;
+}) =>
+  Effect.gen(function* () {
+    const [pipelines, firstPage] = yield* Effect.all(
+      [
+        listLeadConnectorPipelines(input.workspaceId),
+        searchLeadConnectorOpportunityPage({
+          workspaceId: input.workspaceId,
+          pipelineId: input.pipelineId,
+          stageId: input.stageId,
+          status: 'open',
+          limit: 100,
+          page: 1,
+        }),
+      ] as const,
+      { concurrency: 2 },
+    );
+    const itemsByOpportunityId = new Map(
+      firstPage.items.map((item) => [item.opportunity.id, item]),
+    );
+    let currentPage = 1;
+    let nextPage =
+      firstPage.nextPage ??
+      (itemsByOpportunityId.size < firstPage.total ? 2 : null);
+    while (
+      nextPage !== null &&
+      nextPage > currentPage &&
+      itemsByOpportunityId.size < firstPage.total &&
+      currentPage < 100
+    ) {
+      const page = yield* searchLeadConnectorOpportunityPage({
+        workspaceId: input.workspaceId,
+        pipelineId: input.pipelineId,
+        stageId: input.stageId,
+        status: 'open',
+        limit: 100,
+        page: nextPage,
+      });
+      const previousSize = itemsByOpportunityId.size;
+      for (const item of page.items) {
+        itemsByOpportunityId.set(item.opportunity.id, item);
+      }
+      currentPage = nextPage;
+      if (itemsByOpportunityId.size === previousSize) break;
+      nextPage =
+        page.nextPage ??
+        (itemsByOpportunityId.size < firstPage.total ? currentPage + 1 : null);
+    }
+    const items = [...itemsByOpportunityId.values()];
+    const pipeline = pipelines.find((item) => item.id === input.pipelineId);
+    const stage = pipeline?.stages.find((item) => item.id === input.stageId);
+    const embeddedContacts = new Map<string, LeadConnectorContact>();
+    for (const item of items) {
+      if (item.contact?.id) embeddedContacts.set(item.contact.id, item.contact);
+    }
+    const missingContactIds = [
+      ...new Set(
+        items
+          .map((item) => item.opportunity.contactId)
+          .filter((value): value is string => Boolean(value))
+          .filter((contactId) => !embeddedContacts.get(contactId)?.phone?.trim()),
+      ),
+    ];
+    const hydratedContacts = yield* Effect.all(
+      missingContactIds.map((contactId) =>
+        getLeadConnectorContact({
+          workspaceId: input.workspaceId,
+          contactId,
+        }),
+      ),
+      { concurrency: 8 },
+    );
+    const contactsById = new Map(embeddedContacts);
+    for (const contact of hydratedContacts) contactsById.set(contact.id, contact);
+    const candidates = items.flatMap(({ opportunity }) => {
+      const contact = opportunity.contactId
+        ? contactsById.get(opportunity.contactId)
+        : undefined;
+      const phone = contact?.phone?.trim();
+      if (!contact || !phone) return [];
+      return [
+        {
+          opportunityId: opportunity.id,
+          contactId: contact.id,
+          contactName: contactDisplayName(contact),
+          phone,
+          status: opportunity.status,
+          monetaryValue: opportunity.monetaryValue,
+        },
+      ];
+    });
+    return {
+      pipelineId: input.pipelineId,
+      pipelineName: pipeline?.name || 'Pipeline',
+      stageId: input.stageId,
+      stageName: stage?.name || 'Stage',
+      opportunityTotal: firstPage.total,
+      callableTotal: candidates.length,
+      truncated: items.length < firstPage.total,
+      candidates,
+    } satisfies LeadConnectorQueuePreview;
   });
 
 export const createLeadConnectorNote = (input: {

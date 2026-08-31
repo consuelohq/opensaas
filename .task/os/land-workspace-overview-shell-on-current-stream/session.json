@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_5884be2fff34",
+  "tmuxSession": "opensaas-os-land-workspace-overview-shell-on-current-stream-5884be2f",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/land-workspace-overview-shell-on-current-stream",
+  "branch": "task/os/land-workspace-overview-shell-on-current-stream",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-land-workspace-overview-shell-on-current-stream",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-land-workspace-overview-shell-on-current-stream",
+  "prNumber": 2039,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2039",
+  "createdAt": "2026-08-15T07:01:55.173Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-land-workspace-overview-shell-on-current-stream/.task/os/land-workspace-overview-shell-on-current-stream/session.json"
+}

@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_968a51626dc9",
+  "tmuxSession": "opensaas-os-repair-tracing-site-refresh-and-live-history-968a5162",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/repair-tracing-site-refresh-and-live-history",
+  "branch": "task/os/repair-tracing-site-refresh-and-live-history",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-repair-tracing-site-refresh-and-live-history",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-repair-tracing-site-refresh-and-live-history",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2245,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2245",
+  "createdAt": "2026-08-28T22:41:32.301Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-repair-tracing-site-refresh-and-live-history/.task/os/repair-tracing-site-refresh-and-live-history/session.json"
+}

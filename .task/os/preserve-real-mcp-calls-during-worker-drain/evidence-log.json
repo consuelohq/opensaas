@@ -1,0 +1,344 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/preserve-real-mcp-calls-during-worker-drain",
+  "events": [
+    {
+      "id": "1ad180e9-b874-484b-8610-dc3af6fc2b43",
+      "occurred_at": "2026-08-17T01:24:21.671Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/mcp-gateway.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/preserve-real-mcp-calls-during-worker-drain",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/preserve-real-mcp-calls-during-worker-drain"
+      }
+    },
+    {
+      "id": "1e5494e2-8411-4cbb-b8da-1999e4b4d9b2",
+      "occurred_at": "2026-08-17T01:24:47.914Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/mcp-gateway.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/preserve-real-mcp-calls-during-worker-drain",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/preserve-real-mcp-calls-during-worker-drain"
+      }
+    },
+    {
+      "id": "b46d10fe-c7e5-4a53-9f01-059ecf06477f",
+      "occurred_at": "2026-08-17T01:25:00.282Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/mcp-gateway.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/preserve-real-mcp-calls-during-worker-drain",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/preserve-real-mcp-calls-during-worker-drain"
+      }
+    },
+    {
+      "id": "534c4970-cf59-4170-b99d-c9c8d4bca31e",
+      "occurred_at": "2026-08-17T01:25:06.373Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/mcp-gateway.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/preserve-real-mcp-calls-during-worker-drain",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/preserve-real-mcp-calls-during-worker-drain"
+      }
+    },
+    {
+      "id": "35a567c9-c0e4-400b-af25-03a6743c0060",
+      "occurred_at": "2026-08-17T01:25:31.207Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/mcp-gateway.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/preserve-real-mcp-calls-during-worker-drain",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/preserve-real-mcp-calls-during-worker-drain"
+      }
+    },
+    {
+      "id": "0e2cb53c-66fa-4019-a9c4-c5e224be4d62",
+      "occurred_at": "2026-08-17T01:26:37.703Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/manifests/generated/core.manifest.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/preserve-real-mcp-calls-during-worker-drain",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/preserve-real-mcp-calls-during-worker-drain"
+      }
+    },
+    {
+      "id": "7b8ff87d-1b3c-4253-80cf-18eb69049aa0",
+      "occurred_at": "2026-08-17T01:26:49.125Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/mcp-gateway.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/preserve-real-mcp-calls-during-worker-drain",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/preserve-real-mcp-calls-during-worker-drain"
+      }
+    },
+    {
+      "id": "5d11b9d7-7dbb-49e1-a7d6-ef452176485b",
+      "occurred_at": "2026-08-17T01:26:55.437Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/mcp-gateway.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/preserve-real-mcp-calls-during-worker-drain",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/preserve-real-mcp-calls-during-worker-drain"
+      }
+    },
+    {
+      "id": "f00c0cef-9bf8-4307-8e21-dd25b266d278",
+      "occurred_at": "2026-08-17T01:27:34.834Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/manifests/generated/tool.manifest.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/preserve-real-mcp-calls-during-worker-drain",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/preserve-real-mcp-calls-during-worker-drain"
+      }
+    },
+    {
+      "id": "1c08e221-b92c-421e-a0da-034b4fee095c",
+      "occurred_at": "2026-08-17T01:27:53.599Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/server/main.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/preserve-real-mcp-calls-during-worker-drain",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/preserve-real-mcp-calls-during-worker-drain"
+      }
+    },
+    {
+      "id": "9208fb47-f1f7-4815-a6c3-921fa26c4195",
+      "occurred_at": "2026-08-17T01:27:58.721Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/server/main.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/preserve-real-mcp-calls-during-worker-drain",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/preserve-real-mcp-calls-during-worker-drain"
+      }
+    },
+    {
+      "id": "e39485f4-c8c8-4c89-979a-927d09da9a45",
+      "occurred_at": "2026-08-17T01:28:57.384Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/server/main.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/preserve-real-mcp-calls-during-worker-drain",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/preserve-real-mcp-calls-during-worker-drain"
+      }
+    },
+    {
+      "id": "c5515ca1-7d14-4f9a-a3f2-c591946a6b8a",
+      "occurred_at": "2026-08-17T01:29:11.842Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/health-readiness.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/preserve-real-mcp-calls-during-worker-drain",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/preserve-real-mcp-calls-during-worker-drain"
+      }
+    },
+    {
+      "id": "2f6305bc-8d78-4bd2-9bcf-4a1d4e651079",
+      "occurred_at": "2026-08-17T01:30:10.498Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/worker-pool.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/preserve-real-mcp-calls-during-worker-drain",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/preserve-real-mcp-calls-during-worker-drain"
+      }
+    },
+    {
+      "id": "e335176f-4247-4ad1-9b1e-1396d8ce66b6",
+      "occurred_at": "2026-08-17T01:30:43.551Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/preserve-real-mcp-calls-during-worker-drain/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/preserve-real-mcp-calls-during-worker-drain",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/preserve-real-mcp-calls-during-worker-drain"
+      }
+    },
+    {
+      "id": "5cd49077-c39f-44c6-b8cd-0e7b3a440f98",
+      "occurred_at": "2026-08-17T01:33:02.472Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/worker-pool.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/preserve-real-mcp-calls-during-worker-drain",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/preserve-real-mcp-calls-during-worker-drain"
+      }
+    },
+    {
+      "id": "ba478c69-c3c3-409b-aa44-b10e18df7030",
+      "occurred_at": "2026-08-17T01:33:08.957Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/server/supervisor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/preserve-real-mcp-calls-during-worker-drain",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/preserve-real-mcp-calls-during-worker-drain"
+      }
+    },
+    {
+      "id": "dec8a1aa-0bca-4524-8806-87ec4ea64684",
+      "occurred_at": "2026-08-17T01:33:16.075Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/consuelo-reload.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/preserve-real-mcp-calls-during-worker-drain",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/preserve-real-mcp-calls-during-worker-drain"
+      }
+    },
+    {
+      "id": "d2a60b6d-c1cc-40d9-a2eb-e31e60e805fa",
+      "occurred_at": "2026-08-17T01:33:24.493Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/consuelo-reload.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/preserve-real-mcp-calls-during-worker-drain",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/preserve-real-mcp-calls-during-worker-drain"
+      }
+    },
+    {
+      "id": "aa7455aa-8de9-4030-8bb2-eefa83cfc0c7",
+      "occurred_at": "2026-08-17T01:33:37.179Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/consuelo-reload.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/preserve-real-mcp-calls-during-worker-drain",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/preserve-real-mcp-calls-during-worker-drain"
+      }
+    },
+    {
+      "id": "6de9f9e5-e6d8-4164-bd3e-7f33c7a6e0d9",
+      "occurred_at": "2026-08-17T01:35:20.949Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/preserve-real-mcp-calls-during-worker-drain/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/preserve-real-mcp-calls-during-worker-drain",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/preserve-real-mcp-calls-during-worker-drain"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-17T01:35:21.006Z"
+}

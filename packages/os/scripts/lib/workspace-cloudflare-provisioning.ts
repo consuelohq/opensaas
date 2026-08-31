@@ -66,7 +66,6 @@ export type WorkspaceCloudflareManagedOsMcpIngressPolicyConfig = {
   temporaryDenyIpCidrs?: string[];
   trustedProviderIpSourceIds?: TrustedOsMcpProviderIpSourceId[];
   trustedProviderExtraIpCidrs?: string[];
-  reservedHostnames?: string[];
   managedMcpHostnames?: string[];
   allowInstallBootstrapRuleId?: string;
   allowInstallBootstrapRuleRef?: string;
@@ -243,7 +242,7 @@ const MANAGED_OS_MCP_POLICY_ENV_KEYS = [
   'CLOUDFLARE_MCP_TRUSTED_PROVIDER_EXTRA_CIDRS',
   'CLOUDFLARE_MCP_MANAGED_HOSTNAMES',
 ] as const;
-const DEFAULT_RESERVED_HOSTNAME_LABELS = [
+const DEFAULT_NON_WORKSPACE_MCP_HOSTNAME_LABELS = [
   'app',
   'docs',
   'diffs',
@@ -253,7 +252,6 @@ const DEFAULT_RESERVED_HOSTNAME_LABELS = [
   'www',
   'sites',
   'os',
-  'internal',
   'workspace-edge',
   'workspace',
 ] as const;
@@ -581,11 +579,13 @@ const hasManagedOsMcpIngressPolicyEnv = (
     Boolean(normalizeOptionalValue(env[key])),
   );
 
-const createDefaultReservedHostnames = (baseDomain: string): string[] =>
-  DEFAULT_RESERVED_HOSTNAME_LABELS.map((label) => `${label}.${baseDomain}`);
-
 const createDefaultManagedOsMcpHostnames = (baseDomain: string): string[] =>
   DEFAULT_MANAGED_OS_MCP_HOSTNAME_LABELS.map((label) => `${label}.${baseDomain}`);
+
+const createDefaultNonWorkspaceMcpHostnames = (baseDomain: string): string[] =>
+  DEFAULT_NON_WORKSPACE_MCP_HOSTNAME_LABELS.map(
+    (label) => `${label}.${baseDomain}`,
+  );
 
 const assertHostnameBelongsToBaseDomain = (input: {
   hostname: string;
@@ -597,14 +597,6 @@ const assertHostnameBelongsToBaseDomain = (input: {
   ) {
     throw new Error(`managed OS MCP hostname ${input.hostname} must belong to base domain ${input.baseDomain}`);
   }
-};
-
-const normalizeReservedHostnames = (input: {
-  baseDomain: string;
-  reservedHostnames?: string[];
-}): string[] => {
-  const values = input.reservedHostnames ?? createDefaultReservedHostnames(input.baseDomain);
-  return [...new Set(values.map(normalizeBaseDomain))].sort();
 };
 
 const normalizeManagedOsMcpHostnames = (input: {
@@ -636,7 +628,6 @@ const formatIpSet = (cidrs: string[], indent: string): string =>
 
 const createManagedOsMcpBaseExpression = (input: {
   baseDomain: string;
-  reservedHostnames: string[];
   managedMcpHostnames: string[];
 }): string => {
   const connectorOriginHostnameExpression = createConnectorOriginHostnameWafExpression({
@@ -645,7 +636,9 @@ const createManagedOsMcpBaseExpression = (input: {
   const workspaceHostnameExpression = [
     `ends_with(http.host, ".${input.baseDomain}")`,
     `not (${connectorOriginHostnameExpression})`,
-    `not (http.host in {\n${formatHostnameSet(input.reservedHostnames)}\n})`,
+    `not (http.host in {\n${formatHostnameSet(
+      createDefaultNonWorkspaceMcpHostnames(input.baseDomain),
+    )}\n})`,
   ].join('\nand ');
   const centralHostnameExpression = `http.host in {\n${formatHostnameSet(
     input.managedMcpHostnames,
@@ -828,17 +821,12 @@ export const buildManagedOsMcpIngressPolicyRules = (
   const temporaryDenyIpCidrs = [
     ...new Set((input.temporaryDenyIpCidrs ?? []).map(normalizeIpCidrLiteral)),
   ];
-  const reservedHostnames = normalizeReservedHostnames({
-    baseDomain,
-    reservedHostnames: input.reservedHostnames,
-  });
   const managedMcpHostnames = normalizeManagedOsMcpHostnames({
     baseDomain,
     managedMcpHostnames: input.managedMcpHostnames,
   });
   const baseExpression = createManagedOsMcpBaseExpression({
     baseDomain,
-    reservedHostnames,
     managedMcpHostnames,
   });
   const allowedIpsExpression = `ip.src in $${mcpAllowedIpsListName}`;
@@ -1627,14 +1615,6 @@ export const ensureManagedOsMcpIngressPolicy = async (input: {
     const allowedIpsListName = normalizeCloudflareListName(
       input.config.mcpAllowedIpsListName,
     );
-    const accountList = await input.cloudflare.getAccountIpList({
-      name: allowedIpsListName,
-    });
-
-    if (!accountList) {
-      throw new Error(`Cloudflare account IP list ${allowedIpsListName} was not found`);
-    }
-
     const desiredRules = buildManagedOsMcpIngressPolicyRules({
       ...input.config,
       mcpAllowedIpsListName: allowedIpsListName,
