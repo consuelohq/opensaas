@@ -177,19 +177,11 @@ Use `task.prs` only if that tool is present in the current manifest.
 
 For diffs, use the workspace/GitHub tool surface where available. Only fall back to `code.call` for `git diff` when there is not yet a typed tool that exposes the exact local diff you need.
 
-## Task Session Handling — Canonical Task Context
-
-`taskSession` is the canonical handle for task-scoped work.
-
-When `session.start({ kind: "task" })` returns:
-
-```ts
+Task Session Handling — Canonical Task Context
+taskSession is the canonical handle for task-scoped work.
+When session.start({ kind: "task" }) returns:
 const taskSession = result.data.taskSession
-```
-
 Every task-scoped call must pass that value at the top level:
-
-```ts
 await os.call({
   tool: "fs.read",
   taskSession,
@@ -200,38 +192,51 @@ await os.call({
   },
   timeout: 120,
 })
-```
-
-Correct:
-
-```ts
+Correct task-scoped command execution uses code.call, not code.call, code.call, raw shell, or host escape hatches:
+await os.call({
+  tool: "code.call",
+  taskSession,
+  input: {
+    language: "bash",
+    mode: "verify",
+    code: "bun --cwd packages/workspace test",
+    maxResultChars: 20000,
+  },
+  timeout: 360,
+})
+Use code.call for focused command execution in the task worktree:
+package tests
+package build commands
+typechecks
+syntax checks
+codegen commands
+small diagnostic commands
+language-specific validation commands
+Do not use code.call for normal command execution. If either appears in an old workpad, handoff, or copied example, treat it as legacy guidance and translate it to code.call.
+Avoid this legacy shape:
 await os.call({
   tool: "code.call",
   taskSession,
   input: {
     command: ["bun", "--cwd", "packages/workspace", "test"],
-    timeout: 300000,
   },
   timeout: 360,
 })
-```
-
-Avoid this unless testing fallback compatibility:
-
-```ts
+Use this instead:
 await os.call({
   tool: "code.call",
+  taskSession,
   input: {
-    taskSession,
-    command: ["bun", "--cwd", "packages/workspace", "test"],
+    language: "bash",
+    mode: "verify",
+    code: "bun --cwd packages/workspace test",
+    maxResultChars: 20000,
   },
   timeout: 360,
 })
-```
-
+Do not normally put taskSession inside input.
+The server propagates the top-level taskSession into the facade. input.taskSession exists only for compatibility and must match the top-level value if both are present.
 Never pass conflicting task sessions:
-
-```ts
 await os.call({
   tool: "fs.read",
   taskSession: "tsk_outer",
@@ -240,13 +245,10 @@ await os.call({
     path: "AGENTS.md",
   },
 })
-```
+That should return VALIDATION_ERROR.
+If a task-scoped call returns TASK_SESSION_REQUIRED or TASK_SESSION_NOT_FOUND, first check that the exact taskSession returned by session.start({ kind: "task" }) was passed at the top level. Do not switch to branch-threading, root task metadata, code.call, or host shell fallback as the default recovery path.
+Inside code.run and batch, pass taskSession on the outer os.call. Nested workspace.* calls inherit task context.
 
-That should return `VALIDATION_ERROR`.
-
-If a task-scoped call returns `TASK_SESSION_REQUIRED` or `TASK_SESSION_NOT_FOUND`, first check that the exact `taskSession` returned by `session.start({ kind: "task" })` was passed at the top level. Do not switch to branch-threading or root task metadata as the default recovery path.
-
-Inside `code.run` and `batch`, pass `taskSession` on the outer `os.call`. Nested `workspace.*` calls inherit task context.
 
 ## Non-Negotiable: Scoped Workpad Writes
 
@@ -392,7 +394,17 @@ await os.call({
 })
 ```
 
-The `explore` response already contains the dependency map, readiness, uncertainty, `next_action`, and `edit_ready`. Follow `next_action` directly. When it recommends a read, inspect that file through task-scoped file tools:
+Ask for the next best action:
+
+```ts
+await os.call({
+  tool: "decideNext",
+  input: {},
+  timeout: 120,
+})
+```
+
+Read recommended files through task-scoped file tools:
 
 ```ts
 await os.call({
@@ -403,9 +415,33 @@ await os.call({
 })
 ```
 
-Then rerun `explore`. Reads and validation evidence are folded into the same hypothesis/readiness policy automatically. Repeat until `edit_ready` is true; then use `edit_target` as the supported implementation root and preserve the returned dependency map as editing context.
+Then rerun the loop:
 
-`decideNext`, `confidenceScore`, and `exploit` remain available for compatibility with older clients. They are projections of the same Explore policy and are not required in the normal loop. `decideNext` may still be used explicitly when you need its manual evidence-label flags.
+```ts
+await os.call({
+  tool: "decideNext",
+  input: {},
+  timeout: 120,
+})
+
+await os.call({
+  tool: "confidenceScore",
+  input: {},
+  timeout: 120,
+})
+```
+
+Repeat until the implementation path is supported by evidence.
+
+Use `exploit` when the path is clear enough to commit to an editing target:
+
+```ts
+await os.call({
+  tool: "exploit",
+  input: {},
+  timeout: 120,
+})
+```
 
 Use targeted `fs.search` only after the decision engine has narrowed the direction:
 
@@ -586,8 +622,11 @@ await os.call({
         from: 1,
         to: 40
       });
-      const patch = await workspace.fs.apply_patch({
-        patchFile: "/tmp/change.patch"
+      const patch = await workspace.fs.patch({
+        path: "packages/workspace/SCRIPTS.md",
+        from: 12,
+        to: 18,
+        contentFile: "/tmp/replacement.md"
       });
       const after = await workspace.fs.read({
         path: "packages/workspace/SCRIPTS.md",
@@ -627,6 +666,262 @@ Do not use `code.run` for final durable transitions such as:
 - destructive cleanup
 
 Run those as direct outer `os.call` operations so the state transition is visible.
+
+Phase 4a — Use code.call for Bounded Command Execution
+Use code.call when the job is to run one focused Python, Bun/JavaScript/TypeScript, or Bash program with bounded output.
+code.call is the normal command surface for:
+package scripts
+focused tests
+build checks
+typechecks
+syntax checks
+codegen commands
+small one-off runtime checks
+language-specific validation commands
+Use the most specific language for the job. Do not default to Bash just to invoke another runtime.
+Job
+Preferred code.call language
+Python diagnostics, Python syntax checks, Python scripts
+python
+JS/TS/Bun diagnostics, package-command orchestration, JSON/result shaping
+bun
+Shell-specific commands, pipes, redirects, env expansion, short shell passthrough
+bash
+
+Use code.run when the job is programmable orchestration over workspace tools. Use code.call when the job is command execution or runtime execution.
+Authority modes
+Mode
+Use
+Task session requirement
+Mutation policy
+read
+non-mutating diagnostics, short scripts, environment inspection
+optional
+must not intentionally mutate files
+verify
+tests, builds, typechecks, syntax checks, validation commands
+required for task-branch validation
+should not intentionally edit source
+edit
+commands that may create, update, generate, format, or rewrite files
+required
+mutation allowed only inside the managed task worktree
+
+Do not treat taskSession as required for every code.call. It is required when the command needs the task branch filesystem or mutation authority. For ordinary non-mutating diagnostics, use mode: "read" without taskSession instead of falling back to host shell tools.
+Good code.call examples
+Non-mutating Python diagnostic, no task worktree required:
+await os.call({
+  tool: "code.call",
+  input: {
+    language: "python",
+    mode: "read",
+    code: "import platform, sys\nprint(platform.platform())\nprint(sys.version)",
+    maxResultChars: 20000,
+  },
+  timeout: 120,
+})
+
+Non-mutating Bun diagnostic, no task worktree required:
+await os.call({
+  tool: "code.call",
+  input: {
+    language: "bun",
+    mode: "read",
+    code: "console.log(JSON.stringify({ bun: Bun.version, cwd: process.cwd() }, null, 2))",
+    maxResultChars: 20000,
+  },
+  timeout: 120,
+})
+
+Python syntax validation in the task worktree:
+await os.call({
+  tool: "code.call",
+  taskSession,
+  input: {
+    language: "python",
+    mode: "verify",
+    code: `
+import py_compile
+
+files = ["packages/workspace/scripts/example.py"]
+failures = []
+
+for file in files:
+    try:
+        py_compile.compile(file, doraise=True)
+    except Exception as error:
+        failures.append({"file": file, "error": str(error)})
+
+print({"ok": len(failures) == 0, "failures": failures})
+raise SystemExit(1 if failures else 0)
+`.trim(),
+    maxResultChars: 20000,
+  },
+  timeout: 300,
+})
+
+Focused red or green package test in the task worktree:
+await os.call({
+  tool: "code.call",
+  taskSession,
+  input: {
+    language: "bun",
+    mode: "verify",
+    code: `
+const proc = Bun.spawnSync({
+  cmd: ["bun", "--cwd", "packages/workspace", "test", "tests/facade/facade.test.ts"],
+  stdout: "pipe",
+  stderr: "pipe",
+})
+
+const stdout = new TextDecoder().decode(proc.stdout)
+const stderr = new TextDecoder().decode(proc.stderr)
+
+console.log(JSON.stringify({
+  ok: proc.exitCode === 0,
+  exitCode: proc.exitCode,
+  stdout: stdout.slice(-12000),
+  stderr: stderr.slice(-12000),
+}, null, 2))
+
+process.exit(proc.exitCode)
+`.trim(),
+    maxResultChars: 30000,
+  },
+  timeout: 600,
+})
+
+OS package validation bundle with compact output:
+await os.call({
+  tool: "code.call",
+  taskSession,
+  input: {
+    language: "bun",
+    mode: "verify",
+    code: `
+const commands = [
+  ["bun", "--cwd", "packages/os", "test", "tests/fs-read.test.ts"],
+  ["bun", "--cwd", "packages/os", "test", "tests/tool-manifest.test.ts"],
+]
+
+function run(cmd) {
+  const proc = Bun.spawnSync({
+    cmd,
+    stdout: "pipe",
+    stderr: "pipe",
+  })
+
+  const stdout = new TextDecoder().decode(proc.stdout)
+  const stderr = new TextDecoder().decode(proc.stderr)
+
+  return {
+    command: cmd.join(" "),
+    ok: proc.exitCode === 0,
+    exitCode: proc.exitCode,
+    stdout: stdout.slice(-8000),
+    stderr: stderr.slice(-8000),
+  }
+}
+
+const results = commands.map(run)
+const failed = results.filter((result) => !result.ok)
+
+console.log(JSON.stringify({
+  ok: failed.length === 0,
+  failed,
+  results,
+}, null, 2))
+
+process.exit(failed.length === 0 ? 0 : 1)
+`.trim(),
+    maxResultChars: 40000,
+  },
+  timeout: 900,
+})
+
+Generated surface command that intentionally updates files:
+await os.call({
+  tool: "code.call",
+  taskSession,
+  input: {
+    language: "bun",
+    mode: "edit",
+    code: `
+const commands = [
+  ["bun", "run", "--cwd", "packages/os", "generate-types"],
+  ["bun", "run", "--cwd", "packages/os", "generate-docs"],
+]
+
+for (const cmd of commands) {
+  const proc = Bun.spawnSync({
+    cmd,
+    stdout: "pipe",
+    stderr: "pipe",
+  })
+
+  const stdout = new TextDecoder().decode(proc.stdout)
+  const stderr = new TextDecoder().decode(proc.stderr)
+
+  console.log(JSON.stringify({
+    command: cmd.join(" "),
+    exitCode: proc.exitCode,
+    stdout: stdout.slice(-6000),
+    stderr: stderr.slice(-6000),
+  }, null, 2))
+
+  if (proc.exitCode !== 0) process.exit(proc.exitCode)
+}
+`.trim(),
+    maxResultChars: 30000,
+  },
+  timeout: 600,
+})
+
+Use Bash only when the task is genuinely shell-shaped:
+await os.call({
+  tool: "code.call",
+  taskSession,
+  input: {
+    language: "bash",
+    mode: "verify",
+    code: "set -euo pipefail\nprintf 'node: '; node --version\nprintf 'bun: '; bun --version",
+    maxResultChars: 12000,
+  },
+  timeout: 120,
+})
+
+Language selection rules
+Prefer language: "python" when the body is Python.
+Prefer language: "bun" when the body is JavaScript/TypeScript, when you need structured JSON summaries, or when you need to run package commands with argv arrays through Bun.spawnSync.
+Prefer language: "bash" only when shell semantics are the point:
+pipes
+redirects
+shell builtins
+env expansion
+short command passthrough
+set -euo pipefail style smoke checks
+Do not use language: "bash" just to call python3 or bun when the same work can be expressed as a Python or Bun program.
+Keep code.call focused
+Prefer:
+one command intent per call
+bounded output through maxResultChars
+direct runtime programs instead of shell wrappers
+argv arrays through Bun when running package commands
+compact JSON summaries for multi-command validation
+Avoid:
+long shell scripts with unrelated steps
+bash -lc wrappers
+cd <path> && ... when package flags or cwd routing can be used
+heredoc file writes
+giant inline JSON, Markdown, source code, or patch payloads
+destructive commands such as rm, git reset, git clean, broad kill, or pkill
+raw repo reads through cat, sed, head, or tail
+raw repo search through rg, grep, or find
+GitHub state through gh
+Linear, Railway, browser, Sentry, or production state through raw CLIs
+Large source, Markdown, JSON, scripts, and patches should travel through typed file transport: fs.write, fs.patch, contentFile, explicit stdin support, or the closest typed workspace tool. Do not bury structured payloads inside shell strings.
+
+
 
 ## Phase 4b — Use `batch` Only for Fixed Independent Lists
 
@@ -693,50 +988,41 @@ Batch must preserve guardrails. The server recursively inspects child steps befo
 
 ---
 
-# Phase 5 — Implement With Typed Tools First
-
-Make changes only inside the task worktree. Prefer typed workspace tools and `code.run` over raw shell commands.
-
+Phase 5 — Implement With Typed Tools First
+Make changes only inside the task worktree. Prefer typed workspace tools, code.run, and code.call over raw shell commands.
 Tool preference order:
-
-1. `memory` with `operation: "search"`, `explore`, `decideNext`, and `confidenceScore` for discovery and prior context.
-2. `code.run` for semantic workflows that compose multiple typed tools.
-3. `fs.read`, `fs.search`, `fs.list`, `fs.apply_patch`, `fs.write`, and `fs.trash` for exact file work.
-4. `batch` for independent read-only calls or fixed mechanical checklists.
-5. `git.diff` for structured diff inspection after edits.
-6. `status`, `audit`, `review.run`, `verify`, `task.push`, `task.pr`, and `task.merge` for known workflows.
-7. `github` for GitHub/PR state; current `gh` only as a temporary fallback.
-8. `code.call` only for focused package/test/build commands with no typed equivalent.
-
+`memory` with `operation: "search"`, traces, and explore for discovery and prior context.
+code.run for semantic workflows that compose multiple typed tools.
+fs.read, fs.search, fs.list, fs.apply_patch, fs.write, and fs.trash for exact file work.
+batch for independent read-only calls or fixed mechanical checklists.
+git.diff for structured diff inspection after edits.
+code.call for focused package/test/build/typecheck/codegen/syntax commands and small diagnostics.
+status, audit, review.run, verify, task.push, task.pr, and task.merge for known lifecycle workflows.
+github for GitHub/PR state.
+Host or raw-shell fallback only when no typed workspace surface can safely express the operation; record the tooling gap.
+Do not use code.call for normal command execution. Translate old examples to code.call.
 Keep the scoped workpad current:
-
-- acceptance criteria
-- implementation plan
-- files changed
-- key decisions
-- notes for Ko
-- improvements noticed
-- errors or blockers
-- validation commands and results
-- memory searched and relevant prior handoffs/workpads found
-
+acceptance criteria
+implementation plan
+files changed
+key decisions
+notes for Ko
+improvements noticed
+errors or blockers
+validation commands and results
+memory searched and relevant prior handoffs/workpads found
 Use the workspace as an evidence machine:
-
-- search memory before guessing about prior decisions
-- use `explore` before broad file search
-- read relevant policy/control files fully
-- use `decideNext` when the next step is unclear
-- patch only after the edit target is supported by evidence
-- reread changed ranges after writing
-- run the smallest meaningful test first
-- run review/verify gates as appropriate
-- record surprising failures in the workpad
-
-After edits, inspect the diff through `git.diff`.
-
+search memory before guessing about prior decisions
+use explore before broad file search
+read relevant policy/control files fully
+use decideNext when the next step is unclear
+patch only after the edit target is supported by evidence
+reread changed ranges after writing
+run the smallest meaningful test first
+run review/verify gates as appropriate
+record surprising failures in the workpad
+After edits, inspect the diff through git.diff.
 Use summary-first diff inspection:
-
-```ts
 await os.call({
   tool: "git.diff",
   taskSession,
@@ -748,11 +1034,7 @@ await os.call({
   },
   timeout: 120,
 })
-```
-
-When reviewing against a base branch, include `base`:
-
-```ts
+When reviewing against a base branch, include base:
 await os.call({
   tool: "git.diff",
   taskSession,
@@ -765,11 +1047,7 @@ await os.call({
   },
   timeout: 120,
 })
-```
-
-Request `patch: true` only when the actual changed lines are needed:
-
-```ts
+Request patch: true only when the actual changed lines are needed:
 await os.call({
   tool: "git.diff",
   taskSession,
@@ -780,11 +1058,9 @@ await os.call({
   },
   timeout: 120,
 })
-```
-
-Do not use raw `git diff` through `code.call` unless `git.diff` cannot express the needed view. Repeated fallback diff usage is a tooling gap.
-
+Do not use raw git diff through command execution unless git.diff cannot express the needed view. Repeated fallback diff usage is a tooling gap.
 For detailed diff review, prefer bounded output. Do not return giant diffs into chat.
+
 
 ## Dev Tooling First for Service-Backed Workflows
 
@@ -810,13 +1086,10 @@ Use the closest typed workspace tool before considering manual setup. Do not sil
 
 ---
 
-# Phase 6 — Validate Before Publishing
-
+Phase 6 — Validate Before Publishing
 Run validation that matches the change.
-
-For syntax-level changes:
-
-```ts
+Prefer the most specific typed workspace validation surface first. Use code.call only when the validation is genuinely command/runtime execution.
+For syntax-level JS/TS/Python changes, prefer the dedicated checker when available:
 await os.call({
   tool: "checkFiles",
   taskSession,
@@ -826,54 +1099,185 @@ await os.call({
   },
   timeout: 300,
 })
-```
 
-For Python changes:
+Use code.call for focused language/package validation when there is no more specific typed validation tool.
+Choose the runtime directly:
+Validation need
+Preferred code.call language
+Python syntax checks or Python validation scripts
+python
+Bun/JS/TS package tests, package scripts, typechecks, codegen orchestration, compact JSON summaries
+bun
+Shell-specific validation using pipes, redirects, env expansion, or shell builtins
+bash
 
-```ts
+Do not use language: "bash" just to run python3 or bun. Use the Python or Bun runtime directly unless shell semantics are the point.
+Python syntax validation
+Use language: "python" for Python syntax checks:
 await os.call({
   tool: "code.call",
   taskSession,
   input: {
-    command: ["python3", "-m", "py_compile", "<file.py>"],
+    language: "python",
+    mode: "verify",
+    code: `
+import py_compile
+import sys
+
+files = ["<file.py>"]
+failures = []
+
+for file in files:
+    try:
+        py_compile.compile(file, doraise=True)
+    except Exception as error:
+        failures.append({
+            "file": file,
+            "error": str(error),
+        })
+
+print({
+    "ok": len(failures) == 0,
+    "failures": failures,
+})
+
+sys.exit(1 if failures else 0)
+`.trim(),
+    maxResultChars: 20000,
   },
   timeout: 120,
 })
-```
 
-For focused tests, prefer explicit TDD phase markers so the workpad can auto-populate red/green evidence:
-
-```ts
+For several Python files, add them to the files array. Do not shell out to python3 -m py_compile from Bash unless language: "python" cannot express the check.
+Focused red test
+Use language: "bun" for package test commands. Run the command with Bun.spawnSync so arguments stay structured and output is bounded.
 await os.call({
   tool: "code.call",
   taskSession,
   input: {
-    command: ["bun", "--cwd", "packages/workspace", "run", "test", "<test-file>"],
-    tddPhase: "red",
-    timeout: 300000,
-  },
-  timeout: 300000,
+    language: "bun",
+    mode: "verify",
+    code: `
+const proc = Bun.spawnSync({
+  cmd: ["bun", "--cwd", "packages/workspace", "run", "test", "<test-file>"],
+  stdout: "pipe",
+  stderr: "pipe",
 })
-```
 
-After implementation:
+const stdout = new TextDecoder().decode(proc.stdout)
+const stderr = new TextDecoder().decode(proc.stderr)
 
-```ts
+console.log(JSON.stringify({
+  ok: proc.exitCode === 0,
+  phase: "red",
+  command: "bun --cwd packages/workspace run test <test-file>",
+  exitCode: proc.exitCode,
+  stdout: stdout.slice(-12000),
+  stderr: stderr.slice(-12000),
+}, null, 2))
+
+process.exit(proc.exitCode)
+`.trim(),
+    maxResultChars: 30000,
+  },
+  timeout: 600,
+})
+
+The red run should fail for the expected reason. Record the trace ID, command, and meaningful failure signal in the scoped workpad before implementing.
+Focused green test
+After implementation, rerun the same focused command through code.call:
 await os.call({
   tool: "code.call",
   taskSession,
   input: {
-    command: ["bun", "--cwd", "packages/workspace", "run", "test", "<test-file>"],
-    tddPhase: "green",
-    timeout: 300000,
-  },
-  timeout: 300000,
+    language: "bun",
+    mode: "verify",
+    code: `
+const proc = Bun.spawnSync({
+  cmd: ["bun", "--cwd", "packages/workspace", "run", "test", "<test-file>"],
+  stdout: "pipe",
+  stderr: "pipe",
 })
-```
 
-For workspace review:
+const stdout = new TextDecoder().decode(proc.stdout)
+const stderr = new TextDecoder().decode(proc.stderr)
 
-```ts
+console.log(JSON.stringify({
+  ok: proc.exitCode === 0,
+  phase: "green",
+  command: "bun --cwd packages/workspace run test <test-file>",
+  exitCode: proc.exitCode,
+  stdout: stdout.slice(-12000),
+  stderr: stderr.slice(-12000),
+}, null, 2))
+
+process.exit(proc.exitCode)
+`.trim(),
+    maxResultChars: 30000,
+  },
+  timeout: 600,
+})
+
+If the current code.call implementation supports explicit red/green metadata fields, include them. If it does not, record the red and green command, trace ID, and result in the scoped workpad immediately after each run.
+Generated files or codegen
+Use mode: "edit" for commands that intentionally update files. Use language: "bun" for Bun package scripts and command orchestration:
+await os.call({
+  tool: "code.call",
+  taskSession,
+  input: {
+    language: "bun",
+    mode: "edit",
+    code: `
+const commands = [
+  ["bun", "run", "--cwd", "packages/os", "generate-types"],
+  ["bun", "run", "--cwd", "packages/os", "generate-docs"],
+]
+
+const results = []
+
+for (const cmd of commands) {
+  const proc = Bun.spawnSync({
+    cmd,
+    stdout: "pipe",
+    stderr: "pipe",
+  })
+
+  const stdout = new TextDecoder().decode(proc.stdout)
+  const stderr = new TextDecoder().decode(proc.stderr)
+
+  const result = {
+    command: cmd.join(" "),
+    ok: proc.exitCode === 0,
+    exitCode: proc.exitCode,
+    stdout: stdout.slice(-8000),
+    stderr: stderr.slice(-8000),
+  }
+
+  results.push(result)
+
+  if (proc.exitCode !== 0) {
+    console.log(JSON.stringify({
+      ok: false,
+      failed: result,
+      results,
+    }, null, 2))
+    process.exit(proc.exitCode)
+  }
+}
+
+console.log(JSON.stringify({
+  ok: true,
+  results,
+}, null, 2))
+`.trim(),
+    maxResultChars: 30000,
+  },
+  timeout: 600,
+})
+
+After codegen, inspect the diff with git.diff and confirm generated files are expected.
+Workspace review
+Use the typed review tool directly:
 await os.call({
   tool: "review.run",
   taskSession,
@@ -883,11 +1287,9 @@ await os.call({
   },
   timeout: 300000,
 })
-```
 
-For full task safety gate:
-
-```ts
+Full task safety gate
+Use the typed verify tool directly:
 await os.call({
   tool: "verify",
   taskSession,
@@ -897,11 +1299,207 @@ await os.call({
   },
   timeout: 300000,
 })
-```
 
-Use `noReview`, `noDb`, or focused validation only when the reason is explicit and recorded in the workpad.
-
+Use noReview, noDb, or focused validation only when the reason is explicit and recorded in the workpad.
 Do not publish based on vibes. Fix failures in scope. Stop and escalate when the failure requires product, architecture, destructive, or cross-task judgment.
+Validation mode choices
+Use mode: "verify" for tests, typechecks, builds, syntax checks, and package validation commands.
+Use mode: "edit" for commands that intentionally update files, such as code generators, doc generators, schema generators, formatters, or codemods.
+Use mode: "read" for non-mutating diagnostics that do not need task-branch code.
+If a validation command unexpectedly edits files in mode: "verify", stop, inspect the diff, and rerun the command in mode: "edit" only when those changes are expected and in scope.
+TDD evidence requirements
+For non-trivial code changes:
+Write or update the focused test first.
+Run the focused command through code.call and capture the red failure.
+Record the command, trace ID, and meaningful failure signal in the scoped workpad.
+Implement the change.
+Rerun the focused command through code.call and capture green.
+Record the command, trace ID, and result in the scoped workpad.
+Do not use code.call, code.call, host shell tools, or ad hoc terminal commands for TDD evidence when code.call can run the command.
+Common validation command examples
+Workspace package test:
+await os.call({
+  tool: "code.call",
+  taskSession,
+  input: {
+    language: "bun",
+    mode: "verify",
+    code: `
+const proc = Bun.spawnSync({
+  cmd: ["bun", "--cwd", "packages/workspace", "test", "tests/facade/facade.test.ts"],
+  stdout: "pipe",
+  stderr: "pipe",
+})
+
+const stdout = new TextDecoder().decode(proc.stdout)
+const stderr = new TextDecoder().decode(proc.stderr)
+
+console.log(JSON.stringify({
+  ok: proc.exitCode === 0,
+  command: "bun --cwd packages/workspace test tests/facade/facade.test.ts",
+  exitCode: proc.exitCode,
+  stdout: stdout.slice(-12000),
+  stderr: stderr.slice(-12000),
+}, null, 2))
+
+process.exit(proc.exitCode)
+`.trim(),
+    maxResultChars: 30000,
+  },
+  timeout: 600,
+})
+
+OS package test:
+await os.call({
+  tool: "code.call",
+  taskSession,
+  input: {
+    language: "bun",
+    mode: "verify",
+    code: `
+const proc = Bun.spawnSync({
+  cmd: ["bun", "--cwd", "packages/os", "test", "tests/tool-manifest.test.ts"],
+  stdout: "pipe",
+  stderr: "pipe",
+})
+
+const stdout = new TextDecoder().decode(proc.stdout)
+const stderr = new TextDecoder().decode(proc.stderr)
+
+console.log(JSON.stringify({
+  ok: proc.exitCode === 0,
+  command: "bun --cwd packages/os test tests/tool-manifest.test.ts",
+  exitCode: proc.exitCode,
+  stdout: stdout.slice(-12000),
+  stderr: stderr.slice(-12000),
+}, null, 2))
+
+process.exit(proc.exitCode)
+`.trim(),
+    maxResultChars: 30000,
+  },
+  timeout: 600,
+})
+
+Multiple focused validation commands with compact output:
+await os.call({
+  tool: "code.call",
+  taskSession,
+  input: {
+    language: "bun",
+    mode: "verify",
+    code: `
+const commands = [
+  ["bun", "--cwd", "packages/os", "test", "tests/fs-read.test.ts"],
+  ["bun", "--cwd", "packages/os", "test", "tests/tool-manifest.test.ts"],
+]
+
+function run(cmd) {
+  const proc = Bun.spawnSync({
+    cmd,
+    stdout: "pipe",
+    stderr: "pipe",
+  })
+
+  const stdout = new TextDecoder().decode(proc.stdout)
+  const stderr = new TextDecoder().decode(proc.stderr)
+
+  return {
+    command: cmd.join(" "),
+    ok: proc.exitCode === 0,
+    exitCode: proc.exitCode,
+    stdout: stdout.slice(-8000),
+    stderr: stderr.slice(-8000),
+  }
+}
+
+const results = commands.map(run)
+const failed = results.filter((result) => !result.ok)
+
+console.log(JSON.stringify({
+  ok: failed.length === 0,
+  failed,
+  results,
+}, null, 2))
+
+process.exit(failed.length === 0 ? 0 : 1)
+`.trim(),
+    maxResultChars: 40000,
+  },
+  timeout: 900,
+})
+
+Prefer one command intent per call. Combine commands only when they are a tight validation bundle and the output remains bounded.
+Generated surface validation:
+await os.call({
+  tool: "code.call",
+  taskSession,
+  input: {
+    language: "bun",
+    mode: "edit",
+    code: `
+const commands = [
+  ["bun", "run", "--cwd", "packages/os", "generate-types"],
+  ["bun", "run", "--cwd", "packages/os", "generate-docs"],
+]
+
+const results = []
+
+for (const cmd of commands) {
+  const proc = Bun.spawnSync({
+    cmd,
+    stdout: "pipe",
+    stderr: "pipe",
+  })
+
+  const stdout = new TextDecoder().decode(proc.stdout)
+  const stderr = new TextDecoder().decode(proc.stderr)
+
+  const result = {
+    command: cmd.join(" "),
+    ok: proc.exitCode === 0,
+    exitCode: proc.exitCode,
+    stdout: stdout.slice(-8000),
+    stderr: stderr.slice(-8000),
+  }
+
+  results.push(result)
+
+  if (proc.exitCode !== 0) {
+    console.log(JSON.stringify({
+      ok: false,
+      failed: result,
+      results,
+    }, null, 2))
+    process.exit(proc.exitCode)
+  }
+}
+
+console.log(JSON.stringify({
+  ok: true,
+  results,
+}, null, 2))
+`.trim(),
+    maxResultChars: 30000,
+  },
+  timeout: 600,
+})
+
+Static grep-like checks should usually use fs.search, not shell search. Use code.call only when the check needs real language/runtime behavior.
+Use Bash only when shell semantics are required. For example, a short environment smoke check can use Bash because it is intentionally shell-shaped:
+await os.call({
+  tool: "code.call",
+  input: {
+    language: "bash",
+    mode: "read",
+    code: "set -euo pipefail\nprintf 'node: '; node --version\nprintf 'bun: '; bun --version",
+    maxResultChars: 12000,
+  },
+  timeout: 120,
+})
+
+
+
 
 ## Run Development E2E Validation for Behavior Changes
 
@@ -1418,32 +2016,34 @@ Use the decision engine to move from broad uncertainty to evidence-backed action
 
 Normal loop:
 
-1. `explore` to get ranked candidates, the dependency map, categorical readiness, explicit uncertainty, and the next evidence action.
-2. Follow `explore.policy.next_action` with task-scoped `fs.read`, targeted search, or the requested validation evidence.
-3. Rerun `explore`; it folds the accumulated evidence into the same policy automatically.
-4. Repeat until `explore.policy.edit_ready` is true, then edit `explore.policy.edit_target` with the returned dependency map as context.
-5. After implementation, use real validation plus `confirm` when useful.
+1. `explore` to get candidate files and graph context.
+2. `decideNext` to choose the next highest-value action.
+3. `fs.read` the recommended file or section.
+4. Mark evidence when useful with `decideNext` input such as `markRead`, `markRelevant`, or `markIrrelevant`.
+5. Run `confidenceScore`.
+6. Repeat until confidence is high enough to exploit.
+7. Run `exploit` to commit to the implementation path.
+8. After implementation, use real validation plus `confirm` when useful.
 
 Important:
 
-- `explore` owns retrieval plus the investigation policy; retrieval support is still not proof.
-- `explore.policy.next_action` is the normal policy interface.
-- `explore.policy.readiness` is categorical evidence readiness, not a correctness probability.
-- `explore.policy.edit_ready` / `edit_target` mean “stop wandering; this path has enough evidence to edit.”
-- `decideNext`, `confidenceScore`, and `exploit` are compatibility views over that same policy and should not be called as a normal ceremony.
+- `explore` is retrieval, not proof.
+- `decideNext` is the policy layer.
+- `confidenceScore` is an evidence check, not permission to skip tests.
+- `exploit` means “stop wandering; edit this path.”
 - `confirm` means “belief meets reality.”
 - `audit` is for tool/docs/index drift, not general confirmation.
 
-## Explore Is the Investigation Policy Front Door
+## Explore Is a Discovery Command
 
 Use `explore` anywhere you would otherwise start guessing paths, grepping broadly, or asking “where is this implemented?”
 
 Treat it as a workspace navigation primitive alongside `fs.read` and `fs.search`.
 
-- `explore` finds likely files, symbols, tests, docs, and related implementation paths, then evaluates the current evidence state and returns the next action.
+- `explore` finds likely files, symbols, tests, docs, and related implementation paths.
 - `fs.read` verifies actual content.
 - `fs.search` follows up with exact targeted symbol/string lookup after direction is narrowed.
-- `explore.policy.next_action` decides what evidence/action should come next.
+- `decideNext` decides what evidence/action should come next.
 - `confirm` proves behavior against reality.
 
 Do not wait until a formal decision-engine loop to use `explore`.
@@ -1491,4 +2091,5 @@ Before saying “done,” verify and report:
 - commit SHA or merge SHA
 - files changed
 - validation run
-- local state if the user requested
+- local state if the user requested lo
+
