@@ -304,6 +304,50 @@ describe('lifecycle restart parity', () => {
     }
   });
 
+  it('accepts a refreshed loaded sidecar when launchd reports bootstrap exit five', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-restart-loaded-sidecar-visible-'));
+    const launchAgents = join(home, 'Library', 'LaunchAgents');
+    mkdirSync(launchAgents, { recursive: true });
+    const label = 'com.consuelo.watchdog';
+    writeFileSync(join(launchAgents, label + '.plist'), '<plist/>\n');
+    let bootstrapAttempts = 0;
+    let bootoutAttempts = 0;
+    let kickstartAttempts = 0;
+    try {
+      const controller = createReloadServiceController({
+        osRoot,
+        platform: 'darwin',
+        environment: { HOME: home },
+        userId: 501,
+        sleep: async () => {},
+        run: async (command, args) => {
+          if (command === 'launchctl' && args[0] === 'bootstrap') {
+            bootstrapAttempts += 1;
+            return {
+              exitCode: 5,
+              stdout: '',
+              stderr: 'Bootstrap failed: 5: Input/output error',
+            };
+          }
+          if (command === 'launchctl' && args[0] === 'bootout') {
+            bootoutAttempts += 1;
+          }
+          if (command === 'launchctl' && args[0] === 'kickstart') {
+            kickstartAttempts += 1;
+          }
+          return { exitCode: 0, stdout: '', stderr: '' };
+        },
+      });
+
+      await expect(controller.restart({ waitForCompletion: true })).resolves.toBeUndefined();
+      expect(bootstrapAttempts).toBe(1);
+      expect(bootoutAttempts).toBe(1);
+      expect(kickstartAttempts).toBe(1);
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
+  });
+
   it('retries a transient macOS gateway bootstrap while a missing job settles', async () => {
     const home = mkdtempSync(join(tmpdir(), 'consuelo-restart-gateway-retry-'));
     const launchAgents = join(home, 'Library', 'LaunchAgents');
