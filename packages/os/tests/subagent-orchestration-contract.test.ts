@@ -1,12 +1,19 @@
 import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-
 import { describe, expect, it, vi } from 'vitest';
 
 import { executeTool, getToolManifestEntry } from '../scripts/lib/facade/executor';
 import type { ToolInput, ToolRunner } from '../scripts/lib/facade/types';
 import { resolveSubagentRunDirectory, type DurableSubagentRun } from '../scripts/lib/subagent/lifecycle';
+
+function removeTemp(target: string) {
+  try {
+    rmSync(target, { recursive: true, force: true, maxRetries: 8, retryDelay: 25 });
+  } catch {
+    // linux can race a detached runner still holding the temp directory
+  }
+}
 
 function runner(): ToolRunner {
   return async () => ({ stdout: '', stderr: '', exitCode: 0 });
@@ -123,8 +130,8 @@ describe('subagent orchestration contract', () => {
       if (typeof result.data.runId !== 'string') throw new Error('missing Grok runId');
       expect(existsSync(join(resolveSubagentRunDirectory(result.data.runId, env), 'state.json'))).toBe(true);
     } finally {
-      rmSync(durableHome, { recursive: true, force: true });
-      rmSync(worktree, { recursive: true, force: true });
+      removeTemp(durableHome);
+      removeTemp(worktree);
     }
   }, 25_000);
 
@@ -156,8 +163,8 @@ describe('subagent orchestration contract', () => {
         'model_reasoning_effort="xhigh"',
       ]));
     } finally {
-      rmSync(durableHome, { recursive: true, force: true });
-      rmSync(worktree, { recursive: true, force: true });
+      removeTemp(durableHome);
+      removeTemp(worktree);
     }
   });
 
@@ -184,8 +191,8 @@ describe('subagent orchestration contract', () => {
       expect(readFileSync(fake.promptPath, 'utf8')).toContain('task.start');
       expect(readFileSync(fake.promptPath, 'utf8')).toContain('task.pr merges');
     } finally {
-      rmSync(durableHome, { recursive: true, force: true });
-      rmSync(worktree, { recursive: true, force: true });
+      removeTemp(durableHome);
+      removeTemp(worktree);
     }
   });
 
@@ -214,9 +221,9 @@ describe('subagent orchestration contract', () => {
       expect(result.data.instructionPath).toContain(join(durableHome, 'node', 'runs'));
       expect(existsSync(`${result.data.instructionPath}.provenance.json`)).toBe(true);
     } finally {
-      rmSync(handoffDir, { recursive: true, force: true });
-      rmSync(durableHome, { recursive: true, force: true });
-      rmSync(worktree, { recursive: true, force: true });
+      removeTemp(handoffDir);
+      removeTemp(durableHome);
+      removeTemp(worktree);
     }
   });
 
@@ -255,8 +262,8 @@ describe('subagent orchestration contract', () => {
       expect(logs.data.finalMessage).toBe('fake complete');
       expect(readFileSync(fake.spawnPath, 'utf8').trim().split('\n')).toHaveLength(1);
     } finally {
-      rmSync(durableHome, { recursive: true, force: true });
-      rmSync(worktree, { recursive: true, force: true });
+      removeTemp(durableHome);
+      removeTemp(worktree);
     }
   });
 
@@ -288,8 +295,8 @@ describe('subagent orchestration contract', () => {
       expect(waited.code).toBe('WAIT_TIMEOUT');
       expect(Date.now() - before).toBeLessThan(180);
     } finally {
-      rmSync(durableHome, { recursive: true, force: true });
-      rmSync(worktree, { recursive: true, force: true });
+      removeTemp(durableHome);
+      removeTemp(worktree);
     }
   });
 
@@ -329,8 +336,8 @@ describe('subagent orchestration contract', () => {
       expect(existsSync(fake.spawnPath)).toBe(true);
       expect(readFileSync(fake.spawnPath, 'utf8').trim().split('\n')).toHaveLength(1);
     } finally {
-      rmSync(durableHome, { recursive: true, force: true });
-      rmSync(worktree, { recursive: true, force: true });
+      removeTemp(durableHome);
+      removeTemp(worktree);
     }
   });
 
@@ -372,8 +379,8 @@ describe('subagent orchestration contract', () => {
         expect(retried.code, testCase.name).toBe('IDEMPOTENCY_CONFLICT');
         expect(retried.data.runId, testCase.name).toBe(started.data.runId);
       } finally {
-        rmSync(durableHome, { recursive: true, force: true });
-        rmSync(worktree, { recursive: true, force: true });
+        removeTemp(durableHome);
+        removeTemp(worktree);
       }
     }
   });
@@ -422,8 +429,8 @@ describe('subagent orchestration contract', () => {
       expect(status.data.audit.branch).toBe(metadataBranch);
       expect(status.data.audit.rawShellUsed).toBe(true);
     } finally {
-      rmSync(durableHome, { recursive: true, force: true });
-      rmSync(worktree, { recursive: true, force: true });
+      removeTemp(durableHome);
+      removeTemp(worktree);
     }
   });
 
@@ -456,8 +463,8 @@ describe('subagent orchestration contract', () => {
       expect(cancelled.ok).toBe(true);
       expect(cancelled.code).toBe('OK');
     } finally {
-      rmSync(durableHome, { recursive: true, force: true });
-      rmSync(worktree, { recursive: true, force: true });
+      removeTemp(durableHome);
+      removeTemp(worktree);
     }
   });
 
@@ -489,8 +496,8 @@ describe('subagent orchestration contract', () => {
       expect(result.data.exitCode).not.toBe(0);
     } finally {
       dateNow.mockRestore();
-      rmSync(durableHome, { recursive: true, force: true });
-      rmSync(worktree, { recursive: true, force: true });
+      removeTemp(durableHome);
+      removeTemp(worktree);
     }
   });
 
@@ -519,8 +526,8 @@ describe('subagent orchestration contract', () => {
       expect(result.data.stdoutChars).toBeGreaterThan(result.data.stdout.length);
       expect(result.data.stdoutChars).toBeGreaterThan(9_000);
     } finally {
-      rmSync(durableHome, { recursive: true, force: true });
-      rmSync(worktree, { recursive: true, force: true });
+      removeTemp(durableHome);
+      removeTemp(worktree);
     }
   });
 
@@ -573,8 +580,8 @@ describe('subagent orchestration contract', () => {
       expect(waited.data.status).toBe('failed');
       expect(waited.data.stderr).toContain(failure);
     } finally {
-      rmSync(durableHome, { recursive: true, force: true });
-      rmSync(worktree, { recursive: true, force: true });
+      removeTemp(durableHome);
+      removeTemp(worktree);
     }
   });
 
@@ -615,8 +622,8 @@ describe('subagent orchestration contract', () => {
       expect(piReasoning.data.capabilities.reasoningEffort).toBe(false);
       expect(piReasoning.data.unsupportedCapabilities).toContain('reasoningEffort');
     } finally {
-      rmSync(durableHome, { recursive: true, force: true });
-      rmSync(worktree, { recursive: true, force: true });
+      removeTemp(durableHome);
+      removeTemp(worktree);
     }
   });
 
@@ -647,8 +654,8 @@ describe('subagent orchestration contract', () => {
         expect(result.data.runId).toBeUndefined();
       }
     } finally {
-      rmSync(durableHome, { recursive: true, force: true });
-      rmSync(worktree, { recursive: true, force: true });
+      removeTemp(durableHome);
+      removeTemp(worktree);
     }
   });
 
@@ -678,8 +685,8 @@ describe('subagent orchestration contract', () => {
         expect(result.data.command).toEqual([]);
       }
     } finally {
-      rmSync(durableHome, { recursive: true, force: true });
-      rmSync(worktree, { recursive: true, force: true });
+      removeTemp(durableHome);
+      removeTemp(worktree);
     }
   });
 
