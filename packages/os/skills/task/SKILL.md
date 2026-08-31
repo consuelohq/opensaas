@@ -781,7 +781,7 @@ console.log(JSON.stringify({
   stderr: stderr.slice(-12000),
 }, null, 2))
 
-process.exit(proc.exitCode)
+process.exit(proc.exitCode ?? 1)
 `.trim(),
     maxResultChars: 30000,
   },
@@ -866,7 +866,7 @@ for (const cmd of commands) {
     stderr: stderr.slice(-6000),
   }, null, 2))
 
-  if (proc.exitCode !== 0) process.exit(proc.exitCode)
+  if (proc.exitCode !== 0) process.exit(proc.exitCode ?? 1)
 }
 `.trim(),
     maxResultChars: 30000,
@@ -1173,7 +1173,7 @@ console.log(JSON.stringify({
   stderr: stderr.slice(-12000),
 }, null, 2))
 
-process.exit(proc.exitCode)
+process.exit(proc.exitCode ?? 1)
 `.trim(),
     maxResultChars: 30000,
   },
@@ -1208,7 +1208,7 @@ console.log(JSON.stringify({
   stderr: stderr.slice(-12000),
 }, null, 2))
 
-process.exit(proc.exitCode)
+process.exit(proc.exitCode ?? 1)
 `.trim(),
     maxResultChars: 30000,
   },
@@ -1258,7 +1258,7 @@ for (const cmd of commands) {
       failed: result,
       results,
     }, null, 2))
-    process.exit(proc.exitCode)
+    process.exit(proc.exitCode ?? 1)
   }
 }
 
@@ -1339,7 +1339,7 @@ console.log(JSON.stringify({
   stderr: stderr.slice(-12000),
 }, null, 2))
 
-process.exit(proc.exitCode)
+process.exit(proc.exitCode ?? 1)
 `.trim(),
     maxResultChars: 30000,
   },
@@ -1371,7 +1371,7 @@ console.log(JSON.stringify({
   stderr: stderr.slice(-12000),
 }, null, 2))
 
-process.exit(proc.exitCode)
+process.exit(proc.exitCode ?? 1)
 `.trim(),
     maxResultChars: 30000,
   },
@@ -1468,7 +1468,7 @@ for (const cmd of commands) {
       failed: result,
       results,
     }, null, 2))
-    process.exit(proc.exitCode)
+    process.exit(proc.exitCode ?? 1)
   }
 }
 
