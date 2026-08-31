@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/replace-bun-file-in-mcp-proxy-scope-test",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2326,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2326",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-replace-bun-file-in-mcp-proxy-scope-test",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_c1ebabc9236c",
+  "tmuxSession": "opensaas-os-replace-bun-file-in-mcp-proxy-scope-test-c1ebabc9",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-replace-bun-file-in-mcp-proxy-scope-test/.task/session.json",
+  "createdAt": "2026-08-31T04:05:54.395Z"
+}
