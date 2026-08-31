@@ -264,12 +264,9 @@ export function createReloadServiceController(input: {
               if (!transientExitFive) break;
 
               const visible = await run('launchctl', ['print', service]);
-              if (visible.exitCode === 0 && !definitionReloadRequired) {
+              if (visible.exitCode === 0) {
                 available = true;
                 break;
-              }
-              if (visible.exitCode === 0 && definitionReloadRequired) {
-                await run('launchctl', ['bootout', service]);
               }
               if (attempt < MAC_GATEWAY_BOOTSTRAP_ATTEMPTS) {
                 await sleepImpl(MAC_GATEWAY_BOOTSTRAP_RETRY_MS);
