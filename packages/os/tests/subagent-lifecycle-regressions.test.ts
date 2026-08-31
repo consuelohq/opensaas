@@ -706,6 +706,79 @@ describe('durable subagent lifecycle regressions', () => {
     }
   });
 
+  it('allows a pidless parent fallback marker to hand off to the runner owned exit marker', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'subagent-pidless-marker-handoff-'));
+    const environment = makeEnvironment(home);
+    const runId = 'run_777777778888888899999999';
+    const runDirectory = resolveSubagentRunDirectory(runId, environment);
+    mkdirSync(runDirectory, { recursive: true });
+    const stdoutLogPath = join(runDirectory, 'stdout.jsonl');
+    const stderrLogPath = join(runDirectory, 'stderr.log');
+    const exitMarkerPath = join(runDirectory, 'exit.json');
+    const ownerToken = 'owner-pidless-marker-handoff';
+    const run: DurableSubagentRun = {
+      runId,
+      traceId: 'trc_pidless_marker_handoff',
+      fingerprint: 'pidless-marker-handoff',
+      provider: 'codex',
+      policy: 'read',
+      cwd: home,
+      instructionPath: join(runDirectory, 'instruction.md'),
+      command: ['codex', 'exec'],
+      ownerToken,
+      exitMarkerPath,
+      status: 'completion_unknown',
+      timeoutMs: 30_000,
+      startedAt: Date.now() - 10_000,
+      updatedAt: Date.now() - 10_000,
+      stdoutLogPath,
+      stderrLogPath,
+      error: 'runner exited without a durable exit marker; no provider was respawned',
+    };
+    writeFileSync(stdoutLogPath, '{"finalMessage":"pidless marker handoff complete"}\n');
+    writeFileSync(stderrLogPath, '');
+    writeFileSync(join(runDirectory, 'state.json'), JSON.stringify(run, null, 2));
+    writeFileSync(exitMarkerPath, JSON.stringify({
+      runId,
+      ownerToken,
+      runnerPid: 0,
+      outcome: 'failed',
+      exitCode: 1,
+      error: 'runner process exited without writing a durable exit marker',
+      endedAt: Date.now(),
+    }, null, 2));
+
+    const markerPublished = new Promise<void>((resolve) => {
+      setTimeout(() => {
+        writeFileSync(exitMarkerPath, JSON.stringify({
+          runId,
+          ownerToken,
+          runnerPid: 65_535,
+          outcome: 'completed',
+          exitCode: 0,
+        }, null, 2));
+        resolve();
+      }, 750);
+    });
+
+    try {
+      const waited = await waitForDurableSubagentRun(run, environment, 2_000, (stdout) => ({
+        completed: stdout.includes('pidless marker handoff complete'),
+        finalMessage: stdout.includes('pidless marker handoff complete')
+          ? 'pidless marker handoff complete'
+          : undefined,
+      }));
+      await markerPublished;
+
+      expect(waited.run.status).toBe('completed');
+      expect(waited.run.finalMessage).toBe('pidless marker handoff complete');
+      expect(waited.timedOut).toBe(false);
+    } finally {
+      await markerPublished;
+      rmSync(home, { recursive: true, force: true });
+    }
+  });
+
   it('parses the full durable log while keeping attachment log reads bounded', () => {
     const home = mkdtempSync(join(tmpdir(), 'subagent-full-parse-'));
     const environment = makeEnvironment(home);
