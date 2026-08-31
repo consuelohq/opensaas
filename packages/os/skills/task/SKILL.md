@@ -916,7 +916,7 @@ raw repo reads through cat, sed, head, or tail
 raw repo search through rg, grep, or find
 GitHub state through gh
 Linear, Railway, browser, Sentry, or production state through raw CLIs
-Large source, Markdown, JSON, scripts, and patches should travel through typed file transport: fs.write, fs.patch, contentFile, explicit stdin support, or the closest typed workspace tool. Do not bury structured payloads inside shell strings.
+Large source, Markdown, JSON, scripts, and patches should travel through typed file transport: fs.write, fs.apply_patch with patchText or patchFile, contentFile, explicit stdin support, or the closest typed workspace tool. Do not bury structured payloads inside shell strings.
 
 
 
