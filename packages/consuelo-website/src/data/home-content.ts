@@ -125,6 +125,15 @@ export type FeatureArtworkMotif =
   | 'secure'
   | 'switch';
 
+export type HomeFeatureEvidence = {
+  figureNumber: string;
+  meta: string;
+  caption: string;
+  sequence: Array<{ label: string }>;
+  videoSrc?: string;
+  posterSrc?: string;
+};
+
 export type HomeFeaturePreviewItem = {
   number: number;
   label: string;
@@ -133,6 +142,7 @@ export type HomeFeaturePreviewItem = {
   motif: FeatureArtworkMotif;
   imageAlt: string;
   assetSrc: string;
+  evidence?: HomeFeatureEvidence;
 };
 
 export type HomePlatformCardCtaIcon = 'terminal' | 'sign-in' | 'cloud';
@@ -521,6 +531,17 @@ export const homeFeaturePreviewItems: HomeFeaturePreviewItem[] = [
     motif: 'connect',
     imageAlt: 'Sacred table with signals converging on one center',
     assetSrc: '/images/home/connect.svg',
+    evidence: {
+      figureNumber: '01',
+      meta: 'One workspace / four agents',
+      caption: 'One tool contract. Four agent surfaces. The workspace stays put.',
+      sequence: [
+        { label: 'ChatGPT' },
+        { label: 'Codex' },
+        { label: 'Claude' },
+        { label: 'Cursor' },
+      ],
+    },
   },
   {
     number: 2,

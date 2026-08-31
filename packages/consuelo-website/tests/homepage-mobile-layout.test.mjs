@@ -293,6 +293,46 @@ test('homepage mobile layout and content follow the launch contract', { timeout:
     assert.notEqual(featureColors.number, featureColors.label);
     assert.equal(featureColors.number, featureColors.description);
 
+    const connectSequence = await page
+      .locator('.feature-evidence__sequence [data-agent]')
+      .allInnerTexts();
+    assert.deepEqual(connectSequence, ['01\nChatGPT', '02\nCodex', '03\nClaude', '04\nCursor']);
+
+    const connectStageBox = await page.locator('.feature-evidence__stage').boundingBox();
+    assert.ok(connectStageBox);
+    assert.ok(Math.abs(connectStageBox.width / connectStageBox.height - 4 / 3) < 0.02);
+
+    const featureTabletPage = await browser.newPage({ viewport: { width: 1024, height: 1366 } });
+    await featureTabletPage.goto(server.baseUrl, { waitUntil: 'domcontentloaded' });
+    await featureTabletPage.locator('.product-panel__grid').waitFor({ state: 'attached' });
+    const tabletFeatureGeometry = await featureTabletPage.evaluate(() => {
+      const grid = document.querySelector('.product-panel__grid');
+      const stage = document.querySelector('.feature-evidence__stage');
+      if (!(grid instanceof HTMLElement) || !(stage instanceof HTMLElement)) {
+        throw new Error('Expected tablet feature grid and CONNECT evidence stage');
+      }
+      const stageBox = stage.getBoundingClientRect();
+      return {
+        columns: getComputedStyle(grid).gridTemplateColumns.split(' ').filter(Boolean).length,
+        stageRatio: stageBox.width / stageBox.height,
+        horizontalOverflow:
+          document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      };
+    });
+    assert.equal(tabletFeatureGeometry.columns, 2);
+    assert.ok(Math.abs(tabletFeatureGeometry.stageRatio - 4 / 3) < 0.02);
+    assert.equal(tabletFeatureGeometry.horizontalOverflow, 0);
+    await featureTabletPage.close();
+
+    const featureDesktopPage = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+    await featureDesktopPage.goto(server.baseUrl, { waitUntil: 'domcontentloaded' });
+    await featureDesktopPage.locator('.product-panel__grid').waitFor({ state: 'attached' });
+    const desktopColumns = await featureDesktopPage.locator('.product-panel__grid').evaluate((grid) =>
+      getComputedStyle(grid).gridTemplateColumns.split(' ').filter(Boolean).length,
+    );
+    assert.equal(desktopColumns, 3);
+    await featureDesktopPage.close();
+
     assert.equal(
       (await page.locator('.cloud-cta__copy > p').first().innerText()).trim(),
       'FREE • PLUS • SUPER • ULTRA',
