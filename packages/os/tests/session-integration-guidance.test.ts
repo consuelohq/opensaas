@@ -42,4 +42,17 @@ describe('session integration guidance', () => {
     expect(taskSkill).toContain('timeout: 120_000,');
     expect(taskSkill).toContain('timeout: 600_000,');
   });
+
+  it('keeps validation wrappers nonzero when spawned processes exit by signal', () => {
+    const guidanceCopies = [
+      read('packages/os/skills/task/SKILL.md'),
+      read('packages/workspace/task.md'),
+      read('packages/os/tests/fixtures/skills/task-workspace.SKILL.md'),
+    ];
+
+    for (const guidance of guidanceCopies) {
+      expect(guidance).not.toContain('process.exit(proc.exitCode)');
+      expect(guidance).toContain('process.exit(proc.exitCode ?? 1)');
+    }
+  });
 });
