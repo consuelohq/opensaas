@@ -45,7 +45,7 @@ Normal non-task calls must use the typed facade shape:
 await workspace.call({
   tool: "stream.context",
   input: { area: "<area>" },
-  timeout: 120,
+  timeout: 120_000,
 })
 ```
 
@@ -64,14 +64,14 @@ await workspace.call({
   tool: "fs.read",
   taskSession,
   input: { path: "AGENTS.md" },
-  timeout: 120,
+  timeout: 120_000,
 })
 
 await workspace.call({
   tool: "status",
   taskSession,
   input: {},
-  timeout: 120,
+  timeout: 120_000,
 })
 ```
 
@@ -100,7 +100,7 @@ Run stream context before starting task work:
 await workspace.call({
   tool: "stream.context",
   input: { area: "<area>" },
-  timeout: 120,
+  timeout: 120_000,
 })
 ```
 
@@ -110,7 +110,7 @@ Use `stream.list` first only when the correct stream area is unknown:
 await workspace.call({
   tool: "stream.list",
   input: {},
-  timeout: 120,
+  timeout: 120_000,
 })
 ```
 
@@ -140,7 +140,7 @@ await workspace.call({
     title: "<task title>",
     startFrom: "main",
   },
-  timeout: 120,
+  timeout: 120_000,
 })
 ```
 
@@ -160,14 +160,14 @@ await workspace.call({
   tool: "fs.read",
   taskSession,
   input: { path: "AGENTS.md" },
-  timeout: 120,
+  timeout: 120_000,
 })
 
 await workspace.call({
   tool: "status",
   taskSession,
   input: {},
-  timeout: 120,
+  timeout: 120_000,
 })
 ```
 
@@ -190,7 +190,7 @@ await workspace.call({
     from: 1,
     to: 80,
   },
-  timeout: 120,
+  timeout: 120_000,
 })
 Correct task-scoped command execution uses code.call, not legacy task.exec, raw shell, or host escape hatches:
 await workspace.call({
@@ -202,7 +202,7 @@ await workspace.call({
     code: "bun --cwd packages/workspace test",
     maxResultChars: 20000,
   },
-  timeout: 360,
+  timeout: 360_000,
 })
 Use code.call for focused command execution in the task worktree:
 package tests
@@ -220,7 +220,7 @@ await workspace.call({
   input: {
     command: ["bun", "--cwd", "packages/workspace", "test"],
   },
-  timeout: 360,
+  timeout: 360_000,
 })
 Use this instead:
 await workspace.call({
@@ -232,7 +232,7 @@ await workspace.call({
     code: "bun --cwd packages/workspace test",
     maxResultChars: 20000,
   },
-  timeout: 360,
+  timeout: 360_000,
 })
 Do not normally put taskSession inside input.
 The server propagates the top-level taskSession into the facade. input.taskSession exists only for compatibility and must match the top-level value if both are present.
@@ -369,19 +369,19 @@ Context and exploration are not one-time kickoff steps; they are tools for stayi
 await workspace.call({
   tool: "context.search",
   input: { keyword: "<feature or behavior>", limit: 5 },
-  timeout: 120,
+  timeout: 120_000,
 })
 
 await workspace.call({
   tool: "context.search",
   input: { keyword: "typed workspace facade", limit: 5 },
-  timeout: 120,
+  timeout: 120_000,
 })
 
 await workspace.call({
   tool: "context.search",
   input: { keyword: "workspace scripts docs", limit: 5 },
-  timeout: 120,
+  timeout: 120_000,
 })
 
 await workspace.call({
@@ -390,7 +390,7 @@ await workspace.call({
     query: "<feature or behavior> workspace facade script manifest docs tests",
     limit: 8,
   },
-  timeout: 120,
+  timeout: 120_000,
 })
 ```
 
@@ -400,7 +400,7 @@ Ask for the next best action:
 await workspace.call({
   tool: "decideNext",
   input: {},
-  timeout: 120,
+  timeout: 120_000,
 })
 ```
 
@@ -411,7 +411,7 @@ await workspace.call({
   tool: "fs.read",
   taskSession,
   input: { path: "<recommended-file>" },
-  timeout: 120,
+  timeout: 120_000,
 })
 ```
 
@@ -421,13 +421,13 @@ Then rerun the loop:
 await workspace.call({
   tool: "decideNext",
   input: {},
-  timeout: 120,
+  timeout: 120_000,
 })
 
 await workspace.call({
   tool: "confidenceScore",
   input: {},
-  timeout: 120,
+  timeout: 120_000,
 })
 ```
 
@@ -439,7 +439,7 @@ Use `exploit` when the path is clear enough to commit to an editing target:
 await workspace.call({
   tool: "exploit",
   input: {},
-  timeout: 120,
+  timeout: 120_000,
 })
 ```
 
@@ -454,7 +454,7 @@ await workspace.call({
     paths: ["<path>"],
     maxResults: 80,
   },
-  timeout: 120,
+  timeout: 120_000,
 })
 ```
 
@@ -511,7 +511,7 @@ await workspace.call({
     keyword: "<feature-or-failure-keyword>",
     limit: 5,
   },
-  timeout: 120,
+  timeout: 120_000,
 })
 ```
 
@@ -595,7 +595,7 @@ await workspace.call({
       };
     `,
   },
-  timeout: 180,
+  timeout: 180_000,
 })
 ```
 
@@ -637,7 +637,7 @@ await workspace.call({
       };
     `,
   },
-  timeout: 300,
+  timeout: 300_000,
 })
 ```
 
@@ -714,7 +714,7 @@ await workspace.call({
     code: "import platform, sys\nprint(platform.platform())\nprint(sys.version)",
     maxResultChars: 20000,
   },
-  timeout: 120,
+  timeout: 120_000,
 })
 
 Non-mutating Bun diagnostic, no task worktree required:
@@ -726,7 +726,7 @@ await workspace.call({
     code: "console.log(JSON.stringify({ bun: Bun.version, cwd: process.cwd() }, null, 2))",
     maxResultChars: 20000,
   },
-  timeout: 120,
+  timeout: 120_000,
 })
 
 Python syntax validation in the task worktree:
@@ -753,7 +753,7 @@ raise SystemExit(1 if failures else 0)
 `.trim(),
     maxResultChars: 20000,
   },
-  timeout: 300,
+  timeout: 300_000,
 })
 
 Focused red or green package test in the task worktree:
@@ -784,7 +784,7 @@ process.exit(proc.exitCode)
 `.trim(),
     maxResultChars: 30000,
   },
-  timeout: 600,
+  timeout: 600_000,
 })
 
 OS package validation bundle with compact output:
@@ -832,7 +832,7 @@ process.exit(failed.length === 0 ? 0 : 1)
 `.trim(),
     maxResultChars: 40000,
   },
-  timeout: 900,
+  timeout: 900_000,
 })
 
 Generated surface command that intentionally updates files:
@@ -870,7 +870,7 @@ for (const cmd of commands) {
 `.trim(),
     maxResultChars: 30000,
   },
-  timeout: 600,
+  timeout: 600_000,
 })
 
 Use Bash only when the task is genuinely shell-shaped:
@@ -883,7 +883,7 @@ await workspace.call({
     code: "set -euo pipefail\nprintf 'node: '; node --version\nprintf 'bun: '; bun --version",
     maxResultChars: 12000,
   },
-  timeout: 120,
+  timeout: 120_000,
 })
 
 Language selection rules
@@ -971,7 +971,7 @@ await workspace.call({
       },
     ],
   },
-  timeout: 300,
+  timeout: 300_000,
 })
 ```
 
@@ -1027,7 +1027,7 @@ await workspace.call({
     hunks: true,
     maxBytes: 20000,
   },
-  timeout: 120,
+  timeout: 120_000,
 })
 When reviewing against a base branch, include base:
 await workspace.call({
@@ -1040,7 +1040,7 @@ await workspace.call({
     hunks: true,
     maxBytes: 20000,
   },
-  timeout: 120,
+  timeout: 120_000,
 })
 Request patch: true only when the actual changed lines are needed:
 await workspace.call({
@@ -1051,7 +1051,7 @@ await workspace.call({
     patch: true,
     maxBytes: 20000,
   },
-  timeout: 120,
+  timeout: 120_000,
 })
 Do not use raw git diff through command execution unless git.diff cannot express the needed view. Repeated fallback diff usage is a tooling gap.
 For detailed diff review, prefer bounded output. Do not return giant diffs into chat.
@@ -1092,7 +1092,7 @@ await workspace.call({
     files: ["packages/workspace/scripts/task-start.js"],
     stopOnFirstError: true,
   },
-  timeout: 300,
+  timeout: 300_000,
 })
 
 Use code.call for focused language/package validation when there is no more specific typed validation tool.
@@ -1140,7 +1140,7 @@ sys.exit(1 if failures else 0)
 `.trim(),
     maxResultChars: 20000,
   },
-  timeout: 120,
+  timeout: 120_000,
 })
 
 For several Python files, add them to the files array. Do not shell out to python3 -m py_compile from Bash unless language: "python" cannot express the check.
@@ -1175,7 +1175,7 @@ process.exit(proc.exitCode)
 `.trim(),
     maxResultChars: 30000,
   },
-  timeout: 600,
+  timeout: 600_000,
 })
 
 The red run should fail for the expected reason. Record the trace ID, command, and meaningful failure signal in the scoped workpad before implementing.
@@ -1210,7 +1210,7 @@ process.exit(proc.exitCode)
 `.trim(),
     maxResultChars: 30000,
   },
-  timeout: 600,
+  timeout: 600_000,
 })
 
 If the current code.call implementation supports explicit red/green metadata fields, include them. If it does not, record the red and green command, trace ID, and result in the scoped workpad immediately after each run.
@@ -1267,7 +1267,7 @@ console.log(JSON.stringify({
 `.trim(),
     maxResultChars: 30000,
   },
-  timeout: 600,
+  timeout: 600_000,
 })
 
 After codegen, inspect the diff with git.diff and confirm generated files are expected.
@@ -1341,7 +1341,7 @@ process.exit(proc.exitCode)
 `.trim(),
     maxResultChars: 30000,
   },
-  timeout: 600,
+  timeout: 600_000,
 })
 
 OS package test:
@@ -1373,7 +1373,7 @@ process.exit(proc.exitCode)
 `.trim(),
     maxResultChars: 30000,
   },
-  timeout: 600,
+  timeout: 600_000,
 })
 
 Multiple focused validation commands with compact output:
@@ -1421,7 +1421,7 @@ process.exit(failed.length === 0 ? 0 : 1)
 `.trim(),
     maxResultChars: 40000,
   },
-  timeout: 900,
+  timeout: 900_000,
 })
 
 Prefer one command intent per call. Combine commands only when they are a tight validation bundle and the output remains bounded.
@@ -1477,7 +1477,7 @@ console.log(JSON.stringify({
 `.trim(),
     maxResultChars: 30000,
   },
-  timeout: 600,
+  timeout: 600_000,
 })
 
 Static grep-like checks should usually use fs.search, not shell search. Use code.call only when the check needs real language/runtime behavior.
@@ -1490,7 +1490,7 @@ await workspace.call({
     code: "set -euo pipefail\nprintf 'node: '; node --version\nprintf 'bun: '; bun --version",
     maxResultChars: 12000,
   },
-  timeout: 120,
+  timeout: 120_000,
 })
 
 
@@ -1581,7 +1581,7 @@ await workspace.call({
   tool: "confirm",
   taskSession,
   input: { verify: true },
-  timeout: 600,
+  timeout: 600_000,
 })
 ```
 
@@ -1592,7 +1592,7 @@ await workspace.call({
   tool: "audit",
   taskSession,
   input: { scripts: true },
-  timeout: 120,
+  timeout: 120_000,
 })
 ```
 
@@ -1603,14 +1603,14 @@ await workspace.call({
   tool: "audit",
   taskSession,
   input: { docs: true },
-  timeout: 120,
+  timeout: 120_000,
 })
 
 await workspace.call({
   tool: "audit",
   taskSession,
   input: { index: true },
-  timeout: 300,
+  timeout: 300_000,
 })
 ```
 
@@ -1633,7 +1633,7 @@ await workspace.call({
     base: "<origin/main-or-origin/stream/area>",
     noTests: true,
   },
-  timeout: 900,
+  timeout: 900_000,
 })
 
 await workspace.call({
@@ -1643,7 +1643,7 @@ await workspace.call({
     base: "origin/main",
     noDb: true,
   },
-  timeout: 700,
+  timeout: 700_000,
 })
 ```
 
@@ -1669,7 +1669,7 @@ await workspace.call({
     message: "type(scope): description",
     changed: true,
   },
-  timeout: 300,
+  timeout: 300_000,
 })
 ```
 
@@ -1701,7 +1701,7 @@ await workspace.call({
   tool: "task.pr",
   taskSession,
   input: { ready: true },
-  timeout: 300,
+  timeout: 300_000,
 })
 ```
 
@@ -1842,7 +1842,7 @@ await workspace.call({
     squash: true,
     wait: true,
   },
-  timeout: 300,
+  timeout: 300_000,
 })
 ```
 
@@ -1857,7 +1857,7 @@ await workspace.call({
     repo: "consuelohq/opensaas",
     preset: "merge",
   },
-  timeout: 120,
+  timeout: 120_000,
 })
 ```
 
@@ -1867,7 +1867,7 @@ If the stream PR has conflicts with main, run stream sync:
 await workspace.call({
   tool: "stream.sync",
   input: { area: "<area>" },
-  timeout: 300,
+  timeout: 300_000,
 })
 ```
 
@@ -1883,7 +1883,7 @@ Use typed workspace server tooling when available:
 await workspace.call({
   tool: "server",
   input: { action: "restart" },
-  timeout: 120,
+  timeout: 120_000,
 })
 ```
 
@@ -1900,7 +1900,7 @@ await workspace.call({
   tool: "task.finish",
   taskSession,
   input: {},
-  timeout: 300,
+  timeout: 300_000,
 })
 ```
 
