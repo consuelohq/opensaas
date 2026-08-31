@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_6f1b952b9315",
+  "tmuxSession": "opensaas-os-fix-watchdog-bootstrap-handoff-after-lifecycle-a-6f1b952b",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-watchdog-bootstrap-handoff-after-lifecycle-activation",
+  "branch": "task/os/fix-watchdog-bootstrap-handoff-after-lifecycle-activation",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-watchdog-bootstrap-handoff-after-lifecycle-activation",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-watchdog-bootstrap-handoff-after-lifecycle-activation",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2344,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2344",
+  "createdAt": "2026-08-31T22:53:39.329Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-watchdog-bootstrap-handoff-after-lifecycle-activation/.task/os/fix-watchdog-bootstrap-handoff-after-lifecycle-activation/session.json"
+}
