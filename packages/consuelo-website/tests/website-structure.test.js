@@ -280,7 +280,8 @@ describe('Consuelo website structure', () => {
     expect(panel).toContain('<HomeFaq');
 
     expect(evidence).toContain('<figure class="feature-evidence"');
-    expect(evidence).toContain('aspect-ratio: 4 / 3');
+    expect(evidence).toContain('aspect-ratio: 2032 / 1192');
+    expect(evidence).toContain('object-fit: contain');
     expect(evidence).toContain('data-agent={agent.label}');
     expect(evidence).toContain('FIG. {evidence.figureNumber}');
     expect(evidence).toContain('evidence.sequence.map');
@@ -301,6 +302,8 @@ describe('Consuelo website structure', () => {
 
     expect(content).toContain('evidence?: HomeFeatureEvidence;');
     expect(content).toContain("figureNumber: '01'");
+    expect(content).toContain("videoSrc: '/media/home/connect-live-session.mp4'");
+    expect(content).toContain("posterSrc: '/media/home/connect-live-session-poster.webp'");
     expect(content).toContain("label: 'ChatGPT'");
     expect(content).toContain("label: 'Codex'");
     expect(content).toContain("label: 'Claude'");
@@ -308,6 +311,8 @@ describe('Consuelo website structure', () => {
     expect(content).toContain("label: 'CONTROL'");
     expect(content).toContain("label: 'OBSERVE'");
     expect(content).toContain("label: 'SWITCH'");
+    expectFile('public/media/home/connect-live-session.mp4');
+    expectFile('public/media/home/connect-live-session-poster.webp');
   });
 
   test('should expose the approved navigation when rendering the OS header', () => {

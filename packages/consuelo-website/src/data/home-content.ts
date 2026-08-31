@@ -529,12 +529,14 @@ export const homeFeaturePreviewItems: HomeFeaturePreviewItem[] = [
     title: 'SAME\nTOOLS',
     body: 'Build your tools once. Use them from ChatGPT, Codex, Claude, Cursor, and whatever comes next.',
     motif: 'connect',
-    imageAlt: 'Sacred table with signals converging on one center',
+    imageAlt: 'Screen recording of a live Consuelo OS agent session',
     assetSrc: '/images/home/connect.svg',
     evidence: {
       figureNumber: '01',
       meta: 'One workspace / four agents',
       caption: 'One tool contract. Four agent surfaces. The workspace stays put.',
+      videoSrc: '/media/home/connect-live-session.mp4',
+      posterSrc: '/media/home/connect-live-session-poster.webp',
       sequence: [
         { label: 'ChatGPT' },
         { label: 'Codex' },
