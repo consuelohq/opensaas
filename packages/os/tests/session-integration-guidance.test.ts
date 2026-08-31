@@ -34,4 +34,12 @@ describe('session integration guidance', () => {
     expect(examplePrefix).toContain('language: \"bash\"');
     expect(examplePrefix).not.toContain('language: \"bun\"');
   });
+
+  it('expresses OS call timeouts in milliseconds', () => {
+    const taskSkill = read('packages/os/skills/task/SKILL.md');
+
+    expect(taskSkill).not.toMatch(/^\s*timeout: \d{1,3},$/m);
+    expect(taskSkill).toContain('timeout: 120_000,');
+    expect(taskSkill).toContain('timeout: 600_000,');
+  });
 });

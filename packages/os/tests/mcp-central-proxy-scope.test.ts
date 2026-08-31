@@ -13,7 +13,10 @@ import {
   migrateWorkspaceRouteD1,
   upsertWorkspaceHostnameInD1,
 } from '../scripts/lib/workspace-cloudflare-d1-route-registry';
-import { CENTRAL_MCP_READ_ONLY_FACADE_TOOLS } from '../scripts/lib/tool-scope-authorization';
+import {
+  CENTRAL_MCP_EXECUTION_FACADE_TOOLS,
+  CENTRAL_MCP_READ_ONLY_FACADE_TOOLS,
+} from '../scripts/lib/tool-scope-authorization';
 
 describe('central MCP proxy scope enforcement', () => {
   test('should require call scope when a POST body cannot be classified', async () => {
@@ -32,6 +35,24 @@ describe('central MCP proxy scope enforcement', () => {
       body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'initialize' }),
     });
     await expect(centralMcpOperationScope(initialize)).resolves.toBeNull();
+  });
+
+  test('should keep security scans behind the call execution scope', async () => {
+    const request = new Request('https://os.consuelohq.com/mcp', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'tools/call',
+        params: {
+          name: 'call',
+          arguments: { tool: 'security.scan', input: {} },
+        },
+      }),
+    });
+
+    await expect(centralMcpOperationScope(request)).resolves.toBe('mcp:call');
   });
 
   test('should keep the central read-only classifier aligned when the facade manifest changes', async () => {
@@ -53,7 +74,10 @@ describe('central MCP proxy scope enforcement', () => {
       .map((tool) => tool.name)
       .sort();
 
-    expect([...CENTRAL_MCP_READ_ONLY_FACADE_TOOLS].sort()).toEqual(
+    expect([
+      ...CENTRAL_MCP_EXECUTION_FACADE_TOOLS,
+      ...CENTRAL_MCP_READ_ONLY_FACADE_TOOLS,
+    ].sort()).toEqual(
       generatedReadOnlyTools,
     );
   });
