@@ -5,6 +5,7 @@ import path from 'node:path';
 import {
   preserveFirstTerminationOutcome,
   providerExitCodeForOutcome,
+  providerOutcomeForClose,
   scheduleProviderProcessEscalation,
   signalProviderProcess,
 } from './process-termination.ts';
@@ -32,6 +33,7 @@ const launch = JSON.parse(fs.readFileSync(path.join(runDirectory, 'launch.json')
 let provider: ProviderChild | undefined;
 let finished = false;
 let requestedOutcome: 'timed_out' | 'cancelled' | undefined;
+let setupFailureMessage: string | undefined;
 let timeoutTimer: ReturnType<typeof setTimeout> | undefined;
 let cancelTimer: ReturnType<typeof setInterval> | undefined;
 let heartbeatTimer: ReturnType<typeof setInterval> | undefined;
@@ -129,15 +131,16 @@ try {
       if (cancellationRequested()) terminate('cancelled');
     }, 25);
     provider.on('error', (error: unknown) => finish(
-      requestedOutcome ?? 'failed',
+      providerOutcomeForClose(requestedOutcome, setupFailureMessage, null),
       1,
       null,
-      error instanceof Error ? error.message : String(error),
+      setupFailureMessage ?? (error instanceof Error ? error.message : String(error)),
     ));
     provider.on('close', (exitCode, signal) => finish(
-      requestedOutcome ?? (exitCode === 0 ? 'completed' : 'failed'),
-      providerExitCodeForOutcome(requestedOutcome, exitCode),
+      providerOutcomeForClose(requestedOutcome, setupFailureMessage, exitCode),
+      setupFailureMessage ? 1 : providerExitCodeForOutcome(requestedOutcome, exitCode),
       signal,
+      setupFailureMessage,
     ));
     provider.stdin?.end(fs.readFileSync(launch.stdinPath));
     const closeLogFds = () => {
@@ -154,6 +157,7 @@ try {
 } catch (error: unknown) {
   const message = error instanceof Error ? error.message : String(error);
   if (provider && !finished) {
+    setupFailureMessage = message;
     let completed = false;
     const finishSetupFailure = () => {
       if (completed) return;
@@ -174,9 +178,9 @@ process.on('beforeExit', () => {
   if (finished) return;
   const exitCode = provider?.exitCode ?? 1;
   finish(
-    requestedOutcome ?? (exitCode === 0 ? 'completed' : 'failed'),
-    exitCode,
+    providerOutcomeForClose(requestedOutcome, setupFailureMessage, exitCode),
+    setupFailureMessage ? 1 : exitCode,
     provider?.signalCode ?? null,
-    'runner event loop drained before provider close',
+    setupFailureMessage ?? 'runner event loop drained before provider close',
   );
 });

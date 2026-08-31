@@ -5,6 +5,7 @@ type GroupKill = (pid: number, signal: NodeJS.Signals) => boolean;
 type ScheduleTimeout = (callback: () => void, delayMs: number) => unknown;
 type ProviderSignal = (provider: SignalableProvider, signal: NodeJS.Signals) => boolean;
 export type ProviderTerminationOutcome = 'timed_out' | 'cancelled';
+export type ProviderExitOutcome = ProviderTerminationOutcome | 'completed' | 'failed';
 
 export function preserveFirstTerminationOutcome(
   current: ProviderTerminationOutcome | undefined,
@@ -19,6 +20,15 @@ export function providerExitCodeForOutcome(
 ): number {
   if (outcome === 'timed_out' && (exitCode === null || exitCode === 0)) return 124;
   return exitCode ?? 1;
+}
+
+export function providerOutcomeForClose(
+  requestedOutcome: ProviderTerminationOutcome | undefined,
+  setupFailureMessage: string | undefined,
+  exitCode: number | null,
+): ProviderExitOutcome {
+  if (setupFailureMessage) return 'failed';
+  return requestedOutcome ?? (exitCode === 0 ? 'completed' : 'failed');
 }
 
 export function scheduleProviderProcessEscalation(
