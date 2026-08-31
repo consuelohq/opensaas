@@ -1,0 +1,9 @@
+{
+  "files": [
+    ".task/self-healing/daily-self-healing-2026-08-30/workpad.md",
+    "packages/os/tests/monitor-errors-report.test.ts",
+    "packages/workspace/scripts/stream-sync.js",
+    "packages/workspace/test-selection.registry.json"
+  ],
+  "updatedAt": "2026-08-31T02:07:24.571Z"
+}

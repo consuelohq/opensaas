@@ -271,6 +271,18 @@ export function classifyTraceFailure(
       );
     }
     if (
+      failure.tool === 'task.push' &&
+      (stderr.includes('provide --changed, --files, or --files-json') ||
+        stderr.includes('commit message does not match conventional format:'))
+    ) {
+      return classified(
+        failure,
+        'caller-input',
+        false,
+        'task.push rejected an invalid caller-provided file-selection or commit-message contract',
+      );
+    }
+    if (
       failure.tool === 'session.start' &&
       (stderr.includes('work session path does not exist:') || stderr.includes('missing required --area'))
     ) {
@@ -321,6 +333,14 @@ export function classifyTraceFailure(
         'caller-input',
         false,
         'patch anchor no longer matched the target file; caller must refresh the patch context',
+      );
+    }
+    if (failure.tool === 'fs.apply_patch' && stderr.includes('invalid patch: missing *** begin patch')) {
+      return classified(
+        failure,
+        'caller-input',
+        false,
+        'patch envelope was malformed before application; caller must provide the advertised patch format',
       );
     }
     if (

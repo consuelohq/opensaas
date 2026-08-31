@@ -123,4 +123,54 @@ describe('monitor errors report trace selection', () => {
       await rm(home, { recursive: true, force: true });
     }
   });
+
+  it('splits deterministic task.push caller mistakes from recurring lifecycle failures before aggregation', async () => {
+    const home = await mkdtemp(path.join(os.tmpdir(), 'consuelo-monitor-errors-'));
+    const env = { CONSUELO_HOME: home, CONSUELO_TRACE_DB: '', TRACE_DB: '' };
+    try {
+      for (let index = 0; index < 3; index += 1) {
+        expect(recordToolTraceSafely({
+          traceId: `trc_push_missing_remote_${index}`,
+          source: 'test',
+          tool: 'task.push',
+          taskSession: `tsk_remote_${index}`,
+          branch: `task/os/remote-${index}`,
+          status: 'error',
+          ok: false,
+          code: 'COMMAND_FAILED',
+          stderr: `remote branch not found: task/os/remote-${index}`,
+        }, { env })).toBe(true);
+      }
+      expect(recordToolTraceSafely({
+        traceId: 'trc_push_missing_selection',
+        source: 'test',
+        tool: 'task.push',
+        taskSession: 'tsk_caller',
+        branch: 'task/os/caller',
+        status: 'error',
+        ok: false,
+        code: 'COMMAND_FAILED',
+        stderr: 'provide --changed, --files, or --files-json',
+      }, { env })).toBe(true);
+
+      const report = buildMonitorErrorsReport({ home, env });
+
+      expect(report.groups).toHaveLength(2);
+      expect(report.groups).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          classification: 'defect-candidate',
+          actionable: true,
+          occurrences: 3,
+        }),
+        expect.objectContaining({
+          traceId: 'trc_push_missing_selection',
+          classification: 'caller-input',
+          actionable: false,
+          occurrences: 1,
+        }),
+      ]));
+    } finally {
+      await rm(home, { recursive: true, force: true });
+    }
+  });
 });

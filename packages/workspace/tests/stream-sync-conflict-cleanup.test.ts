@@ -1,5 +1,5 @@
 import { execFileSync, spawnSync } from 'node:child_process';
-import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createRequire } from 'node:module';
@@ -28,13 +28,19 @@ function initRepo(): string {
 }
 
 describe.each(helperModules)('%s stream sync failed-merge cleanup', (helperModule) => {
-  const { restoreWorktreeAfterFailedMerge } = require(helperModule) as {
+  const { restoreWorktreeAfterFailedMerge, removeStaleGeneratedSyncWorktree } = require(helperModule) as {
     restoreWorktreeAfterFailedMerge: (
       repoRoot: string,
       worktreePath: string,
       streamBranch: string,
       createdTemporaryWorktree: boolean,
     ) => void;
+    removeStaleGeneratedSyncWorktree: (
+      repoRoot: string,
+      worktreePath: string,
+      streamBranch: string,
+      worktreeRoot: string,
+    ) => boolean;
   };
   it('restores an existing stream worktree to its remote head after a substantive merge conflict', () => {
     const root = initRepo();
@@ -82,6 +88,49 @@ describe.each(helperModules)('%s stream sync failed-merge cleanup', (helperModul
       expect(git(root, ['worktree', 'list', '--porcelain'])).not.toContain(worktreePath);
     } finally {
       if (existsSync(worktreePath)) rmSync(worktreePath, { recursive: true, force: true });
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('removes only stale worktrees that match the stream-sync generated path contract', () => {
+    const root = initRepo();
+    const worktreeRoot = mkdtempSync(join(tmpdir(), 'stream-sync-owned-root-'));
+    const worktreeRootAlias = join(tmpdir(), `stream-sync-owned-root-alias-${process.pid}-${Date.now()}`);
+    const generatedWorktreePath = join(worktreeRoot, 'stream-test-sync-stale');
+    const manualWorktreePath = mkdtempSync(join(tmpdir(), 'manual-stream-worktree-'));
+    rmSync(manualWorktreePath, { recursive: true, force: true });
+    try {
+      symlinkSync(worktreeRoot, worktreeRootAlias, 'dir');
+      git(root, ['checkout', '-b', 'stream/test']);
+      const streamSha = git(root, ['rev-parse', 'HEAD']);
+      git(root, ['update-ref', 'refs/remotes/origin/stream/test', streamSha]);
+      git(root, ['checkout', 'main']);
+
+      git(root, ['worktree', 'add', generatedWorktreePath, 'stream/test']);
+      writeFileSync(join(generatedWorktreePath, 'dirty.txt'), 'stale merge debris\n');
+
+      expect(removeStaleGeneratedSyncWorktree(
+        root,
+        generatedWorktreePath,
+        'stream/test',
+        worktreeRootAlias,
+      )).toBe(true);
+      expect(existsSync(generatedWorktreePath)).toBe(false);
+
+      git(root, ['worktree', 'add', manualWorktreePath, 'stream/test']);
+      writeFileSync(join(manualWorktreePath, 'dirty.txt'), 'human worktree\n');
+
+      expect(removeStaleGeneratedSyncWorktree(
+        root,
+        manualWorktreePath,
+        'stream/test',
+        worktreeRoot,
+      )).toBe(false);
+      expect(existsSync(manualWorktreePath)).toBe(true);
+    } finally {
+      if (existsSync(manualWorktreePath)) rmSync(manualWorktreePath, { recursive: true, force: true });
+      if (existsSync(worktreeRootAlias)) rmSync(worktreeRootAlias, { force: true });
+      rmSync(worktreeRoot, { recursive: true, force: true });
       rmSync(root, { recursive: true, force: true });
     }
   });
