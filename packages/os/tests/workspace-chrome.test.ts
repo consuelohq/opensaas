@@ -31,6 +31,8 @@ describe('workspace chrome custom routes', () => {
     const client = workspaceChromeClientScript();
     expect(client).toContain('[data-private-route-host]');
     expect(client).toContain('window.location.hostname.toLowerCase() === targetHost');
+    expect(client).toContain('event.button !== 0');
+    expect(client).toContain('event.metaKey || event.ctrlKey || event.shiftKey || event.altKey');
     expect(client).toContain('window.location.assign(returnTo)');
     expect(html).not.toContain('href="https://internal.consuelohq.com/users?view=recent"');
     expect(html).not.toContain('target="_blank" rel="noopener noreferrer" href="/auth/handoff/start');

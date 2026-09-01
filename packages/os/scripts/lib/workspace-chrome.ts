@@ -458,6 +458,7 @@ export function workspaceChromeClientScript(): string {
       menu?.addEventListener('focusin', warmIntent);
       menu?.addEventListener('touchstart', warmIntent, { passive: true });
       menu?.addEventListener('click', (event) => {
+        if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
         const target = event.target instanceof Element ? event.target.closest('[data-private-route-host]') : null;
         if (!(target instanceof HTMLAnchorElement)) return;
         const targetHost = String(target.dataset.privateRouteHost || '').trim().toLowerCase();

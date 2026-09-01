@@ -56,8 +56,8 @@ Default repo for bare PR numbers: `consuelohq/opensaas`. Override it with `--rep
 The shared rendering/loading package is tested locally but is not deployed as its own Worker:
 
 ```bash
-cd packages/diff-cockpit && bun run test
-cd packages/diff-cockpit && bun run typecheck
+bun --cwd packages/diff-cockpit run test
+bun --cwd packages/diff-cockpit run typecheck
 ```
 
 ### os:release — release all public Consuelo OS surfaces
