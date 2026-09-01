@@ -26,6 +26,8 @@ The page should feel precise, sparse, and product-focused. Blue establishes the 
 
 Feature media is evidence, not decoration. Do not force every capability into the same screenshot or video treatment. Use the smallest medium that makes the outcome obvious: real recordings when the cross-application behavior matters, deterministic HTML/CSS when the product concept is better explained as data, and cropped first-party product UI when the interface itself is the proof. Existing Consuelo illustrations remain temporary fallback media while a chapter is still being developed.
 
+The current feature proof language is intentionally mixed by capability: CONNECT uses real agent footage; REMEMBER borrows the search/get shape of workspace memory; CONTROL visualizes the real task/review/verify workflow; OBSERVE mirrors the internal Home 7-day × 24-hour trace heatmap levels and hover/focus detail; SECURE uses the real scoped-resource and browser-sealed-secret model; SWITCH keeps one work object fixed while agent surfaces hand off around it. Public examples must stay deterministic and sanitized even when their interaction model comes directly from internal product UI.
+
 Do not ship large animated GIFs. Do not invent additional decorative art when an existing product asset can explain the state.
 
 ### Workspace atmosphere

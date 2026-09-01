@@ -1,9 +1,11 @@
 ---
 import { homeFeaturePreviewItems } from '../../data/home-content';
 import FeatureEvidenceFigure from './FeatureEvidenceFigure.astro';
-import FeatureMedia from './FeatureMedia.astro';
+import FeatureStoryControl from './FeatureStoryControl.astro';
 import FeatureStoryMemory from './FeatureStoryMemory.astro';
 import FeatureStoryObserve from './FeatureStoryObserve.astro';
+import FeatureStorySecure from './FeatureStorySecure.astro';
+import FeatureStorySwitch from './FeatureStorySwitch.astro';
 import HomeFaq from './HomeFaq.astro';
 import PreviewNotice from './PreviewNotice.astro';
 
@@ -44,18 +46,22 @@ const { sectionId = 'features' } = Astro.props as Props;
             <article class="product-story__chapter" data-feature-chapter={item.label.toLowerCase()}>
               <div class="product-story__visual">
                 {
-                  item.motif === 'remember' ? (
-                    <FeatureStoryMemory />
-                  ) : item.motif === 'observe' ? (
-                    <FeatureStoryObserve />
-                  ) : item.evidence ? (
+                  item.evidence ? (
                     <FeatureEvidenceFigure
                       imageSrc={item.assetSrc}
                       imageAlt={item.imageAlt}
                       evidence={item.evidence}
                     />
+                  ) : item.motif === 'remember' ? (
+                    <FeatureStoryMemory />
+                  ) : item.motif === 'multiplayer' ? (
+                    <FeatureStoryControl />
+                  ) : item.motif === 'observe' ? (
+                    <FeatureStoryObserve />
+                  ) : item.motif === 'secure' ? (
+                    <FeatureStorySecure />
                   ) : (
-                    <FeatureMedia imageSrc={item.assetSrc} imageAlt={item.imageAlt} />
+                    <FeatureStorySwitch />
                   )
                 }
               </div>
@@ -194,10 +200,6 @@ const { sectionId = 'features' } = Astro.props as Props;
     top: clamp(1rem, 8vh, 5rem);
     align-self: start;
     min-width: 0;
-  }
-
-  .product-story__visual :global(.feature-media) {
-    aspect-ratio: 2032 / 1192;
   }
 
   .product-story__copy {
