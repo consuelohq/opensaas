@@ -365,6 +365,17 @@ export function parsePullRequestLocator(
     };
   }
 
+  const internalDiffsMatch = value.match(
+    /^https:\/\/internal\.consuelohq\.com\/diffs\/([^/]+)\/([^/]+)\/pull\/(\d+)(?:[/?#].*)?$/,
+  );
+  if (internalDiffsMatch) {
+    return {
+      owner: internalDiffsMatch[1] || defaultOwner,
+      repo: internalDiffsMatch[2] || fallbackRepo,
+      number: Number(internalDiffsMatch[3]),
+    };
+  }
+
   const routeMatch = value.match(/^\/?([^/]+)\/([^/]+)\/pull\/(\d+)(?:[/?#].*)?$/);
   if (routeMatch) {
     return {
