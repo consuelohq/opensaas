@@ -1455,6 +1455,10 @@
       "status": "os-only-intentional",
       "reason": "OS-owned same-node worker supervisor state machine manages deterministic worker slots, readiness, crash replacement, and bounded draining with no workspace counterpart."
     },
+    "scripts/lib/workspace-chrome-config.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned workspace chrome configuration loader reads local launcher customization for shared Home, Artifacts, Tracing, and Diffs surfaces; it has no workspace-package counterpart."
+    },
     "scripts/lib/workspace-chrome.ts": {
       "status": "os-only-needs-review",
       "reason": "scripts/lib/workspace-chrome.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."

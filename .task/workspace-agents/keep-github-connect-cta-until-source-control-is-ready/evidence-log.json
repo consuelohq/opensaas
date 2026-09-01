@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "worktree_id": "task/workspace-agents/keep-github-connect-cta-until-source-control-is-ready",
+  "events": [
+    {
+      "id": "ad226d8d-1c9b-435c-8696-0e54d3a101cd",
+      "occurred_at": "2026-08-29T06:40:56.594Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/settings-site.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/keep-github-connect-cta-until-source-control-is-ready",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/keep-github-connect-cta-until-source-control-is-ready"
+      }
+    },
+    {
+      "id": "5dc14900-30a8-4dd2-b301-ddbdedfcb658",
+      "occurred_at": "2026-08-29T06:41:15.143Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/settings-site.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/keep-github-connect-cta-until-source-control-is-ready",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/keep-github-connect-cta-until-source-control-is-ready"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-29T06:41:15.228Z"
+}

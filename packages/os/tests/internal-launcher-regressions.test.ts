@@ -50,7 +50,7 @@ function node(input: {
 
 describe('internal launcher regression contracts', () => {
   it('keeps the owner route before configure in a title-only responsive menu', () => {
-    const html = renderWorkspaceChromeBar('overview', 'Overview', {
+    const html = renderWorkspaceChromeBar('overview', 'Home', {
       extraSections: [
         {
           id: 'internal',
@@ -91,6 +91,15 @@ describe('internal launcher regression contracts', () => {
     expect(styles).toContain('@media (max-height: 760px)');
     expect(styles).toContain('grid-template-columns: repeat(3, minmax(0, 1fr))');
     expect(styles).toContain('zoom: .86');
+  });
+
+  it('keeps Home compact while retaining the seven-day heatmap', () => {
+    const html = renderConfigurationSite('configuration');
+    expect(html).toContain('Last seven days');
+    expect(html).toContain('id="overview-heatmap-grid"');
+    expect(html).not.toContain('See live workspace activity, operating readiness, and the agent surfaces available here.');
+    expect(html).not.toContain('Live trace activity will appear here');
+    expect(html).not.toContain('Calls, tokens, and cost by local hour. Hover or focus any cell for details; the heatmap refreshes from the signed trace gateway.');
   });
 
   it('renders the sealed-secret create and replace surface', () => {

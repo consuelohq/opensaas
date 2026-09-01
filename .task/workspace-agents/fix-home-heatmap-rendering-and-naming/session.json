@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_abc2d9d2ba2e",
+  "tmuxSession": "opensaas-workspace-agents-fix-home-heatmap-rendering-and-naming-abc2d9d2",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/fix-home-heatmap-rendering-and-naming",
+  "branch": "task/workspace-agents/fix-home-heatmap-rendering-and-naming",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-fix-home-heatmap-rendering-and-naming",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-fix-home-heatmap-rendering-and-naming",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2306,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2306",
+  "createdAt": "2026-08-31T23:19:26.102Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-fix-home-heatmap-rendering-and-naming/.task/workspace-agents/fix-home-heatmap-rendering-and-naming/session.json"
+}
