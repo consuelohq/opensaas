@@ -24,7 +24,7 @@ let nonceCounter = 0;
 function githubAppPrivateKey(): string {
   return generateKeyPairSync('rsa', { modulusLength: 2048 }).privateKey.export({
     format: 'pem',
-    type: 'pkcs8',
+    type: 'pkcs1',
   }).toString();
 }
 

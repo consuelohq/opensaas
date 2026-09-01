@@ -74,29 +74,94 @@ function encodedJson(value: unknown): string {
   return b64(new TextEncoder().encode(JSON.stringify(value)));
 }
 
-function pemBytes(value: string): Uint8Array {
-  const normalized = value.replace(/\\n/g, '\n');
-  const body = normalized
-    .replace(/-----BEGIN PRIVATE KEY-----/g, '')
-    .replace(/-----END PRIVATE KEY-----/g, '')
-    .replace(/\s+/g, '');
-  if (!body) {
-    throw new GitHubSourceControlError(
-      'GITHUB_APP_PRIVATE_KEY_INVALID',
-      503,
-      'GitHub source control credentials are invalid.',
-    );
+function invalidPrivateKey(): never {
+  throw new GitHubSourceControlError(
+    'GITHUB_APP_PRIVATE_KEY_INVALID',
+    503,
+    'GitHub source control credentials are invalid.',
+  );
+}
+
+function concatBytes(...parts: Uint8Array[]): Uint8Array {
+  const output = new Uint8Array(parts.reduce((total, part) => total + part.length, 0));
+  let offset = 0;
+  for (const part of parts) {
+    output.set(part, offset);
+    offset += part.length;
   }
+  return output;
+}
+
+function derLength(length: number): Uint8Array {
+  if (!Number.isSafeInteger(length) || length < 0) invalidPrivateKey();
+  if (length < 0x80) return Uint8Array.of(length);
+  const bytes: number[] = [];
+  let remaining = length;
+  while (remaining > 0) {
+    bytes.unshift(remaining % 256);
+    remaining = Math.floor(remaining / 256);
+  }
+  return Uint8Array.of(0x80 | bytes.length, ...bytes);
+}
+
+function derValue(tag: number, value: Uint8Array): Uint8Array {
+  return concatBytes(Uint8Array.of(tag), derLength(value.length), value);
+}
+
+function pkcs1RsaPrivateKeyToPkcs8(pkcs1: Uint8Array): Uint8Array {
+  const privateKeyInfoVersion = Uint8Array.of(0x02, 0x01, 0x00);
+  const rsaEncryptionAlgorithm = Uint8Array.of(
+    0x30, 0x0d,
+    0x06, 0x09, 0x2a, 0x86, 0x48, 0x86, 0xf7, 0x0d, 0x01, 0x01, 0x01,
+    0x05, 0x00,
+  );
+  const privateKey = derValue(0x04, pkcs1);
+  return derValue(
+    0x30,
+    concatBytes(privateKeyInfoVersion, rsaEncryptionAlgorithm, privateKey),
+  );
+}
+
+function pemBody(value: string, begin: string, end: string): string {
+  return value
+    .replace(begin, '')
+    .replace(end, '')
+    .replace(/\s+/g, '');
+}
+
+function decodePemBody(body: string): Uint8Array {
+  if (!body) invalidPrivateKey();
   try {
     const raw = atob(body);
     return Uint8Array.from(raw, (character) => character.charCodeAt(0));
   } catch {
-    throw new GitHubSourceControlError(
-      'GITHUB_APP_PRIVATE_KEY_INVALID',
-      503,
-      'GitHub source control credentials are invalid.',
-    );
+    return invalidPrivateKey();
   }
+}
+
+function pemBytes(value: string): Uint8Array {
+  const normalized = value.replace(/\\n/g, '\n').trim();
+  if (
+    normalized.includes('-----BEGIN PRIVATE KEY-----')
+    && normalized.includes('-----END PRIVATE KEY-----')
+  ) {
+    return decodePemBody(pemBody(
+      normalized,
+      '-----BEGIN PRIVATE KEY-----',
+      '-----END PRIVATE KEY-----',
+    ));
+  }
+  if (
+    normalized.includes('-----BEGIN RSA PRIVATE KEY-----')
+    && normalized.includes('-----END RSA PRIVATE KEY-----')
+  ) {
+    return pkcs1RsaPrivateKeyToPkcs8(decodePemBody(pemBody(
+      normalized,
+      '-----BEGIN RSA PRIVATE KEY-----',
+      '-----END RSA PRIVATE KEY-----',
+    )));
+  }
+  return invalidPrivateKey();
 }
 
 async function githubAppJwt(runtime: DeviceAuthorityRuntime): Promise<string> {
