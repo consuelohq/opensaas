@@ -289,6 +289,7 @@ export async function sendWorkspaceNodeHeartbeatFromConfig(
   input: {
     fetchImpl?: typeof fetch;
     detectAgents?: (input: { home: string }) => LocalAgentDetection[];
+    acceptCachedMcpProof?: boolean;
   } = {},
 ) {
   try {
@@ -302,6 +303,30 @@ export async function sendWorkspaceNodeHeartbeatFromConfig(
       config,
       fetchImpl: input.fetchImpl,
     });
+    if (input.acceptCachedMcpProof) {
+      const cachedEdgeAuth = cachedHeartbeatEdgeAuth({ configPath, config });
+      const cachedProbeReady = cachedEdgeAuth
+        ? await probeHeartbeatMcpReadiness({
+            config,
+            result: {
+              nodeId: config.nodeId,
+              presence: 'online',
+              routeReady: true,
+              connectorId: cachedEdgeAuth.connectorId,
+              edgeRequestSigningSecret: cachedEdgeAuth.signingSecret,
+            },
+            fetchImpl: input.fetchImpl,
+          })
+        : false;
+      if (cachedProbeReady) {
+        return {
+          nodeId: config.nodeId,
+          presence: 'online' as const,
+          routeReady: true,
+          mcpReady: true,
+        };
+      }
+    }
     // Do not turn a transient public-health failure during restart into an authority-side
     // disconnect. Heartbeat TTL will classify a sustained outage if the connector stays down.
     if (connectorStatus === 'disconnected') {
@@ -378,8 +403,10 @@ export async function sendWorkspaceNodeHeartbeatFromConfig(
 }
 
 async function main(): Promise<void> {
+  const args = process.argv.slice(2);
   const result = await sendWorkspaceNodeHeartbeatFromConfig(
-    parseConfigPath(process.argv.slice(2)),
+    parseConfigPath(args),
+    { acceptCachedMcpProof: args.includes('--accept-cached-mcp-proof') },
   );
   process.stdout.write(
     `${JSON.stringify({

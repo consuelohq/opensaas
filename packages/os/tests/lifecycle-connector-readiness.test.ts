@@ -62,6 +62,13 @@ describe('lifecycle connector readiness', () => {
 
     await expect(readiness.accept()).resolves.toBe(true);
     expect(spawn).toHaveBeenCalledOnce();
+    expect(spawn.mock.calls[0]?.[0]).toEqual([
+      process.execPath,
+      join(scriptsDirectory, 'workspace-node-heartbeat.ts'),
+      '--config',
+      join(configDirectory, 'workspace-node-heartbeat.json'),
+      '--accept-cached-mcp-proof',
+    ]);
     expect(publicHealth).not.toHaveBeenCalled();
   });
 });
