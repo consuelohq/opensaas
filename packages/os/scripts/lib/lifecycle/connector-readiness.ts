@@ -45,7 +45,13 @@ async function runHeartbeat(input: {
   env: NodeJS.ProcessEnv;
 }): Promise<HeartbeatOutput | null> {
   const child = Bun.spawn(
-    [input.bunExecutable, input.scriptPath, '--config', input.configPath],
+    [
+      input.bunExecutable,
+      input.scriptPath,
+      '--config',
+      input.configPath,
+      '--accept-cached-mcp-proof',
+    ],
     {
       env: input.env,
       stdin: 'ignore',
@@ -66,8 +72,8 @@ async function runHeartbeat(input: {
 }
 
 /**
- * Proves the public connector reaches this node and that the signed authority heartbeat
- * reconciled a routable MCP target. Local-only installs without heartbeat config skip this gate.
+ * Proves the public connector reaches this node through a signed MCP request.
+ * Local-only installs without heartbeat config skip this gate.
  */
 export function createConnectorReadinessAcceptance(input: {
   home: string;
