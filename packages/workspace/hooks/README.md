@@ -10,7 +10,6 @@ Current hooks:
 - `task/guidance.js` - compatibility scaffold that returns structured task lifecycle guidance built from the task skill's exact anchor wording, with concrete just-in-time workspace calls for task workflow stages.
 - `task/workflow.js` - manifest-driven task workflow registry for event-scoped task lifecycle guidance.
 - `dispatcher.js` - loads the workspace tool manifest, dispatches workflow events to hook registries, and renders concise agent-readable hook output.
-- `diff-cockpit/cache-refresh.ts` — refreshes and prewarms `diffs.consuelohq.com` homepage/PR API cache entries after task or stream events.
 
 Manifest roles:
 

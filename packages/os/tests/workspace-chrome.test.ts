@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { renderWorkspaceChromeBar } from '../scripts/lib/workspace-chrome';
+import { renderWorkspaceChromeBar, workspaceChromeClientScript } from '../scripts/lib/workspace-chrome';
 
 describe('workspace chrome custom routes', () => {
   it('renders validated launcher sections in the current route menu and turns the private dashboard link into a same-origin handoff', () => {
@@ -26,6 +26,14 @@ describe('workspace chrome custom routes', () => {
     expect(html).not.toContain('<ops>');
     expect(html).toContain('>Users &amp; installs</span>');
     expect(html).toContain('/auth/handoff/start?target_host=internal.consuelohq.com&amp;return_to=%2Fusers%3Fview%3Drecent');
+    expect(html).toContain('data-private-route-host=\"internal.consuelohq.com\"');
+    expect(html).toContain('data-private-route-return-to=\"/users?view=recent\"');
+    const client = workspaceChromeClientScript();
+    expect(client).toContain('[data-private-route-host]');
+    expect(client).toContain('window.location.hostname.toLowerCase() === targetHost');
+    expect(client).toContain('event.button !== 0');
+    expect(client).toContain('event.metaKey || event.ctrlKey || event.shiftKey || event.altKey');
+    expect(client).toContain('window.location.assign(returnTo)');
     expect(html).not.toContain('href="https://internal.consuelohq.com/users?view=recent"');
     expect(html).not.toContain('target="_blank" rel="noopener noreferrer" href="/auth/handoff/start');
   });

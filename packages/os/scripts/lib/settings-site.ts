@@ -40,7 +40,7 @@ const PAGE_COPY: Record<ConfigurationPageId, {
 }> = {
   configuration: {
     title: 'Home',
-    description: 'See live workspace activity, operating readiness, and the agent surfaces available here.',
+    description: '',
   },
   tools: {
     title: 'Tools',
@@ -484,7 +484,6 @@ function configurationClientScript(): string {
       setText('overview-heatmap-calls', heatCompact(totals.calls));
       setText('overview-heatmap-tokens', heatCompact(totals.tokens));
       setText('overview-heatmap-cost', heatCost(totals.cost));
-      setText('overview-heatmap-title', totals.calls > 0 ? 'Activity concentrates into a readable weekly rhythm' : 'Live trace activity will appear here');
       grid.setAttribute('aria-label', 'Trace activity by local hour for the last seven days. ' + String(totals.calls) + ' calls, ' + heatCompact(totals.tokens) + ' tokens, ' + heatCost(totals.cost) + '.');
       const cells = Array.from(grid.querySelectorAll('.overview-heat-cell'));
       cells.forEach((cell) => {
@@ -1133,13 +1132,11 @@ function renderOverviewPanels(): string {
     hour % 3 === 0 || hour === 23 ? `<span>${String(hour).padStart(2, '0')}</span>` : '<span></span>',
   ).join('');
   return `
-        <section class="overview-surface" id="overview" aria-labelledby="overview-heatmap-title">
-          <section class="overview-heatmap-panel" data-overview-heatmap aria-labelledby="overview-heatmap-title">
+        <section class="overview-surface" id="overview">
+          <section class="overview-heatmap-panel" data-overview-heatmap aria-label="Trace activity for the last seven days">
             <div class="overview-heatmap-head">
               <div class="overview-heatmap-copy">
                 <p class="identity">Last seven days</p>
-                <h2 id="overview-heatmap-title">Live trace activity will appear here</h2>
-                <p>Calls, tokens, and cost by local hour. Hover or focus any cell for details; the heatmap refreshes from the signed trace gateway.</p>
               </div>
               <div class="overview-heatmap-summary" aria-live="polite">
                 <span>Calls <b id="overview-heatmap-calls">0</b></span>
@@ -1330,7 +1327,7 @@ export function renderConfigurationSite(
       <main class="content">
         <header class="hero">
           <h1>${copy.title}</h1>
-          <p>${copy.description}</p>
+          ${copy.description ? '<p>' + copy.description + '</p>' : ''}
         </header>
         ${content}
       </main>

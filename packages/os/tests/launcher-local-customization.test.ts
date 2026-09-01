@@ -50,6 +50,7 @@ describe('workspace chrome launcher customization', () => {
       'sites/configuration/index.html',
       'sites/tools/index.html',
       'sites/traces/index.html',
+      'sites/artifacts/index.html',
     ]) {
       const html = readFileSync(join(home, relativePath), 'utf8');
       expect(html).toContain('data-workspace-route-trigger');

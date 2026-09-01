@@ -126,6 +126,7 @@ function resolveCustomRouteHref(href: string): {
   href: string;
   external: boolean;
   description: string;
+  privateRoute?: { targetHost: string; returnTo: string };
 } {
   if (href.startsWith('/')) {
     if (href.startsWith('//') || href.includes('\\')) {
@@ -160,6 +161,7 @@ function resolveCustomRouteHref(href: string): {
       href: `/auth/handoff/start?${query.toString()}`,
       external: false,
       description: 'Open private admin site.',
+      privateRoute: { targetHost: PRIVATE_INTERNAL_SITE_HOST, returnTo: returnPath },
     };
   }
 
@@ -202,7 +204,10 @@ function renderCustomRouteGroup(section: WorkspaceChromeSection): string {
     const external = resolved.external
       ? ' target="_blank" rel="noopener noreferrer"'
       : '';
-    return `<a class="workspace-route-option" role="menuitem"${external} href="${escapeHtml(resolved.href)}"><span>${escapeHtml(link.label)}</span></a>`;
+    const privateRoute = resolved.privateRoute
+      ? ` data-private-route-host="${escapeHtml(resolved.privateRoute.targetHost)}" data-private-route-return-to="${escapeHtml(resolved.privateRoute.returnTo)}"`
+      : '';
+    return `<a class="workspace-route-option" role="menuitem"${external}${privateRoute} href="${escapeHtml(resolved.href)}"><span>${escapeHtml(link.label)}</span></a>`;
   }).join('');
   return `<section class="workspace-route-group" data-custom-route-group="${escapeHtml(section.id)}"><p>${escapeHtml(section.label)}</p>${links}</section>`;
 }
@@ -452,6 +457,24 @@ export function workspaceChromeClientScript(): string {
       menu?.addEventListener('pointerover', warmIntent);
       menu?.addEventListener('focusin', warmIntent);
       menu?.addEventListener('touchstart', warmIntent, { passive: true });
+      menu?.addEventListener('click', (event) => {
+        if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+        const target = event.target instanceof Element ? event.target.closest('[data-private-route-host]') : null;
+        if (!(target instanceof HTMLAnchorElement)) return;
+        const targetHost = String(target.dataset.privateRouteHost || '').trim().toLowerCase();
+        const returnTo = String(target.dataset.privateRouteReturnTo || '').trim();
+        if (
+          targetHost &&
+          window.location.hostname.toLowerCase() === targetHost &&
+          returnTo.startsWith('/') &&
+          !returnTo.startsWith('//') &&
+          !returnTo.includes('\\')
+        ) {
+          event.preventDefault();
+          setMenuOpen(false);
+          window.location.assign(returnTo);
+        }
+      });
       shortcut?.addEventListener('click', (event) => {
         event.preventDefault();
         event.stopPropagation();

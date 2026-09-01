@@ -93,6 +93,15 @@ describe('internal launcher regression contracts', () => {
     expect(styles).toContain('zoom: .86');
   });
 
+  it('keeps Home compact while retaining the seven-day heatmap', () => {
+    const html = renderConfigurationSite('configuration');
+    expect(html).toContain('Last seven days');
+    expect(html).toContain('id="overview-heatmap-grid"');
+    expect(html).not.toContain('See live workspace activity, operating readiness, and the agent surfaces available here.');
+    expect(html).not.toContain('Live trace activity will appear here');
+    expect(html).not.toContain('Calls, tokens, and cost by local hour. Hover or focus any cell for details; the heatmap refreshes from the signed trace gateway.');
+  });
+
   it('renders the sealed-secret create and replace surface', () => {
     const html = renderConfigurationSite('secrets');
 
