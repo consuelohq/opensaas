@@ -1,0 +1,16 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/slow-connect-film-and-replace-fades-with-hard-cuts",
+  "baseBranch": "stream/website",
+  "sourceBranch": "stream/website",
+  "startFrom": "stream",
+  "prNumber": 2351,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2351",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-slow-connect-film-and-replace-fades-with-hard-cuts",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_f770edf95cb3",
+  "tmuxSession": "opensaas-website-slow-connect-film-and-replace-fades-with-hard-cu-f770edf9",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-slow-connect-film-and-replace-fades-with-hard-cuts/.task/session.json",
+  "createdAt": "2026-09-01T00:01:31.590Z"
+}
