@@ -15,6 +15,8 @@ describe('pr-ref parser', () => {
   it('accepts GitHub, diffs, and Graphite URLs', () => {
     expect(parsePrRef('https://github.com/consuelohq/opensaas/pull/686/files')).toMatchObject({ prNumber: 686, source: 'github' });
     expect(parsePrRef('https://diffs.consuelohq.com/consuelohq/opensaas/pull/780')).toMatchObject({ prNumber: 780, source: 'diffs' });
+    expect(parsePrRef('https://internal.consuelohq.com/diffs/consuelohq/opensaas/pull/781')).toMatchObject({ prNumber: 781, repo: 'consuelohq/opensaas', source: 'diffs' });
+    expect(parsePrRef('https://internal.consuelohq.com/diffs/other/project/pull/42', { repo: 'other/project' })).toMatchObject({ prNumber: 42, repo: 'other/project', source: 'diffs' });
     expect(parsePrRef('https://app.graphite.com/github/pr/consuelohq/opensaas/686/some-slug')).toMatchObject({ prNumber: 686, source: 'graphite' });
   });
 
@@ -26,6 +28,7 @@ describe('pr-ref parser', () => {
 
   it('rejects wrong repo URLs unless repo is overridden', () => {
     expect(() => parsePrRef('https://github.com/other/opensaas/pull/686')).toThrow(/expected consuelohq\/opensaas/);
+    expect(() => parsePrRef('https://internal.consuelohq.com/diffs/other/project/pull/42')).toThrow(/expected consuelohq\/opensaas/);
     expect(parsePrRef('https://github.com/other/opensaas/pull/686', { repo: 'other/opensaas' })).toMatchObject({ prNumber: 686, repo: 'other/opensaas' });
   });
 });
