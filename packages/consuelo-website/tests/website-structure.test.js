@@ -262,17 +262,25 @@ describe('Consuelo website structure', () => {
     expect(tokens).not.toContain('#5379AE');
   });
 
-  test('should give CONNECT a documentary evidence figure while keeping the six-feature grid responsive', () => {
+  test('should tell the six-feature story through one editorial stage with distinct REMEMBER and OBSERVE proof', () => {
     const panel = readSource('src/components/home/HomeFeaturePreview.astro');
     const media = readSource('src/components/home/FeatureMedia.astro');
     const evidence = readSource('src/components/home/FeatureEvidenceFigure.astro');
+    const memory = readSource('src/components/home/FeatureStoryMemory.astro');
+    const observe = readSource('src/components/home/FeatureStoryObserve.astro');
     const faq = readSource('src/components/home/HomeFaq.astro');
     const content = readSource('src/data/home-content.ts');
 
-    expect(panel).toContain('grid-template-columns: repeat(3, minmax(0, 1fr))');
-    expect(panel).toContain('@media (max-width: 1120px)');
-    expect(panel).toContain('grid-template-columns: repeat(2, minmax(0, 1fr))');
+    expect(panel).toContain('class="product-story"');
+    expect(panel).toContain('data-feature-story');
+    expect(panel).toContain('data-feature-chapter');
+    expect(panel).toContain('position: sticky');
+    expect(panel).toContain('@media (max-width: 760px)');
+    expect(panel).not.toContain('product-panel__grid');
+    expect(panel).not.toContain('grid-template-columns: repeat(3, minmax(0, 1fr))');
     expect(panel).toContain('<FeatureEvidenceFigure');
+    expect(panel).toContain('<FeatureStoryMemory');
+    expect(panel).toContain('<FeatureStoryObserve');
     expect(panel).toContain('evidence={item.evidence}');
     expect(panel).toContain('<FeatureMedia');
     expect(panel).toContain('imageSrc={item.assetSrc}');
@@ -286,6 +294,18 @@ describe('Consuelo website structure', () => {
     expect(evidence).toContain('FIG. {evidence.figureNumber}');
     expect(evidence).toContain('evidence.sequence.map');
     expect(evidence).not.toContain('position: absolute;\n    inset: 0;\n    color: white');
+
+    expect(memory).toContain('data-memory-story');
+    expect(memory).toContain('homeMemoryMoments');
+    expect(memory).toContain('data-memory-record');
+    expect(memory).toContain('prefers-reduced-motion: reduce');
+
+    expect(observe).toContain('data-observe-story');
+    expect(observe).toContain('homeObserveHeatmap');
+    expect(observe).toContain('homeObserveTrace');
+    expect(observe).toContain('data-observe-cell');
+    expect(observe).toContain('data-observe-trace');
+    expect(observe).toContain('prefers-reduced-motion: reduce');
 
     expect(media).toContain('aspect-ratio: 475 / 178');
     expect(media).toContain('<video autoplay muted loop playsinline');
@@ -310,6 +330,11 @@ describe('Consuelo website structure', () => {
     expect(content).toContain("label: 'OpenCode'");
     expect(content).not.toContain("{ label: 'Claude' },");
     expect(content).not.toContain("{ label: 'Cursor' },");
+    expect(content).toContain('export const homeMemoryMoments');
+    expect(content).toContain('export const homeObserveHeatmap');
+    expect(content).toContain('export const homeObserveTrace');
+    expect(content).not.toContain('/Users/');
+    expect(content).not.toContain('node_F3Wsfd-vJrKkYlfi');
     expect(content).toContain("label: 'CONTROL'");
     expect(content).toContain("label: 'OBSERVE'");
     expect(content).toContain("label: 'SWITCH'");
