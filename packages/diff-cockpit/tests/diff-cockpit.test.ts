@@ -50,6 +50,12 @@ describe('parsePullRequestLocator', () => {
       parsePullRequestLocator('/consuelohq/opensaas/pull/708'),
     ).toEqual({ owner: 'consuelohq', repo: 'opensaas', number: 708 });
   });
+
+  test('accepts the canonical internal Diffs URL it emits', () => {
+    expect(
+      parsePullRequestLocator('https://internal.consuelohq.com/diffs/other/project/pull/42'),
+    ).toEqual({ owner: 'other', repo: 'project', number: 42 });
+  });
 });
 
 describe('buildDiffCockpitUrl', () => {
