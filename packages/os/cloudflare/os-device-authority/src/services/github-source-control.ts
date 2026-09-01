@@ -149,6 +149,7 @@ async function githubRequest(
       headers: {
         accept: 'application/vnd.github+json',
         authorization,
+        'user-agent': 'consuelo-os-device-authority',
         'x-github-api-version': GITHUB_API_VERSION,
         ...(requestInit.headers ?? {}),
       },
@@ -176,6 +177,20 @@ function record(value: unknown): Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
     ? value as Record<string, unknown>
     : {};
+}
+
+function githubUserAuthorizationFailureMessage(payload: Record<string, unknown>): string {
+  const upstreamError = typeof payload.error === 'string' ? payload.error.trim() : '';
+  switch (upstreamError) {
+    case 'incorrect_client_credentials':
+      return 'GitHub rejected the configured OAuth client credentials.';
+    case 'redirect_uri_mismatch':
+      return 'GitHub rejected the configured OAuth redirect URI.';
+    case 'bad_verification_code':
+      return 'GitHub rejected the authorization code. Start the GitHub connection again.';
+    default:
+      return 'GitHub user authorization could not be completed.';
+  }
 }
 
 export function githubInstallationUrl(runtime: DeviceAuthorityRuntime, state: string): string {
@@ -252,7 +267,7 @@ export async function exchangeGitHubUserAuthorizationCode(
     throw new GitHubSourceControlError(
       'GITHUB_USER_AUTHORIZATION_FAILED',
       400,
-      'GitHub user authorization could not be completed.',
+      githubUserAuthorizationFailureMessage(payload),
     );
   }
   return token;

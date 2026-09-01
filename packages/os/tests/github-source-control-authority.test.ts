@@ -113,6 +113,44 @@ describe('GitHub source-control authority', () => {
     });
   });
 
+  it('reports rejected GitHub OAuth client credentials without exposing secrets', async () => {
+    const fetchImpl: typeof fetch = async (input, init) => {
+      const request = input instanceof Request ? input : new Request(input, init);
+      const url = new URL(request.url);
+      if (url.origin === 'https://github.com' && url.pathname === '/login/oauth/access_token') {
+        return Response.json({
+          error: 'incorrect_client_credentials',
+          error_description: 'The client_secret passed was incorrect.',
+        });
+      }
+      return new Response('not found', { status: 404 });
+    };
+    const handler = configuredHandler(fetchImpl);
+
+    const start = await handler(signedNodeRequest(
+      '/workspace/source-control/github/install/start',
+      { returnPath: '/diffs' },
+    ));
+    const state = new URL((await start.json() as { authorizationUrl: string }).authorizationUrl)
+      .searchParams.get('state');
+
+    const callback = await handler(new Request(
+      `${origin}/workspace/source-control/github/oauth/callback?code=oauth-code&state=${encodeURIComponent(state ?? '')}`,
+    ));
+
+    expect(callback.status).toBe(400);
+    const body = await callback.json();
+    expect(body).toMatchObject({
+      error: {
+        code: 'GITHUB_USER_AUTHORIZATION_FAILED',
+        message: 'GitHub rejected the configured OAuth client credentials.',
+      },
+    });
+    expect(JSON.stringify(body)).not.toContain('oauth-code');
+    expect(JSON.stringify(body)).not.toContain('github-client-secret-test');
+    expect(JSON.stringify(body)).not.toContain('client_secret passed was incorrect');
+  });
+
   it('authorizes the GitHub user before reusing an existing installation', async () => {
     const fetchImpl: typeof fetch = async (input, init) => {
       const request = input instanceof Request ? input : new Request(input, init);
@@ -121,6 +159,7 @@ describe('GitHub source-control authority', () => {
         return Response.json({ access_token: 'github-existing-user-token', token_type: 'bearer' });
       }
       if (url.pathname === '/user/installations' && request.method === 'GET') {
+        expect(request.headers.get('user-agent')).toBe('consuelo-os-device-authority');
         return Response.json({
           total_count: 2,
           installations: [
