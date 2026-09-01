@@ -366,8 +366,6 @@ export async function sendWorkspaceNodeHeartbeatFromConfig(
         : false;
       if (cachedProbeReady) {
         mcpReady = true;
-        readinessResult = await client.send({ ...runtimeStatus, mcpReady });
-        reconcileHeartbeatEdgeProxyAuth({ configPath, config, result: readinessResult });
       } else {
         const recoveryResult = await client.send({ ...runtimeStatus, mcpReady: false });
         reconcileHeartbeatEdgeProxyAuth({ configPath, config, result: recoveryResult });
@@ -376,15 +374,27 @@ export async function sendWorkspaceNodeHeartbeatFromConfig(
           result: recoveryResult,
           fetchImpl: input.fetchImpl,
         });
+      }
+      try {
         readinessResult = await client.send({ ...runtimeStatus, mcpReady });
         reconcileHeartbeatEdgeProxyAuth({ configPath, config, result: readinessResult });
+      } catch (error: unknown) {
+        if (mcpReady !== true) throw error;
+        return {
+          nodeId: config.nodeId,
+          presence: 'online' as const,
+          routeReady: true,
+          mcpReady: true,
+          authorityReady: false,
+        };
       }
     }
     const acceptedResult = mcpReadinessRequired
       ? {
           ...readinessResult,
-          routeReady: readinessResult.routeReady && mcpReady === true,
+          routeReady: mcpReady === true,
           mcpReady,
+          authorityReady: true,
         }
       : readinessResult;
     if (readinessResult.workspace) {
@@ -414,6 +424,9 @@ async function main(): Promise<void> {
       presence: result.presence,
       routeReady: result.routeReady,
       ...('mcpReady' in result ? { mcpReady: result.mcpReady } : {}),
+      ...('authorityReady' in result
+        ? { authorityReady: result.authorityReady }
+        : {}),
       ...('skipped' in result && result.skipped
         ? { skipped: true, reason: result.reason }
         : {}),
