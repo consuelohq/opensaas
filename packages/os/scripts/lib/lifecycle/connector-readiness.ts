@@ -74,13 +74,11 @@ export function createConnectorReadinessAcceptance(input: {
   osRoot: string;
   attempts?: number;
   intervalMs?: number;
-  fetchImpl?: typeof fetch;
   bunExecutable?: string;
   env?: NodeJS.ProcessEnv;
 }): LifecycleConnectorReadiness {
   const attempts = input.attempts ?? 40;
   const intervalMs = input.intervalMs ?? 500;
-  const fetchImpl = input.fetchImpl ?? globalThis.fetch;
   const bunExecutable = input.bunExecutable ?? process.env.BUN_BIN ?? process.execPath;
   const env = input.env ?? process.env;
   const configPath = heartbeatConfigPath(input.home);
@@ -95,25 +93,19 @@ export function createConnectorReadinessAcceptance(input: {
 
       for (let attempt = 0; attempt < attempts; attempt += 1) {
         try {
-          const response = await fetchImpl(healthUrl, {
-            headers: { accept: 'application/json' },
-            signal: AbortSignal.timeout(5_000),
+          const heartbeat = await runHeartbeat({
+            bunExecutable,
+            scriptPath,
+            configPath,
+            env,
           });
-          if (response.ok) {
-            const heartbeat = await runHeartbeat({
-              bunExecutable,
-              scriptPath,
-              configPath,
-              env,
-            });
-            if (
-              heartbeat
-              && !heartbeat.skipped
-              && heartbeat.routeReady === true
-              && heartbeat.mcpReady !== false
-            ) {
-              return true;
-            }
+          if (
+            heartbeat
+            && !heartbeat.skipped
+            && heartbeat.routeReady === true
+            && heartbeat.mcpReady !== false
+          ) {
+            return true;
           }
         } catch {
           // Bounded retry below.

@@ -2,16 +2,16 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2687,
-    "mappedTestCount": 2602,
+    "testFileCount": 2690,
+    "mappedTestCount": 2605,
     "unmappedTestCount": 85,
-    "ruleCount": 78,
-    "explicitRuleCount": 59,
+    "ruleCount": 79,
+    "explicitRuleCount": 60,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
     "byGroup": {
-      "packages/os/tests": 305,
+      "packages/os/tests": 308,
       "packages/workspace/tests": 66,
       "packages/twenty-server/test/integration/graphql/utils": 65,
       "packages/twenty-sdk/src/cli": 51,
@@ -635,7 +635,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 592,
+      "test": 595,
       "spec": 152,
       "tests-dir": 8,
       "other": 7,
@@ -1376,6 +1376,32 @@
       "critical": true,
       "exclusive": true,
       "reason": "Shared generated OS tool manifests, facade schemas, registry metadata, and generated workspace types must prove deterministic generation and syntax without waking unrelated lifecycle execution.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-lifecycle-connector-readiness",
+      "source": [
+        "packages/os/scripts/lib/lifecycle/connector-readiness.ts",
+        "packages/os/tests/lifecycle-connector-readiness.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS lifecycle connector readiness contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/lifecycle-connector-readiness.test.ts",
+            "packages/os/tests/lifecycle-engine.test.ts",
+            "packages/os/tests/workspace-node-heartbeat-script.test.ts",
+            "packages/os/tests/workspace-node-heartbeat-client.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Public connector acceptance changes must prove lifecycle fail-closed behavior, heartbeat reconciliation, and signed MCP readiness without selecting the unrelated package-wide OS suite.",
       "origin": "explicit"
     },
     {
@@ -5072,6 +5098,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/lifecycle-connector-readiness.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/lifecycle-engine.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -5892,6 +5923,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/task-recovery-archive-retention.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/task-selection.test.js",
       "group": "packages/os/tests",
       "kind": "test"
@@ -5953,6 +5989,11 @@
     },
     {
       "path": "packages/os/tests/tools-search-v3.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/trace-gateway-home-cache.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },

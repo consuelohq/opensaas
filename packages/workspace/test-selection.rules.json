@@ -716,6 +716,31 @@
       "reason": "Shared generated OS tool manifests, facade schemas, registry metadata, and generated workspace types must prove deterministic generation and syntax without waking unrelated lifecycle execution."
     },
     {
+      "id": "os-lifecycle-connector-readiness",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/scripts/lib/lifecycle/connector-readiness.ts",
+        "packages/os/tests/lifecycle-connector-readiness.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS lifecycle connector readiness contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/lifecycle-connector-readiness.test.ts",
+            "packages/os/tests/lifecycle-engine.test.ts",
+            "packages/os/tests/workspace-node-heartbeat-script.test.ts",
+            "packages/os/tests/workspace-node-heartbeat-client.test.ts"
+          ]
+        }
+      ],
+      "reason": "Public connector acceptance changes must prove lifecycle fail-closed behavior, heartbeat reconciliation, and signed MCP readiness without selecting the unrelated package-wide OS suite."
+    },
+    {
       "id": "os-lifecycle-update-handoff",
       "critical": true,
       "exclusive": true,
