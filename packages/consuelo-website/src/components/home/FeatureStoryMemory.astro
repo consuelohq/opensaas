@@ -1,0 +1,227 @@
+---
+import { homeMemoryMoments } from '../../data/home-content';
+
+const retrievedCount = homeMemoryMoments.filter((moment) => moment.kind === 'retrieved').length;
+---
+
+<section class="memory-story" data-memory-story data-story-animate aria-label="Workspace memory accumulating across a week">
+  <header class="memory-story__header">
+    <p>WORKSPACE MEMORY / PROJECT MERIDIAN</p>
+    <div class="memory-story__metrics" aria-label="Memory summary">
+      <span>{String(homeMemoryMoments.length).padStart(2, '0')} RECORDS</span>
+      <span>{String(retrievedCount).padStart(2, '0')} RETRIEVED</span>
+    </div>
+  </header>
+
+  <div class="memory-story__field">
+    {homeMemoryMoments.map((moment, index) => (
+      <article
+        class:list={['memory-story__record', { 'is-retrieved': moment.kind === 'retrieved' }]}
+        data-memory-record
+      >
+        <div class="memory-story__stamp">
+          <span>{moment.day}</span>
+          <strong>{moment.time}</strong>
+        </div>
+        <div class="memory-story__copy">
+          <span>{String(index + 1).padStart(2, '0')} / {moment.kind}</span>
+          <strong>{moment.title}</strong>
+          <p>{moment.detail}</p>
+        </div>
+      </article>
+    ))}
+  </div>
+
+  <footer class="memory-story__footer">
+    <span>NEW SESSION</span>
+    <strong>PRIOR CONTEXT RESTORED</strong>
+    <span>WITHOUT REBUILDING THE BRIEF</span>
+  </footer>
+</section>
+
+<style>
+  .memory-story {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    width: 100%;
+    aspect-ratio: 2032 / 1192;
+    overflow: hidden;
+    border: 1px solid var(--site-color-brand);
+    background: var(--site-color-on-brand);
+    color: var(--site-color-brand);
+  }
+
+  .memory-story__header,
+  .memory-story__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: clamp(0.65rem, 1.3vw, 1rem) clamp(0.75rem, 1.8vw, 1.35rem);
+    font: 650 clamp(0.48rem, 0.7vw, 0.62rem)/1 var(--site-font-mono);
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+
+  .memory-story__header {
+    border-bottom: 1px solid currentColor;
+  }
+
+  .memory-story__header p,
+  .memory-story__footer span,
+  .memory-story__footer strong {
+    margin: 0;
+  }
+
+  .memory-story__metrics {
+    display: flex;
+    gap: clamp(0.65rem, 1.4vw, 1.25rem);
+    color: var(--site-color-art-muted);
+    white-space: nowrap;
+  }
+
+  .memory-story__field {
+    display: grid;
+    align-content: stretch;
+    grid-template-rows: repeat(4, minmax(0, 1fr));
+    padding-inline: clamp(0.75rem, 1.8vw, 1.35rem);
+  }
+
+  .memory-story__record {
+    display: grid;
+    grid-template-columns: clamp(3.4rem, 7vw, 5.4rem) minmax(0, 1fr);
+    align-items: stretch;
+    border-bottom: 1px solid color-mix(in srgb, var(--site-color-brand) 22%, transparent);
+  }
+
+  .memory-story__record:last-child {
+    border-bottom: 0;
+  }
+
+  .memory-story__stamp {
+    display: grid;
+    align-content: center;
+    gap: 0.2rem;
+    border-right: 1px solid color-mix(in srgb, var(--site-color-brand) 22%, transparent);
+    font-family: var(--site-font-mono);
+  }
+
+  .memory-story__stamp span {
+    color: var(--site-color-art-muted);
+    font-size: clamp(0.45rem, 0.65vw, 0.56rem);
+    letter-spacing: 0.08em;
+  }
+
+  .memory-story__stamp strong {
+    font-size: clamp(0.62rem, 0.9vw, 0.8rem);
+    font-weight: 650;
+  }
+
+  .memory-story__copy {
+    display: grid;
+    grid-template-columns: minmax(0, 0.65fr) minmax(0, 0.85fr) minmax(0, 1fr);
+    align-items: center;
+    gap: clamp(0.6rem, 1.4vw, 1.15rem);
+    min-width: 0;
+    padding: clamp(0.5rem, 1vw, 0.82rem) clamp(0.65rem, 1.5vw, 1.1rem);
+  }
+
+  .memory-story__copy span,
+  .memory-story__copy p {
+    font: 620 clamp(0.44rem, 0.65vw, 0.56rem)/1.35 var(--site-font-mono);
+    letter-spacing: 0.055em;
+    text-transform: uppercase;
+  }
+
+  .memory-story__copy span {
+    color: var(--site-color-art-muted);
+  }
+
+  .memory-story__copy strong {
+    min-width: 0;
+    font-family: var(--site-font-display);
+    font-size: clamp(0.85rem, 1.45vw, 1.35rem);
+    font-weight: 470;
+    line-height: 0.95;
+  }
+
+  .memory-story__copy p {
+    margin: 0;
+  }
+
+  .memory-story__record.is-retrieved {
+    background: var(--site-color-brand);
+    color: var(--site-color-on-brand);
+  }
+
+  .memory-story__record.is-retrieved .memory-story__stamp {
+    border-right-color: color-mix(in srgb, var(--site-color-on-brand) 35%, transparent);
+  }
+
+  .memory-story__record.is-retrieved .memory-story__stamp span,
+  .memory-story__record.is-retrieved .memory-story__copy span {
+    color: color-mix(in srgb, var(--site-color-on-brand) 68%, transparent);
+  }
+
+  .memory-story__footer {
+    border-top: 1px solid currentColor;
+    background: color-mix(in srgb, var(--site-color-brand) 6%, var(--site-color-on-brand));
+  }
+
+  .memory-story__footer strong {
+    font-weight: 760;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .memory-story[data-story-ready='true'] .memory-story__record {
+      opacity: 0.32;
+      transform: translateY(8px);
+      transition:
+        opacity var(--site-motion-medium) var(--site-ease-standard),
+        transform var(--site-motion-medium) var(--site-ease-emphasized);
+    }
+
+    .memory-story[data-story-active='true'] .memory-story__record {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .memory-story[data-story-active='true'] .memory-story__record:nth-child(2) {
+      transition-delay: var(--site-motion-fast);
+    }
+
+    .memory-story[data-story-active='true'] .memory-story__record:nth-child(3) {
+      transition-delay: var(--site-motion-medium);
+    }
+
+    .memory-story[data-story-active='true'] .memory-story__record:nth-child(4) {
+      transition-delay: var(--site-motion-slow);
+    }
+  }
+
+  @media (max-width: 760px) {
+    .memory-story {
+      aspect-ratio: auto;
+      min-height: 24rem;
+    }
+
+    .memory-story__header,
+    .memory-story__footer {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+
+    .memory-story__copy {
+      grid-template-columns: 1fr;
+      gap: 0.2rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .memory-story,
+    .memory-story * {
+      scroll-behavior: auto;
+      transition: none !important;
+    }
+  }
+</style>

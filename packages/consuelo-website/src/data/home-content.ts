@@ -145,6 +145,29 @@ export type HomeFeaturePreviewItem = {
   evidence?: HomeFeatureEvidence;
 };
 
+export type HomeMemoryMoment = {
+  day: string;
+  time: string;
+  kind: 'decision' | 'artifact' | 'context' | 'retrieved';
+  title: string;
+  detail: string;
+};
+
+export type HomeObserveHeatmapRow = {
+  day: string;
+  levels: Array<0 | 1 | 2 | 3 | 4 | 5>;
+};
+
+export type HomeObserveTrace = {
+  time: string;
+  agent: string;
+  tool: string;
+  node: string;
+  duration: string;
+  result: string;
+  summary: string;
+};
+
 export type HomePlatformCardCtaIcon = 'terminal' | 'sign-in' | 'cloud';
 
 export type HomePlatformCard = {
@@ -521,6 +544,55 @@ export const homeMercuryPromo: HomeMercuryPromoContent = {
 };
 
 export const homeMercuryHighlights: HomeMercuryHighlight[] = [];
+
+export const homeMemoryMoments: HomeMemoryMoment[] = [
+  {
+    day: 'MON',
+    time: '09:14',
+    kind: 'decision',
+    title: 'Launch order',
+    detail: 'Canary before production',
+  },
+  {
+    day: 'TUE',
+    time: '13:05',
+    kind: 'artifact',
+    title: 'Release brief',
+    detail: 'Attached to Project Meridian',
+  },
+  {
+    day: 'THU',
+    time: '16:32',
+    kind: 'context',
+    title: 'Project owner',
+    detail: 'Maya · Northstar rollout',
+  },
+  {
+    day: 'FRI',
+    time: '11:08',
+    kind: 'retrieved',
+    title: 'Context resurfaced',
+    detail: '3 facts · 1 decision · 1 artifact',
+  },
+];
+
+export const homeObserveHeatmap: HomeObserveHeatmapRow[] = [
+  { day: 'MON', levels: [0, 0, 1, 1, 2, 3, 5, 4, 2, 1, 0, 0] },
+  { day: 'TUE', levels: [0, 1, 1, 2, 4, 5, 4, 3, 2, 2, 1, 0] },
+  { day: 'WED', levels: [0, 0, 1, 3, 4, 4, 5, 5, 3, 2, 1, 0] },
+  { day: 'THU', levels: [0, 1, 2, 2, 3, 5, 4, 3, 4, 2, 1, 0] },
+  { day: 'FRI', levels: [0, 0, 1, 2, 3, 4, 5, 3, 2, 1, 0, 0] },
+];
+
+export const homeObserveTrace: HomeObserveTrace = {
+  time: '14:08:31',
+  agent: 'Codex',
+  tool: 'browser.open',
+  node: 'Local node',
+  duration: '1.8 s',
+  result: 'SUCCESS',
+  summary: 'Opened the release dashboard and verified the canary state.',
+};
 
 export const homeFeaturePreviewItems: HomeFeaturePreviewItem[] = [
   {

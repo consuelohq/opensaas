@@ -1,0 +1,345 @@
+---
+import { homeObserveHeatmap, homeObserveTrace } from '../../data/home-content';
+
+const hourLabels = ['00', '04', '08', '12', '16', '20'];
+const selectedRow = 2;
+const selectedColumn = 7;
+---
+
+<section class="observe-story" data-observe-story data-story-animate aria-label="Workspace trace activity and one expanded trace">
+  <header class="observe-story__header">
+    <div>
+      <p>LIVE TRACE ACTIVITY / LAST 5 DAYS</p>
+      <strong>ONE WORKSPACE, DIRECTLY READABLE</strong>
+    </div>
+    <dl class="observe-story__summary" aria-label="Trace activity summary">
+      <div><dt>CALLS</dt><dd>184</dd></div>
+      <div><dt>TOOLS</dt><dd>08</dd></div>
+      <div><dt>NODES</dt><dd>02</dd></div>
+    </dl>
+  </header>
+
+  <div class="observe-story__heatmap" aria-label="Five day trace activity heatmap">
+    <div class="observe-story__hours" aria-hidden="true">
+      <span></span>
+      {hourLabels.map((hour) => <span>{hour}</span>)}
+    </div>
+    <div class="observe-story__heat-grid">
+      {homeObserveHeatmap.map((row, rowIndex) => (
+        <div class="observe-story__heat-row">
+          <span class="observe-story__day">{row.day}</span>
+          <div class="observe-story__cells">
+            {row.levels.map((level, columnIndex) => (
+              <span
+                class:list={[
+                  'observe-story__cell',
+                  `level-${level}`,
+                  { 'is-selected': rowIndex === selectedRow && columnIndex === selectedColumn },
+                ]}
+                data-observe-cell
+                aria-label={`${row.day} activity level ${level}`}
+              ></span>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+
+  <div class="observe-story__selection">
+    <div class="observe-story__selection-meta">
+      <span>WED 14:00</span>
+      <strong>12 CALLS</strong>
+      <span>8 TOOLS · 2 NODES</span>
+    </div>
+
+    <article class="observe-story__trace" data-observe-trace>
+      <div class="observe-story__trace-time">{homeObserveTrace.time}</div>
+      <div class="observe-story__trace-main">
+        <span>{homeObserveTrace.agent}</span>
+        <strong>{homeObserveTrace.tool}</strong>
+        <p>{homeObserveTrace.summary}</p>
+      </div>
+      <div class="observe-story__trace-meta">
+        <span>{homeObserveTrace.node}</span>
+        <span>{homeObserveTrace.duration}</span>
+        <strong>{homeObserveTrace.result}</strong>
+      </div>
+    </article>
+  </div>
+</section>
+
+<style>
+  .observe-story {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    width: 100%;
+    aspect-ratio: 2032 / 1192;
+    overflow: hidden;
+    border: 1px solid var(--site-color-brand);
+    background: var(--site-color-on-brand);
+    color: var(--site-color-brand);
+  }
+
+  .observe-story__header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: clamp(0.7rem, 1.5vw, 1.1rem) clamp(0.8rem, 1.8vw, 1.4rem);
+    border-bottom: 1px solid currentColor;
+  }
+
+  .observe-story__header p,
+  .observe-story__header strong,
+  .observe-story__summary,
+  .observe-story__summary dt,
+  .observe-story__summary dd {
+    margin: 0;
+  }
+
+  .observe-story__header p {
+    margin-bottom: 0.35rem;
+    color: var(--site-color-art-muted);
+    font: 650 clamp(0.46rem, 0.7vw, 0.6rem)/1 var(--site-font-mono);
+    letter-spacing: 0.09em;
+  }
+
+  .observe-story__header > div > strong {
+    font-family: var(--site-font-display);
+    font-size: clamp(1rem, 1.9vw, 1.65rem);
+    font-weight: 470;
+    line-height: 0.95;
+  }
+
+  .observe-story__summary {
+    display: grid;
+    grid-template-columns: repeat(3, auto);
+    gap: clamp(0.8rem, 1.8vw, 1.5rem);
+  }
+
+  .observe-story__summary div {
+    display: grid;
+    gap: 0.2rem;
+    text-align: right;
+  }
+
+  .observe-story__summary dt,
+  .observe-story__summary dd {
+    font: 650 clamp(0.44rem, 0.65vw, 0.56rem)/1 var(--site-font-mono);
+    letter-spacing: 0.08em;
+  }
+
+  .observe-story__summary dt {
+    color: var(--site-color-art-muted);
+  }
+
+  .observe-story__heatmap {
+    display: grid;
+    align-content: center;
+    gap: clamp(0.5rem, 1vw, 0.8rem);
+    min-height: 0;
+    padding: clamp(0.7rem, 1.5vw, 1.15rem) clamp(0.8rem, 1.8vw, 1.4rem);
+  }
+
+  .observe-story__hours {
+    display: grid;
+    grid-template-columns: clamp(2rem, 4vw, 3rem) repeat(6, minmax(0, 1fr));
+    color: var(--site-color-art-muted);
+    font: 620 clamp(0.4rem, 0.58vw, 0.5rem)/1 var(--site-font-mono);
+    letter-spacing: 0.04em;
+  }
+
+  .observe-story__hours span:not(:first-child) {
+    text-align: left;
+  }
+
+  .observe-story__heat-grid {
+    display: grid;
+    gap: clamp(0.28rem, 0.55vw, 0.42rem);
+  }
+
+  .observe-story__heat-row {
+    display: grid;
+    grid-template-columns: clamp(2rem, 4vw, 3rem) minmax(0, 1fr);
+    align-items: center;
+    gap: clamp(0.45rem, 0.9vw, 0.7rem);
+  }
+
+  .observe-story__day {
+    font: 650 clamp(0.42rem, 0.62vw, 0.53rem)/1 var(--site-font-mono);
+    letter-spacing: 0.04em;
+  }
+
+  .observe-story__cells {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    gap: clamp(0.18rem, 0.42vw, 0.34rem);
+  }
+
+  .observe-story__cell {
+    aspect-ratio: 1.15 / 1;
+    border: 1px solid color-mix(in srgb, var(--site-color-brand) 8%, transparent);
+    background: color-mix(in srgb, var(--site-color-brand) 4%, var(--site-color-on-brand));
+  }
+
+  .observe-story__cell.level-1 { background: color-mix(in srgb, var(--site-color-brand) 10%, var(--site-color-on-brand)); }
+  .observe-story__cell.level-2 { background: color-mix(in srgb, var(--site-color-brand) 20%, var(--site-color-on-brand)); }
+  .observe-story__cell.level-3 { background: color-mix(in srgb, var(--site-color-brand) 34%, var(--site-color-on-brand)); }
+  .observe-story__cell.level-4 { background: color-mix(in srgb, var(--site-color-brand) 55%, var(--site-color-on-brand)); }
+  .observe-story__cell.level-5 { background: var(--site-color-brand); }
+
+  .observe-story__cell.is-selected {
+    position: relative;
+    outline: 2px solid var(--site-color-brand);
+    outline-offset: 2px;
+  }
+
+  .observe-story__cell.is-selected::after {
+    position: absolute;
+    inset: 28%;
+    border-radius: 50%;
+    background: var(--site-color-on-brand);
+    content: '';
+  }
+
+  .observe-story__selection {
+    display: grid;
+    grid-template-columns: minmax(7rem, 0.28fr) minmax(0, 1fr);
+    border-top: 1px solid currentColor;
+  }
+
+  .observe-story__selection-meta {
+    display: grid;
+    align-content: center;
+    gap: 0.32rem;
+    padding: clamp(0.65rem, 1.2vw, 0.9rem) clamp(0.8rem, 1.8vw, 1.4rem);
+    border-right: 1px solid currentColor;
+    font: 650 clamp(0.42rem, 0.62vw, 0.54rem)/1.2 var(--site-font-mono);
+    letter-spacing: 0.055em;
+  }
+
+  .observe-story__selection-meta span:last-child {
+    color: var(--site-color-art-muted);
+  }
+
+  .observe-story__trace {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: clamp(0.7rem, 1.4vw, 1.2rem);
+    min-width: 0;
+    padding: clamp(0.65rem, 1.2vw, 0.9rem) clamp(0.8rem, 1.8vw, 1.4rem);
+  }
+
+  .observe-story__trace-time,
+  .observe-story__trace-main span,
+  .observe-story__trace-main p,
+  .observe-story__trace-meta {
+    font: 620 clamp(0.42rem, 0.62vw, 0.54rem)/1.3 var(--site-font-mono);
+    letter-spacing: 0.04em;
+  }
+
+  .observe-story__trace-time,
+  .observe-story__trace-main span,
+  .observe-story__trace-meta span {
+    color: var(--site-color-art-muted);
+  }
+
+  .observe-story__trace-main {
+    display: grid;
+    gap: 0.16rem;
+    min-width: 0;
+  }
+
+  .observe-story__trace-main strong {
+    font-family: var(--site-font-display);
+    font-size: clamp(0.78rem, 1.25vw, 1.08rem);
+    font-weight: 500;
+    line-height: 1;
+  }
+
+  .observe-story__trace-main p {
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .observe-story__trace-meta {
+    display: grid;
+    justify-items: end;
+    gap: 0.14rem;
+    text-align: right;
+  }
+
+  .observe-story__trace-meta strong {
+    color: var(--site-color-brand);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .observe-story[data-story-ready='true'] .observe-story__cell {
+      opacity: 0.55;
+      transition: opacity var(--site-motion-medium) var(--site-ease-standard);
+    }
+
+    .observe-story[data-story-ready='true'] .observe-story__trace {
+      opacity: 0;
+      transform: translateY(8px);
+      transition:
+        opacity var(--site-motion-medium) var(--site-ease-standard),
+        transform var(--site-motion-medium) var(--site-ease-emphasized);
+    }
+
+    .observe-story[data-story-active='true'] .observe-story__cell,
+    .observe-story[data-story-active='true'] .observe-story__trace {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (max-width: 760px) {
+    .observe-story {
+      aspect-ratio: auto;
+      min-height: 26rem;
+    }
+
+    .observe-story__header {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+
+    .observe-story__summary div {
+      text-align: left;
+    }
+
+    .observe-story__selection {
+      grid-template-columns: 1fr;
+    }
+
+    .observe-story__selection-meta {
+      grid-template-columns: repeat(3, auto);
+      justify-content: space-between;
+      border-right: 0;
+      border-bottom: 1px solid currentColor;
+    }
+
+    .observe-story__trace {
+      grid-template-columns: auto minmax(0, 1fr);
+    }
+
+    .observe-story__trace-meta {
+      grid-column: 1 / -1;
+      grid-template-columns: repeat(3, auto);
+      justify-content: space-between;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .observe-story,
+    .observe-story * {
+      scroll-behavior: auto;
+      transition: none !important;
+    }
+  }
+</style>
