@@ -677,6 +677,12 @@ describe('renderIndexPage', () => {
     expect(html).toContain('mergeIndexWithCache');
     expect(html).toContain('localStorage.setItem(cacheKey');
     expect(html).toContain("cache: 'no-cache'");
+    expect(html).toContain('const indexAuthRetryDelaysMs = [250, 1000, 2500]');
+    expect(html).toContain('function fetchIndexWithAuthRetry(headers, attempt = 0)');
+    expect(html).toContain("if (response.status !== 401 || attempt >= indexAuthRetryDelaysMs.length) return response;");
+    expect(html).toContain('window.setTimeout(resolve, indexAuthRetryDelaysMs[attempt])');
+    expect(html).toContain('fetchIndexWithAuthRetry(headers)');
+    expect(html).not.toContain("indexLoadInFlight = fetch(apiPath, { headers, cache: 'no-cache' })");
     expect(html).toContain('refreshIndexIfStale');
     expect(html).toContain('readInitialIndexData');
     expect(html).toContain('diff-cockpit-index-initial-data');
