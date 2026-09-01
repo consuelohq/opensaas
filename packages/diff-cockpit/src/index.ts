@@ -3578,6 +3578,7 @@ function loadCachedIndex() { clearStaleIndexCaches(); const cached = readCachedI
 let lastIndexLoadAt = 0;
 let indexLoadInFlight = null;
 let currentIndexEtag = readInitialIndexEtag();
+const indexAuthRetryDelaysMs = [250, 1000, 2500];
 function readScriptJson(id) {
   const element = document.getElementById(id);
   if (!element || !element.textContent) return null;
@@ -3586,6 +3587,13 @@ function readScriptJson(id) {
 }
 function readInitialIndexData() { return readScriptJson('diff-cockpit-index-initial-data'); }
 function readInitialIndexEtag() { return readScriptJson('diff-cockpit-index-initial-etag') || ''; }
+function fetchIndexWithAuthRetry(headers, attempt = 0) {
+  return fetch(apiPath, { headers, cache: 'no-cache' }).then((response) => {
+    if (response.status !== 401 || attempt >= indexAuthRetryDelaysMs.length) return response;
+    return new Promise((resolve) => window.setTimeout(resolve, indexAuthRetryDelaysMs[attempt]))
+      .then(() => fetchIndexWithAuthRetry(headers, attempt + 1));
+  });
+}
 function loadIndex(options = {}) {
   const initial = options.useCache === false ? null : readInitialIndexData();
   const cached = options.useCache === false ? null : (initial || loadCachedIndex());
@@ -3594,7 +3602,7 @@ function loadIndex(options = {}) {
   lastIndexLoadAt = Date.now();
   const headers = { accept: 'application/json' };
   if (currentIndexEtag) headers['If-None-Match'] = currentIndexEtag;
-  indexLoadInFlight = fetch(apiPath, { headers, cache: 'no-cache' })
+  indexLoadInFlight = fetchIndexWithAuthRetry(headers)
     .then((response) => {
       if (response.status === 304) return null;
       if (!response.ok) throw new Error('Live PR index fetch failed: ' + response.status);
