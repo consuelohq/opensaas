@@ -1,6 +1,7 @@
 #!/usr/bin/env bun
 
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { createWorkSession } from '../../os/scripts/lib/work-session';
 import { resolveActiveWorkspaceProjectCwd } from '../../os/scripts/lib/workspace-project-cwd';
@@ -43,10 +44,14 @@ export function parseArgs(argv: string[]): ParsedArgs {
   return parsed;
 }
 
-async function startTaskSession(args: ParsedArgs): Promise<void> {
+export async function startTaskSession(
+  args: ParsedArgs,
+  cwd = resolveActiveWorkspaceProjectCwd() ?? process.cwd(),
+): Promise<void> {
   try {
-    const taskStart = path.resolve(import.meta.dir, 'task-start.js');
+    const taskStart = path.resolve(path.dirname(fileURLToPath(import.meta.url)), 'task-start.js');
     const child = Bun.spawn([process.execPath, taskStart, ...args.forwarded], {
+      cwd,
       stdin: 'inherit',
       stdout: 'inherit',
       stderr: 'inherit',

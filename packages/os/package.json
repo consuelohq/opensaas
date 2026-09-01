@@ -44,6 +44,7 @@
     "review": "bun ./scripts/review.js",
     "ai-review": "bun ./scripts/ai-review.js",
     "explore": "DYLD_LIBRARY_PATH=/opt/homebrew/opt/sqlite/lib:$DYLD_LIBRARY_PATH bun ./scripts/explore.js",
+    "explore:benchmark": "DYLD_LIBRARY_PATH=/opt/homebrew/opt/sqlite/lib:$DYLD_LIBRARY_PATH bun ./scripts/explore-bench.js",
     "decide-next": "DYLD_LIBRARY_PATH=/opt/homebrew/opt/sqlite/lib:$DYLD_LIBRARY_PATH bun ./scripts/decide-next.js",
     "confidence-score": "DYLD_LIBRARY_PATH=/opt/homebrew/opt/sqlite/lib:$DYLD_LIBRARY_PATH bun ./scripts/confidence-score.js",
     "exploit": "DYLD_LIBRARY_PATH=/opt/homebrew/opt/sqlite/lib:$DYLD_LIBRARY_PATH bun ./scripts/exploit.js",
@@ -70,6 +71,8 @@
     "code-run": "bun ./scripts/code-run.ts",
     "code-call": "bun ./scripts/code-call.ts",
     "github": "bun ./scripts/github.js",
+    "google": "bun ./scripts/google.ts",
+    "release": "bun ./scripts/release.ts",
     "consuelo-reload": "bun ./scripts/consuelo-reload.js",
     "git:diff": "bun ./scripts/git-diff.js",
     "subagent": "bun ./scripts/subagent.ts",
@@ -146,5 +149,8 @@
   },
   "devDependencies": {
     "vitest": "^4.1.5"
+  },
+  "overrides": {
+    "tar": "7.5.22"
   }
 }

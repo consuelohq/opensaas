@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_5349a286785e",
+  "tmuxSession": "opensaas-os-yield-release-lock-lease-between-queue-queries-5349a286",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/yield-release-lock-lease-between-queue-queries",
+  "branch": "task/os/yield-release-lock-lease-between-queue-queries",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-yield-release-lock-lease-between-queue-queries",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-yield-release-lock-lease-between-queue-queries",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2230,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2230",
+  "createdAt": "2026-08-26T18:53:38.183Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-yield-release-lock-lease-between-queue-queries/.task/os/yield-release-lock-lease-between-queue-queries/session.json"
+}

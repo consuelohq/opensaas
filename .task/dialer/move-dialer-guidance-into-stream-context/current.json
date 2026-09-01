@@ -1,0 +1,13 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/move-dialer-guidance-into-stream-context",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2252,
+  "taskSession": "tsk_eb3d9c729ef2",
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2252",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-move-dialer-guidance-into-stream-context",
+  "createdAt": "2026-08-29T00:00:44.612Z"
+}

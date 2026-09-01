@@ -60,7 +60,7 @@ export const toolSchemas = [
       name: 'lifecycle.update',
       methodPath: ['lifecycle', 'update'],
       description:
-        'update or upgrade the installed Consuelo OS runtime with the canonical signed lifecycle updater',
+        'update or upgrade the installed Consuelo OS runtime with the canonical signed lifecycle updater; optionally require an exact released version',
       category: 'lifecycle',
       underlying: 'workspace lifecycle.update',
       capabilities: {
@@ -83,6 +83,8 @@ export const toolSchemas = [
           'upgrade',
           'updater',
           'install latest',
+          'exact version',
+          'pin version',
         ],
         entities: ['consuelo os', 'runtime release', 'lifecycle updater'],
       },

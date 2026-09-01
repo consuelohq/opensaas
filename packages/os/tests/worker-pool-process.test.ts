@@ -1,6 +1,6 @@
 import { spawn, spawnSync } from 'node:child_process';
 import { createServer } from 'node:net';
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 
@@ -8,9 +8,20 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 const osRoot = resolve(import.meta.dirname, '..');
 const temporaryHomes: string[] = [];
+const PROCESS_CONVERGENCE_TIMEOUT_MS = 30_000;
 
 const sleep = (milliseconds: number): Promise<void> =>
   new Promise((resolveSleep) => setTimeout(resolveSleep, milliseconds));
+
+function linkRuntimeCurrent(home: string): void {
+  const runtimeDir = join(home, 'runtime');
+  mkdirSync(runtimeDir, { recursive: true });
+  symlinkSync(
+    osRoot,
+    join(runtimeDir, 'current'),
+    process.platform === 'win32' ? 'junction' : 'dir',
+  );
+}
 
 function resolveBunExecutable(): string {
   const executable = process.env.BUN_BINARY || 'bun';
@@ -45,14 +56,17 @@ async function contiguousPorts(): Promise<number> {
   throw new Error('could not find two contiguous test ports');
 }
 
-async function waitFor<T>(read: () => T | undefined, timeoutMs = 10_000): Promise<T> {
+async function waitFor<T>(
+  read: () => T | undefined,
+  timeoutMs = PROCESS_CONVERGENCE_TIMEOUT_MS,
+): Promise<T> {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
     const value = read();
     if (value !== undefined) return value;
     await sleep(50);
   }
-  throw new Error('worker pool condition timed out');
+  throw new Error(`worker pool condition timed out after ${timeoutMs}ms`);
 }
 
 type PoolSnapshot = {
@@ -78,6 +92,7 @@ describe('OS worker pool process integration', () => {
   it('starts two real workers and replaces only the crashed slot', async () => {
     const home = mkdtempSync(join(tmpdir(), 'consuelo-worker-pool-'));
     temporaryHomes.push(home);
+    linkRuntimeCurrent(home);
     const basePort = await contiguousPorts();
     const statePath = join(home, 'node', 'runs', 'os-worker-pool.json');
     const supervisor = spawn(
@@ -89,6 +104,7 @@ describe('OS worker pool process integration', () => {
           ...process.env,
           CONSUELO_HOME: home,
           CONSUELO_OS_PORT: String(basePort),
+          CONSUELO_OS_WORKER_BASE_PORT: String(basePort),
           CONSUELO_OS_WORKER_COUNT: '2',
           CONSUELO_OS_WORKER_RESTART_DELAY_MS: '25',
           CONSUELO_OS_DRAIN_TIMEOUT_MS: '2000',
@@ -168,17 +184,19 @@ describe('OS worker pool process integration', () => {
       supervisor.kill('SIGTERM');
       await supervisorExited;
     }
-  }, 60_000);
+  }, 120_000);
 
   it('reclaims orphaned workers when launchd restarts a killed supervisor', async () => {
     const home = mkdtempSync(join(tmpdir(), 'consuelo-worker-pool-orphans-'));
     temporaryHomes.push(home);
+    linkRuntimeCurrent(home);
     const basePort = await contiguousPorts();
     const statePath = join(home, 'node', 'runs', 'os-worker-pool.json');
     const environment = {
       ...process.env,
       CONSUELO_HOME: home,
       CONSUELO_OS_PORT: String(basePort),
+      CONSUELO_OS_WORKER_BASE_PORT: String(basePort),
       CONSUELO_OS_WORKER_COUNT: '2',
       CONSUELO_OS_WORKER_RESTART_DELAY_MS: '25',
       CONSUELO_OS_DRAIN_TIMEOUT_MS: '2000',

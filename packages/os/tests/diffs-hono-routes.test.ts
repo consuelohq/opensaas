@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   resolveConsueloHomeLayout,
@@ -16,6 +16,7 @@ import {
   type AgentAppToken,
   type GatewaySecurityConfig,
 } from '../scripts/lib/security-gateway';
+import { generateWorkspaceDeviceKeyPair } from '../scripts/lib/workspace-device-login-client';
 import { handleRequest } from '../scripts/server/app';
 
 const workspaceId = 'wrk_diffs_hono';
@@ -105,6 +106,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  vi.restoreAllMocks();
   delete process.env.CONSUELO_HOME;
   delete process.env.CONSUELO_OS_HOME;
   delete process.env.CONSUELO_OS_AUTH_CONFIG;
@@ -113,6 +115,75 @@ afterEach(() => {
 });
 
 describe('Hono Diffs routes', () => {
+  it('uses a managed GitHub installation credential without exposing it to the browser', async () => {
+    writeWorkspace(configuredWorkspace([{
+      id: 'app',
+      name: 'App',
+      repo: 'acme/app',
+      defaultBranch: 'main',
+      provider: 'github',
+      connectionRef: 'github-installation:ghc_primary',
+    }]));
+    const keyPair = generateWorkspaceDeviceKeyPair();
+    const layout = resolveConsueloHomeLayout(home);
+    const heartbeatDir = join(layout.nodeDir, 'security', 'generated');
+    mkdirSync(heartbeatDir, { recursive: true });
+    writeFileSync(join(heartbeatDir, 'workspace-node-heartbeat.json'), JSON.stringify({
+      authorityOrigin: 'https://os.consuelohq.com',
+      workspaceId,
+      nodeId: 'node_diffs_hono',
+      connectorStatus: 'connected',
+      capabilities: [],
+      publicKeyJwk: keyPair.publicKeyJwk,
+      signingKeyJwk: keyPair.signingKeyJwk,
+    }), 'utf8');
+
+    const calls: Request[] = [];
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
+      const request = input instanceof Request ? input : new Request(input, init);
+      calls.push(request.clone());
+      const url = new URL(request.url);
+      if (url.origin === 'https://os.consuelohq.com') {
+        expect(url.pathname).toBe('/workspace/source-control/github/token');
+        expect(request.headers.get('x-consuelo-node-signature')).toBeTruthy();
+        return Response.json({
+          token: 'managed-installation-token',
+          expiresAt: '2099-01-01T00:00:00.000Z',
+        });
+      }
+      if (url.href === 'https://api.github.com/graphql') {
+        expect(request.headers.get('authorization')).toBe('Bearer managed-installation-token');
+        return Response.json({
+          data: {
+            repository: {
+              openPullRequests: { pageInfo: { hasNextPage: false }, nodes: [] },
+              recentPullRequests: { pageInfo: { hasNextPage: false }, nodes: [] },
+            },
+          },
+        });
+      }
+      return new Response('not found', { status: 404 });
+    });
+
+    const path = '/gateway/diffs/repositories/acme/app/pulls';
+    const response = await handleRequest(signedRequest({
+      method: 'GET',
+      path,
+      nonce: 'managed-github-diffs-nonce',
+    }));
+
+    expect(response.status).toBe(200);
+    const text = await response.text();
+    expect(text).not.toContain('managed-installation-token');
+    expect(JSON.parse(text)).toMatchObject({
+      repo: { owner: 'acme', repo: 'app' },
+      pulls: [],
+    });
+    expect(calls.map((request) => request.url)).toEqual([
+      'https://os.consuelohq.com/workspace/source-control/github/token',
+      'https://api.github.com/graphql',
+    ]);
+  });
   it('serves the signed workspace source-control snapshot without credential values', async () => {
     const response = await handleRequest(signedRequest({
       method: 'GET',
@@ -160,6 +231,17 @@ describe('Hono Diffs routes', () => {
   });
 
   it('serves the existing Diffs UI through the authenticated workspace route', async () => {
+    writeFileSync(join(home, 'consuelo.yaml'), [
+      'version: 1',
+      'launcher:',
+      '  extraSections:',
+      '    - id: internal',
+      '      label: Internal',
+      '      links:',
+      '        - label: Users & installs',
+      '          href: https://internal.consuelohq.com/users',
+      '',
+    ].join('\n'));
     const response = await handleRequest(signedRequest({
       method: 'GET',
       path: '/diffs',
@@ -168,6 +250,12 @@ describe('Hono Diffs routes', () => {
     expect(response.status).toBe(200);
     const html = await response.text();
     expect(html).toContain('Consuelo Diffs');
+    expect(html).toContain('data-workspace-shell');
+    expect(html).toContain('data-workspace-chrome');
+    expect(html).toContain('aria-current="page" href="/diffs"');
+    expect(html).toContain('data-custom-route-group="internal"');
+    expect(html).toContain('>Users &amp; installs</span>');
+    expect(html).toContain('.workspace-route-menu[hidden]');
     expect(html).toContain('/gateway/diffs/repositories/acme/app/pulls');
     expect(html).not.toContain('consuelohq/opensaas');
     expect(html).not.toContain('diffs.consuelohq.com');
@@ -182,8 +270,13 @@ describe('Hono Diffs routes', () => {
     }));
     expect(response.status).toBe(200);
     const html = await response.text();
-    expect(html).toContain('Connect source control');
-    expect(html).toContain('/configuration');
+    expect(html).toContain('Connect GitHub');
+    expect(html).toContain('data-workspace-shell');
+    expect(html).toContain('data-workspace-chrome');
+    expect(html).toContain('aria-current="page" href="/diffs"');
+    expect(html).toContain('/gateway/configuration/source-control/github/connect?return_to=%2Fdiffs');
+    expect(html).toContain('Choose repositories on GitHub');
+    expect(html).not.toContain('connection binding');
     expect(html).not.toContain('opensaas');
   });
 
@@ -254,7 +347,11 @@ describe('Hono Diffs routes', () => {
       nonce: 'diffs-nested-tree-path-nonce',
     }));
     expect(response.status).toBe(200);
-    expect(await response.text()).toContain('src/nested/file.ts');
+    const html = await response.text();
+    expect(html).toContain('src/nested/file.ts');
+    expect(html).toContain('data-workspace-shell');
+    expect(html).toContain('data-workspace-chrome');
+    expect(html).toContain('aria-current="page" href="/diffs"');
   });
 
   it('requires signed Diffs access', async () => {

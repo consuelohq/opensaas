@@ -1,0 +1,47 @@
+import { readFileSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { describe, expect, it } from 'vitest';
+
+const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+
+describe('release script security boundary', () => {
+  it('uses GitHub credential-store auth without reading or printing token secrets', () => {
+    const release = readFileSync(resolve(root, 'scripts/release.ts'), 'utf8');
+    const githubCli = readFileSync(resolve(root, 'scripts/lib/github-cli.ts'), 'utf8');
+    const combined = `${release}\n${githubCli}`;
+
+    expect(combined).not.toContain("['auth', 'token']");
+    expect(combined).not.toContain('process.env.GITHUB_TOKEN');
+    expect(combined).not.toContain('process.env.GH_TOKEN');
+    expect(combined).not.toContain('CONSUELO_OS_RELEASE_SIGNING_PRIVATE_KEY');
+    expect(combined).not.toContain('CLOUDFLARE_OS_RELEASE_API_TOKEN');
+    expect(release).toContain('safeErrorText');
+    expect(githubCli).toContain("['auth', 'status']");
+  });
+
+  it('keeps release promotion inside the existing GitHub Actions approval/signing workflow', () => {
+    const release = readFileSync(resolve(root, 'scripts/release.ts'), 'utf8');
+    const correlation = readFileSync(resolve(root, 'scripts/lib/release-promotion-correlation.ts'), 'utf8');
+    expect(`${release}\n${correlation}`).toContain('consuelo-os-runtime-promote.yaml');
+    expect(release).toContain("'workflow'");
+    expect(release).toContain("'run'");
+    expect(release).toContain('RUNTIME_PROMOTE_WORKFLOW');
+    expect(release).not.toContain('release:channels -- promote');
+    expect(release).not.toContain('wrangler');
+  });
+
+  it('waits on the full GitHub release-state concurrency queue before promotion dispatch', () => {
+    const release = readFileSync(resolve(root, 'scripts/release.ts'), 'utf8');
+
+    expect(release).toContain('RELEASE_STATE_WORKFLOWS');
+    expect(release).toContain('listReleaseStateRuns');
+    expect(release).toContain('listReleaseStateRunsWithLease');
+    expect(release).toContain('const releaseStateBefore = await listReleaseStateRunsWithLease(lease);');
+    expect(release).toContain('selectActiveReleaseStateRun(releaseStateBefore.all)');
+    expect(release).toContain('createPromotionLockAdapter(sourceCommit, listReleaseStateRuns)');
+    expect(release).toContain('await lease.renew();');
+    expect(release).toContain('evaluatePromotionCorrelation({');
+    expect(release).toContain('const rows = listPromotionRuns();');
+  });
+});

@@ -108,7 +108,7 @@ describe('memory-adjacent OS workflows', () => {
       title: 'Research Bundle: Memory contract',
       category: 'teach',
     });
-    expect(plan.memorySave.bundlePath).toEndWith('memory-bundle.md');
+    expect(plan.memorySave.bundlePath.endsWith('memory-bundle.md')).toBe(true);
     expect(plan).not.toHaveProperty('contextSave');
 
     const retired = run(researchScript, [

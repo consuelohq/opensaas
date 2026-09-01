@@ -325,6 +325,7 @@ export async function handleSyntheticStripeWebhook(input: {
     throw new SyntheticCheckoutError('SYNTHETIC_INVALID', 400, 'Invalid synthetic Stripe payload.');
   }
   const event = record(parsed);
+  const stripeEventId = field(event.id);
   if (field(event.type) !== 'checkout.session.completed') return { handled: false };
   const session = record(record(event.data).object);
   const metadata = record(session.metadata);
@@ -341,6 +342,7 @@ export async function handleSyntheticStripeWebhook(input: {
     synthetic: true,
     outcome: paymentStatus === 'paid' ? 'success' : 'error',
     errorCode: paymentStatus === 'paid' ? undefined : 'SYNTHETIC_PAYMENT_NOT_PAID',
+    dedupeKey: stripeEventId ? `stripe:${stripeEventId}:checkout_synthetic_completed` : undefined,
   });
   return { handled: true, paymentStatus, planId, runId };
 }

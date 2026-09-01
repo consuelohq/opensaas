@@ -35,6 +35,7 @@ import {
   workspaceIdFromSlug,
 } from '../utils';
 import { grantWorkspace } from './grants';
+import { workspaceNodeReadiness } from './nodes';
 
 export function defaultSiteSnapshot(
   input?: DefaultSiteSnapshot,
@@ -216,21 +217,34 @@ export async function reconcileWorkspaceRouteState(input: {
   const connectedCandidates = candidates
     .filter((node) => node.connectorStatus === 'connected')
     .sort((left, right) => left.createdAt - right.createdAt);
+  const readyCandidates = connectedCandidates.filter(
+    (node) => workspaceNodeReadiness(node, input.nowMs) === 'ready',
+  );
+  const readyCandidateNodeIds = new Set(readyCandidates.map((node) => node.nodeId));
+  const configuredDefaultIsActive = Boolean(
+    configuredDefaultNodeId && candidateNodeIds.has(configuredDefaultNodeId),
+  );
+  const configuredHomeIsReady = Boolean(
+    !configuredDefaultNodeId &&
+      configuredHomeNodeId &&
+      readyCandidateNodeIds.has(configuredHomeNodeId),
+  );
   const fallbackDefaultNodeId =
-    connectedCandidates.find((node) => node.nodeId === input.currentNodeId)?.nodeId ??
-    connectedCandidates[0]?.nodeId ??
-    input.currentNodeId;
+    readyCandidates.find((node) => node.nodeId === input.currentNodeId)?.nodeId ??
+    readyCandidates[0]?.nodeId;
+  const selectedDefaultNodeId = configuredDefaultIsActive
+    ? configuredDefaultNodeId
+    : configuredHomeIsReady
+      ? configuredHomeNodeId
+      : fallbackDefaultNodeId;
   const defaultNodeId =
-    configuredDefaultNodeId && candidateNodeIds.has(configuredDefaultNodeId)
-      ? configuredDefaultNodeId
-      : !configuredDefaultNodeId &&
-          configuredHomeNodeId &&
-          candidateNodeIds.has(configuredHomeNodeId)
-        ? configuredHomeNodeId
-        : fallbackDefaultNodeId;
+    selectedDefaultNodeId ??
+    configuredDefaultNodeId ??
+    configuredHomeNodeId ??
+    input.currentNodeId;
   candidates.sort((left, right) => {
-    if (left.nodeId === defaultNodeId) return -1;
-    if (right.nodeId === defaultNodeId) return 1;
+    if (left.nodeId === selectedDefaultNodeId) return -1;
+    if (right.nodeId === selectedDefaultNodeId) return 1;
     return left.createdAt - right.createdAt;
   });
 
@@ -262,7 +276,7 @@ export async function reconcileWorkspaceRouteState(input: {
         lastSeenAt: node.lastSeenAt ?? 0,
         heartbeatTtlMs: 60_000,
       },
-      makeDefault: node.nodeId === defaultNodeId,
+      makeDefault: node.nodeId === selectedDefaultNodeId,
       localServiceUrl: DEFAULT_CONNECTOR_LOCAL_SERVICE_URL,
     });
   }
@@ -277,6 +291,8 @@ export async function reconcileWorkspaceRouteState(input: {
   return {
     routeReady: resolved.allowed === true && resolved.nodeId === input.currentNodeId,
     defaultNodeId,
-    defaultNodeChanged: configuredDefaultNodeId !== defaultNodeId,
+    defaultNodeChanged:
+      selectedDefaultNodeId !== undefined &&
+      configuredDefaultNodeId !== selectedDefaultNodeId,
   };
 }

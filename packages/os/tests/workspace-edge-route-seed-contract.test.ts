@@ -111,6 +111,7 @@ contractDescribe('workspace edge route seed contract', () => {
       '/settings',
       '/gateway/traces/events',
       '/gateway/traces',
+      '/gateway/configuration/source-control/github',
       '/gateway/configuration/overlay',
       '/gateway/configuration',
       '/gateway/settings/overlay',
@@ -118,7 +119,9 @@ contractDescribe('workspace edge route seed contract', () => {
       '/gateway/environments/upsert',
       '/gateway/environments/delete',
       '/gateway/environments',
+      '/gateway/secrets/install',
       '/gateway/secrets',
+      '/artifacts',
       '/gateway/artifacts',
       '/gateway/diffs/write',
       '/gateway/diffs',
@@ -158,6 +161,16 @@ contractDescribe('workspace edge route seed contract', () => {
           serviceName: 'trace-sites-read-layer',
           gatewayRouteFamily: '/gateway/traces/*',
           publicSiteRouteFamily: '/observability/*',
+        }),
+      }),
+      expect.objectContaining({
+        pathPrefix: '/gateway/configuration/source-control/github',
+        auth: 'workspace-session',
+        target: expect.objectContaining({
+          kind: 'consuelo-gateway-service',
+          serviceName: 'configuration-sites-write-endpoints',
+          gatewayRouteFamily: '/gateway/configuration/*',
+          publicSiteRouteFamily: '/configuration/*',
         }),
       }),
       expect.objectContaining({
@@ -234,6 +247,16 @@ contractDescribe('workspace edge route seed contract', () => {
         pathPrefix: '/settings',
         auth: 'public',
         target: { kind: 'redirect', location: '/configuration', statusCode: 308 },
+      }),
+      expect.objectContaining({
+        pathPrefix: '/artifacts',
+        auth: 'workspace-session',
+        target: expect.objectContaining({
+          kind: 'consuelo-gateway-service',
+          serviceName: 'artifacts-sites-read-layer',
+          gatewayRouteFamily: '/gateway/artifacts/*',
+          publicSiteRouteFamily: '/artifacts/*',
+        }),
       }),
       expect.objectContaining({
         pathPrefix: '/gateway/artifacts',
@@ -316,7 +339,6 @@ contractDescribe('workspace edge route seed contract', () => {
     );
     expect(snapshotRoutes.map((route) => route.pathPrefix)).toEqual([
       '/',
-      '/artifacts',
       '/observability',
       '/observability/traces',
       '/traces',
@@ -329,6 +351,13 @@ contractDescribe('workspace edge route seed contract', () => {
       '/environments',
       '/secrets',
     ]);
+    expect(record.routes.find((route) => route.pathPrefix === '/artifacts')).toMatchObject({
+      auth: 'workspace-session',
+      target: {
+        kind: 'consuelo-gateway-service',
+        serviceName: 'artifacts-sites-read-layer',
+      },
+    });
     expect(record.routes).toEqual(expect.arrayContaining([
       expect.objectContaining({
         pathPrefix: '/diffs',
@@ -661,16 +690,22 @@ contractDescribe('workspace edge route seed contract', () => {
         },
       });
     }
-    for (const siteId of ['artifacts', 'docs']) {
-      expect(refreshed.routes.find((route) => route.target.siteId === siteId)).toMatchObject({
-        target: {
-          siteId,
-          versionId: 'sha256-user-published',
-          manifestKey: 'sites/workspace_internal/' + siteId + '/sha256-user-published/index.html',
-          contentHash: 'f'.repeat(64),
-        },
-      });
-    }
+    expect(refreshed.routes.find((route) => route.target.siteId === 'docs')).toMatchObject({
+      target: {
+        siteId: 'docs',
+        versionId: 'sha256-user-published',
+        manifestKey: 'sites/workspace_internal/docs/sha256-user-published/index.html',
+        contentHash: 'f'.repeat(64),
+      },
+    });
+    expect(refreshed.routes.find((route) => route.pathPrefix === '/artifacts')).toMatchObject({
+      auth: 'workspace-session',
+      target: {
+        kind: 'consuelo-gateway-service',
+        serviceName: 'artifacts-sites-read-layer',
+      },
+    });
+    expect(refreshed.routes.some((route) => route.target.siteId === 'artifacts')).toBe(false);
     db.close();
   });
 

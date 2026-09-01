@@ -1,0 +1,20 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/close-release-tool-review-findings",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2225,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2225",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2225",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2225/close-release-tool-review-findings",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2225",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2225/close-release-tool-review-findings",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-close-release-tool-review-findings",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_3bc12bc4ade0",
+  "tmuxSession": "opensaas-os-close-release-tool-review-findings-3bc12bc4",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-close-release-tool-review-findings/.task/os/close-release-tool-review-findings/session.json",
+  "createdAt": "2026-08-26T18:00:51.901Z"
+}

@@ -391,6 +391,79 @@ describe('Consuelo OS release channels', () => {
     }, { now: NOW, signer: dev.signer })).toThrow('illegal channel transition: dev -> beta');
   });
 
+  it('can promote an exact verified bundle from source-channel history after the source pointer advances', () => {
+    const first = publish(createEmptyReleaseState());
+    const second = publish(first.state, {
+      version: '1.2.4',
+      releaseFingerprint: NEXT_FINGERPRINT,
+      sourceCommit: 'fedcba9876543210fedcba9876543210fedcba98',
+      now: '2026-07-24T00:00:00.000Z',
+    });
+
+    const promoted = promoteReleaseChannel(second.state, {
+      bundleId: first.input.bundleId,
+      from: 'dev',
+      to: 'canary',
+    }, { now: '2026-07-24T01:00:00.000Z', signer: second.signer });
+
+    expect(promoted.state.channels.canary?.payload).toMatchObject({
+      bundleId: first.input.bundleId,
+      sourceChannel: 'dev',
+      version: '1.2.3',
+    });
+    expect(promoted.state.audit.at(-1)).toMatchObject({
+      action: 'promote',
+      bundleId: first.input.bundleId,
+      fromChannel: 'dev',
+    });
+  });
+
+  it('never turns historical-source promotion into an implicit rollback of the target channel', () => {
+    const first = publish(createEmptyReleaseState());
+    const firstCanary = promoteReleaseChannel(first.state, {
+      bundleId: first.input.bundleId,
+      from: 'dev',
+      to: 'canary',
+    }, { now: NOW, signer: first.signer });
+    const second = publish(firstCanary.state, {
+      version: '1.2.4',
+      releaseFingerprint: NEXT_FINGERPRINT,
+      sourceCommit: 'fedcba9876543210fedcba9876543210fedcba98',
+      now: '2026-07-24T00:00:00.000Z',
+    });
+    const secondCanary = promoteReleaseChannel(second.state, {
+      bundleId: second.input.bundleId,
+      from: 'dev',
+      to: 'canary',
+    }, { now: '2026-07-24T00:10:00.000Z', signer: second.signer });
+
+    expect(() => promoteReleaseChannel(secondCanary.state, {
+      bundleId: first.input.bundleId,
+      from: 'dev',
+      to: 'canary',
+    }, { now: '2026-07-24T01:00:00.000Z', signer: second.signer })).toThrow(
+      'promotion would move canary backwards from 1.2.4 to 1.2.3; use rollback for an intentional downgrade',
+    );
+  });
+
+  it('rejects a historical-source promotion when the exact bundle never occupied that source channel', () => {
+    const first = publish(createEmptyReleaseState());
+    const unrelatedBundle = `sha256:${'9'.repeat(64)}`;
+    const tampered = structuredClone(first.state);
+    tampered.releases[unrelatedBundle] = {
+      ...tampered.releases[first.input.bundleId],
+      bundleId: unrelatedBundle,
+    };
+
+    expect(() => promoteReleaseChannel(tampered, {
+      bundleId: unrelatedBundle,
+      from: 'dev',
+      to: 'canary',
+    }, { now: '2026-07-24T01:00:00.000Z', signer: first.signer })).toThrow(
+      'verified immutable release does not exist in source channel dev history',
+    );
+  });
+
   it('requires explicit stable approval and a manual stable deployment environment', () => {
     const dev = publish(createEmptyReleaseState());
     const canary = promoteReleaseChannel(dev.state, {

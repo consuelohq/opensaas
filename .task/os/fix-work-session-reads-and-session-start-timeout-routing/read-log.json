@@ -1,0 +1,18 @@
+{
+  "files": [
+    "packages/os/package.json",
+    "packages/os/scripts/lib/facade/executor.ts",
+    "packages/os/scripts/lib/facade/schemas.ts",
+    "packages/os/scripts/lib/facade/types.ts",
+    "packages/os/scripts/server/routes/mcp.ts",
+    "packages/os/scripts/server/services/call-service.ts",
+    "packages/os/tests/code-call.test.ts",
+    "packages/os/tests/facade/facade.test.ts",
+    "packages/os/tests/fs-search.test.ts",
+    "packages/os/tests/mcp-gateway.test.ts",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/test-selection.test.js",
+    "session-note.txt"
+  ],
+  "updatedAt": "2026-08-29T00:21:32.741Z"
+}

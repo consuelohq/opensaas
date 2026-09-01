@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_6c06e553146d",
+  "tmuxSession": "opensaas-explore-fix-explore-gateway-identity-and-runtime-routing-6c06e553",
+  "area": "explore",
+  "stream": "stream/explore",
+  "taskBranch": "task/explore/fix-explore-gateway-identity-and-runtime-routing",
+  "branch": "task/explore/fix-explore-gateway-identity-and-runtime-routing",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-explore-fix-explore-gateway-identity-and-runtime-routing",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-explore-fix-explore-gateway-identity-and-runtime-routing",
+  "prNumber": 2076,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2076",
+  "createdAt": "2026-08-15T18:30:34.133Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-explore-fix-explore-gateway-identity-and-runtime-routing/.task/explore/fix-explore-gateway-identity-and-runtime-routing/session.json"
+}

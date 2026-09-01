@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_7db22800f728",
+  "tmuxSession": "opensaas-workspace-agents-neutral-github-auth-handoff-before-external-sign-7db22800",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/neutral-github-auth-handoff-before-external-sign-in",
+  "branch": "task/workspace-agents/neutral-github-auth-handoff-before-external-sign-in",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-neutral-github-auth-handoff-before-external-sign-in",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-neutral-github-auth-handoff-before-external-sign-in",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2232,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2232",
+  "createdAt": "2026-08-26T22:04:02.878Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-neutral-github-auth-handoff-before-external-sign-in/.task/workspace-agents/neutral-github-auth-handoff-before-external-sign-in/session.json"
+}

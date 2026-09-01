@@ -41,8 +41,17 @@ export type WorkspaceNodeHeartbeatResult = {
   workspace?: WorkspaceNodeSnapshot;
 };
 
+export type WorkspaceNodeHeartbeatRuntimeStatus = {
+  osVersion?: string;
+  bundleId?: string;
+  mcpProtocolVersion?: string;
+  mcpReady?: boolean;
+};
+
 export type WorkspaceNodeHeartbeatClient = {
-  send: () => Promise<WorkspaceNodeHeartbeatResult>;
+  send: (
+    runtimeStatus?: WorkspaceNodeHeartbeatRuntimeStatus,
+  ) => Promise<WorkspaceNodeHeartbeatResult>;
 };
 
 const KNOWN_AGENT_NAMES = new Set<AgentName>([
@@ -76,6 +85,41 @@ function requiredString(value: string, label: string): string {
   if (!normalized)
     throw new Error(`workspace node heartbeat ${label} is required`);
   return normalized;
+}
+
+function optionalBoundedString(
+  value: string | undefined,
+  label: string,
+  maximumLength: number,
+): string | undefined {
+  if (value === undefined) return undefined;
+  const normalized = value.trim();
+  if (!normalized || normalized.length > maximumLength) {
+    throw new Error(`workspace node heartbeat ${label} is invalid`);
+  }
+  return normalized;
+}
+
+function normalizeRuntimeStatus(
+  status: WorkspaceNodeHeartbeatRuntimeStatus | undefined,
+): WorkspaceNodeHeartbeatRuntimeStatus {
+  if (!status) return {};
+  if (status.mcpReady !== undefined && typeof status.mcpReady !== 'boolean') {
+    throw new Error('workspace node heartbeat MCP readiness must be boolean');
+  }
+  const osVersion = optionalBoundedString(status.osVersion, 'OS version', 80);
+  const bundleId = optionalBoundedString(status.bundleId, 'bundle ID', 160);
+  const mcpProtocolVersion = optionalBoundedString(
+    status.mcpProtocolVersion,
+    'MCP protocol version',
+    80,
+  );
+  return {
+    ...(osVersion ? { osVersion } : {}),
+    ...(bundleId ? { bundleId } : {}),
+    ...(mcpProtocolVersion ? { mcpProtocolVersion } : {}),
+    ...(status.mcpReady === undefined ? {} : { mcpReady: status.mcpReady }),
+  };
 }
 
 function normalizeAuthorityOrigin(value: string): string {
@@ -188,19 +232,25 @@ export function createWorkspaceNodeHeartbeatClient(input: {
   };
 
   return {
-    async send(): Promise<WorkspaceNodeHeartbeatResult> {
+    async send(
+      runtimeStatus?: WorkspaceNodeHeartbeatRuntimeStatus,
+    ): Promise<WorkspaceNodeHeartbeatResult> {
+      const normalizedRuntimeStatus = normalizeRuntimeStatus(runtimeStatus);
       const payload = JSON.stringify({
         workspaceId: config.workspaceId,
         nodeId: config.nodeId,
         timestamp: now(),
         nonce: requiredString(createNonce(), 'nonce'),
         connectorStatus: config.connectorStatus,
+        platform: process.platform,
+        architecture: process.arch,
         capabilities: config.capabilities,
         // Inside the signed payload, so the authority can trust the key it is asked to publish.
         ...(config.encryptionPublicKeyJwk
           ? { encryptionPublicKeyJwk: config.encryptionPublicKeyJwk }
           : {}),
         ...(agents === undefined ? {} : { agents }),
+        ...normalizedRuntimeStatus,
       });
       const signature = createDevicePublicKeyProof({ deviceKeyPair, payload });
       let response: Response;

@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/resolve-final-managed-cloud-review-findings",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2288,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2288",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-resolve-final-managed-cloud-review-findings",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_8be165496bcf",
+  "tmuxSession": "opensaas-os-resolve-final-managed-cloud-review-findings-8be16549",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-resolve-final-managed-cloud-review-findings/.task/session.json",
+  "createdAt": "2026-08-29T06:15:07.384Z"
+}

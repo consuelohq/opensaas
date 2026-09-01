@@ -26,6 +26,11 @@ export const toolHandlers = [
           flag: '--channel',
           kind: 'value',
         },
+        {
+          source: 'version',
+          flag: '--version',
+          kind: 'value',
+        },
       ],
     },
   },

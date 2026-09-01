@@ -1,0 +1,327 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/dialer/implement-queue-first-leadconnector-dialer-experience",
+  "base": "origin/stream/dialer",
+  "headSha": "7cd57b3b1c07df3603f355183c22407bfccb2485",
+  "changeHash": "be1404fd2928c39594466c89695f5e74a1aa40d52cf7b3de89dd23b21f78377a",
+  "changedFiles": [
+    "packages/dialer-server/src/contracts.ts",
+    "packages/dialer-server/src/embed-bootstrap.contract.test.ts",
+    "packages/dialer-server/src/embed-boundary.test.ts",
+    "packages/dialer-server/src/lead-connector-application.ts",
+    "packages/dialer-server/src/lead-connector-boundary.test.ts",
+    "packages/dialer-server/src/lifecycle.integration.test.ts",
+    "packages/dialer-server/src/routes/lead-connector.ts",
+    "packages/dialer-server/src/runtime/railway.ts",
+    "packages/dialer/src/application/adapter-application.spec.ts",
+    "packages/dialer/src/application/start-dialer-call.ts",
+    "packages/dialer/src/ports/dialer-call-start.ts",
+    "packages/lead-connector/src/application.contract.test.ts",
+    "packages/lead-connector/src/application/resources.ts",
+    "packages/lead-connector/src/contracts/index.ts",
+    "packages/lead-connector/src/embed/api-client.ts",
+    "packages/lead-connector/src/embed/controller.test.ts",
+    "packages/lead-connector/src/embed/controller.ts",
+    "packages/lead-connector/src/embed/main.ts",
+    "packages/lead-connector/src/embed/public/consuelo-lead-connector-click-to-call.css",
+    "packages/lead-connector/src/embed/state-machine.test.ts",
+    "packages/lead-connector/src/embed/state-machine.ts",
+    "packages/lead-connector/src/embed/styles.css",
+    "packages/lead-connector/src/embed/view.test.ts",
+    "packages/lead-connector/src/embed/view.ts",
+    "packages/lead-connector/src/index.ts"
+  ],
+  "verifiedAt": "2026-08-04T22:57:29.182Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/dialer/implement-queue-first-leadconnector-dialer-experience/current.json",
+        ".task/dialer/implement-queue-first-leadconnector-dialer-experience/evidence-log.json",
+        ".task/dialer/implement-queue-first-leadconnector-dialer-experience/read-log.json",
+        ".task/dialer/implement-queue-first-leadconnector-dialer-experience/session.json",
+        ".task/dialer/implement-queue-first-leadconnector-dialer-experience/workpad.md",
+        ".task/tasks/dialer/implement-queue-first-leadconnector-dialer-experience.json",
+        "packages/dialer-server/src/contracts.ts",
+        "packages/dialer-server/src/embed-bootstrap.contract.test.ts",
+        "packages/dialer-server/src/embed-boundary.test.ts",
+        "packages/dialer-server/src/lead-connector-application.ts",
+        "packages/dialer-server/src/lead-connector-boundary.test.ts",
+        "packages/dialer-server/src/lifecycle.integration.test.ts",
+        "packages/dialer-server/src/routes/lead-connector.ts",
+        "packages/dialer-server/src/runtime/railway.ts",
+        "packages/dialer/src/application/adapter-application.spec.ts",
+        "packages/dialer/src/application/start-dialer-call.ts",
+        "packages/dialer/src/ports/dialer-call-start.ts",
+        "packages/lead-connector/src/application.contract.test.ts",
+        "packages/lead-connector/src/application/resources.ts",
+        "packages/lead-connector/src/contracts/index.ts",
+        "packages/lead-connector/src/embed/api-client.ts",
+        "packages/lead-connector/src/embed/controller.test.ts",
+        "packages/lead-connector/src/embed/controller.ts",
+        "packages/lead-connector/src/embed/main.ts",
+        "packages/lead-connector/src/embed/public/consuelo-lead-connector-click-to-call.css",
+        "packages/lead-connector/src/embed/state-machine.test.ts",
+        "packages/lead-connector/src/embed/state-machine.ts",
+        "packages/lead-connector/src/embed/styles.css",
+        "packages/lead-connector/src/embed/view.test.ts",
+        "packages/lead-connector/src/embed/view.ts",
+        "packages/lead-connector/src/index.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "dialer-package",
+          "critical": true,
+          "reason": "Dialer changes are call-path critical and must run package specs.",
+          "matchedFiles": [
+            "packages/dialer/src/application/adapter-application.spec.ts",
+            "packages/dialer/src/application/start-dialer-call.ts",
+            "packages/dialer/src/ports/dialer-call-start.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "dialer-server-package",
+          "critical": true,
+          "reason": "Dialer server changes must prove Hono transport, Twilio boundary, and standalone lifecycle contracts.",
+          "matchedFiles": [
+            "packages/dialer-server/src/contracts.ts",
+            "packages/dialer-server/src/embed-bootstrap.contract.test.ts",
+            "packages/dialer-server/src/embed-boundary.test.ts",
+            "packages/dialer-server/src/lead-connector-application.ts",
+            "packages/dialer-server/src/lead-connector-boundary.test.ts",
+            "packages/dialer-server/src/lifecycle.integration.test.ts",
+            "packages/dialer-server/src/routes/lead-connector.ts",
+            "packages/dialer-server/src/runtime/railway.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "lead-connector-package",
+          "critical": true,
+          "reason": "LeadConnector provider changes must prove OAuth, token, resource, webhook, architecture, and branding contracts.",
+          "matchedFiles": [
+            "packages/lead-connector/src/application.contract.test.ts",
+            "packages/lead-connector/src/application/resources.ts",
+            "packages/lead-connector/src/contracts/index.ts",
+            "packages/lead-connector/src/embed/api-client.ts",
+            "packages/lead-connector/src/embed/controller.test.ts",
+            "packages/lead-connector/src/embed/controller.ts",
+            "packages/lead-connector/src/embed/main.ts",
+            "packages/lead-connector/src/embed/public/consuelo-lead-connector-click-to-call.css",
+            "packages/lead-connector/src/embed/state-machine.test.ts",
+            "packages/lead-connector/src/embed/state-machine.ts",
+            "packages/lead-connector/src/embed/styles.css",
+            "packages/lead-connector/src/embed/view.test.ts",
+            "packages/lead-connector/src/embed/view.ts",
+            "packages/lead-connector/src/index.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "auto:@consuelo/dialer-server:package-test",
+          "critical": false,
+          "reason": "Auto-discovered package test script for packages/dialer-server.",
+          "matchedFiles": [
+            "packages/dialer-server/src/contracts.ts",
+            "packages/dialer-server/src/embed-bootstrap.contract.test.ts",
+            "packages/dialer-server/src/embed-boundary.test.ts",
+            "packages/dialer-server/src/lead-connector-application.ts",
+            "packages/dialer-server/src/lead-connector-boundary.test.ts",
+            "packages/dialer-server/src/lifecycle.integration.test.ts",
+            "packages/dialer-server/src/routes/lead-connector.ts",
+            "packages/dialer-server/src/runtime/railway.ts"
+          ],
+          "origin": "auto"
+        },
+        {
+          "id": "auto:@consuelo/lead-connector:package-test",
+          "critical": false,
+          "reason": "Auto-discovered package test script for packages/lead-connector.",
+          "matchedFiles": [
+            "packages/lead-connector/src/application.contract.test.ts",
+            "packages/lead-connector/src/application/resources.ts",
+            "packages/lead-connector/src/contracts/index.ts",
+            "packages/lead-connector/src/embed/api-client.ts",
+            "packages/lead-connector/src/embed/controller.test.ts",
+            "packages/lead-connector/src/embed/controller.ts",
+            "packages/lead-connector/src/embed/main.ts",
+            "packages/lead-connector/src/embed/public/consuelo-lead-connector-click-to-call.css",
+            "packages/lead-connector/src/embed/state-machine.test.ts",
+            "packages/lead-connector/src/embed/state-machine.ts",
+            "packages/lead-connector/src/embed/styles.css",
+            "packages/lead-connector/src/embed/view.test.ts",
+            "packages/lead-connector/src/embed/view.ts",
+            "packages/lead-connector/src/index.ts"
+          ],
+          "origin": "auto"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "dialer specs",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer/src"
+          ],
+          "ruleId": "dialer-package",
+          "critical": true
+        },
+        {
+          "name": "dialer-server Hono contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-server/src"
+          ],
+          "ruleId": "dialer-server-package",
+          "critical": true
+        },
+        {
+          "name": "LeadConnector provider contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/lead-connector/src"
+          ],
+          "ruleId": "lead-connector-package",
+          "critical": true
+        },
+        {
+          "name": "@consuelo/dialer-server package test",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/dialer-server",
+            "run",
+            "test"
+          ],
+          "ruleId": "auto:@consuelo/dialer-server:package-test",
+          "critical": false
+        },
+        {
+          "name": "@consuelo/lead-connector package test",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/lead-connector",
+            "run",
+            "test"
+          ],
+          "ruleId": "auto:@consuelo/lead-connector:package-test",
+          "critical": false
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "dialer specs",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer/src"
+          ],
+          "ruleId": "dialer-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1441,
+          "outputTail": "> explicit profile selection > should use explicit profileId when provided and bypass sampling [0.16ms]\n(pass) ParallelStrategyResolver > thompson sampling > should deterministically pick aggressive when it samples highest [0.10ms]\n(pass) ParallelStrategyResolver > thompson sampling > should use informed default priors on cold start when no posteriors are returned [0.06ms]\n(pass) ParallelStrategyResolver > thompson sampling > should merge loaded posterior values instead of using defaults [0.05ms]\n(pass) ParallelStrategyResolver > thompson sampling > should sample all profiles exactly once when no explicit profileId is set [0.04ms]\n(pass) ParallelStrategyResolver > fallback behavior > should fallback to balanced when posterior loading fails without throwing [2.66ms]\n(pass) ParallelStrategyResolver > profile lookup APIs > should return profile by id [0.03ms]\n(pass) ParallelStrategyResolver > profile lookup APIs > should return all profiles [0.03ms]\n\npackages/dialer/src/services/whittle-index.spec.ts:\n(pass) WhittleIndexService > should increase index as answer rate increases [0.06ms]\n(pass) WhittleIndexService > should increase urgency bonus as callable window closes [0.02ms]\n(pass) WhittleIndexService > should increase exploration bonus when segment sample size is low [0.01ms]\n(pass) WhittleIndexService > should reduce index as cost per attempt increases [0.01ms]\n(pass) WhittleIndexService > should rank candidates by index descending and position ascending for ties [0.06ms]\n(pass) WhittleIndexService > should apply max urgency bonus when zero hours remain in window [0.01ms]\n(pass) WhittleIndexService > should produce near zero exploration bonus with very high sample size\n(pass) WhittleIndexService > should set index to negative cost when all positive components are zero\n(pass) WhittleIndexService > should allow negative index values when cost exceeds reward\n\npackages/dialer/src/services/call-timing-model.spec.ts:\n(pass) CallTimingModel > should return null when segment has insufficient sample size [0.10ms]\n(pass) CallTimingModel > should return optimal retry time when enough observations exist [0.04ms]\n\npackages/dialer/src/services/parallel-lifecycle.contract.spec.ts:\n(pass) parallel dial lifecycle contract > keeps customer legs muted without provider hold music until the agent starts the conference [0.87ms]\n(pass) parallel dial lifecycle contract > retains a callback that arrives while later legs are still being created [1.98ms]\n(pass) parallel dial lifecycle contract > keeps exactly one durable winner under simultaneous human callbacks [3.58ms]\n(pass) parallel dial lifecycle contract > claims telemetry emission exactly once under concurrent callbacks [3.22ms]\n(pass) parallel dial lifecycle contract > records failed loser cleanup and clears it after reconciliation succeeds [2.39ms]\n(pass) parallel dial lifecycle contract > does not persist a false winner-unmute failure before the participant enters [0.87ms]\n(pass) parallel dial lifecycle contract > records failed winner unmute and clears it after reconciliation succeeds [0.99ms]\n(pass) parallel dial lifecycle contract > completes the group when the selected winner hangs up [2.08ms]\n(pass) parallel dial lifecycle contract > persists workspace ownership and rejects cross-workspace access [3.56ms]\n(pass) parallel dial lifecycle contract > ignores an answered callback after the same leg is terminal [3.00ms]\n\npackages/dialer/src/infrastructure/redis/redis-parallel-store.test.ts:\n(pass) RedisParallelStore > registers calls and reverse mappings atomically and cleans the full group [0.46ms]\n(pass) RedisParallelStore > claims one winner and one telemetry emission and serializes group operations [4.79ms]\n(pass) RedisParallelStore > renews an owned group lock while a long operation is running [181.51ms]\n(pass) RedisParallelStore > deletes known group keys when the persisted group JSON is malformed [0.65ms]\n\n 172 pass\n 0 fail\n 364 expect() calls\nRan 172 tests across 16 files. [1420.00ms]\n"
+        },
+        {
+          "name": "dialer-server Hono contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-server/src"
+          ],
+          "ruleId": "dialer-server-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 390,
+          "outputTail": " Twilio webhook boundary > requires a valid provider signature before a Media Stream upgrade [0.16ms]\n\npackages/dialer-server/src/runtime/embed-session.test.ts:\n(pass) dialer-server embed sessions > issues a short-lived token that authenticates the original workspace and user [0.30ms]\n(pass) dialer-server embed sessions > rejects expired, malformed, and tampered tokens [0.10ms]\n(pass) dialer-server embed sessions > binds sessions to installation and location and revalidates them on every request [0.08ms]\n\npackages/dialer-server/src/runtime/twilio-provider-mode.test.ts:\n(pass) Twilio provider test mode > selects test credentials without exposing the live credential pair [0.04ms]\n(pass) Twilio provider test mode > requires and preserves the exact no-carrier Twilio test From number [0.06ms]\n(pass) Twilio provider test mode > passes the magic From number unchanged into the provider group request [0.05ms]\n(pass) Twilio provider test mode > does not claim carrier delivery or callbacks for test credentials [0.01ms]\n\npackages/dialer-server/src/runtime/railway.test.ts:\n(pass) LeadConnector dialer learning > records an atomic attempt and outcome for every completed carrier leg [0.14ms]\n(pass) LeadConnector dialer learning > does not fail carrier callback handling when learning persistence is unavailable [0.06ms]\n(pass) Railway dialer-server runtime composition > selects the test dialer for follow-up operations on test-mode groups [0.16ms]\n(pass) Railway dialer-server runtime composition > keeps existing groups without a provider mode on the live dialer [0.05ms]\n(pass) Railway dialer-server runtime composition > fails closed when a test-mode group outlives its test credentials [0.03ms]\n(pass) Railway dialer-server runtime composition > composes durable LeadConnector configuration and encrypted installation storage [1.61ms]\n(pass) Railway dialer-server runtime composition > ranks predictive LeadConnector targets with shared model data before fanout [2.97ms]\n(pass) Railway dialer-server runtime composition > ranks predictive targets from LeadConnector learned outcomes without Twenty model rows [0.60ms]\n(pass) Railway dialer-server runtime composition > starts a mock standalone call session without Twenty or the compatibility API [0.46ms]\n\npackages/dialer-server/src/runtime/lead-connector-learning.test.ts:\n(pass) LeadConnector learning initialization > creates the attempt ledger before the outcome model tables [1.38ms]\n\npackages/dialer-server/src/call-operations/application.test.ts:\n(pass) Effect call-operations transcription application > keeps inbound and outbound buffers separate and persists provider metadata only [1.38ms]\n(pass) Effect call-operations transcription application > processes duplicate frames once and flushes a terminal remainder once [0.22ms]\n(pass) Effect call-operations transcription application > keeps transcript rows idempotent when a provider stream reconnects [0.31ms]\n(pass) Effect call-operations transcription application > marks transcription failed on provider timeout without failing the call boundary [21.75ms]\n(pass) Effect call-operations transcription application > does not begin provider work when workspace transcription is disabled [0.10ms]\n\npackages/dialer-server/src/call-operations/persistence.test.ts:\n(pass) call-operations persistence > initializes canonical workspace settings, sessions, legs, segments, and transfer-compatible events [1.03ms]\n(pass) call-operations persistence > uses a workspace-scoped idempotent insert for transcript metadata [0.18ms]\n(pass) call-operations persistence > atomically upserts the canonical session and all provider legs [0.13ms]\n\npackages/dialer-server/src/call-operations/groq.test.ts:\n(pass) Groq speech-to-text adapter > uses the OpenAI-compatible audio endpoint and returns provider-grounded metadata [0.30ms]\n(pass) Groq speech-to-text adapter > fails closed when credentials are absent [0.10ms]\n\n 69 pass\n 0 fail\n 357 expect() calls\nRan 69 tests across 18 files. [379.00ms]\n"
+        },
+        {
+          "name": "LeadConnector provider contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/lead-connector/src"
+          ],
+          "ruleId": "lead-connector-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 632,
+          "outputTail": ".34ms]\n(pass) LeadConnector embed view > keeps transcript and coaching panels out of the compact operator overlay [0.07ms]\n(pass) LeadConnector embed view > renders transcript, disposition, opportunity snapshots, and child attempts in call detail [0.14ms]\n(pass) LeadConnector embed view > resolves root and admin to administration while reserving overlay paths for calling [0.02ms]\n(pass) LeadConnector embed view > renders the sidebar route as an operator workspace with callable CRM records [0.11ms]\n(pass) LeadConnector embed view > renders API-reported resource totals instead of capped loaded-array lengths [0.02ms]\n(pass) LeadConnector embed view > renders the mature queue-first call setup in a ready overlay [0.05ms]\n(pass) LeadConnector embed view > renders only target confirmation and next actions before a call starts [0.04ms]\n(pass) LeadConnector embed view > offers multiline dialing only after multiple targets are selected [0.02ms]\n(pass) LeadConnector embed view > renders a progressive starting state without future connected or wrap-up controls [0.02ms]\n(pass) LeadConnector embed view > focuses the human winner and summarizes losing legs while connected [0.02ms]\n(pass) LeadConnector embed view > returns a no-winner batch to the dialer without requiring a disposition [0.05ms]\n(pass) LeadConnector embed view > reveals wrap-up only after the call reaches a terminal state [0.02ms]\n\npackages/lead-connector/src/embed/click-to-call-runtime.test.ts:\n(pass) LeadConnector click-to-call runtime > anchors beside Smart Lists and relays supported Custom JS user context [26.17ms]\n(pass) LeadConnector click-to-call runtime > anchors beside the native Opportunities list control without duplication [4.55ms]\n\npackages/lead-connector/src/embed/architecture.contract.test.ts:\n(pass) LeadConnector browser architecture and branding > contains no forbidden branding or server/runtime dependencies in browser source and public assets [1.15ms]\n(pass) LeadConnector browser architecture and branding > builds a browser-only bundle without forbidden dependencies or branding [9.55ms]\n(pass) LeadConnector browser architecture and branding > targets the actual approved live or sandbox custom-page origin for click-to-call messages [0.07ms]\n(pass) LeadConnector browser architecture and branding > owns one route-aware launcher and one compact overlay iframe lifecycle [0.06ms]\n(pass) LeadConnector browser architecture and branding > authenticates the overlay through the supported Custom JS session context API [0.04ms]\n(pass) LeadConnector browser architecture and branding > anchors the launcher beside native Contacts and Opportunities controls [0.06ms]\n(pass) LeadConnector browser architecture and branding > publishes a separate wrapped Marketplace artifact while keeping the public script executable [0.32ms]\n(pass) LeadConnector browser architecture and branding > creates the iframe on demand and preserves a busy session across route changes [0.06ms]\n(pass) LeadConnector browser architecture and branding > keeps comma-separated selector literals safe for Marketplace editor persistence [0.15ms]\n(pass) LeadConnector browser architecture and branding > restarts the trusted parent bootstrap exchange when authentication is retried [0.03ms]\n\npackages/lead-connector/src/embed/agent-voice.test.ts:\n(pass) LeadConnector browser agent voice > gets microphone permission, registers the device, and resolves after the agent call is accepted [0.33ms]\n(pass) LeadConnector browser agent voice > rejects if the media call fails before acceptance and disconnects the partial leg [0.14ms]\n\npackages/lead-connector/src/deployment/custom-menu.test.ts:\n(pass) LeadConnector custom menu deployment contract > targets one sandbox location in iframe mode with microphone permission [0.05ms]\n(pass) LeadConnector custom menu deployment contract > updates an existing sandbox menu instead of creating duplicates [0.24ms]\n\n 88 pass\n 0 fail\n 750 expect() calls\nRan 88 tests across 17 files. [623.00ms]\n"
+        },
+        {
+          "name": "@consuelo/dialer-server package test",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/dialer-server",
+            "run",
+            "test"
+          ],
+          "ruleId": "auto:@consuelo/dialer-server:package-test",
+          "critical": false,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 5,
+          "outputTail": "--title=<val>                   Set the process title\n      --zero-fill-buffers             Boolean to force Buffer.allocUnsafe(size) to be zero-filled.\n      --use-system-ca                 Use the system's trusted certificate authorities\n      --use-openssl-ca                Use OpenSSL's default CA store\n      --use-bundled-ca                Use bundled CA store\n      --redis-preconnect              Preconnect to $REDIS_URL at startup\n      --sql-preconnect                Preconnect to PostgreSQL at startup\n      --no-addons                     Throw an error if process.dlopen is called, and disable export condition \"node-addons\"\n      --unhandled-rejections=<val>    One of \"strict\", \"throw\", \"warn\", \"none\", or \"warn-with-error-code\"\n      --console-depth=<val>           Set the default depth for console.log object inspection (default: 2)\n      --user-agent=<val>              Set the default User-Agent header for HTTP requests\n      --cron-title=<val>              Title for cron execution mode\n      --cron-period=<val>             Cron period for cron execution mode\n      --main-fields=<val>             Main fields to lookup in package.json. Defaults to --target dependent\n      --preserve-symlinks             Preserve symlinks when resolving files\n      --preserve-symlinks-main        Preserve symlinks when resolving the main entry point\n      --extension-order=<val>         Defaults to: .tsx,.ts,.jsx,.js,.json\n      --tsconfig-override=<val>       Specify custom tsconfig.json. Default <d>$cwd<r>/tsconfig.json\n  -d, --define=<val>                  Substitute K:V while parsing, e.g. --define process.env.NODE_ENV:\"development\". Values are parsed as JSON.\n      --drop=<val>                    Remove function calls, e.g. --drop=console removes all console.* calls.\n      --feature=<val>                 Enable a feature flag for dead-code elimination, e.g. --feature=SUPER_SECRET\n  -l, --loader=<val>                  Parse files with .ext:loader, e.g. --loader .js:jsx. Valid loaders: js, jsx, ts, tsx, json, toml, text, file, wasm, napi\n      --no-macros                     Disable macros from being executed in the bundler, transpiler and runtime\n      --jsx-factory=<val>             Changes the function called when compiling JSX elements using the classic JSX runtime\n      --jsx-fragment=<val>            Changes the function called when compiling JSX fragments\n      --jsx-import-source=<val>       Declares the module specifier to be used for importing the jsx and jsxs factory functions. Default: \"react\"\n      --jsx-runtime=<val>             \"automatic\" (default) or \"classic\"\n      --jsx-side-effects              Treat JSX elements as having side effects (disable pure annotations)\n      --ignore-dce-annotations        Ignore tree-shaking annotations such as @__PURE__\n      --env-file=<val>                Load environment variables from the specified file(s)\n      --no-env-file                   Disable automatic loading of .env files\n      --cwd=<val>                     Absolute path to resolve files & entry points from. This just changes the process' cwd.\n  -c, --config=<val>                  Specify path to Bun config file. Default <d>$cwd<r>/bunfig.toml\n  -h, --help                          Display this menu and exit\n\nExamples:\n  Run a JavaScript or TypeScript file\n  bun run ./index.js\n  bun run ./index.tsx\n\n  Run a package.json script\n  bun run dev\n  bun run lint\n\nFull documentation is available at https://bun.com/docs/cli/run\n\npackage.json scripts (7 found):\n  $ bun run test\n    bun test src\n\n  $ bun run typecheck\n    tsc --noEmit\n\n  $ bun run build\n    mkdir -p ./dist && bun build ./src/main.ts --compile --outfile ./dist/dialer-server\n\n  $ bun run start\n    ./dist/dialer-server\n\n  $ bun run validate:local-runtime\n    bun ./scripts/validate-local-runtime.ts\n\n  $ bun run validate:provider-test\n    bun ./scripts/validate-provider-test.ts\n\n  $ bun run validate:groq-transcription\n    bun ./scripts/validate-groq-transcription.ts\n\n"
+        },
+        {
+          "name": "@consuelo/lead-connector package test",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/lead-connector",
+            "run",
+            "test"
+          ],
+          "ruleId": "auto:@consuelo/lead-connector:package-test",
+          "critical": false,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 4,
+          "outputTail": "eprecation.\n      --throw-deprecation             Determine whether or not deprecation warnings result in errors.\n      --title=<val>                   Set the process title\n      --zero-fill-buffers             Boolean to force Buffer.allocUnsafe(size) to be zero-filled.\n      --use-system-ca                 Use the system's trusted certificate authorities\n      --use-openssl-ca                Use OpenSSL's default CA store\n      --use-bundled-ca                Use bundled CA store\n      --redis-preconnect              Preconnect to $REDIS_URL at startup\n      --sql-preconnect                Preconnect to PostgreSQL at startup\n      --no-addons                     Throw an error if process.dlopen is called, and disable export condition \"node-addons\"\n      --unhandled-rejections=<val>    One of \"strict\", \"throw\", \"warn\", \"none\", or \"warn-with-error-code\"\n      --console-depth=<val>           Set the default depth for console.log object inspection (default: 2)\n      --user-agent=<val>              Set the default User-Agent header for HTTP requests\n      --cron-title=<val>              Title for cron execution mode\n      --cron-period=<val>             Cron period for cron execution mode\n      --main-fields=<val>             Main fields to lookup in package.json. Defaults to --target dependent\n      --preserve-symlinks             Preserve symlinks when resolving files\n      --preserve-symlinks-main        Preserve symlinks when resolving the main entry point\n      --extension-order=<val>         Defaults to: .tsx,.ts,.jsx,.js,.json\n      --tsconfig-override=<val>       Specify custom tsconfig.json. Default <d>$cwd<r>/tsconfig.json\n  -d, --define=<val>                  Substitute K:V while parsing, e.g. --define process.env.NODE_ENV:\"development\". Values are parsed as JSON.\n      --drop=<val>                    Remove function calls, e.g. --drop=console removes all console.* calls.\n      --feature=<val>                 Enable a feature flag for dead-code elimination, e.g. --feature=SUPER_SECRET\n  -l, --loader=<val>                  Parse files with .ext:loader, e.g. --loader .js:jsx. Valid loaders: js, jsx, ts, tsx, json, toml, text, file, wasm, napi\n      --no-macros                     Disable macros from being executed in the bundler, transpiler and runtime\n      --jsx-factory=<val>             Changes the function called when compiling JSX elements using the classic JSX runtime\n      --jsx-fragment=<val>            Changes the function called when compiling JSX fragments\n      --jsx-import-source=<val>       Declares the module specifier to be used for importing the jsx and jsxs factory functions. Default: \"react\"\n      --jsx-runtime=<val>             \"automatic\" (default) or \"classic\"\n      --jsx-side-effects              Treat JSX elements as having side effects (disable pure annotations)\n      --ignore-dce-annotations        Ignore tree-shaking annotations such as @__PURE__\n      --env-file=<val>                Load environment variables from the specified file(s)\n      --no-env-file                   Disable automatic loading of .env files\n      --cwd=<val>                     Absolute path to resolve files & entry points from. This just changes the process' cwd.\n  -c, --config=<val>                  Specify path to Bun config file. Default <d>$cwd<r>/bunfig.toml\n  -h, --help                          Display this menu and exit\n\nExamples:\n  Run a JavaScript or TypeScript file\n  bun run ./index.js\n  bun run ./index.tsx\n\n  Run a package.json script\n  bun run dev\n  bun run lint\n\nFull documentation is available at https://bun.com/docs/cli/run\n\npackage.json scripts (6 found):\n  $ bun run test\n    bun test src\n\n  $ bun run typecheck\n    tsc --noEmit\n\n  $ bun run build\n    tsc && bun run build:embed\n\n  $ bun run build:embed\n    bun ./scripts/build-embed.ts\n\n  $ bun run deploy:embed\n    bun run build:embed && wrangler deploy --config wrangler.jsonc\n\n  $ bun run configure:sandbox-menu\n    bun ./scripts/configure-sandbox-menu.ts\n\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -1,0 +1,7 @@
+{
+  "files": [
+    "packages/os/cloudflare/os-device-authority/src/types.ts",
+    "packages/os/tests/os-device-authority-architecture.test.ts"
+  ],
+  "updatedAt": "2026-08-29T02:05:28.862Z"
+}

@@ -58,11 +58,9 @@ export type TraceFilterFacets = {
 
 const TOOL_LABELS: Record<string, string> = {
   'fs.apply_patch': 'fs.patch',
-  'fs.search': 'files.search',
   get_steering: 'steering',
   refresh_steering: 'steering.refresh',
   'review.run': 'review',
-  'tools.search': 'search',
 };
 
 export function isDefaultTraceTableRowVisible(row: TraceRecord): boolean {

@@ -1,6 +1,8 @@
 export type WorkspaceSurfaceId =
   | 'overview'
   | 'tracing'
+  | 'artifacts'
+  | 'diffs'
   | 'nodes'
   | 'tools'
   | 'secrets'
@@ -23,7 +25,7 @@ export type WorkspaceChromeOptions = {
 };
 
 type WorkspaceRouteGroup = 'Observe' | 'Configure' | 'Connect' | 'Guides' | null;
-type WorkspaceRouteId = WorkspaceSurfaceId | 'artifacts' | 'diffs' | 'chatgpt-connect' | 'claude-connect';
+type WorkspaceRouteId = WorkspaceSurfaceId | 'chatgpt-connect' | 'claude-connect';
 type WorkspaceRoute = {
   id: WorkspaceRouteId;
   label: string;
@@ -36,31 +38,31 @@ type WorkspaceRoute = {
 const WORKSPACE_ROUTES: WorkspaceRoute[] = [
   {
     id: 'overview',
-    label: 'Overview',
+    label: 'Home',
     href: '/configuration',
     group: null,
-    description: 'Workspace health and operating context.',
+    description: 'Workspace health and context.',
   },
   {
     id: 'tracing',
     label: 'Tracing',
     href: '/tracing',
     group: 'Observe',
-    description: 'Inspect live traces and tool execution.',
+    description: 'Inspect live tool traces.',
   },
   {
     id: 'artifacts',
     label: 'Artifacts',
     href: '/artifacts',
     group: 'Observe',
-    description: 'Browse agent work and generated outputs.',
+    description: 'Browse generated agent work.',
   },
   {
     id: 'diffs',
     label: 'Code',
     href: '/diffs',
     group: 'Observe',
-    description: 'Review code diffs and changes.',
+    description: 'Review code changes safely.',
   },
   {
     id: 'nodes',
@@ -74,21 +76,21 @@ const WORKSPACE_ROUTES: WorkspaceRoute[] = [
     label: 'Tools',
     href: '/tools',
     group: 'Configure',
-    description: 'Manage tools, skills, and workflows.',
+    description: 'Manage tools and workflows.',
   },
   {
     id: 'secrets',
     label: 'Secrets',
     href: '/secrets',
     group: 'Configure',
-    description: 'Manage credential bindings without revealing values.',
+    description: 'Manage encrypted credential bindings.',
   },
   {
     id: 'chatgpt-connect',
     label: 'ChatGPT',
     href: 'https://chatgpt.com/plugins#settings/Connectors?create-connector=true&redirectAfter=%2Fplugins',
     group: 'Connect',
-    description: 'Add Consuelo as a custom MCP connector.',
+    description: 'Connect Consuelo to ChatGPT.',
     external: true,
   },
   {
@@ -96,7 +98,7 @@ const WORKSPACE_ROUTES: WorkspaceRoute[] = [
     label: 'Claude',
     href: 'https://claude.ai/customize/connectors',
     group: 'Connect',
-    description: 'Add Consuelo as a custom MCP connector.',
+    description: 'Connect Consuelo to Claude.',
     external: true,
   },
   {
@@ -104,7 +106,7 @@ const WORKSPACE_ROUTES: WorkspaceRoute[] = [
     label: 'Documentation',
     href: 'https://docs.consuelohq.com/',
     group: 'Guides',
-    description: 'Guides, setup, and operating references.',
+    description: 'Read setup and guides.',
     external: true,
   },
 ];
@@ -124,15 +126,16 @@ function resolveCustomRouteHref(href: string): {
   href: string;
   external: boolean;
   description: string;
+  privateRoute?: { targetHost: string; returnTo: string };
 } {
   if (href.startsWith('/')) {
     if (href.startsWith('//') || href.includes('\\')) {
-      return { href: '#', external: false, description: 'Unavailable shortcut.' };
+      return { href: '#', external: false, description: 'Shortcut is unavailable.' };
     }
     return {
       href,
       external: false,
-      description: 'Workspace shortcut.',
+      description: 'Open workspace shortcut.',
     };
   }
 
@@ -140,10 +143,10 @@ function resolveCustomRouteHref(href: string): {
   try {
     url = new URL(href);
   } catch {
-    return { href: '#', external: false, description: 'Unavailable shortcut.' };
+    return { href: '#', external: false, description: 'Shortcut is unavailable.' };
   }
   if (url.protocol !== 'https:' || url.username !== '' || url.password !== '') {
-    return { href: '#', external: false, description: 'Unavailable shortcut.' };
+    return { href: '#', external: false, description: 'Shortcut is unavailable.' };
   }
   if (
     url.hostname === PRIVATE_INTERNAL_SITE_HOST &&
@@ -157,14 +160,15 @@ function resolveCustomRouteHref(href: string): {
     return {
       href: `/auth/handoff/start?${query.toString()}`,
       external: false,
-      description: 'Private Consuelo Site.',
+      description: 'Open private admin site.',
+      privateRoute: { targetHost: PRIVATE_INTERNAL_SITE_HOST, returnTo: returnPath },
     };
   }
 
   return {
     href,
     external: true,
-    description: 'Workspace shortcut.',
+    description: 'Open workspace shortcut.',
   };
 }
 
@@ -180,7 +184,7 @@ function renderRouteOption(
       ? 'workspace-route-option workspace-route-card'
       : 'workspace-route-option';
   const external = route.external ? ' target="_blank" rel="noopener noreferrer"' : '';
-  return `<a class="${className}" role="menuitem"${current}${external} href="${escapeHtml(route.href)}"><span>${escapeHtml(route.label)}</span><small>${escapeHtml(route.description)}</small></a>`;
+  return `<a class="${className}" role="menuitem"${current}${external} href="${escapeHtml(route.href)}"><span>${escapeHtml(route.label)}</span></a>`;
 }
 
 function renderRouteGroup(
@@ -200,7 +204,10 @@ function renderCustomRouteGroup(section: WorkspaceChromeSection): string {
     const external = resolved.external
       ? ' target="_blank" rel="noopener noreferrer"'
       : '';
-    return `<a class="workspace-route-option" role="menuitem"${external} href="${escapeHtml(resolved.href)}"><span>${escapeHtml(link.label)}</span><small>${escapeHtml(resolved.description)}</small></a>`;
+    const privateRoute = resolved.privateRoute
+      ? ` data-private-route-host="${escapeHtml(resolved.privateRoute.targetHost)}" data-private-route-return-to="${escapeHtml(resolved.privateRoute.returnTo)}"`
+      : '';
+    return `<a class="workspace-route-option" role="menuitem"${external}${privateRoute} href="${escapeHtml(resolved.href)}"><span>${escapeHtml(link.label)}</span></a>`;
   }).join('');
   return `<section class="workspace-route-group" data-custom-route-group="${escapeHtml(section.id)}"><p>${escapeHtml(section.label)}</p>${links}</section>`;
 }
@@ -214,10 +221,10 @@ export function renderWorkspaceChromeBar(
   const menuShortcut = traceCompat ? '' : ' data-workspace-menu-shortcut';
   const fullscreenControl = traceCompat ? '' : ' data-workspace-fullscreen';
   const overviewRoute = WORKSPACE_ROUTES.find((route) => route.id === 'overview');
-  if (!overviewRoute) throw new Error('Workspace Overview route is required.');
+  if (!overviewRoute) throw new Error('Workspace Home route is required.');
   return `<div class="trxChrome" data-workspace-chrome>
     <div class="trxDots" aria-label="Window controls">
-      <button class="trxDot red" type="button" data-window-control="close" data-close-traces data-workspace-home aria-label="Go to Overview"></button>
+      <button class="trxDot red" type="button" data-window-control="close" data-close-traces data-workspace-home aria-label="Go to Home"></button>
       <button class="trxDot yellow" type="button" data-window-control="sidebar"${menuShortcut} aria-label="${traceCompat ? 'Toggle trace sidebar' : 'Open workspace routes'}"></button>
       <button class="trxDot green" type="button" data-window-control="fullscreen"${fullscreenControl} aria-label="Toggle fullscreen"></button>
     </div>
@@ -228,8 +235,8 @@ export function renderWorkspaceChromeBar(
       <div id="workspace-route-menu" class="workspace-route-menu" data-workspace-route-menu role="menu" aria-label="Workspace routes" hidden>
         <div class="workspace-route-primary-slot">${renderRouteOption(overviewRoute, active, true)}</div>
         ${renderRouteGroup('Observe', active)}
-        ${renderRouteGroup('Configure', active)}
         ${(options.extraSections ?? []).map(renderCustomRouteGroup).join('\n        ')}
+        ${renderRouteGroup('Configure', active)}
         ${renderRouteGroup('Connect', active)}
         ${renderRouteGroup('Guides', active)}
       </div>
@@ -309,26 +316,44 @@ export function workspaceRouteSwitcherStyles(): string {
     .workspace-route-trigger:hover, .workspace-route-trigger[aria-expanded="true"] { background: var(--workspace-menu-hover); }
     .workspace-route-trigger:focus-visible { outline: none; background: var(--workspace-menu-current); color: var(--workspace-menu-accent); box-shadow: inset 0 -2px 0 var(--workspace-menu-accent); }
     .workspace-route-chevron { font-size: 12px; transform: translateY(-1px); }
-    .workspace-route-menu { position: absolute; top: calc(100% + 10px); left: 50%; transform: translateX(-50%); width: min(360px, calc(100vw - 28px)); max-height: min(540px, calc(100vh - 72px)); overflow: auto; padding: 8px; border: 1px solid var(--workspace-menu-border); border-radius: 13px; background: var(--workspace-menu-bg); color: var(--workspace-menu-ink); box-shadow: var(--workspace-menu-shadow); backdrop-filter: blur(18px); text-align: left; }
-    .workspace-route-primary-slot { padding-bottom: 8px; margin-bottom: 8px; border-bottom: 1px solid var(--workspace-menu-rule); }
-    .workspace-route-primary { grid-template-columns: 78px minmax(0, 1fr); }
-    .workspace-route-group { display: grid; gap: 2px; }
-    .workspace-route-group + .workspace-route-group { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--workspace-menu-rule); }
-    .workspace-route-group > p { margin: 4px 8px 5px; color: var(--workspace-menu-muted); font: 10px/1 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .11em; text-transform: uppercase; }
-    .workspace-route-option { display: grid; grid-template-columns: 78px minmax(0, 1fr); gap: 12px; align-items: baseline; padding: 9px 8px; border-radius: 8px; color: var(--workspace-menu-ink); text-decoration: none; }
+    .workspace-route-menu { position: absolute; top: calc(100% + 10px); left: 50%; transform: translateX(-50%); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px 18px; width: min(780px, calc(100vw - 28px)); max-width: calc(100vw - 28px); overflow: visible; padding: 12px; border: 1px solid var(--workspace-menu-border); border-radius: 13px; background: var(--workspace-menu-bg); color: var(--workspace-menu-ink); box-shadow: var(--workspace-menu-shadow); backdrop-filter: blur(18px); text-align: left; }
+    .workspace-route-menu[hidden] { display: none !important; }
+    .workspace-route-primary-slot { grid-column: 1 / -1; padding-bottom: 0; border-bottom: 0; }
+    .workspace-route-primary { grid-template-columns: 1fr; }
+    .workspace-route-group { min-width: 0; display: grid; align-content: start; gap: 1px; padding-top: 0; border-top: 0; }
+    .workspace-route-group + .workspace-route-group { margin-top: 0; }
+    .workspace-route-group > p { margin: 2px 7px 4px; color: var(--workspace-menu-muted); font: 10px/1 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .11em; text-transform: uppercase; }
+    .workspace-route-option { min-width: 0; display: grid; grid-template-columns: 1fr; gap: 0; align-items: baseline; padding: 7px; border-radius: 8px; color: var(--workspace-menu-ink); text-decoration: none; }
     .workspace-route-option:hover, .workspace-route-option:focus-visible { background: var(--workspace-menu-hover); color: var(--workspace-menu-ink); outline: none; }
     .workspace-route-option[aria-current="page"] { color: var(--workspace-menu-accent); background: var(--workspace-menu-current); }
     .workspace-route-option span { min-width: 0; overflow-wrap: anywhere; font: 13px/1.25 Georgia, "Times New Roman", serif; }
-    .workspace-route-option small { color: var(--workspace-menu-muted); font: 10px/1.35 ui-monospace, SFMono-Regular, Menlo, monospace; }
     .workspace-route-group[data-route-group="Connect"] { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
     .workspace-route-group[data-route-group="Connect"] > p { grid-column: 1 / -1; }
-    .workspace-route-card { grid-template-columns: 1fr; gap: 5px; align-content: start; min-height: 72px; border: 1px solid var(--workspace-menu-rule); padding: 10px; }
+    .workspace-route-card { grid-template-columns: 1fr; gap: 0; align-content: start; min-height: 0; border: 0; padding: 7px; }
     .workspace-route-card span { font-size: 15px; }
-    @media (max-width: 560px) {
-      .workspace-route-menu { position: fixed; top: 52px; left: 50vw; right: auto; transform: translateX(-50%); width: min(360px, calc(100vw - 24px)); max-height: calc(100dvh - 64px); }
+    @media (min-width: 1600px) {
+      .workspace-route-menu { width: min(1040px, calc(100vw - 48px)); }
+    }
+    @media (max-height: 760px) and (min-width: 701px) {
+      .workspace-route-menu { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px 6px; padding: 5px; zoom: .86; }
+      .workspace-route-primary-slot { padding-bottom: 4px; }
+      .workspace-route-group { padding-top: 4px; }
+      .workspace-route-group > p { margin: 1px 5px 2px; font-size: 9px; }
+      .workspace-route-option { grid-template-columns: 1fr; gap: 0; padding: 4px 5px; }
+      .workspace-route-option span { font-size: 11px; }
+      .workspace-route-group[data-route-group="Connect"] { grid-template-columns: 1fr; gap: 2px; }
+      .workspace-route-card { min-height: 0; padding: 4px; }
+    }
+    @media (max-width: 700px) {
+      .workspace-route-menu { position: fixed; top: 52px; left: 50vw; right: auto; transform: translateX(-50%); grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px 7px; width: calc(100vw - 24px); max-width: 520px; overflow: visible; padding: 6px; }
       .workspace-route-trigger { max-width: min(170px, calc(100vw - 150px)); }
-      .workspace-route-option { grid-template-columns: minmax(78px, 96px) minmax(0, 1fr); }
+      .workspace-route-primary { grid-template-columns: 1fr; }
+      .workspace-route-group { padding-top: 5px; }
+      .workspace-route-group > p { margin: 1px 5px 3px; font-size: 9px; }
+      .workspace-route-option { grid-template-columns: 1fr; gap: 2px; padding: 5px; }
       .workspace-route-option span { font-size: clamp(11px, 3.2vw, 13px); }
+      .workspace-route-group[data-route-group="Connect"] { grid-template-columns: 1fr; gap: 3px; }
+      .workspace-route-card { min-height: 0; padding: 5px; }
     }
   `;
 }
@@ -432,6 +457,24 @@ export function workspaceChromeClientScript(): string {
       menu?.addEventListener('pointerover', warmIntent);
       menu?.addEventListener('focusin', warmIntent);
       menu?.addEventListener('touchstart', warmIntent, { passive: true });
+      menu?.addEventListener('click', (event) => {
+        if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+        const target = event.target instanceof Element ? event.target.closest('[data-private-route-host]') : null;
+        if (!(target instanceof HTMLAnchorElement)) return;
+        const targetHost = String(target.dataset.privateRouteHost || '').trim().toLowerCase();
+        const returnTo = String(target.dataset.privateRouteReturnTo || '').trim();
+        if (
+          targetHost &&
+          window.location.hostname.toLowerCase() === targetHost &&
+          returnTo.startsWith('/') &&
+          !returnTo.startsWith('//') &&
+          !returnTo.includes('\\')
+        ) {
+          event.preventDefault();
+          setMenuOpen(false);
+          window.location.assign(returnTo);
+        }
+      });
       shortcut?.addEventListener('click', (event) => {
         event.preventDefault();
         event.stopPropagation();

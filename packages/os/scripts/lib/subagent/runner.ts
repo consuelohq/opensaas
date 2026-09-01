@@ -5,6 +5,7 @@ import path from 'node:path';
 import {
   preserveFirstTerminationOutcome,
   providerExitCodeForOutcome,
+  providerOutcomeForClose,
   scheduleProviderProcessEscalation,
   signalProviderProcess,
 } from './process-termination.ts';
@@ -32,6 +33,7 @@ const launch = JSON.parse(fs.readFileSync(path.join(runDirectory, 'launch.json')
 let provider: ProviderChild | undefined;
 let finished = false;
 let requestedOutcome: 'timed_out' | 'cancelled' | undefined;
+let setupFailureMessage: string | undefined;
 let timeoutTimer: ReturnType<typeof setTimeout> | undefined;
 let cancelTimer: ReturnType<typeof setInterval> | undefined;
 let heartbeatTimer: ReturnType<typeof setInterval> | undefined;
@@ -99,7 +101,7 @@ try {
     provider = spawn(launch.command[0], launch.command.slice(1), {
       cwd: launch.cwd,
       env: process.env,
-      detached: true,
+      detached: process.platform !== 'win32',
       stdio: ['pipe', stdoutFd, stderrFd],
     }) as ProviderChild;
     writeMarker(launch.ownerMarkerPath, {
@@ -129,25 +131,56 @@ try {
       if (cancellationRequested()) terminate('cancelled');
     }, 25);
     provider.on('error', (error: unknown) => finish(
-      requestedOutcome ?? 'failed',
+      providerOutcomeForClose(requestedOutcome, setupFailureMessage, null),
       1,
       null,
-      error instanceof Error ? error.message : String(error),
+      setupFailureMessage ?? (error instanceof Error ? error.message : String(error)),
     ));
     provider.on('close', (exitCode, signal) => finish(
-      requestedOutcome ?? (exitCode === 0 ? 'completed' : 'failed'),
-      providerExitCodeForOutcome(requestedOutcome, exitCode),
+      providerOutcomeForClose(requestedOutcome, setupFailureMessage, exitCode),
+      setupFailureMessage ? 1 : providerExitCodeForOutcome(requestedOutcome, exitCode),
       signal,
+      setupFailureMessage,
     ));
     provider.stdin?.end(fs.readFileSync(launch.stdinPath));
-  } finally {
-    fs.closeSync(stdoutFd);
-    fs.closeSync(stderrFd);
+    const closeLogFds = () => {
+      try { fs.closeSync(stdoutFd); } catch {}
+      try { fs.closeSync(stderrFd); } catch {}
+    };
+    provider.once('close', closeLogFds);
+    provider.once('error', closeLogFds);
+  } catch (setupError: unknown) {
+    try { fs.closeSync(stdoutFd); } catch {}
+    try { fs.closeSync(stderrFd); } catch {}
+    throw setupError;
   }
 } catch (error: unknown) {
+  const message = error instanceof Error ? error.message : String(error);
   if (provider && !finished) {
+    setupFailureMessage = message;
+    let completed = false;
+    const finishSetupFailure = () => {
+      if (completed) return;
+      completed = true;
+      finish('failed', 1, null, message);
+    };
+    provider.once('close', finishSetupFailure);
+    provider.once('error', finishSetupFailure);
     signalProviderProcess(provider, 'SIGTERM');
     scheduleProviderProcessEscalation(provider, 250);
+    setTimeout(finishSetupFailure, 1_000);
+  } else {
+    finish('failed', 1, null, message);
   }
-  finish('failed', 1, null, error instanceof Error ? error.message : String(error));
 }
+
+process.on('beforeExit', () => {
+  if (finished) return;
+  const exitCode = provider?.exitCode ?? 1;
+  finish(
+    providerOutcomeForClose(requestedOutcome, setupFailureMessage, exitCode),
+    setupFailureMessage ? 1 : exitCode,
+    provider?.signalCode ?? null,
+    setupFailureMessage ?? 'runner event loop drained before provider close',
+  );
+});

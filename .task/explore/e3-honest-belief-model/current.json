@@ -1,0 +1,19 @@
+{
+  "area": "explore",
+  "stream": "stream/explore",
+  "taskBranch": "task/explore/e3-honest-belief-model",
+  "baseBranch": "stream/explore",
+  "sourceBranch": "stream/explore",
+  "startFrom": "stream",
+  "prNumber": 2077,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2077",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2077",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2077/e3-honest-belief-model",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2077",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2077/e3-honest-belief-model",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-explore-e3-honest-belief-model",
+  "taskSession": "tsk_6979ef6f7acb",
+  "tmuxSession": "opensaas-explore-e3-honest-belief-model-6979ef6f",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-explore-e3-honest-belief-model/.task/explore/e3-honest-belief-model/session.json",
+  "createdAt": "2026-08-15T18:50:18.558Z"
+}

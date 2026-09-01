@@ -1,0 +1,20 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/refresh-os-tool-manifest-execution-scope",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2231,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2231",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2231",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2231/refresh-os-tool-manifest-execution-scope",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2231",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2231/refresh-os-tool-manifest-execution-scope",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-refresh-os-tool-manifest-execution-scope",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_7ca1017d50fb",
+  "tmuxSession": "opensaas-os-refresh-os-tool-manifest-execution-scope-7ca1017d",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-refresh-os-tool-manifest-execution-scope/.task/os/refresh-os-tool-manifest-execution-scope/session.json",
+  "createdAt": "2026-08-26T19:05:04.375Z"
+}

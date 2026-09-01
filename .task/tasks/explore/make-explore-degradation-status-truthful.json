@@ -1,0 +1,16 @@
+{
+  "area": "explore",
+  "stream": "stream/explore",
+  "taskBranch": "task/explore/make-explore-degradation-status-truthful",
+  "baseBranch": "stream/explore",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2304,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2304",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-explore-make-explore-degradation-status-truthful",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_474b08f08d4e",
+  "tmuxSession": "opensaas-explore-make-explore-degradation-status-truthful-474b08f0",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-explore-make-explore-degradation-status-truthful/.task/session.json",
+  "createdAt": "2026-08-29T08:23:27.990Z"
+}

@@ -19,6 +19,7 @@ import type { Env, StateLike } from './types';
 
 export class OsDeviceGrantDurableObject {
   private handler: (request: Request) => Promise<Response>;
+  private store: DurableStore;
 
   constructor(state: StateLike, env: Env) {
     const installControlPlaneRepository =
@@ -48,8 +49,9 @@ export class OsDeviceGrantDurableObject {
           fetchImpl: (url, init) => globalThis.fetch(url, init),
         })
       : undefined;
+    this.store = new DurableStore(state.storage);
     this.handler = createOsDeviceAuthorityHandler({
-      store: new DurableStore(state.storage),
+      store: this.store,
       installControlPlaneRepository,
       installDiagnosticBundleStore,
       installTelemetryObserver,
@@ -58,6 +60,13 @@ export class OsDeviceGrantDurableObject {
       approvalAssertionSecret: env.OS_DEVICE_AUTH_ASSERTION_SECRET,
       googleOAuthClientId: env.GOOGLE_OAUTH_CLIENT_ID,
       googleOAuthClientSecret: env.GOOGLE_OAUTH_CLIENT_SECRET,
+      googleWorkspaceOAuthClientId: env.GOOGLE_WORKSPACE_OAUTH_CLIENT_ID,
+      googleWorkspaceOAuthClientSecret: env.GOOGLE_WORKSPACE_OAUTH_CLIENT_SECRET,
+      githubAppId: env.GITHUB_APP_ID,
+      githubAppSlug: env.GITHUB_APP_SLUG,
+      githubAppPrivateKey: env.GITHUB_APP_PRIVATE_KEY,
+      githubAppClientId: env.GITHUB_APP_CLIENT_ID,
+      githubAppClientSecret: env.GITHUB_APP_CLIENT_SECRET,
       workspaceRouteRegistry: env.WORKSPACE_ROUTE_REGISTRY,
       workspaceConnectorProvisioner: createWorkspaceConnectorProvisionerFromEnv(
         env,
@@ -103,6 +112,10 @@ export class OsDeviceGrantDurableObject {
 
   fetch(request: Request): Promise<Response> {
     return this.handler(request);
+  }
+
+  alarm(): Promise<void> {
+    return this.store.cleanupExpiredGitHubSourceControlInstallStates(Date.now());
   }
 }
 

@@ -1,0 +1,20 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-pr-2310-ci-completion-marker-race",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2330,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2330",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2330",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2330/fix-pr-2310-ci-completion-marker-race",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2330",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2330/fix-pr-2310-ci-completion-marker-race",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-pr-2310-ci-completion-marker-race",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_be2e22f428c8",
+  "tmuxSession": "opensaas-os-fix-pr-2310-ci-completion-marker-race-be2e22f4",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-pr-2310-ci-completion-marker-race/.task/os/fix-pr-2310-ci-completion-marker-race/session.json",
+  "createdAt": "2026-08-31T19:41:18.057Z"
+}

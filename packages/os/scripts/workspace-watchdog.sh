@@ -244,14 +244,20 @@ reconcile_public_route() {
     return 1
   fi
 
-  local output
+  local output stderr_file
+  stderr_file="$state_dir/heartbeat.stderr"
   if ! output="$(
     CONSUELO_HOME="$consuelo_home" \
-      "$bun_bin" "$heartbeat_script" --config "$heartbeat_config" 2>/dev/null
+      "$bun_bin" "$heartbeat_script" --config "$heartbeat_config" 2>"$stderr_file"
   )"; then
+    if grep -q 'HTTP 429' "$stderr_file" 2>/dev/null; then
+      log "public connector heartbeat rate-limited; skipping restart"
+      return 2
+    fi
     return 1
   fi
   case "$output" in
+    *'"mcpReady":false'*) return 1 ;;
     *'"routeReady":true'*) return 0 ;;
     *) return 1 ;;
   esac
@@ -342,7 +348,12 @@ rm -f "$state_dir/${workspace_label}.degraded"
 
 # Local process health cannot prove that Cloudflare/device-authority still has a routable
 # connector target. Reconcile signed desired state before escalating to a local restart.
-if ! reconcile_public_route; then
+public_route_status=0
+reconcile_public_route || public_route_status="$?"
+if [ "$public_route_status" -eq 2 ]; then
+  exit 0
+fi
+if [ "$public_route_status" -ne 0 ]; then
   public_route_failures="$(increment_counter "$public_route_failure_file")"
   log "public connector route reconciliation failed (consecutive=$public_route_failures)"
   if [ "$public_route_failures" -ge "$public_route_failure_threshold" ]; then

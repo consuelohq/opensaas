@@ -1,0 +1,41 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/explore/expose-explore-degradation-in-compact-output",
+  "base": "origin/task/explore/expose-explore-degradation-in-compact-output",
+  "headSha": "0076bdc4cdddcaa427dc45a93c2ed0b5950a81df",
+  "changeHash": "410821fec8f668f16d91dddc01eec45c83db8d4167797b461bac72c25dc320cb",
+  "changedFiles": [],
+  "verifiedAt": "2026-08-29T08:19:06.484Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "pass",
+      "zeroSuiteReason": "no testable source files changed",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -1,0 +1,20 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/stabilize-worker-pool-process-contract-for-linux-ci",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 2238,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2238",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2238",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2238/stabilize-worker-pool-process-contract-for-linux-ci",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2238",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2238/stabilize-worker-pool-process-contract-for-linux-ci",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-stabilize-worker-pool-process-contract-for-linux-ci",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_1c715e6aba15",
+  "tmuxSession": "opensaas-workspace-agents-stabilize-worker-pool-process-contract-for-linux-1c715e6a",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-stabilize-worker-pool-process-contract-for-linux-ci/.task/workspace-agents/stabilize-worker-pool-process-contract-for-linux-ci/session.json",
+  "createdAt": "2026-08-27T01:17:40.619Z"
+}

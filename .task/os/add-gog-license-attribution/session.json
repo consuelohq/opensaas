@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_8cca4cebc6de",
+  "tmuxSession": "opensaas-os-add-gog-license-attribution-8cca4ceb",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-gog-license-attribution",
+  "branch": "task/os/add-gog-license-attribution",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-add-gog-license-attribution",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-add-gog-license-attribution",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2206,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2206",
+  "createdAt": "2026-08-26T05:41:52.695Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-add-gog-license-attribution/.task/os/add-gog-license-attribution/session.json"
+}

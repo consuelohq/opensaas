@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_48c5ee4031d8",
+  "tmuxSession": "opensaas-dialer-implement-complete-gohighlevel-commercial-dialer-48c5ee40",
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/implement-complete-gohighlevel-commercial-dialer",
+  "branch": "task/dialer/implement-complete-gohighlevel-commercial-dialer",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-implement-complete-gohighlevel-commercial-dialer",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-implement-complete-gohighlevel-commercial-dialer",
+  "prNumber": 1782,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1782",
+  "createdAt": "2026-08-05T01:05:25.026Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-implement-complete-gohighlevel-commercial-dialer/.task/dialer/implement-complete-gohighlevel-commercial-dialer/session.json"
+}

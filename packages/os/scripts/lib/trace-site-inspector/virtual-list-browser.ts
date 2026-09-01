@@ -14,6 +14,7 @@ import {
   dedupeTraceRows,
   isBatchChild,
   number,
+  sessionDisplayName,
   stableTraceKey,
   traceParentKey,
   totalTokens,
@@ -39,6 +40,8 @@ import {
   type TraceFilterFacet,
   type TraceFilterFacets,
 } from './table-formatters';
+import { sessionColorTone } from './session-colors';
+import { estimateTraceCost } from '../trace-cost-estimator';
 
 const MAX_RETAINED_ROWS = 100_000;
 const PREFETCH_THRESHOLD = 25;
@@ -741,6 +744,7 @@ function createTraceRow(
   if (item.child) button.dataset.operationPath = item.child.__tracePath;
   const formatted = formatTraceTableRow(item.child ?? item.row);
   button.classList.toggle('is-error', formatted.isError);
+  button.dataset.status = formatted.statusLabel;
   button.setAttribute('aria-selected', String(item.traceKey === selectedKey));
   button.classList.toggle('selected', item.traceKey === selectedKey);
   button.style.transform = `translateY(${Math.round(
@@ -757,7 +761,7 @@ function appendRootCells(button: HTMLElement, row: TraceRecord): void {
   const formatted = formatTraceTableRow(row);
   const status = formatted.statusLabel;
   const sourceTool = clean(row.name ?? row.traceName ?? row.tool) || 'trace';
-  button.style.setProperty('--branch-color', branchColor(branch));
+  applySessionColor(button, branch);
 
   appendCell(button, '', '', (cell) => {
     const check = document.createElement('span');
@@ -781,9 +785,9 @@ function appendRootCells(button: HTMLElement, row: TraceRecord): void {
   });
   appendCell(button, 'trxLatency', formatDuration(row.durationMs, row.latency));
   appendCell(button, 'trxTokens', formatCompact(totalTokens(row)));
-  appendCell(button, 'trxBranch', stripTaskPrefix(branch), (cell) => {
+  appendCell(button, 'trxBranch', stripTaskPrefix(sessionDisplayName(row)), (cell) => {
     setTraceTooltip(cell, branch);
-    cell.style.setProperty('--branch-color', branchColor(branch));
+    applySessionColor(cell, branch);
   });
   appendCell(button, 'trxJson trxInputCell', formatted.inputLabel, (cell) => {
     setTraceTooltip(cell, formatted.inputFull || formatted.inputLabel);
@@ -793,16 +797,11 @@ function appendRootCells(button: HTMLElement, row: TraceRecord): void {
   );
   appendNodeCell(button, formatted.nodeLabel, formatted.routeLabel, formatted.nodeId);
   appendCell(button, 'trxJson trxTraceCell', itemTraceId(row));
-  appendCell(button, '', '', (cell) => {
-    const badge = document.createElement('span');
-    badge.className = `trxStatus ${status}`;
-    badge.textContent = status;
-    cell.append(badge);
-  });
+  appendStatusCell(button, status);
   appendCell(
     button,
     'trxCost',
-    clean(row.costLabel) || `$${number(row.cost).toFixed(4)}`,
+    traceCostLabel(row),
   );
 }
 
@@ -816,7 +815,7 @@ function appendChildCells(
   const status = formatted.statusLabel;
   const sourceTool = clean(child.tool ?? child.name ?? child.label) || 'child';
   button.style.setProperty('--depth', String(child.__traceDepth));
-  button.style.setProperty('--branch-color', branchColor(branch));
+  applySessionColor(button, branch);
 
   appendCell(button, 'trxTreeCell', '');
   appendCell(button, 'trxStart mono', '');
@@ -840,7 +839,10 @@ function appendChildCells(
     formatDuration(child.durationMs, child.latency),
   );
   appendCell(button, 'trxTokens', formatCompact(totalTokens(child)));
-  appendCell(button, 'trxBranch', stripTaskPrefix(branch));
+  appendCell(button, 'trxBranch', stripTaskPrefix(sessionDisplayName(parent)), (cell) => {
+    setTraceTooltip(cell, branch);
+    applySessionColor(cell, branch);
+  });
   appendCell(button, 'trxJson trxInputCell', formatted.inputLabel, (cell) => {
     setTraceTooltip(cell, formatted.inputFull || formatted.inputLabel);
   });
@@ -849,13 +851,8 @@ function appendChildCells(
   );
   appendNodeCell(button, formatted.nodeLabel, formatted.routeLabel, formatted.nodeId);
   appendCell(button, 'trxJson trxTraceCell', clean(child.traceId));
-  appendCell(button, '', '', (cell) => {
-    const badge = document.createElement('span');
-    badge.className = `trxStatus ${status}`;
-    badge.textContent = status;
-    cell.append(badge);
-  });
-  appendCell(button, 'trxCost', clean(child.costLabel) || '—');
+  appendStatusCell(button, status);
+  appendCell(button, 'trxCost', traceCostLabel(child));
 }
 
 function appendNodeCell(
@@ -1096,13 +1093,48 @@ function stripTaskPrefix(value: string): string {
   return value.replace(/^task\//, '');
 }
 
-function branchColor(value: string): string {
-  if (!value || value === 'no-branch') return '';
-  const palette = ['#c87958', '#b88b4a', '#8fa17a', '#b06f8f', '#7f9b9a'];
-  let hash = 0;
-  for (const character of value)
-    hash = (hash * 31 + character.charCodeAt(0)) >>> 0;
-  return palette[hash % palette.length] ?? palette[0];
+function applySessionColor(element: HTMLElement, value: string): void {
+  const tone = sessionColorTone(value);
+  if (!tone) return;
+  element.style.setProperty('--branch-color', tone.dark);
+  element.style.setProperty('--branch-color-dark', tone.dark);
+  element.style.setProperty('--branch-color-light', tone.light);
+}
+
+function appendStatusCell(row: HTMLElement, status: string): void {
+  appendCell(row, '', '', (cell) => {
+    const badge = document.createElement('span');
+    badge.className = `trxStatus ${status}`;
+    badge.textContent = status;
+    cell.append(badge);
+  });
+}
+
+function traceCostLabel(row: TraceRecord): string {
+  const stored = clean(row.costLabel);
+  if (stored && stored !== '$0.0000') return stored;
+  const estimate = estimateTraceCost({
+    tool: clean(row.name ?? row.traceName ?? row.tool ?? row.label),
+    model: clean(row.model),
+    provider: clean(row.provider),
+    inputTokens: number(row.inputTokens),
+    outputTokens: number(row.outputTokens),
+    totalTokens: totalTokens(row),
+    rawInputJson: costPayload(row.rawResolvedInputJson ?? row.rawInputJson ?? row.input),
+    rawResolvedInputJson: costPayload(row.rawResolvedInputJson ?? row.resolvedInput),
+    rawResultJson: costPayload(row.rawResultJson ?? row.result ?? row.data),
+  });
+  return estimate?.costLabel ?? '—';
+}
+
+function costPayload(value: unknown): string {
+  if (typeof value === 'string') return value;
+  if (value === undefined || value === null) return '';
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return '';
+  }
 }
 
 function traceWindow(): TraceWindow {

@@ -17,6 +17,9 @@ const MAC_RESTARTABLE_SIDECAR_SERVICE_LABELS = new Set([
 const MAC_RESTARTABLE_SIDECAR_SERVICE_PREFIXES = [
   'com.consuelo.os.node-heartbeat.',
 ];
+const MAC_BEST_EFFORT_SIDECAR_SERVICE_LABELS = new Set([
+  'com.consuelo.watchdog',
+]);
 const MAC_GATEWAY_BOOTSTRAP_ATTEMPTS = 4;
 const MAC_GATEWAY_BOOTSTRAP_RETRY_MS = 200;
 const MAC_GATEWAY_KICKSTART_ATTEMPTS = 4;
@@ -76,6 +79,7 @@ function installedMacRestartableSidecarLaunchAgents(environment?: NodeJS.Process
   if (!userHome) return [];
   const launchAgentDir = join(userHome, 'Library', 'LaunchAgents');
   if (!existsSync(launchAgentDir)) return [];
+  const invokingServiceLabel = environment?.XPC_SERVICE_NAME?.trim();
   return readdirSync(launchAgentDir)
     .filter((name) => name.endsWith('.plist'))
     .map((name) => ({
@@ -86,7 +90,14 @@ function installedMacRestartableSidecarLaunchAgents(environment?: NodeJS.Process
       MAC_RESTARTABLE_SIDECAR_SERVICE_LABELS.has(label)
       || MAC_RESTARTABLE_SIDECAR_SERVICE_PREFIXES.some((prefix) => label.startsWith(prefix)),
     )
+    // A one-shot watchdog remains inside its launchd transaction until this process exits.
+    // Tearing down that same job from consuelo restart races launchd and returns 5 or 37.
+    .filter(({ label }) => !invokingServiceLabel || label !== invokingServiceLabel)
     .sort((left, right) => left.label.localeCompare(right.label));
+}
+
+function isBestEffortMacSidecar(label: string): boolean {
+  return MAC_BEST_EFFORT_SIDECAR_SERVICE_LABELS.has(label);
 }
 export function createReloadServiceController(input: {
   osRoot: string;
@@ -215,9 +226,26 @@ export function createReloadServiceController(input: {
           }
           const domain = 'gui/' + String(userId);
           for (const gateway of installedMacRestartableSidecarLaunchAgents(input.environment)) {
-            await run('launchctl', ['bootout', domain + '/' + gateway.label]);
-            let bootstrapped = false;
+            const service = domain + '/' + gateway.label;
+            const loaded = await run('launchctl', ['print', service]);
+            const definitionReloadRequired = loaded.exitCode === 0;
+            let available = false;
             let lastBootstrap: LifecycleProcessResult | undefined;
+
+            if (definitionReloadRequired) {
+              const bootout = await run('launchctl', ['bootout', service]);
+              const detail = bootout.stdout + '\n' + bootout.stderr;
+              const alreadyUnloaded = bootout.exitCode === 3
+                || /No such process|Could not find service|not loaded/i.test(detail);
+              if (bootout.exitCode !== 0 && !alreadyUnloaded) {
+                throw new Error(
+                  'gateway definition unload failed for ' + gateway.label + ': '
+                  + (bootout.stderr.trim() || bootout.stdout.trim()
+                    || 'launchctl bootout exited ' + String(bootout.exitCode)),
+                );
+              }
+            }
+
             for (let attempt = 1; attempt <= MAC_GATEWAY_BOOTSTRAP_ATTEMPTS; attempt += 1) {
               const bootstrap = await run('launchctl', [
                 'bootstrap',
@@ -226,48 +254,42 @@ export function createReloadServiceController(input: {
               ]);
               lastBootstrap = bootstrap;
               if (bootstrap.exitCode === 0) {
-                bootstrapped = true;
+                available = true;
                 break;
               }
 
-              const detail = `${bootstrap.stdout}\n${bootstrap.stderr}`;
+              const detail = bootstrap.stdout + '\n' + bootstrap.stderr;
               const transientExitFive = bootstrap.exitCode === 5
                 || /Bootstrap failed:\s*5|Input\/output error/i.test(detail);
               if (!transientExitFive) break;
 
-              // launchd can briefly keep the old job in its teardown transaction after
-              // bootout. A bootstrap during that window reports exit 5 even though the
-              // plist is valid. If the job is already visible again, accept it; otherwise
-              // wait briefly and retry the same immutable plist.
-              const loaded = await run('launchctl', [
-                'print',
-                domain + '/' + gateway.label,
-              ]);
-              if (loaded.exitCode === 0) {
-                bootstrapped = true;
+              const visible = await run('launchctl', ['print', service]);
+              if (visible.exitCode === 0) {
+                available = true;
                 break;
               }
               if (attempt < MAC_GATEWAY_BOOTSTRAP_ATTEMPTS) {
                 await sleepImpl(MAC_GATEWAY_BOOTSTRAP_RETRY_MS);
               }
             }
-            if (!bootstrapped) {
-              const result = lastBootstrap ?? {
-                exitCode: 1,
-                stdout: '',
-                stderr: '',
-              };
+
+            if (!available) {
+              const result = lastBootstrap ?? loaded;
               const detail = result.stderr.trim() || result.stdout.trim()
                 || 'launchctl bootstrap exited ' + String(result.exitCode);
+              if (isBestEffortMacSidecar(gateway.label)) {
+                continue;
+              }
               throw new Error('gateway bootstrap failed for ' + gateway.label + ': ' + detail);
             }
+
             let kickstarted = false;
             let lastKickstart: LifecycleProcessResult | undefined;
             for (let attempt = 1; attempt <= MAC_GATEWAY_KICKSTART_ATTEMPTS; attempt += 1) {
               const kickstart = await run('launchctl', [
                 'kickstart',
                 '-k',
-                domain + '/' + gateway.label,
+                service,
               ]);
               lastKickstart = kickstart;
               if (kickstart.exitCode === 0) {
@@ -275,7 +297,7 @@ export function createReloadServiceController(input: {
                 break;
               }
 
-              const detail = `${kickstart.stdout}\n${kickstart.stderr}`;
+              const detail = kickstart.stdout + '\n' + kickstart.stderr;
               const transientLaunchdTransition = kickstart.exitCode === 5
                 || kickstart.exitCode === 37
                 || /Bootstrap failed:\s*5|Input\/output error|Operation already in progress/i.test(detail);
@@ -292,6 +314,9 @@ export function createReloadServiceController(input: {
               };
               const detail = result.stderr.trim() || result.stdout.trim()
                 || 'launchctl kickstart exited ' + String(result.exitCode);
+              if (isBestEffortMacSidecar(gateway.label)) {
+                continue;
+              }
               throw new Error('gateway kickstart failed for ' + gateway.label + ': ' + detail);
             }
           }

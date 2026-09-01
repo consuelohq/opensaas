@@ -1,0 +1,11 @@
+{
+  "files": [
+    "packages/os/manifests/generated/tool.manifest.json",
+    "packages/os/package.json",
+    "packages/os/scripts/generate-tool-manifest.ts",
+    "packages/os/tests/browser-service.test.ts",
+    "packages/os/tools/package.ts",
+    "packages/os/tools/utilities/manifest.ts"
+  ],
+  "updatedAt": "2026-08-26T05:23:18.366Z"
+}

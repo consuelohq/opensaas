@@ -1,0 +1,20 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-release-promotion-run-correlation",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2188,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2188",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2188",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2188/fix-release-promotion-run-correlation",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2188",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2188/fix-release-promotion-run-correlation",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-release-promotion-run-correlation",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_a13e4ce1969e",
+  "tmuxSession": "opensaas-os-fix-release-promotion-run-correlation-a13e4ce1",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-release-promotion-run-correlation/.task/os/fix-release-promotion-run-correlation/session.json",
+  "createdAt": "2026-08-26T03:16:03.443Z"
+}

@@ -36,7 +36,10 @@ describe('configuration site', () => {
 
     expect(snapshot.skills).toEqual([]);
     expect(snapshot.runBooks.length).toBeGreaterThan(0);
-    expect(html).toContain('<title>Overview - Consuelo OS</title>');
+    expect(html).toContain('<title>Home - Consuelo OS</title>');
+    expect(html).toContain('<link rel="icon" href="https://consuelohq.com/favicon.svg" type="image/svg+xml" />');
+    expect(html).toContain('<link rel="icon" href="https://consuelohq.com/favicon-32x32.png" sizes="32x32" type="image/png" />');
+    expect(html).toContain('<link rel="apple-touch-icon" href="https://consuelohq.com/apple-touch-icon.png" />');
     expect(html).toContain('data-workspace-shell');
     expect(html).toContain('data-workspace-route-trigger');
     expect(html).toContain('aria-label="Workspace routes"');
@@ -48,11 +51,15 @@ describe('configuration site', () => {
     expect(html).toContain('href="/tools"');
     expect(html).toContain('href="/nodes"');
     expect(html).toContain('href="/secrets"');
-    expect(html).toContain('>Overview</span><small>Workspace health and operating context.</small>');
+    expect(html).toContain('>Home</span>');
+    expect(html).toContain('<h1>Home</h1>');
+    expect(html).toContain('Home shows live activity and operating posture first.');
+    expect(html).not.toContain('Overview shows live activity and operating posture first.');
+    expect(html).not.toContain('Workspace health and context.');
     expect(html).toContain('href="https://docs.consuelohq.com/"');
     expect(html).toContain('target="_blank" rel="noopener noreferrer" href="https://docs.consuelohq.com/"');
-    expect(html).toContain('>Artifacts</span><small>Browse agent work and generated outputs.</small>');
-    expect(html).toContain('>Code</span><small>Review code diffs and changes.</small>');
+    expect(html).toContain('>Artifacts</span>');
+    expect(html).toContain('>Code</span>');
     expect(html).toContain('data-route-group="Connect"');
     expect(html).toContain('>ChatGPT<');
     expect(html).toContain('href="https://chatgpt.com/plugins#settings/Connectors?create-connector=true&amp;redirectAfter=%2Fplugins"');
@@ -102,6 +109,7 @@ describe('configuration site', () => {
     expect(html).toContain("credentials: 'same-origin'");
     expect(html).toContain("cache: 'no-store'");
     expect(html).toContain('sessionStorage.setItem(OVERVIEW_HEATMAP_CACHE_KEY');
+    expect(html).toContain('renderOverviewHeatmap(cached || aggregateOverviewHeatmap([]));');
     expect(html).toContain('tabindex="0"');
     expect(html).toContain("matchMedia('(prefers-reduced-motion: reduce)')");
     expect(html).toContain('globalThis.gsap');
@@ -110,11 +118,20 @@ describe('configuration site', () => {
     expect(html).toContain('Calls');
     expect(html).toContain('Tokens');
     expect(html).toContain('Cost');
-    expect(html).toContain('id="source-control-form"');
+    expect(html).toContain('id="source-control-connect-github"');
     expect(html).toContain('id="source-control-repository-list"');
     expect(html).toContain('/gateway/configuration/source-control');
-    expect(html).toContain('connection binding');
-    expect(html).toContain('href="/secrets"');
+    expect(html).toContain('/gateway/configuration/source-control/github/connect');
+    expect(html).toContain('mode=manage');
+    expect(html).toContain(
+      'const hasReadyRepositories = currentSourceControl.repositories.some((repository) => repository.ready === true);',
+    );
+    expect(html).not.toContain('const hasRepositories = currentSourceControl.repositories.length > 0;');
+    expect(html).toContain('/gateway/configuration/source-control/github/complete');
+    expect(html).toContain('Connect GitHub');
+    expect(html).not.toContain('id="source-control-form"');
+    expect(html).not.toContain('id="source-control-connection"');
+    expect(html).not.toContain('Connection binding');
     expect(html).not.toContain('credentialValue');
     expect(html).not.toContain('githubToken');
     expect(html).not.toContain('/gateway/settings/');
@@ -208,6 +225,10 @@ describe('configuration site', () => {
     expect(nodesHtml).toContain('Unavailable');
     expect(nodesHtml).toContain('Live pricing is unavailable');
     expect(nodesHtml).toContain('Make default');
+    expect(nodesHtml).toContain('node.readiness');
+    expect(nodesHtml).toContain('node.osVersion');
+    expect(nodesHtml).toContain("node.compatibility === 'compatible'");
+    expect(nodesHtml).toContain("node.readiness === 'ready'");
     expect(nodesHtml).not.toContain('Provisioning coming soon');
     expect(nodesHtml).toContain('/gateway/nodes/provision');
     expect(nodesHtml).toContain('/gateway/nodes/provisioning');
@@ -232,9 +253,9 @@ describe('configuration site', () => {
     expect(secretsHtml).toContain('<title>Secrets - Consuelo OS</title>');
     expect(secretsHtml).toContain('<h1>Secrets</h1>');
     expect(secretsHtml).toContain('aria-current="page" href="/secrets"');
-    expect(secretsHtml).toContain('Connected credentials');
+    expect(secretsHtml).toContain('+ New secret');
     expect(secretsHtml).toContain('/gateway/secrets/bindings');
-    expect(secretsHtml).toContain('Values are never returned to this page or to an agent');
+    expect(secretsHtml).toContain('Encrypted in this browser before it is sent.');
     expect(secretsHtml).not.toContain('/gateway/configuration/snapshot');
     expect(secretsHtml).not.toContain('window.__CONSUELO_SETTINGS__');
   });

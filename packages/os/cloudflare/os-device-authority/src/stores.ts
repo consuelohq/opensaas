@@ -1,6 +1,9 @@
 import type {
   AccountWorkspace,
   AuthoritySession,
+  GitHubSourceControlConnection,
+  GitHubSourceControlHandoff,
+  GitHubSourceControlInstallState,
   Grant,
   ManagedCloudCheckout,
   McpOAuthAccessToken,
@@ -32,6 +35,13 @@ const cloneWorkspaceNode = (node: WorkspaceNode): WorkspaceNode => ({
   ...node,
   ...(node.capabilities ? { capabilities: [...node.capabilities] } : {}),
   ...(node.agents ? { agents: [...node.agents] } : {}),
+});
+
+const cloneGitHubSourceControlConnection = (
+  connection: GitHubSourceControlConnection,
+): GitHubSourceControlConnection => ({
+  ...connection,
+  repositories: connection.repositories.map((repository) => ({ ...repository })),
 });
 
 const isWorkspaceNode = (value: unknown): value is WorkspaceNode =>
@@ -426,6 +436,114 @@ export class DurableStore implements Store {
       await this.storage.delete(`mrt:${tokenHash}`);
     } catch {
       throw new Error('mcp oauth refresh token delete failed');
+    }
+  }
+  async putGitHubSourceControlInstallState(state: GitHubSourceControlInstallState) {
+    try {
+      await this.storage.put(`gss:${state.state}`, state);
+      if (this.storage.setAlarm) {
+        const currentAlarm = this.storage.getAlarm
+          ? await this.storage.getAlarm()
+          : null;
+        if (currentAlarm === null || state.expiresAt < currentAlarm) {
+          await this.storage.setAlarm(state.expiresAt);
+        }
+      }
+    } catch {
+      throw new Error('github source-control install state write failed');
+    }
+  }
+  async byGitHubSourceControlInstallState(state: string) {
+    try {
+      return await this.storage.get<GitHubSourceControlInstallState>(`gss:${state}`);
+    } catch {
+      throw new Error('github source-control install state read failed');
+    }
+  }
+  async delGitHubSourceControlInstallState(state: string) {
+    try {
+      await this.storage.delete(`gss:${state}`);
+    } catch {
+      throw new Error('github source-control install state delete failed');
+    }
+  }
+  async cleanupExpiredGitHubSourceControlInstallStates(nowMs: number) {
+    try {
+      if (!this.storage.list) return;
+      const states = await this.storage.list<GitHubSourceControlInstallState>({ prefix: 'gss:' });
+      let nextExpiresAt: number | undefined;
+      for (const [key, state] of states.entries()) {
+        if (state.expiresAt <= nowMs) {
+          await this.storage.delete(key);
+          continue;
+        }
+        if (nextExpiresAt === undefined || state.expiresAt < nextExpiresAt) {
+          nextExpiresAt = state.expiresAt;
+        }
+      }
+      if (nextExpiresAt !== undefined && this.storage.setAlarm) {
+        await this.storage.setAlarm(nextExpiresAt);
+      } else if (nextExpiresAt === undefined && this.storage.deleteAlarm) {
+        await this.storage.deleteAlarm();
+      }
+    } catch {
+      throw new Error('github source-control install state cleanup failed');
+    }
+  }
+  async putGitHubSourceControlConnection(connection: GitHubSourceControlConnection) {
+    try {
+      await this.storage.put(
+        `gsc:${connection.connectionId}`,
+        cloneGitHubSourceControlConnection(connection),
+      );
+    } catch {
+      throw new Error('github source-control connection write failed');
+    }
+  }
+  async byGitHubSourceControlConnection(connectionId: string) {
+    try {
+      const connection = await this.storage.get<GitHubSourceControlConnection>(
+        `gsc:${connectionId}`,
+      );
+      return connection ? cloneGitHubSourceControlConnection(connection) : undefined;
+    } catch {
+      throw new Error('github source-control connection read failed');
+    }
+  }
+  async putGitHubSourceControlHandoff(handoff: GitHubSourceControlHandoff) {
+    try {
+      await this.storage.put(`gsh:${handoff.tokenHash}`, handoff);
+    } catch {
+      throw new Error('github source-control handoff write failed');
+    }
+  }
+  async consumeGitHubSourceControlHandoff(input: {
+    tokenHash: string;
+    workspaceId: string;
+    nodeId: string;
+    nowMs: number;
+  }) {
+    const consume = async (storage: StorageLike) => {
+      const key = `gsh:${input.tokenHash}`;
+      const handoff = await storage.get<GitHubSourceControlHandoff>(key);
+      if (
+        !handoff
+        || handoff.workspaceId !== input.workspaceId
+        || handoff.nodeId !== input.nodeId
+        || input.nowMs >= handoff.expiresAt
+      ) {
+        if (handoff && input.nowMs >= handoff.expiresAt) await storage.delete(key);
+        return undefined;
+      }
+      await storage.delete(key);
+      return { ...handoff };
+    };
+    try {
+      return this.storage.transaction
+        ? await this.storage.transaction((transaction) => consume(transaction))
+        : await consume(this.storage);
+    } catch {
+      throw new Error('github source-control handoff consume failed');
     }
   }
   async putAccountWorkspace(workspace: AccountWorkspace) {
@@ -1361,6 +1479,9 @@ export function createMemoryDeviceGrantStore(): Store {
   const mcpCodes = new Map<string, McpOAuthCode>();
   const mcpTokens = new Map<string, McpOAuthAccessToken>();
   const mcpRefreshTokens = new Map<string, McpOAuthRefreshToken>();
+  const githubSourceControlInstallStates = new Map<string, GitHubSourceControlInstallState>();
+  const githubSourceControlConnections = new Map<string, GitHubSourceControlConnection>();
+  const githubSourceControlHandoffs = new Map<string, GitHubSourceControlHandoff>();
   const accountWorkspaces = new Map<string, AccountWorkspace>();
   const workspaceCloudTrials = new Map<string, WorkspaceCloudTrial>();
   const managedCloudCheckouts = new Map<string, ManagedCloudCheckout>();
@@ -1483,6 +1604,51 @@ export function createMemoryDeviceGrantStore(): Store {
     delMcpOAuthRefreshToken(tokenHash) {
       mcpRefreshTokens.delete(tokenHash);
       return Promise.resolve();
+    },
+    putGitHubSourceControlInstallState(state) {
+      githubSourceControlInstallStates.set(state.state, { ...state });
+      return Promise.resolve();
+    },
+    byGitHubSourceControlInstallState(state) {
+      const record = githubSourceControlInstallStates.get(state);
+      return Promise.resolve(record ? { ...record } : undefined);
+    },
+    delGitHubSourceControlInstallState(state) {
+      githubSourceControlInstallStates.delete(state);
+      return Promise.resolve();
+    },
+    putGitHubSourceControlConnection(connection) {
+      githubSourceControlConnections.set(
+        connection.connectionId,
+        cloneGitHubSourceControlConnection(connection),
+      );
+      return Promise.resolve();
+    },
+    byGitHubSourceControlConnection(connectionId) {
+      const connection = githubSourceControlConnections.get(connectionId);
+      return Promise.resolve(
+        connection ? cloneGitHubSourceControlConnection(connection) : undefined,
+      );
+    },
+    putGitHubSourceControlHandoff(handoff) {
+      githubSourceControlHandoffs.set(handoff.tokenHash, { ...handoff });
+      return Promise.resolve();
+    },
+    consumeGitHubSourceControlHandoff(input) {
+      const handoff = githubSourceControlHandoffs.get(input.tokenHash);
+      if (
+        !handoff
+        || handoff.workspaceId !== input.workspaceId
+        || handoff.nodeId !== input.nodeId
+        || input.nowMs >= handoff.expiresAt
+      ) {
+        if (handoff && input.nowMs >= handoff.expiresAt) {
+          githubSourceControlHandoffs.delete(input.tokenHash);
+        }
+        return Promise.resolve(undefined);
+      }
+      githubSourceControlHandoffs.delete(input.tokenHash);
+      return Promise.resolve({ ...handoff });
     },
     putAccountWorkspace(workspace) {
       accountWorkspaces.set(workspace.accountId, { ...workspace });

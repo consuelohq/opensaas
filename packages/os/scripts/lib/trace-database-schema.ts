@@ -7,6 +7,7 @@ const require = createRequire(import.meta.url);
 export type TraceStatement = {
   run: (...values: unknown[]) => unknown;
   all: (...values: unknown[]) => unknown[];
+  get: (...values: unknown[]) => unknown;
 };
 
 export type TraceDatabase = {
@@ -19,6 +20,20 @@ type TraceDatabaseConstructor = new (
   filename: string,
   options?: { create?: boolean; readonly?: boolean },
 ) => TraceDatabase;
+
+type NodeTraceStatement = {
+  run: (...values: unknown[]) => unknown;
+  all: (...values: unknown[]) => unknown[];
+  get: (...values: unknown[]) => unknown;
+};
+
+type NodeTraceDatabase = {
+  exec: (sql: string) => void;
+  prepare: (sql: string) => NodeTraceStatement;
+  close: () => void;
+};
+
+type NodeTraceDatabaseConstructor = new (filename: string) => NodeTraceDatabase;
 
 const TRACE_COLUMNS: Array<{ name: string; alterSql: string }> = [
   { name: 'id', alterSql: 'ALTER TABLE tool_traces ADD COLUMN id TEXT;' },
@@ -53,8 +68,28 @@ const TRACE_COLUMNS: Array<{ name: string; alterSql: string }> = [
 
 export function openTraceDatabase(dbPath: string): TraceDatabase {
   fs.mkdirSync(path.dirname(dbPath), { recursive: true });
-  const { Database } = require('bun:sqlite') as { Database: TraceDatabaseConstructor };
-  const db = new Database(dbPath, { create: true });
+  let db: TraceDatabase;
+  if (typeof (globalThis as { Bun?: unknown }).Bun !== 'undefined') {
+    const { Database } = require('bun:sqlite') as { Database: TraceDatabaseConstructor };
+    db = new Database(dbPath, { create: true });
+  } else {
+    const { DatabaseSync } = require('node:sqlite') as {
+      DatabaseSync: NodeTraceDatabaseConstructor;
+    };
+    const database = new DatabaseSync(dbPath);
+    db = {
+      exec: (sql) => database.exec(sql),
+      query: (sql) => {
+        const statement = database.prepare(sql);
+        return {
+          run: (...values) => statement.run(...values),
+          all: (...values) => statement.all(...values),
+          get: (...values) => statement.get(...values),
+        };
+      },
+      close: () => database.close(),
+    };
+  }
   db.exec('PRAGMA busy_timeout = 1000;');
   return db;
 }

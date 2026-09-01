@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { createOsDeviceAuthorityHandler } from '../cloudflare/os-device-authority/src/app';
 import { registerApprovedWorkspaceRoute } from '../cloudflare/os-device-authority/src/services/connectors';
+import { reconcileWorkspaceRouteState } from '../cloudflare/os-device-authority/src/services/connectors';
 import { prepareGrantApproval } from '../cloudflare/os-device-authority/src/services/grants';
 import {
   createMemoryDeviceGrantStore,
@@ -65,6 +66,10 @@ const node = (input: {
     platform: 'darwin',
     architecture: 'arm64',
     channel: 'stable',
+    osVersion: '0.1.85',
+    bundleId: `bundle-${input.nodeId}`,
+    mcpProtocolVersion: '2026-07-28',
+    mcpReady: true,
     connectorId: input.connectorId,
     capabilities: ['mcp', 'tools'],
     connectorStatus: 'connected',
@@ -151,11 +156,15 @@ async function seedWorkspace(
 async function seedRoutes(
   db: ReturnType<typeof createInMemoryWorkspaceRouteD1>,
   nowMs = baseNow,
-  presence?: { homeLastSeenAt?: number; memberLastSeenAt?: number },
+  presence?: {
+    homeLastSeenAt?: number;
+    memberLastSeenAt?: number;
+    routeWorkspaceId?: string;
+  },
 ): Promise<void> {
   await migrateWorkspaceRouteD1(db);
   await upsertWorkspaceHostnameInD1(db, {
-    workspaceId,
+    workspaceId: presence?.routeWorkspaceId ?? workspaceId,
     workspaceSlug,
     hostname: workspaceHost,
     baseDomain: 'consuelohq.com',
@@ -199,6 +208,68 @@ async function seedRoutes(
     ],
   } as Parameters<typeof upsertWorkspaceHostnameInD1>[1]);
 }
+
+describe('workspace route default reconciliation', () => {
+  it.each([
+    ['not ready', { mcpReady: false }],
+    ['incompatible', { mcpProtocolVersion: '2024-11-05', mcpReady: true }],
+  ])('should choose a ready fallback when the current node is %s', async (_label, currentPatch) => {
+    const homeKey = generateWorkspaceDeviceKeyPair();
+    const memberKey = generateWorkspaceDeviceKeyPair();
+    const routes = createInMemoryWorkspaceRouteD1();
+    await migrateWorkspaceRouteD1(routes);
+    const home = node({
+      nodeId: 'node-home',
+      displayName: 'Mac Mini',
+      role: 'home',
+      connectorId: 'connector_node_home',
+      publicKeyJwk: homeKey.publicKeyJwk,
+      publicKeyThumbprint: await devicePublicKeyThumbprint(homeKey.publicKeyJwk),
+    });
+    const member = {
+      ...node({
+        nodeId: 'node-member',
+        displayName: 'Cloud node',
+        role: 'member',
+        connectorId: 'connector_node_member',
+        publicKeyJwk: memberKey.publicKeyJwk,
+        publicKeyThumbprint: await devicePublicKeyThumbprint(memberKey.publicKeyJwk),
+      }),
+      ...currentPatch,
+    } as WorkspaceNode;
+
+    const result = await reconcileWorkspaceRouteState({
+      routeRegistry: routes,
+      workspace: {
+        accountId,
+        workspaceId,
+        workspaceSlug,
+        workspaceHost,
+        homeNodeId: 'node-home',
+        defaultNodeId: 'node-missing',
+        updatedAt: baseNow,
+      },
+      nodes: [home, member],
+      currentNodeId: 'node-member',
+      nowMs: baseNow,
+    });
+
+    expect(result).toMatchObject({
+      defaultNodeId: 'node-home',
+      defaultNodeChanged: true,
+    });
+    await expect(
+      resolveWorkspaceRouteFromD1(routes, {
+        host: workspaceHost,
+        path: '/mcp',
+        nowMs: baseNow,
+      }),
+    ).resolves.toMatchObject({
+      allowed: true,
+      nodeId: 'node-home',
+    });
+  });
+});
 
 describe('workspace node identity', () => {
   it('registers new nodes offline until a signed heartbeat arrives', async () => {
@@ -938,6 +1009,8 @@ describe('workspace node management and presence', () => {
       timestamp: baseNow - WORKSPACE_NODE_SIGNATURE_MAX_AGE_MS + 1,
       nonce: 'heartbeat-receipt-retention',
       connectorStatus: 'connected',
+      platform: 'darwin',
+      architecture: 'arm64',
       capabilities: ['mcp'],
     });
     const signature = createDevicePublicKeyProof({
@@ -962,6 +1035,10 @@ describe('workspace node management and presence', () => {
       nonce: 'heartbeat-receipt-retention',
       expiresAt: baseNow + WORKSPACE_NODE_SIGNATURE_MAX_AGE_MS,
       nowMs: baseNow,
+    });
+    await expect(backingStore.byWorkspaceNodeId('node-member')).resolves.toMatchObject({
+      platform: 'darwin',
+      architecture: 'arm64',
     });
   });
 
@@ -1353,6 +1430,12 @@ describe('workspace node management and presence', () => {
     expect(
       (await store.byWorkspaceNode(accountId, 'node-member'))?.agents,
     ).toEqual(['codex', 'opencode']);
+    await expect(store.byWorkspaceNode(accountId, 'node-member')).resolves.toMatchObject({
+      osVersion: undefined,
+      bundleId: undefined,
+      mcpProtocolVersion: undefined,
+      mcpReady: undefined,
+    });
     expect((await handler(heartbeatRequest())).status).toBe(409);
 
     const onlineAgents = await handler(
@@ -1628,6 +1711,75 @@ describe('workspace node management and presence', () => {
     });
   });
 
+  it('should preserve reconciled route when provisioning bookkeeping fails', async () => {
+    const store = createMemoryDeviceGrantStore();
+    const { memberKey } = await seedWorkspace(store);
+    const priorNode = await store.byWorkspaceNode(accountId, 'node-member');
+    expect(priorNode).toBeDefined();
+    await store.putWorkspaceNode({
+      ...priorNode!,
+      connectorStatus: 'disconnected',
+      lastSeenAt: baseNow - heartbeatTtlMs * 3,
+    });
+    const routes = createInMemoryWorkspaceRouteD1();
+    await seedRoutes(routes);
+    store.markManagedCloudProvisioningReadyByNode = async () => {
+      throw new Error('provisioning bookkeeping unavailable');
+    };
+    const nowMs = baseNow + 1_000;
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      origin,
+      now: () => nowMs,
+      workspaceRouteRegistry: routes,
+    });
+    const body = JSON.stringify({
+      workspaceId,
+      nodeId: 'node-member',
+      timestamp: nowMs,
+      nonce: 'heartbeat-provisioning-bookkeeping-failure',
+      connectorStatus: 'connected',
+      capabilities: ['mcp', 'tools'],
+      osVersion: '0.1.85',
+      mcpProtocolVersion: '2026-07-28',
+      mcpReady: true,
+    });
+    const signature = createDevicePublicKeyProof({
+      deviceKeyPair: memberKey,
+      payload: body,
+    });
+
+    const heartbeat = await handler(
+      new Request(`${origin}/workspace/nodes/heartbeat`, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-consuelo-node-signature': signature,
+        },
+        body,
+      }),
+    );
+
+    expect(heartbeat.status).toBe(500);
+    await expect(store.byWorkspaceNode(accountId, 'node-member')).resolves.toMatchObject({
+      connectorStatus: 'connected',
+      lastSeenAt: nowMs,
+      mcpReady: true,
+    });
+    await expect(
+      resolveWorkspaceRouteFromD1(routes, {
+        host: workspaceHost,
+        path: '/mcp',
+        nodeId: 'node-member',
+        nowMs,
+      }),
+    ).resolves.toMatchObject({
+      allowed: true,
+      nodeId: 'node-member',
+      target: { connectorId: 'connector_node_member' },
+    });
+  });
+
   it('preserves a newer published launcher snapshot during signed heartbeat reconciliation', async () => {
     const store = createMemoryDeviceGrantStore();
     const { memberKey } = await seedWorkspace(store);
@@ -1835,6 +1987,9 @@ describe('workspace node management and presence', () => {
         nonce: input.nonce,
         connectorStatus: 'connected',
         capabilities: ['mcp', 'tools'],
+        osVersion: '0.1.85',
+        mcpProtocolVersion: '2026-07-28',
+        mcpReady: true,
       });
       const signature = createDevicePublicKeyProof({
         deviceKeyPair: input.key,
@@ -2137,6 +2292,292 @@ describe('multi-node connector routing', () => {
     expect(upstreams).toHaveLength(2);
   });
 
+  it('should strip routing nodeId when explicit routing rewrites', async () => {
+    const store = createMemoryDeviceGrantStore();
+    await seedWorkspace(store);
+    await authorizeWorkspace(store, 'central-sanitized-node-token', {
+      scopes: ['workspace:read', 'route:/mcp:read', 'tool:*:read'],
+    });
+    const db = createInMemoryWorkspaceRouteD1();
+    await seedRoutes(db);
+    let upstreamRequest: Request | undefined;
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      origin,
+      now: () => baseNow,
+      workspaceRouteRegistry: db,
+      fetchImpl: async (request) => {
+        upstreamRequest = request instanceof Request ? request : new Request(request);
+        return Response.json({ ok: true });
+      },
+    });
+
+    const response = await handler(new Request(`${origin}/mcp`, {
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer central-sanitized-node-token',
+        'content-type': 'application/json',
+        'content-length': '9999',
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 14,
+        method: 'tools/call',
+        params: {
+          name: 'call',
+          arguments: {
+            tool: 'status',
+            nodeId: 'node-member',
+            timeout: 45_000,
+            input: { nodeId: 'domain-node-id', value: 'keep-me' },
+          },
+        },
+      }),
+    }));
+
+    expect(response.status).toBe(200);
+    expect(upstreamRequest?.url).toBe('https://member.connector.test/mcp');
+    expect(upstreamRequest?.headers.get('x-consuelo-node-id')).toBe('node-member');
+    expect(upstreamRequest?.headers.get('content-length')).toBeNull();
+    const forwarded = await upstreamRequest!.clone().json() as {
+      params?: { arguments?: Record<string, unknown> };
+    };
+    expect(forwarded.params?.arguments).toMatchObject({
+      tool: 'status',
+      timeout: 45_000,
+      input: { nodeId: 'domain-node-id', value: 'keep-me' },
+    });
+    expect(forwarded.params?.arguments?.nodeId).toBeUndefined();
+  });
+
+  it('should reject incompatible node when routing is explicit', async () => {
+    const store = createMemoryDeviceGrantStore();
+    await seedWorkspace(store);
+    await authorizeWorkspace(store, 'central-incompatible-node-token', {
+      scopes: ['workspace:read', 'route:/mcp:read', 'tool:*:read'],
+    });
+    const member = await store.byWorkspaceNode(accountId, 'node-member');
+    expect(member).toBeDefined();
+    await store.putWorkspaceNode({
+      ...member!,
+      osVersion: '0.1.70',
+      mcpProtocolVersion: '2024-11-05',
+      mcpReady: true,
+    });
+    const db = createInMemoryWorkspaceRouteD1();
+    await seedRoutes(db);
+    let upstreamCalls = 0;
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      origin,
+      now: () => baseNow,
+      workspaceRouteRegistry: db,
+      fetchImpl: async () => {
+        upstreamCalls += 1;
+        return Response.json({ ok: true });
+      },
+    });
+
+    const response = await handler(new Request(`${origin}/mcp`, {
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer central-incompatible-node-token',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 15,
+        method: 'tools/call',
+        params: {
+          name: 'call',
+          arguments: { tool: 'status', input: {}, nodeId: 'node-member' },
+        },
+      }),
+    }));
+
+    expect(response.status).toBe(409);
+    await expect(response.json()).resolves.toMatchObject({
+      error: {
+        code: 'WORKSPACE_NODE_UPDATE_REQUIRED',
+        nodeId: 'node-member',
+        osVersion: '0.1.70',
+        requiredProtocolVersion: '2026-07-28',
+      },
+    });
+    expect(upstreamCalls).toBe(0);
+  });
+
+  it('should allow lifecycle update recovery when explicit node compatibility is stale', async () => {
+    const store = createMemoryDeviceGrantStore();
+    await seedWorkspace(store);
+    await authorizeWorkspace(store, 'central-lifecycle-recovery-token', {
+      scopes: ['workspace:read', 'route:/mcp:read', 'mcp:call', 'tool:*:read'],
+    });
+    const member = await store.byWorkspaceNode(accountId, 'node-member');
+    expect(member).toBeDefined();
+    await store.putWorkspaceNode({
+      ...member!,
+      osVersion: undefined,
+      bundleId: undefined,
+      mcpProtocolVersion: undefined,
+      mcpReady: undefined,
+    });
+    const routeDatabase = createInMemoryWorkspaceRouteD1();
+    await seedRoutes(routeDatabase);
+    const forwardedTools: string[] = [];
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      origin,
+      now: () => baseNow,
+      workspaceRouteRegistry: routeDatabase,
+      fetchImpl: async (request) => {
+        const forwarded = await (request instanceof Request ? request : new Request(request))
+          .clone()
+          .json() as { params?: { arguments?: { tool?: unknown } } };
+        if (typeof forwarded.params?.arguments?.tool === 'string') {
+          forwardedTools.push(forwarded.params.arguments.tool);
+        }
+        return Response.json({ ok: true });
+      },
+    });
+    const call = async (id: number, tool: string) => handler(new Request(`${origin}/mcp`, {
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer central-lifecycle-recovery-token',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id,
+        method: 'tools/call',
+        params: {
+          name: 'call',
+          arguments: { tool, input: {}, nodeId: 'node-member' },
+        },
+      }),
+    }));
+
+    const blocked = await call(17, 'status');
+    expect(blocked.status).toBe(409);
+    expect(forwardedTools).toEqual([]);
+
+    const recovery = await call(18, 'lifecycle.update');
+    expect(recovery.status).toBe(200);
+    expect(forwardedTools).toEqual(['lifecycle.update']);
+  });
+
+  it('should reject revoked node lifecycle recovery even when the route target is stale', async () => {
+    const store = createMemoryDeviceGrantStore();
+    await seedWorkspace(store);
+    await authorizeWorkspace(store, 'central-revoked-lifecycle-recovery-token', {
+      scopes: ['workspace:read', 'route:/mcp:read', 'mcp:call'],
+    });
+    const member = await store.byWorkspaceNode(accountId, 'node-member');
+    expect(member).toBeDefined();
+    await store.putWorkspaceNode({
+      ...member!,
+      state: 'revoked',
+      connectorStatus: 'disconnected',
+      revokedAt: baseNow,
+      updatedAt: baseNow,
+    });
+    const routeDatabase = createInMemoryWorkspaceRouteD1();
+    await seedRoutes(routeDatabase);
+    let upstreamCalls = 0;
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      origin,
+      now: () => baseNow,
+      workspaceRouteRegistry: routeDatabase,
+      fetchImpl: async () => {
+        upstreamCalls += 1;
+        return Response.json({ ok: true });
+      },
+    });
+
+    const response = await handler(new Request(`${origin}/mcp`, {
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer central-revoked-lifecycle-recovery-token',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 19,
+        method: 'tools/call',
+        params: {
+          name: 'call',
+          arguments: {
+            tool: 'lifecycle.update',
+            input: { channel: 'canary', version: '0.1.93' },
+            nodeId: 'node-member',
+          },
+        },
+      }),
+    }));
+
+    expect(response.status).toBe(404);
+    await expect(response.json()).resolves.toMatchObject({
+      error: {
+        code: 'WORKSPACE_NODE_REVOKED',
+        nodeId: 'node-member',
+      },
+    });
+    expect(upstreamCalls).toBe(0);
+  });
+
+  it('should fail closed when routing lacks an authoritative registry record', async () => {
+    const store = createMemoryDeviceGrantStore();
+    await seedWorkspace(store);
+    await authorizeWorkspace(store, 'central-missing-node-record-token', {
+      scopes: ['workspace:read', 'route:/mcp:read', 'tool:*:read'],
+    });
+    const readWorkspaceNode = store.byWorkspaceNode.bind(store);
+    store.byWorkspaceNode = async (requestedAccountId, requestedNodeId) =>
+      requestedNodeId === 'node-member'
+        ? undefined
+        : readWorkspaceNode(requestedAccountId, requestedNodeId);
+    const routeDatabase = createInMemoryWorkspaceRouteD1();
+    await seedRoutes(routeDatabase);
+    let upstreamCalls = 0;
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      origin,
+      now: () => baseNow,
+      workspaceRouteRegistry: routeDatabase,
+      fetchImpl: async () => {
+        upstreamCalls += 1;
+        return Response.json({ ok: true });
+      },
+    });
+
+    const response = await handler(new Request(`${origin}/mcp`, {
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer central-missing-node-record-token',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 16,
+        method: 'tools/call',
+        params: {
+          name: 'call',
+          arguments: { tool: 'status', input: {}, nodeId: 'node-member' },
+        },
+      }),
+    }));
+
+    expect(response.status).toBe(409);
+    await expect(response.json()).resolves.toMatchObject({
+      error: {
+        code: 'WORKSPACE_NODE_NOT_READY',
+        nodeId: 'node-member',
+      },
+    });
+    expect(upstreamCalls).toBe(0);
+  });
+
   it('should add a safe workspace node directory when central get_steering is requested', async () => {
     const store = createMemoryDeviceGrantStore();
     await seedWorkspace(store);
@@ -2393,6 +2834,221 @@ describe('multi-node connector routing', () => {
       'https://home.connector.test/mcp',
     ]);
     expect(routeSources).toEqual(['default', 'task']);
+  });
+
+  it('should self-heal task affinity when only the resolved workspace ID drifts', async () => {
+    const store = createMemoryDeviceGrantStore();
+    await seedWorkspace(store);
+    await authorizeWorkspace(store, 'central-task-workspace-drift-token', {
+      scopes: ['route:/mcp:read', 'mcp:call'],
+    });
+    const taskSession = 'tsk_workspace_drift';
+    await store.claimWorkspaceTaskAffinity({
+      accountId,
+      workspaceId: 'workspace_previous_identity',
+      workspaceHost,
+      taskSession,
+      ownerNodeId: 'node-home',
+      createdAt: baseNow - 10_000,
+      updatedAt: baseNow - 10_000,
+    });
+    const db = createInMemoryWorkspaceRouteD1();
+    const routeWorkspaceId = 'workspace_rotated_identity';
+    await seedRoutes(db, baseNow, { routeWorkspaceId });
+    const upstreams: string[] = [];
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      origin,
+      now: () => baseNow,
+      workspaceRouteRegistry: db,
+      fetchImpl: async (request) => {
+        const upstream = request instanceof Request ? request : new Request(request);
+        upstreams.push(upstream.url);
+        const payload = await upstream.clone().json() as { id?: unknown };
+        return Response.json({
+          jsonrpc: '2.0',
+          id: payload.id ?? null,
+          result: {
+            content: [{ type: 'text', text: JSON.stringify({ ok: true, code: 'OK', data: {} }) }],
+            isError: false,
+          },
+        });
+      },
+    });
+
+    const response = await handler(new Request(`${origin}/mcp`, {
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer central-task-workspace-drift-token',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0', id: 32, method: 'tools/call',
+        params: {
+          name: 'call',
+          arguments: {
+            tool: 'fs.read',
+            input: { path: 'README.md' },
+            taskSession,
+          },
+        },
+      }),
+    }));
+
+    expect(response.status).toBe(200);
+    expect(upstreams).toEqual(['https://home.connector.test/mcp']);
+    await expect(store.byWorkspaceTaskAffinity({
+      accountId,
+      workspaceHost,
+      taskSession,
+      nowMs: baseNow,
+    })).resolves.toMatchObject({
+      workspaceId: routeWorkspaceId,
+      ownerNodeId: 'node-home',
+    });
+  });
+
+  it('should self-heal work-session affinity when only the resolved workspace ID drifts', async () => {
+    const store = createMemoryDeviceGrantStore();
+    await seedWorkspace(store);
+    await authorizeWorkspace(store, 'central-work-session-workspace-drift-token', {
+      scopes: ['route:/mcp:read', 'mcp:call'],
+    });
+    const workSession = 'wrk_workspace_drift';
+    await store.claimWorkspaceSessionAffinity({
+      accountId,
+      workspaceId: 'workspace_previous_identity',
+      workspaceHost,
+      sessionKind: 'work',
+      sessionId: workSession,
+      ownerNodeId: 'node-home',
+      createdAt: baseNow - 10_000,
+      updatedAt: baseNow - 10_000,
+    });
+    const db = createInMemoryWorkspaceRouteD1();
+    const routeWorkspaceId = 'workspace_rotated_identity';
+    await seedRoutes(db, baseNow, { routeWorkspaceId });
+    const upstreams: string[] = [];
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      origin,
+      now: () => baseNow,
+      workspaceRouteRegistry: db,
+      fetchImpl: async (request) => {
+        const upstream = request instanceof Request ? request : new Request(request);
+        upstreams.push(upstream.url);
+        const payload = await upstream.clone().json() as { id?: unknown };
+        return Response.json({
+          jsonrpc: '2.0',
+          id: payload.id ?? null,
+          result: {
+            content: [{ type: 'text', text: JSON.stringify({ ok: true, code: 'OK', data: {} }) }],
+            isError: false,
+          },
+        });
+      },
+    });
+
+    const response = await handler(new Request(`${origin}/mcp`, {
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer central-work-session-workspace-drift-token',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0', id: 33, method: 'tools/call',
+        params: {
+          name: 'call',
+          arguments: {
+            tool: 'fs.read',
+            input: { path: 'README.md' },
+            workSession,
+          },
+        },
+      }),
+    }));
+
+    expect(response.status).toBe(200);
+    expect(upstreams).toEqual(['https://home.connector.test/mcp']);
+    await expect(store.byWorkspaceSessionAffinity({
+      accountId,
+      workspaceHost,
+      sessionKind: 'work',
+      sessionId: workSession,
+      nowMs: baseNow,
+    })).resolves.toMatchObject({
+      workspaceId: routeWorkspaceId,
+      ownerNodeId: 'node-home',
+    });
+  });
+
+  it('should fail closed when workspace-drift affinity reconciliation conflicts', async () => {
+    const backingStore = createMemoryDeviceGrantStore();
+    await seedWorkspace(backingStore);
+    await authorizeWorkspace(backingStore, 'central-task-workspace-drift-conflict-token', {
+      scopes: ['route:/mcp:read', 'mcp:call'],
+    });
+    const taskSession = 'tsk_workspace_drift_conflict';
+    const staleAffinity = {
+      accountId,
+      workspaceId: 'workspace_previous_identity',
+      workspaceHost,
+      taskSession,
+      ownerNodeId: 'node-home',
+      createdAt: baseNow - 10_000,
+      updatedAt: baseNow - 10_000,
+    };
+    await backingStore.claimWorkspaceTaskAffinity(staleAffinity);
+    const store = {
+      ...backingStore,
+      async claimWorkspaceTaskAffinity() {
+        return {
+          status: 'conflict' as const,
+          affinity: {
+            ...staleAffinity,
+            ownerNodeId: 'node-member',
+          },
+        };
+      },
+    };
+    const db = createInMemoryWorkspaceRouteD1();
+    await seedRoutes(db, baseNow, { routeWorkspaceId: 'workspace_rotated_identity' });
+    let upstreamCalls = 0;
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      origin,
+      now: () => baseNow,
+      workspaceRouteRegistry: db,
+      fetchImpl: async () => {
+        upstreamCalls += 1;
+        return Response.json({ ok: true });
+      },
+    });
+
+    const response = await handler(new Request(`${origin}/mcp`, {
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer central-task-workspace-drift-conflict-token',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0', id: 34, method: 'tools/call',
+        params: {
+          name: 'call',
+          arguments: {
+            tool: 'fs.read',
+            input: { path: 'README.md' },
+            taskSession,
+          },
+        },
+      }),
+    }));
+
+    expect(response.status).toBe(409);
+    await expect(response.json()).resolves.toMatchObject({
+      error: { code: 'TASK_WORKSPACE_MISMATCH' },
+    });
+    expect(upstreamCalls).toBe(0);
   });
 
   it('should reject explicit node targeting when it conflicts with the task owner', async () => {

@@ -11,6 +11,12 @@ const PORT = process.env.CONSUELO_OS_WORKER_BASE_PORT || process.env.WORKSPACE_D
 const HEALTH = `http://127.0.0.1:${PORT}/health`;
 const OS_DIR = path.resolve(__dirname, '..');
 const START_SCRIPT = path.join(OS_DIR, 'scripts', 'start-consuelo-daemon.sh');
+const SITES_SCRIPT = path.join(OS_DIR, 'scripts', 'os.ts');
+const BUN_EXECUTABLE = process.env.BUN_BIN || (process.versions.bun ? process.execPath : 'bun');
+const MANAGED_SITES_REFRESH_TIMEOUT_MS = (() => {
+  const seconds = Number(process.env.WORKSPACE_DAEMON_SITES_REFRESH_TIMEOUT_SECONDS || 15);
+  return Number.isFinite(seconds) && seconds >= 1 ? Math.floor(seconds * 1000) : 15000;
+})();
 const LOG_FILE = process.env.CONSUELO_DAEMON_LOG_FILE || path.join(HOME, 'Library', 'Logs', 'Consuelo', 'system.log');
 const LAUNCH_DOMAIN = `gui/${process.getuid()}`;
 const RELOAD_WAIT_ATTEMPTS = Number(process.env.CONSUELO_RELOAD_WAIT_ATTEMPTS || 40);
@@ -32,6 +38,24 @@ function runBestEffort(command, args = []) {
     return execFileSync(command, args, { encoding: 'utf8', timeout: 10000, stdio: ['ignore', 'pipe', 'pipe'] }).trim();
   } catch (error) {
     return error.stdout?.trim() || '';
+  }
+}
+
+function refreshManagedSitesBestEffort() {
+  try {
+    execFileSync(BUN_EXECUTABLE, [SITES_SCRIPT, 'sites', 'refresh', '--json'], {
+      encoding: 'utf8',
+      timeout: MANAGED_SITES_REFRESH_TIMEOUT_MS,
+      stdio: ['ignore', 'ignore', 'pipe'],
+      env: process.env,
+    });
+    return true;
+  } catch (error) {
+    const detail = error?.stderr?.toString().trim()
+      || error?.stdout?.toString().trim()
+      || (error instanceof Error ? error.message : String(error));
+    writeStderr(`warning: managed Sites refresh failed${detail ? `: ${detail}` : ''}`);
+    return false;
   }
 }
 
@@ -551,6 +575,7 @@ switch (command) {
     if (!tryRollingReload()) {
       throw new Error('Consuelo OS cannot preserve MCP ingress without a healthy two-worker pool. Run repair for destructive recovery.');
     }
+    refreshManagedSitesBestEffort();
     break;
 
   case 'restart':
@@ -562,11 +587,13 @@ switch (command) {
     if (!tryRollingReload()) {
       runReload({ useLaunchd: process.env.CONSUELO_OS_RELOAD_LAUNCHD === '1' || hasLaunchdPlist });
     }
+    refreshManagedSitesBestEffort();
     break;
 
   case 'restart-now':
     sleep(0.5);
     runReload({ useLaunchd: process.env.CONSUELO_OS_RELOAD_LAUNCHD === '1' || hasLaunchdPlist });
+    refreshManagedSitesBestEffort();
     break;
 
   case 'logs':

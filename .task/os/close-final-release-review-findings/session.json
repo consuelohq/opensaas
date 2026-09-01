@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_254cc8bc75b9",
+  "tmuxSession": "opensaas-os-close-final-release-review-findings-254cc8bc",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/close-final-release-review-findings",
+  "branch": "task/os/close-final-release-review-findings",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-close-final-release-review-findings",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-close-final-release-review-findings",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2227,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2227",
+  "createdAt": "2026-08-26T18:21:46.554Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-close-final-release-review-findings/.task/os/close-final-release-review-findings/session.json"
+}
