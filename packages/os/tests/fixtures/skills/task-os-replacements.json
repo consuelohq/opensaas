@@ -20,6 +20,10 @@
     "to": "Normal OS calls should be task-session scoped instead of branch-threaded."
   },
   {
+    "from": "context.search,  context.trace & explore for discovery and prior context.",
+    "to": "`memory` with `operation: \"search\"`, traces, and explore for discovery and prior context."
+  },
+  {
     "from": "context.search",
     "to": "memory.search"
   },

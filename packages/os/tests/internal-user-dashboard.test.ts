@@ -78,6 +78,8 @@ describe('internal user dashboard', () => {
     expect(html).toContain('data-workspace-shell');
     expect(html).toContain('data-workspace-chrome');
     expect(html).toContain('data-workspace-route-trigger');
+    expect(html).toContain('data-custom-route-group=\"internal\"');
+    expect(html).toContain('>Users &amp; installs</span>');
     expect(html).toContain('people have joined Consuelo');
     expect(html).toContain('Activation progression');
     expect(html).toContain('<table class="activation-table"');

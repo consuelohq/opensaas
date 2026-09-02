@@ -1,0 +1,22 @@
+*** Begin Patch
+*** Update File: packages/os/tests/subagent-lifecycle-regressions.test.ts
+@@
+         timeoutMs: 15_000,
+       });
+       if (!started.ok) throw new Error(started.message);
+       const unknown: DurableSubagentRun = {
+         ...started.run,
+         status: 'completion_unknown',
+@@
+         timeoutMs: 15_000,
+       });
+       if (!started.ok) throw new Error(started.message);
++      const exitDeadline = Date.now() + 15_000;
++      while (!started.run.exitMarkerPath || !existsSync(started.run.exitMarkerPath)) {
++        if (Date.now() >= exitDeadline) throw new Error('owned exit marker was not published');
++        await new Promise((resolve) => setTimeout(resolve, 25));
++      }
+       const unknown: DurableSubagentRun = {
+         ...started.run,
+         status: 'completion_unknown',
+*** End Patch

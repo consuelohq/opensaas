@@ -39,8 +39,8 @@ const PAGE_COPY: Record<ConfigurationPageId, {
   description: string;
 }> = {
   configuration: {
-    title: 'Overview',
-    description: 'See live workspace activity, operating readiness, and the agent surfaces available here.',
+    title: 'Home',
+    description: '',
   },
   tools: {
     title: 'Tools',
@@ -484,7 +484,6 @@ function configurationClientScript(): string {
       setText('overview-heatmap-calls', heatCompact(totals.calls));
       setText('overview-heatmap-tokens', heatCompact(totals.tokens));
       setText('overview-heatmap-cost', heatCost(totals.cost));
-      setText('overview-heatmap-title', totals.calls > 0 ? 'Activity concentrates into a readable weekly rhythm' : 'Live trace activity will appear here');
       grid.setAttribute('aria-label', 'Trace activity by local hour for the last seven days. ' + String(totals.calls) + ' calls, ' + heatCompact(totals.tokens) + ' tokens, ' + heatCost(totals.cost) + '.');
       const cells = Array.from(grid.querySelectorAll('.overview-heat-cell'));
       cells.forEach((cell) => {
@@ -546,7 +545,7 @@ function configurationClientScript(): string {
     function initOverviewHeatmap() {
       if (!byId('overview-heatmap-grid')) return;
       const cached = readOverviewHeatmapCache();
-      if (cached) renderOverviewHeatmap(cached);
+      renderOverviewHeatmap(cached || aggregateOverviewHeatmap([]));
       void refreshOverviewHeatmap();
       window.setInterval(() => { if (!document.hidden) void refreshOverviewHeatmap(); }, OVERVIEW_HEATMAP_REFRESH_MS);
       document.addEventListener('visibilitychange', () => { if (!document.hidden) void refreshOverviewHeatmap(); });
@@ -561,7 +560,7 @@ function configurationClientScript(): string {
         '<td>' + (isDefault ? '<strong>Default</strong>' : '<span class="muted">—</span>') + '</td>' +
         '<td><code>' + escapeHtml(repository.nameWithOwner || '') + '</code><br>' + status + '</td>' +
         '<td><code>' + escapeHtml(repository.defaultBranch || 'main') + '</code></td>' +
-        '<td>' + (repository.ready ? 'GitHub' : '<span class="muted">Reconnect GitHub</span>') + '</td>' +
+        '<td>' + (repository.ready ? 'GitHub' : '<span class="muted">Connect GitHub</span>') + '</td>' +
         '<td><div class="row-actions">' +
           (!isDefault ? '<button type="button" data-source-action="default">Make default</button>' : '<span class="muted">—</span>') +
           '</div></td>' +
@@ -590,14 +589,16 @@ function configurationClientScript(): string {
       if (rows) rows.innerHTML = currentSourceControl.repositories.length
         ? currentSourceControl.repositories.map(sourceControlRow).join('')
         : emptyRow(5, 'No GitHub repositories connected yet.');
-      setText('source-control-summary', currentSourceControl.repositories.length
+      const hasReadyRepositories = currentSourceControl.repositories.some((repository) => repository.ready === true);
+      setText('source-control-summary', hasReadyRepositories
         ? 'GitHub connected · ' + currentSourceControl.repositories.length + ' repositor' + (currentSourceControl.repositories.length === 1 ? 'y' : 'ies') + (currentSourceControl.configured ? ' ready' : ' selected')
-        : 'Connect GitHub to choose repositories');
+        : currentSourceControl.repositories.length
+          ? 'Connect GitHub to authorize repository access'
+          : 'Connect GitHub to choose repositories');
       const connect = byId('source-control-connect-github');
       if (connect) {
-        const hasRepositories = currentSourceControl.repositories.length > 0;
-        connect.textContent = hasRepositories ? 'Manage GitHub access' : 'Connect GitHub';
-        connect.setAttribute('href', hasRepositories
+        connect.textContent = hasReadyRepositories ? 'Manage GitHub access' : 'Connect GitHub';
+        connect.setAttribute('href', hasReadyRepositories
           ? '/gateway/configuration/source-control/github/connect?return_to=%2Fconfiguration&mode=manage'
           : '/gateway/configuration/source-control/github/connect?return_to=%2Fconfiguration');
       }
@@ -1131,13 +1132,11 @@ function renderOverviewPanels(): string {
     hour % 3 === 0 || hour === 23 ? `<span>${String(hour).padStart(2, '0')}</span>` : '<span></span>',
   ).join('');
   return `
-        <section class="overview-surface" id="overview" aria-labelledby="overview-heatmap-title">
-          <section class="overview-heatmap-panel" data-overview-heatmap aria-labelledby="overview-heatmap-title">
+        <section class="overview-surface" id="overview">
+          <section class="overview-heatmap-panel" data-overview-heatmap aria-label="Trace activity for the last seven days">
             <div class="overview-heatmap-head">
               <div class="overview-heatmap-copy">
                 <p class="identity">Last seven days</p>
-                <h2 id="overview-heatmap-title">Live trace activity will appear here</h2>
-                <p>Calls, tokens, and cost by local hour. Hover or focus any cell for details; the heatmap refreshes from the signed trace gateway.</p>
               </div>
               <div class="overview-heatmap-summary" aria-live="polite">
                 <span>Calls <b id="overview-heatmap-calls">0</b></span>
@@ -1171,7 +1170,7 @@ function renderOverviewPanels(): string {
           <div class="overview-context">
             <div class="overview-context-copy">
               <h2>One workspace, directly readable</h2>
-              <p>Overview shows live activity and operating posture first. Detailed configuration stays below, while Nodes, Tools, Secrets, and Tracing remain focused work surfaces.</p>
+              <p>Home shows live activity and operating posture first. Detailed configuration stays below, while Nodes, Tools, Secrets, and Tracing remain focused work surfaces.</p>
             </div>
             <a class="overview-context-link" target="_blank" rel="noopener noreferrer" href="https://docs.consuelohq.com/">Open Documentation →</a>
           </div>
@@ -1328,7 +1327,7 @@ export function renderConfigurationSite(
       <main class="content">
         <header class="hero">
           <h1>${copy.title}</h1>
-          <p>${copy.description}</p>
+          ${copy.description ? '<p>' + copy.description + '</p>' : ''}
         </header>
         ${content}
       </main>

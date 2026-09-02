@@ -289,6 +289,7 @@ export async function sendWorkspaceNodeHeartbeatFromConfig(
   input: {
     fetchImpl?: typeof fetch;
     detectAgents?: (input: { home: string }) => LocalAgentDetection[];
+    acceptCachedMcpProof?: boolean;
   } = {},
 ) {
   try {
@@ -302,6 +303,30 @@ export async function sendWorkspaceNodeHeartbeatFromConfig(
       config,
       fetchImpl: input.fetchImpl,
     });
+    if (input.acceptCachedMcpProof) {
+      const cachedEdgeAuth = cachedHeartbeatEdgeAuth({ configPath, config });
+      const cachedProbeReady = cachedEdgeAuth
+        ? await probeHeartbeatMcpReadiness({
+            config,
+            result: {
+              nodeId: config.nodeId,
+              presence: 'online',
+              routeReady: true,
+              connectorId: cachedEdgeAuth.connectorId,
+              edgeRequestSigningSecret: cachedEdgeAuth.signingSecret,
+            },
+            fetchImpl: input.fetchImpl,
+          })
+        : false;
+      if (cachedProbeReady) {
+        return {
+          nodeId: config.nodeId,
+          presence: 'online' as const,
+          routeReady: true,
+          mcpReady: true,
+        };
+      }
+    }
     // Do not turn a transient public-health failure during restart into an authority-side
     // disconnect. Heartbeat TTL will classify a sustained outage if the connector stays down.
     if (connectorStatus === 'disconnected') {
@@ -341,8 +366,6 @@ export async function sendWorkspaceNodeHeartbeatFromConfig(
         : false;
       if (cachedProbeReady) {
         mcpReady = true;
-        readinessResult = await client.send({ ...runtimeStatus, mcpReady });
-        reconcileHeartbeatEdgeProxyAuth({ configPath, config, result: readinessResult });
       } else {
         const recoveryResult = await client.send({ ...runtimeStatus, mcpReady: false });
         reconcileHeartbeatEdgeProxyAuth({ configPath, config, result: recoveryResult });
@@ -351,15 +374,27 @@ export async function sendWorkspaceNodeHeartbeatFromConfig(
           result: recoveryResult,
           fetchImpl: input.fetchImpl,
         });
+      }
+      try {
         readinessResult = await client.send({ ...runtimeStatus, mcpReady });
         reconcileHeartbeatEdgeProxyAuth({ configPath, config, result: readinessResult });
+      } catch (error: unknown) {
+        if (mcpReady !== true) throw error;
+        return {
+          nodeId: config.nodeId,
+          presence: 'online' as const,
+          routeReady: true,
+          mcpReady: true,
+          authorityReady: false,
+        };
       }
     }
     const acceptedResult = mcpReadinessRequired
       ? {
           ...readinessResult,
-          routeReady: readinessResult.routeReady && mcpReady === true,
+          routeReady: mcpReady === true,
           mcpReady,
+          authorityReady: true,
         }
       : readinessResult;
     if (readinessResult.workspace) {
@@ -378,8 +413,10 @@ export async function sendWorkspaceNodeHeartbeatFromConfig(
 }
 
 async function main(): Promise<void> {
+  const args = process.argv.slice(2);
   const result = await sendWorkspaceNodeHeartbeatFromConfig(
-    parseConfigPath(process.argv.slice(2)),
+    parseConfigPath(args),
+    { acceptCachedMcpProof: args.includes('--accept-cached-mcp-proof') },
   );
   process.stdout.write(
     `${JSON.stringify({
@@ -387,6 +424,9 @@ async function main(): Promise<void> {
       presence: result.presence,
       routeReady: result.routeReady,
       ...('mcpReady' in result ? { mcpReady: result.mcpReady } : {}),
+      ...('authorityReady' in result
+        ? { authorityReady: result.authorityReady }
+        : {}),
       ...('skipped' in result && result.skipped
         ? { skipped: true, reason: result.reason }
         : {}),

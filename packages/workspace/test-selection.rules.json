@@ -333,6 +333,7 @@
         "packages/os/scripts/lib/cloudflare-worker-release-readiness.ts",
         "packages/os/scripts/lib/explore-bench.js",
         "packages/os/scripts/lib/index/embedding-gateway.js",
+        "packages/os/scripts/lib/index/indexer.js",
         "packages/os/scripts/lib/index/store.js",
         "packages/os/scripts/lib/search/**",
         "packages/os/scripts/lib/state/explore-calibration.v1.json",
@@ -353,6 +354,7 @@
         "packages/os/tests/explore-promotion-gate.test.ts",
         "packages/os/tests/explore-retrieval-policy.test.ts",
         "packages/os/tests/explore-retriever-fallback.test.ts",
+        "packages/os/tests/explore-index-hydration-fallback.test.ts",
         "packages/os/tests/explore-runtime-routing.test.ts",
         "packages/os/tests/explore-voi-policy.test.ts",
         "packages/os/tests/semantic-embedding-edge-gateway.test.ts",
@@ -372,6 +374,7 @@
             "test",
             "tests/explore-retrieval-policy.test.ts",
             "tests/explore-retriever-fallback.test.ts",
+            "tests/explore-index-hydration-fallback.test.ts",
             "tests/explore-bench.test.ts",
             "tests/explore-output-contract.test.ts",
             "tests/explore-hypothesis-model.test.ts",
@@ -711,6 +714,31 @@
         }
       ],
       "reason": "Shared generated OS tool manifests, facade schemas, registry metadata, and generated workspace types must prove deterministic generation and syntax without waking unrelated lifecycle execution."
+    },
+    {
+      "id": "os-lifecycle-connector-readiness",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/scripts/lib/lifecycle/connector-readiness.ts",
+        "packages/os/tests/lifecycle-connector-readiness.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS lifecycle connector readiness contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/lifecycle-connector-readiness.test.ts",
+            "packages/os/tests/lifecycle-engine.test.ts",
+            "packages/os/tests/workspace-node-heartbeat-script.test.ts",
+            "packages/os/tests/workspace-node-heartbeat-client.test.ts"
+          ]
+        }
+      ],
+      "reason": "Public connector acceptance changes must prove lifecycle fail-closed behavior, heartbeat reconciliation, and signed MCP readiness without selecting the unrelated package-wide OS suite."
     },
     {
       "id": "os-lifecycle-update-handoff",

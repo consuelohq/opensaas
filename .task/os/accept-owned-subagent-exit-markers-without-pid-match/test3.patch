@@ -1,0 +1,17 @@
+*** Begin Patch
+*** Update File: packages/os/tests/subagent-lifecycle-regressions.test.ts
+@@
+       fingerprint: 'pidless-exit',
+       provider: 'codex',
+       policy: 'read',
+       cwd: home,
+       instructionPath: join(runDirectory, 'instruction.md'),
+       command: ['codex', 'exec'],
+       ownerToken,
+       exitMarkerPath,
+@@
+       command: ['codex', 'exec'],
++      pid: 1,
+       ownerToken,
+       exitMarkerPath,
+*** End Patch

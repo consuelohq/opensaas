@@ -1,0 +1,137 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/fix-diff-cockpit-canonical-internal-url-parsing",
+  "base": "origin/stream/os",
+  "headSha": "3d2afcb93d5df6e2a15b5d1da13c5cd6865d6022",
+  "changeHash": "0e733de9f23d362254f8b4ea538523052f7c996c41c8c6f16db3bf59d088dd75",
+  "changedFiles": [
+    "packages/diff-cockpit/src/index.ts",
+    "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+    "packages/workspace/SCRIPTS.md"
+  ],
+  "verifiedAt": "2026-09-01T01:48:15.215Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/fix-diff-cockpit-canonical-internal-url-parsing/evidence-log.json",
+        ".task/os/fix-diff-cockpit-canonical-internal-url-parsing/read-log.json",
+        ".task/os/fix-diff-cockpit-canonical-internal-url-parsing/workpad.md",
+        ".task/tasks/os/fix-diff-cockpit-canonical-internal-url-parsing.json",
+        "packages/diff-cockpit/src/index.ts",
+        "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+        "packages/workspace/SCRIPTS.md"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-audit-docs",
+          "critical": false,
+          "reason": "Workspace script/docs changes should keep audit behavior covered.",
+          "matchedFiles": [
+            "packages/workspace/SCRIPTS.md"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "auto:@consuelo/diff-cockpit:package-test",
+          "critical": false,
+          "reason": "Auto-discovered package test script for packages/diff-cockpit.",
+          "matchedFiles": [
+            "packages/diff-cockpit/src/index.ts",
+            "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+          ],
+          "origin": "auto"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace audit tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/audit/audit.test.ts"
+          ],
+          "ruleId": "workspace-audit-docs",
+          "critical": false
+        },
+        {
+          "name": "@consuelo/diff-cockpit package test",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/diff-cockpit",
+            "test"
+          ],
+          "ruleId": "auto:@consuelo/diff-cockpit:package-test",
+          "critical": false
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace audit tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/audit/audit.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "workspace-audit-docs",
+          "critical": false,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 3208,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-diff-cockpit-canonical-internal-url-parsing\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/audit/audit.test.ts \u001b[2m(\u001b[22m\u001b[2m1 test\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 443\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m runs scripts JSON audit without loading index-only tree-sitter dependencies \u001b[33m 442\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m   Start at \u001b[22m 21:48:12\n\u001b[2m   Duration \u001b[22m 1.21s\u001b[2m (transform 101ms, setup 0ms, import 122ms, tests 443ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "@consuelo/diff-cockpit package test",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/diff-cockpit",
+            "test"
+          ],
+          "cwd": ".",
+          "ruleId": "auto:@consuelo/diff-cockpit:package-test",
+          "critical": false,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 260,
+          "outputTail": "equestLocator > accepts the cockpit route shape [0.05ms]\n(pass) parsePullRequestLocator > accepts the canonical internal Diffs URL it emits [0.01ms]\n(pass) buildDiffCockpitUrl > builds the canonical internal Diffs URL [0.05ms]\n(pass) standalone Diffs retirement > removes the standalone Worker and automatic KV cache warmers while preserving hostname safety [1.55ms]\n(pass) normalizeReviewItems > keeps GitHub review thread resolution as source of truth for AI comments [0.55ms]\n(pass) createGithubCodeBrowserLoader > loads the packages tree with latest commit metadata and commit count [1.02ms]\n(pass) createGithubCodeBrowserLoader > renders markdown file contents when the selected file is markdown [1.59ms]\n(pass) createGithubCodeHistoryLoader > loads path history and builds commit tree links [0.26ms]\n(pass) createGithubPullRequestIndexLoader > fetches all PR states and enriches homepage metadata [0.62ms]\n(pass) createGithubPullRequestLoader > fetches live GitHub PR metadata, files, review comments, and commits [1.27ms]\n(pass) createGithubPullRequestLoader > throws a clear error when GitHub PR metadata fails [0.68ms]\n(pass) createGithubPullRequestLoader > skips stream commits for non-stream branches [0.29ms]\n(pass) createGithubPullRequestLoader > handles empty file, comment, and review arrays [0.69ms]\n(pass) buildFileTree > groups files by path segment and preserves file metadata [0.48ms]\n(pass) createGithubPullRequestIndexLoader GraphQL mergeability > loads all PRs with mergeability in paginated GraphQL requests when token is available [0.55ms]\n(pass) pull request index grouping > derives stream ownership from stream and task branches [0.05ms]\n(pass) pull request index grouping > groups pull requests into collapsible sections and filters by stream [0.16ms]\n(pass) pull request index grouping > streams section shows open streams by default and all streams when toggled [0.04ms]\n(pass) pull request index grouping > scores dotted fuzzy PR search across PR fields [0.41ms]\n(pass) renderCodeBrowserPage > renders the main packages browser shell and history shell [0.60ms]\n(pass) renderIndexPage > renders a Graphite-like PR inbox with command search and load-more sections [1.36ms]\n(pass) renderReviewPage > keeps the existing PR route and the right review panel closed by default [13.04ms]\n(pass) createWorker > updates GitHub review threads through the review thread API endpoint [2.06ms]\n(pass) createWorker > invalidates PR cache for resolved GitHub review-thread webhooks [2.78ms]\n(pass) createWorker > does not silently default the standalone homepage to OpenSaaS [0.13ms]\n(pass) createWorker > routes the standalone homepage to the configured repository shell [0.29ms]\n(pass) createWorker > hydrates PR pages from shared API cache when available [0.70ms]\n(pass) createWorker > keeps the PR loading shell when shared API cache misses [0.34ms]\n(pass) createWorker > merges a pull request through the merge API endpoint [0.47ms]\n(pass) createWorker > routes code browser pages and APIs for main packages and history [1.00ms]\n(pass) createWorker > refresh endpoint uses waitUntil so cron does not block on slow cache warming [76.63ms]\n(pass) createWorker > server-renders warmed inbox and PR pages from shared API cache [17.94ms]\n(pass) createWorker > refresh stores homepage snapshots in durable shared storage for cross-device first paint [0.97ms]\n(pass) createWorker > refresh endpoint protects and prewarms homepage and PR API cache entries [2.45ms]\n(pass) createWorker > returns homepage API shared cache headers and 304 for unchanged ETags [0.58ms]\n(pass) createWorker > prewarms a bounded hot PR set from the homepage snapshot when no explicit pulls are provided [61.47ms]\n(pass) createWorker > uses strict shared cache headers for open PR details and long cache headers for inactive PR details [1.27ms]\n(pass) createWorker > returns PR API cache headers and 304 for unchanged ETags [0.33ms]\n\n 40 pass\n 0 fail\n 399 expect() calls\nRan 40 tests across 1 file. [233.00ms]\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
