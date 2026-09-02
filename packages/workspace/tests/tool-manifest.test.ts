@@ -288,6 +288,26 @@ describe('workspace tool manifest generator', () => {
     });
   });
 
+  it('keeps task.finish repository selection aligned with its CLI contract', () => {
+    const schema = getInputSchema('BranchInput');
+    const registry = buildWorkspaceToolManifest({ write: false });
+    const taskFinish = registry.full.tools.find((entry) => entry.name === 'task.finish');
+    const generatedTypes = readFileSync(join(packageRoot, 'src/generated/workspace.d.ts'), 'utf8');
+
+    const parsed = schema?.safeParse({ branch: 'task/os/example', repo: 'example/private-repo' });
+
+    expect(parsed?.success).toBe(true);
+    if (!parsed?.success) throw new Error('BranchInput should parse task.finish repository selection');
+    expect(parsed.data).toEqual(expect.objectContaining({ repo: 'example/private-repo' }));
+    expect(schemaTypeSignatures.BranchInput).toContain('repo?: string');
+    expect(generatedTypes).toContain('repo?: string');
+    expect(taskFinish?.definition.command?.arguments).toContainEqual({
+      source: 'repo',
+      flag: '--repo',
+      kind: 'value',
+    });
+  });
+
   it('writes full and core manifests to override output paths', () => {
     const fullOutputPath = join(fixtureRoot, 'tool-manifest.json');
     const coreOutputPath = join(fixtureRoot, 'core-manifest.json');

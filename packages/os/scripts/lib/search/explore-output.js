@@ -56,6 +56,8 @@ function compactIndexStats(indexStats = {}) {
     last_indexed: indexStats.last_indexed ?? null,
     files_indexed: indexStats.files_indexed ?? null,
     chunks_embedded: indexStats.chunks_embedded ?? null,
+    chunks_deferred: indexStats.chunks_deferred ?? null,
+    embedding_status: indexStats.embedding_status ?? null,
   };
 }
 

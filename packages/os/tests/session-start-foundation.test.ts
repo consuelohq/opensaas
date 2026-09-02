@@ -1,6 +1,7 @@
 import { mkdirSync, mkdtempSync, readFileSync, realpathSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -162,7 +163,7 @@ describe('session.start foundation', () => {
 
     expect(result.ok).toBe(true);
     expect(plans).toHaveLength(1);
-    expect(realpathSync(plans[0].cwd)).toBe(realpathSync(join(process.cwd(), 'packages/os')));
+    expect(realpathSync(plans[0].cwd)).toBe(realpathSync(fileURLToPath(new URL('..', import.meta.url))));
     expect(plans[0].args.slice(0, 3)).toEqual(['run', 'session:start', '--']);
   });
 

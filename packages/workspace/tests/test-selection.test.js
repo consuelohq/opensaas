@@ -1625,6 +1625,35 @@ describe('test selection registry', () => {
     ]));
   });
 
+  it('routes connector readiness changes through focused lifecycle coverage', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/lib/lifecycle/connector-readiness.ts',
+      '--changed-file',
+      'packages/os/tests/lifecycle-connector-readiness.test.ts',
+      '--json',
+    ]));
+
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const connectorReadinessSuite = data.selectedSuites.find(
+      (suite) => suite.ruleId === 'os-lifecycle-connector-readiness',
+    );
+    expect(matchedRuleIds).toContain('os-lifecycle-connector-readiness');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(connectorReadinessSuite?.critical).toBe(true);
+    expect(connectorReadinessSuite?.command).toEqual([
+      'bun',
+      'x',
+      'vitest',
+      'run',
+      'packages/os/tests/lifecycle-connector-readiness.test.ts',
+      'packages/os/tests/lifecycle-engine.test.ts',
+      'packages/os/tests/workspace-node-heartbeat-script.test.ts',
+      'packages/os/tests/workspace-node-heartbeat-client.test.ts',
+    ]);
+  });
+
   it('routes partial-install recovery CLI changes through focused critical coverage', () => {
     const data = json(run([
       'check',

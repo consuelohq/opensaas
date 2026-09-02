@@ -78,6 +78,11 @@ export const toolHandlers = [
           "source": "github",
           "flag": "--github",
           "kind": "value"
+        },
+        {
+          "source": "repo",
+          "flag": "--repo",
+          "kind": "value"
         }
       ],
       "jsonFlag": "--json"

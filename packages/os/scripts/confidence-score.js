@@ -81,7 +81,7 @@ function main() {
     return;
   }
 
-  const repoRoot = resolveGitRoot(process.cwd());
+  const repoRoot = resolveGitRoot(process.env.CONSUELO_TOOL_CALLER_CWD || process.cwd());
   const state = readExploreState(repoRoot);
   if (!state) throw new Error('no explore state found; run explore first');
 

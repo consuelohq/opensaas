@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_18b443fbf8de",
+  "tmuxSession": "opensaas-os-accept-owned-subagent-exit-markers-without-pid-m-18b443fb",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/accept-owned-subagent-exit-markers-without-pid-match",
+  "branch": "task/os/accept-owned-subagent-exit-markers-without-pid-match",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-accept-owned-subagent-exit-markers-without-pid-match",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-accept-owned-subagent-exit-markers-without-pid-match",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2315,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2315",
+  "createdAt": "2026-08-30T20:09:19.847Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-accept-owned-subagent-exit-markers-without-pid-match/.task/os/accept-owned-subagent-exit-markers-without-pid-match/session.json"
+}

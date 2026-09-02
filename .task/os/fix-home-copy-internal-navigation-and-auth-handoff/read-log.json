@@ -1,0 +1,11 @@
+{
+  "files": [
+    "packages/os/scripts/lib/artifacts.ts",
+    "packages/os/scripts/lib/settings-materialization.ts",
+    "packages/os/scripts/lib/workspace-chrome.ts",
+    "packages/os/scripts/server/services/diffs-gateway.ts",
+    "packages/os/tests/internal-user-dashboard.test.ts",
+    "packages/os/tests/workspace-chrome.test.ts"
+  ],
+  "updatedAt": "2026-09-01T00:51:14.119Z"
+}

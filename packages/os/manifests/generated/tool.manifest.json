@@ -3024,6 +3024,7 @@
         "outputSchema": "RawOutput",
         "command": {
           "script": "confidence-score",
+          "executionScope": "runtime",
           "branchMode": "none",
           "jsonFlag": "--json",
           "arguments": []
@@ -3177,6 +3178,7 @@
         "outputSchema": "RawOutput",
         "command": {
           "script": "decide-next",
+          "executionScope": "runtime",
           "branchMode": "none",
           "jsonFlag": "--json",
           "arguments": [
@@ -4079,6 +4081,7 @@
         "outputSchema": "RawOutput",
         "command": {
           "script": "exploit",
+          "executionScope": "runtime",
           "branchMode": "none",
           "jsonFlag": "--json",
           "arguments": [
@@ -9130,6 +9133,11 @@
             {
               "source": "github",
               "flag": "--github",
+              "kind": "value"
+            },
+            {
+              "source": "repo",
+              "flag": "--repo",
               "kind": "value"
             }
           ],

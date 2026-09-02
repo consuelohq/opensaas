@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/hotfix-lifecycle-accept-signed-mcp-proof",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2368,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2368",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-hotfix-lifecycle-accept-signed-mcp-proof",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_56e2b0705b45",
+  "tmuxSession": "opensaas-os-hotfix-lifecycle-accept-signed-mcp-proof-56e2b070",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-hotfix-lifecycle-accept-signed-mcp-proof/.task/session.json",
+  "createdAt": "2026-09-01T17:55:20.642Z"
+}
