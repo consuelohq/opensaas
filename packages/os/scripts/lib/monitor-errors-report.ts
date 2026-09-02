@@ -18,6 +18,7 @@ type TraceRow = {
   status: string | null;
   branch: string | null;
   task_session: string | null;
+  result_json: string | null;
   stderr: string | null;
 };
 
@@ -46,6 +47,25 @@ function toolContracts(): Map<string, MonitorToolContract> {
   return contracts;
 }
 
+function structuredFailureEvidence(row: TraceRow): string | undefined {
+  if (row.tool !== 'stream.sync' || !row.result_json) return undefined;
+  try {
+    const parsed = JSON.parse(row.result_json) as { data?: { status?: unknown } };
+    if (parsed?.data?.status === 'conflict') {
+      return '[structured-result] stream.sync status=conflict';
+    }
+  } catch {
+    // Persisted result data is supporting evidence only; malformed historical payloads
+    // must not make the deterministic monitor itself fail.
+  }
+  return undefined;
+}
+
+function classificationStderr(row: TraceRow): string | undefined {
+  const evidence = [row.stderr || undefined, structuredFailureEvidence(row)].filter(Boolean);
+  return evidence.length > 0 ? evidence.join('\n') : undefined;
+}
+
 function toFailure(row: TraceRow): MonitorTraceFailure {
   return {
     traceId: row.trace_id,
@@ -55,7 +75,7 @@ function toFailure(row: TraceRow): MonitorTraceFailure {
     status: row.status ?? 'error',
     ...(row.branch ? { branch: row.branch } : {}),
     ...(row.task_session ? { taskSession: row.task_session } : {}),
-    ...(row.stderr ? { stderr: row.stderr } : {}),
+    ...(classificationStderr(row) ? { stderr: classificationStderr(row) } : {}),
   };
 }
 
@@ -97,14 +117,7 @@ function aggregate(
     grouped.set(key, next);
   }
   return [...grouped.values()].map((group) => ({
-    traceId: group.latest.trace_id,
-    ts: group.latest.ts,
-    tool: group.latest.tool,
-    code: group.latest.code ?? group.latest.status ?? 'UNKNOWN',
-    status: group.latest.status ?? 'error',
-    ...(group.latest.branch ? { branch: group.latest.branch } : {}),
-    ...(group.latest.task_session ? { taskSession: group.latest.task_session } : {}),
-    ...(group.latest.stderr ? { stderr: group.latest.stderr } : {}),
+    ...toFailure(group.latest),
     occurrences: group.occurrences,
     affectedBranches: group.branches.size,
     affectedSessions: group.sessions.size,
@@ -126,7 +139,7 @@ export function buildMonitorErrorsReport(options: {
   const database = new Database(traceDb, { readonly: true, strict: true });
   try {
     const rows = database.query<TraceRow, []>(`
-      SELECT trace_id, ts, tool, code, status, branch, task_session, stderr
+      SELECT trace_id, ts, tool, code, status, branch, task_session, result_json, stderr
       FROM tool_traces
       WHERE ts >= datetime('now', '-24 hours')
         AND ok = 0

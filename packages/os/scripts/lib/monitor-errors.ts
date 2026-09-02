@@ -171,6 +171,15 @@ export function classifyTraceFailure(
     );
   }
 
+  if (code === 'TIMEOUT' && failure.tool === 'code.call') {
+    return classified(
+      failure,
+      'unknown',
+      false,
+      'code.call executes arbitrary caller-selected child commands; hitting the execution deadline does not by itself prove the wrapper is defective',
+    );
+  }
+
   if (code === 'TIMEOUT' || code === 'NETWORK_TIMEOUT' || code === 'RATE_LIMITED') {
     if (recurring(failure)) {
       return classified(
@@ -314,6 +323,18 @@ export function classifyTraceFailure(
         'caller-input',
         false,
         'task.pr reached a substantive branch merge conflict that must be reconciled before promotion',
+      );
+    }
+    if (
+      failure.tool === 'stream.sync' &&
+      ((stderr.includes('conflict') && stderr.includes('automatic merge failed')) ||
+        stderr.includes('[structured-result] stream.sync status=conflict'))
+    ) {
+      return classified(
+        failure,
+        'caller-input',
+        false,
+        'stream.sync reached a substantive source merge conflict that requires deliberate reconciliation rather than a source-code repair',
       );
     }
     if (

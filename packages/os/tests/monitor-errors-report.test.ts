@@ -173,4 +173,44 @@ describe('monitor errors report trace selection', () => {
       await rm(home, { recursive: true, force: true });
     }
   });
+
+  it('uses structured stream.sync conflict status for attribution without publishing raw result payloads', async () => {
+    const home = await mkdtemp(path.join(os.tmpdir(), 'consuelo-monitor-errors-'));
+    const env = { CONSUELO_HOME: home, CONSUELO_TRACE_DB: '', TRACE_DB: '' };
+    try {
+      for (let index = 0; index < 3; index += 1) {
+        expect(recordToolTraceSafely({
+          traceId: `trc_stream_conflict_${index}`,
+          source: 'test',
+          tool: 'stream.sync',
+          status: 'error',
+          ok: false,
+          code: 'COMMAND_FAILED',
+          result: {
+            ok: false,
+            code: 'COMMAND_FAILED',
+            data: {
+              status: 'conflict',
+              conflictFiles: ['packages/workspace/test-selection.registry.json'],
+            },
+          },
+          stderr: '$ bun packages/workspace/scripts/stream-sync.js --area self-healing --stream stream/self-healing --json\nerror: script "stream:sync" exited with code 1',
+        }, { env })).toBe(true);
+      }
+
+      const report = buildMonitorErrorsReport({ home, env });
+
+      expect(report.groups).toHaveLength(1);
+      expect(report.groups[0]).toMatchObject({
+        tool: 'stream.sync',
+        occurrences: 3,
+        classification: 'caller-input',
+        actionable: false,
+      });
+      expect(report.groups[0]).not.toHaveProperty('stderr');
+      expect(report.groups[0]).not.toHaveProperty('result');
+    } finally {
+      await rm(home, { recursive: true, force: true });
+    }
+  });
 });

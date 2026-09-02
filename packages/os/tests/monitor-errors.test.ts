@@ -173,6 +173,47 @@ describe('OS self-healing trace classification', () => {
     }
   });
 
+  it('does not promote recurring code.call timeouts from arbitrary child commands into source defects', () => {
+    expect(
+      classifyTraceFailure(
+        failure({
+          tool: 'code.call',
+          code: 'TIMEOUT',
+          occurrences: 9,
+          affectedBranches: 5,
+          affectedSessions: 5,
+        }),
+        undefined,
+      ),
+    ).toMatchObject({ classification: 'unknown', actionable: false });
+  });
+
+  it('keeps substantive stream.sync merge-conflict state non-actionable without masking sync defects', () => {
+    expect(
+      classifyTraceFailure(
+        failure({
+          tool: 'stream.sync',
+          code: 'COMMAND_FAILED',
+          occurrences: 7,
+          stderr: 'CONFLICT (content): Merge conflict in packages/workspace/test-selection.registry.json\nAutomatic merge failed; fix conflicts and then commit the result.',
+        }),
+        undefined,
+      ),
+    ).toMatchObject({ classification: 'caller-input', actionable: false });
+
+    expect(
+      classifyTraceFailure(
+        failure({
+          tool: 'stream.sync',
+          code: 'COMMAND_FAILED',
+          occurrences: 7,
+          stderr: 'stream sync failed before git merge because the helper crashed',
+        }),
+        undefined,
+      ),
+    ).toMatchObject({ classification: 'defect-candidate', actionable: true });
+  });
+
   it('keeps GitHub workflow-cancel operation-state rejections non-actionable without masking real wrapper failures', () => {
     for (const stderr of [
       'Cannot cancel a workflow run that is completed',
