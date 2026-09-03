@@ -219,6 +219,15 @@ export function classifyTraceFailure(
     );
   }
 
+  if (code === 'COMMAND_FAILED' && failure.tool === 'mac.call') {
+    return classified(
+      failure,
+      'unknown',
+      false,
+      'mac.call executes arbitrary caller-selected host commands; a child-command nonzero exit does not by itself prove the host execution wrapper is defective',
+    );
+  }
+
   if (code === 'COMMAND_FAILED' && failure.stderr) {
     const stderr = failure.stderr.toLowerCase();
     if (
@@ -367,7 +376,8 @@ export function classifyTraceFailure(
     if (
       failure.tool === 'fs.list' &&
       ((stderr.includes('search path') && stderr.includes('is not a directory')) ||
-        stderr.includes('no valid search paths given'))
+        stderr.includes('no valid search paths given') ||
+        stderr.includes('no such file or directory (os error 2)'))
     ) {
       return classified(
         failure,
