@@ -173,6 +173,32 @@ describe('OS self-healing trace classification', () => {
     }
   });
 
+  it('does not manufacture defects from recurring arbitrary mac.call child-command exits', () => {
+    expect(
+      classifyTraceFailure(
+        failure({
+          tool: 'mac.call',
+          code: 'COMMAND_FAILED',
+          occurrences: 12,
+          stderr: 'pgrep returned no matching process',
+        }),
+        undefined,
+      ),
+    ).toMatchObject({ classification: 'unknown', actionable: false });
+
+    expect(
+      classifyTraceFailure(
+        failure({
+          tool: 'mac.call',
+          code: 'PARSE_ERROR',
+          occurrences: 12,
+          stderr: 'mac wrapper failed to parse its execution envelope',
+        }),
+        undefined,
+      ),
+    ).toMatchObject({ classification: 'defect-candidate', actionable: true });
+  });
+
   it('does not promote recurring code.call timeouts from arbitrary child commands into source defects', () => {
     expect(
       classifyTraceFailure(
@@ -496,6 +522,30 @@ describe('OS self-healing trace classification', () => {
         undefined,
       ),
     ).toMatchObject({ classification: 'caller-input', actionable: false });
+
+    expect(
+      classifyTraceFailure(
+        failure({
+          tool: 'fs.list',
+          code: 'COMMAND_FAILED',
+          occurrences: 3,
+          stderr: '$ bun packages/workspace/scripts/fs.js list mods --depth "1" --files\n"mods": No such file or directory (os error 2)\neza failed: Command failed: eza -la --only-files --git-ignore mods',
+        }),
+        undefined,
+      ),
+    ).toMatchObject({ classification: 'caller-input', actionable: false });
+
+    expect(
+      classifyTraceFailure(
+        failure({
+          tool: 'fs.list',
+          code: 'COMMAND_FAILED',
+          occurrences: 3,
+          stderr: 'filesystem list wrapper crashed before invoking eza',
+        }),
+        undefined,
+      ),
+    ).toMatchObject({ classification: 'defect-candidate', actionable: true });
 
     expect(
       classifyTraceFailure(
