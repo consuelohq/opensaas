@@ -832,12 +832,10 @@ async function hydrateLiveSnapshot(): Promise<boolean> {
         : Array.isArray(payload.traces)
           ? payload.traces
           : [];
-    if (rows.length) {
-      (window as TraceWindow).__traceVirtualList?.replaceRows(
-        rows,
-        deriveTraceHistoryCursor(rows),
-      );
-    }
+    (window as TraceWindow).__traceVirtualList?.replaceRows(
+      rows,
+      deriveTraceHistoryCursor(rows),
+    );
     liveCursor = deriveTraceLiveCursor(rows);
     return true;
   } catch {

@@ -557,6 +557,7 @@ function configurationClientScript(): string {
             : 'Trace history temporarily unavailable · retrying automatically',
         );
         if (grid) {
+          grid.setAttribute('aria-busy', 'false');
           grid.setAttribute(
             'aria-label',
             overviewHeatmapHasSnapshot
