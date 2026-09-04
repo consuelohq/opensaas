@@ -8,23 +8,29 @@ started: 2026-09-04
 
 ## acceptance criteria
 
-- [ ] Define explicit task acceptance criteria before coding.
+- [x] `tools/list` declares only the grantable OAuth scopes for both public OS tools.
+- [x] Modern top-level and compatibility `_meta` security schemes remain identical.
+- [x] Focused and related authorization/gateway tests pass before canary release.
 
 ## plan
 
-1. Read the relevant code and update this plan before editing.
+1. Reproduce the missing per-tool OAuth metadata with a focused failing test.
+2. Add the narrow public tool scope contract, including the Apps SDK compatibility mirror.
+3. Verify, publish through the OS stream PR, release to canary, and validate the live descriptor.
 
 ## current status
 
-- Task started. Update this before publish.
+- Implementation and review-follow-up are green; ready to refresh the stream PR and release.
 
 ## files changed
 
-- none yet
+- `packages/os/scripts/lib/mcp-gateway.ts`
+- `packages/os/tests/mcp-gateway.test.ts`
+
 
 ## workspace-owned: files changed
 
-- none yet
+- Keep top-level `securitySchemes` and `_meta.securitySchemes` backed by the same constants so the compatibility contract cannot drift.
 
 ## workspace-owned: activity log
 
@@ -35,6 +41,8 @@ started: 2026-09-04
 
 - 2026-09-04 21:04:52 `review.run`: passed — OK
 - 2026-09-04 21:05:16 `verify`: passed — OK
+- 2026-09-04 21:11:22 `verify`: passed — OK
+- 2026-09-04 21:12:00 `verify`: passed — OK
 
 ## key decisions
 
@@ -88,6 +96,12 @@ no-test waiver: not applicable
 - Green: same focused test passed (29/29).
 - Related suite: mcp-gateway, central proxy scope, operator OAuth client, device authority worker, and workspace gateway proxy passed (105/105).
 - Syntax: node ./scripts/check-syntax.js passed.
+- Codex PR review identified the required Apps SDK `_meta.securitySchemes` compatibility mirror; it is now implemented and covered by the focused test. The related 105-test suite, syntax check, and full verification pass after the change.
 - Remaining live acceptance: publish runtime, update local node, refresh the developer-mode ChatGPT connection metadata, then call get_steering.
 
 - 2026-09-04 21:04:26 append: `.task/os/fix-chatgpt-oauth-permission-warning-after-reconnect/workpad.md`
+
+- 2026-09-04 21:10:48 apply-patch: `packages/os/scripts/lib/mcp-gateway.ts`
+- 2026-09-04 21:10:48 apply-patch: `packages/os/tests/mcp-gateway.test.ts`
+
+- 2026-09-04 21:11:42 apply-patch: `.task/os/fix-chatgpt-oauth-permission-warning-after-reconnect/workpad.md`
