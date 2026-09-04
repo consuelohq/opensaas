@@ -3530,14 +3530,21 @@ describe('multi-node connector routing', () => {
     }
   });
 
-  it('keeps OAuth discovery available when the default node is stale while normal MCP routing remains offline', async () => {
+  it('keeps OAuth discovery and direct MCP probing available when the connected default node is stale', async () => {
     const db = createInMemoryWorkspaceRouteD1();
     await seedRoutes(db, baseNow - heartbeatTtlMs * 4);
+    const upstreamRequests: Request[] = [];
     const router = createWorkspaceCloudflareEdgeRouter({
       registry: createWorkspaceCloudflareD1RouteRegistry(db),
       now: () => baseNow,
-      fetchUpstream: async () => {
-        throw new Error('offline discovery must not reach a connector');
+      internalSigningSecret: 'stale-connected-node-probe-secret',
+      fetchUpstream: async (request) => {
+        upstreamRequests.push(request);
+        return Response.json({
+          jsonrpc: '2.0',
+          id: 1,
+          result: { tools: [] },
+        });
       },
     });
 
@@ -3569,9 +3576,11 @@ describe('multi-node connector routing', () => {
         body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/list' }),
       }),
     );
-    expect(mcp.status).toBe(503);
+    expect(mcp.status).toBe(200);
     await expect(mcp.json()).resolves.toMatchObject({
-      error: { code: 'WORKSPACE_NODE_OFFLINE' },
+      result: { tools: [] },
     });
+    expect(upstreamRequests).toHaveLength(1);
+    expect(upstreamRequests[0].url).toBe('https://home.connector.test/mcp');
   });
 });
