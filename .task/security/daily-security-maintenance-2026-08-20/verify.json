@@ -1,0 +1,54 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/security/daily-security-maintenance-2026-08-20",
+  "base": "origin/stream/security",
+  "headSha": "bdd4d15cfd0d8ef72dd2d4c6ad9b2d5610f8d4ad",
+  "changeHash": "48d2bb9449fadd6750c278139143142865237ff56c3825311d2fc8c8f1cf7e0d",
+  "changedFiles": [
+    "package.json",
+    "yarn.lock"
+  ],
+  "verifiedAt": "2026-08-20T14:06:51.825Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/security/daily-security-maintenance-2026-08-20/current.json",
+        ".task/security/daily-security-maintenance-2026-08-20/evidence-log.json",
+        ".task/security/daily-security-maintenance-2026-08-20/read-log.json",
+        ".task/security/daily-security-maintenance-2026-08-20/session.json",
+        ".task/security/daily-security-maintenance-2026-08-20/verify.json",
+        ".task/security/daily-security-maintenance-2026-08-20/workpad.md",
+        ".task/tasks/security/daily-security-maintenance-2026-08-20.json",
+        "package.json",
+        "yarn.lock"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
