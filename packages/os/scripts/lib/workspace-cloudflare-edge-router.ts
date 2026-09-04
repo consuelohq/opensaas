@@ -795,6 +795,11 @@ const MCP_OAUTH_SCOPES = [
   'route:/mcp:read',
   'tool:*:read',
 ];
+// Public discovery is consumed by end-user MCP clients. Keep operator-only
+// node-management out of advertised scopes so reconnects receive a full grant.
+const PUBLIC_MCP_OAUTH_SCOPES = MCP_OAUTH_SCOPES.filter(
+  (scope) => scope !== 'workspace:nodes:manage',
+);
 
 const isOAuthProtectedResourceMetadataRequest = (pathname: string): boolean =>
   pathname === '/.well-known/oauth-protected-resource' ||
@@ -810,7 +815,7 @@ const createOAuthProtectedResourceMetadataResponse = (input: {
     {
       resource: `https://${input.hostname}/mcp`,
       authorization_servers: [OAUTH_AUTHORIZATION_SERVER],
-      scopes_supported: MCP_OAUTH_SCOPES,
+      scopes_supported: PUBLIC_MCP_OAUTH_SCOPES,
       bearer_methods_supported: ['header'],
     },
     {
@@ -834,7 +839,7 @@ const createOAuthAuthorizationServerMetadataResponse = (): Response =>
       code_challenge_methods_supported: ['S256'],
       token_endpoint_auth_methods_supported: ['none'],
       client_id_metadata_document_supported: true,
-      scopes_supported: MCP_OAUTH_SCOPES,
+      scopes_supported: PUBLIC_MCP_OAUTH_SCOPES,
     },
     {
       status: 200,
