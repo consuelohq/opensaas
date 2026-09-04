@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_9c19759b5198",
+  "tmuxSession": "opensaas-os-fix-chatgpt-oauth-permission-warning-after-recon-9c19759b",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-chatgpt-oauth-permission-warning-after-reconnect",
+  "branch": "task/os/fix-chatgpt-oauth-permission-warning-after-reconnect",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-chatgpt-oauth-permission-warning-after-reconnect",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-chatgpt-oauth-permission-warning-after-reconnect",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2381,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2381",
+  "createdAt": "2026-09-04T20:55:49.427Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-chatgpt-oauth-permission-warning-after-reconnect/.task/os/fix-chatgpt-oauth-permission-warning-after-reconnect/session.json"
+}
