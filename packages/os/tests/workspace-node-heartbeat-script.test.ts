@@ -390,6 +390,82 @@ describe('workspace node heartbeat script', () => {
     }
   });
 
+  it.each([401, 403, 404])(
+    'fails closed when the authority permanently rejects a proven connector with HTTP %i',
+    async (status) => {
+      const home = fs.mkdtempSync(
+        path.join(os.tmpdir(), 'consuelo-heartbeat-authority-rejected-'),
+      );
+      try {
+        const security = createGatewaySecurityConfig({
+          home,
+          workspaceId: 'workspace_123',
+          workspaceSlug: 'workspace-123',
+          workspaceHost: 'workspace-123.consuelohq.com',
+        });
+        const configPath = path.join(
+          path.dirname(security.generatedAuthPath),
+          'workspace-node-heartbeat.json',
+        );
+        const keys = generateWorkspaceDeviceKeyPair();
+        const config = {
+          authorityOrigin: 'https://os.consuelohq.com',
+          workspaceId: 'workspace_123',
+          nodeId: 'node_home',
+          connectorStatus: 'connected' as const,
+          connectorHealthUrl:
+            'https://c-0123456789abcdef0123456789abcdef.consuelohq.com/health',
+          capabilities: ['mcp'],
+          publicKeyJwk: keys.publicKeyJwk,
+          signingKeyJwk: keys.signingKeyJwk,
+        };
+        fs.writeFileSync(configPath, JSON.stringify(config));
+        reconcileHeartbeatEdgeProxyAuth({
+          configPath,
+          config,
+          result: {
+            nodeId: 'node_home',
+            presence: 'online',
+            routeReady: true,
+            connectorId: 'connector_home',
+            edgeRequestSigningSecret: 'wen_cached_rejected_secret',
+          },
+        });
+
+        await expect(
+          sendWorkspaceNodeHeartbeatFromConfig(configPath, {
+            detectAgents: () => [],
+            fetchImpl: async (request) => {
+              const url = typeof request === 'string' ? request : request.url;
+              if (url.endsWith('/health')) return new Response('ok');
+              if (url.endsWith('/mcp')) {
+                return Response.json({
+                  jsonrpc: '2.0',
+                  id: 'watchdog-readiness-request',
+                  result: { tools: [] },
+                });
+              }
+              if (url.endsWith('/workspace/nodes/heartbeat')) {
+                return Response.json(
+                  {
+                    error: {
+                      code: 'AUTHORITY_REJECTED',
+                      message: 'Workspace node credentials were rejected.',
+                    },
+                  },
+                  { status },
+                );
+              }
+              throw new Error(`unexpected heartbeat request: ${url}`);
+            },
+          }),
+        ).rejects.toThrow(`workspace node heartbeat failed with HTTP ${status}`);
+      } finally {
+        fs.rmSync(home, { recursive: true, force: true });
+      }
+    },
+  );
+
   it('accepts cached signed MCP proof for lifecycle readiness when health and authority reconciliation are unavailable', async () => {
     const home = fs.mkdtempSync(path.join(os.tmpdir(), 'consuelo-heartbeat-lifecycle-ready-'));
     try {
