@@ -69,6 +69,7 @@ let callSearchFrame = 0;
 let liveCursor = '';
 let livePollInFlight = false;
 let livePollTimer = 0;
+let historyHydrated = false;
 type TraceInteractionScope = 'main' | 'child';
 type TraceInteractionSource = 'hover' | 'keyboard';
 type TraceInteraction = {
@@ -797,9 +798,12 @@ async function pollLiveRows(): Promise<void> {
   if (livePollInFlight || document.visibilityState === 'hidden') return;
   const transport = (window as TraceWindow).__consueloTraceHistoryTransport;
   if (!transport) return;
-  if (!liveCursor) liveCursor = deriveTraceLiveCursor(allRows());
   livePollInFlight = true;
   try {
+    if (!historyHydrated) {
+      historyHydrated = await hydrateLiveSnapshot();
+      if (!historyHydrated) return;
+    }
     const page = parseTraceLiveResponse(
       await transport.fetchJson(traceLiveUrl(liveCursor)),
     );
@@ -814,9 +818,9 @@ async function pollLiveRows(): Promise<void> {
   }
 }
 
-async function hydrateLiveSnapshot(): Promise<void> {
+async function hydrateLiveSnapshot(): Promise<boolean> {
   const transport = (window as TraceWindow).__consueloTraceHistoryTransport;
-  if (!transport) return;
+  if (!transport) return false;
   try {
     const payload = (await transport.fetchJson(
       '/trace-burn-intelligence/live-traces.json',
@@ -828,21 +832,26 @@ async function hydrateLiveSnapshot(): Promise<void> {
         : Array.isArray(payload.traces)
           ? payload.traces
           : [];
-    if (!rows.length) return;
-    (window as TraceWindow).__traceVirtualList?.replaceRows(
-      rows,
-      deriveTraceHistoryCursor(rows),
-    );
+    if (rows.length) {
+      (window as TraceWindow).__traceVirtualList?.replaceRows(
+        rows,
+        deriveTraceHistoryCursor(rows),
+      );
+    }
     liveCursor = deriveTraceLiveCursor(rows);
+    return true;
   } catch {
     // The serialized seed remains the offline fallback.
+    return false;
   }
 }
 
 function installLivePolling(): void {
   const refresh = () => void pollLiveRows();
   window.clearInterval(livePollTimer);
-  void hydrateLiveSnapshot().finally(() => {
+  void hydrateLiveSnapshot().then((hydrated) => {
+    historyHydrated = hydrated;
+  }).finally(() => {
     if (!liveCursor) liveCursor = deriveTraceLiveCursor(allRows());
     livePollTimer = window.setInterval(refresh, 1_000);
     window.addEventListener('focus', refresh);
