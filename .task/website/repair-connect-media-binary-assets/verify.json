@@ -1,0 +1,49 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/website/repair-connect-media-binary-assets",
+  "base": "origin/task/website/repair-connect-media-binary-assets",
+  "headSha": "b2b4cb1a572cba6bdd16e76ad7ec3267b372bd83",
+  "changeHash": "b0470dbade56d4dd2b1c6d492bd474f231544ff94f4769040f6a4145c2894f27",
+  "changedFiles": [
+    "packages/consuelo-website/public/media/home/connect-live-session-poster.webp",
+    "packages/consuelo-website/public/media/home/connect-live-session.mp4"
+  ],
+  "verifiedAt": "2026-08-31T22:18:18.794Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/website/repair-connect-media-binary-assets.json",
+        ".task/website/repair-connect-media-binary-assets/workpad.md",
+        "packages/consuelo-website/public/media/home/connect-live-session-poster.webp",
+        "packages/consuelo-website/public/media/home/connect-live-session.mp4"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "pass",
+      "zeroSuiteReason": "no testable source files changed",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

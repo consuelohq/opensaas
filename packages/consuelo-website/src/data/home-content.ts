@@ -125,6 +125,15 @@ export type FeatureArtworkMotif =
   | 'secure'
   | 'switch';
 
+export type HomeFeatureEvidence = {
+  figureNumber: string;
+  meta: string;
+  caption: string;
+  sequence: Array<{ label: string }>;
+  videoSrc?: string;
+  posterSrc?: string;
+};
+
 export type HomeFeaturePreviewItem = {
   number: number;
   label: string;
@@ -133,6 +142,56 @@ export type HomeFeaturePreviewItem = {
   motif: FeatureArtworkMotif;
   imageAlt: string;
   assetSrc: string;
+  evidence?: HomeFeatureEvidence;
+};
+
+export type HomeMemoryMoment = {
+  day: string;
+  time: string;
+  kind: 'decision' | 'artifact' | 'context' | 'retrieved';
+  title: string;
+  detail: string;
+};
+
+export type HomeObserveTraceRow = {
+  startedAt: string;
+  tokens: number;
+  cost: number;
+};
+
+export type HomeObserveTrace = {
+  time: string;
+  agent: string;
+  tool: string;
+  node: string;
+  duration: string;
+  result: string;
+  summary: string;
+};
+
+export type HomeWorkflowRule = {
+  label: string;
+  value: string;
+  detail: string;
+};
+
+export type HomeWorkflowStage = {
+  label: string;
+  tool: string;
+  detail: string;
+  status: string;
+};
+
+export type HomeSecurityResource = {
+  kind: 'tool' | 'node' | 'secret';
+  name: string;
+  state: string;
+  detail: string;
+};
+
+export type HomeSwitchAgent = {
+  label: string;
+  role: string;
 };
 
 export type HomePlatformCardCtaIcon = 'terminal' | 'sign-in' | 'cloud';
@@ -512,6 +571,102 @@ export const homeMercuryPromo: HomeMercuryPromoContent = {
 
 export const homeMercuryHighlights: HomeMercuryHighlight[] = [];
 
+export const homeMemoryMoments: HomeMemoryMoment[] = [
+  {
+    day: 'MON',
+    time: '09:14',
+    kind: 'decision',
+    title: 'Launch order',
+    detail: 'Canary before production',
+  },
+  {
+    day: 'TUE',
+    time: '13:05',
+    kind: 'artifact',
+    title: 'Release brief',
+    detail: 'Attached to Project Meridian',
+  },
+  {
+    day: 'THU',
+    time: '16:32',
+    kind: 'context',
+    title: 'Project owner',
+    detail: 'Maya · Northstar rollout',
+  },
+  {
+    day: 'FRI',
+    time: '11:08',
+    kind: 'retrieved',
+    title: 'Context resurfaced',
+    detail: '3 facts · 1 decision · 1 artifact',
+  },
+];
+
+export const homeObserveAnchor = '2026-08-31T18:00:00.000Z';
+
+const homeObserveCallPattern = [
+  [0, 0, 0, 0, 0, 0, 1, 2, 4, 5, 7, 6, 4, 3, 5, 8, 9, 5, 4, 3, 1, 0, 0, 0],
+  [0, 0, 0, 0, 0, 1, 1, 3, 5, 7, 6, 4, 3, 5, 7, 10, 8, 6, 5, 2, 2, 1, 0, 0],
+  [0, 0, 0, 0, 0, 0, 2, 3, 4, 6, 8, 7, 5, 4, 6, 9, 11, 8, 4, 3, 2, 0, 0, 0],
+  [0, 0, 0, 0, 0, 1, 2, 4, 6, 5, 7, 9, 6, 5, 8, 10, 8, 5, 4, 2, 1, 1, 0, 0],
+  [0, 0, 0, 0, 0, 0, 1, 2, 5, 8, 9, 7, 5, 4, 6, 8, 7, 4, 3, 2, 1, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 1, 2, 4, 5, 3, 2, 2, 3, 4, 5, 3, 2, 1, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 1, 3, 5, 6, 5, 4, 3, 5, 7, 8, 5, 3, 2, 1, 0, 0, 0],
+] as const;
+
+export const homeObserveTraceRows: HomeObserveTraceRow[] = homeObserveCallPattern.flatMap(
+  (hours, dayIndex) => hours.flatMap((calls, hour) =>
+    Array.from({ length: calls }, (_, callIndex) => {
+      const date = new Date(Date.UTC(2026, 7, 25 + dayIndex, hour, callIndex * 3));
+      const tokens = 180 + ((dayIndex * 97 + hour * 53 + callIndex * 31) % 1320);
+      return {
+        startedAt: date.toISOString(),
+        tokens,
+        cost: Number((tokens * 0.0000018).toFixed(6)),
+      };
+    }),
+  ),
+);
+
+export const homeObserveTrace: HomeObserveTrace = {
+  time: '14:08:31',
+  agent: 'Codex',
+  tool: 'browser.open',
+  node: 'Local node',
+  duration: '1.8 s',
+  result: 'SUCCESS',
+  summary: 'Opened the release dashboard and verified the canary state.',
+};
+
+export const homeWorkflowRules: HomeWorkflowRule[] = [
+  { label: 'Branch isolation', value: 'REQUIRED', detail: 'Every change starts away from the shared stream.' },
+  { label: 'Test-first', value: 'REQUIRED', detail: 'Changed behavior gets a failing contract before implementation.' },
+  { label: 'Strict review', value: 'ON', detail: 'Review and verification gate publication.' },
+  { label: 'Main release', value: 'HUMAN', detail: 'The stream can move fast; production still needs approval.' },
+];
+
+export const homeWorkflowStages: HomeWorkflowStage[] = [
+  { label: 'START', tool: 'session.start', detail: 'task branch isolated', status: 'READY' },
+  { label: 'WORK', tool: 'fs.write', detail: 'changes scoped to task', status: 'DONE' },
+  { label: 'TEST', tool: 'code.call', detail: 'focused contract passes', status: '14 / 14' },
+  { label: 'REVIEW', tool: 'review.run', detail: 'strict review is clean', status: '0 ISSUES' },
+  { label: 'VERIFY', tool: 'verify', detail: 'publish safety gate', status: 'VALID' },
+  { label: 'PUBLISH', tool: 'task.push', detail: 'promote to stream', status: 'READY' },
+];
+
+export const homeSecurityResources: HomeSecurityResource[] = [
+  { kind: 'tool', name: 'browser.open', state: 'ENABLED', detail: 'Available to approved agents' },
+  { kind: 'node', name: 'Cloud node', state: 'SCOPED', detail: 'Workspace-owned execution target' },
+  { kind: 'secret', name: 'DEPLOY_TOKEN', state: 'STORED', detail: 'Value is never rendered back' },
+];
+
+export const homeSwitchAgents: HomeSwitchAgent[] = [
+  { label: 'ChatGPT', role: 'GENERAL' },
+  { label: 'Codex', role: 'CODE' },
+  { label: 'Claude', role: 'RESEARCH' },
+  { label: 'OpenCode', role: 'LOCAL' },
+];
+
 export const homeFeaturePreviewItems: HomeFeaturePreviewItem[] = [
   {
     number: 1,
@@ -519,8 +674,21 @@ export const homeFeaturePreviewItems: HomeFeaturePreviewItem[] = [
     title: 'SAME\nTOOLS',
     body: 'Build your tools once. Use them from ChatGPT, Codex, Claude, Cursor, and whatever comes next.',
     motif: 'connect',
-    imageAlt: 'Sacred table with signals converging on one center',
+    imageAlt: 'Screen recording of a live Consuelo OS agent session',
     assetSrc: '/images/home/connect.svg',
+    evidence: {
+      figureNumber: '01',
+      meta: 'One workspace / four agents',
+      caption: 'One tool contract. Four agent surfaces. The workspace stays put.',
+      videoSrc: '/media/home/connect-live-session.mp4',
+      posterSrc: '/media/home/connect-live-session-poster.webp',
+      sequence: [
+        { label: 'ChatGPT' },
+        { label: 'Grok' },
+        { label: 'Codex' },
+        { label: 'OpenCode' },
+      ],
+    },
   },
   {
     number: 2,

@@ -1,0 +1,57 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/website/w2-connect-real-footage",
+  "base": "origin/task/website/w2-connect-real-footage",
+  "headSha": "3a916e0c7f3e110de6fe47dd358a153cd02826f8",
+  "changeHash": "0dda0f2d073842f466a52e41ce92df50fbe82b8c7b93e36e8923ea71e2983b2b",
+  "changedFiles": [
+    "packages/consuelo-website/public/media/home/connect-live-session-poster.webp",
+    "packages/consuelo-website/public/media/home/connect-live-session.mp4",
+    "packages/consuelo-website/src/components/home/FeatureEvidenceFigure.astro",
+    "packages/consuelo-website/src/data/home-content.ts",
+    "packages/consuelo-website/tests/website-structure.test.js"
+  ],
+  "verifiedAt": "2026-08-31T21:55:07.423Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/website/w2-connect-real-footage.json",
+        ".task/website/w2-connect-real-footage/evidence-log.json",
+        ".task/website/w2-connect-real-footage/read-log.json",
+        ".task/website/w2-connect-real-footage/workpad.md",
+        "packages/consuelo-website/public/media/home/connect-live-session-poster.webp",
+        "packages/consuelo-website/public/media/home/connect-live-session.mp4",
+        "packages/consuelo-website/src/components/home/FeatureEvidenceFigure.astro",
+        "packages/consuelo-website/src/data/home-content.ts",
+        "packages/consuelo-website/tests/website-structure.test.js"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

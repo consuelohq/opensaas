@@ -1,0 +1,11 @@
+{
+  "name": "connect",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npx --yes hyperframes@0.8.21 preview",
+    "check": "npx --yes hyperframes@0.8.21 check",
+    "render": "npx --yes hyperframes@0.8.21 render",
+    "publish": "npx --yes hyperframes@0.8.21 publish"
+  }
+}
