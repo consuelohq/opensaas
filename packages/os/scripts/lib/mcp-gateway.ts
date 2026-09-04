@@ -59,6 +59,7 @@ const MCP_READ_METHODS = new Set([
   'prompts/list',
   'resources/list',
 ]);
+const MCP_READ_SCOPE = 'route:/mcp:read';
 
 const MCP_TOOL_DESCRIPTORS: JsonObject[] = [
   {
@@ -70,6 +71,9 @@ const MCP_TOOL_DESCRIPTORS: JsonObject[] = [
       properties: {},
       additionalProperties: false,
     },
+    securitySchemes: [
+      { type: 'oauth2', scopes: [MCP_READ_SCOPE] },
+    ],
     annotations: {
       readOnlyHint: true,
       openWorldHint: false,
@@ -119,6 +123,9 @@ const MCP_TOOL_DESCRIPTORS: JsonObject[] = [
       required: ['tool'],
       additionalProperties: false,
     },
+    securitySchemes: [
+      { type: 'oauth2', scopes: ['mcp:call'] },
+    ],
     annotations: {
       readOnlyHint: true,
       openWorldHint: false,
@@ -294,7 +301,7 @@ export function resolveMcpGatewayRequiredScope(body: string): McpGatewayScopeRes
         ok: true,
         method: request.method,
         toolName: publicToolName,
-        requiredScope: 'route:/mcp:read',
+        requiredScope: MCP_READ_SCOPE,
       };
     }
 
@@ -330,7 +337,7 @@ export function resolveMcpGatewayRequiredScope(body: string): McpGatewayScopeRes
     return {
       ok: true,
       method: request.method,
-      requiredScope: 'route:/mcp:read',
+      requiredScope: MCP_READ_SCOPE,
     };
   }
 

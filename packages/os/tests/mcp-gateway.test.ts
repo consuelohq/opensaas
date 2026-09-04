@@ -547,8 +547,19 @@ describe('MCP gateway adapter', () => {
       'get_steering',
       'call',
     ]);
+    const steeringTool = tools.find(
+      (tool) => isJsonObject(tool) && tool.name === 'get_steering',
+    );
     const callTool = tools.find((tool) => isJsonObject(tool) && tool.name === 'call');
+    expect(steeringTool).toMatchObject({
+      securitySchemes: [
+        { type: 'oauth2', scopes: ['route:/mcp:read'] },
+      ],
+    });
     expect(callTool).toMatchObject({
+      securitySchemes: [
+        { type: 'oauth2', scopes: ['mcp:call'] },
+      ],
       inputSchema: {
         properties: {
           nodeId: {
