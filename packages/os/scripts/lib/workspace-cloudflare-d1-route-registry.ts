@@ -155,6 +155,20 @@ const createD1RegistryError = (operation: string, error: unknown): Error =>
     `workspace route D1 ${operation} failed: ${getD1ErrorMessage(error)}`,
   );
 
+const d1WriteChanges = (result: unknown): number | undefined => {
+  if (!result || typeof result !== 'object' || Array.isArray(result)) {
+    return undefined;
+  }
+  const meta = (result as { meta?: unknown }).meta;
+  if (!meta || typeof meta !== 'object' || Array.isArray(meta)) {
+    return undefined;
+  }
+  const changes = (meta as { changes?: unknown }).changes;
+  return typeof changes === 'number' && Number.isFinite(changes)
+    ? changes
+    : undefined;
+};
+
 const cloneTarget = (
   target: WorkspaceRouteD1RouteTarget,
 ): WorkspaceRouteD1RouteTarget => ({ ...target });
@@ -218,9 +232,10 @@ const readCloudflareD1Record = (input: {
       return cloneRecord(JSON.parse(row.record_json) as StoredWorkspaceRouteD1Record);
     });
 
-const writeCloudflareD1Record = (input: {
+const writeCloudflareD1Record = async (input: {
   db: WorkspaceRouteD1Database;
   record: StoredWorkspaceRouteD1Record;
+  existing?: boolean;
 }): Promise<unknown> => {
   const primaryRoute = input.record.routes[0];
   if (!primaryRoute) throw new Error('workspace route record must contain a route');
@@ -244,6 +259,37 @@ const writeCloudflareD1Record = (input: {
         : primaryRoute.target.kind === 'redirect'
           ? primaryRoute.target.location
           : '';
+  if (input.existing) {
+    const sql = [
+      'UPDATE workspace_route_registry SET',
+      'workspace_id = ?, workspace_slug = ?, workspace_host = ?, base_domain = ?,',
+      'route_path_prefix = ?, route_surface = ?, route_status = ?, route_target_kind = ?,',
+      'target_origin_url = ?, connector_id = ?, connector_status = ?, record_json = ?,',
+      "updated_at = datetime('now') WHERE hostname = ?",
+    ].join(' ');
+    const result = await getPreparedD1(input.db)
+      .prepare(sql)
+      .bind(
+        input.record.workspaceId,
+        input.record.workspaceSlug,
+        input.record.hostname,
+        input.record.baseDomain,
+        primaryRoute.pathPrefix,
+        primaryRoute.surface,
+        primaryRoute.status,
+        primaryRoute.target.kind,
+        targetOriginUrl,
+        connectorTarget?.connectorId ?? null,
+        connectorTarget?.connectorStatus ?? null,
+        JSON.stringify(input.record),
+        input.record.hostname,
+      )
+      .run();
+    if (d1WriteChanges(result) === 0) {
+      throw new Error('workspace route record was not found during update');
+    }
+    return result;
+  }
   const sql = [
     'INSERT INTO workspace_route_registry',
     '(hostname, workspace_id, workspace_slug, workspace_host, base_domain, route_path_prefix, route_surface, route_status, route_target_kind, target_origin_url, connector_id, connector_status, record_json, created_at, updated_at)',
@@ -362,6 +408,7 @@ const readStoredRecord = async (
 const writeStoredRecord = async (
   db: WorkspaceRouteD1Database,
   record: StoredWorkspaceRouteD1Record,
+  options: { existing?: boolean } = {},
 ): Promise<void> => {
   try {
     const state = states.get(db);
@@ -369,7 +416,7 @@ const writeStoredRecord = async (
       ensureMigrated(db).hostnameRows.set(record.hostname, cloneRecord(record));
       return;
     }
-    await writeCloudflareD1Record({ db, record });
+    await writeCloudflareD1Record({ db, record, existing: options.existing });
   } catch (error: unknown) {
     throw createD1RegistryError('hostname write', error);
   }
@@ -689,6 +736,7 @@ export const revokeWorkspaceHostnameInD1 = async (
     const revokedAt = new Date().toISOString();
     await writeCloudflareD1Record({
       db,
+      existing: true,
       record: {
         ...record,
         status: 'revoked',
@@ -829,13 +877,17 @@ export const upsertWorkspaceNodeTargetInD1 = async (
       target: input.target,
       localServiceUrl: input.localServiceUrl ?? 'http://127.0.0.1:46320',
     });
-    await writeStoredRecord(db, {
-      ...base,
-      defaultNodeId,
-      nodeTargets: targets,
-      routes,
-      updatedAt: new Date().toISOString(),
-    });
+    await writeStoredRecord(
+      db,
+      {
+        ...base,
+        defaultNodeId,
+        nodeTargets: targets,
+        routes,
+        updatedAt: new Date().toISOString(),
+      },
+      { existing: Boolean(existing) },
+    );
   } catch (error: unknown) {
     throw createD1RegistryError('node target upsert', error);
   }
@@ -872,11 +924,15 @@ export const updateWorkspaceNodeTargetInD1 = async (
           }
         : target,
     );
-    await writeStoredRecord(db, {
-      ...record,
-      nodeTargets,
-      updatedAt: new Date().toISOString(),
-    });
+    await writeStoredRecord(
+      db,
+      {
+        ...record,
+        nodeTargets,
+        updatedAt: new Date().toISOString(),
+      },
+      { existing: true },
+    );
   } catch (error: unknown) {
     throw createD1RegistryError('node target update', error);
   }
@@ -900,12 +956,16 @@ export const setDefaultWorkspaceNodeInD1 = async (
         ? { ...route, target: connectorTargetForNode(target) }
         : cloneRoute(route),
     );
-    await writeStoredRecord(db, {
-      ...record,
-      defaultNodeId: input.nodeId,
-      routes,
-      updatedAt: new Date().toISOString(),
-    });
+    await writeStoredRecord(
+      db,
+      {
+        ...record,
+        defaultNodeId: input.nodeId,
+        routes,
+        updatedAt: new Date().toISOString(),
+      },
+      { existing: true },
+    );
   } catch (error: unknown) {
     throw createD1RegistryError('default node update', error);
   }

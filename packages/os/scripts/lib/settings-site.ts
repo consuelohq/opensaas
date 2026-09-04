@@ -379,6 +379,10 @@ function configurationClientScript(): string {
     const OVERVIEW_HEATMAP_REFRESH_MS = 30000;
     const OVERVIEW_HEATMAP_URL = '/gateway/traces/recent?direction=older&cursor=latest&limit=100&site=trace-burn-intelligence&sourceMode=local-networked&includeRawPayload=false';
     const OVERVIEW_HEATMAP_MAX_PAGES = 24;
+    const CONFIGURATION_RETRY_MAX_MS = 30000;
+    let configurationRetryTimer = 0;
+    let configurationRetryDelayMs = 1000;
+    let overviewHeatmapHasSnapshot = false;
     const heatCompact = (value) => new Intl.NumberFormat(undefined, { notation: 'compact', maximumFractionDigits: 1 }).format(Number(value || 0));
     const heatCost = (value) => '$' + Number(value || 0).toFixed(Number(value || 0) >= 1 ? 2 : 4);
     const heatTimestamp = (row) => row && (row.startTime || row.startedAt || row.started_at || row.time || row.ts || row.timestamp || row.createdAt || row.created_at);
@@ -480,6 +484,8 @@ function configurationClientScript(): string {
         return '<div class="overview-heatmap-row" role="row"><span class="overview-heatmap-day" role="rowheader">' + escapeHtml(day.label) + '</span>' + cells.join('') + '</div>';
       }).join('');
       grid.innerHTML = rows;
+      overviewHeatmapHasSnapshot = true;
+      grid.setAttribute('aria-busy', 'false');
       const totals = aggregate.totals || { calls: 0, tokens: 0, cost: 0 };
       setText('overview-heatmap-calls', heatCompact(totals.calls));
       setText('overview-heatmap-tokens', heatCompact(totals.tokens));
@@ -499,8 +505,13 @@ function configurationClientScript(): string {
       try {
         const raw = sessionStorage.getItem(OVERVIEW_HEATMAP_CACHE_KEY);
         const cached = raw ? JSON.parse(raw) : null;
-        if (!cached || Date.now() - Number(cached.savedAt || 0) > OVERVIEW_HEATMAP_TTL_MS) return null;
-        return cached.aggregate || null;
+        if (!cached || !cached.aggregate) return null;
+        const savedAt = Number(cached.savedAt || 0);
+        return {
+          aggregate: cached.aggregate,
+          savedAt,
+          isFresh: Date.now() - savedAt <= OVERVIEW_HEATMAP_TTL_MS,
+        };
       } catch {
         return null;
       }
@@ -535,17 +546,42 @@ function configurationClientScript(): string {
         const rows = await readOverviewHeatmapRows();
         const aggregate = aggregateOverviewHeatmap(rows);
         renderOverviewHeatmap(aggregate);
+        setText('overview-heatmap-status', 'History loaded · live updates connected');
         try { sessionStorage.setItem(OVERVIEW_HEATMAP_CACHE_KEY, JSON.stringify({ savedAt: Date.now(), aggregate })); } catch {}
       } catch {
         const grid = byId('overview-heatmap-grid');
-        if (grid && !grid.children.length) grid.setAttribute('aria-label', 'Live trace activity is temporarily unavailable.');
+        setText(
+          'overview-heatmap-status',
+          overviewHeatmapHasSnapshot
+            ? 'Historical activity shown · live updates unavailable'
+            : 'Trace history temporarily unavailable · retrying automatically',
+        );
+        if (grid) {
+          grid.setAttribute('aria-busy', 'false');
+          grid.setAttribute(
+            'aria-label',
+            overviewHeatmapHasSnapshot
+              ? 'Historical trace activity is shown. Live updates are temporarily unavailable.'
+              : 'Trace history is temporarily unavailable and will retry automatically.',
+          );
+        }
       }
     }
 
     function initOverviewHeatmap() {
       if (!byId('overview-heatmap-grid')) return;
       const cached = readOverviewHeatmapCache();
-      renderOverviewHeatmap(cached || aggregateOverviewHeatmap([]));
+      if (cached) {
+        renderOverviewHeatmap(cached.aggregate);
+        setText(
+          'overview-heatmap-status',
+          cached.isFresh
+            ? 'History loaded · checking live updates…'
+            : 'Historical activity shown · checking live updates…',
+        );
+      } else {
+        byId('overview-heatmap-grid')?.setAttribute('aria-busy', 'true');
+      }
       void refreshOverviewHeatmap();
       window.setInterval(() => { if (!document.hidden) void refreshOverviewHeatmap(); }, OVERVIEW_HEATMAP_REFRESH_MS);
       document.addEventListener('visibilitychange', () => { if (!document.hidden) void refreshOverviewHeatmap(); });
@@ -899,18 +935,76 @@ function configurationClientScript(): string {
       if (configurationContent) configurationContent.setAttribute('aria-busy', 'false');
     }
 
+    function setConfigurationConnectionState(state, title, copy) {
+      const configurationError = byId('configuration-error');
+      if (configurationError) configurationError.dataset.connectionState = state;
+      setText('configuration-error-title', title);
+      setText('configuration-error-copy', copy);
+    }
+
+    function scheduleConfigurationRetry() {
+      if (configurationRetryTimer) return;
+      const delayMs = configurationRetryDelayMs;
+      configurationRetryDelayMs = Math.min(
+        CONFIGURATION_RETRY_MAX_MS,
+        configurationRetryDelayMs * 2,
+      );
+      configurationRetryTimer = window.setTimeout(() => {
+        configurationRetryTimer = 0;
+        void loadConfiguration();
+      }, delayMs);
+    }
+
     async function loadConfiguration() {
-      try {
-        const response = await fetch('/gateway/configuration/snapshot', { headers: { accept: 'application/json' } });
-        if (!response.ok) throw new Error('gateway configuration snapshot returned ' + response.status);
-        const payload = await response.json();
+      const failure = await (async () => {
+        const response = await fetch('/gateway/configuration/snapshot', {
+          headers: { accept: 'application/json' },
+          credentials: 'same-origin',
+          cache: 'no-store',
+        });
+        const payload = await response.json().catch(() => null);
+        if (!response.ok) {
+          const error = new Error('gateway configuration snapshot returned ' + response.status);
+          error.code = payload?.error?.code || '';
+          error.status = response.status;
+          throw error;
+        }
         if (!payload || typeof payload !== 'object' || payload.ok === false || !payload.snapshot) throw new Error('invalid gateway configuration snapshot');
         renderSnapshot(payload.snapshot);
-      } catch {
+        configurationRetryDelayMs = 1000;
+        if (configurationRetryTimer) window.clearTimeout(configurationRetryTimer);
+        configurationRetryTimer = 0;
+      })().then(
+        () => null,
+        (error) => error,
+      );
+      if (failure) {
+        const code = String(failure?.code || '');
+        const status = Number(failure?.status || 0);
+        if (code === 'WORKSPACE_NODE_OFFLINE') {
+          setConfigurationConnectionState(
+            'node-unavailable',
+            'Workspace connected; live node unavailable',
+            'You’re signed in. Configuration will reconnect automatically when the selected node is reachable.',
+          );
+        } else if (status === 401) {
+          setConfigurationConnectionState(
+            'session-recovery',
+            'Workspace session reconnecting',
+            'Your workspace connection is being refreshed automatically.',
+          );
+        } else {
+          setConfigurationConnectionState(
+            'configuration-unavailable',
+            'Configuration temporarily unavailable',
+            'Configuration could not load. Retrying automatically without changing your sign-in state.',
+          );
+        }
         setHidden('configuration-loading', true);
         setHidden('configuration-error', false);
         const configurationContent = byId('configuration-content');
         if (configurationContent) configurationContent.setAttribute('aria-busy', 'false');
+        scheduleConfigurationRetry();
       }
     }
 
@@ -1144,6 +1238,7 @@ function renderOverviewPanels(): string {
                 <span>Cost <b id="overview-heatmap-cost">$0.0000</b></span>
               </div>
             </div>
+            <p id="overview-heatmap-status" class="muted" aria-live="polite">Loading persisted trace history…</p>
             <div class="overview-heatmap-scroll" tabindex="0" aria-label="Scrollable trace activity heatmap">
               <div class="overview-heatmap-frame">
                 <div class="overview-heatmap-hours" aria-hidden="true"><span></span>${heatmapHours}</div>
@@ -1272,8 +1367,8 @@ function renderHydratedContent(page: 'configuration' | 'tools'): string {
   return `
       <p id="configuration-loading" class="sr-only" aria-live="polite">Loading workspace configuration</p>
       <section id="configuration-error" class="state-panel" aria-live="polite" hidden>
-        <strong>Configuration unavailable</strong>
-        <p class="muted">Sign in to this workspace or verify that its home node is online.</p>
+        <strong id="configuration-error-title">Configuration temporarily unavailable</strong>
+        <p id="configuration-error-copy" class="muted">Configuration could not load. Retrying automatically without changing your sign-in state.</p>
       </section>
       <div id="configuration-content" aria-busy="true">${panels}</div>`;
 }

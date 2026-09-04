@@ -11,6 +11,7 @@ import {
 } from './lib/local-agent-connectivity';
 import {
   createWorkspaceNodeHeartbeatClient,
+  isTransientWorkspaceNodeHeartbeatRequestError,
   type WorkspaceNodeHeartbeatConfig,
   type WorkspaceNodeHeartbeatResult,
   type WorkspaceNodeHeartbeatRuntimeStatus,
@@ -379,7 +380,12 @@ export async function sendWorkspaceNodeHeartbeatFromConfig(
         readinessResult = await client.send({ ...runtimeStatus, mcpReady });
         reconcileHeartbeatEdgeProxyAuth({ configPath, config, result: readinessResult });
       } catch (error: unknown) {
-        if (mcpReady !== true) throw error;
+        if (
+          mcpReady !== true
+          || !isTransientWorkspaceNodeHeartbeatRequestError(error)
+        ) {
+          throw error;
+        }
         return {
           nodeId: config.nodeId,
           presence: 'online' as const,

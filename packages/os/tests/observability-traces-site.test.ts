@@ -196,6 +196,28 @@ describe('Observability Traces canonical Trace Burn surface', () => {
     expect(html).not.toContain('cdn.jsdelivr.net');
   });
 
+  it('retries persisted history hydration before advancing to live-only polling', () => {
+    const browserSource = readFileSync(
+      resolve(osTraceInspectorDir, 'browser.ts'),
+      'utf8',
+    );
+
+    expect(browserSource).toContain('let historyHydrated = false;');
+    expect(browserSource).toContain('historyHydrated = await hydrateLiveSnapshot();');
+    expect(browserSource).toContain('if (!historyHydrated) return;');
+    expect(browserSource.indexOf('historyHydrated = await hydrateLiveSnapshot();')).toBeLessThan(
+      browserSource.indexOf('const page = parseTraceLiveResponse('),
+    );
+    const hydrationSource = browserSource.slice(
+      browserSource.indexOf('async function hydrateLiveSnapshot()'),
+      browserSource.indexOf('function installLivePolling()'),
+    );
+    expect(hydrationSource).toContain(
+      '(window as TraceWindow).__traceVirtualList?.replaceRows(',
+    );
+    expect(hydrationSource).not.toContain('if (rows.length)');
+  });
+
   it('recovers an expired private workspace browser session before showing an empty trace table', () => {
     const html = buildObservabilityTracesSite();
 

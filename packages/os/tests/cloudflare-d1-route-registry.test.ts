@@ -1,5 +1,5 @@
-import { join } from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { dirname, join } from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
@@ -125,7 +125,10 @@ const runContract =
 const contractDescribe = runContract ? describe : describe.skip;
 
 
-const createFixtureCloudflareD1 = (): WorkspaceRouteD1Database => {
+const createFixtureCloudflareD1 = (options?: {
+  deleteWorkspaceRouteAfterRead?: () => boolean;
+  rejectWorkspaceRouteInserts?: () => boolean;
+}): WorkspaceRouteD1Database => {
   const rows = new Map<string, Record<string, unknown>>();
 
   return {
@@ -140,14 +143,28 @@ const createFixtureCloudflareD1 = (): WorkspaceRouteD1Database => {
         },
         async first<T = unknown>(): Promise<T | null> {
           if (/select/i.test(sql)) {
-            return (rows.get(String(values[0])) as T | undefined) ?? null;
+            const hostname = String(values[0]);
+            const row = rows.get(hostname) as T | undefined;
+            if (row && options?.deleteWorkspaceRouteAfterRead?.()) {
+              rows.delete(hostname);
+            }
+            return row ?? null;
           }
 
           return null;
         },
         async run(): Promise<unknown> {
-          if (values.length === 0) return { success: true };
+          if (values.length === 0) {
+            return { success: true, meta: { changes: 0 } };
+          }
+          let changes = 0;
           if (/insert/i.test(sql)) {
+            if (
+              /insert into workspace_route_registry/i.test(sql) &&
+              options?.rejectWorkspaceRouteInserts?.()
+            ) {
+              throw new Error('workspace route inserts are unavailable');
+            }
             const recordJson = [...values]
               .reverse()
               .find(
@@ -164,8 +181,8 @@ const createFixtureCloudflareD1 = (): WorkspaceRouteD1Database => {
               revoked_at: values[4] ?? null,
               revocation_reason: values[5] ?? null,
             });
+            changes = 1;
           } else if (/update/i.test(sql)) {
-            const existing = rows.get(String(values[0]));
             const recordJson = [...values]
               .reverse()
               .find(
@@ -174,20 +191,33 @@ const createFixtureCloudflareD1 = (): WorkspaceRouteD1Database => {
                   value.trim().startsWith('{') &&
                   value.includes('"workspaceId"'),
               );
+            const hostname = recordJson === undefined
+              ? String(values[0])
+              : String(values.at(-1));
+            const existing = rows.get(hostname);
 
             if (existing) {
-              rows.set(String(values[0]), {
+              if (recordJson === undefined) {
+                rows.set(hostname, {
+                  ...existing,
+                  record_json: values[1],
+                  status: values[2],
+                  updated_at: values[3],
+                  revoked_at: values[4] ?? null,
+                  revocation_reason: values[5] ?? null,
+                });
+                return { success: true, meta: { changes: 1 } };
+              }
+
+              rows.set(hostname, {
                 ...existing,
-                record_json: recordJson ?? values[1],
-                status: values[2],
-                updated_at: values[3],
-                revoked_at: values[4] ?? null,
-                revocation_reason: values[5] ?? null,
+                record_json: recordJson,
               });
+              changes = 1;
             }
           }
 
-          return { success: true };
+          return { success: true, meta: { changes } };
         },
       };
     },
@@ -197,7 +227,8 @@ const createFixtureCloudflareD1 = (): WorkspaceRouteD1Database => {
 async function loadWorkspaceRouteD1RegistryContract(): Promise<WorkspaceRouteD1RegistryContract> {
   const modulePath = pathToFileURL(
     join(
-      process.cwd(),
+      dirname(fileURLToPath(import.meta.url)),
+      '..',
       'scripts',
       'lib',
       'workspace-cloudflare-d1-route-registry.ts',
@@ -1028,7 +1059,10 @@ contractDescribe('workspace Cloudflare D1 route registry contract', () => {
 
   it('should update node heartbeat state through a production-shaped prepare-only D1 binding', async () => {
     const registry = await loadWorkspaceRouteD1RegistryContract();
-    const fixture = createFixtureCloudflareD1();
+    let rejectWorkspaceRouteInserts = false;
+    const fixture = createFixtureCloudflareD1({
+      rejectWorkspaceRouteInserts: () => rejectWorkspaceRouteInserts,
+    });
     const db: WorkspaceRouteD1Database = { prepare: fixture.prepare };
     const nowMs = Date.parse('2026-07-22T20:00:00.000Z');
     await registry.migrateWorkspaceRouteD1(db);
@@ -1067,6 +1101,7 @@ contractDescribe('workspace Cloudflare D1 route registry contract', () => {
         },
       ],
     });
+    rejectWorkspaceRouteInserts = true;
 
     await registry.updateWorkspaceNodeTargetInD1(db, {
       hostname: 'kokayi.consuelohq.com',
@@ -1087,6 +1122,59 @@ contractDescribe('workspace Cloudflare D1 route registry contract', () => {
       allowed: true,
       nodeId: 'node_home',
       target: { connectorId: 'connector_home' },
+    });
+  });
+
+  it('should not recreate a route deleted while an existing-record revocation is in flight', async () => {
+    const registry = await loadWorkspaceRouteD1RegistryContract();
+    let deleteWorkspaceRouteAfterRead = false;
+    const fixture = createFixtureCloudflareD1({
+      deleteWorkspaceRouteAfterRead: () => deleteWorkspaceRouteAfterRead,
+    });
+    const db: WorkspaceRouteD1Database = { prepare: fixture.prepare };
+    await registry.migrateWorkspaceRouteD1(db);
+    await registry.upsertWorkspaceHostnameInD1(db, {
+      workspaceId: 'workspace_123',
+      workspaceSlug: 'kokayi',
+      hostname: 'kokayi.consuelohq.com',
+      baseDomain: 'consuelohq.com',
+      provider: 'cloudflare',
+      owner: 'consuelo-os-cloud',
+      status: 'active',
+      routes: [
+        {
+          surface: 'os',
+          pathPrefix: '/mcp',
+          auth: 'required',
+          status: 'active',
+          target: {
+            kind: 'os-connector',
+            connectorId: 'connector_home',
+            connectorStatus: 'connected',
+            tunnelOriginUrl: 'https://home.connector.test',
+          },
+        },
+      ],
+    });
+    deleteWorkspaceRouteAfterRead = true;
+
+    await expect(
+      registry.revokeWorkspaceHostnameInD1(db, {
+        hostname: 'kokayi.consuelohq.com',
+        reason: 'user-disabled',
+      }),
+    ).rejects.toThrow('workspace route D1 revocation failed');
+
+    deleteWorkspaceRouteAfterRead = false;
+    await expect(
+      registry.resolveWorkspaceRouteFromD1(db, {
+        host: 'kokayi.consuelohq.com',
+        path: '/mcp',
+      }),
+    ).resolves.toMatchObject({
+      allowed: false,
+      status: 404,
+      errorCode: 'WORKSPACE_HOSTNAME_NOT_FOUND',
     });
   });
 
