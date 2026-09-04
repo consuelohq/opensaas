@@ -845,6 +845,12 @@ const createOAuthAuthorizationServerMetadataResponse = (): Response =>
     },
   );
 
+const canProbeConnectedNodeWithoutFreshHeartbeat = (path: string): boolean =>
+  path === '/mcp' ||
+  path.startsWith('/mcp/') ||
+  path === '/gateway' ||
+  path.startsWith('/gateway/');
+
 export const createWorkspaceCloudflareEdgeRouter = (
   input: WorkspaceCloudflareEdgeRouterInput,
 ): WorkspaceCloudflareEdgeRouter => {
@@ -929,6 +935,9 @@ export const createWorkspaceCloudflareEdgeRouter = (
           host: inboundUrl.hostname,
           path: inboundUrl.pathname,
           method: request.method,
+          ...(canProbeConnectedNodeWithoutFreshHeartbeat(inboundUrl.pathname)
+            ? { requireOnlineNode: false }
+            : {}),
           ...(request.headers.get('x-consuelo-node-id')?.trim()
             ? { nodeId: request.headers.get('x-consuelo-node-id')!.trim() }
             : {}),
