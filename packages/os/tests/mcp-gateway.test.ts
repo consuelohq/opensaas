@@ -555,11 +555,21 @@ describe('MCP gateway adapter', () => {
       securitySchemes: [
         { type: 'oauth2', scopes: ['route:/mcp:read'] },
       ],
+      _meta: {
+        securitySchemes: [
+          { type: 'oauth2', scopes: ['route:/mcp:read'] },
+        ],
+      },
     });
     expect(callTool).toMatchObject({
       securitySchemes: [
         { type: 'oauth2', scopes: ['mcp:call'] },
       ],
+      _meta: {
+        securitySchemes: [
+          { type: 'oauth2', scopes: ['mcp:call'] },
+        ],
+      },
       inputSchema: {
         properties: {
           nodeId: {
