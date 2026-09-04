@@ -677,6 +677,7 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
     expect(body.scopes_supported).toEqual(
       expect.arrayContaining(['mcp:read', 'mcp:call', 'tool:*:read']),
     );
+    expect(body.scopes_supported).not.toContain('workspace:nodes:manage');
     expect(resolvedPaths).toEqual(['/mcp']);
     expect(JSON.stringify(body)).not.toMatch(
       /connector-123|tunnel|cst_|cbt_|private[_-]?key|secret|127\.0\.0\.1/i,
@@ -730,6 +731,7 @@ contractDescribe('workspace Cloudflare edge router contract', () => {
       token_endpoint_auth_methods_supported: ['none'],
       code_challenge_methods_supported: ['S256'],
     });
+    expect(body.scopes_supported).not.toContain('workspace:nodes:manage');
     expect(resolvedPaths).toEqual(['/mcp']);
     expect(JSON.stringify(body)).not.toMatch(
       /connector-123|tunnel|cst_|cbt_|private[_-]?key|secret|127\.0\.0\.1/i,

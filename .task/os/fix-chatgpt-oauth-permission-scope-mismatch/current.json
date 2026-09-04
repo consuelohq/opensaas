@@ -1,0 +1,20 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-chatgpt-oauth-permission-scope-mismatch",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2379,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2379",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2379",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2379/fix-chatgpt-oauth-permission-scope-mismatch",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2379",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2379/fix-chatgpt-oauth-permission-scope-mismatch",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-chatgpt-oauth-permission-scope-mismatch",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_4e452c067c59",
+  "tmuxSession": "opensaas-os-fix-chatgpt-oauth-permission-scope-mismatch-4e452c06",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-chatgpt-oauth-permission-scope-mismatch/.task/os/fix-chatgpt-oauth-permission-scope-mismatch/session.json",
+  "createdAt": "2026-09-04T20:02:19.939Z"
+}
