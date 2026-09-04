@@ -263,7 +263,7 @@ describe('Trace Sites gateway live endpoints', () => {
     expect(observedQuery).toBe('tool:fs.read branch:feature/search');
   });
 
-  it('serves older rich trace pages through the authenticated recent route without changing the live cursor contract', async () => {
+  it('serves redacted and rich older trace pages without changing the live cursor contract', async () => {
     const dbPath = join(tempDir, 'history-endpoint.db');
     await createHistoryFixtureDb(dbPath);
     const endpoints = createTraceSitesGatewayLiveEndpoints({
@@ -271,17 +271,29 @@ describe('Trace Sites gateway live endpoints', () => {
       resolveScope: traceGatewayScopeFromHeaders,
     });
 
-    const denied = await endpoints.handle(
+    const redacted = await endpoints.handle(
       request(
         '/gateway/traces/recent?direction=older&cursor=id%3Arow_4&limit=2&sourceMode=local-networked',
       ),
     );
-    expect(denied.status).toBe(403);
-    expect(await denied.json()).toMatchObject({
-      ok: false,
-      error: { code: 'RAW_PAYLOAD_ACCESS_DENIED' },
-      errors: ['RAW_PAYLOAD_ACCESS_DENIED'],
+    const redactedPayload = (await redacted.json()) as {
+      data: { rows: Array<Record<string, unknown>> };
+    };
+    expect(redacted.status).toBe(200);
+    expect(redactedPayload).toMatchObject({
+      ok: true,
+      data: {
+        direction: 'older',
+        rows: [
+          { recordId: 'row_3', traceId: 'trc_history_3' },
+          { recordId: 'row_2', traceId: 'trc_history_2', status: 'error' },
+        ],
+      },
     });
+    expect(redactedPayload.data.rows[0]).not.toHaveProperty('input');
+    expect(redactedPayload.data.rows[0]).not.toHaveProperty('output');
+    expect(redactedPayload.data.rows[0]).not.toHaveProperty('rawInput');
+    expect(redactedPayload.data.rows[0]).not.toHaveProperty('rawOutput');
 
     const first = await endpoints.handle(
       request(

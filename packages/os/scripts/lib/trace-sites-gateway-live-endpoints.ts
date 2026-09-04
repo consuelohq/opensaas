@@ -2,6 +2,7 @@ import {
   createTraceSitesGatewayReadLayer,
   type TraceSitesGatewayReadBackendAdapter,
   type TraceSitesGatewayReadBackendInput,
+  type TraceSitesGatewayHistoryRow,
   type TraceSitesGatewayReadLayerRequest,
   type TraceSitesGatewayReadLayerResult,
 } from './trace-sites-gateway-read-layer';
@@ -15,6 +16,38 @@ import {
   resolveTraceGatewayDiscovery,
   validateTraceReadQuery,
 } from './trace-sites-gateway-contract';
+
+const REDACTED_TRACE_HISTORY_FIELDS = [
+  'id',
+  'recordId',
+  'traceId',
+  'trace',
+  'startTime',
+  'time',
+  'name',
+  'traceName',
+  'status',
+  'ok',
+  'code',
+  'exitCode',
+  'durationMs',
+  'latency',
+  'tokens',
+  'inputTokens',
+  'outputTokens',
+  'cost',
+  'costLabel',
+] as const;
+
+function redactTraceHistoryRow(
+  row: TraceSitesGatewayHistoryRow,
+): TraceSitesGatewayHistoryRow {
+  return Object.fromEntries(
+    REDACTED_TRACE_HISTORY_FIELDS.flatMap((field) =>
+      row[field] === undefined ? [] : [[field, row[field]]],
+    ),
+  ) as TraceSitesGatewayHistoryRow;
+}
 import type {
   TraceGatewaySessionScope,
   TraceSiteSlug,
@@ -162,7 +195,7 @@ async function cursorPageResponse(
     site: request.site,
     cursor: request.cursor,
     limit,
-    includeRawPayload: true,
+    includeRawPayload: request.includeRawPayload === true,
     requesterCanReadRawPayload:
       request.includeRawPayload === true &&
       request.site === 'trace-burn-intelligence' &&
@@ -232,7 +265,10 @@ async function cursorPageResponse(
         workspaceId: request.workspaceId,
         workspaceHost: request.workspaceHost,
         ...(request.nodeId ? { nodeId: request.nodeId } : {}),
-        rows: page.rows,
+        rows:
+          request.includeRawPayload === true
+            ? page.rows
+            : page.rows.map(redactTraceHistoryRow),
         nextCursor: page.nextCursor,
       },
     });
