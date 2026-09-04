@@ -1,5 +1,5 @@
-import { join } from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { dirname, join } from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
@@ -125,7 +125,9 @@ const runContract =
 const contractDescribe = runContract ? describe : describe.skip;
 
 
-const createFixtureCloudflareD1 = (): WorkspaceRouteD1Database => {
+const createFixtureCloudflareD1 = (options?: {
+  rejectWorkspaceRouteInserts?: () => boolean;
+}): WorkspaceRouteD1Database => {
   const rows = new Map<string, Record<string, unknown>>();
 
   return {
@@ -148,6 +150,12 @@ const createFixtureCloudflareD1 = (): WorkspaceRouteD1Database => {
         async run(): Promise<unknown> {
           if (values.length === 0) return { success: true };
           if (/insert/i.test(sql)) {
+            if (
+              /insert into workspace_route_registry/i.test(sql) &&
+              options?.rejectWorkspaceRouteInserts?.()
+            ) {
+              throw new Error('workspace route inserts are unavailable');
+            }
             const recordJson = [...values]
               .reverse()
               .find(
@@ -165,7 +173,6 @@ const createFixtureCloudflareD1 = (): WorkspaceRouteD1Database => {
               revocation_reason: values[5] ?? null,
             });
           } else if (/update/i.test(sql)) {
-            const existing = rows.get(String(values[0]));
             const recordJson = [...values]
               .reverse()
               .find(
@@ -174,15 +181,27 @@ const createFixtureCloudflareD1 = (): WorkspaceRouteD1Database => {
                   value.trim().startsWith('{') &&
                   value.includes('"workspaceId"'),
               );
+            const hostname = recordJson === undefined
+              ? String(values[0])
+              : String(values.at(-1));
+            const existing = rows.get(hostname);
 
             if (existing) {
-              rows.set(String(values[0]), {
+              if (recordJson === undefined) {
+                rows.set(hostname, {
+                  ...existing,
+                  record_json: values[1],
+                  status: values[2],
+                  updated_at: values[3],
+                  revoked_at: values[4] ?? null,
+                  revocation_reason: values[5] ?? null,
+                });
+                return { success: true };
+              }
+
+              rows.set(hostname, {
                 ...existing,
-                record_json: recordJson ?? values[1],
-                status: values[2],
-                updated_at: values[3],
-                revoked_at: values[4] ?? null,
-                revocation_reason: values[5] ?? null,
+                record_json: recordJson,
               });
             }
           }
@@ -197,7 +216,8 @@ const createFixtureCloudflareD1 = (): WorkspaceRouteD1Database => {
 async function loadWorkspaceRouteD1RegistryContract(): Promise<WorkspaceRouteD1RegistryContract> {
   const modulePath = pathToFileURL(
     join(
-      process.cwd(),
+      dirname(fileURLToPath(import.meta.url)),
+      '..',
       'scripts',
       'lib',
       'workspace-cloudflare-d1-route-registry.ts',
@@ -1028,7 +1048,10 @@ contractDescribe('workspace Cloudflare D1 route registry contract', () => {
 
   it('should update node heartbeat state through a production-shaped prepare-only D1 binding', async () => {
     const registry = await loadWorkspaceRouteD1RegistryContract();
-    const fixture = createFixtureCloudflareD1();
+    let rejectWorkspaceRouteInserts = false;
+    const fixture = createFixtureCloudflareD1({
+      rejectWorkspaceRouteInserts: () => rejectWorkspaceRouteInserts,
+    });
     const db: WorkspaceRouteD1Database = { prepare: fixture.prepare };
     const nowMs = Date.parse('2026-07-22T20:00:00.000Z');
     await registry.migrateWorkspaceRouteD1(db);
@@ -1067,6 +1090,7 @@ contractDescribe('workspace Cloudflare D1 route registry contract', () => {
         },
       ],
     });
+    rejectWorkspaceRouteInserts = true;
 
     await registry.updateWorkspaceNodeTargetInD1(db, {
       hostname: 'kokayi.consuelohq.com',

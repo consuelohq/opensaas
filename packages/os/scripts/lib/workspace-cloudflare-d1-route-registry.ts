@@ -221,6 +221,7 @@ const readCloudflareD1Record = (input: {
 const writeCloudflareD1Record = (input: {
   db: WorkspaceRouteD1Database;
   record: StoredWorkspaceRouteD1Record;
+  existing?: boolean;
 }): Promise<unknown> => {
   const primaryRoute = input.record.routes[0];
   if (!primaryRoute) throw new Error('workspace route record must contain a route');
@@ -244,6 +245,33 @@ const writeCloudflareD1Record = (input: {
         : primaryRoute.target.kind === 'redirect'
           ? primaryRoute.target.location
           : '';
+  if (input.existing) {
+    const sql = [
+      'UPDATE workspace_route_registry SET',
+      'workspace_id = ?, workspace_slug = ?, workspace_host = ?, base_domain = ?,',
+      'route_path_prefix = ?, route_surface = ?, route_status = ?, route_target_kind = ?,',
+      'target_origin_url = ?, connector_id = ?, connector_status = ?, record_json = ?,',
+      "updated_at = datetime('now') WHERE hostname = ?",
+    ].join(' ');
+    return getPreparedD1(input.db)
+      .prepare(sql)
+      .bind(
+        input.record.workspaceId,
+        input.record.workspaceSlug,
+        input.record.hostname,
+        input.record.baseDomain,
+        primaryRoute.pathPrefix,
+        primaryRoute.surface,
+        primaryRoute.status,
+        primaryRoute.target.kind,
+        targetOriginUrl,
+        connectorTarget?.connectorId ?? null,
+        connectorTarget?.connectorStatus ?? null,
+        JSON.stringify(input.record),
+        input.record.hostname,
+      )
+      .run();
+  }
   const sql = [
     'INSERT INTO workspace_route_registry',
     '(hostname, workspace_id, workspace_slug, workspace_host, base_domain, route_path_prefix, route_surface, route_status, route_target_kind, target_origin_url, connector_id, connector_status, record_json, created_at, updated_at)',
@@ -362,6 +390,7 @@ const readStoredRecord = async (
 const writeStoredRecord = async (
   db: WorkspaceRouteD1Database,
   record: StoredWorkspaceRouteD1Record,
+  options: { existing?: boolean } = {},
 ): Promise<void> => {
   try {
     const state = states.get(db);
@@ -369,7 +398,7 @@ const writeStoredRecord = async (
       ensureMigrated(db).hostnameRows.set(record.hostname, cloneRecord(record));
       return;
     }
-    await writeCloudflareD1Record({ db, record });
+    await writeCloudflareD1Record({ db, record, existing: options.existing });
   } catch (error: unknown) {
     throw createD1RegistryError('hostname write', error);
   }
@@ -829,13 +858,17 @@ export const upsertWorkspaceNodeTargetInD1 = async (
       target: input.target,
       localServiceUrl: input.localServiceUrl ?? 'http://127.0.0.1:46320',
     });
-    await writeStoredRecord(db, {
-      ...base,
-      defaultNodeId,
-      nodeTargets: targets,
-      routes,
-      updatedAt: new Date().toISOString(),
-    });
+    await writeStoredRecord(
+      db,
+      {
+        ...base,
+        defaultNodeId,
+        nodeTargets: targets,
+        routes,
+        updatedAt: new Date().toISOString(),
+      },
+      { existing: Boolean(existing) },
+    );
   } catch (error: unknown) {
     throw createD1RegistryError('node target upsert', error);
   }
@@ -872,11 +905,15 @@ export const updateWorkspaceNodeTargetInD1 = async (
           }
         : target,
     );
-    await writeStoredRecord(db, {
-      ...record,
-      nodeTargets,
-      updatedAt: new Date().toISOString(),
-    });
+    await writeStoredRecord(
+      db,
+      {
+        ...record,
+        nodeTargets,
+        updatedAt: new Date().toISOString(),
+      },
+      { existing: true },
+    );
   } catch (error: unknown) {
     throw createD1RegistryError('node target update', error);
   }
@@ -900,12 +937,16 @@ export const setDefaultWorkspaceNodeInD1 = async (
         ? { ...route, target: connectorTargetForNode(target) }
         : cloneRoute(route),
     );
-    await writeStoredRecord(db, {
-      ...record,
-      defaultNodeId: input.nodeId,
-      routes,
-      updatedAt: new Date().toISOString(),
-    });
+    await writeStoredRecord(
+      db,
+      {
+        ...record,
+        defaultNodeId: input.nodeId,
+        routes,
+        updatedAt: new Date().toISOString(),
+      },
+      { existing: true },
+    );
   } catch (error: unknown) {
     throw createD1RegistryError('default node update', error);
   }
