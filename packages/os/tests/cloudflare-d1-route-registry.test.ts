@@ -126,6 +126,7 @@ const contractDescribe = runContract ? describe : describe.skip;
 
 
 const createFixtureCloudflareD1 = (options?: {
+  deleteWorkspaceRouteAfterRead?: () => boolean;
   rejectWorkspaceRouteInserts?: () => boolean;
 }): WorkspaceRouteD1Database => {
   const rows = new Map<string, Record<string, unknown>>();
@@ -142,13 +143,21 @@ const createFixtureCloudflareD1 = (options?: {
         },
         async first<T = unknown>(): Promise<T | null> {
           if (/select/i.test(sql)) {
-            return (rows.get(String(values[0])) as T | undefined) ?? null;
+            const hostname = String(values[0]);
+            const row = rows.get(hostname) as T | undefined;
+            if (row && options?.deleteWorkspaceRouteAfterRead?.()) {
+              rows.delete(hostname);
+            }
+            return row ?? null;
           }
 
           return null;
         },
         async run(): Promise<unknown> {
-          if (values.length === 0) return { success: true };
+          if (values.length === 0) {
+            return { success: true, meta: { changes: 0 } };
+          }
+          let changes = 0;
           if (/insert/i.test(sql)) {
             if (
               /insert into workspace_route_registry/i.test(sql) &&
@@ -172,6 +181,7 @@ const createFixtureCloudflareD1 = (options?: {
               revoked_at: values[4] ?? null,
               revocation_reason: values[5] ?? null,
             });
+            changes = 1;
           } else if (/update/i.test(sql)) {
             const recordJson = [...values]
               .reverse()
@@ -196,17 +206,18 @@ const createFixtureCloudflareD1 = (options?: {
                   revoked_at: values[4] ?? null,
                   revocation_reason: values[5] ?? null,
                 });
-                return { success: true };
+                return { success: true, meta: { changes: 1 } };
               }
 
               rows.set(hostname, {
                 ...existing,
                 record_json: recordJson,
               });
+              changes = 1;
             }
           }
 
-          return { success: true };
+          return { success: true, meta: { changes } };
         },
       };
     },
@@ -1111,6 +1122,59 @@ contractDescribe('workspace Cloudflare D1 route registry contract', () => {
       allowed: true,
       nodeId: 'node_home',
       target: { connectorId: 'connector_home' },
+    });
+  });
+
+  it('should not recreate a route deleted while an existing-record revocation is in flight', async () => {
+    const registry = await loadWorkspaceRouteD1RegistryContract();
+    let deleteWorkspaceRouteAfterRead = false;
+    const fixture = createFixtureCloudflareD1({
+      deleteWorkspaceRouteAfterRead: () => deleteWorkspaceRouteAfterRead,
+    });
+    const db: WorkspaceRouteD1Database = { prepare: fixture.prepare };
+    await registry.migrateWorkspaceRouteD1(db);
+    await registry.upsertWorkspaceHostnameInD1(db, {
+      workspaceId: 'workspace_123',
+      workspaceSlug: 'kokayi',
+      hostname: 'kokayi.consuelohq.com',
+      baseDomain: 'consuelohq.com',
+      provider: 'cloudflare',
+      owner: 'consuelo-os-cloud',
+      status: 'active',
+      routes: [
+        {
+          surface: 'os',
+          pathPrefix: '/mcp',
+          auth: 'required',
+          status: 'active',
+          target: {
+            kind: 'os-connector',
+            connectorId: 'connector_home',
+            connectorStatus: 'connected',
+            tunnelOriginUrl: 'https://home.connector.test',
+          },
+        },
+      ],
+    });
+    deleteWorkspaceRouteAfterRead = true;
+
+    await expect(
+      registry.revokeWorkspaceHostnameInD1(db, {
+        hostname: 'kokayi.consuelohq.com',
+        reason: 'user-disabled',
+      }),
+    ).rejects.toThrow('workspace route D1 revocation failed');
+
+    deleteWorkspaceRouteAfterRead = false;
+    await expect(
+      registry.resolveWorkspaceRouteFromD1(db, {
+        host: 'kokayi.consuelohq.com',
+        path: '/mcp',
+      }),
+    ).resolves.toMatchObject({
+      allowed: false,
+      status: 404,
+      errorCode: 'WORKSPACE_HOSTNAME_NOT_FOUND',
     });
   });
 

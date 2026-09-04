@@ -208,6 +208,14 @@ describe('Observability Traces canonical Trace Burn surface', () => {
     expect(browserSource.indexOf('historyHydrated = await hydrateLiveSnapshot();')).toBeLessThan(
       browserSource.indexOf('const page = parseTraceLiveResponse('),
     );
+    const hydrationSource = browserSource.slice(
+      browserSource.indexOf('async function hydrateLiveSnapshot()'),
+      browserSource.indexOf('function installLivePolling()'),
+    );
+    expect(hydrationSource).toContain(
+      '(window as TraceWindow).__traceVirtualList?.replaceRows(',
+    );
+    expect(hydrationSource).not.toContain('if (rows.length)');
   });
 
   it('recovers an expired private workspace browser session before showing an empty trace table', () => {

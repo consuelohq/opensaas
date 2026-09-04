@@ -119,6 +119,9 @@ describe('configuration site', () => {
     expect(html).toContain('renderOverviewHeatmap(cached.aggregate);');
     expect(html).toContain('Historical activity shown · live updates unavailable');
     expect(html).toContain('Trace history temporarily unavailable · retrying automatically');
+    expect(html).toContain(
+      "if (grid) {\n          grid.setAttribute('aria-busy', 'false');\n          grid.setAttribute(",
+    );
     expect(html).not.toContain('renderOverviewHeatmap(cached || aggregateOverviewHeatmap([]));');
     expect(html).toContain('tabindex="0"');
     expect(html).toContain("matchMedia('(prefers-reduced-motion: reduce)')");

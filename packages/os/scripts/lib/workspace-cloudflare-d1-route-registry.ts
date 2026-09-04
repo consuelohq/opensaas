@@ -155,6 +155,20 @@ const createD1RegistryError = (operation: string, error: unknown): Error =>
     `workspace route D1 ${operation} failed: ${getD1ErrorMessage(error)}`,
   );
 
+const d1WriteChanges = (result: unknown): number | undefined => {
+  if (!result || typeof result !== 'object' || Array.isArray(result)) {
+    return undefined;
+  }
+  const meta = (result as { meta?: unknown }).meta;
+  if (!meta || typeof meta !== 'object' || Array.isArray(meta)) {
+    return undefined;
+  }
+  const changes = (meta as { changes?: unknown }).changes;
+  return typeof changes === 'number' && Number.isFinite(changes)
+    ? changes
+    : undefined;
+};
+
 const cloneTarget = (
   target: WorkspaceRouteD1RouteTarget,
 ): WorkspaceRouteD1RouteTarget => ({ ...target });
@@ -218,7 +232,7 @@ const readCloudflareD1Record = (input: {
       return cloneRecord(JSON.parse(row.record_json) as StoredWorkspaceRouteD1Record);
     });
 
-const writeCloudflareD1Record = (input: {
+const writeCloudflareD1Record = async (input: {
   db: WorkspaceRouteD1Database;
   record: StoredWorkspaceRouteD1Record;
   existing?: boolean;
@@ -253,7 +267,7 @@ const writeCloudflareD1Record = (input: {
       'target_origin_url = ?, connector_id = ?, connector_status = ?, record_json = ?,',
       "updated_at = datetime('now') WHERE hostname = ?",
     ].join(' ');
-    return getPreparedD1(input.db)
+    const result = await getPreparedD1(input.db)
       .prepare(sql)
       .bind(
         input.record.workspaceId,
@@ -271,6 +285,10 @@ const writeCloudflareD1Record = (input: {
         input.record.hostname,
       )
       .run();
+    if (d1WriteChanges(result) === 0) {
+      throw new Error('workspace route record was not found during update');
+    }
+    return result;
   }
   const sql = [
     'INSERT INTO workspace_route_registry',
@@ -718,6 +736,7 @@ export const revokeWorkspaceHostnameInD1 = async (
     const revokedAt = new Date().toISOString();
     await writeCloudflareD1Record({
       db,
+      existing: true,
       record: {
         ...record,
         status: 'revoked',
