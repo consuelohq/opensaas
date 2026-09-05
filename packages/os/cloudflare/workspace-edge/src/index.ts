@@ -273,9 +273,8 @@ function workspaceSessionRequiredResponse(request: Request): Response {
   });
 }
 
-function isInternalDashboardPagePath(pathname: string): boolean {
+function isInternalDashboardDedicatedPagePath(pathname: string): boolean {
   return (
-    pathname === '/' ||
     pathname === '/users' ||
     pathname.startsWith('/users/') ||
     pathname === '/installs' ||
@@ -285,6 +284,10 @@ function isInternalDashboardPagePath(pathname: string): boolean {
     pathname === '/internal/assets/dashboard.css' ||
     pathname === '/internal/assets/dashboard.js'
   );
+}
+
+function isInternalDashboardPagePath(pathname: string): boolean {
+  return pathname === '/' || isInternalDashboardDedicatedPagePath(pathname);
 }
 
 async function validateWorkspaceBrowserSession(input: {
@@ -681,16 +684,17 @@ export function createWorkspaceEdgeHandler(
           internalDashboardAccessValues.length
         ? 'configured'
         : 'partial';
-  const authorizeInternalDashboard =
-    options.authorizeInternalDashboard ??
-    createCloudflareAccessDashboardAuthorizer({
-      teamDomain: env.OS_INTERNAL_DASHBOARD_ACCESS_TEAM_DOMAIN ?? '',
-      audience: env.OS_INTERNAL_DASHBOARD_ACCESS_AUD ?? '',
-      allowedEmails: internalDashboardAllowedEmails(
-        env.OS_INTERNAL_DASHBOARD_ALLOWED_EMAILS,
-      ),
-      now,
-    });
+  const authorizeInternalDashboard = options.authorizeInternalDashboard ??
+    (internalDashboardAccessState === 'disabled'
+      ? async () => true
+      : createCloudflareAccessDashboardAuthorizer({
+          teamDomain: env.OS_INTERNAL_DASHBOARD_ACCESS_TEAM_DOMAIN ?? '',
+          audience: env.OS_INTERNAL_DASHBOARD_ACCESS_AUD ?? '',
+          allowedEmails: internalDashboardAllowedEmails(
+            env.OS_INTERNAL_DASHBOARD_ALLOWED_EMAILS,
+          ),
+          now,
+        }));
   const internalDashboardHandler = internalDashboardService
     ? createInstallDashboardApiHandler({
         service: internalDashboardService,
@@ -764,9 +768,11 @@ export function createWorkspaceEdgeHandler(
         return await stub.fetch(request);
       }
       if (url.hostname.toLowerCase() === INSTALL_INTERNAL_DASHBOARD_HOST) {
-        const internalDashboardRequest =
+        const internalDashboardApiRequest =
           url.pathname === INSTALL_DASHBOARD_API_PREFIX ||
-          url.pathname.startsWith(`${INSTALL_DASHBOARD_API_PREFIX}/`) ||
+          url.pathname.startsWith(`${INSTALL_DASHBOARD_API_PREFIX}/`);
+        const internalDashboardRequest =
+          internalDashboardApiRequest ||
           isInternalDashboardPagePath(url.pathname);
         if (
           internalDashboardRequest &&
@@ -776,7 +782,10 @@ export function createWorkspaceEdgeHandler(
         }
         if (
           internalDashboardRequest &&
-          internalDashboardAccessState === 'configured'
+          (internalDashboardAccessState === 'configured' ||
+            (internalDashboardAccessState === 'disabled' &&
+              (internalDashboardApiRequest ||
+                isInternalDashboardDedicatedPagePath(url.pathname))))
         ) {
           const sessionValidation = await validateWorkspaceBrowserSession({
             request,

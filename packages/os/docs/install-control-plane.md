@@ -127,17 +127,19 @@ https://internal.consuelohq.com/api/internal/os/v1/installs/:installId/diagnosti
 
 There are no user/device/install mutation endpoints in v1.
 
-All HTML, assets, JSON, and diagnostic responses are `Cache-Control: no-store`. The worker checks the exact internal hostname and fails closed unless the request passes the explicit operator authorizer. `/users/:userId` is deliberately derived from the users/installs/devices read models; v1 does not introduce a second user-detail API.
+All HTML, assets, JSON, and diagnostic responses are `Cache-Control: no-store`. The worker checks the exact internal hostname and requires a valid `internal.consuelohq.com` workspace browser session before serving a dedicated dashboard route. `/users/:userId` is deliberately derived from the users/installs/devices read models; v1 does not introduce a second user-detail API.
 
 ### Diagnostic retrieval
 
-Dashboard install detail exposes diagnostic availability, bundle ID, outcome, and expiry only. It never exposes the R2 object key. When an authorized operator follows the diagnostic link, Workspace Edge re-validates operator access and proxies the request to Device Authority over `WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET`. Device Authority resolves the current unexpired private object key from D1 and reads the server-redacted object from R2.
+Dashboard install detail exposes diagnostic availability, bundle ID, outcome, and expiry only. It never exposes the R2 object key. When an authorized operator follows the diagnostic link, Workspace Edge re-validates the internal workspace session (and the optional Cloudflare Access operator gate when configured) and proxies the request to Device Authority over `WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET`. Device Authority resolves the current unexpired private object key from D1 and reads the server-redacted object from R2.
 
 The browser receives only the redacted JSON attachment. A launcher link, guessed `install_id`, D1 row, or R2 key is not sufficient to retrieve a diagnostic.
 
 ### Operator authorization
 
-Production authorization uses the Cloudflare Access JWT supplied in `cf-access-jwt-assertion`. The worker verifies:
+The primary production boundary is the first-party Consuelo workspace browser session for the exact `internal.consuelohq.com` host. Dedicated dashboard routes (`/users`, `/installs`, `/devices`, `/errors`, dashboard assets, and dashboard APIs) are intercepted only on that host and are served only after Device Authority validates the workspace session. The shared `/` route remains the normal internal workspace Home route.
+
+Cloudflare Access remains an optional defense-in-depth operator gate. When all three Access settings are provided, the worker also verifies the `cf-access-jwt-assertion` JWT:
 
 - RS256 signature against the configured Access team's published JWK set;
 - exact issuer/team domain;
@@ -145,9 +147,9 @@ Production authorization uses the Cloudflare Access JWT supplied in `cf-access-j
 - expiration/not-before timestamps;
 - an explicit operator email allow-list.
 
-A launcher link is never an authorization mechanism.
+A launcher link is never an authorization mechanism. A partially configured Access gate fails closed.
 
-Workspace Edge intentionally has no committed operator identity. Production must provide:
+To enable the additional Access gate, provide:
 
 ```text
 OS_INTERNAL_DASHBOARD_ACCESS_TEAM_DOMAIN
@@ -155,7 +157,7 @@ OS_INTERNAL_DASHBOARD_ACCESS_AUD
 OS_INTERNAL_DASHBOARD_ALLOWED_EMAILS
 ```
 
-If any authorization configuration is absent, the private API fails closed.
+If none of these Access settings are present, Workspace Edge uses the validated internal workspace session as the dashboard authorization boundary. If some but not all are present, dashboard requests fail closed rather than silently weakening a partially configured Access policy.
 
 ## Canonical user directory hydration
 
@@ -228,11 +230,11 @@ bunx wrangler r2 bucket lifecycle set consuelo-install-diagnostics \
 
 The lifecycle file physically expires failed diagnostics at 30 days and successful diagnostics at 7 days. Application metadata may make an explicitly configured successful bundle unavailable sooner than 7 days; the bucket lifecycle is the hard maximum.
 
-### 4. Configure Cloudflare Access
+### 4. Optional: configure Cloudflare Access
 
-Create/maintain the Access application for `internal.consuelohq.com` with the intended operator-only policy, then provide the Access team domain, application audience, and explicit allowed operator email(s) to Workspace Edge using deployment secrets/environment configuration.
+For an additional operator-specific gate beyond internal workspace membership, create/maintain a Cloudflare Access application covering the dashboard routes, then provide the Access team domain, application audience, and explicit allowed operator email(s) to Workspace Edge using deployment secrets/environment configuration.
 
-The worker performs Access JWT verification itself as defense in depth; the Access policy and the worker allow-list should agree.
+When configured, the worker performs Access JWT verification itself as defense in depth; the Access policy and the worker allow-list should agree. Do not configure only a subset of the three Access values.
 
 Workspace Edge and Device Authority must also continue to share `WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET`; Branch 6 uses that existing private worker-to-worker trust path for diagnostic downloads in addition to the device projection.
 
