@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/fix-same-host-internal-dashboard-handoff",
+  "events": [
+    {
+      "id": "96ecba1d-ed81-4cd0-ba6b-5370fa169dfd",
+      "occurred_at": "2026-09-05T02:38:16.244Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/internal-dashboard-integration.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-same-host-internal-dashboard-handoff",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-same-host-internal-dashboard-handoff"
+      }
+    },
+    {
+      "id": "1ea227cc-3c27-4bb3-a849-26b241c7c693",
+      "occurred_at": "2026-09-05T02:38:30.263Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/cloudflare/workspace-edge/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-same-host-internal-dashboard-handoff",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-same-host-internal-dashboard-handoff"
+      }
+    },
+    {
+      "id": "31ab3d68-69ad-49d9-b960-027e02ffbf91",
+      "occurred_at": "2026-09-05T02:39:01.455Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/cloudflare/workspace-edge/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-same-host-internal-dashboard-handoff",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-same-host-internal-dashboard-handoff"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-09-05T02:39:01.538Z"
+}

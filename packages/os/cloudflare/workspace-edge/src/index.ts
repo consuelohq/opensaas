@@ -34,6 +34,7 @@ import {
   handleSemanticEmbeddingGatewayRequest,
   type SemanticEmbeddingGatewayEnvironment,
 } from './semantic-embedding-gateway';
+import { normalizeAuthReturnPath } from '../../os-device-authority/src/security/web-auth-contract';
 
 type WorkspaceEdgeLogContext = {
   component: 'workspace-edge';
@@ -345,6 +346,36 @@ async function startPrivateSiteHandoff(input: {
         'cache-control': 'no-store',
       },
     });
+  }
+  if (incoming.hostname.toLowerCase() === targetHost) {
+    try {
+      const sessionValidation = await validateWorkspaceBrowserSession({
+        request: input.request,
+        stub: input.stub,
+        internalAuthSecret: input.internalAuthSecret,
+        workspaceHost: targetHost,
+      });
+      if (!sessionValidation) return closedAuthResponse();
+      if (sessionValidation.status !== 204) {
+        return sessionValidation.status === 401
+          ? workspaceSessionRequiredResponse(input.request)
+          : closedAuthResponse();
+      }
+      const destination = new URL(
+        normalizeAuthReturnPath(incoming.searchParams.get('return_to')),
+        incoming.origin,
+      );
+      return new Response(null, {
+        status: 302,
+        headers: {
+          location: destination.toString(),
+          'cache-control': 'no-store',
+          'x-content-type-options': 'nosniff',
+        },
+      });
+    } catch {
+      return closedAuthResponse();
+    }
   }
   const internalAuthSecret = input.internalAuthSecret?.trim();
   if (!input.stub || !internalAuthSecret) return closedAuthResponse();

@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-same-host-internal-dashboard-handoff",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2395,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2395",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-same-host-internal-dashboard-handoff",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_1b286728202e",
+  "tmuxSession": "opensaas-os-fix-same-host-internal-dashboard-handoff-1b286728",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-same-host-internal-dashboard-handoff/.task/session.json",
+  "createdAt": "2026-09-05T02:38:06.925Z"
+}
