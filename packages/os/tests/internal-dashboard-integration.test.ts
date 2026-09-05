@@ -206,6 +206,57 @@ describe('Branch 6 internal dashboard integration', () => {
     expect(users.status).toBe(403);
   });
 
+  it('short-circuits same-host internal dashboard handoff instead of calling Device Authority', async () => {
+    const routeRegistry = createInMemoryWorkspaceRouteD1();
+    await migrateWorkspaceRouteD1(routeRegistry);
+    let sessionValidationCalls = 0;
+    let handoffCalls = 0;
+    const edge = createWorkspaceEdgeHandler(
+      {
+        WORKSPACE_ROUTE_REGISTRY: routeRegistry,
+        CONSUELO_EDGE_SIGNING_SECRET: 'edge-secret',
+        WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET: 'internal-secret',
+        OS_DEVICE_AUTHORITY: {
+          idFromName: (name: string) => name,
+          get: () => ({
+            fetch: async (request: Request) => {
+              const url = new URL(request.url);
+              if (url.pathname === '/internal/auth/session/validate') {
+                sessionValidationCalls += 1;
+                return new Response(null, { status: 204 });
+              }
+              if (url.pathname === '/internal/auth/session/handoff') {
+                handoffCalls += 1;
+                return new Response('Not found\n', { status: 404 });
+              }
+              return new Response('unexpected authority route', { status: 500 });
+            },
+          }),
+        },
+      },
+      { now: () => NOW },
+    );
+
+    const response = await edge(new Request(
+      'https://internal.consuelohq.com/auth/handoff/start?target_host=internal.consuelohq.com&return_to=%2Fusers',
+      { headers: { cookie: '__Host-consuelo_os_session=target-session' } },
+    ));
+
+    expect(response.status).toBe(302);
+    expect(response.headers.get('location')).toBe('https://internal.consuelohq.com/users');
+    expect(sessionValidationCalls).toBe(1);
+    expect(handoffCalls).toBe(0);
+
+    const unsafeReturn = await edge(new Request(
+      'https://internal.consuelohq.com/auth/handoff/start?target_host=internal.consuelohq.com&return_to=https%3A%2F%2Fevil.example%2Fsteal',
+      { headers: { cookie: '__Host-consuelo_os_session=target-session' } },
+    ));
+    expect(unsafeReturn.status).toBe(302);
+    expect(unsafeReturn.headers.get('location')).toBe('https://internal.consuelohq.com/');
+    expect(sessionValidationCalls).toBe(2);
+    expect(handoffCalls).toBe(0);
+  });
+
   it('leaves shared-host paths on normal workspace routing when dashboard Access is disabled', async () => {
     const routeRegistry = createInMemoryWorkspaceRouteD1();
     await migrateWorkspaceRouteD1(routeRegistry);
