@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/workspace-agents/invalidate-heatmap-cache-on-replaced-traces",
+  "events": [
+    {
+      "id": "c29701d1-1450-428b-ae3b-1a32e13098da",
+      "occurred_at": "2026-09-05T00:55:36.058Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/trace-sites-local-read-backend.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/invalidate-heatmap-cache-on-replaced-traces",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/invalidate-heatmap-cache-on-replaced-traces"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-09-05T00:55:36.167Z"
+}
