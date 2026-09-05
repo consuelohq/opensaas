@@ -4,6 +4,9 @@ import type {
   TraceSitesGatewayCachedAggregate,
   TraceSitesGatewayHistoryPage,
   TraceSitesGatewayHistoryRow,
+  TraceSitesGatewayHourlyAggregate,
+  TraceSitesGatewayHourlyAggregateBucket,
+  TraceSitesGatewayHourlyAggregateInput,
   TraceSitesGatewayReadBackendAdapter,
   TraceSitesGatewayReadBackendInput,
   TraceSitesGatewayRecentEvents,
@@ -60,6 +63,21 @@ type TraceRow = {
   input_tokens?: number | null;
   output_tokens?: number | null;
   total_tokens?: number | null;
+};
+
+type HourlyAggregateRow = {
+  started_at?: string | null;
+  calls?: number | null;
+  input_tokens?: number | null;
+  output_tokens?: number | null;
+  tokens?: number | null;
+};
+
+type HourlyAggregateCache = {
+  hours: number;
+  currentHourStartMs: number;
+  refreshedAtMs: number;
+  buckets: Map<string, TraceSitesGatewayHourlyAggregateBucket>;
 };
 
 const TRACE_HISTORY_PAGE_SQL = [
@@ -134,10 +152,30 @@ const RECENT_TRACE_EVENTS_SQL = [
   'LIMIT ?;',
 ].join('\n');
 
+const TRACE_HOURLY_AGGREGATE_SQL = [
+  'SELECT',
+  "  substr(ts, 1, 13) || ':00:00.000Z' AS started_at,",
+  '  count(*) AS calls,',
+  '  coalesce(sum(coalesce(input_tokens, 0)), 0) AS input_tokens,',
+  '  coalesce(sum(coalesce(output_tokens, 0)), 0) AS output_tokens,',
+  '  coalesce(sum(CASE',
+  '    WHEN coalesce(total_tokens, 0) > 0 THEN total_tokens',
+  '    ELSE coalesce(input_tokens, 0) + coalesce(output_tokens, 0)',
+  '  END), 0) AS tokens',
+  'FROM tool_traces',
+  'WHERE ts >= ? AND ts < ?',
+  'GROUP BY started_at',
+  'ORDER BY started_at ASC;',
+].join('\n');
+
+const HOUR_MS = 60 * 60 * 1000;
+const HOURLY_AGGREGATE_REFRESH_MS = 30_000;
+
 export function createLocalTraceSitesReadBackend(
   options: LocalTraceSitesReadBackendOptions,
 ): TraceSitesGatewayReadBackendAdapter {
   let schemaReady = false;
+  let hourlyAggregateCache: HourlyAggregateCache | null = null;
   const prepareExistingDatabaseForRead = (): void => {
     if (schemaReady || !existsSync(options.dbPath)) return;
     ensureTraceDatabaseSchema(options.dbPath);
@@ -147,7 +185,7 @@ export function createLocalTraceSitesReadBackend(
     resolveHealth() {
       return {
         traceStoreAvailable: existsSync(options.dbPath),
-        aggregateCacheAvailable: Boolean(options.cachedSummary),
+        aggregateCacheAvailable: Boolean(options.cachedSummary || hourlyAggregateCache),
         localRelayOnline: options.localRelayOnline ?? true,
         cloudRunnerSaturated: options.cloudRunnerSaturated ?? false,
       };
@@ -163,6 +201,16 @@ export function createLocalTraceSitesReadBackend(
     readNewerPage(input) {
       prepareExistingDatabaseForRead();
       return readNewerTracePage(options.dbPath, input);
+    },
+    readHourlyAggregate(input) {
+      prepareExistingDatabaseForRead();
+      const result = readHourlyTraceAggregate(
+        options.dbPath,
+        input,
+        hourlyAggregateCache,
+      );
+      hourlyAggregateCache = result.cache;
+      return result.aggregate;
     },
     readCachedAggregate(): TraceSitesGatewayCachedAggregate {
       return {
@@ -257,6 +305,120 @@ async function readRecentTraceEvents(
       cursor,
       events: rows.map((row) => rowToDashboardEvent(row, input)),
     };
+  } finally {
+    db.close();
+  }
+}
+
+function readHourlyTraceAggregate(
+  dbPath: string,
+  input: TraceSitesGatewayHourlyAggregateInput,
+  cache: HourlyAggregateCache | null,
+): { aggregate: TraceSitesGatewayHourlyAggregate; cache: HourlyAggregateCache } {
+  const nowMs = Date.now();
+  const hours = Math.max(1, Math.min(24 * 31, Math.floor(input.hours)));
+  const currentHourStartMs = Math.floor(nowMs / HOUR_MS) * HOUR_MS;
+  const windowStartMs = currentHourStartMs - (hours - 1) * HOUR_MS;
+  const databaseAvailable = existsSync(dbPath);
+  let nextCache = cache;
+  const resetCache =
+    !nextCache ||
+    nextCache.hours !== hours ||
+    nextCache.currentHourStartMs > currentHourStartMs;
+
+  if (resetCache) {
+    nextCache = {
+      hours,
+      currentHourStartMs,
+      refreshedAtMs: nowMs,
+      buckets: databaseAvailable
+        ? readHourlyAggregateBuckets(dbPath, windowStartMs, nowMs)
+        : new Map(),
+    };
+  } else {
+    const hourAdvanced = nextCache.currentHourStartMs !== currentHourStartMs;
+    const refreshDue = nowMs - nextCache.refreshedAtMs >= HOURLY_AGGREGATE_REFRESH_MS;
+    if (databaseAvailable && (hourAdvanced || refreshDue)) {
+      const refreshStartMs = Math.max(
+        windowStartMs,
+        Math.min(nextCache.currentHourStartMs, currentHourStartMs),
+      );
+      for (const key of nextCache.buckets.keys()) {
+        if (Date.parse(key) >= refreshStartMs) nextCache.buckets.delete(key);
+      }
+      const refreshed = readHourlyAggregateBuckets(dbPath, refreshStartMs, nowMs);
+      for (const [key, bucket] of refreshed) nextCache.buckets.set(key, bucket);
+      nextCache.currentHourStartMs = currentHourStartMs;
+      nextCache.refreshedAtMs = nowMs;
+    }
+  }
+
+  for (const key of nextCache.buckets.keys()) {
+    if (Date.parse(key) < windowStartMs) nextCache.buckets.delete(key);
+  }
+
+  const buckets = [...nextCache.buckets.values()].sort((left, right) =>
+    left.startedAt.localeCompare(right.startedAt),
+  );
+  const totals = buckets.reduce(
+    (value, bucket) => ({
+      calls: value.calls + bucket.calls,
+      inputTokens: value.inputTokens + bucket.inputTokens,
+      outputTokens: value.outputTokens + bucket.outputTokens,
+      tokens: value.tokens + bucket.tokens,
+      cost: value.cost + bucket.cost,
+    }),
+    { calls: 0, inputTokens: 0, outputTokens: 0, tokens: 0, cost: 0 },
+  );
+
+  return {
+    aggregate: {
+      generatedAt: new Date(nextCache.refreshedAtMs).toISOString(),
+      windowStart: new Date(windowStartMs).toISOString(),
+      windowEnd: new Date(nowMs).toISOString(),
+      buckets,
+      totals,
+    },
+    cache: nextCache,
+  };
+}
+
+function readHourlyAggregateBuckets(
+  dbPath: string,
+  startMs: number,
+  endMs: number,
+): Map<string, TraceSitesGatewayHourlyAggregateBucket> {
+  const db = openTraceDatabase(dbPath);
+  try {
+    const rows = db
+      .query(TRACE_HOURLY_AGGREGATE_SQL)
+      .all(new Date(startMs).toISOString(), new Date(endMs).toISOString()) as HourlyAggregateRow[];
+    return new Map(
+      rows.flatMap((row) => {
+        const startedAt = cleanString(row.started_at);
+        if (!startedAt) return [];
+        const inputTokens = numberValue(row.input_tokens);
+        const outputTokens = numberValue(row.output_tokens);
+        const tokens = numberValue(row.tokens) || inputTokens + outputTokens;
+        const cost = estimateTraceCost({
+          tool: 'trace.aggregate',
+          inputTokens,
+          outputTokens,
+          totalTokens: tokens,
+        })?.cost ?? 0;
+        return [[
+          startedAt,
+          {
+            startedAt,
+            calls: numberValue(row.calls),
+            inputTokens,
+            outputTokens,
+            tokens,
+            cost,
+          },
+        ]] as Array<[string, TraceSitesGatewayHourlyAggregateBucket]>;
+      }),
+    );
   } finally {
     db.close();
   }
