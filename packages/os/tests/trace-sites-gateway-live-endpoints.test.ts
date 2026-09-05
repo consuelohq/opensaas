@@ -248,7 +248,7 @@ describe('Trace Sites gateway live endpoints', () => {
     });
   });
 
-  it('serves a bounded hourly aggregate window without paginating raw trace history', async () => {
+  it('serves a bounded 15-minute aggregate window without paginating raw trace history', async () => {
     const dbPath = join(tempDir, 'hourly-aggregate.db');
     ensureTraceDatabaseSchema(dbPath);
     let now = Date.now();
@@ -288,7 +288,7 @@ describe('Trace Sites gateway live endpoints', () => {
       backend: createLocalTraceSitesReadBackend(backendOptions),
       resolveScope: traceGatewayScopeFromHeaders,
     });
-    const aggregatePath = '/gateway/traces/aggregates?window=8d&bucket=hour&site=trace-burn-intelligence&sourceMode=local-networked&includeRawPayload=false';
+    const aggregatePath = '/gateway/traces/aggregates?window=8d&bucket=15m&site=trace-burn-intelligence&sourceMode=local-networked&includeRawPayload=false';
     const response = await endpoints.handle(request(aggregatePath));
     const payload = await response.json() as {
       data?: {
@@ -335,6 +335,37 @@ describe('Trace Sites gateway live endpoints', () => {
     expect(refreshedPayload.data?.hourly?.totals).toMatchObject({ calls: 2, tokens: 1030 });
     expect(refreshedPayload.data?.hourly?.totals?.cost).toBeCloseTo(recentCost + replacementCost, 12);
     expect(refreshedPayload.data?.hourly?.buckets).toHaveLength(1);
+  });
+
+  it('preserves 15-minute aggregate boundaries for fractional local-hour rendering', async () => {
+    const dbPath = join(tempDir, 'quarter-hour-aggregate.db');
+    ensureTraceDatabaseSchema(dbPath);
+    const now = Date.parse('2026-09-05T02:00:00.000Z');
+    const db = openTraceDatabase(dbPath);
+    try {
+      const insert = db.query(TRACE_AGGREGATE_INSERT_SQL);
+      insert.run('row_quarter_1', '2026-09-05T01:10:00.000Z', 'trc_quarter_1', 'facade', 'workspace.call', 'ok', 1, 'OK', '', '', 10, 10, 20);
+      insert.run('row_quarter_2', '2026-09-05T01:40:00.000Z', 'trc_quarter_2', 'facade', 'workspace.call', 'ok', 1, 'OK', '', '', 20, 20, 40);
+    } finally {
+      db.close();
+    }
+
+    const endpoints = createTraceSitesGatewayLiveEndpoints({
+      backend: createLocalTraceSitesReadBackend({ dbPath, now: () => now }),
+      resolveScope: traceGatewayScopeFromHeaders,
+    });
+    const response = await endpoints.handle(request(
+      '/gateway/traces/aggregates?window=8d&bucket=15m&site=trace-burn-intelligence&sourceMode=local-networked&includeRawPayload=false',
+    ));
+    const payload = await response.json() as {
+      data?: { hourly?: { buckets?: Array<{ startedAt?: string; calls?: number }> } };
+    };
+
+    expect(response.status).toBe(200);
+    expect(payload.data?.hourly?.buckets).toEqual([
+      expect.objectContaining({ startedAt: '2026-09-05T01:00:00.000Z', calls: 1 }),
+      expect.objectContaining({ startedAt: '2026-09-05T01:30:00.000Z', calls: 1 }),
+    ]);
   });
 
   it('forwards a full-history search query through the authenticated recent route', async () => {

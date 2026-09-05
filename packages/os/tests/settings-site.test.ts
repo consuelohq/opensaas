@@ -106,10 +106,10 @@ describe('configuration site', () => {
     expect(html).toContain('role="grid"');
     expect(html).toContain('id="overview-heatmap-tooltip"');
     expect(html).toContain('id="overview-heatmap-status"');
-    expect(html).toContain("const OVERVIEW_HEATMAP_CACHE_KEY = 'consuelo:overview-heatmap:v2'");
+    expect(html).toContain("const OVERVIEW_HEATMAP_CACHE_KEY = 'consuelo:overview-heatmap:v3'");
     expect(html).toContain('const OVERVIEW_HEATMAP_CACHE_MAX_AGE_MS = 86400000');
     expect(html).toContain('const OVERVIEW_HEATMAP_REFRESH_MS = 30000');
-    expect(html).toContain('/gateway/traces/aggregates?window=8d&bucket=hour');
+    expect(html).toContain('/gateway/traces/aggregates?window=8d&bucket=15m');
     expect(html).toContain('includeRawPayload=false');
     expect(html).not.toContain('OVERVIEW_HEATMAP_MAX_PAGES');
     expect(html).not.toContain('data.nextCursor');

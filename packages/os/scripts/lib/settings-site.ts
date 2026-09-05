@@ -374,10 +374,10 @@ function configurationClientScript(): string {
     const emptyRow = (columns, message) => '<tr><td colspan="' + columns + '" class="empty">' + escapeHtml(message) + '</td></tr>';
     const detail = (label, value, code = false) => '<div><dt>' + escapeHtml(label) + '</dt><dd>' + (code ? '<code>' + escapeHtml(value) + '</code>' : escapeHtml(value)) + '</dd></div>';
 
-    const OVERVIEW_HEATMAP_CACHE_KEY = 'consuelo:overview-heatmap:v2';
+    const OVERVIEW_HEATMAP_CACHE_KEY = 'consuelo:overview-heatmap:v3';
     const OVERVIEW_HEATMAP_CACHE_MAX_AGE_MS = 86400000;
     const OVERVIEW_HEATMAP_REFRESH_MS = 30000;
-    const OVERVIEW_HEATMAP_URL = '/gateway/traces/aggregates?window=8d&bucket=hour&site=trace-burn-intelligence&sourceMode=local-networked&includeRawPayload=false';
+    const OVERVIEW_HEATMAP_URL = '/gateway/traces/aggregates?window=8d&bucket=15m&site=trace-burn-intelligence&sourceMode=local-networked&includeRawPayload=false';
     const CONFIGURATION_RETRY_MAX_MS = 30000;
     let configurationRetryTimer = 0;
     let configurationRetryDelayMs = 1000;
