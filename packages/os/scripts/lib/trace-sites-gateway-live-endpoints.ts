@@ -362,6 +362,23 @@ async function hourlyAggregateResponse(
       scope,
     );
   }
+
+  if (url.searchParams.get('scopeOnly') === 'true') {
+    return jsonResponse({
+      ok: true,
+      publicBoundary: 'consuelo-gateway',
+      route: '/gateway/traces/aggregates',
+      data: {
+        workspaceId: request.workspaceId,
+        workspaceHost: request.workspaceHost,
+        ...(request.nodeId ? { nodeId: request.nodeId } : {}),
+        sourceMode: request.sourceMode,
+        site: request.site,
+        scopeOnly: true,
+      },
+    });
+  }
+
   if (!backend.readHourlyAggregate) {
     return aggregateFailureResponse(
       'TRACE_AGGREGATE_UNAVAILABLE',

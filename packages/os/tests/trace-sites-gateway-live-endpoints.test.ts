@@ -248,6 +248,44 @@ describe('Trace Sites gateway live endpoints', () => {
     });
   });
 
+  it('returns signed workspace and node scope without touching aggregate storage', async () => {
+    let aggregateReads = 0;
+    const fixture = createFixtureTraceSitesReadBackend({ cursor: '00000001', events: [event] });
+    const endpoints = createTraceSitesGatewayLiveEndpoints({
+      backend: {
+        ...fixture,
+        readHourlyAggregate(input) {
+          aggregateReads += 1;
+          return {
+            generatedAt: new Date().toISOString(),
+            windowStart: new Date().toISOString(),
+            windowEnd: new Date().toISOString(),
+            buckets: [],
+            totals: { calls: 0, inputTokens: 0, outputTokens: 0, tokens: 0, cost: 0 },
+          };
+        },
+      },
+      resolveScope: traceGatewayScopeFromHeaders,
+    });
+
+    const response = await endpoints.handle(request(
+      '/gateway/traces/aggregates?window=8d&bucket=15m&scopeOnly=true&site=trace-burn-intelligence&sourceMode=local-networked&includeRawPayload=false',
+    ));
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({
+      ok: true,
+      route: '/gateway/traces/aggregates',
+      data: {
+        workspaceId: 'wrk_live',
+        workspaceHost: 'testing.consuelohq.com',
+        nodeId: 'node_live',
+        scopeOnly: true,
+      },
+    });
+    expect(aggregateReads).toBe(0);
+  });
+
   it('serves a bounded 15-minute aggregate window without paginating raw trace history', async () => {
     const dbPath = join(tempDir, 'hourly-aggregate.db');
     ensureTraceDatabaseSchema(dbPath);

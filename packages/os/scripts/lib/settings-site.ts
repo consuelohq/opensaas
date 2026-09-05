@@ -374,10 +374,11 @@ function configurationClientScript(): string {
     const emptyRow = (columns, message) => '<tr><td colspan="' + columns + '" class="empty">' + escapeHtml(message) + '</td></tr>';
     const detail = (label, value, code = false) => '<div><dt>' + escapeHtml(label) + '</dt><dd>' + (code ? '<code>' + escapeHtml(value) + '</code>' : escapeHtml(value)) + '</dd></div>';
 
-    const OVERVIEW_HEATMAP_CACHE_KEY = 'consuelo:overview-heatmap:v3';
+    const OVERVIEW_HEATMAP_CACHE_PREFIX = 'consuelo:overview-heatmap:v3:';
     const OVERVIEW_HEATMAP_CACHE_MAX_AGE_MS = 86400000;
     const OVERVIEW_HEATMAP_REFRESH_MS = 30000;
     const OVERVIEW_HEATMAP_URL = '/gateway/traces/aggregates?window=8d&bucket=15m&site=trace-burn-intelligence&sourceMode=local-networked&includeRawPayload=false';
+    const OVERVIEW_HEATMAP_SCOPE_URL = '/gateway/traces/aggregates?window=8d&bucket=15m&scopeOnly=true&site=trace-burn-intelligence&sourceMode=local-networked&includeRawPayload=false';
     const CONFIGURATION_RETRY_MAX_MS = 30000;
     let configurationRetryTimer = 0;
     let configurationRetryDelayMs = 1000;
@@ -501,9 +502,29 @@ function configurationClientScript(): string {
       if (animate) animateOverviewHeatmap(cells);
     }
 
-    function readOverviewHeatmapCache() {
+    function overviewHeatmapScope(data) {
+      return {
+        workspaceId: String(data?.workspaceId || ''),
+        workspaceHost: String(data?.workspaceHost || ''),
+        nodeId: String(data?.nodeId || ''),
+      };
+    }
+
+    function overviewHeatmapStorageKey(scope) {
+      return OVERVIEW_HEATMAP_CACHE_PREFIX
+        + encodeURIComponent(String(scope.workspaceId || 'workspace-unknown'))
+        + ':'
+        + encodeURIComponent(String(scope.nodeId || 'node-default'));
+    }
+
+    function validOverviewHeatmapScope(scope) {
+      return Boolean(scope && typeof scope.workspaceId === 'string' && scope.workspaceId.length > 0);
+    }
+
+    function readOverviewHeatmapCache(scope) {
+      if (!validOverviewHeatmapScope(scope)) return null;
       try {
-        const raw = localStorage.getItem(OVERVIEW_HEATMAP_CACHE_KEY);
+        const raw = localStorage.getItem(overviewHeatmapStorageKey(scope));
         const cached = raw ? JSON.parse(raw) : null;
         const savedAt = Number(cached?.savedAt || 0);
         if (!cached || !Array.isArray(cached.rows) || Date.now() - savedAt > OVERVIEW_HEATMAP_CACHE_MAX_AGE_MS) return null;
@@ -517,13 +538,25 @@ function configurationClientScript(): string {
       }
     }
 
+    async function readOverviewHeatmapScope() {
+      const response = await fetch(OVERVIEW_HEATMAP_SCOPE_URL, { headers: { accept: 'application/json' }, credentials: 'same-origin', cache: 'no-store' });
+      if (!response.ok) throw new Error('trace heatmap scope returned ' + response.status);
+      const payload = await response.json();
+      if (!payload || payload.ok === false) throw new Error('trace heatmap scope unavailable');
+      const scope = overviewHeatmapScope(payload.data || payload);
+      if (!validOverviewHeatmapScope(scope)) throw new Error('trace heatmap scope invalid');
+      return scope;
+    }
+
     async function readOverviewHeatmapRows() {
       const response = await fetch(OVERVIEW_HEATMAP_URL, { headers: { accept: 'application/json' }, credentials: 'same-origin', cache: 'no-store' });
       if (!response.ok) throw new Error('trace heatmap returned ' + response.status);
       const payload = await response.json();
       if (!payload || payload.ok === false) throw new Error('trace heatmap payload unavailable');
       const data = payload.data || payload;
-      return Array.isArray(data.hourly?.buckets) ? data.hourly.buckets : [];
+      const scope = overviewHeatmapScope(data);
+      if (!validOverviewHeatmapScope(scope)) throw new Error('trace heatmap response scope invalid');
+      return { rows: Array.isArray(data.hourly?.buckets) ? data.hourly.buckets : [], scope };
     }
 
     let overviewHeatmapRendered = false;
@@ -533,12 +566,12 @@ function configurationClientScript(): string {
       if (!byId('overview-heatmap-grid') || overviewHeatmapRefreshPending) return;
       overviewHeatmapRefreshPending = true;
       try {
-        const rows = await readOverviewHeatmapRows();
-        const aggregate = aggregateOverviewHeatmap(rows);
+        const result = await readOverviewHeatmapRows();
+        const aggregate = aggregateOverviewHeatmap(result.rows);
         renderOverviewHeatmap(aggregate, !overviewHeatmapRendered);
         overviewHeatmapRendered = true;
         setText('overview-heatmap-status', 'History loaded · live updates connected');
-        try { localStorage.setItem(OVERVIEW_HEATMAP_CACHE_KEY, JSON.stringify({ savedAt: Date.now(), rows })); } catch {}
+        try { localStorage.setItem(overviewHeatmapStorageKey(result.scope), JSON.stringify({ savedAt: Date.now(), rows: result.rows })); } catch {}
       } catch {
         const grid = byId('overview-heatmap-grid');
         setText(
@@ -561,24 +594,30 @@ function configurationClientScript(): string {
       }
     }
 
+    async function primeOverviewHeatmap() {
+      try {
+        const scope = await readOverviewHeatmapScope();
+        const cached = readOverviewHeatmapCache(scope);
+        if (cached && !overviewHeatmapRendered) {
+          renderOverviewHeatmap(aggregateOverviewHeatmap(cached.rows), true);
+          overviewHeatmapRendered = true;
+          setText(
+            'overview-heatmap-status',
+            cached.isFresh
+              ? 'History loaded · checking live updates…'
+              : 'Historical activity shown · checking live updates…',
+          );
+        }
+      } catch {}
+      await refreshOverviewHeatmap();
+    }
+
     function initOverviewHeatmap() {
       if (!byId('overview-heatmap-grid')) return;
-      const cached = readOverviewHeatmapCache();
-      if (cached) {
-        renderOverviewHeatmap(aggregateOverviewHeatmap(cached.rows), true);
-        overviewHeatmapRendered = true;
-        setText(
-          'overview-heatmap-status',
-          cached.isFresh
-            ? 'History loaded · checking live updates…'
-            : 'Historical activity shown · checking live updates…',
-        );
-      } else {
-        const grid = byId('overview-heatmap-grid');
-        grid?.setAttribute('aria-busy', 'true');
-        grid?.setAttribute('aria-label', 'Loading trace activity for the last seven days.');
-      }
-      void refreshOverviewHeatmap();
+      const grid = byId('overview-heatmap-grid');
+      grid?.setAttribute('aria-busy', 'true');
+      grid?.setAttribute('aria-label', 'Loading trace activity for the last seven days.');
+      void primeOverviewHeatmap();
       window.setInterval(() => { if (!document.hidden) void refreshOverviewHeatmap(); }, OVERVIEW_HEATMAP_REFRESH_MS);
       document.addEventListener('visibilitychange', () => { if (!document.hidden) void refreshOverviewHeatmap(); });
     }
