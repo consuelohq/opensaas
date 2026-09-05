@@ -134,6 +134,21 @@ describe('github typed facade script', () => {
     ]);
   });
 
+  it('uses only supported gh flags for pr.diff', () => {
+    const result = runGithub(['pr.diff', '--pr', '436', '--dry-run']);
+    expect(result.ok).toBe(true);
+    expect(result.operation).toBe('pr.diff');
+    expect(result.command).toEqual([
+      'gh',
+      'pr',
+      'diff',
+      '436',
+      '--repo',
+      'consuelohq/opensaas',
+    ]);
+    expect(result.command).not.toContain('--stat');
+  });
+
   it('requires a reason for the raw escape hatch', () => {
     const result = spawnSync('bun', [scriptPath(), 'raw', '--raw-arg', 'pr', '--dry-run'], { encoding: 'utf8' });
     expect(result.status).not.toBe(0);

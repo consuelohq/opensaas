@@ -3,6 +3,7 @@ import { z } from 'zod';
 const requestFields = {
   requestId: z.string().min(1).optional(),
   taskSession: z.string().min(1).optional(),
+  timeout: z.number().int().positive().optional(),
 };
 
 const workSessionField = {
@@ -51,6 +52,7 @@ export const BranchInput = z.object({
   ...branchField,
   pr: prRefInput.optional(),
   github: optionalString,
+  repo: optionalString,
 });
 
 
@@ -1512,7 +1514,7 @@ export function getInputSchema(name: string): z.ZodType<unknown> | null {
 
 export const schemaTypeSignatures: Record<string, string> = {
   EmptyInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean }',
-  BranchInput: '{ branch?: string; pr?: string | number; github?: string; requestId?: string; taskSession?: string; dryRun?: boolean }',
+  BranchInput: '{ branch?: string; pr?: string | number; github?: string; repo?: string; requestId?: string; taskSession?: string; dryRun?: boolean }',
   ArtifactsPublishInput: '{ target?: string; portlessName?: string; path?: string; name?: string; category?: string; template?: "research" | "spec" | "plan"; tailscaleBin?: string; requestId?: string; taskSession?: string; dryRun?: boolean }',
   ArtifactsRefreshInput: '{ tailscaleBin?: string; requestId?: string; taskSession?: string; dryRun?: boolean }',
   ArtifactsInput: '{ requestId?: string; taskSession?: string; dryRun?: boolean }',

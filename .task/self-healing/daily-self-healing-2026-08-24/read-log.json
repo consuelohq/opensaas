@@ -1,0 +1,16 @@
+{
+  "files": [
+    ".task/self-healing/daily-self-healing-2026-08-24/monitor-errors-report.json",
+    ".task/self-healing/daily-self-healing-2026-08-24/workpad.md",
+    "packages/os/scripts/artifacts.ts",
+    "packages/os/scripts/github.js",
+    "packages/os/scripts/lib/daily-schedules.ts",
+    "packages/os/scripts/monitor-errors.ts",
+    "packages/os/tests/monitor-errors-report.test.ts",
+    "packages/os/tools/artifacts/schema.ts",
+    "packages/workspace/scripts/lib/state/explore-state.js",
+    "packages/workspace/scripts/task-fs.js",
+    "packages/workspace/test-selection.rules.json"
+  ],
+  "updatedAt": "2026-08-25T02:16:59.499Z"
+}

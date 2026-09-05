@@ -72,13 +72,17 @@ export type ManagedGogRunResult = { exitCode: number; stdout: string; stderr: st
 export type ManagedGogRunner = (command: readonly string[]) => Promise<ManagedGogRunResult>;
 
 const defaultRunner: ManagedGogRunner = async (command) => {
-  const child = Bun.spawn([...command], { stdout: 'pipe', stderr: 'pipe' });
-  const [stdout, stderr, exitCode] = await Promise.all([
-    new Response(child.stdout).text(),
-    new Response(child.stderr).text(),
-    child.exited,
-  ]);
-  return { exitCode, stdout, stderr };
+  try {
+    const child = Bun.spawn([...command], { stdout: 'pipe', stderr: 'pipe' });
+    const [stdout, stderr, exitCode] = await Promise.all([
+      new Response(child.stdout).text(),
+      new Response(child.stderr).text(),
+      child.exited,
+    ]);
+    return { exitCode, stdout, stderr };
+  } catch (error: unknown) {
+    throw new Error('managed gog process execution failed', { cause: error });
+  }
 };
 
 export function managedGogAsset(

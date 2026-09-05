@@ -3,6 +3,7 @@
 // task-prs.js — show task PR + review PR links for a selected task
 
 const { execFileSync } = require('child_process');
+const { resolveGitHubCli } = require('./lib/github');
 const { resolveGitRoot } = require('./lib/paths');
 const { findActiveTaskResult } = require('./lib/task-selection');
 const { findTaskMeta } = require('./lib/task-meta');
@@ -98,7 +99,7 @@ function getCurrentTaskMeta() {
 
 function ghJson(args) {
   try {
-    return execFileSync('gh', args, { encoding: 'utf8', timeout: 10000 }).trim();
+    return execFileSync(resolveGitHubCli(), args, { encoding: 'utf8', timeout: 10000 }).trim();
   } catch {
     return null;
   }

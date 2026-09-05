@@ -1,0 +1,13 @@
+{
+  "files": [
+    ".task/self-healing/daily-self-healing-2026-08-21/evidence-log.json",
+    ".task/self-healing/daily-self-healing-2026-08-21/read-log.json",
+    ".task/self-healing/daily-self-healing-2026-08-21/verify.json",
+    ".task/self-healing/daily-self-healing-2026-08-21/workpad.md",
+    "packages/workspace/scripts/lib/state/evidence-log.js",
+    "packages/workspace/scripts/lib/state/explore-state.js",
+    "packages/workspace/scripts/lib/task-registry.js",
+    "packages/workspace/scripts/task-fs.js"
+  ],
+  "updatedAt": "2026-08-22T02:00:16.680Z"
+}

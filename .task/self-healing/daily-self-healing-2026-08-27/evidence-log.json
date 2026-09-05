@@ -1,0 +1,168 @@
+{
+  "version": 1,
+  "worktree_id": "task/self-healing/daily-self-healing-2026-08-27",
+  "events": [
+    {
+      "id": "2b571150-ce4e-4baf-a558-2b83f67cbbb0",
+      "occurred_at": "2026-08-28T01:17:14.002Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/monitor-errors-report.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/daily-self-healing-2026-08-27",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/daily-self-healing-2026-08-27"
+      }
+    },
+    {
+      "id": "385f26b2-738c-4559-8d35-9a3dc66bfebe",
+      "occurred_at": "2026-08-28T01:18:18.453Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/stream-context.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/daily-self-healing-2026-08-27",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/daily-self-healing-2026-08-27"
+      }
+    },
+    {
+      "id": "427cac33-8942-4b33-be15-1adc4b537853",
+      "occurred_at": "2026-08-28T01:19:40.076Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/git.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/daily-self-healing-2026-08-27",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/daily-self-healing-2026-08-27"
+      }
+    },
+    {
+      "id": "30f64053-1298-489f-8007-b0fb2dfe4532",
+      "occurred_at": "2026-08-28T01:19:50.397Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/monitor-errors.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/daily-self-healing-2026-08-27",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/daily-self-healing-2026-08-27"
+      }
+    },
+    {
+      "id": "66d56e72-b882-4680-9322-75c120fd87b5",
+      "occurred_at": "2026-08-28T01:20:32.036Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/monitor-errors.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/daily-self-healing-2026-08-27",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/daily-self-healing-2026-08-27"
+      }
+    },
+    {
+      "id": "59f13d60-85d5-4839-a9fa-bc7ae14ff137",
+      "occurred_at": "2026-08-28T01:21:38.134Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/self-healing/daily-self-healing-2026-08-27/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/daily-self-healing-2026-08-27",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/daily-self-healing-2026-08-27"
+      }
+    },
+    {
+      "id": "d84d7c70-ea5a-42a9-9d9b-d89c43fcc7dd",
+      "occurred_at": "2026-08-28T01:24:23.162Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/test-selection.rules.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/daily-self-healing-2026-08-27",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/daily-self-healing-2026-08-27"
+      }
+    },
+    {
+      "id": "43dc8668-f64b-4193-9bec-0cfb675a08b2",
+      "occurred_at": "2026-08-28T01:25:09.124Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/test-selection.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/daily-self-healing-2026-08-27",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/daily-self-healing-2026-08-27"
+      }
+    },
+    {
+      "id": "97a7801a-72a3-455d-81c1-c7cc3f13b1fc",
+      "occurred_at": "2026-08-28T01:25:27.307Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/test-selection.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/daily-self-healing-2026-08-27",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/daily-self-healing-2026-08-27"
+      }
+    },
+    {
+      "id": "2288633b-cdb2-4c01-b93e-189f8c22ef99",
+      "occurred_at": "2026-08-28T01:28:21.436Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/daily-schedules.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/daily-self-healing-2026-08-27",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/daily-self-healing-2026-08-27"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-28T01:28:21.507Z"
+}

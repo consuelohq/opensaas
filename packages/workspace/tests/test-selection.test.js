@@ -197,6 +197,26 @@ describe('test selection registry', () => {
     );
   });
 
+  it('keeps GitHub contract tests inside the focused GitHub verification boundary', () => {
+    for (const changedFile of [
+      'packages/os/tests/github.test.ts',
+      'packages/os/tests/github-pr-reviews.test.ts',
+      'packages/os/tests/pr-review-collector.test.js',
+      'packages/workspace/tests/github.test.ts',
+      'packages/workspace/tests/github-pr-reviews.test.ts',
+      'packages/workspace/tests/pr-review.test.js',
+      'packages/workspace/tests/wait.test.js',
+    ]) {
+      const data = json(run(['check', '--changed-file', changedFile, '--json']));
+      const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+      const suiteRuleIds = data.selectedSuites.map((suite) => suite.ruleId);
+
+      expect(matchedRuleIds, changedFile).toContain('os-github-cli-runtime');
+      expect(suiteRuleIds, changedFile).not.toContain('auto:@consuelo/os:package-test');
+      expect(suiteRuleIds, changedFile).toContain('os-github-cli-runtime');
+    }
+  });
+
   it('uses exclusive frontend config contracts instead of unrelated package suites', () => {
     const result = run([
       'check',
@@ -269,6 +289,69 @@ describe('test selection registry', () => {
     expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
     expect(data.selectedSuites.map((suite) => suite.name)).toEqual([
       'OS artifact manifest contract',
+    ]);
+  });
+
+  it('uses focused deployment-provider contracts instead of the broad OS package suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/tools/deployment-provider/cloudflare.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+
+    expect(matchedRuleIds).toContain('os-deployment-provider-adapters');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(data.selectedSuites.map((suite) => suite.name)).toEqual([
+      'OS deployment-provider adapter contracts',
+    ]);
+  });
+
+  it('uses focused stream-sync contracts instead of the broad OS package suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/lib/stream-sync-cleanup.js',
+      '--changed-file',
+      'packages/os/scripts/stream-sync.js',
+      '--changed-file',
+      'packages/workspace/scripts/lib/stream-sync-cleanup.js',
+      '--changed-file',
+      'packages/workspace/scripts/stream-sync.js',
+      '--changed-file',
+      'packages/workspace/tests/stream-sync-conflict-cleanup.test.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+
+    expect(matchedRuleIds).toContain('workspace-stream-sync');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(data.selectedSuites.map((suite) => suite.name)).toEqual([
+      'Workspace stream sync contracts',
+    ]);
+  });
+
+  it('keeps shared Git helper changes on focused synchronization contracts', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/lib/git.js',
+      '--changed-file',
+      'packages/workspace/scripts/lib/git.js',
+      '--changed-file',
+      'packages/os/tests/git-fetch-origin-concurrency.test.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+
+    expect(matchedRuleIds).toContain('workspace-stream-sync');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(data.selectedSuites.map((suite) => suite.name)).toEqual([
+      'Workspace stream sync contracts',
     ]);
   });
 

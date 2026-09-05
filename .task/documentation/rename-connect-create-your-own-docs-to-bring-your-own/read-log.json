@@ -1,0 +1,7 @@
+{
+  "files": [
+    "packages/documentation/README.md",
+    "packages/documentation/tests/connect.test.ts"
+  ],
+  "updatedAt": "2026-08-15T06:10:47.916Z"
+}

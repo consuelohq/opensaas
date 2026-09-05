@@ -1,0 +1,12 @@
+{
+  "files": [
+    "packages/os/package.json",
+    "packages/workspace/scripts/lib/git.js",
+    "packages/workspace/scripts/lib/verification.js",
+    "packages/workspace/scripts/stream-sync.js",
+    "packages/workspace/scripts/task-pr.js",
+    "packages/workspace/scripts/task-push.js",
+    "packages/workspace/scripts/verify.js"
+  ],
+  "updatedAt": "2026-08-16T03:33:41.536Z"
+}

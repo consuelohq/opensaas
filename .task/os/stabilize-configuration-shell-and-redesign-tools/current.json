@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/stabilize-configuration-shell-and-redesign-tools",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2030,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2030",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2030",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2030/stabilize-configuration-shell-and-redesign-tools",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2030",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2030/stabilize-configuration-shell-and-redesign-tools",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-stabilize-configuration-shell-and-redesign-tools",
+  "taskSession": "tsk_ec71b73ce90b",
+  "tmuxSession": "opensaas-os-stabilize-configuration-shell-and-redesign-tools-ec71b73c",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-stabilize-configuration-shell-and-redesign-tools/.task/os/stabilize-configuration-shell-and-redesign-tools/session.json",
+  "createdAt": "2026-08-15T05:31:16.987Z"
+}

@@ -1,10 +1,37 @@
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
+const { execFileSync } = require('child_process');
 
 const { getPackageRoot } = require('./paths');
 
 const GITHUB_API_URL = 'https://api.github.com';
 let workspaceEnvLoaded = false;
+
+function resolveGitHubCli(env = process.env) {
+  const home = env.HOME || os.homedir();
+  const consueloRoots = [env.CONSUELO_OS_HOME, env.CONSUELO_HOME, path.join(home, '.consuelo')]
+    .filter(Boolean)
+    .map((root) => path.resolve(root));
+  const blockedBinDirs = new Set(consueloRoots.map((root) => path.join(root, 'bin')));
+  const executableNames = process.platform === 'win32' ? ['gh.exe', 'gh'] : ['gh'];
+
+  for (const directory of String(env.PATH || process.env.PATH || '').split(path.delimiter).filter(Boolean)) {
+    const resolvedDirectory = path.resolve(directory);
+    if (blockedBinDirs.has(resolvedDirectory)) continue;
+    for (const executableName of executableNames) {
+      const candidate = path.join(resolvedDirectory, executableName);
+      try {
+        fs.accessSync(candidate, fs.constants.X_OK);
+        return candidate;
+      } catch {
+        // Keep searching PATH for the real GitHub CLI.
+      }
+    }
+  }
+
+  throw new Error('GitHub CLI executable not found outside Consuelo tool wrapper paths');
+}
 
 class GitHubRequestError extends Error {
   constructor(message, details = {}) {
@@ -69,7 +96,7 @@ function getToken() {
 
   if (!token) {
     try {
-      token = require('child_process').execSync('gh auth token', { encoding: 'utf8', timeout: 5000 }).trim();
+      token = execFileSync(resolveGitHubCli(), ['auth', 'token'], { encoding: 'utf8', timeout: 5000 }).trim();
     } catch { /* gh cli not available or not logged in */ }
   }
 
@@ -215,7 +242,7 @@ async function createCommit({ token, repository, message, tree, parents, author,
   });
 }
 
-async function listPullRequests({ token, repository, state = 'open', owner, head, base }) {
+function listPullRequests({ token, repository, state = 'open', owner, head, base }) {
   const parsedRepository = parseRepository(repository);
   const query = new URLSearchParams({
     state,
@@ -232,25 +259,21 @@ async function listPullRequests({ token, repository, state = 'open', owner, head
     query.set('base', base);
   }
 
-  const pullRequests = await githubRequest({
+  return githubRequest({
     token,
     endpoint: `/repos/${parsedRepository.owner}/${parsedRepository.name}/pulls?${query.toString()}`,
-  });
-
-  return Array.isArray(pullRequests) ? pullRequests : [];
+  }).then((pullRequests) => (Array.isArray(pullRequests) ? pullRequests : []));
 }
 
-async function findPullRequest({ token, repository, owner, branch, base, state = 'open' }) {
-  const pullRequests = await listPullRequests({
+function findPullRequest({ token, repository, owner, branch, base, state = 'open' }) {
+  return listPullRequests({
     token,
     repository,
     state,
     owner,
     head: branch,
     base,
-  });
-
-  return pullRequests.length > 0 ? pullRequests[0] : null;
+  }).then((pullRequests) => (pullRequests.length > 0 ? pullRequests[0] : null));
 }
 
 async function findOpenPullRequest({ token, repository, owner, branch, base }) {
@@ -313,12 +336,13 @@ async function markPullRequestReadyForReview({ token, repository, prNumber }) {
 
   // Use gh CLI for the GraphQL mutation — the script's GITHUB_TOKEN may lack
   // the scope needed for this mutation, but gh's auth always works.
-  const { execSync } = require('child_process');
   try {
-    execSync(
-      `gh api graphql -f query='mutation { markPullRequestReadyForReview(input: { pullRequestId: "${nodeId}" }) { pullRequest { number isDraft } } }'`,
-      { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] },
-    );
+    execFileSync(resolveGitHubCli(), [
+      'api',
+      'graphql',
+      '-f',
+      `query=mutation { markPullRequestReadyForReview(input: { pullRequestId: "${nodeId}" }) { pullRequest { number isDraft } } }`,
+    ], { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] });
   } catch (err) {
     throw new Error(`failed to mark PR #${prNumber} ready for review: ${err.stderr || err.message}`);
   }
@@ -364,6 +388,7 @@ module.exports = {
   markPullRequestReadyForReview,
   mergePullRequest,
   parseRepository,
+  resolveGitHubCli,
   updateBranchRef,
   updatePullRequest,
 };

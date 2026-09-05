@@ -6,6 +6,7 @@ import { spawnSync } from 'node:child_process';
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { parseArgs } from '../scripts/session-start';
+import { getInputSchema } from '../scripts/lib/facade/schemas';
 
 import {
   createDefaultNodeYamlConfig,
@@ -20,6 +21,15 @@ afterEach(() => {
 });
 
 describe('workspace session.start compatibility', () => {
+  it('retains the facade execution timeout in strict session.start input', () => {
+    const schema = getInputSchema('SessionStartInput');
+    expect(schema).not.toBeNull();
+    expect(schema?.parse({ kind: 'task', area: 'workspace-agents', title: 'compat task', timeout: 120_000 })).toMatchObject({
+      kind: 'task',
+      timeout: 120_000,
+    });
+  });
+
   it('creates the same durable work-session metadata used by the OS facade', () => {
     const root = mkdtempSync(join(tmpdir(), 'consuelo-workspace-session-start-'));
     roots.push(root);

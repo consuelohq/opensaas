@@ -101,6 +101,44 @@ export function classifyTraceFailure(
     );
   }
 
+  if (
+    code === 'WORK_SESSION_NOT_FOUND' &&
+    (failure.tool === 'fs.write' || failure.tool === 'fs.apply_patch' || failure.tool === 'fs.trash')
+  ) {
+    return classified(
+      failure,
+      'caller-input',
+      false,
+      'caller supplied a work session that is unknown or no longer available on this node',
+    );
+  }
+
+  if (
+    code === 'PERMISSION_DENIED' &&
+    (failure.tool === 'fs.write' || failure.tool === 'fs.apply_patch' || failure.tool === 'fs.trash')
+  ) {
+    return classified(
+      failure,
+      'expected-policy',
+      false,
+      'filesystem mutation was rejected by the work-session ownership or protected-root boundary',
+    );
+  }
+
+  if (
+    failure.tool === 'authorization.mcp' &&
+    (code === 'UNKNOWN_TOKEN' || code === 'MISSING_SCOPE')
+  ) {
+    return classified(
+      failure,
+      'expected-policy',
+      false,
+      code === 'UNKNOWN_TOKEN'
+        ? 'MCP authorization correctly rejected an inactive or unrecognized bearer token'
+        : 'MCP authorization correctly rejected a bearer token that lacks the required scope',
+    );
+  }
+
   if (code === 'UNKNOWN_TOOL_SCOPE' && contract) {
     return classified(
       failure,
@@ -119,12 +157,26 @@ export function classifyTraceFailure(
     );
   }
 
-  if (code === 'VALIDATION_ERROR' || code === 'INVALID_INPUT' || code === 'SCHEMA_VALIDATION_FAILED') {
+  if (
+    code === 'VALIDATION_ERROR' ||
+    code === 'CODE_CALL_VALIDATION_ERROR' ||
+    code === 'INVALID_INPUT' ||
+    code === 'SCHEMA_VALIDATION_FAILED'
+  ) {
     return classified(
       failure,
       'caller-input',
       false,
       'input failed the advertised schema; this is not a product defect without contradictory contract evidence',
+    );
+  }
+
+  if (code === 'TIMEOUT' && failure.tool === 'code.call') {
+    return classified(
+      failure,
+      'unknown',
+      false,
+      'code.call executes arbitrary caller-selected child commands; hitting the execution deadline does not by itself prove the wrapper is defective',
     );
   }
 
@@ -154,6 +206,222 @@ export function classifyTraceFailure(
         ? 'external/provider failure is recurring enough to inspect our adapter or resilience contract'
         : 'isolated external/provider failure',
     );
+  }
+
+  if (code === 'COMMAND_FAILED' && (failure.tool === 'batch' || failure.tool === 'code.call')) {
+    return classified(
+      failure,
+      'unknown',
+      false,
+      failure.tool === 'batch'
+        ? 'batch propagates child-tool failures; inspect the separately persisted child trace before attributing an OS defect'
+        : 'code.call propagates arbitrary child-command nonzero exits; recurrence alone does not prove the execution wrapper is defective',
+    );
+  }
+
+  if (code === 'COMMAND_FAILED' && failure.tool === 'mac.call') {
+    return classified(
+      failure,
+      'unknown',
+      false,
+      'mac.call executes arbitrary caller-selected host commands; a child-command nonzero exit does not by itself prove the host execution wrapper is defective',
+    );
+  }
+
+  if (code === 'COMMAND_FAILED' && failure.stderr) {
+    const stderr = failure.stderr.toLowerCase();
+    if (
+      failure.tool === 'github' &&
+      (stderr.includes('is still in progress; logs will be available when it is complete') ||
+        stderr.includes('no checks reported on the') ||
+        stderr.includes('no required checks reported on the'))
+    ) {
+      return classified(
+        failure,
+        'caller-input',
+        false,
+        'GitHub checks or logs were requested before the workflow exposed the requested data',
+      );
+    }
+    if (
+      failure.tool === 'github' &&
+      (stderr.includes('cannot cancel a workflow run that is completed') ||
+        stderr.includes('cannot cancel a workflow run that has not been queued yet'))
+    ) {
+      return classified(
+        failure,
+        'caller-input',
+        false,
+        'GitHub rejected a workflow-cancel request because the workflow state did not permit cancellation',
+      );
+    }
+    if (failure.tool === 'release' && stderr.includes('release refuses failed check')) {
+      return classified(
+        failure,
+        'expected-policy',
+        false,
+        'release correctly refused to continue while a required verification check was failing',
+      );
+    }
+    if (
+      failure.tool === 'release' &&
+      stderr.includes('native lifecycle operation') &&
+      stderr.includes('is already active')
+    ) {
+      return classified(
+        failure,
+        'transient',
+        false,
+        'release reached the lifecycle concurrency guard while another native lifecycle operation was still active',
+      );
+    }
+    if (
+      failure.tool === 'task.push' &&
+      (stderr.includes('publish-valid verify required before task:push:') ||
+        (stderr.includes('local task branch is not synced with origin/') &&
+          stderr.includes('sync the task worktree before running task:push')))
+    ) {
+      return classified(
+        failure,
+        'expected-policy',
+        false,
+        'task.push correctly refused to publish without a current verify stamp or synchronized task branch',
+      );
+    }
+    if (
+      failure.tool === 'task.push' &&
+      (stderr.includes('provide --changed, --files, or --files-json') ||
+        stderr.includes('commit message does not match conventional format:'))
+    ) {
+      return classified(
+        failure,
+        'caller-input',
+        false,
+        'task.push rejected an invalid caller-provided file-selection or commit-message contract',
+      );
+    }
+    if (
+      failure.tool === 'session.start' &&
+      (stderr.includes('work session path does not exist:') || stderr.includes('missing required --area'))
+    ) {
+      return classified(
+        failure,
+        'caller-input',
+        false,
+        'session.start rejected missing caller-provided task or work-session prerequisites',
+      );
+    }
+    if (
+      failure.tool === 'session.start' &&
+      stderr.includes('work sessions cannot edit the managed repository or its task worktrees') &&
+      stderr.includes('use a tasksession for repository edits')
+    ) {
+      return classified(
+        failure,
+        'expected-policy',
+        false,
+        'session.start correctly blocked a work session from editing a managed repository or task worktree',
+      );
+    }
+    if (
+      failure.tool === 'task.pr' &&
+      (stderr.includes('non-metadata conflicts present') || stderr.includes('pull request has merge conflicts'))
+    ) {
+      return classified(
+        failure,
+        'caller-input',
+        false,
+        'task.pr reached a substantive branch merge conflict that must be reconciled before promotion',
+      );
+    }
+    if (
+      failure.tool === 'stream.sync' &&
+      ((stderr.includes('conflict') && stderr.includes('automatic merge failed')) ||
+        stderr.includes('[structured-result] stream.sync status=conflict'))
+    ) {
+      return classified(
+        failure,
+        'caller-input',
+        false,
+        'stream.sync reached a substantive source merge conflict that requires deliberate reconciliation rather than a source-code repair',
+      );
+    }
+    if (
+      (failure.tool === 'fs.write' || failure.tool === 'fs.apply_patch' || failure.tool === 'fs.trash') &&
+      (stderr.includes('path_outside_root') || stderr.includes('unsafe mutation path resolves outside allowed root'))
+    ) {
+      return classified(
+        failure,
+        'expected-policy',
+        false,
+        'filesystem mutation attempted to escape its authorized root and was rejected as designed',
+      );
+    }
+    if (failure.tool === 'fs.apply_patch' && stderr.includes('patch hunk did not match')) {
+      return classified(
+        failure,
+        'caller-input',
+        false,
+        'patch anchor no longer matched the target file; caller must refresh the patch context',
+      );
+    }
+    if (failure.tool === 'fs.apply_patch' && stderr.includes('invalid patch: missing *** begin patch')) {
+      return classified(
+        failure,
+        'caller-input',
+        false,
+        'patch envelope was malformed before application; caller must provide the advertised patch format',
+      );
+    }
+    if (
+      failure.tool === 'fs.list' &&
+      ((stderr.includes('search path') && stderr.includes('is not a directory')) ||
+        stderr.includes('no valid search paths given') ||
+        stderr.includes('no such file or directory (os error 2)'))
+    ) {
+      return classified(
+        failure,
+        'caller-input',
+        false,
+        'filesystem list targeted a path that does not exist as a searchable directory',
+      );
+    }
+    if (
+      failure.tool === 'fs.read' &&
+      stderr.includes('no active task found for branch') &&
+      stderr.includes('run task:start first')
+    ) {
+      return classified(
+        failure,
+        'caller-input',
+        false,
+        'filesystem read targeted a caller-selected branch that is not an active task',
+      );
+    }
+    if (
+      failure.tool === 'fs.search' &&
+      stderr.includes('error: search failed: rg:') &&
+      stderr.includes('no such file or directory') &&
+      !stderr.includes('unable to run ripgrep')
+    ) {
+      return classified(
+        failure,
+        'caller-input',
+        false,
+        'filesystem search targeted a caller-selected path that does not exist',
+      );
+    }
+    if (
+      (failure.tool === 'fs.search' || failure.tool === 'fs.list') &&
+      stderr.includes('regex parse error')
+    ) {
+      return classified(
+        failure,
+        'caller-input',
+        false,
+        'filesystem query contained invalid regular-expression syntax',
+      );
+    }
   }
 
   if (code === 'COMMAND_FAILED' || code === 'PARSE_ERROR' || code === 'MALFORMED_OUTPUT') {

@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_19e6afb1c523",
+  "tmuxSession": "opensaas-self-healing-daily-self-healing-2026-08-30-19e6afb1",
+  "area": "self-healing",
+  "stream": "stream/self-healing",
+  "taskBranch": "task/self-healing/daily-self-healing-2026-08-30",
+  "branch": "task/self-healing/daily-self-healing-2026-08-30",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-self-healing-daily-self-healing-2026-08-30",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-self-healing-daily-self-healing-2026-08-30",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2323,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2323",
+  "createdAt": "2026-08-31T01:56:28.118Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-self-healing-daily-self-healing-2026-08-30/.task/self-healing/daily-self-healing-2026-08-30/session.json"
+}

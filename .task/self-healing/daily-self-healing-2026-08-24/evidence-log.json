@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "worktree_id": "task/self-healing/daily-self-healing-2026-08-24",
+  "events": [
+    {
+      "id": "f9a4308e-8d15-4d26-8b61-640e0137c20c",
+      "occurred_at": "2026-08-25T02:05:52.308Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/daily-schedules.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/daily-self-healing-2026-08-24",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/daily-self-healing-2026-08-24"
+      }
+    },
+    {
+      "id": "f148e387-9618-4b33-9082-22983d6f8dec",
+      "occurred_at": "2026-08-25T02:16:59.557Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/self-healing/daily-self-healing-2026-08-24/monitor-errors-report.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/daily-self-healing-2026-08-24",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/daily-self-healing-2026-08-24"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-25T02:16:59.612Z"
+}

@@ -18,6 +18,8 @@ type TraceRow = {
   status: string | null;
   branch: string | null;
   task_session: string | null;
+  result_json: string | null;
+  stderr: string | null;
 };
 
 export type MonitorErrorsReport = {
@@ -45,7 +47,53 @@ function toolContracts(): Map<string, MonitorToolContract> {
   return contracts;
 }
 
-function aggregate(rows: TraceRow[]): MonitorTraceFailure[] {
+function structuredFailureEvidence(row: TraceRow): string | undefined {
+  if (row.tool !== 'stream.sync' || !row.result_json) return undefined;
+  try {
+    const parsed = JSON.parse(row.result_json) as { data?: { status?: unknown } };
+    if (parsed?.data?.status === 'conflict') {
+      return '[structured-result] stream.sync status=conflict';
+    }
+  } catch {
+    // Persisted result data is supporting evidence only; malformed historical payloads
+    // must not make the deterministic monitor itself fail.
+  }
+  return undefined;
+}
+
+function classificationStderr(row: TraceRow): string | undefined {
+  const evidence = [row.stderr || undefined, structuredFailureEvidence(row)].filter(Boolean);
+  return evidence.length > 0 ? evidence.join('\n') : undefined;
+}
+
+function toFailure(row: TraceRow): MonitorTraceFailure {
+  return {
+    traceId: row.trace_id,
+    ts: row.ts,
+    tool: row.tool,
+    code: row.code ?? row.status ?? 'UNKNOWN',
+    status: row.status ?? 'error',
+    ...(row.branch ? { branch: row.branch } : {}),
+    ...(row.task_session ? { taskSession: row.task_session } : {}),
+    ...(classificationStderr(row) ? { stderr: classificationStderr(row) } : {}),
+  };
+}
+
+function deterministicClassificationKey(
+  row: TraceRow,
+  contract: MonitorToolContract | undefined,
+): string {
+  const preliminary = classifyTraceFailure(toFailure(row), contract);
+  if (preliminary.classification === 'expected-policy' || preliminary.classification === 'caller-input') {
+    return `${preliminary.classification}\u0000${preliminary.reason}`;
+  }
+  return 'unclassified';
+}
+
+function aggregate(
+  rows: TraceRow[],
+  contracts: Map<string, MonitorToolContract>,
+): MonitorTraceFailure[] {
   const grouped = new Map<string, {
     latest: TraceRow;
     occurrences: number;
@@ -54,7 +102,7 @@ function aggregate(rows: TraceRow[]): MonitorTraceFailure[] {
   }>();
   for (const row of rows) {
     const code = (row.code ?? row.status ?? 'UNKNOWN').trim() || 'UNKNOWN';
-    const key = `${row.tool}\u0000${code}`;
+    const key = `${row.tool}\u0000${code}\u0000${deterministicClassificationKey(row, contracts.get(row.tool))}`;
     const existing = grouped.get(key);
     const next = existing ?? {
       latest: row,
@@ -69,17 +117,17 @@ function aggregate(rows: TraceRow[]): MonitorTraceFailure[] {
     grouped.set(key, next);
   }
   return [...grouped.values()].map((group) => ({
-    traceId: group.latest.trace_id,
-    ts: group.latest.ts,
-    tool: group.latest.tool,
-    code: group.latest.code ?? group.latest.status ?? 'UNKNOWN',
-    status: group.latest.status ?? 'error',
-    ...(group.latest.branch ? { branch: group.latest.branch } : {}),
-    ...(group.latest.task_session ? { taskSession: group.latest.task_session } : {}),
+    ...toFailure(group.latest),
     occurrences: group.occurrences,
     affectedBranches: group.branches.size,
     affectedSessions: group.sessions.size,
   }));
+}
+
+function withoutRawStderr(failure: ClassifiedTraceFailure): ClassifiedTraceFailure {
+  const normalized = { ...failure };
+  delete normalized.stderr;
+  return normalized;
 }
 
 export function buildMonitorErrorsReport(options: {
@@ -91,19 +139,17 @@ export function buildMonitorErrorsReport(options: {
   const database = new Database(traceDb, { readonly: true, strict: true });
   try {
     const rows = database.query<TraceRow, []>(`
-      SELECT trace_id, ts, tool, code, status, branch, task_session
+      SELECT trace_id, ts, tool, code, status, branch, task_session, result_json, stderr
       FROM tool_traces
       WHERE ts >= datetime('now', '-24 hours')
-        AND (
-          coalesce(status, '') != 'ok'
-          OR coalesce(code, '') != 'OK'
-        )
+        AND ok = 0
       ORDER BY ts DESC
       LIMIT 10000
     `).all();
     const contracts = toolContracts();
-    const groups = aggregate(rows)
+    const groups = aggregate(rows, contracts)
       .map((failure) => classifyTraceFailure(failure, contracts.get(failure.tool)))
+      .map(withoutRawStderr)
       .sort((left, right) => {
         if (left.actionable !== right.actionable) return left.actionable ? -1 : 1;
         if ((left.occurrences ?? 0) !== (right.occurrences ?? 0)) {

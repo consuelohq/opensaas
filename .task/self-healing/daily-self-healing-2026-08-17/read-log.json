@@ -1,0 +1,16 @@
+{
+  "files": [
+    ".task/self-healing/daily-self-healing-2026-08-17/workpad.md",
+    "packages/os/scripts/lib/monitor-errors.ts",
+    "packages/os/scripts/lib/worker-pool.ts",
+    "packages/os/tests/monitor-errors-report.test.ts",
+    "packages/os/tools/deployment-provider/cloudflare.test.ts",
+    "packages/os/tools/deployment-provider/cloudflare.ts",
+    "packages/os/tools/deployment-provider/errors.ts",
+    "packages/os/tools/deployment-provider/service.ts",
+    "packages/workspace/scripts/test-selection.js",
+    "packages/workspace/senior-engineer.md",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "updatedAt": "2026-08-18T02:15:17.731Z"
+}

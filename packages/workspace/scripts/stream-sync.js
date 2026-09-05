@@ -16,6 +16,10 @@ const {
   setBranchUpstream,
 } = require('./lib/git');
 const {
+  removeStaleGeneratedSyncWorktree,
+  restoreWorktreeAfterFailedMerge,
+} = require('./lib/stream-sync-cleanup');
+const {
   DEFAULT_MAIN_BRANCH,
   getWorktreeRoot,
   resolveGitRoot,
@@ -41,6 +45,7 @@ function printHelp() {
   writeStdout('');
   writeStdout('options:');
   writeStdout('  --stream <branch>      stream branch (default: stream/<area>)');
+  writeStdout('  --repo <owner/name>    repository identity accepted by the typed facade');
   writeStdout('  --json                 output json');
   writeStdout('  --help                 show this help');
 }
@@ -75,6 +80,9 @@ function parseArgs(argv) {
         break;
       case '--stream':
         args.stream = value;
+        break;
+      case '--repo':
+        args.repo = value;
         break;
       case '--json':
         args.json = true;
@@ -232,7 +240,14 @@ async function main() {
   }
   pruneWorktrees(repoRoot);
 
-  const existingWorktree = getWorktreeForBranch(repoRoot, streamBranch);
+  let existingWorktree = getWorktreeForBranch(repoRoot, streamBranch);
+
+  if (
+    existingWorktree &&
+    removeStaleGeneratedSyncWorktree(repoRoot, existingWorktree.path, streamBranch, getWorktreeRoot())
+  ) {
+    existingWorktree = null;
+  }
 
   if (!existingWorktree) {
     createOrResetLocalBranch(repoRoot, streamBranch, `origin/${streamBranch}`);
@@ -289,6 +304,7 @@ async function main() {
   const conflictFiles = getConflictFiles(repoRoot, worktreePath);
 
   if (conflictFiles.length === 0) {
+    restoreWorktreeAfterFailedMerge(repoRoot, worktreePath, streamBranch, createdTemporaryWorktree);
     throw new Error(mergeOutput || `merge failed for ${streamBranch}`);
   }
 
@@ -327,6 +343,8 @@ async function main() {
       return;
     }
   }
+
+  restoreWorktreeAfterFailedMerge(repoRoot, worktreePath, streamBranch, createdTemporaryWorktree);
 
   const checks = {
     skipped: true,

@@ -1,0 +1,14 @@
+{
+  "files": [
+    ".task/self-healing/daily-self-healing-2026-08-26/verify.json",
+    ".task/self-healing/daily-self-healing-2026-08-26/workpad.md",
+    "packages/os/scripts/review.js",
+    "packages/workspace/scripts/lib/review-run-state.js",
+    "packages/workspace/scripts/lib/verification.js",
+    "packages/workspace/scripts/review.js",
+    "packages/workspace/scripts/task-push.js",
+    "packages/workspace/scripts/test-selection.js",
+    "packages/workspace/test-selection.rules.json"
+  ],
+  "updatedAt": "2026-08-27T02:18:50.049Z"
+}

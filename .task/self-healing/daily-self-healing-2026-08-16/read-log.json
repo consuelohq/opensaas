@@ -1,0 +1,21 @@
+{
+  "files": [
+    ".task/self-healing/daily-self-healing-2026-08-16/evidence-log.json",
+    ".task/self-healing/daily-self-healing-2026-08-16/session.json",
+    ".task/self-healing/daily-self-healing-2026-08-16/workpad.md",
+    "packages/os/scripts/lib/daily-schedules.ts",
+    "packages/os/scripts/lib/install-state.ts",
+    "packages/os/scripts/lib/monitor-errors-report.ts",
+    "packages/os/scripts/monitor-errors.ts",
+    "packages/os/tests/install-state.test.ts",
+    "packages/workspace/scripts/lib/github.js",
+    "packages/workspace/scripts/lib/review-static-rules.js",
+    "packages/workspace/scripts/review.js",
+    "packages/workspace/scripts/test-selection.js",
+    "packages/workspace/scripts/verify.js",
+    "packages/workspace/senior-engineer.md",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/review-error-handling-scope.test.ts"
+  ],
+  "updatedAt": "2026-08-17T02:36:23.998Z"
+}

@@ -1,0 +1,61 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/documentation/rename-connect-create-your-own-docs-to-bring-your-own",
+  "base": "origin/main",
+  "headSha": "25b2eba4f9578592b1c9c9a2877d5eaf5e7123d5",
+  "changeHash": "71cdaa4a2c797b42fdce6ee7c09c1bcb99e062b45039bfa590fcff22b1f5afcd",
+  "changedFiles": [
+    "packages/documentation/scripts/test-connect-browser.mjs",
+    "packages/documentation/src/content/docs/connect/agents/create-your-own.mdx",
+    "packages/documentation/src/content/docs/connect/apps-and-services/create-your-own.mdx",
+    "packages/documentation/src/content/docs/connect/apps-and-services/index.mdx",
+    "packages/documentation/src/lib/docs-navigation.ts",
+    "packages/documentation/tests/connect.test.ts"
+  ],
+  "verifiedAt": "2026-08-15T06:12:25.969Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/documentation/rename-connect-create-your-own-docs-to-bring-your-own/current.json",
+        ".task/documentation/rename-connect-create-your-own-docs-to-bring-your-own/evidence-log.json",
+        ".task/documentation/rename-connect-create-your-own-docs-to-bring-your-own/read-log.json",
+        ".task/documentation/rename-connect-create-your-own-docs-to-bring-your-own/session.json",
+        ".task/documentation/rename-connect-create-your-own-docs-to-bring-your-own/workpad.md",
+        ".task/tasks/documentation/rename-connect-create-your-own-docs-to-bring-your-own.json",
+        "packages/documentation/scripts/test-connect-browser.mjs",
+        "packages/documentation/src/content/docs/connect/agents/create-your-own.mdx",
+        "packages/documentation/src/content/docs/connect/apps-and-services/create-your-own.mdx",
+        "packages/documentation/src/content/docs/connect/apps-and-services/index.mdx",
+        "packages/documentation/src/lib/docs-navigation.ts",
+        "packages/documentation/tests/connect.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

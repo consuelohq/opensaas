@@ -1,0 +1,13 @@
+{
+  "files": [
+    ".task/self-healing/daily-self-healing-2026-08-19/workpad.md",
+    "packages/os/scripts/monitor-errors.ts",
+    "packages/workspace/scripts/lib/git.js",
+    "packages/workspace/scripts/stream-sync.js",
+    "packages/workspace/scripts/test-selection.js",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/stream-sync-node-modules.test.js",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "updatedAt": "2026-08-20T01:52:11.738Z"
+}
