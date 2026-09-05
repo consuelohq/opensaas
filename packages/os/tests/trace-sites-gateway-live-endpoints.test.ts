@@ -9,7 +9,7 @@ import {
   traceGatewayScopeFromHeaders,
 } from '../scripts/lib/trace-sites-gateway-live-endpoints';
 import { createLocalTraceSitesReadBackend } from '../scripts/lib/trace-sites-local-read-backend';
-import { openTraceDatabase } from '../scripts/lib/trace-database-schema';
+import { ensureTraceDatabaseSchema, openTraceDatabase } from '../scripts/lib/trace-database-schema';
 import { createFixtureTraceSitesReadBackend } from '../scripts/lib/trace-sites-gateway-read-layer';
 import {
   type TraceSitesDashboardEvent,
@@ -61,6 +61,13 @@ const TRACE_HISTORY_INSERT_SQL = [
   '  resolved_input_json, result_json, stderr, input_tokens, output_tokens,',
   '  total_tokens',
   ') VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+].join('\n');
+
+const TRACE_AGGREGATE_INSERT_SQL = [
+  'INSERT INTO tool_traces (',
+  '  id, ts, trace_id, source, tool, status, ok, code,',
+  '  input_tokens, output_tokens, total_tokens',
+  ') VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
 ].join('\n');
 
 function request(path: string): Request {
@@ -238,6 +245,47 @@ describe('Trace Sites gateway live endpoints', () => {
       route: '/gateway/traces/aggregates',
       data: { summary: { calls: 1, totalTraceBurn: 500, outputTokens: 380 } },
     });
+  });
+
+  it('serves a bounded hourly aggregate window without paginating raw trace history', async () => {
+    const dbPath = join(tempDir, 'hourly-aggregate.db');
+    ensureTraceDatabaseSchema(dbPath);
+    const db = openTraceDatabase(dbPath);
+    try {
+      const insert = db.query(TRACE_AGGREGATE_INSERT_SQL);
+      const now = Date.now();
+      insert.run('row_recent', new Date(now - 10 * 60 * 1000).toISOString(), 'trc_recent', 'facade', 'workspace.call', 'ok', 1, 'OK', 10, 20, 30);
+      insert.run('row_history', new Date(now - 7 * 24 * 60 * 60 * 1000).toISOString(), 'trc_history', 'facade', 'code.call', 'ok', 1, 'OK', 40, 60, 100);
+      insert.run('row_expired', new Date(now - 9 * 24 * 60 * 60 * 1000).toISOString(), 'trc_expired', 'facade', 'tools.search', 'ok', 1, 'OK', 1, 1, 2);
+    } finally {
+      db.close();
+    }
+
+    const endpoints = createTraceSitesGatewayLiveEndpoints({
+      backend: createLocalTraceSitesReadBackend({ dbPath }),
+      resolveScope: traceGatewayScopeFromHeaders,
+    });
+    const response = await endpoints.handle(request(
+      '/gateway/traces/aggregates?window=8d&bucket=hour&site=trace-burn-intelligence&sourceMode=local-networked&includeRawPayload=false',
+    ));
+    const payload = await response.json() as {
+      data?: {
+        aggregateSource?: string;
+        hourly?: {
+          buckets?: Array<{ startedAt?: string; calls?: number; tokens?: number; cost?: number }>;
+          totals?: { calls?: number; tokens?: number; cost?: number };
+        };
+      };
+    };
+
+    expect(response.status).toBe(200);
+    expect(payload.data?.aggregateSource).toBe('trace-store');
+    expect(payload.data?.hourly?.totals).toMatchObject({ calls: 2, tokens: 130 });
+    expect(payload.data?.hourly?.totals?.cost).toBeGreaterThan(0);
+    expect(payload.data?.hourly?.buckets).toHaveLength(2);
+    expect(payload.data?.hourly?.buckets?.every((bucket) => typeof bucket.startedAt === 'string')).toBe(true);
+    expect(JSON.stringify(payload)).not.toContain('rawInputJson');
+    expect(JSON.stringify(payload)).not.toContain('result_json');
   });
 
   it('forwards a full-history search query through the authenticated recent route', async () => {
