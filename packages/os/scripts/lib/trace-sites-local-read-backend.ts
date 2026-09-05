@@ -65,12 +65,16 @@ type TraceRow = {
   total_tokens?: number | null;
 };
 
-type HourlyAggregateRow = {
+type HourlyAggregateTraceRow = {
+  rowid: number;
   started_at?: string | null;
-  calls?: number | null;
+  tool?: string | null;
+  input_json?: string | null;
+  resolved_input_json?: string | null;
+  result_json?: string | null;
   input_tokens?: number | null;
   output_tokens?: number | null;
-  tokens?: number | null;
+  total_tokens?: number | null;
 };
 
 type HourlyAggregateCache = {
@@ -152,24 +156,26 @@ const RECENT_TRACE_EVENTS_SQL = [
   'LIMIT ?;',
 ].join('\n');
 
-const TRACE_HOURLY_AGGREGATE_SQL = [
+const TRACE_HOURLY_AGGREGATE_ROWS_SQL = [
   'SELECT',
+  '  rowid,',
   "  substr(ts, 1, 13) || ':00:00.000Z' AS started_at,",
-  '  count(*) AS calls,',
-  '  coalesce(sum(coalesce(input_tokens, 0)), 0) AS input_tokens,',
-  '  coalesce(sum(coalesce(output_tokens, 0)), 0) AS output_tokens,',
-  '  coalesce(sum(CASE',
-  '    WHEN coalesce(total_tokens, 0) > 0 THEN total_tokens',
-  '    ELSE coalesce(input_tokens, 0) + coalesce(output_tokens, 0)',
-  '  END), 0) AS tokens',
+  '  tool,',
+  "  substr(coalesce(input_json, ''), 1, 200000) AS input_json,",
+  "  substr(coalesce(resolved_input_json, ''), 1, 200000) AS resolved_input_json,",
+  "  substr(coalesce(result_json, ''), 1, 200000) AS result_json,",
+  '  input_tokens,',
+  '  output_tokens,',
+  '  total_tokens',
   'FROM tool_traces',
-  'WHERE ts >= ? AND ts < ?',
-  'GROUP BY started_at',
-  'ORDER BY started_at ASC;',
+  'WHERE rowid > ? AND ts >= ? AND ts < ?',
+  'ORDER BY rowid ASC',
+  'LIMIT ?;',
 ].join('\n');
 
 const HOUR_MS = 60 * 60 * 1000;
 const HOURLY_AGGREGATE_REFRESH_MS = 30_000;
+const HOURLY_AGGREGATE_PAGE_SIZE = 10_000;
 
 export function createLocalTraceSitesReadBackend(
   options: LocalTraceSitesReadBackendOptions,
@@ -390,35 +396,51 @@ function readHourlyAggregateBuckets(
 ): Map<string, TraceSitesGatewayHourlyAggregateBucket> {
   const db = openTraceDatabase(dbPath);
   try {
-    const rows = db
-      .query(TRACE_HOURLY_AGGREGATE_SQL)
-      .all(new Date(startMs).toISOString(), new Date(endMs).toISOString()) as HourlyAggregateRow[];
-    return new Map(
-      rows.flatMap((row) => {
+    const buckets = new Map<string, TraceSitesGatewayHourlyAggregateBucket>();
+    const statement = db.query(TRACE_HOURLY_AGGREGATE_ROWS_SQL);
+    const windowStart = new Date(startMs).toISOString();
+    const windowEnd = new Date(endMs).toISOString();
+    let afterRowid = 0;
+    while (true) {
+      const rows = statement.all(
+        afterRowid,
+        windowStart,
+        windowEnd,
+        HOURLY_AGGREGATE_PAGE_SIZE,
+      ) as HourlyAggregateTraceRow[];
+      for (const row of rows) {
         const startedAt = cleanString(row.started_at);
-        if (!startedAt) return [];
+        if (!startedAt) continue;
         const inputTokens = numberValue(row.input_tokens);
         const outputTokens = numberValue(row.output_tokens);
-        const tokens = numberValue(row.tokens) || inputTokens + outputTokens;
-        const cost = estimateTraceCost({
-          tool: 'trace.aggregate',
+        const tokens = numberValue(row.total_tokens) || inputTokens + outputTokens;
+        const cost = estimateTraceRowCost(
+          row,
+          cleanString(row.tool) || 'unknown',
           inputTokens,
           outputTokens,
-          totalTokens: tokens,
-        })?.cost ?? 0;
-        return [[
+          tokens,
+        )?.cost ?? 0;
+        const bucket = buckets.get(startedAt) ?? {
           startedAt,
-          {
-            startedAt,
-            calls: numberValue(row.calls),
-            inputTokens,
-            outputTokens,
-            tokens,
-            cost,
-          },
-        ]] as Array<[string, TraceSitesGatewayHourlyAggregateBucket]>;
-      }),
-    );
+          calls: 0,
+          inputTokens: 0,
+          outputTokens: 0,
+          tokens: 0,
+          cost: 0,
+        };
+        bucket.calls += 1;
+        bucket.inputTokens += inputTokens;
+        bucket.outputTokens += outputTokens;
+        bucket.tokens += tokens;
+        bucket.cost += cost;
+        buckets.set(startedAt, bucket);
+      }
+      if (rows.length === 0) break;
+      afterRowid = rows[rows.length - 1].rowid;
+      if (rows.length < HOURLY_AGGREGATE_PAGE_SIZE) break;
+    }
+    return buckets;
   } finally {
     db.close();
   }
@@ -477,21 +499,17 @@ function historyRowFromTraceRow(row: TraceRow): TraceSitesGatewayHistoryRow {
   const inputTokens = numberValue(row.input_tokens);
   const outputTokens = numberValue(row.output_tokens);
   const tokens = numberValue(row.total_tokens) || inputTokens + outputTokens;
-  const rawInputJson = sanitizeTracePayloadJson(cleanString(row.input_json));
-  const rawResolvedInputJson = sanitizeTracePayloadJson(
-    cleanString(row.resolved_input_json),
-  );
-  const rawResultJson = sanitizeTracePayloadJson(cleanString(row.result_json));
-  const rawStderr = sanitizeLocalTraceText(cleanString(row.stderr));
-  const costEstimate = estimateTraceCost({
+  const costEstimate = estimateTraceRowCost(
+    row,
     tool,
     inputTokens,
     outputTokens,
-    totalTokens: tokens,
-    rawInputJson,
-    rawResolvedInputJson,
-    rawResultJson,
-  });
+    tokens,
+  );
+  const rawInputJson = sanitizeTracePayloadJson(cleanString(row.input_json));
+  const rawResolvedInputJson = sanitizeTracePayloadJson(cleanString(row.resolved_input_json));
+  const rawResultJson = sanitizeTracePayloadJson(cleanString(row.result_json));
+  const rawStderr = sanitizeLocalTraceText(cleanString(row.stderr));
   const requestedNodeId = cleanString(row.requested_node_id);
   const resolvedNodeId = cleanString(row.resolved_node_id);
   const resolvedNodeName = cleanString(row.resolved_node_name);
@@ -572,6 +590,27 @@ function historyRowFromTraceRow(row: TraceRow): TraceSitesGatewayHistoryRow {
     historyRow.batchResultsCount = batchResults.length;
   }
   return historyRow;
+}
+
+function estimateTraceRowCost(
+  row: Pick<TraceRow, 'input_json' | 'resolved_input_json' | 'result_json'>,
+  tool: string,
+  inputTokens: number,
+  outputTokens: number,
+  tokens: number,
+) {
+  // Pricing stays local. Use the original bounded payloads so the aggregate and
+  // history views share token allocation/model/cache semantics without exposing
+  // those payloads through the aggregate response.
+  return estimateTraceCost({
+    tool,
+    inputTokens,
+    outputTokens,
+    totalTokens: tokens,
+    rawInputJson: cleanString(row.input_json),
+    rawResolvedInputJson: cleanString(row.resolved_input_json),
+    rawResultJson: cleanString(row.result_json),
+  });
 }
 
 export function sanitizeTraceHistoryRowForTest(

@@ -11,6 +11,7 @@ import {
 import { createLocalTraceSitesReadBackend } from '../scripts/lib/trace-sites-local-read-backend';
 import { ensureTraceDatabaseSchema, openTraceDatabase } from '../scripts/lib/trace-database-schema';
 import { createFixtureTraceSitesReadBackend } from '../scripts/lib/trace-sites-gateway-read-layer';
+import { estimateTraceCost } from '../scripts/lib/trace-cost-estimator';
 import {
   type TraceSitesDashboardEvent,
   type TraceSitesDashboardSummary,
@@ -66,8 +67,8 @@ const TRACE_HISTORY_INSERT_SQL = [
 const TRACE_AGGREGATE_INSERT_SQL = [
   'INSERT INTO tool_traces (',
   '  id, ts, trace_id, source, tool, status, ok, code,',
-  '  input_tokens, output_tokens, total_tokens',
-  ') VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+  '  resolved_input_json, result_json, input_tokens, output_tokens, total_tokens',
+  ') VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
 ].join('\n');
 
 function request(path: string): Request {
@@ -251,15 +252,33 @@ describe('Trace Sites gateway live endpoints', () => {
     const dbPath = join(tempDir, 'hourly-aggregate.db');
     ensureTraceDatabaseSchema(dbPath);
     const db = openTraceDatabase(dbPath);
+    const cachedUsage = JSON.stringify({ model: 'gpt-5.5', usage: { cached_input_tokens: 8 } });
+    const emptyResult = JSON.stringify({ ok: true });
     try {
       const insert = db.query(TRACE_AGGREGATE_INSERT_SQL);
       const now = Date.now();
-      insert.run('row_recent', new Date(now - 10 * 60 * 1000).toISOString(), 'trc_recent', 'facade', 'workspace.call', 'ok', 1, 'OK', 10, 20, 30);
-      insert.run('row_history', new Date(now - 7 * 24 * 60 * 60 * 1000).toISOString(), 'trc_history', 'facade', 'code.call', 'ok', 1, 'OK', 40, 60, 100);
-      insert.run('row_expired', new Date(now - 9 * 24 * 60 * 60 * 1000).toISOString(), 'trc_expired', 'facade', 'tools.search', 'ok', 1, 'OK', 1, 1, 2);
+      insert.run('row_recent', new Date(now - 10 * 60 * 1000).toISOString(), 'trc_recent', 'facade', 'workspace.call', 'ok', 1, 'OK', cachedUsage, emptyResult, 10, 20, 30);
+      insert.run('row_history', new Date(now - 7 * 24 * 60 * 60 * 1000).toISOString(), 'trc_history', 'facade', 'code.call', 'ok', 1, 'OK', '', '', 40, 60, 100);
+      insert.run('row_expired', new Date(now - 9 * 24 * 60 * 60 * 1000).toISOString(), 'trc_expired', 'facade', 'tools.search', 'ok', 1, 'OK', '', '', 1, 1, 2);
     } finally {
       db.close();
     }
+
+    const expectedCost =
+      (estimateTraceCost({
+        tool: 'workspace.call',
+        inputTokens: 10,
+        outputTokens: 20,
+        totalTokens: 30,
+        rawResolvedInputJson: cachedUsage,
+        rawResultJson: emptyResult,
+      })?.cost ?? 0) +
+      (estimateTraceCost({
+        tool: 'code.call',
+        inputTokens: 40,
+        outputTokens: 60,
+        totalTokens: 100,
+      })?.cost ?? 0);
 
     const endpoints = createTraceSitesGatewayLiveEndpoints({
       backend: createLocalTraceSitesReadBackend({ dbPath }),
@@ -281,7 +300,10 @@ describe('Trace Sites gateway live endpoints', () => {
     expect(response.status).toBe(200);
     expect(payload.data?.aggregateSource).toBe('trace-store');
     expect(payload.data?.hourly?.totals).toMatchObject({ calls: 2, tokens: 130 });
-    expect(payload.data?.hourly?.totals?.cost).toBeGreaterThan(0);
+    expect(payload.data?.hourly?.totals?.cost).toBeCloseTo(expectedCost, 12);
+    expect(
+      payload.data?.hourly?.buckets?.reduce((sum, bucket) => sum + Number(bucket.cost ?? 0), 0),
+    ).toBeCloseTo(expectedCost, 12);
     expect(payload.data?.hourly?.buckets).toHaveLength(2);
     expect(payload.data?.hourly?.buckets?.every((bucket) => typeof bucket.startedAt === 'string')).toBe(true);
     expect(JSON.stringify(payload)).not.toContain('rawInputJson');
