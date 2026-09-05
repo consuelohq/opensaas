@@ -242,6 +242,66 @@ describe('Branch 6 internal dashboard integration', () => {
     expect(sessionValidationCalls).toBe(0);
   });
 
+  it('serves dedicated internal dashboard routes from the workspace session when Access is disabled', async () => {
+    const routeRegistry = createInMemoryWorkspaceRouteD1();
+    await migrateWorkspaceRouteD1(routeRegistry);
+    const service = createInstallControlPlaneService({
+      repository: createMemoryInstallControlPlaneRepository(),
+    });
+    let sessionValidationCalls = 0;
+    const edge = createWorkspaceEdgeHandler(
+      {
+        WORKSPACE_ROUTE_REGISTRY: routeRegistry,
+        CONSUELO_EDGE_SIGNING_SECRET: 'edge-secret',
+        WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET: 'internal-secret',
+        OS_DEVICE_AUTHORITY: {
+          idFromName: (name: string) => name,
+          get: () => ({
+            fetch: async (request: Request) => {
+              const url = new URL(request.url);
+              if (url.pathname !== '/internal/auth/session/validate') {
+                return new Response('not found', { status: 404 });
+              }
+              sessionValidationCalls += 1;
+              const cookie = request.headers.get('cookie') ?? '';
+              return cookie.includes('__Host-consuelo_os_session=target-session')
+                ? new Response(null, { status: 204 })
+                : Response.json({ error: 'workspace_session_required' }, { status: 401 });
+            },
+          }),
+        },
+      },
+      {
+        internalDashboardService: service,
+        now: () => NOW,
+      },
+    );
+
+    const anonymous = await edge(new Request(
+      'https://internal.consuelohq.com/users',
+      { headers: { accept: 'text/html' } },
+    ));
+    expect(anonymous.status).toBe(302);
+    expect(anonymous.headers.get('location')).toBe(
+      'https://os.consuelohq.com/login/google/start?purpose=web&return_to=%2Fusers',
+    );
+
+    const authenticated = await edge(new Request(
+      'https://internal.consuelohq.com/users',
+      { headers: { cookie: '__Host-consuelo_os_session=target-session' } },
+    ));
+    expect(authenticated.status).toBe(200);
+    expect(await authenticated.text()).toContain('Consuelo internal');
+    expect(sessionValidationCalls).toBe(2);
+
+    const customerWorkspace = await edge(new Request(
+      'https://customer.consuelohq.com/users',
+      { headers: { cookie: '__Host-consuelo_os_session=target-session' } },
+    ));
+    expect(customerWorkspace.status).toBe(404);
+    expect(sessionValidationCalls).toBe(2);
+  });
+
   it('fails closed instead of intercepting with a partially configured dashboard', async () => {
     const routeRegistry = createInMemoryWorkspaceRouteD1();
     await migrateWorkspaceRouteD1(routeRegistry);
