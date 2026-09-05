@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/broaden-social-persona-beyond-agents",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1537,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1537",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1537",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1537/broaden-social-persona-beyond-agents",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1537",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1537/broaden-social-persona-beyond-agents",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-broaden-social-persona-beyond-agents",
+  "taskSession": "tsk_6d0d17331469",
+  "tmuxSession": "opensaas-workspace-agents-broaden-social-persona-beyond-agents-6d0d1733",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-broaden-social-persona-beyond-agents/.task/workspace-agents/broaden-social-persona-beyond-agents/session.json",
+  "createdAt": "2026-07-20T19:45:24.246Z"
+}
