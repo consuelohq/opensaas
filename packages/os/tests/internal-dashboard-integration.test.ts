@@ -334,7 +334,7 @@ describe('Branch 6 internal dashboard integration', () => {
     ));
     expect(anonymous.status).toBe(302);
     expect(anonymous.headers.get('location')).toBe(
-      'https://os.consuelohq.com/login/google/start?purpose=web&return_to=%2Fusers',
+      'https://os.consuelohq.com/login/google/start?purpose=web&return_to=%2Fusers&target_host=internal.consuelohq.com',
     );
 
     const authenticated = await edge(new Request(
@@ -343,14 +343,14 @@ describe('Branch 6 internal dashboard integration', () => {
     ));
     expect(authenticated.status).toBe(200);
     expect(await authenticated.text()).toContain('Consuelo internal');
-    expect(sessionValidationCalls).toBe(2);
+    expect(sessionValidationCalls).toBe(3);
 
     const customerWorkspace = await edge(new Request(
       'https://customer.consuelohq.com/users',
       { headers: { cookie: '__Host-consuelo_os_session=target-session' } },
     ));
     expect(customerWorkspace.status).toBe(404);
-    expect(sessionValidationCalls).toBe(2);
+    expect(sessionValidationCalls).toBe(3);
   });
 
   it('fails closed instead of intercepting with a partially configured dashboard', async () => {
@@ -426,14 +426,14 @@ describe('Branch 6 internal dashboard integration', () => {
     ));
     expect(anonymous.status).toBe(302);
     expect(anonymous.headers.get('location')).toBe(
-      'https://os.consuelohq.com/login/google/start?purpose=web&return_to=%2Fusers%3Fstate%3Dactive',
+      'https://os.consuelohq.com/login/google/start?purpose=web&return_to=%2Fusers%3Fstate%3Dactive&target_host=internal.consuelohq.com',
     );
     const anonymousRoot = await allowedOperator(new Request('https://internal.consuelohq.com/', {
       headers: { accept: 'text/html' },
     }));
     expect(anonymousRoot.status).toBe(302);
     expect(anonymousRoot.headers.get('location')).toBe(
-      'https://os.consuelohq.com/login/google/start?purpose=web&return_to=%2F',
+      'https://os.consuelohq.com/login/google/start?purpose=web&return_to=%2F&target_host=internal.consuelohq.com',
     );
     const anonymousJson = await allowedOperator(new Request('https://internal.consuelohq.com/users', {
       headers: { accept: 'application/json' },

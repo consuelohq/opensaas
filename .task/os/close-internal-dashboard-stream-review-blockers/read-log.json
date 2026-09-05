@@ -1,0 +1,9 @@
+{
+  "files": [
+    "packages/os/cloudflare/os-device-authority/src/routes/google-oauth.ts",
+    "packages/os/cloudflare/os-device-authority/src/routes/web-auth.ts",
+    "packages/os/cloudflare/workspace-edge/src/index.ts",
+    "packages/os/tests/os-universal-login.test.ts"
+  ],
+  "updatedAt": "2026-09-05T03:51:01.326Z"
+}

@@ -128,13 +128,16 @@ async function webLogin(input: {
   nonce: { value: string };
   returnTo?: string;
   intent?: 'login' | 'signup';
+  targetHost?: string;
 }): Promise<{ authorityCookie: string; callback: Response; state: string }> {
+  const startParams = new URLSearchParams({
+    purpose: 'web',
+    intent: input.intent ?? 'login',
+    return_to: input.returnTo ?? '/',
+  });
+  if (input.targetHost) startParams.set('target_host', input.targetHost);
   const start = await input.handler(new Request(
-    `${origin}/login/google/start?${new URLSearchParams({
-      purpose: 'web',
-      intent: input.intent ?? 'login',
-      return_to: input.returnTo ?? '/',
-    })}`,
+    `${origin}/login/google/start?${startParams}`,
   ));
   expect(start.status).toBe(302);
   const googleUrl = new URL(start.headers.get('location') ?? '');
@@ -471,6 +474,11 @@ describe('Consuelo OS universal login', () => {
     const edge = await createEdge({ authority });
     const sourceConsumed = await edge.handler(new Request(issued.location));
     const sourceSession = cookieValue(sourceConsumed, '__Host-consuelo_os_session');
+    await seedMembership(store, {
+      workspaceId: 'workspace_internal',
+      workspaceSlug: 'internal',
+      workspaceHost: 'internal.consuelohq.com',
+    });
 
     const transition = await edge.handler(new Request(
       'https://one.consuelohq.com/auth/handoff/start?target_host=internal.consuelohq.com&return_to=%2Fusers',
@@ -513,15 +521,103 @@ describe('Consuelo OS universal login', () => {
         headers: {
           'x-consuelo-internal-auth-secret': internalSigningSecret,
           'x-consuelo-workspace-host': 'internal.consuelohq.com',
-          'x-consuelo-workspace-id': 'workspace_one',
+          'x-consuelo-workspace-id': 'workspace_internal',
           cookie: cookieHeader({ '__Host-consuelo_os_session': privateSession }),
         },
       },
     ));
     expect(validated.status).toBe(204);
 
+    await seedMembership(store, {
+      workspaceId: 'workspace_internal',
+      workspaceSlug: 'internal',
+      workspaceHost: 'internal.consuelohq.com',
+      status: 'revoked',
+      updatedAt: baseNow + 1,
+    });
+    const revoked = await authority(new Request(
+      origin + '/internal/auth/session/validate',
+      {
+        method: 'POST',
+        headers: {
+          'x-consuelo-internal-auth-secret': internalSigningSecret,
+          'x-consuelo-workspace-host': 'internal.consuelohq.com',
+          'x-consuelo-workspace-id': 'workspace_internal',
+          cookie: cookieHeader({ '__Host-consuelo_os_session': privateSession }),
+        },
+      },
+    ));
+    expect(revoked.status).toBe(403);
+
     const replay = await edge.handler(new Request(privateLocation));
     expect(replay.status).toBe(400);
+  });
+
+  it('denies private internal handoff without an active internal workspace membership', async () => {
+    const store = createMemoryDeviceGrantStore();
+    await seedMembership(store, {
+      workspaceId: 'workspace_one',
+      workspaceSlug: 'one',
+      workspaceHost: 'one.consuelohq.com',
+    });
+    const { handler: authority, nonce } = await createAuthority({ store });
+    const issued = await issueSingleMembershipHandoff({
+      handler: authority,
+      nonce,
+      returnTo: '/configuration',
+    });
+    const edge = await createEdge({ authority });
+    const sourceConsumed = await edge.handler(new Request(issued.location));
+    const sourceSession = cookieValue(sourceConsumed, '__Host-consuelo_os_session');
+
+    const transition = await edge.handler(new Request(
+      'https://one.consuelohq.com/auth/handoff/start?target_host=internal.consuelohq.com&return_to=%2Fusers',
+      {
+        headers: {
+          accept: 'text/html',
+          cookie: cookieHeader({ '__Host-consuelo_os_session': sourceSession }),
+        },
+      },
+    ));
+    expect(transition.status).toBe(403);
+  });
+
+  it('preserves an explicit private target host through Google login and selects that active membership', async () => {
+    const store = createMemoryDeviceGrantStore();
+    await seedMembership(store, {
+      workspaceId: 'workspace_one',
+      workspaceSlug: 'one',
+      workspaceHost: 'one.consuelohq.com',
+    });
+    await seedMembership(store, {
+      workspaceId: 'workspace_internal',
+      workspaceSlug: 'internal',
+      workspaceHost: 'internal.consuelohq.com',
+    });
+    const { handler, nonce } = await createAuthority({
+      store,
+      canonicalWorkspaceIds: ['workspace_one', 'workspace_internal'],
+    });
+    const login = await webLogin({
+      handler,
+      nonce,
+      returnTo: '/users?state=active',
+      targetHost: 'internal.consuelohq.com',
+    });
+    const callbackLocation = new URL(login.callback.headers.get('location') ?? '', origin);
+    expect(callbackLocation.pathname).toBe('/auth/workspaces');
+    expect(callbackLocation.searchParams.get('return_to')).toBe('/users?state=active');
+    expect(callbackLocation.searchParams.get('target_host')).toBe('internal.consuelohq.com');
+
+    const workspaces = await handler(new Request(callbackLocation, {
+      headers: {
+        cookie: cookieHeader({ '__Host-consuelo_os_authority': login.authorityCookie }),
+      },
+    }));
+    expect(workspaces.status).toBe(302);
+    const destination = new URL(workspaces.headers.get('location') ?? '');
+    expect(destination.origin).toBe('https://internal.consuelohq.com');
+    expect(destination.pathname).toBe('/auth/consume');
   });
 
   it('requires an explicit CSRF-protected choice for multiple active memberships and ignores browser-supplied hosts', async () => {
