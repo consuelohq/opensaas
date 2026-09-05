@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-home-copy-internal-navigation-and-auth-handoff",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2353,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2353",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-home-copy-internal-navigation-and-auth-handoff",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_375bc595787b",
+  "tmuxSession": "opensaas-os-fix-home-copy-internal-navigation-and-auth-hando-375bc595",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-home-copy-internal-navigation-and-auth-handoff/.task/session.json",
+  "createdAt": "2026-09-01T00:47:10.102Z"
+}

@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/deploy-merged-os-connection-and-tracing-fix",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2378,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2378",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-deploy-merged-os-connection-and-tracing-fix",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_9a4d869ff2cd",
+  "tmuxSession": "opensaas-os-deploy-merged-os-connection-and-tracing-fix-9a4d869f",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-deploy-merged-os-connection-and-tracing-fix/.task/session.json",
+  "createdAt": "2026-09-04T16:15:59.214Z"
+}

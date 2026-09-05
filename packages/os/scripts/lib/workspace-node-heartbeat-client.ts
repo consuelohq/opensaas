@@ -54,6 +54,31 @@ export type WorkspaceNodeHeartbeatClient = {
   ) => Promise<WorkspaceNodeHeartbeatResult>;
 };
 
+export class WorkspaceNodeHeartbeatRequestError extends Error {
+  readonly status?: number;
+
+  constructor(
+    message: string,
+    options: { cause?: unknown; status?: number } = {},
+  ) {
+    super(
+      message,
+      options.cause === undefined ? undefined : { cause: options.cause },
+    );
+    this.name = 'WorkspaceNodeHeartbeatRequestError';
+    this.status = options.status;
+  }
+}
+
+export function isTransientWorkspaceNodeHeartbeatRequestError(
+  error: unknown,
+): error is WorkspaceNodeHeartbeatRequestError {
+  return (
+    error instanceof WorkspaceNodeHeartbeatRequestError
+    && (error.status === undefined || error.status >= 500)
+  );
+}
+
 const KNOWN_AGENT_NAMES = new Set<AgentName>([
   'claude',
   'codex',
@@ -270,13 +295,17 @@ export function createWorkspaceNodeHeartbeatClient(input: {
           ),
         );
       } catch (error: unknown) {
-        throw new Error('workspace node heartbeat request failed', {
-          cause: error,
-        });
+        throw new WorkspaceNodeHeartbeatRequestError(
+          'workspace node heartbeat request failed',
+          {
+            cause: error,
+          },
+        );
       }
       if (!response.ok) {
-        throw new Error(
+        throw new WorkspaceNodeHeartbeatRequestError(
           `workspace node heartbeat failed with HTTP ${response.status}`,
+          { status: response.status },
         );
       }
       let body: unknown;

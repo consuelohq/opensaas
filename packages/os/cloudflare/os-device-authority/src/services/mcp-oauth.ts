@@ -5,6 +5,7 @@ import {
   MCP_OAUTH_REFRESH_TTL_MS,
   MCP_OAUTH_SCOPES,
   MCP_OAUTH_TTL_MS,
+  PUBLIC_MCP_OAUTH_SCOPES,
   TTL_MS,
 } from '../constants';
 import { json } from '../http';
@@ -114,7 +115,7 @@ export function authorizationServerMetadata(
     code_challenge_methods_supported: ['S256'],
     token_endpoint_auth_methods_supported: ['none'],
     client_id_metadata_document_supported: true,
-    scopes_supported: MCP_OAUTH_SCOPES,
+    scopes_supported: PUBLIC_MCP_OAUTH_SCOPES,
   };
 }
 
@@ -162,7 +163,7 @@ export function oauthProtectedResourceMetadata(
   return {
     resource: mcpResourceUrl(origin),
     authorization_servers: [origin],
-    scopes_supported: MCP_OAUTH_SCOPES,
+    scopes_supported: PUBLIC_MCP_OAUTH_SCOPES,
     bearer_methods_supported: ['header'],
   };
 }

@@ -89,7 +89,13 @@ describe('configuration site', () => {
     expect(html).not.toContain('aria-label="Configuration sidebar"');
     expect(html).toContain('/gateway/configuration/snapshot');
     expect(html).toContain('Loading workspace configuration');
-    expect(html).toContain('Configuration unavailable');
+    expect(html).toContain('id="configuration-error-title"');
+    expect(html).toContain('id="configuration-error-copy"');
+    expect(html).toContain('configurationError.dataset.connectionState = state');
+    expect(html).toContain('Workspace connected; live node unavailable');
+    expect(html).toContain('You’re signed in. Configuration will reconnect automatically');
+    expect(html).toContain('Workspace session reconnecting');
+    expect(html).toContain('CONFIGURATION_RETRY_MAX_MS = 30000');
     expect(html).toContain('/gateway/configuration/overlay');
     expect(html).toContain('Source control');
     expect(html).toContain('id="overview-readiness-title"');
@@ -99,6 +105,7 @@ describe('configuration site', () => {
     expect(html).toContain('data-overview-heatmap');
     expect(html).toContain('role="grid"');
     expect(html).toContain('id="overview-heatmap-tooltip"');
+    expect(html).toContain('id="overview-heatmap-status"');
     expect(html).toContain("const OVERVIEW_HEATMAP_CACHE_KEY = 'consuelo:overview-heatmap:v2'");
     expect(html).toContain('const OVERVIEW_HEATMAP_CACHE_MAX_AGE_MS = 86400000');
     expect(html).toContain('const OVERVIEW_HEATMAP_REFRESH_MS = 30000');
@@ -112,8 +119,10 @@ describe('configuration site', () => {
     expect(html).toContain('localStorage.setItem(OVERVIEW_HEATMAP_CACHE_KEY');
     expect(html).not.toContain('sessionStorage.setItem(OVERVIEW_HEATMAP_CACHE_KEY');
     expect(html).not.toContain('renderOverviewHeatmap(cached || aggregateOverviewHeatmap([]));');
-    expect(html).toContain('renderOverviewHeatmap(aggregateOverviewHeatmap(cachedRows), true);');
+    expect(html).toContain('renderOverviewHeatmap(aggregateOverviewHeatmap(cached.rows), true);');
     expect(html).toContain('renderOverviewHeatmap(aggregate, !overviewHeatmapRendered);');
+    expect(html).toContain('Historical activity shown · live updates unavailable');
+    expect(html).toContain('Trace history temporarily unavailable · retrying automatically');
     expect(html).toContain('tabindex="0"');
     expect(html).toContain("matchMedia('(prefers-reduced-motion: reduce)')");
     expect(html).toContain('globalThis.gsap');

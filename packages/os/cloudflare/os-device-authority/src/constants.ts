@@ -71,3 +71,8 @@ export const MCP_OAUTH_SCOPES = [
   'route:/mcp:read',
   'tool:*:read',
 ];
+// OAuth discovery must only advertise scopes that an ordinary MCP client can
+// actually receive. Operator-only scopes remain valid for explicit CLI grants.
+export const PUBLIC_MCP_OAUTH_SCOPES = MCP_OAUTH_SCOPES.filter(
+  (scope) => !OPERATOR_ONLY_SCOPES.has(scope),
+);

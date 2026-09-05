@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_e9df70fe7120",
+  "tmuxSession": "opensaas-os-keep-subagent-provider-attached-to-runner-until--e9df70fe",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/keep-subagent-provider-attached-to-runner-until-exit",
+  "branch": "task/os/keep-subagent-provider-attached-to-runner-until-exit",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-keep-subagent-provider-attached-to-runner-until-exit",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-keep-subagent-provider-attached-to-runner-until-exit",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2316,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2316",
+  "createdAt": "2026-08-30T20:24:33.454Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-keep-subagent-provider-attached-to-runner-until-exit/.task/os/keep-subagent-provider-attached-to-runner-until-exit/session.json"
+}

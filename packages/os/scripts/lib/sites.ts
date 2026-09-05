@@ -9,11 +9,11 @@ import {
   refreshArtifactsSite,
   type ArtifactCatalog,
 } from './artifacts';
-import { loadGlobalYamlConfig } from './consuelo-home';
 import { buildObservabilityTracesSite } from './observability-traces-site';
 import { materializeConfigurationSite } from './settings-materialization';
 import { renderConfigurationSite } from './settings-site';
 import type { WorkspaceChromeOptions } from './workspace-chrome';
+import { loadWorkspaceChromeOptions } from './workspace-chrome-config';
 
 export type SitesAction = {
   type: 'create_dir' | 'create_file';
@@ -551,14 +551,6 @@ function baseStyles(): string {
     .section-header { margin-bottom: 8px; }
     .empty { color: #a8a095; }
   `;
-}
-
-function loadWorkspaceChromeOptions(home: string): WorkspaceChromeOptions {
-  const configPath = path.join(home, 'consuelo.yaml');
-  if (!fs.existsSync(configPath)) return {};
-  const config = loadGlobalYamlConfig(configPath);
-  const extraSections = config.launcher?.extraSections ?? [];
-  return extraSections.length > 0 ? { extraSections } : {};
 }
 
 function buildSitesIndex(chromeOptions: WorkspaceChromeOptions = {}): string {

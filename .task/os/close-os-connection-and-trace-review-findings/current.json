@@ -1,0 +1,20 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/close-os-connection-and-trace-review-findings",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2377,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2377",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2377",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2377/close-os-connection-and-trace-review-findings",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2377",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2377/close-os-connection-and-trace-review-findings",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-close-os-connection-and-trace-review-findings",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_1feb0ef4d161",
+  "tmuxSession": "opensaas-os-close-os-connection-and-trace-review-findings-1feb0ef4",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-close-os-connection-and-trace-review-findings/.task/os/close-os-connection-and-trace-review-findings/session.json",
+  "createdAt": "2026-09-04T15:45:32.051Z"
+}

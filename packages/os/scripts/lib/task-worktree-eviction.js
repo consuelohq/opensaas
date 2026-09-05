@@ -110,6 +110,59 @@ function readStatus(worktreePath) {
   ], { cwd: worktreePath });
 }
 
+const DEFAULT_TASK_RECOVERY_ARCHIVE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+const BUNDLE_ANCHOR_REFS = [
+  'refs/remotes/origin/main',
+  'refs/remotes/origin/master',
+  'refs/remotes/origin/HEAD',
+];
+
+function resolveBundleAnchorSha(repoRoot, remoteSha) {
+  if (remoteSha) return remoteSha;
+  for (const ref of BUNDLE_ANCHOR_REFS) {
+    const sha = runGitMaybe(['rev-parse', '--verify', ref], { cwd: repoRoot });
+    if (sha) return sha;
+  }
+  return null;
+}
+
+function pruneExpiredTaskRecoveryArchives(options = {}) {
+  const home = options.home || getConsueloHome();
+  const maxAgeMs = options.maxAgeMs ?? DEFAULT_TASK_RECOVERY_ARCHIVE_MAX_AGE_MS;
+  if (!Number.isFinite(maxAgeMs) || maxAgeMs < 0) {
+    throw new Error('task recovery archive maxAgeMs must be a non-negative number');
+  }
+  const nowValue = typeof options.now === 'function' ? options.now() : (options.now ?? Date.now());
+  const nowMs = nowValue instanceof Date ? nowValue.getTime() : Number(nowValue);
+  if (!Number.isFinite(nowMs)) throw new Error('task recovery archive now must resolve to a timestamp');
+  const root = path.join(path.resolve(home), 'node', 'tasks', 'archives');
+  const protectedSnapshotRoots = new Set(
+    (options.protectedSnapshotRoots || []).map((value) => path.resolve(String(value))),
+  );
+  const removed = [];
+  if (!fs.existsSync(root)) return { removed };
+  for (const sessionName of fs.readdirSync(root)) {
+    const sessionRoot = path.join(root, sessionName);
+    let sessionStat;
+    try { sessionStat = fs.lstatSync(sessionRoot); } catch { continue; }
+    if (!sessionStat.isDirectory()) continue;
+    for (const snapshotName of fs.readdirSync(sessionRoot)) {
+      const snapshotRoot = path.join(sessionRoot, snapshotName);
+      let snapshotStat;
+      try { snapshotStat = fs.lstatSync(snapshotRoot); } catch { continue; }
+      if (!snapshotStat.isDirectory()) continue;
+      if (protectedSnapshotRoots.has(path.resolve(snapshotRoot))) continue;
+      if (nowMs - snapshotStat.mtimeMs < maxAgeMs) continue;
+      fs.rmSync(snapshotRoot, { recursive: true, force: true });
+      removed.push(snapshotRoot);
+    }
+    try {
+      if (fs.readdirSync(sessionRoot).length === 0) fs.rmSync(sessionRoot, { recursive: true, force: true });
+    } catch {}
+  }
+  return { removed };
+}
+
 function inspectTaskWorktreeState({ repoRoot, worktreePath, taskBranch }) {
   if (!fs.existsSync(worktreePath)) {
     throw new Error(`task worktree is unavailable: ${worktreePath}`);
@@ -187,7 +240,8 @@ function createVerifiedTaskRecoveryArchive(input) {
   runGit(['update-ref', exportedRef, checkpointSha], { cwd: repoRoot });
   try {
     const bundleArgs = ['bundle', 'create', temporaryBundlePath, exportedRef];
-    if (stateBefore.remoteSha) bundleArgs.push(`^${stateBefore.remoteSha}`);
+    const anchorSha = resolveBundleAnchorSha(repoRoot, stateBefore.remoteSha);
+    if (anchorSha) bundleArgs.push(`^${anchorSha}`);
     runGit(bundleArgs, { cwd: repoRoot });
     runGit(['bundle', 'verify', temporaryBundlePath], { cwd: repoRoot });
 
@@ -207,7 +261,7 @@ function createVerifiedTaskRecoveryArchive(input) {
       worktreePath,
       createdAt: timestamp,
       headSha: stateBefore.headSha,
-      anchorSha: stateBefore.remoteSha || null,
+      anchorSha: anchorSha || null,
       checkpointSha,
       treeSha,
       exportedRef,
@@ -484,6 +538,9 @@ function removeDurableTaskRecoveryState(taskSession, options = {}) {
 }
 
 module.exports = {
+  DEFAULT_TASK_RECOVERY_ARCHIVE_MAX_AGE_MS,
+  pruneExpiredTaskRecoveryArchives,
+  resolveBundleAnchorSha,
   createVerifiedTaskRecoveryArchive,
   evictDurableTaskWorktree,
   getTaskInactivityAgeMs,
