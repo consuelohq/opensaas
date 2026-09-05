@@ -124,9 +124,21 @@ export function createTraceSitesGatewayLiveEndpoints(
 
       if (
         url.pathname === '/gateway/traces/aggregates' &&
-        url.searchParams.get('bucket') === 'hour'
+        url.searchParams.get('bucket') === '15m'
       ) {
         return hourlyAggregateResponse(url, scope, options.backend);
+      }
+
+      if (
+        url.pathname === '/gateway/traces/aggregates' &&
+        url.searchParams.has('bucket')
+      ) {
+        return aggregateFailureResponse(
+          'TRACE_AGGREGATE_BUCKET_INVALID',
+          'Trace heatmap aggregates require bucket=15m.',
+          400,
+          scope,
+        );
       }
 
       const historyDirection = url.searchParams.get('direction');

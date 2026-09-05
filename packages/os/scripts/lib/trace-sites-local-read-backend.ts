@@ -87,15 +87,15 @@ type HourlyAggregateDeltaRow = {
 
 type HourlyAggregateBucketRead = {
   buckets: Map<string, TraceSitesGatewayHourlyAggregateBucket>;
-  traceHours: Map<string, number>;
+  traceBuckets: Map<string, number>;
 };
 
 type HourlyAggregateCache = {
   hours: number;
-  currentHourStartMs: number;
+  currentBucketStartMs: number;
   refreshedAtMs: number;
   buckets: Map<string, TraceSitesGatewayHourlyAggregateBucket>;
-  traceHours: Map<string, number>;
+  traceBuckets: Map<string, number>;
   lastRowid: number;
 };
 
@@ -175,7 +175,12 @@ const TRACE_HOURLY_AGGREGATE_ROWS_SQL = [
   'SELECT',
   '  rowid,',
   '  id,',
-  "  substr(ts, 1, 13) || ':00:00.000Z' AS started_at,",
+  "  substr(ts, 1, 14) || CASE",
+  "    WHEN substr(ts, 15, 2) < '15' THEN '00'",
+  "    WHEN substr(ts, 15, 2) < '30' THEN '15'",
+  "    WHEN substr(ts, 15, 2) < '45' THEN '30'",
+  "    ELSE '45'",
+  "  END || ':00.000Z' AS started_at,",
   '  tool,',
   "  substr(coalesce(input_json, ''), 1, 200000) AS input_json,",
   "  substr(coalesce(resolved_input_json, ''), 1, 200000) AS resolved_input_json,",
@@ -202,7 +207,9 @@ const TRACE_AGGREGATE_DELTA_SQL = [
   'LIMIT ?;',
 ].join('\n');
 
-const HOUR_MS = 60 * 60 * 1000;
+const HEATMAP_BUCKET_MINUTES = 15;
+const HEATMAP_BUCKET_MS = HEATMAP_BUCKET_MINUTES * 60 * 1000;
+const HEATMAP_BUCKETS_PER_HOUR = 60 / HEATMAP_BUCKET_MINUTES;
 const HOURLY_AGGREGATE_REFRESH_MS = 30_000;
 const HOURLY_AGGREGATE_PAGE_SIZE = 10_000;
 
@@ -353,78 +360,79 @@ function readHourlyTraceAggregate(
   nowMs: number,
 ): { aggregate: TraceSitesGatewayHourlyAggregate; cache: HourlyAggregateCache } {
   const hours = Math.max(1, Math.min(24 * 31, Math.floor(input.hours)));
-  const currentHourStartMs = Math.floor(nowMs / HOUR_MS) * HOUR_MS;
-  const windowStartMs = currentHourStartMs - (hours - 1) * HOUR_MS;
+  const bucketCount = hours * HEATMAP_BUCKETS_PER_HOUR;
+  const currentBucketStartMs = Math.floor(nowMs / HEATMAP_BUCKET_MS) * HEATMAP_BUCKET_MS;
+  const windowStartMs = currentBucketStartMs - (bucketCount - 1) * HEATMAP_BUCKET_MS;
   const databaseAvailable = existsSync(dbPath);
   let nextCache = cache;
   const resetCache =
     !nextCache ||
     nextCache.hours !== hours ||
-    nextCache.currentHourStartMs > currentHourStartMs;
+    nextCache.currentBucketStartMs > currentBucketStartMs;
 
   if (resetCache) {
     const lastRowid = databaseAvailable ? readTraceAggregateHighWater(dbPath) : 0;
     const snapshot = databaseAvailable
       ? readHourlyAggregateBuckets(dbPath, windowStartMs, nowMs, lastRowid)
-      : { buckets: new Map(), traceHours: new Map() };
+      : { buckets: new Map(), traceBuckets: new Map() };
     nextCache = {
       hours,
-      currentHourStartMs,
+      currentBucketStartMs,
       refreshedAtMs: nowMs,
       buckets: snapshot.buckets,
-      traceHours: snapshot.traceHours,
+      traceBuckets: snapshot.traceBuckets,
       lastRowid,
     };
   } else {
-    const hourAdvanced = nextCache.currentHourStartMs !== currentHourStartMs;
+    const bucketAdvanced = nextCache.currentBucketStartMs !== currentBucketStartMs;
     const refreshDue = nowMs - nextCache.refreshedAtMs >= HOURLY_AGGREGATE_REFRESH_MS;
-    if (databaseAvailable && (hourAdvanced || refreshDue)) {
+    if (databaseAvailable && (bucketAdvanced || refreshDue)) {
       const delta = readTraceAggregateDelta(dbPath, nextCache.lastRowid);
-      const affectedHours = new Set<number>([currentHourStartMs]);
+      const affectedBuckets = new Set<number>([currentBucketStartMs]);
       if (
-        hourAdvanced &&
-        nextCache.currentHourStartMs >= windowStartMs &&
-        nextCache.currentHourStartMs <= currentHourStartMs
+        bucketAdvanced &&
+        nextCache.currentBucketStartMs >= windowStartMs &&
+        nextCache.currentBucketStartMs <= currentBucketStartMs
       ) {
-        affectedHours.add(nextCache.currentHourStartMs);
+        affectedBuckets.add(nextCache.currentBucketStartMs);
       }
 
       for (const row of delta.rows) {
         const id = cleanString(row.id);
-        const previousHour = id ? nextCache.traceHours.get(id) : undefined;
+        const previousBucket = id ? nextCache.traceBuckets.get(id) : undefined;
         if (
-          previousHour !== undefined &&
-          previousHour >= windowStartMs &&
-          previousHour <= currentHourStartMs
+          previousBucket !== undefined &&
+          previousBucket >= windowStartMs &&
+          previousBucket <= currentBucketStartMs
         ) {
-          affectedHours.add(previousHour);
+          affectedBuckets.add(previousBucket);
         }
         const timestampMs = Date.parse(cleanString(row.ts));
         if (Number.isFinite(timestampMs)) {
-          const nextHour = Math.floor(timestampMs / HOUR_MS) * HOUR_MS;
-          if (nextHour >= windowStartMs && nextHour <= currentHourStartMs) {
-            affectedHours.add(nextHour);
+          const nextBucket = Math.floor(timestampMs / HEATMAP_BUCKET_MS) * HEATMAP_BUCKET_MS;
+          if (nextBucket >= windowStartMs && nextBucket <= currentBucketStartMs) {
+            affectedBuckets.add(nextBucket);
           }
         }
       }
 
-      for (const [id, hour] of nextCache.traceHours) {
-        if (affectedHours.has(hour)) nextCache.traceHours.delete(id);
+      for (const [id, bucketStart] of nextCache.traceBuckets) {
+        if (affectedBuckets.has(bucketStart)) nextCache.traceBuckets.delete(id);
       }
-      for (const hour of [...affectedHours].sort((left, right) => left - right)) {
-        const key = new Date(hour).toISOString();
+      for (const bucketStart of [...affectedBuckets].sort((left, right) => left - right)) {
+        const key = new Date(bucketStart).toISOString();
         nextCache.buckets.delete(key);
-        const endMs = Math.min(hour + HOUR_MS, nowMs);
-        if (endMs <= hour) continue;
-        const refreshed = readHourlyAggregateBuckets(dbPath, hour, endMs, delta.highWaterRowid);
+        const endMs = Math.min(bucketStart + HEATMAP_BUCKET_MS, nowMs);
+        if (endMs <= bucketStart) continue;
+        const refreshed = readHourlyAggregateBuckets(dbPath, bucketStart, endMs, delta.highWaterRowid);
         for (const [bucketKey, bucket] of refreshed.buckets) {
           nextCache.buckets.set(bucketKey, bucket);
         }
-        for (const [id, traceHour] of refreshed.traceHours) {
-          nextCache.traceHours.set(id, traceHour);
+        for (const [id, traceBucket] of refreshed.traceBuckets) {
+          nextCache.traceBuckets.set(id, traceBucket);
         }
       }
-      nextCache.currentHourStartMs = currentHourStartMs;
+      nextCache.currentBucketStartMs = currentBucketStartMs;
       nextCache.refreshedAtMs = nowMs;
       nextCache.lastRowid = delta.highWaterRowid;
     }
@@ -433,8 +441,8 @@ function readHourlyTraceAggregate(
   for (const key of nextCache.buckets.keys()) {
     if (Date.parse(key) < windowStartMs) nextCache.buckets.delete(key);
   }
-  for (const [id, hour] of nextCache.traceHours) {
-    if (hour < windowStartMs) nextCache.traceHours.delete(id);
+  for (const [id, bucketStart] of nextCache.traceBuckets) {
+    if (bucketStart < windowStartMs) nextCache.traceBuckets.delete(id);
   }
 
   const buckets = [...nextCache.buckets.values()].sort((left, right) =>
@@ -472,7 +480,7 @@ function readHourlyAggregateBuckets(
   const db = openTraceDatabase(dbPath);
   try {
     const buckets = new Map<string, TraceSitesGatewayHourlyAggregateBucket>();
-    const traceHours = new Map<string, number>();
+    const traceBuckets = new Map<string, number>();
     const statement = db.query(TRACE_HOURLY_AGGREGATE_ROWS_SQL);
     const windowStart = new Date(startMs).toISOString();
     const windowEnd = new Date(endMs).toISOString();
@@ -490,7 +498,7 @@ function readHourlyAggregateBuckets(
         if (!startedAt) continue;
         const startedAtMs = Date.parse(startedAt);
         const id = cleanString(row.id);
-        if (id && Number.isFinite(startedAtMs)) traceHours.set(id, startedAtMs);
+        if (id && Number.isFinite(startedAtMs)) traceBuckets.set(id, startedAtMs);
         const inputTokens = numberValue(row.input_tokens);
         const outputTokens = numberValue(row.output_tokens);
         const tokens = numberValue(row.total_tokens) || inputTokens + outputTokens;
@@ -520,7 +528,7 @@ function readHourlyAggregateBuckets(
       afterRowid = rows[rows.length - 1].rowid;
       if (rows.length < HOURLY_AGGREGATE_PAGE_SIZE) break;
     }
-    return { buckets, traceHours };
+    return { buckets, traceBuckets };
   } finally {
     db.close();
   }
