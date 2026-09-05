@@ -1,0 +1,88 @@
+{
+  "version": 1,
+  "worktree_id": "task/workspace-agents/preserve-heatmap-aggregate-cost-accuracy",
+  "events": [
+    {
+      "id": "7de43a6f-fdf8-41e7-bee3-682e0f77c853",
+      "occurred_at": "2026-09-05T00:39:47.276Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/trace-cost-estimator.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/preserve-heatmap-aggregate-cost-accuracy",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/preserve-heatmap-aggregate-cost-accuracy"
+      }
+    },
+    {
+      "id": "1d4670a2-4b9e-4add-b1fd-8f2e9a036402",
+      "occurred_at": "2026-09-05T00:40:44.285Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/trace-sites-local-read-backend.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/preserve-heatmap-aggregate-cost-accuracy",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/preserve-heatmap-aggregate-cost-accuracy"
+      }
+    },
+    {
+      "id": "ca5e91fb-b6f9-4d89-ba1e-2165149e8da5",
+      "occurred_at": "2026-09-05T00:40:54.032Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/trace-sites-local-read-backend.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/preserve-heatmap-aggregate-cost-accuracy",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/preserve-heatmap-aggregate-cost-accuracy"
+      }
+    },
+    {
+      "id": "0df658cc-c5af-4a16-9100-e45833a1cd42",
+      "occurred_at": "2026-09-05T00:41:11.855Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/trace-database-schema.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/preserve-heatmap-aggregate-cost-accuracy",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/preserve-heatmap-aggregate-cost-accuracy"
+      }
+    },
+    {
+      "id": "922787f4-082c-408e-9930-3932f88513ab",
+      "occurred_at": "2026-09-05T00:44:01.915Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "node_modules/bun-types/sqlite.d.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/preserve-heatmap-aggregate-cost-accuracy",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/preserve-heatmap-aggregate-cost-accuracy"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-09-05T00:44:02.000Z"
+}
