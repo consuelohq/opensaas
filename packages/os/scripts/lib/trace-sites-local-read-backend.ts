@@ -182,9 +182,9 @@ const TRACE_HOURLY_AGGREGATE_ROWS_SQL = [
   "    ELSE '45'",
   "  END || ':00.000Z' AS started_at,",
   '  tool,',
-  "  substr(coalesce(input_json, ''), 1, 200000) AS input_json,",
-  "  substr(coalesce(resolved_input_json, ''), 1, 200000) AS resolved_input_json,",
-  "  substr(coalesce(result_json, ''), 1, 200000) AS result_json,",
+  "  coalesce(input_json, '') AS input_json,",
+  "  coalesce(resolved_input_json, '') AS resolved_input_json,",
+  "  coalesce(result_json, '') AS result_json,",
   '  input_tokens,',
   '  output_tokens,',
   '  total_tokens',
@@ -211,7 +211,8 @@ const HEATMAP_BUCKET_MINUTES = 15;
 const HEATMAP_BUCKET_MS = HEATMAP_BUCKET_MINUTES * 60 * 1000;
 const HEATMAP_BUCKETS_PER_HOUR = 60 / HEATMAP_BUCKET_MINUTES;
 const HOURLY_AGGREGATE_REFRESH_MS = 30_000;
-const HOURLY_AGGREGATE_PAGE_SIZE = 10_000;
+const HOURLY_AGGREGATE_TRACE_PAGE_SIZE = 250;
+const HOURLY_AGGREGATE_DELTA_PAGE_SIZE = 10_000;
 
 export function createLocalTraceSitesReadBackend(
   options: LocalTraceSitesReadBackendOptions,
@@ -491,7 +492,7 @@ function readHourlyAggregateBuckets(
         maxRowid,
         windowStart,
         windowEnd,
-        HOURLY_AGGREGATE_PAGE_SIZE,
+        HOURLY_AGGREGATE_TRACE_PAGE_SIZE,
       ) as HourlyAggregateTraceRow[];
       for (const row of rows) {
         const startedAt = cleanString(row.started_at);
@@ -526,7 +527,7 @@ function readHourlyAggregateBuckets(
       }
       if (rows.length === 0) break;
       afterRowid = rows[rows.length - 1].rowid;
-      if (rows.length < HOURLY_AGGREGATE_PAGE_SIZE) break;
+      if (rows.length < HOURLY_AGGREGATE_TRACE_PAGE_SIZE) break;
     }
     return { buckets, traceBuckets };
   } finally {
@@ -558,11 +559,11 @@ function readTraceAggregateDelta(
     const statement = db.query(TRACE_AGGREGATE_DELTA_SQL);
     let cursor = afterRowid;
     while (cursor < highWaterRowid) {
-      const page = statement.all(cursor, highWaterRowid, HOURLY_AGGREGATE_PAGE_SIZE) as HourlyAggregateDeltaRow[];
+      const page = statement.all(cursor, highWaterRowid, HOURLY_AGGREGATE_DELTA_PAGE_SIZE) as HourlyAggregateDeltaRow[];
       if (page.length === 0) break;
       rows.push(...page);
       cursor = page[page.length - 1].rowid;
-      if (page.length < HOURLY_AGGREGATE_PAGE_SIZE) break;
+      if (page.length < HOURLY_AGGREGATE_DELTA_PAGE_SIZE) break;
     }
     return { rows, highWaterRowid };
   } finally {
