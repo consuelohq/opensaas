@@ -1,0 +1,8 @@
+{
+  "files": [
+    "node_modules/bun-types/sqlite.d.ts",
+    "packages/os/scripts/lib/trace-database-schema.ts",
+    "packages/os/scripts/lib/trace-sites-local-read-backend.ts"
+  ],
+  "updatedAt": "2026-09-05T00:44:01.830Z"
+}
