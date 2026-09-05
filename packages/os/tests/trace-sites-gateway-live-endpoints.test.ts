@@ -375,6 +375,63 @@ describe('Trace Sites gateway live endpoints', () => {
     expect(refreshedPayload.data?.hourly?.buckets).toHaveLength(1);
   });
 
+  it('prices large aggregate payloads from complete valid JSON', async () => {
+    const dbPath = join(tempDir, 'large-payload-aggregate.db');
+    ensureTraceDatabaseSchema(dbPath);
+    const now = Date.now();
+    const largeResolvedInput = JSON.stringify({
+      padding: 'x'.repeat(210_000),
+      metadata: {
+        model: 'gpt-5.5',
+        usage: { cached_input_tokens: 900 },
+      },
+    });
+    const resultJson = JSON.stringify({ ok: true });
+    const db = openTraceDatabase(dbPath);
+    try {
+      db.query(TRACE_AGGREGATE_INSERT_SQL).run(
+        'row_large_payload',
+        new Date(now - 5 * 60 * 1000).toISOString(),
+        'trc_large_payload',
+        'facade',
+        'workspace.call',
+        'ok',
+        1,
+        'OK',
+        largeResolvedInput,
+        resultJson,
+        0,
+        0,
+        1000,
+      );
+    } finally {
+      db.close();
+    }
+
+    const expectedCost = estimateTraceCost({
+      tool: 'workspace.call',
+      inputTokens: 0,
+      outputTokens: 0,
+      totalTokens: 1000,
+      rawResolvedInputJson: largeResolvedInput,
+      rawResultJson: resultJson,
+    })?.cost ?? 0;
+    const endpoints = createTraceSitesGatewayLiveEndpoints({
+      backend: createLocalTraceSitesReadBackend({ dbPath, now: () => now }),
+      resolveScope: traceGatewayScopeFromHeaders,
+    });
+    const response = await endpoints.handle(request(
+      '/gateway/traces/aggregates?window=8d&bucket=15m&site=trace-burn-intelligence&sourceMode=local-networked&includeRawPayload=false',
+    ));
+    const payload = await response.json() as {
+      data?: { hourly?: { totals?: { calls?: number; tokens?: number; cost?: number } } };
+    };
+
+    expect(response.status).toBe(200);
+    expect(payload.data?.hourly?.totals).toMatchObject({ calls: 1, tokens: 1000 });
+    expect(payload.data?.hourly?.totals?.cost).toBeCloseTo(expectedCost, 12);
+  });
+
   it('preserves 15-minute aggregate boundaries for fractional local-hour rendering', async () => {
     const dbPath = join(tempDir, 'quarter-hour-aggregate.db');
     ensureTraceDatabaseSchema(dbPath);
