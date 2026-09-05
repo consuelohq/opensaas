@@ -251,42 +251,45 @@ describe('Trace Sites gateway live endpoints', () => {
   it('serves a bounded hourly aggregate window without paginating raw trace history', async () => {
     const dbPath = join(tempDir, 'hourly-aggregate.db');
     ensureTraceDatabaseSchema(dbPath);
+    let now = Date.now();
+    const recentTimestamp = new Date(now - 10 * 60 * 1000).toISOString();
     const db = openTraceDatabase(dbPath);
     const cachedUsage = JSON.stringify({ model: 'gpt-5.5', usage: { cached_input_tokens: 8 } });
     const emptyResult = JSON.stringify({ ok: true });
     try {
       const insert = db.query(TRACE_AGGREGATE_INSERT_SQL);
-      const now = Date.now();
-      insert.run('row_recent', new Date(now - 10 * 60 * 1000).toISOString(), 'trc_recent', 'facade', 'workspace.call', 'ok', 1, 'OK', cachedUsage, emptyResult, 10, 20, 30);
+      insert.run('row_recent', recentTimestamp, 'trc_recent', 'facade', 'workspace.call', 'ok', 1, 'OK', cachedUsage, emptyResult, 10, 20, 30);
       insert.run('row_history', new Date(now - 7 * 24 * 60 * 60 * 1000).toISOString(), 'trc_history', 'facade', 'code.call', 'ok', 1, 'OK', '', '', 40, 60, 100);
       insert.run('row_expired', new Date(now - 9 * 24 * 60 * 60 * 1000).toISOString(), 'trc_expired', 'facade', 'tools.search', 'ok', 1, 'OK', '', '', 1, 1, 2);
     } finally {
       db.close();
     }
 
-    const expectedCost =
-      (estimateTraceCost({
+    const recentCost =
+      estimateTraceCost({
         tool: 'workspace.call',
         inputTokens: 10,
         outputTokens: 20,
         totalTokens: 30,
         rawResolvedInputJson: cachedUsage,
         rawResultJson: emptyResult,
-      })?.cost ?? 0) +
-      (estimateTraceCost({
+      })?.cost ?? 0;
+    const historicalCost =
+      estimateTraceCost({
         tool: 'code.call',
         inputTokens: 40,
         outputTokens: 60,
         totalTokens: 100,
-      })?.cost ?? 0);
+      })?.cost ?? 0;
+    const expectedCost = recentCost + historicalCost;
 
+    const backendOptions = { dbPath, now: () => now };
     const endpoints = createTraceSitesGatewayLiveEndpoints({
-      backend: createLocalTraceSitesReadBackend({ dbPath }),
+      backend: createLocalTraceSitesReadBackend(backendOptions),
       resolveScope: traceGatewayScopeFromHeaders,
     });
-    const response = await endpoints.handle(request(
-      '/gateway/traces/aggregates?window=8d&bucket=hour&site=trace-burn-intelligence&sourceMode=local-networked&includeRawPayload=false',
-    ));
+    const aggregatePath = '/gateway/traces/aggregates?window=8d&bucket=hour&site=trace-burn-intelligence&sourceMode=local-networked&includeRawPayload=false';
+    const response = await endpoints.handle(request(aggregatePath));
     const payload = await response.json() as {
       data?: {
         aggregateSource?: string;
@@ -308,6 +311,30 @@ describe('Trace Sites gateway live endpoints', () => {
     expect(payload.data?.hourly?.buckets?.every((bucket) => typeof bucket.startedAt === 'string')).toBe(true);
     expect(JSON.stringify(payload)).not.toContain('rawInputJson');
     expect(JSON.stringify(payload)).not.toContain('result_json');
+
+    const replacementDb = openTraceDatabase(dbPath);
+    try {
+      replacementDb
+        .query(TRACE_AGGREGATE_INSERT_SQL.replace('INSERT INTO', 'INSERT OR REPLACE INTO'))
+        .run('row_history', recentTimestamp, 'trc_history_replaced', 'facade', 'code.call', 'ok', 1, 'OK', '', '', 400, 600, 1000);
+    } finally {
+      replacementDb.close();
+    }
+    now += 31_000;
+
+    const replacementCost = estimateTraceCost({
+      tool: 'code.call',
+      inputTokens: 400,
+      outputTokens: 600,
+      totalTokens: 1000,
+    })?.cost ?? 0;
+    const refreshed = await endpoints.handle(request(aggregatePath));
+    const refreshedPayload = await refreshed.json() as typeof payload;
+
+    expect(refreshed.status).toBe(200);
+    expect(refreshedPayload.data?.hourly?.totals).toMatchObject({ calls: 2, tokens: 1030 });
+    expect(refreshedPayload.data?.hourly?.totals?.cost).toBeCloseTo(recentCost + replacementCost, 12);
+    expect(refreshedPayload.data?.hourly?.buckets).toHaveLength(1);
   });
 
   it('forwards a full-history search query through the authenticated recent route', async () => {

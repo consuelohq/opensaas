@@ -1,0 +1,16 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/invalidate-heatmap-cache-on-replaced-traces",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 2391,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2391",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-invalidate-heatmap-cache-on-replaced-traces",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_2206e7f9777d",
+  "tmuxSession": "opensaas-workspace-agents-invalidate-heatmap-cache-on-replaced-traces-2206e7f9",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-invalidate-heatmap-cache-on-replaced-traces/.task/session.json",
+  "createdAt": "2026-09-05T00:55:24.383Z"
+}
