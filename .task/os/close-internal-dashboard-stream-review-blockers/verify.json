@@ -1,0 +1,418 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/close-internal-dashboard-stream-review-blockers",
+  "base": "origin/stream/os",
+  "headSha": "d037ba7ed287a27fe04971a1ff0e4c830c6ddd91",
+  "changeHash": "d3865a29831346860dfb8d6ca89a89e6517d32afe0b474193072dbd1f6ccfe08",
+  "changedFiles": [
+    "packages/os/cloudflare/os-device-authority/src/routes/google-oauth.ts",
+    "packages/os/cloudflare/os-device-authority/src/routes/web-auth.ts",
+    "packages/os/cloudflare/os-device-authority/src/types.ts",
+    "packages/os/cloudflare/workspace-edge/src/index.ts",
+    "packages/os/docs/install-control-plane.md",
+    "packages/os/tests/internal-dashboard-integration.test.ts",
+    "packages/os/tests/os-universal-login.test.ts"
+  ],
+  "verifiedAt": "2026-09-05T03:53:52.747Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/close-internal-dashboard-stream-review-blockers/current.json",
+        ".task/os/close-internal-dashboard-stream-review-blockers/evidence-log.json",
+        ".task/os/close-internal-dashboard-stream-review-blockers/read-log.json",
+        ".task/os/close-internal-dashboard-stream-review-blockers/session.json",
+        ".task/os/close-internal-dashboard-stream-review-blockers/workpad.md",
+        ".task/tasks/os/close-internal-dashboard-stream-review-blockers.json",
+        "packages/os/cloudflare/os-device-authority/src/routes/google-oauth.ts",
+        "packages/os/cloudflare/os-device-authority/src/routes/web-auth.ts",
+        "packages/os/cloudflare/os-device-authority/src/types.ts",
+        "packages/os/cloudflare/workspace-edge/src/index.ts",
+        "packages/os/docs/install-control-plane.md",
+        "packages/os/tests/internal-dashboard-integration.test.ts",
+        "packages/os/tests/os-universal-login.test.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "os-explore-retrieval-science",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Agent-facing OS Explore retrieval, unified investigation-policy, shadow VOI, and E6 controlled-trial promotion-gate changes must prove hard scope, missing-semantic fallback, honest hypothesis/readiness state, neutral reads, explicit relevance evidence, one shared E4 next-action/edit-readiness control, shadow-only empirical E5 VOI abstention/cost math, fixed-sample paired E6 evidence with exact sign-test and required-node safety gates, hosted embeddings, runtime routing, benchmark metrics, and compact/full output without selecting the historically red package-wide OS suite.",
+          "matchedFiles": [
+            "packages/os/cloudflare/workspace-edge/src/index.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-cloud-first-auth-onboarding",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Cloud-first Consuelo OS login, canonical signup, workspace trial, and provisioning handoff changes must prove the exact browser auth, managed-cloud, installer-lifecycle, launcher, Worker, and syntax contracts without selecting unrelated package-wide OS tests.",
+          "matchedFiles": [
+            "packages/os/cloudflare/os-device-authority/src/routes/web-auth.ts",
+            "packages/os/tests/os-universal-login.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-device-approval-canonical-identity",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Native OS device-approval and canonical-identity changes must prove the exact auth, tenant, and control-plane contracts without selecting unsafe unrelated package-wide OS tests.",
+          "matchedFiles": [
+            "packages/os/cloudflare/os-device-authority/src/routes/google-oauth.ts",
+            "packages/os/tests/internal-dashboard-integration.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-managed-cloud-one-click-provisioning",
+          "critical": true,
+          "exclusive": true,
+          "reason": "One-click managed-cloud control-plane, launcher, provisioning-runner, enrollment, and Worker changes must prove their focused security and lifecycle contracts without selecting the historically red unrelated OS package suite.",
+          "matchedFiles": [
+            "packages/os/cloudflare/os-device-authority/src/types.ts",
+            "packages/os/cloudflare/workspace-edge/src/index.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-github-source-control",
+          "critical": true,
+          "exclusive": true,
+          "reason": "GitHub App source-control onboarding, installation handoff, workspace repository materialization, and Diffs credential brokering must prove their focused security and UX contracts without selecting the historically red unrelated OS package suite.",
+          "matchedFiles": [
+            "packages/os/cloudflare/os-device-authority/src/types.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "OS Explore retrieval science contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/explore-retrieval-policy.test.ts",
+            "tests/explore-retriever-fallback.test.ts",
+            "tests/explore-index-hydration-fallback.test.ts",
+            "tests/explore-bench.test.ts",
+            "tests/explore-output-contract.test.ts",
+            "tests/explore-hypothesis-model.test.ts",
+            "tests/explore-voi-policy.test.ts",
+            "tests/explore-promotion-gate.test.ts",
+            "tests/explore-runtime-routing.test.ts",
+            "tests/semantic-embedding-edge-gateway.test.ts",
+            "tests/semantic-embedding-gateway.test.ts",
+            "tests/semantic-embedding-identity.test.ts",
+            "tools/decision-engine/handler.test.ts"
+          ],
+          "ruleId": "os-explore-retrieval-science",
+          "critical": true
+        },
+        {
+          "name": "OS cloud-first auth onboarding contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/os-universal-login.test.ts",
+            "tests/cloud-first-web-onboarding.test.ts",
+            "tests/managed-cloud-one-click-provisioning.test.ts",
+            "tests/managed-cloud-one-click-runner.test.ts",
+            "tests/managed-cloud-node-enrollment.test.ts",
+            "tests/managed-cloud-node-lifecycle-onboarding.test.ts",
+            "tests/launcher-nodes-control-plane.test.ts",
+            "tests/managed-cloud-pricing.test.ts"
+          ],
+          "ruleId": "os-cloud-first-auth-onboarding",
+          "critical": true
+        },
+        {
+          "name": "OS cloud-first auth onboarding Worker contract",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/os-device-authority-worker.test.ts"
+          ],
+          "ruleId": "os-cloud-first-auth-onboarding",
+          "critical": true
+        },
+        {
+          "name": "OS cloud-first auth onboarding syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "ruleId": "os-cloud-first-auth-onboarding",
+          "critical": true
+        },
+        {
+          "name": "OS canonical device approval contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/canonical-device-identity.test.ts",
+            "tests/install-control-plane.test.ts",
+            "tests/install-control-plane-d1.test.ts",
+            "tests/oauth-device-page-contract.test.ts",
+            "tests/internal-dashboard-integration.test.ts",
+            "tests/native-google-device-approval.test.ts",
+            "tests/os-device-authority-worker.test.ts"
+          ],
+          "ruleId": "os-device-approval-canonical-identity",
+          "critical": true
+        },
+        {
+          "name": "OS one-click managed cloud contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/managed-cloud-one-click-provisioning.test.ts",
+            "tests/managed-cloud-one-click-runner.test.ts",
+            "tests/launcher-nodes-control-plane.test.ts",
+            "tests/settings-site.test.ts",
+            "tests/cloudflare-worker-release-readiness.test.ts",
+            "tests/os-device-authority-architecture.test.ts",
+            "tests/os-device-authority-release-contract.test.ts",
+            "tests/managed-cloud-node-enrollment.test.ts",
+            "tests/managed-cloud-node-enrollment-cli.test.ts",
+            "tests/platform-managed-cloud-node.test.ts",
+            "tests/managed-cloud-pricing.test.ts",
+            "tests/managed-cloud-public-pricing.test.ts",
+            "tests/managed-cloud-node-instance-contract.test.ts",
+            "tests/managed-cloud-node-contract.test.ts"
+          ],
+          "ruleId": "os-managed-cloud-one-click-provisioning",
+          "critical": true
+        },
+        {
+          "name": "OS GitHub source-control contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/github-source-control-authority.test.ts",
+            "tests/source-control-config.test.ts",
+            "tests/settings-hono-routes.test.ts",
+            "tests/settings-site.test.ts",
+            "tests/diffs-hono-routes.test.ts",
+            "tests/settings-sites-gateway-endpoints.test.ts",
+            "tests/os-device-authority-worker.test.ts"
+          ],
+          "ruleId": "os-github-source-control",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "OS Explore retrieval science contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/explore-retrieval-policy.test.ts",
+            "tests/explore-retriever-fallback.test.ts",
+            "tests/explore-index-hydration-fallback.test.ts",
+            "tests/explore-bench.test.ts",
+            "tests/explore-output-contract.test.ts",
+            "tests/explore-hypothesis-model.test.ts",
+            "tests/explore-voi-policy.test.ts",
+            "tests/explore-promotion-gate.test.ts",
+            "tests/explore-runtime-routing.test.ts",
+            "tests/semantic-embedding-edge-gateway.test.ts",
+            "tests/semantic-embedding-gateway.test.ts",
+            "tests/semantic-embedding-identity.test.ts",
+            "tools/decision-engine/handler.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-explore-retrieval-science",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 4609,
+          "outputTail": "entity.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 10\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/semantic-embedding-edge-gateway.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 25\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tools/decision-engine/handler.test.ts \u001b[2m(\u001b[22m\u001b[2m1 test\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/explore-output-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m6 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 7\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/explore-retriever-fallback.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 538\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should return lexical results when semantic embedding is unavailable \u001b[33m 359\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/explore-runtime-routing.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 21\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/explore-bench.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 965\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should reject missing values when a value-taking benchmark CLI flag is last \u001b[33m 664\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/explore-index-hydration-fallback.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 4142\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should stop after the first failed hydration batch and continue with lexical retrieval \u001b[33m 1466\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should bound successful semantic hydration instead of rebuilding the whole index synchronously \u001b[33m 1352\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should mark query-time semantic fallback degraded after successful document hydration \u001b[33m 1322\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m13 passed\u001b[39m\u001b[22m\u001b[90m (13)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m94 passed\u001b[39m\u001b[22m\u001b[90m (94)\u001b[39m\n\u001b[2m   Start at \u001b[22m 23:53:41\n\u001b[2m   Duration \u001b[22m 4.32s\u001b[2m (transform 776ms, setup 204ms, import 1.32s, tests 5.86s, environment 1ms)\u001b[22m\n\n$ vitest run tests/explore-retrieval-policy.test.ts tests/explore-retriever-fallback.test.ts tests/explore-index-hydration-fallback.test.ts tests/explore-bench.test.ts tests/explore-output-contract.test.ts tests/explore-hypothesis-model.test.ts tests/explore-voi-policy.test.ts tests/explore-promotion-gate.test.ts tests/explore-runtime-routing.test.ts tests/semantic-embedding-edge-gateway.test.ts tests/semantic-embedding-gateway.test.ts tests/semantic-embedding-identity.test.ts tools/decision-engine/handler.test.ts\n{\"level\":\"info\",\"tool\":\"explore\",\"branch\":\"\",\"command\":\"workspace explore '{\\\"query\\\":\\\"where is Explore retrieval implemented\\\"}'\",\"implementationCommand\":\"bun run explore -- where is Explore retrieval implemented --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-05T03:53:41.975Z\"}\n{\"level\":\"info\",\"tool\":\"confidenceScore\",\"branch\":\"\",\"command\":\"workspace confidenceScore\",\"implementationCommand\":\"bun run confidence-score -- --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-05T03:53:41.985Z\"}\n{\"level\":\"info\",\"tool\":\"decideNext\",\"branch\":\"\",\"command\":\"workspace decideNext\",\"implementationCommand\":\"bun run decide-next -- --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-05T03:53:41.987Z\"}\n{\"level\":\"info\",\"tool\":\"exploit\",\"branch\":\"\",\"command\":\"workspace exploit\",\"implementationCommand\":\"bun run exploit -- --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-05T03:53:41.989Z\"}\n(node:14066) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+        },
+        {
+          "name": "OS cloud-first auth onboarding contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/os-universal-login.test.ts",
+            "tests/cloud-first-web-onboarding.test.ts",
+            "tests/managed-cloud-one-click-provisioning.test.ts",
+            "tests/managed-cloud-one-click-runner.test.ts",
+            "tests/managed-cloud-node-enrollment.test.ts",
+            "tests/managed-cloud-node-lifecycle-onboarding.test.ts",
+            "tests/launcher-nodes-control-plane.test.ts",
+            "tests/managed-cloud-pricing.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-cloud-first-auth-onboarding",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 928,
+          "outputTail": " tests/managed-cloud-pricing.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 5\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-one-click-provisioning.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 30\u001b[2mms\u001b[22m\u001b[39m\n\u001b[90mstdout\u001b[2m | tests/cloud-first-web-onboarding.test.ts\u001b[2m > \u001b[22m\u001b[2mcloud-first web onboarding\u001b[2m > \u001b[22m\u001b[2mfulfills one paid checkout only after a valid Stripe webhook and is idempotent\n\u001b[22m\u001b[39m{\"event\":\"consuelo.os.checkout\",\"event_id\":\"evt_checkout_1\",\"event_name\":\"checkout_plan_selected\",\"synthetic\":false,\"account_id\":\"user_13f3fb3d7f31a07691f2\",\"plan_id\":\"performance\",\"outcome\":\"started\"}\n\n\u001b[90mstdout\u001b[2m | tests/cloud-first-web-onboarding.test.ts\u001b[2m > \u001b[22m\u001b[2mcloud-first web onboarding\u001b[2m > \u001b[22m\u001b[2mfulfills one paid checkout only after a valid Stripe webhook and is idempotent\n\u001b[22m\u001b[39m{\"event\":\"consuelo.os.checkout\",\"event_id\":\"evt_checkout_2\",\"event_name\":\"checkout_session_created\",\"synthetic\":false,\"account_id\":\"user_13f3fb3d7f31a07691f2\",\"checkout_id\":\"mcc_7a4ce5819ef0a7a830dec55cecfa\",\"stripe_session_id\":\"cs_test_performance\",\"plan_id\":\"performance\",\"pricing_version\":\"cloud-first-onboarding-test\",\"monthly_price_cents\":14000,\"currency\":\"USD\",\"outcome\":\"success\"}\n\n\u001b[90mstdout\u001b[2m | tests/cloud-first-web-onboarding.test.ts\u001b[2m > \u001b[22m\u001b[2mcloud-first web onboarding\u001b[2m > \u001b[22m\u001b[2mfulfills one paid checkout only after a valid Stripe webhook and is idempotent\n\u001b[22m\u001b[39m{\"event\":\"consuelo.os.checkout\",\"event_id\":\"evt_checkout_3\",\"event_name\":\"checkout_completed\",\"synthetic\":false,\"account_id\":\"user_13f3fb3d7f31a07691f2\",\"checkout_id\":\"mcc_7a4ce5819ef0a7a830dec55cecfa\",\"stripe_session_id\":\"cs_test_performance\",\"plan_id\":\"performance\",\"pricing_version\":\"cloud-first-onboarding-test\",\"monthly_price_cents\":14000,\"currency\":\"USD\",\"outcome\":\"success\"}\n\n\u001b[90mstdout\u001b[2m | tests/cloud-first-web-onboarding.test.ts\u001b[2m > \u001b[22m\u001b[2mcloud-first web onboarding\u001b[2m > \u001b[22m\u001b[2mfulfills one paid checkout only after a valid Stripe webhook and is idempotent\n\u001b[22m\u001b[39m{\"event\":\"consuelo.os.checkout\",\"event_id\":\"evt_checkout_4\",\"event_name\":\"checkout_completed\",\"synthetic\":false,\"account_id\":\"user_13f3fb3d7f31a07691f2\",\"checkout_id\":\"mcc_7a4ce5819ef0a7a830dec55cecfa\",\"stripe_session_id\":\"cs_test_performance\",\"plan_id\":\"performance\",\"pricing_version\":\"cloud-first-onboarding-test\",\"monthly_price_cents\":14000,\"currency\":\"USD\",\"outcome\":\"success\"}\n\n \u001b[32m✓\u001b[39m tests/cloud-first-web-onboarding.test.ts \u001b[2m(\u001b[22m\u001b[2m13 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 44\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/launcher-nodes-control-plane.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 32\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-universal-login.test.ts \u001b[2m(\u001b[22m\u001b[2m13 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 46\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-node-lifecycle-onboarding.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 563\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m builds deterministic noninteractive installer args from the cloud descriptor \u001b[33m 559\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-node-enrollment.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 562\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m persists one owner-only node keypair and reuses it across enrollment retries \u001b[33m 540\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-one-click-runner.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m8 passed\u001b[39m\u001b[22m\u001b[90m (8)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m60 passed\u001b[39m\u001b[22m\u001b[90m (60)\u001b[39m\n\u001b[2m   Start at \u001b[22m 23:53:45\n\u001b[2m   Duration \u001b[22m 719ms\u001b[2m (transform 2.44s, setup 109ms, import 2.56s, tests 1.29s, environment 0ms)\u001b[22m\n\n$ vitest run tests/os-universal-login.test.ts tests/cloud-first-web-onboarding.test.ts tests/managed-cloud-one-click-provisioning.test.ts tests/managed-cloud-one-click-runner.test.ts tests/managed-cloud-node-enrollment.test.ts tests/managed-cloud-node-lifecycle-onboarding.test.ts tests/launcher-nodes-control-plane.test.ts tests/managed-cloud-pricing.test.ts\n"
+        },
+        {
+          "name": "OS cloud-first auth onboarding Worker contract",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/os-device-authority-worker.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-cloud-first-auth-onboarding",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 732,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-close-internal-dashboard-stream-review-blockers\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/os-device-authority-worker.test.ts \u001b[2m(\u001b[22m\u001b[2m33 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 67\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m33 passed\u001b[39m\u001b[22m\u001b[90m (33)\u001b[39m\n\u001b[2m   Start at \u001b[22m 23:53:46\n\u001b[2m   Duration \u001b[22m 431ms\u001b[2m (transform 257ms, setup 0ms, import 302ms, tests 67ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS cloud-first auth onboarding syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "cwd": ".",
+          "ruleId": "os-cloud-first-auth-onboarding",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 2001,
+          "outputTail": "workspace script syntax checks passed\n"
+        },
+        {
+          "name": "OS canonical device approval contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/canonical-device-identity.test.ts",
+            "tests/install-control-plane.test.ts",
+            "tests/install-control-plane-d1.test.ts",
+            "tests/oauth-device-page-contract.test.ts",
+            "tests/internal-dashboard-integration.test.ts",
+            "tests/native-google-device-approval.test.ts",
+            "tests/os-device-authority-worker.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-device-approval-canonical-identity",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 606,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-close-internal-dashboard-stream-review-blockers/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/oauth-device-page-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/install-control-plane-d1.test.ts \u001b[2m(\u001b[22m\u001b[2m6 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 11\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/install-control-plane.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 14\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/canonical-device-identity.test.ts \u001b[2m(\u001b[22m\u001b[2m14 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 10\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/native-google-device-approval.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 22\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-worker.test.ts \u001b[2m(\u001b[22m\u001b[2m33 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 77\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/internal-dashboard-integration.test.ts \u001b[2m(\u001b[22m\u001b[2m11 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 60\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m7 passed\u001b[39m\u001b[22m\u001b[90m (7)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m80 passed\u001b[39m\u001b[22m\u001b[90m (80)\u001b[39m\n\u001b[2m   Start at \u001b[22m 23:53:49\n\u001b[2m   Duration \u001b[22m 455ms\u001b[2m (transform 821ms, setup 64ms, import 1.06s, tests 196ms, environment 0ms)\u001b[22m\n\n$ vitest run tests/canonical-device-identity.test.ts tests/install-control-plane.test.ts \"tests/install-control-plane-d1.test.ts\" tests/oauth-device-page-contract.test.ts tests/internal-dashboard-integration.test.ts tests/native-google-device-approval.test.ts tests/os-device-authority-worker.test.ts\n"
+        },
+        {
+          "name": "OS one-click managed cloud contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/managed-cloud-one-click-provisioning.test.ts",
+            "tests/managed-cloud-one-click-runner.test.ts",
+            "tests/launcher-nodes-control-plane.test.ts",
+            "tests/settings-site.test.ts",
+            "tests/cloudflare-worker-release-readiness.test.ts",
+            "tests/os-device-authority-architecture.test.ts",
+            "tests/os-device-authority-release-contract.test.ts",
+            "tests/managed-cloud-node-enrollment.test.ts",
+            "tests/managed-cloud-node-enrollment-cli.test.ts",
+            "tests/platform-managed-cloud-node.test.ts",
+            "tests/managed-cloud-pricing.test.ts",
+            "tests/managed-cloud-public-pricing.test.ts",
+            "tests/managed-cloud-node-instance-contract.test.ts",
+            "tests/managed-cloud-node-contract.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-managed-cloud-one-click-provisioning",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1220,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-close-internal-dashboard-stream-review-blockers/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/managed-cloud-node-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 29\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-node-instance-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 33\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/platform-managed-cloud-node.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 28\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-public-pricing.test.ts \u001b[2m(\u001b[22m\u001b[2m6 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 19\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/cloudflare-worker-release-readiness.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 4\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-pricing.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 4\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-one-click-provisioning.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 35\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-architecture.test.ts \u001b[2m(\u001b[22m\u001b[2m26 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 34\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-node-enrollment-cli.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 541\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m parses explicit home, onboarding, and status paths \u001b[33m 537\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-node-enrollment.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 549\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m persists one owner-only node keypair and reuses it across enrollment retries \u001b[33m 534\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/launcher-nodes-control-plane.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 37\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-one-click-runner.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/settings-site.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 153\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-release-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m18 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 444\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m14 passed\u001b[39m\u001b[22m\u001b[90m (14)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m108 passed\u001b[39m\u001b[22m\u001b[90m (108)\u001b[39m\n\u001b[2m   Start at \u001b[22m 23:53:49\n\u001b[2m   Duration \u001b[22m 1.05s\u001b[2m (transform 2.54s, setup 137ms, import 2.90s, tests 1.91s, environment 1ms)\u001b[22m\n\n$ vitest run tests/managed-cloud-one-click-provisioning.test.ts tests/managed-cloud-one-click-runner.test.ts tests/launcher-nodes-control-plane.test.ts tests/settings-site.test.ts tests/cloudflare-worker-release-readiness.test.ts tests/os-device-authority-architecture.test.ts tests/os-device-authority-release-contract.test.ts tests/managed-cloud-node-enrollment.test.ts tests/managed-cloud-node-enrollment-cli.test.ts tests/platform-managed-cloud-node.test.ts tests/managed-cloud-pricing.test.ts tests/managed-cloud-public-pricing.test.ts tests/managed-cloud-node-instance-contract.test.ts tests/managed-cloud-node-contract.test.ts\n"
+        },
+        {
+          "name": "OS GitHub source-control contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/github-source-control-authority.test.ts",
+            "tests/source-control-config.test.ts",
+            "tests/settings-hono-routes.test.ts",
+            "tests/settings-site.test.ts",
+            "tests/diffs-hono-routes.test.ts",
+            "tests/settings-sites-gateway-endpoints.test.ts",
+            "tests/os-device-authority-worker.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-github-source-control",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1593,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-close-internal-dashboard-stream-review-blockers/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/source-control-config.test.ts \u001b[2m(\u001b[22m\u001b[2m7 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 57\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-worker.test.ts \u001b[2m(\u001b[22m\u001b[2m33 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 133\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/settings-site.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 361\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/github-source-control-authority.test.ts \u001b[2m(\u001b[22m\u001b[2m10 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 427\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/settings-sites-gateway-endpoints.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 388\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/diffs-hono-routes.test.ts \u001b[2m(\u001b[22m\u001b[2m10 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 111\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/settings-hono-routes.test.ts \u001b[2m(\u001b[22m\u001b[2m14 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 361\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m7 passed\u001b[39m\u001b[22m\u001b[90m (7)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m90 passed\u001b[39m\u001b[22m\u001b[90m (90)\u001b[39m\n\u001b[2m   Start at \u001b[22m 23:53:51\n\u001b[2m   Duration \u001b[22m 1.43s\u001b[2m (transform 2.53s, setup 80ms, import 3.92s, tests 1.84s, environment 0ms)\u001b[22m\n\n$ vitest run tests/github-source-control-authority.test.ts tests/source-control-config.test.ts tests/settings-hono-routes.test.ts tests/settings-site.test.ts tests/diffs-hono-routes.test.ts tests/settings-sites-gateway-endpoints.test.ts tests/os-device-authority-worker.test.ts\n(node:15318) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n(node:15315) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

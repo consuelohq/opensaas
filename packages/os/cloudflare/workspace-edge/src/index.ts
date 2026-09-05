@@ -255,6 +255,9 @@ function workspaceSessionRequiredResponse(request: Request): Response {
     );
     login.searchParams.set('purpose', 'web');
     login.searchParams.set('return_to', `${url.pathname}${url.search}`);
+    if (url.hostname.toLowerCase() === INSTALL_INTERNAL_DASHBOARD_HOST) {
+      login.searchParams.set('target_host', INSTALL_INTERNAL_DASHBOARD_HOST);
+    }
     return new Response(null, {
       status: 302,
       headers: {
@@ -359,7 +362,9 @@ async function startPrivateSiteHandoff(input: {
       if (sessionValidation.status !== 204) {
         return sessionValidation.status === 401
           ? workspaceSessionRequiredResponse(input.request)
-          : closedAuthResponse();
+          : sessionValidation.status === 403
+            ? forbiddenInternalDashboardResponse()
+            : closedAuthResponse();
       }
       const destination = new URL(
         normalizeAuthReturnPath(incoming.searchParams.get('return_to')),
@@ -715,9 +720,22 @@ export function createWorkspaceEdgeHandler(
           internalDashboardAccessValues.length
         ? 'configured'
         : 'partial';
+  const authorizeInternalWorkspaceSession = async (request: Request): Promise<boolean> => {
+    try {
+      const validation = await validateWorkspaceBrowserSession({
+        request,
+        stub,
+        internalAuthSecret: env.WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET,
+        workspaceHost: INSTALL_INTERNAL_DASHBOARD_HOST,
+      });
+      return validation?.status === 204;
+    } catch {
+      return false;
+    }
+  };
   const authorizeInternalDashboard = options.authorizeInternalDashboard ??
     (internalDashboardAccessState === 'disabled'
-      ? async () => true
+      ? authorizeInternalWorkspaceSession
       : createCloudflareAccessDashboardAuthorizer({
           teamDomain: env.OS_INTERNAL_DASHBOARD_ACCESS_TEAM_DOMAIN ?? '',
           audience: env.OS_INTERNAL_DASHBOARD_ACCESS_AUD ?? '',
@@ -828,7 +846,9 @@ export function createWorkspaceEdgeHandler(
           if (sessionValidation.status !== 204) {
             return sessionValidation.status === 401
               ? workspaceSessionRequiredResponse(request)
-              : closedAuthResponse();
+              : sessionValidation.status === 403
+                ? forbiddenInternalDashboardResponse()
+                : closedAuthResponse();
           }
           if (
             url.pathname === INSTALL_DASHBOARD_API_PREFIX ||

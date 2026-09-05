@@ -137,7 +137,7 @@ The browser receives only the redacted JSON attachment. A launcher link, guessed
 
 ### Operator authorization
 
-The primary production boundary is the first-party Consuelo workspace browser session for the exact `internal.consuelohq.com` host. Dedicated dashboard routes (`/users`, `/installs`, `/devices`, `/errors`, dashboard assets, and dashboard APIs) are intercepted only on that host and are served only after Device Authority validates the workspace session. The shared `/` route remains the normal internal workspace Home route.
+The primary production boundary is the first-party Consuelo workspace browser session for the exact `internal.consuelohq.com` host, backed by an active canonical membership for that internal workspace. Dedicated dashboard routes (`/users`, `/installs`, `/devices`, `/errors`, dashboard assets, and dashboard APIs) are intercepted only on that host and are served only after Device Authority validates both the session and that membership. With Cloudflare Access disabled, the shared `/` route remains the normal internal workspace Home route. When all three Access settings are configured, `/` is also intercepted by the private dashboard and is subject to the same workspace-session and Access operator gates.
 
 Cloudflare Access remains an optional defense-in-depth operator gate. When all three Access settings are provided, the worker also verifies the `cf-access-jwt-assertion` JWT:
 
@@ -157,7 +157,7 @@ OS_INTERNAL_DASHBOARD_ACCESS_AUD
 OS_INTERNAL_DASHBOARD_ALLOWED_EMAILS
 ```
 
-If none of these Access settings are present, Workspace Edge uses the validated internal workspace session as the dashboard authorization boundary. If some but not all are present, dashboard requests fail closed rather than silently weakening a partially configured Access policy.
+If none of these Access settings are present, Workspace Edge uses the validated active internal-workspace membership as the dashboard authorization boundary. If some but not all are present, dashboard requests fail closed rather than silently weakening a partially configured Access policy.
 
 ## Canonical user directory hydration
 
