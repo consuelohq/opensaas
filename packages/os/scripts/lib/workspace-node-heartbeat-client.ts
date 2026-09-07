@@ -56,10 +56,11 @@ export type WorkspaceNodeHeartbeatClient = {
 
 export class WorkspaceNodeHeartbeatRequestError extends Error {
   readonly status?: number;
+  readonly code?: string;
 
   constructor(
     message: string,
-    options: { cause?: unknown; status?: number } = {},
+    options: { cause?: unknown; status?: number; code?: string } = {},
   ) {
     super(
       message,
@@ -67,6 +68,7 @@ export class WorkspaceNodeHeartbeatRequestError extends Error {
     );
     this.name = 'WorkspaceNodeHeartbeatRequestError';
     this.status = options.status;
+    this.code = options.code;
   }
 }
 
@@ -238,6 +240,36 @@ function safeHeartbeatResult(payload: unknown): WorkspaceNodeHeartbeatResult {
   };
 }
 
+async function readHeartbeatErrorBody(response: Response): Promise<unknown> {
+  const reader = response.body?.getReader();
+  if (!reader) return undefined;
+  let timeout: ReturnType<typeof setTimeout> | undefined;
+  const readBody = async (): Promise<unknown> => {
+    const decoder = new TextDecoder();
+    let text = '';
+    let bytes = 0;
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) return JSON.parse(text + decoder.decode()) as unknown;
+      bytes += value.byteLength;
+      if (bytes > 16_384) return undefined;
+      text += decoder.decode(value, { stream: true });
+    }
+  };
+  try {
+    return await Promise.race([
+      readBody(),
+      new Promise<undefined>((resolve) => {
+        timeout = setTimeout(() => resolve(undefined), 1_000);
+      }),
+    ]);
+  } finally {
+    clearTimeout(timeout);
+    // Diagnostic bodies must not hold heartbeat reporting open or wait on cancellation.
+    void reader.cancel().catch(() => {});
+  }
+}
+
 export function createWorkspaceNodeHeartbeatClient(input: {
   config: WorkspaceNodeHeartbeatConfig;
   agents?: readonly AgentName[];
@@ -303,9 +335,27 @@ export function createWorkspaceNodeHeartbeatClient(input: {
         );
       }
       if (!response.ok) {
+        let code: string | undefined;
+        try {
+          const body = await readHeartbeatErrorBody(response);
+          const error = body && typeof body === 'object' && 'error' in body
+            ? body.error
+            : undefined;
+          const candidate = error && typeof error === 'object' && 'code' in error
+            ? error.code
+            : undefined;
+          // Only stable public codes may reach local diagnostics; never echo provider bodies.
+          if (
+            candidate === 'WORKSPACE_ROUTE_QUOTA_EXCEEDED' ||
+            candidate === 'WORKSPACE_ROUTE_RECONCILIATION_FAILED' ||
+            candidate === 'WORKSPACE_ROUTE_NOT_READY'
+          ) code = candidate;
+        } catch {
+          // Proxy failures may return HTML instead of the authority JSON envelope.
+        }
         throw new WorkspaceNodeHeartbeatRequestError(
-          `workspace node heartbeat failed with HTTP ${response.status}`,
-          { status: response.status },
+          `workspace node heartbeat failed with HTTP ${response.status}${code ? ': ' + code : ''}`,
+          { status: response.status, code },
         );
       }
       let body: unknown;
