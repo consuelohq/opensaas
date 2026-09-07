@@ -21,9 +21,9 @@ started: 2026-09-07
 
 ## files changed
 
+- `packages/os/scripts/lib/workspace-node-heartbeat-client.ts`
 - `packages/os/tests/workspace-node-heartbeat-client.test.ts`
-- `packages/os/tests/workspace-node-registry-routing.test.ts`
-- `packages/os/tests/workspace-route-heartbeat-write-budget.test.ts`
+
 
 ## key decisions
 
@@ -53,6 +53,7 @@ bun run task:finish
 
 ## workspace-owned: files read
 
+- `.agents/skills/monitor-ci/SKILL.md`
 - `.agents/skills/nx-run-tasks/SKILL.md`
 - `.github/workflows/consuelo-os-runtime-publish.yaml`
 - `CODING-STANDARDS.md`
@@ -118,9 +119,17 @@ Inspect current readiness/authenticated probes and authority failure detail, cor
 
 ## workspace-owned: files changed
 
+- `packages/os/cloudflare/os-device-authority/src/routes/workspace-nodes.ts`
+- `packages/os/scripts/lib/workspace-cloudflare-d1-route-registry.ts`
+- `packages/os/scripts/lib/workspace-node-heartbeat-client.ts`
+- `packages/os/scripts/workspace-node-heartbeat.ts`
 - `packages/os/tests/workspace-node-heartbeat-client.test.ts`
+- `packages/os/tests/workspace-node-heartbeat-script.test.ts`
 - `packages/os/tests/workspace-node-registry-routing.test.ts`
 - `packages/os/tests/workspace-route-heartbeat-write-budget.test.ts`
+- `packages/workspace/test-selection.registry.json`
+- `packages/workspace/test-selection.rules.json`
+- `packages/workspace/tests/test-selection.test.js`
 
 ## workspace-owned: activity log
 
@@ -131,6 +140,7 @@ Inspect current readiness/authenticated probes and authority failure detail, cor
 - 2026-09-07 18:07:50 fs.write: `packages/os/tests/workspace-node-heartbeat-client.test.ts`
 - 2026-09-07 18:10:06 fs.write: `.task/os/repair-recurring-chatgpt-mcp-connection-failures/workpad.md`
 - 2026-09-07 18:20:09 fs.write: `.task/os/repair-recurring-chatgpt-mcp-connection-failures/workpad.md`
+- 2026-09-07 18:33:35 fs.write: `.task/os/repair-recurring-chatgpt-mcp-connection-failures/workpad.md`
 
 ## Confirmed D1 write exhaustion and focused regression contract
 
@@ -161,6 +171,7 @@ Candidate repair: preserve node array order, skip identical route records, condi
 - 2026-09-07 18:11:49 `verify`: failed — COMMAND_FAILED
 - 2026-09-07 18:18:08 `verify`: failed — COMMAND_FAILED
 - 2026-09-07 18:19:50 `verify`: passed — OK
+- 2026-09-07 18:34:03 `verify`: passed — OK
 
 ## Implementation and validation
 
@@ -191,3 +202,13 @@ Final verify against origin/main PASSED, publishValid=true, full mode, trace trc
 Cloudflare whoami confirms operator auth; authority deployment dry-run passed (trc_e1bb3a6449c1). Live authority has newer default snapshot variables and managed-cloud pricing variables absent from source config; deployment must preserve those remote variables. Prior deployed authority version: 539d132b-db11-4a72-a156-4c2d24b90e04. No schema migration required.
 
 - 2026-09-07 18:20:09 append: `.task/os/repair-recurring-chatgpt-mcp-connection-failures/workpad.md`
+
+- 2026-09-07 18:32:42 apply-patch: `packages/os/tests/workspace-node-heartbeat-client.test.ts`
+- 2026-09-07 18:33:15 apply-patch: `packages/os/scripts/lib/workspace-node-heartbeat-client.ts`
+## Review follow-up and free-tier recovery decision
+
+Ko chose to remain on free and test after the Sep 8 00:00 UTC (Sep 7 8 p.m. Eastern) reset. App automation creation was blocked by required approval with this session's never-approval policy; no scheduled check exists.
+
+PR 2402 CI passed after one existing installer timeout rerun; Codex review completed without findings. CodeRabbit identified that new non-OK JSON diagnostics could wait indefinitely for a proxy response body. Validated and fixed before merge: error-body reads capped at one second and 16 KiB, stream cancelled without waiting on cancellation. Exact allowlist tests now include NOT_READY and reject unknown WORKSPACE_ROUTE codes. Non-terminating 503 regression RED trc_2fca7e0fd6d8; GREEN 29 tests/90 assertions trc_4025ec91629a. The previous release process exited; PR remained OPEN. Reverify and push this review fix before resuming release.
+
+- 2026-09-07 18:33:35 append: `.task/os/repair-recurring-chatgpt-mcp-connection-failures/workpad.md`

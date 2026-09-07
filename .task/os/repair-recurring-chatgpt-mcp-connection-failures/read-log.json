@@ -1,5 +1,6 @@
 {
   "files": [
+    ".agents/skills/monitor-ci/SKILL.md",
     ".github/workflows/consuelo-os-runtime-publish.yaml",
     ".task/os/repair-recurring-chatgpt-mcp-connection-failures/verify.json",
     ".task/os/repair-recurring-chatgpt-mcp-connection-failures/workpad.md",
@@ -8,11 +9,13 @@
     "packages/os/AGENTS.md",
     "packages/os/cloudflare/os-device-authority/src/routes/workspace-nodes.ts",
     "packages/os/cloudflare/os-device-authority/src/services/connectors.ts",
+    "packages/os/cloudflare/os-device-authority/wrangler.toml",
     "packages/os/project.json",
     "packages/os/scripts/deploy-cloudflare-worker.ts",
     "packages/os/scripts/lib/cloudflare-worker-release-readiness.ts",
     "packages/os/scripts/lib/verify-run-state.js",
     "packages/os/scripts/lib/workspace-cloudflare-d1-route-registry.ts",
+    "packages/os/scripts/lib/workspace-node-heartbeat-client.ts",
     "packages/os/scripts/release.ts",
     "packages/os/scripts/verify.js",
     "packages/os/scripts/verify.ts",
@@ -28,5 +31,5 @@
     "packages/workspace/test-selection.rules.json",
     "packages/workspace/tests/test-selection.test.js"
   ],
-  "updatedAt": "2026-09-07T18:18:21.878Z"
+  "updatedAt": "2026-09-07T18:32:03.209Z"
 }

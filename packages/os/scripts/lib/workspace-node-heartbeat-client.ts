@@ -240,6 +240,36 @@ function safeHeartbeatResult(payload: unknown): WorkspaceNodeHeartbeatResult {
   };
 }
 
+async function readHeartbeatErrorBody(response: Response): Promise<unknown> {
+  const reader = response.body?.getReader();
+  if (!reader) return undefined;
+  let timeout: ReturnType<typeof setTimeout> | undefined;
+  const readBody = async (): Promise<unknown> => {
+    const decoder = new TextDecoder();
+    let text = '';
+    let bytes = 0;
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) return JSON.parse(text + decoder.decode()) as unknown;
+      bytes += value.byteLength;
+      if (bytes > 16_384) return undefined;
+      text += decoder.decode(value, { stream: true });
+    }
+  };
+  try {
+    return await Promise.race([
+      readBody(),
+      new Promise<undefined>((resolve) => {
+        timeout = setTimeout(() => resolve(undefined), 1_000);
+      }),
+    ]);
+  } finally {
+    clearTimeout(timeout);
+    // Diagnostic bodies must not hold heartbeat reporting open or wait on cancellation.
+    void reader.cancel().catch(() => {});
+  }
+}
+
 export function createWorkspaceNodeHeartbeatClient(input: {
   config: WorkspaceNodeHeartbeatConfig;
   agents?: readonly AgentName[];
@@ -307,7 +337,7 @@ export function createWorkspaceNodeHeartbeatClient(input: {
       if (!response.ok) {
         let code: string | undefined;
         try {
-          const body: unknown = await response.json();
+          const body = await readHeartbeatErrorBody(response);
           const error = body && typeof body === 'object' && 'error' in body
             ? body.error
             : undefined;
