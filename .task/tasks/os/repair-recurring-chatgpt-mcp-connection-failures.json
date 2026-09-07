@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/repair-recurring-chatgpt-mcp-connection-failures",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2401,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2401",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-repair-recurring-chatgpt-mcp-connection-failures",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_06af78a05494",
+  "tmuxSession": "opensaas-os-repair-recurring-chatgpt-mcp-connection-failures-06af78a0",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-repair-recurring-chatgpt-mcp-connection-failures/.task/session.json",
+  "createdAt": "2026-09-07T17:44:55.403Z"
+}

@@ -56,10 +56,11 @@ export type WorkspaceNodeHeartbeatClient = {
 
 export class WorkspaceNodeHeartbeatRequestError extends Error {
   readonly status?: number;
+  readonly code?: string;
 
   constructor(
     message: string,
-    options: { cause?: unknown; status?: number } = {},
+    options: { cause?: unknown; status?: number; code?: string } = {},
   ) {
     super(
       message,
@@ -67,6 +68,7 @@ export class WorkspaceNodeHeartbeatRequestError extends Error {
     );
     this.name = 'WorkspaceNodeHeartbeatRequestError';
     this.status = options.status;
+    this.code = options.code;
   }
 }
 
@@ -303,9 +305,27 @@ export function createWorkspaceNodeHeartbeatClient(input: {
         );
       }
       if (!response.ok) {
+        let code: string | undefined;
+        try {
+          const body: unknown = await response.json();
+          const error = body && typeof body === 'object' && 'error' in body
+            ? body.error
+            : undefined;
+          const candidate = error && typeof error === 'object' && 'code' in error
+            ? error.code
+            : undefined;
+          // Only stable public codes may reach local diagnostics; never echo provider bodies.
+          if (
+            candidate === 'WORKSPACE_ROUTE_QUOTA_EXCEEDED' ||
+            candidate === 'WORKSPACE_ROUTE_RECONCILIATION_FAILED' ||
+            candidate === 'WORKSPACE_ROUTE_NOT_READY'
+          ) code = candidate;
+        } catch {
+          // Proxy failures may return HTML instead of the authority JSON envelope.
+        }
         throw new WorkspaceNodeHeartbeatRequestError(
-          `workspace node heartbeat failed with HTTP ${response.status}`,
-          { status: response.status },
+          `workspace node heartbeat failed with HTTP ${response.status}${code ? ': ' + code : ''}`,
+          { status: response.status, code },
         );
       }
       let body: unknown;

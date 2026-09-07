@@ -384,6 +384,7 @@ describe('workspace node heartbeat script', () => {
         routeReady: true,
         mcpReady: true,
         authorityReady: false,
+        authorityError: { status: 503, code: 'WORKSPACE_ROUTE_RECONCILIATION_FAILED' },
       });
     } finally {
       fs.rmSync(home, { recursive: true, force: true });

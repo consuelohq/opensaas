@@ -392,6 +392,10 @@ export async function sendWorkspaceNodeHeartbeatFromConfig(
           routeReady: true,
           mcpReady: true,
           authorityReady: false,
+          authorityError: {
+            ...(error.status === undefined ? {} : { status: error.status }),
+            ...(error.code === undefined ? {} : { code: error.code }),
+          },
         };
       }
     }
@@ -432,6 +436,9 @@ async function main(): Promise<void> {
       ...('mcpReady' in result ? { mcpReady: result.mcpReady } : {}),
       ...('authorityReady' in result
         ? { authorityReady: result.authorityReady }
+        : {}),
+      ...('authorityError' in result
+        ? { authorityError: result.authorityError }
         : {}),
       ...('skipped' in result && result.skipped
         ? { skipped: true, reason: result.reason }

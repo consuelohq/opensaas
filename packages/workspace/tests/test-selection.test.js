@@ -810,6 +810,8 @@ describe('test selection registry', () => {
       'packages/os/tests/lifecycle-engine.test.ts',
       '--changed-file',
       'packages/os/tests/workspace-node-registry-routing.test.ts',
+      '--changed-file',
+      'packages/os/tests/workspace-route-heartbeat-write-budget.test.ts',
       '--json',
     ]);
     const data = json(result);
@@ -826,6 +828,8 @@ describe('test selection registry', () => {
         'OS hosted-site lifecycle and node routing contracts',
       ]),
     );
+    expect(data.selectedSuites.flatMap((suite) => suite.command))
+      .toContain('packages/os/tests/workspace-route-heartbeat-write-budget.test.ts');
   });
 
   it('uses the frozen OS Bun lock contract instead of the broad OS package suite', () => {
