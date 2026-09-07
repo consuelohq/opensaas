@@ -287,3 +287,26 @@ describe('workspace node heartbeat client', () => {
     await expect(client.send()).rejects.not.toThrow(deviceKeyPair.signingKeyJwk);
   });
 });
+
+describe('workspace heartbeat error diagnostics', () => {
+  it.each(['WORKSPACE_ROUTE_QUOTA_EXCEEDED', 'WORKSPACE_ROUTE_RECONCILIATION_FAILED', 'Bearer unsafe-provider-secret'])(
+    'should expose only recognized authority error codes: %s', async (code) => {
+      const keys = generateWorkspaceDeviceKeyPair();
+      const client = createWorkspaceNodeHeartbeatClient({
+        config: {
+          ...keys, authorityOrigin: 'https://os.consuelohq.com',
+          workspaceId: 'workspace_test', nodeId: 'node_test',
+          connectorStatus: 'connected', capabilities: ['mcp'],
+        },
+        fetchImpl: async () => Response.json({
+          error: { code, message: 'Bearer unsafe-provider-secret' },
+        }, { status: 503 }),
+      });
+      await expect(client.send()).rejects.toMatchObject({
+        status: 503,
+        code: code.startsWith('WORKSPACE_ROUTE_') ? code : undefined,
+      });
+      await expect(client.send()).rejects.not.toThrow('unsafe-provider-secret');
+    },
+  );
+});

@@ -4,6 +4,9 @@ import type {
   TraceSitesGatewayCachedAggregate,
   TraceSitesGatewayHistoryPage,
   TraceSitesGatewayHistoryRow,
+  TraceSitesGatewayHourlyAggregate,
+  TraceSitesGatewayHourlyAggregateBucket,
+  TraceSitesGatewayHourlyAggregateInput,
   TraceSitesGatewayReadBackendAdapter,
   TraceSitesGatewayReadBackendInput,
   TraceSitesGatewayRecentEvents,
@@ -28,6 +31,7 @@ export type LocalTraceSitesReadBackendOptions = {
   cachedCursor?: string;
   localRelayOnline?: boolean;
   cloudRunnerSaturated?: boolean;
+  now?: () => number;
 };
 
 type TraceRow = {
@@ -60,6 +64,39 @@ type TraceRow = {
   input_tokens?: number | null;
   output_tokens?: number | null;
   total_tokens?: number | null;
+};
+
+type HourlyAggregateTraceRow = {
+  rowid: number;
+  id?: string | null;
+  started_at?: string | null;
+  tool?: string | null;
+  input_json?: string | null;
+  resolved_input_json?: string | null;
+  result_json?: string | null;
+  input_tokens?: number | null;
+  output_tokens?: number | null;
+  total_tokens?: number | null;
+};
+
+type HourlyAggregateDeltaRow = {
+  rowid: number;
+  id?: string | null;
+  ts?: string | null;
+};
+
+type HourlyAggregateBucketRead = {
+  buckets: Map<string, TraceSitesGatewayHourlyAggregateBucket>;
+  traceBuckets: Map<string, number>;
+};
+
+type HourlyAggregateCache = {
+  hours: number;
+  currentBucketStartMs: number;
+  refreshedAtMs: number;
+  buckets: Map<string, TraceSitesGatewayHourlyAggregateBucket>;
+  traceBuckets: Map<string, number>;
+  lastRowid: number;
 };
 
 const TRACE_HISTORY_PAGE_SQL = [
@@ -134,10 +171,54 @@ const RECENT_TRACE_EVENTS_SQL = [
   'LIMIT ?;',
 ].join('\n');
 
+const TRACE_HOURLY_AGGREGATE_ROWS_SQL = [
+  'SELECT',
+  '  rowid,',
+  '  id,',
+  "  substr(ts, 1, 14) || CASE",
+  "    WHEN substr(ts, 15, 2) < '15' THEN '00'",
+  "    WHEN substr(ts, 15, 2) < '30' THEN '15'",
+  "    WHEN substr(ts, 15, 2) < '45' THEN '30'",
+  "    ELSE '45'",
+  "  END || ':00.000Z' AS started_at,",
+  '  tool,',
+  "  coalesce(input_json, '') AS input_json,",
+  "  coalesce(resolved_input_json, '') AS resolved_input_json,",
+  "  coalesce(result_json, '') AS result_json,",
+  '  input_tokens,',
+  '  output_tokens,',
+  '  total_tokens',
+  'FROM tool_traces',
+  'WHERE rowid > ? AND rowid <= ? AND ts >= ? AND ts < ?',
+  'ORDER BY rowid ASC',
+  'LIMIT ?;',
+].join('\n');
+
+const TRACE_AGGREGATE_HIGH_WATER_SQL = [
+  'SELECT coalesce(max(rowid), 0) AS rowid',
+  'FROM tool_traces;',
+].join('\n');
+
+const TRACE_AGGREGATE_DELTA_SQL = [
+  'SELECT rowid, id, ts',
+  'FROM tool_traces',
+  'WHERE rowid > ? AND rowid <= ?',
+  'ORDER BY rowid ASC',
+  'LIMIT ?;',
+].join('\n');
+
+const HEATMAP_BUCKET_MINUTES = 15;
+const HEATMAP_BUCKET_MS = HEATMAP_BUCKET_MINUTES * 60 * 1000;
+const HEATMAP_BUCKETS_PER_HOUR = 60 / HEATMAP_BUCKET_MINUTES;
+const HOURLY_AGGREGATE_REFRESH_MS = 30_000;
+const HOURLY_AGGREGATE_TRACE_PAGE_SIZE = 250;
+const HOURLY_AGGREGATE_DELTA_PAGE_SIZE = 10_000;
+
 export function createLocalTraceSitesReadBackend(
   options: LocalTraceSitesReadBackendOptions,
 ): TraceSitesGatewayReadBackendAdapter {
   let schemaReady = false;
+  let hourlyAggregateCache: HourlyAggregateCache | null = null;
   const prepareExistingDatabaseForRead = (): void => {
     if (schemaReady || !existsSync(options.dbPath)) return;
     ensureTraceDatabaseSchema(options.dbPath);
@@ -147,7 +228,7 @@ export function createLocalTraceSitesReadBackend(
     resolveHealth() {
       return {
         traceStoreAvailable: existsSync(options.dbPath),
-        aggregateCacheAvailable: Boolean(options.cachedSummary),
+        aggregateCacheAvailable: Boolean(options.cachedSummary || hourlyAggregateCache),
         localRelayOnline: options.localRelayOnline ?? true,
         cloudRunnerSaturated: options.cloudRunnerSaturated ?? false,
       };
@@ -163,6 +244,17 @@ export function createLocalTraceSitesReadBackend(
     readNewerPage(input) {
       prepareExistingDatabaseForRead();
       return readNewerTracePage(options.dbPath, input);
+    },
+    readHourlyAggregate(input) {
+      prepareExistingDatabaseForRead();
+      const result = readHourlyTraceAggregate(
+        options.dbPath,
+        input,
+        hourlyAggregateCache,
+        options.now?.() ?? Date.now(),
+      );
+      hourlyAggregateCache = result.cache;
+      return result.aggregate;
     },
     readCachedAggregate(): TraceSitesGatewayCachedAggregate {
       return {
@@ -262,6 +354,223 @@ async function readRecentTraceEvents(
   }
 }
 
+function readHourlyTraceAggregate(
+  dbPath: string,
+  input: TraceSitesGatewayHourlyAggregateInput,
+  cache: HourlyAggregateCache | null,
+  nowMs: number,
+): { aggregate: TraceSitesGatewayHourlyAggregate; cache: HourlyAggregateCache } {
+  const hours = Math.max(1, Math.min(24 * 31, Math.floor(input.hours)));
+  const bucketCount = hours * HEATMAP_BUCKETS_PER_HOUR;
+  const currentBucketStartMs = Math.floor(nowMs / HEATMAP_BUCKET_MS) * HEATMAP_BUCKET_MS;
+  const windowStartMs = currentBucketStartMs - (bucketCount - 1) * HEATMAP_BUCKET_MS;
+  const databaseAvailable = existsSync(dbPath);
+  let nextCache = cache;
+  const resetCache =
+    !nextCache ||
+    nextCache.hours !== hours ||
+    nextCache.currentBucketStartMs > currentBucketStartMs;
+
+  if (resetCache) {
+    const lastRowid = databaseAvailable ? readTraceAggregateHighWater(dbPath) : 0;
+    const snapshot = databaseAvailable
+      ? readHourlyAggregateBuckets(dbPath, windowStartMs, nowMs, lastRowid)
+      : { buckets: new Map(), traceBuckets: new Map() };
+    nextCache = {
+      hours,
+      currentBucketStartMs,
+      refreshedAtMs: nowMs,
+      buckets: snapshot.buckets,
+      traceBuckets: snapshot.traceBuckets,
+      lastRowid,
+    };
+  } else {
+    const bucketAdvanced = nextCache.currentBucketStartMs !== currentBucketStartMs;
+    const refreshDue = nowMs - nextCache.refreshedAtMs >= HOURLY_AGGREGATE_REFRESH_MS;
+    if (databaseAvailable && (bucketAdvanced || refreshDue)) {
+      const delta = readTraceAggregateDelta(dbPath, nextCache.lastRowid);
+      const affectedBuckets = new Set<number>([currentBucketStartMs]);
+      if (
+        bucketAdvanced &&
+        nextCache.currentBucketStartMs >= windowStartMs &&
+        nextCache.currentBucketStartMs <= currentBucketStartMs
+      ) {
+        affectedBuckets.add(nextCache.currentBucketStartMs);
+      }
+
+      for (const row of delta.rows) {
+        const id = cleanString(row.id);
+        const previousBucket = id ? nextCache.traceBuckets.get(id) : undefined;
+        if (
+          previousBucket !== undefined &&
+          previousBucket >= windowStartMs &&
+          previousBucket <= currentBucketStartMs
+        ) {
+          affectedBuckets.add(previousBucket);
+        }
+        const timestampMs = Date.parse(cleanString(row.ts));
+        if (Number.isFinite(timestampMs)) {
+          const nextBucket = Math.floor(timestampMs / HEATMAP_BUCKET_MS) * HEATMAP_BUCKET_MS;
+          if (nextBucket >= windowStartMs && nextBucket <= currentBucketStartMs) {
+            affectedBuckets.add(nextBucket);
+          }
+        }
+      }
+
+      for (const [id, bucketStart] of nextCache.traceBuckets) {
+        if (affectedBuckets.has(bucketStart)) nextCache.traceBuckets.delete(id);
+      }
+      for (const bucketStart of [...affectedBuckets].sort((left, right) => left - right)) {
+        const key = new Date(bucketStart).toISOString();
+        nextCache.buckets.delete(key);
+        const endMs = Math.min(bucketStart + HEATMAP_BUCKET_MS, nowMs);
+        if (endMs <= bucketStart) continue;
+        const refreshed = readHourlyAggregateBuckets(dbPath, bucketStart, endMs, delta.highWaterRowid);
+        for (const [bucketKey, bucket] of refreshed.buckets) {
+          nextCache.buckets.set(bucketKey, bucket);
+        }
+        for (const [id, traceBucket] of refreshed.traceBuckets) {
+          nextCache.traceBuckets.set(id, traceBucket);
+        }
+      }
+      nextCache.currentBucketStartMs = currentBucketStartMs;
+      nextCache.refreshedAtMs = nowMs;
+      nextCache.lastRowid = delta.highWaterRowid;
+    }
+  }
+
+  for (const key of nextCache.buckets.keys()) {
+    if (Date.parse(key) < windowStartMs) nextCache.buckets.delete(key);
+  }
+  for (const [id, bucketStart] of nextCache.traceBuckets) {
+    if (bucketStart < windowStartMs) nextCache.traceBuckets.delete(id);
+  }
+
+  const buckets = [...nextCache.buckets.values()].sort((left, right) =>
+    left.startedAt.localeCompare(right.startedAt),
+  );
+  const totals = buckets.reduce(
+    (value, bucket) => ({
+      calls: value.calls + bucket.calls,
+      inputTokens: value.inputTokens + bucket.inputTokens,
+      outputTokens: value.outputTokens + bucket.outputTokens,
+      tokens: value.tokens + bucket.tokens,
+      cost: value.cost + bucket.cost,
+    }),
+    { calls: 0, inputTokens: 0, outputTokens: 0, tokens: 0, cost: 0 },
+  );
+
+  return {
+    aggregate: {
+      generatedAt: new Date(nextCache.refreshedAtMs).toISOString(),
+      windowStart: new Date(windowStartMs).toISOString(),
+      windowEnd: new Date(nowMs).toISOString(),
+      buckets,
+      totals,
+    },
+    cache: nextCache,
+  };
+}
+
+function readHourlyAggregateBuckets(
+  dbPath: string,
+  startMs: number,
+  endMs: number,
+  maxRowid: number,
+): HourlyAggregateBucketRead {
+  const db = openTraceDatabase(dbPath);
+  try {
+    const buckets = new Map<string, TraceSitesGatewayHourlyAggregateBucket>();
+    const traceBuckets = new Map<string, number>();
+    const statement = db.query(TRACE_HOURLY_AGGREGATE_ROWS_SQL);
+    const windowStart = new Date(startMs).toISOString();
+    const windowEnd = new Date(endMs).toISOString();
+    let afterRowid = 0;
+    while (true) {
+      const rows = statement.all(
+        afterRowid,
+        maxRowid,
+        windowStart,
+        windowEnd,
+        HOURLY_AGGREGATE_TRACE_PAGE_SIZE,
+      ) as HourlyAggregateTraceRow[];
+      for (const row of rows) {
+        const startedAt = cleanString(row.started_at);
+        if (!startedAt) continue;
+        const startedAtMs = Date.parse(startedAt);
+        const id = cleanString(row.id);
+        if (id && Number.isFinite(startedAtMs)) traceBuckets.set(id, startedAtMs);
+        const inputTokens = numberValue(row.input_tokens);
+        const outputTokens = numberValue(row.output_tokens);
+        const tokens = numberValue(row.total_tokens) || inputTokens + outputTokens;
+        const cost = estimateTraceRowCost(
+          row,
+          cleanString(row.tool) || 'unknown',
+          inputTokens,
+          outputTokens,
+          tokens,
+        )?.cost ?? 0;
+        const bucket = buckets.get(startedAt) ?? {
+          startedAt,
+          calls: 0,
+          inputTokens: 0,
+          outputTokens: 0,
+          tokens: 0,
+          cost: 0,
+        };
+        bucket.calls += 1;
+        bucket.inputTokens += inputTokens;
+        bucket.outputTokens += outputTokens;
+        bucket.tokens += tokens;
+        bucket.cost += cost;
+        buckets.set(startedAt, bucket);
+      }
+      if (rows.length === 0) break;
+      afterRowid = rows[rows.length - 1].rowid;
+      if (rows.length < HOURLY_AGGREGATE_TRACE_PAGE_SIZE) break;
+    }
+    return { buckets, traceBuckets };
+  } finally {
+    db.close();
+  }
+}
+
+function readTraceAggregateHighWater(dbPath: string): number {
+  const db = openTraceDatabase(dbPath);
+  try {
+    const row = db.query(TRACE_AGGREGATE_HIGH_WATER_SQL).get() as { rowid?: number | null } | null;
+    return numberValue(row?.rowid);
+  } finally {
+    db.close();
+  }
+}
+
+function readTraceAggregateDelta(
+  dbPath: string,
+  afterRowid: number,
+): { rows: HourlyAggregateDeltaRow[]; highWaterRowid: number } {
+  const db = openTraceDatabase(dbPath);
+  try {
+    const highWater = db.query(TRACE_AGGREGATE_HIGH_WATER_SQL).get() as { rowid?: number | null } | null;
+    const highWaterRowid = numberValue(highWater?.rowid);
+    if (highWaterRowid <= afterRowid) return { rows: [], highWaterRowid };
+
+    const rows: HourlyAggregateDeltaRow[] = [];
+    const statement = db.query(TRACE_AGGREGATE_DELTA_SQL);
+    let cursor = afterRowid;
+    while (cursor < highWaterRowid) {
+      const page = statement.all(cursor, highWaterRowid, HOURLY_AGGREGATE_DELTA_PAGE_SIZE) as HourlyAggregateDeltaRow[];
+      if (page.length === 0) break;
+      rows.push(...page);
+      cursor = page[page.length - 1].rowid;
+      if (page.length < HOURLY_AGGREGATE_DELTA_PAGE_SIZE) break;
+    }
+    return { rows, highWaterRowid };
+  } finally {
+    db.close();
+  }
+}
+
 function rowToDashboardEvent(
   row: TraceRow,
   input: TraceSitesGatewayReadBackendInput,
@@ -315,21 +624,17 @@ function historyRowFromTraceRow(row: TraceRow): TraceSitesGatewayHistoryRow {
   const inputTokens = numberValue(row.input_tokens);
   const outputTokens = numberValue(row.output_tokens);
   const tokens = numberValue(row.total_tokens) || inputTokens + outputTokens;
-  const rawInputJson = sanitizeTracePayloadJson(cleanString(row.input_json));
-  const rawResolvedInputJson = sanitizeTracePayloadJson(
-    cleanString(row.resolved_input_json),
-  );
-  const rawResultJson = sanitizeTracePayloadJson(cleanString(row.result_json));
-  const rawStderr = sanitizeLocalTraceText(cleanString(row.stderr));
-  const costEstimate = estimateTraceCost({
+  const costEstimate = estimateTraceRowCost(
+    row,
     tool,
     inputTokens,
     outputTokens,
-    totalTokens: tokens,
-    rawInputJson,
-    rawResolvedInputJson,
-    rawResultJson,
-  });
+    tokens,
+  );
+  const rawInputJson = sanitizeTracePayloadJson(cleanString(row.input_json));
+  const rawResolvedInputJson = sanitizeTracePayloadJson(cleanString(row.resolved_input_json));
+  const rawResultJson = sanitizeTracePayloadJson(cleanString(row.result_json));
+  const rawStderr = sanitizeLocalTraceText(cleanString(row.stderr));
   const requestedNodeId = cleanString(row.requested_node_id);
   const resolvedNodeId = cleanString(row.resolved_node_id);
   const resolvedNodeName = cleanString(row.resolved_node_name);
@@ -410,6 +715,27 @@ function historyRowFromTraceRow(row: TraceRow): TraceSitesGatewayHistoryRow {
     historyRow.batchResultsCount = batchResults.length;
   }
   return historyRow;
+}
+
+function estimateTraceRowCost(
+  row: Pick<TraceRow, 'input_json' | 'resolved_input_json' | 'result_json'>,
+  tool: string,
+  inputTokens: number,
+  outputTokens: number,
+  tokens: number,
+) {
+  // Pricing stays local. Use the original bounded payloads so the aggregate and
+  // history views share token allocation/model/cache semantics without exposing
+  // those payloads through the aggregate response.
+  return estimateTraceCost({
+    tool,
+    inputTokens,
+    outputTokens,
+    totalTokens: tokens,
+    rawInputJson: cleanString(row.input_json),
+    rawResolvedInputJson: cleanString(row.resolved_input_json),
+    rawResultJson: cleanString(row.result_json),
+  });
 }
 
 export function sanitizeTraceHistoryRowForTest(

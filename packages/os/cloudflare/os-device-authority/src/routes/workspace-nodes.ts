@@ -506,7 +506,17 @@ async function handleHeartbeat(
           updatedAt: nowMs,
         });
       }
-    } catch {
+    } catch (error: unknown) {
+      if (
+        error instanceof Error &&
+        /exceeded D1's free tier daily row (read|write) limit/i.test(error.message)
+      ) {
+        return errorResponse(
+          503,
+          'WORKSPACE_ROUTE_QUOTA_EXCEEDED',
+          'Workspace routing database daily quota is exhausted. Operator action or the next quota reset is required.',
+        );
+      }
       return errorResponse(
         503,
         'WORKSPACE_ROUTE_RECONCILIATION_FAILED',
