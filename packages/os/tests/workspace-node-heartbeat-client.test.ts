@@ -289,8 +289,14 @@ describe('workspace node heartbeat client', () => {
 });
 
 describe('workspace heartbeat error diagnostics', () => {
-  it.each(['WORKSPACE_ROUTE_QUOTA_EXCEEDED', 'WORKSPACE_ROUTE_RECONCILIATION_FAILED', 'Bearer unsafe-provider-secret'])(
-    'should expose only recognized authority error codes: %s', async (code) => {
+  it.each([
+    ['WORKSPACE_ROUTE_QUOTA_EXCEEDED', 'WORKSPACE_ROUTE_QUOTA_EXCEEDED'],
+    ['WORKSPACE_ROUTE_RECONCILIATION_FAILED', 'WORKSPACE_ROUTE_RECONCILIATION_FAILED'],
+    ['WORKSPACE_ROUTE_NOT_READY', 'WORKSPACE_ROUTE_NOT_READY'],
+    ['WORKSPACE_ROUTE_UNKNOWN', undefined],
+    ['Bearer unsafe-provider-secret', undefined],
+  ])(
+    'should expose only recognized authority error codes: %s', async (code, expectedCode) => {
       const keys = generateWorkspaceDeviceKeyPair();
       const client = createWorkspaceNodeHeartbeatClient({
         config: {
@@ -304,9 +310,44 @@ describe('workspace heartbeat error diagnostics', () => {
       });
       await expect(client.send()).rejects.toMatchObject({
         status: 503,
-        code: code.startsWith('WORKSPACE_ROUTE_') ? code : undefined,
+        code: expectedCode,
       });
       await expect(client.send()).rejects.not.toThrow('unsafe-provider-secret');
     },
   );
+
+  it('should cancel a non-terminating 503 body and preserve the HTTP failure', async () => {
+    const keys = generateWorkspaceDeviceKeyPair();
+    let cancelled = false;
+    let streamController: ReadableStreamDefaultController<Uint8Array>;
+    const body = new ReadableStream<Uint8Array>({
+      start(controller) {
+        streamController = controller;
+        controller.enqueue(new TextEncoder().encode('{"error":'));
+      },
+      cancel() { cancelled = true; },
+    });
+    const client = createWorkspaceNodeHeartbeatClient({
+      config: {
+        ...keys, authorityOrigin: 'https://os.consuelohq.com',
+        workspaceId: 'workspace_test', nodeId: 'node_test',
+        connectorStatus: 'connected', capabilities: ['mcp'],
+      },
+      fetchImpl: async () => new Response(body, { status: 503 }),
+    });
+    let guard: ReturnType<typeof setTimeout> | undefined;
+    try {
+      const failure = await Promise.race([
+        client.send().catch((error: unknown) => error),
+        new Promise((resolve) => {
+          guard = setTimeout(() => resolve('body read did not finish'), 2_000);
+        }),
+      ]);
+      expect(failure).toMatchObject({ status: 503, code: undefined });
+      expect(cancelled).toBe(true);
+    } finally {
+      clearTimeout(guard);
+      if (!cancelled) streamController!.close();
+    }
+  });
 });
