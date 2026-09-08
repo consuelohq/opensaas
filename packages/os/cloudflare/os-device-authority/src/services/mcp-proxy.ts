@@ -202,7 +202,18 @@ export function legacyLifecycleBootstrapCommand(channel: string): string {
   if (script.includes("'")) {
     throw new Error('legacy lifecycle bootstrap must remain shell-literal safe');
   }
-  return `"$HOME/.bun/bin/bun" -e '${script}'`;
+  const resolver = [
+    'legacy_bun="";',
+    'if [ -n "${CONSUELO_HOME:-}" ] && [ -x "$CONSUELO_HOME/bin/consuelo-os" ]; then legacy_bun="$CONSUELO_HOME/bin/consuelo-os";',
+    'elif [ -n "${BUN_BIN:-}" ] && [ -x "$BUN_BIN" ]; then legacy_bun="$BUN_BIN";',
+    'elif command -v bun >/dev/null 2>&1; then legacy_bun="$(command -v bun)";',
+    'elif [ -x "$HOME/.bun/bin/bun" ]; then legacy_bun="$HOME/.bun/bin/bun";',
+    'else printf "%s\\n" "legacy Bun runtime unavailable" >&2; exit 127; fi;',
+  ].join('');
+  if (resolver.includes("'")) {
+    throw new Error('legacy lifecycle Bun resolver must remain shell-literal safe');
+  }
+  return `${resolver}"$legacy_bun" -e '${script}'`;
 }
 
 function rewriteLegacyLifecycleUpdate(
