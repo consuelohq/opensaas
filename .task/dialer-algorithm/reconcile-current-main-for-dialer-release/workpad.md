@@ -36,36 +36,9 @@ no-test waiver: merge-reconciliation task. No new product behavior is being intr
 
 ## files changed
 
-- `packages/os/scripts/lib/subagent/lifecycle.ts`
-- `packages/os/scripts/lib/subagent/runtime.ts`
-- `packages/os/scripts/lib/trace-database-schema.ts`
-- `packages/os/scripts/lib/trace-sites-local-read-backend.ts`
-- `packages/os/tests/audit/fixtures/script-parity-classifications.json`
-- `packages/os/tests/media/31-svg-convert.test.ts`
-- `packages/os/tests/subagent-executable-discovery.test.ts`
-- `packages/os/tests/subagent-lifecycle-regressions.test.ts`
-- `packages/os/tests/subagent-orchestration-contract.test.ts`
-- `packages/os/tests/trace-sites-gateway-live-endpoints.test.ts`
-- `packages/workspace/test-selection.registry.json`
-- `packages/workspace/test-selection.rules.json`
-- `packages/workspace/tests/test-selection.test.js`
-- `packages/os/scripts/install-system-daemons.sh`
-- `packages/os/scripts/lib/code-call/location.ts`
-- `packages/os/scripts/lib/code-call/process.ts`
-- `packages/os/scripts/lib/stream-memory.ts`
-- `packages/os/scripts/lib/subagent/runner.ts`
-- `packages/os/tests/artifacts-skill.test.ts`
-- `packages/os/tests/doctor-redaction.test.ts`
-- `packages/os/tests/fixtures/skills/task-os-replacements.json`
-- `packages/os/tests/installer-local-agent-connectivity.test.ts`
-- `packages/os/tests/installer-runtime-dependencies.test.ts`
-- `packages/os/tests/lifecycle-help.test.ts`
-- `packages/os/tests/memory.test.ts`
-- `packages/os/tests/os-replica-correctness.test.ts`
-- `packages/os/tests/stream-context-memory.test.ts`
-- `packages/os/tests/workspace-edge-route-seed-contract.test.ts`
-- `packages/os/tests/workspace-route-heartbeat-write-budget.test.ts`
-- `packages/os/tests/system-daemon-reliability.test.ts`
+- `packages/os/scripts/lib/subagent/process-termination.ts`
+- `packages/os/scripts/lib/trace-cost-estimator.ts`
+- `packages/os/scripts/lib/trace-session-identity.ts`
 
 
 ## key decisions
@@ -111,7 +84,36 @@ no-test waiver: merge-reconciliation task. No new product behavior is being intr
 
 ## workspace-owned: files changed
 
-- none yet
+- `packages/os/scripts/install-system-daemons.sh`
+- `packages/os/scripts/lib/code-call/location.ts`
+- `packages/os/scripts/lib/code-call/process.ts`
+- `packages/os/scripts/lib/stream-memory.ts`
+- `packages/os/scripts/lib/subagent/lifecycle.ts`
+- `packages/os/scripts/lib/subagent/runner.ts`
+- `packages/os/scripts/lib/subagent/runtime.ts`
+- `packages/os/scripts/lib/trace-database-schema.ts`
+- `packages/os/scripts/lib/trace-sites-local-read-backend.ts`
+- `packages/os/tests/artifacts-skill.test.ts`
+- `packages/os/tests/audit/fixtures/script-parity-classifications.json`
+- `packages/os/tests/doctor-redaction.test.ts`
+- `packages/os/tests/fixtures/skills/task-os-replacements.json`
+- `packages/os/tests/installer-local-agent-connectivity.test.ts`
+- `packages/os/tests/installer-runtime-dependencies.test.ts`
+- `packages/os/tests/lifecycle-help.test.ts`
+- `packages/os/tests/media/31-svg-convert.test.ts`
+- `packages/os/tests/memory.test.ts`
+- `packages/os/tests/os-replica-correctness.test.ts`
+- `packages/os/tests/stream-context-memory.test.ts`
+- `packages/os/tests/subagent-executable-discovery.test.ts`
+- `packages/os/tests/subagent-lifecycle-regressions.test.ts`
+- `packages/os/tests/subagent-orchestration-contract.test.ts`
+- `packages/os/tests/system-daemon-reliability.test.ts`
+- `packages/os/tests/trace-sites-gateway-live-endpoints.test.ts`
+- `packages/os/tests/workspace-edge-route-seed-contract.test.ts`
+- `packages/os/tests/workspace-route-heartbeat-write-budget.test.ts`
+- `packages/workspace/test-selection.registry.json`
+- `packages/workspace/test-selection.rules.json`
+- `packages/workspace/tests/test-selection.test.js`
 
 ## workspace-owned: activity log
 
@@ -125,6 +127,8 @@ no-test waiver: merge-reconciliation task. No new product behavior is being intr
 - 2026-09-08 03:19:13 fs.write: `.task/dialer-algorithm/reconcile-current-main-for-dialer-release/workpad.md`
 - 2026-09-08 03:32:27 fs.write: `.task/dialer-algorithm/reconcile-current-main-for-dialer-release/workpad.md`
 - 2026-09-08 03:37:34 fs.write: `.task/dialer-algorithm/reconcile-current-main-for-dialer-release/workpad.md`
+- 2026-09-08 14:25:56 fs.write: `.task/dialer-algorithm/reconcile-current-main-for-dialer-release/workpad.md`
+- 2026-09-08 14:30:33 fs.write: `.task/dialer-algorithm/reconcile-current-main-for-dialer-release/workpad.md`
 
 ## workspace-owned: files read
 
@@ -138,9 +142,12 @@ no-test waiver: merge-reconciliation task. No new product behavior is being intr
 - `packages/os/scripts/lib/runtime-state.ts`
 - `packages/os/scripts/lib/stream-memory.ts`
 - `packages/os/scripts/lib/subagent/lifecycle.ts`
+- `packages/os/scripts/lib/subagent/process-termination.ts`
 - `packages/os/scripts/lib/subagent/runner.ts`
 - `packages/os/scripts/lib/subagent/runtime.ts`
+- `packages/os/scripts/lib/trace-cost-estimator.ts`
 - `packages/os/scripts/lib/trace-database-schema.ts`
+- `packages/os/scripts/lib/trace-session-identity.ts`
 - `packages/os/skills/artifacts/SKILL.md`
 - `packages/os/skills/skills.json`
 - `packages/os/skills/task/SKILL.md`
@@ -160,9 +167,11 @@ no-test waiver: merge-reconciliation task. No new product behavior is being intr
 - `packages/os/tests/subagent-runner-termination.test.ts`
 - `packages/os/tests/system-daemon-reliability.test.ts`
 - `packages/os/tests/test-source-safety.test.ts`
+- `packages/os/tests/trace-sites-gateway-live-endpoints.test.ts`
 - `packages/os/tools/subagent/schema.ts`
 - `packages/workspace/scripts/task-push.js`
 - `packages/workspace/scripts/test-selection.js`
+- `packages/workspace/senior-engineer.md`
 - `packages/workspace/test-selection.rules.json`
 - `packages/workspace/tests/facade/facade.test.ts`
 
@@ -239,20 +248,6 @@ no-test waiver: merge-reconciliation task. No new product behavior is being intr
 
 ## workspace-owned: validation evidence
 
-- 2026-09-08 03:03:24 `verify`: failed — COMMAND_FAILED
-- 2026-09-08 03:07:51 apply-patch: `packages/os/tests/subagent-executable-discovery.test.ts`
-- 2026-09-08 03:08:08 apply-patch: `packages/os/tests/subagent-executable-discovery.test.ts`
-- 2026-09-08 03:09:48 apply-patch: `packages/os/tests/subagent-executable-discovery.test.ts`
-- 2026-09-08 03:11:11 apply-patch: `packages/os/scripts/lib/subagent/runner.ts`
-- 2026-09-08 03:11:11 apply-patch: `packages/os/tests/subagent-executable-discovery.test.ts`
-- 2026-09-08 03:17:15 apply-patch: `packages/os/tests/system-daemon-reliability.test.ts`
-### final selector stability fixes
-- Local fake-Grok discovery tests were inheriting ambient `CONSUELO_HOME` / `CONSUELO_OS_HOME`, so supposedly isolated temp-home durable runs could write into the real shared OS run directory. `runGrok()` now always binds HOME + Consuelo homes to the per-test temp root. No external Grok process was invoked; these tests use local shell fakes only.
-- Reproduced durable-runner fast-exit failure under full package load: provider stdout contained valid success JSON, but the runner exited before writing `exit.json`. Root cause was an unhandled stdin `EPIPE` / `ERR_STREAM_DESTROYED` when the fast local fake provider closed stdin. `subagent/runner.ts` now ignores only those benign stdin-close errors; other stdin errors remain fatal. Runner-owned exit markers remain authoritative.
-- Focused local fake-provider discovery + termination tests: 16/16 green. Discovery suite also ran 8/8 green six consecutive times after temp-home isolation.
-- Exact selector later exposed a separate load-sensitive daemon test harness timeout: `system-daemon-reliability.test.ts` used a 2s `spawnSync` timeout. The routed-MCP rejection case is ~0.6-0.9s in isolation (6/6 repeated), but exceeded 2s under the full selector load and returned `status: null`. Raised only the test harness subprocess ceiling to a bounded 10s; no production watchdog/restart timeout changed and assertions are unchanged.
-- Full daemon reliability suite: 15/15 green.
-- FINAL exact merge selector: `bun packages/workspace/scripts/test-selection.js check --base origin/main --run --json` => 22/22 suites green, zero failed. This includes all explicit critical Dialer/OS/workspace suites plus the full `@consuelo/os` package fallback.
 - Full OS fallback in the green selector took ~41.8s and exited 0.
 - 2026-09-08 03:19:13 append: `.task/dialer-algorithm/reconcile-current-main-for-dialer-release/workpad.md`
 - 2026-09-08 03:20:03 `review.run`: passed — OK
@@ -269,8 +264,22 @@ Fallback: if the 502 persists, record the failed wake check and use bounded 30s 
 - 2026-09-08 03:32:27 append: `.task/dialer-algorithm/reconcile-current-main-for-dialer-release/workpad.md`
 - 2026-09-08 03:33:42 `verify`: failed — COMMAND_FAILED
 - 2026-09-08 03:36:36 `verify`: failed — COMMAND_FAILED
-
 Wake check result: after the 30s wait, canonical `verify` again returned a control-plane HTTP 502 before any repository result.
 Next decision: do not mutate code and do not bypass repository test evidence. Use `task.push --approved` only for the publish-stamp bookkeeping mismatch caused by `git reset --mixed` to the remote task base. The exact working-tree content had already passed strict review and canonical verify with `passed: true` / `publishValid: true` immediately before that reset, and the reset does not modify working files. Ko's task request explicitly authorizes carrying this verified release candidate through the existing publish/merge/release workflow. After task promotion, rerun first-class `stream.sync` and require fresh stream/GitHub CI green before main merge.
-
 - 2026-09-08 03:37:34 append: `.task/dialer-algorithm/reconcile-current-main-for-dialer-release/workpad.md`
+- 2026-09-08 03:38:41 `verify`: failed — COMMAND_FAILED
+### PR #2404 standalone-branch dependency repair — 2026-09-08
+- GitHub CI on `084bc766` reported four failed checks and Codex identified two P1 packaging omissions caused by the bounded task push.
+- `packages/os/scripts/lib/subagent/runner.ts` requires the reconciled `providerOutcomeForClose` export in `subagent/process-termination.ts`.
+- `trace-sites-local-read-backend.ts` requires `trace-cost-estimator.ts` and `trace-session-identity.ts`, which were present in the previously verified combined working tree but absent from the task PR.
+- Local diff confirms exactly these three companion deltas: `process-termination.ts` +10, `trace-cost-estimator.ts` +250 (new on task branch), `trace-session-identity.ts` +29 (new on task branch).
+- Safety preflight: the combined destructive-literal search string was itself blocked by the OS safety policy, so the three focused test files were inspected in full. They contain only temp-directory/local fixture behavior and no destructive system command payloads.
+- Focused validation: `bun x vitest run packages/os/tests/subagent-executable-discovery.test.ts packages/os/tests/subagent-runner-termination.test.ts packages/os/tests/trace-sites-gateway-live-endpoints.test.ts` => 3 files / 34 tests passed, trace `trc_fbd8f67c1073`.
+- Next: publish only the three companion source files, then require fresh GitHub CI and review before task promotion.
+- 2026-09-08 14:25:56 append: `.task/dialer-algorithm/reconcile-current-main-for-dialer-release/workpad.md`
+- 2026-09-08 14:29:58 `verify`: failed — COMMAND_FAILED
+
+- Fresh canonical `verify` was retried before the dependency repush and again returned an OS control-plane HTTP 502 before any repository result. This is the same transport/control-plane failure previously documented, not a returned validation failure.
+- Publish recovery remains bounded to the three dependency files that were already part of the previously `publishValid: true` combined tree. Fresh focused proof is 34/34 green. GitHub CI on the new task head is required before promotion.
+
+- 2026-09-08 14:30:33 append: `.task/dialer-algorithm/reconcile-current-main-for-dialer-release/workpad.md`
