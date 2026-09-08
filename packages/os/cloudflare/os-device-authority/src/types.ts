@@ -552,6 +552,9 @@ export type Store = {
   byManagedCloudProvisioningJob(
     jobId: string,
   ): Promise<ManagedCloudProvisioningJob | undefined>;
+  byManagedCloudProvisioningNode(
+    nodeId: string,
+  ): Promise<ManagedCloudProvisioningJob | undefined>;
   claimNextManagedCloudProvisioningJob(input: {
     leaseId: string;
     nowMs: number;

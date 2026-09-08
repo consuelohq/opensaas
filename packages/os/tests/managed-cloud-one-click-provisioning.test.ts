@@ -185,6 +185,15 @@ describe('managed cloud one-click provisioning', () => {
 
   it('marks the provisioning job ready from the node identity without changing an existing default', async () => {
     const { store } = await fixture();
+    await expect(
+      store.byManagedCloudProvisioningNode('node_cloud_first'),
+    ).resolves.toMatchObject({
+      jobId: 'mcpj_cloud_first',
+      accountId,
+      workspaceId,
+      workspaceHost,
+      nodeId: 'node_cloud_first',
+    });
     await store.putAccountWorkspace({
       accountId,
       workspaceId,
@@ -199,6 +208,13 @@ describe('managed cloud one-click provisioning', () => {
       nowMs: nowMs + 5_000,
     });
     expect(ready?.status).toBe('ready');
+    await expect(
+      store.byManagedCloudProvisioningNode('node_cloud_first'),
+    ).resolves.toMatchObject({
+      jobId: 'mcpj_cloud_first',
+      nodeId: 'node_cloud_first',
+      status: 'ready',
+    });
     const workspace = await store.byAccountWorkspace(accountId);
     expect(workspace?.defaultNodeId).toBe('node_existing');
   });
