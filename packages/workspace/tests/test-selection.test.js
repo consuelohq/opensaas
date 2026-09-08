@@ -1708,6 +1708,8 @@ describe('test selection registry', () => {
       '--changed-file',
       'packages/os/tests/workspace-chrome.test.ts',
       '--changed-file',
+      'packages/os/tests/settings-control-plane.test.ts',
+      '--changed-file',
       'packages/os/scripts/lib/observability-traces-site.ts',
       '--changed-file',
       'packages/os/tests/launcher-nodes-materialization.test.ts',
@@ -1727,6 +1729,7 @@ describe('test selection registry', () => {
     expect(suite?.critical).toBe(true);
     expect(suite?.command).toEqual(expect.arrayContaining([
       'tests/settings-site.test.ts',
+      'tests/settings-control-plane.test.ts',
       'tests/launcher-nodes-materialization.test.ts',
       'tests/observability-traces-site.test.ts',
       'tests/workspace-chrome.test.ts',
