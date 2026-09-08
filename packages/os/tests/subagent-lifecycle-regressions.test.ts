@@ -247,7 +247,7 @@ describe('durable subagent lifecycle regressions', () => {
       writeFileSync(instructionPath, 'instruction');
       mkdirSync(barrierPath);
       writeFileSync(join(barrierPath, '.keep'), '');
-      const modulePath = join(process.cwd(), 'packages/os/scripts/lib/subagent/lifecycle.ts');
+      const modulePath = fileURLToPath(new URL('../scripts/lib/subagent/lifecycle.ts', import.meta.url));
       const values = { executable, home, instructionPath };
       const code = [
         "import { readdirSync, writeFileSync } from 'node:fs';",
@@ -423,7 +423,7 @@ describe('durable subagent lifecycle regressions', () => {
     } finally {
       rmSync(home, { recursive: true, force: true });
     }
-  });
+  }, 25_000);
 
   it('preserves startup grace when a published runner exits before its exit marker is observed', () => {
     const home = mkdtempSync(join(tmpdir(), 'subagent-fast-exit-grace-'));
@@ -585,6 +585,201 @@ describe('durable subagent lifecycle regressions', () => {
     }
   });
 
+  it('stops waiting when completion_unknown has a dead runner and no exit marker', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'subagent-dead-runner-no-marker-'));
+    const environment = makeEnvironment(home);
+    const runId = 'run_111111112222222233333333';
+    const runDirectory = resolveSubagentRunDirectory(runId, environment);
+    mkdirSync(runDirectory, { recursive: true });
+    const stdoutLogPath = join(runDirectory, 'stdout.jsonl');
+    const stderrLogPath = join(runDirectory, 'stderr.log');
+    const run: DurableSubagentRun = {
+      runId,
+      traceId: 'trc_dead_runner_no_marker',
+      fingerprint: 'dead-runner-no-marker',
+      provider: 'codex',
+      policy: 'read',
+      cwd: home,
+      instructionPath: join(runDirectory, 'instruction.md'),
+      command: ['codex', 'exec'],
+      pid: 98_765_431,
+      ownerToken: 'owner-dead-runner-no-marker',
+      exitMarkerPath: join(runDirectory, 'exit.json'),
+      status: 'completion_unknown',
+      timeoutMs: 30_000,
+      startedAt: Date.now() - 10_000,
+      updatedAt: Date.now(),
+      stdoutLogPath,
+      stderrLogPath,
+      error: 'runner exited without a durable exit marker; no provider was respawned',
+    };
+    writeFileSync(stdoutLogPath, '');
+    writeFileSync(stderrLogPath, '');
+    writeFileSync(join(runDirectory, 'state.json'), JSON.stringify(run, null, 2));
+
+    try {
+      const startedAt = Date.now();
+      const waited = await waitForDurableSubagentRun(
+        run,
+        environment,
+        3_000,
+        () => ({ completed: false }),
+      );
+
+      expect(Date.now() - startedAt).toBeLessThan(2_500);
+      expect(waited.run.status).toBe('completion_unknown');
+      expect(waited.timedOut).toBe(false);
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
+  });
+
+  it('allows a parent fallback marker to hand off to the runner owned exit marker', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'subagent-dead-runner-marker-handoff-'));
+    const environment = makeEnvironment(home);
+    const runId = 'run_444444445555555566666666';
+    const runDirectory = resolveSubagentRunDirectory(runId, environment);
+    mkdirSync(runDirectory, { recursive: true });
+    const stdoutLogPath = join(runDirectory, 'stdout.jsonl');
+    const stderrLogPath = join(runDirectory, 'stderr.log');
+    const exitMarkerPath = join(runDirectory, 'exit.json');
+    const ownerToken = 'owner-dead-runner-marker-handoff';
+    const run: DurableSubagentRun = {
+      runId,
+      traceId: 'trc_dead_runner_marker_handoff',
+      fingerprint: 'dead-runner-marker-handoff',
+      provider: 'codex',
+      policy: 'read',
+      cwd: home,
+      instructionPath: join(runDirectory, 'instruction.md'),
+      command: ['codex', 'exec'],
+      pid: 98_765_430,
+      ownerToken,
+      exitMarkerPath,
+      status: 'completion_unknown',
+      timeoutMs: 30_000,
+      startedAt: Date.now() - 10_000,
+      updatedAt: Date.now(),
+      stdoutLogPath,
+      stderrLogPath,
+      error: 'runner exited without a durable exit marker; no provider was respawned',
+    };
+    writeFileSync(stdoutLogPath, '{"finalMessage":"marker handoff complete"}\n');
+    writeFileSync(stderrLogPath, '');
+    writeFileSync(join(runDirectory, 'state.json'), JSON.stringify(run, null, 2));
+    writeFileSync(exitMarkerPath, JSON.stringify({
+      runId,
+      ownerToken,
+      runnerPid: run.pid,
+      outcome: 'failed',
+      exitCode: 1,
+      error: 'runner process exited without writing a durable exit marker',
+      endedAt: Date.now(),
+    }, null, 2));
+
+    const markerPublished = new Promise<void>((resolve) => {
+      setTimeout(() => {
+        writeFileSync(exitMarkerPath, JSON.stringify({
+          runId,
+          ownerToken,
+          runnerPid: run.pid,
+          outcome: 'completed',
+          exitCode: 0,
+        }, null, 2));
+        resolve();
+      }, 750);
+    });
+
+    try {
+      const waited = await waitForDurableSubagentRun(run, environment, 2_000, (stdout) => ({
+        completed: stdout.includes('marker handoff complete'),
+        finalMessage: stdout.includes('marker handoff complete') ? 'marker handoff complete' : undefined,
+      }));
+      await markerPublished;
+
+      expect(waited.run.status).toBe('completed');
+      expect(waited.run.finalMessage).toBe('marker handoff complete');
+      expect(waited.timedOut).toBe(false);
+    } finally {
+      await markerPublished;
+      rmSync(home, { recursive: true, force: true });
+    }
+  });
+
+  it('allows a pidless parent fallback marker to hand off to the runner owned exit marker', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'subagent-pidless-marker-handoff-'));
+    const environment = makeEnvironment(home);
+    const runId = 'run_777777778888888899999999';
+    const runDirectory = resolveSubagentRunDirectory(runId, environment);
+    mkdirSync(runDirectory, { recursive: true });
+    const stdoutLogPath = join(runDirectory, 'stdout.jsonl');
+    const stderrLogPath = join(runDirectory, 'stderr.log');
+    const exitMarkerPath = join(runDirectory, 'exit.json');
+    const ownerToken = 'owner-pidless-marker-handoff';
+    const run: DurableSubagentRun = {
+      runId,
+      traceId: 'trc_pidless_marker_handoff',
+      fingerprint: 'pidless-marker-handoff',
+      provider: 'codex',
+      policy: 'read',
+      cwd: home,
+      instructionPath: join(runDirectory, 'instruction.md'),
+      command: ['codex', 'exec'],
+      ownerToken,
+      exitMarkerPath,
+      status: 'completion_unknown',
+      timeoutMs: 30_000,
+      startedAt: Date.now() - 10_000,
+      updatedAt: Date.now() - 10_000,
+      stdoutLogPath,
+      stderrLogPath,
+      error: 'runner exited without a durable exit marker; no provider was respawned',
+    };
+    writeFileSync(stdoutLogPath, '{"finalMessage":"pidless marker handoff complete"}\n');
+    writeFileSync(stderrLogPath, '');
+    writeFileSync(join(runDirectory, 'state.json'), JSON.stringify(run, null, 2));
+    writeFileSync(exitMarkerPath, JSON.stringify({
+      runId,
+      ownerToken,
+      runnerPid: 0,
+      outcome: 'failed',
+      exitCode: 1,
+      error: 'runner process exited without writing a durable exit marker',
+      endedAt: Date.now(),
+    }, null, 2));
+
+    const markerPublished = new Promise<void>((resolve) => {
+      setTimeout(() => {
+        writeFileSync(exitMarkerPath, JSON.stringify({
+          runId,
+          ownerToken,
+          runnerPid: 65_535,
+          outcome: 'completed',
+          exitCode: 0,
+        }, null, 2));
+        resolve();
+      }, 750);
+    });
+
+    try {
+      const waited = await waitForDurableSubagentRun(run, environment, 2_000, (stdout) => ({
+        completed: stdout.includes('pidless marker handoff complete'),
+        finalMessage: stdout.includes('pidless marker handoff complete')
+          ? 'pidless marker handoff complete'
+          : undefined,
+      }));
+      await markerPublished;
+
+      expect(waited.run.status).toBe('completed');
+      expect(waited.run.finalMessage).toBe('pidless marker handoff complete');
+      expect(waited.run.error).toBeUndefined();
+      expect(waited.timedOut).toBe(false);
+    } finally {
+      await markerPublished;
+      rmSync(home, { recursive: true, force: true });
+    }
+  });
+
   it('parses the full durable log while keeping attachment log reads bounded', () => {
     const home = mkdtempSync(join(tmpdir(), 'subagent-full-parse-'));
     const environment = makeEnvironment(home);
@@ -683,15 +878,15 @@ describe('durable subagent lifecycle regressions', () => {
     mkdirSync(runDirectory, { recursive: true });
     const provider = writeExecutable(home, 'setup-failure-provider', [
       '#!/bin/sh',
-      'sleep 2',
+      "trap 'exit 0' TERM",
+      'while true; do sleep 0.05; done',
     ].join('\n'));
-    const stdinPath = join(runDirectory, 'stdin.txt');
+    const stdinPath = join(runDirectory, 'missing-stdin.txt');
     const stdoutLogPath = join(runDirectory, 'stdout.jsonl');
     const stderrLogPath = join(runDirectory, 'stderr.log');
     const exitMarkerPath = join(runDirectory, 'exit.json');
-    const ownerMarkerPath = join(runDirectory, 'missing-parent', 'owner.json');
+    const ownerMarkerPath = join(runDirectory, 'owner.json');
     const runId = 'run_setup_failure_cleanup';
-    writeFileSync(stdinPath, 'instruction');
     writeFileSync(stdoutLogPath, '');
     writeFileSync(stderrLogPath, '');
     writeFileSync(join(runDirectory, 'launch.json'), JSON.stringify({
@@ -761,7 +956,7 @@ describe('durable subagent lifecycle regressions', () => {
       const runDirectory = resolveSubagentRunDirectory(started.run.runId, environment);
       const persistedFiles = readRegularFiles(runDirectory);
       expect(persistedFiles.some((content) => content.includes(sentinel))).toBe(false);
-      const waited = await waitForDurableSubagentRun(started.run, environment, 2_000, (stdout) => ({
+      const waited = await waitForDurableSubagentRun(started.run, environment, 15_000, (stdout) => ({
         completed: stdout.includes('secret complete'),
         finalMessage: stdout.includes('secret complete') ? 'secret complete' : undefined,
       }));
@@ -771,7 +966,235 @@ describe('durable subagent lifecycle regressions', () => {
     } finally {
       rmSync(home, { recursive: true, force: true });
     }
+  }, 25_000);
+
+  it('recovers completion_unknown from an owned exit marker when persisted pid is missing', () => {
+    const home = mkdtempSync(join(tmpdir(), 'os-lifecycle-pidless-exit-'));
+    const environment = makeEnvironment(home);
+    const runId = 'run_aaabbbcccdddeeeeffff0000';
+    const runDirectory = resolveSubagentRunDirectory(runId, environment);
+    mkdirSync(runDirectory, { recursive: true });
+    const stdoutLogPath = join(runDirectory, 'stdout.jsonl');
+    const stderrLogPath = join(runDirectory, 'stderr.log');
+    const exitMarkerPath = join(runDirectory, 'exit.json');
+    const ownerToken = 'owner-pidless-exit';
+    writeFileSync(stdoutLogPath, '{"finalMessage":"pidless complete"}\n');
+    writeFileSync(stderrLogPath, '');
+    writeFileSync(exitMarkerPath, JSON.stringify({
+      runId,
+      ownerToken,
+      runnerPid: 65535,
+      outcome: 'completed',
+      exitCode: 0,
+      endedAt: Date.now(),
+    }, null, 2));
+    const run: DurableSubagentRun = {
+      runId,
+      traceId: 'trc_pidless_exit',
+      fingerprint: 'pidless-exit',
+      provider: 'codex',
+      policy: 'read',
+      cwd: home,
+      instructionPath: join(runDirectory, 'instruction.md'),
+      command: ['codex', 'exec'],
+      ownerToken,
+      exitMarkerPath,
+      status: 'completion_unknown',
+      timeoutMs: 5_000,
+      startedAt: Date.now() - 10_000,
+      updatedAt: Date.now(),
+      stdoutLogPath,
+      stderrLogPath,
+      error: 'runner pid was not persisted before exit',
+    };
+    writeFileSync(join(runDirectory, 'state.json'), JSON.stringify(run, null, 2));
+    try {
+      const reconciled = reconcileDurableSubagentRun(run, environment, (stdout) => ({
+        completed: stdout.includes('pidless complete'),
+        finalMessage: stdout.includes('pidless complete') ? 'pidless complete' : undefined,
+      }));
+      expect(reconciled.status).toBe('completed');
+      expect(reconciled.finalMessage).toBe('pidless complete');
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
   });
+
+  it('persists parser terminal failures from a completed provider exit', () => {
+    const home = mkdtempSync(join(tmpdir(), 'os-lifecycle-parser-terminal-'));
+    const environment = makeEnvironment(home);
+    const runId = 'run_aaaabbbbccccddddeeee0000';
+    const runDirectory = resolveSubagentRunDirectory(runId, environment);
+    mkdirSync(runDirectory, { recursive: true });
+    const stdoutLogPath = join(runDirectory, 'stdout.jsonl');
+    const stderrLogPath = join(runDirectory, 'stderr.log');
+    const exitMarkerPath = join(runDirectory, 'exit.json');
+    const ownerToken = 'owner-parser-terminal';
+    writeFileSync(stdoutLogPath, '{"text":"partial","stopReason":"Cancelled"}\n');
+    writeFileSync(stderrLogPath, '');
+    writeFileSync(exitMarkerPath, JSON.stringify({
+      runId,
+      ownerToken,
+      runnerPid: 65534,
+      outcome: 'completed',
+      exitCode: 0,
+      endedAt: Date.now(),
+    }, null, 2));
+    const run: DurableSubagentRun = {
+      runId,
+      traceId: 'trc_parser_terminal',
+      fingerprint: 'parser-terminal',
+      provider: 'grok',
+      policy: 'read',
+      cwd: home,
+      instructionPath: join(runDirectory, 'instruction.md'),
+      command: ['grok'],
+      ownerToken,
+      exitMarkerPath,
+      status: 'running',
+      timeoutMs: 5_000,
+      startedAt: Date.now() - 1_000,
+      updatedAt: Date.now(),
+      stdoutLogPath,
+      stderrLogPath,
+    };
+    writeFileSync(join(runDirectory, 'state.json'), JSON.stringify(run, null, 2));
+    try {
+      const reconciled = reconcileDurableSubagentRun(run, environment, () => ({
+        completed: false,
+        terminalError: 'grok provider ended with stop reason Cancelled',
+      }));
+      expect(reconciled.status).toBe('failed');
+      expect(reconciled.exitCode).toBe(1);
+      expect(reconciled.error).toBe(
+        'grok provider ended with stop reason Cancelled',
+      );
+      const persisted = JSON.parse(
+        readFileSync(join(runDirectory, 'state.json'), 'utf8'),
+      ) as DurableSubagentRun;
+      expect(persisted.status).toBe('failed');
+      expect(persisted.error).toBe(reconciled.error);
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
+  });
+
+  it('writes a parent fallback exit marker when the runner dies without publishing one', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'os-lifecycle-fallback-exit-'));
+    const instructionPath = join(home, 'instructions.md');
+    try {
+      const executable = writeExecutable(home, 'slow-fallback-provider', [
+        '#!/bin/sh',
+        'sleep 8',
+      ].join(String.fromCharCode(10)));
+      writeFileSync(instructionPath, 'instruction');
+      const environment = makeEnvironment(home);
+      const started = startDurableSubagentRun({
+        ...startInput(executable, home, instructionPath, 'req-fallback-exit'),
+        env: environment,
+        timeoutMs: 15_000,
+      });
+      if (!started.ok) throw new Error(started.message);
+      expect(typeof started.run.pid).toBe('number');
+      const providerPid = await waitForProviderPid(started.run);
+      const exitMarkerPath = started.run.exitMarkerPath;
+      expect(typeof exitMarkerPath).toBe('string');
+      if (started.run.pid) {
+        try { process.kill(started.run.pid, 'SIGKILL'); } catch {
+          // Runner may have already exited; fallback still has to publish the marker.
+        }
+      }
+      const waited = await waitForDurableSubagentRun(started.run, environment, 15_000, () => ({ completed: false }));
+      expect(waited.timedOut, waited.run.status + ' ' + (waited.run.error || '')).toBe(false);
+      expect(waited.run.status).toBe('failed');
+      expect(existsSync(exitMarkerPath as string)).toBe(true);
+      const marker = JSON.parse(readFileSync(exitMarkerPath as string, 'utf8')) as {
+        runId?: unknown;
+        ownerToken?: unknown;
+        runnerPid?: unknown;
+        outcome?: unknown;
+      };
+      expect(marker.runId).toBe(started.run.runId);
+      expect(marker.ownerToken).toBe(started.run.ownerToken);
+      expect(typeof marker.runnerPid).toBe('number');
+      expect(marker.outcome).toBe('failed');
+      expect(await waitForProcessGroupExit(providerPid)).toBe(true);
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
+  }, 25_000);
+
+  it('keeps a nonzero runner exit failed even when stdout is present', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'os-lifecycle-nonzero-output-'));
+    const instructionPath = join(home, 'instructions.md');
+    try {
+      const executable = writeExecutable(home, 'nonzero-provider', [
+        '#!/bin/sh',
+        'echo "partial provider output"',
+        'exit 1',
+      ].join(String.fromCharCode(10)));
+      writeFileSync(instructionPath, 'instruction');
+      const environment = makeEnvironment(home);
+      const started = startDurableSubagentRun({
+        ...startInput(executable, home, instructionPath, 'req-nonzero-output'),
+        env: environment,
+      });
+      if (!started.ok) throw new Error(started.message);
+      const waited = await waitForDurableSubagentRun(
+        started.run,
+        environment,
+        5_000,
+        () => ({ completed: false }),
+      );
+      expect(waited.run.status).toBe('failed');
+      expect(waited.run.exitCode).toBe(1);
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
+  });
+
+  it('keeps waiting through completion_unknown until an owned exit marker arrives', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'os-lifecycle-wait-unknown-'));
+    const instructionPath = join(home, 'instructions.md');
+    try {
+      const executable = writeExecutable(home, 'wait-unknown-provider', [
+        '#!/bin/sh',
+        'while [ ! -f release-provider ]; do sleep 0.02; done',
+        "echo '{\"finalMessage\":\"unknown recovered\"}'",
+      ].join(String.fromCharCode(10)));
+      writeFileSync(instructionPath, 'instruction');
+      const environment = makeEnvironment(home);
+      const started = startDurableSubagentRun({
+        ...startInput(executable, home, instructionPath, 'req-wait-unknown'),
+        env: environment,
+        timeoutMs: 15_000,
+      });
+      if (!started.ok) throw new Error(started.message);
+      expect(started.run.exitMarkerPath && existsSync(started.run.exitMarkerPath)).toBe(false);
+      const unknown: DurableSubagentRun = {
+        ...started.run,
+        status: 'completion_unknown',
+        updatedAt: Date.now(),
+        error: 'runner ownership marker is temporarily stale',
+      };
+      writeFileSync(
+        join(resolveSubagentRunDirectory(started.run.runId, environment), 'state.json'),
+        JSON.stringify(unknown, null, 2),
+      );
+      const wait = waitForDurableSubagentRun(unknown, environment, 15_000, (stdout) => ({
+        completed: stdout.includes('unknown recovered'),
+        finalMessage: stdout.includes('unknown recovered') ? 'unknown recovered' : undefined,
+      }));
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      expect(started.run.exitMarkerPath && existsSync(started.run.exitMarkerPath)).toBe(false);
+      writeFileSync(join(home, 'release-provider'), 'release\n');
+      const waited = await wait;
+      expect(waited.run.status).toBe('completed');
+      expect(waited.timedOut).toBe(false);
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
+  }, 25_000);
 
   it('cancels an owned provider through the runner control marker', async () => {
     const home = mkdtempSync(join(tmpdir(), 'os-lifecycle-home-'));

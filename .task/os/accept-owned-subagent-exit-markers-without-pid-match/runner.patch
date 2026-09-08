@@ -1,0 +1,24 @@
+*** Begin Patch
+*** Update File: packages/os/scripts/lib/subagent/runner.ts
+@@
+     provider.on('close', (exitCode, signal) => finish(
+       requestedOutcome ?? (exitCode === 0 ? 'completed' : 'failed'),
+       providerExitCodeForOutcome(requestedOutcome, exitCode),
+       signal,
+     ));
+     provider.stdin?.end(fs.readFileSync(launch.stdinPath));
+-  } finally {
+-    fs.closeSync(stdoutFd);
+-    fs.closeSync(stderrFd);
++    const closeLogFds = () => {
++      try { fs.closeSync(stdoutFd); } catch {}
++      try { fs.closeSync(stderrFd); } catch {}
++    };
++    provider.once('close', closeLogFds);
++    provider.once('error', closeLogFds);
++  } catch (setupError: unknown) {
++    try { fs.closeSync(stdoutFd); } catch {}
++    try { fs.closeSync(stderrFd); } catch {}
++    throw setupError;
+   }
+*** End Patch

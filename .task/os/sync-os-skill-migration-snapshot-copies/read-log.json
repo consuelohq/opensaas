@@ -1,0 +1,14 @@
+{
+  "files": [
+    "packages/os/scripts/generate-skills-registry.ts",
+    "packages/os/skills/senior-engineer/skill.json",
+    "packages/os/skills/skill-creator/SKILL.md",
+    "packages/os/tests/fixtures/skills/task-os-replacements.json",
+    "packages/os/tests/senior-engineer-skill.test.ts",
+    "packages/os/tests/skill-migration.test.ts",
+    "packages/os/tests/skills-registry.test.ts",
+    "packages/os/tests/steering-canonical-source.test.ts",
+    "packages/os/vitest.config.ts"
+  ],
+  "updatedAt": "2026-08-31T03:31:19.037Z"
+}

@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "worktree_id": "task/explore/fix-explore-runtime-caller-cwd",
+  "events": [
+    {
+      "id": "381cd22a-bdc7-4388-aa67-40d716045a59",
+      "occurred_at": "2026-08-29T07:53:10.167Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/decide-next.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/explore/fix-explore-runtime-caller-cwd",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/explore/fix-explore-runtime-caller-cwd"
+      }
+    },
+    {
+      "id": "c657cff7-af9a-4bd3-bb30-61141dec3235",
+      "occurred_at": "2026-08-29T07:55:18.167Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/explore-runtime-routing.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/explore/fix-explore-runtime-caller-cwd",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/explore/fix-explore-runtime-caller-cwd"
+      }
+    },
+    {
+      "id": "ed892911-a068-4416-b68c-a68defac3341",
+      "occurred_at": "2026-08-29T07:56:23.596Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/explore-runtime-routing.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/explore/fix-explore-runtime-caller-cwd",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/explore/fix-explore-runtime-caller-cwd"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-29T07:56:23.680Z"
+}

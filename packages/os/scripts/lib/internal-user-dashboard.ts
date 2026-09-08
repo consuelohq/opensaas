@@ -829,7 +829,7 @@ export function renderInternalUserDashboard(options: InternalUserDashboardRender
 </head>
 <body>
   <div class="workspace-window" data-workspace-shell>
-    ${renderWorkspaceChromeBar('internal', 'Internal')}
+    ${renderWorkspaceChromeBar('internal', 'Internal', { extraSections: [{ id: 'internal', label: 'Internal', links: [{ label: 'Users & installs', href: '/users' }] }] })}
     <div class="workspace-view" data-workspace-view>
       <div class="dashboard-shell" data-internal-dashboard data-data-mode="${fixtureFlag}">
         <header class="dashboard-masthead">

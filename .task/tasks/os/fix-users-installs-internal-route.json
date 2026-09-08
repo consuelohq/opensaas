@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-users-installs-internal-route",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2385,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2385",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-users-installs-internal-route",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_c9b452c30426",
+  "tmuxSession": "opensaas-os-fix-users-installs-internal-route-c9b452c3",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-users-installs-internal-route/.task/session.json",
+  "createdAt": "2026-09-05T00:24:18.178Z"
+}

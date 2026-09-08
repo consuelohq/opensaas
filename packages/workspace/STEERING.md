@@ -1054,9 +1054,9 @@ Do not call `get_steering()` again because:
 - The agent wants the manifest again.
 - A workflow phase says to run `stream.context`, `task.start`, validation, review, or publish.
 
-`get_steering()` loads the operating manual. It does not start task work. For scoped repo work, call the core `task.start` tool directly; run `stream.context` first only when fresh stream context is needed.
+`get_steering()` loads the operating manual. It does not start task work. For scoped repo work, call `session.start({ kind: "task" })` directly; `task.start` is a compatibility alias; run `stream.context` first only when fresh stream context is needed.
 
-Scoped repo work starts with `task.start`. Use `stream.context` first only when fresh stream context is needed, then continue through the relevant lifecycle tools.
+Scoped repo work starts with `session.start({ kind: "task" })`; `task.start` remains a compatibility alias. Use `stream.context` first only when fresh stream context is needed, then continue through the relevant lifecycle tools.
 
 ### Direct-call rule
 

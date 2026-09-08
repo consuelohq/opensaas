@@ -87,6 +87,34 @@ export type TraceSitesGatewayHistoryPage = {
   nextCursor: string | null;
 };
 
+export type TraceSitesGatewayHourlyAggregateBucket = {
+  startedAt: string;
+  calls: number;
+  inputTokens: number;
+  outputTokens: number;
+  tokens: number;
+  cost: number;
+};
+
+export type TraceSitesGatewayHourlyAggregate = {
+  generatedAt: string;
+  windowStart: string;
+  windowEnd: string;
+  buckets: TraceSitesGatewayHourlyAggregateBucket[];
+  totals: {
+    calls: number;
+    inputTokens: number;
+    outputTokens: number;
+    tokens: number;
+    cost: number;
+  };
+};
+
+export type TraceSitesGatewayHourlyAggregateInput =
+  TraceSitesGatewayReadBackendInput & {
+    hours: number;
+  };
+
 export type TraceSitesGatewayCachedAggregate = {
   cursor: string;
   summary: TraceSitesDashboardSummary | null;
@@ -107,6 +135,9 @@ export type TraceSitesGatewayReadBackendAdapter = {
   readNewerPage?: (
     input: TraceSitesGatewayReadBackendInput,
   ) => MaybePromise<TraceSitesGatewayHistoryPage>;
+  readHourlyAggregate?: (
+    input: TraceSitesGatewayHourlyAggregateInput,
+  ) => MaybePromise<TraceSitesGatewayHourlyAggregate>;
   readCachedAggregate: (
     input: TraceSitesGatewayReadBackendInput,
   ) => MaybePromise<TraceSitesGatewayCachedAggregate>;

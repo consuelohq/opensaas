@@ -203,6 +203,7 @@ export type WebOAuthState = {
   nonce: string;
   intent: 'login' | 'signup';
   returnPath: string;
+  targetHost?: string;
   expiresAt: number;
 };
 

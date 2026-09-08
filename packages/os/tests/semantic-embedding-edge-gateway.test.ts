@@ -115,6 +115,7 @@ describe('Consuelo hosted Explore embedding gateway', () => {
     );
 
     expect(CLOUDFLARE_WORKER_RELEASE_CONFIGS['workspace-edge'].requiredSecrets).toContain('OPENROUTER_API_KEY');
+    expect(wrangler).toContain('pattern = "gateway.consuelohq.com/*"');
     expect(wrangler).toContain('name = "OS_SEMANTIC_EMBEDDING_RATE_LIMITER"');
     expect(wrangler).toContain('name = "OS_SEMANTIC_EMBEDDING_IP_RATE_LIMITER"');
     expect(wrangler).toMatch(/limit\s*=\s*600/);

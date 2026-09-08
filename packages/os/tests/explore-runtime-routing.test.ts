@@ -42,6 +42,35 @@ describe('installed Explore facade routing', () => {
     expect(plans[0]?.env.CONSUELO_TOOL_CALLER_CWD).toBe('/tmp/unrelated-caller-repository');
   });
 
+  it('preserves the caller repository for installed runtime policy tools', () => {
+    for (const script of ['confidence-score.js', 'decide-next.js', 'exploit.js']) {
+      const source = readFileSync(new URL('../scripts/' + script, import.meta.url), 'utf8');
+      expect(source).toContain('resolveGitRoot(process.env.CONSUELO_TOOL_CALLER_CWD || process.cwd())');
+    }
+  });
+
+  it('routes Explore compatibility policy views through the installed OS runtime', async () => {
+    for (const toolName of ['confidenceScore', 'decideNext', 'exploit']) {
+      const entry = getToolManifestEntry(toolName);
+      expect(entry).not.toBeNull();
+      expect(entry?.command.executionScope).toBe('runtime');
+
+      const plans: CommandPlan[] = [];
+      const result = await executeTool(toolName, {}, {
+        cwd: '/tmp/unrelated-caller-repository',
+        runner: runner(plans),
+        now: () => 1000,
+        randomUUID: () => 'abc123def4567890abc123def4567890',
+      });
+
+      expect(result.ok).toBe(true);
+      expect(plans).toHaveLength(1);
+      expect(plans[0]?.cwd.split(path.sep).slice(-2).join('/')).toBe('packages/os');
+      expect(plans[0]?.env.CONSUELO_TOOL_CALLER_CWD).toBe('/tmp/unrelated-caller-repository');
+    }
+  });
+
+
   it('passes the caller repository cwd from the runtime process into index construction', () => {
     const source = readFileSync(new URL('../scripts/explore.js', import.meta.url), 'utf8');
 

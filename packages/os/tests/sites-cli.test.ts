@@ -199,7 +199,7 @@ describe('Sites CLI', () => {
     const first = runSitesCommand(['refresh', '--json']);
     const firstHtml = readFileSync(first.indexPath, 'utf8');
 
-    expect(firstHtml).toContain('<title>Overview - Consuelo OS</title>');
+    expect(firstHtml).toContain('<title>Home - Consuelo OS</title>');
     expect(firstHtml).toContain('data-workspace-shell');
     expect(firstHtml).toContain('data-workspace-route-trigger');
     expect(firstHtml).toContain('aria-current="page" href="/configuration"');
@@ -221,7 +221,7 @@ describe('Sites CLI', () => {
     const refreshResult = runSitesCommand(['refresh', '--json']);
     const html = readFileSync(refreshResult.indexPath, 'utf8');
 
-    expect(html).toContain('<title>Overview - Consuelo OS</title>');
+    expect(html).toContain('<title>Home - Consuelo OS</title>');
     expect(html).toContain('href="/configuration"');
     expect(html).toContain('href="/tracing"');
     expect(html).toContain('href="/tools"');
@@ -252,7 +252,7 @@ describe('Sites CLI', () => {
     const html = readFileSync(refreshResult.indexPath, 'utf8');
     const persisted = JSON.parse(readFileSync(configPath, 'utf8'));
 
-    expect(html).toContain('<title>Overview - Consuelo OS</title>');
+    expect(html).toContain('<title>Home - Consuelo OS</title>');
     expect(html).not.toContain('https://legacy-workspace.consuelohq.com/mcp');
     expect(persisted).toMatchObject({
       url: 'https://legacy-workspace.consuelohq.com/mcp',

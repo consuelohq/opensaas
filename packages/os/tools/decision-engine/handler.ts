@@ -30,6 +30,7 @@ export const toolHandlers = [
     "name": "confidenceScore",
     "command": {
       "script": "confidence-score",
+      "executionScope": "runtime",
       "branchMode": "none",
       "jsonFlag": "--json",
       "arguments": []
@@ -59,6 +60,7 @@ export const toolHandlers = [
     "name": "decideNext",
     "command": {
       "script": "decide-next",
+      "executionScope": "runtime",
       "branchMode": "none",
       "jsonFlag": "--json",
       "arguments": [
@@ -89,6 +91,7 @@ export const toolHandlers = [
     "name": "exploit",
     "command": {
       "script": "exploit",
+      "executionScope": "runtime",
       "branchMode": "none",
       "jsonFlag": "--json",
       "arguments": [

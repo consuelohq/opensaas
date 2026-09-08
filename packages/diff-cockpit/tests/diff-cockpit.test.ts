@@ -1,3 +1,6 @@
+import { existsSync, readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+
 import { describe, expect, test } from 'bun:test';
 
 import {
@@ -18,6 +21,12 @@ import {
   renderReviewPage,
   scorePullRequestSearch,
 } from '../src/index';
+
+const repositoryRoot = resolve(import.meta.dirname, '../../..');
+
+function readRepoFile(path: string): string {
+  return readFileSync(resolve(repositoryRoot, path), 'utf8');
+}
 
 describe('parsePullRequestLocator', () => {
   test('accepts a bare PR number with a default repo', () => {
@@ -41,13 +50,49 @@ describe('parsePullRequestLocator', () => {
       parsePullRequestLocator('/consuelohq/opensaas/pull/708'),
     ).toEqual({ owner: 'consuelohq', repo: 'opensaas', number: 708 });
   });
+
+  test('accepts the canonical internal Diffs URL it emits', () => {
+    expect(
+      parsePullRequestLocator('https://internal.consuelohq.com/diffs/other/project/pull/42'),
+    ).toEqual({ owner: 'other', repo: 'project', number: 42 });
+  });
 });
 
 describe('buildDiffCockpitUrl', () => {
-  test('builds the canonical diffs.consuelohq.com URL', () => {
+  test('builds the canonical internal Diffs URL', () => {
     expect(buildDiffCockpitUrl({ owner: 'consuelohq', repo: 'opensaas', number: 708 })).toBe(
-      'https://diffs.consuelohq.com/consuelohq/opensaas/pull/708',
+      'https://internal.consuelohq.com/diffs/consuelohq/opensaas/pull/708',
     );
+  });
+});
+
+describe('standalone Diffs retirement', () => {
+  test('removes the standalone Worker and automatic KV cache warmers while preserving hostname safety', () => {
+    expect(existsSync(resolve(repositoryRoot, 'packages/diff-cockpit/wrangler.toml'))).toBe(false);
+    expect(existsSync(resolve(repositoryRoot, 'packages/diff-cockpit/src/worker.ts'))).toBe(false);
+    expect(existsSync(resolve(repositoryRoot, 'cron_jobs/diff_cockpit/cron.json'))).toBe(false);
+    expect(existsSync(resolve(repositoryRoot, 'packages/workspace/hooks/diff-cockpit/cache-refresh.ts'))).toBe(false);
+
+    const packageJson = JSON.parse(readRepoFile('packages/diff-cockpit/package.json')) as {
+      scripts?: Record<string, string>;
+    };
+    expect(packageJson.scripts).not.toHaveProperty('deploy');
+    expect(packageJson.scripts).not.toHaveProperty('dev');
+
+    const opener = readRepoFile('packages/workspace/scripts/diff_cockpit.ts');
+    expect(opener).not.toContain('refreshDiffCockpitCache');
+    expect(opener).not.toContain('DIFF_COCKPIT_REFRESH_TOKEN');
+
+    const taskPush = readRepoFile('packages/workspace/scripts/task-push.js');
+    expect(taskPush).not.toContain('diff-cockpit/cache-refresh');
+    expect(taskPush).not.toContain('DIFF_COCKPIT_REFRESH_TOKEN');
+
+    const cronRuntime = readRepoFile('cron_jobs/index.ts');
+    expect(cronRuntime).not.toContain("'diff-cockpit'");
+    expect(cronRuntime).not.toContain('refreshDiffCockpitCache');
+
+    const router = readRepoFile('packages/os/scripts/lib/workspace-cloudflare-edge-router.ts');
+    expect(router).toContain("'diffs.consuelohq.com'");
   });
 });
 
@@ -632,6 +677,12 @@ describe('renderIndexPage', () => {
     expect(html).toContain('mergeIndexWithCache');
     expect(html).toContain('localStorage.setItem(cacheKey');
     expect(html).toContain("cache: 'no-cache'");
+    expect(html).toContain('const indexAuthRetryDelaysMs = [250, 1000, 2500]');
+    expect(html).toContain('function fetchIndexWithAuthRetry(headers, attempt = 0)');
+    expect(html).toContain("if (response.status !== 401 || attempt >= indexAuthRetryDelaysMs.length) return response;");
+    expect(html).toContain('window.setTimeout(resolve, indexAuthRetryDelaysMs[attempt])');
+    expect(html).toContain('fetchIndexWithAuthRetry(headers)');
+    expect(html).not.toContain("indexLoadInFlight = fetch(apiPath, { headers, cache: 'no-cache' })");
     expect(html).toContain('refreshIndexIfStale');
     expect(html).toContain('readInitialIndexData');
     expect(html).toContain('diff-cockpit-index-initial-data');

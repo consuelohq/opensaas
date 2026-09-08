@@ -1,4 +1,5 @@
 import { createRequire } from 'node:module';
+import { readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
@@ -131,6 +132,18 @@ describe('OS ExploreBench retrieval metrics', () => {
     expect(report.metrics.mrr).toBe(1);
     expect(report.metrics.ndcgAtK['1']).toBeCloseTo(1 / 7, 12);
     expect(report.metrics.ndcgAtK['5']).toBeLessThanOrEqual(1);
+  });
+
+  it('should request exhaustive semantic hydration when refreshing the benchmark index', () => {
+    const source = readFileSync(new URL('../scripts/explore-bench.js', import.meta.url), 'utf8');
+    expect(source).toMatch(/refreshIndex[\s\S]*ensureIndex\(\{[\s\S]*hydrateAll:\s*true/);
+  });
+
+  it('should fail closed when refreshed benchmark semantic hydration is incomplete', () => {
+    const source = readFileSync(new URL('../scripts/explore-bench.js', import.meta.url), 'utf8');
+    expect(source).toContain('embeddingFailure');
+    expect(source).toContain('chunksDeferred');
+    expect(source).toMatch(/benchmark semantic hydration incomplete/i);
   });
 
   it('should remain syntactically executable when the benchmark CLI source is checked', () => {

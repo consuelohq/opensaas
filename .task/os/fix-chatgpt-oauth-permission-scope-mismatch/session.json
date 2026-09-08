@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_4e452c067c59",
+  "tmuxSession": "opensaas-os-fix-chatgpt-oauth-permission-scope-mismatch-4e452c06",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-chatgpt-oauth-permission-scope-mismatch",
+  "branch": "task/os/fix-chatgpt-oauth-permission-scope-mismatch",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-chatgpt-oauth-permission-scope-mismatch",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-chatgpt-oauth-permission-scope-mismatch",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2379,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2379",
+  "createdAt": "2026-09-04T20:02:19.935Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-chatgpt-oauth-permission-scope-mismatch/.task/os/fix-chatgpt-oauth-permission-scope-mismatch/session.json"
+}

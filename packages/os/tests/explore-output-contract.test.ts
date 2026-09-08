@@ -122,6 +122,8 @@ type RichExplorePayload = {
     cache_root: string;
     files_indexed: number;
     chunks_embedded: number;
+    chunks_deferred: number;
+    embedding_status: 'ready' | 'degraded';
   };
 };
 
@@ -261,6 +263,8 @@ function richPayload(): RichExplorePayload {
       cache_root: '/Users/example/.cache/workspace-index/example',
       files_indexed: 3,
       chunks_embedded: 17,
+      chunks_deferred: 42,
+      embedding_status: 'degraded',
     },
   };
 }
@@ -370,6 +374,18 @@ describe('Explore compact response contract', () => {
       expect(first).not.toHaveProperty(diagnosticField);
     }
     expect(rich).toEqual(before);
+  });
+
+  it('should preserve semantic degradation state in compact index stats', () => {
+    const compact = formatExploreOutput(richPayload(), 'compact') as {
+      index_stats: Record<string, unknown>;
+    };
+
+    expect(compact.index_stats).toMatchObject({
+      chunks_embedded: 17,
+      chunks_deferred: 42,
+      embedding_status: 'degraded',
+    });
   });
 
   it('should preserve the exact rich object when full detail is requested', () => {

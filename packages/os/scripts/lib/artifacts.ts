@@ -8,7 +8,9 @@ import {
   workspaceChromeClientScript,
   workspaceRouteSwitcherStyles,
   workspaceWindowShellStyles,
+  type WorkspaceChromeOptions,
 } from './workspace-chrome';
+import { loadWorkspaceChromeOptions } from './workspace-chrome-config';
 
 export type ArtifactTemplate =
   | 'research'
@@ -417,7 +419,10 @@ function displayFilter(entry: ArtifactEntry): string {
   return 'uncategorized';
 }
 
-function renderArtifactsIndex(catalog: ArtifactCatalog): string {
+function renderArtifactsIndex(
+  catalog: ArtifactCatalog,
+  chromeOptions: WorkspaceChromeOptions = {},
+): string {
   const logoDataUri = consueloMarkDataUri();
   const entries = catalog.entries
     .filter((entry) => !entry.path.startsWith('/daily-schedules/'))
@@ -491,7 +496,7 @@ function renderArtifactsIndex(catalog: ArtifactCatalog): string {
 </head>
 <body>
   <div class="workspace-window" data-workspace-shell>
-    ${renderWorkspaceChromeBar('artifacts', 'Artifacts')}
+    ${renderWorkspaceChromeBar('artifacts', 'Artifacts', chromeOptions)}
     <div class="workspace-view" data-workspace-view>
       <div class="shell">
         <div class="topbar">
@@ -531,7 +536,7 @@ function renderArtifactsIndex(catalog: ArtifactCatalog): string {
 
 export function refreshArtifactsSite(home: string, catalog = readArtifactCatalog(home)): string {
   const indexPath = artifactsSiteIndexPath(home);
-  atomicWrite(indexPath, renderArtifactsIndex(catalog));
+  atomicWrite(indexPath, renderArtifactsIndex(catalog, loadWorkspaceChromeOptions(home)));
   atomicWrite(artifactsSiteDataPath(home), `${JSON.stringify(catalog, null, 2)}\n`);
   return indexPath;
 }

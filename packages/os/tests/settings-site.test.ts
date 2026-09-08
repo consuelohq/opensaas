@@ -36,7 +36,7 @@ describe('configuration site', () => {
 
     expect(snapshot.skills).toEqual([]);
     expect(snapshot.runBooks.length).toBeGreaterThan(0);
-    expect(html).toContain('<title>Overview - Consuelo OS</title>');
+    expect(html).toContain('<title>Home - Consuelo OS</title>');
     expect(html).toContain('<link rel="icon" href="https://consuelohq.com/favicon.svg" type="image/svg+xml" />');
     expect(html).toContain('<link rel="icon" href="https://consuelohq.com/favicon-32x32.png" sizes="32x32" type="image/png" />');
     expect(html).toContain('<link rel="apple-touch-icon" href="https://consuelohq.com/apple-touch-icon.png" />');
@@ -51,7 +51,10 @@ describe('configuration site', () => {
     expect(html).toContain('href="/tools"');
     expect(html).toContain('href="/nodes"');
     expect(html).toContain('href="/secrets"');
-    expect(html).toContain('>Overview</span>');
+    expect(html).toContain('>Home</span>');
+    expect(html).toContain('<h1>Home</h1>');
+    expect(html).toContain('Home shows live activity and operating posture first.');
+    expect(html).not.toContain('Overview shows live activity and operating posture first.');
     expect(html).not.toContain('Workspace health and context.');
     expect(html).toContain('href="https://docs.consuelohq.com/"');
     expect(html).toContain('target="_blank" rel="noopener noreferrer" href="https://docs.consuelohq.com/"');
@@ -86,7 +89,13 @@ describe('configuration site', () => {
     expect(html).not.toContain('aria-label="Configuration sidebar"');
     expect(html).toContain('/gateway/configuration/snapshot');
     expect(html).toContain('Loading workspace configuration');
-    expect(html).toContain('Configuration unavailable');
+    expect(html).toContain('id="configuration-error-title"');
+    expect(html).toContain('id="configuration-error-copy"');
+    expect(html).toContain('configurationError.dataset.connectionState = state');
+    expect(html).toContain('Workspace connected; live node unavailable');
+    expect(html).toContain('You’re signed in. Configuration will reconnect automatically');
+    expect(html).toContain('Workspace session reconnecting');
+    expect(html).toContain('CONFIGURATION_RETRY_MAX_MS = 30000');
     expect(html).toContain('/gateway/configuration/overlay');
     expect(html).toContain('Source control');
     expect(html).toContain('id="overview-readiness-title"');
@@ -96,16 +105,30 @@ describe('configuration site', () => {
     expect(html).toContain('data-overview-heatmap');
     expect(html).toContain('role="grid"');
     expect(html).toContain('id="overview-heatmap-tooltip"');
-    expect(html).toContain("const OVERVIEW_HEATMAP_CACHE_KEY = 'consuelo:overview-heatmap:v1'");
-    expect(html).toContain('const OVERVIEW_HEATMAP_TTL_MS = 30000');
+    expect(html).toContain('id="overview-heatmap-status"');
+    expect(html).toContain("const OVERVIEW_HEATMAP_CACHE_PREFIX = 'consuelo:overview-heatmap:v3:'");
+    expect(html).toContain('const OVERVIEW_HEATMAP_CACHE_MAX_AGE_MS = 86400000');
     expect(html).toContain('const OVERVIEW_HEATMAP_REFRESH_MS = 30000');
-    expect(html).toContain('/gateway/traces/recent?direction=older&cursor=latest&limit=100');
+    expect(html).toContain('/gateway/traces/aggregates?window=8d&bucket=15m');
+    expect(html).toContain('scopeOnly=true');
     expect(html).toContain('includeRawPayload=false');
-    expect(html).toContain('const OVERVIEW_HEATMAP_MAX_PAGES = 24');
-    expect(html).toContain('data.nextCursor');
+    expect(html).not.toContain('OVERVIEW_HEATMAP_MAX_PAGES');
+    expect(html).not.toContain('data.nextCursor');
     expect(html).toContain("credentials: 'same-origin'");
     expect(html).toContain("cache: 'no-store'");
-    expect(html).toContain('sessionStorage.setItem(OVERVIEW_HEATMAP_CACHE_KEY');
+    expect(html).toContain('overviewHeatmapStorageKey(scope)');
+    expect(html).toContain('scope.workspaceId');
+    expect(html).toContain("scope.nodeId || 'node-default'");
+    expect(html).toContain('localStorage.getItem(overviewHeatmapStorageKey(scope))');
+    expect(html).toContain('localStorage.setItem(overviewHeatmapStorageKey(result.scope)');
+    expect(html).not.toContain('localStorage.getItem(OVERVIEW_HEATMAP_CACHE_PREFIX)');
+    expect(html).not.toContain('renderOverviewHeatmap(cached || aggregateOverviewHeatmap([]));');
+    expect(html).toContain('renderOverviewHeatmap(aggregateOverviewHeatmap(cached.rows), true);');
+    expect(html).toContain('renderOverviewHeatmap(aggregate, !overviewHeatmapRendered);');
+    expect(html).toContain('const scope = await readOverviewHeatmapScope();');
+    expect(html).toContain('const cached = readOverviewHeatmapCache(scope);');
+    expect(html).toContain('Historical activity shown · live updates unavailable');
+    expect(html).toContain('Trace history temporarily unavailable · retrying automatically');
     expect(html).toContain('tabindex="0"');
     expect(html).toContain("matchMedia('(prefers-reduced-motion: reduce)')");
     expect(html).toContain('globalThis.gsap');
@@ -119,6 +142,10 @@ describe('configuration site', () => {
     expect(html).toContain('/gateway/configuration/source-control');
     expect(html).toContain('/gateway/configuration/source-control/github/connect');
     expect(html).toContain('mode=manage');
+    expect(html).toContain(
+      'const hasReadyRepositories = currentSourceControl.repositories.some((repository) => repository.ready === true);',
+    );
+    expect(html).not.toContain('const hasRepositories = currentSourceControl.repositories.length > 0;');
     expect(html).toContain('/gateway/configuration/source-control/github/complete');
     expect(html).toContain('Connect GitHub');
     expect(html).not.toContain('id="source-control-form"');

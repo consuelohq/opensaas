@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/explore/expose-explore-degradation-in-compact-output",
+  "events": [
+    {
+      "id": "1b5a20c6-a5b7-4089-9e72-d60a6b550343",
+      "occurred_at": "2026-08-29T08:12:49.481Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/search/explore-output.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/explore/expose-explore-degradation-in-compact-output",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/explore/expose-explore-degradation-in-compact-output"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-29T08:12:49.578Z"
+}

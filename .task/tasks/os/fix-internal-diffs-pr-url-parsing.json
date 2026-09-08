@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-internal-diffs-pr-url-parsing",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2355,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2355",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-internal-diffs-pr-url-parsing",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_318de18edbd8",
+  "tmuxSession": "opensaas-os-fix-internal-diffs-pr-url-parsing-318de18e",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-internal-diffs-pr-url-parsing/.task/session.json",
+  "createdAt": "2026-09-01T01:09:22.785Z"
+}

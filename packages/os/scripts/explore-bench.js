@@ -164,7 +164,7 @@ function currentCommit() {
 async function rankCases(cases, args) {
   const root = repoRoot();
   const indexResult = args.refreshIndex
-    ? await ensureIndex({ cwd: root, json: true, reindex: false })
+    ? await ensureIndex({ cwd: root, hydrateAll: true, json: true, reindex: false })
     : (() => {
       const store = createStore(root, getRemoteUrl(root));
       const stats = store.getStats();
@@ -180,6 +180,13 @@ async function rankCases(cases, args) {
         stats,
       };
     })();
+  if (args.refreshIndex && (indexResult.embeddingFailure || (indexResult.chunksDeferred || 0) > 0)) {
+    const failure = indexResult.embeddingFailure || 'semantic vectors remain deferred';
+    const deferred = indexResult.chunksDeferred || 0;
+    indexResult.store?.db?.close?.();
+    throw new Error(`benchmark semantic hydration incomplete: ${failure} (deferred chunks: ${deferred})`);
+  }
+
   const rankings = new Map();
 
   try {

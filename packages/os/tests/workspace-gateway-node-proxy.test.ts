@@ -201,12 +201,28 @@ describe('workspace gateway node proxy', () => {
     expect(upstream).toHaveLength(0);
   });
 
-  it.each([
-    {
-      name: 'stale node',
+  it('probes a connected stale node so a recovered gateway can refresh its heartbeat', async () => {
+    const upstream: Request[] = [];
+    const router = await createRouter({
       record: workspaceRecord({ lastSeenAt: now - 180_001 }),
-      code: 'WORKSPACE_NODE_OFFLINE',
-    },
+      fetchUpstream: async (request) => {
+        upstream.push(request);
+        return Response.json({ ok: true });
+      },
+    });
+
+    const response = await router.fetch(
+      new Request('https://acme.consuelohq.com/gateway/traces/recent', {
+        headers: { cookie: 'consuelo_workspace_session=session-acme' },
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ ok: true });
+    expect(upstream).toHaveLength(1);
+  });
+
+  it.each([
     {
       name: 'disconnected connector',
       record: workspaceRecord({ connectorStatus: 'disconnected' }),

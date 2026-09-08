@@ -810,6 +810,8 @@ describe('test selection registry', () => {
       'packages/os/tests/lifecycle-engine.test.ts',
       '--changed-file',
       'packages/os/tests/workspace-node-registry-routing.test.ts',
+      '--changed-file',
+      'packages/os/tests/workspace-route-heartbeat-write-budget.test.ts',
       '--json',
     ]);
     const data = json(result);
@@ -826,6 +828,8 @@ describe('test selection registry', () => {
         'OS hosted-site lifecycle and node routing contracts',
       ]),
     );
+    expect(data.selectedSuites.flatMap((suite) => suite.command))
+      .toContain('packages/os/tests/workspace-route-heartbeat-write-budget.test.ts');
   });
 
   it('uses the frozen OS Bun lock contract instead of the broad OS package suite', () => {
@@ -1542,6 +1546,35 @@ describe('test selection registry', () => {
     ]));
   });
 
+  it('routes connector readiness changes through focused lifecycle coverage', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/lib/lifecycle/connector-readiness.ts',
+      '--changed-file',
+      'packages/os/tests/lifecycle-connector-readiness.test.ts',
+      '--json',
+    ]));
+
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const connectorReadinessSuite = data.selectedSuites.find(
+      (suite) => suite.ruleId === 'os-lifecycle-connector-readiness',
+    );
+    expect(matchedRuleIds).toContain('os-lifecycle-connector-readiness');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(connectorReadinessSuite?.critical).toBe(true);
+    expect(connectorReadinessSuite?.command).toEqual([
+      'bun',
+      'x',
+      'vitest',
+      'run',
+      'packages/os/tests/lifecycle-connector-readiness.test.ts',
+      'packages/os/tests/lifecycle-engine.test.ts',
+      'packages/os/tests/workspace-node-heartbeat-script.test.ts',
+      'packages/os/tests/workspace-node-heartbeat-client.test.ts',
+    ]);
+  });
+
   it('routes partial-install recovery CLI changes through focused critical coverage', () => {
     const data = json(run([
       'check',
@@ -1673,6 +1706,8 @@ describe('test selection registry', () => {
       '--changed-file',
       'packages/os/scripts/lib/workspace-chrome.ts',
       '--changed-file',
+      'packages/os/tests/workspace-chrome.test.ts',
+      '--changed-file',
       'packages/os/scripts/lib/observability-traces-site.ts',
       '--changed-file',
       'packages/os/tests/launcher-nodes-materialization.test.ts',
@@ -1694,6 +1729,7 @@ describe('test selection registry', () => {
       'tests/settings-site.test.ts',
       'tests/launcher-nodes-materialization.test.ts',
       'tests/observability-traces-site.test.ts',
+      'tests/workspace-chrome.test.ts',
       'tests/sites-cli.test.ts',
       'tests/launcher-local-customization.test.ts',
       'tests/internal-launcher-regressions.test.ts',
