@@ -286,6 +286,7 @@ async function main() {
       changedFiles: indexResult.changedFiles,
       changedOnly: args.changedOnly,
       depth: args.depth,
+      skipSemantic: Boolean(indexResult.embeddingFailure),
       worktreeId: indexResult.worktreeId,
       onRetrievalDiagnostics: (diagnostics) => {
         retrievalDiagnostics = diagnostics;

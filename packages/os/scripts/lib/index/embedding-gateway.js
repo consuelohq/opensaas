@@ -16,7 +16,8 @@ const APPROVED_EMBEDDING_MODEL = DEFAULT_API_MODEL;
 const MAX_GATEWAY_BATCH_SIZE = 32;
 const MAX_GATEWAY_TEXT_CHARS = 4_000;
 const MAX_GATEWAY_TOTAL_CHARS = 128_000;
-const GATEWAY_TIMEOUT_MS = 60_000;
+const GATEWAY_QUERY_TIMEOUT_MS = 4_000;
+const GATEWAY_DOCUMENT_TIMEOUT_MS = 8_000;
 const INSTALL_ID_PATTERN = /^ins_[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 let cachedInstallId = null;
 
@@ -197,18 +198,26 @@ async function requestGatewayEmbeddings(texts, options = {}, runtime = {}) {
     installId: runtime.installId,
     repoHash: runtime.repoHash,
   });
+  const timeoutMs = normalizeKind(options.kind) === 'query'
+    ? GATEWAY_QUERY_TIMEOUT_MS
+    : GATEWAY_DOCUMENT_TIMEOUT_MS;
 
-  const response = await fetchImpl(gatewayUrl, {
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-      'x-consuelo-embedding-model': payload.model,
-      ...(payload.installId ? { 'x-consuelo-install-id': payload.installId } : {}),
-      ...(payload.repoHash ? { 'x-consuelo-repo-hash': payload.repoHash } : {}),
-    },
-    body: JSON.stringify(payload),
-    signal: AbortSignal.timeout(GATEWAY_TIMEOUT_MS),
-  });
+  let response;
+  try {
+    response = await fetchImpl(gatewayUrl, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-consuelo-embedding-model': payload.model,
+        ...(payload.installId ? { 'x-consuelo-install-id': payload.installId } : {}),
+        ...(payload.repoHash ? { 'x-consuelo-repo-hash': payload.repoHash } : {}),
+      },
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(timeoutMs),
+    });
+  } catch (error) {
+    throw new Error(`embedding gateway request failed: ${getErrorMessage(error)}`, { cause: error });
+  }
 
   if (!response.ok) {
     const details = await response.text().catch((error) => getErrorMessage(error));

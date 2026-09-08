@@ -165,6 +165,30 @@ describe('OS semantic embedding gateway default', () => {
     expect(vectors[0]).toHaveLength(4);
   });
 
+  it('uses shorter interactive deadlines for query embeddings than document hydration', async () => {
+    const gateway = loadIndexModule<GatewayModule>('embedding-gateway.js');
+    const configModule = loadIndexModule<EmbeddingConfigModule>('embedding-config.js');
+    const config = configModule.getEmbeddingConfig({ dimensions: 4 });
+    const observedTimeouts: number[] = [];
+    const timeoutSpy = vi.spyOn(AbortSignal, 'timeout').mockImplementation((timeoutMs: number) => {
+      observedTimeouts.push(timeoutMs);
+      return new AbortController().signal;
+    });
+    const fetchImpl = vi.fn(async () => new Response(JSON.stringify({ data: [{ embedding: makeVector(4) }] }), {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    }));
+
+    try {
+      await gateway.requestGatewayEmbeddings(['query text'], { kind: 'query' }, { config, fetchImpl });
+      await gateway.requestGatewayEmbeddings(['document text'], { kind: 'document' }, { config, fetchImpl });
+    } finally {
+      timeoutSpy.mockRestore();
+    }
+
+    expect(observedTimeouts).toEqual([4_000, 8_000]);
+  });
+
   it('keeps local embeddings as explicit opt-in mode', () => {
     withEnv({ CONSUELO_EMBEDDING_PROVIDER: 'local' }, () => {
       const configModule = loadIndexModule<EmbeddingConfigModule>('embedding-config.js');
