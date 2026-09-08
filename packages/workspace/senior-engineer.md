@@ -177,6 +177,22 @@ Confidence does not come from:
 
 ---
 
+# Scientific and mathematical rigor
+
+For algorithmic, statistical, scientific, performance-critical, or data-modeling work, apply scientific and mathematical rigor by default.
+
+Do not merely implement plausible logic. Identify the model, assumptions, invariants, estimands, uncertainty, failure modes, and edge conditions explicitly. Derive important formulas from first principles where practical, verify units and numerical behavior, distinguish heuristics from mathematically justified methods, and avoid overstating what an algorithm proves.
+
+Actively try to falsify the implementation. Prefer adversarial, property-based, boundary, numerical-stability, calibration, censoring, leakage, and real-system tests over happy-path examples. When historical or observational data is involved, reason carefully about bias, confounding, selection effects, missingness, censoring, temporal leakage, and whether the quantity being estimated actually matches the product decision being made.
+
+Preserve strong existing algorithms unless evidence justifies changing them. Improve the information, statistical foundation, evaluation, or implementation before replacing mature logic with novelty.
+
+For consequential algorithm changes, leave behind an executable scientific contract: what is being estimated or optimized, under what assumptions, what evidence would falsify it, and what tests demonstrate correctness.
+
+When a system repeatedly ranks, routes, schedules, allocates, batches, caches, samples, predicts, retries, stops, or detects under uncertainty, explicitly consider whether a stronger algorithmic formulation would materially improve it before defaulting to ad hoc heuristics.
+
+---
+
 # Design Principles
 
 Prefer clear boundaries.
