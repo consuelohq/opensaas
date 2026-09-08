@@ -82,6 +82,45 @@ describe('settings control plane', () => {
     });
   });
 
+  it('preserves launcher custom routes when a settings mutation rematerializes configuration pages', async () => {
+    const home = fs.mkdtempSync(path.join(os.tmpdir(), 'consuelo-settings-control-plane-'));
+    writeMinimalOsHome(home);
+    fs.writeFileSync(
+      path.join(home, 'consuelo.yaml'),
+      [
+        'version: 1',
+        'launcher:',
+        '  extraSections:',
+        '    - id: internal',
+        '      label: Internal',
+        '      links:',
+        '        - label: Users & installs',
+        '          href: https://internal.consuelohq.com/users',
+        '',
+      ].join('\n'),
+      { mode: 0o600 },
+    );
+    const tool = readFullToolManifest().tools.find((entry) => entry.kind === 'facade-tool');
+    expect(tool).toBeDefined();
+
+    await Effect.runPromise(applySettingsOverlayPatchEffect({
+      home,
+      patch: { kind: 'tool', name: tool!.name, enabled: false },
+      actor: {
+        actorType: 'user',
+        actorId: 'usr_settings',
+        workspaceId: 'wrk_settings',
+        correlationId: 'corr_preserve_launcher',
+      },
+    }));
+
+    for (const page of ['configuration', 'tools', 'nodes', 'environments', 'secrets']) {
+      const html = fs.readFileSync(path.join(home, 'sites', page, 'index.html'), 'utf8');
+      expect(html).toContain('data-custom-route-group=\"internal\"');
+      expect(html).toContain('>Users &amp; installs</span>');
+    }
+  });
+
   it('reads private settings state only through the Effect snapshot service', async () => {
     const home = fs.mkdtempSync(path.join(os.tmpdir(), 'consuelo-settings-control-plane-'));
     writeMinimalOsHome(home);
