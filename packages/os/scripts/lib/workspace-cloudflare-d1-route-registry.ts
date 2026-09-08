@@ -236,7 +236,25 @@ const writeCloudflareD1Record = async (input: {
   db: WorkspaceRouteD1Database;
   record: StoredWorkspaceRouteD1Record;
   existing?: boolean;
+  presenceOnly?: boolean;
 }): Promise<unknown> => {
+  if (input.presenceOnly) {
+    // Heartbeat timestamps do not change indexed routing metadata.
+    try {
+      const result = await getPreparedD1(input.db)
+        .prepare(
+          "UPDATE workspace_route_registry SET record_json = ?, updated_at = datetime('now') WHERE hostname = ?",
+        )
+        .bind(JSON.stringify(input.record), input.record.hostname)
+        .run();
+      if (d1WriteChanges(result) === 0) {
+        throw new Error('workspace route record was not found during update');
+      }
+      return result;
+    } catch (error: unknown) {
+      throw createD1RegistryError('presence update', error);
+    }
+  }
   const primaryRoute = input.record.routes[0];
   if (!primaryRoute) throw new Error('workspace route record must contain a route');
   const defaultNodeTarget = input.record.nodeTargets?.find(
@@ -336,6 +354,11 @@ const writeCloudflareD1Connector = async (input: {
           'VALUES (?, ?, ?, ?, ?, ?, datetime(\'now\'), datetime(\'now\'))',
           'ON CONFLICT(connector_id) DO UPDATE SET workspace_id = excluded.workspace_id, workspace_host = excluded.workspace_host,',
           'transport = excluded.transport, local_service_url = excluded.local_service_url, connector_status = excluded.connector_status, updated_at = datetime(\'now\')',
+          'WHERE workspace_connectors.workspace_id IS NOT excluded.workspace_id',
+          'OR workspace_connectors.workspace_host IS NOT excluded.workspace_host',
+          'OR workspace_connectors.transport IS NOT excluded.transport',
+          'OR workspace_connectors.local_service_url IS NOT excluded.local_service_url',
+          'OR workspace_connectors.connector_status IS NOT excluded.connector_status',
         ].join(' '),
       )
       .bind(
@@ -408,7 +431,7 @@ const readStoredRecord = async (
 const writeStoredRecord = async (
   db: WorkspaceRouteD1Database,
   record: StoredWorkspaceRouteD1Record,
-  options: { existing?: boolean } = {},
+  options: { existing?: boolean; presenceOnly?: boolean } = {},
 ): Promise<void> => {
   try {
     const state = states.get(db);
@@ -416,7 +439,7 @@ const writeStoredRecord = async (
       ensureMigrated(db).hostnameRows.set(record.hostname, cloneRecord(record));
       return;
     }
-    await writeCloudflareD1Record({ db, record, existing: options.existing });
+    await writeCloudflareD1Record({ db, record, ...options });
   } catch (error: unknown) {
     throw createD1RegistryError('hostname write', error);
   }
@@ -821,13 +844,14 @@ export const upsertWorkspaceNodeTargetInD1 = async (
             heartbeatTtlMs: input.target.heartbeatTtlMs,
           }
         : undefined;
-    const targets = [
+    const previousTargets = [
       ...(legacyTarget ? [legacyTarget] : []),
-      ...(base.nodeTargets ?? []).filter(
-        (candidate) => candidate.nodeId !== input.target.nodeId,
-      ),
-      { ...input.target },
-    ].filter(
+      ...(base.nodeTargets ?? []),
+    ];
+    const targets = (previousTargets.some((target) => target.nodeId === input.target.nodeId)
+      ? previousTargets.map((target) => target.nodeId === input.target.nodeId ? { ...input.target } : target)
+      : [...previousTargets, { ...input.target }]
+    ).filter(
       (candidate, index, candidates) =>
         candidates.findIndex((item) => item.nodeId === candidate.nodeId) === index,
     );
@@ -877,17 +901,18 @@ export const upsertWorkspaceNodeTargetInD1 = async (
       target: input.target,
       localServiceUrl: input.localServiceUrl ?? 'http://127.0.0.1:46320',
     });
-    await writeStoredRecord(
-      db,
-      {
-        ...base,
-        defaultNodeId,
-        nodeTargets: targets,
-        routes,
-        updatedAt: new Date().toISOString(),
-      },
-      { existing: Boolean(existing) },
-    );
+    const next = { ...base, defaultNodeId, nodeTargets: targets, routes };
+    if (existing && JSON.stringify(next) === JSON.stringify(existing)) return;
+    const topology = (record: StoredWorkspaceRouteD1Record): string =>
+      JSON.stringify({
+        ...record,
+        updatedAt: '',
+        nodeTargets: record.nodeTargets?.map(({ lastSeenAt: _lastSeenAt, ...target }) => target),
+      });
+    await writeStoredRecord(db, { ...next, updatedAt: new Date().toISOString() }, {
+      existing: Boolean(existing),
+      presenceOnly: Boolean(existing && topology(existing) === topology(next)),
+    });
   } catch (error: unknown) {
     throw createD1RegistryError('node target upsert', error);
   }

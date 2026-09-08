@@ -367,6 +367,8 @@ export function workspaceChromeClientScript(): string {
       const close = document.querySelector('button[data-close-traces]');
       const fullscreen = document.querySelector('[data-workspace-fullscreen]');
       const clock = document.querySelector('[data-workspace-clock]');
+      const INTERNAL_WORKSPACE_HOST = 'internal.consuelohq.com';
+      const INTERNAL_USERS_ROUTE = '/users';
       const TRACE_PREFETCH_KEY = 'consuelo:tracing-prefetch:v1';
       const TRACE_PREFETCH_URL = '/gateway/traces/recent?direction=older&cursor=latest&limit=40&site=trace-burn-intelligence&sourceMode=local-networked&includeRawPayload=false';
       const TRACE_PREFETCH_MAX_BYTES = 250000;
@@ -381,6 +383,35 @@ export function workspaceChromeClientScript(): string {
           return null;
         }
       };
+      const ensureInternalRoute = () => {
+        if (!(menu instanceof HTMLElement)) return;
+        if (window.location.hostname.toLowerCase() !== INTERNAL_WORKSPACE_HOST) return;
+        if (menu.querySelector('[data-workspace-internal-route], [data-private-route-return-to="/users"], a[href="/users"]')) return;
+
+        const section = document.createElement('section');
+        section.className = 'workspace-route-group';
+        section.dataset.customRouteGroup = 'internal';
+
+        const heading = document.createElement('p');
+        heading.textContent = 'Internal';
+
+        const link = document.createElement('a');
+        link.className = 'workspace-route-option';
+        link.setAttribute('role', 'menuitem');
+        link.setAttribute('data-workspace-internal-route', '');
+        link.href = INTERNAL_USERS_ROUTE;
+        link.dataset.privateRouteHost = INTERNAL_WORKSPACE_HOST;
+        link.dataset.privateRouteReturnTo = INTERNAL_USERS_ROUTE;
+
+        const label = document.createElement('span');
+        label.textContent = 'Users & installs';
+        link.appendChild(label);
+        section.append(heading, link);
+
+        const configureGroup = menu.querySelector('[data-route-group="Configure"]');
+        menu.insertBefore(section, configureGroup instanceof Element ? configureGroup : null);
+      };
+      ensureInternalRoute();
       const warmRoute = (href) => {
         const route = sameOriginRoute(href);
         if (!route || warmedRoutes.has(route) || route === window.location.pathname + window.location.search + window.location.hash) return;

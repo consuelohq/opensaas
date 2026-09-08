@@ -2,8 +2,8 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2690,
-    "mappedTestCount": 2605,
+    "testFileCount": 2691,
+    "mappedTestCount": 2606,
     "unmappedTestCount": 85,
     "ruleCount": 79,
     "explicitRuleCount": 60,
@@ -11,7 +11,7 @@
     "projectCount": 15,
     "packageTestScriptCount": 19,
     "byGroup": {
-      "packages/os/tests": 308,
+      "packages/os/tests": 309,
       "packages/workspace/tests": 66,
       "packages/twenty-server/test/integration/graphql/utils": 65,
       "packages/twenty-sdk/src/cli": 51,
@@ -635,7 +635,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 595,
+      "test": 596,
       "spec": 152,
       "tests-dir": 8,
       "other": 7,
@@ -1179,7 +1179,8 @@
         "packages/os/scripts/lib/workspace-cloudflare-d1-route-registry.ts",
         "packages/os/tests/cloudflare-d1-route-registry.test.ts",
         "packages/os/tests/lifecycle-engine.test.ts",
-        "packages/os/tests/workspace-node-registry-routing.test.ts"
+        "packages/os/tests/workspace-node-registry-routing.test.ts",
+        "packages/os/tests/workspace-route-heartbeat-write-budget.test.ts"
       ],
       "tests": [
         {
@@ -1204,6 +1205,14 @@
             "test",
             "tests/lifecycle-engine.test.ts",
             "tests/workspace-node-registry-routing.test.ts"
+          ]
+        },
+        {
+          "name": "OS heartbeat D1 write budget",
+          "command": [
+            "bun",
+            "test",
+            "packages/os/tests/workspace-route-heartbeat-write-budget.test.ts"
           ]
         }
       ],
@@ -1965,6 +1974,7 @@
         "packages/os/scripts/lib/settings-materialization.ts",
         "packages/os/scripts/lib/workspace-chrome.ts",
         "packages/os/scripts/lib/observability-traces-site.ts",
+        "packages/os/tests/workspace-chrome.test.ts",
         "packages/os/tests/settings-site.test.ts",
         "packages/os/tests/artifacts.test.ts",
         "packages/os/tests/launcher-nodes-materialization.test.ts",
@@ -1988,6 +1998,7 @@
             "tests/settings-site.test.ts",
             "tests/launcher-nodes-materialization.test.ts",
             "tests/observability-traces-site.test.ts",
+            "tests/workspace-chrome.test.ts",
             "tests/sites-cli.test.ts",
             "tests/launcher-local-customization.test.ts",
             "tests/install-state.test.ts",
@@ -6219,6 +6230,11 @@
     },
     {
       "path": "packages/os/tests/workspace-project-cwd.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/workspace-route-heartbeat-write-budget.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },

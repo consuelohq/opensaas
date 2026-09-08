@@ -42,7 +42,7 @@ const AUTHORITY_SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 const WORKSPACE_HANDOFF_TTL_MS = 60 * 1000;
 const WORKSPACE_SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 const INTERNAL_AUTH_HEADER = 'x-consuelo-internal-auth-secret';
-const PRIVATE_INTERNAL_SITE_HOST = 'internal.consuelohq.com';
+export const PRIVATE_INTERNAL_SITE_HOST = 'internal.consuelohq.com';
 
 function cookieValue(request: Request, name: string): string {
   const raw = request.headers.get('cookie') ?? '';
@@ -155,6 +155,21 @@ function activeMemberships(
       a.workspaceHost.localeCompare(b.workspaceHost) ||
       a.workspaceId.localeCompare(b.workspaceId),
     );
+}
+
+async function activePrivateInternalMembership(
+  runtime: DeviceAuthorityRuntime,
+  accountId: string,
+): Promise<WorkspaceMembership | undefined> {
+  try {
+    return activeMemberships(
+      await runtime.store.listWorkspaceMemberships(accountId),
+    ).find(
+      (membership) => membership.workspaceHost.toLowerCase() === PRIVATE_INTERNAL_SITE_HOST,
+    );
+  } catch {
+    throw new Error('private internal workspace membership lookup failed');
+  }
 }
 
 function canonicalWorkspaceHost(value: string): string {
@@ -387,6 +402,7 @@ export async function completeWebGoogleLogin(input: {
   accountId: string;
   email: string;
   returnPath: string;
+  targetHost?: string;
   cloudOnboardingEligible: boolean;
 }): Promise<Response> {
   try {
@@ -406,6 +422,9 @@ export async function completeWebGoogleLogin(input: {
       'return_to',
       normalizeAuthReturnPath(input.returnPath),
     );
+    if (input.targetHost === PRIVATE_INTERNAL_SITE_HOST) {
+      location.searchParams.set('target_host', PRIVATE_INTERNAL_SITE_HOST);
+    }
     return redirectWithCookies(location.toString(), [
       authorityCookie(token, AUTHORITY_SESSION_TTL_MS / 1000),
     ]);
@@ -576,6 +595,19 @@ async function handleWebAuthRequest(
       await runtime.store.listWorkspaceMemberships(session.accountId),
     );
     const returnPath = normalizeAuthReturnPath(url.searchParams.get('return_to'));
+    const requestedTargetHost = url.searchParams.get('target_host')?.trim().toLowerCase() ?? '';
+    if (requestedTargetHost && requestedTargetHost !== PRIVATE_INTERNAL_SITE_HOST) {
+      return json({ error: 'handoff_target_denied' }, { status: 403 });
+    }
+    if (requestedTargetHost === PRIVATE_INTERNAL_SITE_HOST) {
+      const membership = memberships.find(
+        (candidate) => candidate.workspaceHost.toLowerCase() === requestedTargetHost,
+      );
+      if (!membership) {
+        return json({ error: 'workspace_access_denied' }, { status: 403 });
+      }
+      return issueHandoff({ runtime, session, membership, returnPath });
+    }
     const choice = resolveMembershipChoice(memberships);
     if (choice.kind === 'none') {
       if (session.cloudOnboardingEligible === true) {
@@ -922,11 +954,18 @@ async function handleWebAuthRequest(
     if (targetHost !== PRIVATE_INTERNAL_SITE_HOST) {
       return json({ error: 'handoff_target_denied' }, { status: 403 });
     }
+    const membership = await activePrivateInternalMembership(
+      runtime,
+      auth.session.accountId,
+    );
+    if (!membership) {
+      return json({ error: 'workspace_access_denied' }, { status: 403 });
+    }
     const body = await params(request);
     return issueWorkspaceHandoff({
       runtime,
       accountId: auth.session.accountId,
-      workspaceId: auth.session.workspaceId,
+      workspaceId: membership.workspaceId,
       workspaceHost: targetHost,
       returnPath: body.get('return_to') ?? '/',
     });
@@ -999,6 +1038,19 @@ async function handleWebAuthRequest(
       requireWorkspaceId,
     });
     if (!auth.ok) return auth.response;
+    const requestedWorkspaceHost = request.headers
+      .get('x-consuelo-workspace-host')
+      ?.trim()
+      .toLowerCase() ?? '';
+    if (requestedWorkspaceHost === PRIVATE_INTERNAL_SITE_HOST) {
+      const membership = await activePrivateInternalMembership(
+        runtime,
+        auth.session.accountId,
+      );
+      if (!membership || auth.session.workspaceId !== membership.workspaceId) {
+        return json({ error: 'workspace_access_denied' }, { status: 403 });
+      }
+    }
     return new Response(null, {
       status: 204,
       headers: { 'cache-control': 'no-store' },

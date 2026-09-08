@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_5b900ab174b0",
+  "tmuxSession": "opensaas-os-bootstrap-stale-nodes-through-legacy-lifecycle-5b900ab1",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/bootstrap-stale-nodes-through-legacy-lifecycle",
+  "branch": "task/os/bootstrap-stale-nodes-through-legacy-lifecycle",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-bootstrap-stale-nodes-through-legacy-lifecycle",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-bootstrap-stale-nodes-through-legacy-lifecycle",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2305,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2305",
+  "createdAt": "2026-09-08T02:31:15.042Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-bootstrap-stale-nodes-through-legacy-lifecycle/.task/os/bootstrap-stale-nodes-through-legacy-lifecycle/session.json"
+}
