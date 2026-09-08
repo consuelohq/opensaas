@@ -189,6 +189,36 @@ describe('OS semantic embedding gateway default', () => {
     expect(observedTimeouts).toEqual([4_000, 8_000]);
   });
 
+  it('marks only unavailable gateway failures as semantic availability failures', async () => {
+    const gateway = loadIndexModule<GatewayModule>('embedding-gateway.js');
+    const configModule = loadIndexModule<EmbeddingConfigModule>('embedding-config.js');
+    const config = configModule.getEmbeddingConfig({ dimensions: 4 });
+
+    let localValidationError: unknown;
+    try {
+      await gateway.requestGatewayEmbeddings(['x'.repeat(4_001)], { kind: 'document' }, {
+        config,
+        fetchImpl: vi.fn(),
+      });
+    } catch (error: unknown) {
+      localValidationError = error;
+    }
+    expect(localValidationError).toBeInstanceOf(Error);
+    expect((localValidationError as Error & { semanticUnavailable?: boolean }).semanticUnavailable).not.toBe(true);
+
+    let providerError: unknown;
+    try {
+      await gateway.requestGatewayEmbeddings(['document text'], { kind: 'document' }, {
+        config,
+        fetchImpl: vi.fn(async () => new Response('provider timeout', { status: 503 })),
+      });
+    } catch (error: unknown) {
+      providerError = error;
+    }
+    expect(providerError).toBeInstanceOf(Error);
+    expect((providerError as Error & { semanticUnavailable?: boolean }).semanticUnavailable).toBe(true);
+  });
+
   it('keeps local embeddings as explicit opt-in mode', () => {
     withEnv({ CONSUELO_EMBEDDING_PROVIDER: 'local' }, () => {
       const configModule = loadIndexModule<EmbeddingConfigModule>('embedding-config.js');

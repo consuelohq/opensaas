@@ -678,6 +678,8 @@ describe('test selection registry', () => {
       '--changed-file',
       'packages/os/cloudflare/workspace-edge/wrangler.toml',
       '--changed-file',
+      'packages/os/scripts/lib/index/embedder.js',
+      '--changed-file',
       'packages/os/scripts/lib/index/embedding-gateway.js',
       '--changed-file',
       'packages/os/tests/explore-runtime-routing.test.ts',
