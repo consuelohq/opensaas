@@ -121,7 +121,7 @@ describe('Explore semantic index hydration availability', () => {
     }
   }, 20_000);
 
-  it('should bound a hung semantic provider and avoid a second query-time wait after hydration fails', async () => {
+  it('should avoid a second query-time wait when semantic hydration hangs', async () => {
     const root = mkdtempSync(path.join(os.tmpdir(), 'consuelo-explore-hydration-timeout-'));
     const repo = path.join(root, 'repo');
     const home = path.join(root, 'home');
