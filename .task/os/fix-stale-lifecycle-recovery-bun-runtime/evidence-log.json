@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/fix-stale-lifecycle-recovery-bun-runtime",
+  "events": [
+    {
+      "id": "239460f5-5c1e-4940-ac6f-ad3d8f83ec4e",
+      "occurred_at": "2026-09-08T14:41:12.102Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/cloudflare/os-device-authority/src/services/mcp-proxy.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-stale-lifecycle-recovery-bun-runtime",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-stale-lifecycle-recovery-bun-runtime"
+      }
+    },
+    {
+      "id": "cd973787-5548-44bf-8615-fe4bb730f042",
+      "occurred_at": "2026-09-08T14:41:23.939Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/cloudflare/os-device-authority/src/services/mcp-proxy.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-stale-lifecycle-recovery-bun-runtime",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-stale-lifecycle-recovery-bun-runtime"
+      }
+    },
+    {
+      "id": "2abbb329-1eba-46b6-a023-2a73bc3c7bc0",
+      "occurred_at": "2026-09-08T14:41:33.343Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/workspace-node-registry-routing.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-stale-lifecycle-recovery-bun-runtime",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-stale-lifecycle-recovery-bun-runtime"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-09-08T14:41:33.436Z"
+}

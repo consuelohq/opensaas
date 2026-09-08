@@ -202,7 +202,7 @@ export function legacyLifecycleBootstrapCommand(channel: string): string {
   if (script.includes("'")) {
     throw new Error('legacy lifecycle bootstrap must remain shell-literal safe');
   }
-  return `"$HOME/.bun/bin/bun" -e '${script}'`;
+  return `"$CONSUELO_HOME/bin/consuelo-os" -e '${script}'`;
 }
 
 function rewriteLegacyLifecycleUpdate(

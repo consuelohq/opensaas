@@ -2655,7 +2655,7 @@ describe('multi-node connector routing', () => {
         : undefined;
     expect(typeof command).toBe('string');
     if (typeof command !== 'string') throw new Error('legacy lifecycle recovery command missing');
-    expect(command).toContain('"$HOME/.bun/bin/bun" -e');
+    expect(command).toContain('"$CONSUELO_HOME/bin/consuelo-os" -e');
     expect(command).toContain('metadata.google.internal/computeMetadata/v1/instance/attributes/startup-script');
     expect(command).toContain('CONSUELO_RELEASE_BASE_URL');
     expect(command).toContain('CONSUELO_RELEASE_PUBLIC_KEYS_JSON');
@@ -2663,7 +2663,7 @@ describe('multi-node connector routing', () => {
     expect(command).toContain('trusted-release-keys.json');
     expect(command).toContain('const lifecyclePath=resolve(runtimeDir,"current","scripts","lifecycle.ts")');
     expect(command).toContain('const channel="stable"');
-    const commandPrefix = "\"$HOME/.bun/bin/bun\" -e '";
+    const commandPrefix = "\"$CONSUELO_HOME/bin/consuelo-os\" -e '";
     expect(command.startsWith(commandPrefix)).toBe(true);
     expect(command.endsWith("'")).toBe(true);
     const inlineScript = command.slice(commandPrefix.length, -1);
@@ -2733,7 +2733,7 @@ describe('multi-node connector routing', () => {
         : undefined;
     expect(typeof command).toBe('string');
     expect(command).toContain('trusted-release-keys.json');
-    expect(command).toContain('"$HOME/.bun/bin/bun" -e');
+    expect(command).toContain('"$CONSUELO_HOME/bin/consuelo-os" -e');
   });
 
   it('should bootstrap stale lifecycle updates even when the managed-cloud job failed before enrollment', async () => {
@@ -2946,6 +2946,57 @@ describe('multi-node connector routing', () => {
       error: { code: 'WORKSPACE_NODE_LEGACY_LIFECYCLE_INPUT_INVALID' },
     });
     expect(upstreamCalls).toBe(0);
+  });
+
+  it('should execute stale lifecycle recovery through the Consuelo-managed runtime when user-home Bun is absent', async () => {
+    const { spawnSync } = await import('node:child_process');
+    const { chmodSync, copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } = await import('node:fs');
+    const { tmpdir } = await import('node:os');
+    const { join } = await import('node:path');
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-legacy-managed-runtime-'));
+    const userHome = mkdtempSync(join(tmpdir(), 'consuelo-legacy-user-home-'));
+    try {
+      const binDir = join(home, 'bin');
+      const runtimeDir = join(home, 'runtime');
+      const lifecycleDir = join(runtimeDir, 'current', 'scripts');
+      mkdirSync(binDir, { recursive: true });
+      mkdirSync(lifecycleDir, { recursive: true });
+      const bunExecutable = spawnSync('which', ['bun'], { encoding: 'utf8' }).stdout.trim();
+      expect(bunExecutable).not.toBe('');
+      const managedRuntime = join(binDir, 'consuelo-os');
+      copyFileSync(bunExecutable, managedRuntime);
+      chmodSync(managedRuntime, 0o755);
+      const releaseKeys = {
+        release: '-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEA111111111111111111111111111111111111111=\n-----END PUBLIC KEY-----',
+      };
+      writeFileSync(
+        join(runtimeDir, 'trusted-release-keys.json'),
+        JSON.stringify(releaseKeys),
+        { encoding: 'utf8', mode: 0o600 },
+      );
+      const lifecycleMarker = join(home, 'legacy-lifecycle-managed-runtime.json');
+      writeFileSync(
+        join(lifecycleDir, 'lifecycle.ts'),
+        `await Bun.write(${JSON.stringify(lifecycleMarker)}, JSON.stringify({ execPath: process.execPath, keys: process.env.CONSUELO_RELEASE_PUBLIC_KEYS_JSON }));`,
+        'utf8',
+      );
+
+      const command = legacyLifecycleBootstrapCommand('stable');
+      const child = spawnSync('/bin/sh', ['-c', command], {
+        encoding: 'utf8',
+        env: { ...process.env, HOME: userHome, CONSUELO_HOME: home },
+      });
+
+      expect(existsSync(join(userHome, '.bun', 'bin', 'bun'))).toBe(false);
+      expect(child.status, child.stderr).toBe(0);
+      expect(JSON.parse(readFileSync(lifecycleMarker, 'utf8'))).toEqual({
+        execPath: realpathSync(managedRuntime),
+        keys: JSON.stringify(releaseKeys),
+      });
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+      rmSync(userHome, { recursive: true, force: true });
+    }
   });
 
   it('should use installed local release trust before managed-cloud metadata', async () => {

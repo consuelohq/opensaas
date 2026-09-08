@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-stale-lifecycle-recovery-bun-runtime",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2414,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2414",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-stale-lifecycle-recovery-bun-runtime",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_42bf9a00caaa",
+  "tmuxSession": "opensaas-os-fix-stale-lifecycle-recovery-bun-runtime-42bf9a00",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-stale-lifecycle-recovery-bun-runtime/.task/session.json",
+  "createdAt": "2026-09-08T14:40:49.064Z"
+}
