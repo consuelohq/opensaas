@@ -179,6 +179,14 @@ describe('managed cloud one-click provisioning', () => {
     expect(job?.status).toBe('connecting');
     expect(job?.enrollmentConsumedAt).toBe(nowMs);
 
+    await store.delWorkspaceNode(accountId, 'node_cloud_first');
+    await expect(store.byManagedCloudProvisioningNode('node_cloud_first')).resolves.toBeUndefined();
+    await expect(store.byManagedCloudProvisioningJob('mcpj_cloud_first')).resolves.toMatchObject({
+      jobId: 'mcpj_cloud_first',
+      nodeId: 'node_cloud_first',
+      status: 'connecting',
+    });
+
     const replay = await enroll();
     expect(replay.status).toBe(409);
   });

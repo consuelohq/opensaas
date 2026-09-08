@@ -907,6 +907,7 @@ export class DurableStore implements Store {
         if (boundAccountId === accountId) {
           await storage.delete(`wni:${nodeId}`);
         }
+        await storage.delete(managedCloudProvisioningNodeKey(nodeId));
         await storage.put(
           `wnl:${accountId}`,
           nodeIds.filter((candidate) => candidate !== nodeId),
@@ -959,6 +960,7 @@ export class DurableStore implements Store {
             (await storage.get<string[]>(`wnh:${node.workspaceHost}`)) ?? [];
           await storage.delete(`wn:${input.accountId}:${input.nodeId}`);
           await storage.delete(`wni:${input.nodeId}`);
+          await storage.delete(managedCloudProvisioningNodeKey(input.nodeId));
           await storage.put(
             `wnl:${input.accountId}`,
             nodeIds.filter((candidate) => candidate !== input.nodeId),
@@ -1380,6 +1382,11 @@ export class DurableStore implements Store {
       const job = await this.storage.get<ManagedCloudProvisioningJob>(managedCloudProvisioningJobKey(jobId));
       return job ? cloneManagedCloudProvisioningJob(job) : undefined;
     } catch { throw new Error('managed cloud provisioning node read failed'); }
+  }
+  async delManagedCloudProvisioningNode(nodeId: string) {
+    try {
+      await this.storage.delete(managedCloudProvisioningNodeKey(nodeId));
+    } catch { throw new Error('managed cloud provisioning node delete failed'); }
   }
   async claimNextManagedCloudProvisioningJob(input: { leaseId: string; nowMs: number; leaseExpiresAt: number; enrollmentNonce: string; enrollmentExpiresAt: number }) {
     const claim = async (storage: StorageLike) => {
@@ -1853,6 +1860,7 @@ export function createMemoryDeviceGrantStore(): Store {
       }
       workspaceNodes.delete(`${accountId}:${nodeId}`);
       if (boundAccountId === accountId) workspaceNodeAccounts.delete(nodeId);
+      managedCloudProvisioningNode.delete(nodeId);
       for (const [key, affinity] of workspaceTaskAffinities) {
         if (affinity.accountId === accountId && affinity.ownerNodeId === nodeId) {
           workspaceTaskAffinities.delete(key);
@@ -1878,6 +1886,7 @@ export function createMemoryDeviceGrantStore(): Store {
       if (workspaceNodeAccounts.get(input.nodeId) === input.accountId) {
         workspaceNodeAccounts.delete(input.nodeId);
       }
+      managedCloudProvisioningNode.delete(input.nodeId);
       for (const [affinityKey, affinity] of workspaceTaskAffinities) {
         if (affinity.accountId === input.accountId && affinity.ownerNodeId === input.nodeId) {
           workspaceTaskAffinities.delete(affinityKey);
@@ -2129,6 +2138,7 @@ export function createMemoryDeviceGrantStore(): Store {
     },
     byManagedCloudProvisioningJob(jobId) { const job = managedCloudProvisioningJobs.get(jobId); return Promise.resolve(job ? cloneManagedCloudProvisioningJob(job) : undefined); },
     byManagedCloudProvisioningNode(nodeId) { const jobId = managedCloudProvisioningNode.get(nodeId); const job = jobId ? managedCloudProvisioningJobs.get(jobId) : undefined; return Promise.resolve(job ? cloneManagedCloudProvisioningJob(job) : undefined); },
+    delManagedCloudProvisioningNode(nodeId) { managedCloudProvisioningNode.delete(nodeId); return Promise.resolve(); },
     claimNextManagedCloudProvisioningJob(input) {
       for (const jobId of managedCloudProvisioningQueue) { const job = managedCloudProvisioningJobs.get(jobId); if (!job || managedCloudProvisioningTerminal(job.status) || job.status === 'booting' || job.status === 'connecting') continue; if (job.leaseId && (job.leaseExpiresAt ?? 0) > input.nowMs) continue; const updated = { ...job, status: 'provisioning' as const, leaseId: input.leaseId, leaseExpiresAt: input.leaseExpiresAt, enrollmentNonce: job.enrollmentNonce ?? input.enrollmentNonce, enrollmentExpiresAt: job.enrollmentExpiresAt && job.enrollmentExpiresAt > input.nowMs ? job.enrollmentExpiresAt : input.enrollmentExpiresAt, updatedAt: input.nowMs }; managedCloudProvisioningJobs.set(jobId, updated); return Promise.resolve({ status: 'claimed' as const, job: cloneManagedCloudProvisioningJob(updated) }); }
       return Promise.resolve({ status: 'empty' as const });

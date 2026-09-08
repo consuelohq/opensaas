@@ -1,0 +1,13 @@
+{
+  "files": [
+    ".task/os/clear-stale-managed-cloud-node-identity/workpad.md",
+    "packages/os/cloudflare/os-device-authority/src/routes/managed-cloud-provisioning.ts",
+    "packages/os/cloudflare/os-device-authority/src/services/grants.ts",
+    "packages/os/cloudflare/os-device-authority/src/services/mcp-proxy.ts",
+    "packages/os/scripts/lib/managed-cloud-provisioning.ts",
+    "packages/os/tests/gateway-placeholder-workspace-auth.test.ts",
+    "packages/os/tests/managed-cloud-one-click-provisioning.test.ts",
+    "packages/os/tests/workspace-node-registry-routing.test.ts"
+  ],
+  "updatedAt": "2026-09-08T03:36:36.982Z"
+}

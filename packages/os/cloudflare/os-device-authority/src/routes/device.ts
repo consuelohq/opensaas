@@ -187,6 +187,12 @@ async function handleDeviceRequest(
           grant: g,
           defaultSiteSnapshot: input.defaultSiteSnapshot,
         });
+        await commitGrantApproval({
+          store: input.store,
+          grant: g,
+          accountId: g.accountId,
+          nowMs: now(),
+        });
       } catch (error: unknown) {
         const failureMessage = await failGrantWorkspaceRouteSetup({
           store: input.store,
@@ -201,12 +207,6 @@ async function handleDeviceRequest(
           { status: 502 },
         );
       }
-      await commitGrantApproval({
-        store: input.store,
-        grant: g,
-        accountId: g.accountId,
-        nowMs: now(),
-      });
       await recordCanonicalInstallIdentity(runtime, g);
       await input.store.del(g.hash);
       return json(approvedJson(g, runtime.workspaceEdgeInternalSigningSecret));
@@ -282,6 +282,12 @@ async function handleDeviceRequest(
           grant: g,
           defaultSiteSnapshot: input.defaultSiteSnapshot,
         });
+        await commitGrantApproval({
+          store: input.store,
+          grant: g,
+          accountId: auth.accountId,
+          nowMs: now(),
+        });
       } catch (error: unknown) {
         const failureMessage = await failGrantWorkspaceRouteSetup({
           store: input.store,
@@ -296,12 +302,6 @@ async function handleDeviceRequest(
           { status: 502 },
         );
       }
-      await commitGrantApproval({
-        store: input.store,
-        grant: g,
-        accountId: auth.accountId,
-        nowMs: now(),
-      });
       await recordCanonicalInstallIdentity(runtime, g);
       return json({
         status: 'approved',
