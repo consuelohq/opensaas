@@ -243,7 +243,15 @@ async function requestGatewayEmbeddings(texts, options = {}, runtime = {}) {
   }
 
   if (!response.ok) {
-    const details = await response.text().catch((error) => getErrorMessage(error));
+    let details;
+    try {
+      details = await response.text();
+    } catch (error) {
+      throw new EmbeddingGatewayUnavailableError(
+        `embedding gateway response body failed: ${getErrorMessage(error)}`,
+        { cause: error },
+      );
+    }
     const message = `embedding gateway failed (${response.status}): ${details.slice(0, 240)}`;
     if (isGatewayUnavailableStatus(response.status)) {
       throw new EmbeddingGatewayUnavailableError(message);
@@ -251,7 +259,15 @@ async function requestGatewayEmbeddings(texts, options = {}, runtime = {}) {
     throw new Error(message);
   }
 
-  const body = await response.json();
+  let body;
+  try {
+    body = await response.json();
+  } catch (error) {
+    throw new EmbeddingGatewayUnavailableError(
+      `embedding gateway response body failed: ${getErrorMessage(error)}`,
+      { cause: error },
+    );
+  }
   const rows = parseEmbeddingRows(body);
   if (rows.length !== texts.length) {
     throw new Error(`embedding gateway returned ${rows.length} embeddings for ${texts.length} inputs`);

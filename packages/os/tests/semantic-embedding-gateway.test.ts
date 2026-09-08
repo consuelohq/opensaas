@@ -40,8 +40,15 @@ type GatewayModule = {
   createGatewayEmbeddingAudit: (payload: GatewayPayload) => GatewayAudit;
   requestGatewayEmbeddings: (
     texts: string[],
-    options?: { kind?: string },
+    options?: { kind?: string; timeoutMs?: number },
     runtime?: { config?: EmbeddingConfig; fetchImpl?: typeof fetch; installId?: string; repoHash?: string },
+  ) => Promise<Float32Array[]>;
+};
+
+type EmbedderModule = {
+  embedTexts: (
+    texts: string[],
+    options?: { kind?: string; provider?: string; timeoutMs?: number },
   ) => Promise<Float32Array[]>;
 };
 
@@ -244,6 +251,62 @@ describe('OS semantic embedding gateway default', () => {
     }
     expect(providerError).toBeInstanceOf(Error);
     expect((providerError as Error & { semanticUnavailable?: boolean }).semanticUnavailable).toBe(true);
+  });
+
+  it('should mark gateway body-read failures unavailable when response headers already succeeded', async () => {
+    const gateway = loadIndexModule<GatewayModule>('embedding-gateway.js');
+    const configModule = loadIndexModule<EmbeddingConfigModule>('embedding-config.js');
+    const config = configModule.getEmbeddingConfig({ dimensions: 4 });
+    const bodyFailure = new DOMException('response body deadline reached', 'TimeoutError');
+    const fetchImpl = vi.fn(async () => ({
+      ok: true,
+      status: 200,
+      json: async () => {
+        throw bodyFailure;
+      },
+    }) as Response);
+
+    let observedError: unknown;
+    try {
+      await gateway.requestGatewayEmbeddings(['document text'], { kind: 'document' }, { config, fetchImpl });
+    } catch (error: unknown) {
+      observedError = error;
+    }
+
+    expect(observedError).toBeInstanceOf(Error);
+    expect((observedError as Error & { semanticUnavailable?: boolean }).semanticUnavailable).toBe(true);
+    expect((observedError as Error).cause).toBe(bodyFailure);
+  });
+
+  it('should preserve semantic unavailability when direct OpenRouter transport times out', async () => {
+    const originalFetch = globalThis.fetch;
+    const originalApiKey = process.env.CONSUELO_OPENROUTER_API_KEY;
+    const transportFailure = new DOMException('provider deadline reached', 'TimeoutError');
+    globalThis.fetch = vi.fn(async () => {
+      throw transportFailure;
+    }) as typeof fetch;
+    process.env.CONSUELO_OPENROUTER_API_KEY = 'test-openrouter-key';
+
+    try {
+      const embedder = loadIndexModule<EmbedderModule>('embedder.js');
+      let observedError: unknown;
+      try {
+        await embedder.embedTexts(['document text'], {
+          kind: 'document',
+          provider: 'openrouter',
+          timeoutMs: 1_000,
+        });
+      } catch (error: unknown) {
+        observedError = error;
+      }
+
+      expect(observedError).toBeInstanceOf(Error);
+      expect((observedError as Error & { semanticUnavailable?: boolean }).semanticUnavailable).toBe(true);
+    } finally {
+      globalThis.fetch = originalFetch;
+      if (originalApiKey === undefined) delete process.env.CONSUELO_OPENROUTER_API_KEY;
+      else process.env.CONSUELO_OPENROUTER_API_KEY = originalApiKey;
+    }
   });
 
   it('keeps local embeddings as explicit opt-in mode', () => {
