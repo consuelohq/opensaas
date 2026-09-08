@@ -37,6 +37,7 @@ const EXCLUDE_FILE_NAMES = new Set(['package-lock.json', 'yarn.lock']);
 const MAX_QUERY_HYDRATION_CHUNKS = 64;
 const MAX_CHANGED_HYDRATION_CHUNKS = 32;
 const MAX_GATEWAY_EMBEDDING_BATCH_SIZE = 32;
+const INTERACTIVE_HYDRATION_TIMEOUT_MS = 8_000;
 
 function writeStderr(value = '') {
   process.stderr.write(`${value}\n`);
@@ -145,6 +146,10 @@ function readFileContent(repoRoot, filePath) {
 
 async function indexChunkEmbeddings(store, chunks, options) {
   const batchSize = getEmbeddingBatchSize();
+  const hydrationDeadlineAt = Number.isFinite(options.hydrationTimeoutMs)
+    && options.hydrationTimeoutMs > 0
+    ? Date.now() + options.hydrationTimeoutMs
+    : null;
   let embeddedCount = 0;
   let skippedCount = 0;
   let processedCount = 0;
@@ -169,7 +174,18 @@ async function indexChunkEmbeddings(store, chunks, options) {
 
     if (uncached.length > 0) {
       try {
-        const vectors = await embedTexts(uncached.map((chunk) => chunk.content), { kind: 'document' });
+        const remainingTimeoutMs = hydrationDeadlineAt === null
+          ? null
+          : hydrationDeadlineAt - Date.now();
+        if (remainingTimeoutMs !== null && remainingTimeoutMs <= 0) {
+          const deadlineError = new Error('semantic hydration deadline exceeded');
+          deadlineError.semanticUnavailable = true;
+          throw deadlineError;
+        }
+        const vectors = await embedTexts(uncached.map((chunk) => chunk.content), {
+          kind: 'document',
+          ...(remainingTimeoutMs === null ? {} : { timeoutMs: remainingTimeoutMs }),
+        });
         for (let vectorIndex = 0; vectorIndex < uncached.length; vectorIndex += 1) {
           const chunk = uncached[vectorIndex];
           const vector = vectors[vectorIndex];
@@ -386,6 +402,9 @@ async function ensureIndex(options = {}) {
   });
   const totalChunks = chunksToEmbed.length;
   const embeddingResult = await indexChunkEmbeddings(store, chunksToEmbed, {
+    hydrationTimeoutMs: options.hydrateAll || options.reindex
+      ? null
+      : INTERACTIVE_HYDRATION_TIMEOUT_MS,
     json: options.json,
     totalChunks,
   });

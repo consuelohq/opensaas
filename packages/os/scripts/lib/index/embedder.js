@@ -18,6 +18,7 @@ const QUERY_INSTRUCTION = 'Instruct: Find code related to this question\nQuery: 
 const OPENROUTER_EMBEDDING_API_URL = 'https://openrouter.ai/api/v1/embeddings';
 const EMBEDDING_API_MODEL = EMBEDDING_CONFIG.apiModel || DEFAULT_API_MODEL;
 const MODEL_FILE_NAME = 'Qwen3-Embedding-4B-Q8_0.gguf';
+const OPENROUTER_TIMEOUT_MS = 60_000;
 
 const embeddingContextsByPath = new Map();
 const embeddingContextsPromiseByPath = new Map();
@@ -49,6 +50,13 @@ function wrapEmbeddingError(message, error) {
     wrapped.semanticUnavailable = true;
   }
   return wrapped;
+}
+
+function resolveEmbeddingTimeoutMs(defaultTimeoutMs, requestedTimeoutMs) {
+  if (!Number.isFinite(requestedTimeoutMs) || requestedTimeoutMs <= 0) {
+    return defaultTimeoutMs;
+  }
+  return Math.max(1, Math.min(defaultTimeoutMs, Math.floor(requestedTimeoutMs)));
 }
 
 function normalizeVector(vector) {
@@ -173,7 +181,7 @@ async function embedTexts(texts, options = {}) {
       if (!apiKey) {
         throw new Error('direct OpenRouter embeddings require CONSUELO_OPENROUTER_API_KEY');
       }
-      return embedTextsOpenRouter(texts, apiKey);
+      return embedTextsOpenRouter(texts, apiKey, options);
     }
     if (provider === CONSUELO_GATEWAY_PROVIDER) {
       const vectors = await requestGatewayEmbeddings(texts, options, {
@@ -189,14 +197,14 @@ async function embedTexts(texts, options = {}) {
     throw wrapEmbeddingError('batch embedding failed', error);
   }
 }
-async function embedTextsOpenRouter(texts, apiKey) {
+async function embedTextsOpenRouter(texts, apiKey, options = {}) {
   try {
     if (!Array.isArray(texts) || texts.length === 0) return [];
     const response = await fetch(OPENROUTER_EMBEDDING_API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
       body: JSON.stringify({ model: EMBEDDING_API_MODEL, input: texts }),
-      signal: AbortSignal.timeout(60000),
+      signal: AbortSignal.timeout(resolveEmbeddingTimeoutMs(OPENROUTER_TIMEOUT_MS, options.timeoutMs)),
     });
     if (!response.ok) {
       const details = await response.text();

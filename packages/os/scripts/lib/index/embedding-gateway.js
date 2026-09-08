@@ -45,6 +45,16 @@ function normalizeKind(kind) {
   return kind === 'query' ? 'query' : 'document';
 }
 
+function resolveGatewayTimeoutMs(kind, requestedTimeoutMs) {
+  const defaultTimeoutMs = normalizeKind(kind) === 'query'
+    ? GATEWAY_QUERY_TIMEOUT_MS
+    : GATEWAY_DOCUMENT_TIMEOUT_MS;
+  if (!Number.isFinite(requestedTimeoutMs) || requestedTimeoutMs <= 0) {
+    return defaultTimeoutMs;
+  }
+  return Math.max(1, Math.min(defaultTimeoutMs, Math.floor(requestedTimeoutMs)));
+}
+
 function getConsueloHome() {
   const raw = process.env.CONSUELO_HOME
     || process.env.CONSUELO_OS_HOME
@@ -210,9 +220,7 @@ async function requestGatewayEmbeddings(texts, options = {}, runtime = {}) {
     installId: runtime.installId,
     repoHash: runtime.repoHash,
   });
-  const timeoutMs = normalizeKind(options.kind) === 'query'
-    ? GATEWAY_QUERY_TIMEOUT_MS
-    : GATEWAY_DOCUMENT_TIMEOUT_MS;
+  const timeoutMs = resolveGatewayTimeoutMs(options.kind, options.timeoutMs);
 
   let response;
   try {

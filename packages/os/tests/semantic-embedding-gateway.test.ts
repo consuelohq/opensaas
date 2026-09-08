@@ -189,7 +189,34 @@ describe('OS semantic embedding gateway default', () => {
     expect(observedTimeouts).toEqual([4_000, 8_000]);
   });
 
-  it('marks only unavailable gateway failures as semantic availability failures', async () => {
+  it('should honor a smaller request deadline when the hydration budget is nearly exhausted', async () => {
+    const gateway = loadIndexModule<GatewayModule>('embedding-gateway.js');
+    const configModule = loadIndexModule<EmbeddingConfigModule>('embedding-config.js');
+    const config = configModule.getEmbeddingConfig({ dimensions: 4 });
+    const observedTimeouts: number[] = [];
+    const timeoutSpy = vi.spyOn(AbortSignal, 'timeout').mockImplementation((timeoutMs: number) => {
+      observedTimeouts.push(timeoutMs);
+      return new AbortController().signal;
+    });
+    const fetchImpl = vi.fn(async () => new Response(JSON.stringify({ data: [{ embedding: makeVector(4) }] }), {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    }));
+
+    try {
+      await gateway.requestGatewayEmbeddings(
+        ['document text'],
+        { kind: 'document', timeoutMs: 1_250 },
+        { config, fetchImpl },
+      );
+    } finally {
+      timeoutSpy.mockRestore();
+    }
+
+    expect(observedTimeouts).toEqual([1_250]);
+  });
+
+  it('should mark only unavailable gateway failures when classifying semantic availability', async () => {
     const gateway = loadIndexModule<GatewayModule>('embedding-gateway.js');
     const configModule = loadIndexModule<EmbeddingConfigModule>('embedding-config.js');
     const config = configModule.getEmbeddingConfig({ dimensions: 4 });
