@@ -126,14 +126,14 @@ function isJsonObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-export function legacyLifecycleBootstrapCommand(channel: string): string {
+export function legacyLifecycleBootstrapCommand(channel: string, platform = 'darwin'): string {
   const script = [
     'import { chmodSync, existsSync, lstatSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";',
-    'import { resolve } from "node:path";',
+    'import { isAbsolute, resolve } from "node:path";',
     `const channel=${JSON.stringify(channel)};`,
     'const defaultReleaseBaseUrl="https://install.consuelohq.com/os/releases";',
     'const home=process.env.CONSUELO_HOME?.trim();',
-    'if(!home||!home.startsWith("/"))throw new Error("CONSUELO_HOME unavailable");',
+    'if(!home||!isAbsolute(home))throw new Error("CONSUELO_HOME unavailable");',
     'const runtimeDir=resolve(home,"runtime");',
     'mkdirSync(runtimeDir,{recursive:true,mode:0o700});',
     'const trustPath=resolve(runtimeDir,"trusted-release-keys.json");',
@@ -231,6 +231,20 @@ export function legacyLifecycleBootstrapCommand(channel: string): string {
   if (script.includes("'")) {
     throw new Error('legacy lifecycle bootstrap must remain shell-literal safe');
   }
+  if (platform === 'windows') {
+    return [
+      'powershell.exe -NoLogo -NoProfile -NonInteractive -Command "',
+      '$legacyBun=$null;',
+      "if($env:CONSUELO_HOME){$candidate=Join-Path $env:CONSUELO_HOME 'bin\\bun.exe';if(Test-Path -LiteralPath $candidate -PathType Leaf){$legacyBun=$candidate}};",
+      "if(-not $legacyBun -and $env:BUN_BIN -and (Test-Path -LiteralPath $env:BUN_BIN -PathType Leaf)){$legacyBun=$env:BUN_BIN};",
+      "if(-not $legacyBun){$command=Get-Command bun.exe -ErrorAction SilentlyContinue;if(-not $command){$command=Get-Command bun -ErrorAction SilentlyContinue};if($command){$legacyBun=$command.Source}};",
+      "if(-not $legacyBun -and $env:USERPROFILE){$candidate=Join-Path $env:USERPROFILE '.bun\\bin\\bun.exe';if(Test-Path -LiteralPath $candidate -PathType Leaf){$legacyBun=$candidate}};",
+      "if(-not $legacyBun){[Console]::Error.WriteLine('legacy Bun runtime unavailable');exit 127};",
+      `& $legacyBun -e '${script}';`,
+      'exit $LASTEXITCODE"',
+    ].join('');
+  }
+
   const resolver = [
     'legacy_bun="";',
     'if [ -n "${CONSUELO_HOME:-}" ] && [ -x "$CONSUELO_HOME/bin/consuelo-os" ]; then legacy_bun="$CONSUELO_HOME/bin/consuelo-os";',
@@ -247,6 +261,7 @@ export function legacyLifecycleBootstrapCommand(channel: string): string {
 
 function rewriteLegacyLifecycleUpdate(
   requestBody: string,
+  platform: string,
 ): LegacyLifecycleRewriteResult {
   let payload: unknown;
   try {
@@ -326,7 +341,7 @@ function rewriteLegacyLifecycleUpdate(
         arguments: {
           tool: 'mac.call',
           input: {
-            command: legacyLifecycleBootstrapCommand(channel),
+            command: legacyLifecycleBootstrapCommand(channel, platform),
           },
         },
       },
@@ -788,7 +803,7 @@ export async function proxyCentralMcpRequest(input: {
         && routingInspection.facadeTool === 'lifecycle.update'
         && safeNode.compatibility !== 'compatible'
       ) {
-        const legacyRewrite = rewriteLegacyLifecycleUpdate(requestBody);
+        const legacyRewrite = rewriteLegacyLifecycleUpdate(requestBody, safeNode.platform);
         if (!legacyRewrite.ok) {
           return centralMcpSafeError({
             status: 400,
