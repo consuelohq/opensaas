@@ -4,7 +4,7 @@ import { createOsDeviceAuthorityHandler } from '../cloudflare/os-device-authorit
 import { legacyManagedCloudLifecycleBootstrapCommand } from '../cloudflare/os-device-authority/src/services/mcp-proxy';
 import { registerApprovedWorkspaceRoute } from '../cloudflare/os-device-authority/src/services/connectors';
 import { reconcileWorkspaceRouteState } from '../cloudflare/os-device-authority/src/services/connectors';
-import { prepareGrantApproval } from '../cloudflare/os-device-authority/src/services/grants';
+import { commitGrantApproval, prepareGrantApproval } from '../cloudflare/os-device-authority/src/services/grants';
 import {
   createMemoryDeviceGrantStore,
   DurableStore,
@@ -393,6 +393,7 @@ describe('workspace node identity', () => {
   it('accepts a declared identity replacement, which is what reinstalling a node produces', async () => {
     const store = createMemoryDeviceGrantStore();
     await seedWorkspace(store);
+    await seedManagedCloudProvisioningJob(store, 'node-home');
     const existingKey = generateWorkspaceDeviceKeyPair();
     const reinstalledKey = generateWorkspaceDeviceKeyPair();
     await store.putWorkspaceNode(
@@ -435,6 +436,19 @@ describe('workspace node identity', () => {
 
     expect(approved.nodeIdentityRotatedAt).toBe(baseNow);
     expect(approved.nodeStatus).toBe('reconnected');
+    await expect(store.byManagedCloudProvisioningNode('node-home')).resolves.toMatchObject({
+      jobId: 'mcpj_node-home',
+    });
+    await commitGrantApproval({
+      store,
+      grant: approved,
+      accountId,
+      nowMs: baseNow,
+    });
+    await expect(store.byManagedCloudProvisioningNode('node-home')).resolves.toBeUndefined();
+    await expect(store.byManagedCloudProvisioningJob('mcpj_node-home')).resolves.toMatchObject({
+      nodeId: 'node-home',
+    });
     const stored = await store.byWorkspaceNode(accountId, 'node-home');
     expect(stored?.devicePublicKeyThumbprint).toBe(
       await devicePublicKeyThumbprint(reinstalledKey.publicKeyJwk),
@@ -448,6 +462,7 @@ describe('workspace node identity', () => {
   it('does not stamp a rotation when the identity key is unchanged', async () => {
     const store = createMemoryDeviceGrantStore();
     await seedWorkspace(store);
+    await seedManagedCloudProvisioningJob(store, 'node-home');
     const keyPair = generateWorkspaceDeviceKeyPair();
     const thumbprint = await devicePublicKeyThumbprint(keyPair.publicKeyJwk);
     await store.putWorkspaceNode(
@@ -484,6 +499,15 @@ describe('workspace node identity', () => {
     });
 
     expect(approved.nodeIdentityRotatedAt).toBeUndefined();
+    await commitGrantApproval({
+      store,
+      grant: approved,
+      accountId,
+      nowMs: baseNow,
+    });
+    await expect(store.byManagedCloudProvisioningNode('node-home')).resolves.toMatchObject({
+      jobId: 'mcpj_node-home',
+    });
   });
 
   it('restores the previous key when route provisioning fails after a replacement', async () => {
@@ -492,6 +516,7 @@ describe('workspace node identity', () => {
     );
     const store = createMemoryDeviceGrantStore();
     await seedWorkspace(store);
+    await seedManagedCloudProvisioningJob(store, 'node-home');
     const existingKey = generateWorkspaceDeviceKeyPair();
     const reinstalledKey = generateWorkspaceDeviceKeyPair();
     const existingThumbprint = await devicePublicKeyThumbprint(
@@ -545,6 +570,77 @@ describe('workspace node identity', () => {
     const restored = await store.byWorkspaceNode(accountId, 'node-home');
     expect(restored?.devicePublicKeyJwk).toBe(existingKey.publicKeyJwk);
     expect(restored?.devicePublicKeyThumbprint).toBe(existingThumbprint);
+    await expect(store.byManagedCloudProvisioningNode('node-home')).resolves.toMatchObject({
+      jobId: 'mcpj_node-home',
+    });
+  });
+
+  it('can roll back a replacement when managed-cloud binding cleanup fails during commit', async () => {
+    const { failGrantWorkspaceRouteSetup } = await import(
+      '../cloudflare/os-device-authority/src/services/grants'
+    );
+    const backingStore = createMemoryDeviceGrantStore();
+    await seedWorkspace(backingStore);
+    await seedManagedCloudProvisioningJob(backingStore, 'node-home');
+    const existingKey = generateWorkspaceDeviceKeyPair();
+    const reinstalledKey = generateWorkspaceDeviceKeyPair();
+    const existingThumbprint = await devicePublicKeyThumbprint(existingKey.publicKeyJwk);
+    await backingStore.putWorkspaceNode(
+      node({
+        nodeId: 'node-home',
+        displayName: 'Mac Mini',
+        role: 'home',
+        connectorId: 'connector_node_home',
+        publicKeyJwk: existingKey.publicKeyJwk,
+        publicKeyThumbprint: existingThumbprint,
+      }),
+    );
+    const store = {
+      ...backingStore,
+      delManagedCloudProvisioningNode: async () => {
+        throw new Error('injected managed-cloud binding delete failure');
+      },
+    };
+    const grant: Grant = {
+      hash: 'grant_commit_cleanup_failure',
+      userCode: 'ABCD-EFGH',
+      workspaceSlug,
+      workspaceHost,
+      status: 'pending',
+      expiresAt: baseNow + 300_000,
+      interval: 5,
+      devicePublicKeyJwk: reinstalledKey.publicKeyJwk,
+      deviceKeyAlgorithm: 'Ed25519',
+      devicePublicKeyThumbprint: await devicePublicKeyThumbprint(reinstalledKey.publicKeyJwk),
+      nodeId: 'node-home',
+      nodeName: 'Mac Mini',
+      nodeIdentityReplacement: true,
+    };
+
+    const approved = await prepareGrantApproval({
+      store,
+      grant,
+      accountId,
+      authMethod: 'google',
+      nowMs: baseNow,
+    });
+    let commitError: unknown;
+    try {
+      await commitGrantApproval({ store, grant: approved, accountId, nowMs: baseNow });
+    } catch (error: unknown) {
+      commitError = error;
+    }
+    expect(commitError).toBeInstanceOf(Error);
+    expect(String(commitError)).toContain('injected managed-cloud binding delete failure');
+
+    await failGrantWorkspaceRouteSetup({ store, grant: approved, error: commitError });
+    await expect(backingStore.byWorkspaceNode(accountId, 'node-home')).resolves.toMatchObject({
+      devicePublicKeyJwk: existingKey.publicKeyJwk,
+      devicePublicKeyThumbprint: existingThumbprint,
+    });
+    await expect(backingStore.byManagedCloudProvisioningNode('node-home')).resolves.toMatchObject({
+      jobId: 'mcpj_node-home',
+    });
   });
 
   it('refuses to resurrect a revoked node even with a declared replacement', async () => {
@@ -685,7 +781,29 @@ describe('workspace node management and presence', () => {
     });
 
     await store.putWorkspaceNode(registered);
+    await store.createManagedCloudProvisioningJob({
+      jobId: 'mcpj_node-deleted',
+      accountId,
+      workspaceId,
+      workspaceSlug,
+      workspaceHost,
+      nodeId: registered.nodeId,
+      nodeName: 'Deleted Cloud',
+      planId: 'starter',
+      region: 'us-east1',
+      pricingVersion: 'test-v1',
+      monthlyPriceCents: 2_000,
+      currency: 'USD',
+      idempotencyKey: 'idem_node-deleted',
+      status: 'ready',
+      createdAt: baseNow,
+      updatedAt: baseNow,
+      readyAt: baseNow,
+    });
     expect(values.get(`wnh:${workspaceHost}`)).toEqual([registered.nodeId]);
+    await expect(store.byManagedCloudProvisioningNode(registered.nodeId)).resolves.toMatchObject({
+      jobId: 'mcpj_node-deleted',
+    });
 
     await store.delWorkspaceNode(accountId, registered.nodeId);
 
@@ -693,6 +811,10 @@ describe('workspace node management and presence', () => {
     await expect(
       store.listWorkspaceNodesByHost(workspaceHost),
     ).resolves.toEqual([]);
+    await expect(store.byManagedCloudProvisioningNode(registered.nodeId)).resolves.toBeUndefined();
+    await expect(store.byManagedCloudProvisioningJob('mcpj_node-deleted')).resolves.toMatchObject({
+      nodeId: registered.nodeId,
+    });
   });
 
   it('keeps provisioned nodes offline until their first heartbeat', async () => {
@@ -915,6 +1037,25 @@ describe('workspace node management and presence', () => {
       publicKeyThumbprint: 'dpk_affinity_owner',
     });
     await store.putWorkspaceNode(owner);
+    await store.createManagedCloudProvisioningJob({
+      jobId: 'mcpj_affinity_owner',
+      accountId,
+      workspaceId,
+      workspaceSlug,
+      workspaceHost,
+      nodeId: owner.nodeId,
+      nodeName: 'Affinity Cloud',
+      planId: 'starter',
+      region: 'us-east1',
+      pricingVersion: 'test-v1',
+      monthlyPriceCents: 2_000,
+      currency: 'USD',
+      idempotencyKey: 'idem_affinity_owner',
+      status: 'ready',
+      createdAt: baseNow,
+      updatedAt: baseNow,
+      readyAt: baseNow,
+    });
     await store.claimWorkspaceTaskAffinity({
       accountId,
       workspaceId,
@@ -932,6 +1073,9 @@ describe('workspace node management and presence', () => {
       updatedAt: owner.updatedAt + 1,
       devicePublicKeyThumbprint: owner.devicePublicKeyThumbprint,
     })).resolves.toBe(false);
+    await expect(store.byManagedCloudProvisioningNode(owner.nodeId)).resolves.toMatchObject({
+      jobId: 'mcpj_affinity_owner',
+    });
     await expect(store.byWorkspaceTaskAffinity({
       accountId,
       workspaceHost,
@@ -945,6 +1089,10 @@ describe('workspace node management and presence', () => {
       updatedAt: owner.updatedAt,
       devicePublicKeyThumbprint: owner.devicePublicKeyThumbprint,
     })).resolves.toBe(true);
+    await expect(store.byManagedCloudProvisioningNode(owner.nodeId)).resolves.toBeUndefined();
+    await expect(store.byManagedCloudProvisioningJob('mcpj_affinity_owner')).resolves.toMatchObject({
+      nodeId: owner.nodeId,
+    });
     await expect(store.byWorkspaceTaskAffinity({
       accountId,
       workspaceHost,
