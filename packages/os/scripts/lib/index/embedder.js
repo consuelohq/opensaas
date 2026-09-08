@@ -52,6 +52,16 @@ function wrapEmbeddingError(message, error) {
   return wrapped;
 }
 
+function semanticUnavailableError(message, error) {
+  const wrapped = new Error(`${message}: ${getErrorMessage(error)}`, { cause: error });
+  wrapped.semanticUnavailable = true;
+  return wrapped;
+}
+
+function isProviderUnavailableStatus(status) {
+  return status === 408 || status === 429 || status >= 500;
+}
+
 function resolveEmbeddingTimeoutMs(defaultTimeoutMs, requestedTimeoutMs) {
   if (!Number.isFinite(requestedTimeoutMs) || requestedTimeoutMs <= 0) {
     return defaultTimeoutMs;
@@ -200,17 +210,38 @@ async function embedTexts(texts, options = {}) {
 async function embedTextsOpenRouter(texts, apiKey, options = {}) {
   try {
     if (!Array.isArray(texts) || texts.length === 0) return [];
-    const response = await fetch(OPENROUTER_EMBEDDING_API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
-      body: JSON.stringify({ model: EMBEDDING_API_MODEL, input: texts }),
-      signal: AbortSignal.timeout(resolveEmbeddingTimeoutMs(OPENROUTER_TIMEOUT_MS, options.timeoutMs)),
-    });
-    if (!response.ok) {
-      const details = await response.text();
-      throw new Error(`direct embedding provider failed (${response.status}): ${details}`);
+    let response;
+    try {
+      response = await fetch(OPENROUTER_EMBEDDING_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+        body: JSON.stringify({ model: EMBEDDING_API_MODEL, input: texts }),
+        signal: AbortSignal.timeout(resolveEmbeddingTimeoutMs(OPENROUTER_TIMEOUT_MS, options.timeoutMs)),
+      });
+    } catch (error) {
+      throw semanticUnavailableError('direct embedding provider request failed', error);
     }
-    const data = await response.json();
+    if (!response.ok) {
+      let details;
+      try {
+        details = await response.text();
+      } catch (error) {
+        throw semanticUnavailableError('direct embedding provider response body failed', error);
+      }
+      const message = `direct embedding provider failed (${response.status}): ${details}`;
+      if (isProviderUnavailableStatus(response.status)) {
+        const unavailableError = new Error(message);
+        unavailableError.semanticUnavailable = true;
+        throw unavailableError;
+      }
+      throw new Error(message);
+    }
+    let data;
+    try {
+      data = await response.json();
+    } catch (error) {
+      throw semanticUnavailableError('direct embedding provider response body failed', error);
+    }
     const embeddings = data.data || [];
     if (embeddings.length !== texts.length) {
       throw new Error(`direct embedding provider returned ${embeddings.length} embeddings for ${texts.length} inputs`);
@@ -220,7 +251,7 @@ async function embedTextsOpenRouter(texts, apiKey, options = {}) {
       return prepareVector(new Float32Array(item.embedding));
     });
   } catch (error /* unknown */) {
-    throw new Error(`direct embedding batch failed: ${getErrorMessage(error)}`);
+    throw wrapEmbeddingError('direct embedding batch failed', error);
   }
 }
 
