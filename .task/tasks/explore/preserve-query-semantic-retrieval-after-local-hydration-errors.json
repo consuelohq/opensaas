@@ -1,0 +1,16 @@
+{
+  "area": "explore",
+  "stream": "stream/explore",
+  "taskBranch": "task/explore/preserve-query-semantic-retrieval-after-local-hydration-errors",
+  "baseBranch": "stream/explore",
+  "sourceBranch": "stream/explore",
+  "startFrom": "stream",
+  "prNumber": 2419,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2419",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-explore-preserve-query-semantic-retrieval-after-local-hydration-errors",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_e5421d2cb498",
+  "tmuxSession": "opensaas-explore-preserve-query-semantic-retrieval-after-local-hy-e5421d2c",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-explore-preserve-query-semantic-retrieval-after-local-hydration-errors/.task/session.json",
+  "createdAt": "2026-09-08T14:51:25.748Z"
+}
