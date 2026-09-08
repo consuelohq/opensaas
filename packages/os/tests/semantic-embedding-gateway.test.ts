@@ -165,7 +165,7 @@ describe('OS semantic embedding gateway default', () => {
     expect(vectors[0]).toHaveLength(4);
   });
 
-  it('uses shorter interactive deadlines for query embeddings than document hydration', async () => {
+  it('should use shorter query deadlines when comparing query embeddings with document hydration', async () => {
     const gateway = loadIndexModule<GatewayModule>('embedding-gateway.js');
     const configModule = loadIndexModule<EmbeddingConfigModule>('embedding-config.js');
     const config = configModule.getEmbeddingConfig({ dimensions: 4 });
