@@ -3063,7 +3063,7 @@ describe('multi-node connector routing', () => {
         ['-e', `globalThis.fetch=async()=>{throw new Error("metadata should not be read");};${inlineScript}`],
         {
           encoding: 'utf8',
-          env: { ...process.env, CONSUELO_HOME: home },
+          env: { ...process.env, CONSUELO_HOME: home, CONSUELO_RELEASE_GCP_METADATA_AUTH: '1' },
         },
       );
 
@@ -3074,6 +3074,57 @@ describe('multi-node connector routing', () => {
         keys: JSON.stringify(releaseKeys),
         gcpAuth: null,
       });
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
+  });
+
+  it('should preserve managed GCS metadata auth when stale recovery reuses installed local trust', async () => {
+    const { spawnSync } = await import('node:child_process');
+    const { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } = await import('node:fs');
+    const { tmpdir } = await import('node:os');
+    const { join } = await import('node:path');
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-legacy-gcs-retry-trust-'));
+    try {
+      const runtimeDir = join(home, 'runtime');
+      const lifecycleDir = join(runtimeDir, 'current', 'scripts');
+      mkdirSync(lifecycleDir, { recursive: true });
+      const releaseKeys = {
+        release: '-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEA111111111111111111111111111111111111111=\n-----END PUBLIC KEY-----',
+      };
+      writeFileSync(
+        join(runtimeDir, 'trusted-release-keys.json'),
+        JSON.stringify(releaseKeys),
+        { encoding: 'utf8', mode: 0o600 },
+      );
+      const lifecycleMarker = join(home, 'legacy-lifecycle-gcs-retry-trust');
+      writeFileSync(
+        join(lifecycleDir, 'lifecycle.ts'),
+        `await Bun.write(${JSON.stringify(lifecycleMarker)}, process.env.CONSUELO_RELEASE_GCP_METADATA_AUTH ?? '');`,
+        'utf8',
+      );
+      const command = legacyLifecycleBootstrapCommand('stable');
+      const inlineMarker = " -e '";
+      const inlineStart = command.indexOf(inlineMarker);
+      expect(inlineStart).toBeGreaterThanOrEqual(0);
+      const inlineScript = command.slice(inlineStart + inlineMarker.length, -1);
+      const child = spawnSync(
+        'bun',
+        ['-e', `globalThis.fetch=async()=>{throw new Error(\"metadata should not be read when local trust exists\");};${inlineScript}`],
+        {
+          encoding: 'utf8',
+          env: {
+            ...process.env,
+            CONSUELO_HOME: home,
+            CONSUELO_RELEASE_BASE_URL: 'https://storage.googleapis.com/consuelo-os-releases-prod',
+            CONSUELO_RELEASE_GCP_METADATA_AUTH: '1',
+          },
+        },
+      );
+
+      expect(child.status).toBe(0);
+      expect(existsSync(lifecycleMarker)).toBe(true);
+      expect(readFileSync(lifecycleMarker, 'utf8')).toBe('1');
     } finally {
       rmSync(home, { recursive: true, force: true });
     }
