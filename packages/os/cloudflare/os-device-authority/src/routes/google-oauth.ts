@@ -338,6 +338,13 @@ async function handleGoogleOAuthRequest(
             grant,
             defaultSiteSnapshot: input.defaultSiteSnapshot,
           });
+          await input.store.delOAuthState(stateValue);
+          await commitGrantApproval({
+            store: input.store,
+            grant,
+            accountId,
+            nowMs: now(),
+          });
         } catch (error: unknown) {
           const failureMessage = await failGrantWorkspaceRouteSetup({
             store: input.store,
@@ -353,13 +360,6 @@ async function handleGoogleOAuthRequest(
             { status: 502 },
           );
         }
-        await input.store.delOAuthState(stateValue);
-        await commitGrantApproval({
-          store: input.store,
-          grant,
-          accountId,
-          nowMs: now(),
-        });
         await recordCanonicalInstallIdentity(runtime, grant);
         return text(
           page({
