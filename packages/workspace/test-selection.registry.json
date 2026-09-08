@@ -983,6 +983,7 @@
         "packages/os/scripts/lib/facade/executor.ts",
         "packages/os/scripts/lib/cloudflare-worker-release-readiness.ts",
         "packages/os/scripts/lib/explore-bench.js",
+        "packages/os/scripts/lib/index/embedder.js",
         "packages/os/scripts/lib/index/embedding-gateway.js",
         "packages/os/scripts/lib/index/indexer.js",
         "packages/os/scripts/lib/index/store.js",

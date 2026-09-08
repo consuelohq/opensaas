@@ -182,14 +182,18 @@ async function indexChunkEmbeddings(store, chunks, options) {
         skippedCount += uncached.length;
         const remainingAfterBatch = Math.max(0, chunks.length - (index + batch.length));
         const message = error instanceof Error ? error.message : String(error);
+        const semanticUnavailable = Boolean(
+          error && typeof error === 'object' && error.semanticUnavailable === true,
+        );
         if (!options.json) {
-          writeStderr(`warning: semantic hydration paused after provider failure: ${message}`);
+          writeStderr(`warning: semantic hydration paused after failure: ${message}`);
         }
         return {
           embeddedCount,
           skippedCount,
           deferredCount: uncached.length + remainingAfterBatch,
           failure: message,
+          semanticUnavailable,
         };
       }
     }
@@ -200,7 +204,13 @@ async function indexChunkEmbeddings(store, chunks, options) {
     }
   }
 
-  return { embeddedCount, skippedCount, deferredCount: 0, failure: null };
+  return {
+    embeddedCount,
+    skippedCount,
+    deferredCount: 0,
+    failure: null,
+    semanticUnavailable: false,
+  };
 }
 
 function getEmbeddingBatchSize() {
@@ -414,6 +424,7 @@ async function ensureIndex(options = {}) {
     chunksSkipped: embeddingResult.skippedCount,
     chunksDeferred: embeddingResult.deferredCount,
     embeddingFailure: embeddingResult.failure,
+    embeddingUnavailable: embeddingResult.semanticUnavailable,
     stats: store.getStats(),
   };
 }

@@ -43,6 +43,14 @@ function getErrorMessage(error) {
   return error instanceof Error ? error.message : String(error);
 }
 
+function wrapEmbeddingError(message, error) {
+  const wrapped = new Error(`${message}: ${getErrorMessage(error)}`, { cause: error });
+  if (error && typeof error === 'object' && error.semanticUnavailable === true) {
+    wrapped.semanticUnavailable = true;
+  }
+  return wrapped;
+}
+
 function normalizeVector(vector) {
   let magnitude = 0;
   for (const value of vector) {
@@ -178,7 +186,7 @@ async function embedTexts(texts, options = {}) {
 
     throw new Error(`Unsupported embedding provider: ${provider}`);
   } catch (error /* unknown */) {
-    throw new Error(`batch embedding failed: ${getErrorMessage(error)}`);
+    throw wrapEmbeddingError('batch embedding failed', error);
   }
 }
 async function embedTextsOpenRouter(texts, apiKey) {

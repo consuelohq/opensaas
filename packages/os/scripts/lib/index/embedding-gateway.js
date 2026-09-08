@@ -25,6 +25,18 @@ function getErrorMessage(error) {
   return error instanceof Error ? error.message : String(error);
 }
 
+class EmbeddingGatewayUnavailableError extends Error {
+  constructor(message, options = {}) {
+    super(message, options);
+    this.name = 'EmbeddingGatewayUnavailableError';
+    this.semanticUnavailable = true;
+  }
+}
+
+function isGatewayUnavailableStatus(status) {
+  return status === 408 || status === 429 || status >= 500;
+}
+
 function sha256(value) {
   return crypto.createHash('sha256').update(value).digest('hex');
 }
@@ -216,12 +228,19 @@ async function requestGatewayEmbeddings(texts, options = {}, runtime = {}) {
       signal: AbortSignal.timeout(timeoutMs),
     });
   } catch (error) {
-    throw new Error(`embedding gateway request failed: ${getErrorMessage(error)}`, { cause: error });
+    throw new EmbeddingGatewayUnavailableError(
+      `embedding gateway request failed: ${getErrorMessage(error)}`,
+      { cause: error },
+    );
   }
 
   if (!response.ok) {
     const details = await response.text().catch((error) => getErrorMessage(error));
-    throw new Error(`embedding gateway failed (${response.status}): ${details.slice(0, 240)}`);
+    const message = `embedding gateway failed (${response.status}): ${details.slice(0, 240)}`;
+    if (isGatewayUnavailableStatus(response.status)) {
+      throw new EmbeddingGatewayUnavailableError(message);
+    }
+    throw new Error(message);
   }
 
   const body = await response.json();
