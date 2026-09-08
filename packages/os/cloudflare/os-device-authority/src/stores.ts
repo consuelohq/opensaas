@@ -1373,6 +1373,14 @@ export class DurableStore implements Store {
       return job ? cloneManagedCloudProvisioningJob(job) : undefined;
     } catch { throw new Error('managed cloud provisioning job read failed'); }
   }
+  async byManagedCloudProvisioningNode(nodeId: string) {
+    try {
+      const jobId = await this.storage.get<string>(managedCloudProvisioningNodeKey(nodeId));
+      if (!jobId) return undefined;
+      const job = await this.storage.get<ManagedCloudProvisioningJob>(managedCloudProvisioningJobKey(jobId));
+      return job ? cloneManagedCloudProvisioningJob(job) : undefined;
+    } catch { throw new Error('managed cloud provisioning node read failed'); }
+  }
   async claimNextManagedCloudProvisioningJob(input: { leaseId: string; nowMs: number; leaseExpiresAt: number; enrollmentNonce: string; enrollmentExpiresAt: number }) {
     const claim = async (storage: StorageLike) => {
       const queue = (await storage.get<string[]>(MANAGED_CLOUD_PROVISIONING_QUEUE_KEY)) ?? [];
@@ -2120,6 +2128,7 @@ export function createMemoryDeviceGrantStore(): Store {
       return Promise.resolve({ status: 'created' as const, job: cloneManagedCloudProvisioningJob(job) });
     },
     byManagedCloudProvisioningJob(jobId) { const job = managedCloudProvisioningJobs.get(jobId); return Promise.resolve(job ? cloneManagedCloudProvisioningJob(job) : undefined); },
+    byManagedCloudProvisioningNode(nodeId) { const jobId = managedCloudProvisioningNode.get(nodeId); const job = jobId ? managedCloudProvisioningJobs.get(jobId) : undefined; return Promise.resolve(job ? cloneManagedCloudProvisioningJob(job) : undefined); },
     claimNextManagedCloudProvisioningJob(input) {
       for (const jobId of managedCloudProvisioningQueue) { const job = managedCloudProvisioningJobs.get(jobId); if (!job || managedCloudProvisioningTerminal(job.status) || job.status === 'booting' || job.status === 'connecting') continue; if (job.leaseId && (job.leaseExpiresAt ?? 0) > input.nowMs) continue; const updated = { ...job, status: 'provisioning' as const, leaseId: input.leaseId, leaseExpiresAt: input.leaseExpiresAt, enrollmentNonce: job.enrollmentNonce ?? input.enrollmentNonce, enrollmentExpiresAt: job.enrollmentExpiresAt && job.enrollmentExpiresAt > input.nowMs ? job.enrollmentExpiresAt : input.enrollmentExpiresAt, updatedAt: input.nowMs }; managedCloudProvisioningJobs.set(jobId, updated); return Promise.resolve({ status: 'claimed' as const, job: cloneManagedCloudProvisioningJob(updated) }); }
       return Promise.resolve({ status: 'empty' as const });
