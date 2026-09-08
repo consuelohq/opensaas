@@ -2674,6 +2674,81 @@ describe('multi-node connector routing', () => {
     expect(inlineScript.includes("'")).toBe(false);
   });
 
+  it('should generate a Windows-compatible lifecycle recovery command for an explicitly routed stale Windows node', async () => {
+    const store = createMemoryDeviceGrantStore();
+    await seedWorkspace(store);
+    await authorizeWorkspace(store, 'central-windows-lifecycle-recovery-token', {
+      scopes: ['workspace:read', 'route:/mcp:read', 'mcp:call', 'tool:*:read'],
+    });
+    const member = await store.byWorkspaceNode(accountId, 'node-member');
+    expect(member).toBeDefined();
+    await store.putWorkspaceNode({
+      ...member!,
+      platform: 'windows',
+      architecture: 'x64',
+      osVersion: undefined,
+      bundleId: undefined,
+      mcpProtocolVersion: undefined,
+      mcpReady: undefined,
+    });
+    const routeDatabase = createInMemoryWorkspaceRouteD1();
+    await seedRoutes(routeDatabase);
+    let forwarded: { tool?: unknown; input?: unknown; nodeId?: unknown } | undefined;
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      origin,
+      now: () => baseNow,
+      workspaceRouteRegistry: routeDatabase,
+      fetchImpl: async (request) => {
+        const body = await (request instanceof Request ? request : new Request(request)).clone().json() as {
+          params?: { arguments?: { tool?: unknown; input?: unknown; nodeId?: unknown } };
+        };
+        forwarded = body.params?.arguments;
+        return Response.json({ ok: true });
+      },
+    });
+
+    const response = await handler(new Request(`${origin}/mcp`, {
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer central-windows-lifecycle-recovery-token',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 181,
+        method: 'tools/call',
+        params: {
+          name: 'call',
+          arguments: {
+            tool: 'lifecycle.update',
+            input: { channel: 'stable' },
+            nodeId: 'node-member',
+          },
+        },
+      }),
+    }));
+
+    expect(response.status).toBe(200);
+    expect(forwarded?.tool).toBe('mac.call');
+    const command =
+      forwarded?.input
+      && typeof forwarded.input === 'object'
+      && !Array.isArray(forwarded.input)
+        ? (forwarded.input as Record<string, unknown>).command
+        : undefined;
+    expect(typeof command).toBe('string');
+    if (typeof command !== 'string') throw new Error('Windows lifecycle recovery command missing');
+    expect(command).toContain('powershell.exe');
+    expect(command).toContain("Join-Path $env:CONSUELO_HOME 'bin\\bun.exe'");
+    expect(command).toContain('$env:BUN_BIN');
+    expect(command).toContain('Get-Command bun.exe');
+    expect(command).toContain("Join-Path $env:USERPROFILE '.bun\\bin\\bun.exe'");
+    expect(command).not.toContain('command -v bun');
+    expect(command).not.toContain('if [ -n');
+    expect(command).not.toContain('home.startsWith(\"/\")');
+  });
+
   it('should bootstrap stale lifecycle updates without managed-cloud provisioning state', async () => {
     const store = createMemoryDeviceGrantStore();
     await seedWorkspace(store);
