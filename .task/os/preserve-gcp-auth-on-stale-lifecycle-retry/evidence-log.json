@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/preserve-gcp-auth-on-stale-lifecycle-retry",
+  "events": [
+    {
+      "id": "49832e7f-87d7-4598-b02a-1eed76515233",
+      "occurred_at": "2026-09-08T14:52:10.460Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/workspace-node-registry-routing.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/preserve-gcp-auth-on-stale-lifecycle-retry",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/preserve-gcp-auth-on-stale-lifecycle-retry"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-09-08T14:52:10.551Z"
+}
