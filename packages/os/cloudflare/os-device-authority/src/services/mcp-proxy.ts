@@ -190,6 +190,7 @@ export function legacyLifecycleBootstrapCommand(channel: string): string {
     '}',
     'const releaseUrl=new URL(releaseBaseUrl);',
     'if(releaseUrl.protocol!=="https:"||releaseUrl.username||releaseUrl.password||releaseUrl.hash)throw new Error("release origin is not trusted");',
+    'if(!gcpMetadataAuth&&process.env.CONSUELO_RELEASE_GCP_METADATA_AUTH==="1"&&releaseUrl.hostname==="storage.googleapis.com"&&!releaseUrl.port&&!releaseUrl.search&&releaseUrl.pathname.split("/").filter(Boolean).length>0)gcpMetadataAuth=true;',
     'const lifecyclePath=resolve(runtimeDir,"current","scripts","lifecycle.ts");',
     'if(!existsSync(lifecyclePath))throw new Error("legacy lifecycle updater unavailable");',
     'const childEnv={...process.env,CONSUELO_RELEASE_BASE_URL:releaseBaseUrl,CONSUELO_RELEASE_PUBLIC_KEYS_JSON:JSON.stringify(releaseKeys)};',
