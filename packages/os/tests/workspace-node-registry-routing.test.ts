@@ -154,6 +154,31 @@ async function seedWorkspace(
   return { homeKey, memberKey };
 }
 
+async function seedManagedCloudProvisioningJob(
+  store: ReturnType<typeof createMemoryDeviceGrantStore>,
+  nodeId = 'node-member',
+): Promise<void> {
+  await store.createManagedCloudProvisioningJob({
+    jobId: `mcpj_${nodeId}`,
+    accountId,
+    workspaceId,
+    workspaceSlug,
+    workspaceHost,
+    nodeId,
+    nodeName: 'Cloud node',
+    planId: 'starter',
+    region: 'us-east1',
+    pricingVersion: 'test-v1',
+    monthlyPriceCents: 2_000,
+    currency: 'USD',
+    idempotencyKey: `idem_${nodeId}`,
+    status: 'ready',
+    createdAt: baseNow,
+    updatedAt: baseNow,
+    readyAt: baseNow,
+  });
+}
+
 async function seedRoutes(
   db: ReturnType<typeof createInMemoryWorkspaceRouteD1>,
   nowMs = baseNow,
@@ -2423,6 +2448,7 @@ describe('multi-node connector routing', () => {
       mcpProtocolVersion: undefined,
       mcpReady: undefined,
     });
+    await seedManagedCloudProvisioningJob(store);
     const routeDatabase = createInMemoryWorkspaceRouteD1();
     await seedRoutes(routeDatabase);
     const forwardedCalls: Array<{
@@ -2494,6 +2520,143 @@ describe('multi-node connector routing', () => {
     expect(inlineScript.includes("'")).toBe(false);
   });
 
+  it('should keep stale non-managed lifecycle updates on the typed facade', async () => {
+    const store = createMemoryDeviceGrantStore();
+    await seedWorkspace(store);
+    await authorizeWorkspace(store, 'central-stale-desktop-lifecycle-token', {
+      scopes: ['workspace:read', 'route:/mcp:read', 'mcp:call', 'tool:*:read'],
+    });
+    const member = await store.byWorkspaceNode(accountId, 'node-member');
+    expect(member).toBeDefined();
+    await store.putWorkspaceNode({
+      ...member!,
+      osVersion: undefined,
+      bundleId: undefined,
+      mcpProtocolVersion: undefined,
+      mcpReady: undefined,
+    });
+    const routeDatabase = createInMemoryWorkspaceRouteD1();
+    await seedRoutes(routeDatabase);
+    let forwarded: { tool?: unknown; input?: unknown; nodeId?: unknown } | undefined;
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      origin,
+      now: () => baseNow,
+      workspaceRouteRegistry: routeDatabase,
+      fetchImpl: async (request) => {
+        const body = await (request instanceof Request ? request : new Request(request)).clone().json() as {
+          params?: { arguments?: { tool?: unknown; input?: unknown; nodeId?: unknown } };
+        };
+        forwarded = body.params?.arguments;
+        return Response.json({ ok: true });
+      },
+    });
+    const response = await handler(new Request(`${origin}/mcp`, {
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer central-stale-desktop-lifecycle-token',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 180,
+        method: 'tools/call',
+        params: {
+          name: 'call',
+          arguments: {
+            tool: 'lifecycle.update',
+            input: { channel: 'stable' },
+            nodeId: 'node-member',
+          },
+        },
+      }),
+    }));
+
+    expect(response.status).toBe(200);
+    expect(forwarded).toEqual({
+      tool: 'lifecycle.update',
+      input: { channel: 'stable' },
+    });
+  });
+
+  it('should not legacy-rewrite stale lifecycle updates from a mismatched managed-cloud tenant record', async () => {
+    const store = createMemoryDeviceGrantStore();
+    await seedWorkspace(store);
+    await authorizeWorkspace(store, 'central-mismatched-cloud-lifecycle-token', {
+      scopes: ['workspace:read', 'route:/mcp:read', 'mcp:call', 'tool:*:read'],
+    });
+    const member = await store.byWorkspaceNode(accountId, 'node-member');
+    expect(member).toBeDefined();
+    await store.putWorkspaceNode({
+      ...member!,
+      osVersion: undefined,
+      bundleId: undefined,
+      mcpProtocolVersion: undefined,
+      mcpReady: undefined,
+    });
+    await store.createManagedCloudProvisioningJob({
+      jobId: 'mcpj_wrong_tenant_node_member',
+      accountId: 'account_other_workspace',
+      workspaceId: 'workspace_other',
+      workspaceSlug: 'other',
+      workspaceHost: 'other.consuelohq.com',
+      nodeId: 'node-member',
+      nodeName: 'Other Cloud node',
+      planId: 'starter',
+      region: 'us-east1',
+      pricingVersion: 'test-v1',
+      monthlyPriceCents: 2_000,
+      currency: 'USD',
+      idempotencyKey: 'idem_wrong_tenant_node_member',
+      status: 'ready',
+      createdAt: baseNow,
+      updatedAt: baseNow,
+      readyAt: baseNow,
+    });
+    const routeDatabase = createInMemoryWorkspaceRouteD1();
+    await seedRoutes(routeDatabase);
+    let forwarded: { tool?: unknown; input?: unknown; nodeId?: unknown } | undefined;
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      origin,
+      now: () => baseNow,
+      workspaceRouteRegistry: routeDatabase,
+      fetchImpl: async (request) => {
+        const body = await (request instanceof Request ? request : new Request(request)).clone().json() as {
+          params?: { arguments?: { tool?: unknown; input?: unknown; nodeId?: unknown } };
+        };
+        forwarded = body.params?.arguments;
+        return Response.json({ ok: true });
+      },
+    });
+    const response = await handler(new Request(`${origin}/mcp`, {
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer central-mismatched-cloud-lifecycle-token',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 1801,
+        method: 'tools/call',
+        params: {
+          name: 'call',
+          arguments: {
+            tool: 'lifecycle.update',
+            input: { channel: 'stable' },
+            nodeId: 'node-member',
+          },
+        },
+      }),
+    }));
+
+    expect(response.status).toBe(200);
+    expect(forwarded).toEqual({
+      tool: 'lifecycle.update',
+      input: { channel: 'stable' },
+    });
+  });
+
   it('should reject unsupported exact-version and injection-shaped stale lifecycle recovery before upstream contact', async () => {
     const store = createMemoryDeviceGrantStore();
     await seedWorkspace(store);
@@ -2509,6 +2672,7 @@ describe('multi-node connector routing', () => {
       mcpProtocolVersion: undefined,
       mcpReady: undefined,
     });
+    await seedManagedCloudProvisioningJob(store);
     const routeDatabase = createInMemoryWorkspaceRouteD1();
     await seedRoutes(routeDatabase);
     let upstreamCalls = 0;

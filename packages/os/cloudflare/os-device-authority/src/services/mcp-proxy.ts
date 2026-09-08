@@ -726,16 +726,26 @@ export async function proxyCentralMcpRequest(input: {
         && routingInspection.facadeTool === 'lifecycle.update'
         && safeNode.compatibility !== 'compatible'
       ) {
-        const legacyRewrite = rewriteLegacyManagedCloudLifecycleUpdate(requestBody);
-        if (!legacyRewrite.ok) {
-          return centralMcpSafeError({
-            status: 400,
-            code: legacyRewrite.code,
-            message: legacyRewrite.message,
-            details: { nodeId: resolution.nodeId },
-          });
+        const managedCloudProvisioning = await input.store.byManagedCloudProvisioningNode(
+          resolution.nodeId,
+        );
+        const managedCloudNode =
+          managedCloudProvisioning?.nodeId === resolution.nodeId
+          && managedCloudProvisioning.accountId === stored.accountId
+          && managedCloudProvisioning.workspaceId === resolution.workspaceId
+          && managedCloudProvisioning.workspaceHost === stored.workspaceHost;
+        if (managedCloudNode) {
+          const legacyRewrite = rewriteLegacyManagedCloudLifecycleUpdate(requestBody);
+          if (!legacyRewrite.ok) {
+            return centralMcpSafeError({
+              status: 400,
+              code: legacyRewrite.code,
+              message: legacyRewrite.message,
+              details: { nodeId: resolution.nodeId },
+            });
+          }
+          proxyRequestBody = legacyRewrite.body;
         }
-        proxyRequestBody = legacyRewrite.body;
       }
       if (
         !lifecycleRecovery &&
