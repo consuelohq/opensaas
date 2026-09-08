@@ -2655,7 +2655,10 @@ describe('multi-node connector routing', () => {
         : undefined;
     expect(typeof command).toBe('string');
     if (typeof command !== 'string') throw new Error('legacy lifecycle recovery command missing');
-    expect(command).toContain('"$HOME/.bun/bin/bun" -e');
+    expect(command).toContain('"$CONSUELO_HOME/bin/consuelo-os"');
+    expect(command).toContain('"${BUN_BIN:-}"');
+    expect(command).toContain('command -v bun');
+    expect(command).toContain('"$HOME/.bun/bin/bun"');
     expect(command).toContain('metadata.google.internal/computeMetadata/v1/instance/attributes/startup-script');
     expect(command).toContain('CONSUELO_RELEASE_BASE_URL');
     expect(command).toContain('CONSUELO_RELEASE_PUBLIC_KEYS_JSON');
@@ -2663,10 +2666,11 @@ describe('multi-node connector routing', () => {
     expect(command).toContain('trusted-release-keys.json');
     expect(command).toContain('const lifecyclePath=resolve(runtimeDir,"current","scripts","lifecycle.ts")');
     expect(command).toContain('const channel="stable"');
-    const commandPrefix = "\"$HOME/.bun/bin/bun\" -e '";
-    expect(command.startsWith(commandPrefix)).toBe(true);
+    const inlineMarker = " -e '";
+    const inlineStart = command.indexOf(inlineMarker);
+    expect(inlineStart).toBeGreaterThanOrEqual(0);
     expect(command.endsWith("'")).toBe(true);
-    const inlineScript = command.slice(commandPrefix.length, -1);
+    const inlineScript = command.slice(inlineStart + inlineMarker.length, -1);
     expect(inlineScript.includes("'")).toBe(false);
   });
 
@@ -2733,7 +2737,84 @@ describe('multi-node connector routing', () => {
         : undefined;
     expect(typeof command).toBe('string');
     expect(command).toContain('trusted-release-keys.json');
-    expect(command).toContain('"$HOME/.bun/bin/bun" -e');
+    expect(command).toContain('command -v bun');
+  });
+
+  it('should resolve the stale lifecycle Bun executable across historical install shapes', async () => {
+    const { spawnSync } = await import('node:child_process');
+    const { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } = await import('node:fs');
+    const { tmpdir } = await import('node:os');
+    const { join } = await import('node:path');
+
+    const makeFakeBun = (path: string, marker: string, label: string) => {
+      mkdirSync(join(path, '..'), { recursive: true });
+      writeFileSync(path, `#!/bin/sh\nprintf '%s' '${label}' > \"${marker}\"\n`, 'utf8');
+      chmodSync(path, 0o755);
+    };
+
+    const runCase = (label: string, setup: (home: string, pathBin: string, marker: string) => Record<string, string>) => {
+      const home = mkdtempSync(join(tmpdir(), `consuelo-legacy-bun-${label}-`));
+      try {
+        const pathBin = join(home, 'path-bin');
+        mkdirSync(pathBin, { recursive: true });
+        const marker = join(home, 'selected-bun');
+        const env = setup(home, pathBin, marker);
+        const command = legacyLifecycleBootstrapCommand('stable');
+        const child = spawnSync('/bin/sh', ['-c', command], {
+          encoding: 'utf8',
+          env: {
+            HOME: home,
+            CONSUELO_HOME: home,
+            PATH: pathBin,
+            ...env,
+          },
+        });
+        return {
+          child,
+          selected: existsSync(marker) ? readFileSync(marker, 'utf8') : undefined,
+        };
+      } finally {
+        rmSync(home, { recursive: true, force: true });
+      }
+    };
+
+    const managed = runCase('managed', (home, pathBin, marker) => {
+      makeFakeBun(join(home, 'bin', 'consuelo-os'), marker, 'managed');
+      makeFakeBun(join(pathBin, 'bun'), marker, 'path');
+      const envBun = join(home, 'configured-bun');
+      makeFakeBun(envBun, marker, 'env');
+      return { BUN_BIN: envBun };
+    });
+    expect(managed.child.status).toBe(0);
+    expect(managed.selected).toBe('managed');
+
+    const configured = runCase('configured', (home, pathBin, marker) => {
+      makeFakeBun(join(pathBin, 'bun'), marker, 'path');
+      const envBun = join(home, 'configured-bun');
+      makeFakeBun(envBun, marker, 'env');
+      return { BUN_BIN: envBun };
+    });
+    expect(configured.child.status).toBe(0);
+    expect(configured.selected).toBe('env');
+
+    const pathOnly = runCase('path', (_home, pathBin, marker) => {
+      makeFakeBun(join(pathBin, 'bun'), marker, 'path');
+      return {};
+    });
+    expect(pathOnly.child.status).toBe(0);
+    expect(pathOnly.selected).toBe('path');
+
+    const homeBun = runCase('home', (home, _pathBin, marker) => {
+      makeFakeBun(join(home, '.bun', 'bin', 'bun'), marker, 'home');
+      return {};
+    });
+    expect(homeBun.child.status).toBe(0);
+    expect(homeBun.selected).toBe('home');
+
+    const unavailable = runCase('missing', () => ({}));
+    expect(unavailable.child.status).not.toBe(0);
+    expect(unavailable.child.stderr).toContain('legacy Bun runtime unavailable');
+    expect(unavailable.selected).toBeUndefined();
   });
 
   it('should bootstrap stale lifecycle updates even when the managed-cloud job failed before enrollment', async () => {
