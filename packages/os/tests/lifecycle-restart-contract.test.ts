@@ -304,6 +304,50 @@ describe('lifecycle restart parity', () => {
     }
   });
 
+  it('accepts a refreshed loaded sidecar when launchd reports bootstrap exit five', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-restart-loaded-sidecar-visible-'));
+    const launchAgents = join(home, 'Library', 'LaunchAgents');
+    mkdirSync(launchAgents, { recursive: true });
+    const label = 'com.consuelo.watchdog';
+    writeFileSync(join(launchAgents, label + '.plist'), '<plist/>\n');
+    let bootstrapAttempts = 0;
+    let bootoutAttempts = 0;
+    let kickstartAttempts = 0;
+    try {
+      const controller = createReloadServiceController({
+        osRoot,
+        platform: 'darwin',
+        environment: { HOME: home },
+        userId: 501,
+        sleep: async () => {},
+        run: async (command, args) => {
+          if (command === 'launchctl' && args[0] === 'bootstrap') {
+            bootstrapAttempts += 1;
+            return {
+              exitCode: 5,
+              stdout: '',
+              stderr: 'Bootstrap failed: 5: Input/output error',
+            };
+          }
+          if (command === 'launchctl' && args[0] === 'bootout') {
+            bootoutAttempts += 1;
+          }
+          if (command === 'launchctl' && args[0] === 'kickstart') {
+            kickstartAttempts += 1;
+          }
+          return { exitCode: 0, stdout: '', stderr: '' };
+        },
+      });
+
+      await expect(controller.restart({ waitForCompletion: true })).resolves.toBeUndefined();
+      expect(bootstrapAttempts).toBe(1);
+      expect(bootoutAttempts).toBe(1);
+      expect(kickstartAttempts).toBe(1);
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
+  });
+
   it('retries a transient macOS gateway bootstrap while a missing job settles', async () => {
     const home = mkdtempSync(join(tmpdir(), 'consuelo-restart-gateway-retry-'));
     const launchAgents = join(home, 'Library', 'LaunchAgents');
@@ -349,6 +393,45 @@ describe('lifecycle restart parity', () => {
         command: 'launchctl',
         args: ['kickstart', '-k', 'gui/501/' + label],
       });
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
+  });
+
+  it('keeps node-heartbeat bootstrap failure fatal after retries are exhausted', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-restart-heartbeat-failure-'));
+    const launchAgents = join(home, 'Library', 'LaunchAgents');
+    mkdirSync(launchAgents, { recursive: true });
+    const label = 'com.consuelo.os.node-heartbeat.node-test';
+    writeFileSync(join(launchAgents, label + '.plist'), '<plist/>\n');
+    let bootstrapAttempts = 0;
+    try {
+      const controller = createReloadServiceController({
+        osRoot,
+        platform: 'darwin',
+        environment: { HOME: home },
+        userId: 501,
+        sleep: async () => {},
+        run: async (command, args) => {
+          if (command === 'launchctl' && args[0] === 'print') {
+            return { exitCode: 113, stdout: '', stderr: 'Could not find service' };
+          }
+          if (command === 'launchctl' && args[0] === 'bootstrap') {
+            bootstrapAttempts += 1;
+            return {
+              exitCode: 5,
+              stdout: '',
+              stderr: 'Bootstrap failed: 5: Input/output error',
+            };
+          }
+          return { exitCode: 0, stdout: '', stderr: '' };
+        },
+      });
+
+      await expect(controller.restart({ waitForCompletion: true })).rejects.toThrow(
+        'gateway bootstrap failed for ' + label,
+      );
+      expect(bootstrapAttempts).toBe(4);
     } finally {
       rmSync(home, { recursive: true, force: true });
     }
@@ -434,7 +517,7 @@ describe('lifecycle restart parity', () => {
     const home = mkdtempSync(join(tmpdir(), 'consuelo-restart-gateway-kickstart-failure-'));
     const launchAgents = join(home, 'Library', 'LaunchAgents');
     mkdirSync(launchAgents, { recursive: true });
-    const label = 'com.consuelo.os.node-heartbeat.node-test';
+    const label = 'com.consuelo.portless.system';
     writeFileSync(join(launchAgents, label + '.plist'), '<plist/>\n');
     let kickstartAttempts = 0;
     try {
@@ -464,7 +547,7 @@ describe('lifecycle restart parity', () => {
     }
   });
 
-  it('includes the gateway label when bootstrap retries are exhausted', async () => {
+  it('keeps restart available when watchdog bootstrap retries are exhausted', async () => {
     const home = mkdtempSync(join(tmpdir(), 'consuelo-restart-gateway-failure-'));
     const launchAgents = join(home, 'Library', 'LaunchAgents');
     mkdirSync(launchAgents, { recursive: true });
@@ -492,7 +575,7 @@ describe('lifecycle restart parity', () => {
         },
       });
 
-      await expect(controller.restart({ waitForCompletion: true })).rejects.toThrow(label);
+      await expect(controller.restart({ waitForCompletion: true })).resolves.toBeUndefined();
     } finally {
       rmSync(home, { recursive: true, force: true });
     }

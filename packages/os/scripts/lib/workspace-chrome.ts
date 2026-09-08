@@ -38,7 +38,7 @@ type WorkspaceRoute = {
 const WORKSPACE_ROUTES: WorkspaceRoute[] = [
   {
     id: 'overview',
-    label: 'Overview',
+    label: 'Home',
     href: '/configuration',
     group: null,
     description: 'Workspace health and context.',
@@ -126,6 +126,7 @@ function resolveCustomRouteHref(href: string): {
   href: string;
   external: boolean;
   description: string;
+  privateRoute?: { targetHost: string; returnTo: string };
 } {
   if (href.startsWith('/')) {
     if (href.startsWith('//') || href.includes('\\')) {
@@ -160,6 +161,7 @@ function resolveCustomRouteHref(href: string): {
       href: `/auth/handoff/start?${query.toString()}`,
       external: false,
       description: 'Open private admin site.',
+      privateRoute: { targetHost: PRIVATE_INTERNAL_SITE_HOST, returnTo: returnPath },
     };
   }
 
@@ -202,7 +204,10 @@ function renderCustomRouteGroup(section: WorkspaceChromeSection): string {
     const external = resolved.external
       ? ' target="_blank" rel="noopener noreferrer"'
       : '';
-    return `<a class="workspace-route-option" role="menuitem"${external} href="${escapeHtml(resolved.href)}"><span>${escapeHtml(link.label)}</span></a>`;
+    const privateRoute = resolved.privateRoute
+      ? ` data-private-route-host="${escapeHtml(resolved.privateRoute.targetHost)}" data-private-route-return-to="${escapeHtml(resolved.privateRoute.returnTo)}"`
+      : '';
+    return `<a class="workspace-route-option" role="menuitem"${external}${privateRoute} href="${escapeHtml(resolved.href)}"><span>${escapeHtml(link.label)}</span></a>`;
   }).join('');
   return `<section class="workspace-route-group" data-custom-route-group="${escapeHtml(section.id)}"><p>${escapeHtml(section.label)}</p>${links}</section>`;
 }
@@ -216,10 +221,10 @@ export function renderWorkspaceChromeBar(
   const menuShortcut = traceCompat ? '' : ' data-workspace-menu-shortcut';
   const fullscreenControl = traceCompat ? '' : ' data-workspace-fullscreen';
   const overviewRoute = WORKSPACE_ROUTES.find((route) => route.id === 'overview');
-  if (!overviewRoute) throw new Error('Workspace Overview route is required.');
+  if (!overviewRoute) throw new Error('Workspace Home route is required.');
   return `<div class="trxChrome" data-workspace-chrome>
     <div class="trxDots" aria-label="Window controls">
-      <button class="trxDot red" type="button" data-window-control="close" data-close-traces data-workspace-home aria-label="Go to Overview"></button>
+      <button class="trxDot red" type="button" data-window-control="close" data-close-traces data-workspace-home aria-label="Go to Home"></button>
       <button class="trxDot yellow" type="button" data-window-control="sidebar"${menuShortcut} aria-label="${traceCompat ? 'Toggle trace sidebar' : 'Open workspace routes'}"></button>
       <button class="trxDot green" type="button" data-window-control="fullscreen"${fullscreenControl} aria-label="Toggle fullscreen"></button>
     </div>
@@ -362,6 +367,8 @@ export function workspaceChromeClientScript(): string {
       const close = document.querySelector('button[data-close-traces]');
       const fullscreen = document.querySelector('[data-workspace-fullscreen]');
       const clock = document.querySelector('[data-workspace-clock]');
+      const INTERNAL_WORKSPACE_HOST = 'internal.consuelohq.com';
+      const INTERNAL_USERS_ROUTE = '/users';
       const TRACE_PREFETCH_KEY = 'consuelo:tracing-prefetch:v1';
       const TRACE_PREFETCH_URL = '/gateway/traces/recent?direction=older&cursor=latest&limit=40&site=trace-burn-intelligence&sourceMode=local-networked&includeRawPayload=false';
       const TRACE_PREFETCH_MAX_BYTES = 250000;
@@ -376,6 +383,35 @@ export function workspaceChromeClientScript(): string {
           return null;
         }
       };
+      const ensureInternalRoute = () => {
+        if (!(menu instanceof HTMLElement)) return;
+        if (window.location.hostname.toLowerCase() !== INTERNAL_WORKSPACE_HOST) return;
+        if (menu.querySelector('[data-workspace-internal-route], [data-private-route-return-to="/users"], a[href="/users"]')) return;
+
+        const section = document.createElement('section');
+        section.className = 'workspace-route-group';
+        section.dataset.customRouteGroup = 'internal';
+
+        const heading = document.createElement('p');
+        heading.textContent = 'Internal';
+
+        const link = document.createElement('a');
+        link.className = 'workspace-route-option';
+        link.setAttribute('role', 'menuitem');
+        link.setAttribute('data-workspace-internal-route', '');
+        link.href = INTERNAL_USERS_ROUTE;
+        link.dataset.privateRouteHost = INTERNAL_WORKSPACE_HOST;
+        link.dataset.privateRouteReturnTo = INTERNAL_USERS_ROUTE;
+
+        const label = document.createElement('span');
+        label.textContent = 'Users & installs';
+        link.appendChild(label);
+        section.append(heading, link);
+
+        const configureGroup = menu.querySelector('[data-route-group="Configure"]');
+        menu.insertBefore(section, configureGroup instanceof Element ? configureGroup : null);
+      };
+      ensureInternalRoute();
       const warmRoute = (href) => {
         const route = sameOriginRoute(href);
         if (!route || warmedRoutes.has(route) || route === window.location.pathname + window.location.search + window.location.hash) return;
@@ -452,6 +488,24 @@ export function workspaceChromeClientScript(): string {
       menu?.addEventListener('pointerover', warmIntent);
       menu?.addEventListener('focusin', warmIntent);
       menu?.addEventListener('touchstart', warmIntent, { passive: true });
+      menu?.addEventListener('click', (event) => {
+        if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+        const target = event.target instanceof Element ? event.target.closest('[data-private-route-host]') : null;
+        if (!(target instanceof HTMLAnchorElement)) return;
+        const targetHost = String(target.dataset.privateRouteHost || '').trim().toLowerCase();
+        const returnTo = String(target.dataset.privateRouteReturnTo || '').trim();
+        if (
+          targetHost &&
+          window.location.hostname.toLowerCase() === targetHost &&
+          returnTo.startsWith('/') &&
+          !returnTo.startsWith('//') &&
+          !returnTo.includes('\\')
+        ) {
+          event.preventDefault();
+          setMenuOpen(false);
+          window.location.assign(returnTo);
+        }
+      });
       shortcut?.addEventListener('click', (event) => {
         event.preventDefault();
         event.stopPropagation();

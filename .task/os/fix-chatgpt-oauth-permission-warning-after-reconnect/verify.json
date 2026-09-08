@@ -1,0 +1,363 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/fix-chatgpt-oauth-permission-warning-after-reconnect",
+  "base": "origin/task/os/fix-chatgpt-oauth-permission-warning-after-reconnect",
+  "headSha": "b6eeca9b582cd68bfb131330848bf37dbc462174",
+  "changeHash": "32fdad78f1f5fe77060048e1afcaf91905f51895d3b52af05994dba02fdcbdfd",
+  "changedFiles": [
+    "packages/os/scripts/lib/mcp-gateway.ts",
+    "packages/os/tests/mcp-gateway.test.ts"
+  ],
+  "verifiedAt": "2026-09-04T21:12:00.825Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/fix-chatgpt-oauth-permission-warning-after-reconnect/current.json",
+        ".task/os/fix-chatgpt-oauth-permission-warning-after-reconnect/verify.json",
+        ".task/os/fix-chatgpt-oauth-permission-warning-after-reconnect/workpad.md",
+        ".task/tasks/os/fix-chatgpt-oauth-permission-warning-after-reconnect.json",
+        "packages/os/scripts/lib/mcp-gateway.ts",
+        "packages/os/tests/mcp-gateway.test.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "os-mcp-admission-error-contract",
+          "critical": true,
+          "exclusive": true,
+          "reason": "MCP request admission and dangerous-material boundary changes must prove JSON-RPC transport/error behavior, fail-closed safety, authentication/gateway compatibility, and syntax without selecting the historically broad OS package suite.",
+          "matchedFiles": [
+            "packages/os/tests/mcp-gateway.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-chatgpt-node-routing-facade",
+          "critical": true,
+          "exclusive": true,
+          "reason": "ChatGPT node-routing facade or steering changes must prove top-level nodeId discovery, no inner-input leakage, explicit/default/fail-closed routing, and syntax without selecting unrelated package-wide OS tests.",
+          "matchedFiles": [
+            "packages/os/scripts/lib/mcp-gateway.ts",
+            "packages/os/tests/mcp-gateway.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-mcp-call-timeout-envelope",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Public MCP call timeout is envelope execution metadata, not selected tool input; changes must prove transport separation, local facade deadline propagation, and syntax without selecting the historically red package-wide OS suite.",
+          "matchedFiles": [
+            "packages/os/scripts/lib/mcp-gateway.ts",
+            "packages/os/tests/mcp-gateway.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-work-session-code-call",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Work-session Code Call and MCP routing must prove bounded execution, protected Consuelo state, session-authority validation, public schema limits, and generated error-code parity without selecting unrelated package-wide OS tests.",
+          "matchedFiles": [
+            "packages/os/scripts/lib/mcp-gateway.ts",
+            "packages/os/tests/mcp-gateway.test.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "OS MCP admission contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/mcp-gateway.test.ts",
+            "packages/os/tests/mcp-openai-session-receipt.test.ts"
+          ],
+          "ruleId": "os-mcp-admission-error-contract",
+          "critical": true
+        },
+        {
+          "name": "OS dangerous material ingress contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/dangerous-material-policy.test.ts"
+          ],
+          "ruleId": "os-mcp-admission-error-contract",
+          "critical": true
+        },
+        {
+          "name": "OS MCP admission syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "ruleId": "os-mcp-admission-error-contract",
+          "critical": true
+        },
+        {
+          "name": "OS ChatGPT node-routing facade contracts",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/mcp-gateway.test.ts",
+            "tests/os-get-steering-trace.test.ts"
+          ],
+          "ruleId": "os-chatgpt-node-routing-facade",
+          "critical": true
+        },
+        {
+          "name": "OS ChatGPT node-routing authority contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/workspace-node-registry-routing.test.ts",
+            "tests/os-device-authority-worker.test.ts"
+          ],
+          "ruleId": "os-chatgpt-node-routing-facade",
+          "critical": true
+        },
+        {
+          "name": "OS MCP call-timeout envelope contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/mcp-gateway.test.ts"
+          ],
+          "ruleId": "os-mcp-call-timeout-envelope",
+          "critical": true
+        },
+        {
+          "name": "OS MCP call-timeout facade contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/facade/facade.test.ts",
+            "-t",
+            "call execution timeout"
+          ],
+          "ruleId": "os-mcp-call-timeout-envelope",
+          "critical": true
+        },
+        {
+          "name": "OS work-session Code Call and MCP authority contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/work-session-code-call.test.ts",
+            "packages/os/tests/session-start-foundation.test.ts",
+            "packages/os/tests/generated-error-code-parity.test.ts",
+            "packages/os/tests/mcp-gateway.test.ts",
+            "packages/os/tests/code-call.test.ts"
+          ],
+          "ruleId": "os-work-session-code-call",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "OS MCP admission contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/mcp-gateway.test.ts",
+            "packages/os/tests/mcp-openai-session-receipt.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-mcp-admission-error-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1286,
+          "outputTail": "ge\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"0260e7a1-94f6-4cca-a347-fc5352de7aae\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-04T21:11:49.707Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"80415ea7-0ae3-4329-a88c-35b49fcb3b0c\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-04T21:11:49.708Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"9e8f66c3-6785-400b-a476-6db0c30d55c8\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-04T21:11:49.711Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"bdb8505c-5722-41b0-af5d-c7182473699f\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-04T21:11:49.717Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"43a902bc-1b19-44c8-9646-251f89fb8c5b\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-04T21:11:49.722Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"cbddcf47-b56a-4e08-9e96-80e263c69c28\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-04T21:11:49.728Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"525dede2-c702-4639-8e62-6ca69a7eb757\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-04T21:11:49.733Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"407a4b62-1aac-44c6-953b-3550cc9c25a2\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-04T21:11:49.739Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"74350f8a-e9c5-4e07-8fd6-f4f43dc935bf\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-04T21:11:49.743Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"bc957009-a23b-45af-b931-562ccd927623\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-04T21:11:49.744Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"95905b96-ec4a-492d-bb17-7ea1fa432876\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-04T21:11:49.746Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"0e0468ba-e100-4af1-be35-d43c07600195\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-04T21:11:49.747Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"5895f6a5-5303-446a-82de-434140e26a13\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-04T21:11:49.751Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"5b96206c-aafb-4ac1-8995-933b87f080a6\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-04T21:11:49.756Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"8dd44f98-fe1f-455d-b2ca-dddb3d294a8d\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-04T21:11:49.762Z\"}\n(node:64346) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+        },
+        {
+          "name": "OS dangerous material ingress contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/dangerous-material-policy.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-mcp-admission-error-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 385,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-chatgpt-oauth-permission-warning-after-reconnect/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/dangerous-material-policy.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 136\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m4 passed\u001b[39m\u001b[22m\u001b[90m (4)\u001b[39m\n\u001b[2m   Start at \u001b[22m 17:11:49\n\u001b[2m   Duration \u001b[22m 210ms\u001b[2m (transform 24ms, setup 16ms, import 15ms, tests 136ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS MCP admission syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "cwd": ".",
+          "ruleId": "os-mcp-admission-error-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 2245,
+          "outputTail": "workspace script syntax checks passed\n"
+        },
+        {
+          "name": "OS ChatGPT node-routing facade contracts",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/mcp-gateway.test.ts",
+            "tests/os-get-steering-trace.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-chatgpt-node-routing-facade",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 2731,
+          "outputTail": "ge\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"9a8ed7bc-fffe-466c-80ae-184f98210424\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-04T21:11:53.733Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"622566d1-0043-46fe-81c1-639d5115903e\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-04T21:11:53.734Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"c7e82f2f-f000-4211-8ed2-53626ccda4fd\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-04T21:11:53.738Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"d66d024f-1236-4f8b-b50c-e0770f2cb83b\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-04T21:11:53.744Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"0fc75b37-d09a-4aaa-8e42-f9ffcc789b58\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-04T21:11:53.751Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"3565a7cf-df1f-4304-b49c-2163954b9181\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-04T21:11:53.758Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"36da0adc-715a-48d9-9473-6cdaf2572624\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-04T21:11:53.766Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"a0c64b98-a36c-408f-88f4-cc46a77e6538\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-04T21:11:53.774Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"d9afe560-1474-4daa-ad7b-4fe4dfbc7a34\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-04T21:11:53.780Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"6630475b-aa65-4494-9357-c4e7aa3beea2\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-04T21:11:53.782Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"741d72a1-95a4-48c0-ba7b-2ecbefc95e62\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-04T21:11:53.783Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"bf649f0e-65be-45db-9be9-55ea9ccbfd06\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-04T21:11:53.785Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"d8afa41f-e27c-42a9-9e0a-e6d37f04997d\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-04T21:11:53.789Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"2065b759-7389-43d7-a69a-6f0a23089bbe\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-04T21:11:53.795Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"44dcc0cc-8e3f-4793-adc7-b781f05b1573\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-04T21:11:53.803Z\"}\n(node:64463) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+        },
+        {
+          "name": "OS ChatGPT node-routing authority contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/workspace-node-registry-routing.test.ts",
+            "tests/os-device-authority-worker.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-chatgpt-node-routing-facade",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 593,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-chatgpt-oauth-permission-warning-after-reconnect/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/workspace-node-registry-routing.test.ts \u001b[2m(\u001b[22m\u001b[2m52 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 70\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-worker.test.ts \u001b[2m(\u001b[22m\u001b[2m33 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 79\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m85 passed\u001b[39m\u001b[22m\u001b[90m (85)\u001b[39m\n\u001b[2m   Start at \u001b[22m 17:11:55\n\u001b[2m   Duration \u001b[22m 432ms\u001b[2m (transform 515ms, setup 30ms, import 582ms, tests 149ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS MCP call-timeout envelope contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/mcp-gateway.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-mcp-call-timeout-envelope",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1023,
+          "outputTail": "ge\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"309f518a-3319-4da4-852f-1f914347d53b\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-04T21:11:56.689Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"55b409cc-df68-4002-aad1-df38f67fd1c2\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-04T21:11:56.690Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"d1d04680-89d3-4279-aeca-d12488568208\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-04T21:11:56.693Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"a3e57726-528b-42f0-9495-62d8d10ce00f\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-04T21:11:56.699Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"08a6dc65-c495-4d47-8037-f318476f8c58\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-04T21:11:56.704Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"4b0132aa-d295-4b10-b13b-ba5c0c1f716c\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-04T21:11:56.708Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"78d8e08c-b58d-4045-bcf3-b911c9c88f56\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-04T21:11:56.713Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"06625ec8-5bc4-4f53-bd6a-20903f3b32a5\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-04T21:11:56.718Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"4e3db545-76bb-4d18-8f4c-330f7d819f1d\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-04T21:11:56.721Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"fb46fdec-7184-4a85-8179-4329600da8dc\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-04T21:11:56.723Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"74a39433-118e-4ff2-b1c0-d8bb7a44a30e\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-04T21:11:56.724Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"321f0119-0fdd-41b0-9cd7-2587f0e5ca37\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-04T21:11:56.725Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"bd88e87f-8fb9-466e-bc94-fd965ea5fbc8\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-04T21:11:56.728Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"140b1e0e-68f9-40de-b7fd-98006e6839bd\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-04T21:11:56.733Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"aaeb6130-0711-4ea4-8844-6c478b76357f\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-04T21:11:56.737Z\"}\n(node:64868) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+        },
+        {
+          "name": "OS MCP call-timeout facade contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/facade/facade.test.ts",
+            "-t",
+            "call execution timeout"
+          ],
+          "cwd": ".",
+          "ruleId": "os-mcp-call-timeout-envelope",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 781,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-chatgpt-oauth-permission-warning-after-reconnect\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/facade/facade.test.ts \u001b[2m(\u001b[22m\u001b[2m724 tests\u001b[22m\u001b[2m | \u001b[22m\u001b[33m721 skipped\u001b[39m\u001b[2m)\u001b[22m\u001b[32m 108\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m3 passed\u001b[39m\u001b[22m\u001b[2m | \u001b[22m\u001b[33m721 skipped\u001b[39m\u001b[90m (724)\u001b[39m\n\u001b[2m   Start at \u001b[22m 17:11:56\n\u001b[2m   Duration \u001b[22m 565ms\u001b[2m (transform 197ms, setup 0ms, import 391ms, tests 108ms, environment 0ms)\u001b[22m\n\n{\"level\":\"info\",\"tool\":\"session.start\",\"branch\":\"\",\"command\":\"workspace session.start '{\\\"kind\\\":\\\"work\\\",\\\"path\\\":\\\"/tmp/session-runtime-scope\\\"}'\",\"implementationCommand\":\"bun run session:start -- --kind work --path /tmp/session-runtime-scope --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-04T21:11:57.447Z\"}\n{\"level\":\"info\",\"tool\":\"task.ensureSynced\",\"branch\":\"task/workspace-agents/test\",\"command\":\"workspace task.ensureSynced\",\"implementationCommand\":\"bun run stream:context -- --area workspace-agents --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-04T21:11:57.453Z\"}\n(node:64871) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n{\"level\":\"error\",\"tool\":\"code.call\",\"command\":\"workspace code.call\",\"implementationCommand\":\"os code.call\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"TIMEOUT\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-04T21:11:57.547Z\"}\n"
+        },
+        {
+          "name": "OS work-session Code Call and MCP authority contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/work-session-code-call.test.ts",
+            "packages/os/tests/session-start-foundation.test.ts",
+            "packages/os/tests/generated-error-code-parity.test.ts",
+            "packages/os/tests/mcp-gateway.test.ts",
+            "packages/os/tests/code-call.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-work-session-code-call",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 3068,
+          "outputTail": "nt\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"d9c003f0-e199-4893-8ca7-a96616c53679\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-04T21:11:58.909Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"8a896ead-a351-4c3a-942e-2b3e2bd91d75\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-04T21:11:58.911Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"10c2725f-8ddb-4e74-a4fd-18c34241b428\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-04T21:11:58.912Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"134b427d-3e94-44dc-b860-f3f7d7c2c4cd\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-04T21:11:58.917Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"fd513885-8a6e-49d2-aa63-6ed0e263631e\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-04T21:11:58.923Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"68fd3308-2814-4e45-b225-bb2aef73650f\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-04T21:11:58.930Z\"}\n(node:65035) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n{\"level\":\"info\",\"tool\":\"code.call\",\"command\":\"workspace code.call\",\"implementationCommand\":\"os code.call\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_123456781234\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-04T21:11:59.013Z\"}\n{\"level\":\"error\",\"tool\":\"code.call\",\"command\":\"workspace code.call\",\"implementationCommand\":\"os code.call\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_123456781234\",\"ok\":false,\"code\":\"PERMISSION_DENIED\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-04T21:11:59.113Z\"}\n{\"level\":\"error\",\"tool\":\"code.call\",\"command\":\"workspace code.call\",\"implementationCommand\":\"os code.call\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_123456781234\",\"ok\":false,\"code\":\"PERMISSION_DENIED\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-04T21:11:59.194Z\"}\n{\"level\":\"error\",\"tool\":\"code.call\",\"command\":\"workspace code.call\",\"implementationCommand\":\"os code.call\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_123456781234\",\"ok\":false,\"code\":\"COMMAND_FAILED\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-04T21:11:59.467Z\"}\n{\"level\":\"error\",\"tool\":\"code.call\",\"command\":\"workspace code.call\",\"implementationCommand\":\"os code.call\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_123456781234\",\"ok\":false,\"code\":\"COMMAND_FAILED\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-04T21:11:59.721Z\"}\n{\"level\":\"error\",\"tool\":\"code.call\",\"command\":\"workspace code.call\",\"implementationCommand\":\"os code.call\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_123456781234\",\"ok\":false,\"code\":\"COMMAND_FAILED\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-04T21:11:59.987Z\"}\n{\"level\":\"error\",\"tool\":\"code.call\",\"command\":\"workspace code.call\",\"implementationCommand\":\"os code.call\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_123456781234\",\"ok\":false,\"code\":\"COMMAND_FAILED\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-04T21:12:00.251Z\"}\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

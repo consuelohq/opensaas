@@ -45,7 +45,13 @@ async function runHeartbeat(input: {
   env: NodeJS.ProcessEnv;
 }): Promise<HeartbeatOutput | null> {
   const child = Bun.spawn(
-    [input.bunExecutable, input.scriptPath, '--config', input.configPath],
+    [
+      input.bunExecutable,
+      input.scriptPath,
+      '--config',
+      input.configPath,
+      '--accept-cached-mcp-proof',
+    ],
     {
       env: input.env,
       stdin: 'ignore',
@@ -66,21 +72,19 @@ async function runHeartbeat(input: {
 }
 
 /**
- * Proves the public connector reaches this node and that the signed authority heartbeat
- * reconciled a routable MCP target. Local-only installs without heartbeat config skip this gate.
+ * Proves the public connector reaches this node through a signed MCP request.
+ * Local-only installs without heartbeat config skip this gate.
  */
 export function createConnectorReadinessAcceptance(input: {
   home: string;
   osRoot: string;
   attempts?: number;
   intervalMs?: number;
-  fetchImpl?: typeof fetch;
   bunExecutable?: string;
   env?: NodeJS.ProcessEnv;
 }): LifecycleConnectorReadiness {
   const attempts = input.attempts ?? 40;
   const intervalMs = input.intervalMs ?? 500;
-  const fetchImpl = input.fetchImpl ?? globalThis.fetch;
   const bunExecutable = input.bunExecutable ?? process.env.BUN_BIN ?? process.execPath;
   const env = input.env ?? process.env;
   const configPath = heartbeatConfigPath(input.home);
@@ -95,25 +99,19 @@ export function createConnectorReadinessAcceptance(input: {
 
       for (let attempt = 0; attempt < attempts; attempt += 1) {
         try {
-          const response = await fetchImpl(healthUrl, {
-            headers: { accept: 'application/json' },
-            signal: AbortSignal.timeout(5_000),
+          const heartbeat = await runHeartbeat({
+            bunExecutable,
+            scriptPath,
+            configPath,
+            env,
           });
-          if (response.ok) {
-            const heartbeat = await runHeartbeat({
-              bunExecutable,
-              scriptPath,
-              configPath,
-              env,
-            });
-            if (
-              heartbeat
-              && !heartbeat.skipped
-              && heartbeat.routeReady === true
-              && heartbeat.mcpReady !== false
-            ) {
-              return true;
-            }
+          if (
+            heartbeat
+            && !heartbeat.skipped
+            && heartbeat.routeReady === true
+            && heartbeat.mcpReady !== false
+          ) {
+            return true;
           }
         } catch {
           // Bounded retry below.

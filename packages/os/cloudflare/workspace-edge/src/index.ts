@@ -34,6 +34,7 @@ import {
   handleSemanticEmbeddingGatewayRequest,
   type SemanticEmbeddingGatewayEnvironment,
 } from './semantic-embedding-gateway';
+import { normalizeAuthReturnPath } from '../../os-device-authority/src/security/web-auth-contract';
 
 type WorkspaceEdgeLogContext = {
   component: 'workspace-edge';
@@ -254,6 +255,9 @@ function workspaceSessionRequiredResponse(request: Request): Response {
     );
     login.searchParams.set('purpose', 'web');
     login.searchParams.set('return_to', `${url.pathname}${url.search}`);
+    if (url.hostname.toLowerCase() === INSTALL_INTERNAL_DASHBOARD_HOST) {
+      login.searchParams.set('target_host', INSTALL_INTERNAL_DASHBOARD_HOST);
+    }
     return new Response(null, {
       status: 302,
       headers: {
@@ -273,9 +277,8 @@ function workspaceSessionRequiredResponse(request: Request): Response {
   });
 }
 
-function isInternalDashboardPagePath(pathname: string): boolean {
+function isInternalDashboardDedicatedPagePath(pathname: string): boolean {
   return (
-    pathname === '/' ||
     pathname === '/users' ||
     pathname.startsWith('/users/') ||
     pathname === '/installs' ||
@@ -285,6 +288,10 @@ function isInternalDashboardPagePath(pathname: string): boolean {
     pathname === '/internal/assets/dashboard.css' ||
     pathname === '/internal/assets/dashboard.js'
   );
+}
+
+function isInternalDashboardPagePath(pathname: string): boolean {
+  return pathname === '/' || isInternalDashboardDedicatedPagePath(pathname);
 }
 
 async function validateWorkspaceBrowserSession(input: {
@@ -342,6 +349,38 @@ async function startPrivateSiteHandoff(input: {
         'cache-control': 'no-store',
       },
     });
+  }
+  if (incoming.hostname.toLowerCase() === targetHost) {
+    try {
+      const sessionValidation = await validateWorkspaceBrowserSession({
+        request: input.request,
+        stub: input.stub,
+        internalAuthSecret: input.internalAuthSecret,
+        workspaceHost: targetHost,
+      });
+      if (!sessionValidation) return closedAuthResponse();
+      if (sessionValidation.status !== 204) {
+        return sessionValidation.status === 401
+          ? workspaceSessionRequiredResponse(input.request)
+          : sessionValidation.status === 403
+            ? forbiddenInternalDashboardResponse()
+            : closedAuthResponse();
+      }
+      const destination = new URL(
+        normalizeAuthReturnPath(incoming.searchParams.get('return_to')),
+        incoming.origin,
+      );
+      return new Response(null, {
+        status: 302,
+        headers: {
+          location: destination.toString(),
+          'cache-control': 'no-store',
+          'x-content-type-options': 'nosniff',
+        },
+      });
+    } catch {
+      return closedAuthResponse();
+    }
   }
   const internalAuthSecret = input.internalAuthSecret?.trim();
   if (!input.stub || !internalAuthSecret) return closedAuthResponse();
@@ -681,16 +720,30 @@ export function createWorkspaceEdgeHandler(
           internalDashboardAccessValues.length
         ? 'configured'
         : 'partial';
-  const authorizeInternalDashboard =
-    options.authorizeInternalDashboard ??
-    createCloudflareAccessDashboardAuthorizer({
-      teamDomain: env.OS_INTERNAL_DASHBOARD_ACCESS_TEAM_DOMAIN ?? '',
-      audience: env.OS_INTERNAL_DASHBOARD_ACCESS_AUD ?? '',
-      allowedEmails: internalDashboardAllowedEmails(
-        env.OS_INTERNAL_DASHBOARD_ALLOWED_EMAILS,
-      ),
-      now,
-    });
+  const authorizeInternalWorkspaceSession = async (request: Request): Promise<boolean> => {
+    try {
+      const validation = await validateWorkspaceBrowserSession({
+        request,
+        stub,
+        internalAuthSecret: env.WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET,
+        workspaceHost: INSTALL_INTERNAL_DASHBOARD_HOST,
+      });
+      return validation?.status === 204;
+    } catch {
+      return false;
+    }
+  };
+  const authorizeInternalDashboard = options.authorizeInternalDashboard ??
+    (internalDashboardAccessState === 'disabled'
+      ? authorizeInternalWorkspaceSession
+      : createCloudflareAccessDashboardAuthorizer({
+          teamDomain: env.OS_INTERNAL_DASHBOARD_ACCESS_TEAM_DOMAIN ?? '',
+          audience: env.OS_INTERNAL_DASHBOARD_ACCESS_AUD ?? '',
+          allowedEmails: internalDashboardAllowedEmails(
+            env.OS_INTERNAL_DASHBOARD_ALLOWED_EMAILS,
+          ),
+          now,
+        }));
   const internalDashboardHandler = internalDashboardService
     ? createInstallDashboardApiHandler({
         service: internalDashboardService,
@@ -764,9 +817,11 @@ export function createWorkspaceEdgeHandler(
         return await stub.fetch(request);
       }
       if (url.hostname.toLowerCase() === INSTALL_INTERNAL_DASHBOARD_HOST) {
-        const internalDashboardRequest =
+        const internalDashboardApiRequest =
           url.pathname === INSTALL_DASHBOARD_API_PREFIX ||
-          url.pathname.startsWith(`${INSTALL_DASHBOARD_API_PREFIX}/`) ||
+          url.pathname.startsWith(`${INSTALL_DASHBOARD_API_PREFIX}/`);
+        const internalDashboardRequest =
+          internalDashboardApiRequest ||
           isInternalDashboardPagePath(url.pathname);
         if (
           internalDashboardRequest &&
@@ -776,7 +831,10 @@ export function createWorkspaceEdgeHandler(
         }
         if (
           internalDashboardRequest &&
-          internalDashboardAccessState === 'configured'
+          (internalDashboardAccessState === 'configured' ||
+            (internalDashboardAccessState === 'disabled' &&
+              (internalDashboardApiRequest ||
+                isInternalDashboardDedicatedPagePath(url.pathname))))
         ) {
           const sessionValidation = await validateWorkspaceBrowserSession({
             request,
@@ -788,7 +846,9 @@ export function createWorkspaceEdgeHandler(
           if (sessionValidation.status !== 204) {
             return sessionValidation.status === 401
               ? workspaceSessionRequiredResponse(request)
-              : closedAuthResponse();
+              : sessionValidation.status === 403
+                ? forbiddenInternalDashboardResponse()
+                : closedAuthResponse();
           }
           if (
             url.pathname === INSTALL_DASHBOARD_API_PREFIX ||

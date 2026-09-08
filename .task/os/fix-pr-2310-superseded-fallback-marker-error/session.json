@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_ba42bfe17b48",
+  "tmuxSession": "opensaas-os-fix-pr-2310-superseded-fallback-marker-error-ba42bfe1",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-pr-2310-superseded-fallback-marker-error",
+  "branch": "task/os/fix-pr-2310-superseded-fallback-marker-error",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-pr-2310-superseded-fallback-marker-error",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-pr-2310-superseded-fallback-marker-error",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2339,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2339",
+  "createdAt": "2026-08-31T21:37:30.093Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-pr-2310-superseded-fallback-marker-error/.task/os/fix-pr-2310-superseded-fallback-marker-error/session.json"
+}

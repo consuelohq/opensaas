@@ -1,0 +1,313 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/hotfix-watchdog-preserve-proven-connector-route",
+  "base": "origin/stream/os",
+  "headSha": "786218b2821d406bff75bcaf6c0ebd720e9585e1",
+  "changeHash": "27410c13e5b55c9c312eed8afb15b3aafe7dd5b8acb0ce483b9b56928edf66fa",
+  "changedFiles": [
+    "packages/os/scripts/lib/lifecycle/connector-readiness.ts",
+    "packages/os/scripts/workspace-node-heartbeat.ts",
+    "packages/os/tests/lifecycle-connector-readiness.test.ts",
+    "packages/os/tests/workspace-node-heartbeat-script.test.ts"
+  ],
+  "verifiedAt": "2026-09-01T18:23:07.390Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/hotfix-lifecycle-accept-signed-mcp-proof/verify.json",
+        ".task/os/hotfix-lifecycle-accept-signed-mcp-proof/workpad.md",
+        ".task/os/hotfix-watchdog-preserve-proven-connector-route/workpad.md",
+        ".task/tasks/os/hotfix-lifecycle-accept-signed-mcp-proof.json",
+        ".task/tasks/os/hotfix-watchdog-preserve-proven-connector-route.json",
+        "packages/os/scripts/lib/lifecycle/connector-readiness.ts",
+        "packages/os/scripts/workspace-node-heartbeat.ts",
+        "packages/os/tests/lifecycle-connector-readiness.test.ts",
+        "packages/os/tests/workspace-node-heartbeat-script.test.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "os-lifecycle-connector-readiness",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Public connector acceptance changes must prove lifecycle fail-closed behavior, heartbeat reconciliation, and signed MCP readiness without selecting the unrelated package-wide OS suite.",
+          "matchedFiles": [
+            "packages/os/scripts/lib/lifecycle/connector-readiness.ts",
+            "packages/os/tests/lifecycle-connector-readiness.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-native-menu-node-discovery",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Native menu lifecycle/auth/heartbeat changes must prove read-only enrolled-node discovery, privileged operator mutations, refresh-token persistence, heartbeat snapshot safety, and lifecycle presentation without selecting the historically red unrelated OS package suite.",
+          "matchedFiles": [
+            "packages/os/scripts/workspace-node-heartbeat.ts",
+            "packages/os/tests/workspace-node-heartbeat-script.test.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "OS lifecycle connector readiness contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/lifecycle-connector-readiness.test.ts",
+            "packages/os/tests/lifecycle-engine.test.ts",
+            "packages/os/tests/workspace-node-heartbeat-script.test.ts",
+            "packages/os/tests/workspace-node-heartbeat-client.test.ts"
+          ],
+          "ruleId": "os-lifecycle-connector-readiness",
+          "critical": true
+        },
+        {
+          "name": "OS native lifecycle node discovery contracts",
+          "cwd": "packages/os",
+          "command": [
+            "node",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/native-lifecycle-endpoint.test.ts",
+            "--config",
+            "vitest.config.ts"
+          ],
+          "ruleId": "os-native-menu-node-discovery",
+          "critical": true
+        },
+        {
+          "name": "OS node heartbeat script contracts",
+          "cwd": "packages/os",
+          "command": [
+            "node",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/workspace-node-heartbeat-script.test.ts",
+            "--config",
+            "vitest.config.ts"
+          ],
+          "ruleId": "os-native-menu-node-discovery",
+          "critical": true
+        },
+        {
+          "name": "OS operator login contracts",
+          "cwd": "packages/os",
+          "command": [
+            "node",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/operator-login.test.ts",
+            "--config",
+            "vitest.config.ts"
+          ],
+          "ruleId": "os-native-menu-node-discovery",
+          "critical": true
+        },
+        {
+          "name": "OS node heartbeat client contracts",
+          "cwd": "packages/os",
+          "command": [
+            "node",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/workspace-node-heartbeat-client.test.ts",
+            "--config",
+            "vitest.config.ts"
+          ],
+          "ruleId": "os-native-menu-node-discovery",
+          "critical": true
+        },
+        {
+          "name": "OS workspace node routing contracts",
+          "cwd": "packages/os",
+          "command": [
+            "node",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/workspace-node-registry-routing.test.ts",
+            "--config",
+            "vitest.config.ts"
+          ],
+          "ruleId": "os-native-menu-node-discovery",
+          "critical": true
+        },
+        {
+          "name": "OS native menu node discovery syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "ruleId": "os-native-menu-node-discovery",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "OS lifecycle connector readiness contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/lifecycle-connector-readiness.test.ts",
+            "packages/os/tests/lifecycle-engine.test.ts",
+            "packages/os/tests/workspace-node-heartbeat-script.test.ts",
+            "packages/os/tests/workspace-node-heartbeat-client.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-lifecycle-connector-readiness",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 2999,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-hotfix-watchdog-preserve-proven-connector-route\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/workspace-node-heartbeat-client.test.ts \u001b[2m(\u001b[22m\u001b[2m6 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 25\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/workspace-node-heartbeat-script.test.ts \u001b[2m(\u001b[22m\u001b[2m10 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 29\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/lifecycle-connector-readiness.test.ts \u001b[2m(\u001b[22m\u001b[2m1 test\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 11\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/lifecycle-engine.test.ts \u001b[2m(\u001b[22m\u001b[2m66 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 1897\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m activates after production provisioning without leaving runtime/current as a directory \u001b[33m 315\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m4 passed\u001b[39m\u001b[22m\u001b[90m (4)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m83 passed\u001b[39m\u001b[22m\u001b[90m (83)\u001b[39m\n\u001b[2m   Start at \u001b[22m 14:22:59\n\u001b[2m   Duration \u001b[22m 2.67s\u001b[2m (transform 781ms, setup 0ms, import 1.99s, tests 1.96s, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS native lifecycle node discovery contracts",
+          "command": [
+            "node",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/native-lifecycle-endpoint.test.ts",
+            "--config",
+            "vitest.config.ts"
+          ],
+          "cwd": "packages/os",
+          "ruleId": "os-native-menu-node-discovery",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1030,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-hotfix-watchdog-preserve-proven-connector-route/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/native-lifecycle-endpoint.test.ts \u001b[2m(\u001b[22m\u001b[2m13 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 173\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m13 passed\u001b[39m\u001b[22m\u001b[90m (13)\u001b[39m\n\u001b[2m   Start at \u001b[22m 14:23:02\n\u001b[2m   Duration \u001b[22m 762ms\u001b[2m (transform 299ms, setup 15ms, import 511ms, tests 173ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS node heartbeat script contracts",
+          "command": [
+            "node",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/workspace-node-heartbeat-script.test.ts",
+            "--config",
+            "vitest.config.ts"
+          ],
+          "cwd": "packages/os",
+          "ruleId": "os-native-menu-node-discovery",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 604,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-hotfix-watchdog-preserve-proven-connector-route/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/workspace-node-heartbeat-script.test.ts \u001b[2m(\u001b[22m\u001b[2m10 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 23\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m10 passed\u001b[39m\u001b[22m\u001b[90m (10)\u001b[39m\n\u001b[2m   Start at \u001b[22m 14:23:03\n\u001b[2m   Duration \u001b[22m 347ms\u001b[2m (transform 103ms, setup 14ms, import 249ms, tests 23ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS operator login contracts",
+          "command": [
+            "node",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/operator-login.test.ts",
+            "--config",
+            "vitest.config.ts"
+          ],
+          "cwd": "packages/os",
+          "ruleId": "os-native-menu-node-discovery",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 347,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-hotfix-watchdog-preserve-proven-connector-route/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/operator-login.test.ts \u001b[2m(\u001b[22m\u001b[2m18 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 46\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m18 passed\u001b[39m\u001b[22m\u001b[90m (18)\u001b[39m\n\u001b[2m   Start at \u001b[22m 14:23:04\n\u001b[2m   Duration \u001b[22m 142ms\u001b[2m (transform 20ms, setup 13ms, import 23ms, tests 46ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS node heartbeat client contracts",
+          "command": [
+            "node",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/workspace-node-heartbeat-client.test.ts",
+            "--config",
+            "vitest.config.ts"
+          ],
+          "cwd": "packages/os",
+          "ruleId": "os-native-menu-node-discovery",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 391,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-hotfix-watchdog-preserve-proven-connector-route/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/workspace-node-heartbeat-client.test.ts \u001b[2m(\u001b[22m\u001b[2m6 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 18\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m6 passed\u001b[39m\u001b[22m\u001b[90m (6)\u001b[39m\n\u001b[2m   Start at \u001b[22m 14:23:04\n\u001b[2m   Duration \u001b[22m 161ms\u001b[2m (transform 61ms, setup 14ms, import 67ms, tests 18ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS workspace node routing contracts",
+          "command": [
+            "node",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/workspace-node-registry-routing.test.ts",
+            "--config",
+            "vitest.config.ts"
+          ],
+          "cwd": "packages/os",
+          "ruleId": "os-native-menu-node-discovery",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 734,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-hotfix-watchdog-preserve-proven-connector-route/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/workspace-node-registry-routing.test.ts \u001b[2m(\u001b[22m\u001b[2m52 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 67\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m52 passed\u001b[39m\u001b[22m\u001b[90m (52)\u001b[39m\n\u001b[2m   Start at \u001b[22m 14:23:04\n\u001b[2m   Duration \u001b[22m 539ms\u001b[2m (transform 334ms, setup 23ms, import 390ms, tests 67ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS native menu node discovery syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "cwd": ".",
+          "ruleId": "os-native-menu-node-discovery",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1911,
+          "outputTail": "workspace script syntax checks passed\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

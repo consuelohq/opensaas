@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/refresh-script-parity-classifications-for-stream-os-verify",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2311,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2311",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-refresh-script-parity-classifications-for-stream-os-verify",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_ab7e6c1b3dae",
+  "tmuxSession": "opensaas-os-refresh-script-parity-classifications-for-stream-ab7e6c1b",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-refresh-script-parity-classifications-for-stream-os-verify/.task/session.json",
+  "createdAt": "2026-08-30T17:58:35.915Z"
+}

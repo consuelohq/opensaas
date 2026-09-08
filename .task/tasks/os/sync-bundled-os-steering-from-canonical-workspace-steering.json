@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/sync-bundled-os-steering-from-canonical-workspace-steering",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2322,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2322",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-sync-bundled-os-steering-from-canonical-workspace-steering",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_77756ca840ca",
+  "tmuxSession": "opensaas-os-sync-bundled-os-steering-from-canonical-workspac-77756ca8",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-sync-bundled-os-steering-from-canonical-workspace-steering/.task/session.json",
+  "createdAt": "2026-08-30T22:07:10.269Z"
+}

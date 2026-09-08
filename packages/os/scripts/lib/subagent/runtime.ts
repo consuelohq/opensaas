@@ -562,8 +562,10 @@ function durableSubagentParser(provider: SubagentProvider, traceId: string) {
   return (stdout: string, stderr: string) => {
     const parsed = parseSubagentOutput(provider, stdout);
     const events = parseSubagentTraceEvents(provider, stdout);
+    const terminalError = provider === 'grok' ? grokCompletionFailure(stdout) : undefined;
     return {
-      completed: Boolean(parsed.finalMessage),
+      completed: Boolean(parsed.finalMessage) && !terminalError,
+      ...(terminalError ? { terminalError } : {}),
       ...(parsed.finalMessage ? { finalMessage: parsed.finalMessage } : {}),
       ...(parsed.usage ? { usage: parsed.usage } : {}),
       summary: buildSubagentRunSummary({ traceId, events, finalMessage: parsed.finalMessage, stdout: `${stdout}${stderr}` }),

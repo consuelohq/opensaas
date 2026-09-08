@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -16,6 +16,7 @@ import { deriveWorkspaceEdgeNodeSecret } from '../scripts/lib/workspace-edge-nod
 import { sealCredential } from '../scripts/lib/node-credential-sealing';
 import { ensureNodeEncryptionKey } from '../scripts/lib/node-encryption-key-file';
 import { createGatewaySecurityConfig } from '../scripts/lib/security-gateway';
+import { ensureTraceDatabaseSchema } from '../scripts/lib/trace-database-schema';
 import { createLocalOsApp } from '../scripts/server/app';
 
 const workspaceId = 'workspace_edge_e2e';
@@ -81,6 +82,8 @@ afterEach(() => {
   delete process.env.CONSUELO_HOME;
   delete process.env.CONSUELO_OS_HOME;
   delete process.env.CONSUELO_OS_AUTH_CONFIG;
+  delete process.env.CONSUELO_TRACE_DB;
+  delete process.env.TRACE_DB;
   for (const home of temporaryHomes.splice(0)) {
     rmSync(home, { recursive: true, force: true });
   }
@@ -111,6 +114,11 @@ describe('authenticated workspace edge to local OS node', () => {
     process.env.CONSUELO_HOME = home;
     process.env.CONSUELO_OS_HOME = home;
     process.env.CONSUELO_OS_AUTH_CONFIG = security.generatedAuthPath;
+    const traceDbPath = join(home, 'node', 'db', 'traces.sqlite');
+    mkdirSync(join(home, 'node', 'db'), { recursive: true });
+    process.env.CONSUELO_TRACE_DB = traceDbPath;
+    delete process.env.TRACE_DB;
+    ensureTraceDatabaseSchema(traceDbPath);
     const nodeEncryption = ensureNodeEncryptionKey({
       nodeHome: join(home, 'node'),
       workspaceId,
@@ -209,7 +217,8 @@ describe('authenticated workspace edge to local OS node', () => {
     });
 
     const traces = await browserRequest('/gateway/traces/recent?cursor=latest');
-    expect(traces.status).toBe(200);
+    const tracesBody = await traces.clone().json().catch(() => ({ parseError: true }));
+    expect(traces.status, JSON.stringify(tracesBody)).toBe(200);
     await expect(traces.json()).resolves.toMatchObject({ ok: true });
 
     expect(upstreamRequests).toHaveLength(7);

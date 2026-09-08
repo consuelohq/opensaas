@@ -349,6 +349,7 @@ describe('os device authority worker', () => {
       code_challenge_methods_supported: ['S256'],
       token_endpoint_auth_methods_supported: ['none'],
     });
+    expect(body.scopes_supported).not.toContain('workspace:nodes:manage');
     expect(body).not.toHaveProperty('registration_endpoint');
   });
 
@@ -373,6 +374,7 @@ describe('os device authority worker', () => {
     expect(body.scopes_supported).toEqual(
       expect.arrayContaining(['mcp:call', 'route:/mcp:read', 'tool:*:read']),
     );
+    expect(body.scopes_supported).not.toContain('workspace:nodes:manage');
   });
 
   it('should require a bearer token on central MCP and advertise OAuth resource metadata', async () => {

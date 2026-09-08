@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-diff-cockpit-canonical-internal-url-parsing",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2359,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2359",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-diff-cockpit-canonical-internal-url-parsing",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_eae08929496b",
+  "tmuxSession": "opensaas-os-fix-diff-cockpit-canonical-internal-url-parsing-eae08929",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-diff-cockpit-canonical-internal-url-parsing/.task/session.json",
+  "createdAt": "2026-09-01T01:44:06.004Z"
+}

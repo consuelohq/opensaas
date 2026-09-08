@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_bc4fcff9ddd1",
+  "tmuxSession": "opensaas-os-write-fallback-exit-marker-when-subagent-runner--bc4fcff9",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/write-fallback-exit-marker-when-subagent-runner-dies",
+  "branch": "task/os/write-fallback-exit-marker-when-subagent-runner-dies",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-write-fallback-exit-marker-when-subagent-runner-dies",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-write-fallback-exit-marker-when-subagent-runner-dies",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2319,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2319",
+  "createdAt": "2026-08-30T21:07:51.391Z",
+  "tmuxCreated": false,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-write-fallback-exit-marker-when-subagent-runner-dies/.task/os/write-fallback-exit-marker-when-subagent-runner-dies/session.json"
+}
