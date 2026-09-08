@@ -635,6 +635,14 @@ if [ "$dry_run" -eq 0 ]; then
 fi
 
 run_generate_daemons
+# The generator writes the canonical plists into the mutable security directory.
+# Re-resolve after generation so a fresh install does not keep using the legacy
+# in-release fallback paths captured before those files existed.
+workspace_generated_plist="$(resolve_generated_plist "$workspace_label")"
+caddy_generated_plist="$(resolve_generated_plist "$caddy_label")"
+portless_generated_plist="$(resolve_generated_plist "$portless_label")"
+watchdog_generated_plist="$(resolve_generated_plist "$watchdog_label")"
+availability_generated_plist="$(resolve_generated_plist "$availability_label")"
 if [ -f "$portless_generated_plist" ]; then
   portless_enabled=1
 fi
@@ -683,7 +691,9 @@ fi
 
 [ "$quiet" = "1" ] || log "running Consuelo OS smoke test on port $stage_port"
 background_service_failure_code="BACKGROUND_SERVICE_START_FAILED"
-WORKSPACE_DAEMON_PORT="$stage_port" bash "$script_dir/start-consuelo-daemon.sh" > /tmp/consuelo-os-stage.log 2>&1 &
+CONSUELO_OS_SINGLE_WORKER_SMOKE_TEST=1 \
+  WORKSPACE_DAEMON_PORT="$stage_port" \
+  bash "$script_dir/start-consuelo-daemon.sh" > /tmp/consuelo-os-stage.log 2>&1 &
 stage_pid=$!
 background_service_failure_code="BACKGROUND_SERVICE_HEALTHCHECK_FAILED"
 if ! wait_for_health "http://127.0.0.1:${stage_port}/health" 20 1; then

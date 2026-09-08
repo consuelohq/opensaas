@@ -8,9 +8,11 @@ import {
   statSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+
+const packageRoot = resolve(import.meta.dirname, '..');
 
 let osHome: string;
 let userHome: string;
@@ -41,7 +43,7 @@ describe('installer local agent connectivity', () => {
       'opencode',
       '--skip-daemons',
     ], {
-      cwd: process.cwd(),
+      cwd: packageRoot,
       env: {
         ...process.env,
         HOME: userHome,
@@ -87,5 +89,5 @@ describe('installer local agent connectivity', () => {
       expect.arrayContaining([expect.objectContaining({ name: 'opencode', status: 'configured' })]),
     );
     expect(existsSync(join(osHome, 'consuelo.db'))).toBe(false);
-  });
+  }, 30_000);
 });

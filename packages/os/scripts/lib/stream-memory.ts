@@ -1,7 +1,7 @@
-import { Database } from 'bun:sqlite';
 import { existsSync } from 'node:fs';
 
 import { resolveConsueloHomeLayout } from './consuelo-home';
+import { openTraceDatabase } from './trace-database-schema';
 
 export type StreamDecision = {
   title: string;
@@ -23,7 +23,7 @@ export function readLocalStreamDecisions(
   if (!existsSync(dbPath)) return [];
 
   const limit = Math.max(1, Math.min(options.limit ?? 10, 100));
-  const db = new Database(dbPath, { readonly: true });
+  const db = openTraceDatabase(dbPath);
   try {
     const memoriesTable = db.query(
       "SELECT 1 AS present FROM sqlite_master WHERE type = 'table' AND name = 'memories' LIMIT 1",

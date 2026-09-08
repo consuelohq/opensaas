@@ -1,4 +1,3 @@
-import { Database } from 'bun:sqlite';
 import { spawn } from 'node:child_process';
 import fs from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -8,6 +7,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 
 import { manifestOverlayPath, readManifestOverlay } from '../scripts/lib/manifest-overlay';
 import { resolveCanonicalTraceDbPath } from '../scripts/lib/trace-persistence';
+import { openTraceDatabase } from '../scripts/lib/trace-database-schema';
 import { removeSafeTempDir } from './safe-temp-cleanup';
 
 const workerScript = path.join(import.meta.dirname, 'fixtures', 'os-replica-correctness-worker.ts');
@@ -23,7 +23,7 @@ function tempHome(prefix: string): string {
 
 function runWorker(args: string[]): Promise<WorkerResult> {
   return new Promise((resolve, reject) => {
-    const child = spawn(process.execPath, [workerScript, ...args], {
+    const child = spawn('bun', [workerScript, ...args], {
       cwd: path.join(import.meta.dirname, '..'),
       env: process.env,
       stdio: ['ignore', 'pipe', 'pipe'],
@@ -134,7 +134,7 @@ describe('OS same-node replica correctness', () => {
     }
 
     const dbPath = resolveCanonicalTraceDbPath({ home, env: {} });
-    const db = new Database(dbPath, { readonly: true });
+    const db = openTraceDatabase(dbPath);
     try {
       const row = db.query("SELECT COUNT(*) AS count FROM tool_traces WHERE source = 'replica-test'").get() as { count: number };
       expect(Number(row.count)).toBe(workerCount * rowsPerWorker);

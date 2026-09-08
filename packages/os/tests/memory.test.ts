@@ -3,8 +3,9 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
-import { Database } from 'bun:sqlite';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+
+import { openTraceDatabase } from '../scripts/lib/trace-database-schema';
 
 const packageRoot = join(import.meta.dirname, '..');
 const memoryScript = join(packageRoot, 'scripts', 'memory.js');
@@ -26,9 +27,17 @@ function cleanEnv(): NodeJS.ProcessEnv {
     SUPABASE_URL: _supabaseUrl,
     SUPABASE_KEY: _supabaseKey,
     SUPABASE_ANON_KEY: _supabaseAnonKey,
+    CONSUELO_HOME: _consueloHome,
+    CONSUELO_OS_HOME: _consueloOsHome,
+    CONSUELO_TRACE_DB: _consueloTraceDb,
+    TRACE_DB: _traceDb,
     ...rest
   } = process.env;
-  return { ...rest, CONSUELO_HOME: consueloHome };
+  return {
+    ...rest,
+    CONSUELO_HOME: consueloHome,
+    CONSUELO_OS_HOME: consueloHome,
+  };
 }
 
 function runMemory(args: string[], input?: string) {
@@ -43,14 +52,16 @@ function runMemory(args: string[], input?: string) {
 describe('OS memory runtime', () => {
   it('classifies memory.js as the canonical high-risk OS runtime', () => {
     const classifications = JSON.parse(readFileSync(
-      join(packageRoot, 'tooling', 'script-parity-classifications.json'),
+      join(packageRoot, 'tests', 'audit', 'fixtures', 'script-parity-classifications.json'),
       'utf8',
     ));
 
     expect(classifications.scripts['scripts/memory.js']).toMatchObject({
       status: 'os-only-intentional',
     });
-    expect(classifications.scripts).not.toHaveProperty('scripts/context.js');
+    expect(classifications.scripts['scripts/context.js']).toMatchObject({
+      status: 'workspace-only-needs-port',
+    });
     expect(classifications.highRiskScripts).toContain('scripts/memory.js');
     expect(classifications.highRiskScripts).not.toContain('scripts/context.js');
   });
@@ -108,7 +119,7 @@ describe('OS memory runtime', () => {
 
   it('queries an explicit local trace database through memory trace', () => {
     const traceDbPath = join(fixtureRoot, 'traces.db');
-    const db = new Database(traceDbPath, { create: true });
+    const db = openTraceDatabase(traceDbPath);
     try {
       db.exec(`
         CREATE TABLE tool_traces (
@@ -153,7 +164,7 @@ describe('OS memory runtime', () => {
   it('uses the canonical Consuelo trace database when --db is omitted', () => {
     const traceDbPath = join(consueloHome, 'node', 'db', 'traces.db');
     mkdirSync(join(consueloHome, 'node', 'db'), { recursive: true });
-    const db = new Database(traceDbPath, { create: true });
+    const db = openTraceDatabase(traceDbPath);
     try {
       db.exec(`
         CREATE TABLE tool_traces (

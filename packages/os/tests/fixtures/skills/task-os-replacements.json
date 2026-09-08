@@ -20,6 +20,10 @@
     "to": "Normal OS calls should be task-session scoped instead of branch-threaded."
   },
   {
+    "from": "context.search,  context.trace & explore for discovery and prior context.",
+    "to": "`memory` with `operation: \"search\"`, traces, and explore for discovery and prior context."
+  },
+  {
     "from": "context.search",
     "to": "memory.search"
   },
@@ -74,5 +78,9 @@
   {
     "from": "context,",
     "to": "memory,"
+  },
+  {
+    "from": "Large source, Markdown, JSON, scripts, and patches should travel through typed file transport: fs.write, fs.patch, contentFile, explicit stdin support, or the closest typed workspace tool. Do not bury structured payloads inside shell strings.",
+    "to": "Large source, Markdown, JSON, scripts, and patches should travel through typed file transport: fs.write, fs.apply_patch with patchText or patchFile, contentFile, explicit stdin support, or the closest typed workspace tool. Do not bury structured payloads inside shell strings."
   }
 ]
