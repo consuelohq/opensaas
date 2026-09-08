@@ -111,7 +111,7 @@ const EXPLICIT_NODE_LIFECYCLE_RECOVERY_TOOLS = new Set([
   'lifecycle.update',
 ]);
 
-const LEGACY_MANAGED_CLOUD_RELEASE_CHANNELS = new Set([
+const LEGACY_LIFECYCLE_RELEASE_CHANNELS = new Set([
   'stable',
   'beta',
   'canary',
@@ -126,11 +126,36 @@ function isJsonObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-export function legacyManagedCloudLifecycleBootstrapCommand(channel: string): string {
+export function legacyLifecycleBootstrapCommand(channel: string): string {
   const script = [
-    'import { chmodSync, existsSync, lstatSync, mkdirSync, renameSync, writeFileSync } from "node:fs";',
+    'import { chmodSync, existsSync, lstatSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";',
     'import { resolve } from "node:path";',
     `const channel=${JSON.stringify(channel)};`,
+    'const defaultReleaseBaseUrl="https://install.consuelohq.com/os/releases";',
+    'const home=process.env.CONSUELO_HOME?.trim();',
+    'if(!home||!home.startsWith("/"))throw new Error("CONSUELO_HOME unavailable");',
+    'const runtimeDir=resolve(home,"runtime");',
+    'mkdirSync(runtimeDir,{recursive:true,mode:0o700});',
+    'const trustPath=resolve(runtimeDir,"trusted-release-keys.json");',
+    'const validateReleaseKeys=(value,label)=>{',
+    'if(!value||typeof value!=="object"||Array.isArray(value))throw new Error(label+" invalid");',
+    'const entries=Object.entries(value);',
+    'if(entries.length===0||entries.length>32)throw new Error(label+" invalid");',
+    'for(const [keyId,publicKey] of entries){if(typeof publicKey!=="string"||keyId.length===0||keyId.length>128||keyId.trim()!==keyId||publicKey.length===0||publicKey.length>8192||publicKey.trim()!==publicKey||!publicKey.startsWith("-----BEGIN PUBLIC KEY-----")||!publicKey.endsWith("-----END PUBLIC KEY-----")||publicKey.includes("PRIVATE KEY"))throw new Error(label+" invalid");}',
+    'return value;',
+    '};',
+    'let releaseBaseUrl=process.env.CONSUELO_RELEASE_BASE_URL?.trim()||defaultReleaseBaseUrl;',
+    'let releaseKeys;',
+    'let gcpMetadataAuth=false;',
+    'if(existsSync(trustPath)){',
+    'const existing=lstatSync(trustPath);',
+    'if(existing.isSymbolicLink()||!existing.isFile()||(typeof process.getuid==="function"&&existing.uid!==process.getuid())||(existing.mode&0o022)!==0)throw new Error("trusted release key path is unsafe");',
+    'const encoded=readFileSync(trustPath,"utf8");',
+    'if(encoded.length===0||encoded.length>65536)throw new Error("trusted release key file invalid");',
+    'let parsed;',
+    'try{parsed=JSON.parse(encoded);}catch{throw new Error("trusted release key file invalid");}',
+    'releaseKeys=validateReleaseKeys(parsed,"trusted release key file");',
+    '}else{',
     'const metadataUrl="http://metadata.google.internal/computeMetadata/v1/instance/attributes/startup-script";',
     'const response=await fetch(metadataUrl,{headers:{"Metadata-Flavor":"Google"}});',
     'if(!response.ok)throw new Error("managed cloud startup metadata unavailable");',
@@ -148,42 +173,39 @@ export function legacyManagedCloudLifecycleBootstrapCommand(channel: string): st
     'if(!value||value.includes(quote))throw new Error("managed cloud release metadata malformed");',
     'return value;',
     '};',
-    'const releaseBaseUrl=assignment("CONSUELO_RELEASE_BASE_URL");',
-    'const releaseUrl=new URL(releaseBaseUrl);',
-    'if(releaseUrl.protocol!=="https:"||releaseUrl.hostname!=="storage.googleapis.com"||releaseUrl.username||releaseUrl.password||releaseUrl.port||releaseUrl.search||releaseUrl.hash||releaseUrl.pathname.split("/").filter(Boolean).length===0)throw new Error("managed cloud release origin is not trusted");',
+    'releaseBaseUrl=assignment("CONSUELO_RELEASE_BASE_URL");',
+    'const managedCloudReleaseUrl=new URL(releaseBaseUrl);',
+    'if(managedCloudReleaseUrl.protocol!=="https:"||managedCloudReleaseUrl.hostname!=="storage.googleapis.com"||managedCloudReleaseUrl.username||managedCloudReleaseUrl.password||managedCloudReleaseUrl.port||managedCloudReleaseUrl.search||managedCloudReleaseUrl.hash||managedCloudReleaseUrl.pathname.split("/").filter(Boolean).length===0)throw new Error("managed cloud release origin is not trusted");',
     'const releaseKeysJson=assignment("CONSUELO_RELEASE_PUBLIC_KEYS_JSON");',
     'if(releaseKeysJson.length>65536)throw new Error("managed cloud release key metadata too large");',
-    'let releaseKeys;',
-    'try{releaseKeys=JSON.parse(releaseKeysJson);}catch{throw new Error("managed cloud release key metadata invalid");}',
-    'if(!releaseKeys||typeof releaseKeys!=="object"||Array.isArray(releaseKeys))throw new Error("managed cloud release key metadata invalid");',
-    'const releaseKeyEntries=Object.entries(releaseKeys);',
-    'if(releaseKeyEntries.length===0||releaseKeyEntries.length>32)throw new Error("managed cloud release key metadata invalid");',
-    'for(const [keyId,publicKey] of releaseKeyEntries){if(typeof publicKey!=="string"||keyId.length===0||keyId.length>128||keyId.trim()!==keyId||publicKey.length===0||publicKey.length>8192||publicKey.trim()!==publicKey||!publicKey.startsWith("-----BEGIN PUBLIC KEY-----")||!publicKey.endsWith("-----END PUBLIC KEY-----")||publicKey.includes("PRIVATE KEY"))throw new Error("managed cloud release key metadata invalid");}',
-    'const home=process.env.CONSUELO_HOME?.trim();',
-    'if(!home||!home.startsWith("/"))throw new Error("CONSUELO_HOME unavailable");',
-    'const runtimeDir=resolve(home,"runtime");',
-    'mkdirSync(runtimeDir,{recursive:true,mode:0o700});',
-    'const trustPath=resolve(runtimeDir,"trusted-release-keys.json");',
-    'if(existsSync(trustPath)){const existing=lstatSync(trustPath);if(existing.isSymbolicLink()||!existing.isFile())throw new Error("trusted release key path is unsafe");}',
+    'let metadataReleaseKeys;',
+    'try{metadataReleaseKeys=JSON.parse(releaseKeysJson);}catch{throw new Error("managed cloud release key metadata invalid");}',
+    'releaseKeys=validateReleaseKeys(metadataReleaseKeys,"managed cloud release key metadata");',
     'const temporaryTrustPath=trustPath+".recovery-"+process.pid+"-"+Date.now();',
     'writeFileSync(temporaryTrustPath,JSON.stringify(releaseKeys,null,2)+"\\n",{encoding:"utf8",mode:0o600,flag:"wx"});',
     'chmodSync(temporaryTrustPath,0o600);',
     'renameSync(temporaryTrustPath,trustPath);',
     'chmodSync(trustPath,0o600);',
+    'gcpMetadataAuth=true;',
+    '}',
+    'const releaseUrl=new URL(releaseBaseUrl);',
+    'if(releaseUrl.protocol!=="https:"||releaseUrl.username||releaseUrl.password||releaseUrl.hash)throw new Error("release origin is not trusted");',
     'const lifecyclePath=resolve(runtimeDir,"current","scripts","lifecycle.ts");',
     'if(!existsSync(lifecyclePath))throw new Error("legacy lifecycle updater unavailable");',
-    'const child=Bun.spawnSync([process.execPath,lifecyclePath,"update","--channel",channel,"--yes","--json"],{env:{...process.env,CONSUELO_RELEASE_BASE_URL:releaseBaseUrl,CONSUELO_RELEASE_PUBLIC_KEYS_JSON:JSON.stringify(releaseKeys),CONSUELO_RELEASE_GCP_METADATA_AUTH:"1"}});',
+    'const childEnv={...process.env,CONSUELO_RELEASE_BASE_URL:releaseBaseUrl,CONSUELO_RELEASE_PUBLIC_KEYS_JSON:JSON.stringify(releaseKeys)};',
+    'if(gcpMetadataAuth)childEnv.CONSUELO_RELEASE_GCP_METADATA_AUTH="1";else delete childEnv.CONSUELO_RELEASE_GCP_METADATA_AUTH;',
+    'const child=Bun.spawnSync([process.execPath,lifecyclePath,"update","--channel",channel,"--yes","--json"],{env:childEnv});',
     'if(child.stdout)process.stdout.write(child.stdout);',
     'if(child.stderr)process.stderr.write(child.stderr);',
     'process.exit(child.exitCode??1);',
   ].join('');
   if (script.includes("'")) {
-    throw new Error('legacy managed-cloud bootstrap must remain shell-literal safe');
+    throw new Error('legacy lifecycle bootstrap must remain shell-literal safe');
   }
-  return `/home/consuelo/.bun/bin/bun -e '${script}'`;
+  return `"$HOME/.bun/bin/bun" -e '${script}'`;
 }
 
-function rewriteLegacyManagedCloudLifecycleUpdate(
+function rewriteLegacyLifecycleUpdate(
   requestBody: string,
 ): LegacyLifecycleRewriteResult {
   let payload: unknown;
@@ -247,12 +269,12 @@ function rewriteLegacyManagedCloudLifecycleUpdate(
   const channel = lifecycleInput.channel ?? 'stable';
   if (
     typeof channel !== 'string'
-    || !LEGACY_MANAGED_CLOUD_RELEASE_CHANNELS.has(channel)
+    || !LEGACY_LIFECYCLE_RELEASE_CHANNELS.has(channel)
   ) {
     return {
       ok: false,
       code: 'WORKSPACE_NODE_LEGACY_LIFECYCLE_INPUT_INVALID',
-      message: 'Stale managed-cloud recovery supports stable, beta, canary, or dev only.',
+      message: 'Stale-node lifecycle recovery supports stable, beta, canary, or dev only.',
     };
   }
   return {
@@ -264,7 +286,7 @@ function rewriteLegacyManagedCloudLifecycleUpdate(
         arguments: {
           tool: 'mac.call',
           input: {
-            command: legacyManagedCloudLifecycleBootstrapCommand(channel),
+            command: legacyLifecycleBootstrapCommand(channel),
           },
         },
       },
@@ -726,30 +748,16 @@ export async function proxyCentralMcpRequest(input: {
         && routingInspection.facadeTool === 'lifecycle.update'
         && safeNode.compatibility !== 'compatible'
       ) {
-        const managedCloudProvisioning = await input.store.byManagedCloudProvisioningNode(
-          resolution.nodeId,
-        );
-        const managedCloudNode =
-          managedCloudProvisioning?.nodeId === resolution.nodeId
-          && managedCloudProvisioning.accountId === stored.accountId
-          && managedCloudProvisioning.workspaceId === resolution.workspaceId
-          && managedCloudProvisioning.workspaceHost === stored.workspaceHost
-          && (
-            managedCloudProvisioning.status === 'connecting'
-            || managedCloudProvisioning.status === 'ready'
-          );
-        if (managedCloudNode) {
-          const legacyRewrite = rewriteLegacyManagedCloudLifecycleUpdate(requestBody);
-          if (!legacyRewrite.ok) {
-            return centralMcpSafeError({
-              status: 400,
-              code: legacyRewrite.code,
-              message: legacyRewrite.message,
-              details: { nodeId: resolution.nodeId },
-            });
-          }
-          proxyRequestBody = legacyRewrite.body;
+        const legacyRewrite = rewriteLegacyLifecycleUpdate(requestBody);
+        if (!legacyRewrite.ok) {
+          return centralMcpSafeError({
+            status: 400,
+            code: legacyRewrite.code,
+            message: legacyRewrite.message,
+            details: { nodeId: resolution.nodeId },
+          });
         }
+        proxyRequestBody = legacyRewrite.body;
       }
       if (
         !lifecycleRecovery &&

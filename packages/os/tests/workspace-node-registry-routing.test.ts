@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { createOsDeviceAuthorityHandler } from '../cloudflare/os-device-authority/src/app';
-import { legacyManagedCloudLifecycleBootstrapCommand } from '../cloudflare/os-device-authority/src/services/mcp-proxy';
+import { legacyLifecycleBootstrapCommand } from '../cloudflare/os-device-authority/src/services/mcp-proxy';
 import { registerApprovedWorkspaceRoute } from '../cloudflare/os-device-authority/src/services/connectors';
 import { reconcileWorkspaceRouteState } from '../cloudflare/os-device-authority/src/services/connectors';
 import { commitGrantApproval, prepareGrantApproval } from '../cloudflare/os-device-authority/src/services/grants';
@@ -2655,7 +2655,7 @@ describe('multi-node connector routing', () => {
         : undefined;
     expect(typeof command).toBe('string');
     if (typeof command !== 'string') throw new Error('legacy lifecycle recovery command missing');
-    expect(command).toContain('/home/consuelo/.bun/bin/bun -e');
+    expect(command).toContain('"$HOME/.bun/bin/bun" -e');
     expect(command).toContain('metadata.google.internal/computeMetadata/v1/instance/attributes/startup-script');
     expect(command).toContain('CONSUELO_RELEASE_BASE_URL');
     expect(command).toContain('CONSUELO_RELEASE_PUBLIC_KEYS_JSON');
@@ -2663,14 +2663,14 @@ describe('multi-node connector routing', () => {
     expect(command).toContain('trusted-release-keys.json');
     expect(command).toContain('const lifecyclePath=resolve(runtimeDir,"current","scripts","lifecycle.ts")');
     expect(command).toContain('const channel="stable"');
-    const commandPrefix = "/home/consuelo/.bun/bin/bun -e '";
+    const commandPrefix = "\"$HOME/.bun/bin/bun\" -e '";
     expect(command.startsWith(commandPrefix)).toBe(true);
     expect(command.endsWith("'")).toBe(true);
     const inlineScript = command.slice(commandPrefix.length, -1);
     expect(inlineScript.includes("'")).toBe(false);
   });
 
-  it('should keep stale non-managed lifecycle updates on the typed facade', async () => {
+  it('should bootstrap stale lifecycle updates without managed-cloud provisioning state', async () => {
     const store = createMemoryDeviceGrantStore();
     await seedWorkspace(store);
     await authorizeWorkspace(store, 'central-stale-desktop-lifecycle-token', {
@@ -2723,13 +2723,20 @@ describe('multi-node connector routing', () => {
     }));
 
     expect(response.status).toBe(200);
-    expect(forwarded).toEqual({
-      tool: 'lifecycle.update',
-      input: { channel: 'stable' },
-    });
+    expect(forwarded?.tool).toBe('mac.call');
+    expect(forwarded?.nodeId).toBeUndefined();
+    const command =
+      forwarded?.input
+      && typeof forwarded.input === 'object'
+      && !Array.isArray(forwarded.input)
+        ? (forwarded.input as Record<string, unknown>).command
+        : undefined;
+    expect(typeof command).toBe('string');
+    expect(command).toContain('trusted-release-keys.json');
+    expect(command).toContain('"$HOME/.bun/bin/bun" -e');
   });
 
-  it('should keep stale lifecycle updates typed when the managed-cloud job failed before enrollment', async () => {
+  it('should bootstrap stale lifecycle updates even when the managed-cloud job failed before enrollment', async () => {
     const store = createMemoryDeviceGrantStore();
     await seedWorkspace(store);
     await authorizeWorkspace(store, 'central-failed-cloud-lifecycle-token', {
@@ -2802,13 +2809,11 @@ describe('multi-node connector routing', () => {
     }));
 
     expect(response.status).toBe(200);
-    expect(forwarded).toEqual({
-      tool: 'lifecycle.update',
-      input: { channel: 'stable' },
-    });
+    expect(forwarded?.tool).toBe('mac.call');
+    expect(forwarded?.nodeId).toBeUndefined();
   });
 
-  it('should not legacy-rewrite stale lifecycle updates from a mismatched managed-cloud tenant record', async () => {
+  it('should ignore unrelated managed-cloud tenant records when bootstrapping a stale node', async () => {
     const store = createMemoryDeviceGrantStore();
     await seedWorkspace(store);
     await authorizeWorkspace(store, 'central-mismatched-cloud-lifecycle-token', {
@@ -2880,10 +2885,8 @@ describe('multi-node connector routing', () => {
     }));
 
     expect(response.status).toBe(200);
-    expect(forwarded).toEqual({
-      tool: 'lifecycle.update',
-      input: { channel: 'stable' },
-    });
+    expect(forwarded?.tool).toBe('mac.call');
+    expect(forwarded?.nodeId).toBeUndefined();
   });
 
   it('should reject unsupported exact-version and injection-shaped stale lifecycle recovery before upstream contact', async () => {
@@ -2901,7 +2904,6 @@ describe('multi-node connector routing', () => {
       mcpProtocolVersion: undefined,
       mcpReady: undefined,
     });
-    await seedManagedCloudProvisioningJob(store);
     const routeDatabase = createInMemoryWorkspaceRouteD1();
     await seedRoutes(routeDatabase);
     let upstreamCalls = 0;
@@ -2946,6 +2948,150 @@ describe('multi-node connector routing', () => {
     expect(upstreamCalls).toBe(0);
   });
 
+  it('should use installed local release trust before managed-cloud metadata', async () => {
+    const { spawnSync } = await import('node:child_process');
+    const { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } = await import('node:fs');
+    const { tmpdir } = await import('node:os');
+    const { join } = await import('node:path');
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-legacy-local-trust-'));
+    try {
+      const runtimeDir = join(home, 'runtime');
+      const lifecycleDir = join(runtimeDir, 'current', 'scripts');
+      mkdirSync(lifecycleDir, { recursive: true });
+      const releaseKeys = {
+        release: '-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEA111111111111111111111111111111111111111=\n-----END PUBLIC KEY-----',
+      };
+      writeFileSync(
+        join(runtimeDir, 'trusted-release-keys.json'),
+        JSON.stringify(releaseKeys),
+        { encoding: 'utf8', mode: 0o600 },
+      );
+      const lifecycleMarker = join(home, 'legacy-lifecycle-local-trust.json');
+      writeFileSync(
+        join(lifecycleDir, 'lifecycle.ts'),
+        `await Bun.write(${JSON.stringify(lifecycleMarker)}, JSON.stringify({ baseUrl: process.env.CONSUELO_RELEASE_BASE_URL, keys: process.env.CONSUELO_RELEASE_PUBLIC_KEYS_JSON, gcpAuth: process.env.CONSUELO_RELEASE_GCP_METADATA_AUTH ?? null }));`,
+        'utf8',
+      );
+      const command = legacyLifecycleBootstrapCommand('stable');
+      const inlineMarker = " -e '";
+      const inlineStart = command.indexOf(inlineMarker);
+      expect(inlineStart).toBeGreaterThanOrEqual(0);
+      const inlineScript = command.slice(inlineStart + inlineMarker.length, -1);
+      const child = spawnSync(
+        'bun',
+        ['-e', `globalThis.fetch=async()=>{throw new Error("metadata should not be read");};${inlineScript}`],
+        {
+          encoding: 'utf8',
+          env: { ...process.env, CONSUELO_HOME: home },
+        },
+      );
+
+      expect(child.status).toBe(0);
+      expect(existsSync(lifecycleMarker)).toBe(true);
+      expect(JSON.parse(readFileSync(lifecycleMarker, 'utf8'))).toEqual({
+        baseUrl: 'https://install.consuelohq.com/os/releases',
+        keys: JSON.stringify(releaseKeys),
+        gcpAuth: null,
+      });
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
+  });
+
+  it('should fail closed on unsafe installed release trust before metadata or lifecycle execution', async () => {
+    const { spawnSync } = await import('node:child_process');
+    const { chmodSync, existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } = await import('node:fs');
+    const { tmpdir } = await import('node:os');
+    const { join } = await import('node:path');
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-legacy-unsafe-trust-'));
+    try {
+      const runtimeDir = join(home, 'runtime');
+      const lifecycleDir = join(runtimeDir, 'current', 'scripts');
+      mkdirSync(lifecycleDir, { recursive: true });
+      const trustPath = join(runtimeDir, 'trusted-release-keys.json');
+      writeFileSync(
+        trustPath,
+        JSON.stringify({
+          release: '-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEA111111111111111111111111111111111111111=\n-----END PUBLIC KEY-----',
+        }),
+        { encoding: 'utf8', mode: 0o600 },
+      );
+      chmodSync(trustPath, 0o666);
+      const lifecycleMarker = join(home, 'legacy-lifecycle-unsafe-trust');
+      const metadataMarker = join(home, 'legacy-metadata-unsafe-trust');
+      writeFileSync(
+        join(lifecycleDir, 'lifecycle.ts'),
+        `await Bun.write(${JSON.stringify(lifecycleMarker)}, 'spawned');`,
+        'utf8',
+      );
+      const command = legacyLifecycleBootstrapCommand('stable');
+      const inlineMarker = " -e '";
+      const inlineStart = command.indexOf(inlineMarker);
+      expect(inlineStart).toBeGreaterThanOrEqual(0);
+      const inlineScript = command.slice(inlineStart + inlineMarker.length, -1);
+      const child = spawnSync(
+        'bun',
+        ['-e', `globalThis.fetch=async()=>{await Bun.write(${JSON.stringify(metadataMarker)},'called');return new Response('',{status:500});};${inlineScript}`],
+        {
+          encoding: 'utf8',
+          env: { ...process.env, CONSUELO_HOME: home },
+        },
+      );
+
+      expect(child.status).not.toBe(0);
+      expect(child.stderr).toContain('trusted release key path is unsafe');
+      expect(existsSync(metadataMarker)).toBe(false);
+      expect(existsSync(lifecycleMarker)).toBe(false);
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
+  });
+
+  it('should recover missing local release trust from validated managed-cloud metadata', async () => {
+    const { spawnSync } = await import('node:child_process');
+    const { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } = await import('node:fs');
+    const { tmpdir } = await import('node:os');
+    const { join } = await import('node:path');
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-legacy-metadata-trust-'));
+    try {
+      const lifecycleDir = join(home, 'runtime', 'current', 'scripts');
+      mkdirSync(lifecycleDir, { recursive: true });
+      const lifecycleMarker = join(home, 'legacy-lifecycle-metadata-trust');
+      writeFileSync(
+        join(lifecycleDir, 'lifecycle.ts'),
+        `await Bun.write(${JSON.stringify(lifecycleMarker)}, process.env.CONSUELO_RELEASE_GCP_METADATA_AUTH ?? '');`,
+        'utf8',
+      );
+      const releaseKeys = {
+        release: '-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEA111111111111111111111111111111111111111=\n-----END PUBLIC KEY-----',
+      };
+      const startupScript = [
+        '#!/usr/bin/env bash',
+        `  CONSUELO_RELEASE_BASE_URL='https://storage.googleapis.com/consuelo-os-releases-prod' \\`,
+        `  CONSUELO_RELEASE_PUBLIC_KEYS_JSON='${JSON.stringify(releaseKeys)}' \\`,
+      ].join('\n');
+      const command = legacyLifecycleBootstrapCommand('stable');
+      const inlineMarker = " -e '";
+      const inlineStart = command.indexOf(inlineMarker);
+      expect(inlineStart).toBeGreaterThanOrEqual(0);
+      const inlineScript = command.slice(inlineStart + inlineMarker.length, -1);
+      const child = spawnSync(
+        'bun',
+        ['-e', `globalThis.fetch=async()=>new Response(${JSON.stringify(startupScript)},{status:200});${inlineScript}`],
+        {
+          encoding: 'utf8',
+          env: { ...process.env, CONSUELO_HOME: home },
+        },
+      );
+
+      expect(child.status).toBe(0);
+      expect(readFileSync(lifecycleMarker, 'utf8')).toBe('1');
+      expect(JSON.parse(readFileSync(join(home, 'runtime', 'trusted-release-keys.json'), 'utf8'))).toEqual(releaseKeys);
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
+  });
+
   it.each([
     [
       'untrusted release origin',
@@ -2979,9 +3125,11 @@ describe('multi-node connector routing', () => {
         `  CONSUELO_RELEASE_BASE_URL='${releaseBaseUrl}' \\`,
         `  CONSUELO_RELEASE_PUBLIC_KEYS_JSON='${JSON.stringify(releaseKeys)}' \\`,
       ].join('\n');
-      const command = legacyManagedCloudLifecycleBootstrapCommand('stable');
-      const commandPrefix = "/home/consuelo/.bun/bin/bun -e '";
-      const inlineScript = command.slice(commandPrefix.length, -1);
+      const command = legacyLifecycleBootstrapCommand('stable');
+      const inlineMarker = " -e '";
+      const inlineStart = command.indexOf(inlineMarker);
+      expect(inlineStart).toBeGreaterThanOrEqual(0);
+      const inlineScript = command.slice(inlineStart + inlineMarker.length, -1);
       const child = spawnSync(
         'bun',
         ['-e', `globalThis.fetch=async()=>new Response(${JSON.stringify(startupScript)},{status:200});${inlineScript}`],
