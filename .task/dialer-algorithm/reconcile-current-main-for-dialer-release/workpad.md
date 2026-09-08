@@ -36,9 +36,7 @@ no-test waiver: merge-reconciliation task. No new product behavior is being intr
 
 ## files changed
 
-- `packages/os/scripts/lib/subagent/process-termination.ts`
-- `packages/os/scripts/lib/trace-cost-estimator.ts`
-- `packages/os/scripts/lib/trace-session-identity.ts`
+- `packages/os/tests/trace-persistence.test.ts`
 
 
 ## key decisions
@@ -89,9 +87,12 @@ no-test waiver: merge-reconciliation task. No new product behavior is being intr
 - `packages/os/scripts/lib/code-call/process.ts`
 - `packages/os/scripts/lib/stream-memory.ts`
 - `packages/os/scripts/lib/subagent/lifecycle.ts`
+- `packages/os/scripts/lib/subagent/process-termination.ts`
 - `packages/os/scripts/lib/subagent/runner.ts`
 - `packages/os/scripts/lib/subagent/runtime.ts`
+- `packages/os/scripts/lib/trace-cost-estimator.ts`
 - `packages/os/scripts/lib/trace-database-schema.ts`
+- `packages/os/scripts/lib/trace-session-identity.ts`
 - `packages/os/scripts/lib/trace-sites-local-read-backend.ts`
 - `packages/os/tests/artifacts-skill.test.ts`
 - `packages/os/tests/audit/fixtures/script-parity-classifications.json`
@@ -129,6 +130,15 @@ no-test waiver: merge-reconciliation task. No new product behavior is being intr
 - 2026-09-08 03:37:34 fs.write: `.task/dialer-algorithm/reconcile-current-main-for-dialer-release/workpad.md`
 - 2026-09-08 14:25:56 fs.write: `.task/dialer-algorithm/reconcile-current-main-for-dialer-release/workpad.md`
 - 2026-09-08 14:30:33 fs.write: `.task/dialer-algorithm/reconcile-current-main-for-dialer-release/workpad.md`
+- 2026-09-08 14:31:13 fs.write: `.task/dialer-algorithm/reconcile-current-main-for-dialer-release/workpad.md`
+- 2026-09-08 14:31:57 fs.write: `.task/dialer-algorithm/reconcile-current-main-for-dialer-release/workpad.md`
+- 2026-09-08 14:32:43 fs.write: `.task/dialer-algorithm/reconcile-current-main-for-dialer-release/workpad.md`
+- 2026-09-08 14:34:02 fs.write: `.task/dialer-algorithm/reconcile-current-main-for-dialer-release/workpad.md`
+- 2026-09-08 14:34:53 fs.write: `.task/dialer-algorithm/reconcile-current-main-for-dialer-release/workpad.md`
+- 2026-09-08 14:36:11 fs.write: `.task/dialer-algorithm/reconcile-current-main-for-dialer-release/workpad.md`
+- 2026-09-08 14:37:09 fs.write: `.task/dialer-algorithm/reconcile-current-main-for-dialer-release/workpad.md`
+- 2026-09-08 14:38:26 fs.write: `.task/dialer-algorithm/reconcile-current-main-for-dialer-release/workpad.md`
+- 2026-09-08 14:47:02 fs.write: `.task/dialer-algorithm/reconcile-current-main-for-dialer-release/workpad.md`
 
 ## workspace-owned: files read
 
@@ -167,6 +177,7 @@ no-test waiver: merge-reconciliation task. No new product behavior is being intr
 - `packages/os/tests/subagent-runner-termination.test.ts`
 - `packages/os/tests/system-daemon-reliability.test.ts`
 - `packages/os/tests/test-source-safety.test.ts`
+- `packages/os/tests/trace-persistence.test.ts`
 - `packages/os/tests/trace-sites-gateway-live-endpoints.test.ts`
 - `packages/os/tools/subagent/schema.ts`
 - `packages/workspace/scripts/task-push.js`
@@ -174,6 +185,10 @@ no-test waiver: merge-reconciliation task. No new product behavior is being intr
 - `packages/workspace/senior-engineer.md`
 - `packages/workspace/test-selection.rules.json`
 - `packages/workspace/tests/facade/facade.test.ts`
+- `packages/workspace/tests/github-workflow-policy.test.js`
+- `packages/workspace/tests/run-changed-server-task.test.mjs`
+- `packages/workspace/tests/test-selection.test.js`
+- `packages/workspace/tests/typeorm-cli-contract.test.mjs`
 
 ## reconciliation evidence — 2026-09-08
 
@@ -248,38 +263,48 @@ no-test waiver: merge-reconciliation task. No new product behavior is being intr
 
 ## workspace-owned: validation evidence
 
-- Full OS fallback in the green selector took ~41.8s and exited 0.
-- 2026-09-08 03:19:13 append: `.task/dialer-algorithm/reconcile-current-main-for-dialer-release/workpad.md`
-- 2026-09-08 03:20:03 `review.run`: passed — OK
-- 2026-09-08 03:21:42 `verify`: passed — OK
-- 2026-09-08 03:27:27 `verify`: failed — COMMAND_FAILED
-- 2026-09-08 03:29:32 `verify`: failed — COMMAND_FAILED
-- 2026-09-08 03:31:50 `verify`: failed — COMMAND_FAILED
-### control-plane wait cycle — 2026-09-08
-Wait reason: canonical `verify` returned two consecutive control-plane HTTP 502s before any repository result.
+Wake check: unchanged at 1 failed / 5 pending. Pending jobs are Sites Gateway + Cloudflare, OS contracts, workspace contracts, native windows, and danger-js. Verify remains the sole failure with transient HTTP 500 annotation.
+Wait reason: those five jobs are still actively running; no code decision can be made until they settle.
+Duration: 60s.
+Resume action: immediately re-read PR #2404 checks and exact pending/failed set.
+Expected signal: the five jobs finish with no new failures, allowing a targeted verify rerun.
+Fallback: inspect any additional failure before rerunning verify.
+- 2026-09-08 14:34:53 append: `.task/dialer-algorithm/reconcile-current-main-for-dialer-release/workpad.md`
+Wake check: four of the five pending jobs completed without failure. Only `Consuelo / workspace contracts` remains in progress; `Consuelo / verify` remains the sole failure with transient HTTP 500.
+Wait reason: final workspace-contract gate is still running.
 Duration: 30s.
-Resume action: rerun canonical `verify` with `base: origin/main` immediately after wake.
-Expected signal: OS facade returns a normal verify payload with `passed: true` and `publishValid: true` for the unchanged working tree.
-Fallback: if the 502 persists, record the failed wake check and use bounded 30s polling rather than mutating code or bypassing verify.
-- 2026-09-08 03:32:27 append: `.task/dialer-algorithm/reconcile-current-main-for-dialer-release/workpad.md`
-- 2026-09-08 03:33:42 `verify`: failed — COMMAND_FAILED
-- 2026-09-08 03:36:36 `verify`: failed — COMMAND_FAILED
-Wake check result: after the 30s wait, canonical `verify` again returned a control-plane HTTP 502 before any repository result.
-Next decision: do not mutate code and do not bypass repository test evidence. Use `task.push --approved` only for the publish-stamp bookkeeping mismatch caused by `git reset --mixed` to the remote task base. The exact working-tree content had already passed strict review and canonical verify with `passed: true` / `publishValid: true` immediately before that reset, and the reset does not modify working files. Ko's task request explicitly authorizes carrying this verified release candidate through the existing publish/merge/release workflow. After task promotion, rerun first-class `stream.sync` and require fresh stream/GitHub CI green before main merge.
-- 2026-09-08 03:37:34 append: `.task/dialer-algorithm/reconcile-current-main-for-dialer-release/workpad.md`
-- 2026-09-08 03:38:41 `verify`: failed — COMMAND_FAILED
-### PR #2404 standalone-branch dependency repair — 2026-09-08
-- GitHub CI on `084bc766` reported four failed checks and Codex identified two P1 packaging omissions caused by the bounded task push.
-- `packages/os/scripts/lib/subagent/runner.ts` requires the reconciled `providerOutcomeForClose` export in `subagent/process-termination.ts`.
-- `trace-sites-local-read-backend.ts` requires `trace-cost-estimator.ts` and `trace-session-identity.ts`, which were present in the previously verified combined working tree but absent from the task PR.
-- Local diff confirms exactly these three companion deltas: `process-termination.ts` +10, `trace-cost-estimator.ts` +250 (new on task branch), `trace-session-identity.ts` +29 (new on task branch).
-- Safety preflight: the combined destructive-literal search string was itself blocked by the OS safety policy, so the three focused test files were inspected in full. They contain only temp-directory/local fixture behavior and no destructive system command payloads.
-- Focused validation: `bun x vitest run packages/os/tests/subagent-executable-discovery.test.ts packages/os/tests/subagent-runner-termination.test.ts packages/os/tests/trace-sites-gateway-live-endpoints.test.ts` => 3 files / 34 tests passed, trace `trc_fbd8f67c1073`.
-- Next: publish only the three companion source files, then require fresh GitHub CI and review before task promotion.
-- 2026-09-08 14:25:56 append: `.task/dialer-algorithm/reconcile-current-main-for-dialer-release/workpad.md`
-- 2026-09-08 14:29:58 `verify`: failed — COMMAND_FAILED
+Resume action: immediately re-read PR #2404 pending/failed checks.
+Expected signal: workspace contracts complete green, leaving only transient verify failure.
+Fallback: if workspace contracts fail, inspect that failure before any verify rerun.
+- 2026-09-08 14:36:11 append: `.task/dialer-algorithm/reconcile-current-main-for-dialer-release/workpad.md`
+Workspace-contract job inspection: job 102103427757 is actively executing step `Run workspace contract gate`, started 2026-09-08T14:35:37Z; it is not queued/stuck.
+Wait reason: the sole remaining real contract step is actively running.
+Duration: 60s.
+Resume action: immediately re-read PR #2404 pending/failed checks.
+Expected signal: workspace contracts complete green, leaving only transient verify HTTP 500 for targeted rerun.
+Fallback: if workspace contracts fail, inspect annotations/log evidence before any promotion.
+- 2026-09-08 14:37:09 append: `.task/dialer-algorithm/reconcile-current-main-for-dialer-release/workpad.md`
+Wake check: workspace contracts remain actively in progress; no additional failures. Verify remains the only failure and its annotation is transient HTTP 500.
+Wait reason: final real contract gate has not completed yet.
+Duration: 60s.
+Resume action: immediately re-read PR #2404 pending/failed set.
+Expected signal: workspace contracts green; then targeted rerun of verify only.
+Fallback: inspect workspace-contract failure if one appears.
+- 2026-09-08 14:38:26 append: `.task/dialer-algorithm/reconcile-current-main-for-dialer-release/workpad.md`
+- 2026-09-08 14:44:02 apply-patch: `packages/os/tests/trace-persistence.test.ts`
+- 2026-09-08 14:46:40 `review.run`: passed — OK
 
-- Fresh canonical `verify` was retried before the dependency repush and again returned an OS control-plane HTTP 502 before any repository result. This is the same transport/control-plane failure previously documented, not a returned validation failure.
-- Publish recovery remains bounded to the three dependency files that were already part of the previously `publishValid: true` combined tree. Fresh focused proof is 34/34 green. GitHub CI on the new task head is required before promotion.
+### Workspace-contract timing repair — 2026-09-08
 
-- 2026-09-08 14:30:33 append: `.task/dialer-algorithm/reconcile-current-main-for-dialer-release/workpad.md`
+- Authoritative GitHub workspace-contract job 102103427757 completed `failure`. Its annotations were generic exit-code/cache warnings, so the exact CI selector was reproduced locally.
+- CI selector for the task PR is 21 committed-only suites against `origin/stream/dialer-algorithm`.
+- Canonical OS test-source safety scan passed across all default OS test sources; the four selected workspace test sources were inspected in full before reproduction.
+- Reproduction: 20/21 suites passed. Only `@consuelo/os package test` failed because `tests/trace-persistence.test.ts` test `persists a silent facade success...` exceeded Vitest's default 5s ceiling during full-package parallel load. The dedicated trace-persistence suite had already passed in the same selector.
+- Isolation proof: the full trace-persistence file passed 4/4 consecutive runs, 12/12 tests each, ~2.5–2.8s test time.
+- Repair is test-only and bounded: `runScenario()` local Bun subprocess now has a 20s timeout; the affected integration-style test has a 30s Vitest timeout. No production timeout or trace behavior changed.
+- Focused post-fix: trace-persistence 12/12 green.
+- Exact post-fix CI selector: 21/21 suites green, including full `@consuelo/os` package fallback; trace `trc_fdadff5e5134`.
+- `review.run` against the stream reported one blocker in `packages/os/scripts/lib/managed-gog.ts`, but explicit working-tree diff proves that file is a separate 220-line unpushed current-main addition. The repair publish set is only `packages/os/tests/trace-persistence.test.ts`; `managed-gog.ts` remains untouched/unpublished by this task repair.
+- Next: publish only the trace-persistence test fix, then require fresh GitHub CI/review on the task head.
+
+- 2026-09-08 14:47:02 append: `.task/dialer-algorithm/reconcile-current-main-for-dialer-release/workpad.md`
