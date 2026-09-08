@@ -3029,7 +3029,7 @@ describe('multi-node connector routing', () => {
     expect(upstreamCalls).toBe(0);
   });
 
-  it('should use installed local release trust before managed-cloud metadata', async () => {
+  it('should use installed local release trust for stale lifecycle when managed metadata is unavailable', async () => {
     const { spawnSync } = await import('node:child_process');
     const { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } = await import('node:fs');
     const { tmpdir } = await import('node:os');
@@ -3060,10 +3060,10 @@ describe('multi-node connector routing', () => {
       const inlineScript = command.slice(inlineStart + inlineMarker.length, -1);
       const child = spawnSync(
         'bun',
-        ['-e', `globalThis.fetch=async()=>{throw new Error("metadata should not be read");};${inlineScript}`],
+        ['-e', `globalThis.fetch=async()=>{throw new Error("managed metadata unavailable");};${inlineScript}`],
         {
           encoding: 'utf8',
-          env: { ...process.env, CONSUELO_HOME: home, CONSUELO_RELEASE_GCP_METADATA_AUTH: '1' },
+          env: { ...process.env, CONSUELO_HOME: home },
         },
       );
 
@@ -3074,6 +3074,112 @@ describe('multi-node connector routing', () => {
         keys: JSON.stringify(releaseKeys),
         gcpAuth: null,
       });
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
+  });
+
+  it('should recover managed release source for stale lifecycle when local trust exists but release env is absent', async () => {
+    const { spawnSync } = await import('node:child_process');
+    const { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } = await import('node:fs');
+    const { tmpdir } = await import('node:os');
+    const { join } = await import('node:path');
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-legacy-local-managed-source-'));
+    try {
+      const runtimeDir = join(home, 'runtime');
+      const lifecycleDir = join(runtimeDir, 'current', 'scripts');
+      mkdirSync(lifecycleDir, { recursive: true });
+      const releaseKeys = {
+        release: '-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEA111111111111111111111111111111111111111=\n-----END PUBLIC KEY-----',
+      };
+      writeFileSync(
+        join(runtimeDir, 'trusted-release-keys.json'),
+        JSON.stringify(releaseKeys),
+        { encoding: 'utf8', mode: 0o600 },
+      );
+      const lifecycleMarker = join(home, 'legacy-lifecycle-local-managed-source.json');
+      writeFileSync(
+        join(lifecycleDir, 'lifecycle.ts'),
+        `await Bun.write(${JSON.stringify(lifecycleMarker)}, JSON.stringify({ baseUrl: process.env.CONSUELO_RELEASE_BASE_URL, keys: process.env.CONSUELO_RELEASE_PUBLIC_KEYS_JSON, gcpAuth: process.env.CONSUELO_RELEASE_GCP_METADATA_AUTH ?? null }));`,
+        'utf8',
+      );
+      const startupScript = [
+        '#!/usr/bin/env bash',
+        `  CONSUELO_RELEASE_BASE_URL='https://storage.googleapis.com/consuelo-os-releases-prod' \\`,
+        `  CONSUELO_RELEASE_PUBLIC_KEYS_JSON='${JSON.stringify(releaseKeys)}' \\`,
+      ].join('\n');
+      const command = legacyLifecycleBootstrapCommand('stable');
+      const inlineMarker = " -e '";
+      const inlineStart = command.indexOf(inlineMarker);
+      expect(inlineStart).toBeGreaterThanOrEqual(0);
+      const inlineScript = command.slice(inlineStart + inlineMarker.length, -1);
+      const child = spawnSync(
+        'bun',
+        ['-e', `globalThis.fetch=async()=>new Response(${JSON.stringify(startupScript)},{status:200});${inlineScript}`],
+        {
+          encoding: 'utf8',
+          env: { ...process.env, CONSUELO_HOME: home },
+        },
+      );
+
+      expect(child.status).toBe(0);
+      expect(existsSync(lifecycleMarker)).toBe(true);
+      expect(JSON.parse(readFileSync(lifecycleMarker, 'utf8'))).toEqual({
+        baseUrl: 'https://storage.googleapis.com/consuelo-os-releases-prod',
+        keys: JSON.stringify(releaseKeys),
+        gcpAuth: '1',
+      });
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
+  });
+
+  it('should fail closed on an untrusted managed release source discovered during stale lifecycle local-trust recovery', async () => {
+    const { spawnSync } = await import('node:child_process');
+    const { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } = await import('node:fs');
+    const { tmpdir } = await import('node:os');
+    const { join } = await import('node:path');
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-legacy-local-untrusted-source-'));
+    try {
+      const runtimeDir = join(home, 'runtime');
+      const lifecycleDir = join(runtimeDir, 'current', 'scripts');
+      mkdirSync(lifecycleDir, { recursive: true });
+      const releaseKeys = {
+        release: '-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEA111111111111111111111111111111111111111=\n-----END PUBLIC KEY-----',
+      };
+      writeFileSync(
+        join(runtimeDir, 'trusted-release-keys.json'),
+        JSON.stringify(releaseKeys),
+        { encoding: 'utf8', mode: 0o600 },
+      );
+      const lifecycleMarker = join(home, 'legacy-lifecycle-local-untrusted-source');
+      writeFileSync(
+        join(lifecycleDir, 'lifecycle.ts'),
+        `await Bun.write(${JSON.stringify(lifecycleMarker)}, 'spawned');`,
+        'utf8',
+      );
+      const startupScript = [
+        '#!/usr/bin/env bash',
+        `  CONSUELO_RELEASE_BASE_URL='https://example.com/consuelo-os-releases' \\`,
+        `  CONSUELO_RELEASE_PUBLIC_KEYS_JSON='${JSON.stringify(releaseKeys)}' \\`,
+      ].join('\n');
+      const command = legacyLifecycleBootstrapCommand('stable');
+      const inlineMarker = " -e '";
+      const inlineStart = command.indexOf(inlineMarker);
+      expect(inlineStart).toBeGreaterThanOrEqual(0);
+      const inlineScript = command.slice(inlineStart + inlineMarker.length, -1);
+      const child = spawnSync(
+        'bun',
+        ['-e', `globalThis.fetch=async()=>new Response(${JSON.stringify(startupScript)},{status:200});${inlineScript}`],
+        {
+          encoding: 'utf8',
+          env: { ...process.env, CONSUELO_HOME: home },
+        },
+      );
+
+      expect(child.status).not.toBe(0);
+      expect(child.stderr).toContain('managed cloud release origin is not trusted');
+      expect(existsSync(lifecycleMarker)).toBe(false);
     } finally {
       rmSync(home, { recursive: true, force: true });
     }
