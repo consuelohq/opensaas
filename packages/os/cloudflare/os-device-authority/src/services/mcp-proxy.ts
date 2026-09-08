@@ -733,7 +733,11 @@ export async function proxyCentralMcpRequest(input: {
           managedCloudProvisioning?.nodeId === resolution.nodeId
           && managedCloudProvisioning.accountId === stored.accountId
           && managedCloudProvisioning.workspaceId === resolution.workspaceId
-          && managedCloudProvisioning.workspaceHost === stored.workspaceHost;
+          && managedCloudProvisioning.workspaceHost === stored.workspaceHost
+          && (
+            managedCloudProvisioning.status === 'connecting'
+            || managedCloudProvisioning.status === 'ready'
+          );
         if (managedCloudNode) {
           const legacyRewrite = rewriteLegacyManagedCloudLifecycleUpdate(requestBody);
           if (!legacyRewrite.ok) {

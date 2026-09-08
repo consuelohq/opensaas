@@ -157,6 +157,7 @@ async function seedWorkspace(
 async function seedManagedCloudProvisioningJob(
   store: ReturnType<typeof createMemoryDeviceGrantStore>,
   nodeId = 'node-member',
+  status: 'connecting' | 'ready' = 'ready',
 ): Promise<void> {
   await store.createManagedCloudProvisioningJob({
     jobId: `mcpj_${nodeId}`,
@@ -172,10 +173,11 @@ async function seedManagedCloudProvisioningJob(
     monthlyPriceCents: 2_000,
     currency: 'USD',
     idempotencyKey: `idem_${nodeId}`,
-    status: 'ready',
+    status,
     createdAt: baseNow,
     updatedAt: baseNow,
-    readyAt: baseNow,
+    enrollmentConsumedAt: baseNow,
+    ...(status === 'ready' ? { readyAt: baseNow } : {}),
   });
 }
 
@@ -2596,7 +2598,7 @@ describe('multi-node connector routing', () => {
       mcpProtocolVersion: undefined,
       mcpReady: undefined,
     });
-    await seedManagedCloudProvisioningJob(store);
+    await seedManagedCloudProvisioningJob(store, 'node-member', 'connecting');
     const routeDatabase = createInMemoryWorkspaceRouteD1();
     await seedRoutes(routeDatabase);
     const forwardedCalls: Array<{
@@ -2708,6 +2710,85 @@ describe('multi-node connector routing', () => {
       body: JSON.stringify({
         jsonrpc: '2.0',
         id: 180,
+        method: 'tools/call',
+        params: {
+          name: 'call',
+          arguments: {
+            tool: 'lifecycle.update',
+            input: { channel: 'stable' },
+            nodeId: 'node-member',
+          },
+        },
+      }),
+    }));
+
+    expect(response.status).toBe(200);
+    expect(forwarded).toEqual({
+      tool: 'lifecycle.update',
+      input: { channel: 'stable' },
+    });
+  });
+
+  it('should keep stale lifecycle updates typed when the managed-cloud job failed before enrollment', async () => {
+    const store = createMemoryDeviceGrantStore();
+    await seedWorkspace(store);
+    await authorizeWorkspace(store, 'central-failed-cloud-lifecycle-token', {
+      scopes: ['workspace:read', 'route:/mcp:read', 'mcp:call', 'tool:*:read'],
+    });
+    const member = await store.byWorkspaceNode(accountId, 'node-member');
+    expect(member).toBeDefined();
+    await store.putWorkspaceNode({
+      ...member!,
+      osVersion: undefined,
+      bundleId: undefined,
+      mcpProtocolVersion: undefined,
+      mcpReady: undefined,
+    });
+    await store.createManagedCloudProvisioningJob({
+      jobId: 'mcpj_failed_node_member',
+      accountId,
+      workspaceId,
+      workspaceSlug,
+      workspaceHost,
+      nodeId: 'node-member',
+      nodeName: 'Failed Cloud node',
+      planId: 'starter',
+      region: 'us-east1',
+      pricingVersion: 'test-v1',
+      monthlyPriceCents: 2_000,
+      currency: 'USD',
+      idempotencyKey: 'idem_failed_node_member',
+      status: 'failed',
+      createdAt: baseNow,
+      updatedAt: baseNow,
+      errorCode: 'INSTANCE_BOOT_FAILED',
+      errorMessage: 'instance never enrolled',
+    });
+    const routeDatabase = createInMemoryWorkspaceRouteD1();
+    await seedRoutes(routeDatabase);
+    let forwarded: { tool?: unknown; input?: unknown; nodeId?: unknown } | undefined;
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      origin,
+      now: () => baseNow,
+      workspaceRouteRegistry: routeDatabase,
+      fetchImpl: async (request) => {
+        const body = await (request instanceof Request ? request : new Request(request)).clone().json() as {
+          params?: { arguments?: { tool?: unknown; input?: unknown; nodeId?: unknown } };
+        };
+        forwarded = body.params?.arguments;
+        return Response.json({ ok: true });
+      },
+    });
+    const response = await handler(new Request(`${origin}/mcp`, {
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer central-failed-cloud-lifecycle-token',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0',
+        id: 1802,
         method: 'tools/call',
         params: {
           name: 'call',
