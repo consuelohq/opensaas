@@ -37,6 +37,7 @@ const EXCLUDE_FILE_NAMES = new Set(['package-lock.json', 'yarn.lock']);
 const MAX_QUERY_HYDRATION_CHUNKS = 64;
 const MAX_CHANGED_HYDRATION_CHUNKS = 32;
 const MAX_GATEWAY_EMBEDDING_BATCH_SIZE = 32;
+const INTERACTIVE_HYDRATION_TIMEOUT_MS = 8_000;
 
 function writeStderr(value = '') {
   process.stderr.write(`${value}\n`);
@@ -145,6 +146,10 @@ function readFileContent(repoRoot, filePath) {
 
 async function indexChunkEmbeddings(store, chunks, options) {
   const batchSize = getEmbeddingBatchSize();
+  const hydrationDeadlineAt = Number.isFinite(options.hydrationTimeoutMs)
+    && options.hydrationTimeoutMs > 0
+    ? Date.now() + options.hydrationTimeoutMs
+    : null;
   let embeddedCount = 0;
   let skippedCount = 0;
   let processedCount = 0;
@@ -169,7 +174,18 @@ async function indexChunkEmbeddings(store, chunks, options) {
 
     if (uncached.length > 0) {
       try {
-        const vectors = await embedTexts(uncached.map((chunk) => chunk.content), { kind: 'document' });
+        const remainingTimeoutMs = hydrationDeadlineAt === null
+          ? null
+          : hydrationDeadlineAt - Date.now();
+        if (remainingTimeoutMs !== null && remainingTimeoutMs <= 0) {
+          const deadlineError = new Error('semantic hydration deadline exceeded');
+          deadlineError.semanticUnavailable = true;
+          throw deadlineError;
+        }
+        const vectors = await embedTexts(uncached.map((chunk) => chunk.content), {
+          kind: 'document',
+          ...(remainingTimeoutMs === null ? {} : { timeoutMs: remainingTimeoutMs }),
+        });
         for (let vectorIndex = 0; vectorIndex < uncached.length; vectorIndex += 1) {
           const chunk = uncached[vectorIndex];
           const vector = vectors[vectorIndex];
@@ -182,14 +198,18 @@ async function indexChunkEmbeddings(store, chunks, options) {
         skippedCount += uncached.length;
         const remainingAfterBatch = Math.max(0, chunks.length - (index + batch.length));
         const message = error instanceof Error ? error.message : String(error);
+        const semanticUnavailable = Boolean(
+          error && typeof error === 'object' && error.semanticUnavailable === true,
+        );
         if (!options.json) {
-          writeStderr(`warning: semantic hydration paused after provider failure: ${message}`);
+          writeStderr(`warning: semantic hydration paused after failure: ${message}`);
         }
         return {
           embeddedCount,
           skippedCount,
           deferredCount: uncached.length + remainingAfterBatch,
           failure: message,
+          semanticUnavailable,
         };
       }
     }
@@ -200,7 +220,13 @@ async function indexChunkEmbeddings(store, chunks, options) {
     }
   }
 
-  return { embeddedCount, skippedCount, deferredCount: 0, failure: null };
+  return {
+    embeddedCount,
+    skippedCount,
+    deferredCount: 0,
+    failure: null,
+    semanticUnavailable: false,
+  };
 }
 
 function getEmbeddingBatchSize() {
@@ -376,6 +402,9 @@ async function ensureIndex(options = {}) {
   });
   const totalChunks = chunksToEmbed.length;
   const embeddingResult = await indexChunkEmbeddings(store, chunksToEmbed, {
+    hydrationTimeoutMs: options.hydrateAll || options.reindex
+      ? null
+      : INTERACTIVE_HYDRATION_TIMEOUT_MS,
     json: options.json,
     totalChunks,
   });
@@ -414,6 +443,7 @@ async function ensureIndex(options = {}) {
     chunksSkipped: embeddingResult.skippedCount,
     chunksDeferred: embeddingResult.deferredCount,
     embeddingFailure: embeddingResult.failure,
+    embeddingUnavailable: embeddingResult.semanticUnavailable,
     stats: store.getStats(),
   };
 }
