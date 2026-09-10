@@ -12,7 +12,7 @@
 - Stream review PR / integration SHA: resolve live from task promotion.
 - Prerequisites: planning authorized; existing algorithm PR reconciliation is a
   separate task and remains an explicit implementation gate.
-- Owned files: stream AGENTS.md RD entry and rd/ coordination pack.
+- Owned files: area AGENTS.md RD entry and rd/ coordination pack.
 - Changed behavior: manual child tasks have current-stream startup, bounded work
   contracts, independent receipts and a copyable return to the RD0 coordinator.
 - Acceptance evidence: task-scoped stream.context resolved the canonical OS dialer

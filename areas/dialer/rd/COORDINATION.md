@@ -131,7 +131,7 @@ Pasting an explicit approval prompt is the user's authorization for that node.
 ```text
 <ID> approved, go. Execute only <ID> in the RD graph on stream/dialer.
 Preferred model: GPT-6 Astra, High reasoning; do not claim settings changed by text.
-Read current stream context and packages/os/streams/dialer/rd/README.md
+Read current stream context and areas/dialer/rd/README.md
 from the latest stream, then follow COORDINATION.md and the frozen node contract.
 Verify prerequisite <IDs and evidence links>, existing ownership, and current
 stream state before creating one managed task from startFrom: "stream".

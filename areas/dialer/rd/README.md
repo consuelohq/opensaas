@@ -60,7 +60,7 @@ select Astra / High in the child or use supported explicit model controls.
 
 The original main-based bootstrap PR #2434 is superseded by #2437. Its preserved
 worktree is a recovery copy, not another active RD0 owner. Canonical stream guidance
-now lives under packages/os/streams/dialer following the #2435 migration.
+now lives under areas/dialer as repository-local project guidance; it is not shipped in the Consuelo OS runtime.
 
 ## Receipt ownership
 

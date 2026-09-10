@@ -55,7 +55,6 @@ const requiredFixtureFiles: Record<string, string> = {
   'hooks/dispatcher.js': 'export const dispatch = () => undefined;\n',
   'steering/system_prompt.md': '# Fixture system prompt\n',
   'streams/tools/AGENTS.md': '# Fixture tools stream\n',
-  'streams/dialer/AGENTS.md': '# Fixture dialer stream\n',
   'skills/task/SKILL.md': '# Fixture task skill\n',
   'skills/task/skill.json': '{"name":"task","entrypoint":"SKILL.md"}\n',
 };
@@ -355,6 +354,13 @@ describe('runtime bundle contract', () => {
     expect(classifyRuntimeBundlePath('manifests/manifest.config.ts')).toBe(
       'source-only',
     );
+    expect(classifyRuntimeBundlePath('streams/dialer/AGENTS.md')).toBe(
+      'source-only',
+    );
+    expect(classifyRuntimeBundlePath('streams/dialer/rd/README.md')).toBe(
+      'source-only',
+    );
+    expect(classifyRuntimeBundlePath('streams/tools/AGENTS.md')).toBe('runtime');
     expect(
       classifyRuntimeBundlePath('scripts/lib/distribution/runtime-bundle.ts'),
     ).toBe('runtime');
