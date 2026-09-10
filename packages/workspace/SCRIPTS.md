@@ -42,7 +42,7 @@ do not answer architecture questions from memory. search memory, read files, the
 
 ### diff_cockpit — open the live PR review cockpit
 
-Operator launcher for the Cloudflare-hosted live PR review cockpit. The script opens a canonical `diffs.consuelohq.com` URL in Arc and does not generate a static tmp review page. The first phase supports a single PR route with live GitHub data, a file tree, a diff/code review surface, and a right review drawer that stays closed by default.
+Operator launcher for the authenticated Consuelo OS Diffs surface. The script opens the canonical `internal.consuelohq.com/diffs` URL in Arc and does not generate a static tmp review page. The review surface uses the workspace's configured GitHub connection.
 
 ```bash
 bun run diff_cockpit -- 708
@@ -53,15 +53,12 @@ bun run diff_cockpit -- consuelohq/opensaas/pull/708
 
 Default repo for bare PR numbers: `consuelohq/opensaas`. Override it with `--repo owner/repo`.
 
-Related package commands:
+The shared rendering/loading package is tested locally but is not deployed as its own Worker:
 
 ```bash
-cd packages/diff-cockpit && bun run dev
-cd packages/diff-cockpit && bun run deploy
-cd packages/diff-cockpit && bun run test
+bun run --cwd packages/diff-cockpit test
+bun run --cwd packages/diff-cockpit typecheck
 ```
-
-Deploy target: `diffs.consuelohq.com` via Cloudflare Workers. Provide `GITHUB_TOKEN` or `GH_TOKEN` to the Worker when private repo access or higher GitHub API limits are needed.
 
 ### os:release — release all public Consuelo OS surfaces
 
@@ -499,7 +496,7 @@ writes `packages/workspace/test-selection.registry.json` from repo test discover
 
 ### test-selection:check — check affected test selection
 
-selects registry-owned suites for changed files and can run them with `--run`. `verify` uses this command internally.
+selects registry-owned suites for changed files and can run them with `--run`. `verify` uses this command internally. When a selected suite executes OS-owned code from a clean checkout, the runner first ensures `packages/os` dependencies are installed with the frozen Bun lockfile; this keeps workspace-triggered CI self-contained instead of relying on a separate workflow install step.
 
 ---
 
@@ -520,7 +517,7 @@ bun run test-selection:check -- --base origin/main --run --json
 bun run test-selection:nightly -- --json
 ```
 
-`verify` runs the registry check with `--run`. If changed code selects zero suites, verify reports the reason. Critical surfaces such as workspace gate scripts, task routing, trace rendering, API, dialer, and server code must have mapped tests. Nightly reports are written to `/tmp/opensaas-test-reports/latest.md` and `/tmp/opensaas-test-reports/latest.json`.
+`verify` runs the registry check with `--run`. Before running any selected OS suite, test selection checks the OS package dependency sentinel and performs `bun install --frozen-lockfile` in `packages/os` only when those dependencies are absent. If that preparation fails, it is reported as a critical `OS test dependency preparation` failure and no OS suite is run against a partial install. If changed code selects zero suites, verify reports the reason. Critical surfaces such as workspace gate scripts, task routing, trace rendering, API, dialer, and server code must have mapped tests. Nightly reports are written to `/tmp/opensaas-test-reports/latest.md` and `/tmp/opensaas-test-reports/latest.json`.
 
 ---
 

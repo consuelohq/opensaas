@@ -232,7 +232,7 @@ describe('prelaunch local OS port cutover', () => {
       ['scripts/server.js', "process.env.PORT || '46321'"],
       [
         'scripts/consuelo-reload.js',
-        "process.env.WORKSPACE_DAEMON_PORT || '46321'",
+        'process.env.CONSUELO_OS_WORKER_BASE_PORT || process.env.WORKSPACE_DAEMON_PORT',
       ],
       ['scripts/start-consuelo-daemon.sh', 'PORT:-46321'],
       ['scripts/workspace-watchdog.sh', 'CONSUELO_CADDY_INGRESS_PORT:-46320'],

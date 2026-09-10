@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_289548507e3f",
+  "tmuxSession": "opensaas-os-reconcile-stable-os-stream-with-main-28954850",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/reconcile-stable-os-stream-with-main",
+  "branch": "task/os/reconcile-stable-os-stream-with-main",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-reconcile-stable-os-stream-with-main",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-reconcile-stable-os-stream-with-main",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2213,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2213",
+  "createdAt": "2026-08-26T06:37:11.697Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-reconcile-stable-os-stream-with-main/.task/os/reconcile-stable-os-stream-with-main/session.json"
+}

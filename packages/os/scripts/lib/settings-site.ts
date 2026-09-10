@@ -8,8 +8,15 @@ import {
   renderWorkspaceChromeBar,
   workspaceChromeClientScript,
   workspaceRouteSwitcherStyles,
+  workspaceWindowShellStyles,
+  type WorkspaceChromeOptions,
   type WorkspaceSurfaceId,
 } from './workspace-chrome';
+import {
+  renderSecretsContent,
+  secretsClientScript,
+  secretsSiteStyles,
+} from './secrets-site';
 
 const overviewAssetDir = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -32,8 +39,8 @@ const PAGE_COPY: Record<ConfigurationPageId, {
   description: string;
 }> = {
   configuration: {
-    title: 'Overview',
-    description: 'See live workspace activity, operating readiness, and the agent surfaces available here.',
+    title: 'Home',
+    description: '',
   },
   tools: {
     title: 'Tools',
@@ -49,7 +56,7 @@ const PAGE_COPY: Record<ConfigurationPageId, {
   },
   secrets: {
     title: 'Secrets',
-    description: 'Connect credentials to the nodes and tools that need them without exposing secret values to agents.',
+    description: 'Store credentials securely for this workspace.',
   },
 };
 
@@ -116,20 +123,7 @@ function configurationStyles(): string {
         --heat-tooltip-shadow: 0 18px 55px rgba(0, 0, 0, 0.44);
       }
     }
-    * { box-sizing: border-box; }
-    html { background: var(--site-color-canvas); }
-    body { margin: 0; min-height: 100vh; padding: 14px; background: var(--site-color-canvas); color: var(--site-color-ink); }
-    .workspace-window { width: min(1880px, calc(100vw - 28px)); min-height: calc(100vh - 28px); margin: 0 auto; overflow: clip; border: 1px solid rgba(241, 231, 213, 0.16); border-radius: 18px; background: var(--site-color-paper); box-shadow: 0 34px 110px rgba(0, 0, 0, 0.42); display: grid; grid-template-rows: 42px minmax(0, 1fr); }
-    .trxChrome { position: relative; z-index: 70; display: grid; grid-template-columns: minmax(84px, 1fr) auto minmax(84px, 1fr); align-items: center; height: 42px; padding: 0 14px; border-bottom: 1px solid rgba(241, 231, 213, 0.10); background: #151411; color: #d8d0c1; view-transition-name: workspace-chrome; }
-    .trxDots { display: flex; align-items: center; gap: 8px; justify-self: start; }
-    .trxDot { width: 12px; height: 12px; padding: 0; border: 0; border-radius: 50%; cursor: pointer; box-shadow: inset 0 0 0 1px rgba(0,0,0,.22); }
-    .trxDot.red { background: #d85e54; }
-    .trxDot.yellow { background: #d5ad49; }
-    .trxDot.green { background: #64a866; }
-    .trxChromeTitle { justify-self: center; color: #d8d0c1; font: 600 12px/1 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .01em; }
-    .trxChromeActions { justify-self: end; min-width: 72px; text-align: right; }
-    .trxClock { color: #918a7f; font: 600 12px/1 ui-monospace, SFMono-Regular, Menlo, monospace; font-variant-numeric: tabular-nums; }
-    .workspace-view { min-width: 0; min-height: 0; background: var(--site-color-paper); view-transition-name: workspace-body; }
+    ${workspaceWindowShellStyles()}
     @view-transition { navigation: auto; }
     ::view-transition-old(workspace-chrome), ::view-transition-new(workspace-chrome) { animation-duration: 90ms; }
     ::view-transition-old(workspace-body), ::view-transition-new(workspace-body) { animation-duration: 140ms; animation-timing-function: ease-out; }
@@ -340,8 +334,6 @@ function configurationStyles(): string {
     [hidden] { display: none !important; }
     .sr-only { position: absolute !important; width: 1px !important; height: 1px !important; padding: 0 !important; margin: -1px !important; overflow: hidden !important; clip: rect(0,0,0,0) !important; white-space: nowrap !important; border: 0 !important; }
     @media (max-width: 900px) {
-      body { padding: 0; }
-      .workspace-window { width: 100vw; min-height: 100dvh; border: 0; border-radius: 0; }
       .detail-grid { grid-template-columns: 1fr; }
       .form-grid { grid-template-columns: 1fr; }
       .field-wide { grid-column: auto; }
@@ -358,7 +350,7 @@ function configurationStyles(): string {
     @media (prefers-reduced-motion: reduce) {
       .overview-heat-cell { transition: none; }
     }
-  ` + workspaceRouteSwitcherStyles() + nodesSiteStyles();
+  ` + workspaceRouteSwitcherStyles() + nodesSiteStyles() + secretsSiteStyles();
 }
 
 function configurationClientScript(): string {
@@ -382,11 +374,15 @@ function configurationClientScript(): string {
     const emptyRow = (columns, message) => '<tr><td colspan="' + columns + '" class="empty">' + escapeHtml(message) + '</td></tr>';
     const detail = (label, value, code = false) => '<div><dt>' + escapeHtml(label) + '</dt><dd>' + (code ? '<code>' + escapeHtml(value) + '</code>' : escapeHtml(value)) + '</dd></div>';
 
-    const OVERVIEW_HEATMAP_CACHE_KEY = 'consuelo:overview-heatmap:v1';
-    const OVERVIEW_HEATMAP_TTL_MS = 30000;
+    const OVERVIEW_HEATMAP_CACHE_PREFIX = 'consuelo:overview-heatmap:v3:';
+    const OVERVIEW_HEATMAP_CACHE_MAX_AGE_MS = 86400000;
     const OVERVIEW_HEATMAP_REFRESH_MS = 30000;
-    const OVERVIEW_HEATMAP_URL = '/gateway/traces/recent?direction=older&cursor=latest&limit=100&site=trace-burn-intelligence&sourceMode=local-networked&includeRawPayload=false';
-    const OVERVIEW_HEATMAP_MAX_PAGES = 24;
+    const OVERVIEW_HEATMAP_URL = '/gateway/traces/aggregates?window=8d&bucket=15m&site=trace-burn-intelligence&sourceMode=local-networked&includeRawPayload=false';
+    const OVERVIEW_HEATMAP_SCOPE_URL = '/gateway/traces/aggregates?window=8d&bucket=15m&scopeOnly=true&site=trace-burn-intelligence&sourceMode=local-networked&includeRawPayload=false';
+    const CONFIGURATION_RETRY_MAX_MS = 30000;
+    let configurationRetryTimer = 0;
+    let configurationRetryDelayMs = 1000;
+    let overviewHeatmapHasSnapshot = false;
     const heatCompact = (value) => new Intl.NumberFormat(undefined, { notation: 'compact', maximumFractionDigits: 1 }).format(Number(value || 0));
     const heatCost = (value) => '$' + Number(value || 0).toFixed(Number(value || 0) >= 1 ? 2 : 4);
     const heatTimestamp = (row) => row && (row.startTime || row.startedAt || row.started_at || row.time || row.ts || row.timestamp || row.createdAt || row.created_at);
@@ -420,12 +416,13 @@ function configurationClientScript(): string {
         const key = dayKey + ':' + String(date.getHours());
         const bucket = buckets[key];
         if (!bucket) continue;
+        const rowCalls = Math.max(0, Number(row?.calls ?? 1) || 0);
         const rowTokens = heatTokens(row);
         const rowCost = heatCostValue(row);
-        bucket.calls += 1;
+        bucket.calls += rowCalls;
         bucket.tokens += rowTokens;
         bucket.cost += rowCost;
-        calls += 1;
+        calls += rowCalls;
         tokens += rowTokens;
         cost += rowCost;
       }
@@ -473,7 +470,7 @@ function configurationClientScript(): string {
       gsap.fromTo(cells, { opacity: 0.22, scale: 0.88 }, { opacity: 1, scale: 1, duration: 0.28, stagger: 0.006, ease: 'power2.out', clearProps: 'opacity,transform' });
     }
 
-    function renderOverviewHeatmap(aggregate) {
+    function renderOverviewHeatmap(aggregate, animate = false) {
       const grid = byId('overview-heatmap-grid');
       if (!grid || !aggregate || !Array.isArray(aggregate.days)) return;
       const rows = aggregate.days.map((day) => {
@@ -488,11 +485,12 @@ function configurationClientScript(): string {
         return '<div class="overview-heatmap-row" role="row"><span class="overview-heatmap-day" role="rowheader">' + escapeHtml(day.label) + '</span>' + cells.join('') + '</div>';
       }).join('');
       grid.innerHTML = rows;
+      overviewHeatmapHasSnapshot = true;
+      grid.setAttribute('aria-busy', 'false');
       const totals = aggregate.totals || { calls: 0, tokens: 0, cost: 0 };
       setText('overview-heatmap-calls', heatCompact(totals.calls));
       setText('overview-heatmap-tokens', heatCompact(totals.tokens));
       setText('overview-heatmap-cost', heatCost(totals.cost));
-      setText('overview-heatmap-title', totals.calls > 0 ? 'Activity concentrates into a readable weekly rhythm' : 'Live trace activity will appear here');
       grid.setAttribute('aria-label', 'Trace activity by local hour for the last seven days. ' + String(totals.calls) + ' calls, ' + heatCompact(totals.tokens) + ' tokens, ' + heatCost(totals.cost) + '.');
       const cells = Array.from(grid.querySelectorAll('.overview-heat-cell'));
       cells.forEach((cell) => {
@@ -501,95 +499,130 @@ function configurationClientScript(): string {
         cell.addEventListener('focus', () => showOverviewHeatTooltip(cell));
         cell.addEventListener('blur', hideOverviewHeatTooltip);
       });
-      animateOverviewHeatmap(cells);
+      if (animate) animateOverviewHeatmap(cells);
     }
 
-    function readOverviewHeatmapCache() {
+    function overviewHeatmapScope(data) {
+      return {
+        workspaceId: String(data?.workspaceId || ''),
+        workspaceHost: String(data?.workspaceHost || ''),
+        nodeId: String(data?.nodeId || ''),
+      };
+    }
+
+    function overviewHeatmapStorageKey(scope) {
+      return OVERVIEW_HEATMAP_CACHE_PREFIX
+        + encodeURIComponent(String(scope.workspaceId || 'workspace-unknown'))
+        + ':'
+        + encodeURIComponent(String(scope.nodeId || 'node-default'));
+    }
+
+    function validOverviewHeatmapScope(scope) {
+      return Boolean(scope && typeof scope.workspaceId === 'string' && scope.workspaceId.length > 0);
+    }
+
+    function readOverviewHeatmapCache(scope) {
+      if (!validOverviewHeatmapScope(scope)) return null;
       try {
-        const raw = sessionStorage.getItem(OVERVIEW_HEATMAP_CACHE_KEY);
+        const raw = localStorage.getItem(overviewHeatmapStorageKey(scope));
         const cached = raw ? JSON.parse(raw) : null;
-        if (!cached || Date.now() - Number(cached.savedAt || 0) > OVERVIEW_HEATMAP_TTL_MS) return null;
-        return cached.aggregate || null;
+        const savedAt = Number(cached?.savedAt || 0);
+        if (!cached || !Array.isArray(cached.rows) || Date.now() - savedAt > OVERVIEW_HEATMAP_CACHE_MAX_AGE_MS) return null;
+        return {
+          rows: cached.rows,
+          savedAt,
+          isFresh: Date.now() - savedAt <= OVERVIEW_HEATMAP_REFRESH_MS,
+        };
       } catch {
         return null;
       }
     }
 
-    async function readOverviewHeatmapRows() {
-      const rows = [];
-      let cursor = 'latest';
-      const cutoff = Date.now() - (7 * 24 * 60 * 60 * 1000);
-      for (let page = 0; page < OVERVIEW_HEATMAP_MAX_PAGES; page += 1) {
-        const requestUrl = OVERVIEW_HEATMAP_URL.replace('cursor=latest', 'cursor=' + encodeURIComponent(cursor));
-        const response = await fetch(requestUrl, { headers: { accept: 'application/json' }, credentials: 'same-origin', cache: 'no-store' });
-        if (!response.ok) throw new Error('trace heatmap returned ' + response.status);
-        const payload = await response.json();
-        if (!payload || payload.ok === false) throw new Error('trace heatmap payload unavailable');
-        const data = payload.data || payload;
-        const pageRows = Array.isArray(data.rows) ? data.rows : [];
-        rows.push(...pageRows);
-        const oldest = pageRows.reduce((value, row) => {
-          const time = new Date(String(heatTimestamp(row) || '')).getTime();
-          return Number.isFinite(time) ? Math.min(value, time) : value;
-        }, Number.POSITIVE_INFINITY);
-        if (!data.nextCursor || pageRows.length === 0 || oldest <= cutoff) break;
-        cursor = String(data.nextCursor);
-      }
-      return rows;
+    async function readOverviewHeatmapScope() {
+      const response = await fetch(OVERVIEW_HEATMAP_SCOPE_URL, { headers: { accept: 'application/json' }, credentials: 'same-origin', cache: 'no-store' });
+      if (!response.ok) throw new Error('trace heatmap scope returned ' + response.status);
+      const payload = await response.json();
+      if (!payload || payload.ok === false) throw new Error('trace heatmap scope unavailable');
+      const scope = overviewHeatmapScope(payload.data || payload);
+      if (!validOverviewHeatmapScope(scope)) throw new Error('trace heatmap scope invalid');
+      return scope;
     }
 
+    async function readOverviewHeatmapRows() {
+      const response = await fetch(OVERVIEW_HEATMAP_URL, { headers: { accept: 'application/json' }, credentials: 'same-origin', cache: 'no-store' });
+      if (!response.ok) throw new Error('trace heatmap returned ' + response.status);
+      const payload = await response.json();
+      if (!payload || payload.ok === false) throw new Error('trace heatmap payload unavailable');
+      const data = payload.data || payload;
+      const scope = overviewHeatmapScope(data);
+      if (!validOverviewHeatmapScope(scope)) throw new Error('trace heatmap response scope invalid');
+      return { rows: Array.isArray(data.hourly?.buckets) ? data.hourly.buckets : [], scope };
+    }
+
+    let overviewHeatmapRendered = false;
+    let overviewHeatmapRefreshPending = false;
+
     async function refreshOverviewHeatmap() {
-      if (!byId('overview-heatmap-grid')) return;
+      if (!byId('overview-heatmap-grid') || overviewHeatmapRefreshPending) return;
+      overviewHeatmapRefreshPending = true;
       try {
-        const rows = await readOverviewHeatmapRows();
-        const aggregate = aggregateOverviewHeatmap(rows);
-        renderOverviewHeatmap(aggregate);
-        try { sessionStorage.setItem(OVERVIEW_HEATMAP_CACHE_KEY, JSON.stringify({ savedAt: Date.now(), aggregate })); } catch {}
+        const result = await readOverviewHeatmapRows();
+        const aggregate = aggregateOverviewHeatmap(result.rows);
+        renderOverviewHeatmap(aggregate, !overviewHeatmapRendered);
+        overviewHeatmapRendered = true;
+        setText('overview-heatmap-status', 'History loaded · live updates connected');
+        try { localStorage.setItem(overviewHeatmapStorageKey(result.scope), JSON.stringify({ savedAt: Date.now(), rows: result.rows })); } catch {}
       } catch {
         const grid = byId('overview-heatmap-grid');
-        if (grid && !grid.children.length) grid.setAttribute('aria-label', 'Live trace activity is temporarily unavailable.');
+        setText(
+          'overview-heatmap-status',
+          overviewHeatmapHasSnapshot
+            ? 'Historical activity shown · live updates unavailable'
+            : 'Trace history temporarily unavailable · retrying automatically',
+        );
+        if (grid) {
+          grid.setAttribute('aria-busy', 'false');
+          grid.setAttribute(
+            'aria-label',
+            overviewHeatmapHasSnapshot
+              ? 'Historical trace activity is shown. Live updates are temporarily unavailable.'
+              : 'Trace history is temporarily unavailable and will retry automatically.',
+          );
+        }
+      } finally {
+        overviewHeatmapRefreshPending = false;
       }
+    }
+
+    async function primeOverviewHeatmap() {
+      try {
+        const scope = await readOverviewHeatmapScope();
+        const cached = readOverviewHeatmapCache(scope);
+        if (cached && !overviewHeatmapRendered) {
+          renderOverviewHeatmap(aggregateOverviewHeatmap(cached.rows), true);
+          overviewHeatmapRendered = true;
+          setText(
+            'overview-heatmap-status',
+            cached.isFresh
+              ? 'History loaded · checking live updates…'
+              : 'Historical activity shown · checking live updates…',
+          );
+        }
+      } catch {}
+      await refreshOverviewHeatmap();
     }
 
     function initOverviewHeatmap() {
       if (!byId('overview-heatmap-grid')) return;
-      const cached = readOverviewHeatmapCache();
-      if (cached) renderOverviewHeatmap(cached);
-      void refreshOverviewHeatmap();
+      const grid = byId('overview-heatmap-grid');
+      grid?.setAttribute('aria-busy', 'true');
+      grid?.setAttribute('aria-label', 'Loading trace activity for the last seven days.');
+      void primeOverviewHeatmap();
       window.setInterval(() => { if (!document.hidden) void refreshOverviewHeatmap(); }, OVERVIEW_HEATMAP_REFRESH_MS);
       document.addEventListener('visibilitychange', () => { if (!document.hidden) void refreshOverviewHeatmap(); });
     }
 
     let currentSourceControl = { configured: false, defaultRepositoryId: null, repositories: [] };
-
-    const sourceControlField = (id, value) => {
-      const element = byId(id);
-      if (element instanceof HTMLInputElement || element instanceof HTMLSelectElement) element.value = value ?? '';
-    };
-
-    function resetSourceControlForm() {
-      const form = byId('source-control-form');
-      if (form instanceof HTMLFormElement) form.reset();
-      sourceControlField('source-control-provider', 'github');
-      sourceControlField('source-control-branch', 'main');
-      const defaultInput = byId('source-control-default');
-      if (defaultInput instanceof HTMLInputElement) defaultInput.checked = currentSourceControl.repositories.length === 0;
-      setText('source-control-form-status', 'Repository root is used when code roots are empty.');
-    }
-
-    function editSourceControlRepository(repository) {
-      sourceControlField('source-control-id', repository.id || '');
-      sourceControlField('source-control-name', repository.name || '');
-      sourceControlField('source-control-provider', repository.provider || 'github');
-      sourceControlField('source-control-repo', repository.nameWithOwner || '');
-      sourceControlField('source-control-branch', repository.defaultBranch || 'main');
-      sourceControlField('source-control-connection', repository.connectionRef || '');
-      sourceControlField('source-control-roots', (repository.codeRoots || []).join(', '));
-      const defaultInput = byId('source-control-default');
-      if (defaultInput instanceof HTMLInputElement) defaultInput.checked = currentSourceControl.defaultRepositoryId === repository.id;
-      setText('source-control-form-status', 'Editing ' + (repository.nameWithOwner || repository.id) + '.');
-      byId('source-control-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
 
     function sourceControlRow(repository) {
       const isDefault = currentSourceControl.defaultRepositoryId === repository.id;
@@ -597,13 +630,11 @@ function configurationClientScript(): string {
       return '<tr data-source-control-id="' + escapeHtml(repository.id) + '">' +
         '<td>' + (isDefault ? '<strong>Default</strong>' : '<span class="muted">—</span>') + '</td>' +
         '<td><code>' + escapeHtml(repository.nameWithOwner || '') + '</code><br>' + status + '</td>' +
-        '<td>' + escapeHtml(repository.provider || 'github') + '</td>' +
         '<td><code>' + escapeHtml(repository.defaultBranch || 'main') + '</code></td>' +
-        '<td><code>' + escapeHtml(repository.connectionRef || 'not connected') + '</code></td>' +
-        '<td><code>' + escapeHtml((repository.codeRoots || []).join(', ') || 'repository root') + '</code></td>' +
-        '<td><div class="row-actions"><button type="button" data-source-action="edit">Edit</button>' +
-          (!isDefault ? '<button type="button" data-source-action="default">Make default</button>' : '') +
-          '<button type="button" class="danger-button" data-source-action="remove">Remove</button></div></td>' +
+        '<td>' + (repository.ready ? 'GitHub' : '<span class="muted">Connect GitHub</span>') + '</td>' +
+        '<td><div class="row-actions">' +
+          (!isDefault ? '<button type="button" data-source-action="default">Make default</button>' : '<span class="muted">—</span>') +
+          '</div></td>' +
       '</tr>';
     }
 
@@ -612,18 +643,10 @@ function configurationClientScript(): string {
         const id = row.getAttribute('data-source-control-id');
         const repository = currentSourceControl.repositories.find((candidate) => candidate.id === id);
         if (!repository) return;
-        row.querySelector('[data-source-action="edit"]')?.addEventListener('click', () => editSourceControlRepository(repository));
         row.querySelector('[data-source-action="default"]')?.addEventListener('click', () => void persistSourceControl({
           ...currentSourceControl,
           defaultRepositoryId: repository.id,
         }, 'Default repository updated.'));
-        row.querySelector('[data-source-action="remove"]')?.addEventListener('click', () => {
-          const repositories = currentSourceControl.repositories.filter((candidate) => candidate.id !== repository.id);
-          const defaultRepositoryId = currentSourceControl.defaultRepositoryId === repository.id
-            ? (repositories[0]?.id || null)
-            : currentSourceControl.defaultRepositoryId;
-          void persistSourceControl({ ...currentSourceControl, repositories, defaultRepositoryId }, 'Repository removed.');
-        });
       });
     }
 
@@ -636,16 +659,25 @@ function configurationClientScript(): string {
       const rows = byId('source-control-repository-list');
       if (rows) rows.innerHTML = currentSourceControl.repositories.length
         ? currentSourceControl.repositories.map(sourceControlRow).join('')
-        : emptyRow(7, 'No source-control repositories configured. Diffs will stay in setup mode.');
-      setText('source-control-summary', currentSourceControl.repositories.length
-        ? currentSourceControl.repositories.length + ' repositor' + (currentSourceControl.repositories.length === 1 ? 'y' : 'ies') + (currentSourceControl.configured ? ' · ready' : ' · connection required')
-        : 'No repositories connected');
+        : emptyRow(5, 'No GitHub repositories connected yet.');
+      const hasReadyRepositories = currentSourceControl.repositories.some((repository) => repository.ready === true);
+      setText('source-control-summary', hasReadyRepositories
+        ? 'GitHub connected · ' + currentSourceControl.repositories.length + ' repositor' + (currentSourceControl.repositories.length === 1 ? 'y' : 'ies') + (currentSourceControl.configured ? ' ready' : ' selected')
+        : currentSourceControl.repositories.length
+          ? 'Connect GitHub to authorize repository access'
+          : 'Connect GitHub to choose repositories');
+      const connect = byId('source-control-connect-github');
+      if (connect) {
+        connect.textContent = hasReadyRepositories ? 'Manage GitHub access' : 'Connect GitHub';
+        connect.setAttribute('href', hasReadyRepositories
+          ? '/gateway/configuration/source-control/github/connect?return_to=%2Fconfiguration&mode=manage'
+          : '/gateway/configuration/source-control/github/connect?return_to=%2Fconfiguration');
+      }
       bindSourceControlRows();
-      resetSourceControlForm();
     }
 
     async function persistSourceControl(next, successMessage) {
-      setText('source-control-form-status', 'Saving source-control configuration…');
+      setText('source-control-status', 'Saving source-control configuration…');
       try {
         const response = await fetch('/gateway/configuration/source-control', {
           method: 'POST',
@@ -668,42 +700,10 @@ function configurationClientScript(): string {
           throw new Error(payload?.error?.message || 'Source-control update was denied.');
         }
         renderSourceControl(payload.snapshot);
-        setText('source-control-form-status', successMessage || 'Source-control configuration updated.');
+        setText('source-control-status', successMessage || 'Source-control configuration updated.');
       } catch (/** @type {unknown} */ error) {
-        setText('source-control-form-status', error instanceof Error ? error.message : 'Source-control update failed.');
+        setText('source-control-status', error instanceof Error ? error.message : 'Source-control update failed.');
       }
-    }
-
-    function submitSourceControl(event) {
-      event.preventDefault();
-      const form = event.currentTarget;
-      if (!(form instanceof HTMLFormElement)) return;
-      const data = new FormData(form);
-      const id = String(data.get('id') || '').trim();
-      const nameWithOwner = String(data.get('nameWithOwner') || '').trim();
-      const connectionRef = String(data.get('connectionRef') || '').trim();
-      if (!id || !nameWithOwner || !connectionRef) {
-        setText('source-control-form-status', 'Project ID, repository, and connection binding are required.');
-        return;
-      }
-      const repository = {
-        id,
-        ...(String(data.get('name') || '').trim() ? { name: String(data.get('name')).trim() } : {}),
-        provider: String(data.get('provider') || 'github').trim() || 'github',
-        nameWithOwner,
-        defaultBranch: String(data.get('defaultBranch') || 'main').trim() || 'main',
-        connectionRef,
-        codeRoots: String(data.get('codeRoots') || '').split(',').map((value) => value.trim()).filter(Boolean),
-        ready: true,
-      };
-      const repositories = currentSourceControl.repositories.filter((candidate) => candidate.id !== id);
-      repositories.push(repository);
-      const defaultInput = byId('source-control-default');
-      const makeDefault = defaultInput instanceof HTMLInputElement && defaultInput.checked;
-      const defaultRepositoryId = makeDefault || !currentSourceControl.defaultRepositoryId
-        ? id
-        : currentSourceControl.defaultRepositoryId;
-      void persistSourceControl({ ...currentSourceControl, repositories, defaultRepositoryId }, 'Repository saved.');
     }
 
     async function loadSourceControl() {
@@ -715,12 +715,45 @@ function configurationClientScript(): string {
         renderSourceControl(payload.snapshot);
       } catch {
         setText('source-control-summary', 'Source-control configuration unavailable');
-        setHtml('source-control-repository-list', emptyRow(7, 'Source-control configuration could not be loaded.'));
+        setHtml('source-control-repository-list', emptyRow(5, 'Source-control configuration could not be loaded.'));
       }
     }
 
-    byId('source-control-form')?.addEventListener('submit', (event) => void submitSourceControl(event));
-    byId('source-control-form-reset')?.addEventListener('click', resetSourceControlForm);
+    async function completeGitHubSourceControlFromLocation() {
+      const url = new URL(window.location.href);
+      const handoff = url.searchParams.get('github_handoff');
+      if (!handoff) return false;
+      setText('source-control-status', 'Finishing GitHub connection…');
+      try {
+        const response = await fetch('/gateway/configuration/source-control/github/complete', {
+          method: 'POST',
+          headers: { accept: 'application/json', 'content-type': 'application/json' },
+          body: JSON.stringify({ handoff }),
+        });
+        const payload = await response.json();
+        if (!response.ok || !payload || payload.ok === false || !payload.snapshot) {
+          throw new Error(payload?.error?.message || 'GitHub connection could not be completed.');
+        }
+        renderSourceControl(payload.snapshot);
+        setText('source-control-status', payload.snapshot.repositories?.length
+          ? 'GitHub connected.'
+          : 'GitHub connected, but no repositories are selected.');
+        url.searchParams.delete('github_handoff');
+        url.searchParams.delete('return_to');
+        history.replaceState({}, '', url.pathname + url.search);
+        const returnPath = typeof payload.returnPath === 'string' ? payload.returnPath : '/configuration';
+        if (returnPath !== '/configuration' && returnPath !== window.location.pathname) window.location.assign(returnPath);
+        return true;
+      } catch (/** @type {unknown} */ error) {
+        setText('source-control-status', error instanceof Error ? error.message : 'GitHub connection failed.');
+        return true;
+      }
+    }
+
+    async function initSourceControl() {
+      const completed = await completeGitHubSourceControlFromLocation();
+      if (!completed) await loadSourceControl();
+    }
 
     function bindToggles() {
       document.querySelectorAll('.configuration-toggle').forEach((input) => {
@@ -937,18 +970,76 @@ function configurationClientScript(): string {
       if (configurationContent) configurationContent.setAttribute('aria-busy', 'false');
     }
 
+    function setConfigurationConnectionState(state, title, copy) {
+      const configurationError = byId('configuration-error');
+      if (configurationError) configurationError.dataset.connectionState = state;
+      setText('configuration-error-title', title);
+      setText('configuration-error-copy', copy);
+    }
+
+    function scheduleConfigurationRetry() {
+      if (configurationRetryTimer) return;
+      const delayMs = configurationRetryDelayMs;
+      configurationRetryDelayMs = Math.min(
+        CONFIGURATION_RETRY_MAX_MS,
+        configurationRetryDelayMs * 2,
+      );
+      configurationRetryTimer = window.setTimeout(() => {
+        configurationRetryTimer = 0;
+        void loadConfiguration();
+      }, delayMs);
+    }
+
     async function loadConfiguration() {
-      try {
-        const response = await fetch('/gateway/configuration/snapshot', { headers: { accept: 'application/json' } });
-        if (!response.ok) throw new Error('gateway configuration snapshot returned ' + response.status);
-        const payload = await response.json();
+      const failure = await (async () => {
+        const response = await fetch('/gateway/configuration/snapshot', {
+          headers: { accept: 'application/json' },
+          credentials: 'same-origin',
+          cache: 'no-store',
+        });
+        const payload = await response.json().catch(() => null);
+        if (!response.ok) {
+          const error = new Error('gateway configuration snapshot returned ' + response.status);
+          error.code = payload?.error?.code || '';
+          error.status = response.status;
+          throw error;
+        }
         if (!payload || typeof payload !== 'object' || payload.ok === false || !payload.snapshot) throw new Error('invalid gateway configuration snapshot');
         renderSnapshot(payload.snapshot);
-      } catch {
+        configurationRetryDelayMs = 1000;
+        if (configurationRetryTimer) window.clearTimeout(configurationRetryTimer);
+        configurationRetryTimer = 0;
+      })().then(
+        () => null,
+        (error) => error,
+      );
+      if (failure) {
+        const code = String(failure?.code || '');
+        const status = Number(failure?.status || 0);
+        if (code === 'WORKSPACE_NODE_OFFLINE') {
+          setConfigurationConnectionState(
+            'node-unavailable',
+            'Workspace connected; live node unavailable',
+            'You’re signed in. Configuration will reconnect automatically when the selected node is reachable.',
+          );
+        } else if (status === 401) {
+          setConfigurationConnectionState(
+            'session-recovery',
+            'Workspace session reconnecting',
+            'Your workspace connection is being refreshed automatically.',
+          );
+        } else {
+          setConfigurationConnectionState(
+            'configuration-unavailable',
+            'Configuration temporarily unavailable',
+            'Configuration could not load. Retrying automatically without changing your sign-in state.',
+          );
+        }
         setHidden('configuration-loading', true);
         setHidden('configuration-error', false);
         const configurationContent = byId('configuration-content');
         if (configurationContent) configurationContent.setAttribute('aria-busy', 'false');
+        scheduleConfigurationRetry();
       }
     }
 
@@ -973,7 +1064,7 @@ function configurationClientScript(): string {
 
     initOverviewHeatmap();
     void loadConfiguration();
-    void loadSourceControl();
+    void initSourceControl();
   `;
 }
 
@@ -1170,13 +1261,11 @@ function renderOverviewPanels(): string {
     hour % 3 === 0 || hour === 23 ? `<span>${String(hour).padStart(2, '0')}</span>` : '<span></span>',
   ).join('');
   return `
-        <section class="overview-surface" id="overview" aria-labelledby="overview-heatmap-title">
-          <section class="overview-heatmap-panel" data-overview-heatmap aria-labelledby="overview-heatmap-title">
+        <section class="overview-surface" id="overview">
+          <section class="overview-heatmap-panel" data-overview-heatmap aria-label="Trace activity for the last seven days">
             <div class="overview-heatmap-head">
               <div class="overview-heatmap-copy">
                 <p class="identity">Last seven days</p>
-                <h2 id="overview-heatmap-title">Live trace activity will appear here</h2>
-                <p>Calls, tokens, and cost by local hour. Hover or focus any cell for details; the heatmap refreshes from the signed trace gateway.</p>
               </div>
               <div class="overview-heatmap-summary" aria-live="polite">
                 <span>Calls <b id="overview-heatmap-calls">0</b></span>
@@ -1184,6 +1273,7 @@ function renderOverviewPanels(): string {
                 <span>Cost <b id="overview-heatmap-cost">$0.0000</b></span>
               </div>
             </div>
+            <p id="overview-heatmap-status" class="muted" aria-live="polite">Loading persisted trace history…</p>
             <div class="overview-heatmap-scroll" tabindex="0" aria-label="Scrollable trace activity heatmap">
               <div class="overview-heatmap-frame">
                 <div class="overview-heatmap-hours" aria-hidden="true"><span></span>${heatmapHours}</div>
@@ -1210,7 +1300,7 @@ function renderOverviewPanels(): string {
           <div class="overview-context">
             <div class="overview-context-copy">
               <h2>One workspace, directly readable</h2>
-              <p>Overview shows live activity and operating posture first. Detailed configuration stays below, while Nodes, Tools, Secrets, and Tracing remain focused work surfaces.</p>
+              <p>Home shows live activity and operating posture first. Detailed configuration stays below, while Nodes, Tools, Secrets, and Tracing remain focused work surfaces.</p>
             </div>
             <a class="overview-context-link" target="_blank" rel="noopener noreferrer" href="https://docs.consuelohq.com/">Open Documentation →</a>
           </div>
@@ -1223,24 +1313,12 @@ function renderOverviewPanels(): string {
         <section class="panel-section" id="source-control">
           <header class="panel-header">
             <h2>Source control</h2>
-            <p>Choose the repositories Diffs can review. Store the credential in <a href="/secrets">Secrets</a>, then enter its connection binding ID here; secret values never load into this page.</p>
+            <p>Connect GitHub, choose the repositories Consuelo may review in GitHub's own access screen, and come back here ready to use Diffs.</p>
             <p id="source-control-summary" class="muted">Loading source-control configuration…</p>
           </header>
-          <form id="source-control-form" class="source-control-form">
-            <div class="form-grid">
-              <label class="field"><span>Project ID</span><input id="source-control-id" name="id" required maxlength="80" placeholder="app" autocomplete="off" /></label>
-              <label class="field"><span>Display name</span><input id="source-control-name" name="name" maxlength="120" placeholder="App" autocomplete="off" /></label>
-              <label class="field"><span>Provider</span><select id="source-control-provider" name="provider"><option value="github">GitHub</option></select></label>
-              <label class="field"><span>Repository</span><input id="source-control-repo" name="nameWithOwner" required placeholder="owner/repository" autocomplete="off" /></label>
-              <label class="field"><span>Default branch</span><input id="source-control-branch" name="defaultBranch" value="main" required autocomplete="off" /></label>
-              <label class="field"><span>Connection binding</span><input id="source-control-connection" name="connectionRef" required placeholder="github-app:primary" autocomplete="off" /></label>
-              <label class="field field-wide"><span>Code roots</span><input id="source-control-roots" name="codeRoots" placeholder="src, packages/app (blank = repository root)" autocomplete="off" /></label>
-            </div>
-            <label class="inline-check"><input id="source-control-default" name="makeDefault" type="checkbox" /> Make this the default repository</label>
-            <div class="actions"><button type="submit">Save repository</button><button id="source-control-form-reset" type="button">Clear</button></div>
-            <p id="source-control-form-status" class="muted" aria-live="polite">Repository root is used when code roots are empty.</p>
-          </form>
-          <div class="table-wrap"><table><thead><tr><th>Default</th><th>Repository</th><th>Provider</th><th>Branch</th><th>Connection</th><th>Code roots</th><th>Actions</th></tr></thead><tbody id="source-control-repository-list"></tbody></table></div>
+          <div class="actions"><a id="source-control-connect-github" href="/gateway/configuration/source-control/github/connect?return_to=%2Fconfiguration">Connect GitHub</a></div>
+          <p id="source-control-status" class="muted" aria-live="polite">GitHub manages repository access; Consuelo stores only the workspace connection.</p>
+          <div class="table-wrap"><table><thead><tr><th>Default</th><th>Repository</th><th>Branch</th><th>Access</th><th>Actions</th></tr></thead><tbody id="source-control-repository-list"></tbody></table></div>
         </section>
         <section class="panel-section" id="connections">
           <header class="panel-header"><h2>Connections</h2><p>Cloud and local agent connections for this workspace.</p></header>
@@ -1287,75 +1365,6 @@ function renderToolPanels(): string {
         </section>`;
 }
 
-// Metadata only. No value column and no reveal control are rendered.
-function secretsClientScript(): string {
-  return `
-    const byId = (id) => document.getElementById(id);
-    const setHidden = (id, value) => { const element = byId(id); if (element) element.hidden = value; };
-    const setText = (id, value) => { const element = byId(id); if (element) element.textContent = value; };
-    const renderBindingRow = (binding) => {
-      const row = document.createElement('tr');
-      for (const value of [binding.bindingId, binding.nodeId, binding.status, binding.updatedAt]) {
-        const cell = document.createElement('td');
-        cell.textContent = String(value ?? '');
-        row.append(cell);
-      }
-      return row;
-    };
-    fetch('/gateway/secrets/bindings', {
-      headers: { Accept: 'application/json' },
-      credentials: 'same-origin',
-      cache: 'no-store',
-    })
-      .then((response) => response.ok ? response.json() : Promise.reject(new Error('secrets unavailable')))
-      .then((payload) => {
-        const bindings = Array.isArray(payload && payload.bindings) ? payload.bindings : [];
-        const rows = byId('secret-rows');
-        if (rows) {
-          rows.replaceChildren();
-          if (bindings.length) {
-            for (const binding of bindings) rows.append(renderBindingRow(binding));
-          } else {
-            const row = document.createElement('tr');
-            const cell = document.createElement('td');
-            cell.colSpan = 4;
-            cell.className = 'empty';
-            cell.textContent = 'No credentials are connected yet.';
-            row.append(cell);
-            rows.append(row);
-          }
-        }
-        setText('secret-summary', bindings.length + (bindings.length === 1 ? ' binding' : ' bindings'));
-        setHidden('secret-loading', true);
-        setHidden('secret-error', true);
-        const content = byId('secret-content');
-        if (content) content.setAttribute('aria-busy', 'false');
-      })
-      .catch(() => {
-        setHidden('secret-loading', true);
-        setHidden('secret-error', false);
-        const content = byId('secret-content');
-        if (content) content.setAttribute('aria-busy', 'false');
-      });
-  `;
-}
-
-function renderSecretsContent(): string {
-  return `
-      <p id="secret-loading" class="sr-only" aria-live="polite">Loading secret connections</p>
-      <section id="secret-error" class="state-panel" aria-live="polite" hidden>
-        <strong>Secret connections unavailable</strong>
-        <p class="muted">Sign in to this workspace or verify that its home node is online.</p>
-      </section>
-      <div id="secret-content" aria-busy="true">
-        <section class="panel-section">
-          <header class="panel-header"><h2>Connected credentials</h2><p id="secret-summary" class="muted">0 bindings</p></header>
-          <p class="muted">Values are never returned to this page or to an agent. Never paste a credential into an agent conversation.</p>
-          <div class="table-wrap"><table><thead><tr><th>Binding</th><th>Node</th><th>Status</th><th>Updated</th></tr></thead><tbody id="secret-rows"></tbody></table></div>
-        </section>
-      </div>`;
-}
-
 function renderEnvironmentContent(): string {
   return `
       <p id="environment-loading" class="sr-only" aria-live="polite">Loading environments</p>
@@ -1393,8 +1402,8 @@ function renderHydratedContent(page: 'configuration' | 'tools'): string {
   return `
       <p id="configuration-loading" class="sr-only" aria-live="polite">Loading workspace configuration</p>
       <section id="configuration-error" class="state-panel" aria-live="polite" hidden>
-        <strong>Configuration unavailable</strong>
-        <p class="muted">Sign in to this workspace or verify that its home node is online.</p>
+        <strong id="configuration-error-title">Configuration temporarily unavailable</strong>
+        <p id="configuration-error-copy" class="muted">Configuration could not load. Retrying automatically without changing your sign-in state.</p>
       </section>
       <div id="configuration-content" aria-busy="true">${panels}</div>`;
 }
@@ -1406,7 +1415,10 @@ function configurationSurface(page: ConfigurationPageId): WorkspaceSurfaceId {
   return 'overview';
 }
 
-export function renderConfigurationSite(page: ConfigurationPageId = 'configuration'): string {
+export function renderConfigurationSite(
+  page: ConfigurationPageId = 'configuration',
+  chromeOptions: WorkspaceChromeOptions = {},
+): string {
   const copy = PAGE_COPY[page];
   const requiresConfigurationSnapshot = page === 'configuration' || page === 'tools';
   const content = requiresConfigurationSnapshot
@@ -1433,16 +1445,19 @@ export function renderConfigurationSite(page: ConfigurationPageId = 'configurati
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>${copy.title} - Consuelo OS</title>
+  <link rel="icon" href="https://consuelohq.com/favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="https://consuelohq.com/favicon-32x32.png" sizes="32x32" type="image/png" />
+  <link rel="apple-touch-icon" href="https://consuelohq.com/apple-touch-icon.png" />
   <style>${configurationStyles()}</style>
 </head>
 <body>
   <div class="workspace-window" data-workspace-shell>
-    ${renderWorkspaceChromeBar(configurationSurface(page), copy.title)}
+    ${renderWorkspaceChromeBar(configurationSurface(page), copy.title, chromeOptions)}
     <div class="workspace-view" data-workspace-view>
       <main class="content">
         <header class="hero">
           <h1>${copy.title}</h1>
-          <p>${copy.description}</p>
+          ${copy.description ? '<p>' + copy.description + '</p>' : ''}
         </header>
         ${content}
       </main>

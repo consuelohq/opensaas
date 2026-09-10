@@ -1,0 +1,7 @@
+{
+  "files": [
+    "packages/os/scripts/lib/source-control-config.ts",
+    "packages/os/tests/settings-hono-routes.test.ts"
+  ],
+  "updatedAt": "2026-08-29T02:28:01.446Z"
+}

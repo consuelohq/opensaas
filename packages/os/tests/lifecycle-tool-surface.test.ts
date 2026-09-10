@@ -37,10 +37,12 @@ describe('lifecycle tool surface', () => {
     });
   });
 
-  it('validates lifecycle update channels without inventing updater-specific options', () => {
+  it('validates lifecycle update channels and exact released versions', () => {
     const schema = getInputSchema('LifecycleUpdateInput');
     expect(schema).not.toBeNull();
     expect(schema?.safeParse({ channel: 'canary' }).success).toBe(true);
+    expect(schema?.safeParse({ channel: 'canary', version: '1.2.3' }).success).toBe(true);
+    expect(schema?.safeParse({ channel: 'canary', version: 'latest' }).success).toBe(false);
     expect(schema?.safeParse({ channel: 'made-up' }).success).toBe(false);
   });
 

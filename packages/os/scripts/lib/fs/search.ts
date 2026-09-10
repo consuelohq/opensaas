@@ -1,5 +1,6 @@
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
+import { readdirSync, readFileSync, statSync } from 'node:fs';
 
 import { Effect } from 'effect';
 
@@ -40,7 +41,7 @@ export type FsSearchInput = {
   root?: string;
 };
 
-type RipgrepResult = { status: number; stdout: string; stderr: string };
+type RipgrepResult = { status: number; stdout: string; stderr: string; unavailable?: boolean };
 
 type ParsedRipgrep = {
   matches: FsSearchMatch[];
@@ -83,6 +84,133 @@ function buildRipgrepArgs(input: Required<Pick<FsSearchInput, 'pattern'>> & FsSe
   const targets = input.paths && input.paths.length > 0 ? input.paths : ['.'];
   args.push('--', ...targets);
   return args;
+}
+
+function globPattern(pattern: string): RegExp {
+  let source = '';
+  for (let index = 0; index < pattern.length; index += 1) {
+    const char = pattern[index];
+    if (char === '*') {
+      if (pattern[index + 1] === '*') {
+        source += '.*';
+        index += 1;
+      } else {
+        source += '[^/]*';
+      }
+    } else if (char === '?') {
+      source += '[^/]';
+    } else {
+      source += char.replace(/[|\\{}()[\]^$+?.]/g, '\\$&');
+    }
+  }
+  return new RegExp(`^${source}$`);
+}
+
+function includeMatches(include: string | undefined, relativePath: string): boolean {
+  if (!include) return true;
+  const normalized = relativePath.split(path.sep).join(path.posix.sep);
+  const matcher = globPattern(include);
+  return matcher.test(normalized) || matcher.test(path.posix.basename(normalized));
+}
+
+function collectPortableFiles(root: string, targets: string[]): string[] {
+  const files: string[] = [];
+  const seen = new Set<string>();
+
+  const visit = (absolutePath: string): void => {
+    let stats;
+    try {
+      stats = statSync(absolutePath);
+    } catch {
+      return;
+    }
+    if (stats.isFile()) {
+      if (!seen.has(absolutePath)) {
+        seen.add(absolutePath);
+        files.push(absolutePath);
+      }
+      return;
+    }
+    if (!stats.isDirectory()) return;
+
+    let entries;
+    try {
+      entries = readdirSync(absolutePath, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const entry of entries.sort((left, right) => left.name.localeCompare(right.name))) {
+      if (entry.isDirectory() && SEARCH_EXCLUDES.includes(entry.name)) continue;
+      if (entry.isSymbolicLink()) continue;
+      visit(path.join(absolutePath, entry.name));
+    }
+  };
+
+  for (const target of targets) {
+    visit(path.isAbsolute(target) ? target : path.resolve(root, target));
+  }
+  return files.sort((left, right) => left.localeCompare(right));
+}
+
+function portableSearch(input: FsSearchInput, root: string): ParsedRipgrep {
+  let matcher: RegExp;
+  try {
+    matcher = new RegExp(input.pattern);
+  } catch (cause: unknown) {
+    throw new Error('invalid search pattern: ' + String((cause as Error).message || cause));
+  }
+
+  const context = normalizeNonNegativeInt(input.context, 0);
+  const targets = input.paths && input.paths.length > 0 ? input.paths : ['.'];
+  const matches: FsSearchMatch[] = [];
+  const contextByPathLine = new Map<string, { before: FsSearchLine[]; after: FsSearchLine[] }>();
+
+  for (const absolutePath of collectPortableFiles(root, targets)) {
+    const relativePath = normalizeRelativePath(root, absolutePath);
+    if (!includeMatches(input.include, relativePath)) continue;
+
+    let content: string;
+    try {
+      content = readFileSync(absolutePath, 'utf8');
+    } catch {
+      continue;
+    }
+    if (content.includes('\0')) continue;
+
+    const lines = content.replace(/\r\n/g, '\n').split('\n');
+    if (lines[lines.length - 1] === '') lines.pop();
+    for (let index = 0; index < lines.length; index += 1) {
+      matcher.lastIndex = 0;
+      if (!matcher.test(lines[index])) continue;
+
+      const lineNumber = index + 1;
+      const match: FsSearchMatch = {
+        type: 'match',
+        path: relativePath,
+        line: lineNumber,
+        text: lines[index],
+      };
+      const before = context > 0
+        ? lines.slice(Math.max(0, index - context), index).map((text, offset) => ({
+            line: Math.max(0, index - context) + offset + 1,
+            text,
+          }))
+        : [];
+      const after = context > 0
+        ? lines.slice(index + 1, index + 1 + context).map((text, offset) => ({
+            line: index + offset + 2,
+            text,
+          }))
+        : [];
+      if (before.length > 0) match.before = before;
+      if (after.length > 0) match.after = after;
+      matches.push(match);
+      contextByPathLine.set(`${relativePath}:${lineNumber}`, { before, after });
+      if (input.filesOnly) break;
+    }
+  }
+
+  return { matches, contextByPathLine };
 }
 
 function parseJsonLine(line: string): unknown | undefined {
@@ -171,7 +299,12 @@ const runRipgrepEffect = (input: FsSearchInput, root: string) => Effect.try({
       stdio: ['pipe', 'pipe', 'pipe'],
       maxBuffer: 32 * 1024 * 1024,
     });
-    if (proc.error) throw proc.error;
+    if (proc.error) {
+      if ((proc.error as NodeJS.ErrnoException).code === 'ENOENT') {
+        return { status: 0, stdout: '', stderr: '', unavailable: true };
+      }
+      throw proc.error;
+    }
     if (proc.status === null) throw new Error('ripgrep exited without a status');
     return { status: proc.status, stdout: proc.stdout || '', stderr: proc.stderr || '' };
   },
@@ -208,7 +341,12 @@ export const searchEffect = (input: FsSearchInput) => Effect.gen(function* () {
   const limit = Math.min(normalizePositiveInt(input.maxResults, MAX_SEARCH_RESULTS), MAX_SEARCH_RESULTS);
   const rg = yield* runRipgrepEffect(input, root);
   if (rg.status > 1) return yield* Effect.fail(new Error((rg.stderr || 'ripgrep failed').trim()));
-  const parsed = parseRipgrepJson(rg.stdout, root);
+  const parsed = rg.unavailable
+    ? yield* Effect.try({
+        try: () => portableSearch(input, root),
+        catch: (cause) => new Error('Unable to run portable search: ' + String((cause as Error).message || cause)),
+      })
+    : parseRipgrepJson(rg.stdout, root);
   const truncated = parsed.matches.length > limit;
   const matches = parsed.matches.slice(0, limit);
   const output: FsSearchOutput = {

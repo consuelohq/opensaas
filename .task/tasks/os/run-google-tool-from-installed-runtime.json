@@ -1,0 +1,20 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/run-google-tool-from-installed-runtime",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2212,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2212",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2212",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2212/run-google-tool-from-installed-runtime",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2212",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2212/run-google-tool-from-installed-runtime",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-run-google-tool-from-installed-runtime",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_aba08d2319a7",
+  "tmuxSession": "opensaas-os-run-google-tool-from-installed-runtime-aba08d23",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-run-google-tool-from-installed-runtime/.task/os/run-google-tool-from-installed-runtime/session.json",
+  "createdAt": "2026-08-26T06:19:41.547Z"
+}

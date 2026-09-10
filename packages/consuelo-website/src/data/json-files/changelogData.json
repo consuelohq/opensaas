@@ -1,9 +1,82 @@
 [
   {
     "title": "v0.9.0",
-    "date": "Aug 13, 2026",
-    "summary": "August opened with a broader OS control plane, managed cloud and node-aware routing, more durable agent workflows, a commercial dialer foundation, and a polished website and documentation experience.",
+    "date": "Aug 27, 2026",
+    "summary": "August expanded Consuelo OS into a managed control plane with cloud checkout, live workspace navigation, native Google and GitHub integrations, safer one-command releases, durable task and browser sessions, richer tracing, and more resilient security and lifecycle recovery.",
     "weeks": [
+      {
+        "label": "Week of Aug 21 through Aug 27",
+        "summary": "The week added native Google and GitHub workflows, a safer end-to-end release path, restored live Artifacts, upgraded tracing, isolated persistent browser sessions, and closed several authentication, secrets, and release-lifecycle gaps.",
+        "sections": [
+          {
+            "title": "Release",
+            "items": [
+              "Added a one-command release and update flow that can take an approved pull request through main merge, immutable runtime publication, exact channel promotion, and local exact-version update and verification.",
+              "Hardened release promotion against queue, lock, retry, cancellation, and correlation races, and repaired session and release lifecycle contracts after main synchronization."
+            ]
+          },
+          {
+            "title": "OS",
+            "items": [
+              "Added a native Google Workspace integration exposed as Google, with first-use OAuth recovery, read-only safeguards, and explicit approval for mutations.",
+              "Restored live Artifacts routing and refresh behavior, kept the Artifacts surface out of stale static snapshots, and brought forward the long-lived How to Speak, Security Report, and OS Spec artifacts.",
+              "Upgraded tracing with token- and model-aware estimated costs, system-driven light and dark modes, a larger stable session palette, and more accurate tool labels for batched traces."
+            ]
+          },
+          {
+            "title": "Security and Source Control",
+            "items": [
+              "Added GitHub App-based source-control connection and repository discovery while keeping installation credentials server-side and using opaque handoffs in the browser.",
+              "Repaired GitHub authentication handoff, strengthened secrets audit identity and key rotation, improved enrollment-reset error handling, and restored owner recovery controls."
+            ]
+          },
+          {
+            "title": "Workspace Agents",
+            "items": [
+              "Isolated persistent headed browser sessions so human authentication windows stay visible and survive later browser commands without being replaced by headless sessions.",
+              "Stabilized session-start and worker process handling so task sessions and workspace-agent releases recover more reliably across main synchronization."
+            ]
+          }
+        ]
+      },
+      {
+        "label": "Week of Aug 14 through Aug 20",
+        "summary": "The week made OS updates and routing more resilient, shipped live workspace navigation and managed checkout, introduced durable task and work sessions, hardened site publication and dependencies, and polished responsive documentation.",
+        "sections": [
+          {
+            "title": "OS",
+            "items": [
+              "Added a live workspace Overview with heatmap and stable navigation, preloaded Home routes with live node pricing, managed cloud checkout, and explicit node targeting for agent and plugin calls.",
+              "Made lifecycle updates safer by draining workers without interrupting MCP response streams, retrying gateway and macOS bootstrap handoffs, preserving authenticated workspace routes, and improving rollback and current-bundle convergence.",
+              "Hardened launcher and gateway coherence, local recovery, node discovery, OAuth reconnect and callback routing, runtime health recovery, and targeted device delivery."
+            ]
+          },
+          {
+            "title": "Workspace Agents",
+            "items": [
+              "Introduced unified task and work sessions with filesystem and code authority, session observability, durable task worktrees, recoverable eviction, and stronger task and subagent recovery flows."
+            ]
+          },
+          {
+            "title": "Security and Sites",
+            "items": [
+              "Repaired hosted site snapshot publication and verification while keeping private launcher access intact, and moved website XML dependencies onto patched releases."
+            ]
+          },
+          {
+            "title": "Docs",
+            "items": [
+              "Refined the docs home, desktop and responsive chrome, navigation and translation behavior, mobile browse menu, and Connect content around Bring Your Own workflows."
+            ]
+          },
+          {
+            "title": "Release",
+            "items": [
+              "Improved workspace shell and edge-migration sequencing plus lifecycle handoff so releases recover routes and services more reliably."
+            ]
+          }
+        ]
+      },
       {
         "label": "Week of Aug 7 through Aug 13",
         "summary": "The week expanded the OS into a managed control plane, hardened MCP and worker lifecycle, productized skills and task workflows, reconciled major dialer work, and completed another website and documentation polish wave.",

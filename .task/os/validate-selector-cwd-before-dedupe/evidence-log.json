@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/validate-selector-cwd-before-dedupe",
+  "events": [
+    {
+      "id": "6f3e5a03-34cd-4494-8e21-5ed7ae0a79c7",
+      "occurred_at": "2026-08-29T07:02:00.076Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/test-selection.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/validate-selector-cwd-before-dedupe",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/validate-selector-cwd-before-dedupe"
+      }
+    },
+    {
+      "id": "fdefade7-fe3e-4ea3-bdf2-fd3aadce3e39",
+      "occurred_at": "2026-08-29T07:02:03.450Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/test-selection.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/validate-selector-cwd-before-dedupe",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/validate-selector-cwd-before-dedupe"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-29T07:02:03.533Z"
+}

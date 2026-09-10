@@ -33,15 +33,7 @@ type NodeTraceDatabase = {
   close: () => void;
 };
 
-type NodeTraceDatabaseConstructor = new (
-  filename: string,
-  options?: { readOnly?: boolean; timeout?: number },
-) => NodeTraceDatabase;
-
-export type OpenTraceDatabaseOptions = {
-  create?: boolean;
-  readonly?: boolean;
-};
+type NodeTraceDatabaseConstructor = new (filename: string) => NodeTraceDatabase;
 
 const TRACE_COLUMNS: Array<{ name: string; alterSql: string }> = [
   { name: 'id', alterSql: 'ALTER TABLE tool_traces ADD COLUMN id TEXT;' },
@@ -74,25 +66,17 @@ const TRACE_COLUMNS: Array<{ name: string; alterSql: string }> = [
   { name: 'total_tokens', alterSql: 'ALTER TABLE tool_traces ADD COLUMN total_tokens INTEGER;' },
 ];
 
-export function openTraceDatabase(
-  dbPath: string,
-  options: OpenTraceDatabaseOptions = {},
-): TraceDatabase {
-  const create = options.create ?? true;
-  const readonly = options.readonly ?? false;
-  if (!create && !fs.existsSync(dbPath)) {
-    throw new Error(`Trace database does not exist: ${dbPath}`);
-  }
+export function openTraceDatabase(dbPath: string): TraceDatabase {
   fs.mkdirSync(path.dirname(dbPath), { recursive: true });
   let db: TraceDatabase;
   if (typeof (globalThis as { Bun?: unknown }).Bun !== 'undefined') {
     const { Database } = require('bun:sqlite') as { Database: TraceDatabaseConstructor };
-    db = new Database(dbPath, { create, readonly });
+    db = new Database(dbPath, { create: true });
   } else {
     const { DatabaseSync } = require('node:sqlite') as {
       DatabaseSync: NodeTraceDatabaseConstructor;
     };
-    const database = new DatabaseSync(dbPath, { readOnly: readonly, timeout: 1_000 });
+    const database = new DatabaseSync(dbPath);
     db = {
       exec: (sql) => database.exec(sql),
       query: (sql) => {

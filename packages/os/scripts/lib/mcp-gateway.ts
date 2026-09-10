@@ -24,6 +24,10 @@ type FacadeCall = {
   timeout?: number;
 };
 
+export type McpFacadeExecutionOptions = {
+  timeoutMs?: number;
+};
+
 export type McpGatewayScopeResolution =
   | {
       ok: true;
@@ -39,7 +43,11 @@ export type McpGatewayScopeResolution =
 
 type McpGatewayHandlerInput = {
   getSteering: () => Promise<string>;
-  executeFacadeTool: (toolName: string, input: JsonObject) => Promise<unknown>;
+  executeFacadeTool: (
+    toolName: string,
+    input: JsonObject,
+    execution?: McpFacadeExecutionOptions,
+  ) => Promise<unknown>;
 };
 
 const MCP_READ_METHODS = new Set([
@@ -51,6 +59,13 @@ const MCP_READ_METHODS = new Set([
   'prompts/list',
   'resources/list',
 ]);
+const MCP_READ_SCOPE = 'route:/mcp:read';
+const MCP_READ_SECURITY_SCHEMES: JsonObject[] = [
+  { type: 'oauth2', scopes: [MCP_READ_SCOPE] },
+];
+const MCP_CALL_SECURITY_SCHEMES: JsonObject[] = [
+  { type: 'oauth2', scopes: ['mcp:call'] },
+];
 
 const MCP_TOOL_DESCRIPTORS: JsonObject[] = [
   {
@@ -62,6 +77,8 @@ const MCP_TOOL_DESCRIPTORS: JsonObject[] = [
       properties: {},
       additionalProperties: false,
     },
+    securitySchemes: MCP_READ_SECURITY_SCHEMES,
+    _meta: { securitySchemes: MCP_READ_SECURITY_SCHEMES },
     annotations: {
       readOnlyHint: true,
       openWorldHint: false,
@@ -111,6 +128,8 @@ const MCP_TOOL_DESCRIPTORS: JsonObject[] = [
       required: ['tool'],
       additionalProperties: false,
     },
+    securitySchemes: MCP_CALL_SECURITY_SCHEMES,
+    _meta: { securitySchemes: MCP_CALL_SECURITY_SCHEMES },
     annotations: {
       readOnlyHint: true,
       openWorldHint: false,
@@ -213,7 +232,6 @@ function facadeToolInput(call: FacadeCall): JsonObject {
     ...call.input,
     ...(call.taskSession ? { taskSession: call.taskSession } : {}),
     ...(call.workSession ? { workSession: call.workSession } : {}),
-    ...(call.timeout ? { timeout: call.timeout } : {}),
   };
 }
 
@@ -287,7 +305,7 @@ export function resolveMcpGatewayRequiredScope(body: string): McpGatewayScopeRes
         ok: true,
         method: request.method,
         toolName: publicToolName,
-        requiredScope: 'route:/mcp:read',
+        requiredScope: MCP_READ_SCOPE,
       };
     }
 
@@ -323,7 +341,7 @@ export function resolveMcpGatewayRequiredScope(body: string): McpGatewayScopeRes
     return {
       ok: true,
       method: request.method,
-      requiredScope: 'route:/mcp:read',
+      requiredScope: MCP_READ_SCOPE,
     };
   }
 
@@ -402,7 +420,10 @@ export async function handleMcpGatewayJsonRpc(
     const call = parseFacadeCall(request.params);
     if (!call) return jsonRpcError(request.id, -32602, 'Invalid call arguments.');
 
-    const output = await input.executeFacadeTool(call.tool, facadeToolInput(call));
+    const toolInput = facadeToolInput(call);
+    const output = typeof call.timeout === 'number'
+      ? await input.executeFacadeTool(call.tool, toolInput, { timeoutMs: call.timeout })
+      : await input.executeFacadeTool(call.tool, toolInput);
     return result({
       content: [{ type: 'text', text: outputText(output) }],
       isError: outputIsError(output),

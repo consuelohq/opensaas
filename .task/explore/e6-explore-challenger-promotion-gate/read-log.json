@@ -1,0 +1,24 @@
+{
+  "files": [
+    ".task/explore/e6-explore-challenger-promotion-gate/verify.json",
+    "packages/os/SCRIPTS.md",
+    "packages/os/explore-bench/E5_VOI_POLICY.md",
+    "packages/os/scripts/explore-bench.js",
+    "packages/os/scripts/explore.js",
+    "packages/os/scripts/lib/explore-bench.js",
+    "packages/os/scripts/lib/search/explore-output.js",
+    "packages/os/scripts/lib/state/explore-promotion-criteria.v1.json",
+    "packages/os/scripts/lib/state/explore-promotion-gate.js",
+    "packages/os/scripts/lib/state/explore-voi-policy.js",
+    "packages/os/tests/explore-bench.test.ts",
+    "packages/os/tests/explore-output-contract.test.ts",
+    "packages/os/tests/explore-promotion-gate.test.ts",
+    "packages/workspace/scripts/test-selection.js",
+    "packages/workspace/test-selection.registry.json",
+    "packages/workspace/tests/github-workflow-policy.test.js",
+    "packages/workspace/tests/run-changed-server-task.test.mjs",
+    "packages/workspace/tests/test-selection.test.js",
+    "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+  ],
+  "updatedAt": "2026-08-16T03:34:50.447Z"
+}

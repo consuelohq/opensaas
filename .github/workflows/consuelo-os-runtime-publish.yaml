@@ -164,6 +164,9 @@ jobs:
           - runner: macos-14
             platform: darwin
             architecture: arm64
+          - runner: macos-15-intel
+            platform: darwin
+            architecture: x64
           - runner: ubuntu-latest
             platform: linux
             architecture: x64
@@ -268,6 +271,7 @@ jobs:
         run: |
           result="$(bun ./packages/os/scripts/prepare-release-publication.ts \
             --archive "darwin-arm64=.release/archives/consuelo-os-darwin-arm64.tar.gz" \
+            --archive "darwin-x64=.release/archives/consuelo-os-darwin-x64.tar.gz" \
             --archive "linux-x64=.release/archives/consuelo-os-linux-x64.tar.gz" \
             --archive "windows-x64=.release/archives/consuelo-os-windows-x64.tar.gz" \
             --version "${{ needs.plan.outputs.version }}" \

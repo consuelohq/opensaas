@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_c632e57d59f4",
+  "tmuxSession": "opensaas-os-prevent-mcp-eof-during-rolling-worker-evacuation-c632e57d",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/prevent-mcp-eof-during-rolling-worker-evacuation",
+  "branch": "task/os/prevent-mcp-eof-during-rolling-worker-evacuation",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-prevent-mcp-eof-during-rolling-worker-evacuation",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-prevent-mcp-eof-during-rolling-worker-evacuation",
+  "prNumber": 2132,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2132",
+  "createdAt": "2026-08-16T05:17:16.710Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-prevent-mcp-eof-during-rolling-worker-evacuation/.task/os/prevent-mcp-eof-during-rolling-worker-evacuation/session.json"
+}

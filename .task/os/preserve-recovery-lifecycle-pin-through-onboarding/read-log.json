@@ -1,0 +1,10 @@
+{
+  "files": [
+    "packages/os/scripts/bootstrap.sh",
+    "packages/os/scripts/install.ts",
+    "packages/os/scripts/lib/install-state.ts",
+    "packages/os/tests/bootstrap-recovery-cli.test.ts",
+    "packages/os/tests/lifecycle-command.test.ts"
+  ],
+  "updatedAt": "2026-08-29T00:57:46.249Z"
+}

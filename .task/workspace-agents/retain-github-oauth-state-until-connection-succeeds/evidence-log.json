@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/workspace-agents/retain-github-oauth-state-until-connection-succeeds",
+  "events": [
+    {
+      "id": "79b7eddc-fbb9-4488-9b8f-d732609473c2",
+      "occurred_at": "2026-08-29T02:31:57.701Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/github-source-control-authority.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/retain-github-oauth-state-until-connection-succeeds",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/retain-github-oauth-state-until-connection-succeeds"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-29T02:31:57.863Z"
+}

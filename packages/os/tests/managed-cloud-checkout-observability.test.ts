@@ -233,6 +233,17 @@ describe('synthetic Stripe checkout', () => {
 
   it('accepts a signed sandbox completion without creating workspace or provisioning state', async () => {
     const runtime = makeRuntime(async () => Response.json({}));
+    const posthogBodies: string[] = [];
+    let posthogSequence = 0;
+    runtime.checkoutObservability = createCheckoutObservability({
+      posthogApiKey: 'phc_synthetic_checkout_test',
+      posthogHost: 'https://posthog.test',
+      fetchImpl: async (_input, init) => {
+        posthogBodies.push(String(init?.body ?? ''));
+        return new Response(null, { status: 200 });
+      },
+      idFactory: () => `evt_synthetic_${++posthogSequence}`,
+    });
     const event = JSON.stringify({
       id: 'evt_synthetic_paid_1',
       type: 'checkout.session.completed',
@@ -259,6 +270,21 @@ describe('synthetic Stripe checkout', () => {
       signatureHeader: await stripeSignature('whsec_synthetic', timestamp, event),
     });
     expect(result).toMatchObject({ handled: true, paymentStatus: 'paid', planId: 'performance' });
+    const retry = await handleSyntheticStripeWebhook({
+      runtime,
+      rawBody: event,
+      signatureHeader: await stripeSignature('whsec_synthetic', timestamp, event),
+    });
+    expect(retry).toMatchObject({ handled: true, paymentStatus: 'paid', planId: 'performance' });
+    const completionInsertIds = posthogBodies
+      .map((body) => JSON.parse(body) as { batch?: Array<{ event?: string; properties?: Record<string, unknown> }> })
+      .flatMap((body) => body.batch ?? [])
+      .filter((item) => item.event === 'consuelo_os_checkout_synthetic_completed')
+      .map((item) => item.properties?.$insert_id);
+    expect(completionInsertIds).toEqual([
+      'stripe:evt_synthetic_paid_1:checkout_synthetic_completed',
+      'stripe:evt_synthetic_paid_1:checkout_synthetic_completed',
+    ]);
     await expect(runtime.store.byAccountWorkspace('user_internal_123')).resolves.toBeUndefined();
     await expect(runtime.store.listWorkspaceMemberships('user_internal_123')).resolves.toEqual([]);
     await expect(runtime.store.claimNextManagedCloudProvisioningJob({

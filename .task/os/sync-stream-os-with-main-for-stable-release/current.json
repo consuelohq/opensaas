@@ -1,0 +1,20 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/sync-stream-os-with-main-for-stable-release",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2197,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2197",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2197",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2197/sync-stream-os-with-main-for-stable-release",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2197",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2197/sync-stream-os-with-main-for-stable-release",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-sync-stream-os-with-main-for-stable-release",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_d09120383f43",
+  "tmuxSession": "opensaas-os-sync-stream-os-with-main-for-stable-release-d0912038",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-sync-stream-os-with-main-for-stable-release/.task/os/sync-stream-os-with-main-for-stable-release/session.json",
+  "createdAt": "2026-08-26T04:47:40.832Z"
+}

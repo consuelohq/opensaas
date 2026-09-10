@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/self-heal-session-affinity-workspace-drift",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2257,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2257",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-self-heal-session-affinity-workspace-drift",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_2ce51bf3d170",
+  "tmuxSession": "opensaas-os-self-heal-session-affinity-workspace-drift-2ce51bf3",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-self-heal-session-affinity-workspace-drift/.task/session.json",
+  "createdAt": "2026-08-29T00:07:30.332Z"
+}

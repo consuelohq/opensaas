@@ -1,0 +1,20 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/close-final-codex-stable-findings",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2216,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2216",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2216",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2216/close-final-codex-stable-findings",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2216",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2216/close-final-codex-stable-findings",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-close-final-codex-stable-findings",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_7012c71e6a94",
+  "tmuxSession": "opensaas-os-close-final-codex-stable-findings-7012c71e",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-close-final-codex-stable-findings/.task/os/close-final-codex-stable-findings/session.json",
+  "createdAt": "2026-08-26T14:51:23.549Z"
+}

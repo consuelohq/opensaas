@@ -1,0 +1,20 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/normalize-enrollment-reset-proxy-errors",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2198,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2198",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2198",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2198/normalize-enrollment-reset-proxy-errors",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2198",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2198/normalize-enrollment-reset-proxy-errors",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-normalize-enrollment-reset-proxy-errors",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_98ef6922d061",
+  "tmuxSession": "opensaas-os-normalize-enrollment-reset-proxy-errors-98ef6922",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-normalize-enrollment-reset-proxy-errors/.task/os/normalize-enrollment-reset-proxy-errors/session.json",
+  "createdAt": "2026-08-26T04:53:50.523Z"
+}

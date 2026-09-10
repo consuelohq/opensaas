@@ -1,0 +1,16 @@
+{
+  "area": "explore",
+  "stream": "stream/explore",
+  "taskBranch": "task/explore/fix-live-explore-gateway-and-policy-routing",
+  "baseBranch": "stream/explore",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2297,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2297",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-explore-fix-live-explore-gateway-and-policy-routing",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_fe981ca72a98",
+  "tmuxSession": "opensaas-explore-fix-live-explore-gateway-and-policy-routing-fe981ca7",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-explore-fix-live-explore-gateway-and-policy-routing/.task/session.json",
+  "createdAt": "2026-08-29T07:35:31.189Z"
+}

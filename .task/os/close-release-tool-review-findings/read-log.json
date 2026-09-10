@@ -1,0 +1,8 @@
+{
+  "files": [
+    "packages/os/scripts/lib/release-orchestrator.ts",
+    "packages/os/scripts/lib/release-promotion-correlation.ts",
+    "packages/os/scripts/release.ts"
+  ],
+  "updatedAt": "2026-08-26T18:01:37.985Z"
+}

@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_ca9585371555",
+  "tmuxSession": "opensaas-workspace-agents-repair-session-start-and-release-lifecycle-regre-ca958537",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/repair-session-start-and-release-lifecycle-regressions",
+  "branch": "task/workspace-agents/repair-session-start-and-release-lifecycle-regressions",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-repair-session-start-and-release-lifecycle-regressions",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-repair-session-start-and-release-lifecycle-regressions",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2235,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2235",
+  "createdAt": "2026-08-26T22:16:37.635Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-repair-session-start-and-release-lifecycle-regressions/.task/workspace-agents/repair-session-start-and-release-lifecycle-regressions/session.json"
+}

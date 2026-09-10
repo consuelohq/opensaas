@@ -1,0 +1,17 @@
+{
+  "files": [
+    ".task/os/prevent-mcp-eof-during-rolling-worker-evacuation/workpad.md",
+    "packages/os/SCRIPTS.md",
+    "packages/os/scripts/lib/worker-pool.ts",
+    "packages/os/scripts/server/app.ts",
+    "packages/os/scripts/server/main.ts",
+    "packages/os/scripts/server/routes/health.ts",
+    "packages/os/scripts/server/routes/mcp.ts",
+    "packages/os/scripts/server/worker-runtime-state.ts",
+    "packages/os/tests/health-readiness.test.ts",
+    "packages/os/tests/lifecycle-restart-contract.test.ts",
+    "packages/workspace/senior-engineer.md",
+    "packages/workspace/test-selection.rules.json"
+  ],
+  "updatedAt": "2026-08-16T06:04:25.185Z"
+}

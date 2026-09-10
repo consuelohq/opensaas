@@ -10,7 +10,7 @@ import {
 
 const sourceModes = ['local-networked', 'cloud-compute', 'local-off-network'] as const;
 
-/** Metadata-only. Credential values remain inside the node sealed store and broker. */
+/** Metadata reads plus sealed-envelope writes. Credential plaintext never enters the gateway. */
 export const CONSUELO_SECRET_SITE_SERVICE_REGISTRATIONS: ConsueloGatewayServiceRegistration[] = [
   {
     publicBoundary: CONSUELO_GATEWAY_PUBLIC_BOUNDARY,
@@ -19,6 +19,19 @@ export const CONSUELO_SECRET_SITE_SERVICE_REGISTRATIONS: ConsueloGatewayServiceR
     serviceName: 'secrets-sites-read-endpoints',
     gatewayServiceName: 'secrets-sites-read-endpoints',
     gatewayAdapterName: 'secrets-sites-read-endpoints',
+    publicSiteRouteFamily: '/secrets/*',
+    gatewayRouteFamily: '/gateway/secrets/*',
+    supportedSourceModes: [...sourceModes],
+    cachePolicy: { strategy: 'control-plane', ttlSeconds: 0 },
+    circuitState: { state: 'closed', retryPolicy: 'normal' },
+  },
+  {
+    publicBoundary: CONSUELO_GATEWAY_PUBLIC_BOUNDARY,
+    site: 'secrets',
+    capability: 'secrets-write',
+    serviceName: 'secrets-sites-write-endpoints',
+    gatewayServiceName: 'secrets-sites-write-endpoints',
+    gatewayAdapterName: 'secrets-sites-write-endpoints',
     publicSiteRouteFamily: '/secrets/*',
     gatewayRouteFamily: '/gateway/secrets/*',
     supportedSourceModes: [...sourceModes],

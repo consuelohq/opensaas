@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/fix-release-publication-wait-race",
+  "events": [
+    {
+      "id": "a072e899-8c4b-43e9-8bf5-cd3627774fd7",
+      "occurred_at": "2026-08-26T14:59:53.431Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/fix-release-publication-wait-race/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-release-publication-wait-race",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-release-publication-wait-race"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-26T14:59:53.492Z"
+}

@@ -1,0 +1,152 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/verify-release-local-platform-bundle",
+  "events": [
+    {
+      "id": "670824c5-65bf-49d7-8ecc-4290570b0e8e",
+      "occurred_at": "2026-08-26T03:43:58.950Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/release-orchestrator.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/verify-release-local-platform-bundle",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/verify-release-local-platform-bundle"
+      }
+    },
+    {
+      "id": "2150e2d2-7515-447c-823b-dd96b5372c32",
+      "occurred_at": "2026-08-26T03:44:09.137Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/lifecycle/release.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/verify-release-local-platform-bundle",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/verify-release-local-platform-bundle"
+      }
+    },
+    {
+      "id": "18bbec08-60c6-4840-9143-51781a1a71cd",
+      "occurred_at": "2026-08-26T03:44:58.338Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/release-orchestrator.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/verify-release-local-platform-bundle",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/verify-release-local-platform-bundle"
+      }
+    },
+    {
+      "id": "832021f7-fb1e-4df5-9726-1aa8c2ce9500",
+      "occurred_at": "2026-08-26T03:44:58.803Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/release-promotion-correlation.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/verify-release-local-platform-bundle",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/verify-release-local-platform-bundle"
+      }
+    },
+    {
+      "id": "cc0e2079-edaa-4069-b375-51d9cff2c00e",
+      "occurred_at": "2026-08-26T03:44:59.245Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/release-script-promotion-correlation.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/verify-release-local-platform-bundle",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/verify-release-local-platform-bundle"
+      }
+    },
+    {
+      "id": "d4c88089-4a38-44a9-9853-851f0f01801e",
+      "occurred_at": "2026-08-26T03:45:28.355Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/release.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/verify-release-local-platform-bundle",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/verify-release-local-platform-bundle"
+      }
+    },
+    {
+      "id": "6872482d-bfe2-48a2-93e0-b5655af80031",
+      "occurred_at": "2026-08-26T03:45:28.835Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/release.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/verify-release-local-platform-bundle",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/verify-release-local-platform-bundle"
+      }
+    },
+    {
+      "id": "048370e3-0437-4623-bf0c-a72e33e013d6",
+      "occurred_at": "2026-08-26T03:45:29.297Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/release.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/verify-release-local-platform-bundle",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/verify-release-local-platform-bundle"
+      }
+    },
+    {
+      "id": "8e897cf9-16e7-4cf4-9dd9-87a223a5d960",
+      "occurred_at": "2026-08-26T03:47:04.965Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/verify-release-local-platform-bundle/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/verify-release-local-platform-bundle",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/verify-release-local-platform-bundle"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-26T03:47:05.022Z"
+}

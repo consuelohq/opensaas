@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-work-session-reads-and-session-start-timeout-routing",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2258,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2258",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-work-session-reads-and-session-start-timeout-routing",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_7d6daef6229b",
+  "tmuxSession": "opensaas-os-fix-work-session-reads-and-session-start-timeout-7d6daef6",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-work-session-reads-and-session-start-timeout-routing/.task/session.json",
+  "createdAt": "2026-08-29T00:14:40.662Z"
+}

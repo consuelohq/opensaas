@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_02c649972eb4",
+  "tmuxSession": "opensaas-workspace-agents-fix-artifacts-routing-and-refresh-02c64997",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/fix-artifacts-routing-and-refresh",
+  "branch": "task/workspace-agents/fix-artifacts-routing-and-refresh",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-fix-artifacts-routing-and-refresh",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-fix-artifacts-routing-and-refresh",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2200,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2200",
+  "createdAt": "2026-08-26T05:01:00.930Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-fix-artifacts-routing-and-refresh/.task/workspace-agents/fix-artifacts-routing-and-refresh/session.json"
+}

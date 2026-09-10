@@ -1478,7 +1478,10 @@ describe('Consuelo OS public gateway security contract', () => {
       const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
       const result = provisionLocalOs({ mode: 'local', port: 8999 });
       process.stdout.write(JSON.stringify(result));
-    `, { CONSUELO_OS_WORKER_COUNT: '3' });
+    `, {
+      CONSUELO_OS_WORKER_COUNT: '3',
+      CONSUELO_OS_WORKER_BASE_PORT: '8999',
+    });
 
     const caddyfile = readFileSync(join(tempHome, 'node', 'caddy', 'Caddyfile'), 'utf8');
     expect(caddyfile).toContain(

@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/ship-owner-auth-dashboard-and-oauth-recovery-to-stable",
+  "events": [
+    {
+      "id": "f9e70456-bc58-4e87-b47c-dc3eb447449c",
+      "occurred_at": "2026-08-26T01:28:09.690Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/skills/task/SKILL.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/ship-owner-auth-dashboard-and-oauth-recovery-to-stable",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/ship-owner-auth-dashboard-and-oauth-recovery-to-stable"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-26T01:28:09.770Z"
+}

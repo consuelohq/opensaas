@@ -10,6 +10,7 @@ import { runSubagentProcess } from '../scripts/lib/subagent/runtime';
 
 import {
   preserveFirstTerminationOutcome,
+  providerOutcomeForClose,
   providerExitCodeForOutcome,
   scheduleProviderProcessEscalation,
   signalProviderProcess,
@@ -22,6 +23,10 @@ describe('subagent runner termination', () => {
     expect(providerExitCodeForOutcome('timed_out', 143)).toBe(143);
     expect(providerExitCodeForOutcome('cancelled', 0)).toBe(0);
     expect(providerExitCodeForOutcome(undefined, 0)).toBe(0);
+  });
+
+  it('keeps setup failures failed when provider cleanup exits zero', () => {
+    expect(providerOutcomeForClose(undefined, 'stdin handoff failed', 0)).toBe('failed');
   });
 
   it('preserves the first timeout or cancellation cause during escalation', () => {

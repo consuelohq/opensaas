@@ -159,7 +159,7 @@ describe('OS workflow intent bundles', () => {
     expect(result.hookEvent).toEqual(expect.objectContaining({ taskSession: 'task/os/intent-architecture' }));
   });
 
-  test('should expose task.start as the sole public task workflow entrypoint', () => {
+  test('should expose task.start as the compatibility public task workflow entrypoint', () => {
     const full = readManifest();
     const core = readCoreManifest().tools;
     const startEntry = full.find((tool) => tool.name === 'task.start');
@@ -170,7 +170,7 @@ describe('OS workflow intent bundles', () => {
     expect(startEntry).toEqual(expect.objectContaining({
       name: 'task.start',
       methodPath: ['task', 'start'],
-      description: "Call this directly at the beginning of every scoped repo task, before tools.search or any search for task-start tooling. It creates the task branch, worktree, task PR, and real taskSession, then returns the selected workflow bundle and post-start lifecycle guidance.",
+      description: 'Compatibility alias for session.start({ kind: "task" }). Existing callers remain supported; new agents should prefer session.start for task creation.',
       workflowRole: 'task.start',
       command: expect.objectContaining({ script: 'task:start' }),
     }));
@@ -180,7 +180,7 @@ describe('OS workflow intent bundles', () => {
       definition: expect.objectContaining({
         name: 'task.start',
         methodPath: ['task', 'start'],
-        description: "Call this directly at the beginning of every scoped repo task, before tools.search or any search for task-start tooling. It creates the task branch, worktree, task PR, and real taskSession, then returns the selected workflow bundle and post-start lifecycle guidance.",
+        description: 'Compatibility alias for session.start({ kind: "task" }). Existing callers remain supported; new agents should prefer session.start for task creation.',
       }),
     }));
     const commandArguments = (startEntry?.command as { arguments?: Array<{ source?: string; flag?: string }> })?.arguments ?? [];

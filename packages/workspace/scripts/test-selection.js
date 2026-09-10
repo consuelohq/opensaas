@@ -152,8 +152,11 @@ function matchesPattern(file, pattern) {
   return globToRegExp(pattern).test(file);
 }
 
-function commandKey(command) {
-  return JSON.stringify(command);
+function commandKey(test) {
+  const cwdKey = Object.prototype.hasOwnProperty.call(test, 'cwd')
+    ? ['present', test.cwd]
+    : ['absent'];
+  return JSON.stringify([cwdKey, test.command]);
 }
 
 function normalizeRule(rule, source = 'explicit') {
@@ -322,6 +325,7 @@ function select(registry, files) {
       ? rawMatchedFiles
       : rawMatchedFiles.filter((file) => !exclusivelyOwnedFiles.has(file));
     if (matchedFiles.length === 0) continue;
+    if (rule.origin === 'auto' && docsOnly(matchedFiles)) continue;
     matchedRules.push({
       id: rule.id,
       critical: rule.critical,
@@ -339,7 +343,7 @@ function select(registry, files) {
       autoPackageCodeFiles.every((file) => explicitCriticalFiles.has(file));
     if (fullyCoveredByExplicitCriticalRule) continue;
     for (const test of rule.tests) {
-      const key = commandKey(test.command);
+      const key = commandKey(test);
       if (seen.has(key)) continue;
       seen.add(key);
       suites.push({ ...test, ruleId: rule.id, critical: rule.critical });
@@ -369,12 +373,109 @@ function testSuiteTimeoutMs() {
   return Number.isFinite(value) && value > 0 ? value : 300000;
 }
 
+function resolveSuiteCwd(root, suite) {
+  let configured = '.';
+  if (suite.cwd !== undefined) {
+    if (typeof suite.cwd !== 'string' || !suite.cwd.trim()) {
+      throw new Error('suite cwd must be a non-blank repository-relative string');
+    }
+    configured = suite.cwd.trim();
+  }
+  const resolved = path.resolve(root, configured);
+  const relative = path.relative(root, resolved);
+  const escapesRoot = relative === '..'
+    || relative.startsWith(`..${path.sep}`)
+    || path.isAbsolute(relative);
+  if (escapesRoot) {
+    throw new Error(`suite cwd must stay within repository: ${configured}`);
+  }
+  return resolved;
+}
+
+function suiteNeedsOsDependencies(suite) {
+  const command = Array.isArray(suite?.command) ? suite.command : [];
+  return String(suite?.ruleId || '').startsWith('os-')
+    || command.some((argument) => argument === 'packages/os' || String(argument).startsWith('packages/os/'));
+}
+
+function osDependenciesAreReady(root) {
+  const osRoot = path.join(root, 'packages', 'os');
+  const packageJsonPath = path.join(osRoot, 'package.json');
+  const nodeModulesPath = path.join(osRoot, 'node_modules');
+  if (!fs.existsSync(packageJsonPath) || !fs.existsSync(nodeModulesPath)) return false;
+
+  const packageJson = readJson(packageJsonPath, {});
+  const requiresTreeSitter = Boolean(
+    packageJson?.dependencies?.['tree-sitter']
+      || packageJson?.devDependencies?.['tree-sitter'],
+  );
+  return !requiresTreeSitter
+    || fs.existsSync(path.join(nodeModulesPath, 'tree-sitter', 'package.json'));
+}
+
+function prepareOsDependencies(root, suites) {
+  if (!suites.some(suiteNeedsOsDependencies) || osDependenciesAreReady(root)) return null;
+
+  const osRoot = path.join(root, 'packages', 'os');
+  const command = ['bun', 'install', '--frozen-lockfile'];
+  const started = Date.now();
+  const result = spawnSync(command[0], command.slice(1), {
+    cwd: osRoot,
+    encoding: 'utf8',
+    maxBuffer: 1024 * 1024 * 8,
+    timeout: testSuiteTimeoutMs(),
+    env: process.env,
+  });
+  const timedOut = result.error && result.error.code === 'ETIMEDOUT';
+  const signaled = Boolean(result.signal);
+  if (result.status === 0 && !timedOut && !signaled) return null;
+
+  const output = `${result.stdout || ''}${result.stderr || ''}${timedOut ? '\n[test-selection] OS dependency install timed out\n' : ''}${signaled ? `\n[test-selection] OS dependency install terminated by signal ${result.signal}\n` : ''}`;
+  return {
+    name: 'OS test dependency preparation',
+    command,
+    ruleId: 'os-dependency-preflight',
+    critical: true,
+    status: 'failed',
+    exitCode: result.status,
+    signal: result.signal || null,
+    error: result.error ? { code: result.error.code, message: result.error.message } : null,
+    durationMs: Date.now() - started,
+    outputTail: output.slice(-4000),
+  };
+}
+
 function runSuites(root, suites, base) {
+  const dependencyFailure = prepareOsDependencies(root, suites);
+  if (dependencyFailure) return [dependencyFailure];
+
   const results = [];
   for (const suite of suites) {
     const started = Date.now();
+    let cwd;
+    try {
+      cwd = resolveSuiteCwd(root, suite);
+    } catch (error) {
+      results.push({
+        name: suite.name,
+        command: suite.command,
+        cwd: suite.cwd || '.',
+        ruleId: suite.ruleId,
+        critical: suite.critical,
+        status: 'failed',
+        exitCode: null,
+        signal: null,
+        error: {
+          code: 'INVALID_SUITE_CWD',
+          message: error instanceof Error ? error.message : 'invalid suite cwd',
+        },
+        durationMs: Date.now() - started,
+        outputTail: '',
+      });
+      continue;
+    }
     const result = spawnSync(suite.command[0], suite.command.slice(1), {
-      cwd: root,
+      cwd,
       encoding: 'utf8',
       maxBuffer: 1024 * 1024 * 8,
       timeout: testSuiteTimeoutMs(),
@@ -386,6 +487,7 @@ function runSuites(root, suites, base) {
     results.push({
       name: suite.name,
       command: suite.command,
+      cwd: suite.cwd || '.',
       ruleId: suite.ruleId,
       critical: suite.critical,
       status: result.status === 0 && !timedOut && !signaled ? 'passed' : 'failed',

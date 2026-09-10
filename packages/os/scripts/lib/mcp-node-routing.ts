@@ -10,6 +10,11 @@ export type McpNodeSummary = {
   displayName: string;
   role?: 'home' | 'member';
   platform?: string;
+  channel?: string;
+  osVersion?: string;
+  mcpProtocolVersion?: string;
+  readiness?: 'ready' | 'not_ready' | 'unknown';
+  compatibility?: 'compatible' | 'incompatible' | 'unknown';
   presence?: 'online' | 'stale' | 'offline';
   state?: string;
 };
@@ -132,6 +137,30 @@ export function inspectMcpNodeRoutingBody(body: string): McpNodeRoutingInspectio
   };
 }
 
+export function stripMcpRoutingNodeId(body: string): string {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(body) as unknown;
+  } catch {
+    return body;
+  }
+  if (!isJsonObject(parsed) || parsed.method !== 'tools/call') return body;
+  const params = parsed.params;
+  if (!isJsonObject(params) || params.name !== 'call') return body;
+  const args = params.arguments;
+  if (!isJsonObject(args) || !Object.hasOwn(args, 'nodeId')) return body;
+
+  const sanitizedArgs = { ...args };
+  delete sanitizedArgs.nodeId;
+  return JSON.stringify({
+    ...parsed,
+    params: {
+      ...params,
+      arguments: sanitizedArgs,
+    },
+  });
+}
+
 function encodeBase64Url(value: string): string {
   const bytes = new TextEncoder().encode(value);
   let binary = '';
@@ -177,6 +206,23 @@ export function decodeMcpNodeRoutingContext(value: string | null): McpNodeRoutin
         displayName: raw.displayName.trim().slice(0, 120),
         ...(raw.role === 'home' || raw.role === 'member' ? { role: raw.role } : {}),
         ...(typeof raw.platform === 'string' ? { platform: raw.platform.slice(0, 40) } : {}),
+        ...(typeof raw.channel === 'string' && raw.channel.trim()
+          ? { channel: raw.channel.trim().slice(0, 40) }
+          : {}),
+        ...(typeof raw.osVersion === 'string' && raw.osVersion.trim()
+          ? { osVersion: raw.osVersion.trim().slice(0, 80) }
+          : {}),
+        ...(typeof raw.mcpProtocolVersion === 'string' && raw.mcpProtocolVersion.trim()
+          ? { mcpProtocolVersion: raw.mcpProtocolVersion.trim().slice(0, 80) }
+          : {}),
+        ...(raw.readiness === 'ready' || raw.readiness === 'not_ready' || raw.readiness === 'unknown'
+          ? { readiness: raw.readiness }
+          : {}),
+        ...(raw.compatibility === 'compatible'
+          || raw.compatibility === 'incompatible'
+          || raw.compatibility === 'unknown'
+          ? { compatibility: raw.compatibility }
+          : {}),
         ...(raw.presence === 'online' || raw.presence === 'stale' || raw.presence === 'offline'
           ? { presence: raw.presence }
           : {}),

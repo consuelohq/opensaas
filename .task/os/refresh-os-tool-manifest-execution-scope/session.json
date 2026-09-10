@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_7ca1017d50fb",
+  "tmuxSession": "opensaas-os-refresh-os-tool-manifest-execution-scope-7ca1017d",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/refresh-os-tool-manifest-execution-scope",
+  "branch": "task/os/refresh-os-tool-manifest-execution-scope",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-refresh-os-tool-manifest-execution-scope",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-refresh-os-tool-manifest-execution-scope",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2231,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2231",
+  "createdAt": "2026-08-26T19:05:04.369Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-refresh-os-tool-manifest-execution-scope/.task/os/refresh-os-tool-manifest-execution-scope/session.json"
+}

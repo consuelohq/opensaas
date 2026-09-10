@@ -937,24 +937,17 @@ use the owning source of truth:
 
 write durable rules, not conversation recaps. generated files should be regenerated from source instead of patched by hand.
 
-## retrieval is a prior, not a conclusion
+## retrieval support, hypotheses, and readiness
 
-when building systems that combine search/retrieval with decision-making, do not conflate
-retrieval quality with decision quality. high-relevance search results are a starting
-belief — a prior distribution over where to look. they are not evidence that the path is
-correct.
+when building systems that combine search/retrieval with decision-making, separate retrieval support from investigation readiness. retrieval produces candidate dependency subgraphs and provisional benchmark support. it does not prove that a file or path is correct.
 
-confidence comes from accumulated evidence: files read, tests run, runtime checked,
-hypotheses confirmed or contradicted. retrieval narrows the search space. evidence
-determines the answer.
+a file read is an observation and coverage event. reading a candidate must never automatically mark that candidate relevant. explicit relevance/irrelevance labels update hypothesis support. tests, verify, and runtime checks validate the chosen change and affect readiness; they do not retroactively make a file more or less relevant.
 
-systems that optimize only for retrieval accuracy produce agents that read the "right"
-files but still make wrong decisions. systems that optimize for evidence-driven decisions
-produce agents that converge on correct outcomes regardless of initial retrieval quality.
+model investigations as dependency hypotheses rather than independent file probabilities. keep the strongest hypothesis root, its connected implementation/state/test context, explicit supporting/contradicting labels, and which nodes have actually been observed.
 
-the standard: every tool in a decision pipeline should read and write evidence state.
-retrieval writes candidates. actions write observations. confidence computes from
-observations, not from retrieval scores.
+use the word readiness for the action state until a probability model has enough independent benchmark data and calibration diagnostics to justify probability language. retrieval support fitted from a small judged corpus must remain labeled provisional.
+
+the standard: retrieval writes candidates and provisional support; actions write observations; explicit labels update hypothesis support; validation updates readiness.
 
 
 reminders

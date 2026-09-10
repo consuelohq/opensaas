@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_3eff5b3e1ded",
+  "tmuxSession": "opensaas-workspace-agents-compact-explore-response-contract-3eff5b3e",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/compact-explore-response-contract",
+  "branch": "task/workspace-agents/compact-explore-response-contract",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-compact-explore-response-contract",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-compact-explore-response-contract",
+  "prNumber": 2050,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2050",
+  "createdAt": "2026-08-15T08:26:05.595Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-compact-explore-response-contract/.task/workspace-agents/compact-explore-response-contract/session.json"
+}

@@ -6,9 +6,16 @@ import { describe, expect, it } from 'vitest';
 import { buildSkillsRegistry } from '../scripts/generate-skills-registry';
 
 const repoRoot = join(import.meta.dirname, '..', '..', '..');
+const packageRoot = join(import.meta.dirname, '..');
 
 function read(relativePath: string): string {
-  return readFileSync(join(repoRoot, relativePath), 'utf8');
+  const fromRepo = join(repoRoot, relativePath);
+  try {
+    return readFileSync(fromRepo, 'utf8');
+  } catch (err: unknown) {
+    if ((err as NodeJS.ErrnoException).code !== 'ENOENT') throw err;
+    return readFileSync(join(packageRoot, relativePath), 'utf8');
+  }
 }
 
 describe('OS senior engineer skill', () => {
@@ -25,8 +32,9 @@ describe('OS senior engineer skill', () => {
   it('does not publish pseudo memory subtools in active OS skills', () => {
     const registry = buildSkillsRegistry();
     for (const skill of registry.skills) {
-      const body = read(skill.load.path);
-      expect(body, skill.name).not.toMatch(/\bmemory\.(search|find|get|list|save|categories|trace)\b/);
+      const load = skill.load as { path: string };
+      const body = read(load.path);
+      expect(body, String(skill.name)).not.toMatch(/\bmemory\.(search|find|get|list|save|categories|trace)\b/);
     }
   });
 
@@ -39,7 +47,7 @@ describe('OS senior engineer skill', () => {
       title: 'Senior Engineer',
       entrypoint: 'SKILL.md',
       status: 'active',
-      load: { path: 'packages/os/skills/senior-engineer/SKILL.md' },
+      load: { path: 'skills/senior-engineer/SKILL.md' },
     });
   });
 });

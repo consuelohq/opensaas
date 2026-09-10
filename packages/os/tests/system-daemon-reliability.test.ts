@@ -316,6 +316,49 @@ describe('macOS runtime service reliability', () => {
     );
   });
 
+  it('should kickstart launchd when canonical rolling recovery rejects an unhealthy pool', () => {
+    const fixtureRoot = temporaryDirectory('consuelo-watchdog-recovery-fallback-');
+    const fakeBin = join(fixtureRoot, 'bin');
+    const home = join(fixtureRoot, 'home');
+    const consueloHome = join(home, '.consuelo');
+    const launchLog = join(fixtureRoot, 'launchctl.log');
+    const consueloLog = join(fixtureRoot, 'consuelo.log');
+    mkdirSync(fakeBin, { recursive: true });
+    mkdirSync(home, { recursive: true });
+    installFakeConsuelo(consueloHome);
+    writeExecutable(
+      join(consueloHome, 'bin', 'consuelo'),
+      '#!/bin/bash\nprintf "%s\\n" "$*" >> "$WATCHDOG_CONSUELO_LOG"\nexit 1\n',
+    );
+    writeExecutable(join(fakeBin, 'lsof'), '#!/bin/bash\nexit 0\n');
+    writeExecutable(join(fakeBin, 'curl'), '#!/bin/bash\nexit 1\n');
+    writeExecutable(
+      join(fakeBin, 'launchctl'),
+      '#!/bin/bash\nprintf "%s\\n" "$*" >> "$WATCHDOG_LAUNCH_LOG"\nexit 0\n',
+    );
+
+    const result = run('bash', [resolve(osRoot, 'scripts/workspace-watchdog.sh')], {
+      ...process.env,
+      HOME: home,
+      CONSUELO_HOME: consueloHome,
+      WORKSPACE_WATCHDOG_PATH: `${fakeBin}:/usr/bin:/bin:/usr/sbin:/sbin`,
+      WORKSPACE_WATCHDOG_DISABLE_EXTERNAL: '1',
+      WORKSPACE_WATCHDOG_LOCAL_HTTP_FAILURE_THRESHOLD: '1',
+      WORKSPACE_WATCHDOG_MIN_RESTART_GAP_SECONDS: '0',
+      WATCHDOG_LAUNCH_LOG: launchLog,
+      WATCHDOG_CONSUELO_LOG: consueloLog,
+    });
+
+    expect(result.status, `${result.stdout}\n${result.stderr}`).toBe(0);
+    expect(readFileSync(consueloLog, 'utf8')).toContain('restart --quiet');
+    expect(readFileSync(launchLog, 'utf8')).toContain(
+      'kickstart -k gui/' + String(process.getuid?.()) + '/com.consuelo.system',
+    );
+    expect(result.stdout).toContain(
+      'falling back to launchd recovery for com.consuelo.system',
+    );
+  });
+
   it('should bootstrap a missing Caddy label when the HA ingress is unavailable', () => {
     const fixtureRoot = temporaryDirectory('consuelo-watchdog-bootstrap-');
     const fakeBin = join(fixtureRoot, 'bin');
@@ -457,7 +500,7 @@ describe('macOS runtime service reliability', () => {
     expect(existsSync(consueloLog)).toBe(false);
   });
 
-  it('should reconcile signed public route state before escalating a locally healthy node to restart', () => {
+  it('should reject route registration when the routed MCP probe is not ready', () => {
     const fixtureRoot = temporaryDirectory('consuelo-watchdog-public-route-');
     const fakeBin = join(fixtureRoot, 'bin');
     const home = join(fixtureRoot, 'home');
@@ -475,16 +518,72 @@ describe('macOS runtime service reliability', () => {
     mkdirSync(join(consueloHome, 'node', 'security', 'generated'), {
       recursive: true,
     });
+    const watchdogState = join(consueloHome, 'node', 'runtime', 'watchdog');
+    mkdirSync(watchdogState, { recursive: true });
+    writeFileSync(join(watchdogState, 'public-route-failure-count'), '2\n');
     writeFileSync(heartbeatConfig, '{}');
     writeExecutable(join(fakeBin, 'lsof'), '#!/bin/bash\nexit 0\n');
     writeExecutable(join(fakeBin, 'curl'), '#!/bin/bash\nexit 0\n');
     writeExecutable(
       join(fakeBin, 'bun'),
-      '#!/bin/bash\nprintf "heartbeat\\n" >> "$WATCHDOG_EVENT_LOG"\nprintf \'{"nodeId":"node_home","routeReady":false}\\n\'\n',
+      '#!/bin/bash\nprintf "heartbeat\\n" >> "$WATCHDOG_EVENT_LOG"\nprintf \'{"nodeId":"node_home","routeReady":true,"mcpReady":false}\\n\'\n',
     );
     writeExecutable(
       join(consueloHome, 'bin', 'consuelo'),
       '#!/bin/bash\nprintf "restart %s\\n" "$*" >> "$WATCHDOG_EVENT_LOG"\n',
+    );
+
+    const result = run('bash', [resolve(osRoot, 'scripts/workspace-watchdog.sh')], {
+      ...process.env,
+      HOME: home,
+      CONSUELO_HOME: consueloHome,
+      WORKSPACE_WATCHDOG_PATH: `${fakeBin}:/usr/bin:/bin:/usr/sbin:/sbin`,
+      WORKSPACE_WATCHDOG_BUN_BIN: join(fakeBin, 'bun'),
+      WORKSPACE_WATCHDOG_DISABLE_EXTERNAL: '1',
+      WORKSPACE_WATCHDOG_PUBLIC_ROUTE_FAILURE_THRESHOLD: '3',
+      WORKSPACE_WATCHDOG_MIN_RESTART_GAP_SECONDS: '0',
+      WATCHDOG_EVENT_LOG: eventLog,
+    });
+
+    expect(result.status, `${result.stdout}\n${result.stderr}`).toBe(0);
+    expect(readFileSync(eventLog, 'utf8').trim().split('\n')).toEqual([
+      'heartbeat',
+      'restart restart --quiet',
+    ]);
+    expect(result.stdout).toContain('public connector route reconciliation failed');
+  });
+
+  it('should not restart when public heartbeat is rate-limited', () => {
+    const fixtureRoot = temporaryDirectory('consuelo-watchdog-public-route-429-');
+    const fakeBin = join(fixtureRoot, 'bin');
+    const home = join(fixtureRoot, 'home');
+    const consueloHome = join(home, '.consuelo');
+    const watchdogState = join(consueloHome, 'node', 'runtime', 'watchdog');
+    const eventLog = join(fixtureRoot, 'events.log');
+    const heartbeatConfig = join(
+      consueloHome,
+      'node',
+      'security',
+      'generated',
+      'workspace-node-heartbeat.json',
+    );
+    mkdirSync(fakeBin, { recursive: true });
+    mkdirSync(join(consueloHome, 'bin'), { recursive: true });
+    mkdirSync(join(consueloHome, 'node', 'security', 'generated'), {
+      recursive: true,
+    });
+    mkdirSync(watchdogState, { recursive: true });
+    writeFileSync(join(watchdogState, 'public-route-failure-count'), '2\n');
+    writeFileSync(heartbeatConfig, '{}');
+    writeExecutable(join(fakeBin, 'lsof'), '#!/bin/bash\nexit 0\n');
+    writeExecutable(join(fakeBin, 'curl'), '#!/bin/bash\nexit 0\n');
+    writeExecutable(
+      join(fakeBin, 'bun'),
+      '#!/bin/bash\nprintf "heartbeat\n" >> "$WATCHDOG_EVENT_LOG"\nprintf "workspace node heartbeat failed with HTTP 429\n" >&2\nexit 1\n',
+    );
+    writeExecutable(
+      join(consueloHome, 'bin', 'consuelo'),
+      '#!/bin/bash\nprintf "restart %s\n" "$*" >> "$WATCHDOG_EVENT_LOG"\n',
     );
 
     const result = run('bash', [resolve(osRoot, 'scripts/workspace-watchdog.sh')], {
@@ -502,8 +601,11 @@ describe('macOS runtime service reliability', () => {
     expect(result.status, `${result.stdout}\n${result.stderr}`).toBe(0);
     expect(readFileSync(eventLog, 'utf8').trim().split('\n')).toEqual([
       'heartbeat',
-      'restart restart --quiet',
     ]);
-    expect(result.stdout).toContain('public connector route reconciliation failed');
+    expect(result.stdout).toContain('public connector heartbeat rate-limited');
+    expect(result.stdout).not.toContain('restarting com.consuelo.system');
+    expect(
+      readFileSync(join(watchdogState, 'public-route-failure-count'), 'utf8'),
+    ).toBe('2\n');
   });
 });

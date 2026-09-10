@@ -108,6 +108,7 @@ describe('native Google OS device approval', () => {
 
     await expect(store.byUserCode(userCode)).resolves.toMatchObject({
       accountId: 'user_canonical_123',
+      accountEmail: 'ko@example.com',
       accountAuthMethod: 'google',
       canonicalUserId: 'user_canonical_123',
       canonicalWorkspaceId: 'workspace_canonical_123',
@@ -133,12 +134,20 @@ describe('native Google OS device approval', () => {
     const callback = await handler(
       new Request(
         `${ORIGIN}/login/google/callback?code=google-code&state=${encodeURIComponent(state)}`,
+        { headers: { 'cf-ray': 'ray-device-user-missing' } },
       ),
     );
     expect(callback.status).toBe(403);
-    await expect(callback.text()).resolves.toContain(
-      'Sign in to Consuelo first, then retry device approval',
+    expect(callback.headers.get('x-consuelo-error-code')).toBe(
+      'CANONICAL_USER_NOT_FOUND',
     );
+    expect(callback.headers.get('x-consuelo-correlation-id')).toBe(
+      'ray-device-user-missing',
+    );
+    const body = await callback.text();
+    expect(body).toContain('This Google account is not registered with Consuelo');
+    expect(body).toContain('CANONICAL_USER_NOT_FOUND');
+    expect(body).toContain('ray-device-user-missing');
 
     const grant = await store.byUserCode(userCode);
     expect(grant?.accountId).toBeUndefined();

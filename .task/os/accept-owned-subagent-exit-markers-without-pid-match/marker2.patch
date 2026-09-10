@@ -1,0 +1,10 @@
+*** Begin Patch
+*** Update File: packages/os/scripts/lib/subagent/lifecycle.ts
+@@
+ ): boolean {
+   if (marker.runId !== run.runId || marker.ownerToken !== run.ownerToken) return false;
+-  if (typeof run.pid !== 'number') return true;
+-  return marker.runnerPid === run.pid;
++  return true;
+ }
+*** End Patch

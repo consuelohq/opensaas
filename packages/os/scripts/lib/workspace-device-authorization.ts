@@ -25,6 +25,7 @@ export type WorkspaceDeviceAuthorizationPollResult =
   | {
       status: 'approved';
       userId?: string;
+      accountEmail?: string;
       workspaceId: string;
       workspaceSlug: string;
       workspaceHost: string;

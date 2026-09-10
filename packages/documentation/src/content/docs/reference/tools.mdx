@@ -2,7 +2,7 @@
 title: Tools
 description: Generated facade-tool metadata, typed invocation, and execution policy.
 status: preview
-verifiedAt: 2026-08-15
+verifiedAt: 2026-08-26
 evidence:
   - source: packages/os/manifests/schemas/tool-manifest.schema.json
     tests:
@@ -33,6 +33,12 @@ evidence:
       - packages/os/tests/daily-schedules.test.ts
       - packages/os/tools/daily-schedules/handler.test.ts
     runtime: A private Daily Schedules artifact was published, listed in the artifact archive, and checked at desktop and mobile sizes on 2026-08-14.
+  - source: packages/os/tools/release/schema.ts
+    tests:
+      - packages/os/tests/release-tool-surface.test.ts
+      - packages/os/tests/release-orchestrator.test.ts
+      - packages/os/tests/release-script-security.test.ts
+    runtime: The operator release workflow was validated against the signed runtime publication/promotion contracts, main-targeting review-PR guard, and exact-version lifecycle update path on 2026-08-26.
 ---
 
 A facade tool is a typed operation exposed through the workspace tool facade. The generated full manifest marks these entries with `kind: "facade-tool"`.
@@ -130,6 +136,22 @@ The call envelope also supports a top-level `workSession` for work-session node 
 ## Subagents
 
 `subagent` starts or attaches to durable Codex and Grok runs from an instruction handoff. The default tool deadline is 15 minutes so deep reviews can complete without disabling bounded execution. A `start` or bounded `wait` response for a run that is still `starting` or `running` reports `exitCode: 0`; use the returned run `status` to distinguish active work from terminal completion. Provider capability limits remain explicit—for example, Grok rejects unsupported `reasoningEffort` selection instead of silently ignoring it.
+
+## Operator releases
+
+`release` is the canonical Consuelo OS operator release tool. Pass the stream review PR whose base is `main`, not a task PR whose base is a stream. The tool rejects a non-`main` PR before waiting on its checks; for the correct review PR it verifies readiness, merges it, waits for the runtime publication associated with that exact merge SHA, promotes the exact immutable bundle through the requested release channel, and by default updates the current operator node to the exact released version and verifies the installed bundle. Use `releaseOnly: true` when the release should stop after channel promotion.
+
+```json
+{
+  "tool": "release",
+  "input": {
+    "pr": 2185,
+    "channel": "canary"
+  }
+}
+```
+
+The tool is intentionally discoverable for requests such as “release,” “deploy this PR,” “release to canary,” and “release and update.” It keeps GitHub environment approvals, release signing, immutable-bundle verification, and channel transition rules in the existing protected workflows; it never returns release credentials.
 
 ## Maintenance and observability examples
 

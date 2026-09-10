@@ -92,6 +92,38 @@ describe('Hono Artifacts routes', () => {
     await expect(artifact.text()).resolves.toContain('Hono Artifact');
   });
 
+  it('keeps nested artifact current content when a parent artifact is republished', async () => {
+    const detailPath = join(home, 'daily-detail.html');
+    const indexPath = join(home, 'daily-index.html');
+    writeFileSync(detailPath, '<!doctype html><title>Daily detail</title><main>Self-healing detail</main>');
+    writeFileSync(indexPath, '<!doctype html><title>Daily Schedules</title><main>Schedule index</main>');
+
+    publishArtifact({
+      home,
+      target: detailPath,
+      path: '/daily-schedules/2026-08-25/self-healing',
+      title: 'Self-healing detail',
+      category: 'daily-schedule:self-healing-workpad',
+      template: 'uncategorized',
+      now: '2026-08-26T01:00:00.000Z',
+    });
+    publishArtifact({
+      home,
+      target: indexPath,
+      path: '/daily-schedules',
+      title: 'Daily Schedules',
+      category: 'daily-schedules',
+      template: 'website',
+      now: '2026-08-26T01:01:00.000Z',
+    });
+
+    const detail = await app.fetch(new Request(
+      'http://127.0.0.1:46321/artifacts/daily-schedules/2026-08-25/self-healing',
+    ));
+    expect(detail.status).toBe(200);
+    await expect(detail.text()).resolves.toContain('Self-healing detail');
+  });
+
   it('returns the signed catalog, artifact, and version history', async () => {
     const catalogResponse = await app.fetch(signedGet(
       '/gateway/artifacts',

@@ -683,7 +683,9 @@ fi
 
 [ "$quiet" = "1" ] || log "running Consuelo OS smoke test on port $stage_port"
 background_service_failure_code="BACKGROUND_SERVICE_START_FAILED"
-WORKSPACE_DAEMON_PORT="$stage_port" bash "$script_dir/start-consuelo-daemon.sh" > /tmp/consuelo-os-stage.log 2>&1 &
+CONSUELO_OS_SINGLE_WORKER_SMOKE_TEST=1 \
+  WORKSPACE_DAEMON_PORT="$stage_port" \
+  bash "$script_dir/start-consuelo-daemon.sh" > /tmp/consuelo-os-stage.log 2>&1 &
 stage_pid=$!
 background_service_failure_code="BACKGROUND_SERVICE_HEALTHCHECK_FAILED"
 if ! wait_for_health "http://127.0.0.1:${stage_port}/health" 20 1; then

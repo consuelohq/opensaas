@@ -4,7 +4,11 @@ import { join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { readArtifactCatalog, resolveArtifactCurrentIndex } from '../scripts/lib/artifacts';
+import {
+  artifactsSiteIndexPath,
+  readArtifactCatalog,
+  resolveArtifactCurrentIndex,
+} from '../scripts/lib/artifacts';
 import {
   createDailyScheduleEntry,
   renderDailySchedulesIndex,
@@ -128,6 +132,18 @@ describe('Daily Schedules artifact model', () => {
     expect(indexHtml).toContain('data-schedule-kind="security-workpad"');
     expect(indexHtml).toContain('data-schedule-kind="self-healing-workpad"');
     expect(indexHtml).toContain('/artifacts/daily-schedules/2026-08-14/security-scan');
+
+    const detailHtml = readFileSync(
+      resolveArtifactCurrentIndex(tempHome, '/daily-schedules/2026-08-14/security-scan'),
+      'utf8',
+    );
+    expect(detailHtml).toContain('&quot;total&quot;: 0');
+
+    const artifactsIndexHtml = readFileSync(artifactsSiteIndexPath(tempHome), 'utf8');
+    expect(artifactsIndexHtml).toContain('href="/artifacts/daily-schedules"');
+    expect(artifactsIndexHtml).not.toContain(
+      'href="/artifacts/daily-schedules/2026-08-14/security-scan"',
+    );
 
     const updated = publishDailySchedule({
       home: tempHome,

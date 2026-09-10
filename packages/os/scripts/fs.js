@@ -268,6 +268,74 @@ async function cmdSearch(argv) {
 
 // ── list ──
 
+function isMissingExecutableError(error) {
+  return Boolean(error && typeof error === 'object' && error.code === 'ENOENT');
+}
+
+function compilePortableFindPattern(patternValue) {
+  if (!patternValue) return null;
+  if (patternValue.includes('*') || patternValue.includes('?')) {
+    const escaped = patternValue
+      .replace(/[.+^${}()|[\]\\]/g, '\\$&')
+      .replace(/\*/g, '.*')
+      .replace(/\?/g, '.');
+    return new RegExp(`^${escaped}$`, 'i');
+  }
+  return new RegExp(patternValue.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+}
+
+function portableListEntries(targetPath, options = {}) {
+  const root = path.resolve(targetPath);
+  const rootStats = fs.statSync(root);
+  if (!rootStats.isDirectory()) return [targetPath];
+
+  const includeHidden = options.hidden || options.showAll;
+  const maxDepth = Math.max(1, options.depth || (options.tree ? 3 : 1));
+  const pattern = compilePortableFindPattern(options.findPattern);
+  const extension = options.ext
+    ? String(options.ext).replace(/^\./, '').toLowerCase()
+    : null;
+  const output = [];
+
+  function visit(directory, relativeDirectory, currentDepth) {
+    const entries = fs.readdirSync(directory, { withFileTypes: true })
+      .filter((entry) => includeHidden || !entry.name.startsWith('.'))
+      .sort((left, right) => left.name.localeCompare(right.name));
+
+    for (const entry of entries) {
+      const relativePath = relativeDirectory
+        ? path.join(relativeDirectory, entry.name)
+        : entry.name;
+      const isDirectory = entry.isDirectory();
+      const isFile = entry.isFile();
+      const typeAllowed = (!options.dirsOnly && !options.filesOnly)
+        || (options.dirsOnly && isDirectory)
+        || (options.filesOnly && isFile);
+      const extensionAllowed = !extension
+        || (isFile && path.extname(entry.name).slice(1).toLowerCase() === extension);
+      const patternAllowed = !pattern || pattern.test(entry.name) || pattern.test(relativePath);
+
+      if (typeAllowed && extensionAllowed && patternAllowed) {
+        const suffix = isDirectory ? path.sep : '';
+        const prefix = options.tree ? '  '.repeat(currentDepth - 1) : '';
+        output.push(`${prefix}${relativePath}${suffix}`);
+      }
+
+      if (isDirectory && currentDepth < maxDepth && (options.tree || options.findPattern || extension)) {
+        visit(path.join(directory, entry.name), relativePath, currentDepth + 1);
+      }
+    }
+  }
+
+  visit(root, '', 1);
+  return output;
+}
+
+function renderPortableList(targetPath, options) {
+  const entries = portableListEntries(targetPath, options);
+  if (entries.length > 0) process.stdout.write(`${entries.join('\n')}\n`);
+}
+
 function cmdList(argv) {
   if (argv.includes('--help') || argv.length === 0) {
     out('usage: bun run fs -- list [path] [options]');
@@ -293,7 +361,7 @@ function cmdList(argv) {
   }
 
   const args = [];
-  let path = '.';
+  let targetPath = '.';
   let mode = 'eza'; // eza or fd
   let depth = null;
   let findPattern = null;
@@ -316,7 +384,7 @@ function cmdList(argv) {
     else if (a === '--hidden') hidden = true;
     else if (a === '--git') gitStatus = true;
     else if (a === '--all') showAll = true;
-    else if (!a.startsWith('-')) path = a;
+    else if (!a.startsWith('-')) targetPath = a;
   }
 
   if (mode === 'fd' || ext) {
@@ -324,7 +392,7 @@ function cmdList(argv) {
     const cmd = ['fd'];
     if (findPattern) cmd.push(findPattern);
     else cmd.push('.'); // match everything
-    cmd.push(path);
+    cmd.push(targetPath);
     if (depth) cmd.push('--max-depth', String(depth));
     else if (!depth) cmd.push('--max-depth', '3');
     if (dirsOnly) cmd.push('--type', 'd');
@@ -335,7 +403,17 @@ function cmdList(argv) {
       const result = execFileSync(cmd[0], cmd.slice(1), { encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 });
       process.stdout.write(result);
     } catch (e) {
-      if (e.stdout) process.stdout.write(e.stdout);
+      if (isMissingExecutableError(e)) {
+        renderPortableList(targetPath, {
+          depth,
+          findPattern,
+          dirsOnly,
+          filesOnly,
+          ext,
+          hidden,
+          showAll,
+        });
+      } else if (e.stdout) process.stdout.write(e.stdout);
       else err('fd failed: ' + (e.message || ''));
     }
   } else {
@@ -352,12 +430,21 @@ function cmdList(argv) {
     if (dirsOnly) cmd.push('--only-dirs');
     if (filesOnly) cmd.push('--only-files');
     cmd.push('--git-ignore');
-    cmd.push(path);
+    cmd.push(targetPath);
     try {
       const result = execFileSync(cmd[0], cmd.slice(1), { encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 });
       process.stdout.write(result);
     } catch (e) {
-      if (e.stdout) process.stdout.write(e.stdout);
+      if (isMissingExecutableError(e)) {
+        renderPortableList(targetPath, {
+          tree,
+          depth,
+          dirsOnly,
+          filesOnly,
+          hidden,
+          showAll,
+        });
+      } else if (e.stdout) process.stdout.write(e.stdout);
       else err('eza failed: ' + (e.message || ''));
     }
   }

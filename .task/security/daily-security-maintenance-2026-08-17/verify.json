@@ -1,0 +1,61 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/security/daily-security-maintenance-2026-08-17",
+  "base": "origin/main",
+  "headSha": "6c6fad47a855dd3fbfdf1fff6173a83fe0220574",
+  "changeHash": "95f44c26c69ae0efc8de3d60eda7634ff553912875f189b7e6b6e81e6d6007e9",
+  "changedFiles": [
+    "packages/consuelo-website/bun.lock",
+    "packages/consuelo-website/package-lock.json",
+    "packages/consuelo-website/package.json"
+  ],
+  "verifiedAt": "2026-08-17T13:30:00.767Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/security/daily-security-maintenance-2026-08-15/current.json",
+        ".task/security/daily-security-maintenance-2026-08-15/session.json",
+        ".task/security/daily-security-maintenance-2026-08-15/verify.json",
+        ".task/security/daily-security-maintenance-2026-08-15/workpad.md",
+        ".task/security/daily-security-maintenance-2026-08-17/current.json",
+        ".task/security/daily-security-maintenance-2026-08-17/evidence-log.json",
+        ".task/security/daily-security-maintenance-2026-08-17/read-log.json",
+        ".task/security/daily-security-maintenance-2026-08-17/session.json",
+        ".task/security/daily-security-maintenance-2026-08-17/verify.json",
+        ".task/security/daily-security-maintenance-2026-08-17/workpad.md",
+        ".task/tasks/security/daily-security-maintenance-2026-08-15.json",
+        ".task/tasks/security/daily-security-maintenance-2026-08-17.json",
+        "packages/consuelo-website/bun.lock",
+        "packages/consuelo-website/package-lock.json",
+        "packages/consuelo-website/package.json"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

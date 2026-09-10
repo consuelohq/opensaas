@@ -1,0 +1,7 @@
+{
+  "files": [
+    "packages/os/scripts/lib/release-promotion-dispatch-lock.ts",
+    "packages/os/scripts/release.ts"
+  ],
+  "updatedAt": "2026-08-26T18:36:41.566Z"
+}

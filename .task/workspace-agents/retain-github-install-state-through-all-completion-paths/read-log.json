@@ -1,0 +1,7 @@
+{
+  "files": [
+    "packages/os/cloudflare/os-device-authority/src/routes/github-source-control.ts",
+    "packages/os/tests/github-source-control-authority.test.ts"
+  ],
+  "updatedAt": "2026-08-29T06:06:03.242Z"
+}

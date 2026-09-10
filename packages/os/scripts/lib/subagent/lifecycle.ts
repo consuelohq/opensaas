@@ -56,7 +56,7 @@ export type DurableSubagentRun = {
 
 export type DurableSubagentParser = (stdout: string, stderr: string) => {
   completed: boolean;
-  failure?: string;
+  terminalError?: string;
   finalMessage?: string;
   summary?: unknown;
   usage?: Record<string, number>;
@@ -108,6 +108,10 @@ export type DurableSubagentReadResult =
 const RUN_ID_PATTERN = /^run_[a-f0-9]{24}$/;
 const MAX_PERSISTED_LOG_CHARS = 8_000;
 const STARTUP_GRACE_MS = 2_000;
+// On loaded hosts, the detached runner can exit before Node dispatches the
+// parent's exit fallback or the runner's atomic marker rename becomes visible.
+const EXIT_MARKER_HANDOFF_GRACE_MS = 2_000;
+const FALLBACK_EXIT_MARKER_ERROR = 'runner process exited without writing a durable exit marker';
 const RUNNER_PATH = fileURLToPath(new URL('./runner.ts', import.meta.url));
 
 export function deriveSubagentRunId(requestId: string | undefined, fallback: string): string {
@@ -233,6 +237,14 @@ export function startDurableSubagentRun(
       stdio: 'ignore',
     });
     child.on('error', () => undefined);
+    attachRunnerExitFallback(child, {
+      runId,
+      ownerToken,
+      exitMarkerPath: starting.exitMarkerPath || path.join(runDir, 'exit.json'),
+      ownerMarkerPath: starting.ownerMarkerPath || path.join(runDir, 'owner.json'),
+      stdoutLogPath,
+      runnerPid: child.pid,
+    });
     child.unref();
     const running: DurableSubagentRun = {
       ...starting,
@@ -402,7 +414,7 @@ export async function waitForDurableSubagentRun(
 ): Promise<{ run: DurableSubagentRun; timedOut: boolean }> {
   const deadline = Date.now() + Math.max(0, waitMs);
   let current = reconcileDurableSubagentRun(run, env, parser);
-  while (!isSettledForWait(current.status) && current.status !== 'cancelled' && Date.now() < deadline) {
+  while (!isDurableWaitSettled(current) && Date.now() < deadline) {
     try {
       await new Promise((resolve) => setTimeout(resolve, Math.min(50, Math.max(1, deadline - Date.now()))));
       const read = readDurableSubagentRun(current.runId, env);
@@ -423,7 +435,7 @@ export async function waitForDurableSubagentRun(
       return { run: unknown, timedOut: false };
     }
   }
-  return { run: current, timedOut: !isSettledForWait(current.status) && current.status !== 'cancelled' };
+  return { run: current, timedOut: !isDurableWaitSettled(current) };
 }
 
 export function cancelDurableSubagentRun(
@@ -537,8 +549,24 @@ function isTerminal(status: DurableSubagentStatus): boolean {
   return status === 'completed' || status === 'failed' || status === 'timed_out' || status === 'completion_unknown';
 }
 
-function isSettledForWait(status: DurableSubagentStatus): boolean {
-  return status === 'completed' || status === 'failed' || status === 'timed_out';
+function isDurableWaitSettled(run: DurableSubagentRun): boolean {
+  if (
+    run.status === 'completed' ||
+    run.status === 'failed' ||
+    run.status === 'timed_out' ||
+    run.status === 'cancelled'
+  ) {
+    return true;
+  }
+  if (run.status !== 'completion_unknown') return false;
+  if (run.pid) {
+    if (isProcessAlive(run.pid)) return false;
+    return Date.now() - run.updatedAt >= EXIT_MARKER_HANDOFF_GRACE_MS;
+  }
+  if (run.error === FALLBACK_EXIT_MARKER_ERROR) {
+    return Date.now() - run.updatedAt >= EXIT_MARKER_HANDOFF_GRACE_MS;
+  }
+  return Date.now() - run.startedAt >= STARTUP_GRACE_MS;
 }
 
 function isProcessAlive(pid: number): boolean {
@@ -608,6 +636,7 @@ function readExitMarker(run: DurableSubagentRun): {
   outcome: 'completed' | 'failed' | 'timed_out' | 'cancelled';
   exitCode?: number;
   error?: string;
+  endedAt?: number;
 } | null {
   if (!run.exitMarkerPath) return null;
   const value = readJsonObject(run.exitMarkerPath);
@@ -626,6 +655,7 @@ function readExitMarker(run: DurableSubagentRun): {
     outcome: 'completed' | 'failed' | 'timed_out' | 'cancelled';
     exitCode?: number;
     error?: string;
+    endedAt?: number;
   };
 }
 
@@ -636,11 +666,24 @@ function reconcileOwnedExitMarker(
   parsed: ReturnType<DurableSubagentParser>,
   now: number,
 ): DurableSubagentRun {
-  const providerFailure = exit.outcome === 'completed' ? parsed.failure : undefined;
+  if (exit.error === FALLBACK_EXIT_MARKER_ERROR) {
+    const fallbackMarkerAt = typeof exit.endedAt === 'number' ? exit.endedAt : run.updatedAt;
+    if (now - fallbackMarkerAt < EXIT_MARKER_HANDOFF_GRACE_MS) {
+      const deferred = withParsed(
+        run,
+        'completion_unknown',
+        parsed,
+        fallbackMarkerAt,
+        FALLBACK_EXIT_MARKER_ERROR,
+      );
+      return persistReconciledState(statePath, run, deferred, true);
+    }
+  }
+  const terminalError = exit.outcome === 'completed' ? parsed.terminalError : undefined;
   const updated: DurableSubagentRun = {
     ...run,
-    status: providerFailure ? 'failed' : exit.outcome,
-    ...(providerFailure
+    status: terminalError ? 'failed' : exit.outcome,
+    ...(terminalError
       ? { exitCode: 1 }
       : exit.exitCode !== undefined
         ? { exitCode: exit.exitCode }
@@ -651,8 +694,11 @@ function reconcileOwnedExitMarker(
     ...(parsed.usage ? { usage: parsed.usage } : {}),
     ...(typeof parsed.stdoutChars === 'number' ? { stdoutChars: parsed.stdoutChars } : {}),
     ...(typeof parsed.stderrChars === 'number' ? { stderrChars: parsed.stderrChars } : {}),
-    ...(providerFailure || exit.error ? { error: providerFailure || exit.error } : {}),
+    ...(terminalError ? { error: terminalError } : exit.error ? { error: exit.error } : {}),
   };
+  if (exit.outcome === 'completed' && !terminalError && !exit.error) {
+    delete updated.error;
+  }
   return persistReconciledState(statePath, run, updated, true);
 }
 
@@ -664,7 +710,8 @@ function isOwnedExitMarker(
     runnerPid: number;
   },
 ): boolean {
-  return marker.runId === run.runId && marker.ownerToken === run.ownerToken && marker.runnerPid === run.pid;
+  if (marker.runId !== run.runId || marker.ownerToken !== run.ownerToken) return false;
+  return true;
 }
 
 function readJsonObject(filePath: string): Record<string, unknown> | null {
@@ -675,6 +722,94 @@ function readJsonObject(filePath: string): Record<string, unknown> | null {
   } catch {
     return null;
   }
+}
+
+function attachRunnerExitFallback(
+  child: ReturnType<typeof spawn>,
+  input: {
+    runId: string;
+    ownerToken: string;
+    exitMarkerPath: string;
+    ownerMarkerPath: string;
+    stdoutLogPath: string;
+    runnerPid?: number;
+  },
+): void {
+  const writeFallback = (code: number | null, signal: NodeJS.Signals | null) => {
+    try {
+      writeFallbackExitMarkerIfMissing({
+        ...input,
+        code,
+        signal,
+      });
+    } catch {
+      // Parent fallback must not throw into the unref'd spawn handle.
+    }
+  };
+  if (child.exitCode !== null || child.signalCode) {
+    writeFallback(child.exitCode, child.signalCode);
+    return;
+  }
+  child.once('exit', writeFallback);
+}
+
+function inferFallbackOutcome(input: {
+  code: number | null;
+  signal: NodeJS.Signals | null;
+  stdoutLogPath: string;
+}): 'completed' | 'failed' {
+  if (input.signal) return 'failed';
+  return input.code === 0 ? 'completed' : 'failed';
+}
+
+function writeFallbackExitMarkerIfMissing(input: {
+  runId: string;
+  ownerToken: string;
+  exitMarkerPath: string;
+  ownerMarkerPath: string;
+  stdoutLogPath: string;
+  runnerPid?: number;
+  code: number | null;
+  signal: NodeJS.Signals | null;
+}): void {
+  if (fs.existsSync(input.exitMarkerPath)) return;
+  const owner = readJsonObject(input.ownerMarkerPath);
+  if (
+    owner
+    && owner.runId === input.runId
+    && owner.ownerToken === input.ownerToken
+    && typeof owner.providerPid === 'number'
+  ) {
+    const providerPid = owner.providerPid;
+    const provider = {
+      pid: providerPid,
+      kill(signal: NodeJS.Signals) {
+        try {
+          process.kill(providerPid, signal);
+          return true;
+        } catch {
+          return false;
+        }
+      },
+    };
+    signalProviderProcess(provider, 'SIGTERM');
+    scheduleProviderProcessEscalation(provider, 250);
+  }
+  const runnerPid = typeof input.runnerPid === 'number' ? input.runnerPid : 0;
+  const outcome = inferFallbackOutcome(input);
+  const exitCode = outcome === 'completed' ? 0 : (input.code ?? 1);
+  writeJsonFile(input.exitMarkerPath, {
+    runId: input.runId,
+    ownerToken: input.ownerToken,
+    runnerPid,
+    outcome,
+    exitCode,
+    ...(input.signal ? { signal: input.signal } : {}),
+    ...(outcome === 'failed'
+      ? { error: FALLBACK_EXIT_MARKER_ERROR }
+      : {}),
+    endedAt: Date.now(),
+  });
 }
 
 function writeJsonFile(filePath: string, value: unknown): void {
