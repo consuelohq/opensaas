@@ -1,0 +1,16 @@
+{
+  "area": "explore",
+  "stream": "stream/explore",
+  "taskBranch": "task/explore/resolve-pr-2060-minor-reviews",
+  "baseBranch": "stream/explore",
+  "sourceBranch": "stream/explore",
+  "startFrom": "stream",
+  "prNumber": 2281,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2281",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-explore-resolve-pr-2060-minor-reviews",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_e23c31946fc9",
+  "tmuxSession": "opensaas-explore-resolve-pr-2060-minor-reviews-e23c3194",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-explore-resolve-pr-2060-minor-reviews/.task/session.json",
+  "createdAt": "2026-08-29T04:33:50.000Z"
+}

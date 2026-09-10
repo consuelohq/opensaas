@@ -107,7 +107,7 @@ export function createCheckoutObservability(
               {
                 event: `consuelo_os_${event.name}`,
                 distinct_id: event.accountId ?? event.checkoutId ?? eventId,
-                properties: { ...projection, $insert_id: eventId },
+                properties: { ...projection, $insert_id: event.dedupeKey ?? eventId },
               },
             ],
           }),

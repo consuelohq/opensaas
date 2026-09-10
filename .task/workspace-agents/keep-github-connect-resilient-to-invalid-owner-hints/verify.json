@@ -1,0 +1,107 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace-agents/keep-github-connect-resilient-to-invalid-owner-hints",
+  "base": "origin/task/workspace-agents/keep-github-connect-resilient-to-invalid-owner-hints",
+  "headSha": "b06ec77c7238949ea71ff4ea4cd60767e75bd501",
+  "changeHash": "b1e0cd7171149bfff00f764ee4b9c7b6024835e000aded89fd0f58682e658386",
+  "changedFiles": [
+    "packages/os/scripts/server/routes/settings.ts",
+    "packages/os/tests/settings-hono-routes.test.ts"
+  ],
+  "verifiedAt": "2026-08-29T02:29:28.625Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/workspace-agents/keep-github-connect-resilient-to-invalid-owner-hints.json",
+        ".task/workspace-agents/keep-github-connect-resilient-to-invalid-owner-hints/evidence-log.json",
+        ".task/workspace-agents/keep-github-connect-resilient-to-invalid-owner-hints/read-log.json",
+        ".task/workspace-agents/keep-github-connect-resilient-to-invalid-owner-hints/workpad.md",
+        "packages/os/scripts/server/routes/settings.ts",
+        "packages/os/tests/settings-hono-routes.test.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "os-github-source-control",
+          "critical": true,
+          "exclusive": true,
+          "reason": "GitHub App source-control onboarding, installation handoff, workspace repository materialization, and Diffs credential brokering must prove their focused security and UX contracts without selecting the historically red unrelated OS package suite.",
+          "matchedFiles": [
+            "packages/os/scripts/server/routes/settings.ts",
+            "packages/os/tests/settings-hono-routes.test.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "OS GitHub source-control contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/github-source-control-authority.test.ts",
+            "tests/source-control-config.test.ts",
+            "tests/settings-hono-routes.test.ts",
+            "tests/settings-site.test.ts",
+            "tests/diffs-hono-routes.test.ts",
+            "tests/settings-sites-gateway-endpoints.test.ts",
+            "tests/os-device-authority-worker.test.ts"
+          ],
+          "ruleId": "os-github-source-control",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "OS GitHub source-control contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/github-source-control-authority.test.ts",
+            "tests/source-control-config.test.ts",
+            "tests/settings-hono-routes.test.ts",
+            "tests/settings-site.test.ts",
+            "tests/diffs-hono-routes.test.ts",
+            "tests/settings-sites-gateway-endpoints.test.ts",
+            "tests/os-device-authority-worker.test.ts"
+          ],
+          "ruleId": "os-github-source-control",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 2931,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-keep-github-connect-resilient-to-invalid-owner-hints/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/source-control-config.test.ts \u001b[2m(\u001b[22m\u001b[2m7 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 79\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/settings-site.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 359\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/settings-sites-gateway-endpoints.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 378\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-worker.test.ts \u001b[2m(\u001b[22m\u001b[2m33 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 197\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/github-source-control-authority.test.ts \u001b[2m(\u001b[22m\u001b[2m6 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 368\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/diffs-hono-routes.test.ts \u001b[2m(\u001b[22m\u001b[2m10 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 153\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/settings-hono-routes.test.ts \u001b[2m(\u001b[22m\u001b[2m14 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 549\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m7 passed\u001b[39m\u001b[22m\u001b[90m (7)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m86 passed\u001b[39m\u001b[22m\u001b[90m (86)\u001b[39m\n\u001b[2m   Start at \u001b[22m 22:29:25\n\u001b[2m   Duration \u001b[22m 2.53s\u001b[2m (transform 6.04s, setup 155ms, import 8.88s, tests 2.08s, environment 1ms)\u001b[22m\n\n$ vitest run tests/github-source-control-authority.test.ts tests/source-control-config.test.ts tests/settings-hono-routes.test.ts tests/settings-site.test.ts tests/diffs-hono-routes.test.ts tests/settings-sites-gateway-endpoints.test.ts tests/os-device-authority-worker.test.ts\n(node:54350) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n(node:54345) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

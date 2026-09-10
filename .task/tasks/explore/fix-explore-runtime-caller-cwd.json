@@ -1,0 +1,16 @@
+{
+  "area": "explore",
+  "stream": "stream/explore",
+  "taskBranch": "task/explore/fix-explore-runtime-caller-cwd",
+  "baseBranch": "stream/explore",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2301,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2301",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-explore-fix-explore-runtime-caller-cwd",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_f5aca4a7349b",
+  "tmuxSession": "opensaas-explore-fix-explore-runtime-caller-cwd-f5aca4a7",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-explore-fix-explore-runtime-caller-cwd/.task/session.json",
+  "createdAt": "2026-08-29T07:52:55.719Z"
+}

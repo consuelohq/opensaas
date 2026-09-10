@@ -1,0 +1,11 @@
+{
+  "files": [
+    "packages/os/skills/task/SKILL.md",
+    "packages/os/tests/fixtures/tool-package-baseline.json",
+    "packages/os/tools/decision-engine/handler.ts",
+    "packages/os/tools/decision-engine/manifest.ts",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "updatedAt": "2026-08-15T20:14:54.635Z"
+}

@@ -1,0 +1,20 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/repair-tracing-site-refresh-and-live-history",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2245,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2245",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2245",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2245/repair-tracing-site-refresh-and-live-history",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2245",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2245/repair-tracing-site-refresh-and-live-history",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-repair-tracing-site-refresh-and-live-history",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_968a51626dc9",
+  "tmuxSession": "opensaas-os-repair-tracing-site-refresh-and-live-history-968a5162",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-repair-tracing-site-refresh-and-live-history/.task/os/repair-tracing-site-refresh-and-live-history/session.json",
+  "createdAt": "2026-08-28T22:41:32.305Z"
+}

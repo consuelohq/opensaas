@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -13,7 +13,10 @@ import {
 } from '../scripts/lib/workspace-cloudflare-d1-route-registry';
 import { createWorkspaceCloudflareEdgeRouter } from '../scripts/lib/workspace-cloudflare-edge-router';
 import { deriveWorkspaceEdgeNodeSecret } from '../scripts/lib/workspace-edge-node-auth';
+import { sealCredential } from '../scripts/lib/node-credential-sealing';
+import { ensureNodeEncryptionKey } from '../scripts/lib/node-encryption-key-file';
 import { createGatewaySecurityConfig } from '../scripts/lib/security-gateway';
+import { ensureTraceDatabaseSchema } from '../scripts/lib/trace-database-schema';
 import { createLocalOsApp } from '../scripts/server/app';
 
 const workspaceId = 'workspace_edge_e2e';
@@ -69,6 +72,7 @@ function workspaceRecord(now: number): WorkspaceRouteD1RecordInput {
       gatewayRoute('/gateway/traces/events', 'trace-sites-live-endpoints', '/gateway/traces/*', '/observability/*'),
       gatewayRoute('/gateway/traces', 'trace-sites-read-layer', '/gateway/traces/*', '/observability/*'),
       gatewayRoute('/gateway/environments', 'environment-sites-read-endpoints', '/gateway/environments/*', '/environments/*'),
+      gatewayRoute('/gateway/secrets/install', 'secrets-sites-write-endpoints', '/gateway/secrets/*', '/secrets/*'),
       gatewayRoute('/gateway/secrets', 'secrets-sites-read-endpoints', '/gateway/secrets/*', '/secrets/*'),
     ],
   };
@@ -78,13 +82,15 @@ afterEach(() => {
   delete process.env.CONSUELO_HOME;
   delete process.env.CONSUELO_OS_HOME;
   delete process.env.CONSUELO_OS_AUTH_CONFIG;
+  delete process.env.CONSUELO_TRACE_DB;
+  delete process.env.TRACE_DB;
   for (const home of temporaryHomes.splice(0)) {
     rmSync(home, { recursive: true, force: true });
   }
 });
 
 describe('authenticated workspace edge to local OS node', () => {
-  it('carries environments, secrets metadata, and traces through the full signed bridge', async () => {
+  it('carries environments, sealed secret writes, and traces through the full signed bridge', async () => {
     const now = Date.now();
     const home = mkdtempSync(join(tmpdir(), 'consuelo-gateway-node-e2e-'));
     temporaryHomes.push(home);
@@ -108,6 +114,16 @@ describe('authenticated workspace edge to local OS node', () => {
     process.env.CONSUELO_HOME = home;
     process.env.CONSUELO_OS_HOME = home;
     process.env.CONSUELO_OS_AUTH_CONFIG = security.generatedAuthPath;
+    const traceDbPath = join(home, 'node', 'db', 'traces.sqlite');
+    mkdirSync(join(home, 'node', 'db'), { recursive: true });
+    process.env.CONSUELO_TRACE_DB = traceDbPath;
+    delete process.env.TRACE_DB;
+    ensureTraceDatabaseSchema(traceDbPath);
+    const nodeEncryption = ensureNodeEncryptionKey({
+      nodeHome: join(home, 'node'),
+      workspaceId,
+      nodeId,
+    });
 
     const localApp = createLocalOsApp();
     const db = createInMemoryWorkspaceRouteD1();
@@ -166,11 +182,46 @@ describe('authenticated workspace edge to local OS node', () => {
     expect(secrets.status).toBe(200);
     await expect(secrets.json()).resolves.toEqual({ ok: true, bindings: [] });
 
+    const secretSetup = await browserRequest('/gateway/secrets/setup');
+    expect(secretSetup.status).toBe(200);
+    await expect(secretSetup.clone().json()).resolves.toMatchObject({
+      ok: true,
+      workspaceId,
+      nodeId,
+      algorithm: 'X25519',
+      publicKeyJwk: nodeEncryption.publicKeyJwk,
+    });
+
+    const bindingId = 'EDGE_E2E_SECRET';
+    const envelope = sealCredential({
+      recipientPublicKeyJwk: nodeEncryption.publicKeyJwk,
+      recipient: { workspaceId, nodeId, bindingId },
+      plaintext: 'edge-e2e-secret-value',
+    });
+    const installSecret = await browserRequest('/gateway/secrets/install', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ bindingId, envelope }),
+    });
+    expect(installSecret.status).toBe(200);
+    await expect(installSecret.json()).resolves.toMatchObject({
+      ok: true,
+      binding: { workspaceId, nodeId, bindingId, status: 'set' },
+    });
+
+    const secretsAfterInstall = await browserRequest('/gateway/secrets/bindings');
+    expect(secretsAfterInstall.status).toBe(200);
+    await expect(secretsAfterInstall.json()).resolves.toMatchObject({
+      ok: true,
+      bindings: [{ workspaceId, nodeId, bindingId, status: 'set' }],
+    });
+
     const traces = await browserRequest('/gateway/traces/recent?cursor=latest');
-    expect(traces.status).toBe(200);
+    const tracesBody = await traces.clone().json().catch(() => ({ parseError: true }));
+    expect(traces.status, JSON.stringify(tracesBody)).toBe(200);
     await expect(traces.json()).resolves.toMatchObject({ ok: true });
 
-    expect(upstreamRequests).toHaveLength(4);
+    expect(upstreamRequests).toHaveLength(7);
     for (const request of upstreamRequests) {
       expect(request.url).toMatch(new RegExp('^' + connectorOrigin.replace(/[.*+?^$\{\}()|[\]\\]/g, '\$&') + '/gateway/'));
       expect(request.headers.get('x-consuelo-workspace-id')).toBe(workspaceId);

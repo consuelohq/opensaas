@@ -1,0 +1,68 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/security/daily-security-maintenance-2026-08-18",
+  "base": "origin/main",
+  "headSha": "ca76ac23ceacaa7a67b94926d0643a67e01b5dc7",
+  "changeHash": "927adf8d809e75d97d37d10c4699c044a1fb902d915df55d6c6f70d11d63f90b",
+  "changedFiles": [
+    "packages/consuelo-website/bun.lock",
+    "packages/consuelo-website/package-lock.json",
+    "packages/consuelo-website/package.json"
+  ],
+  "verifiedAt": "2026-08-18T13:53:28.499Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/security/daily-security-maintenance-2026-08-15/current.json",
+        ".task/security/daily-security-maintenance-2026-08-15/session.json",
+        ".task/security/daily-security-maintenance-2026-08-15/verify.json",
+        ".task/security/daily-security-maintenance-2026-08-15/workpad.md",
+        ".task/security/daily-security-maintenance-2026-08-17/current.json",
+        ".task/security/daily-security-maintenance-2026-08-17/evidence-log.json",
+        ".task/security/daily-security-maintenance-2026-08-17/read-log.json",
+        ".task/security/daily-security-maintenance-2026-08-17/session.json",
+        ".task/security/daily-security-maintenance-2026-08-17/verify.json",
+        ".task/security/daily-security-maintenance-2026-08-17/workpad.md",
+        ".task/security/daily-security-maintenance-2026-08-18/current.json",
+        ".task/security/daily-security-maintenance-2026-08-18/evidence-log.json",
+        ".task/security/daily-security-maintenance-2026-08-18/read-log.json",
+        ".task/security/daily-security-maintenance-2026-08-18/session.json",
+        ".task/security/daily-security-maintenance-2026-08-18/verify.json",
+        ".task/security/daily-security-maintenance-2026-08-18/workpad.md",
+        ".task/tasks/security/daily-security-maintenance-2026-08-15.json",
+        ".task/tasks/security/daily-security-maintenance-2026-08-17.json",
+        ".task/tasks/security/daily-security-maintenance-2026-08-18.json",
+        "packages/consuelo-website/bun.lock",
+        "packages/consuelo-website/package-lock.json",
+        "packages/consuelo-website/package.json"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

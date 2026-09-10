@@ -1,0 +1,16 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/keep-github-connect-cta-until-source-control-is-ready",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 2292,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2292",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-keep-github-connect-cta-until-source-control-is-ready",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_eb8e505e3eb4",
+  "tmuxSession": "opensaas-workspace-agents-keep-github-connect-cta-until-source-control-is--eb8e505e",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-keep-github-connect-cta-until-source-control-is-ready/.task/session.json",
+  "createdAt": "2026-08-29T06:40:39.397Z"
+}

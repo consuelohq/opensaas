@@ -1,0 +1,20 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-pr-2310-current-head-timeout-and-security-scope-reviews",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2331,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2331",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2331",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2331/fix-pr-2310-current-head-timeout-and-security-scope-reviews",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2331",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2331/fix-pr-2310-current-head-timeout-and-security-scope-reviews",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-pr-2310-current-head-timeout-and-security-scope-reviews",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_9b775b72cf35",
+  "tmuxSession": "opensaas-os-fix-pr-2310-current-head-timeout-and-security-sc-9b775b72",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-pr-2310-current-head-timeout-and-security-scope-reviews/.task/os/fix-pr-2310-current-head-timeout-and-security-scope-reviews/session.json",
+  "createdAt": "2026-08-31T19:53:09.056Z"
+}

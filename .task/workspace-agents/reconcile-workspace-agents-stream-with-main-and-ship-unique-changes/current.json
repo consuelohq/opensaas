@@ -1,0 +1,20 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/reconcile-workspace-agents-stream-with-main-and-ship-unique-changes",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 2186,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2186",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2186",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2186/reconcile-workspace-agents-stream-with-main-and-ship-unique-changes",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2186",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2186/reconcile-workspace-agents-stream-with-main-and-ship-unique-changes",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-reconcile-workspace-agents-stream-with-main-and-ship-unique-changes",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_06d6ca957d43",
+  "tmuxSession": "opensaas-workspace-agents-reconcile-workspace-agents-stream-with-main-and--06d6ca95",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-reconcile-workspace-agents-stream-with-main-and-ship-unique-changes/.task/workspace-agents/reconcile-workspace-agents-stream-with-main-and-ship-unique-changes/session.json",
+  "createdAt": "2026-08-26T02:20:55.041Z"
+}

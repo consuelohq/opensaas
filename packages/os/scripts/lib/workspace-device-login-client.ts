@@ -331,6 +331,7 @@ export async function requestWorkspaceDeviceCode(
 
 function approvedDeviceGrantFromJson(json: Record<string, unknown>): WorkspaceDeviceAuthorizationPollResult | undefined {
   const userId = stringField(json, 'user_id', 'userId');
+  const accountEmail = stringField(json, 'account_email', 'accountEmail');
   const workspaceId = stringField(json, 'workspace_id', 'workspaceId');
   const workspaceSlug = stringField(json, 'workspace_slug', 'workspaceSlug');
   const workspaceHost = stringField(json, 'workspace_host', 'workspaceHost');
@@ -351,6 +352,7 @@ function approvedDeviceGrantFromJson(json: Record<string, unknown>): WorkspaceDe
   return {
     status: 'approved',
     ...(userId && !userId.startsWith('google:') ? { userId } : {}),
+    ...(accountEmail ? { accountEmail } : {}),
     workspaceId,
     workspaceSlug,
     workspaceHost,

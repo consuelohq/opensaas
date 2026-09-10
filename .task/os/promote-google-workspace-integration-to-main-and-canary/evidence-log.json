@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/promote-google-workspace-integration-to-main-and-canary",
+  "events": [
+    {
+      "id": "ecd106f9-6e30-48cb-85f2-e69959f3bbfe",
+      "occurred_at": "2026-08-26T06:01:25.757Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tools/google/manifest.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/promote-google-workspace-integration-to-main-and-canary",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/promote-google-workspace-integration-to-main-and-canary"
+      }
+    },
+    {
+      "id": "f482df8a-7fed-492e-ab21-ad29c9562201",
+      "occurred_at": "2026-08-26T06:01:44.740Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tools/google/schema.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/promote-google-workspace-integration-to-main-and-canary",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/promote-google-workspace-integration-to-main-and-canary"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-26T06:01:44.820Z"
+}

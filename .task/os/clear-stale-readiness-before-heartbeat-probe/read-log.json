@@ -1,0 +1,7 @@
+{
+  "files": [
+    "packages/os/scripts/workspace-node-heartbeat.ts",
+    "packages/os/tests/workspace-node-heartbeat-script.test.ts"
+  ],
+  "updatedAt": "2026-08-29T04:36:36.050Z"
+}

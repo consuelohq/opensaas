@@ -12,6 +12,7 @@ import {
   upsertWorkspaceHostnameInD1,
 } from '../scripts/lib/workspace-cloudflare-d1-route-registry';
 import { hash } from '../cloudflare/os-device-authority/src/utils';
+import { createMemoryInstallControlPlaneRepository } from '../scripts/lib/install-control-plane';
 
 const nowMs = Date.parse('2026-08-12T12:00:00.000Z');
 const workspaceHost = 'nodes-ui.consuelohq.com';
@@ -21,7 +22,28 @@ const sessionToken = 'workspace-session-nodes-ui';
 const csrfToken = 'csrf-nodes-ui';
 const internalSecret = 'workspace-edge-node-ui-secret';
 
-const node = (input: { nodeId: string; name: string; role: 'home' | 'member' }): WorkspaceNode => ({
+
+async function stripeSignature(secret: string, timestamp: number, payload: string): Promise<string> {
+  const key = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign'],
+  );
+  const signature = new Uint8Array(
+    await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(`${timestamp}.${payload}`)),
+  );
+  const hex = Array.from(signature, (byte) => byte.toString(16).padStart(2, '0')).join('');
+  return `t=${timestamp},v1=${hex}`;
+}
+
+const node = (input: {
+  nodeId: string;
+  name: string;
+  role: 'home' | 'member';
+  mcpReady?: boolean;
+}): WorkspaceNode => ({
   accountId,
   workspaceId,
   workspaceSlug: 'nodes-ui',
@@ -33,6 +55,10 @@ const node = (input: { nodeId: string; name: string; role: 'home' | 'member' }):
   platform: input.role === 'home' ? 'darwin' : 'linux',
   architecture: input.role === 'home' ? 'arm64' : 'x64',
   channel: 'stable',
+  osVersion: '0.1.85',
+  bundleId: `bundle-${input.nodeId}`,
+  mcpProtocolVersion: '2026-07-28',
+  mcpReady: input.mcpReady ?? true,
   connectorId: input.nodeId === 'node-home' ? 'connector_home' : 'connector_cloud',
   connectorStatus: 'connected',
   capabilities: ['mcp', 'tools'],
@@ -71,16 +97,31 @@ const pricingPolicy: ManagedCloudPricingPolicy = {
   platformOperationsReserveMicros: 5_000_000,
 };
 
-async function fixture(input: { pricing?: boolean } = {}) {
+async function fixture(input: { pricing?: boolean; cloudReady?: boolean; billing?: boolean } = {}) {
   const store = createMemoryDeviceGrantStore();
+  const installControlPlaneRepository = createMemoryInstallControlPlaneRepository();
+  const stripeRequests: Array<{ url: string; body: URLSearchParams }> = [];
   const routeDb = createInMemoryWorkspaceRouteD1();
   await migrateWorkspaceRouteD1(routeDb);
   await store.putAccountWorkspace({
     accountId, workspaceId, workspaceSlug: 'nodes-ui', workspaceHost,
     homeNodeId: 'node-home', defaultNodeId: 'node-home', updatedAt: nowMs,
   });
+  await installControlPlaneRepository.upsertUser({
+    userId: accountId,
+    email: 'ko@example.com',
+    workspaceIds: [workspaceId],
+    workspaceMembershipVerifiedAt: new Date(nowMs).toISOString(),
+    createdAt: new Date(nowMs - 60_000).toISOString(),
+    updatedAt: new Date(nowMs).toISOString(),
+  });
   await store.putWorkspaceNode(node({ nodeId: 'node-home', name: 'Ko Mac', role: 'home' }));
-  await store.putWorkspaceNode(node({ nodeId: 'node-cloud', name: 'Cloud', role: 'member' }));
+  await store.putWorkspaceNode(node({
+    nodeId: 'node-cloud',
+    name: 'Cloud',
+    role: 'member',
+    mcpReady: input.cloudReady ?? true,
+  }));
   await store.putWorkspaceBrowserSession({
     tokenHash: await hash(sessionToken), accountId, workspaceId, workspaceHost, csrfToken,
     issuedAt: nowMs, expiresAt: nowMs + 60_000,
@@ -98,7 +139,24 @@ async function fixture(input: { pricing?: boolean } = {}) {
   const authority = createOsDeviceAuthorityHandler({
     store, origin: 'https://os.consuelohq.com', now: () => nowMs,
     workspaceRouteRegistry: routeDb, workspaceEdgeInternalSigningSecret: internalSecret,
+    installControlPlaneRepository,
     ...(input.pricing ? { managedCloudPricing: { policy: pricingPolicy, rateCards: { 'us-east1': rateCard } } } : {}),
+    ...(input.billing ? {
+      stripeSecretKey: 'sk_test_nodes_checkout',
+      stripeWebhookSecret: 'whsec_nodes_checkout',
+      fetchImpl: async (requestInput: RequestInfo | URL, init?: RequestInit) => {
+        const url = typeof requestInput === 'string'
+          ? requestInput
+          : requestInput instanceof URL
+            ? requestInput.toString()
+            : requestInput.url;
+        stripeRequests.push({ url, body: new URLSearchParams(String(init?.body ?? '')) });
+        return Response.json({
+          id: 'cs_test_nodes_checkout_123',
+          url: 'https://checkout.stripe.test/c/pay/cs_test_nodes_checkout_123',
+        });
+      },
+    } : {}),
   });
   const namespace = { idFromName: (name: string) => name, get: () => ({ fetch: authority }) };
   const edge = createWorkspaceEdgeHandler({
@@ -106,7 +164,7 @@ async function fixture(input: { pricing?: boolean } = {}) {
     WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET: internalSecret, OS_DEVICE_AUTHORITY: namespace,
   }, { now: () => nowMs });
   const cookie = `__Host-consuelo_os_session=${encodeURIComponent(sessionToken)}; __Host-consuelo_os_csrf=${encodeURIComponent(csrfToken)}`;
-  return { store, routeDb, edge, cookie };
+  return { store, routeDb, edge, cookie, stripeRequests, authority };
 }
 
 describe('launcher Nodes workspace-session control plane', () => {
@@ -119,6 +177,9 @@ describe('launcher Nodes workspace-session control plane', () => {
     const serialized = JSON.stringify(payload);
     expect(serialized).toContain('Ko Mac');
     expect(serialized).toContain('Cloud');
+    expect(serialized).toContain('0.1.85');
+    expect(serialized).toContain('"readiness":"ready"');
+    expect(serialized).toContain('"compatibility":"compatible"');
     expect(serialized).not.toMatch(/devicePublicKey|thumbprint|secret|token|machineType|providerCost/i);
   });
 
@@ -146,6 +207,28 @@ describe('launcher Nodes workspace-session control plane', () => {
     expect(resolved).toMatchObject({ allowed: true, nodeId: 'node-cloud' });
   });
 
+  it('refuses to make a present but execution-not-ready node the workspace default', async () => {
+    const { edge, cookie, store } = await fixture({ cloudReady: false });
+    const response = await edge(new Request(`https://${workspaceHost}/gateway/nodes/default`, {
+      method: 'POST',
+      headers: {
+        cookie,
+        'content-type': 'application/json',
+        origin: `https://${workspaceHost}`,
+        'x-consuelo-csrf-token': csrfToken,
+      },
+      body: JSON.stringify({ nodeId: 'node-cloud' }),
+    }));
+
+    expect(response.status).toBe(409);
+    await expect(response.json()).resolves.toMatchObject({
+      error: { code: 'WORKSPACE_NODE_NOT_READY' },
+    });
+    await expect(store.byAccountWorkspace(accountId)).resolves.toMatchObject({
+      defaultNodeId: 'node-home',
+    });
+  });
+
   it('returns public cloud plan/region quotes without provider or margin internals', async () => {
     const { edge, cookie } = await fixture({ pricing: true });
     const response = await edge(new Request(`https://${workspaceHost}/gateway/nodes/pricing?region=us-east1`, { headers: { cookie } }));
@@ -162,9 +245,9 @@ describe('launcher Nodes workspace-session control plane', () => {
     expect(serialized).not.toMatch(/machineType|providerMachine|providerCost|landedCost|grossMargin|contingency|e2-standard|e2-medium/i);
   });
 
-  it('creates an idempotent managed-cloud provisioning job without exposing provider internals', async () => {
-    const { edge, cookie } = await fixture({ pricing: true });
-    const request = () => new Request(`https://${workspaceHost}/gateway/nodes/provision`, {
+  it('opens Stripe checkout without queueing a cloud node before payment', async () => {
+    const { edge, cookie, store, stripeRequests } = await fixture({ pricing: true, billing: true });
+    const response = await edge(new Request(`https://${workspaceHost}/gateway/nodes/provision`, {
       method: 'POST',
       headers: {
         cookie,
@@ -178,25 +261,164 @@ describe('launcher Nodes workspace-session control plane', () => {
         pricingVersion: pricingPolicy.pricingVersion,
         idempotencyKey: 'create-cloud-standard-1',
       }),
+    }));
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      checkout: {
+        sessionId: 'cs_test_nodes_checkout_123',
+        url: 'https://checkout.stripe.test/c/pay/cs_test_nodes_checkout_123',
+        planId: 'standard',
+        region: 'us-east1',
+      },
     });
-    const first = await edge(request());
-    expect(first.status).toBe(202);
-    const firstPayload = await first.json() as { job: { jobId: string; status: string; planId: string; region: string; monthlyPriceCents: number } };
-    expect(firstPayload.job).toMatchObject({ status: 'requested', planId: 'standard', region: 'us-east1' });
-    expect(firstPayload.job.monthlyPriceCents).toBeGreaterThan(0);
-    expect(JSON.stringify(firstPayload)).not.toMatch(/machineType|providerMachine|providerCost|landedCost|grossMargin|enrollment|token|secret/i);
-
-    const duplicate = await edge(request());
-    expect(duplicate.status).toBe(200);
-    const duplicatePayload = await duplicate.json() as typeof firstPayload;
-    expect(duplicatePayload.job.jobId).toBe(firstPayload.job.jobId);
-
-    const status = await edge(new Request(`https://${workspaceHost}/gateway/nodes/provisioning?job_id=${encodeURIComponent(firstPayload.job.jobId)}`, { headers: { cookie } }));
-    expect(status.status).toBe(200);
-    await expect(status.json()).resolves.toMatchObject({ job: { jobId: firstPayload.job.jobId, status: 'requested' } });
+    expect(stripeRequests).toHaveLength(1);
+    expect(stripeRequests[0]?.url).toBe('https://api.stripe.com/v1/checkout/sessions');
+    expect(stripeRequests[0]?.body.get('mode')).toBe('subscription');
+    expect(stripeRequests[0]?.body.get('customer_email')).toBe('ko@example.com');
+    expect(stripeRequests[0]?.body.get('success_url')).toBe(
+      `https://${workspaceHost}/nodes?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
+    );
+    expect(stripeRequests[0]?.body.get('cancel_url')).toBe(
+      `https://${workspaceHost}/nodes?checkout=cancelled`,
+    );
+    await expect(store.claimNextManagedCloudProvisioningJob({
+      leaseId: 'lease_should_stay_empty',
+      nowMs,
+      leaseExpiresAt: nowMs + 60_000,
+      enrollmentNonce: 'enrollment_should_stay_empty',
+      enrollmentExpiresAt: nowMs + 60_000,
+    })).resolves.toEqual({ status: 'empty' });
   });
 
-  it('requires same-origin CSRF and a current pricing revision to provision', async () => {
+  it('queues the purchased node only after a verified Stripe payment and preserves the existing default', async () => {
+    const { edge, cookie, store, authority } = await fixture({ pricing: true, billing: true });
+    const checkoutResponse = await edge(new Request(`https://${workspaceHost}/gateway/nodes/provision`, {
+      method: 'POST',
+      headers: {
+        cookie,
+        'content-type': 'application/json',
+        origin: `https://${workspaceHost}`,
+        'x-consuelo-csrf-token': csrfToken,
+      },
+      body: JSON.stringify({
+        planId: 'standard',
+        region: 'us-east1',
+        pricingVersion: pricingPolicy.pricingVersion,
+        idempotencyKey: 'paid-cloud-standard-1',
+      }),
+    }));
+    expect(checkoutResponse.status).toBe(200);
+    const checkout = await store.byAccountManagedCloudCheckout(accountId);
+    expect(checkout).toMatchObject({ status: 'pending', planId: 'standard', workspaceId });
+    expect(checkout?.provisioningJobId).toBeUndefined();
+    await expect(store.byAccountWorkspace(accountId)).resolves.toMatchObject({
+      homeNodeId: 'node-home',
+      defaultNodeId: 'node-home',
+    });
+
+    const rawBody = JSON.stringify({
+      id: 'evt_nodes_checkout_paid_123',
+      type: 'checkout.session.completed',
+      data: {
+        object: {
+          id: checkout?.stripeCheckoutSessionId,
+          mode: 'subscription',
+          payment_status: 'paid',
+          amount_total: checkout?.monthlyPriceCents,
+          currency: 'usd',
+          client_reference_id: checkout?.checkoutId,
+          customer: 'cus_nodes_checkout_123',
+          subscription: 'sub_nodes_checkout_123',
+          metadata: {
+            checkout_id: checkout?.checkoutId,
+            account_id: accountId,
+            workspace_id: workspaceId,
+            plan_id: 'standard',
+            pricing_version: pricingPolicy.pricingVersion,
+          },
+        },
+      },
+    });
+    const timestamp = Math.floor(nowMs / 1000);
+    const signature = await stripeSignature('whsec_nodes_checkout', timestamp, rawBody);
+    const webhook = await authority(new Request('https://os.consuelohq.com/webhooks/stripe', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'stripe-signature': signature,
+      },
+      body: rawBody,
+    }));
+    expect(webhook.status).toBe(200);
+
+    const paid = await store.byAccountManagedCloudCheckout(accountId);
+    expect(paid).toMatchObject({ status: 'paid', planId: 'standard' });
+    expect(paid?.provisioningJobId).toBeTruthy();
+    await expect(store.byAccountWorkspace(accountId)).resolves.toMatchObject({
+      homeNodeId: 'node-home',
+      defaultNodeId: 'node-home',
+    });
+    const claimed = await store.claimNextManagedCloudProvisioningJob({
+      leaseId: 'lease_after_payment',
+      nowMs: nowMs + 1,
+      leaseExpiresAt: nowMs + 60_001,
+      enrollmentNonce: 'enrollment_after_payment',
+      enrollmentExpiresAt: nowMs + 60_001,
+    });
+    expect(claimed).toMatchObject({
+      status: 'claimed',
+      job: { status: 'provisioning', planId: 'standard', workspaceId },
+    });
+  });
+
+  it('cancels an accidental requested cloud node before a provisioner can claim it', async () => {
+    const { edge, cookie, store } = await fixture({ pricing: true });
+    const jobId = 'mcpj_accidental_unpaid';
+    await store.createManagedCloudProvisioningJob({
+      jobId,
+      accountId,
+      workspaceId,
+      workspaceSlug: 'nodes-ui',
+      workspaceHost,
+      nodeId: 'node_accidental_unpaid',
+      nodeName: 'Cloud',
+      planId: 'standard',
+      region: 'us-east1',
+      pricingVersion: pricingPolicy.pricingVersion,
+      monthlyPriceCents: 13_700,
+      currency: 'USD',
+      idempotencyKey: 'accidental-unpaid-request',
+      status: 'requested',
+      createdAt: nowMs,
+      updatedAt: nowMs,
+    });
+
+    const response = await edge(new Request(`https://${workspaceHost}/gateway/nodes/provision`, {
+      method: 'POST',
+      headers: {
+        cookie,
+        'content-type': 'application/json',
+        origin: `https://${workspaceHost}`,
+        'x-consuelo-csrf-token': csrfToken,
+      },
+      body: JSON.stringify({ action: 'cancel', jobId }),
+    }));
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      job: { jobId, status: 'failed', errorCode: 'MANAGED_CLOUD_PROVISIONING_CANCELLED' },
+    });
+    await expect(store.claimNextManagedCloudProvisioningJob({
+      leaseId: 'lease_after_cancel',
+      nowMs: nowMs + 1,
+      leaseExpiresAt: nowMs + 60_001,
+      enrollmentNonce: 'enrollment_after_cancel',
+      enrollmentExpiresAt: nowMs + 60_001,
+    })).resolves.toEqual({ status: 'empty' });
+  });
+
+  it('requires same-origin CSRF before accepting a cloud-node request', async () => {
     const { edge, cookie } = await fixture({ pricing: true });
     const missingCsrf = await edge(new Request(`https://${workspaceHost}/gateway/nodes/provision`, {
       method: 'POST',
@@ -205,12 +427,6 @@ describe('launcher Nodes workspace-session control plane', () => {
     }));
     expect(missingCsrf.status).toBe(403);
 
-    const stale = await edge(new Request(`https://${workspaceHost}/gateway/nodes/provision`, {
-      method: 'POST',
-      headers: { cookie, 'content-type': 'application/json', origin: `https://${workspaceHost}`, 'x-consuelo-csrf-token': csrfToken },
-      body: JSON.stringify({ planId: 'standard', region: 'us-east1', pricingVersion: 'stale-pricing', idempotencyKey: 'stale-pricing' }),
-    }));
-    expect(stale.status).toBe(409);
   });
 
   it('returns the public plan catalog without inventing prices when no rate card is published', async () => {

@@ -1,0 +1,11 @@
+{
+  "files": [
+    "packages/documentation/src/content/docs/reference/configuration.mdx",
+    "packages/os/scripts/server/app.ts",
+    "packages/os/scripts/server/env.ts",
+    "packages/os/tests/health-readiness.test.ts",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "updatedAt": "2026-08-16T07:06:10.113Z"
+}

@@ -1,0 +1,9 @@
+{
+  "files": [
+    "packages/dialer-server/src/billing/application.ts",
+    "packages/dialer-server/src/commercial-application.acceptance.test.ts",
+    "packages/dialer-server/src/commercial.acceptance.test.ts",
+    "packages/dialer-server/src/commercial/application.ts"
+  ],
+  "updatedAt": "2026-08-10T02:05:17.573Z"
+}

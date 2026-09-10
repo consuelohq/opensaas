@@ -1,5 +1,6 @@
 import type {
   ManagedCloudPlanId,
+  ManagedCloudRegionId,
 } from '../../../../scripts/lib/managed-cloud-pricing';
 import type { ManagedCloudProvisioningJob } from '../../../../scripts/lib/managed-cloud-provisioning';
 import type {
@@ -60,6 +61,8 @@ export class ManagedCloudBillingError extends Error {
       | 'WORKSPACE_EXISTS'
       | 'CHECKOUT_PENDING'
       | 'CHECKOUT_NOT_FOUND'
+      | 'PRICING_CHANGED'
+      | 'CHECKOUT_INVALID'
       | 'PAYMENT_INVALID',
     readonly status: number,
     message: string,
@@ -190,6 +193,8 @@ function checkoutResponseUrl(checkout: ManagedCloudCheckout): string | undefined
 async function createStripeCheckoutSession(input: {
   runtime: DeviceAuthorityRuntime;
   checkout: ManagedCloudCheckout;
+  successUrl?: string;
+  cancelUrl?: string;
 }): Promise<{ sessionId: string; url: string }> {
   const secret = input.runtime.stripeSecretKey?.trim();
   if (!secret) {
@@ -207,9 +212,12 @@ async function createStripeCheckoutSession(input: {
   body.set('expires_at', String(Math.floor(input.checkout.expiresAt / 1000)));
   body.set(
     'success_url',
-    `${input.runtime.origin}/onboarding/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+    input.successUrl ?? `${input.runtime.origin}/onboarding/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
   );
-  body.set('cancel_url', `${input.runtime.origin}/auth/workspaces?checkout=cancelled`);
+  body.set(
+    'cancel_url',
+    input.cancelUrl ?? `${input.runtime.origin}/auth/workspaces?checkout=cancelled`,
+  );
   body.set('line_items[0][quantity]', '1');
   body.set('line_items[0][price_data][currency]', input.checkout.currency.toLowerCase());
   body.set(
@@ -401,6 +409,202 @@ export async function startManagedCloudCheckout(input: {
   }
 }
 
+
+async function deterministicManagedCloudNodeCheckoutId(input: {
+  accountId: string;
+  workspaceId: string;
+  planId: ManagedCloudPlanId;
+  region: ManagedCloudRegionId;
+  pricingVersion: string;
+  monthlyPriceCents: number;
+  idempotencyKey: string;
+}): Promise<string> {
+  try {
+    const digest = await hashHex(
+      [
+        'consuelo:managed-cloud-node-checkout:v1',
+        input.accountId,
+        input.workspaceId,
+        input.planId,
+        input.region,
+        input.pricingVersion,
+        String(input.monthlyPriceCents),
+        input.idempotencyKey,
+      ].join('\n'),
+    );
+    return `mcc_${digest.slice(0, 28)}`;
+  } catch (error: unknown) {
+    throw new ManagedCloudBillingError(
+      'BILLING_UNAVAILABLE',
+      503,
+      'Cloud billing is temporarily unavailable.',
+    );
+  }
+}
+
+export async function startManagedCloudNodeCheckout(input: {
+  runtime: DeviceAuthorityRuntime;
+  accountId: string;
+  email: string;
+  workspaceId: string;
+  workspaceSlug: string;
+  workspaceHost: string;
+  workspaceName?: string;
+  planId: string;
+  region: string;
+  pricingVersion: string;
+  idempotencyKey: string;
+}): Promise<ManagedCloudCheckout> {
+  if (!managedCloudBillingConfigured(input.runtime)) {
+    throw new ManagedCloudBillingError(
+      'BILLING_UNAVAILABLE',
+      503,
+      'Cloud billing is temporarily unavailable.',
+    );
+  }
+  if (!input.runtime.managedCloudPricing) {
+    throw new ManagedCloudBillingError(
+      'BILLING_UNAVAILABLE',
+      503,
+      'Managed cloud pricing is temporarily unavailable.',
+    );
+  }
+
+  const catalog = buildManagedCloudPublicCatalog(input.runtime.managedCloudPricing, input.region);
+  const plan = catalog.plans.find((candidate) => candidate.id === input.planId);
+  const region = catalog.regions.find((candidate) => candidate.id === input.region);
+  const quote = catalog.quotes.find(
+    (candidate) => candidate.plan.id === input.planId && candidate.region.id === input.region,
+  );
+  if (!plan || !region || !quote) {
+    throw new ManagedCloudBillingError(
+      'PLAN_INVALID',
+      400,
+      'Choose an available cloud plan and region.',
+    );
+  }
+  if (!input.pricingVersion || input.pricingVersion !== quote.pricingVersion) {
+    throw new ManagedCloudBillingError(
+      'PRICING_CHANGED',
+      409,
+      'Cloud pricing changed. Refresh the current monthly price before checkout.',
+    );
+  }
+  if (input.idempotencyKey.length < 8 || input.idempotencyKey.length > 128) {
+    throw new ManagedCloudBillingError(
+      'CHECKOUT_INVALID',
+      400,
+      'A valid checkout request identifier is required.',
+    );
+  }
+
+  const workspace = await input.runtime.store.byAccountWorkspace(input.accountId);
+  if (
+    !workspace ||
+    workspace.workspaceId !== input.workspaceId ||
+    workspace.workspaceSlug !== input.workspaceSlug ||
+    workspace.workspaceHost !== input.workspaceHost
+  ) {
+    throw new ManagedCloudBillingError(
+      'CHECKOUT_INVALID',
+      409,
+      'This workspace is not ready for managed cloud checkout.',
+    );
+  }
+
+  const nowMs = input.runtime.now();
+  const active = await input.runtime.store.byAccountManagedCloudCheckout(input.accountId);
+  if (active?.status === 'paid' && active.provisioningJobId) {
+    const activeJob = await input.runtime.store.byManagedCloudProvisioningJob(active.provisioningJobId);
+    if (activeJob && activeJob.status !== 'ready' && activeJob.status !== 'failed') {
+      throw new ManagedCloudBillingError(
+        'CHECKOUT_PENDING',
+        409,
+        'A cloud node is already being created for this workspace.',
+      );
+    }
+  }
+
+  const checkoutId = await deterministicManagedCloudNodeCheckoutId({
+    accountId: input.accountId,
+    workspaceId: input.workspaceId,
+    planId: plan.id,
+    region: region.id,
+    pricingVersion: quote.pricingVersion,
+    monthlyPriceCents: quote.monthlyPriceCents,
+    idempotencyKey: input.idempotencyKey,
+  });
+  if (active?.status === 'pending' && active.expiresAt > nowMs) {
+    if (active.checkoutId !== checkoutId) {
+      throw new ManagedCloudBillingError(
+        'CHECKOUT_PENDING',
+        409,
+        'A cloud checkout is already in progress. Finish it before choosing another plan.',
+      );
+    }
+    const url = checkoutResponseUrl(active);
+    if (url) return active;
+  }
+
+  const email = input.email.trim().toLowerCase();
+  if (!email) {
+    throw new ManagedCloudBillingError(
+      'CHECKOUT_INVALID',
+      409,
+      'A verified account email is required for cloud checkout.',
+    );
+  }
+  const displayName = input.workspaceName?.trim() || workspace.displayName?.trim() || workspace.workspaceSlug;
+  const candidate: ManagedCloudCheckout = {
+    checkoutId,
+    accountId: input.accountId,
+    email,
+    displayName,
+    workspaceId: input.workspaceId,
+    workspaceSlug: input.workspaceSlug,
+    workspaceHost: input.workspaceHost,
+    planId: plan.id,
+    region: region.id,
+    pricingVersion: quote.pricingVersion,
+    monthlyPriceCents: quote.monthlyPriceCents,
+    currency: quote.currency,
+    status: 'pending',
+    createdAt: active?.checkoutId === checkoutId ? active.createdAt : nowMs,
+    updatedAt: nowMs,
+    expiresAt: nowMs + STRIPE_CHECKOUT_TTL_MS,
+  };
+  await input.runtime.store.putManagedCloudCheckout(candidate);
+
+  const successUrl = `https://${input.workspaceHost}/nodes?checkout=success&session_id={CHECKOUT_SESSION_ID}`;
+  const cancelUrl = `https://${input.workspaceHost}/nodes?checkout=cancelled`;
+  const session = await createStripeCheckoutSession({
+    runtime: input.runtime,
+    checkout: candidate,
+    successUrl,
+    cancelUrl,
+  });
+  const updated: ManagedCloudCheckout = {
+    ...candidate,
+    stripeCheckoutSessionId: session.sessionId,
+    stripeCheckoutUrl: session.url,
+    updatedAt: input.runtime.now(),
+  };
+  await input.runtime.store.putManagedCloudCheckout(updated);
+  await input.runtime.checkoutObservability?.observe({
+    name: 'checkout_session_created',
+    accountId: updated.accountId,
+    checkoutId: updated.checkoutId,
+    stripeSessionId: updated.stripeCheckoutSessionId,
+    planId: updated.planId,
+    pricingVersion: updated.pricingVersion,
+    monthlyPriceCents: updated.monthlyPriceCents,
+    currency: updated.currency,
+    synthetic: false,
+    outcome: 'success',
+  });
+  return updated;
+}
+
 function secureHexEqual(left: string, right: string): boolean {
   if (left.length !== right.length || left.length === 0) return false;
   let mismatch = 0;
@@ -514,8 +718,9 @@ async function fulfillPaidManagedCloudCheckout(input: {
     throw new ManagedCloudBillingError('WORKSPACE_EXISTS', 409, 'This account already has a workspace.');
   }
   await input.runtime.store.putAccountWorkspace({
+    ...(existingWorkspace ?? {}),
     accountId: checkout.accountId,
-    displayName: checkout.displayName,
+    displayName: existingWorkspace?.displayName ?? checkout.displayName,
     workspaceId: checkout.workspaceId,
     workspaceSlug: checkout.workspaceSlug,
     workspaceHost: checkout.workspaceHost,
@@ -623,7 +828,9 @@ export async function handleManagedCloudStripeWebhook(input: {
   } catch {
     throw new ManagedCloudBillingError('PAYMENT_INVALID', 400, 'Invalid Stripe webhook payload.');
   }
-  const eventType = field(record(parsed).type);
+  const stripeEvent = record(parsed);
+  const stripeEventId = field(stripeEvent.id);
+  const eventType = field(stripeEvent.type);
   if (eventType !== 'checkout.session.completed') return { handled: false };
   const event = checkoutSessionEvent(parsed);
   if (!event?.checkoutId) {
@@ -645,6 +852,7 @@ export async function handleManagedCloudStripeWebhook(input: {
       currency: checkout.currency,
       synthetic: false,
       outcome: 'success',
+      dedupeKey: stripeEventId ? `stripe:${stripeEventId}:checkout_completed` : undefined,
     });
     return { handled: true, checkout };
   } catch (error: unknown) {

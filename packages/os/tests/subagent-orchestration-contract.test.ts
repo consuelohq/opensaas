@@ -1,12 +1,19 @@
 import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-
 import { describe, expect, it, vi } from 'vitest';
 
 import { executeTool, getToolManifestEntry } from '../scripts/lib/facade/executor';
 import type { ToolInput, ToolRunner } from '../scripts/lib/facade/types';
 import { resolveSubagentRunDirectory, type DurableSubagentRun } from '../scripts/lib/subagent/lifecycle';
+
+function removeTemp(target: string) {
+  try {
+    rmSync(target, { recursive: true, force: true, maxRetries: 8, retryDelay: 25 });
+  } catch {
+    // linux can race a detached runner still holding the temp directory
+  }
+}
 
 function runner(): ToolRunner {
   return async () => ({ stdout: '', stderr: '', exitCode: 0 });
@@ -94,24 +101,8 @@ function input(overrides: ToolInput): ToolInput {
   return { provider: 'codex', policy: 'read', ...overrides };
 }
 
-async function settleDetachedRun(
-  runId: unknown,
-  durableHome: string,
-  env: NodeJS.ProcessEnv | undefined,
-): Promise<void> {
-  if (typeof runId !== 'string' || !env) return;
-  const waited = await executeTool(
-    'subagent',
-    { action: 'wait', runId, waitMs: 2_000 },
-    options(durableHome, env),
-  );
-  if (['starting', 'running', 'completion_unknown'].includes(waited.data.status)) {
-    await executeTool('subagent', { action: 'cancel', runId }, options(durableHome, env));
-  }
-}
-
 describe('subagent orchestration contract', () => {
-  it('runs Grok directly without creating durable detached state', async () => {
+  it('runs Grok through the durable detached runner', async () => {
     const durableHome = mkdtempSync(join(tmpdir(), 'os-subagent-home-'));
     const worktree = mkdtempSync(join(tmpdir(), 'os-subagent-worktree-'));
     try {
@@ -127,20 +118,32 @@ describe('subagent orchestration contract', () => {
         provider: 'grok',
         requestId: 'req_grok_durable',
         instructionPath,
+        timeoutMs: 20_000,
       }), options(worktree, env));
 
-      expect(result.ok).toBe(true);
+      expect(
+        result.ok,
+        [
+          result.code,
+          result.data?.status,
+          result.message,
+          result.data?.stderr,
+        ]
+          .filter(Boolean)
+          .join(' | '),
+      ).toBe(true);
       expect(result.code).toBe('OK');
       expect(result.data.status).toBe('completed');
-      expect(result.data.capabilities.detachedExecution).toBe(false);
-      expect(result.data.runId).toBeUndefined();
+      expect(result.data.capabilities.detachedExecution).toBe(true);
+      expect(result.data.runId).toMatch(/^run_[a-f0-9]{24}$/);
       expect(result.data.command).toEqual(expect.arrayContaining(['--permission-mode', 'auto', '--max-turns', '32']));
-      expect(existsSync(join(durableHome, 'node', 'runs'))).toBe(false);
+      if (typeof result.data.runId !== 'string') throw new Error('missing Grok runId');
+      expect(existsSync(join(resolveSubagentRunDirectory(result.data.runId, env), 'state.json'))).toBe(true);
     } finally {
-      rmSync(durableHome, { recursive: true, force: true });
-      rmSync(worktree, { recursive: true, force: true });
+      removeTemp(durableHome);
+      removeTemp(worktree);
     }
-  });
+  }, 25_000);
 
   it('passes the requested Codex model and reasoning effort as exact argv', async () => {
     const durableHome = mkdtempSync(join(tmpdir(), 'os-subagent-home-'));
@@ -170,8 +173,8 @@ describe('subagent orchestration contract', () => {
         'model_reasoning_effort="xhigh"',
       ]));
     } finally {
-      rmSync(durableHome, { recursive: true, force: true });
-      rmSync(worktree, { recursive: true, force: true });
+      removeTemp(durableHome);
+      removeTemp(worktree);
     }
   });
 
@@ -198,8 +201,8 @@ describe('subagent orchestration contract', () => {
       expect(readFileSync(fake.promptPath, 'utf8')).toContain('task.start');
       expect(readFileSync(fake.promptPath, 'utf8')).toContain('task.pr merges');
     } finally {
-      rmSync(durableHome, { recursive: true, force: true });
-      rmSync(worktree, { recursive: true, force: true });
+      removeTemp(durableHome);
+      removeTemp(worktree);
     }
   });
 
@@ -228,9 +231,9 @@ describe('subagent orchestration contract', () => {
       expect(result.data.instructionPath).toContain(join(durableHome, 'node', 'runs'));
       expect(existsSync(`${result.data.instructionPath}.provenance.json`)).toBe(true);
     } finally {
-      rmSync(handoffDir, { recursive: true, force: true });
-      rmSync(durableHome, { recursive: true, force: true });
-      rmSync(worktree, { recursive: true, force: true });
+      removeTemp(handoffDir);
+      removeTemp(durableHome);
+      removeTemp(worktree);
     }
   });
 
@@ -269,8 +272,8 @@ describe('subagent orchestration contract', () => {
       expect(logs.data.finalMessage).toBe('fake complete');
       expect(readFileSync(fake.spawnPath, 'utf8').trim().split('\n')).toHaveLength(1);
     } finally {
-      rmSync(durableHome, { recursive: true, force: true });
-      rmSync(worktree, { recursive: true, force: true });
+      removeTemp(durableHome);
+      removeTemp(worktree);
     }
   });
 
@@ -302,16 +305,14 @@ describe('subagent orchestration contract', () => {
       expect(waited.code).toBe('WAIT_TIMEOUT');
       expect(Date.now() - before).toBeLessThan(180);
     } finally {
-      rmSync(durableHome, { recursive: true, force: true });
-      rmSync(worktree, { recursive: true, force: true });
+      removeTemp(durableHome);
+      removeTemp(worktree);
     }
   });
 
   it('rejects changed instruction content for the same requestId without overwriting the winning run', async () => {
     const durableHome = mkdtempSync(join(tmpdir(), 'os-subagent-home-'));
     const worktree = mkdtempSync(join(tmpdir(), 'os-subagent-worktree-'));
-    let cleanupRunId: string | undefined;
-    let cleanupEnv: NodeJS.ProcessEnv | undefined;
     try {
       const fake = writeFakeCodex(durableHome);
       const instructionPath = writeInstruction(worktree, 'winner instruction');
@@ -324,10 +325,8 @@ describe('subagent orchestration contract', () => {
         CODEX_PROMPT_PATH: fake.promptPath,
         CODEX_SLEEP: '0.2',
       };
-      cleanupEnv = env;
       const requestId = 'req_subagent_instruction_conflict';
       const started = await executeTool('subagent', input({ action: 'start', instructionPath, requestId }), options(worktree, env));
-      cleanupRunId = typeof started.data.runId === 'string' ? started.data.runId : undefined;
       expect(started.ok).toBe(true);
       expect(started.data.runId).toMatch(/^run_/);
       const persistedInstructionPath = started.data.instructionPath;
@@ -347,9 +346,8 @@ describe('subagent orchestration contract', () => {
       expect(existsSync(fake.spawnPath)).toBe(true);
       expect(readFileSync(fake.spawnPath, 'utf8').trim().split('\n')).toHaveLength(1);
     } finally {
-      await settleDetachedRun(cleanupRunId, durableHome, cleanupEnv);
-      rmSync(durableHome, { recursive: true, force: true });
-      rmSync(worktree, { recursive: true, force: true });
+      removeTemp(durableHome);
+      removeTemp(worktree);
     }
   });
 
@@ -365,8 +363,6 @@ describe('subagent orchestration contract', () => {
     for (const testCase of cases) {
       const durableHome = mkdtempSync(join(tmpdir(), `os-subagent-fingerprint-${testCase.name}-`));
       const worktree = mkdtempSync(join(tmpdir(), 'os-subagent-worktree-'));
-      let cleanupRunId: string | undefined;
-      let cleanupEnv: NodeJS.ProcessEnv | undefined;
       try {
         const fake = writeFakeCodex(durableHome);
         const instructionPath = writeInstruction(worktree, 'stable instruction');
@@ -383,11 +379,9 @@ describe('subagent orchestration contract', () => {
           CODEX_PROMPT_PATH: fake.promptPath,
           CODEX_SLEEP: '0.2',
         };
-        cleanupEnv = env;
         const requestId = `req_subagent_fingerprint_${testCase.name}`;
         const common = { action: 'start', policy: 'edit', instructionPath, requestId } as ToolInput;
         const started = await executeTool('subagent', input({ ...common, ...testCase.baseline }), options(worktree, env));
-        cleanupRunId = typeof started.data.runId === 'string' ? started.data.runId : undefined;
         expect(started.ok).toBe(true);
 
         const retried = await executeTool('subagent', input({ ...common, ...testCase.retry }), options(worktree, env));
@@ -395,9 +389,8 @@ describe('subagent orchestration contract', () => {
         expect(retried.code, testCase.name).toBe('IDEMPOTENCY_CONFLICT');
         expect(retried.data.runId, testCase.name).toBe(started.data.runId);
       } finally {
-        await settleDetachedRun(cleanupRunId, durableHome, cleanupEnv);
-        rmSync(durableHome, { recursive: true, force: true });
-        rmSync(worktree, { recursive: true, force: true });
+        removeTemp(durableHome);
+        removeTemp(worktree);
       }
     }
   });
@@ -405,8 +398,6 @@ describe('subagent orchestration contract', () => {
   it('preserves durable invocation metadata across start and attachment responses', async () => {
     const durableHome = mkdtempSync(join(tmpdir(), 'os-subagent-metadata-'));
     const worktree = mkdtempSync(join(tmpdir(), 'os-subagent-worktree-'));
-    let cleanupRunId: string | undefined;
-    let cleanupEnv: NodeJS.ProcessEnv | undefined;
     try {
       const fake = writeFakeCodex(durableHome);
       const instructionPath = writeInstruction(worktree);
@@ -421,7 +412,6 @@ describe('subagent orchestration contract', () => {
         CODEX_PROMPT_PATH: fake.promptPath,
         CODEX_SLEEP: '0.5',
       };
-      cleanupEnv = env;
       const started = await executeTool('subagent', input({
         action: 'start',
         policy: 'edit',
@@ -433,7 +423,6 @@ describe('subagent orchestration contract', () => {
         instructionPath,
         requestId: 'req_subagent_metadata_contract',
       }), options(worktree, env));
-      cleanupRunId = typeof started.data.runId === 'string' ? started.data.runId : undefined;
 
       expect(started.data.bundle).toBe('media');
       expect(started.data.outputFormat).toBe('text');
@@ -450,9 +439,8 @@ describe('subagent orchestration contract', () => {
       expect(status.data.audit.branch).toBe(metadataBranch);
       expect(status.data.audit.rawShellUsed).toBe(true);
     } finally {
-      await settleDetachedRun(cleanupRunId, durableHome, cleanupEnv);
-      rmSync(durableHome, { recursive: true, force: true });
-      rmSync(worktree, { recursive: true, force: true });
+      removeTemp(durableHome);
+      removeTemp(worktree);
     }
   });
 
@@ -485,8 +473,8 @@ describe('subagent orchestration contract', () => {
       expect(cancelled.ok).toBe(true);
       expect(cancelled.code).toBe('OK');
     } finally {
-      rmSync(durableHome, { recursive: true, force: true });
-      rmSync(worktree, { recursive: true, force: true });
+      removeTemp(durableHome);
+      removeTemp(worktree);
     }
   });
 
@@ -518,8 +506,8 @@ describe('subagent orchestration contract', () => {
       expect(result.data.exitCode).not.toBe(0);
     } finally {
       dateNow.mockRestore();
-      rmSync(durableHome, { recursive: true, force: true });
-      rmSync(worktree, { recursive: true, force: true });
+      removeTemp(durableHome);
+      removeTemp(worktree);
     }
   });
 
@@ -548,8 +536,8 @@ describe('subagent orchestration contract', () => {
       expect(result.data.stdoutChars).toBeGreaterThan(result.data.stdout.length);
       expect(result.data.stdoutChars).toBeGreaterThan(9_000);
     } finally {
-      rmSync(durableHome, { recursive: true, force: true });
-      rmSync(worktree, { recursive: true, force: true });
+      removeTemp(durableHome);
+      removeTemp(worktree);
     }
   });
 
@@ -602,8 +590,8 @@ describe('subagent orchestration contract', () => {
       expect(waited.data.status).toBe('failed');
       expect(waited.data.stderr).toContain(failure);
     } finally {
-      rmSync(durableHome, { recursive: true, force: true });
-      rmSync(worktree, { recursive: true, force: true });
+      removeTemp(durableHome);
+      removeTemp(worktree);
     }
   });
 
@@ -644,8 +632,8 @@ describe('subagent orchestration contract', () => {
       expect(piReasoning.data.capabilities.reasoningEffort).toBe(false);
       expect(piReasoning.data.unsupportedCapabilities).toContain('reasoningEffort');
     } finally {
-      rmSync(durableHome, { recursive: true, force: true });
-      rmSync(worktree, { recursive: true, force: true });
+      removeTemp(durableHome);
+      removeTemp(worktree);
     }
   });
 
@@ -676,8 +664,8 @@ describe('subagent orchestration contract', () => {
         expect(result.data.runId).toBeUndefined();
       }
     } finally {
-      rmSync(durableHome, { recursive: true, force: true });
-      rmSync(worktree, { recursive: true, force: true });
+      removeTemp(durableHome);
+      removeTemp(worktree);
     }
   });
 
@@ -707,8 +695,8 @@ describe('subagent orchestration contract', () => {
         expect(result.data.command).toEqual([]);
       }
     } finally {
-      rmSync(durableHome, { recursive: true, force: true });
-      rmSync(worktree, { recursive: true, force: true });
+      removeTemp(durableHome);
+      removeTemp(worktree);
     }
   });
 

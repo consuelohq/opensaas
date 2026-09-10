@@ -1,0 +1,88 @@
+{
+  "version": 1,
+  "worktree_id": "task/explore/e4-unified-explore-policy",
+  "events": [
+    {
+      "id": "47956d6d-0ec3-48e5-ab63-b706e20b7567",
+      "occurred_at": "2026-08-15T19:21:17.899Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tools/decision-engine/manifest.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/explore/e4-unified-explore-policy",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/explore/e4-unified-explore-policy"
+      }
+    },
+    {
+      "id": "898bba12-52fa-464f-bab6-4323ebded3e6",
+      "occurred_at": "2026-08-15T19:21:25.699Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tools/decision-engine/handler.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/explore/e4-unified-explore-policy",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/explore/e4-unified-explore-policy"
+      }
+    },
+    {
+      "id": "814e284c-f833-467e-9ac8-f76a1376a873",
+      "occurred_at": "2026-08-15T20:05:03.979Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/fixtures/tool-package-baseline.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/explore/e4-unified-explore-policy",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/explore/e4-unified-explore-policy"
+      }
+    },
+    {
+      "id": "69bf9ab7-4775-4099-bf99-332cec8e7e0c",
+      "occurred_at": "2026-08-15T20:07:15.366Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/test-selection.rules.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/explore/e4-unified-explore-policy",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/explore/e4-unified-explore-policy"
+      }
+    },
+    {
+      "id": "b7fe8b2a-69ba-441d-93fb-fd9baa3d1010",
+      "occurred_at": "2026-08-15T20:14:54.692Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/test-selection.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/explore/e4-unified-explore-policy",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/explore/e4-unified-explore-policy"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-15T20:14:54.749Z"
+}

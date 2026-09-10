@@ -71,6 +71,32 @@ describe('lifecycle facade', () => {
     });
   });
 
+  it('can require the exact immutable release version during update', async () => {
+    const plans: CommandPlan[] = [];
+    const result = await executeTool(
+      'lifecycle.update',
+      { channel: 'canary', version: '1.2.3' },
+      options(plans),
+    );
+
+    expect(result.ok).toBe(true);
+    expect(plans[0]).toMatchObject({
+      command: 'bun',
+      args: [
+        'run',
+        'lifecycle',
+        '--',
+        'update',
+        '--channel',
+        'canary',
+        '--version',
+        '1.2.3',
+        '--json',
+      ],
+      cwd: RUNTIME_PACKAGE_ROOT,
+    });
+  });
+
   it('rejects an invalid release channel before running a command', async () => {
     const plans: CommandPlan[] = [];
     const result = await executeTool(

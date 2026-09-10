@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/reject-revoked-nodes-from-lifecycle-recovery",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2299,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2299",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-reject-revoked-nodes-from-lifecycle-recovery",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_6b6940824373",
+  "tmuxSession": "opensaas-os-reject-revoked-nodes-from-lifecycle-recovery-6b694082",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-reject-revoked-nodes-from-lifecycle-recovery/.task/session.json",
+  "createdAt": "2026-08-29T07:49:06.270Z"
+}

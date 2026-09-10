@@ -106,6 +106,13 @@ function envPresence(nodeRouting?: McpNodeRoutingContext): Record<string, unknow
               displayName: node.displayName,
               ...(node.role ? { role: node.role } : {}),
               ...(node.platform ? { platform: node.platform } : {}),
+              ...(node.channel ? { channel: node.channel } : {}),
+              ...(node.osVersion ? { osVersion: node.osVersion } : {}),
+              ...(node.mcpProtocolVersion
+                ? { mcpProtocolVersion: node.mcpProtocolVersion }
+                : {}),
+              ...(node.readiness ? { readiness: node.readiness } : {}),
+              ...(node.compatibility ? { compatibility: node.compatibility } : {}),
               ...(node.presence ? { presence: node.presence } : {}),
               ...(node.state ? { state: node.state } : {}),
             })),

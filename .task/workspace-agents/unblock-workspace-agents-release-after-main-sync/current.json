@@ -1,0 +1,20 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/unblock-workspace-agents-release-after-main-sync",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 2237,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2237",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2237",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2237/unblock-workspace-agents-release-after-main-sync",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2237",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2237/unblock-workspace-agents-release-after-main-sync",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-unblock-workspace-agents-release-after-main-sync",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_1b92ea9214f2",
+  "tmuxSession": "opensaas-workspace-agents-unblock-workspace-agents-release-after-main-sync-1b92ea92",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-unblock-workspace-agents-release-after-main-sync/.task/workspace-agents/unblock-workspace-agents-release-after-main-sync/session.json",
+  "createdAt": "2026-08-27T00:48:59.261Z"
+}

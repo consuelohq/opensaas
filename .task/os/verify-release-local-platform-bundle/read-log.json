@@ -1,0 +1,12 @@
+{
+  "files": [
+    ".task/os/verify-release-local-platform-bundle/workpad.md",
+    "packages/os/scripts/lib/lifecycle/release.ts",
+    "packages/os/scripts/lib/release-orchestrator.ts",
+    "packages/os/scripts/lib/release-promotion-correlation.ts",
+    "packages/os/scripts/release.ts",
+    "packages/os/tests/release-orchestrator.test.ts",
+    "packages/os/tests/release-script-promotion-correlation.test.ts"
+  ],
+  "updatedAt": "2026-08-26T03:47:04.906Z"
+}

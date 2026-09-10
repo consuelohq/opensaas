@@ -1,6 +1,12 @@
 export const MAX_OS_WORKERS = 16;
 export const MIN_HA_OS_WORKERS = 2;
 
+export function resolveWorkerGracefulDrainSignal(
+  platform: NodeJS.Platform = process.platform,
+): NodeJS.Signals {
+  return platform === 'win32' ? 'SIGTERM' : 'SIGUSR2';
+}
+
 export type WorkerPoolConfiguration = {
   desiredWorkers: number;
   basePort: number;
@@ -303,7 +309,7 @@ export function createWorkerPoolSupervisor(input: {
       current.state = 'draining';
       publish();
       try {
-        current.process.kill('SIGTERM');
+        current.process.kill(resolveWorkerGracefulDrainSignal());
       } catch (error: unknown) {
         current.state = 'failed';
         publish();
@@ -314,7 +320,9 @@ export function createWorkerPoolSupervisor(input: {
       // the old sibling serving until the replacement has had a full admission
       // window, otherwise the next drain can leave Caddy with no healthy
       // upstream even though the supervisor already sees the new worker ready.
-      await sleep(input.configuration.caddyAdmissionDelayMs);
+      if (slotIndex < input.configuration.desiredWorkers - 1) {
+        await sleep(input.configuration.caddyAdmissionDelayMs);
+      }
     }
   };
 
@@ -343,12 +351,14 @@ export function createWorkerPoolSupervisor(input: {
         if (slot.state === 'ready' || slot.state === 'starting') slot.state = 'draining';
         publish();
         try {
-          slot.process?.kill('SIGTERM');
+          slot.process?.kill(resolveWorkerGracefulDrainSignal());
         } catch {
           // The worker may already be gone; its exit handler will normalize state.
         }
         const completed = slot.process.exited.then(() => true, () => true);
-        const timedOut = sleep(input.configuration.drainTimeoutMs).then(() => false);
+        const forceCloseBudgetMs = input.configuration.drainTimeoutMs
+          + (input.configuration.caddyAdmissionDelayMs * 2);
+        const timedOut = sleep(forceCloseBudgetMs).then(() => false);
         const graceful = await Promise.race([completed, timedOut]);
         if (!graceful) {
           try {

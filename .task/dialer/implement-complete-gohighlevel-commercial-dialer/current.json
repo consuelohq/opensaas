@@ -1,0 +1,19 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/implement-complete-gohighlevel-commercial-dialer",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 1782,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1782",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1782",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1782/implement-complete-gohighlevel-commercial-dialer",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1782",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1782/implement-complete-gohighlevel-commercial-dialer",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-implement-complete-gohighlevel-commercial-dialer",
+  "taskSession": "tsk_48c5ee4031d8",
+  "tmuxSession": "opensaas-dialer-implement-complete-gohighlevel-commercial-dialer-48c5ee40",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-implement-complete-gohighlevel-commercial-dialer/.task/dialer/implement-complete-gohighlevel-commercial-dialer/session.json",
+  "createdAt": "2026-08-05T01:05:25.026Z"
+}

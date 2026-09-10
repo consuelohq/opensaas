@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "worktree_id": "task/workspace-agents/stabilize-worker-pool-process-contract-for-linux-ci",
+  "events": [
+    {
+      "id": "208b1fe8-29e2-4565-8ce9-db2fc88f4460",
+      "occurred_at": "2026-08-27T01:18:01.141Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/worker-pool.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/stabilize-worker-pool-process-contract-for-linux-ci",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/stabilize-worker-pool-process-contract-for-linux-ci"
+      }
+    },
+    {
+      "id": "02584d25-564d-4481-a31d-9e18d687f5ae",
+      "occurred_at": "2026-08-27T01:18:08.280Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/worker-pool-process.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/stabilize-worker-pool-process-contract-for-linux-ci",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/stabilize-worker-pool-process-contract-for-linux-ci"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-27T01:18:08.339Z"
+}

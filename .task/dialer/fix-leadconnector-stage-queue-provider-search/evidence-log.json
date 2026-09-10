@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/dialer/fix-leadconnector-stage-queue-provider-search",
+  "events": [
+    {
+      "id": "b3f0d4f7-1ee3-4548-b5d9-f7c29819345b",
+      "occurred_at": "2026-08-04T23:47:58.082Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/dialer/fix-leadconnector-stage-queue-provider-search/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-leadconnector-stage-queue-provider-search",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-leadconnector-stage-queue-provider-search"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-04T23:47:58.146Z"
+}

@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/explore/preserve-semantic-outage-metadata-across-embedding-transports",
+  "events": [
+    {
+      "id": "26236fb8-56da-49ce-bcaa-df6a15df607d",
+      "occurred_at": "2026-09-08T15:31:47.194Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/index/embedding-gateway.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/explore/preserve-semantic-outage-metadata-across-embedding-transports",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/explore/preserve-semantic-outage-metadata-across-embedding-transports"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-09-08T15:31:47.305Z"
+}

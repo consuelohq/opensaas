@@ -4,6 +4,7 @@ import path from 'node:path';
 
 import { resolveConsueloHomeLayout } from '../lib/consuelo-home';
 import { startDefaultNativeLifecycleEndpoint } from '../lib/native-lifecycle-endpoint';
+import { resolveWorkerGracefulDrainSignal } from '../lib/worker-pool';
 import { startWorkspaceNodeHeartbeatScheduler } from '../lib/workspace-node-heartbeat-scheduler';
 import { sendWorkspaceNodeHeartbeatFromConfig } from '../workspace-node-heartbeat';
 import { createLocalOsApp } from './app';
@@ -141,7 +142,12 @@ if (import.meta.main) {
     await lifecycleEndpoint?.close();
   };
 
-  for (const signal of ['SIGTERM', 'SIGINT'] as const) {
+  const drainSignals = new Set<NodeJS.Signals>([
+    resolveWorkerGracefulDrainSignal(),
+    'SIGTERM',
+    'SIGINT',
+  ]);
+  for (const signal of drainSignals) {
     process.once(signal, () => {
       void runDrainAndExit(() => drainServer(signal));
     });

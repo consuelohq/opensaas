@@ -154,7 +154,18 @@ describe('OS steering execution recording', () => {
             routeSource: 'explicit',
             nodes: [
               { nodeId: 'node_local', displayName: 'Local Node', role: 'member', presence: 'online' },
-              { nodeId: 'node_cloud', displayName: 'Cloud Node', role: 'home', platform: 'linux', presence: 'online' },
+              {
+                nodeId: 'node_cloud',
+                displayName: 'Cloud Node',
+                role: 'home',
+                platform: 'linux',
+                presence: 'online',
+                channel: 'canary',
+                osVersion: '0.1.85',
+                mcpProtocolVersion: '2026-07-28',
+                readiness: 'ready',
+                compatibility: 'compatible',
+              },
             ],
           },
         }),
@@ -166,6 +177,11 @@ describe('OS steering execution recording', () => {
     expect(steering).toContain('"routeSource": "explicit"');
     expect(steering).toContain('"displayName": "Cloud Node"');
     expect(steering).toContain('"presence": "online"');
+    expect(steering).toContain('"osVersion": "0.1.85"');
+    expect(steering).toContain('"channel": "canary"');
+    expect(steering).toContain('"mcpProtocolVersion": "2026-07-28"');
+    expect(steering).toContain('"readiness": "ready"');
+    expect(steering).toContain('"compatibility": "compatible"');
     expect(steering).toContain('pass `nodeId` at the top level of `os.call`');
     expect(steering).toContain('Nodes are routing targets, not tools');
     expect(steering).toContain('Omit `nodeId` to use the workspace default node');

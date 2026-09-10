@@ -1,0 +1,20 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/ship-owner-auth-dashboard-and-oauth-recovery-to-stable",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2162,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2162",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2162",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2162/ship-owner-auth-dashboard-and-oauth-recovery-to-stable",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2162",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2162/ship-owner-auth-dashboard-and-oauth-recovery-to-stable",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-ship-owner-auth-dashboard-and-oauth-recovery-to-stable",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_711ae9495b8a",
+  "tmuxSession": "opensaas-os-ship-owner-auth-dashboard-and-oauth-recovery-to--711ae949",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-ship-owner-auth-dashboard-and-oauth-recovery-to-stable/.task/os/ship-owner-auth-dashboard-and-oauth-recovery-to-stable/session.json",
+  "createdAt": "2026-08-19T00:18:21.870Z"
+}

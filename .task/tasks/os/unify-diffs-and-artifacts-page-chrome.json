@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/unify-diffs-and-artifacts-page-chrome",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2249,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2249",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-unify-diffs-and-artifacts-page-chrome",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_f79212795c4d",
+  "tmuxSession": "opensaas-os-unify-diffs-and-artifacts-page-chrome-f7921279",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-unify-diffs-and-artifacts-page-chrome/.task/session.json",
+  "createdAt": "2026-08-29T00:09:24.444Z"
+}

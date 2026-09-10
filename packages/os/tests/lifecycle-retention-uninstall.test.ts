@@ -51,6 +51,17 @@ const requiredRuntimePaths = [
   'scripts/server/main.ts',
   'scripts/server/supervisor.ts',
   'scripts/lib/install-state.ts',
+  'scripts/lib/mcp-protocol.ts',
+  'scripts/lib/mcp-gateway.ts',
+  'scripts/server/routes/mcp.ts',
+  'scripts/lib/worker-pool.ts',
+  'scripts/lib/security-gateway.ts',
+  'scripts/consuelo-reload.js',
+  'scripts/workspace-watchdog.sh',
+  'scripts/lib/lifecycle/connector-readiness.ts',
+  'scripts/workspace-node-heartbeat.ts',
+  'scripts/lib/workspace-node-heartbeat-client.ts',
+  'scripts/lib/subagent/runner.ts',
   'scripts/managed-components.ts',
   'scripts/lib/managed-components.ts',
   'scripts/lib/managed-component-install.ts',
@@ -135,6 +146,7 @@ function signedManifest(bundle: BuiltBundle): SignedReleaseManifest {
       architecture: bundle.manifest.architecture,
       archiveDigest: resolved.bundleDigest,
       bundleId: resolved.bundleId,
+      capabilities: bundle.manifest.capabilities,
       cloudflareObjectKey: resolved.bundleUrl,
       githubAssetName: `consuelo-os-runtime-${resolved.version}.tar.gz`,
       platform: bundle.manifest.platform,
@@ -449,6 +461,36 @@ describe('lifecycle rollback and retention', () => {
       bundle120.manifest.bundleId,
       bundle130.manifest.bundleId,
     ].sort());
+  });
+
+  it('removes a corrupt obsolete release without weakening protected release verification', () => {
+    writeInstalledIdentity();
+    stageBundle(bundle110, 'stage-obsolete');
+    const previousPath = stageBundle(bundle120, 'stage-previous');
+    stageBundle(bundle130, 'stage-current');
+    mkdirSync(join(tempHome, 'runtime'), { recursive: true });
+    symlinkSync(runtimeReleaseTargetFor(bundle130), join(tempHome, 'runtime', 'current'));
+    symlinkSync(runtimeReleaseTargetFor(bundle120), join(tempHome, 'runtime', 'previous'));
+    const obsoletePath = join(
+      tempHome,
+      'runtime',
+      runtimeReleaseTargetFor(bundle110),
+    );
+    writeFileSync(join(obsoletePath, 'package.json'), '{"corrupt":true}\n');
+
+    expect(pruneLifecycleReleases({ home: tempHome })).toMatchObject({
+      removedBundleIds: [bundle110.manifest.bundleId],
+      retainedBundleIds: expect.arrayContaining([
+        bundle120.manifest.bundleId,
+        bundle130.manifest.bundleId,
+      ]),
+    });
+    expect(existsSync(obsoletePath)).toBe(false);
+
+    writeFileSync(join(previousPath, 'package.json'), '{"corrupt":true}\n');
+    expect(() => pruneLifecycleReleases({ home: tempHome })).toThrow(
+      /previous.*digest mismatch|protected runtime release failed verification/i,
+    );
   });
 
   it('refuses pruning when a runtime reference is inconsistent', () => {

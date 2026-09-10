@@ -1,0 +1,8 @@
+{
+  "files": [
+    ".task/os/restack-worker-drain-fixes-for-canary/workpad.md",
+    "packages/os/SCRIPTS.md",
+    "packages/os/tests/health-readiness.test.ts"
+  ],
+  "updatedAt": "2026-08-17T00:37:59.333Z"
+}

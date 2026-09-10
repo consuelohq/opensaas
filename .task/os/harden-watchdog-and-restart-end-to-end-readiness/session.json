@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_8ceba77e56ff",
+  "tmuxSession": "opensaas-os-harden-watchdog-and-restart-end-to-end-readiness-8ceba77e",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/harden-watchdog-and-restart-end-to-end-readiness",
+  "branch": "task/os/harden-watchdog-and-restart-end-to-end-readiness",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-harden-watchdog-and-restart-end-to-end-readiness",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-harden-watchdog-and-restart-end-to-end-readiness",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2209,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2209",
+  "createdAt": "2026-08-26T05:50:36.573Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-harden-watchdog-and-restart-end-to-end-readiness/.task/os/harden-watchdog-and-restart-end-to-end-readiness/session.json"
+}

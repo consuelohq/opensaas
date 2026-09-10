@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_679e8c531f39",
+  "tmuxSession": "opensaas-os-isolate-test-traces-and-clarify-session-observab-679e8c53",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/isolate-test-traces-and-clarify-session-observability",
+  "branch": "task/os/isolate-test-traces-and-clarify-session-observability",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-isolate-test-traces-and-clarify-session-observability",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-isolate-test-traces-and-clarify-session-observability",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2253,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2253",
+  "createdAt": "2026-08-29T00:06:13.081Z",
+  "tmuxCreated": false,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-isolate-test-traces-and-clarify-session-observability/.task/os/isolate-test-traces-and-clarify-session-observability/session.json"
+}

@@ -1,0 +1,16 @@
+{
+  "area": "explore",
+  "stream": "stream/explore",
+  "taskBranch": "task/explore/resolve-pr-2060-review-findings",
+  "baseBranch": "stream/explore",
+  "sourceBranch": "stream/explore",
+  "startFrom": "stream",
+  "prNumber": 2278,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2278",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-explore-resolve-pr-2060-review-findings",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_b06fb86b45e9",
+  "tmuxSession": "opensaas-explore-resolve-pr-2060-review-findings-b06fb86b",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-explore-resolve-pr-2060-review-findings/.task/session.json",
+  "createdAt": "2026-08-29T04:27:44.003Z"
+}

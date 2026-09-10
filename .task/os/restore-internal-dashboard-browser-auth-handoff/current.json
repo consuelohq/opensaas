@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/restore-internal-dashboard-browser-auth-handoff",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2147,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2147",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2147",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2147/restore-internal-dashboard-browser-auth-handoff",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2147",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2147/restore-internal-dashboard-browser-auth-handoff",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-restore-internal-dashboard-browser-auth-handoff",
+  "taskSession": "tsk_fdaa1f3e0fdd",
+  "tmuxSession": "opensaas-os-restore-internal-dashboard-browser-auth-handoff-fdaa1f3e",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-restore-internal-dashboard-browser-auth-handoff/.task/os/restore-internal-dashboard-browser-auth-handoff/session.json",
+  "createdAt": "2026-08-16T22:16:27.043Z"
+}

@@ -63,7 +63,7 @@ describe('canonical tool package layout', () => {
     const built = buildToolManifest({ write: false });
     expect(built.full.tools.map((entry) => entry.definition)).toEqual(baseline.definitions);
     expect(built.full.tools).toHaveLength(baseline.definitions.length);
-    expect(built.core.tools).toHaveLength(14);
+    expect(built.core.tools).toHaveLength(15);
     expect(built.workflows.workflows.map((workflow) => workflow.id)).toEqual(workflows.map((workflow) => workflow.id));
     expect(manifestConfig.outputs).toEqual({
       full: 'packages/os/manifests/generated/tool.manifest.json',

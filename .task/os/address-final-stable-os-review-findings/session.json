@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_d6bf28e2ffd3",
+  "tmuxSession": "opensaas-os-address-final-stable-os-review-findings-d6bf28e2",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/address-final-stable-os-review-findings",
+  "branch": "task/os/address-final-stable-os-review-findings",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-address-final-stable-os-review-findings",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-address-final-stable-os-review-findings",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2215,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2215",
+  "createdAt": "2026-08-26T14:40:03.312Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-address-final-stable-os-review-findings/.task/os/address-final-stable-os-review-findings/session.json"
+}

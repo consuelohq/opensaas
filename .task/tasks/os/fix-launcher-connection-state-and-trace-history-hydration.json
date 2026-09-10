@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-launcher-connection-state-and-trace-history-hydration",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2374,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2374",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-launcher-connection-state-and-trace-history-hydration",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_380028d5a644",
+  "tmuxSession": "opensaas-os-fix-launcher-connection-state-and-trace-history--380028d5",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-launcher-connection-state-and-trace-history-hydration/.task/session.json",
+  "createdAt": "2026-09-03T05:56:39.965Z"
+}

@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_82f152b46c6c",
+  "tmuxSession": "opensaas-workspace-agents-fix-tracing-tool-labels-and-batch-child-inputs-82f152b4",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/fix-tracing-tool-labels-and-batch-child-inputs",
+  "branch": "task/workspace-agents/fix-tracing-tool-labels-and-batch-child-inputs",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-fix-tracing-tool-labels-and-batch-child-inputs",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-fix-tracing-tool-labels-and-batch-child-inputs",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2181,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2181",
+  "createdAt": "2026-08-26T01:51:08.434Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-fix-tracing-tool-labels-and-batch-child-inputs/.task/workspace-agents/fix-tracing-tool-labels-and-batch-child-inputs/session.json"
+}

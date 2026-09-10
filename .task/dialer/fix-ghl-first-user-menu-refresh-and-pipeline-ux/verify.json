@@ -1,0 +1,101 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/dialer/fix-ghl-first-user-menu-refresh-and-pipeline-ux",
+  "base": "origin/stream/dialer",
+  "headSha": "07125d3fb853d8ddc3df6dcf683d211a7906b02b",
+  "changeHash": "112aff2d288e08bac451e19cb0b4d93d75fd80c368e40522b28a6950b565fc75",
+  "changedFiles": [
+    "packages/lead-connector/src/embed/commercial-ui.acceptance.test.ts",
+    "packages/lead-connector/src/embed/controller.test.ts",
+    "packages/lead-connector/src/embed/idle-refresh.test.ts",
+    "packages/lead-connector/src/embed/idle-refresh.ts",
+    "packages/lead-connector/src/embed/main.ts"
+  ],
+  "verifiedAt": "2026-08-10T02:00:28.721Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/dialer/fix-ghl-first-user-menu-refresh-and-pipeline-ux/current.json",
+        ".task/dialer/fix-ghl-first-user-menu-refresh-and-pipeline-ux/evidence-log.json",
+        ".task/dialer/fix-ghl-first-user-menu-refresh-and-pipeline-ux/read-log.json",
+        ".task/dialer/fix-ghl-first-user-menu-refresh-and-pipeline-ux/session.json",
+        ".task/dialer/fix-ghl-first-user-menu-refresh-and-pipeline-ux/workpad.md",
+        ".task/tasks/dialer/fix-ghl-first-user-menu-refresh-and-pipeline-ux.json",
+        "packages/lead-connector/src/embed/commercial-ui.acceptance.test.ts",
+        "packages/lead-connector/src/embed/controller.test.ts",
+        "packages/lead-connector/src/embed/idle-refresh.test.ts",
+        "packages/lead-connector/src/embed/idle-refresh.ts",
+        "packages/lead-connector/src/embed/main.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "lead-connector-package",
+          "critical": true,
+          "reason": "LeadConnector provider changes must prove OAuth, token, resource, webhook, architecture, and branding contracts.",
+          "matchedFiles": [
+            "packages/lead-connector/src/embed/commercial-ui.acceptance.test.ts",
+            "packages/lead-connector/src/embed/controller.test.ts",
+            "packages/lead-connector/src/embed/idle-refresh.test.ts",
+            "packages/lead-connector/src/embed/idle-refresh.ts",
+            "packages/lead-connector/src/embed/main.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "LeadConnector provider contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/lead-connector/src"
+          ],
+          "ruleId": "lead-connector-package",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "LeadConnector provider contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/lead-connector/src"
+          ],
+          "ruleId": "lead-connector-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 799,
+          "outputTail": "> reveals wrap-up only after the call reaches a terminal state [0.02ms]\n\npackages/lead-connector/src/embed/click-to-call-runtime.test.ts:\n(pass) LeadConnector click-to-call runtime > anchors beside Smart Lists and relays supported Custom JS user context [19.58ms]\n(pass) LeadConnector click-to-call runtime > remounts and reauthenticates after GHL replaces route DOM [19.71ms]\n(pass) LeadConnector click-to-call runtime > refreshes signed context on a route change without replacing a connected iframe [10.47ms]\n(pass) LeadConnector click-to-call runtime > anchors beside the native Opportunities list control without duplication [6.94ms]\n\npackages/lead-connector/src/embed/embed-build.contract.test.ts:\n(pass) LeadConnector embed build > content-versions every application asset reference with its exact digest [37.97ms]\n\npackages/lead-connector/src/embed/architecture.contract.test.ts:\n(pass) LeadConnector browser architecture and branding > contains no forbidden branding or server/runtime dependencies in browser source and public assets [1.43ms]\n(pass) LeadConnector browser architecture and branding > builds a browser-only bundle without forbidden dependencies or branding [10.49ms]\n(pass) LeadConnector browser architecture and branding > targets the actual approved live or sandbox custom-page origin for click-to-call messages [0.10ms]\n(pass) LeadConnector browser architecture and branding > owns one route-aware launcher and one compact overlay iframe lifecycle [0.07ms]\n(pass) LeadConnector browser architecture and branding > authenticates the overlay through the supported Custom JS session context API [0.05ms]\n(pass) LeadConnector browser architecture and branding > anchors the launcher beside native Contacts and Opportunities controls [0.07ms]\n(pass) LeadConnector browser architecture and branding > publishes a separate wrapped Marketplace artifact while keeping the public script executable [0.22ms]\n(pass) LeadConnector browser architecture and branding > creates the iframe on demand and preserves a busy session across route changes [0.07ms]\n(pass) LeadConnector browser architecture and branding > keeps comma-separated selector literals safe for Marketplace editor persistence [0.20ms]\n(pass) LeadConnector browser architecture and branding > wires progressive commercial billing forms and confirmation actions to the controller [0.06ms]\n(pass) LeadConnector browser architecture and branding > restarts the trusted parent bootstrap exchange when authentication is retried [0.03ms]\n\npackages/lead-connector/src/embed/agent-voice.test.ts:\n(pass) LeadConnector browser agent voice > gets microphone permission, registers the device, and resolves after the agent call is accepted [0.37ms]\n(pass) LeadConnector browser agent voice > rejects if the media call fails before acceptance and disconnects the partial leg [0.18ms]\n\npackages/lead-connector/src/embed/idle-refresh.test.ts:\n(pass) LeadConnector idle refresh scheduling > uses focus and visible transitions without polling and fully cleans up across remounts [0.13ms]\n\npackages/lead-connector/src/deployment/custom-menu.test.ts:\n(pass) LeadConnector custom menu deployment contract > targets one sandbox location in iframe mode with microphone permission [0.06ms]\n(pass) LeadConnector custom menu deployment contract > updates an existing sandbox menu instead of creating duplicates [0.29ms]\n\npackages/lead-connector/src/deployment/commercial-artifacts.test.ts:\n(pass) commercial deployment artifacts > installs an admin-only GHL menu at /admin with microphone permission [0.03ms]\n(pass) commercial deployment artifacts > builds independently versioned marketplace JavaScript and CSS artifacts [0.06ms]\n(pass) commercial deployment artifacts > centers a responsive modal backdrop while preserving a stable native launcher [0.07ms]\n(pass) commercial deployment artifacts > removes obsolete metering workspace and build references [1.48ms]\n\n 108 pass\n 0 fail\n 944 expect() calls\nRan 108 tests across 22 files. [790.00ms]\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

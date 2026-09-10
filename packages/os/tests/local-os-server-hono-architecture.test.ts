@@ -151,6 +151,8 @@ describe('local OS Hono server architecture', () => {
       { method: 'POST', path: '/gateway/environments/upsert', trust: 'signed' },
       { method: 'POST', path: '/gateway/environments/delete', trust: 'signed' },
       { method: 'GET', path: '/gateway/secrets/bindings', trust: 'signed' },
+      { method: 'GET', path: '/gateway/secrets/setup', trust: 'signed' },
+      { method: 'POST', path: '/gateway/secrets/install', trust: 'signed' },
       { method: 'ANY', path: '/mcp', trust: 'signed-or-oauth' },
       { method: 'GET', path: '/get_steering', trust: 'signed' },
       { method: 'POST', path: '/get_steering', trust: 'signed' },

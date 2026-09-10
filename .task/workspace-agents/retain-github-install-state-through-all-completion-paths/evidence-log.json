@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "worktree_id": "task/workspace-agents/retain-github-install-state-through-all-completion-paths",
+  "events": [
+    {
+      "id": "7e75455f-28ee-4358-a253-07e7bbf4fd25",
+      "occurred_at": "2026-08-29T06:05:57.718Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/cloudflare/os-device-authority/src/routes/github-source-control.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/retain-github-install-state-through-all-completion-paths",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/retain-github-install-state-through-all-completion-paths"
+      }
+    },
+    {
+      "id": "590aa90f-0f3f-44f8-a211-9199aaa821e7",
+      "occurred_at": "2026-08-29T06:06:03.332Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/github-source-control-authority.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/retain-github-install-state-through-all-completion-paths",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/retain-github-install-state-through-all-completion-paths"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-29T06:06:03.421Z"
+}

@@ -356,12 +356,18 @@ function readRetentionState(home?: string): RetentionState {
   };
 }
 
-function listStrictVerifiedReleases(
-  home?: string,
-): LifecycleReleaseReference[] {
+type RetentionReleaseCandidate = {
+  path: string;
+  bundleId: string;
+};
+
+function listRetentionReleaseCandidates(
+  home: string | undefined,
+  protectedBundleIds: ReadonlySet<string>,
+): RetentionReleaseCandidate[] {
   const paths = resolveLifecyclePaths(home);
   if (!existsSync(paths.releasesDir)) return [];
-  const releases: LifecycleReleaseReference[] = [];
+  const releases: RetentionReleaseCandidate[] = [];
   for (const entry of readdirSync(paths.releasesDir, { withFileTypes: true })) {
     const releasePath = join(paths.releasesDir, entry.name);
     const stat = lstatSync(releasePath);
@@ -377,14 +383,31 @@ function listStrictVerifiedReleases(
         `runtime release entry is not a directory: ${entry.name}`,
       );
     }
-    const manifest = verifyInstalledRuntimeRelease(releasePath);
-    if (!releaseDirectoryMatchesBundleId(entry.name, manifest.bundleId)) {
+    let bundleId: string;
+    try {
+      bundleId = runtimeBundleIdFromDirectoryName(entry.name);
+    } catch (error: unknown) {
       throw lifecycleError(
         'RETENTION_FAILED',
-        `runtime release identity mismatch: ${entry.name}`,
+        `runtime release entry has an invalid identity: ${entry.name}`,
+        { cause: error },
       );
     }
-    releases.push({ path: releasePath, manifest });
+    try {
+      const manifest = verifyInstalledRuntimeRelease(releasePath);
+      if (manifest.bundleId !== bundleId) {
+        throw new Error(`verified bundle identity does not match ${entry.name}`);
+      }
+    } catch (error: unknown) {
+      if (protectedBundleIds.has(bundleId)) {
+        throw lifecycleError(
+          'RETENTION_FAILED',
+          `protected runtime release failed verification: ${entry.name}`,
+          { cause: error },
+        );
+      }
+    }
+    releases.push({ path: releasePath, bundleId });
   }
   return releases;
 }
@@ -476,16 +499,19 @@ export function pruneLifecycleReleases(input: {
   const current = readLifecycleReleaseReference(paths.home, 'current');
   const previous = readLifecycleReleaseReference(paths.home, 'previous');
   const state = readRetentionState(paths.home);
-  const releases = listStrictVerifiedReleases(paths.home);
-  const byId = new Map(
-    releases.map((release) => [release.manifest.bundleId, release]),
-  );
   const protectedBundleIds = new Set([
     ...(current ? [current.manifest.bundleId] : []),
     ...(previous ? [previous.manifest.bundleId] : []),
     ...state.pinnedBundleIds,
     ...state.unresolvedContentBaseBundleIds,
   ]);
+  const releases = listRetentionReleaseCandidates(
+    paths.home,
+    protectedBundleIds,
+  );
+  const byId = new Map(
+    releases.map((release) => [release.bundleId, release]),
+  );
   for (const bundleId of protectedBundleIds) {
     if (!byId.has(bundleId)) {
       throw lifecycleError(
@@ -496,7 +522,7 @@ export function pruneLifecycleReleases(input: {
   }
   const removedBundleIds: string[] = [];
   for (const release of releases) {
-    if (protectedBundleIds.has(release.manifest.bundleId)) continue;
+    if (protectedBundleIds.has(release.bundleId)) continue;
     if (
       !isPathWithin(paths.releasesDir, release.path) ||
       release.path === resolve(paths.releasesDir)
@@ -508,7 +534,7 @@ export function pruneLifecycleReleases(input: {
     }
     if (!(input.dryRun ?? false))
       rmSync(release.path, { recursive: true, force: true });
-    removedBundleIds.push(release.manifest.bundleId);
+    removedBundleIds.push(release.bundleId);
   }
   const removedEphemeralPaths = pruneLifecycleEphemeralDirectories({
     home: paths.home,

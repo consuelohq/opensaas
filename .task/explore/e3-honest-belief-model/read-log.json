@@ -1,0 +1,14 @@
+{
+  "files": [
+    ".task/explore/e3-honest-belief-model/current.json",
+    ".task/explore/e3-honest-belief-model/verify.json",
+    "packages/os/SCRIPTS.md",
+    "packages/os/package.json",
+    "packages/os/scripts/review.js",
+    "packages/os/tests/tool-package-layout.test.ts",
+    "packages/workspace/scripts/verify.js",
+    "packages/workspace/test-selection.registry.json",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "updatedAt": "2026-08-15T19:07:36.283Z"
+}

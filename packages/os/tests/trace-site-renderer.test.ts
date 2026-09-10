@@ -35,7 +35,7 @@ describe('shared trace site renderer', () => {
       "import { buildObservabilityTracesSite } from './observability-traces-site';",
     );
     expect(sitesSource).toContain(
-      'fs.writeFileSync(paths.tracesIndexPath, buildObservabilityTracesSite()',
+      'fs.writeFileSync(paths.tracesIndexPath, buildObservabilityTracesSite(chromeOptions)',
     );
     expect(sitesSource).not.toContain("return renderTraceSite({ assetMode: 'inline' });");
     expect(sitesSource).not.toContain("import { renderTraceSite } from './trace-site';");

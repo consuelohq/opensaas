@@ -15,13 +15,15 @@ import {
   runMediaCli,
 } from './helpers';
 
-const FIXTURE_PNG_BASE64 =
-  'iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAIAAABLbSncAAAAFklEQVR42mP4jwMwEJBgQAK0kiDBVQAL0I9xH8BxaAAAAABJRU5ErkJggg==';
-
 function writeFixturePng(dir: string): string {
   const path = join(dir, 'fixture.png');
-  // 8x8 white RGB PNG with the same centered 4x4 black square used by the old ffmpeg fixture.
-  writeFileSync(path, Buffer.from(FIXTURE_PNG_BASE64, 'base64'));
+  writeFileSync(
+    path,
+    Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAGUlEQVR4nGP4TwAwEK2AgYEBBQ+EArJ9AQDEFs8xYAHzPwAAAABJRU5ErkJggg==',
+      'base64',
+    ),
+  );
   return path;
 }
 

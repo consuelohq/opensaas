@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_8b2462df6fd6",
+  "tmuxSession": "opensaas-dialer-make-commercial-billing-access-fail-closed-8b2462df",
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/make-commercial-billing-access-fail-closed",
+  "branch": "task/dialer/make-commercial-billing-access-fail-closed",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-make-commercial-billing-access-fail-closed",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-make-commercial-billing-access-fail-closed",
+  "prNumber": 1809,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1809",
+  "createdAt": "2026-08-10T01:41:14.704Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-make-commercial-billing-access-fail-closed/.task/dialer/make-commercial-billing-access-fail-closed/session.json"
+}

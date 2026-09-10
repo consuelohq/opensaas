@@ -531,7 +531,7 @@ describe('managed metadata migration and ownership', () => {
 });
 
 describe('visible steering provisioning integration', () => {
-  it('synchronizes dialer instructions into the configured visible user root', () => {
+  it('does not copy stream-scoped dialer instructions into the visible user root', () => {
     const actions = provisionManagedComponentIndexes({
       home,
       selectedSkills: [],
@@ -541,21 +541,10 @@ describe('visible steering provisioning integration', () => {
     });
     const target = join(userRoot, 'Steering', 'dialer-AGENTS.md');
 
-    expect(readFileSync(target, 'utf8')).toContain(
-      '# Consuelo Dialer agent instructions',
-    );
-    expect(actions).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          type: 'seed_steering',
-          path: target,
-          status: 'created',
-        }),
-      ]),
-    );
+    expect(existsSync(target)).toBe(false);
+    expect(actions.some((action) => action.path === target)).toBe(false);
   });
 });
-
 describe('managed component provisioning integration', () => {
   it('should run built-in tool wrappers from the active runtime with persisted Bun', () => {
     provisionManagedComponentIndexes({

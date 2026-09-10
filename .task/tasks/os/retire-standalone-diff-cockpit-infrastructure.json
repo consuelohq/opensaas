@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/retire-standalone-diff-cockpit-infrastructure",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2347,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2347",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-retire-standalone-diff-cockpit-infrastructure",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_570379236d08",
+  "tmuxSession": "opensaas-os-retire-standalone-diff-cockpit-infrastructure-57037923",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-retire-standalone-diff-cockpit-infrastructure/.task/session.json",
+  "createdAt": "2026-08-31T23:19:45.668Z"
+}

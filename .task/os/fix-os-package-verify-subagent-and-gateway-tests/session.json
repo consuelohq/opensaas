@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_21fe2278bfac",
+  "tmuxSession": "opensaas-os-fix-os-package-verify-subagent-and-gateway-tests-21fe2278",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-os-package-verify-subagent-and-gateway-tests",
+  "branch": "task/os/fix-os-package-verify-subagent-and-gateway-tests",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-os-package-verify-subagent-and-gateway-tests",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-os-package-verify-subagent-and-gateway-tests",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2313,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2313",
+  "createdAt": "2026-08-30T19:20:00.331Z",
+  "tmuxCreated": false,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-os-package-verify-subagent-and-gateway-tests/.task/os/fix-os-package-verify-subagent-and-gateway-tests/session.json"
+}
