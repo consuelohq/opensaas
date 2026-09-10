@@ -1,0 +1,16 @@
+{
+  "area": "dialer-algorithm",
+  "stream": "stream/dialer-algorithm",
+  "taskBranch": "task/dialer-algorithm/reconcile-current-main-for-dialer-release",
+  "baseBranch": "stream/dialer-algorithm",
+  "sourceBranch": "stream/dialer-algorithm",
+  "startFrom": "stream",
+  "prNumber": 2404,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2404",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-algorithm-reconcile-current-main-for-dialer-release",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_baac8c8dc3c7",
+  "tmuxSession": "opensaas-dialer-algorithm-reconcile-current-main-for-dialer-release-baac8c8d",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-algorithm-reconcile-current-main-for-dialer-release/.task/session.json",
+  "createdAt": "2026-09-08T02:32:28.929Z"
+}

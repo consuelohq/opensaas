@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_b8231e4be300",
+  "tmuxSession": "opensaas-dialer-algorithm-finalize-synced-os-script-parity-baseline-b8231e4b",
+  "area": "dialer-algorithm",
+  "stream": "stream/dialer-algorithm",
+  "taskBranch": "task/dialer-algorithm/finalize-synced-os-script-parity-baseline",
+  "branch": "task/dialer-algorithm/finalize-synced-os-script-parity-baseline",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-finalize-synced-os-script-parity-baseline",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-finalize-synced-os-script-parity-baseline",
+  "prNumber": 2072,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2072",
+  "createdAt": "2026-08-15T11:35:57.358Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-finalize-synced-os-script-parity-baseline/.task/dialer-algorithm/finalize-synced-os-script-parity-baseline/session.json"
+}

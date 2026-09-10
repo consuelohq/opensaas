@@ -1,0 +1,19 @@
+{
+  "area": "dialer-algorithm",
+  "stream": "stream/dialer-algorithm",
+  "taskBranch": "task/dialer-algorithm/fix-final-workspace-contract-gate",
+  "baseBranch": "stream/dialer-algorithm",
+  "sourceBranch": "stream/dialer-algorithm",
+  "startFrom": "stream",
+  "prNumber": 2108,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2108",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2108",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2108/fix-final-workspace-contract-gate",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2108",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2108/fix-final-workspace-contract-gate",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-fix-final-workspace-contract-gate",
+  "taskSession": "tsk_0354cedb6eff",
+  "tmuxSession": "opensaas-dialer-algorithm-fix-final-workspace-contract-gate-0354cedb",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-fix-final-workspace-contract-gate/.task/dialer-algorithm/fix-final-workspace-contract-gate/session.json",
+  "createdAt": "2026-08-16T03:09:32.991Z"
+}

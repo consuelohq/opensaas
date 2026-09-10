@@ -1,0 +1,8 @@
+{
+  "files": [
+    ".task/dialer-algorithm/fix-final-workspace-contract-gate/workpad.md",
+    "packages/os/scripts/lib/subagent/lifecycle.ts",
+    "packages/os/scripts/lib/subagent/runner.ts"
+  ],
+  "updatedAt": "2026-08-16T03:18:23.670Z"
+}

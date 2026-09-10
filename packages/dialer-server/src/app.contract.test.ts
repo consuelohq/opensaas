@@ -146,6 +146,46 @@ describe('dialer-server HTTP contracts', () => {
     });
   });
 
+  it('strips untrusted client scientific context when no server authorization boundary is present', async () => {
+    const dependencies = createDependencies();
+    const response = await createDialerServer(dependencies).fetch(
+      authenticatedRequest('/v1/call-sessions', {
+        method: 'POST',
+        body: JSON.stringify({
+          source: 'queue',
+          selectionStrategy: 'predictive',
+          requestedFanout: 1,
+          queueId: 'queue-1',
+          contactIds: ['contact-1'],
+          targetPhones: ['+15550000001'],
+          targetContexts: [
+            {
+              contactId: 'contact-1',
+              context: {
+                contactTimezone: 'Pacific/Kiritimati',
+                opportunityValue: 1_000_000_000,
+              },
+            },
+          ],
+        }),
+      }),
+    );
+
+    expect(response.status).toBe(201);
+    expect(dependencies.application.startCallSession).toHaveBeenCalledWith({
+      workspaceId: 'workspace-1',
+      userId: 'user-1',
+      input: {
+        source: 'queue',
+        selectionStrategy: 'predictive',
+        requestedFanout: 1,
+        queueId: 'queue-1',
+        contactIds: ['contact-1'],
+        targetPhones: ['+15550000001'],
+      },
+    });
+  });
+
   it('loads and terminates a session through one shared use case per route', async () => {
     const dependencies = createDependencies();
     const app = createDialerServer(dependencies);
