@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=2032, height=1192" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      :root {
+        --blue: #0000f2;
+        --paper: #ffffff;
+        --soft-white: #f5f5f5;
+        --ink: #0000f2;
+        --display: "Bodoni Moda", Didot, Georgia, serif;
+        --sans: Inter, -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+        --mono: "JetBrains Mono", Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html,
+      body {
+        width: 2032px;
+        height: 1192px;
+        overflow: hidden;
+        background: var(--paper);
+      }
+
+      body {
+        font-family: var(--sans);
+        color: var(--ink);
+      }
+
+      #root {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: var(--paper);
+      }
+
+      .intro,
+      .outro {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 84px 96px 78px;
+        background: var(--paper);
+        border: 18px solid var(--blue);
+      }
+
+      .intro__meta,
+      .outro__meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 48px;
+        font-family: var(--mono);
+        font-size: 30px;
+        line-height: 1.15;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .intro__title {
+        max-width: 1500px;
+        font-family: var(--display);
+        font-size: 228px;
+        line-height: 0.78;
+        font-weight: 500;
+        letter-spacing: -0.055em;
+        text-transform: lowercase;
+      }
+
+      .intro__title span {
+        display: block;
+      }
+
+      .intro__rule,
+      .outro__rule {
+        width: 100%;
+        height: 5px;
+        background: var(--blue);
+        transform-origin: left center;
+      }
+
+      .intro__dek {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        gap: 64px;
+        font-family: var(--mono);
+        font-size: 34px;
+        line-height: 1.18;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+      }
+
+      .intro__dek strong {
+        font-family: var(--sans);
+        font-size: 58px;
+        letter-spacing: -0.03em;
+        text-transform: none;
+      }
+
+      .evidence-video {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        background: var(--paper);
+        transform-origin: center center;
+      }
+
+      .scene-overlay {
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+      }
+
+      .surface-tag {
+        position: absolute;
+        z-index: 3;
+        top: 34px;
+        left: 34px;
+        display: flex;
+        align-items: baseline;
+        gap: 18px;
+        min-width: 490px;
+        padding: 20px 24px 18px;
+        background: rgba(255, 255, 255, 0.96);
+        border: 4px solid var(--blue);
+      }
+
+      .surface-tag__number {
+        font-family: var(--mono);
+        font-size: 34px;
+        line-height: 1;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+      }
+
+      .surface-tag__name {
+        font-size: 68px;
+        line-height: 0.88;
+        font-weight: 800;
+        letter-spacing: -0.055em;
+        text-transform: lowercase;
+      }
+
+      .capture-note {
+        position: absolute;
+        z-index: 3;
+        top: 40px;
+        right: 40px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 7px;
+        padding: 14px 16px 12px;
+        background: rgba(255, 255, 255, 0.94);
+        border-left: 4px solid var(--blue);
+        font-family: var(--mono);
+        font-size: 25px;
+        line-height: 1;
+        font-weight: 700;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+      }
+
+      .capture-note strong {
+        font-size: 31px;
+        letter-spacing: 0.03em;
+      }
+
+      .sequence-strip {
+        position: absolute;
+        z-index: 3;
+        left: 34px;
+        right: 34px;
+        bottom: 34px;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        height: 74px;
+        background: rgba(255, 255, 255, 0.96);
+        border: 4px solid var(--blue);
+      }
+
+      .sequence-strip__item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 0 20px;
+        border-right: 3px solid var(--blue);
+        font-family: var(--mono);
+        font-size: 24px;
+        line-height: 1;
+        font-weight: 700;
+        letter-spacing: 0.025em;
+        text-transform: uppercase;
+      }
+
+      .sequence-strip__item:last-child {
+        border-right: 0;
+      }
+
+      .sequence-strip__item span {
+        opacity: 0.48;
+      }
+
+      .sequence-strip__item.is-current {
+        color: var(--paper);
+        background: var(--blue);
+      }
+
+      .sequence-strip__item.is-current span {
+        opacity: 0.72;
+      }
+
+      .outro {
+        justify-content: flex-start;
+        gap: 56px;
+        background: var(--blue);
+        color: var(--paper);
+        border-color: var(--paper);
+      }
+
+      .outro__meta {
+        color: var(--paper);
+      }
+
+      .outro__rule {
+        background: var(--paper);
+      }
+
+      .outro__statement {
+        margin-top: auto;
+        max-width: 1650px;
+        font-family: var(--display);
+        font-size: 166px;
+        line-height: 0.86;
+        font-weight: 500;
+        letter-spacing: -0.055em;
+        text-transform: uppercase;
+      }
+
+      .outro__sequence {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0;
+        border-top: 4px solid var(--paper);
+        border-bottom: 4px solid var(--paper);
+      }
+
+      .outro__agent {
+        padding: 22px 20px 20px;
+        border-right: 3px solid var(--paper);
+        font-family: var(--mono);
+        font-size: 29px;
+        line-height: 1;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+
+      .outro__agent:last-child {
+        border-right: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="20.95"
+      data-width="2032"
+      data-height="1192"
+      data-fps="30"
+    >
+      <section id="intro" class="clip intro" data-layout-allow-occlusion data-layout-allow-overlap data-start="0" data-duration="1.45" data-track-index="3">
+        <div class="intro__meta">
+          <span>FIG. 01 / CONNECT</span>
+          <span>RECORDED PRODUCT EVIDENCE</span>
+        </div>
+        <h1 class="intro__title"><span>same</span><span>tools.</span></h1>
+        <div class="intro__rule"></div>
+        <div class="intro__dek">
+          <strong>one workspace / four agents</strong>
+          <span>Consuelo OS</span>
+        </div>
+      </section>
+
+      <video id="chatgpt-video" class="evidence-video" data-layout-allow-occlusion data-layout-allow-overlap data-start="1.45" data-duration="4.30" data-track-index="0" src=".local-assets/chatgpt.mp4" muted playsinline></video>
+      <section id="chatgpt-overlay" class="clip scene-overlay" data-layout-allow-occlusion data-layout-allow-overlap data-start="1.45" data-duration="4.30" data-track-index="2">
+        <div class="surface-tag"><span class="surface-tag__number">01</span><strong class="surface-tag__name">chatgpt</strong></div>
+        <div class="capture-note"><span>recorded session</span><strong>same tool contract</strong></div>
+        <div class="sequence-strip">
+          <div class="sequence-strip__item is-current"><span>01</span>ChatGPT</div>
+          <div class="sequence-strip__item"><span>02</span>Grok</div>
+          <div class="sequence-strip__item"><span>03</span>Codex</div>
+          <div class="sequence-strip__item"><span>04</span>OpenCode</div>
+        </div>
+      </section>
+
+      <video id="grok-video" class="evidence-video" data-layout-allow-occlusion data-layout-allow-overlap data-start="5.75" data-duration="4.30" data-track-index="0" src=".local-assets/grok.mp4" muted playsinline></video>
+      <section id="grok-overlay" class="clip scene-overlay" data-layout-allow-occlusion data-layout-allow-overlap data-start="5.75" data-duration="4.30" data-track-index="2">
+        <div class="surface-tag"><span class="surface-tag__number">02</span><strong class="surface-tag__name">grok</strong></div>
+        <div class="capture-note"><span>recorded session</span><strong>same tool contract</strong></div>
+        <div class="sequence-strip">
+          <div class="sequence-strip__item"><span>01</span>ChatGPT</div>
+          <div class="sequence-strip__item is-current"><span>02</span>Grok</div>
+          <div class="sequence-strip__item"><span>03</span>Codex</div>
+          <div class="sequence-strip__item"><span>04</span>OpenCode</div>
+        </div>
+      </section>
+
+      <video id="codex-video" class="evidence-video" data-layout-allow-occlusion data-layout-allow-overlap data-start="10.05" data-duration="4.30" data-track-index="0" src=".local-assets/codex.mp4" muted playsinline></video>
+      <section id="codex-overlay" class="clip scene-overlay" data-layout-allow-occlusion data-layout-allow-overlap data-start="10.05" data-duration="4.30" data-track-index="2">
+        <div class="surface-tag"><span class="surface-tag__number">03</span><strong class="surface-tag__name">codex</strong></div>
+        <div class="capture-note"><span>recorded session</span><strong>same tool contract</strong></div>
+        <div class="sequence-strip">
+          <div class="sequence-strip__item"><span>01</span>ChatGPT</div>
+          <div class="sequence-strip__item"><span>02</span>Grok</div>
+          <div class="sequence-strip__item is-current"><span>03</span>Codex</div>
+          <div class="sequence-strip__item"><span>04</span>OpenCode</div>
+        </div>
+      </section>
+
+      <video id="opencode-video" class="evidence-video" data-layout-allow-occlusion data-layout-allow-overlap data-start="14.35" data-duration="4.30" data-track-index="0" src=".local-assets/opencode.mp4" muted playsinline></video>
+      <section id="opencode-overlay" class="clip scene-overlay" data-layout-allow-occlusion data-layout-allow-overlap data-start="14.35" data-duration="4.30" data-track-index="2">
+        <div class="surface-tag"><span class="surface-tag__number">04</span><strong class="surface-tag__name">opencode</strong></div>
+        <div class="capture-note"><span>recorded session</span><strong>same tool contract</strong></div>
+        <div class="sequence-strip">
+          <div class="sequence-strip__item"><span>01</span>ChatGPT</div>
+          <div class="sequence-strip__item"><span>02</span>Grok</div>
+          <div class="sequence-strip__item"><span>03</span>Codex</div>
+          <div class="sequence-strip__item is-current"><span>04</span>OpenCode</div>
+        </div>
+      </section>
+
+      <section id="outro" class="clip outro" data-layout-allow-occlusion data-layout-allow-overlap data-start="18.65" data-duration="2.30" data-track-index="3">
+        <div class="outro__meta"><span>FIG. 01 / RESULT</span><span>CONSUELO OS</span></div>
+        <div class="outro__rule"></div>
+        <h2 class="outro__statement">one tool contract.<br />the workspace stays put.</h2>
+        <div class="outro__sequence">
+          <div class="outro__agent">01 / ChatGPT</div>
+          <div class="outro__agent">02 / Grok</div>
+          <div class="outro__agent">03 / Codex</div>
+          <div class="outro__agent">04 / OpenCode</div>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+
+      tl.from("#intro .intro__meta span", { y: 28, opacity: 0, duration: 0.38, stagger: 0.06, ease: "power3.out" }, 0.12);
+      tl.from("#intro .intro__title span:first-child", { x: -48, opacity: 0, duration: 0.46, ease: "expo.out" }, 0.18);
+      tl.from("#intro .intro__title span:last-child", { y: 52, opacity: 0, duration: 0.42, ease: "power4.out" }, 0.24);
+      tl.from("#intro .intro__rule", { scaleX: 0, duration: 0.48, ease: "power2.out" }, 0.26);
+      tl.from("#intro .intro__dek strong", { y: 24, opacity: 0, duration: 0.35, ease: "power3.out" }, 0.34);
+      tl.from("#intro .intro__dek span", { x: 22, opacity: 0, duration: 0.32, ease: "sine.out" }, 0.38);
+
+      // Dense product UIs compare best with straight editorial cuts. Scene timing
+      // provides the transition; no opacity dissolve is applied between surfaces.
+
+      tl.from("#outro .outro__meta span", { y: 26, opacity: 0, duration: 0.34, stagger: 0.05, ease: "power3.out" }, 18.80);
+      tl.from("#outro .outro__rule", { scaleX: 0, duration: 0.44, ease: "power2.out" }, 18.85);
+      tl.from("#outro .outro__statement", { y: 54, opacity: 0, duration: 0.56, ease: "expo.out" }, 18.95);
+      tl.from("#outro .outro__agent", { y: 24, opacity: 0, duration: 0.32, stagger: 0.05, ease: "power3.out" }, 19.18);
+
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

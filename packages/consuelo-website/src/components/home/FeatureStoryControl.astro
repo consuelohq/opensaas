@@ -1,0 +1,340 @@
+---
+import { homeWorkflowRules, homeWorkflowStages } from '../../data/home-content';
+---
+
+<section class="control-story" data-control-story data-story-animate aria-label="A Consuelo workflow applying one set of rules from task start through publication">
+  <header class="control-story__header">
+    <div>
+      <p>WORKFLOW / RELEASE</p>
+      <strong>ONE PLAYBOOK, EVERY RUN</strong>
+    </div>
+    <span>{String(homeWorkflowStages.length).padStart(2, '0')} CHECKPOINTS</span>
+  </header>
+
+  <div class="control-story__canvas">
+    <aside class="control-story__rules" aria-label="Workspace workflow rules">
+      <div class="control-story__rules-head">
+        <span>WORKSPACE RULES</span>
+        <strong>release / v3</strong>
+      </div>
+      {homeWorkflowRules.map((rule) => (
+        <div class="control-story__rule">
+          <div>
+            <strong>{rule.label}</strong>
+            <p>{rule.detail}</p>
+          </div>
+          <span>{rule.value}</span>
+        </div>
+      ))}
+    </aside>
+
+    <div class="control-story__run">
+      <div class="control-story__run-head">
+        <div>
+          <span>TASK</span>
+          <strong>website / meridian</strong>
+        </div>
+        <div>
+          <span>TARGET</span>
+          <strong>stream / website</strong>
+        </div>
+      </div>
+
+      <ol class="control-story__stages">
+        {homeWorkflowStages.map((stage, index) => (
+          <li data-workflow-stage style={`--stage-index:${index}`}>
+            <span class="control-story__stage-number">{String(index + 1).padStart(2, '0')}</span>
+            <div class="control-story__stage-copy">
+              <strong>{stage.label}</strong>
+              <code>{stage.tool}</code>
+              <p>{stage.detail}</p>
+            </div>
+            <span class="control-story__stage-status">{stage.status}</span>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </div>
+
+  <footer class="control-story__footer">
+    <span>AGENT CHANGES</span>
+    <strong>THE WORKFLOW DOES NOT</strong>
+    <span>REVIEW + VERIFY BEFORE PUBLISH</span>
+  </footer>
+</section>
+
+<style>
+  .control-story {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    width: 100%;
+    aspect-ratio: 2032 / 1192;
+    overflow: hidden;
+    border: 1px solid var(--site-color-brand);
+    background: var(--site-color-on-brand);
+    color: var(--site-color-brand);
+  }
+
+  .control-story__header,
+  .control-story__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: clamp(0.65rem, 1.2vw, 0.95rem) clamp(0.75rem, 1.6vw, 1.25rem);
+    font: 650 clamp(0.46rem, 0.66vw, 0.58rem)/1.15 var(--site-font-mono);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .control-story__header {
+    border-bottom: 1px solid currentColor;
+  }
+
+  .control-story__header > div {
+    display: grid;
+    gap: 0.3rem;
+  }
+
+  .control-story__header p,
+  .control-story__footer span,
+  .control-story__footer strong {
+    margin: 0;
+  }
+
+  .control-story__header p,
+  .control-story__header > span,
+  .control-story__footer span {
+    color: var(--site-color-art-muted);
+  }
+
+  .control-story__header strong {
+    font-family: var(--site-font-display);
+    font-size: clamp(0.95rem, 1.55vw, 1.35rem);
+    font-weight: 480;
+    line-height: 0.95;
+  }
+
+  .control-story__canvas {
+    display: grid;
+    grid-template-columns: minmax(12rem, 0.7fr) minmax(0, 1.3fr);
+    min-height: 0;
+  }
+
+  .control-story__rules {
+    display: grid;
+    grid-template-rows: auto repeat(4, minmax(0, 1fr));
+    border-right: 1px solid currentColor;
+  }
+
+  .control-story__rules-head,
+  .control-story__rule,
+  .control-story__run-head {
+    padding: clamp(0.55rem, 1vw, 0.82rem) clamp(0.65rem, 1.35vw, 1rem);
+  }
+
+  .control-story__rules-head,
+  .control-story__run-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--site-color-brand) 24%, transparent);
+    font: 650 clamp(0.42rem, 0.58vw, 0.52rem)/1.2 var(--site-font-mono);
+    letter-spacing: 0.06em;
+  }
+
+  .control-story__rules-head span,
+  .control-story__run-head span {
+    color: var(--site-color-art-muted);
+  }
+
+  .control-story__rule {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.8rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--site-color-brand) 16%, transparent);
+  }
+
+  .control-story__rule:last-child {
+    border-bottom: 0;
+  }
+
+  .control-story__rule > div {
+    display: grid;
+    gap: 0.22rem;
+    min-width: 0;
+  }
+
+  .control-story__rule strong {
+    font-family: var(--site-font-display);
+    font-size: clamp(0.72rem, 1vw, 0.96rem);
+    font-weight: 500;
+    line-height: 1;
+  }
+
+  .control-story__rule p,
+  .control-story__rule > span {
+    margin: 0;
+    font: 620 clamp(0.38rem, 0.52vw, 0.48rem)/1.35 var(--site-font-mono);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .control-story__rule p {
+    color: var(--site-color-art-muted);
+  }
+
+  .control-story__rule > span {
+    border: 1px solid currentColor;
+    padding: 0.28rem 0.38rem;
+    white-space: nowrap;
+  }
+
+  .control-story__run {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    min-width: 0;
+  }
+
+  .control-story__run-head > div {
+    display: flex;
+    gap: 0.45rem;
+  }
+
+  .control-story__stages {
+    display: grid;
+    grid-template-rows: repeat(6, minmax(0, 1fr));
+    margin: 0;
+    padding: 0 clamp(0.75rem, 1.6vw, 1.25rem);
+    list-style: none;
+  }
+
+  .control-story__stages li {
+    position: relative;
+    display: grid;
+    grid-template-columns: 2.1rem minmax(0, 1fr) auto;
+    align-items: center;
+    gap: clamp(0.5rem, 1vw, 0.9rem);
+    border-bottom: 1px solid color-mix(in srgb, var(--site-color-brand) 15%, transparent);
+  }
+
+  .control-story__stages li:last-child {
+    border-bottom: 0;
+  }
+
+  .control-story__stages li::before {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 1rem;
+    width: 1px;
+    background: color-mix(in srgb, var(--site-color-brand) 24%, transparent);
+    content: '';
+  }
+
+  .control-story__stage-number {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: 1.85rem;
+    aspect-ratio: 1;
+    border: 1px solid currentColor;
+    background: var(--site-color-on-brand);
+    font: 650 0.46rem/1 var(--site-font-mono);
+  }
+
+  .control-story__stage-copy {
+    display: grid;
+    grid-template-columns: minmax(3.2rem, 0.35fr) minmax(5rem, 0.7fr) minmax(0, 1fr);
+    align-items: center;
+    gap: clamp(0.4rem, 0.8vw, 0.75rem);
+    min-width: 0;
+  }
+
+  .control-story__stage-copy strong {
+    font: 720 clamp(0.42rem, 0.62vw, 0.55rem)/1 var(--site-font-mono);
+    letter-spacing: 0.06em;
+  }
+
+  .control-story__stage-copy code,
+  .control-story__stage-copy p,
+  .control-story__stage-status {
+    margin: 0;
+    font: 620 clamp(0.38rem, 0.52vw, 0.48rem)/1.25 var(--site-font-mono);
+  }
+
+  .control-story__stage-copy code,
+  .control-story__stage-copy p {
+    overflow: hidden;
+    color: var(--site-color-art-muted);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .control-story__stage-status {
+    font-weight: 720;
+    white-space: nowrap;
+  }
+
+  .control-story__footer {
+    border-top: 1px solid currentColor;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .control-story[data-story-ready='true'] [data-workflow-stage] {
+      opacity: 0.22;
+      transform: translateX(-8px);
+      transition:
+        opacity var(--site-motion-medium) var(--site-ease-standard),
+        transform var(--site-motion-medium) var(--site-ease-emphasized);
+    }
+
+    .control-story[data-story-active='true'] [data-workflow-stage] {
+      opacity: 1;
+      transform: translateX(0);
+      transition-delay: calc(var(--stage-index) * 70ms);
+    }
+  }
+
+  @media (max-width: 760px) {
+    .control-story {
+      aspect-ratio: auto;
+      min-height: 34rem;
+    }
+
+    .control-story__canvas {
+      grid-template-columns: 1fr;
+    }
+
+    .control-story__rules {
+      grid-template-rows: auto;
+      border-right: 0;
+      border-bottom: 1px solid currentColor;
+    }
+
+    .control-story__rule {
+      min-height: 3.4rem;
+    }
+
+    .control-story__stage-copy {
+      grid-template-columns: 1fr;
+      gap: 0.08rem;
+    }
+
+    .control-story__header,
+    .control-story__footer {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .control-story,
+    .control-story * {
+      transition: none !important;
+    }
+  }
+</style>

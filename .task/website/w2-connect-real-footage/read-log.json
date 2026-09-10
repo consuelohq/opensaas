@@ -1,0 +1,9 @@
+{
+  "files": [
+    ".task/website/w2-connect-real-footage/workpad.md",
+    "packages/consuelo-website/AGENTS.md",
+    "packages/consuelo-website/src/styles/primitives.css",
+    "packages/consuelo-website/tests/website-structure.test.js"
+  ],
+  "updatedAt": "2026-08-31T21:49:25.618Z"
+}

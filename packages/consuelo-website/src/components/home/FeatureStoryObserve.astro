@@ -1,0 +1,544 @@
+---
+import {
+  homeObserveAnchor,
+  homeObserveTrace,
+  homeObserveTraceRows,
+} from '../../data/home-content';
+import {
+  aggregateTraceHeatmap,
+  TRACE_HEATMAP_HOURS,
+} from '../../lib/trace-heatmap';
+
+const heatmap = aggregateTraceHeatmap(homeObserveTraceRows, new Date(homeObserveAnchor));
+const compact = (value: number) => new Intl.NumberFormat('en-US', {
+  notation: 'compact',
+  maximumFractionDigits: 1,
+}).format(value);
+const money = (value: number) => `$${value.toFixed(value >= 1 ? 2 : 4)}`;
+
+const hottest = heatmap.days
+  .flatMap((day, dayIndex) => day.buckets.map((bucket, hour) => ({ day, dayIndex, bucket, hour })))
+  .sort((left, right) => right.bucket.calls - left.bucket.calls)[0];
+const selectedDayIndex = hottest?.dayIndex ?? 0;
+const selectedHour = hottest?.hour ?? 0;
+const selectedBucket = hottest?.bucket ?? { calls: 0, tokens: 0, cost: 0, level: 0 };
+const selectedTime = `${hottest?.day.dateLabel ?? 'Wed, Aug 27'} · ${String(selectedHour).padStart(2, '0')}:00`;
+const hourLabels = Array.from({ length: TRACE_HEATMAP_HOURS }, (_, hour) =>
+  hour % 3 === 0 || hour === 23 ? String(hour).padStart(2, '0') : '',
+);
+---
+
+<section class="observe-story" data-observe-story data-story-animate aria-label="Interactive Consuelo trace heatmap and expanded trace">
+  <header class="observe-story__header">
+    <div>
+      <p>LAST SEVEN DAYS</p>
+      <strong>LIVE TRACE ACTIVITY</strong>
+      <span>Calls, tokens, and cost by hour. Hover or focus any cell for details.</span>
+    </div>
+    <dl class="observe-story__summary" aria-label="Trace activity totals">
+      <div><dt>CALLS</dt><dd>{compact(heatmap.totals.calls)}</dd></div>
+      <div><dt>TOKENS</dt><dd>{compact(heatmap.totals.tokens)}</dd></div>
+      <div><dt>COST</dt><dd>{money(heatmap.totals.cost)}</dd></div>
+    </dl>
+  </header>
+
+  <div class="observe-story__heatmap" aria-label="Trace activity by hour for the last seven days">
+    <div class="observe-story__frame">
+      <div class="observe-story__hours" aria-hidden="true">
+        <span></span>
+        {hourLabels.map((hour) => <span>{hour}</span>)}
+      </div>
+
+      <div class="observe-story__grid" role="grid" aria-label={`Trace activity by hour. ${heatmap.totals.calls} calls total.`}>
+        {heatmap.days.map((day, dayIndex) => (
+          <div class="observe-story__row" role="row">
+            <span class="observe-story__day" role="rowheader">{day.label}</span>
+            {day.buckets.map((bucket, hour) => {
+              const hourLabel = `${String(hour).padStart(2, '0')}:00`;
+              const time = `${day.dateLabel} · ${hourLabel}`;
+              const selected = dayIndex === selectedDayIndex && hour === selectedHour;
+              return (
+                <button
+                  type="button"
+                  class:list={['observe-story__cell', { 'is-selected': selected }]}
+                  role="gridcell"
+                  data-overview-heat-cell
+                  data-level={bucket.level}
+                  data-time={time}
+                  data-calls={bucket.calls}
+                  data-tokens={bucket.tokens}
+                  data-cost={bucket.cost}
+                  aria-label={`${time}, ${bucket.calls} calls, ${compact(bucket.tokens)} tokens, ${money(bucket.cost)}`}
+                ></button>
+              );
+            })}
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+
+  <div class="observe-story__selection">
+    <div class="observe-story__selection-meta">
+      <span>SELECTED HOUR</span>
+      <strong>{selectedTime}</strong>
+      <dl>
+        <div><dt>CALLS</dt><dd>{selectedBucket.calls}</dd></div>
+        <div><dt>TOKENS</dt><dd>{compact(selectedBucket.tokens)}</dd></div>
+        <div><dt>COST</dt><dd>{money(selectedBucket.cost)}</dd></div>
+      </dl>
+    </div>
+
+    <article class="observe-story__trace" data-observe-trace>
+      <time>{homeObserveTrace.time}</time>
+      <div class="observe-story__trace-main">
+        <span>{homeObserveTrace.agent}</span>
+        <strong>{homeObserveTrace.tool}</strong>
+        <p>{homeObserveTrace.summary}</p>
+      </div>
+      <div class="observe-story__trace-meta">
+        <span>{homeObserveTrace.node}</span>
+        <span>{homeObserveTrace.duration}</span>
+        <strong>{homeObserveTrace.result}</strong>
+      </div>
+    </article>
+  </div>
+
+  <aside class="observe-story__tooltip" data-trace-heatmap-tooltip hidden>
+    <time data-heat-time></time>
+    <dl>
+      <div><dt>CALLS</dt><dd data-heat-calls>0</dd></div>
+      <div><dt>TOKENS</dt><dd data-heat-tokens>0</dd></div>
+      <div><dt>COST</dt><dd data-heat-cost>$0.0000</dd></div>
+    </dl>
+  </aside>
+</section>
+
+<style>
+  .observe-story {
+    position: relative;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    width: 100%;
+    aspect-ratio: 2032 / 1192;
+    overflow: hidden;
+    border: 1px solid var(--site-color-brand);
+    background: var(--site-color-on-brand);
+    color: var(--site-color-brand);
+  }
+
+  .observe-story__header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: clamp(1rem, 2.4vw, 2rem);
+    padding: clamp(0.7rem, 1.3vw, 1rem) clamp(0.8rem, 1.7vw, 1.3rem);
+    border-bottom: 1px solid currentColor;
+  }
+
+  .observe-story__header > div {
+    display: grid;
+    gap: 0.25rem;
+  }
+
+  .observe-story__header p,
+  .observe-story__header span,
+  .observe-story__summary,
+  .observe-story__summary dt,
+  .observe-story__summary dd,
+  .observe-story__selection dl,
+  .observe-story__selection dt,
+  .observe-story__selection dd,
+  .observe-story__trace p {
+    margin: 0;
+  }
+
+  .observe-story__header p,
+  .observe-story__header span {
+    color: var(--site-color-art-muted);
+    font: 640 clamp(0.4rem, 0.56vw, 0.5rem)/1.35 var(--site-font-mono);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .observe-story__header strong {
+    font-family: var(--site-font-display);
+    font-size: clamp(1rem, 1.8vw, 1.6rem);
+    font-weight: 480;
+    line-height: 0.95;
+  }
+
+  .observe-story__summary {
+    display: grid;
+    grid-template-columns: repeat(3, auto);
+    gap: clamp(0.75rem, 1.6vw, 1.35rem);
+  }
+
+  .observe-story__summary div {
+    display: grid;
+    gap: 0.18rem;
+    text-align: right;
+  }
+
+  .observe-story__summary dt,
+  .observe-story__summary dd {
+    font: 650 clamp(0.4rem, 0.56vw, 0.5rem)/1 var(--site-font-mono);
+  }
+
+  .observe-story__summary dt {
+    color: var(--site-color-art-muted);
+  }
+
+  .observe-story__heatmap {
+    min-height: 0;
+    overflow: hidden;
+    padding: clamp(0.62rem, 1.25vw, 0.95rem) clamp(0.8rem, 1.7vw, 1.3rem);
+  }
+
+  .observe-story__frame {
+    display: grid;
+    gap: clamp(0.32rem, 0.55vw, 0.46rem);
+    height: 100%;
+  }
+
+  .observe-story__hours,
+  .observe-story__row {
+    display: grid;
+    grid-template-columns: clamp(1.8rem, 3.5vw, 2.6rem) repeat(24, minmax(0, 1fr));
+    gap: clamp(0.1rem, 0.25vw, 0.2rem);
+    align-items: center;
+  }
+
+  .observe-story__hours {
+    color: var(--site-color-art-muted);
+    font: 620 clamp(0.34rem, 0.45vw, 0.41rem)/1 var(--site-font-mono);
+  }
+
+  .observe-story__hours span:not(:first-child) {
+    text-align: center;
+  }
+
+  .observe-story__grid {
+    display: grid;
+    grid-template-rows: repeat(7, minmax(0, 1fr));
+    gap: clamp(0.14rem, 0.28vw, 0.22rem);
+    min-height: 0;
+  }
+
+  .observe-story__day {
+    color: var(--site-color-art-muted);
+    font: 650 clamp(0.36rem, 0.48vw, 0.43rem)/1 var(--site-font-mono);
+  }
+
+  .observe-story__cell {
+    min-width: 0;
+    min-height: clamp(0.7rem, 1.55vw, 1.35rem);
+    border: 0;
+    border-radius: 2px;
+    outline: 0;
+    background: color-mix(in srgb, var(--site-color-brand) 4%, var(--site-color-on-brand));
+    padding: 0;
+    cursor: default;
+    transition:
+      box-shadow var(--site-motion-fast) var(--site-ease-standard),
+      transform var(--site-motion-fast) var(--site-ease-standard);
+  }
+
+  .observe-story__cell[data-level='1'] { background: color-mix(in srgb, var(--site-color-brand) 12%, var(--site-color-on-brand)); }
+  .observe-story__cell[data-level='2'] { background: color-mix(in srgb, var(--site-color-brand) 22%, var(--site-color-on-brand)); }
+  .observe-story__cell[data-level='3'] { background: color-mix(in srgb, var(--site-color-brand) 36%, var(--site-color-on-brand)); }
+  .observe-story__cell[data-level='4'] { background: color-mix(in srgb, var(--site-color-brand) 56%, var(--site-color-on-brand)); }
+  .observe-story__cell[data-level='5'] { background: var(--site-color-brand); }
+
+  .observe-story__cell:hover,
+  .observe-story__cell:focus-visible,
+  .observe-story__cell.is-selected {
+    transform: translateY(-1px);
+    box-shadow:
+      inset 0 0 0 1px var(--site-color-brand),
+      0 5px 13px color-mix(in srgb, var(--site-color-brand) 16%, transparent);
+  }
+
+  .observe-story__cell.is-selected {
+    outline: 1px solid var(--site-color-brand);
+    outline-offset: 2px;
+  }
+
+  .observe-story__selection {
+    display: grid;
+    grid-template-columns: minmax(10rem, 0.44fr) minmax(0, 1fr);
+    border-top: 1px solid currentColor;
+  }
+
+  .observe-story__selection-meta,
+  .observe-story__trace {
+    padding: clamp(0.62rem, 1.1vw, 0.85rem) clamp(0.8rem, 1.7vw, 1.3rem);
+  }
+
+  .observe-story__selection-meta {
+    display: grid;
+    align-content: center;
+    gap: 0.25rem;
+    border-right: 1px solid currentColor;
+  }
+
+  .observe-story__selection-meta > span,
+  .observe-story__selection-meta > strong,
+  .observe-story__selection dt,
+  .observe-story__selection dd,
+  .observe-story__trace time,
+  .observe-story__trace-main span,
+  .observe-story__trace-main p,
+  .observe-story__trace-meta {
+    font: 620 clamp(0.38rem, 0.52vw, 0.47rem)/1.25 var(--site-font-mono);
+    letter-spacing: 0.04em;
+  }
+
+  .observe-story__selection-meta > span,
+  .observe-story__selection dt,
+  .observe-story__trace time,
+  .observe-story__trace-main span,
+  .observe-story__trace-main p,
+  .observe-story__trace-meta span {
+    color: var(--site-color-art-muted);
+  }
+
+  .observe-story__selection-meta > strong {
+    font-weight: 720;
+  }
+
+  .observe-story__selection-meta dl {
+    display: flex;
+    gap: 0.7rem;
+  }
+
+  .observe-story__selection-meta dl div {
+    display: grid;
+    gap: 0.1rem;
+  }
+
+  .observe-story__selection dd {
+    font-weight: 720;
+  }
+
+  .observe-story__trace {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: clamp(0.65rem, 1.25vw, 1rem);
+    min-width: 0;
+  }
+
+  .observe-story__trace-main {
+    display: grid;
+    gap: 0.12rem;
+    min-width: 0;
+  }
+
+  .observe-story__trace-main strong {
+    font-family: var(--site-font-display);
+    font-size: clamp(0.8rem, 1.2vw, 1.08rem);
+    font-weight: 500;
+    line-height: 1;
+  }
+
+  .observe-story__trace-main p {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .observe-story__trace-meta {
+    display: grid;
+    justify-items: end;
+    gap: 0.1rem;
+    text-align: right;
+  }
+
+  .observe-story__trace-meta strong {
+    color: var(--site-color-brand);
+  }
+
+  .observe-story__tooltip {
+    position: fixed;
+    z-index: 160;
+    width: min(15rem, calc(100vw - 1.5rem));
+    border: 1px solid var(--site-color-brand);
+    background: color-mix(in srgb, var(--site-color-on-brand) 94%, transparent);
+    box-shadow: var(--site-shadow-raised);
+    padding: 0.65rem 0.72rem;
+    backdrop-filter: blur(14px);
+    pointer-events: none;
+  }
+
+  .observe-story__tooltip time {
+    display: block;
+    margin-bottom: 0.55rem;
+    color: var(--site-color-brand);
+    font: 700 0.56rem/1.2 var(--site-font-mono);
+  }
+
+  .observe-story__tooltip dl {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.6rem;
+    margin: 0;
+  }
+
+  .observe-story__tooltip dt,
+  .observe-story__tooltip dd {
+    margin: 0;
+    font-family: var(--site-font-mono);
+  }
+
+  .observe-story__tooltip dt {
+    color: var(--site-color-art-muted);
+    font-size: 0.43rem;
+    letter-spacing: 0.06em;
+  }
+
+  .observe-story__tooltip dd {
+    margin-top: 0.16rem;
+    font-size: 0.58rem;
+    font-weight: 720;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .observe-story[data-story-ready='true'] [data-overview-heat-cell] {
+      opacity: 0.35;
+      transform: scale(0.92);
+      transition:
+        opacity var(--site-motion-medium) var(--site-ease-standard),
+        transform var(--site-motion-medium) var(--site-ease-emphasized),
+        box-shadow var(--site-motion-fast) var(--site-ease-standard);
+    }
+
+    .observe-story[data-story-active='true'] [data-overview-heat-cell] {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .observe-story[data-story-ready='true'] [data-observe-trace] {
+      opacity: 0;
+      transform: translateY(8px);
+      transition:
+        opacity var(--site-motion-medium) var(--site-ease-standard),
+        transform var(--site-motion-medium) var(--site-ease-emphasized);
+    }
+
+    .observe-story[data-story-active='true'] [data-observe-trace] {
+      opacity: 1;
+      transform: translateY(0);
+      transition-delay: var(--site-motion-medium);
+    }
+  }
+
+  @media (max-width: 760px) {
+    .observe-story {
+      aspect-ratio: auto;
+      min-height: 31rem;
+    }
+
+    .observe-story__header {
+      grid-template-columns: 1fr;
+      align-items: start;
+    }
+
+    .observe-story__summary div {
+      text-align: left;
+    }
+
+    .observe-story__heatmap {
+      overflow-x: auto;
+      overscroll-behavior-inline: contain;
+    }
+
+    .observe-story__frame {
+      min-width: 38rem;
+    }
+
+    .observe-story__selection {
+      grid-template-columns: 1fr;
+    }
+
+    .observe-story__selection-meta {
+      border-right: 0;
+      border-bottom: 1px solid currentColor;
+    }
+
+    .observe-story__trace {
+      grid-template-columns: auto minmax(0, 1fr);
+    }
+
+    .observe-story__trace-meta {
+      grid-column: 1 / -1;
+      grid-template-columns: repeat(3, auto);
+      justify-content: space-between;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .observe-story,
+    .observe-story * {
+      transition: none !important;
+    }
+  }
+</style>
+
+<script>
+  const compactHeatNumber = (value: string | undefined) => new Intl.NumberFormat(undefined, {
+    notation: 'compact',
+    maximumFractionDigits: 1,
+  }).format(Number(value || 0));
+
+  const heatMoney = (value: string | undefined) => {
+    const amount = Number(value || 0);
+    return `$${amount.toFixed(amount >= 1 ? 2 : 4)}`;
+  };
+
+  const placeHeatTooltip = (tooltip: HTMLElement, cell: HTMLElement) => {
+    const rect = cell.getBoundingClientRect();
+    window.requestAnimationFrame(() => {
+      const left = Math.max(
+        12,
+        Math.min(window.innerWidth - tooltip.offsetWidth - 12, rect.left + rect.width / 2 - tooltip.offsetWidth / 2),
+      );
+      const preferredTop = rect.top - tooltip.offsetHeight - 10;
+      const top = preferredTop >= 12
+        ? preferredTop
+        : Math.min(window.innerHeight - tooltip.offsetHeight - 12, rect.bottom + 10);
+      tooltip.style.left = `${Math.round(left)}px`;
+      tooltip.style.top = `${Math.round(top)}px`;
+    });
+  };
+
+  document.querySelectorAll<HTMLElement>('[data-observe-story]').forEach((story) => {
+    const tooltip = story.querySelector<HTMLElement>('[data-trace-heatmap-tooltip]');
+    if (!tooltip) return;
+
+    const time = tooltip.querySelector<HTMLElement>('[data-heat-time]');
+    const calls = tooltip.querySelector<HTMLElement>('[data-heat-calls]');
+    const tokens = tooltip.querySelector<HTMLElement>('[data-heat-tokens]');
+    const cost = tooltip.querySelector<HTMLElement>('[data-heat-cost]');
+
+    const hideTooltip = () => {
+      tooltip.hidden = true;
+    };
+
+    const showTooltip = (cell: HTMLElement) => {
+      if (time) time.textContent = cell.dataset.time || '';
+      if (calls) calls.textContent = compactHeatNumber(cell.dataset.calls);
+      if (tokens) tokens.textContent = compactHeatNumber(cell.dataset.tokens);
+      if (cost) cost.textContent = heatMoney(cell.dataset.cost);
+      tooltip.hidden = false;
+      placeHeatTooltip(tooltip, cell);
+    };
+
+    story.querySelectorAll<HTMLElement>('[data-overview-heat-cell]').forEach((cell) => {
+      cell.addEventListener('pointerenter', () => showTooltip(cell));
+      cell.addEventListener('pointerleave', hideTooltip);
+      cell.addEventListener('focus', () => showTooltip(cell));
+      cell.addEventListener('blur', hideTooltip);
+    });
+  });
+</script>

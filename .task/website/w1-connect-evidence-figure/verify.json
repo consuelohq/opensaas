@@ -1,0 +1,55 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/website/w1-connect-evidence-figure",
+  "base": "origin/stream/website",
+  "headSha": "42f07f570d9c0c3e746bcf34ba6f487863605b46",
+  "changeHash": "699d7b5d175d2bdd507240845bba304ad8cde320752c9801f981d26f5d7e32f7",
+  "changedFiles": [
+    "packages/consuelo-website/src/components/home/FeatureEvidenceFigure.astro",
+    "packages/consuelo-website/src/components/home/HomeFeaturePreview.astro",
+    "packages/consuelo-website/src/data/home-content.ts",
+    "packages/consuelo-website/tests/homepage-mobile-layout.test.mjs",
+    "packages/consuelo-website/tests/website-structure.test.js"
+  ],
+  "verifiedAt": "2026-08-31T21:12:23.940Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/website/w1-connect-evidence-figure.json",
+        ".task/website/w1-connect-evidence-figure/workpad.md",
+        "packages/consuelo-website/src/components/home/FeatureEvidenceFigure.astro",
+        "packages/consuelo-website/src/components/home/HomeFeaturePreview.astro",
+        "packages/consuelo-website/src/data/home-content.ts",
+        "packages/consuelo-website/tests/homepage-mobile-layout.test.mjs",
+        "packages/consuelo-website/tests/website-structure.test.js"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

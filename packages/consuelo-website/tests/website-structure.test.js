@@ -262,32 +262,163 @@ describe('Consuelo website structure', () => {
     expect(tokens).not.toContain('#5379AE');
   });
 
-  test('should provide a compact six-feature media grid and accessible FAQ when rendering the product panel', () => {
+  test('should cook each feature proof object while keeping one editorial story stage', () => {
     const panel = readSource('src/components/home/HomeFeaturePreview.astro');
-    const media = readSource('src/components/home/FeatureMedia.astro');
+    const evidence = readSource('src/components/home/FeatureEvidenceFigure.astro');
+    const memory = readSource('src/components/home/FeatureStoryMemory.astro');
+    const control = readSource('src/components/home/FeatureStoryControl.astro');
+    const observe = readSource('src/components/home/FeatureStoryObserve.astro');
+    const secure = readSource('src/components/home/FeatureStorySecure.astro');
+    const switchStory = readSource('src/components/home/FeatureStorySwitch.astro');
+    const heatmap = readSource('src/lib/trace-heatmap.ts');
     const faq = readSource('src/components/home/HomeFaq.astro');
     const content = readSource('src/data/home-content.ts');
 
-    expect(panel).toContain('grid-template-columns: repeat(3, minmax(0, 1fr))');
-    expect(panel).toContain('<FeatureMedia');
-    expect(panel).toContain('imageSrc={item.assetSrc}');
+    expect(panel).toContain('class="product-story"');
+    expect(panel).toContain('data-feature-story');
+    expect(panel).toContain('data-feature-chapter');
+    expect(panel).toContain('position: sticky');
+    expect(panel).toContain('@media (max-width: 760px)');
+    expect(panel).not.toContain('product-panel__grid');
+    expect(panel).not.toContain('grid-template-columns: repeat(3, minmax(0, 1fr))');
+    expect(panel).toContain('<FeatureEvidenceFigure');
+    expect(panel).toContain('<FeatureStoryMemory');
+    expect(panel).toContain('<FeatureStoryControl');
+    expect(panel).toContain('<FeatureStoryObserve');
+    expect(panel).toContain('<FeatureStorySecure');
+    expect(panel).toContain('<FeatureStorySwitch');
+    expect(panel).toContain('evidence={item.evidence}');
+    expect(panel).not.toContain('<FeatureMedia');
     expect(panel).not.toContain("item.assetSrc ?? ''");
     expect(panel).toContain('<HomeFaq');
-    expect(media).toContain('aspect-ratio: 475 / 178');
-    expect(media).toContain('<video autoplay muted loop playsinline');
-    expect(media).toContain('class="feature-media__poster"');
-    expect(media).toContain('.feature-media__video');
-    expect(media).toContain('display: none;');
+
+    expect(evidence).toContain('<figure class="feature-evidence"');
+    expect(evidence).toContain('aspect-ratio: 2032 / 1192');
+    expect(evidence).toContain('object-fit: contain');
+    expect(evidence).toContain('data-agent={agent.label}');
+    expect(evidence).toContain('FIG. {evidence.figureNumber}');
+    expect(evidence).toContain('evidence.sequence.map');
+    expect(evidence).not.toContain('position: absolute;\n    inset: 0;\n    color: white');
+
+    expect(memory).toContain('data-memory-story');
+    expect(memory).toContain('homeMemoryMoments');
+    expect(memory).toContain('data-memory-record');
+    expect(memory).toContain('data-memory-search');
+    expect(memory).toContain('SEARCH WORKSPACE MEMORY');
+    expect(memory).toContain('prefers-reduced-motion: reduce');
+
+    expect(observe).toContain('data-observe-story');
+    expect(observe).toContain('aggregateTraceHeatmap');
+    expect(observe).toContain('homeObserveTraceRows');
+    expect(observe).toContain('homeObserveTrace');
+    expect(observe).toContain('data-overview-heat-cell');
+    expect(observe).toContain('data-trace-heatmap-tooltip');
+    expect(observe).toContain('data-observe-trace');
+    expect(observe).toContain("addEventListener('pointerenter'");
+    expect(observe).toContain("addEventListener('focus'");
+    expect(observe).toContain('prefers-reduced-motion: reduce');
+
+    expect(heatmap).toContain('TRACE_HEATMAP_DAYS = 7');
+    expect(heatmap).toContain('TRACE_HEATMAP_HOURS = 24');
+    expect(heatmap).toContain('export function aggregateTraceHeatmap');
+    expect(heatmap).toContain('if (ratio >= 0.8) return 5');
+    expect(heatmap).toContain('if (ratio >= 0.55) return 4');
+    expect(heatmap).toContain('if (ratio >= 0.32) return 3');
+    expect(heatmap).toContain('if (ratio >= 0.14) return 2');
+
+    expect(control).toContain('data-control-story');
+    expect(control).toContain('homeWorkflowRules');
+    expect(control).toContain('data-workflow-stage');
+    expect(control).toContain('prefers-reduced-motion: reduce');
+
+    expect(secure).toContain('data-secure-story');
+    expect(secure).toContain('homeSecurityResources');
+    expect(secure).toContain('••••••••');
+    expect(secure).toContain('X25519');
+    expect(secure).toContain('AES-GCM');
+    expect(secure).toContain('prefers-reduced-motion: reduce');
+
+    expect(switchStory).toContain('data-switch-story');
+    expect(switchStory).toContain('homeSwitchAgents');
+    expect(switchStory).toContain('data-switch-agent');
+    expect(switchStory).toContain('data-switch-work-object');
+    expect(switchStory).toContain('prefers-reduced-motion: reduce');
+
     expect(faq).toContain('<details data-home-faq-item>');
     expect(faq).toContain('<summary>');
     expect(faq).toContain('color: var(--site-color-muted);');
     expect(panel).toContain('color: var(--site-color-art-muted);');
     expect(panel).not.toContain('#15156f');
     expect(faq).not.toContain('#25256f');
-    expect(content).toContain('assetSrc: string;');
+
+    expect(content).toContain('evidence?: HomeFeatureEvidence;');
+    expect(content).toContain("figureNumber: '01'");
+    expect(content).toContain("videoSrc: '/media/home/connect-live-session.mp4'");
+    expect(content).toContain("posterSrc: '/media/home/connect-live-session-poster.webp'");
+    expect(content).toContain("label: 'ChatGPT'");
+    expect(content).toContain("label: 'Grok'");
+    expect(content).toContain("label: 'Codex'");
+    expect(content).toContain("label: 'OpenCode'");
+    expect(content).not.toContain("{ label: 'Claude' },");
+    expect(content).not.toContain("{ label: 'Cursor' },");
+    expect(content).toContain('export const homeMemoryMoments');
+    expect(content).toContain('export const homeObserveTraceRows');
+    expect(content).toContain('export const homeObserveTrace');
+    expect(content).toContain('export const homeWorkflowRules');
+    expect(content).toContain('export const homeWorkflowStages');
+    expect(content).toContain("tool: 'review.run'");
+    expect(content).toContain("tool: 'verify'");
+    expect(content).toContain('export const homeSecurityResources');
+    expect(content).toContain('export const homeSwitchAgents');
+    expect(content).not.toContain('/Users/');
+    expect(content).not.toContain('node_F3Wsfd-vJrKkYlfi');
+    expect(content).not.toContain('sk-');
     expect(content).toContain("label: 'CONTROL'");
     expect(content).toContain("label: 'OBSERVE'");
     expect(content).toContain("label: 'SWITCH'");
+    expectFile('public/media/home/connect-live-session.mp4');
+    expectFile('public/media/home/connect-live-session-poster.webp');
+    expectFile('motion/connect/index.html');
+    expectFile('motion/connect/hyperframes.json');
+  });
+
+  test('should keep the public OBSERVE heatmap on the same seven-day hourly semantics as the product Home surface', async () => {
+    const productHome = readRepo('packages/os/scripts/lib/settings-site.ts');
+    expect(productHome).toContain('for (let hour = 0; hour < 24; hour += 1)');
+    expect(productHome).toContain('if (ratio >= 0.8) return 5;');
+    expect(productHome).toContain('if (ratio >= 0.55) return 4;');
+    expect(productHome).toContain('if (ratio >= 0.32) return 3;');
+    expect(productHome).toContain('if (ratio >= 0.14) return 2;');
+    expect(productHome).toContain("cell.addEventListener('pointerenter'");
+    expect(productHome).toContain("cell.addEventListener('focus'");
+
+    const heatmap = await import(pathToFileURL(join(sourceRoot, 'lib/trace-heatmap.ts')).href);
+    expect(heatmap.TRACE_HEATMAP_DAYS).toBe(7);
+    expect(heatmap.TRACE_HEATMAP_HOURS).toBe(24);
+    expect([0, 1, 2, 3, 4, 5].map((calls) => heatmap.traceHeatLevel(calls, 5))).toEqual([
+      0,
+      2,
+      3,
+      4,
+      5,
+      5,
+    ]);
+
+    const aggregate = heatmap.aggregateTraceHeatmap(
+      [
+        { startedAt: '2026-08-31T14:00:00.000Z', tokens: 400, cost: 0.01 },
+        { startedAt: '2026-08-31T14:02:00.000Z', tokens: 600, cost: 0.02 },
+        { startedAt: '2026-08-31T15:00:00.000Z', tokens: 250, cost: 0.005 },
+      ],
+      new Date('2026-08-31T18:00:00.000Z'),
+    );
+    expect(aggregate.days).toHaveLength(7);
+    expect(aggregate.days.every((day) => day.buckets.length === 24)).toBe(true);
+    expect(aggregate.totals.calls).toBe(3);
+    expect(aggregate.totals.tokens).toBe(1250);
+    expect(aggregate.totals.cost).toBeCloseTo(0.035, 8);
+    expect(aggregate.maxCalls).toBe(2);
+    expect(aggregate.days.at(-1).buckets[14].level).toBe(5);
   });
 
   test('should expose the approved navigation when rendering the OS header', () => {

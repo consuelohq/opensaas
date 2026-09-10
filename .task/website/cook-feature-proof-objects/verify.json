@@ -1,0 +1,67 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/website/cook-feature-proof-objects",
+  "base": "origin/stream/website",
+  "headSha": "1c27767e5edfab005bcb417ed548492a19b3fc9f",
+  "changeHash": "3c3e40b7d691234f836ac7772f104b15dcc4d25cb1ba42d4ad460ae64489db46",
+  "changedFiles": [
+    "packages/consuelo-website/DESIGN.md",
+    "packages/consuelo-website/src/components/home/FeatureStoryControl.astro",
+    "packages/consuelo-website/src/components/home/FeatureStoryMemory.astro",
+    "packages/consuelo-website/src/components/home/FeatureStoryObserve.astro",
+    "packages/consuelo-website/src/components/home/FeatureStorySecure.astro",
+    "packages/consuelo-website/src/components/home/FeatureStorySwitch.astro",
+    "packages/consuelo-website/src/components/home/HomeFeaturePreview.astro",
+    "packages/consuelo-website/src/data/home-content.ts",
+    "packages/consuelo-website/src/lib/trace-heatmap.ts",
+    "packages/consuelo-website/tests/website-structure.test.js"
+  ],
+  "verifiedAt": "2026-09-01T02:15:19.483Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/website/cook-feature-proof-objects.json",
+        ".task/website/cook-feature-proof-objects/evidence-log.json",
+        ".task/website/cook-feature-proof-objects/read-log.json",
+        ".task/website/cook-feature-proof-objects/workpad.md",
+        "packages/consuelo-website/DESIGN.md",
+        "packages/consuelo-website/src/components/home/FeatureStoryControl.astro",
+        "packages/consuelo-website/src/components/home/FeatureStoryMemory.astro",
+        "packages/consuelo-website/src/components/home/FeatureStoryObserve.astro",
+        "packages/consuelo-website/src/components/home/FeatureStorySecure.astro",
+        "packages/consuelo-website/src/components/home/FeatureStorySwitch.astro",
+        "packages/consuelo-website/src/components/home/HomeFeaturePreview.astro",
+        "packages/consuelo-website/src/data/home-content.ts",
+        "packages/consuelo-website/src/lib/trace-heatmap.ts",
+        "packages/consuelo-website/tests/website-structure.test.js"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -273,7 +273,7 @@ test('homepage mobile layout and content follow the launch contract', { timeout:
     assert.ok(featureHeadingBox.x + featureHeadingBox.width <= 378);
 
     const featureColors = await page
-      .locator('.product-panel__item')
+      .locator('.product-story__chapter')
       .first()
       .evaluate((item) => {
         const number = item.querySelector('.product-panel__index-number');
@@ -292,6 +292,82 @@ test('homepage mobile layout and content follow the launch contract', { timeout:
       });
     assert.notEqual(featureColors.number, featureColors.label);
     assert.equal(featureColors.number, featureColors.description);
+
+    const connectSequence = await page
+      .locator('.feature-evidence__sequence [data-agent]')
+      .allInnerTexts();
+    assert.deepEqual(connectSequence, ['01\nChatGPT', '02\nGrok', '03\nCodex', '04\nOpenCode']);
+
+    const connectStageBox = await page.locator('.feature-evidence__stage').boundingBox();
+    assert.ok(connectStageBox);
+    assert.ok(Math.abs(connectStageBox.width / connectStageBox.height - 2032 / 1192) < 0.02);
+
+    const mobileFeatureStory = await page.evaluate(() => {
+      const chapters = Array.from(document.querySelectorAll('[data-feature-chapter]'));
+      const visual = document.querySelector('.product-story__visual');
+      if (!(visual instanceof HTMLElement)) {
+        throw new Error('Expected the mobile feature story visual');
+      }
+      return {
+        chapterCount: chapters.length,
+        visualPosition: getComputedStyle(visual).position,
+        memoryCount: document.querySelectorAll('[data-memory-story]').length,
+        observeCount: document.querySelectorAll('[data-observe-story]').length,
+        horizontalOverflow:
+          document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      };
+    });
+    assert.equal(mobileFeatureStory.chapterCount, 6);
+    assert.equal(mobileFeatureStory.visualPosition, 'static');
+    assert.equal(mobileFeatureStory.memoryCount, 1);
+    assert.equal(mobileFeatureStory.observeCount, 1);
+    assert.equal(mobileFeatureStory.horizontalOverflow, 0);
+
+    const featureTabletPage = await browser.newPage({ viewport: { width: 1024, height: 1366 } });
+    await featureTabletPage.goto(server.baseUrl, { waitUntil: 'domcontentloaded' });
+    await featureTabletPage.locator('.product-story').waitFor({ state: 'attached' });
+    const tabletFeatureGeometry = await featureTabletPage.evaluate(() => {
+      const chapter = document.querySelector('.product-story__chapter');
+      const visual = document.querySelector('.product-story__visual');
+      const stage = document.querySelector('.feature-evidence__stage');
+      if (!(chapter instanceof HTMLElement) || !(visual instanceof HTMLElement) || !(stage instanceof HTMLElement)) {
+        throw new Error('Expected tablet feature story and CONNECT evidence stage');
+      }
+      const stageBox = stage.getBoundingClientRect();
+      return {
+        columns: getComputedStyle(chapter).gridTemplateColumns.split(' ').filter(Boolean).length,
+        visualPosition: getComputedStyle(visual).position,
+        stageRatio: stageBox.width / stageBox.height,
+        horizontalOverflow:
+          document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      };
+    });
+    assert.equal(tabletFeatureGeometry.columns, 2);
+    assert.equal(tabletFeatureGeometry.visualPosition, 'sticky');
+    assert.ok(Math.abs(tabletFeatureGeometry.stageRatio - 2032 / 1192) < 0.02);
+    assert.equal(tabletFeatureGeometry.horizontalOverflow, 0);
+    await featureTabletPage.close();
+
+    const featureDesktopPage = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+    await featureDesktopPage.goto(server.baseUrl, { waitUntil: 'domcontentloaded' });
+    await featureDesktopPage.locator('.product-story').waitFor({ state: 'attached' });
+    const desktopFeatureStory = await featureDesktopPage.evaluate(() => {
+      const chapter = document.querySelector('.product-story__chapter');
+      const visual = document.querySelector('.product-story__visual');
+      if (!(chapter instanceof HTMLElement) || !(visual instanceof HTMLElement)) {
+        throw new Error('Expected desktop feature story');
+      }
+      return {
+        columns: getComputedStyle(chapter).gridTemplateColumns.split(' ').filter(Boolean).length,
+        visualPosition: getComputedStyle(visual).position,
+        horizontalOverflow:
+          document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      };
+    });
+    assert.equal(desktopFeatureStory.columns, 2);
+    assert.equal(desktopFeatureStory.visualPosition, 'sticky');
+    assert.equal(desktopFeatureStory.horizontalOverflow, 0);
+    await featureDesktopPage.close();
 
     assert.equal(
       (await page.locator('.cloud-cta__copy > p').first().innerText()).trim(),
