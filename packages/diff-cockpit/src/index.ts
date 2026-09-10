@@ -971,7 +971,7 @@ export function renderIndexPage(
       <div class="footer-links" aria-label="Footer links"><a href="#pull-requests">Inbox</a></div>
     </footer>
   </div>
-${initialDataScript}${initialEtagScript}  <script type="module">${renderIndexClientScript(apiPath, repo)}</script>
+${initialDataScript}${initialEtagScript}  <script type="module">${renderIndexClientScript(apiPath, repo, options)}</script>
 </body>
 </html>`;
 }
@@ -3424,8 +3424,15 @@ function escapeAttribute(value) { return escapeHtml(value); }
 `;
 }
 
-function renderIndexClientScript(apiPath: string, repo: RepoLocator): string {
-  const routePrefix = `/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/pull/`;
+function renderIndexClientScript(
+  apiPath: string,
+  repo: RepoLocator,
+  options: DiffCockpitRenderOptions = {},
+): string {
+  const routePrefix = `${mountedPath(
+    `/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/pull`,
+    options,
+  )}/`;
   const repoLabel = `${repo.owner}/${repo.repo}`;
   return `
 const apiPath = ${JSON.stringify(apiPath)};

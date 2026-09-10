@@ -1,0 +1,150 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/fix-diffs-pr-navigation-redirect",
+  "base": "origin/stream/os",
+  "headSha": "3782e783678325d29463c07225e66ecde4a2ca17",
+  "changeHash": "ad75c34343e7616bd9c4a9e767e3e667bf9bfb881955ad712d76ddb7e4b23a4a",
+  "changedFiles": [
+    "packages/diff-cockpit/src/index.ts",
+    "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+    "packages/os/tests/diffs-hono-routes.test.ts"
+  ],
+  "verifiedAt": "2026-09-10T00:17:27.281Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/fix-diffs-pr-navigation-redirect/evidence-log.json",
+        ".task/os/fix-diffs-pr-navigation-redirect/read-log.json",
+        ".task/os/fix-diffs-pr-navigation-redirect/workpad.md",
+        ".task/tasks/os/fix-diffs-pr-navigation-redirect.json",
+        "packages/diff-cockpit/src/index.ts",
+        "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+        "packages/os/tests/diffs-hono-routes.test.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "os-github-source-control",
+          "critical": true,
+          "exclusive": true,
+          "reason": "GitHub App source-control onboarding, installation handoff, workspace repository materialization, and Diffs credential brokering must prove their focused security and UX contracts without selecting the historically red unrelated OS package suite.",
+          "matchedFiles": [
+            "packages/os/tests/diffs-hono-routes.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "auto:@consuelo/diff-cockpit:package-test",
+          "critical": false,
+          "reason": "Auto-discovered package test script for packages/diff-cockpit.",
+          "matchedFiles": [
+            "packages/diff-cockpit/src/index.ts",
+            "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+          ],
+          "origin": "auto"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "OS GitHub source-control contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/github-source-control-authority.test.ts",
+            "tests/source-control-config.test.ts",
+            "tests/settings-hono-routes.test.ts",
+            "tests/settings-site.test.ts",
+            "tests/diffs-hono-routes.test.ts",
+            "tests/settings-sites-gateway-endpoints.test.ts",
+            "tests/os-device-authority-worker.test.ts"
+          ],
+          "ruleId": "os-github-source-control",
+          "critical": true
+        },
+        {
+          "name": "@consuelo/diff-cockpit package test",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/diff-cockpit",
+            "test"
+          ],
+          "ruleId": "auto:@consuelo/diff-cockpit:package-test",
+          "critical": false
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "OS GitHub source-control contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/github-source-control-authority.test.ts",
+            "tests/source-control-config.test.ts",
+            "tests/settings-hono-routes.test.ts",
+            "tests/settings-site.test.ts",
+            "tests/diffs-hono-routes.test.ts",
+            "tests/settings-sites-gateway-endpoints.test.ts",
+            "tests/os-device-authority-worker.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-github-source-control",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1562,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-diffs-pr-navigation-redirect/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/source-control-config.test.ts \u001b[2m(\u001b[22m\u001b[2m7 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 46\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-worker.test.ts \u001b[2m(\u001b[22m\u001b[2m33 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 139\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/settings-site.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 153\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/settings-sites-gateway-endpoints.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 202\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/github-source-control-authority.test.ts \u001b[2m(\u001b[22m\u001b[2m10 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 374\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/diffs-hono-routes.test.ts \u001b[2m(\u001b[22m\u001b[2m10 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 122\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/settings-hono-routes.test.ts \u001b[2m(\u001b[22m\u001b[2m14 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 372\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m7 passed\u001b[39m\u001b[22m\u001b[90m (7)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m90 passed\u001b[39m\u001b[22m\u001b[90m (90)\u001b[39m\n\u001b[2m   Start at \u001b[22m 20:17:25\n\u001b[2m   Duration \u001b[22m 1.30s\u001b[2m (transform 2.09s, setup 135ms, import 3.87s, tests 1.41s, environment 0ms)\u001b[22m\n\n$ vitest run tests/github-source-control-authority.test.ts tests/source-control-config.test.ts tests/settings-hono-routes.test.ts tests/settings-site.test.ts tests/diffs-hono-routes.test.ts tests/settings-sites-gateway-endpoints.test.ts tests/os-device-authority-worker.test.ts\n(node:66865) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n(node:66861) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+        },
+        {
+          "name": "@consuelo/diff-cockpit package test",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/diff-cockpit",
+            "test"
+          ],
+          "cwd": ".",
+          "ruleId": "auto:@consuelo/diff-cockpit:package-test",
+          "critical": false,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 64,
+          "outputTail": "ocator > accepts the canonical internal Diffs URL it emits\n(pass) buildDiffCockpitUrl > builds the canonical internal Diffs URL [0.07ms]\n(pass) standalone Diffs retirement > removes the standalone Worker and automatic KV cache warmers while preserving hostname safety [3.64ms]\n(pass) normalizeReviewItems > keeps GitHub review thread resolution as source of truth for AI comments [0.68ms]\n(pass) createGithubCodeBrowserLoader > loads the packages tree with latest commit metadata and commit count [0.73ms]\n(pass) createGithubCodeBrowserLoader > renders markdown file contents when the selected file is markdown [0.45ms]\n(pass) createGithubCodeHistoryLoader > loads path history and builds commit tree links [0.19ms]\n(pass) createGithubPullRequestIndexLoader > fetches all PR states and enriches homepage metadata [0.55ms]\n(pass) createGithubPullRequestLoader > fetches live GitHub PR metadata, files, review comments, and commits [0.75ms]\n(pass) createGithubPullRequestLoader > throws a clear error when GitHub PR metadata fails [0.12ms]\n(pass) createGithubPullRequestLoader > skips stream commits for non-stream branches [0.13ms]\n(pass) createGithubPullRequestLoader > handles empty file, comment, and review arrays [0.07ms]\n(pass) buildFileTree > groups files by path segment and preserves file metadata [0.07ms]\n(pass) createGithubPullRequestIndexLoader GraphQL mergeability > loads all PRs with mergeability in paginated GraphQL requests when token is available [0.31ms]\n(pass) pull request index grouping > derives stream ownership from stream and task branches [0.02ms]\n(pass) pull request index grouping > groups pull requests into collapsible sections and filters by stream [0.12ms]\n(pass) pull request index grouping > streams section shows open streams by default and all streams when toggled [0.04ms]\n(pass) pull request index grouping > scores dotted fuzzy PR search across PR fields [0.22ms]\n(pass) renderCodeBrowserPage > renders the main packages browser shell and history shell [0.53ms]\n(pass) renderIndexPage > renders a Graphite-like PR inbox with command search and load-more sections [1.20ms]\n(pass) renderIndexPage > keeps mounted PR navigation inside the configured Diffs path [0.12ms]\n(pass) renderReviewPage > keeps the existing PR route and the right review panel closed by default [4.20ms]\n(pass) createWorker > updates GitHub review threads through the review thread API endpoint [0.87ms]\n(pass) createWorker > invalidates PR cache for resolved GitHub review-thread webhooks [1.53ms]\n(pass) createWorker > does not silently default the standalone homepage to OpenSaaS [0.07ms]\n(pass) createWorker > routes the standalone homepage to the configured repository shell [0.22ms]\n(pass) createWorker > hydrates PR pages from shared API cache when available [0.39ms]\n(pass) createWorker > keeps the PR loading shell when shared API cache misses [0.12ms]\n(pass) createWorker > merges a pull request through the merge API endpoint [0.18ms]\n(pass) createWorker > routes code browser pages and APIs for main packages and history [0.51ms]\n(pass) createWorker > refresh endpoint uses waitUntil so cron does not block on slow cache warming [1.14ms]\n(pass) createWorker > server-renders warmed inbox and PR pages from shared API cache [0.61ms]\n(pass) createWorker > refresh stores homepage snapshots in durable shared storage for cross-device first paint [0.53ms]\n(pass) createWorker > refresh endpoint protects and prewarms homepage and PR API cache entries [0.75ms]\n(pass) createWorker > returns homepage API shared cache headers and 304 for unchanged ETags [0.22ms]\n(pass) createWorker > prewarms a bounded hot PR set from the homepage snapshot when no explicit pulls are provided [1.35ms]\n(pass) createWorker > uses strict shared cache headers for open PR details and long cache headers for inactive PR details [0.24ms]\n(pass) createWorker > returns PR API cache headers and 304 for unchanged ETags [0.20ms]\n\n 41 pass\n 0 fail\n 408 expect() calls\nRan 41 tests across 1 file. [47.00ms]\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
