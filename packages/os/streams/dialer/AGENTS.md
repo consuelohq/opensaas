@@ -2,6 +2,18 @@
 
 Use this file as durable context for work in `stream/dialer`. It records the current product model, architecture, deployment topology, safety boundaries, and known operational lessons. Prefer current code and tests when they conflict with this document, then update this file in the same task.
 
+## RD inbound routing program
+
+For RD0-RD8 work, read [the RD coordination entry point](rd/README.md),
+[the agent handoff protocol](rd/COORDINATION.md), and the requested work-ID contract
+in [the dependency graph](rd/GRAPH.md) before starting or resuming work.
+All RD tasks integrate into `stream/dialer`; start dependent tasks from the current
+stream tip. A branched chat inherits context, not proof that sibling work landed.
+Read the latest stream files and verify task PRs, checks, commits, and prerequisites
+at startup and before the final copyable handoff. RD0 owns graph alignment;
+publishing its coordination documents does not itself authorize RD1 or freeze open
+product decisions. Keep RD-specific guidance here rather than global steering.
+
 ## Product model
 
 The embedded dialer is a GoHighLevel/LeadConnector adapter around the mature Consuelo dialer. It is not a new CRM contact picker and it must not fork core dialing behavior.
