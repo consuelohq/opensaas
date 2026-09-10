@@ -1,7 +1,7 @@
 # RD product and scientific design
 
-Status: alignment_open. This is a durable synthesis, not an implemented feature.
-Locked items come from the planning conversation; recommendations remain explicit.
+Status: contract_frozen (rd-1). This is an implementation contract, not an implemented feature.
+Explicit customer choices, engineering defaults and tenant activation gates are distinguished below.
 
 ## Locked product direction
 
@@ -117,28 +117,116 @@ sensitive segments are explicit policy boundaries. Do not add recording incident
 Event durability does not justify indefinite storage of PII. Provider spend and
 controlled live tests require the existing explicit authorizations.
 
-## Open RD0 decisions
+## Frozen first-release decisions
 
-1. Owner affinity: brief owner-first offer then wider eligible pool, or next available.
-2. Max-wait fallback: callback option, voicemail, external forwarding, or configured chain.
-3. Customer-side browser calling: first release or a later adapter/UI extension.
-4. Launch jurisdiction and callback disclosure/permission rules.
-5. Queue hours, staffing/traffic assumptions, service targets and default thresholds.
-6. Reservation execution: Consuelo transactional authority or a TaskRouter-backed
-   implementation of the same ports. Choose one authority; never run two schedulers.
-7. Calendar provider/booking semantics and the precise callback promise.
-8. Per-node and final release activation scope.
+Contract revision: rd-1, frozen on 2026-09-09 America/New_York.
+Ko explicitly confirmed owner-first routing, callback plus voicemail, and deferring
+customer browser calling, then authorized completion of RD0. Engineering defaults
+below are implementation decisions under that authorization, not claims that Ko
+specified every mechanism or that a tenant launch configuration is already known.
 
-Recommended starting architecture: Consuelo-owned transactional Postgres capacity
-and request authority with Redis presence/index/notification acceleration, reusing
-existing provider adapters. TaskRouter already offers queue/reservation machinery;
-compare operational burden, recovery proof, SDK ownership and provider coupling
-before freezing this choice. Do not duplicate TaskRouter if chosen.
+### Caller and rep selection
 
-Recommended callback sequence: reserve/confirm rep when due, then call customer.
-This spends some rep time waiting for pickup but avoids calling customers into an
-unstaffed queue. Bound no-answer attempts and release/reconcile capacity correctly.
-These recommendations are not recorded as Ko-approved policy choices.
+Serve waiting eligible requests in original queue-entry order; stable request ID
+breaks equal timestamps. Select the longest-idle eligible rep, then stable rep ID.
+Tenant, queue, skills, readiness, device health and shared capacity are hard gates.
+Skip a request with no eligible rep without blocking unrelated serviceable requests.
+Callback obligations retain original entry and explicit not-before/deadline fields;
+a not-yet-due callback is not a serviceable waiting caller. The baseline combines due callbacks and live queued requests in original-entry FIFO
+order, with stable request ID ties; neither preempts existing capacity ownership.
+RD4/RD6 version this rule and test starvation and missed-window handling.
+
+For a customer with an unambiguous CRM-assigned salesperson, offer that owner first
+only if currently eligible and available. Do not wait for a busy, away, reserved,
+wrapping-up or ineligible owner. Allow one bounded owner offer per routing cycle;
+decline/timeout goes to the wider team with cooldown and attempt history preserved.
+Do not reset owner preference on every retry to starve the wider pool. If CRM is
+unavailable or ownership is ambiguous, use the normal eligible pool and record why.
+Affinity never bypasses tenant/skill gates, grants capacity, or preempts a call.
+
+One human rep has one live voice capacity unit across inbound and outbound initially.
+Browser and phone endpoints share it. Explicit browser acceptance or screened phone
+acceptance must commit against its current assignment generation. Phone carrier
+answer alone, including voicemail pickup, cannot win. RD5 owns the provider-specific
+private acceptance prompt and losing-endpoint cancellation proof.
+
+### Waiting, fallback and callbacks
+
+Expose callback and voicemail choices when a caller cannot be served, including
+max-wait and after-hours paths. No silent automatic callback on hangup, form submit,
+or voicemail. Caller choice creates its own durable outcome. Stop new offers and
+reconcile escaped effects before final resource release. Preserve an explicit
+provider-unavailable terminal fallback if either service cannot be fulfilled.
+External forwarding and customer browser ingress are later extensions.
+
+For explicit callbacks, reserve and confirm a rep when the obligation is due, then
+dial the customer. A no-answer is a bounded attempt, not a connected conversation.
+Persist each attempt and the next eligible time; exhausted, canceled, missed-window
+and uncertain outcomes remain distinct. Do not retain the rep between retry attempts
+unless an escaped effect still requires protected ownership and reconciliation.
+
+Immediate callback means as soon as staffed capacity permits, not a guaranteed ETA.
+Scheduled callback means a disclosed team service window with a timezone, start and
+end; it does not automatically guarantee a named rep or an exact-second call.
+RD6 owns a provider-neutral booking port and a deterministic test adapter. A real
+calendar provider is a tenant activation dependency, not permission to invent a
+Google/GoHighLevel integration. Never confirm an external booking without evidence.
+UI must hide unavailable booking capabilities and distinguish requested from confirmed.
+Original queue entry is retained for policy/evidence; do not promise that callbacks
+keep a precise place in line without a proved policy.
+
+### Runtime, testing and delivery
+
+Consuelo Postgres owns requests, capacity, generations, event/state transitions and
+durable commands. Redis accelerates presence, indexes and notifications; it is not
+a second allocation authority. Twilio is the initial carrier/media adapter.
+Do not introduce TaskRouter as another scheduler. This choice favors SDK ownership,
+shared inbound/outbound capacity and one replayable authority, while accepting the
+operational burden of leases, reconciliation and queue recovery. TaskRouter remains
+an alternative requiring a deliberate contract amendment, not a parallel fallback.
+
+Use the same application factories, migrations and durable stores in the isolated
+lab and deployment. Inject clocks/provider/endpoints for tests; never share customer
+data or enable fault injection in production. RD1 owns focused real-Postgres proof;
+RD2 adds the reusable lab so RD1 does not circularly depend on RD2.
+
+Inbound conversation recording/transcription is off by default. Voicemail is a
+separate explicitly selected recording feature: RD5 must define its bounded storage,
+access, retention/deletion and unavailable behavior. This is a scoped exception to
+the existing no-retained-conversation-audio guidance, not permission to retain live
+call audio. Tenant disclosure/retention policy is required before voicemail activation.
+No voicemail-to-transcription automation is implied.
+
+Participant and transfer/recovery contracts are required. A new customer transfer
+UI, supervisor controls, learned matching, deliberate waiting for a better rep and
+customer browser telephony are deferred. Existing outbound transfers must not regress.
+RD5/RD8 prove participant boundaries without claiming a new embedded transfer UI.
+
+Each implementation node ends at tested task-to-stream integration and its receipt.
+RD8 joins release evidence. Main promotion, deployment, recording, real calls and
+provider charges require the existing explicit scope; this contract does not grant it.
+
+## Tenant configuration and activation gates
+
+These unknown operating facts do not block RD1's provider-neutral schema/ports.
+They must not be guessed into production defaults or silently treated as approved.
+
+| Required fact/configuration | Owner and gate |
+| --- | --- |
+| Launch country/jurisdiction, customer permission/disclosures, recording/voicemail retention | RD5/RD6 policy adapters; verify before corresponding tenant activation |
+| Queue timezone, hours, holidays/closure, team/skills/endpoints | RD4 configuration contract, RD7A setup; required before number activation |
+| Offer deadline, presence freshness, wait budget, cooldown, total attempts, wrap-up limit, unknown-effect escalation | RD3/RD4 bounded configuration and validation; RD2 supplies labelled simulation fixtures, not optimized production defaults |
+| Callback attempt limit/backoff, service window, overdue handling and calling eligibility | RD6 policy contract, RD7B truthful UX; required before callback activation |
+| Actual CRM ownership mapping and calendar provider/credentials/capabilities | RD4 normalized enrichment fallback; RD6/RD7B external-booking activation |
+| Team size, arrival/burst volume, service targets and alert/load thresholds | RD2 parameterized scenarios; RD8 must obtain measured/agreed launch envelope |
+| Source/destination/fanout, spend and audio policy for live tests; deployed scope/rollback | RD8 release plan plus each separately authorized live test |
+
+Missing settings prevent the affected feature/number from activating, with a clear
+operator-visible reason. Internal tests use explicit versioned fixtures. An expiry
+setting never overrides the invariant protecting unknown external effects.
+Each owner records resolved values, assumptions and evidence in its own receipt.
+Material changes to the frozen contract come back to RD0; filling tenant values
+within these ports does not require reopening the dependency graph.
 
 ## Evidence and references
 

@@ -1,7 +1,7 @@
 # RD dependency graph and work contracts
 
-Graph revision: draft-1. Coordination protocol is established by RD0.
-Implementation freeze: NOT YET APPROVED. Resolve DESIGN.md decisions before RD1.
+Graph revision: rd-1. RD0 product and engineering contract is frozen.
+Tenant configuration in DESIGN.md gates affected activation, not RD1 domain work.
 All task branches target stream/dialer; independent PR cleanup is an external gate.
 
 ## Dependencies and waves
@@ -43,8 +43,9 @@ every implementation node has concrete scope and falsifiable gates; Ko has
 resolved material alignment choices; existing-foundation gate is explicit.
 Non-goals: implementing runtime, auto-launching siblings, editing the global Branch
 skill, purchasing infrastructure, or declaring old unverified PRs complete.
-Integration: coordination documents may merge while RD0 remains alignment_open.
-Next in that case is an RD0 continuation, not RD1.
+Integration: RD0 completes when this frozen contract and its validation land.
+RD1 is next, subject to the separately verified existing-foundation gate.
+Tenant-specific activation settings have explicit later owners in DESIGN.md.
 
 ## RD1 — Durable lifecycle and event contracts
 
@@ -89,7 +90,8 @@ Integration: no second independent reservation authority in Redis or TaskRouter.
 Purpose: explainable caller selection and eligible-rep allocation.
 Owns: SDK policy and immutable routing decision artifacts, not transport.
 Changes: eligibility constraints; documented ordering/ties; aging; cooldowns;
-bounded reoffers; business hours; overflow; relevant decision-time snapshots.
+bounded reoffers; business hours; callback/voicemail fallback; relevant decision-time
+snapshots. Implement the frozen owner-first/FIFO/longest-idle baseline in DESIGN.md.
 Acceptance: FIFO/affinity/skill/fairness boundaries; no endless reoffer; no immediate
 retry to a cooled-down rep; scarce-skill cases; actual reservation outcome distinguished
 from proposed assignment; adversarial scenarios using RD2/RD3.
@@ -101,7 +103,8 @@ Integration: version policies and retain deterministic fallback plus evidence.
 
 Purpose: retain the already-live caller while connecting an eligible human rep.
 Owns: Hono signed ingress, tenant/DID binding, provider adapters, waiting experience,
-rep browser/phone delivery, bridge commands, participants, transfer/recovery seams.
+rep browser/phone delivery, bridge commands, participants, transfer/recovery seams,
+and explicitly selected voicemail capture/storage under tenant policy.
 Changes: bounded webhook responses; waiting/DTMF/hangup events; offer delivery;
 authorized endpoint admission; bridge evidence; uncertain-effect reconciliation;
 connection recovery and capacity release through RD3.
@@ -109,15 +112,17 @@ Acceptance: real application + simulator end-to-end first; public signature/rout
 proof; separately authorized real-call ladder; no false connected state or orphaned
 legs; restart continuity; transfer boundaries; no outbound regression.
 Non-goals: redialing the inbound customer or claiming browser presence proves audio.
-Integration: per-number opt-in and rollback to verified existing behavior. Customer-
-side browser ingress is included only if RD0 explicitly selects it, before RD7B UI.
+Integration: per-number opt-in and rollback to verified existing behavior. Customer
+browser ingress is deferred. Voicemail activation needs its disclosure/retention
+policy; no new transfer UI or conversation recording is included.
 
 ## RD6 — Immediate and scheduled callbacks
 
 Purpose: fulfill an explicit durable customer request once a caller leg no longer
 exists or has not yet been created.
 Owns: obligation scheduler, consent/eligibility ports, cancellation/no-answer policy,
-rep-first initiation and provider-neutral calendar integration.
+rep-first initiation and provider-neutral calendar integration. Team service-window
+semantics are frozen in DESIGN.md; a real provider adapter needs a selected provider.
 Acceptance: no reservation hours before due time; no duplicate initiation from retry;
 customer no-answer releases the rep correctly; cancellation during dialing reconciles;
 original entry/deadline retained; timezone/DST, rescheduling, and restart proofs.
@@ -144,7 +149,8 @@ Acceptance: duplicate submissions, abuse boundaries, timezone and promise accura
 permission evidence, no available staffing, full obligation fulfillment/cancellation.
 Non-goals: implied marketing permission, invented ETA, or adding an unapproved
 customer-browser telephony stack inside a UI task.
-Integration: customer-browser UI depends on the corresponding approved RD5 adapter.
+Integration: customer browser calling is deferred. Hide unsupported calendar
+capabilities; do not display an unconfirmed request as a booked appointment.
 
 ## RD8 — Integrated acceptance and release
 
@@ -158,4 +164,4 @@ and recovery gates, no orphaned capacity/media, no exposed PII/secrets.
 Non-goals: hiding new product work in finalization or assuming earlier node approval
 authorizes main promotion, calls, provider spend, recording, or production activation.
 Release authority: freeze the exact permitted promotion/deployment/live scope before
-RD8 executes. This draft is not authorization for those operations.
+RD8 executes. The frozen graph is not authorization for those operations.
