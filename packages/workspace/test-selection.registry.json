@@ -2849,17 +2849,21 @@
       "source": [
         "packages/os/scripts/lib/subagent/**",
         "packages/os/tools/subagent/**",
-        "packages/os/tests/subagent-orchestration-contract.test.ts"
+        "packages/os/tests/subagent-orchestration-contract.test.ts",
+        "packages/os/tests/subagent-lifecycle-regressions.test.ts",
+        "packages/os/tests/subagent-executable-discovery.test.ts"
       ],
       "tests": [
         {
-          "name": "OS durable subagent orchestration contracts",
+          "name": "OS durable subagent runtime contracts",
           "command": [
             "bun",
             "x",
             "vitest",
             "run",
-            "packages/os/tests/subagent-orchestration-contract.test.ts"
+            "packages/os/tests/subagent-orchestration-contract.test.ts",
+            "packages/os/tests/subagent-lifecycle-regressions.test.ts",
+            "packages/os/tests/subagent-executable-discovery.test.ts"
           ]
         },
         {
