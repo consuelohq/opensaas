@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-website-ci-for-windows-installer-test",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2440,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2440",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-website-ci-for-windows-installer-test",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_7fd8fb0cf6db",
+  "tmuxSession": "opensaas-os-fix-website-ci-for-windows-installer-test-7fd8fb0c",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-website-ci-for-windows-installer-test/.task/session.json",
+  "createdAt": "2026-09-10T02:25:53.372Z"
+}

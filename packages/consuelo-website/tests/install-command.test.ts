@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'bun:test';
+import assert from 'node:assert/strict';
+import { describe, it } from 'node:test';
 
 import {
   POSIX_INSTALL_COMMAND,
@@ -13,13 +14,17 @@ const EXPECTED_WINDOWS_COMMAND = [
 ].join(' ');
 
 describe('homepage install command selection', () => {
-  it.each(['Win32', 'Win64', 'Windows'])('uses PowerShell on %s', (platform) => {
-    expect(installCommandForPlatform(platform)).toBe(WINDOWS_INSTALL_COMMAND);
-    expect(WINDOWS_INSTALL_COMMAND).toBe(EXPECTED_WINDOWS_COMMAND);
-  });
+  for (const platform of ['Win32', 'Win64', 'Windows']) {
+    it(`uses PowerShell on ${platform}`, () => {
+      assert.equal(installCommandForPlatform(platform), WINDOWS_INSTALL_COMMAND);
+      assert.equal(WINDOWS_INSTALL_COMMAND, EXPECTED_WINDOWS_COMMAND);
+    });
+  }
 
-  it.each(['MacIntel', 'MacARM64', 'Linux x86_64', ''])('uses curl on %s', (platform) => {
-    expect(installCommandForPlatform(platform)).toBe(POSIX_INSTALL_COMMAND);
-    expect(POSIX_INSTALL_COMMAND).toContain('install.consuelohq.com/os');
-  });
+  for (const platform of ['MacIntel', 'MacARM64', 'Linux x86_64', '']) {
+    it(`uses curl on ${platform || 'unknown platform'}`, () => {
+      assert.equal(installCommandForPlatform(platform), POSIX_INSTALL_COMMAND);
+      assert.match(POSIX_INSTALL_COMMAND, /install\.consuelohq\.com\/os/);
+    });
+  }
 });
