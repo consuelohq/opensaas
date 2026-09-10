@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/rd2-inbound-simulation-replay-and-failure-testing-lab",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 2453,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2453",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-rd2-inbound-simulation-replay-and-failure-testing-lab",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_a1dba786266f",
+  "tmuxSession": "opensaas-dialer-rd2-inbound-simulation-replay-and-failure-testin-a1dba786",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-rd2-inbound-simulation-replay-and-failure-testing-lab/.task/session.json",
+  "createdAt": "2026-09-10T15:51:47.126Z"
+}
