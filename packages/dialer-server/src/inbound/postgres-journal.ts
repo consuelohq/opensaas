@@ -1,3 +1,4 @@
+import { isManagedCapacityCommand } from './rep-capacity-commands';
 import { createHash } from 'node:crypto';
 import { Effect, Layer } from 'effect';
 import type { Pool, PoolClient } from 'pg';
@@ -32,7 +33,7 @@ const canonical = (value: unknown): string => {
   );
 };
 
-const transaction = async <TResult>(
+export const withInboundTransaction = async <TResult>(
   pool: Pool,
   workspaceId: string,
   operation: (client: PoolClient) => Promise<TResult>,
@@ -61,7 +62,7 @@ const transaction = async <TResult>(
   }
 };
 
-const readSnapshot = async (
+export const readInboundSnapshot = async (
   client: PoolClient,
   workspaceId: string,
   kind: InboundKind,
@@ -105,7 +106,7 @@ const persistLinks = async (client: PoolClient, snapshot: InboundSnapshot) => {
         { relation: 'rep', kind: 'leg', id: identity.repLegId },
       );
     for (const link of links) {
-      const target = await readSnapshot(
+      const target = await readInboundSnapshot(
         client,
         snapshot.workspaceId,
         link.kind,
@@ -147,7 +148,7 @@ const persistDecision = async (client: PoolClient, input: InboundCommit) => {
   try {
     const decision = input.decision;
     if (!decision) return;
-    const request = await readSnapshot(
+    const request = await readInboundSnapshot(
       client,
       input.workspaceId,
       'request',
@@ -173,7 +174,7 @@ const persistDecision = async (client: PoolClient, input: InboundCommit) => {
       if (candidates.has(candidate.capacityId))
         throw new Error('Duplicate decision candidate');
       candidates.add(candidate.capacityId);
-      const capacity = await readSnapshot(
+      const capacity = await readInboundSnapshot(
         client,
         input.workspaceId,
         'capacity',
@@ -214,157 +215,196 @@ const persistDecision = async (client: PoolClient, input: InboundCommit) => {
   }
 };
 
-export const createPostgresInboundJournal = (pool: Pool) => {
-  const commit = async (raw: InboundCommit): Promise<InboundCommitResult> => {
-    try {
-      const input = decodeInboundCommit(raw);
-      const digest = createHash('sha256')
-        .update(
-          canonical({
-            fact: input.fact,
-            events: input.events.map(
-              ({
-                eventId: _id,
-                expectedVersion: _version,
-                observedAt: _observed,
-                ...fact
-              }) => fact,
-            ),
-          }),
-        )
-        .digest('hex');
-      return await transaction(pool, input.workspaceId, async (client) => {
-        try {
-          const existing = await client.query<{
-            digest: string;
-            result: InboundCommitResult;
-          }>(
-            'SELECT digest,result FROM dialer_inbound_facts WHERE workspace_id=$1 AND source=$2 AND event_key=$3',
-            [input.workspaceId, input.fact.source, input.fact.eventKey],
+export const commitInboundFactOnClient = async (
+  client: PoolClient,
+  raw: InboundCommit,
+): Promise<InboundCommitResult> => {
+  try {
+    const input = decodeInboundCommit(raw);
+    const digest = createHash('sha256')
+      .update(
+        canonical({
+          fact: input.fact,
+          events: input.events.map(
+            ({
+              eventId: _id,
+              expectedVersion: _version,
+              observedAt: _observed,
+              ...fact
+            }) => fact,
+          ),
+        }),
+      )
+      .digest('hex');
+    return await (async () => {
+      try {
+        const existing = await client.query<{
+          digest: string;
+          result: InboundCommitResult;
+        }>(
+          'SELECT digest,result FROM dialer_inbound_facts WHERE workspace_id=$1 AND source=$2 AND event_key=$3',
+          [input.workspaceId, input.fact.source, input.fact.eventKey],
+        );
+        if (existing.rows[0]) {
+          if (existing.rows[0].digest !== digest)
+            throw new Error('Provider deduplication identity collision');
+          return { ...existing.rows[0].result, duplicate: true };
+        }
+        await client.query(
+          'INSERT INTO dialer_inbound_facts(workspace_id,source,event_key,digest,fact) VALUES($1,$2,$3,$4,$5)',
+          [
+            input.workspaceId,
+            input.fact.source,
+            input.fact.eventKey,
+            digest,
+            JSON.stringify(input.fact),
+          ],
+        );
+        // Decision features describe pre-transition state and cannot see outcomes from this commit.
+        await persistDecision(client, input);
+        const snapshots: InboundSnapshot[] = [];
+        const accepted = new Map<string, InboundEvent>();
+        for (const event of input.events) {
+          if (
+            event.workspaceId !== input.workspaceId ||
+            event.occurredAt !== input.fact.occurredAt
+          )
+            throw new Error('Fact scope/time mismatch');
+          const previous = await readInboundSnapshot(
+            client,
+            input.workspaceId,
+            event.kind,
+            event.entityId,
           );
-          if (existing.rows[0]) {
-            if (existing.rows[0].digest !== digest)
-              throw new Error('Provider deduplication identity collision');
-            return { ...existing.rows[0].result, duplicate: true };
-          }
-          await client.query(
-            'INSERT INTO dialer_inbound_facts(workspace_id,source,event_key,digest,fact) VALUES($1,$2,$3,$4,$5)',
-            [
-              input.workspaceId,
-              input.fact.source,
-              input.fact.eventKey,
-              digest,
-              JSON.stringify(input.fact),
-            ],
-          );
-          // Decision features describe pre-transition state and cannot see outcomes from this commit.
-          await persistDecision(client, input);
-          const snapshots: InboundSnapshot[] = [];
-          const accepted = new Map<string, InboundEvent>();
-          for (const event of input.events) {
-            if (
-              event.workspaceId !== input.workspaceId ||
-              event.occurredAt !== input.fact.occurredAt
-            )
-              throw new Error('Fact scope/time mismatch');
-            const previous = await readSnapshot(
-              client,
-              input.workspaceId,
-              event.kind,
-              event.entityId,
-            );
-            const next = applyInboundEvent(previous, event);
-            if (next.applied) {
-              await client.query(
-                'INSERT INTO dialer_inbound_entities(workspace_id,kind,entity_id,version,snapshot) VALUES($1,$2,$3,$4,$5) ON CONFLICT(workspace_id,kind,entity_id) DO UPDATE SET version=EXCLUDED.version,snapshot=EXCLUDED.snapshot',
-                [
-                  input.workspaceId,
-                  event.kind,
-                  event.entityId,
-                  next.snapshot.version,
-                  JSON.stringify(next.snapshot),
-                ],
-              );
-              if (!previous) await persistLinks(client, next.snapshot);
-              accepted.set(event.eventId, event);
-            }
+          const next = applyInboundEvent(previous, event);
+          if (next.applied) {
             await client.query(
-              'INSERT INTO dialer_inbound_events(workspace_id,event_id,kind,entity_id,source,event_key,event,applied) VALUES($1,$2,$3,$4,$5,$6,$7,$8)',
+              'INSERT INTO dialer_inbound_entities(workspace_id,kind,entity_id,version,snapshot) VALUES($1,$2,$3,$4,$5) ON CONFLICT(workspace_id,kind,entity_id) DO UPDATE SET version=EXCLUDED.version,snapshot=EXCLUDED.snapshot',
               [
                 input.workspaceId,
-                event.eventId,
                 event.kind,
                 event.entityId,
-                input.fact.source,
-                input.fact.eventKey,
-                JSON.stringify(event),
-                next.applied,
+                next.snapshot.version,
+                JSON.stringify(next.snapshot),
               ],
             );
-            snapshots.push(next.snapshot);
+            if (!previous) await persistLinks(client, next.snapshot);
+            accepted.set(event.eventId, event);
           }
-          for (const command of input.commands) {
-            const event = accepted.get(command.eventId);
-            if (
-              !event ||
-              event.kind !== command.kind ||
-              event.entityId !== command.entityId
-            )
-              throw new Error('Command requires an applied causal event');
-            const valid =
-              command.type === 'notify' ||
-              (command.type === 'offer' &&
-                event.kind === 'assignment' &&
-                event.to === 'offering') ||
-              (command.type === 'bridge' &&
-                event.kind === 'bridge' &&
-                event.to === 'connecting') ||
-              (command.type === 'terminate_leg' && event.kind === 'leg') ||
-              (command.type === 'start_callback' &&
-                event.kind === 'callback' &&
-                event.to === 'dialing') ||
-              (command.type === 'reconcile' && event.to === 'unknown');
-            if (!valid)
-              throw new Error(
-                'Command does not match the lifecycle transition',
-              );
-            await client.query(
-              'INSERT INTO dialer_inbound_commands(workspace_id,command_id,event_id,command) VALUES($1,$2,$3,$4)',
-              [
-                input.workspaceId,
-                command.commandId,
-                command.eventId,
-                JSON.stringify(command),
-              ],
-            );
-            await client.query(
-              "INSERT INTO dialer_inbound_command_events(workspace_id,command_id,version,status,reconciled) VALUES($1,$2,1,'pending',false)",
-              [input.workspaceId, command.commandId],
-            );
-          }
-          const result: InboundCommitResult = { duplicate: false, snapshots };
           await client.query(
-            'UPDATE dialer_inbound_facts SET result=$4 WHERE workspace_id=$1 AND source=$2 AND event_key=$3',
+            'INSERT INTO dialer_inbound_events(workspace_id,event_id,kind,entity_id,source,event_key,event,applied) VALUES($1,$2,$3,$4,$5,$6,$7,$8)',
             [
               input.workspaceId,
+              event.eventId,
+              event.kind,
+              event.entityId,
               input.fact.source,
               input.fact.eventKey,
-              JSON.stringify(result),
+              JSON.stringify(event),
+              next.applied,
             ],
           );
-          return result;
-        } catch (cause: unknown) {
-          throw new InboundPersistenceError('Inbound fact transaction failed', {
-            cause,
-          });
+          snapshots.push(next.snapshot);
         }
-      });
-    } catch (cause: unknown) {
-      throw new InboundPersistenceError('Inbound fact commit failed', {
-        cause,
-      });
-    }
-  };
+        for (const command of input.commands) {
+          const event = accepted.get(command.eventId);
+          if (
+            !event ||
+            event.kind !== command.kind ||
+            event.entityId !== command.entityId
+          )
+            throw new Error('Command requires an applied causal event');
+          const valid =
+            command.type === 'notify' ||
+            (command.type === 'offer' &&
+              event.kind === 'assignment' &&
+              event.to === 'offering') ||
+            (command.type === 'bridge' &&
+              event.kind === 'bridge' &&
+              event.to === 'connecting') ||
+            (command.type === 'terminate_leg' && event.kind === 'leg') ||
+            (command.type === 'start_callback' &&
+              event.kind === 'callback' &&
+              event.to === 'dialing') ||
+            (command.type === 'reconcile' && event.to === 'unknown');
+          if (!valid)
+            throw new Error('Command does not match the lifecycle transition');
+          await client.query(
+            'INSERT INTO dialer_inbound_commands(workspace_id,command_id,event_id,command) VALUES($1,$2,$3,$4)',
+            [
+              input.workspaceId,
+              command.commandId,
+              command.eventId,
+              JSON.stringify(command),
+            ],
+          );
+          await client.query(
+            "INSERT INTO dialer_inbound_command_events(workspace_id,command_id,version,status,reconciled) VALUES($1,$2,1,'pending',false)",
+            [input.workspaceId, command.commandId],
+          );
+        }
+        const result: InboundCommitResult = { duplicate: false, snapshots };
+        await client.query(
+          'UPDATE dialer_inbound_facts SET result=$4 WHERE workspace_id=$1 AND source=$2 AND event_key=$3',
+          [
+            input.workspaceId,
+            input.fact.source,
+            input.fact.eventKey,
+            JSON.stringify(result),
+          ],
+        );
+        return result;
+      } catch (cause: unknown) {
+        throw new InboundPersistenceError('Inbound fact transaction failed', {
+          cause,
+        });
+      }
+    })();
+  } catch (cause: unknown) {
+    throw new InboundPersistenceError('Inbound fact commit failed', {
+      cause,
+    });
+  }
+};
+
+export const createPostgresInboundJournal = (pool: Pool) => {
+  const commit = (input: InboundCommit): Promise<InboundCommitResult> =>
+    withInboundTransaction(pool, input.workspaceId, async (client) => {
+      try {
+        // Managed capacity can only change through the generation-aware authority.
+        const installed = await client.query<{ installed: boolean }>(
+          "SELECT to_regclass('dialer_rep_capacity') IS NOT NULL AS installed",
+        );
+        if (installed.rows[0]?.installed) {
+          const managed = await client.query(
+            `SELECT 1 FROM dialer_rep_capacity WHERE workspace_id=$1 AND
+           (capacity_id = ANY($2::text[]) OR snapshot->'owner'->>'assignmentId' = ANY($3::text[])) LIMIT 1`,
+            [
+              input.workspaceId,
+              input.events.flatMap((event) =>
+                event.kind === 'capacity'
+                  ? [event.entityId]
+                  : event.identity?.kind === 'assignment'
+                    ? [event.identity.capacityId]
+                    : [],
+              ),
+              input.events
+                .filter((event) => event.kind === 'assignment')
+                .map((event) => event.entityId),
+            ],
+          );
+          if (managed.rowCount)
+            throw new InboundPersistenceError(
+              'Managed capacity requires fenced authority',
+            );
+        }
+        return await commitInboundFactOnClient(client, input);
+      } catch (cause: unknown) {
+        throw new InboundPersistenceError('Fenced journal commit failed', {
+          cause,
+        });
+      }
+    });
 
   const replay = async (
     workspaceId: string,
@@ -389,7 +429,7 @@ export const createPostgresInboundJournal = (pool: Pool) => {
     status: InboundCommandStatus,
     reconciled = false,
   ): Promise<InboundStoredCommand> =>
-    transaction(pool, workspaceId, async (client) => {
+    withInboundTransaction(pool, workspaceId, async (client) => {
       try {
         const rows = await client.query<{
           command: InboundStoredCommand['command'];
@@ -400,6 +440,18 @@ export const createPostgresInboundJournal = (pool: Pool) => {
           [workspaceId, commandId],
         );
         const previous = rows.rows[0];
+        if (
+          previous &&
+          status === 'dispatched' &&
+          (await isManagedCapacityCommand(
+            client,
+            workspaceId,
+            previous.command,
+          ))
+        )
+          throw new InboundPersistenceError(
+            'Managed carrier commands require fenced dispatch',
+          );
         const allowed =
           previous?.status === 'pending'
             ? ['dispatched']

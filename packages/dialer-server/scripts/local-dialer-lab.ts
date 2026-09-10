@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 
 import { INBOUND_MIGRATION_ID } from '../src/inbound/migration';
+import { REP_CAPACITY_MIGRATION_ID } from '../src/inbound/rep-capacity-migration';
 import { stopLabResources } from '../src/lab/inbound-lab-cleanup';
 import { runInboundSimulationScenarios } from '../src/lab/inbound-simulation-scenarios';
 import { runInboundJournalScenarios } from '../src/lab/inbound-journal-scenarios';
@@ -326,6 +327,7 @@ const main = async () => {
     const rowsBeforeRollback = await countObservations();
     const inbound = await runInboundJournalScenarios(pool);
     const simulation = await runInboundSimulationScenarios({ pool, redis, databaseUrl, seed });
+    await rollbackDialerDatabaseMigration(database, REP_CAPACITY_MIGRATION_ID);
     await rollbackDialerDatabaseMigration(database, INBOUND_MIGRATION_ID);
     const inboundRemoved = await pool.query<{ table_name: string | null }>(
       "SELECT to_regclass('dialer_inbound_entities')::text AS table_name",

@@ -8,6 +8,7 @@ import {
   DIALER_DATABASE_PREDICTIVE_LEARNING_MIGRATION_ID,
 } from '../database/migrations';
 import { INBOUND_MIGRATION_ID } from '../inbound/migration';
+import { REP_CAPACITY_MIGRATION_ID } from '../inbound/rep-capacity-migration';
 
 // The outer transaction restores this isolated fixture after exercising destructive down paths.
 export const verifyLearningRollbackChain = async (pool: Pool): Promise<true> => {
@@ -30,7 +31,7 @@ export const verifyLearningRollbackChain = async (pool: Pool): Promise<true> => 
       database, DIALER_DATABASE_CONTEXTUAL_SCIENCE_HARDENING_MIGRATION_ID,
     ));
     await client.query('ROLLBACK TO SAVEPOINT newer_migration_guard');
-    for (const id of [INBOUND_MIGRATION_ID, DIALER_DATABASE_LEARNING_INTEGRITY_MIGRATION_ID,
+    for (const id of [REP_CAPACITY_MIGRATION_ID, INBOUND_MIGRATION_ID, DIALER_DATABASE_LEARNING_INTEGRITY_MIGRATION_ID,
       DIALER_DATABASE_CONTEXTUAL_SCIENCE_HARDENING_MIGRATION_ID, DIALER_DATABASE_CONTEXTUAL_SCIENCE_MIGRATION_ID]) {
       await rollbackDialerDatabaseMigration(database, id);
     }
@@ -59,7 +60,7 @@ export const verifyLearningRollbackChain = async (pool: Pool): Promise<true> => 
     const restored = await client.query<{ count: number }>(
       'SELECT COUNT(*)::int AS count FROM consuelo_dialer_schema_migrations',
     );
-    assert.equal(restored.rows[0]?.count, 6);
+    assert.equal(restored.rows[0]?.count, 7);
     const emptyLearning = await client.query<{ count: number }>(
       'SELECT COUNT(*)::int AS count FROM dialer_learning_observations',
     );

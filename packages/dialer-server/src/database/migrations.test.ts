@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import { INBOUND_MIGRATION_ID } from '../inbound/migration';
+import { REP_CAPACITY_MIGRATION_ID } from '../inbound/rep-capacity-migration';
 
 import type { LeadConnectorDatabase } from '@consuelo/lead-connector';
 
@@ -71,6 +72,7 @@ describe('dialer database migrations', () => {
         DIALER_DATABASE_CONTEXTUAL_SCIENCE_HARDENING_MIGRATION_ID,
         DIALER_DATABASE_LEARNING_INTEGRITY_MIGRATION_ID,
         INBOUND_MIGRATION_ID,
+        REP_CAPACITY_MIGRATION_ID,
       ]),
     );
   });
@@ -168,6 +170,6 @@ describe('dialer database migrations', () => {
     expect(callSessionCreates).toHaveLength(1);
     expect(observationCreates).toHaveLength(1);
     expect(decisionCreates).toHaveLength(1);
-    expect(migrationInserts).toHaveLength(6);
+    expect(migrationInserts).toHaveLength(7);
   });
 });
