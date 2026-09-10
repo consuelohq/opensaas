@@ -1,0 +1,1223 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/make-local-steering-authoritative",
+  "base": "origin/stream/os",
+  "headSha": "9413363cbc146a0e1b2a2f226d13a91ffa8157e0",
+  "changeHash": "4d3f4d275d501809a809b9d14f6e1328afed7e643d83e7c570378b7d4f7c1d93",
+  "changedFiles": [
+    "packages/documentation/src/content/docs/build/steering/how-steering-works.mdx",
+    "packages/documentation/src/content/docs/build/steering/project-steering.mdx",
+    "packages/documentation/src/content/docs/build/steering/workspace-steering.mdx",
+    "packages/documentation/src/content/docs/start/core-concepts.mdx",
+    "packages/documentation/src/content/docs/start/install-consuelo-os.mdx",
+    "packages/documentation/src/content/docs/steering/index.mdx",
+    "packages/os/SCRIPTS.md",
+    "packages/os/dev-steering.md",
+    "packages/os/plans/consuelo-os-foundation/plan.md",
+    "packages/os/plans/consuelo-os-foundation/workers/07-steering-runtime-context.md",
+    "packages/os/scripts/lib/distribution/runtime-bundle.ts",
+    "packages/os/scripts/lib/install-state.ts",
+    "packages/os/scripts/lib/managed-user-content-release.ts",
+    "packages/os/scripts/lib/managed-user-content.ts",
+    "packages/os/scripts/lib/steering-snapshot-cache.ts",
+    "packages/os/scripts/os.ts",
+    "packages/os/steering/system_prompt.md",
+    "packages/os/tests/distribution/runtime-bundle.test.ts",
+    "packages/os/tests/lifecycle-engine.test.ts",
+    "packages/os/tests/lifecycle-retention-uninstall.test.ts",
+    "packages/os/tests/managed-user-content.test.ts",
+    "packages/os/tests/os-get-steering-trace.test.ts",
+    "packages/os/tests/session-integration-guidance.test.ts",
+    "packages/os/tests/steering-canonical-source.test.ts",
+    "packages/os/tests/test-source-safety.test.ts",
+    "packages/workspace/STEERING.md",
+    "packages/workspace/server.py",
+    "packages/workspace/test-selection.registry.json",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/server_call_test.py",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "verifiedAt": "2026-09-10T02:28:25.430Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/make-local-steering-authoritative/current.json",
+        ".task/os/make-local-steering-authoritative/evidence-log.json",
+        ".task/os/make-local-steering-authoritative/read-log.json",
+        ".task/os/make-local-steering-authoritative/session.json",
+        ".task/os/make-local-steering-authoritative/workpad.md",
+        ".task/tasks/os/make-local-steering-authoritative.json",
+        "packages/documentation/src/content/docs/build/steering/how-steering-works.mdx",
+        "packages/documentation/src/content/docs/build/steering/project-steering.mdx",
+        "packages/documentation/src/content/docs/build/steering/workspace-steering.mdx",
+        "packages/documentation/src/content/docs/start/core-concepts.mdx",
+        "packages/documentation/src/content/docs/start/install-consuelo-os.mdx",
+        "packages/documentation/src/content/docs/steering/index.mdx",
+        "packages/os/SCRIPTS.md",
+        "packages/os/dev-steering.md",
+        "packages/os/plans/consuelo-os-foundation/plan.md",
+        "packages/os/plans/consuelo-os-foundation/workers/07-steering-runtime-context.md",
+        "packages/os/scripts/lib/distribution/runtime-bundle.ts",
+        "packages/os/scripts/lib/install-state.ts",
+        "packages/os/scripts/lib/managed-user-content-release.ts",
+        "packages/os/scripts/lib/managed-user-content.ts",
+        "packages/os/scripts/lib/steering-snapshot-cache.ts",
+        "packages/os/scripts/os.ts",
+        "packages/os/steering/system_prompt.md",
+        "packages/os/tests/distribution/runtime-bundle.test.ts",
+        "packages/os/tests/lifecycle-engine.test.ts",
+        "packages/os/tests/lifecycle-retention-uninstall.test.ts",
+        "packages/os/tests/managed-user-content.test.ts",
+        "packages/os/tests/os-get-steering-trace.test.ts",
+        "packages/os/tests/session-integration-guidance.test.ts",
+        "packages/os/tests/steering-canonical-source.test.ts",
+        "packages/os/tests/test-source-safety.test.ts",
+        "packages/workspace/STEERING.md",
+        "packages/workspace/server.py",
+        "packages/workspace/test-selection.registry.json",
+        "packages/workspace/test-selection.rules.json",
+        "packages/workspace/tests/server_call_test.py",
+        "packages/workspace/tests/test-selection.test.js"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-test-selection",
+          "critical": true,
+          "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy.",
+          "matchedFiles": [
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-local-steering-authority",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Steering ownership, seeding, caching, operator context, and release-boundary changes must prove that visible user steering is authoritative and no private repository prompt is shipped.",
+          "matchedFiles": [
+            "packages/os/plans/consuelo-os-foundation/plan.md",
+            "packages/os/plans/consuelo-os-foundation/workers/07-steering-runtime-context.md",
+            "packages/os/scripts/lib/distribution/runtime-bundle.ts",
+            "packages/os/scripts/lib/install-state.ts",
+            "packages/os/scripts/lib/managed-user-content-release.ts",
+            "packages/os/scripts/lib/managed-user-content.ts",
+            "packages/os/scripts/lib/steering-snapshot-cache.ts",
+            "packages/os/steering/system_prompt.md",
+            "packages/os/tests/distribution/runtime-bundle.test.ts",
+            "packages/os/tests/lifecycle-engine.test.ts",
+            "packages/os/tests/lifecycle-retention-uninstall.test.ts",
+            "packages/os/tests/managed-user-content.test.ts",
+            "packages/os/tests/session-integration-guidance.test.ts",
+            "packages/os/tests/steering-canonical-source.test.ts",
+            "packages/os/tests/test-source-safety.test.ts",
+            "packages/workspace/STEERING.md",
+            "packages/workspace/server.py",
+            "packages/workspace/tests/server_call_test.py"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "trace-site-pagination",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Current OS Trace gateway and Trace Burn changes must prove authenticated history paging, canonical TraceStore resolution, safe redaction, and OS-owned virtual-list/browser behavior.",
+          "matchedFiles": [
+            "packages/os/scripts/lib/distribution/runtime-bundle.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-explore-retrieval-science",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Agent-facing OS Explore retrieval, unified investigation-policy, shadow VOI, and E6 controlled-trial promotion-gate changes must prove hard scope, missing-semantic fallback, honest hypothesis/readiness state, neutral reads, explicit relevance evidence, one shared E4 next-action/edit-readiness control, shadow-only empirical E5 VOI abstention/cost math, fixed-sample paired E6 evidence with exact sign-test and required-node safety gates, hosted embeddings, runtime routing, benchmark metrics, and compact/full output without selecting the historically red package-wide OS suite.",
+          "matchedFiles": [
+            "packages/os/dev-steering.md"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-release-surface-freshness",
+          "critical": true,
+          "exclusive": true,
+          "reason": "OS release orchestration, GitHub CLI resolution, signed runtime publication/promotion, exact local update handoff, default workspace-shell snapshots, and Workspace Edge migrations must prove the focused freshness path without selecting unrelated package-wide OS tests.",
+          "matchedFiles": [
+            "packages/os/SCRIPTS.md"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-hosted-site-update-reconciliation",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Hosted Sites update reconciliation changes must prove canonical D1 route ownership, stale-default repair, lifecycle reconciliation, and node routing without selecting the historically red unrelated OS package suite.",
+          "matchedFiles": [
+            "packages/os/tests/lifecycle-engine.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-runtime-bundle-distribution-contract",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Runtime-bundle distribution harness changes must run the exact runtime-bundle contract without selecting unrelated package-wide OS tests.",
+          "matchedFiles": [
+            "packages/os/tests/distribution/runtime-bundle.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-lifecycle-update-handoff",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Lifecycle updater, managed ingress dependency convergence, Caddy topology reload decisions, immutable release handoff, worker drain/load-balancer evacuation, detached activation, platform restart, and discoverable lifecycle-tool changes must run the exact lifecycle/facade/tool contracts without selecting unrelated package-wide OS tests.",
+          "matchedFiles": [
+            "packages/os/SCRIPTS.md",
+            "packages/os/tests/lifecycle-engine.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-chatgpt-node-routing-facade",
+          "critical": true,
+          "exclusive": true,
+          "reason": "ChatGPT node-routing facade or steering changes must prove top-level nodeId discovery, no inner-input leakage, explicit/default/fail-closed routing, and syntax without selecting unrelated package-wide OS tests.",
+          "matchedFiles": [
+            "packages/os/scripts/os.ts",
+            "packages/os/tests/os-get-steering-trace.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-test-source-safety",
+          "critical": true,
+          "exclusive": true,
+          "reason": "OS tests that exercise destructive-command guardrails, legacy daemon retirement, or release CLI safety must prove pure/static/dry-run behavior without selecting the entire OS package suite.",
+          "matchedFiles": [
+            "packages/os/tests/test-source-safety.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "server-ci-task-contract",
+          "critical": true,
+          "reason": "Server CI changes must scope lint and typecheck to directly changed Twenty server runtime files while retaining dependency propagation.",
+          "matchedFiles": [
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "workspace-session-integration",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Session constructor, canonical guidance, task-start compatibility, and workspace fallback changes must prove the integrated task/work session contract.",
+          "matchedFiles": [
+            "packages/os/tests/session-integration-guidance.test.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true
+        },
+        {
+          "name": "OS local-authoritative steering ownership contract",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/steering-canonical-source.test.ts"
+          ],
+          "ruleId": "os-local-steering-authority",
+          "critical": true
+        },
+        {
+          "name": "OS managed user steering contracts",
+          "command": [
+            "bunx",
+            "vitest",
+            "run",
+            "packages/os/tests/managed-user-content.test.ts"
+          ],
+          "ruleId": "os-local-steering-authority",
+          "critical": true
+        },
+        {
+          "name": "OS steering session guidance contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/session-integration-guidance.test.ts"
+          ],
+          "ruleId": "os-local-steering-authority",
+          "critical": true
+        },
+        {
+          "name": "OS local steering install and release contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/install-state.test.ts",
+            "tests/distribution/release-publication-preparer.test.ts"
+          ],
+          "ruleId": "os-local-steering-authority",
+          "critical": true
+        },
+        {
+          "name": "Workspace steering guard contracts",
+          "command": [
+            "python3",
+            "packages/workspace/tests/server_call_test.py"
+          ],
+          "ruleId": "os-local-steering-authority",
+          "critical": true
+        },
+        {
+          "name": "OS local-authoritative steering syntax",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "ruleId": "os-local-steering-authority",
+          "critical": true
+        },
+        {
+          "name": "OS trace gateway and Trace Burn contracts",
+          "command": [
+            "bun",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "--root",
+            "packages/os",
+            "tests/trace-sites-history-endpoint-contract.test.ts",
+            "tests/trace-sites-gateway-read-layer.test.ts",
+            "tests/trace-history-redaction.test.ts",
+            "tests/trace-site-inspector-os-owned.test.ts",
+            "tests/observability-traces-site.test.ts",
+            "tests/redaction.test.ts",
+            "tests/runtime-bundle-managed-site-assets.test.ts",
+            "tests/trace-sites-gateway-live-endpoints.test.ts"
+          ],
+          "ruleId": "trace-site-pagination",
+          "critical": true
+        },
+        {
+          "name": "OS canonical TraceStore runtime boundary",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/trace-sites-runtime-boundary.test.ts"
+          ],
+          "ruleId": "trace-site-pagination",
+          "critical": true
+        },
+        {
+          "name": "OS trace persistence and session search contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "--root",
+            "packages/os",
+            "tests/trace-persistence.test.ts",
+            "tests/trace-search-query.test.ts"
+          ],
+          "ruleId": "trace-site-pagination",
+          "critical": true
+        },
+        {
+          "name": "OS Explore retrieval science contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/explore-retrieval-policy.test.ts",
+            "tests/explore-retriever-fallback.test.ts",
+            "tests/explore-index-hydration-fallback.test.ts",
+            "tests/explore-bench.test.ts",
+            "tests/explore-output-contract.test.ts",
+            "tests/explore-hypothesis-model.test.ts",
+            "tests/explore-voi-policy.test.ts",
+            "tests/explore-promotion-gate.test.ts",
+            "tests/explore-runtime-routing.test.ts",
+            "tests/semantic-embedding-edge-gateway.test.ts",
+            "tests/semantic-embedding-gateway.test.ts",
+            "tests/semantic-embedding-identity.test.ts",
+            "tools/decision-engine/handler.test.ts"
+          ],
+          "ruleId": "os-explore-retrieval-science",
+          "critical": true
+        },
+        {
+          "name": "OS release freshness contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/os-device-authority-release-contract.test.ts",
+            "tests/distribution/release-channel-workflows.test.ts",
+            "tests/production-release-mcp-security.test.ts",
+            "tests/distribution/release-channels.test.ts",
+            "tests/github-cli-resolution.test.ts",
+            "tests/release-orchestrator.test.ts",
+            "tests/release-local-platform-bundle.test.ts",
+            "tests/release-script-promotion-correlation.test.ts",
+            "tests/release-promotion-dispatch-lock.test.ts",
+            "tests/release-script-security.test.ts",
+            "tests/release-tool-surface.test.ts"
+          ],
+          "ruleId": "os-release-surface-freshness",
+          "critical": true
+        },
+        {
+          "name": "Workspace production release contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/website-deploy.test.js"
+          ],
+          "ruleId": "os-release-surface-freshness",
+          "critical": true
+        },
+        {
+          "name": "Workspace Edge release dry run",
+          "command": [
+            "bun",
+            "run",
+            "os:release-workspace-edge",
+            "--",
+            "--dry-run"
+          ],
+          "ruleId": "os-release-surface-freshness",
+          "critical": true
+        },
+        {
+          "name": "OS hosted-site D1 reconciliation contract",
+          "command": [
+            "env",
+            "CONSUELO_RUN_WORKSPACE_GATEWAY_CONTRACTS=1",
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/cloudflare-d1-route-registry.test.ts"
+          ],
+          "ruleId": "os-hosted-site-update-reconciliation",
+          "critical": true
+        },
+        {
+          "name": "OS hosted-site lifecycle and node routing contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/lifecycle-engine.test.ts",
+            "tests/workspace-node-registry-routing.test.ts"
+          ],
+          "ruleId": "os-hosted-site-update-reconciliation",
+          "critical": true
+        },
+        {
+          "name": "OS heartbeat D1 write budget",
+          "command": [
+            "bun",
+            "test",
+            "packages/os/tests/workspace-route-heartbeat-write-budget.test.ts"
+          ],
+          "ruleId": "os-hosted-site-update-reconciliation",
+          "critical": true
+        },
+        {
+          "name": "OS runtime-bundle distribution contract",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/distribution/runtime-bundle.test.ts"
+          ],
+          "ruleId": "os-runtime-bundle-distribution-contract",
+          "critical": true
+        },
+        {
+          "name": "OS lifecycle update handoff contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/lifecycle-engine.test.ts",
+            "packages/os/tests/lifecycle-restart-contract.test.ts",
+            "packages/os/tests/lifecycle-ingress-continuity.test.ts",
+            "packages/os/tests/linux-ingress-continuity.test.ts",
+            "packages/os/tests/daemon-bun-path.test.ts",
+            "packages/os/tests/system-daemon-reliability.test.ts",
+            "packages/os/tests/worker-pool-lifecycle.test.ts",
+            "packages/os/tests/health-readiness.test.ts",
+            "packages/os/tests/lifecycle-facade.test.ts",
+            "packages/os/tests/native-lifecycle-operation.test.ts",
+            "packages/os/tests/lifecycle-tool-surface.test.ts",
+            "packages/os/tests/cli-update-routing.test.ts",
+            "packages/os/tests/linux-platform.test.ts",
+            "packages/os/tests/windows-platform.test.ts",
+            "packages/os/tests/tool-manifest.test.ts",
+            "packages/os/tests/tool-package-layout.test.ts",
+            "packages/os/tests/caddy-worker-pool-reconciliation.test.ts",
+            "packages/os/tests/runtime-ingress-dependency-convergence.test.ts",
+            "packages/os/tests/caddy-worker-pool-migration.test.ts",
+            "packages/os/tests/bootstrap-recovery-cli.test.ts",
+            "packages/os/tests/lifecycle-command.test.ts",
+            "packages/os/tests/worker-pool-process.test.ts"
+          ],
+          "ruleId": "os-lifecycle-update-handoff",
+          "critical": true
+        },
+        {
+          "name": "OS lifecycle facade snapshots",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/facade/facade.test.ts",
+            "-t",
+            "lifecycle\\.(status|update)"
+          ],
+          "ruleId": "os-lifecycle-update-handoff",
+          "critical": true
+        },
+        {
+          "name": "OS ChatGPT node-routing facade contracts",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/mcp-gateway.test.ts",
+            "tests/os-get-steering-trace.test.ts"
+          ],
+          "ruleId": "os-chatgpt-node-routing-facade",
+          "critical": true
+        },
+        {
+          "name": "OS ChatGPT node-routing authority contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/workspace-node-registry-routing.test.ts",
+            "tests/os-device-authority-worker.test.ts"
+          ],
+          "ruleId": "os-chatgpt-node-routing-facade",
+          "critical": true
+        },
+        {
+          "name": "OS test source safety contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/test-source-safety.test.ts",
+            "tests/code-call.test.ts",
+            "tests/legacy-system-daemons.test.ts",
+            "tests/lifecycle-restart-contract.test.ts",
+            "tests/distribution/release-channels-cli.test.ts"
+          ],
+          "ruleId": "os-test-source-safety",
+          "critical": true
+        },
+        {
+          "name": "changed server task selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "TypeORM CLI compatibility contract",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "workspace session integration contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/session-integration-guidance.test.ts",
+            "packages/os/tests/session-start-foundation.test.ts",
+            "packages/os/tests/task-hook-workflow-contract.test.ts",
+            "packages/os/tests/task-hooks.test.ts",
+            "packages/workspace/tests/task-hook-workflow-contract.test.ts",
+            "packages/workspace/tests/task-hooks.test.ts",
+            "packages/workspace/tests/workflow-intent.test.ts",
+            "packages/workspace/tests/session-start-compatibility.test.ts",
+            "packages/os/tests/observability-traces-site.test.ts",
+            "packages/os/tests/workflow-intent.test.ts"
+          ],
+          "ruleId": "workspace-session-integration",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "cwd": ".",
+          "ruleId": "workspace-test-selection",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 5066,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-make-local-steering-authoritative\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/test-selection.test.js \u001b[2m(\u001b[22m\u001b[2m75 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 4742\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m discovers and seeds the existing test inventory \u001b[33m 1601\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m provisions OS package dependencies before selected OS suites on a clean checkout \u001b[33m 486\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m75 passed\u001b[39m\u001b[22m\u001b[90m (75)\u001b[39m\n\u001b[2m   Start at \u001b[22m 22:26:50\n\u001b[2m   Duration \u001b[22m 4.84s\u001b[2m (transform 19ms, setup 0ms, import 28ms, tests 4.74s, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS local-authoritative steering ownership contract",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/steering-canonical-source.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-local-steering-authority",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 613,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-make-local-steering-authoritative/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/steering-canonical-source.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m   Start at \u001b[22m 22:26:55\n\u001b[2m   Duration \u001b[22m 65ms\u001b[2m (transform 17ms, setup 15ms, import 8ms, tests 2ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS managed user steering contracts",
+          "command": [
+            "bunx",
+            "vitest",
+            "run",
+            "packages/os/tests/managed-user-content.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-local-steering-authority",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 763,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-make-local-steering-authoritative\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/managed-user-content.test.ts \u001b[2m(\u001b[22m\u001b[2m25 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 302\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m25 passed\u001b[39m\u001b[22m\u001b[90m (25)\u001b[39m\n\u001b[2m   Start at \u001b[22m 22:26:55\n\u001b[2m   Duration \u001b[22m 487ms\u001b[2m (transform 106ms, setup 0ms, import 110ms, tests 302ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS steering session guidance contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/session-integration-guidance.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-local-steering-authority",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 252,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-make-local-steering-authoritative/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/session-integration-guidance.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 4\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m5 passed\u001b[39m\u001b[22m\u001b[90m (5)\u001b[39m\n\u001b[2m   Start at \u001b[22m 22:26:56\n\u001b[2m   Duration \u001b[22m 62ms\u001b[2m (transform 14ms, setup 15ms, import 5ms, tests 4ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS local steering install and release contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/install-state.test.ts",
+            "tests/distribution/release-publication-preparer.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-local-steering-authority",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 11803,
+          "outputTail": "2m✓\u001b[22m\u001b[39m rewrites existing ChatGPT MCP config to the central endpoint without rotating tokens \u001b[33m 720\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m replaces stale ChatGPT MCP metadata when its stored credential is missing \u001b[33m 350\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m replaces an expired ChatGPT MCP credential during reprovisioning \u001b[33m 733\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m reports existing generated security assets as existing on reprovision \u001b[33m 723\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should reuse the active workspace and node when reprovisioning without a new bootstrap \u001b[33m 716\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should reject a noninteractive update when the active workspace conflicts with installed state \u001b[33m 465\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m creates the approved local home shape and preserves existing config \u001b[33m 1127\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m writes approved node identity into flattened node config \u001b[33m 351\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m writes an OpenCode MCP config that exposes Consuelo tools \u001b[33m 350\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m preserves credentials for previously configured agents during partial reconfiguration \u001b[33m 699\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m replaces expired local-agent credentials during reprovisioning \u001b[33m 695\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m materializes the canonical Artifacts site from persisted route-addressed artifacts \u001b[33m 626\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m preserves local user skills while refreshing the installed registry \u001b[33m 349\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m drops unknown legacy skill selections without mapping them to another skill \u001b[33m 372\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m installs every full-manifest tool even when only one skill is selected \u001b[33m 333\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m preserves local user tools while refreshing the installed registry \u001b[33m 379\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m materializes only selected bundled skills on fresh install \u001b[33m 372\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m uses default selected bundled skills when no selectedSkills option is provided \u001b[33m 353\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m configures Codex natively without writing a legacy sidecar or claiming verification \u001b[33m 364\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m reports intent and task hook runtime modules in doctor checks \u001b[33m 388\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m26 passed\u001b[39m\u001b[22m\u001b[90m (26)\u001b[39m\n\u001b[2m   Start at \u001b[22m 22:26:56\n\u001b[2m   Duration \u001b[22m 11.65s\u001b[2m (transform 68ms, setup 33ms, import 62ms, tests 11.60s, environment 0ms)\u001b[22m\n\n786 |   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);\n787 | }\n788 | \n789 | export function readManagedComponentState(home: string): ManagedComponentState {\n790 |   const root = componentsRoot(home);\n791 |   const provenanceEnvelope = readJson(join(root, PROVENANCE_FILE));\n                                   ^\nSyntaxError: JSON Parse error: Expected '}'\n      at readManagedComponentState (/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-make-local-steering-authoritative/packages/os/scripts/lib/managed-components.ts:791:30)\n      at readExistingState (/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-make-local-steering-authoritative/packages/os/scripts/lib/managed-component-install.ts:315:17)\n      at provisionManagedComponentIndexes (/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-make-local-steering-authoritative/packages/os/scripts/lib/managed-component-install.ts:479:20)\n      at provisionLocalOs (/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-make-local-steering-authoritative/packages/os/scripts/lib/install-state.ts:1978:19)\n      at /Users/kokayi/.consuelo/node/tasks/worktrees/task-os-make-local-steering-authoritative/packages/os/[eval]:3:43\n\nBun v1.3.14 (macOS arm64)\n"
+        },
+        {
+          "name": "Workspace steering guard contracts",
+          "command": [
+            "python3",
+            "packages/workspace/tests/server_call_test.py"
+          ],
+          "cwd": ".",
+          "ruleId": "os-local-steering-authority",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 525,
+          "outputTail": "..............................................\n----------------------------------------------------------------------\nRan 46 tests in 0.379s\n\nOK\n"
+        },
+        {
+          "name": "OS local-authoritative steering syntax",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "cwd": ".",
+          "ruleId": "os-local-steering-authority",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1818,
+          "outputTail": "workspace script syntax checks passed\n"
+        },
+        {
+          "name": "OS trace gateway and Trace Burn contracts",
+          "command": [
+            "bun",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "--root",
+            "packages/os",
+            "tests/trace-sites-history-endpoint-contract.test.ts",
+            "tests/trace-sites-gateway-read-layer.test.ts",
+            "tests/trace-history-redaction.test.ts",
+            "tests/trace-site-inspector-os-owned.test.ts",
+            "tests/observability-traces-site.test.ts",
+            "tests/redaction.test.ts",
+            "tests/runtime-bundle-managed-site-assets.test.ts",
+            "tests/trace-sites-gateway-live-endpoints.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "trace-site-pagination",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 704,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-make-local-steering-authoritative/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/redaction.test.ts \u001b[2m(\u001b[22m\u001b[2m6 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 5\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/trace-sites-gateway-read-layer.test.ts \u001b[2m(\u001b[22m\u001b[2m10 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 6\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/trace-sites-history-endpoint-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 7\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/trace-history-redaction.test.ts \u001b[2m(\u001b[22m\u001b[2m7 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 7\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/trace-site-inspector-os-owned.test.ts \u001b[2m(\u001b[22m\u001b[2m16 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 7\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/observability-traces-site.test.ts \u001b[2m(\u001b[22m\u001b[2m15 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 64\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/trace-sites-gateway-live-endpoints.test.ts \u001b[2m(\u001b[22m\u001b[2m18 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 83\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/runtime-bundle-managed-site-assets.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 313\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m includes the OS-owned v38 asset closure in the real customer release fingerprint \u001b[33m 310\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m8 passed\u001b[39m\u001b[22m\u001b[90m (8)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m79 passed\u001b[39m\u001b[22m\u001b[90m (79)\u001b[39m\n\u001b[2m   Start at \u001b[22m 22:27:10\n\u001b[2m   Duration \u001b[22m 503ms\u001b[2m (transform 630ms, setup 197ms, import 694ms, tests 493ms, environment 2ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS canonical TraceStore runtime boundary",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/trace-sites-runtime-boundary.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "trace-site-pagination",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 357,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-make-local-steering-authoritative/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/trace-sites-runtime-boundary.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m3 passed\u001b[39m\u001b[22m\u001b[90m (3)\u001b[39m\n\u001b[2m   Start at \u001b[22m 22:27:11\n\u001b[2m   Duration \u001b[22m 98ms\u001b[2m (transform 20ms, setup 17ms, import 10ms, tests 3ms, environment 0ms)\u001b[22m\n\n$ vitest run tests/trace-sites-runtime-boundary.test.ts\n"
+        },
+        {
+          "name": "OS trace persistence and session search contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "--root",
+            "packages/os",
+            "tests/trace-persistence.test.ts",
+            "tests/trace-search-query.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "trace-site-pagination",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 3317,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-make-local-steering-authoritative/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/trace-search-query.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 12\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/trace-persistence.test.ts \u001b[2m(\u001b[22m\u001b[2m12 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 2997\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m persists code.call and batch parent envelopes alongside nested child traces \u001b[33m 1175\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m persists durable Codex child events once under the originating trace across later attachments \u001b[33m 466\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m16 passed\u001b[39m\u001b[22m\u001b[90m (16)\u001b[39m\n\u001b[2m   Start at \u001b[22m 22:27:11\n\u001b[2m   Duration \u001b[22m 3.13s\u001b[2m (transform 57ms, setup 27ms, import 74ms, tests 3.01s, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS Explore retrieval science contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/explore-retrieval-policy.test.ts",
+            "tests/explore-retriever-fallback.test.ts",
+            "tests/explore-index-hydration-fallback.test.ts",
+            "tests/explore-bench.test.ts",
+            "tests/explore-output-contract.test.ts",
+            "tests/explore-hypothesis-model.test.ts",
+            "tests/explore-voi-policy.test.ts",
+            "tests/explore-promotion-gate.test.ts",
+            "tests/explore-runtime-routing.test.ts",
+            "tests/semantic-embedding-edge-gateway.test.ts",
+            "tests/semantic-embedding-gateway.test.ts",
+            "tests/semantic-embedding-identity.test.ts",
+            "tools/decision-engine/handler.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-explore-retrieval-science",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 26337,
+          "outputTail": "32m✓\u001b[39m tests/explore-retriever-fallback.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 725\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should return lexical results when semantic embedding is unavailable \u001b[33m 514\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/explore-bench.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 1033\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should remain syntactically executable when the benchmark CLI source is checked \u001b[33m 363\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should reject missing values when a value-taking benchmark CLI flag is last \u001b[33m 661\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/explore-index-hydration-fallback.test.ts \u001b[2m(\u001b[22m\u001b[2m7 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 25992\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should stop after the first failed hydration batch and continue with lexical retrieval \u001b[33m 1551\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should avoid a second query-time wait when semantic hydration hangs \u001b[33m 9282\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should bound total hydration latency when a later semantic batch hangs \u001b[33m 9485\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should bound successful semantic hydration instead of rebuilding the whole index synchronously \u001b[33m 1460\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should preserve query semantic retrieval when changed-document hydration fails local validation \u001b[33m 2713\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should mark query-time semantic fallback degraded after successful document hydration \u001b[33m 1499\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m13 passed\u001b[39m\u001b[22m\u001b[90m (13)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m102 passed\u001b[39m\u001b[22m\u001b[90m (102)\u001b[39m\n\u001b[2m   Start at \u001b[22m 22:27:15\n\u001b[2m   Duration \u001b[22m 26.15s\u001b[2m (transform 728ms, setup 143ms, import 1.18s, tests 27.89s, environment 1ms)\u001b[22m\n\n$ vitest run tests/explore-retrieval-policy.test.ts tests/explore-retriever-fallback.test.ts tests/explore-index-hydration-fallback.test.ts tests/explore-bench.test.ts tests/explore-output-contract.test.ts tests/explore-hypothesis-model.test.ts tests/explore-voi-policy.test.ts tests/explore-promotion-gate.test.ts tests/explore-runtime-routing.test.ts tests/semantic-embedding-edge-gateway.test.ts tests/semantic-embedding-gateway.test.ts tests/semantic-embedding-identity.test.ts tools/decision-engine/handler.test.ts\n{\"level\":\"info\",\"tool\":\"explore\",\"branch\":\"\",\"command\":\"workspace explore '{\\\"query\\\":\\\"where is Explore retrieval implemented\\\"}'\",\"implementationCommand\":\"bun run explore -- where is Explore retrieval implemented --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-10T02:27:15.856Z\"}\n{\"level\":\"info\",\"tool\":\"confidenceScore\",\"branch\":\"\",\"command\":\"workspace confidenceScore\",\"implementationCommand\":\"bun run confidence-score -- --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-10T02:27:15.865Z\"}\n{\"level\":\"info\",\"tool\":\"decideNext\",\"branch\":\"\",\"command\":\"workspace decideNext\",\"implementationCommand\":\"bun run decide-next -- --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-10T02:27:15.867Z\"}\n{\"level\":\"info\",\"tool\":\"exploit\",\"branch\":\"\",\"command\":\"workspace exploit\",\"implementationCommand\":\"bun run exploit -- --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-10T02:27:15.869Z\"}\n(node:47189) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+        },
+        {
+          "name": "OS release freshness contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/os-device-authority-release-contract.test.ts",
+            "tests/distribution/release-channel-workflows.test.ts",
+            "tests/production-release-mcp-security.test.ts",
+            "tests/distribution/release-channels.test.ts",
+            "tests/github-cli-resolution.test.ts",
+            "tests/release-orchestrator.test.ts",
+            "tests/release-local-platform-bundle.test.ts",
+            "tests/release-script-promotion-correlation.test.ts",
+            "tests/release-promotion-dispatch-lock.test.ts",
+            "tests/release-script-security.test.ts",
+            "tests/release-tool-surface.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-release-surface-freshness",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1500,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-make-local-steering-authoritative/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/release-orchestrator.test.ts \u001b[2m(\u001b[22m\u001b[2m13 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 5\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/distribution/release-channel-workflows.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 39\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/release-script-security.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 4\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/github-cli-resolution.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 4\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/release-script-promotion-correlation.test.ts \u001b[2m(\u001b[22m\u001b[2m7 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 4\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/production-release-mcp-security.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 4\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/distribution/release-channels.test.ts \u001b[2m(\u001b[22m\u001b[2m25 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 34\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/release-local-platform-bundle.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/release-promotion-dispatch-lock.test.ts \u001b[2m(\u001b[22m\u001b[2m7 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 231\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/release-tool-surface.test.ts \u001b[2m(\u001b[22m\u001b[2m6 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 35\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-release-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m18 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 770\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should stop release before remote mutation when readiness fails \u001b[33m 573\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m11 passed\u001b[39m\u001b[22m\u001b[90m (11)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m95 passed\u001b[39m\u001b[22m\u001b[90m (95)\u001b[39m\n\u001b[2m   Start at \u001b[22m 22:27:41\n\u001b[2m   Duration \u001b[22m 1.28s\u001b[2m (transform 1.19s, setup 157ms, import 1.29s, tests 1.13s, environment 1ms)\u001b[22m\n\n$ vitest run tests/os-device-authority-release-contract.test.ts tests/distribution/release-channel-workflows.test.ts tests/production-release-mcp-security.test.ts tests/distribution/release-channels.test.ts tests/github-cli-resolution.test.ts tests/release-orchestrator.test.ts tests/release-local-platform-bundle.test.ts tests/release-script-promotion-correlation.test.ts tests/release-promotion-dispatch-lock.test.ts tests/release-script-security.test.ts tests/release-tool-surface.test.ts\n"
+        },
+        {
+          "name": "Workspace production release contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/website-deploy.test.js"
+          ],
+          "cwd": ".",
+          "ruleId": "os-release-surface-freshness",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1258,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-make-local-steering-authoritative\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/website-deploy.test.js \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 392\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m allows local deploys to use existing Wrangler auth when CLOUDFLARE_API_TOKEN is absent \u001b[33m 374\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m3 passed\u001b[39m\u001b[22m\u001b[90m (3)\u001b[39m\n\u001b[2m   Start at \u001b[22m 22:27:43\n\u001b[2m   Duration \u001b[22m 493ms\u001b[2m (transform 14ms, setup 0ms, import 20ms, tests 392ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "Workspace Edge release dry run",
+          "command": [
+            "bun",
+            "run",
+            "os:release-workspace-edge",
+            "--",
+            "--dry-run"
+          ],
+          "cwd": ".",
+          "ruleId": "os-release-surface-freshness",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 803,
+          "outputTail": "release=consuelo-workspace-edge\n$ bun run --cwd packages/os cloudflare:workspace-edge:deploy:dry-run\n\n ⛅️ wrangler 4.114.0 (update available 4.130.0)\n───────────────────────────────────────────────\nTotal Upload: 235.04 KiB / gzip: 51.15 KiB\nYour Worker has access to the following bindings:\nBinding                                                                                                              Resource            \nenv.OS_DEVICE_AUTHORITY (OsDeviceGrantDurableObject, defined in consuelo-os-device-authority)                        Durable Object      \nenv.WORKSPACE_ROUTE_REGISTRY (consuelo-workspace-route-registry)                                                     D1 Database         \nenv.SITES_SNAPSHOTS (consuelo-sites-snapshots)                                                                       R2 Bucket           \nenv.OS_SEMANTIC_EMBEDDING_RATE_LIMITER (600 requests/60s)                                                            Rate Limit          \nenv.OS_SEMANTIC_EMBEDDING_IP_RATE_LIMITER (1200 requests/60s)                                                        Rate Limit          \n\n--dry-run: exiting now.\nConsuelo Workspace Edge dry run complete\n$ bun packages/workspace/scripts/os-release-workspace-edge.ts --dry-run\n$ wrangler deploy --config cloudflare/workspace-edge/wrangler.toml --dry-run\n"
+        },
+        {
+          "name": "OS hosted-site D1 reconciliation contract",
+          "command": [
+            "env",
+            "CONSUELO_RUN_WORKSPACE_GATEWAY_CONTRACTS=1",
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/cloudflare-d1-route-registry.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-hosted-site-update-reconciliation",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 344,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-make-local-steering-authoritative/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/cloudflare-d1-route-registry.test.ts \u001b[2m(\u001b[22m\u001b[2m12 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 20\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m12 passed\u001b[39m\u001b[22m\u001b[90m (12)\u001b[39m\n\u001b[2m   Start at \u001b[22m 22:27:45\n\u001b[2m   Duration \u001b[22m 92ms\u001b[2m (transform 32ms, setup 15ms, import 14ms, tests 20ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS hosted-site lifecycle and node routing contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/lifecycle-engine.test.ts",
+            "tests/workspace-node-registry-routing.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-hosted-site-update-reconciliation",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 2539,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-make-local-steering-authoritative/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/workspace-node-registry-routing.test.ts \u001b[2m(\u001b[22m\u001b[2m70 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 985\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should resolve the stale lifecycle Bun executable across historical install shapes \u001b[33m 692\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/lifecycle-engine.test.ts \u001b[2m(\u001b[22m\u001b[2m66 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 1814\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m activates after production provisioning without leaving runtime/current as a directory \u001b[33m 310\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m136 passed\u001b[39m\u001b[22m\u001b[90m (136)\u001b[39m\n\u001b[2m   Start at \u001b[22m 22:27:45\n\u001b[2m   Duration \u001b[22m 2.38s\u001b[2m (transform 510ms, setup 24ms, import 774ms, tests 2.80s, environment 0ms)\u001b[22m\n\n$ vitest run tests/lifecycle-engine.test.ts tests/workspace-node-registry-routing.test.ts\n"
+        },
+        {
+          "name": "OS heartbeat D1 write budget",
+          "command": [
+            "bun",
+            "test",
+            "packages/os/tests/workspace-route-heartbeat-write-budget.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-hosted-site-update-reconciliation",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 153,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/os/tests/workspace-route-heartbeat-write-budget.test.ts:\n(pass) workspace heartbeat D1 write budget > should write one unindexed row per changed heartbeat with 1 registered nodes [7.08ms]\n(pass) workspace heartbeat D1 write budget > should write one unindexed row per changed heartbeat with 8 registered nodes [4.01ms]\n(pass) workspace heartbeat D1 write budget > should write one unindexed row per changed heartbeat with 32 registered nodes [12.43ms]\n(pass) workspace heartbeat D1 write budget > should persist connector changes and keep published site routes during reconciliation [1.87ms]\n\n 4 pass\n 0 fail\n 16 expect() calls\nRan 4 tests across 1 file. [145.00ms]\n"
+        },
+        {
+          "name": "OS runtime-bundle distribution contract",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/distribution/runtime-bundle.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-runtime-bundle-distribution-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 9437,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-make-local-steering-authoritative/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/distribution/runtime-bundle.test.ts \u001b[2m(\u001b[22m\u001b[2m20 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 9189\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m builds the real customer closure twice with clean-host inventory parity \u001b[33m 9005\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m20 passed\u001b[39m\u001b[22m\u001b[90m (20)\u001b[39m\n\u001b[2m   Start at \u001b[22m 22:27:48\n\u001b[2m   Duration \u001b[22m 9.28s\u001b[2m (transform 26ms, setup 11ms, import 25ms, tests 9.19s, environment 0ms)\u001b[22m\n\n$ vitest run tests/distribution/runtime-bundle.test.ts\n"
+        },
+        {
+          "name": "OS lifecycle update handoff contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/lifecycle-engine.test.ts",
+            "packages/os/tests/lifecycle-restart-contract.test.ts",
+            "packages/os/tests/lifecycle-ingress-continuity.test.ts",
+            "packages/os/tests/linux-ingress-continuity.test.ts",
+            "packages/os/tests/daemon-bun-path.test.ts",
+            "packages/os/tests/system-daemon-reliability.test.ts",
+            "packages/os/tests/worker-pool-lifecycle.test.ts",
+            "packages/os/tests/health-readiness.test.ts",
+            "packages/os/tests/lifecycle-facade.test.ts",
+            "packages/os/tests/native-lifecycle-operation.test.ts",
+            "packages/os/tests/lifecycle-tool-surface.test.ts",
+            "packages/os/tests/cli-update-routing.test.ts",
+            "packages/os/tests/linux-platform.test.ts",
+            "packages/os/tests/windows-platform.test.ts",
+            "packages/os/tests/tool-manifest.test.ts",
+            "packages/os/tests/tool-package-layout.test.ts",
+            "packages/os/tests/caddy-worker-pool-reconciliation.test.ts",
+            "packages/os/tests/runtime-ingress-dependency-convergence.test.ts",
+            "packages/os/tests/caddy-worker-pool-migration.test.ts",
+            "packages/os/tests/bootstrap-recovery-cli.test.ts",
+            "packages/os/tests/lifecycle-command.test.ts",
+            "packages/os/tests/worker-pool-process.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-lifecycle-update-handoff",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 17353,
+          "outputTail": "uld bootstrap a missing Caddy label when the HA ingress is unavailable \u001b[33m 529\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should open a recovery circuit when restart attempts exceed the bounded window \u001b[33m 670\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should keep external health recovery scoped to the external launchd label \u001b[33m 742\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should reject route registration when the routed MCP probe is not ready \u001b[33m 684\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should not restart when public heartbeat is rate-limited \u001b[33m 554\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/health-readiness.test.ts \u001b[2m(\u001b[22m\u001b[2m13 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 5618\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m preserves a real in-flight response when the worker exits after draining \u001b[33m 1264\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m preserves a slow app response stream while a real Bun worker drains \u001b[33m 1606\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m preserves a real MCP tool call when the worker receives the graceful drain signal \u001b[33m 2733\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/worker-pool-process.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 16848\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m starts two real workers and replaces only the crashed slot \u001b[33m 10770\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m reclaims orphaned workers when launchd restarts a killed supervisor \u001b[33m 6077\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m22 passed\u001b[39m\u001b[22m\u001b[90m (22)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m230 passed\u001b[39m\u001b[22m\u001b[90m (230)\u001b[39m\n\u001b[2m   Start at \u001b[22m 22:27:57\n\u001b[2m   Duration \u001b[22m 17.01s\u001b[2m (transform 2.85s, setup 0ms, import 6.11s, tests 40.05s, environment 2ms)\u001b[22m\n\n(node:49637) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n{\"level\":\"info\",\"tool\":\"lifecycle.status\",\"branch\":\"\",\"command\":\"workspace lifecycle.status\",\"implementationCommand\":\"bun run lifecycle -- status --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-10T02:27:59.952Z\"}\n{\"level\":\"info\",\"tool\":\"lifecycle.update\",\"branch\":\"\",\"command\":\"workspace lifecycle.update '{\\\"channel\\\":\\\"canary\\\"}'\",\"implementationCommand\":\"bun run lifecycle -- update --channel canary --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-10T02:27:59.964Z\"}\n{\"level\":\"info\",\"tool\":\"lifecycle.update\",\"branch\":\"\",\"command\":\"workspace lifecycle.update '{\\\"channel\\\":\\\"canary\\\",\\\"version\\\":\\\"1.2.3\\\"}'\",\"implementationCommand\":\"bun run lifecycle -- update --channel canary --version 1.2.3 --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-10T02:27:59.970Z\"}\n{\"level\":\"error\",\"tool\":\"lifecycle.update\",\"command\":\"workspace lifecycle.update\",\"implementationCommand\":\"workspace lifecycle.update\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-10T02:27:59.974Z\"}\n{\"level\":\"info\",\"tool\":\"lifecycle.update\",\"command\":\"workspace lifecycle.update\",\"implementationCommand\":\"workspace lifecycle.update\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"DRY_RUN\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-10T02:27:59.978Z\"}\n(node:49594) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+        },
+        {
+          "name": "OS lifecycle facade snapshots",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/facade/facade.test.ts",
+            "-t",
+            "lifecycle\\.(status|update)"
+          ],
+          "cwd": ".",
+          "ruleId": "os-lifecycle-update-handoff",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1177,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-make-local-steering-authoritative\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/facade/facade.test.ts \u001b[2m(\u001b[22m\u001b[2m724 tests\u001b[22m\u001b[2m | \u001b[22m\u001b[33m715 skipped\u001b[39m\u001b[2m)\u001b[22m\u001b[32m 25\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m9 passed\u001b[39m\u001b[22m\u001b[2m | \u001b[22m\u001b[33m715 skipped\u001b[39m\u001b[90m (724)\u001b[39m\n\u001b[2m   Start at \u001b[22m 22:28:15\n\u001b[2m   Duration \u001b[22m 530ms\u001b[2m (transform 219ms, setup 0ms, import 427ms, tests 25ms, environment 0ms)\u001b[22m\n\n{\"level\":\"info\",\"tool\":\"lifecycle.status\",\"branch\":\"\",\"command\":\"workspace lifecycle.status\",\"implementationCommand\":\"bun run lifecycle -- status --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-10T02:28:15.921Z\"}\n{\"level\":\"info\",\"tool\":\"lifecycle.update\",\"branch\":\"\",\"command\":\"workspace lifecycle.update '{\\\"channel\\\":\\\"stable\\\"}'\",\"implementationCommand\":\"bun run lifecycle -- update --channel stable --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-10T02:28:15.929Z\"}\n{\"level\":\"error\",\"tool\":\"lifecycle.status\",\"branch\":\"\",\"command\":\"workspace lifecycle.status\",\"implementationCommand\":\"bun run lifecycle -- status --json\",\"durationMs\":0,\"exitCode\":2,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"COMMAND_FAILED\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-10T02:28:15.931Z\"}\n{\"level\":\"error\",\"tool\":\"lifecycle.update\",\"branch\":\"\",\"command\":\"workspace lifecycle.update '{\\\"channel\\\":\\\"stable\\\"}'\",\"implementationCommand\":\"bun run lifecycle -- update --channel stable --json\",\"durationMs\":0,\"exitCode\":2,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"COMMAND_FAILED\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-10T02:28:15.934Z\"}\n{\"level\":\"error\",\"tool\":\"lifecycle.status\",\"branch\":\"\",\"command\":\"workspace lifecycle.status\",\"implementationCommand\":\"bun run lifecycle -- status --json\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"TIMEOUT\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-10T02:28:15.936Z\"}\n{\"level\":\"error\",\"tool\":\"lifecycle.update\",\"branch\":\"\",\"command\":\"workspace lifecycle.update '{\\\"channel\\\":\\\"stable\\\"}'\",\"implementationCommand\":\"bun run lifecycle -- update --channel stable --json\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"TIMEOUT\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-10T02:28:15.938Z\"}\n{\"level\":\"info\",\"tool\":\"lifecycle.update\",\"command\":\"workspace lifecycle.update\",\"implementationCommand\":\"workspace lifecycle.update\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"DRY_RUN\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-10T02:28:15.941Z\"}\n(node:50347) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+        },
+        {
+          "name": "OS ChatGPT node-routing facade contracts",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/mcp-gateway.test.ts",
+            "tests/os-get-steering-trace.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-chatgpt-node-routing-facade",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 2797,
+          "outputTail": "ge\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"b9c348f2-4628-4bd3-9160-f1fecffd3a6f\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-10T02:28:17.166Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"025273a0-7516-4690-9b24-cea852d69542\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-10T02:28:17.167Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"e31fcc20-c410-426a-aa9d-ffd244543ad6\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-10T02:28:17.171Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"131aecae-9a8a-48dd-9eed-a12a3eaf8f2e\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-10T02:28:17.178Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"25ef9d87-8dcc-498c-b55a-1c2e8a669e59\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-10T02:28:17.186Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"5a4f69a5-a0bd-4ab9-8eb6-42a1ee2f6b79\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-10T02:28:17.193Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"9ecd360a-1110-41fc-8d13-6cafcb1a3325\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-10T02:28:17.200Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"8c7763ad-a426-4f44-8fad-d2e905c6785d\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-10T02:28:17.208Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"fb4aa984-6a80-412b-8b06-75f8c84270a7\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-10T02:28:17.213Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"a970c8d9-a9bb-4d07-8951-eb2939128b36\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-10T02:28:17.216Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"44ce9a86-8c24-4e67-89d7-2d7a9090cf40\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-10T02:28:17.218Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"f62bbe08-7c99-433a-998a-a8f94de2d285\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-10T02:28:17.220Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"7a30e37f-c018-4e52-9c4e-a9c35222ca31\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-10T02:28:17.224Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"5f1accd9-d029-4105-9164-d44eb2bda0e1\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-10T02:28:17.232Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"d536eafd-a49f-4e51-878e-be55fbaeee08\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-10T02:28:17.243Z\"}\n(node:50491) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+        },
+        {
+          "name": "OS ChatGPT node-routing authority contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/workspace-node-registry-routing.test.ts",
+            "tests/os-device-authority-worker.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-chatgpt-node-routing-facade",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1809,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-make-local-steering-authoritative/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/os-device-authority-worker.test.ts \u001b[2m(\u001b[22m\u001b[2m33 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 70\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/workspace-node-registry-routing.test.ts \u001b[2m(\u001b[22m\u001b[2m70 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 992\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should resolve the stale lifecycle Bun executable across historical install shapes \u001b[33m 693\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m103 passed\u001b[39m\u001b[22m\u001b[90m (103)\u001b[39m\n\u001b[2m   Start at \u001b[22m 22:28:19\n\u001b[2m   Duration \u001b[22m 1.39s\u001b[2m (transform 601ms, setup 33ms, import 674ms, tests 1.06s, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS test source safety contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/test-source-safety.test.ts",
+            "tests/code-call.test.ts",
+            "tests/legacy-system-daemons.test.ts",
+            "tests/lifecycle-restart-contract.test.ts",
+            "tests/distribution/release-channels-cli.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-test-source-safety",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 2538,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-make-local-steering-authoritative/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/test-source-safety.test.ts \u001b[2m(\u001b[22m\u001b[2m1 test\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 103\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/legacy-system-daemons.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 162\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/distribution/release-channels-cli.test.ts \u001b[2m(\u001b[22m\u001b[2m7 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 82\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/lifecycle-restart-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m25 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 132\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/code-call.test.ts \u001b[2m(\u001b[22m\u001b[2m27 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 2016\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m can invoke OS fs read through Bun from code.call \u001b[33m 584\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m5 passed\u001b[39m\u001b[22m\u001b[90m (5)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m65 passed\u001b[39m\u001b[22m\u001b[90m (65)\u001b[39m\n\u001b[2m   Start at \u001b[22m 22:28:20\n\u001b[2m   Duration \u001b[22m 2.37s\u001b[2m (transform 312ms, setup 63ms, import 727ms, tests 2.49s, environment 0ms)\u001b[22m\n\n$ vitest run tests/test-source-safety.test.ts tests/code-call.test.ts tests/legacy-system-daemons.test.ts tests/lifecycle-restart-contract.test.ts tests/distribution/release-channels-cli.test.ts\n"
+        },
+        {
+          "name": "changed server task selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ],
+          "cwd": ".",
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 69,
+          "outputTail": "No changed Twenty server runtime files require lint or typecheck.\nRunning server lint and baseline-aware typecheck for 1 directly changed file(s).\nTwenty server typecheck matched 1 known baseline diagnostic(s).\nRunning server lint and baseline-aware typecheck for 1 directly changed file(s).\nNo changed Twenty server schema files require GraphQL generation.\nNo changed Twenty server runtime files require migration generation.\nNo changesgeneratedTwenty server migration drift matched 2 known baseline operation(s).\ngeneratedgenerated✔ parseCliArguments resolves comparison SHAs (0.762375ms)\n✔ parseCliArguments selects GraphQL generation mode (0.060417ms)\n✔ parseCliArguments selects migration generation mode (0.052375ms)\n✔ filterServerTaskFiles excludes root and config-only triggers (0.092209ms)\n✔ filterGraphqlGenerationFiles keeps only server schema and generated files (0.06825ms)\n✔ buildEslintArguments selects the owning project config and stdin filename (0.057458ms)\n✔ ESLint diagnostic comparison tracks new error multiplicity without line numbers (0.185ms)\n✔ runChangedFileLint accepts base-existing errors and rejects a new changed-file error (0.804459ms)\n✔ runChangedFileLint allows explicit lint baseline debt but rejects diagnostics beyond it (0.718459ms)\n✔ buildTypecheckArguments uses standard TypeScript without emitting (0.09275ms)\n✔ TypeScript diagnostic baseline comparison rejects only new diagnostic keys (0.180333ms)\n✔ runChangedServerTask skips Nx for config-only changes (0.330042ms)\n✔ runChangedServerTask executes lint and baseline-aware typecheck for server runtime changes (0.088417ms)\n✔ runChangedServerTask rejects a new TypeScript diagnostic outside the baseline (0.084041ms)\n✔ server lint configuration resolves the existing workspace rules project (0.331584ms)\n✔ runGraphqlGenerationCheck skips generation without schema changes (0.071166ms)\n✔ runGraphqlGenerationCheck generates and verifies committed outputs (0.126208ms)\n✔ runMigrationGenerationCheck skips generation without server runtime changes (0.070167ms)\n✔ runMigrationGenerationCheck accepts a no-change TypeORM exit (0.075292ms)\n✔ runMigrationGenerationCheck accepts and removes exact known migration drift (0.166041ms)\n✔ runMigrationGenerationCheck rejects changed drift beyond the baseline (0.103167ms)\n✔ runMigrationGenerationCheck rejects and removes generated drift (0.090458ms)\nℹ tests 22\nℹ suites 0\nℹ pass 22\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 43.490208\n"
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "cwd": ".",
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 129,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/workspace/tests/github-workflow-policy.test.js:\n(pass) GitHub workflow policy > does not include retired automation workflows [0.08ms]\n(pass) GitHub workflow policy > does not reference retired CI credentials or the disabled Chromatic job [4.45ms]\n(pass) GitHub workflow policy > does not retain privileged allowlist entries for deleted workflows [0.16ms]\n(pass) GitHub workflow policy > runs typecheck and test from the filtered frontend file set [0.05ms]\n(pass) GitHub workflow policy > installs Bun and scopes shared tasks to changed frontend files [0.17ms]\n(pass) GitHub workflow policy > scopes native OS distribution tests to relevant changed files [0.04ms]\n(pass) GitHub workflow policy > runs Docker Compose CI with the pgvector PostgreSQL image required by migrations [0.02ms]\n(pass) GitHub workflow policy > uses available hosted runners for the Server and Front build pipelines [0.05ms]\n(pass) GitHub workflow policy > builds Consuelo backend workspace dependencies before server typecheck [0.03ms]\n(pass) GitHub workflow policy > installs Bun before the Server unit-test job runs Bun package tests [0.04ms]\n(pass) GitHub workflow policy > allows enough time for Danger dependency installation and execution [0.02ms]\n(pass) GitHub workflow policy > explicitly allowlists the API breaking-changes workflow write permissions [0.02ms]\n\n 12 pass\n 0 fail\n 53 expect() calls\nRan 12 tests across 1 file. [123.00ms]\n"
+        },
+        {
+          "name": "TypeORM CLI compatibility contract",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+          ],
+          "cwd": ".",
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 933,
+          "outputTail": "✔ Twenty server uses the Node 24-compatible TypeORM ts-node wrapper (0.294417ms)\n✔ the configured TypeORM wrapper resolves from the installed package (872.276333ms)\nℹ tests 2\nℹ suites 0\nℹ pass 2\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 907.130458\n"
+        },
+        {
+          "name": "workspace session integration contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/session-integration-guidance.test.ts",
+            "packages/os/tests/session-start-foundation.test.ts",
+            "packages/os/tests/task-hook-workflow-contract.test.ts",
+            "packages/os/tests/task-hooks.test.ts",
+            "packages/workspace/tests/task-hook-workflow-contract.test.ts",
+            "packages/workspace/tests/task-hooks.test.ts",
+            "packages/workspace/tests/workflow-intent.test.ts",
+            "packages/workspace/tests/session-start-compatibility.test.ts",
+            "packages/os/tests/observability-traces-site.test.ts",
+            "packages/os/tests/workflow-intent.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "workspace-session-integration",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 993,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-make-local-steering-authoritative\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/session-integration-guidance.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 6\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/workspace/tests/task-hooks.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/task-hook-workflow-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m12 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 23\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/workspace/tests/task-hook-workflow-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m12 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 39\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/task-hooks.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/observability-traces-site.test.ts \u001b[2m(\u001b[22m\u001b[2m15 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 70\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/workspace/tests/workflow-intent.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 39\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/workflow-intent.test.ts \u001b[2m(\u001b[22m\u001b[2m11 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 47\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/workspace/tests/session-start-compatibility.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 211\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/session-start-foundation.test.ts \u001b[2m(\u001b[22m\u001b[2m12 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 55\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m10 passed\u001b[39m\u001b[22m\u001b[90m (10)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m87 passed\u001b[39m\u001b[22m\u001b[90m (87)\u001b[39m\n\u001b[2m   Start at \u001b[22m 22:28:24\n\u001b[2m   Duration \u001b[22m 742ms\u001b[2m (transform 978ms, setup 0ms, import 1.44s, tests 495ms, environment 1ms)\u001b[22m\n\n(node:52500) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

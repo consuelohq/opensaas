@@ -5,8 +5,8 @@
     "testFileCount": 2691,
     "mappedTestCount": 2606,
     "unmappedTestCount": 85,
-    "ruleCount": 79,
-    "explicitRuleCount": 60,
+    "ruleCount": 80,
+    "explicitRuleCount": 61,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
@@ -766,6 +766,94 @@
       ],
       "critical": true,
       "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-local-steering-authority",
+      "source": [
+        "packages/os/scripts/lib/steering-snapshot-cache.ts",
+        "packages/os/scripts/lib/managed-user-content.ts",
+        "packages/os/scripts/lib/managed-user-content-release.ts",
+        "packages/os/scripts/lib/install-state.ts",
+        "packages/os/scripts/lib/distribution/runtime-bundle.ts",
+        "packages/os/steering/**",
+        "packages/os/tests/steering-canonical-source.test.ts",
+        "packages/os/tests/managed-user-content.test.ts",
+        "packages/os/tests/test-source-safety.test.ts",
+        "packages/os/tests/session-integration-guidance.test.ts",
+        "packages/os/tests/install-state.test.ts",
+        "packages/os/tests/lifecycle-engine.test.ts",
+        "packages/os/tests/lifecycle-retention-uninstall.test.ts",
+        "packages/os/tests/distribution/runtime-bundle.test.ts",
+        "packages/os/tests/distribution/release-publication-preparer.test.ts",
+        "packages/os/plans/consuelo-os-foundation/plan.md",
+        "packages/os/plans/consuelo-os-foundation/workers/07-steering-runtime-context.md",
+        "packages/workspace/STEERING.md",
+        "packages/workspace/server.py",
+        "packages/workspace/tests/server_call_test.py"
+      ],
+      "tests": [
+        {
+          "name": "OS local-authoritative steering ownership contract",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/steering-canonical-source.test.ts"
+          ]
+        },
+        {
+          "name": "OS managed user steering contracts",
+          "command": [
+            "bunx",
+            "vitest",
+            "run",
+            "packages/os/tests/managed-user-content.test.ts"
+          ]
+        },
+        {
+          "name": "OS steering session guidance contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/session-integration-guidance.test.ts"
+          ]
+        },
+        {
+          "name": "OS local steering install and release contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/install-state.test.ts",
+            "tests/distribution/release-publication-preparer.test.ts"
+          ]
+        },
+        {
+          "name": "Workspace steering guard contracts",
+          "command": [
+            "python3",
+            "packages/workspace/tests/server_call_test.py"
+          ]
+        },
+        {
+          "name": "OS local-authoritative steering syntax",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Steering ownership, seeding, caching, operator context, and release-boundary changes must prove that visible user steering is authoritative and no private repository prompt is shipped.",
       "origin": "explicit"
     },
     {
@@ -2759,7 +2847,6 @@
         "packages/os/skills/task/SKILL.md",
         "packages/workspace/task.md",
         "packages/workspace/senior-engineer.md",
-        "packages/os/steering/system_prompt.md",
         "packages/workspace/scripts/session-start.ts",
         "packages/os/tests/session-integration-guidance.test.ts",
         "packages/os/tests/task-hook-workflow-contract.test.ts",

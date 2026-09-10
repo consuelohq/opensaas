@@ -113,7 +113,7 @@ A healthy installation should find the runtime files, local database, steering, 
 
 ## Run it again safely
 
-The hosted installer refreshes its temporary source by default. Provisioning preserves existing configuration and user-owned steering, skills, and tools instead of replacing them blindly.
+The hosted installer refreshes its temporary source by default. Provisioning preserves existing configuration and the user-owned `~/Consuelo/Steering/system.md`, skills, and tools instead of replacing them blindly. The excluded steering example may be refreshed because it is reference content, not active policy. See [Workspace steering](/build/steering/workspace-steering/) for the ownership and load-order model.
 
 Use a dry run to inspect the plan without installing Bun, downloading source, or creating LaunchAgents:
 
