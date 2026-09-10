@@ -7,6 +7,7 @@ import { tmpdir } from 'node:os';
 
 import { INBOUND_MIGRATION_ID } from '../src/inbound/migration';
 import { runInboundJournalScenarios } from '../src/lab/inbound-journal-scenarios';
+import { verifyLearningRollbackChain } from '../src/lab/learning-rollback-scenario';
 import Redis from 'ioredis';
 import { Pool } from 'pg';
 
@@ -316,6 +317,7 @@ const main = async () => {
       fixture,
       scale,
     });
+    const learningRollbackChainVerified = await verifyLearningRollbackChain(pool);
     const countObservations = () => database.query<{ count: string }>(
       'SELECT COUNT(*)::text AS count FROM dialer_learning_observations',
     ).then((result) => result.rows[0]?.count);
@@ -382,6 +384,7 @@ const main = async () => {
       },
       migration: {
         rollbackVerified: true,
+        learningRollbackChainVerified,
         durationMs: migrationMs,
         applied: migrationRows.rows.map((row) => row.migration_id),
       },

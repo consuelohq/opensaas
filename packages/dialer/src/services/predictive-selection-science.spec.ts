@@ -158,3 +158,17 @@ describe('scientific predictive selection contract', () => {
   });
 
 });
+
+  it('uses aggregate attempt evidence rather than a peak slot for an unobserved calling time', async () => {
+    const model = new PredictiveSelectionModel(store({
+      getHazardEstimates: async () => [{ segmentId: 'segment-1', attemptNumber: 1,
+        hourOfDay: 18, dayOfWeek: 6, answerRate: 0.9, sampleSize: 10, upperBound: 0.99 }],
+      getAnswerProbabilities: async () => [{ attemptNumber: 1, probability: 0.2,
+        trials: 100, upperBound: 0.29 }],
+    }));
+    const result = await model.rankCandidates({ workspaceId: 'workspace-1', segmentId: 'segment-1',
+      localTimezone: 'UTC', callableWindowEndHour: 20, evaluatedAt: new Date('2026-08-15T12:00:00.000Z'),
+      candidates: [{ contactId: 'contact', position: 1, attemptsUsed: 0, lastAttemptAt: null }] });
+    expect(result.ranked[0]).toMatchObject({ hazardSource: 'attempt_fallback',
+      answerProbability: 0.2, answerProbabilityUpperBound: 0.29 });
+  });

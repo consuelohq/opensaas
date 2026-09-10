@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
-import { applyInboundEvent, replayInboundEvents } from './lifecycle';
-import type { InboundEvent } from './contracts';
+import { applyInboundEvent, replayInboundEvents } from './lifecycle.js';
+import type { InboundEvent } from './contracts.js';
 
 const at = '2026-09-10T00:00:00.000Z';
 const event = (overrides: Partial<InboundEvent> = {}): InboundEvent => ({

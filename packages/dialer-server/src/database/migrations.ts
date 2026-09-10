@@ -1,3 +1,4 @@
+import { ROLLBACK_CONTEXTUAL_HARDENING_SQL, ROLLBACK_CONTEXTUAL_SCIENCE_SQL, ROLLBACK_PREDICTIVE_LEARNING_SQL } from './learning-migration-rollbacks';
 import { CREATE_INBOUND_SCHEMA_SQL, DROP_INBOUND_SCHEMA_SQL, INBOUND_MIGRATION_ID } from '../inbound/migration';
 import {
   initializeLeadConnectorPersistence,
@@ -215,11 +216,10 @@ const ROLLBACK_LEARNING_INTEGRITY_SQL = `
         END $$;
       `;
 
-type Migration = {
-  id: string;
-  up: (database: LeadConnectorDatabase) => Promise<void>;
-  down?: (database: LeadConnectorDatabase) => Promise<void>;
-};
+type MigrationUp = (database: LeadConnectorDatabase) => Promise<void>;
+type Migration =
+  | { id: typeof DIALER_DATABASE_BASELINE_MIGRATION_ID; up: MigrationUp; down?: never }
+  | { id: string; up: MigrationUp; down: MigrationUp };
 
 const migrations: readonly Migration[] = [
   {
@@ -238,6 +238,7 @@ const migrations: readonly Migration[] = [
   },
   {
     id: DIALER_DATABASE_PREDICTIVE_LEARNING_MIGRATION_ID,
+    down: (database) => database.query(ROLLBACK_PREDICTIVE_LEARNING_SQL).then(() => undefined),
     up: async (database) => {
       try {
         await database.query(CREATE_PREDICTIVE_LEARNING_OBSERVATIONS_SQL);
@@ -253,6 +254,7 @@ const migrations: readonly Migration[] = [
   },
   {
     id: DIALER_DATABASE_CONTEXTUAL_SCIENCE_MIGRATION_ID,
+    down: (database) => database.query(ROLLBACK_CONTEXTUAL_SCIENCE_SQL).then(() => undefined),
     up: async (database) => {
       try {
         await database.query(ADD_CONTEXTUAL_OBSERVATION_FIELDS_SQL);
@@ -268,6 +270,7 @@ const migrations: readonly Migration[] = [
   },
   {
     id: DIALER_DATABASE_CONTEXTUAL_SCIENCE_HARDENING_MIGRATION_ID,
+    down: (database) => database.query(ROLLBACK_CONTEXTUAL_HARDENING_SQL).then(() => undefined),
     up: async (database) => {
       try {
         await database.query(HARDEN_CONTEXTUAL_OBSERVATION_SCHEMA_SQL);

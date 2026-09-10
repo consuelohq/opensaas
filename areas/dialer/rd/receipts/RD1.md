@@ -86,3 +86,9 @@ Suggested next: RD2 and RD3 become technically ready after verified RD1 stream
 promotion and a fresh ownership/review scan. They may run in parallel with distinct
 harness vs production ownership. RD4 waits for both. This receipt does not authorize
 starting another node. Return the COORDINATION.md handoff and await Ko's selection.
+
+## Follow-up acceptance
+
+PR #2451 addresses the late migration002–004 rollback review and the compiled
+RD1 Node import defect. See [FOUNDATION-REVIEW.md](FOUNDATION-REVIEW.md). Resolve
+that correction on stream/dialer before launching RD2/RD3.
