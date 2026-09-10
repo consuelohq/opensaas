@@ -56,13 +56,14 @@ no-test waiver: merge-reconciliation task. No new product behavior is being intr
 - `packages/os/scripts/lib/subagent/process-termination.ts`
 - `packages/os/scripts/lib/subagent/runner.ts`
 - `packages/os/scripts/lib/subagent/runtime.ts`
-- `packages/os/scripts/lib/trace-cost-estimator.ts`
+- `packages/os/scripts/lib/trace-cost-estimator.ts` (deleted)
 - `packages/os/scripts/lib/trace-database-schema.ts`
-- `packages/os/scripts/lib/trace-session-identity.ts`
+- `packages/os/scripts/lib/trace-session-identity.ts` (deleted)
 - `packages/os/scripts/lib/trace-sites-local-read-backend.ts`
 - `packages/os/tests/artifacts-skill.test.ts`
 - `packages/os/tests/audit/fixtures/script-parity-classifications.json`
 - `packages/os/tests/doctor-redaction.test.ts`
+- `packages/os/tests/facade/__snapshots__/facade.test.ts.snap`
 - `packages/os/tests/fixtures/skills/task-os-replacements.json`
 - `packages/os/tests/installer-local-agent-connectivity.test.ts`
 - `packages/os/tests/installer-runtime-dependencies.test.ts`
@@ -78,10 +79,11 @@ no-test waiver: merge-reconciliation task. No new product behavior is being intr
 - `packages/os/tests/trace-persistence.test.ts`
 - `packages/os/tests/trace-sites-gateway-live-endpoints.test.ts`
 - `packages/os/tests/workspace-edge-route-seed-contract.test.ts`
-- `packages/os/tests/workspace-route-heartbeat-write-budget.test.ts`
+- `packages/os/tests/workspace-route-heartbeat-write-budget.test.ts` (deleted)
 - `packages/workspace/test-selection.registry.json`
 - `packages/workspace/test-selection.rules.json`
 - `packages/workspace/tests/test-selection.test.js`
+
 
 ## key decisions
 
