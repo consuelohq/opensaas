@@ -6,6 +6,8 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 
 import { INBOUND_MIGRATION_ID } from '../src/inbound/migration';
+import { stopLabResources } from '../src/lab/inbound-lab-cleanup';
+import { runInboundSimulationScenarios } from '../src/lab/inbound-simulation-scenarios';
 import { runInboundJournalScenarios } from '../src/lab/inbound-journal-scenarios';
 import { verifyLearningRollbackChain } from '../src/lab/learning-rollback-scenario';
 import Redis from 'ioredis';
@@ -323,6 +325,7 @@ const main = async () => {
     ).then((result) => result.rows[0]?.count);
     const rowsBeforeRollback = await countObservations();
     const inbound = await runInboundJournalScenarios(pool);
+    const simulation = await runInboundSimulationScenarios({ pool, redis, databaseUrl, seed });
     await rollbackDialerDatabaseMigration(database, INBOUND_MIGRATION_ID);
     const inboundRemoved = await pool.query<{ table_name: string | null }>(
       "SELECT to_regclass('dialer_inbound_entities')::text AS table_name",
@@ -397,25 +400,23 @@ const main = async () => {
       },
       benchmarks,
       inbound,
+      simulation,
     };
   } finally {
     redis?.disconnect();
     await pool?.end().catch(() => undefined);
     try {
-      await redisServer?.stop();
-      await postgres?.stop();
+      const cleanup = await stopLabResources({
+        stops: [async () => redisServer?.stop(), async () => postgres?.stop()],
+        closed: async () => ({
+          postgresClosed: !(await canConnect(postgresPort)),
+          redisClosed: !(await canConnect(redisPort)),
+        }),
+        remove: () => rm(root, { recursive: true, force: true }),
+      });
+      if (result) result.cleanup = cleanup;
     } catch (cause: unknown) {
       cleanupError = cause;
-    }
-    const postgresClosed = !(await canConnect(postgresPort));
-    const redisClosed = !(await canConnect(redisPort));
-    await rm(root, { recursive: true, force: true });
-    if (result) {
-      result.cleanup = {
-        postgresClosed,
-        redisClosed,
-        tempDirectoryRemoved: true,
-      };
     }
   }
 

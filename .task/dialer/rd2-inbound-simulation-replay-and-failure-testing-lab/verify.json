@@ -1,0 +1,170 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/dialer/rd2-inbound-simulation-replay-and-failure-testing-lab",
+  "base": "e79b01b786a1cb62b779c3a0adcf2715db4773c3",
+  "headSha": "ff4e8575511a9f8cfac620610e74ca20e9cef123",
+  "changeHash": "f0810f4ee6385d55126b0bea9f752a4fe14b869697aca81184457fd8de77b208",
+  "changedFiles": [
+    "areas/dialer/rd/receipts/RD2.md",
+    "packages/dialer-server/scripts/local-dialer-lab.ts",
+    "packages/dialer-server/src/lab/INBOUND.md",
+    "packages/dialer-server/src/lab/inbound-lab-cleanup.test.ts",
+    "packages/dialer-server/src/lab/inbound-lab-cleanup.ts",
+    "packages/dialer-server/src/lab/inbound-lab-worker.ts",
+    "packages/dialer-server/src/lab/inbound-process-runner.ts",
+    "packages/dialer-server/src/lab/inbound-simulation-evidence.ts",
+    "packages/dialer-server/src/lab/inbound-simulation-fixtures.ts",
+    "packages/dialer-server/src/lab/inbound-simulation-scenarios.ts",
+    "packages/dialer-server/src/lab/inbound-simulator.test.ts",
+    "packages/dialer-server/src/lab/inbound-simulator.ts",
+    "packages/dialer-server/src/lab/inbound-worker-protocol.test.ts",
+    "packages/dialer-server/src/lab/inbound-worker-protocol.ts",
+    "packages/dialer-server/src/lab/local-dialer-lab.integration.test.ts"
+  ],
+  "verifiedAt": "2026-09-10T16:08:40.065Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/dialer/rd2-inbound-simulation-replay-and-failure-testing-lab/workpad.md",
+        ".task/tasks/dialer/rd2-inbound-simulation-replay-and-failure-testing-lab.json",
+        "areas/dialer/rd/receipts/RD2.md",
+        "packages/dialer-server/scripts/local-dialer-lab.ts",
+        "packages/dialer-server/src/lab/INBOUND.md",
+        "packages/dialer-server/src/lab/inbound-lab-cleanup.test.ts",
+        "packages/dialer-server/src/lab/inbound-lab-cleanup.ts",
+        "packages/dialer-server/src/lab/inbound-lab-worker.ts",
+        "packages/dialer-server/src/lab/inbound-process-runner.ts",
+        "packages/dialer-server/src/lab/inbound-simulation-evidence.ts",
+        "packages/dialer-server/src/lab/inbound-simulation-fixtures.ts",
+        "packages/dialer-server/src/lab/inbound-simulation-scenarios.ts",
+        "packages/dialer-server/src/lab/inbound-simulator.test.ts",
+        "packages/dialer-server/src/lab/inbound-simulator.ts",
+        "packages/dialer-server/src/lab/inbound-worker-protocol.test.ts",
+        "packages/dialer-server/src/lab/inbound-worker-protocol.ts",
+        "packages/dialer-server/src/lab/local-dialer-lab.integration.test.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "os-stream-instructions",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Stream instruction storage and resolver changes must prove repository area guidance is preferred when present, OS stream fallback remains available for product-owned streams, and Dialer project context never ships as customer runtime content.",
+          "matchedFiles": [
+            "areas/dialer/rd/receipts/RD2.md"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "dialer-server-package",
+          "critical": true,
+          "reason": "Dialer server changes must prove Hono transport, Twilio boundary, and standalone lifecycle contracts.",
+          "matchedFiles": [
+            "packages/dialer-server/scripts/local-dialer-lab.ts",
+            "packages/dialer-server/src/lab/INBOUND.md",
+            "packages/dialer-server/src/lab/inbound-lab-cleanup.test.ts",
+            "packages/dialer-server/src/lab/inbound-lab-cleanup.ts",
+            "packages/dialer-server/src/lab/inbound-lab-worker.ts",
+            "packages/dialer-server/src/lab/inbound-process-runner.ts",
+            "packages/dialer-server/src/lab/inbound-simulation-evidence.ts",
+            "packages/dialer-server/src/lab/inbound-simulation-fixtures.ts",
+            "packages/dialer-server/src/lab/inbound-simulation-scenarios.ts",
+            "packages/dialer-server/src/lab/inbound-simulator.test.ts",
+            "packages/dialer-server/src/lab/inbound-simulator.ts",
+            "packages/dialer-server/src/lab/inbound-worker-protocol.test.ts",
+            "packages/dialer-server/src/lab/inbound-worker-protocol.ts",
+            "packages/dialer-server/src/lab/local-dialer-lab.integration.test.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "OS stream instruction contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/scripts/lib/stream-instructions.test.ts",
+            "packages/os/tests/dialer-stream-instructions.test.ts",
+            "packages/workspace/tests/dialer-validation-runbook.test.ts"
+          ],
+          "ruleId": "os-stream-instructions",
+          "critical": true
+        },
+        {
+          "name": "dialer-server Hono contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-server/src"
+          ],
+          "ruleId": "dialer-server-package",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "OS stream instruction contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/scripts/lib/stream-instructions.test.ts",
+            "packages/os/tests/dialer-stream-instructions.test.ts",
+            "packages/workspace/tests/dialer-validation-runbook.test.ts"
+          ],
+          "ruleId": "os-stream-instructions",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 453,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-rd2-inbound-simulation-replay-and-failure-testing-lab\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/dialer-stream-instructions.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 1\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/workspace/scripts/lib/stream-instructions.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/workspace/tests/dialer-validation-runbook.test.ts \u001b[2m(\u001b[22m\u001b[2m6 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m3 passed\u001b[39m\u001b[22m\u001b[90m (3)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m11 passed\u001b[39m\u001b[22m\u001b[90m (11)\u001b[39m\n\u001b[2m   Start at \u001b[22m 12:08:38\n\u001b[2m   Duration \u001b[22m 145ms\u001b[2m (transform 147ms, setup 0ms, import 167ms, tests 5ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "dialer-server Hono contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-server/src"
+          ],
+          "ruleId": "dialer-server-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1463,
+          "outputTail": " runtime composition > finalizes predictive actions only after provider initiation and only for created legs [0.13ms]\n(pass) Railway dialer-server runtime composition > selects the test dialer for follow-up operations on test-mode groups [0.14ms]\n(pass) Railway dialer-server runtime composition > keeps existing groups without a provider mode on the live dialer [0.04ms]\n(pass) Railway dialer-server runtime composition > fails closed when a test-mode group outlives its test credentials [0.03ms]\n(pass) Railway dialer-server runtime composition > composes durable LeadConnector configuration and encrypted installation storage [1.60ms]\n(pass) Railway dialer-server runtime composition > preserves input order when standalone learned data is not available [0.86ms]\n(pass) Railway dialer-server runtime composition > ranks predictive targets from canonical observations without Twenty model rows [1.02ms]\n(pass) Railway dialer-server runtime composition > starts a mock standalone call session without Twenty or the compatibility API [0.53ms]\n\npackages/dialer-server/src/runtime/lead-connector-learning.test.ts:\n(pass) LeadConnector learning initialization > creates the compatibility attempt ledger before the compatibility outcome tables [0.17ms]\n(pass) LeadConnector learning initialization > uses the canonical observation insert as the idempotency gate and persists immutable D4 decision context [0.45ms]\n\npackages/dialer-server/src/release/production-release.test.ts:\n(pass) dialer production release safety > selects the new Railway deployment instead of racing the previous latest [0.12ms]\n(pass) dialer production release safety > smokes only non-mutating health/auth/signature boundaries [0.27ms]\n(pass) dialer production release safety > builds a secret-free release manifest from immutable deployment evidence [0.09ms]\n(pass) dialer production release safety > refuses to serialize a release manifest from non-green evidence [0.03ms]\n(pass) dialer production release safety > requires immutable one-time Marketplace bootstrap evidence [0.02ms]\n(pass) dialer production release safety > rolls Railway back to one explicit deployment id through the public API [0.13ms]\n\npackages/dialer-server/src/call-operations/application.test.ts:\n(pass) Effect call-operations transcription application > keeps inbound and outbound buffers separate and persists provider metadata only [1.91ms]\n(pass) Effect call-operations transcription application > processes duplicate frames once and flushes a terminal remainder once [0.22ms]\n(pass) Effect call-operations transcription application > keeps transcript rows idempotent when a provider stream reconnects [0.30ms]\n(pass) Effect call-operations transcription application > marks transcription failed on provider timeout without failing the call boundary [21.55ms]\n(pass) Effect call-operations transcription application > does not begin provider work when workspace transcription is disabled [0.12ms]\n\npackages/dialer-server/src/call-operations/persistence.test.ts:\n(pass) call-operations persistence > initializes canonical workspace settings, sessions, legs, segments, and transfer-compatible events [0.15ms]\n(pass) call-operations persistence > uses a workspace-scoped idempotent insert for transcript metadata [0.20ms]\n(pass) call-operations persistence > atomically upserts the canonical session and all provider legs [0.13ms]\n(pass) call-operations persistence > persists recording provider metadata without retaining a raw recording URL [0.08ms]\n\npackages/dialer-server/src/call-operations/groq.test.ts:\n(pass) Groq speech-to-text adapter > uses the OpenAI-compatible audio endpoint and returns provider-grounded metadata [0.79ms]\n(pass) Groq speech-to-text adapter > fails closed when credentials are absent [0.08ms]\n\n1 tests skipped:\n(skip) local dialer lab service integration > migrates an empty isolated Postgres, exercises Redis, and tears both down\n\n 183 pass\n 1 skip\n 0 fail\n 972 expect() calls\nRan 184 tests across 40 files. [1453.00ms]\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
