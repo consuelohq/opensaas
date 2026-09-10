@@ -207,7 +207,7 @@ export const recordLeadConnectorAttemptTelemetry = async (
           call.terminatedAt ??
           call.answeredAt ??
           record.group.completedAt ??
-          null;
+          call.dialStartedAt;
         const persistedDecisionContext = call.decisionContext
           ? JSON.stringify({
               ...call.decisionContext,

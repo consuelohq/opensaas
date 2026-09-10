@@ -157,16 +157,9 @@ function runnableEntries() {
 }
 
 function syntheticDryRunEntries() {
-  return runnableEntries().filter((entry) => {
-    if (!entry.capabilities.mutating || entry.command.dryRunFlag) {
-      return false;
-    }
-
-    const schema = getInputSchema(entry.inputSchema);
-    if (!schema) return false;
-    const parsed = schema.safeParse({ ...exampleInput(entry.name), dryRun: true });
-    return parsed.success && (parsed.data as ToolInput).dryRun === true;
-  });
+  return runnableEntries().filter(
+    (entry) => entry.capabilities.mutating && !entry.command.dryRunFlag,
+  );
 }
 
 describe('typed facade executor', () => {
@@ -534,7 +527,13 @@ describe('typed facade executor', () => {
 
   it.each(syntheticDryRunEntries().map((entry) => entry.name))('supports synthetic dry-run for %s', async (toolName) => {
     const plans: CommandPlan[] = [];
-    const result = await executeTool(toolName, { ...exampleInput(toolName), dryRun: true }, stableOptions(successfulRunner(), plans));
+    const input = { ...exampleInput(toolName), dryRun: true };
+    const entry = getToolManifestEntry(toolName);
+    const schema = entry ? getInputSchema(entry.inputSchema) : null;
+    const parsed = schema?.safeParse(input);
+    expect(parsed?.success, `${toolName} must accept dryRun when it advertises synthetic dry-run behavior`).toBe(true);
+    expect(parsed && parsed.success ? (parsed.data as ToolInput).dryRun : undefined).toBe(true);
+    const result = await executeTool(toolName, input, stableOptions(successfulRunner(), plans));
     expect(result.code).toBe('DRY_RUN');
     expect(plans).toHaveLength(0);
   });
