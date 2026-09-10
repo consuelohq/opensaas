@@ -159,6 +159,7 @@ describe('test selection registry', () => {
     expect(matchedRuleIds).toContain('os-subagent-runtime');
     expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
     expect(runtimeSuite?.command).toEqual(expect.arrayContaining([
+      '--no-file-parallelism',
       'packages/os/tests/subagent-orchestration-contract.test.ts',
       'packages/os/tests/subagent-lifecycle-regressions.test.ts',
       'packages/os/tests/subagent-executable-discovery.test.ts',
