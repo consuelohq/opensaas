@@ -27,11 +27,7 @@ import { b64Decode, hasGrantedScope, hash } from '../utils';
 import { bearerToken } from '../services/mcp-proxy';
 import { authenticateInternalWorkspaceSession } from './web-auth';
 import { buildManagedCloudPublicCatalog } from '../services/managed-cloud-pricing';
-import {
-  publicManagedCloudProvisioningJob,
-  type ManagedCloudProvisioningJob,
-} from '../../../../scripts/lib/managed-cloud-provisioning';
-import type { ManagedCloudPlanId, ManagedCloudRegionId } from '../../../../scripts/lib/managed-cloud-pricing';
+import { publicManagedCloudProvisioningJob } from '../../../../scripts/lib/managed-cloud-provisioning';
 
 const jsonHeaders = { 'cache-control': 'no-store' } as const;
 
@@ -648,9 +644,6 @@ async function handleInternalNodePricing(
   }
 }
 
-const managedCloudId = (prefix: 'mcpj' | 'node'): string =>
-  `${prefix}_${crypto.randomUUID().replaceAll('-', '').slice(0, 20)}`;
-
 async function handleInternalCreateProvisioning(
   request: Request,
   runtime: DeviceAuthorityRuntime,
@@ -662,41 +655,47 @@ async function handleInternalCreateProvisioning(
     if (!workspace || workspace.workspaceHost !== auth.session.workspaceHost) {
       return errorResponse(403, 'WORKSPACE_ACCESS_DENIED', 'The workspace is not available to this session.');
     }
+
     const body = await readJsonObject(request);
-    const planId = typeof body?.planId === 'string' ? body.planId.trim() as ManagedCloudPlanId : '' as ManagedCloudPlanId;
-    const region = typeof body?.region === 'string' ? body.region.trim() as ManagedCloudRegionId : '' as ManagedCloudRegionId;
-    const pricingVersion = typeof body?.pricingVersion === 'string' ? body.pricingVersion.trim() : '';
-    const idempotencyKey = typeof body?.idempotencyKey === 'string' ? body.idempotencyKey.trim() : '';
-    if (!runtime.managedCloudPricing) {
-      return errorResponse(503, 'MANAGED_CLOUD_PRICING_UNAVAILABLE', 'Managed cloud pricing is temporarily unavailable.');
+    if (body?.action === 'cancel') {
+      const jobId = typeof body.jobId === 'string' ? body.jobId.trim() : '';
+      const job = jobId ? await runtime.store.byManagedCloudProvisioningJob(jobId) : undefined;
+      if (
+        !job ||
+        job.accountId !== auth.session.accountId ||
+        job.workspaceHost !== workspace.workspaceHost
+      ) {
+        return errorResponse(404, 'MANAGED_CLOUD_PROVISIONING_NOT_FOUND', 'The provisioning request was not found.');
+      }
+      if (job.status !== 'requested') {
+        return errorResponse(
+          409,
+          'MANAGED_CLOUD_PROVISIONING_ALREADY_STARTED',
+          'This cloud node can no longer be cancelled from the workspace because provisioning already started.',
+        );
+      }
+      const cancelled = await runtime.store.updateManagedCloudProvisioningJob({
+        jobId: job.jobId,
+        status: 'failed',
+        nowMs: runtime.now(),
+        errorCode: 'MANAGED_CLOUD_PROVISIONING_CANCELLED',
+        errorMessage: 'Cloud node request was cancelled before provisioning started.',
+      });
+      if (!cancelled) {
+        return errorResponse(409, 'MANAGED_CLOUD_PROVISIONING_CANCEL_FAILED', 'The cloud node request could not be cancelled.');
+      }
+      return json({ job: publicManagedCloudProvisioningJob(cancelled) }, { headers: jsonHeaders });
     }
-    const catalog = buildManagedCloudPublicCatalog(runtime.managedCloudPricing, region);
-    const quote = catalog.quotes.find((candidate) => candidate.plan.id === planId && candidate.region.id === region);
-    if (!catalog.regions.some((candidate) => candidate.id === region) || !catalog.plans.some((candidate) => candidate.id === planId) || !quote) {
-      return errorResponse(400, 'MANAGED_CLOUD_PLAN_INVALID', 'Choose an available cloud plan and region.');
-    }
-    if (!pricingVersion || pricingVersion !== quote.pricingVersion) {
-      return errorResponse(409, 'MANAGED_CLOUD_PRICING_CHANGED', 'Cloud pricing changed. Refresh the current monthly price before creating this node.');
-    }
-    if (idempotencyKey.length < 8 || idempotencyKey.length > 128) {
-      return errorResponse(400, 'MANAGED_CLOUD_IDEMPOTENCY_INVALID', 'A valid provisioning request identifier is required.');
-    }
-    const workspaceId = workspace.workspaceId?.trim();
-    if (!workspaceId) {
-      return errorResponse(409, 'WORKSPACE_ID_UNAVAILABLE', 'This workspace is not ready for managed cloud provisioning yet.');
-    }
-    const nowMs = runtime.now();
-    const job: ManagedCloudProvisioningJob = {
-      jobId: managedCloudId('mcpj'), accountId: auth.session.accountId,
-      workspaceId, workspaceSlug: workspace.workspaceSlug, workspaceHost: workspace.workspaceHost,
-      nodeId: managedCloudId('node'), nodeName: 'Cloud', planId, region, pricingVersion: quote.pricingVersion,
-      monthlyPriceCents: quote.monthlyPriceCents, currency: quote.currency, idempotencyKey, status: 'requested', createdAt: nowMs, updatedAt: nowMs,
-    };
-    const created = await runtime.store.createManagedCloudProvisioningJob(job);
-    if (created.status === 'active-conflict') {
-      return json({ error: { code: 'MANAGED_CLOUD_PROVISIONING_ACTIVE', message: 'A cloud node is already being created for this workspace.' }, job: publicManagedCloudProvisioningJob(created.job) }, { status: 409, headers: jsonHeaders });
-    }
-    return json({ job: publicManagedCloudProvisioningJob(created.job) }, { status: created.status === 'created' ? 202 : 200, headers: jsonHeaders });
+
+    // Paid managed-cloud nodes must enter the provisioning queue only from the
+    // verified Stripe checkout completion path. This endpoint previously
+    // created an unpaid `requested` job directly from the Nodes page. Fail
+    // closed until the workspace checkout handoff is completed below.
+    return errorResponse(
+      409,
+      'MANAGED_CLOUD_CHECKOUT_REQUIRED',
+      'Checkout must be completed before a cloud node can be provisioned.',
+    );
   } catch {
     return serviceUnavailableResponse();
   }

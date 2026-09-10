@@ -201,9 +201,9 @@ describe('launcher Nodes workspace-session control plane', () => {
     expect(serialized).not.toMatch(/machineType|providerMachine|providerCost|landedCost|grossMargin|contingency|e2-standard|e2-medium/i);
   });
 
-  it('creates an idempotent managed-cloud provisioning job without exposing provider internals', async () => {
-    const { edge, cookie } = await fixture({ pricing: true });
-    const request = () => new Request(`https://${workspaceHost}/gateway/nodes/provision`, {
+  it('never queues a paid cloud node before checkout has completed', async () => {
+    const { edge, cookie, store } = await fixture({ pricing: true });
+    const response = await edge(new Request(`https://${workspaceHost}/gateway/nodes/provision`, {
       method: 'POST',
       headers: {
         cookie,
@@ -217,25 +217,68 @@ describe('launcher Nodes workspace-session control plane', () => {
         pricingVersion: pricingPolicy.pricingVersion,
         idempotencyKey: 'create-cloud-standard-1',
       }),
+    }));
+
+    expect(response.status).toBe(409);
+    await expect(response.json()).resolves.toMatchObject({
+      error: { code: 'MANAGED_CLOUD_CHECKOUT_REQUIRED' },
     });
-    const first = await edge(request());
-    expect(first.status).toBe(202);
-    const firstPayload = await first.json() as { job: { jobId: string; status: string; planId: string; region: string; monthlyPriceCents: number } };
-    expect(firstPayload.job).toMatchObject({ status: 'requested', planId: 'standard', region: 'us-east1' });
-    expect(firstPayload.job.monthlyPriceCents).toBeGreaterThan(0);
-    expect(JSON.stringify(firstPayload)).not.toMatch(/machineType|providerMachine|providerCost|landedCost|grossMargin|enrollment|token|secret/i);
-
-    const duplicate = await edge(request());
-    expect(duplicate.status).toBe(200);
-    const duplicatePayload = await duplicate.json() as typeof firstPayload;
-    expect(duplicatePayload.job.jobId).toBe(firstPayload.job.jobId);
-
-    const status = await edge(new Request(`https://${workspaceHost}/gateway/nodes/provisioning?job_id=${encodeURIComponent(firstPayload.job.jobId)}`, { headers: { cookie } }));
-    expect(status.status).toBe(200);
-    await expect(status.json()).resolves.toMatchObject({ job: { jobId: firstPayload.job.jobId, status: 'requested' } });
+    await expect(store.claimNextManagedCloudProvisioningJob({
+      leaseId: 'lease_should_stay_empty',
+      nowMs,
+      leaseExpiresAt: nowMs + 60_000,
+      enrollmentNonce: 'enrollment_should_stay_empty',
+      enrollmentExpiresAt: nowMs + 60_000,
+    })).resolves.toEqual({ status: 'empty' });
   });
 
-  it('requires same-origin CSRF and a current pricing revision to provision', async () => {
+  it('cancels an accidental requested cloud node before a provisioner can claim it', async () => {
+    const { edge, cookie, store } = await fixture({ pricing: true });
+    const jobId = 'mcpj_accidental_unpaid';
+    await store.createManagedCloudProvisioningJob({
+      jobId,
+      accountId,
+      workspaceId,
+      workspaceSlug: 'nodes-ui',
+      workspaceHost,
+      nodeId: 'node_accidental_unpaid',
+      nodeName: 'Cloud',
+      planId: 'standard',
+      region: 'us-east1',
+      pricingVersion: pricingPolicy.pricingVersion,
+      monthlyPriceCents: 13_700,
+      currency: 'USD',
+      idempotencyKey: 'accidental-unpaid-request',
+      status: 'requested',
+      createdAt: nowMs,
+      updatedAt: nowMs,
+    });
+
+    const response = await edge(new Request(`https://${workspaceHost}/gateway/nodes/provision`, {
+      method: 'POST',
+      headers: {
+        cookie,
+        'content-type': 'application/json',
+        origin: `https://${workspaceHost}`,
+        'x-consuelo-csrf-token': csrfToken,
+      },
+      body: JSON.stringify({ action: 'cancel', jobId }),
+    }));
+
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toMatchObject({
+      job: { jobId, status: 'failed', errorCode: 'MANAGED_CLOUD_PROVISIONING_CANCELLED' },
+    });
+    await expect(store.claimNextManagedCloudProvisioningJob({
+      leaseId: 'lease_after_cancel',
+      nowMs: nowMs + 1,
+      leaseExpiresAt: nowMs + 60_001,
+      enrollmentNonce: 'enrollment_after_cancel',
+      enrollmentExpiresAt: nowMs + 60_001,
+    })).resolves.toEqual({ status: 'empty' });
+  });
+
+  it('requires same-origin CSRF before accepting a cloud-node request', async () => {
     const { edge, cookie } = await fixture({ pricing: true });
     const missingCsrf = await edge(new Request(`https://${workspaceHost}/gateway/nodes/provision`, {
       method: 'POST',
@@ -244,12 +287,6 @@ describe('launcher Nodes workspace-session control plane', () => {
     }));
     expect(missingCsrf.status).toBe(403);
 
-    const stale = await edge(new Request(`https://${workspaceHost}/gateway/nodes/provision`, {
-      method: 'POST',
-      headers: { cookie, 'content-type': 'application/json', origin: `https://${workspaceHost}`, 'x-consuelo-csrf-token': csrfToken },
-      body: JSON.stringify({ planId: 'standard', region: 'us-east1', pricingVersion: 'stale-pricing', idempotencyKey: 'stale-pricing' }),
-    }));
-    expect(stale.status).toBe(409);
   });
 
   it('returns the public plan catalog without inventing prices when no rate card is published', async () => {
