@@ -74,7 +74,6 @@ function runScenario(name: string): ScenarioResult {
     cwd: OS_PACKAGE_ROOT,
     env,
     encoding: 'utf8',
-    timeout: 20_000,
   });
   if (run.status !== 0) {
     throw new Error([
@@ -156,7 +155,7 @@ describe('canonical OS trace persistence', () => {
         routeSource: 'explicit',
       }),
     ]);
-  }, 30_000);
+  });
 
   it('migrates an existing tool_traces table and preserves correlation and token fields', () => {
     const output = runScenario('migration');

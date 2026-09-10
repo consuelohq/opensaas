@@ -1,8 +1,7 @@
 {
   "files": [
-    "packages/os/tests/test-source-safety.test.ts",
-    "packages/os/tests/trace-persistence.test.ts",
-    "packages/workspace/tests/run-changed-server-task.test.mjs"
+    ".task/dialer-algorithm/reconcile-current-main-for-dialer-release/verify.json",
+    "packages/workspace/scripts/task-push.js"
   ],
-  "updatedAt": "2026-09-08T14:43:00.836Z"
+  "updatedAt": "2026-09-10T01:38:44.913Z"
 }

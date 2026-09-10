@@ -31,7 +31,7 @@
     },
     "scripts/bootstrap.ps1": {
       "status": "os-only-needs-review",
-      "reason": "scripts/bootstrap.ps1 exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/bootstrap.sh": {
       "status": "os-only-intentional",
@@ -60,31 +60,31 @@
     },
     "scripts/ci/lint-changed-frontend-files.mjs": {
       "status": "workspace-only-needs-port",
-      "reason": "scripts/ci/lint-changed-frontend-files.mjs exists only in the workspace script inventory; keep it flagged for an OS port or an explicit intentional-retirement decision."
+      "reason": "This script currently exists only in packages/workspace; parity review must decide whether Consuelo OS needs an equivalent before legacy workspace extraction."
     },
     "scripts/ci/run-changed-frontend-task.mjs": {
       "status": "workspace-only-needs-port",
-      "reason": "scripts/ci/run-changed-frontend-task.mjs exists only in the workspace script inventory; keep it flagged for an OS port or an explicit intentional-retirement decision."
+      "reason": "This script currently exists only in packages/workspace; parity review must decide whether Consuelo OS needs an equivalent before legacy workspace extraction."
     },
     "scripts/ci/run-changed-os-native-tests.mjs": {
       "status": "workspace-only-needs-port",
-      "reason": "scripts/ci/run-changed-os-native-tests.mjs exists only in the workspace script inventory; keep it flagged for an OS port or an explicit intentional-retirement decision."
+      "reason": "This script currently exists only in packages/workspace; parity review must decide whether Consuelo OS needs an equivalent before legacy workspace extraction."
     },
     "scripts/ci/run-changed-server-task.mjs": {
       "status": "workspace-only-needs-port",
-      "reason": "scripts/ci/run-changed-server-task.mjs exists only in the workspace script inventory; keep it flagged for an OS port or an explicit intentional-retirement decision."
+      "reason": "This script currently exists only in packages/workspace; parity review must decide whether Consuelo OS needs an equivalent before legacy workspace extraction."
     },
     "scripts/ci/twenty-server-eslint-baseline.json": {
       "status": "workspace-only-needs-port",
-      "reason": "scripts/ci/twenty-server-eslint-baseline.json exists only in the workspace script inventory; keep it flagged for an OS port or an explicit intentional-retirement decision."
+      "reason": "This script currently exists only in packages/workspace; parity review must decide whether Consuelo OS needs an equivalent before legacy workspace extraction."
     },
     "scripts/ci/twenty-server-migration-baseline.json": {
       "status": "workspace-only-needs-port",
-      "reason": "scripts/ci/twenty-server-migration-baseline.json exists only in the workspace script inventory; keep it flagged for an OS port or an explicit intentional-retirement decision."
+      "reason": "This script currently exists only in packages/workspace; parity review must decide whether Consuelo OS needs an equivalent before legacy workspace extraction."
     },
     "scripts/ci/twenty-server-typecheck-baseline.json": {
       "status": "workspace-only-needs-port",
-      "reason": "scripts/ci/twenty-server-typecheck-baseline.json exists only in the workspace script inventory; keep it flagged for an OS port or an explicit intentional-retirement decision."
+      "reason": "This script currently exists only in packages/workspace; parity review must decide whether Consuelo OS needs an equivalent before legacy workspace extraction."
     },
     "scripts/code-call.ts": {
       "status": "same",
@@ -99,12 +99,12 @@
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
     },
     "scripts/confidence-score.js": {
-      "status": "changed-needs-review",
-      "reason": "Same-path OS and workspace copies differ and require explicit review before syncing or porting."
+      "status": "same",
+      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
     },
     "scripts/confirm.js": {
       "status": "changed-needs-review",
-      "reason": "scripts/confirm.js exists in both workspace and OS script trees with different bytes; keep it under explicit parity review until the divergence is reconciled or documented."
+      "reason": "This script now differs between packages/workspace and packages/os; parity review must confirm the intended implementation before synchronization."
     },
     "scripts/consuelo-reload.js": {
       "status": "changed-needs-review",
@@ -116,7 +116,7 @@
     },
     "scripts/daily-schedules.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/daily-schedules.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/decide-next.js": {
       "status": "changed-needs-review",
@@ -128,7 +128,7 @@
     },
     "scripts/deploy-cloudflare-worker.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/deploy-cloudflare-worker.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/diff_cockpit.ts": {
       "status": "workspace-only-needs-port",
@@ -164,12 +164,8 @@
       "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
     },
     "scripts/exploit.js": {
-      "status": "changed-needs-review",
-      "reason": "Same-path OS and workspace copies differ and require explicit review before syncing or porting."
-    },
-    "scripts/explore-bench.js": {
-      "status": "changed-needs-review",
-      "reason": "Same-path workspace and OS copies exist but this path was missing from the committed script-parity baseline."
+      "status": "same",
+      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
     },
     "scripts/explore.js": {
       "status": "changed-needs-review",
@@ -214,12 +210,8 @@
       "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
     },
     "scripts/github.js": {
-      "status": "changed-needs-review",
-      "reason": "scripts/github.js exists in both workspace and OS script trees with different bytes; keep it under explicit parity review until the divergence is reconciled or documented."
-    },
-    "scripts/google.ts": {
-      "status": "os-only-intentional",
-      "reason": "Canonical OS Google Workspace facade and managed gog entrypoint; intentionally owned by the installed OS runtime."
+      "status": "same",
+      "reason": "scripts/github.js is classified from the current workspace/OS inventory and retains an explicit parity disposition for this repository state."
     },
     "scripts/install-system-daemons.sh": {
       "status": "changed-needs-review",
@@ -267,7 +259,7 @@
     },
     "scripts/lib/caddy-worker-pool-reconciliation.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/caddy-worker-pool-reconciliation.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/capabilities.ts": {
       "status": "os-only-intentional",
@@ -283,7 +275,7 @@
     },
     "scripts/lib/cloudflare-worker-release-readiness.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/cloudflare-worker-release-readiness.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/code-call/errors.ts": {
       "status": "same",
@@ -303,7 +295,7 @@
     },
     "scripts/lib/code-call/policy.ts": {
       "status": "changed-needs-review",
-      "reason": "scripts/lib/code-call/policy.ts exists in both workspace and OS script trees with different bytes; keep it under explicit parity review until the divergence is reconciled or documented."
+      "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
     },
     "scripts/lib/code-call/process.ts": {
       "status": "changed-needs-review",
@@ -323,7 +315,7 @@
     },
     "scripts/lib/code-call/service.ts": {
       "status": "changed-needs-review",
-      "reason": "scripts/lib/code-call/service.ts exists in both workspace and OS script trees with different bytes; keep it under explicit parity review until the divergence is reconciled or documented."
+      "reason": "This script now differs between packages/workspace and packages/os; parity review must confirm the intended implementation before synchronization."
     },
     "scripts/lib/code-call/snapshot.ts": {
       "status": "changed-needs-review",
@@ -335,7 +327,7 @@
     },
     "scripts/lib/code-call/types.ts": {
       "status": "changed-needs-review",
-      "reason": "scripts/lib/code-call/types.ts exists in both workspace and OS script trees with different bytes; keep it under explicit parity review until the divergence is reconciled or documented."
+      "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
     },
     "scripts/lib/codemode/debug.ts": {
       "status": "os-only-intentional",
@@ -383,7 +375,7 @@
     },
     "scripts/lib/consuelo-sites-diffs-adapter.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/consuelo-sites-diffs-adapter.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/consuelo-sites-environment-adapter.ts": {
       "status": "os-only-intentional",
@@ -407,7 +399,7 @@
     },
     "scripts/lib/consuelo-sites-secrets-adapter.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/consuelo-sites-secrets-adapter.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/consuelo-sites-settings-adapter.ts": {
       "status": "os-only-intentional",
@@ -431,11 +423,11 @@
     },
     "scripts/lib/daily-schedules-publisher.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/daily-schedules-publisher.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/daily-schedules.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/daily-schedules.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/dangerous-material-policy.ts": {
       "status": "os-only-intentional",
@@ -481,10 +473,6 @@
       "status": "os-only-intentional",
       "reason": "scripts/lib/environment-sites-gateway-endpoints.ts is an intentional OS-owned runtime, build, support, or test asset with no workspace counterpart."
     },
-    "scripts/lib/explore-bench.js": {
-      "status": "changed-needs-review",
-      "reason": "Same-path workspace and OS copies exist but this path was missing from the committed script-parity baseline."
-    },
     "scripts/lib/facade/batch.ts": {
       "status": "same",
       "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
@@ -523,7 +511,7 @@
     },
     "scripts/lib/fs/mutation-path.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/fs/mutation-path.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "OS-only mutation-path guard centralizes filesystem mutation-root validation; keep tracked until Workspace intentionally adopts an equivalent boundary."
     },
     "scripts/lib/fs/read.ts": {
       "status": "changed-needs-review",
@@ -539,19 +527,11 @@
     },
     "scripts/lib/gcloud-managed-cloud-node.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/gcloud-managed-cloud-node.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/git.js": {
       "status": "same",
       "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
-    },
-    "scripts/lib/github-cli.ts": {
-      "status": "os-only-needs-review",
-      "reason": "scripts/lib/github-cli.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
-    },
-    "scripts/lib/github-source-control-client.ts": {
-      "status": "os-only-needs-review",
-      "reason": "scripts/lib/github-source-control-client.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
     },
     "scripts/lib/github.js": {
       "status": "same",
@@ -559,11 +539,7 @@
     },
     "scripts/lib/google-cloud-public-pricing-refresh.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/google-cloud-public-pricing-refresh.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
-    },
-    "scripts/lib/google-workspace-auth.ts": {
-      "status": "os-only-intentional",
-      "reason": "OS-owned Google Workspace OAuth and account authorization runtime with no workspace-script counterpart."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/graphql-client.ts": {
       "status": "os-only-intentional",
@@ -599,19 +575,19 @@
     },
     "scripts/lib/install-control-plane-d1.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/install-control-plane-d1.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/install-control-plane-http.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/install-control-plane-http.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/install-control-plane-r2.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/install-control-plane-r2.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/install-control-plane.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/install-control-plane.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/install-diagnostics.ts": {
       "status": "os-only-intentional",
@@ -623,7 +599,7 @@
     },
     "scripts/lib/install-observability.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/install-observability.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/install-state.ts": {
       "status": "os-only-intentional",
@@ -631,27 +607,27 @@
     },
     "scripts/lib/install-telemetry-contract.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/install-telemetry-contract.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/install-telemetry-http.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/install-telemetry-http.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/install-telemetry-sentry.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/install-telemetry-sentry.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/install-telemetry.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/install-telemetry.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/internal-user-dashboard-fixtures.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/internal-user-dashboard-fixtures.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/internal-user-dashboard.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/internal-user-dashboard.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/launcher-onboarding.ts": {
       "status": "os-only-intentional",
@@ -663,7 +639,7 @@
     },
     "scripts/lib/lifecycle/connector-readiness.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/lifecycle/connector-readiness.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/lifecycle/diagnostics.ts": {
       "status": "os-only-intentional",
@@ -703,15 +679,15 @@
     },
     "scripts/lib/lifecycle/retention.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/lifecycle/retention.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/lifecycle/runtime-links.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/lifecycle/runtime-links.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/lifecycle/runtime-release-path.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/lifecycle/runtime-release-path.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/lifecycle/runtime.ts": {
       "status": "os-only-intentional",
@@ -731,7 +707,7 @@
     },
     "scripts/lib/lifecycle/uninstall.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/lifecycle/uninstall.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/local-agent-connectivity.ts": {
       "status": "os-only-intentional",
@@ -739,7 +715,7 @@
     },
     "scripts/lib/local-agent-mcp-bridge.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/local-agent-mcp-bridge.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/local-guardrails.ts": {
       "status": "os-only-intentional",
@@ -747,27 +723,27 @@
     },
     "scripts/lib/managed-cloud-node-enrollment.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/managed-cloud-node-enrollment.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/managed-cloud-node.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/managed-cloud-node.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/managed-cloud-pricing.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/managed-cloud-pricing.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/managed-cloud-provisioning-runner.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/managed-cloud-provisioning-runner.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/managed-cloud-provisioning.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/managed-cloud-provisioning.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/managed-cloud-public-pricing.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/managed-cloud-public-pricing.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/managed-component-install.ts": {
       "status": "os-only-intentional",
@@ -776,10 +752,6 @@
     "scripts/lib/managed-components.ts": {
       "status": "os-only-intentional",
       "reason": "OS-owned deterministic provenance, update planning, merge classification, and bounded component resolution engine has no workspace counterpart."
-    },
-    "scripts/lib/managed-gog.ts": {
-      "status": "os-only-intentional",
-      "reason": "OS-owned managed gog installation and runtime dependency lifecycle used by the Google facade."
     },
     "scripts/lib/managed-os-mcp-origin-class-migration.ts": {
       "status": "os-only-intentional",
@@ -807,11 +779,11 @@
     },
     "scripts/lib/mcp-node-routing.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/mcp-node-routing.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/mcp-protocol.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/mcp-protocol.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/media/artifacts.ts": {
       "status": "os-only-intentional",
@@ -943,11 +915,11 @@
     },
     "scripts/lib/monitor-errors-report.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/monitor-errors-report.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/monitor-errors.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/monitor-errors.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/native-lifecycle-client.ts": {
       "status": "os-only-intentional",
@@ -955,11 +927,11 @@
     },
     "scripts/lib/native-lifecycle-endpoint.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/native-lifecycle-endpoint.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/native-lifecycle-operation.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/native-lifecycle-operation.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/node-credential-sealing.ts": {
       "status": "os-only-intentional",
@@ -979,7 +951,7 @@
     },
     "scripts/lib/nodes-site.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/nodes-site.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/nx-projects.js": {
       "status": "same",
@@ -987,7 +959,7 @@
     },
     "scripts/lib/observability-traces-site.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/observability-traces-site.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/onboarding-skills.ts": {
       "status": "os-only-intentional",
@@ -999,7 +971,7 @@
     },
     "scripts/lib/operator-token-store.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/operator-token-store.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/paths.js": {
       "status": "same",
@@ -1011,11 +983,11 @@
     },
     "scripts/lib/platform-managed-cloud-node.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/platform-managed-cloud-node.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/platforms/linux.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/platforms/linux.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/pr-links.js": {
       "status": "same",
@@ -1032,31 +1004,15 @@
     },
     "scripts/lib/private-workspace-session-recovery.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/private-workspace-session-recovery.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/redaction.ts": {
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
     },
-    "scripts/lib/release-orchestrator.ts": {
-      "status": "os-only-needs-review",
-      "reason": "scripts/lib/release-orchestrator.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
-    },
-    "scripts/lib/release-platform-bundle.ts": {
-      "status": "os-only-needs-review",
-      "reason": "scripts/lib/release-platform-bundle.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
-    },
-    "scripts/lib/release-promotion-correlation.ts": {
-      "status": "os-only-needs-review",
-      "reason": "scripts/lib/release-promotion-correlation.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
-    },
-    "scripts/lib/release-promotion-dispatch-lock.ts": {
-      "status": "os-only-intentional",
-      "reason": "OS-owned release promotion dispatch lock coordinates immutable runtime channel promotion and prevents concurrent release-state dispatch; no workspace counterpart is intended."
-    },
     "scripts/lib/review-documentation.js": {
       "status": "workspace-only-needs-port",
-      "reason": "scripts/lib/review-documentation.js exists only in the workspace script inventory; keep it flagged for an OS port or an explicit intentional-retirement decision."
+      "reason": "This script currently exists only in packages/workspace; parity review must decide whether Consuelo OS needs an equivalent before legacy workspace extraction."
     },
     "scripts/lib/review-run-state.js": {
       "status": "same",
@@ -1066,25 +1022,13 @@
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
     },
-    "scripts/lib/search/explore-output.js": {
-      "status": "os-only-needs-review",
-      "reason": "scripts/lib/search/explore-output.js exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
-    },
     "scripts/lib/search/ranker.js": {
       "status": "changed-needs-review",
       "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
     },
-    "scripts/lib/search/retrieval-policy.js": {
-      "status": "os-only-intentional",
-      "reason": "OS-owned helper added after the last script-parity baseline refresh; keep it in the OS inventory and review if a workspace twin is required."
-    },
     "scripts/lib/search/retriever.js": {
       "status": "changed-needs-review",
       "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
-    },
-    "scripts/lib/secrets-site.ts": {
-      "status": "os-only-intentional",
-      "reason": "OS-owned Secrets management UI surface for the local workspace shell; it is runtime presentation code with no workspace-script counterpart."
     },
     "scripts/lib/security-gateway.ts": {
       "status": "os-only-intentional",
@@ -1092,11 +1036,11 @@
     },
     "scripts/lib/security-scan-runner.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/security-scan-runner.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/security-scan.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/security-scan.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/settings-control-plane.ts": {
       "status": "os-only-intentional",
@@ -1132,7 +1076,7 @@
     },
     "scripts/lib/skill-selection.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/skill-selection.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/skills.ts": {
       "status": "os-only-intentional",
@@ -1140,63 +1084,31 @@
     },
     "scripts/lib/source-control-config.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/source-control-config.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/state/evidence-log.js": {
       "status": "same",
       "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
     },
-    "scripts/lib/state/explore-calibration.v1.json": {
-      "status": "os-only-intentional",
-      "reason": "OS-owned helper added after the last script-parity baseline refresh; keep it in the OS inventory and review if a workspace twin is required."
-    },
-    "scripts/lib/state/explore-hypothesis-model.js": {
-      "status": "os-only-intentional",
-      "reason": "OS-owned helper added after the last script-parity baseline refresh; keep it in the OS inventory and review if a workspace twin is required."
-    },
-    "scripts/lib/state/explore-policy.js": {
-      "status": "os-only-intentional",
-      "reason": "OS-owned helper added after the last script-parity baseline refresh; keep it in the OS inventory and review if a workspace twin is required."
-    },
-    "scripts/lib/state/explore-promotion-criteria.v1.json": {
-      "status": "os-only-intentional",
-      "reason": "OS-owned helper added after the last script-parity baseline refresh; keep it in the OS inventory and review if a workspace twin is required."
-    },
-    "scripts/lib/state/explore-promotion-evidence.v1.json": {
-      "status": "os-only-intentional",
-      "reason": "OS-owned helper added after the last script-parity baseline refresh; keep it in the OS inventory and review if a workspace twin is required."
-    },
-    "scripts/lib/state/explore-promotion-gate.js": {
-      "status": "os-only-intentional",
-      "reason": "OS-owned helper added after the last script-parity baseline refresh; keep it in the OS inventory and review if a workspace twin is required."
-    },
-    "scripts/lib/state/explore-read-cost-model.v1.json": {
-      "status": "os-only-intentional",
-      "reason": "OS-owned helper added after the last script-parity baseline refresh; keep it in the OS inventory and review if a workspace twin is required."
-    },
     "scripts/lib/state/explore-state.js": {
       "status": "changed-needs-review",
       "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
     },
-    "scripts/lib/state/explore-voi-policy.js": {
-      "status": "os-only-intentional",
-      "reason": "OS-owned helper added after the last script-parity baseline refresh; keep it in the OS inventory and review if a workspace twin is required."
-    },
     "scripts/lib/steering-skills.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/steering-skills.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/steering-snapshot-cache.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/steering-snapshot-cache.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/stream-instructions.js": {
       "status": "workspace-only-needs-port",
-      "reason": "scripts/lib/stream-instructions.js exists only in the workspace script inventory; keep it flagged for an OS port or an explicit intentional-retirement decision."
+      "reason": "This script currently exists only in packages/workspace; parity review must decide whether Consuelo OS needs an equivalent before legacy workspace extraction."
     },
     "scripts/lib/stream-instructions.test.ts": {
       "status": "workspace-only-needs-port",
-      "reason": "scripts/lib/stream-instructions.test.ts exists only in the workspace script inventory; keep it flagged for an OS port or an explicit intentional-retirement decision."
+      "reason": "This script currently exists only in packages/workspace; parity review must decide whether Consuelo OS needs an equivalent before legacy workspace extraction."
     },
     "scripts/lib/stream-lifecycle.js": {
       "status": "workspace-only-needs-port",
@@ -1257,15 +1169,15 @@
     },
     "scripts/lib/subagent/lifecycle.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/subagent/lifecycle.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/subagent/process-termination.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/subagent/process-termination.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/subagent/runner.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/subagent/runner.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/subagent/runtime.ts": {
       "status": "changed-needs-review",
@@ -1281,7 +1193,7 @@
     },
     "scripts/lib/task-registry.js": {
       "status": "same",
-      "reason": "scripts/lib/task-registry.js is byte-identical in both workspace and OS script trees, so parity classifies it as shared unchanged implementation."
+      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
     },
     "scripts/lib/task-selection.js": {
       "status": "changed-needs-review",
@@ -1300,28 +1212,24 @@
       "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
     },
     "scripts/lib/task-worktree-eviction.js": {
-      "status": "changed-needs-review",
-      "reason": "Same-path OS and workspace copies differ and require explicit review before syncing or porting."
+      "status": "same",
+      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
     },
     "scripts/lib/task-worktree-gc-scheduler.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/task-worktree-gc-scheduler.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "OS-only scheduler owns background task-worktree garbage-collection timing; keep explicit until Workspace intentionally gains an equivalent scheduler."
     },
     "scripts/lib/task-worktree-gc.js": {
-      "status": "changed-needs-review",
-      "reason": "Same-path OS and workspace copies differ and require explicit review before syncing or porting."
+      "status": "same",
+      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
     },
     "scripts/lib/tool-scope-authorization.ts": {
       "status": "os-only-intentional",
       "reason": "scripts/lib/tool-scope-authorization.ts is an intentional OS-owned runtime, build, support, or test asset with no workspace counterpart."
     },
-    "scripts/lib/trace-cost-estimator.ts": {
-      "status": "os-only-intentional",
-      "reason": "OS-owned observability cost estimator derives non-zero trace cost estimates from runtime model/token metadata; no workspace-script counterpart is intended."
-    },
     "scripts/lib/trace-database-schema.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/trace-database-schema.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/trace-persistence.ts": {
       "status": "os-only-intentional",
@@ -1329,55 +1237,47 @@
     },
     "scripts/lib/trace-routing-context.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/trace-routing-context.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/trace-search-query.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/trace-search-query.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
-    },
-    "scripts/lib/trace-session-identity.ts": {
-      "status": "os-only-intentional",
-      "reason": "OS-owned helper added after the last script-parity baseline refresh; keep it in the OS inventory and review if a workspace twin is required."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/trace-site-inspector/browser.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/trace-site-inspector/browser.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/trace-site-inspector/inspector-state.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/trace-site-inspector/inspector-state.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/trace-site-inspector/interactions.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/trace-site-inspector/interactions.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/trace-site-inspector/model.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/trace-site-inspector/model.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/trace-site-inspector/pagination-browser.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/trace-site-inspector/pagination-browser.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
-    },
-    "scripts/lib/trace-site-inspector/session-colors.ts": {
-      "status": "os-only-intentional",
-      "reason": "OS-owned trace inspector presentation helper assigns deterministic session colors for the observability UI; no workspace-script counterpart is intended."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/trace-site-inspector/table-formatters.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/trace-site-inspector/table-formatters.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/trace-site-inspector/trace-list.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/trace-site-inspector/trace-list.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/trace-site-inspector/virtual-list-browser.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/trace-site-inspector/virtual-list-browser.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/trace-site.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/trace-site.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/trace-sites-browser-client.ts": {
       "status": "os-only-intentional",
@@ -1421,7 +1321,7 @@
     },
     "scripts/lib/unenrolled-placeholder-identity.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/unenrolled-placeholder-identity.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/validation.js": {
       "status": "same",
@@ -1435,33 +1335,33 @@
       "status": "os-only-intentional",
       "reason": "scripts/lib/verify-run-state.js is an intentional OS-owned runtime, build, support, or test asset with no workspace counterpart."
     },
+    "scripts/lib/visible-dialer-steering.ts": {
+      "status": "os-only-needs-review",
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
+    },
     "scripts/lib/windows-platform.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/windows-platform.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/work-session-fs.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/work-session-fs.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "OS-only work-session filesystem authority persists session-scoped mutations and currently has no Workspace counterpart."
     },
     "scripts/lib/work-session-protection.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/work-session-protection.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "OS-only work-session protection enforces session-owned path boundaries and currently has no Workspace counterpart."
     },
     "scripts/lib/work-session.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/work-session.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "OS-only work-session lifecycle coordinates session state for OS Code Call and currently has no Workspace counterpart."
     },
     "scripts/lib/worker-pool.ts": {
       "status": "os-only-intentional",
       "reason": "OS-owned same-node worker supervisor state machine manages deterministic worker slots, readiness, crash replacement, and bounded draining with no workspace counterpart."
     },
-    "scripts/lib/workspace-chrome-config.ts": {
-      "status": "os-only-intentional",
-      "reason": "OS-owned workspace chrome configuration loader reads local launcher customization for shared Home, Artifacts, Tracing, and Diffs surfaces; it has no workspace-package counterpart."
-    },
     "scripts/lib/workspace-chrome.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/workspace-chrome.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/workspace-cloudflare-d1-route-registry.ts": {
       "status": "os-only-intentional",
@@ -1497,7 +1397,7 @@
     },
     "scripts/lib/workspace-edge-node-auth.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/workspace-edge-node-auth.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/workspace-edge-route-seed.ts": {
       "status": "os-only-intentional",
@@ -1513,11 +1413,11 @@
     },
     "scripts/lib/workspace-node-heartbeat-scheduler.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/workspace-node-heartbeat-scheduler.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/workspace-node-snapshot-cache.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/lib/workspace-node-snapshot-cache.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/lib/workspace-project-cwd.ts": {
       "status": "os-only-intentional",
@@ -1545,15 +1445,15 @@
     },
     "scripts/managed-cloud-node-enroll.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/managed-cloud-node-enroll.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/managed-cloud-node.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/managed-cloud-node.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/managed-cloud-provisioning-runner.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/managed-cloud-provisioning-runner.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/managed-components.ts": {
       "status": "os-only-intentional",
@@ -1582,19 +1482,19 @@
     },
     "scripts/migrations/reconcile-caddy-ha-watchdog.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/migrations/reconcile-caddy-ha-watchdog.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/migrations/reconcile-caddy-worker-pool.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/migrations/reconcile-caddy-worker-pool.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/monitor-errors.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/monitor-errors.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/native-lifecycle-operation.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/native-lifecycle-operation.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/onboarding-flow.test.ts": {
       "status": "os-only-intentional",
@@ -1615,7 +1515,7 @@
     },
     "scripts/os-release-workspace-edge.ts": {
       "status": "workspace-only-needs-port",
-      "reason": "scripts/os-release-workspace-edge.ts exists only in the workspace script inventory; keep it flagged for an OS port or an explicit intentional-retirement decision."
+      "reason": "This script currently exists only in packages/workspace; parity review must decide whether Consuelo OS needs an equivalent before legacy workspace extraction."
     },
     "scripts/os-release.ts": {
       "status": "workspace-only-needs-port",
@@ -1649,17 +1549,13 @@
       "status": "os-only-intentional",
       "reason": "OS-owned release-channel orchestration is intentionally separate from the legacy workspace installer/device-authority release scripts."
     },
-    "scripts/release.ts": {
-      "status": "os-only-needs-review",
-      "reason": "scripts/release.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
-    },
     "scripts/research-ingest.js": {
       "status": "changed-needs-review",
       "reason": "scripts/research-ingest.js is classified from the current workspace/OS inventory and retains an explicit parity disposition for this repository state."
     },
     "scripts/retire-legacy-system-daemons.sh": {
       "status": "os-only-needs-review",
-      "reason": "scripts/retire-legacy-system-daemons.sh exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/review.js": {
       "status": "changed-needs-review",
@@ -1667,7 +1563,7 @@
     },
     "scripts/run-dialer-scenario.ts": {
       "status": "changed-needs-review",
-      "reason": "scripts/run-dialer-scenario.ts exists in both workspace and OS script trees with different bytes; keep it under explicit parity review until the divergence is reconciled or documented."
+      "reason": "This script now differs between packages/workspace and packages/os; parity review must confirm the intended implementation before synchronization."
     },
     "scripts/secrets.ts": {
       "status": "os-only-intentional",
@@ -1675,7 +1571,7 @@
     },
     "scripts/security-scan.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/security-scan.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/seed-workspace-edge-route.ts": {
       "status": "os-only-intentional",
@@ -1739,7 +1635,7 @@
     },
     "scripts/server/routes/diffs.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/server/routes/diffs.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/server/routes/environments.ts": {
       "status": "os-only-intentional",
@@ -1755,7 +1651,7 @@
     },
     "scripts/server/routes/secrets.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/server/routes/secrets.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/server/routes/settings.ts": {
       "status": "os-only-intentional",
@@ -1771,11 +1667,11 @@
     },
     "scripts/server/security/authenticated-principal.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/server/security/authenticated-principal.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/server/security/mcp-origin.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/server/security/mcp-origin.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/server/services/artifacts-gateway.ts": {
       "status": "os-only-intentional",
@@ -1787,7 +1683,7 @@
     },
     "scripts/server/services/diffs-gateway.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/server/services/diffs-gateway.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/server/services/mcp-session.ts": {
       "status": "os-only-intentional",
@@ -1815,7 +1711,7 @@
     },
     "scripts/server/vendor/diff-cockpit.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/server/vendor/diff-cockpit.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/server/worker-runtime-state.ts": {
       "status": "os-only-intentional",
@@ -1823,7 +1719,7 @@
     },
     "scripts/session-start.ts": {
       "status": "changed-needs-review",
-      "reason": "scripts/session-start.ts exists in both workspace and OS script trees with different bytes; keep it under explicit parity review until the divergence is reconciled or documented."
+      "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
     },
     "scripts/smoke-workspace-edge.ts": {
       "status": "os-only-intentional",
@@ -1839,7 +1735,7 @@
     },
     "scripts/start-caddy-daemon.sh": {
       "status": "os-only-needs-review",
-      "reason": "scripts/start-caddy-daemon.sh exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/start-consuelo-daemon.sh": {
       "status": "os-only-intentional",
@@ -1875,7 +1771,7 @@
     },
     "scripts/subagent.ts": {
       "status": "changed-needs-review",
-      "reason": "scripts/subagent.ts exists in both workspace and OS script trees with different bytes; keep it under explicit parity review until the divergence is reconciled or documented."
+      "reason": "This script now differs between packages/workspace and packages/os; parity review must confirm the intended implementation before synchronization."
     },
     "scripts/task-cleanup.js": {
       "status": "changed-needs-review",
@@ -1927,7 +1823,7 @@
     },
     "scripts/task-worktree-gc.js": {
       "status": "os-only-needs-review",
-      "reason": "scripts/task-worktree-gc.js exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "OS-only task-worktree GC entrypoint invokes the OS cleanup implementation; keep tracked until Workspace intentionally adopts an equivalent entrypoint."
     },
     "scripts/test-selection.js": {
       "status": "changed-needs-review",
@@ -1955,11 +1851,11 @@
     },
     "scripts/testing/macos-alpha-package.sh": {
       "status": "os-only-needs-review",
-      "reason": "scripts/testing/macos-alpha-package.sh exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/testing/windows-platform-acceptance.ps1": {
       "status": "os-only-needs-review",
-      "reason": "scripts/testing/windows-platform-acceptance.ps1 exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/tmp.js": {
       "status": "changed-needs-review",
@@ -1975,11 +1871,11 @@
     },
     "scripts/tools-search-benchmark.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/tools-search-benchmark.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/tools-search.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/tools-search.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script now exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/trace-home/cli.ts": {
       "status": "workspace-only-needs-port",
@@ -2111,7 +2007,7 @@
     },
     "scripts/verify-local-agents.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/verify-local-agents.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/verify.js": {
       "status": "changed-needs-review",
@@ -2131,7 +2027,7 @@
     },
     "scripts/windows-platform.ts": {
       "status": "os-only-needs-review",
-      "reason": "scripts/windows-platform.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "reason": "This script currently exists only in packages/os; parity review must confirm the OS-owned implementation is intentional and needs no workspace counterpart."
     },
     "scripts/workspace-node-heartbeat.ts": {
       "status": "os-only-intentional",

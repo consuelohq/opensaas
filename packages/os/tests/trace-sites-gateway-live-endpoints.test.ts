@@ -9,9 +9,8 @@ import {
   traceGatewayScopeFromHeaders,
 } from '../scripts/lib/trace-sites-gateway-live-endpoints';
 import { createLocalTraceSitesReadBackend } from '../scripts/lib/trace-sites-local-read-backend';
-import { ensureTraceDatabaseSchema, openTraceDatabase } from '../scripts/lib/trace-database-schema';
+import { openTraceDatabase } from '../scripts/lib/trace-database-schema';
 import { createFixtureTraceSitesReadBackend } from '../scripts/lib/trace-sites-gateway-read-layer';
-import { estimateTraceCost } from '../scripts/lib/trace-cost-estimator';
 import {
   type TraceSitesDashboardEvent,
   type TraceSitesDashboardSummary,
@@ -55,20 +54,13 @@ const cachedSummary: TraceSitesDashboardSummary = {
   sourceModes: ['local-networked'],
 };
 
-const TRACE_HISTORY_INSERT_SQL = [
+const TRACE_FIXTURE_INSERT_SQL = [
   'INSERT INTO tool_traces (',
   '  id, ts, trace_id, mcp_trace_id, source, tool, task_session, branch,',
   '  worktree, status, ok, code, exit_code, duration_ms, input_json,',
   '  resolved_input_json, result_json, stderr, input_tokens, output_tokens,',
   '  total_tokens',
   ') VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-].join('\n');
-
-const TRACE_AGGREGATE_INSERT_SQL = [
-  'INSERT INTO tool_traces (',
-  '  id, ts, trace_id, source, tool, status, ok, code,',
-  '  resolved_input_json, result_json, input_tokens, output_tokens, total_tokens',
-  ') VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
 ].join('\n');
 
 function request(path: string): Request {
@@ -115,7 +107,7 @@ async function createHistoryFixtureDb(dbPath: string): Promise<void> {
       total_tokens INTEGER
     );
   `);
-  const insert = db.query(TRACE_HISTORY_INSERT_SQL);
+  const insert = db.query(TRACE_FIXTURE_INSERT_SQL);
   for (let index = 1; index <= 4; index += 1) {
     insert.run(
       `row_${index}`,
@@ -248,221 +240,6 @@ describe('Trace Sites gateway live endpoints', () => {
     });
   });
 
-  it('returns signed workspace and node scope without touching aggregate storage', async () => {
-    let aggregateReads = 0;
-    const fixture = createFixtureTraceSitesReadBackend({ cursor: '00000001', events: [event] });
-    const endpoints = createTraceSitesGatewayLiveEndpoints({
-      backend: {
-        ...fixture,
-        readHourlyAggregate(input) {
-          aggregateReads += 1;
-          return {
-            generatedAt: new Date().toISOString(),
-            windowStart: new Date().toISOString(),
-            windowEnd: new Date().toISOString(),
-            buckets: [],
-            totals: { calls: 0, inputTokens: 0, outputTokens: 0, tokens: 0, cost: 0 },
-          };
-        },
-      },
-      resolveScope: traceGatewayScopeFromHeaders,
-    });
-
-    const response = await endpoints.handle(request(
-      '/gateway/traces/aggregates?window=8d&bucket=15m&scopeOnly=true&site=trace-burn-intelligence&sourceMode=local-networked&includeRawPayload=false',
-    ));
-
-    expect(response.status).toBe(200);
-    expect(await response.json()).toMatchObject({
-      ok: true,
-      route: '/gateway/traces/aggregates',
-      data: {
-        workspaceId: 'wrk_live',
-        workspaceHost: 'testing.consuelohq.com',
-        nodeId: 'node_live',
-        scopeOnly: true,
-      },
-    });
-    expect(aggregateReads).toBe(0);
-  });
-
-  it('serves a bounded 15-minute aggregate window without paginating raw trace history', async () => {
-    const dbPath = join(tempDir, 'hourly-aggregate.db');
-    ensureTraceDatabaseSchema(dbPath);
-    let now = Date.now();
-    const recentTimestamp = new Date(now - 10 * 60 * 1000).toISOString();
-    const db = openTraceDatabase(dbPath);
-    const cachedUsage = JSON.stringify({ model: 'gpt-5.5', usage: { cached_input_tokens: 8 } });
-    const emptyResult = JSON.stringify({ ok: true });
-    try {
-      const insert = db.query(TRACE_AGGREGATE_INSERT_SQL);
-      insert.run('row_recent', recentTimestamp, 'trc_recent', 'facade', 'workspace.call', 'ok', 1, 'OK', cachedUsage, emptyResult, 10, 20, 30);
-      insert.run('row_history', new Date(now - 7 * 24 * 60 * 60 * 1000).toISOString(), 'trc_history', 'facade', 'code.call', 'ok', 1, 'OK', '', '', 40, 60, 100);
-      insert.run('row_expired', new Date(now - 9 * 24 * 60 * 60 * 1000).toISOString(), 'trc_expired', 'facade', 'tools.search', 'ok', 1, 'OK', '', '', 1, 1, 2);
-    } finally {
-      db.close();
-    }
-
-    const recentCost =
-      estimateTraceCost({
-        tool: 'workspace.call',
-        inputTokens: 10,
-        outputTokens: 20,
-        totalTokens: 30,
-        rawResolvedInputJson: cachedUsage,
-        rawResultJson: emptyResult,
-      })?.cost ?? 0;
-    const historicalCost =
-      estimateTraceCost({
-        tool: 'code.call',
-        inputTokens: 40,
-        outputTokens: 60,
-        totalTokens: 100,
-      })?.cost ?? 0;
-    const expectedCost = recentCost + historicalCost;
-
-    const backendOptions = { dbPath, now: () => now };
-    const endpoints = createTraceSitesGatewayLiveEndpoints({
-      backend: createLocalTraceSitesReadBackend(backendOptions),
-      resolveScope: traceGatewayScopeFromHeaders,
-    });
-    const aggregatePath = '/gateway/traces/aggregates?window=8d&bucket=15m&site=trace-burn-intelligence&sourceMode=local-networked&includeRawPayload=false';
-    const response = await endpoints.handle(request(aggregatePath));
-    const payload = await response.json() as {
-      data?: {
-        aggregateSource?: string;
-        hourly?: {
-          buckets?: Array<{ startedAt?: string; calls?: number; tokens?: number; cost?: number }>;
-          totals?: { calls?: number; tokens?: number; cost?: number };
-        };
-      };
-    };
-
-    expect(response.status).toBe(200);
-    expect(payload.data?.aggregateSource).toBe('trace-store');
-    expect(payload.data?.hourly?.totals).toMatchObject({ calls: 2, tokens: 130 });
-    expect(payload.data?.hourly?.totals?.cost).toBeCloseTo(expectedCost, 12);
-    expect(
-      payload.data?.hourly?.buckets?.reduce((sum, bucket) => sum + Number(bucket.cost ?? 0), 0),
-    ).toBeCloseTo(expectedCost, 12);
-    expect(payload.data?.hourly?.buckets).toHaveLength(2);
-    expect(payload.data?.hourly?.buckets?.every((bucket) => typeof bucket.startedAt === 'string')).toBe(true);
-    expect(JSON.stringify(payload)).not.toContain('rawInputJson');
-    expect(JSON.stringify(payload)).not.toContain('result_json');
-
-    const replacementDb = openTraceDatabase(dbPath);
-    try {
-      replacementDb
-        .query(TRACE_AGGREGATE_INSERT_SQL.replace('INSERT INTO', 'INSERT OR REPLACE INTO'))
-        .run('row_history', recentTimestamp, 'trc_history_replaced', 'facade', 'code.call', 'ok', 1, 'OK', '', '', 400, 600, 1000);
-    } finally {
-      replacementDb.close();
-    }
-    now += 31_000;
-
-    const replacementCost = estimateTraceCost({
-      tool: 'code.call',
-      inputTokens: 400,
-      outputTokens: 600,
-      totalTokens: 1000,
-    })?.cost ?? 0;
-    const refreshed = await endpoints.handle(request(aggregatePath));
-    const refreshedPayload = await refreshed.json() as typeof payload;
-
-    expect(refreshed.status).toBe(200);
-    expect(refreshedPayload.data?.hourly?.totals).toMatchObject({ calls: 2, tokens: 1030 });
-    expect(refreshedPayload.data?.hourly?.totals?.cost).toBeCloseTo(recentCost + replacementCost, 12);
-    expect(refreshedPayload.data?.hourly?.buckets).toHaveLength(1);
-  });
-
-  it('prices large aggregate payloads from complete valid JSON', async () => {
-    const dbPath = join(tempDir, 'large-payload-aggregate.db');
-    ensureTraceDatabaseSchema(dbPath);
-    const now = Date.now();
-    const largeResolvedInput = JSON.stringify({
-      padding: 'x'.repeat(210_000),
-      metadata: {
-        model: 'gpt-5.5',
-        usage: { cached_input_tokens: 900 },
-      },
-    });
-    const resultJson = JSON.stringify({ ok: true });
-    const db = openTraceDatabase(dbPath);
-    try {
-      db.query(TRACE_AGGREGATE_INSERT_SQL).run(
-        'row_large_payload',
-        new Date(now - 5 * 60 * 1000).toISOString(),
-        'trc_large_payload',
-        'facade',
-        'workspace.call',
-        'ok',
-        1,
-        'OK',
-        largeResolvedInput,
-        resultJson,
-        0,
-        0,
-        1000,
-      );
-    } finally {
-      db.close();
-    }
-
-    const expectedCost = estimateTraceCost({
-      tool: 'workspace.call',
-      inputTokens: 0,
-      outputTokens: 0,
-      totalTokens: 1000,
-      rawResolvedInputJson: largeResolvedInput,
-      rawResultJson: resultJson,
-    })?.cost ?? 0;
-    const endpoints = createTraceSitesGatewayLiveEndpoints({
-      backend: createLocalTraceSitesReadBackend({ dbPath, now: () => now }),
-      resolveScope: traceGatewayScopeFromHeaders,
-    });
-    const response = await endpoints.handle(request(
-      '/gateway/traces/aggregates?window=8d&bucket=15m&site=trace-burn-intelligence&sourceMode=local-networked&includeRawPayload=false',
-    ));
-    const payload = await response.json() as {
-      data?: { hourly?: { totals?: { calls?: number; tokens?: number; cost?: number } } };
-    };
-
-    expect(response.status).toBe(200);
-    expect(payload.data?.hourly?.totals).toMatchObject({ calls: 1, tokens: 1000 });
-    expect(payload.data?.hourly?.totals?.cost).toBeCloseTo(expectedCost, 12);
-  });
-
-  it('preserves 15-minute aggregate boundaries for fractional local-hour rendering', async () => {
-    const dbPath = join(tempDir, 'quarter-hour-aggregate.db');
-    ensureTraceDatabaseSchema(dbPath);
-    const now = Date.parse('2026-09-05T02:00:00.000Z');
-    const db = openTraceDatabase(dbPath);
-    try {
-      const insert = db.query(TRACE_AGGREGATE_INSERT_SQL);
-      insert.run('row_quarter_1', '2026-09-05T01:10:00.000Z', 'trc_quarter_1', 'facade', 'workspace.call', 'ok', 1, 'OK', '', '', 10, 10, 20);
-      insert.run('row_quarter_2', '2026-09-05T01:40:00.000Z', 'trc_quarter_2', 'facade', 'workspace.call', 'ok', 1, 'OK', '', '', 20, 20, 40);
-    } finally {
-      db.close();
-    }
-
-    const endpoints = createTraceSitesGatewayLiveEndpoints({
-      backend: createLocalTraceSitesReadBackend({ dbPath, now: () => now }),
-      resolveScope: traceGatewayScopeFromHeaders,
-    });
-    const response = await endpoints.handle(request(
-      '/gateway/traces/aggregates?window=8d&bucket=15m&site=trace-burn-intelligence&sourceMode=local-networked&includeRawPayload=false',
-    ));
-    const payload = await response.json() as {
-      data?: { hourly?: { buckets?: Array<{ startedAt?: string; calls?: number }> } };
-    };
-
-    expect(response.status).toBe(200);
-    expect(payload.data?.hourly?.buckets).toEqual([
-      expect.objectContaining({ startedAt: '2026-09-05T01:00:00.000Z', calls: 1 }),
-      expect.objectContaining({ startedAt: '2026-09-05T01:30:00.000Z', calls: 1 }),
-    ]);
-  });
-
   it('forwards a full-history search query through the authenticated recent route', async () => {
     let observedQuery = '';
     const endpoints = createTraceSitesGatewayLiveEndpoints({
@@ -486,7 +263,7 @@ describe('Trace Sites gateway live endpoints', () => {
     expect(observedQuery).toBe('tool:fs.read branch:feature/search');
   });
 
-  it('serves redacted and rich older trace pages without changing the live cursor contract', async () => {
+  it('serves older rich trace pages through the authenticated recent route without changing the live cursor contract', async () => {
     const dbPath = join(tempDir, 'history-endpoint.db');
     await createHistoryFixtureDb(dbPath);
     const endpoints = createTraceSitesGatewayLiveEndpoints({
@@ -494,29 +271,17 @@ describe('Trace Sites gateway live endpoints', () => {
       resolveScope: traceGatewayScopeFromHeaders,
     });
 
-    const redacted = await endpoints.handle(
+    const denied = await endpoints.handle(
       request(
         '/gateway/traces/recent?direction=older&cursor=id%3Arow_4&limit=2&sourceMode=local-networked',
       ),
     );
-    const redactedPayload = (await redacted.json()) as {
-      data: { rows: Array<Record<string, unknown>> };
-    };
-    expect(redacted.status).toBe(200);
-    expect(redactedPayload).toMatchObject({
-      ok: true,
-      data: {
-        direction: 'older',
-        rows: [
-          { recordId: 'row_3', traceId: 'trc_history_3' },
-          { recordId: 'row_2', traceId: 'trc_history_2', status: 'error' },
-        ],
-      },
+    expect(denied.status).toBe(403);
+    expect(await denied.json()).toMatchObject({
+      ok: false,
+      error: { code: 'RAW_PAYLOAD_ACCESS_DENIED' },
+      errors: ['RAW_PAYLOAD_ACCESS_DENIED'],
     });
-    expect(redactedPayload.data.rows[0]).not.toHaveProperty('input');
-    expect(redactedPayload.data.rows[0]).not.toHaveProperty('output');
-    expect(redactedPayload.data.rows[0]).not.toHaveProperty('rawInput');
-    expect(redactedPayload.data.rows[0]).not.toHaveProperty('rawOutput');
 
     const first = await endpoints.handle(
       request(
@@ -622,7 +387,7 @@ describe('Trace Sites gateway live endpoints', () => {
 
     const db = openTraceDatabase(dbPath);
     try {
-      db.query(TRACE_HISTORY_INSERT_SQL).run(
+      db.query(TRACE_FIXTURE_INSERT_SQL).run(
         'row_5',
         '2026-07-11T00:00:05.000Z',
         'trc_history_5',
@@ -821,7 +586,7 @@ describe('Trace Sites local trace backend adapter', () => {
   it('should migrate missing routing columns when rich history reads an older trace database', async () => {
     const dbPath = join(tempDir, 'legacy-history.db');
     await createHistoryFixtureDb(dbPath);
-    const before = openTraceDatabase(dbPath);
+    const before = openTraceDatabase(dbPath, { create: false, readonly: true });
     const beforeColumns = (before.query('PRAGMA table_info(tool_traces)').all() as Array<{ name: string }>)
       .map((column) => column.name);
     before.close();
@@ -839,7 +604,7 @@ describe('Trace Sites local trace backend adapter', () => {
     });
 
     expect(page.rows.map((historyRow) => historyRow.recordId)).toEqual(['row_3', 'row_2']);
-    const after = openTraceDatabase(dbPath);
+    const after = openTraceDatabase(dbPath, { create: false, readonly: true });
     const afterColumns = (after.query('PRAGMA table_info(tool_traces)').all() as Array<{ name: string }>)
       .map((column) => column.name);
     after.close();

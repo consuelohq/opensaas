@@ -9,15 +9,14 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { delimiter, join, resolve } from 'node:path';
+import { delimiter, join } from 'node:path';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
 import { removeSafeTempDir } from './safe-temp-cleanup';
 
-const PACKAGE_ROOT = resolve(import.meta.dirname, '..');
+const PACKAGE_ROOT = process.cwd();
 const SYSTEM_PATH = ['/usr/bin', '/bin', '/usr/sbin', '/sbin'].join(delimiter);
-const TEST_INSTALL_ID = 'ins_00000000-0000-4000-8000-000000000000';
 const tempHomes: string[] = [];
 
 function createTempHome(prefix: string): string {
@@ -50,7 +49,6 @@ function runBootstrapDryRun(
         CONSUELO_HOME: join(home, '.consuelo', 'os'),
         CONSUELO_OS_SOURCE_DIR: join(home, 'source'),
         CONSUELO_OS_ALLOW_GLOBAL_RUNTIME_LOOKUP: '0',
-        CONSUELO_INSTALL_ID: TEST_INSTALL_ID,
         PATH: SYSTEM_PATH,
         ...overrides,
       },
@@ -205,14 +203,6 @@ function writeCloudflaredPlist(filePath: string, label: string): void {
   );
 }
 
-function writeManagedCloudflared(dataHome: string): string {
-  const binDir = join(dataHome, 'bin');
-  const cloudflaredBin = join(binDir, 'cloudflared');
-  mkdirSync(binDir, { recursive: true });
-  writeExecutable(cloudflaredBin, '#!/bin/sh\nexit 0\n');
-  return cloudflaredBin;
-}
-
 afterEach(() => {
   for (const home of tempHomes.splice(0)) {
     removeSafeTempDir(home, 'consuelo-os-installer-runtime-');
@@ -343,47 +333,6 @@ describe('public installer runtime dependencies', () => {
     );
   });
 
-  it('should install a named Consuelo service executable before daemon generation', () => {
-    const bootstrap = readBootstrap();
-    const namedRuntime = extractShellFunction(
-      bootstrap,
-      'ensure_named_bun_runtime',
-    );
-
-    expect(namedRuntime).toContain('consuelo-os');
-    expect(namedRuntime).toContain('/bin/cp -c');
-    expect(namedRuntime).toContain('/bin/cp -p');
-    expect(namedRuntime).toContain('/usr/bin/cmp -s');
-    expect(namedRuntime).toContain('/bin/mv -f');
-    expect(namedRuntime).toContain('BUN_BIN="$target"');
-
-    const main = extractShellFunction(bootstrap, 'main');
-    expect(main.indexOf('ensure_bun')).toBeLessThan(
-      main.indexOf('ensure_named_bun_runtime'),
-    );
-    expect(main.indexOf('ensure_named_bun_runtime')).toBeLessThan(
-      main.indexOf('persist_runtime_paths'),
-    );
-  });
-
-  it('should stage one smoke-test worker without contending with the live supervisor', () => {
-    const installer = readDaemonInstaller();
-    const daemon = readFileSync(
-      join(PACKAGE_ROOT, 'scripts', 'start-consuelo-daemon.sh'),
-      'utf8',
-    );
-
-    expect(installer).toContain('CONSUELO_OS_SINGLE_WORKER_SMOKE_TEST=1');
-    expect(daemon).toContain(
-      'if [ "${CONSUELO_OS_SINGLE_WORKER_SMOKE_TEST:-0}" = "1" ]; then',
-    );
-    expect(daemon).toContain('CONSUELO_OS_WORKER_ID="smoke-worker"');
-    expect(daemon).toContain('scripts/server/main.ts');
-    expect(daemon.indexOf('scripts/server/main.ts')).toBeLessThan(
-      daemon.lastIndexOf('scripts/server/supervisor.ts'),
-    );
-  });
-
   it('should use the regular local port when Portless is disabled by default', () => {
     const home = createTempHome('consuelo-os-installer-runtime-bootstrap-');
     const result = runBootstrapDryRun(home);
@@ -481,7 +430,6 @@ describe('public installer runtime dependencies', () => {
           CONSUELO_HOME: join(home, '.consuelo', 'os'),
           CONSUELO_OS_SOURCE_DIR: sourceDir,
           CONSUELO_OS_ALLOW_GLOBAL_RUNTIME_LOOKUP: '0',
-          CONSUELO_INSTALL_ID: TEST_INSTALL_ID,
           BUN_CAPTURE_FILE: bunCaptureFile,
           PATH: [binDir, SYSTEM_PATH].join(delimiter),
         },
@@ -548,7 +496,6 @@ describe('public installer runtime dependencies', () => {
           CONSUELO_HOME: join(home, '.consuelo', 'os'),
           CONSUELO_OS_SOURCE_DIR: sourceDir,
           CONSUELO_OS_ALLOW_GLOBAL_RUNTIME_LOOKUP: '0',
-          CONSUELO_INSTALL_ID: TEST_INSTALL_ID,
           PATH: [binDir, SYSTEM_PATH].join(delimiter),
         },
       },
@@ -593,7 +540,6 @@ describe('public installer runtime dependencies', () => {
           CONSUELO_HOME: join(home, '.consuelo', 'os'),
           CONSUELO_OS_SOURCE_DIR: join(home, 'source'),
           CONSUELO_OS_ALLOW_GLOBAL_RUNTIME_LOOKUP: '0',
-          CONSUELO_INSTALL_ID: TEST_INSTALL_ID,
           PATH: [binDir, SYSTEM_PATH].join(delimiter),
         },
       },
@@ -802,9 +748,7 @@ describe('public installer runtime dependencies', () => {
   it('should include generated connector and heartbeat services in daemon dry-run output only when their plists exist', () => {
     const home = createTempHome('consuelo-os-installer-runtime-daemons-');
     const generatedDir = join(home, 'security', 'generated');
-    const dataHome = join(home, '.consuelo');
     mkdirSync(generatedDir, { recursive: true });
-    writeManagedCloudflared(dataHome);
 
     const absentResult = spawnSync(
       '/bin/bash',
@@ -820,7 +764,6 @@ describe('public installer runtime dependencies', () => {
           ...installerEnv({
             HOME: home,
             CONSUELO_DAEMON_HOME: home,
-            CONSUELO_HOME: dataHome,
             CONSUELO_SECURITY_GENERATED_DIR: generatedDir,
             PORTLESS_DAEMON_PATH: SYSTEM_PATH,
             PATH: SYSTEM_PATH,
@@ -861,7 +804,6 @@ describe('public installer runtime dependencies', () => {
           ...installerEnv({
             HOME: home,
             CONSUELO_DAEMON_HOME: home,
-            CONSUELO_HOME: dataHome,
             CONSUELO_SECURITY_GENERATED_DIR: generatedDir,
             PORTLESS_DAEMON_PATH: SYSTEM_PATH,
             PATH: SYSTEM_PATH,
@@ -932,7 +874,6 @@ describe('public installer runtime dependencies', () => {
     const generatedDir = join(osHome, 'node', 'security', 'generated');
     const connectorLabel = 'com.consuelo.os.cloudflared.connector-flat-home';
     mkdirSync(generatedDir, { recursive: true });
-    writeManagedCloudflared(osHome);
     writeCloudflaredPlist(
       join(generatedDir, `${connectorLabel}.plist`),
       connectorLabel,

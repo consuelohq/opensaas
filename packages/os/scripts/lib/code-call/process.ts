@@ -56,10 +56,11 @@ const DARWIN_READ_CONTAINMENT_PROFILE = [
 ].join('');
 
 function canonicalPath(value: string): string {
-  return Effect.runSync(Effect.try({
-    try: () => realpathSync(value),
-    catch: () => value,
-  }).pipe(Effect.catchAll((fallback) => Effect.succeed(fallback))));
+  try {
+    return realpathSync(value);
+  } catch {
+    return value;
+  }
 }
 
 function errorMessage(error: NodeJS.ErrnoException): string {
@@ -159,6 +160,10 @@ export const runRuntimeEffect = (command: string, args: string[], options: RunRu
 
   child.stdout.setEncoding('utf8');
   child.stderr.setEncoding('utf8');
+  child.stdin.on('error', (error: NodeJS.ErrnoException) => {
+    if (error.code === 'EPIPE' || error.code === 'ERR_STREAM_DESTROYED') return;
+    if (!settled) stderr += `${stderr ? '\n' : ''}${errorMessage(error)}`;
+  });
   child.stdout.on('data', (chunk) => { stdout += chunk; });
   child.stderr.on('data', (chunk) => { stderr += chunk; });
   child.stdin.on('error', (error: NodeJS.ErrnoException) => {
@@ -184,13 +189,10 @@ export const runRuntimeEffect = (command: string, args: string[], options: RunRu
   child.on('close', (code) => {
     finish({ stdout, stderr, exitCode: code ?? 0, timedOut, runtimeMissing: false, containmentUnavailable: false });
   });
-  Effect.runSync(Effect.try({
-    try: () => child.stdin.end(options.stdin || ''),
-    catch: (error) => error as NodeJS.ErrnoException,
-  }).pipe(Effect.catchAll((error) => {
-    if (error.code === 'EPIPE' || error.code === 'ERR_STREAM_DESTROYED') {
-      return Effect.succeed(undefined);
-    }
-    return Effect.fail(error);
-  })));
+  try {
+    child.stdin.end(options.stdin || '');
+  } catch (error: unknown) {
+    const code = (error as NodeJS.ErrnoException)?.code;
+    if (code !== 'EPIPE' && code !== 'ERR_STREAM_DESTROYED') throw error;
+  }
 }));

@@ -2,18 +2,18 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2708,
-    "mappedTestCount": 2622,
-    "unmappedTestCount": 86,
-    "ruleCount": 79,
-    "explicitRuleCount": 60,
+    "testFileCount": 2667,
+    "mappedTestCount": 2583,
+    "unmappedTestCount": 84,
+    "ruleCount": 73,
+    "explicitRuleCount": 54,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
     "byGroup": {
-      "packages/os/tests": 310,
-      "packages/workspace/tests": 67,
+      "packages/os/tests": 271,
       "packages/twenty-server/test/integration/graphql/utils": 65,
+      "packages/workspace/tests": 65,
       "packages/twenty-sdk/src/cli": 51,
       "packages/os/tests/media": 34,
       "packages/twenty-server/test/integration/graphql/suites/object-generated": 33,
@@ -636,10 +636,10 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 604,
+      "test": 564,
       "spec": 161,
-      "tests-dir": 8,
       "other": 7,
+      "tests-dir": 7,
       "integration": 2,
       "e2e": 1
     }
@@ -770,25 +770,26 @@
       "origin": "explicit"
     },
     {
-      "id": "workspace-explore-bench-compatibility",
+      "id": "workspace-stream-sync-runtime",
       "source": [
-        "packages/workspace/scripts/explore-bench.js",
-        "packages/workspace/tests/explore-bench.test.js"
+        "packages/workspace/scripts/stream-sync.js",
+        "packages/workspace/tests/stream-sync-node-modules.test.js",
+        "packages/workspace/tests/stream-sync-generated-registry-conflict.test.js"
       ],
       "tests": [
         {
-          "name": "Workspace ExploreBench compatibility contracts",
+          "name": "workspace stream sync runtime contracts",
           "command": [
             "bun",
-            "x",
-            "vitest",
-            "run",
-            "packages/workspace/tests/explore-bench.test.js"
+            "test",
+            "packages/workspace/tests/stream-sync-node-modules.test.js",
+            "packages/workspace/tests/stream-sync-generated-registry-conflict.test.js"
           ]
         }
       ],
       "critical": true,
-      "reason": "The legacy Workspace ExploreBench entrypoint must delegate to the canonical OS benchmark without cwd, syntax, or error-wrapping drift.",
+      "exclusive": true,
+      "reason": "Stream sync merge, worktree, generated-registry recovery, and push-gate changes must prove focused real-Git sync behavior without selecting unrelated workspace package tests.",
       "origin": "explicit"
     },
     {
@@ -810,34 +811,6 @@
       ],
       "critical": true,
       "reason": "OS trace watcher changes must preserve terminal rendering, canonical sidecar resolution, and real SQLite CLI behavior.",
-      "origin": "explicit"
-    },
-    {
-      "id": "os-browser-headed-handoff",
-      "source": [
-        "packages/os/scripts/lib/browser/**",
-        "packages/os/tests/browser-service.test.ts",
-        "packages/workspace/scripts/lib/browser/**",
-        "packages/workspace/tests/browser-service.test.ts"
-      ],
-      "tests": [
-        {
-          "name": "OS headed browser handoff contracts",
-          "command": [
-            "bun",
-            "x",
-            "vitest",
-            "run",
-            "packages/os/tests/browser-service.test.ts",
-            "packages/workspace/tests/browser-service.test.ts",
-            "-t",
-            "should leave a headed browser running|should open headed mode|should use headed handoff behavior|should preserve the current daemon|should forward provider options|should keep workspace and OS browser runtimes byte-identical"
-          ]
-        }
-      ],
-      "critical": true,
-      "exclusive": true,
-      "reason": "Browser daemon, headed handoff, and persistent-profile changes must prove visible-mode continuity and OS/workspace runtime parity without selecting unrelated package-wide OS tests.",
       "origin": "explicit"
     },
     {
@@ -892,8 +865,6 @@
         "packages/os/assets/vendor/observability-traces-v38/inspector.js",
         "packages/os/package.json",
         "packages/os/scripts/lib/observability-traces-site.ts",
-        "packages/os/scripts/lib/trace-cost-estimator.ts",
-        "packages/os/scripts/lib/trace-session-identity.ts",
         "packages/os/scripts/lib/trace-site-inspector/**",
         "packages/os/scripts/lib/trace-sites-gateway-*.ts",
         "packages/os/scripts/lib/trace-sites-local-read-backend.ts",
@@ -916,8 +887,7 @@
         "packages/os/scripts/lib/trace-database-schema.ts",
         "packages/os/scripts/lib/trace-search-query.ts",
         "packages/os/tests/trace-persistence.test.ts",
-        "packages/os/tests/trace-search-query.test.ts",
-        "packages/os/tests/trace-sites-gateway-live-endpoints.test.ts"
+        "packages/os/tests/trace-search-query.test.ts"
       ],
       "tests": [
         {
@@ -934,8 +904,7 @@
             "tests/trace-site-inspector-os-owned.test.ts",
             "tests/observability-traces-site.test.ts",
             "tests/redaction.test.ts",
-            "tests/runtime-bundle-managed-site-assets.test.ts",
-            "tests/trace-sites-gateway-live-endpoints.test.ts"
+            "tests/runtime-bundle-managed-site-assets.test.ts"
           ]
         },
         {
@@ -968,113 +937,142 @@
       "origin": "explicit"
     },
     {
-      "id": "os-explore-retrieval-science",
+      "id": "os-code-call-process-runtime",
       "source": [
-        "packages/os/cloudflare/workspace-edge/src/index.ts",
-        "packages/os/cloudflare/workspace-edge/src/semantic-embedding-gateway.ts",
-        "packages/os/cloudflare/workspace-edge/wrangler.toml",
-        "packages/os/dev-steering.md",
-        "packages/os/explore-bench/**",
-        "packages/os/scripts/ai-review.js",
-        "packages/os/scripts/confidence-score.js",
-        "packages/os/scripts/decide-next.js",
-        "packages/os/scripts/exploit.js",
-        "packages/os/scripts/explore-bench.js",
-        "packages/os/scripts/explore.js",
-        "packages/os/scripts/lib/facade/executor.ts",
-        "packages/os/scripts/lib/cloudflare-worker-release-readiness.ts",
-        "packages/os/scripts/lib/explore-bench.js",
-        "packages/os/scripts/lib/index/embedding-gateway.js",
-        "packages/os/scripts/lib/index/indexer.js",
-        "packages/os/scripts/lib/index/store.js",
-        "packages/os/scripts/lib/search/**",
-        "packages/os/scripts/lib/state/explore-calibration.v1.json",
-        "packages/os/scripts/lib/state/explore-hypothesis-model.js",
-        "packages/os/scripts/lib/state/explore-policy.js",
-        "packages/os/scripts/lib/state/explore-promotion-criteria.v1.json",
-        "packages/os/scripts/lib/state/explore-promotion-evidence.v1.json",
-        "packages/os/scripts/lib/state/explore-promotion-gate.js",
-        "packages/os/scripts/lib/state/explore-read-cost-model.v1.json",
-        "packages/os/scripts/lib/state/explore-state.js",
-        "packages/os/scripts/lib/state/explore-voi-policy.js",
-        "packages/os/scripts/review.js",
-        "packages/os/skills/senior-engineer/SKILL.md",
-        "packages/os/skills/task/SKILL.md",
-        "packages/os/tests/explore-bench.test.ts",
-        "packages/os/tests/explore-hypothesis-model.test.ts",
-        "packages/os/tests/explore-output-contract.test.ts",
-        "packages/os/tests/explore-promotion-gate.test.ts",
-        "packages/os/tests/explore-retrieval-policy.test.ts",
-        "packages/os/tests/explore-retriever-fallback.test.ts",
-        "packages/os/tests/explore-index-hydration-fallback.test.ts",
-        "packages/os/tests/explore-runtime-routing.test.ts",
-        "packages/os/tests/explore-voi-policy.test.ts",
-        "packages/os/tests/semantic-embedding-edge-gateway.test.ts",
-        "packages/os/tests/semantic-embedding-gateway.test.ts",
-        "packages/os/tests/semantic-embedding-identity.test.ts",
-        "packages/os/tools/decision-engine/handler.test.ts",
-        "packages/os/tools/decision-engine/handler.ts",
-        "packages/os/tools/decision-engine/schema.ts"
+        "packages/os/scripts/lib/code-call/process.ts",
+        "packages/os/tests/code-call-process-regressions.test.ts"
       ],
       "tests": [
         {
-          "name": "OS Explore retrieval science contracts",
+          "name": "OS code.call process regressions",
           "command": [
             "bun",
             "--cwd",
             "packages/os",
             "test",
-            "tests/explore-retrieval-policy.test.ts",
-            "tests/explore-retriever-fallback.test.ts",
-            "tests/explore-index-hydration-fallback.test.ts",
-            "tests/explore-bench.test.ts",
-            "tests/explore-output-contract.test.ts",
-            "tests/explore-hypothesis-model.test.ts",
-            "tests/explore-voi-policy.test.ts",
-            "tests/explore-promotion-gate.test.ts",
-            "tests/explore-runtime-routing.test.ts",
-            "tests/semantic-embedding-edge-gateway.test.ts",
-            "tests/semantic-embedding-gateway.test.ts",
-            "tests/semantic-embedding-identity.test.ts",
-            "tools/decision-engine/handler.test.ts"
+            "tests/code-call-process-regressions.test.ts"
           ]
         }
       ],
       "critical": true,
       "exclusive": true,
-      "reason": "Agent-facing OS Explore retrieval, unified investigation-policy, shadow VOI, and E6 controlled-trial promotion-gate changes must prove hard scope, missing-semantic fallback, honest hypothesis/readiness state, neutral reads, explicit relevance evidence, one shared E4 next-action/edit-readiness control, shadow-only empirical E5 VOI abstention/cost math, fixed-sample paired E6 evidence with exact sign-test and required-node safety gates, hosted embeddings, runtime routing, benchmark metrics, and compact/full output without selecting the historically red package-wide OS suite.",
+      "reason": "Code-call child-process transport changes must prove stdin/exit lifecycle behavior without selecting the broad OS guardrail test file or unrelated package-wide tests.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-trace-sqlite-runtime",
+      "source": [
+        "packages/os/scripts/lib/trace-database-schema.ts",
+        "packages/os/scripts/lib/trace-sites-local-read-backend.ts",
+        "packages/os/tests/trace-sites-gateway-live-endpoints.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS Trace SQLite runtime compatibility",
+          "command": [
+            "node",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "packages/os/tests/trace-sites-gateway-live-endpoints.test.ts",
+            "--config",
+            "packages/os/vitest.config.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Trace SQLite adapter changes must prove the Node-compatible read backend and gateway history behavior under the same runtime that exposed the CI regression, without selecting the broad OS package suite.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-facade-release-regressions",
+      "source": [
+        "packages/os/tests/facade/facade.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS facade release regression contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/facade/facade.test.ts",
+            "-t",
+            "returns a timeout envelope|supports synthetic dry-run|rejects mixed fs read pagination modes|allows matching taskSession and branch for code.call|runs code.call edit mode inside an explicit task worktree"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Facade test-only release-gate fixes must rerun the exact timeout, dry-run, pagination, and managed-task-worktree contracts without selecting unrelated OS package tests.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-media-svg-convert",
+      "source": [
+        "packages/os/tests/media/31-svg-convert.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS SVG conversion contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/media/31-svg-convert.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "SVG fixture and conversion-contract changes must prove the exact media conversion suite without requiring host ffmpeg or selecting unrelated OS package tests.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-script-parity-audit",
+      "source": [
+        "packages/os/tests/audit/fixtures/script-parity-classifications.json",
+        "packages/os/tests/audit/script-parity-audit.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS script parity audit contract",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/audit/script-parity-audit.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Script-parity classification changes must prove the complete current workspace/OS inventory without selecting unrelated OS runtime tests.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-instruction-docs",
+      "source": [
+        "packages/os/SCRIPTS.md",
+        "packages/os/streams/**/AGENTS.md"
+      ],
+      "tests": [],
+      "critical": false,
+      "exclusive": true,
+      "reason": "OS operator and stream instruction Markdown is documentation-only test-selection metadata and must not wake executable lifecycle or package-wide runtime suites by itself.",
       "origin": "explicit"
     },
     {
       "id": "os-release-surface-freshness",
       "source": [
         ".github/workflows/consuelo-os-runtime-publish.yaml",
-        ".github/workflows/consuelo-os-runtime-promote.yaml",
-        "packages/os/SCRIPTS.md",
-        "packages/os/docs/distribution/release-channels.md",
         "packages/os/package.json",
-        "packages/os/scripts/github.js",
-        "packages/os/scripts/lib/distribution/release-channels.ts",
-        "packages/os/scripts/lib/github-cli.ts",
-        "packages/os/scripts/lib/release-platform-bundle.ts",
-        "packages/os/scripts/lib/release-promotion-dispatch-lock.ts",
-        "packages/os/scripts/lib/release-promotion-correlation.ts",
-        "packages/os/scripts/lib/release-orchestrator.ts",
-        "packages/os/scripts/release-channels.ts",
-        "packages/os/scripts/release.ts",
         "packages/os/scripts/lib/workspace-edge-route-seed.ts",
         "packages/os/tests/distribution/release-channel-workflows.test.ts",
-        "packages/os/tests/distribution/release-channels.test.ts",
-        "packages/os/tests/github-cli-resolution.test.ts",
         "packages/os/tests/os-device-authority-release-contract.test.ts",
-        "packages/os/tests/production-release-mcp-security.test.ts",
-        "packages/os/tests/release-orchestrator.test.ts",
-        "packages/os/tests/release-local-platform-bundle.test.ts",
-        "packages/os/tests/release-script-promotion-correlation.test.ts",
-        "packages/os/tests/release-promotion-dispatch-lock.test.ts",
-        "packages/os/tests/release-script-security.test.ts",
-        "packages/os/tests/release-tool-surface.test.ts",
-        "packages/os/tools/release/**",
         "packages/workspace/scripts/os-release.ts",
         "packages/workspace/scripts/os-release-device-auth.ts",
         "packages/workspace/scripts/os-release-workspace-edge.ts",
@@ -1089,16 +1087,7 @@
             "packages/os",
             "test",
             "tests/os-device-authority-release-contract.test.ts",
-            "tests/distribution/release-channel-workflows.test.ts",
-            "tests/production-release-mcp-security.test.ts",
-            "tests/distribution/release-channels.test.ts",
-            "tests/github-cli-resolution.test.ts",
-            "tests/release-orchestrator.test.ts",
-            "tests/release-local-platform-bundle.test.ts",
-            "tests/release-script-promotion-correlation.test.ts",
-            "tests/release-promotion-dispatch-lock.test.ts",
-            "tests/release-script-security.test.ts",
-            "tests/release-tool-surface.test.ts"
+            "tests/distribution/release-channel-workflows.test.ts"
           ]
         },
         {
@@ -1124,7 +1113,7 @@
       ],
       "critical": true,
       "exclusive": true,
-      "reason": "OS release orchestration, GitHub CLI resolution, signed runtime publication/promotion, exact local update handoff, default workspace-shell snapshots, and Workspace Edge migrations must prove the focused freshness path without selecting unrelated package-wide OS tests.",
+      "reason": "OS release, signed runtime publication, default workspace-shell snapshots, and Workspace Edge migrations must prove the focused freshness path without selecting unrelated package-wide OS tests.",
       "origin": "explicit"
     },
     {
@@ -1175,13 +1164,11 @@
       "id": "os-hosted-site-update-reconciliation",
       "source": [
         "packages/os/cloudflare/os-device-authority/src/services/connectors.ts",
-        "packages/os/cloudflare/os-device-authority/src/services/mcp-proxy.ts",
         "packages/os/scripts/lib/lifecycle/engine.ts",
         "packages/os/scripts/lib/workspace-cloudflare-d1-route-registry.ts",
         "packages/os/tests/cloudflare-d1-route-registry.test.ts",
         "packages/os/tests/lifecycle-engine.test.ts",
-        "packages/os/tests/workspace-node-registry-routing.test.ts",
-        "packages/os/tests/workspace-route-heartbeat-write-budget.test.ts"
+        "packages/os/tests/workspace-node-registry-routing.test.ts"
       ],
       "tests": [
         {
@@ -1206,14 +1193,6 @@
             "test",
             "tests/lifecycle-engine.test.ts",
             "tests/workspace-node-registry-routing.test.ts"
-          ]
-        },
-        {
-          "name": "OS heartbeat D1 write budget",
-          "command": [
-            "bun",
-            "test",
-            "packages/os/tests/workspace-route-heartbeat-write-budget.test.ts"
           ]
         }
       ],
@@ -1351,73 +1330,8 @@
       "origin": "explicit"
     },
     {
-      "id": "os-tool-surface-generation",
-      "source": [
-        "packages/os/manifests/generated/core.manifest.json",
-        "packages/os/manifests/generated/tool.manifest.json",
-        "packages/os/scripts/lib/facade/schemas.ts",
-        "packages/os/src/generated/workspace.d.ts",
-        "packages/os/tests/facade/__snapshots__/facade.test.ts.snap",
-        "packages/os/tests/fixtures/tool-package-baseline.json",
-        "packages/os/tests/tool-manifest.test.ts",
-        "packages/os/tests/tool-package-layout.test.ts",
-        "packages/os/tools/registry.ts"
-      ],
-      "tests": [
-        {
-          "name": "OS tool surface generation contracts",
-          "command": [
-            "bun",
-            "--cwd",
-            "packages/os",
-            "test",
-            "tests/tool-manifest.test.ts",
-            "tests/tool-package-layout.test.ts"
-          ]
-        },
-        {
-          "name": "OS tool surface syntax contracts",
-          "command": [
-            "node",
-            "packages/os/scripts/check-syntax.js"
-          ]
-        }
-      ],
-      "critical": true,
-      "exclusive": true,
-      "reason": "Shared generated OS tool manifests, facade schemas, registry metadata, and generated workspace types must prove deterministic generation and syntax without waking unrelated lifecycle execution.",
-      "origin": "explicit"
-    },
-    {
-      "id": "os-lifecycle-connector-readiness",
-      "source": [
-        "packages/os/scripts/lib/lifecycle/connector-readiness.ts",
-        "packages/os/tests/lifecycle-connector-readiness.test.ts"
-      ],
-      "tests": [
-        {
-          "name": "OS lifecycle connector readiness contracts",
-          "command": [
-            "bun",
-            "x",
-            "vitest",
-            "run",
-            "packages/os/tests/lifecycle-connector-readiness.test.ts",
-            "packages/os/tests/lifecycle-engine.test.ts",
-            "packages/os/tests/workspace-node-heartbeat-script.test.ts",
-            "packages/os/tests/workspace-node-heartbeat-client.test.ts"
-          ]
-        }
-      ],
-      "critical": true,
-      "exclusive": true,
-      "reason": "Public connector acceptance changes must prove lifecycle fail-closed behavior, heartbeat reconciliation, and signed MCP readiness without selecting the unrelated package-wide OS suite.",
-      "origin": "explicit"
-    },
-    {
       "id": "os-lifecycle-update-handoff",
       "source": [
-        "packages/os/SCRIPTS.md",
         "packages/os/TOOLS.md",
         "packages/os/manifests/generated/tool.manifest.json",
         "packages/os/native/windows-service/**",
@@ -1458,16 +1372,12 @@
         "packages/os/scripts/lib/caddy-worker-pool-reconciliation.ts",
         "packages/os/scripts/migrations/reconcile-caddy-worker-pool.ts",
         "packages/os/tests/caddy-worker-pool-reconciliation.test.ts",
-        "packages/os/scripts/server/app.ts",
         "packages/os/scripts/server/main.ts",
         "packages/os/scripts/server/worker-runtime-state.ts",
         "packages/os/tests/health-readiness.test.ts",
         "packages/os/scripts/bootstrap.sh",
         "packages/os/tests/runtime-ingress-dependency-convergence.test.ts",
-        "packages/os/tests/caddy-worker-pool-migration.test.ts",
-        "packages/os/tests/bootstrap-recovery-cli.test.ts",
-        "packages/os/tests/lifecycle-command.test.ts",
-        "packages/os/tests/worker-pool-process.test.ts"
+        "packages/os/tests/caddy-worker-pool-migration.test.ts"
       ],
       "tests": [
         {
@@ -1495,10 +1405,7 @@
             "packages/os/tests/tool-package-layout.test.ts",
             "packages/os/tests/caddy-worker-pool-reconciliation.test.ts",
             "packages/os/tests/runtime-ingress-dependency-convergence.test.ts",
-            "packages/os/tests/caddy-worker-pool-migration.test.ts",
-            "packages/os/tests/bootstrap-recovery-cli.test.ts",
-            "packages/os/tests/lifecycle-command.test.ts",
-            "packages/os/tests/worker-pool-process.test.ts"
+            "packages/os/tests/caddy-worker-pool-migration.test.ts"
           ]
         },
         {
@@ -1524,6 +1431,42 @@
       "critical": true,
       "exclusive": true,
       "reason": "Lifecycle updater, managed ingress dependency convergence, Caddy topology reload decisions, immutable release handoff, worker drain/load-balancer evacuation, detached activation, platform restart, and discoverable lifecycle-tool changes must run the exact lifecycle/facade/tool contracts without selecting unrelated package-wide OS tests.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-durable-subagent-runtime",
+      "source": [
+        "packages/os/scripts/lib/subagent/**",
+        "packages/os/tests/subagent-executable-discovery.test.ts",
+        "packages/os/tests/subagent-lifecycle-regressions.test.ts",
+        "packages/os/tests/subagent-orchestration-contract.test.ts",
+        "packages/os/tests/subagent-runner-termination.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS durable subagent runtime contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/subagent-executable-discovery.test.ts",
+            "tests/subagent-lifecycle-regressions.test.ts",
+            "tests/subagent-orchestration-contract.test.ts",
+            "tests/subagent-runner-termination.test.ts"
+          ]
+        },
+        {
+          "name": "OS durable subagent syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Durable subagent provider, ownership, completion, cancellation, and process-lifecycle changes must prove focused provider and lifecycle contracts without selecting the broad OS package suite.",
       "origin": "explicit"
     },
     {
@@ -1756,8 +1699,7 @@
         "packages/os/scripts/lib/mcp-gateway.ts",
         "packages/os/scripts/os.ts",
         "packages/os/tests/mcp-gateway.test.ts",
-        "packages/os/tests/os-get-steering-trace.test.ts",
-        "packages/os/scripts/lib/mcp-node-routing.ts"
+        "packages/os/tests/os-get-steering-trace.test.ts"
       ],
       "tests": [
         {
@@ -1795,53 +1737,6 @@
       "critical": true,
       "exclusive": true,
       "reason": "ChatGPT node-routing facade or steering changes must prove top-level nodeId discovery, no inner-input leakage, explicit/default/fail-closed routing, and syntax without selecting unrelated package-wide OS tests.",
-      "origin": "explicit"
-    },
-    {
-      "id": "os-mcp-call-timeout-envelope",
-      "source": [
-        "packages/os/scripts/lib/mcp-gateway.ts",
-        "packages/os/scripts/server/routes/mcp.ts",
-        "packages/os/scripts/server/services/call-service.ts",
-        "packages/os/scripts/lib/facade/executor.ts",
-        "packages/os/scripts/lib/facade/types.ts",
-        "packages/os/tests/mcp-gateway.test.ts",
-        "packages/os/tests/facade/facade.test.ts"
-      ],
-      "tests": [
-        {
-          "name": "OS MCP call-timeout envelope contracts",
-          "command": [
-            "bun",
-            "x",
-            "vitest",
-            "run",
-            "packages/os/tests/mcp-gateway.test.ts"
-          ]
-        },
-        {
-          "name": "OS MCP call-timeout facade contracts",
-          "command": [
-            "bun",
-            "x",
-            "vitest",
-            "run",
-            "packages/os/tests/facade/facade.test.ts",
-            "-t",
-            "call execution timeout"
-          ]
-        },
-        {
-          "name": "OS MCP call-timeout syntax contracts",
-          "command": [
-            "node",
-            "packages/os/scripts/check-syntax.js"
-          ]
-        }
-      ],
-      "critical": true,
-      "exclusive": true,
-      "reason": "Public MCP call timeout is envelope execution metadata, not selected tool input; changes must prove transport separation, local facade deadline propagation, and syntax without selecting the historically red package-wide OS suite.",
       "origin": "explicit"
     },
     {
@@ -1895,96 +1790,21 @@
       "origin": "explicit"
     },
     {
-      "id": "os-secrets-management",
-      "source": [
-        "packages/os/scripts/lib/consuelo-sites-secrets-adapter.ts",
-        "packages/os/scripts/lib/node-sealed-credential-store.ts",
-        "packages/os/scripts/lib/secrets-site.ts",
-        "packages/os/scripts/lib/workspace-cloudflare-d1-route-registry.ts",
-        "packages/os/scripts/lib/workspace-cloudflare-edge-router.ts",
-        "packages/os/scripts/lib/workspace-edge-route-seed.ts",
-        "packages/os/scripts/server/route-policies.ts",
-        "packages/os/scripts/server/routes/secrets.ts",
-        "packages/os/tests/internal-launcher-regressions.test.ts",
-        "packages/os/tests/local-os-server-hono-architecture.test.ts",
-        "packages/os/tests/secrets-hono-routes.test.ts",
-        "packages/os/tests/secrets-surface.test.ts",
-        "packages/os/tests/workspace-edge-route-seed-contract.test.ts",
-        "packages/os/tests/workspace-gateway-node-end-to-end.test.ts"
-      ],
-      "tests": [
-        {
-          "name": "OS Secrets sealed credential contracts",
-          "command": [
-            "bun",
-            "--cwd",
-            "packages/os",
-            "test",
-            "tests/secrets-surface.test.ts",
-            "tests/secrets-hono-routes.test.ts",
-            "tests/node-sealed-credential-store.test.ts",
-            "tests/settings-site.test.ts",
-            "tests/internal-launcher-regressions.test.ts"
-          ]
-        },
-        {
-          "name": "OS Secrets signed gateway bridge",
-          "command": [
-            "bun",
-            "test",
-            "--cwd",
-            "packages/os",
-            "tests/local-os-server-hono-architecture.test.ts",
-            "tests/workspace-gateway-node-end-to-end.test.ts"
-          ]
-        },
-        {
-          "name": "OS Secrets edge route contracts",
-          "command": [
-            "env",
-            "CONSUELO_RUN_WORKSPACE_GATEWAY_CONTRACTS=1",
-            "bun",
-            "--cwd",
-            "packages/os",
-            "../../node_modules/vitest/vitest.mjs",
-            "run",
-            "tests/workspace-edge-route-seed-contract.test.ts",
-            "tests/workspace-edge-sites-gateway-integration.test.ts"
-          ]
-        },
-        {
-          "name": "OS Secrets syntax",
-          "command": [
-            "node",
-            "packages/os/scripts/check-syntax.js"
-          ]
-        }
-      ],
-      "critical": true,
-      "exclusive": true,
-      "reason": "Secrets UI, sealed-envelope storage, signed node routes, and Workspace Edge write routing must prove browser-to-node encryption and metadata-only behavior without selecting the historically red unrelated OS package suite.",
-      "origin": "explicit"
-    },
-    {
       "id": "os-internal-workspace-shell",
       "source": [
-        "packages/os/scripts/lib/artifacts.ts",
         "packages/os/scripts/lib/sites.ts",
         "packages/os/scripts/lib/settings-site.ts",
         "packages/os/scripts/lib/settings-snapshot.ts",
         "packages/os/scripts/lib/settings-materialization.ts",
         "packages/os/scripts/lib/workspace-chrome.ts",
         "packages/os/scripts/lib/observability-traces-site.ts",
-        "packages/os/tests/workspace-chrome.test.ts",
         "packages/os/tests/settings-site.test.ts",
-        "packages/os/tests/artifacts.test.ts",
         "packages/os/tests/launcher-nodes-materialization.test.ts",
         "packages/os/tests/observability-traces-site.test.ts",
         "packages/os/tests/sites-cli.test.ts",
         "packages/os/tests/launcher-local-customization.test.ts",
         "packages/os/tests/install-state.test.ts",
-        "packages/os/tests/local-agent-connectivity.test.ts",
-        "packages/os/tests/internal-launcher-regressions.test.ts"
+        "packages/os/tests/local-agent-connectivity.test.ts"
       ],
       "tests": [
         {
@@ -1995,16 +1815,13 @@
             "packages/os",
             "test",
             "--no-file-parallelism",
-            "tests/artifacts.test.ts",
             "tests/settings-site.test.ts",
             "tests/launcher-nodes-materialization.test.ts",
             "tests/observability-traces-site.test.ts",
-            "tests/workspace-chrome.test.ts",
             "tests/sites-cli.test.ts",
             "tests/launcher-local-customization.test.ts",
             "tests/install-state.test.ts",
-            "tests/local-agent-connectivity.test.ts",
-            "tests/internal-launcher-regressions.test.ts"
+            "tests/local-agent-connectivity.test.ts"
           ]
         },
         {
@@ -2018,34 +1835,6 @@
       "critical": true,
       "exclusive": true,
       "reason": "Internal workspace shell, Sites root, and trace/config chrome changes must prove the workspace root always converges on Home across daemon refreshes, the shared route switcher stays consistent, disabled agent surfaces remain re-enableable, and syntax stays valid. These tests share process.env and local MCP daemons, so files run serially to prevent cross-file agent-verification interference.",
-      "origin": "explicit"
-    },
-    {
-      "id": "os-test-source-safety",
-      "source": [
-        "packages/os/tests/distribution/release-channels-cli.test.ts",
-        "packages/os/tests/legacy-system-daemons.test.ts",
-        "packages/os/tests/test-source-safety.test.ts"
-      ],
-      "tests": [
-        {
-          "name": "OS test source safety contracts",
-          "command": [
-            "bun",
-            "--cwd",
-            "packages/os",
-            "test",
-            "tests/test-source-safety.test.ts",
-            "tests/code-call.test.ts",
-            "tests/legacy-system-daemons.test.ts",
-            "tests/lifecycle-restart-contract.test.ts",
-            "tests/distribution/release-channels-cli.test.ts"
-          ]
-        }
-      ],
-      "critical": true,
-      "exclusive": true,
-      "reason": "OS tests that exercise destructive-command guardrails, legacy daemon retirement, or release CLI safety must prove pure/static/dry-run behavior without selecting the entire OS package suite.",
       "origin": "explicit"
     },
     {
@@ -2079,8 +1868,7 @@
         "packages/os/scripts/lib/google-cloud-public-pricing-refresh.ts",
         "packages/os/scripts/lib/managed-cloud-public-pricing.ts",
         "packages/os/scripts/lib/nodes-site.ts",
-        "packages/os/tests/managed-cloud-public-pricing.test.ts",
-        "packages/os/cloudflare/os-device-authority/src/services/nodes.ts"
+        "packages/os/tests/managed-cloud-public-pricing.test.ts"
       ],
       "tests": [
         {
@@ -2219,62 +2007,57 @@
       "tests": [
         {
           "name": "OS native lifecycle node discovery contracts",
-          "cwd": "packages/os",
           "command": [
             "node",
-            "../../node_modules/vitest/vitest.mjs",
+            "node_modules/vitest/vitest.mjs",
             "run",
-            "tests/native-lifecycle-endpoint.test.ts",
+            "packages/os/tests/native-lifecycle-endpoint.test.ts",
             "--config",
-            "vitest.config.ts"
+            "packages/os/vitest.config.ts"
           ]
         },
         {
           "name": "OS node heartbeat script contracts",
-          "cwd": "packages/os",
           "command": [
             "node",
-            "../../node_modules/vitest/vitest.mjs",
+            "node_modules/vitest/vitest.mjs",
             "run",
-            "tests/workspace-node-heartbeat-script.test.ts",
+            "packages/os/tests/workspace-node-heartbeat-script.test.ts",
             "--config",
-            "vitest.config.ts"
+            "packages/os/vitest.config.ts"
           ]
         },
         {
           "name": "OS operator login contracts",
-          "cwd": "packages/os",
           "command": [
             "node",
-            "../../node_modules/vitest/vitest.mjs",
+            "node_modules/vitest/vitest.mjs",
             "run",
-            "tests/operator-login.test.ts",
+            "packages/os/tests/operator-login.test.ts",
             "--config",
-            "vitest.config.ts"
+            "packages/os/vitest.config.ts"
           ]
         },
         {
           "name": "OS node heartbeat client contracts",
-          "cwd": "packages/os",
           "command": [
             "node",
-            "../../node_modules/vitest/vitest.mjs",
+            "node_modules/vitest/vitest.mjs",
             "run",
-            "tests/workspace-node-heartbeat-client.test.ts",
+            "packages/os/tests/workspace-node-heartbeat-client.test.ts",
             "--config",
-            "vitest.config.ts"
+            "packages/os/vitest.config.ts"
           ]
         },
         {
           "name": "OS workspace node routing contracts",
-          "cwd": "packages/os",
           "command": [
             "node",
-            "../../node_modules/vitest/vitest.mjs",
+            "node_modules/vitest/vitest.mjs",
             "run",
-            "tests/workspace-node-registry-routing.test.ts",
+            "packages/os/tests/workspace-node-registry-routing.test.ts",
             "--config",
-            "vitest.config.ts"
+            "packages/os/vitest.config.ts"
           ]
         },
         {
@@ -2449,121 +2232,6 @@
       "critical": true,
       "exclusive": true,
       "reason": "Native OS distribution workflow and selector changes must run their exact cross-platform contracts without selecting unrelated full OS package tests.",
-      "origin": "explicit"
-    },
-    {
-      "id": "os-compact-explore-response",
-      "source": [
-        "packages/os/scripts/explore.js",
-        "packages/os/scripts/lib/search/explore-output.js",
-        "packages/os/tools/decision-engine/handler.ts",
-        "packages/os/tests/explore-output-contract.test.ts"
-      ],
-      "tests": [
-        {
-          "name": "OS compact explore response contracts",
-          "command": [
-            "bun",
-            "--cwd",
-            "packages/os",
-            "test",
-            "tests/explore-output-contract.test.ts"
-          ]
-        }
-      ],
-      "critical": true,
-      "exclusive": true,
-      "reason": "Compact explore response shaping and decision-engine integration must prove bounded summary/detail contracts without selecting the unrelated broad OS package suite.",
-      "origin": "explicit"
-    },
-    {
-      "id": "os-google-workspace",
-      "source": [
-        "packages/os/cloudflare/os-device-authority/src/routes/google-workspace.ts",
-        "packages/os/cloudflare/os-device-authority/src/services/grants.ts",
-        "packages/os/manifests/manifest.config.ts",
-        "packages/os/scripts/google.ts",
-        "packages/os/scripts/install.ts",
-        "packages/os/scripts/lib/google-workspace-auth.ts",
-        "packages/os/scripts/lib/install-state.ts",
-        "packages/os/scripts/lib/managed-gog.ts",
-        "packages/os/scripts/lib/workspace-device-authorization.ts",
-        "packages/os/scripts/lib/workspace-device-login-client.ts",
-        "packages/os/tests/google-skill.test.ts",
-        "packages/os/tests/google-tool.test.ts",
-        "packages/os/tests/google-workspace-auth.test.ts",
-        "packages/os/tests/managed-gog.test.ts",
-        "packages/os/tests/native-google-device-approval.test.ts",
-        "packages/os/tools/google/handler.ts",
-        "packages/os/tools/google/manifest.ts",
-        "packages/os/tools/google/schema.ts",
-        "packages/os/tools/google/service.ts"
-      ],
-      "tests": [
-        {
-          "name": "OS Google Workspace contracts",
-          "command": [
-            "bun",
-            "--cwd",
-            "packages/os",
-            "test",
-            "tests/managed-gog.test.ts",
-            "tests/google-tool.test.ts",
-            "tests/google-skill.test.ts",
-            "tests/google-workspace-auth.test.ts",
-            "tests/native-google-device-approval.test.ts",
-            "tests/os-device-authority-worker.test.ts",
-            "tests/install-state.test.ts",
-            "tests/tool-manifest.test.ts",
-            "tests/tool-package-layout.test.ts"
-          ]
-        }
-      ],
-      "critical": true,
-      "reason": "Google Workspace runtime, first-use OAuth, signed node bootstrap, tool policy, installer, and bundled-skill changes must prove the focused Google and shared OS contracts without selecting the historically noisy unrelated package-wide OS suite.",
-      "origin": "explicit"
-    },
-    {
-      "id": "os-github-source-control",
-      "source": [
-        "packages/os/cloudflare/os-device-authority/src/routes/github-source-control.ts",
-        "packages/os/cloudflare/os-device-authority/src/services/github-source-control.ts",
-        "packages/os/scripts/lib/github-source-control-client.ts",
-        "packages/os/scripts/lib/source-control-config.ts",
-        "packages/os/scripts/server/routes/settings.ts",
-        "packages/os/scripts/server/services/diffs-gateway.ts",
-        "packages/os/tests/diffs-hono-routes.test.ts",
-        "packages/os/tests/github-source-control-authority.test.ts",
-        "packages/os/tests/settings-hono-routes.test.ts",
-        "packages/os/tests/settings-sites-gateway-endpoints.test.ts",
-        "packages/os/cloudflare/os-device-authority/src/app.ts",
-        "packages/os/cloudflare/os-device-authority/src/stores.ts",
-        "packages/os/cloudflare/os-device-authority/src/types.ts",
-        "packages/os/cloudflare/os-device-authority/src/worker.ts",
-        "packages/os/scripts/lib/settings-site.ts",
-        "packages/os/tests/settings-site.test.ts"
-      ],
-      "tests": [
-        {
-          "name": "OS GitHub source-control contracts",
-          "command": [
-            "bun",
-            "--cwd",
-            "packages/os",
-            "test",
-            "tests/github-source-control-authority.test.ts",
-            "tests/source-control-config.test.ts",
-            "tests/settings-hono-routes.test.ts",
-            "tests/settings-site.test.ts",
-            "tests/diffs-hono-routes.test.ts",
-            "tests/settings-sites-gateway-endpoints.test.ts",
-            "tests/os-device-authority-worker.test.ts"
-          ]
-        }
-      ],
-      "critical": true,
-      "exclusive": true,
-      "reason": "GitHub App source-control onboarding, installation handoff, workspace repository materialization, and Diffs credential brokering must prove their focused security and UX contracts without selecting the historically red unrelated OS package suite.",
       "origin": "explicit"
     },
     {
@@ -2765,8 +2433,7 @@
         "packages/os/scripts/session-start.ts",
         "packages/os/scripts/lib/work-session.ts",
         "packages/os/scripts/lib/observability-traces-site.ts",
-        "packages/os/tests/observability-traces-site.test.ts",
-        "packages/os/tests/workflow-intent.test.ts"
+        "packages/os/tests/observability-traces-site.test.ts"
       ],
       "tests": [
         {
@@ -2784,8 +2451,7 @@
             "packages/workspace/tests/task-hooks.test.ts",
             "packages/workspace/tests/workflow-intent.test.ts",
             "packages/workspace/tests/session-start-compatibility.test.ts",
-            "packages/os/tests/observability-traces-site.test.ts",
-            "packages/os/tests/workflow-intent.test.ts"
+            "packages/os/tests/observability-traces-site.test.ts"
           ]
         }
       ],
@@ -2874,34 +2540,6 @@
       "origin": "explicit"
     },
     {
-      "id": "os-test-environment-isolation",
-      "source": [
-        "packages/os/vitest.config.ts",
-        "packages/os/tests/test-environment.ts",
-        "packages/os/tests/test-environment-contract.test.ts"
-      ],
-      "tests": [
-        {
-          "name": "OS test-environment isolation contracts",
-          "command": [
-            "bun",
-            "x",
-            "vitest",
-            "run",
-            "--root",
-            "packages/os",
-            "--config",
-            "vitest.config.ts",
-            "tests/test-environment-contract.test.ts"
-          ]
-        }
-      ],
-      "critical": true,
-      "exclusive": true,
-      "reason": "OS test-runner configuration must redirect inherited operator trace persistence to a test-owned database without selecting the unrelated package-wide OS baseline.",
-      "origin": "explicit"
-    },
-    {
       "id": "os-work-session-fs",
       "source": [
         "packages/os/TOOLS.md",
@@ -2914,21 +2552,15 @@
         "packages/os/scripts/lib/facade/schemas.ts",
         "packages/os/scripts/lib/facade/types.ts",
         "packages/os/scripts/lib/fs/mutation-path.ts",
-        "packages/os/scripts/lib/fs/search.ts",
         "packages/os/scripts/lib/work-session-fs.ts",
         "packages/os/src/generated/workspace.d.ts",
-        "packages/os/tests/fs-list-portability.test.ts",
-        "packages/os/tests/fs-search.test.ts",
         "packages/os/tests/session-start-foundation.test.ts",
         "packages/os/tests/fixtures/tool-package-baseline.json",
         "packages/os/tests/tool-manifest.test.ts",
         "packages/os/tests/work-session-fs.test.ts",
-        "packages/os/tools/task-lifecycle/handler.ts",
         "packages/os/tools/filesystem/schema.ts",
         "packages/os/workflows/generated/workflow-bundles.json",
-        "packages/os/scripts/lib/work-session-protection.ts",
-        "packages/os/tests/facade/facade.test.ts",
-        "packages/workspace/scripts/lib/fs/search.ts"
+        "packages/os/scripts/lib/work-session-protection.ts"
       ],
       "tests": [
         {
@@ -2939,8 +2571,6 @@
             "vitest",
             "run",
             "packages/os/tests/work-session-fs.test.ts",
-            "packages/os/tests/fs-list-portability.test.ts",
-            "packages/os/tests/fs-search.test.ts",
             "packages/os/tests/fs-write.test.ts",
             "packages/os/tests/session-start-foundation.test.ts",
             "packages/os/tests/tool-manifest.test.ts"
@@ -2955,7 +2585,7 @@
             "run",
             "packages/os/tests/facade/facade.test.ts",
             "-t",
-            "fs\\.(apply_patch|write|read)"
+            "fs\\.(apply_patch|write)"
           ]
         },
         {
@@ -3008,54 +2638,6 @@
       "critical": true,
       "exclusive": true,
       "reason": "Work-session Code Call and MCP routing must prove bounded execution, protected Consuelo state, session-authority validation, public schema limits, and generated error-code parity without selecting unrelated package-wide OS tests.",
-      "origin": "explicit"
-    },
-    {
-      "id": "os-script-parity-audit",
-      "source": [
-        "packages/os/tests/audit/script-parity-audit.test.ts",
-        "packages/os/tests/audit/fixtures/script-parity-classifications.json"
-      ],
-      "tests": [
-        {
-          "name": "OS script parity audit contracts",
-          "command": [
-            "bun",
-            "x",
-            "vitest",
-            "run",
-            "packages/os/tests/audit/script-parity-audit.test.ts"
-          ]
-        }
-      ],
-      "critical": true,
-      "exclusive": true,
-      "reason": "OS/workspace script inventory and classification changes must prove the focused parity audit without selecting the unrelated whole-OS package suite.",
-      "origin": "explicit"
-    },
-    {
-      "id": "os-media-contracts",
-      "source": [
-        "packages/os/tools/media/schema.ts",
-        "packages/os/tests/media/20-audio-transcribe.test.ts",
-        "packages/os/tests/media/31-svg-convert.test.ts"
-      ],
-      "tests": [
-        {
-          "name": "OS media contracts",
-          "command": [
-            "bun",
-            "--cwd",
-            "packages/os",
-            "test",
-            "tests/media/20-audio-transcribe.test.ts",
-            "tests/media/31-svg-convert.test.ts"
-          ]
-        }
-      ],
-      "critical": true,
-      "exclusive": true,
-      "reason": "Media schema, transcription, and SVG conversion changes must run the package-native focused media contracts without selecting the unrelated whole-OS package suite.",
       "origin": "explicit"
     },
     {
@@ -4520,16 +4102,6 @@
       "kind": "test"
     },
     {
-      "path": "packages/os/tests/artifacts-edge-routing.test.ts",
-      "group": "packages/os/tests",
-      "kind": "test"
-    },
-    {
-      "path": "packages/os/tests/artifacts-facade-runtime.test.ts",
-      "group": "packages/os/tests",
-      "kind": "test"
-    },
-    {
       "path": "packages/os/tests/artifacts-hono-routes.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -4557,11 +4129,6 @@
     {
       "path": "packages/os/tests/audit/script-parity-audit.test.ts",
       "group": "packages/os/tests/audit",
-      "kind": "test"
-    },
-    {
-      "path": "packages/os/tests/bootstrap-recovery-cli.test.ts",
-      "group": "packages/os/tests",
       "kind": "test"
     },
     {
@@ -4875,51 +4442,6 @@
       "kind": "test"
     },
     {
-      "path": "packages/os/tests/explore-bench.test.ts",
-      "group": "packages/os/tests",
-      "kind": "test"
-    },
-    {
-      "path": "packages/os/tests/explore-hypothesis-model.test.ts",
-      "group": "packages/os/tests",
-      "kind": "test"
-    },
-    {
-      "path": "packages/os/tests/explore-index-hydration-fallback.test.ts",
-      "group": "packages/os/tests",
-      "kind": "test"
-    },
-    {
-      "path": "packages/os/tests/explore-output-contract.test.ts",
-      "group": "packages/os/tests",
-      "kind": "test"
-    },
-    {
-      "path": "packages/os/tests/explore-promotion-gate.test.ts",
-      "group": "packages/os/tests",
-      "kind": "test"
-    },
-    {
-      "path": "packages/os/tests/explore-retrieval-policy.test.ts",
-      "group": "packages/os/tests",
-      "kind": "test"
-    },
-    {
-      "path": "packages/os/tests/explore-retriever-fallback.test.ts",
-      "group": "packages/os/tests",
-      "kind": "test"
-    },
-    {
-      "path": "packages/os/tests/explore-runtime-routing.test.ts",
-      "group": "packages/os/tests",
-      "kind": "test"
-    },
-    {
-      "path": "packages/os/tests/explore-voi-policy.test.ts",
-      "group": "packages/os/tests",
-      "kind": "test"
-    },
-    {
       "path": "packages/os/tests/facade/facade.test.ts",
       "group": "packages/os/tests/facade",
       "kind": "test"
@@ -4946,11 +4468,6 @@
     },
     {
       "path": "packages/os/tests/foundation-finish-line-regressions.test.ts",
-      "group": "packages/os/tests",
-      "kind": "test"
-    },
-    {
-      "path": "packages/os/tests/fs-list-portability.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -4995,42 +4512,12 @@
       "kind": "test"
     },
     {
-      "path": "packages/os/tests/github-cli-resolution.test.ts",
-      "group": "packages/os/tests",
-      "kind": "test"
-    },
-    {
       "path": "packages/os/tests/github-pr-reviews.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
     {
-      "path": "packages/os/tests/github-source-control-authority.test.ts",
-      "group": "packages/os/tests",
-      "kind": "test"
-    },
-    {
       "path": "packages/os/tests/github.test.ts",
-      "group": "packages/os/tests",
-      "kind": "test"
-    },
-    {
-      "path": "packages/os/tests/google-cli.test.ts",
-      "group": "packages/os/tests",
-      "kind": "test"
-    },
-    {
-      "path": "packages/os/tests/google-skill.test.ts",
-      "group": "packages/os/tests",
-      "kind": "test"
-    },
-    {
-      "path": "packages/os/tests/google-tool.test.ts",
-      "group": "packages/os/tests",
-      "kind": "test"
-    },
-    {
-      "path": "packages/os/tests/google-workspace-auth.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -5041,11 +4528,6 @@
     },
     {
       "path": "packages/os/tests/hosted-release-worker-contract.test.ts",
-      "group": "packages/os/tests",
-      "kind": "test"
-    },
-    {
-      "path": "packages/os/tests/index-path-exclusions.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -5135,17 +4617,7 @@
       "kind": "test"
     },
     {
-      "path": "packages/os/tests/internal-dashboard-astro-source.test.ts",
-      "group": "packages/os/tests",
-      "kind": "test"
-    },
-    {
       "path": "packages/os/tests/internal-dashboard-integration.test.ts",
-      "group": "packages/os/tests",
-      "kind": "test"
-    },
-    {
-      "path": "packages/os/tests/internal-launcher-regressions.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -5181,16 +4653,6 @@
     },
     {
       "path": "packages/os/tests/legacy-system-daemons.test.ts",
-      "group": "packages/os/tests",
-      "kind": "test"
-    },
-    {
-      "path": "packages/os/tests/lifecycle-command.test.ts",
-      "group": "packages/os/tests",
-      "kind": "test"
-    },
-    {
-      "path": "packages/os/tests/lifecycle-connector-readiness.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -5346,11 +4808,6 @@
     },
     {
       "path": "packages/os/tests/managed-components.test.ts",
-      "group": "packages/os/tests",
-      "kind": "test"
-    },
-    {
-      "path": "packages/os/tests/managed-gog.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -5755,36 +5212,6 @@
       "kind": "test"
     },
     {
-      "path": "packages/os/tests/release-local-platform-bundle.test.ts",
-      "group": "packages/os/tests",
-      "kind": "test"
-    },
-    {
-      "path": "packages/os/tests/release-orchestrator.test.ts",
-      "group": "packages/os/tests",
-      "kind": "test"
-    },
-    {
-      "path": "packages/os/tests/release-promotion-dispatch-lock.test.ts",
-      "group": "packages/os/tests",
-      "kind": "test"
-    },
-    {
-      "path": "packages/os/tests/release-script-promotion-correlation.test.ts",
-      "group": "packages/os/tests",
-      "kind": "test"
-    },
-    {
-      "path": "packages/os/tests/release-script-security.test.ts",
-      "group": "packages/os/tests",
-      "kind": "test"
-    },
-    {
-      "path": "packages/os/tests/release-tool-surface.test.ts",
-      "group": "packages/os/tests",
-      "kind": "test"
-    },
-    {
       "path": "packages/os/tests/repo-default-config.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -5835,17 +5262,7 @@
       "kind": "test"
     },
     {
-      "path": "packages/os/tests/semantic-embedding-edge-gateway.test.ts",
-      "group": "packages/os/tests",
-      "kind": "test"
-    },
-    {
       "path": "packages/os/tests/semantic-embedding-gateway.test.ts",
-      "group": "packages/os/tests",
-      "kind": "test"
-    },
-    {
-      "path": "packages/os/tests/semantic-embedding-identity.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -6015,11 +5432,6 @@
       "kind": "test"
     },
     {
-      "path": "packages/os/tests/task-recovery-archive-retention.test.ts",
-      "group": "packages/os/tests",
-      "kind": "test"
-    },
-    {
       "path": "packages/os/tests/task-selection.test.js",
       "group": "packages/os/tests",
       "kind": "test"
@@ -6036,21 +5448,6 @@
     },
     {
       "path": "packages/os/tests/task-worktree-gc-scheduler.test.ts",
-      "group": "packages/os/tests",
-      "kind": "test"
-    },
-    {
-      "path": "packages/os/tests/test-environment-contract.test.ts",
-      "group": "packages/os/tests",
-      "kind": "test"
-    },
-    {
-      "path": "packages/os/tests/test-environment.ts",
-      "group": "packages/os/tests",
-      "kind": "tests-dir"
-    },
-    {
-      "path": "packages/os/tests/test-source-safety.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -6081,11 +5478,6 @@
     },
     {
       "path": "packages/os/tests/tools-search-v3.test.ts",
-      "group": "packages/os/tests",
-      "kind": "test"
-    },
-    {
-      "path": "packages/os/tests/trace-gateway-home-cache.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -6190,6 +5582,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/visible-dialer-steering.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/windows-bootstrap-source.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -6221,11 +5618,6 @@
     },
     {
       "path": "packages/os/tests/workflow-intent.test.ts",
-      "group": "packages/os/tests",
-      "kind": "test"
-    },
-    {
-      "path": "packages/os/tests/workspace-chrome.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -6311,11 +5703,6 @@
     },
     {
       "path": "packages/os/tests/workspace-project-cwd.test.ts",
-      "group": "packages/os/tests",
-      "kind": "test"
-    },
-    {
-      "path": "packages/os/tests/workspace-route-heartbeat-write-budget.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -16735,11 +16122,6 @@
       "kind": "test"
     },
     {
-      "path": "packages/workspace/tests/explore-bench.test.js",
-      "group": "packages/workspace/tests",
-      "kind": "test"
-    },
-    {
       "path": "packages/workspace/tests/explore-ranker.test.js",
       "group": "packages/workspace/tests",
       "kind": "test"
@@ -16781,11 +16163,6 @@
     },
     {
       "path": "packages/workspace/tests/github.test.ts",
-      "group": "packages/workspace/tests",
-      "kind": "test"
-    },
-    {
-      "path": "packages/workspace/tests/index-path-exclusions.test.js",
       "group": "packages/workspace/tests",
       "kind": "test"
     },
@@ -17031,6 +16408,7 @@
     "packages/workspace/scripts/lib/stream-instructions.test.ts",
     "packages/workspace/tests/api-breaking-workflow-build-toolchain.test.ts",
     "packages/workspace/tests/browser-review-contract.test.ts",
+    "packages/workspace/tests/browser-service.test.ts",
     "packages/workspace/tests/chunker.test.js",
     "packages/workspace/tests/code-call-parity.test.ts",
     "packages/workspace/tests/code-call-service-architecture.test.ts",
@@ -17052,7 +16430,6 @@
     "packages/workspace/tests/git-diff.test.ts",
     "packages/workspace/tests/github-pr-reviews.test.ts",
     "packages/workspace/tests/github.test.ts",
-    "packages/workspace/tests/index-path-exclusions.test.js",
     "packages/workspace/tests/pr-links.test.js",
     "packages/workspace/tests/pr-ref.test.js",
     "packages/workspace/tests/pr-review.test.js",
@@ -17062,8 +16439,6 @@
     "packages/workspace/tests/review-run-state.test.js",
     "packages/workspace/tests/session-start-compatibility.test.ts",
     "packages/workspace/tests/stream-lifecycle.test.ts",
-    "packages/workspace/tests/stream-sync-generated-registry-conflict.test.js",
-    "packages/workspace/tests/stream-sync-node-modules.test.js",
     "packages/workspace/tests/stream-workpads.test.js",
     "packages/workspace/tests/task-hook-dispatcher.test.ts",
     "packages/workspace/tests/task-hook-workflow-contract.test.ts",

@@ -36,8 +36,52 @@ no-test waiver: merge-reconciliation task. No new product behavior is being intr
 
 ## files changed
 
+- `packages/dialer-server/src/commercial-target-authorization.test.ts`
+- `packages/dialer-server/src/commercial-target-authorization.ts`
+- `packages/dialer-server/src/database/migrations.test.ts`
+- `packages/dialer-server/src/database/migrations.ts`
+- `packages/dialer-server/src/lab/local-dialer-lab.integration.test.ts`
+- `packages/dialer-server/src/learning/predictive-decision-log.test.ts`
+- `packages/dialer-server/src/learning/predictive-decision-log.ts`
+- `packages/dialer-server/src/runtime/railway.test.ts`
+- `packages/dialer/src/services/call-timing-model.service.ts`
+- `packages/dialer/src/services/call-timing-model.spec.ts`
+- `packages/dialer/src/services/predictive-selection-model.ts`
+- `packages/dialer/src/services/predictive-selection-science.spec.ts`
+- `packages/os/scripts/install-system-daemons.sh`
+- `packages/os/scripts/lib/code-call/location.ts`
+- `packages/os/scripts/lib/code-call/process.ts`
+- `packages/os/scripts/lib/stream-memory.ts`
+- `packages/os/scripts/lib/subagent/lifecycle.ts`
+- `packages/os/scripts/lib/subagent/process-termination.ts`
+- `packages/os/scripts/lib/subagent/runner.ts`
+- `packages/os/scripts/lib/subagent/runtime.ts`
+- `packages/os/scripts/lib/trace-cost-estimator.ts`
+- `packages/os/scripts/lib/trace-database-schema.ts`
+- `packages/os/scripts/lib/trace-session-identity.ts`
+- `packages/os/scripts/lib/trace-sites-local-read-backend.ts`
+- `packages/os/tests/artifacts-skill.test.ts`
+- `packages/os/tests/audit/fixtures/script-parity-classifications.json`
+- `packages/os/tests/doctor-redaction.test.ts`
+- `packages/os/tests/fixtures/skills/task-os-replacements.json`
+- `packages/os/tests/installer-local-agent-connectivity.test.ts`
+- `packages/os/tests/installer-runtime-dependencies.test.ts`
+- `packages/os/tests/lifecycle-help.test.ts`
+- `packages/os/tests/media/31-svg-convert.test.ts`
+- `packages/os/tests/memory.test.ts`
+- `packages/os/tests/os-replica-correctness.test.ts`
+- `packages/os/tests/stream-context-memory.test.ts`
+- `packages/os/tests/subagent-executable-discovery.test.ts`
+- `packages/os/tests/subagent-lifecycle-regressions.test.ts`
+- `packages/os/tests/subagent-orchestration-contract.test.ts`
+- `packages/os/tests/system-daemon-reliability.test.ts`
 - `packages/os/tests/trace-persistence.test.ts`
-
+- `packages/os/tests/trace-sites-gateway-live-endpoints.test.ts`
+- `packages/os/tests/workspace-edge-route-seed-contract.test.ts`
+- `packages/os/tests/workspace-route-heartbeat-write-budget.test.ts`
+- `packages/workspace/test-selection.registry.json`
+- `packages/workspace/test-selection.rules.json`
+- `packages/workspace/tests/test-selection.test.js`
 
 ## key decisions
 
@@ -82,6 +126,18 @@ no-test waiver: merge-reconciliation task. No new product behavior is being intr
 
 ## workspace-owned: files changed
 
+- `packages/dialer-server/src/commercial-target-authorization.test.ts`
+- `packages/dialer-server/src/commercial-target-authorization.ts`
+- `packages/dialer-server/src/database/migrations.test.ts`
+- `packages/dialer-server/src/database/migrations.ts`
+- `packages/dialer-server/src/lab/local-dialer-lab.integration.test.ts`
+- `packages/dialer-server/src/learning/predictive-decision-log.test.ts`
+- `packages/dialer-server/src/learning/predictive-decision-log.ts`
+- `packages/dialer-server/src/runtime/railway.test.ts`
+- `packages/dialer/src/services/call-timing-model.service.ts`
+- `packages/dialer/src/services/call-timing-model.spec.ts`
+- `packages/dialer/src/services/predictive-selection-model.ts`
+- `packages/dialer/src/services/predictive-selection-science.spec.ts`
 - `packages/os/scripts/install-system-daemons.sh`
 - `packages/os/scripts/lib/code-call/location.ts`
 - `packages/os/scripts/lib/code-call/process.ts`
@@ -109,6 +165,7 @@ no-test waiver: merge-reconciliation task. No new product behavior is being intr
 - `packages/os/tests/subagent-lifecycle-regressions.test.ts`
 - `packages/os/tests/subagent-orchestration-contract.test.ts`
 - `packages/os/tests/system-daemon-reliability.test.ts`
+- `packages/os/tests/trace-persistence.test.ts`
 - `packages/os/tests/trace-sites-gateway-live-endpoints.test.ts`
 - `packages/os/tests/workspace-edge-route-seed-contract.test.ts`
 - `packages/os/tests/workspace-route-heartbeat-write-budget.test.ts`
@@ -139,12 +196,46 @@ no-test waiver: merge-reconciliation task. No new product behavior is being intr
 - 2026-09-08 14:37:09 fs.write: `.task/dialer-algorithm/reconcile-current-main-for-dialer-release/workpad.md`
 - 2026-09-08 14:38:26 fs.write: `.task/dialer-algorithm/reconcile-current-main-for-dialer-release/workpad.md`
 - 2026-09-08 14:47:02 fs.write: `.task/dialer-algorithm/reconcile-current-main-for-dialer-release/workpad.md`
+- 2026-09-10 00:39:45 fs.write: `.task/dialer-algorithm/reconcile-current-main-for-dialer-release/workpad.md`
+- 2026-09-10 00:56:46 fs.write: `.task/dialer-algorithm/reconcile-current-main-for-dialer-release/workpad.md`
+- 2026-09-10 01:03:49 fs.write: `.task/dialer-algorithm/reconcile-current-main-for-dialer-release/workpad.md`
+- 2026-09-10 01:05:23 fs.write: `.task/dialer-algorithm/reconcile-current-main-for-dialer-release/workpad.md`
+- 2026-09-10 01:22:50 fs.write: `.task/dialer-algorithm/reconcile-current-main-for-dialer-release/workpad.md`
+- 2026-09-10 01:28:09 fs.write: `.task/dialer-algorithm/reconcile-current-main-for-dialer-release/workpad.md`
+- 2026-09-10 01:40:45 fs.write: `.task/dialer-algorithm/reconcile-current-main-for-dialer-release/workpad.md`
 
 ## workspace-owned: files read
 
 - `packages/dialer-server/README.md`
 - `packages/dialer-server/package.json`
+- `packages/dialer-server/scripts/local-dialer-lab.ts`
+- `packages/dialer-server/src/commercial-target-authorization.test.ts`
+- `packages/dialer-server/src/commercial-target-authorization.ts`
+- `packages/dialer-server/src/database/migrations.test.ts`
+- `packages/dialer-server/src/database/migrations.ts`
+- `packages/dialer-server/src/lab/local-dialer-lab.integration.test.ts`
+- `packages/dialer-server/src/lab/local-dialer-lab.ts`
+- `packages/dialer-server/src/learning/contextual-shadow-evaluation.test.ts`
+- `packages/dialer-server/src/learning/contextual-shadow-evaluation.ts`
+- `packages/dialer-server/src/learning/predictive-decision-log.test.ts`
+- `packages/dialer-server/src/learning/predictive-decision-log.ts`
+- `packages/dialer-server/src/learning/response-time-shadow-evaluation.ts`
+- `packages/dialer-server/src/runtime/lead-connector-learning.ts`
+- `packages/dialer-server/src/runtime/predictive-target-ranking.ts`
+- `packages/dialer-server/src/runtime/railway.test.ts`
+- `packages/dialer/MODEL.md`
 - `packages/dialer/package.json`
+- `packages/dialer/src/domain/learning-observation.spec.ts`
+- `packages/dialer/src/domain/learning-observation.ts`
+- `packages/dialer/src/services/call-timing-model.service.ts`
+- `packages/dialer/src/services/call-timing-model.spec.ts`
+- `packages/dialer/src/services/predictive-priority.service.ts`
+- `packages/dialer/src/services/predictive-selection-model.contract.spec.ts`
+- `packages/dialer/src/services/predictive-selection-model.ts`
+- `packages/dialer/src/services/predictive-selection-science.spec.ts`
+- `packages/dialer/src/services/stopping-model.spec.ts`
+- `packages/dialer/src/services/stopping-model.ts`
+- `packages/dialer/src/types.ts`
 - `packages/lead-connector/package.json`
 - `packages/os/package.json`
 - `packages/os/scripts/install-system-daemons.sh`
@@ -158,6 +249,8 @@ no-test waiver: merge-reconciliation task. No new product behavior is being intr
 - `packages/os/scripts/lib/trace-cost-estimator.ts`
 - `packages/os/scripts/lib/trace-database-schema.ts`
 - `packages/os/scripts/lib/trace-session-identity.ts`
+- `packages/os/scripts/lib/trace-sites-local-read-backend.ts`
+- `packages/os/scripts/server/routes/traces.ts`
 - `packages/os/skills/artifacts/SKILL.md`
 - `packages/os/skills/skills.json`
 - `packages/os/skills/task/SKILL.md`
@@ -179,10 +272,14 @@ no-test waiver: merge-reconciliation task. No new product behavior is being intr
 - `packages/os/tests/test-source-safety.test.ts`
 - `packages/os/tests/trace-persistence.test.ts`
 - `packages/os/tests/trace-sites-gateway-live-endpoints.test.ts`
+- `packages/os/tests/trace-sites-gateway-read-layer.test.ts`
+- `packages/os/tests/workspace-route-heartbeat-write-budget.test.ts`
 - `packages/os/tools/subagent/schema.ts`
 - `packages/workspace/scripts/task-push.js`
 - `packages/workspace/scripts/test-selection.js`
+- `packages/workspace/scripts/verify.js`
 - `packages/workspace/senior-engineer.md`
+- `packages/workspace/test-selection.registry.json`
 - `packages/workspace/test-selection.rules.json`
 - `packages/workspace/tests/facade/facade.test.ts`
 - `packages/workspace/tests/github-workflow-policy.test.js`
@@ -263,29 +360,6 @@ no-test waiver: merge-reconciliation task. No new product behavior is being intr
 
 ## workspace-owned: validation evidence
 
-Wake check: unchanged at 1 failed / 5 pending. Pending jobs are Sites Gateway + Cloudflare, OS contracts, workspace contracts, native windows, and danger-js. Verify remains the sole failure with transient HTTP 500 annotation.
-Wait reason: those five jobs are still actively running; no code decision can be made until they settle.
-Duration: 60s.
-Resume action: immediately re-read PR #2404 checks and exact pending/failed set.
-Expected signal: the five jobs finish with no new failures, allowing a targeted verify rerun.
-Fallback: inspect any additional failure before rerunning verify.
-- 2026-09-08 14:34:53 append: `.task/dialer-algorithm/reconcile-current-main-for-dialer-release/workpad.md`
-Wake check: four of the five pending jobs completed without failure. Only `Consuelo / workspace contracts` remains in progress; `Consuelo / verify` remains the sole failure with transient HTTP 500.
-Wait reason: final workspace-contract gate is still running.
-Duration: 30s.
-Resume action: immediately re-read PR #2404 pending/failed checks.
-Expected signal: workspace contracts complete green, leaving only transient verify failure.
-Fallback: if workspace contracts fail, inspect that failure before any verify rerun.
-- 2026-09-08 14:36:11 append: `.task/dialer-algorithm/reconcile-current-main-for-dialer-release/workpad.md`
-Workspace-contract job inspection: job 102103427757 is actively executing step `Run workspace contract gate`, started 2026-09-08T14:35:37Z; it is not queued/stuck.
-Wait reason: the sole remaining real contract step is actively running.
-Duration: 60s.
-Resume action: immediately re-read PR #2404 pending/failed checks.
-Expected signal: workspace contracts complete green, leaving only transient verify HTTP 500 for targeted rerun.
-Fallback: if workspace contracts fail, inspect annotations/log evidence before any promotion.
-- 2026-09-08 14:37:09 append: `.task/dialer-algorithm/reconcile-current-main-for-dialer-release/workpad.md`
-Wake check: workspace contracts remain actively in progress; no additional failures. Verify remains the only failure and its annotation is transient HTTP 500.
-Wait reason: final real contract gate has not completed yet.
 Duration: 60s.
 Resume action: immediately re-read PR #2404 pending/failed set.
 Expected signal: workspace contracts green; then targeted rerun of verify only.
@@ -293,9 +367,7 @@ Fallback: inspect workspace-contract failure if one appears.
 - 2026-09-08 14:38:26 append: `.task/dialer-algorithm/reconcile-current-main-for-dialer-release/workpad.md`
 - 2026-09-08 14:44:02 apply-patch: `packages/os/tests/trace-persistence.test.ts`
 - 2026-09-08 14:46:40 `review.run`: passed — OK
-
 ### Workspace-contract timing repair — 2026-09-08
-
 - Authoritative GitHub workspace-contract job 102103427757 completed `failure`. Its annotations were generic exit-code/cache warnings, so the exact CI selector was reproduced locally.
 - CI selector for the task PR is 21 committed-only suites against `origin/stream/dialer-algorithm`.
 - Canonical OS test-source safety scan passed across all default OS test sources; the four selected workspace test sources were inspected in full before reproduction.
@@ -306,5 +378,109 @@ Fallback: inspect workspace-contract failure if one appears.
 - Exact post-fix CI selector: 21/21 suites green, including full `@consuelo/os` package fallback; trace `trc_fdadff5e5134`.
 - `review.run` against the stream reported one blocker in `packages/os/scripts/lib/managed-gog.ts`, but explicit working-tree diff proves that file is a separate 220-line unpushed current-main addition. The repair publish set is only `packages/os/tests/trace-persistence.test.ts`; `managed-gog.ts` remains untouched/unpublished by this task repair.
 - Next: publish only the trace-persistence test fix, then require fresh GitHub CI/review on the task head.
-
 - 2026-09-08 14:47:02 append: `.task/dialer-algorithm/reconcile-current-main-for-dialer-release/workpad.md`
+- 2026-09-10 01:06:30 `review.run`: passed — OK
+- 2026-09-10 01:06:33 `review.run`: passed — OK
+- 2026-09-10 01:07:03 `review.run`: passed — OK
+- 2026-09-10 01:09:11 `verify`: failed — COMMAND_FAILED
+- 2026-09-10 01:23:17 `review.run`: passed — OK
+- 2026-09-10 01:25:23 `verify`: failed — COMMAND_FAILED
+- 2026-09-10 01:41:21 `review.run`: passed — OK
+- 2026-09-10 01:43:41 `verify`: failed — COMMAND_FAILED
+- 2026-09-10 01:46:12 `verify`: failed — COMMAND_FAILED
+- 2026-09-10 01:47:38 `verify`: failed — COMMAND_FAILED
+- 2026-09-10 01:49:50 `verify`: failed — COMMAND_FAILED
+
+## cleanup continuation — 2026-09-09
+
+Scope override from ko: finish engineering-guidance + Dialer algorithm integration only. Keep new inbound-router product development out. Do not place carrier calls, purchase numbers, reset infrastructure, or perform production deployment. A main merge may trigger ordinary CI, but this task will not invoke the production release workflow.
+
+### acceptance additions
+- [ ] Re-read durable CI failures before any retry; do not weaken gates.
+- [ ] Adjudicate #2014 findings against the current combined tree: authorization boundary, observation timestamp/schema invariants, missing-evidence ranking, deterministic timing ties, decision-log persistence, and OS/workspace integration.
+- [ ] Preserve canonical censoring, attempt ordinals, economic stopping, provider-neutral ownership, D3 authoritative production selection, and D4 shadow-only behavior.
+- [ ] Fix only demonstrated defects with focused behavioral tests.
+- [ ] Use real isolated PostgreSQL/Redis proof without provider traffic.
+- [ ] Classify stale sibling PRs by unique diff/ancestry before closing or merging.
+
+### Test-first contract — cleanup findings
+behavior under test: each demonstrated algorithm/integration defect gets a focused regression proving the review claim before production implementation is changed.
+existing local pattern: colocated Vitest/Bun unit and contract tests in `packages/dialer` and `packages/dialer-server`; DB invariants are exercised in migration/contract tests; shared OS regressions use focused package tests.
+new or changed tests: only where the current branch still reproduces the review claim; findings already fixed or superseded will be documented instead of reimplemented.
+focused red command: run the smallest existing/new spec for each reproduced finding before its fix; exact commands and failures are recorded below as they are reproduced.
+expected red failure: the test must fail for the reviewed behavior, not for unrelated baseline drift.
+no-test waiver: none for demonstrated product defects. Superseded/stale findings require ancestry/current-code evidence instead of artificial tests.
+
+- 2026-09-10 00:39:45 append: `.task/dialer-algorithm/reconcile-current-main-for-dialer-release/workpad.md`
+
+## cleanup defect evidence — 2026-09-09
+
+### reproduced RED
+- commercial authorization: queue request retained forged singular `targetPhone`; focused authorization test failed on leaked `+18888888888`.
+- canonical learning schema: migration contract lacked outcome/timestamp coherence and SQL-NULL-safe decision-context schema enforcement.
+- D4 decision finalization: `rowCount = 0` resolved successfully instead of surfacing a workspace/decision mismatch.
+- timing evidence: statistically identical bins inherited input/database order; focused tie test failed deterministic calendar ordering.
+- missing hazard evidence: a candidate with no hazard estimate was assigned an optimistic upper placeholder and outranked supported evidence; this contradicted `MODEL.md`'s stated FIFO behavior when canonical response evidence is absent.
+- Railway ordering contract: hardened source-order assertion exposed its old end marker was absent; previous `indexOf` comparison could pass with `-1` and did not actually prove the intended order.
+
+### fixes
+- strip untrusted `targetPhone`, `targetPhones`, and `targetContexts` before server reconstruction.
+- append migration `20260815_005_learning_observation_integrity` with `NOT VALID` constraints so historical rows are not rewritten while new writes enforce response/observation timestamps and schema-version equality with `IS TRUE` semantics.
+- fail decision finalization on a zero-row workspace-scoped update.
+- break exact timing-evidence ties deterministically by day-of-week then hour.
+- continue applying economic stopping first; if any surviving ranked candidate lacks comparable hazard evidence, preserve FIFO for the decision set instead of inventing another probability heuristic.
+- update the Railway ordering test to a current, asserted source boundary; current runtime already finalizes only after provider initiation.
+
+### focused GREEN
+- `bun test packages/dialer-server/src/commercial-target-authorization.test.ts packages/dialer-server/src/database/migrations.test.ts packages/dialer-server/src/learning/predictive-decision-log.test.ts packages/dialer-server/src/runtime/railway.test.ts` => 20 pass / 0 fail / 85 expectations.
+- `bun test packages/dialer/src/services/call-timing-model.spec.ts packages/dialer/src/services/predictive-selection-science.spec.ts packages/dialer/src/services/predictive-selection-model.contract.spec.ts packages/dialer/src/services/stopping-model.spec.ts` => 14 pass / 0 fail / 33 expectations.
+- Existing confidence-aware exploration, censoring boundary, no arbitrary stale penalty, and upper-bound economic stopping remained green.
+
+- 2026-09-10 00:56:46 append: `.task/dialer-algorithm/reconcile-current-main-for-dialer-release/workpad.md`
+
+### #2404 OS/workspace integration findings — reproduced and closed
+
+- RED aggregate accounting: a trace row with zero persisted token counters but valid input/output payload produced estimator cost for 45 inferred tokens while aggregate totals still reported `inputTokens=0`, `outputTokens=0`, `tokens=0`.
+- FIX: aggregate buckets now reuse the existing estimator's inferred input/output allocation for both displayed token totals and cost, avoiding a second heuristic or contradictory accounting path.
+- GREEN: full Bun live-endpoint suite 19/19; focused inferred-token accounting regression green.
+- RED Node SQLite coverage: a change to `trace-database-schema.ts` selected only `trace-site-pagination`; no Node-runtime proof exercised the `node:sqlite` adapter.
+- FIX: restore an explicit critical/exclusive `os-trace-sqlite-runtime` rule. Under the current Vitest config the historical root-level command fails setup path resolution, so the rule uses the supported `cwd: packages/os` contract and runs Vitest under Node from that package root.
+- GREEN: generated selector check with `--run` selected both Trace Site contracts and Node SQLite coverage; all four selected suites passed. Direct Node execution passed 19/19 and emitted Node's expected experimental SQLite warning, proving the Node adapter path actually executed.
+- Historical #2404 findings now superseded by current-main sync: missing subagent helper modules, missing `providerOutcomeForClose`, aggregate route wiring, and ignored single-worker smoke flag. They are not reimplemented.
+
+- 2026-09-10 01:03:49 append: `.task/dialer-algorithm/reconcile-current-main-for-dialer-release/workpad.md`
+
+### broad validation — 2026-09-09 cleanup
+
+- `bun test packages/dialer/src` => 223 pass / 0 fail / 500 expectations.
+- `bun test packages/dialer-server/src` => 173 pass / 1 intentional isolated-service skip / 0 fail / 907 expectations.
+- `bun test packages/workspace/tests/test-selection.test.js` => 74 pass / 0 fail / 369 expectations.
+- Dialer typecheck + build passed.
+- Dialer Server typecheck + compiled Bun build passed.
+- `bun run --cwd packages/dialer-server lab:verify` => real isolated PostgreSQL + Redis integration passed; migration 005 is now asserted in the durable integration test.
+- Direct smoke lab evidence: Bun 1.3.14, PostgreSQL 16.13, Redis 8.6.2; no production credentials, no external providers; migrations 001/002/003/004/005 applied; 250 ledger rows + 1000 compatibility outcomes + 1000 canonical observations; censoring preserved (`observedAttemptNumbers=[1,3]`, censored attempt excluded); canonical runtime chose attempt 2 while conflicting compatibility baseline chose 1 and was ignored; 50 Redis coordination samples; PostgreSQL/Redis ports closed and temp directory removed.
+
+- 2026-09-10 01:05:23 append: `.task/dialer-algorithm/reconcile-current-main-for-dialer-release/workpad.md`
+
+### canonical OS gate repair
+
+- The only remaining OS package failure was `workspace-route-heartbeat-write-budget.test.ts` statically importing `bun:sqlite` while the canonical Vitest package suite executes under Node. This file is also present on current `main`, so it was a real baseline CI defect relevant to the requested SQLite integration cleanup, not Dialer-model drift.
+- RED: OS package suite failed at module load with `Cannot find package 'bun:sqlite'` before the four heartbeat write-budget assertions could execute.
+- FIX: converted the in-memory test fixture to Node's built-in `node:sqlite` `DatabaseSync`, retaining the same D1 adapter shape, write counting, EXPLAIN index detection, and route assertions. No production code or gate exclusion changed.
+- GREEN focused: Node Vitest heartbeat budget 4/4.
+- GREEN full OS package: 372 files passed / 17 skipped; 3322 tests passed / 161 skipped / 7 todo; 0 failures. The previously load-sensitive subagent idempotency test also passed under full-package load (3.695s), so no timeout/gate relaxation was made.
+
+- 2026-09-10 01:22:50 append: `.task/dialer-algorithm/reconcile-current-main-for-dialer-release/workpad.md`
+
+- Follow-up to heartbeat gate: Node-only conversion made the canonical Bun-selected heartbeat suite fail because Bun 1.3.14 does not expose `node:sqlite`. The fixture is now explicitly dual-runtime: Bun uses dynamic `bun:sqlite`; Node/Vitest uses dynamic `node:sqlite`, with one shared adapter contract. Both focused executions pass 4/4 with no assertion or gate changes.
+- The `verify` facade itself currently returns after ~124s without writing a current stamp; its durable `verify.json` remains the older 2026-09-08 evidence. This is an execution-envelope issue, not accepted as verification. Final canonical evidence will be produced by running the same repository `packages/workspace/scripts/verify.js --base origin/main --json` through OS with a longer bounded code-call envelope, then checking the newly written stamp timestamp/head/change hash before publish.
+
+- 2026-09-10 01:28:09 append: `.task/dialer-algorithm/reconcile-current-main-for-dialer-release/workpad.md`
+
+### publish boundary correction
+
+- The full current-main candidate was validated, but the task publisher requires the PR remote commit as its exact parent. Publishing the whole reconciled tree would have attributed 700+ unrelated current-main files and other agents' task metadata to #2404, so that approach was rejected.
+- Rebased the publishable task shape onto #2404's actual remote parent and retained only the Dialer algorithm/runtime fixes above. Those focused tests pass on the real task parent.
+- The remaining OS integration repairs (aggregate inferred-token accounting, Node SQLite selector coverage, and the dual-runtime heartbeat SQLite test fixture) are intentionally deferred to a fresh integration task after `stream/dialer-algorithm` is synchronized with current main, where the required current-main Trace/heartbeat APIs exist. The validated copies are preserved outside the worktree for reapplication; no unrelated current-main content will be published through #2404.
+
+- 2026-09-10 01:40:45 append: `.task/dialer-algorithm/reconcile-current-main-for-dialer-release/workpad.md`

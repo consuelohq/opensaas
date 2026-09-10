@@ -44,6 +44,7 @@ describe('commercial call target authorization science context', () => {
         source: 'queue',
         queueId: 'pipeline-1:stage-1',
         contactIds: ['contact-1'],
+        targetPhone: '+18888888888',
         targetPhones: ['+19999999999'],
       },
       identity,
@@ -69,6 +70,7 @@ describe('commercial call target authorization science context', () => {
         ],
       }),
     );
+    expect(result).not.toHaveProperty('targetPhone');
     expect(JSON.stringify(result.targetContexts)).not.toContain('Ada Lovelace');
     expect(JSON.stringify(result.targetContexts)).not.toContain('+15555550100');
   });

@@ -34,22 +34,24 @@ export const realpathIfExistsEffect = (value: string) => Effect.try({
 }).pipe(Effect.catchAll((fallback) => Effect.succeed(fallback)));
 
 function gitOutput(cwd: string, args: string[]): string | null {
-  return Effect.runSync(Effect.try({
-    try: () => execFileSync('git', args, {
+  try {
+    return execFileSync('git', args, {
       cwd,
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'ignore'],
-    }).trim(),
-    catch: () => null,
-  }).pipe(Effect.catchAll(() => Effect.succeed(null))));
+    }).trim();
+  } catch {
+    return null;
+  }
 }
 
 function canonicalGitPath(cwd: string, value: string): string {
   const absolute = path.isAbsolute(value) ? value : path.resolve(cwd, value);
-  return Effect.runSync(Effect.try({
-    try: () => realpathSync(absolute),
-    catch: () => path.resolve(absolute),
-  }).pipe(Effect.catchAll((fallback) => Effect.succeed(fallback))));
+  try {
+    return realpathSync(absolute);
+  } catch {
+    return path.resolve(absolute);
+  }
 }
 
 function gitRoot(cwd: string): string | null {

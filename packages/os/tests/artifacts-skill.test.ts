@@ -40,7 +40,7 @@ describe('artifacts skill', () => {
     });
     expect(registry.skills.find((skill) => skill.name === metadata.name)).toMatchObject({
       status: 'active',
-      load: { path: 'skills/artifacts/SKILL.md' },
+      load: { path: 'packages/os/skills/artifacts/SKILL.md' },
     });
     expect(manifest.tools.some((tool) => tool.name === metadata.name)).toBe(false);
     expect(manifest.tools.map((tool) => tool.name)).toEqual(expect.arrayContaining([

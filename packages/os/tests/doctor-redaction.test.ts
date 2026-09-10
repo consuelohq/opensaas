@@ -1,12 +1,9 @@
+import { Database } from 'bun:sqlite';
 import { execFileSync } from 'node:child_process';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-
-import { openTraceDatabase } from '../scripts/lib/trace-database-schema';
-
-const packageRoot = join(import.meta.dirname, '..');
 
 const forbiddenStrings = [
   'correct-horse-battery',
@@ -37,12 +34,8 @@ function expectNoForbiddenLeaks(value: unknown): void {
 
 function runBun(args: string[]): string {
   return execFileSync('bun', args, {
-    cwd: packageRoot,
-    env: {
-      ...process.env,
-      CONSUELO_HOME: tempHome,
-      CONSUELO_OS_HOME: tempHome,
-    },
+    cwd: process.cwd(),
+    env: { ...process.env, CONSUELO_HOME: tempHome },
     encoding: 'utf8',
   });
 }
@@ -96,7 +89,7 @@ function seedSensitiveExecution(): void {
 describe('Doctor execution log redaction', () => {
   it('redacts persisted execution rows and events while keeping useful fields', () => {
     seedSensitiveExecution();
-    const db = openTraceDatabase(join(tempHome, 'node', 'db', 'consuelo.db'));
+    const db = new Database(join(tempHome, 'consuelo.db'), { readonly: true });
     try {
       const execution = db.query('SELECT * FROM skill_executions WHERE trace_id = ?').get('trc_redaction_fixture') as Record<string, unknown>;
       const events = db.query('SELECT * FROM execution_events WHERE trace_id = ? ORDER BY id ASC').all('trc_redaction_fixture') as Array<Record<string, unknown>>;

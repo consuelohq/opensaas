@@ -21,9 +21,9 @@ describe('Consuelo lifecycle help', () => {
     expect(help.stderr).toBe('');
     expect(flagHelp).toEqual(help);
 
-    expect(help.stdout.startsWith(
+    expect(help.stdout).toStartWith(
       'Consuelo OS\n\nIf no command is specified, Consuelo shows the local OS status.\n',
-    )).toBe(true);
+    );
     expect(help.stdout).toContain('Usage: consuelo [OPTIONS] [COMMAND] [ARGS]');
     expect(help.stdout).toContain('Commands:\n');
     expect(help.stdout).toContain('  status');

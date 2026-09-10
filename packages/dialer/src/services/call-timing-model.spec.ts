@@ -86,4 +86,21 @@ describe('CallTimingModel', () => {
 
     expect(rankHazardEstimates(hazards)[0]?.hourOfDay).toBe(14);
   });
+
+  it('breaks exact timing-evidence ties by stable calendar coordinates', () => {
+    const hazards: HazardEstimate[] = [
+      { segmentId: 'segment-1', hourOfDay: 14, dayOfWeek: 2, attemptNumber: 1, answerRate: 0.4, sampleSize: 100, lowerBound: 0.3 },
+      { segmentId: 'segment-1', hourOfDay: 14, dayOfWeek: 1, attemptNumber: 1, answerRate: 0.4, sampleSize: 100, lowerBound: 0.3 },
+      { segmentId: 'segment-1', hourOfDay: 9, dayOfWeek: 1, attemptNumber: 1, answerRate: 0.4, sampleSize: 100, lowerBound: 0.3 },
+    ];
+
+    expect(
+      rankHazardEstimates(hazards).map(({ dayOfWeek, hourOfDay }) => ({ dayOfWeek, hourOfDay })),
+    ).toEqual([
+      { dayOfWeek: 1, hourOfDay: 9 },
+      { dayOfWeek: 1, hourOfDay: 14 },
+      { dayOfWeek: 2, hourOfDay: 14 },
+    ]);
+  });
+
 });

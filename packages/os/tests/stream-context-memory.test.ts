@@ -2,10 +2,10 @@ import { mkdirSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
+import { Database } from 'bun:sqlite';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { readLocalStreamDecisions } from '../scripts/lib/stream-memory';
-import { openTraceDatabase } from '../scripts/lib/trace-database-schema';
 
 let fixtureRoot: string;
 let consueloHome: string;
@@ -22,7 +22,7 @@ afterEach(() => {
 
 describe('stream context local memory', () => {
   it('reads stream decisions from the local Consuelo memory database', () => {
-    const db = openTraceDatabase(join(consueloHome, 'node', 'db', 'consuelo.db'));
+    const db = new Database(join(consueloHome, 'node', 'db', 'consuelo.db'), { create: true });
     try {
       db.exec(`
         CREATE TABLE memories (

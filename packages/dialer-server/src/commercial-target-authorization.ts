@@ -86,7 +86,12 @@ export const resolveCommercialCallTargetInput = async (
 ): Promise<CommercialCallInput> => {
   try {
     if (!leadConnector) throw targetAuthorizationError();
-    const { targetContexts: _untrustedTargetContexts, ...trustedInput } = input;
+    const {
+      targetContexts: _untrustedTargetContexts,
+      targetPhone: _untrustedTargetPhone,
+      targetPhones: _untrustedTargetPhones,
+      ...trustedInput
+    } = input;
 
     if (input.source === 'direct') {
       const contactId = readString(input.contactId);
