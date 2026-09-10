@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 import { Effect } from 'effect';
@@ -24,17 +24,12 @@ describe('dialer stream instructions', () => {
     );
   });
 
-  it('keeps OS and Workspace stream copies byte-identical', () => {
+  it('does not require a deprecated Workspace stream copy', () => {
     const repositoryRoot = resolve(import.meta.dirname, '../../..');
-    const osInstructions = readFileSync(
-      resolve(repositoryRoot, 'packages/os/streams/dialer/AGENTS.md'),
-      'utf8',
-    );
-    const workspaceInstructions = readFileSync(
-      resolve(repositoryRoot, 'packages/workspace/streams/dialer/AGENTS.md'),
-      'utf8',
-    );
-
-    expect(workspaceInstructions).toBe(osInstructions);
+    expect(
+      existsSync(
+        resolve(repositoryRoot, 'packages/workspace/streams/dialer/AGENTS.md'),
+      ),
+    ).toBe(false);
   });
 });

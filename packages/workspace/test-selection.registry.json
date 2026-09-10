@@ -2,16 +2,16 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2671,
+    "testFileCount": 2670,
     "mappedTestCount": 2586,
-    "unmappedTestCount": 85,
-    "ruleCount": 72,
-    "explicitRuleCount": 53,
+    "unmappedTestCount": 84,
+    "ruleCount": 73,
+    "explicitRuleCount": 54,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
     "byGroup": {
-      "packages/os/tests": 290,
+      "packages/os/tests": 289,
       "packages/twenty-server/test/integration/graphql/utils": 65,
       "packages/workspace/tests": 65,
       "packages/twenty-sdk/src/cli": 51,
@@ -635,7 +635,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 577,
+      "test": 576,
       "spec": 152,
       "other": 7,
       "tests-dir": 7,
@@ -766,6 +766,34 @@
       ],
       "critical": true,
       "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-stream-instructions",
+      "source": [
+        "packages/os/scripts/lib/streams/instructions.ts",
+        "packages/os/tests/dialer-stream-instructions.test.ts",
+        "packages/os/streams/**/AGENTS.md",
+        "packages/workspace/scripts/lib/stream-instructions.js",
+        "packages/workspace/scripts/lib/stream-instructions.test.ts",
+        "packages/workspace/streams/**/AGENTS.md"
+      ],
+      "tests": [
+        {
+          "name": "OS stream instruction contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/scripts/lib/stream-instructions.test.ts",
+            "packages/os/tests/dialer-stream-instructions.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Stream instruction storage and resolver changes must prove the OS-owned canonical path without selecting the unrelated package-wide OS suite.",
       "origin": "explicit"
     },
     {
@@ -5708,11 +5736,6 @@
     },
     {
       "path": "packages/os/tests/verify-run-state.test.js",
-      "group": "packages/os/tests",
-      "kind": "test"
-    },
-    {
-      "path": "packages/os/tests/visible-dialer-steering.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -16540,7 +16563,6 @@
     "packages/documentation/tests/secure.test.ts",
     "packages/documentation/tests/sites.test.ts",
     "packages/documentation/tests/start.test.ts",
-    "packages/workspace/scripts/lib/stream-instructions.test.ts",
     "packages/workspace/tests/api-breaking-workflow-build-toolchain.test.ts",
     "packages/workspace/tests/browser-review-contract.test.ts",
     "packages/workspace/tests/chunker.test.js",
