@@ -5,6 +5,8 @@ import { createConnection, createServer } from 'node:net';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 
+import { INBOUND_MIGRATION_ID } from '../src/inbound/migration';
+import { runInboundJournalScenarios } from '../src/lab/inbound-journal-scenarios';
 import Redis from 'ioredis';
 import { Pool } from 'pg';
 
@@ -318,6 +320,14 @@ const main = async () => {
       'SELECT COUNT(*)::text AS count FROM dialer_learning_observations',
     ).then((result) => result.rows[0]?.count);
     const rowsBeforeRollback = await countObservations();
+    const inbound = await runInboundJournalScenarios(pool);
+    await rollbackDialerDatabaseMigration(database, INBOUND_MIGRATION_ID);
+    const inboundRemoved = await pool.query<{ table_name: string | null }>(
+      "SELECT to_regclass('dialer_inbound_entities')::text AS table_name",
+    );
+    if (inboundRemoved.rows[0]?.table_name !== null) {
+      throw new Error('Inbound rollback left schema behind');
+    }
     await rollbackDialerDatabaseMigration(database, DIALER_DATABASE_LEARNING_INTEGRITY_MIGRATION_ID);
     const removed = await database.query<{ count: string }>(`
       SELECT COUNT(*)::text AS count FROM pg_constraint
@@ -383,6 +393,7 @@ const main = async () => {
         ),
       },
       benchmarks,
+      inbound,
     };
   } finally {
     redis?.disconnect();

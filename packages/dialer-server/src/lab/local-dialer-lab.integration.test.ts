@@ -6,138 +6,141 @@ const integrationEnabled =
 const describeIntegration = integrationEnabled ? describe : describe.skip;
 
 describeIntegration('local dialer lab service integration', () => {
-  it(
-    'migrates an empty isolated Postgres, exercises Redis, and tears both down',
-    async () => {
-      expect(Bun.which('pg_config')).not.toBeNull();
-      expect(Bun.which('redis-server')).not.toBeNull();
+  it('migrates an empty isolated Postgres, exercises Redis, and tears both down', async () => {
+    expect(Bun.which('pg_config')).not.toBeNull();
+    expect(Bun.which('redis-server')).not.toBeNull();
 
-      const scriptPath = fileURLToPath(
-        new URL('../../scripts/local-dialer-lab.ts', import.meta.url),
-      );
-      const processHandle = Bun.spawn(
-        ['bun', scriptPath, '--scale', 'smoke', '--seed', '4242'],
-        {
-          stdout: 'pipe',
-          stderr: 'pipe',
-        },
-      );
-      const [stdout, stderr, exitCode] = await Promise.all([
-        new Response(processHandle.stdout).text(),
-        new Response(processHandle.stderr).text(),
-        processHandle.exited,
-      ]);
+    const scriptPath = fileURLToPath(
+      new URL('../../scripts/local-dialer-lab.ts', import.meta.url),
+    );
+    const processHandle = Bun.spawn(
+      ['bun', scriptPath, '--scale', 'smoke', '--seed', '4242'],
+      {
+        stdout: 'pipe',
+        stderr: 'pipe',
+      },
+    );
+    const [stdout, stderr, exitCode] = await Promise.all([
+      new Response(processHandle.stdout).text(),
+      new Response(processHandle.stderr).text(),
+      processHandle.exited,
+    ]);
 
-      expect(exitCode, stderr).toBe(0);
-      const result = JSON.parse(stdout) as {
-        ok: boolean;
-        isolation: {
-          postgresPort: number;
-          redisPort: number;
-          productionCredentialsUsed: boolean;
-          externalProvidersUsed: boolean;
-        };
-        migration: { applied: string[]; rollbackVerified: boolean };
-        persistedFixture: {
-          candidateLedgerRows: number;
-          trainingOutcomeRows: number;
-          canonicalObservationRows: number;
-        };
-        benchmarks: {
-          dataset: { seed: number };
-          ranking: Record<string, unknown>;
-          aggregation: { groups: number };
-          ingestion: { operations: number };
-          scientificValidation: {
-            observedAttemptNumbers: number[];
-            observedProbabilities: number[];
-            censoredAttemptExcludedFromDenominator: boolean;
-            idempotency: {
-              canonicalRows: number;
-              ledgerAttempts: number;
-              compatibilityOutcomeRows: number;
-            };
-          };
-          runtimeCutover: {
-            canonicalTopContactId: string | null;
-            canonicalPreferredAttempt: number;
-            compatibilityPreferredAttempt: number;
-            compatibilityConflictIgnored: boolean;
-            legacyBaselineAttemptNumbers: number[];
-          };
-          redisCoordination: { samples: number };
-        };
-        cleanup: {
-          postgresClosed: boolean;
-          redisClosed: boolean;
-          tempDirectoryRemoved: boolean;
-        };
+    expect(exitCode, stderr).toBe(0);
+    const result = JSON.parse(stdout) as {
+      ok: boolean;
+      inbound: {
+        assertions: number;
+        concurrentWinners: number;
+        replayWithoutEffects: boolean;
       };
+      isolation: {
+        postgresPort: number;
+        redisPort: number;
+        productionCredentialsUsed: boolean;
+        externalProvidersUsed: boolean;
+      };
+      migration: { applied: string[]; rollbackVerified: boolean };
+      persistedFixture: {
+        candidateLedgerRows: number;
+        trainingOutcomeRows: number;
+        canonicalObservationRows: number;
+      };
+      benchmarks: {
+        dataset: { seed: number };
+        ranking: Record<string, unknown>;
+        aggregation: { groups: number };
+        ingestion: { operations: number };
+        scientificValidation: {
+          observedAttemptNumbers: number[];
+          observedProbabilities: number[];
+          censoredAttemptExcludedFromDenominator: boolean;
+          idempotency: {
+            canonicalRows: number;
+            ledgerAttempts: number;
+            compatibilityOutcomeRows: number;
+          };
+        };
+        runtimeCutover: {
+          canonicalTopContactId: string | null;
+          canonicalPreferredAttempt: number;
+          compatibilityPreferredAttempt: number;
+          compatibilityConflictIgnored: boolean;
+          legacyBaselineAttemptNumbers: number[];
+        };
+        redisCoordination: { samples: number };
+      };
+      cleanup: {
+        postgresClosed: boolean;
+        redisClosed: boolean;
+        tempDirectoryRemoved: boolean;
+      };
+    };
 
-      expect(result.ok).toBe(true);
-      expect(result.migration.rollbackVerified).toBe(true);
-      expect(result.isolation.postgresPort).not.toBe(
-        result.isolation.redisPort,
-      );
-      expect(result.isolation.productionCredentialsUsed).toBe(false);
-      expect(result.isolation.externalProvidersUsed).toBe(false);
-      expect(result.migration.applied).toContain(
-        '20260810_001_standalone_dialer_baseline',
-      );
-      expect(result.migration.applied).toContain(
-        '20260815_002_predictive_learning_observations',
-      );
-      expect(result.migration.applied).toContain(
-        '20260815_003_contextual_predictive_science',
-      );
-      expect(result.migration.applied).toContain(
-        '20260815_004_contextual_predictive_science_hardening',
-      );
-      expect(result.migration.applied).toContain(
-        '20260815_005_learning_observation_integrity',
-      );
-      expect(result.persistedFixture).toEqual({
-        candidateLedgerRows: 250,
-        trainingOutcomeRows: 1_000,
-        canonicalObservationRows: 1_000,
-      });
-      expect(result.benchmarks.dataset.seed).toBe(4242);
-      expect(Object.keys(result.benchmarks.ranking)).toEqual([
-        '25',
-        '100',
-        '250',
-      ]);
-      expect(result.benchmarks.aggregation.groups).toBeGreaterThan(0);
-      expect(result.benchmarks.ingestion.operations).toBe(50);
-      expect(
-        result.benchmarks.scientificValidation.observedAttemptNumbers,
-      ).toEqual([1, 3]);
-      expect(
-        result.benchmarks.scientificValidation.observedProbabilities,
-      ).toEqual([1, 0]);
-      expect(
-        result.benchmarks.scientificValidation
-          .censoredAttemptExcludedFromDenominator,
-      ).toBe(true);
-      expect(result.benchmarks.scientificValidation.idempotency).toEqual({
-        canonicalRows: 1,
-        ledgerAttempts: 1,
-        compatibilityOutcomeRows: 1,
-      });
-      expect(result.benchmarks.runtimeCutover).toEqual({
-        canonicalTopContactId: 'cutover-canonical-winner',
-        canonicalPreferredAttempt: 2,
-        compatibilityPreferredAttempt: 1,
-        compatibilityConflictIgnored: true,
-        legacyBaselineAttemptNumbers: [3, 4],
-      });
-      expect(result.benchmarks.redisCoordination.samples).toBe(50);
-      expect(result.cleanup).toEqual({
-        postgresClosed: true,
-        redisClosed: true,
-        tempDirectoryRemoved: true,
-      });
-    },
-    30_000,
-  );
+    expect(result.ok).toBe(true);
+    expect(result.inbound.concurrentWinners).toBe(1);
+    expect(result.inbound.replayWithoutEffects).toBe(true);
+    expect(result.inbound.assertions).toBeGreaterThanOrEqual(20);
+    expect(result.migration.rollbackVerified).toBe(true);
+    expect(result.migration.applied).toContain('20260910_006_inbound_journal');
+    expect(result.isolation.postgresPort).not.toBe(result.isolation.redisPort);
+    expect(result.isolation.productionCredentialsUsed).toBe(false);
+    expect(result.isolation.externalProvidersUsed).toBe(false);
+    expect(result.migration.applied).toContain(
+      '20260810_001_standalone_dialer_baseline',
+    );
+    expect(result.migration.applied).toContain(
+      '20260815_002_predictive_learning_observations',
+    );
+    expect(result.migration.applied).toContain(
+      '20260815_003_contextual_predictive_science',
+    );
+    expect(result.migration.applied).toContain(
+      '20260815_004_contextual_predictive_science_hardening',
+    );
+    expect(result.migration.applied).toContain(
+      '20260815_005_learning_observation_integrity',
+    );
+    expect(result.persistedFixture).toEqual({
+      candidateLedgerRows: 250,
+      trainingOutcomeRows: 1_000,
+      canonicalObservationRows: 1_000,
+    });
+    expect(result.benchmarks.dataset.seed).toBe(4242);
+    expect(Object.keys(result.benchmarks.ranking)).toEqual([
+      '25',
+      '100',
+      '250',
+    ]);
+    expect(result.benchmarks.aggregation.groups).toBeGreaterThan(0);
+    expect(result.benchmarks.ingestion.operations).toBe(50);
+    expect(
+      result.benchmarks.scientificValidation.observedAttemptNumbers,
+    ).toEqual([1, 3]);
+    expect(
+      result.benchmarks.scientificValidation.observedProbabilities,
+    ).toEqual([1, 0]);
+    expect(
+      result.benchmarks.scientificValidation
+        .censoredAttemptExcludedFromDenominator,
+    ).toBe(true);
+    expect(result.benchmarks.scientificValidation.idempotency).toEqual({
+      canonicalRows: 1,
+      ledgerAttempts: 1,
+      compatibilityOutcomeRows: 1,
+    });
+    expect(result.benchmarks.runtimeCutover).toEqual({
+      canonicalTopContactId: 'cutover-canonical-winner',
+      canonicalPreferredAttempt: 2,
+      compatibilityPreferredAttempt: 1,
+      compatibilityConflictIgnored: true,
+      legacyBaselineAttemptNumbers: [3, 4],
+    });
+    expect(result.benchmarks.redisCoordination.samples).toBe(50);
+    expect(result.cleanup).toEqual({
+      postgresClosed: true,
+      redisClosed: true,
+      tempDirectoryRemoved: true,
+    });
+  }, 30_000);
 });

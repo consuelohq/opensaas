@@ -1,3 +1,4 @@
+import { CREATE_INBOUND_SCHEMA_SQL, DROP_INBOUND_SCHEMA_SQL, INBOUND_MIGRATION_ID } from '../inbound/migration';
 import {
   initializeLeadConnectorPersistence,
   type LeadConnectorDatabase,
@@ -292,6 +293,11 @@ const migrations: readonly Migration[] = [
         });
       }
     },
+  },
+  {
+    id: INBOUND_MIGRATION_ID,
+    up: (database) => database.query(CREATE_INBOUND_SCHEMA_SQL).then(() => undefined),
+    down: (database) => database.query(DROP_INBOUND_SCHEMA_SQL).then(() => undefined),
   },
 ];
 
