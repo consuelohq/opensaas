@@ -161,7 +161,9 @@ describe('subagent runner termination', () => {
       expect(marker.exitCode).toBe(0);
       expect(marker.error).toBeUndefined();
     } finally {
-      try { process.kill(child.pid || 0, 'SIGKILL'); } catch {}
+      if (child.pid !== undefined) {
+        try { process.kill(child.pid, 'SIGKILL'); } catch {}
+      }
       rmSync(root, { recursive: true, force: true });
     }
   });

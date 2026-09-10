@@ -1991,6 +1991,7 @@ export async function runSubagentProcess(input: {
     let stderr = '';
     let timedOut = false;
     let settled = false;
+    let stdinFailure: string | undefined;
     let killTimer: NodeJS.Timeout | undefined;
     const finish = (result: RunnerResult & { timedOut: boolean }) => {
       if (settled) return;
@@ -2015,14 +2016,29 @@ export async function runSubagentProcess(input: {
     child.stdout.on('data', (chunk) => { stdout = boundSubagentOutput(stdout + chunk); });
     child.stderr.on('data', (chunk) => { stderr = boundSubagentOutput(stderr + chunk); });
     child.stdin.on('error', (error: NodeJS.ErrnoException) => {
-      if (error.code === 'EPIPE' || error.code === 'ERR_STREAM_DESTROYED') return;
-      finish({ stdout, stderr: stderr || error.message, exitCode: 1, timedOut: false });
+      if (error.code === 'EPIPE' || error.code === 'ERR_STREAM_DESTROYED' || settled) return;
+      stdinFailure = error.message;
+      stderr = boundSubagentOutput(stderr + `${stderr ? '\n' : ''}${error.message}`);
+      clearTimeout(timeout);
+      child.kill('SIGTERM');
+      if (!killTimer) {
+        killTimer = setTimeout(() => {
+          child.kill('SIGKILL');
+          finish({ stdout, stderr, exitCode: 1, timedOut: false });
+        }, 5000);
+        killTimer.unref?.();
+      }
     });
     child.on('error', (error) => {
       finish({ stdout, stderr: error.message, exitCode: 1, timedOut: false });
     });
     child.on('close', (code) => {
-      finish({ stdout, stderr, exitCode: timedOut ? 1 : code ?? 0, timedOut });
+      finish({
+        stdout,
+        stderr,
+        exitCode: timedOut || stdinFailure ? 1 : code ?? 0,
+        timedOut,
+      });
     });
     child.stdin.end(input.stdin || '');
   });
