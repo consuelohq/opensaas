@@ -6,7 +6,7 @@ import type {
   InboundSnapshot,
   InboundCommandStatus,
   InboundStoredCommand,
-} from './contracts';
+} from './contracts.js';
 
 export class InboundPersistenceError extends Error {
   readonly _tag = 'InboundPersistenceError';

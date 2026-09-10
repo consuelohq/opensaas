@@ -15,3 +15,9 @@ Observation: 2026-09-09 America/New_York. This is the external prerequisite rece
 - No carrier calls, production schema changes, deployments or learned-policy activation were performed.
 
 Late review repair: migration 005 now exposes a supported guarded down operation without changing its up SQL. The isolated lab proves down/up removes/restores exactly its two constraints, retains earlier migration records and preserves all observation rows. These additions in migrations.ts, scripts/local-dialer-lab.ts and the lab integration test are the only differences from the consumed package source.
+
+## Follow-up acceptance
+
+PR #2451 addresses the late migration002–004 rollback review and the compiled
+RD1 Node import defect. See [FOUNDATION-REVIEW.md](FOUNDATION-REVIEW.md). Resolve
+that correction on stream/dialer before launching RD2/RD3.

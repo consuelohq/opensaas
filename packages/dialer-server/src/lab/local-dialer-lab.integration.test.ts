@@ -40,7 +40,7 @@ describeIntegration('local dialer lab service integration', () => {
         productionCredentialsUsed: boolean;
         externalProvidersUsed: boolean;
       };
-      migration: { applied: string[]; rollbackVerified: boolean };
+      migration: { applied: string[]; rollbackVerified: boolean; learningRollbackChainVerified: boolean };
       persistedFixture: {
         candidateLedgerRows: number;
         trainingOutcomeRows: number;
@@ -82,6 +82,7 @@ describeIntegration('local dialer lab service integration', () => {
     expect(result.inbound.replayWithoutEffects).toBe(true);
     expect(result.inbound.assertions).toBeGreaterThanOrEqual(20);
     expect(result.migration.rollbackVerified).toBe(true);
+      expect(result.migration.learningRollbackChainVerified).toBe(true);
     expect(result.migration.applied).toContain('20260910_006_inbound_journal');
     expect(result.isolation.postgresPort).not.toBe(result.isolation.redisPort);
     expect(result.isolation.productionCredentialsUsed).toBe(false);

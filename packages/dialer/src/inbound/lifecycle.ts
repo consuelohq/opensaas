@@ -3,7 +3,7 @@ import {
   type InboundEvent,
   type InboundKind,
   type InboundSnapshot,
-} from './contracts';
+} from './contracts.js';
 
 type Lifecycle = {
   initial: string;

@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/finish-foundation-migration-rollback-review",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 2451,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2451",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-finish-foundation-migration-rollback-review",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_328af0cac93f",
+  "tmuxSession": "opensaas-dialer-finish-foundation-migration-rollback-review-328af0ca",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-finish-foundation-migration-rollback-review/.task/session.json",
+  "createdAt": "2026-09-10T03:42:52.639Z"
+}

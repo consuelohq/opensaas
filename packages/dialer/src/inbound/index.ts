@@ -1,3 +1,3 @@
-export * from './contracts';
-export * from './lifecycle';
-export * from './ports';
+export * from './contracts.js';
+export * from './lifecycle.js';
+export * from './ports.js';

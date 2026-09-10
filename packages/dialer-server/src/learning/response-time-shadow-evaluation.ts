@@ -1,5 +1,6 @@
 import {
   DiscreteTimeResponseHazardModel,
+  expandDiscreteTimeObservation,
   buildCalibrationBins,
   buildResponseTimeObservation,
   evaluateProbabilisticPredictions,
@@ -182,6 +183,19 @@ export const evaluateResponseTimeHazardShadow = async (
   }
 
   const split = splitTemporalEvaluationExamples(examples, trainingFraction);
+  const trainingPeriodCount = split.training.reduce((count, example) => count +
+    expandDiscreteTimeObservation(example.observation, { intervalMs, horizonMs }).length, 0);
+  if (trainingPeriodCount === 0) {
+    return {
+      status: 'insufficient_training_periods' as const,
+      trainingSampleSize: split.training.length,
+      holdoutSampleSize: split.holdout.length,
+      trainingPeriodCount,
+      invalidContextCount, invalidObservationCount, unlinkableDecisionCount,
+      intervalMs, horizonMs,
+      estimand: 'response_by_horizon' as const,
+    };
+  }
   const model = DiscreteTimeResponseHazardModel.fit(split.training, {
     intervalMs,
     horizonMs,
