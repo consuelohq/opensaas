@@ -142,7 +142,7 @@ not copied there. User-authored tools, skills, sites, and steering live only in
 the visible user-owned tree. Do not maintain two editable copies of the same
 component. Do not create `~/Consuelo/Scripts`.
 
-`system_prompt.md` remains a managed product policy in the runtime bundle. User steering belongs in `~/Consuelo/Steering/`; updates never overwrite it. Future workspace sync may synchronize approved user-owned content, but never secrets, node identity, local databases, logs, tunnel credentials, Caddy state, or the entire Consuelo home.
+User steering belongs only in `~/Consuelo/Steering/`. `system.md` is the primary steering file and additional user-authored Markdown files are loaded after it; `example-system.md` is excluded. Updates never overwrite `system.md`, and the runtime bundle does not carry a second system prompt. Future workspace sync may synchronize approved user-owned content, but never secrets, node identity, local databases, logs, tunnel credentials, Caddy state, or the entire Consuelo home.
 
 `consuelo.yaml` is the small human-editable OS configuration boundary for channel, update-notification, and other approved preferences. Runtime state, traces, tokens, node keys, and mutable indexes remain structured node-local data, not YAML.
 
@@ -213,7 +213,7 @@ Workers must verify these facts against their task base before editing:
 
 - `packages/os/scripts/bootstrap.sh` already promotes hosted source into `~/.consuelo/runtime/releases/<id>` and switches `runtime/current` atomically.
 - Current release promotion has no complete retention/pruning policy.
-- `packages/os/scripts/lib/install-state.ts` copies broad runtime directories and currently seeds `system_prompt.md` and `decision.md`.
+- `packages/os/scripts/lib/install-state.ts` creates the visible user-owned Steering directory and seeds a generic `system.md` only when it is absent.
 - `packages/os/scripts/os.ts` already excludes `decision.md` from `get_steering`.
 - The installer generates an installed `skills/skills.json`, but `get_steering` does not read it.
 - Device authority already persists an `AccountWorkspace` and keyed `WorkspaceNode`, sends node ID/name through install, and labels the first node `home` and later nodes `member`.
@@ -395,7 +395,7 @@ Include:
 - installed skill index generated from the installed `skills.json`;
 - the core tool manifest;
 - a compact update summary only;
-- managed `system_prompt.md` plus explicitly supported user steering files read from `~/Consuelo/Steering/`.
+- user-owned `system.md` plus supported user steering files read from `~/Consuelo/Steering/`.
 
 Do not include:
 

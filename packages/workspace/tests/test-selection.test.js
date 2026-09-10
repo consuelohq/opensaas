@@ -2219,4 +2219,28 @@ describe('test selection registry', () => {
     expect(suiteNames).not.toContain('@consuelo/os package test');
   });
 
+  it('uses focused local-authoritative steering contracts instead of the broad OS package suite', () => {
+    const changedFiles = [
+      'packages/os/scripts/lib/steering-snapshot-cache.ts',
+      'packages/os/scripts/lib/managed-user-content.ts',
+      'packages/os/scripts/lib/managed-user-content-release.ts',
+      'packages/os/scripts/os.ts',
+      'packages/os/steering/system_prompt.md',
+      'packages/workspace/STEERING.md',
+      'packages/workspace/server.py',
+    ];
+    const args = ['check'];
+    for (const changedFile of changedFiles) args.push('--changed-file', changedFile);
+    args.push('--json');
+    const data = json(run(args));
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-local-steering-authority');
+    expect(suiteNames).toContain('OS local-authoritative steering ownership contract');
+    expect(suiteNames).toContain('OS managed user steering contracts');
+    expect(suiteNames).toContain('Workspace steering guard contracts');
+    expect(suiteNames).not.toContain('@consuelo/os package test');
+  });
+
 });

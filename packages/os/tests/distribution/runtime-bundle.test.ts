@@ -282,7 +282,7 @@ describe('runtime bundle contract', () => {
     expect(build.status).toBe(0);
     expect(existsSync(archivePath)).toBe(true);
     expect(JSON.parse(build.stdout)).toMatchObject({
-      fileCount: Object.keys(requiredFixtureFiles).length,
+      fileCount: Object.keys(requiredFixtureFiles).length - 1,
       outputPath: archivePath,
       version: '2.3.4',
     });
@@ -295,7 +295,7 @@ describe('runtime bundle contract', () => {
     expect(verify.status).toBe(0);
     expect(JSON.parse(verify.stdout)).toMatchObject({
       archivePath,
-      fileCount: Object.keys(requiredFixtureFiles).length,
+      fileCount: Object.keys(requiredFixtureFiles).length - 1,
       valid: true,
       version: '2.3.4',
     });
@@ -353,6 +353,9 @@ describe('runtime bundle contract', () => {
       'source-only',
     );
     expect(classifyRuntimeBundlePath('manifests/manifest.config.ts')).toBe(
+      'source-only',
+    );
+    expect(classifyRuntimeBundlePath('steering/system_prompt.md')).toBe(
       'source-only',
     );
     expect(
@@ -1008,17 +1011,7 @@ describe('runtime bundle contract', () => {
     const bundledSteering = archive.entries.find(
       (entry) => entry.path === 'steering/system_prompt.md',
     );
-    const bundledSteeringText = bundledSteering?.bytes.toString('utf8') ?? '';
-    // The property that matters is that no real home path ships to customers. Any absolute
-    // /Users path in the steering must be the redacted placeholder form. This previously pinned
-    // one exact literal from an older revision, which broke as soon as the bundle was resynced
-    // from the canonical workspace steering without testing anything real.
-    for (const match of bundledSteeringText.match(/\/Users\/[^\s`|)]*/g) ?? []) {
-      expect(match.startsWith('/Users/.../')).toBe(true);
-    }
-    expect(bundledSteeringText).not.toContain('/Users/kokayi/');
-    // The bundle is what actually reaches agents, so the governance rules must be in it.
-    expect(bundledSteeringText).toContain('Alignment First');
+    expect(bundledSteering).toBeUndefined();
     expect(readFileSync(join(packageRoot, 'Dockerfile'), 'utf8')).toContain(
       'scripts/build-runtime-bundle.ts',
     );

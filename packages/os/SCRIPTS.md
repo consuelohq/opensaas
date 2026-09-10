@@ -843,7 +843,7 @@ bad: bun run stream:sync
 
 shows the selected stream's durable `AGENTS.md` instructions first, followed by decisions, worktrees, task PRs, workpads, commits, and divergence. JSON includes an explicit `instructions` object; a missing file is a valid optional empty state.
 
-OS reads `packages/os/streams/<area>/AGENTS.md`; Workspace reads the byte-identical mirror under `packages/workspace/streams/<area>/AGENTS.md`. Dialer instructions are also synchronized during install/update to visible `~/Consuelo/Steering/dialer-AGENTS.md`, never hidden `~/.consuelo`.
+Stream context may load stream-scoped instruction documents, but those documents are never synchronized into global `~/Consuelo/Steering`. The visible Steering directory is user-owned steering only.
 
 ```bash
 bun run stream:context -- --area dialer
