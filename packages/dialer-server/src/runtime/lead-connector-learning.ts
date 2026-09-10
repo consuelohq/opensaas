@@ -1,4 +1,8 @@
-import type { ParallelTelemetryRecord } from '@consuelo/dialer';
+import {
+  classifyLearningObservation,
+  resolveLocalCalendarSlot,
+  type ParallelTelemetryRecord,
+} from '@consuelo/dialer';
 import type { LeadConnectorDatabase } from '@consuelo/lead-connector';
 
 const CREATE_ATTEMPT_LEDGER_TABLE_SQL = `
@@ -69,7 +73,45 @@ const outcomeForCall = (
 };
 
 const RECORD_ATTEMPT_SQL = `
-  WITH updated_ledger AS (
+  WITH canonical_insert AS (
+    INSERT INTO dialer_learning_observations (
+      workspace_id,
+      group_id,
+      position,
+      segment_id,
+      contact_id,
+      attempted_at,
+      response_at,
+      observed_until_at,
+      local_hour,
+      local_day_of_week,
+      outcome_class,
+      censor_reason,
+      feature_schema_version,
+      decision_id,
+      decision_context
+    )
+    VALUES (
+      $1,
+      $2,
+      $3,
+      $4,
+      $5,
+      $6::timestamptz,
+      $7::timestamptz,
+      $8::timestamptz,
+      $9,
+      $10,
+      $11,
+      $12,
+      $13,
+      $14,
+      $15::jsonb
+    )
+    ON CONFLICT (workspace_id, group_id, position) DO NOTHING
+    RETURNING workspace_id, contact_id, attempted_at
+  ),
+  updated_ledger AS (
     INSERT INTO contact_attempt_ledger (
       workspace_id,
       contact_id,
@@ -82,18 +124,18 @@ const RECORD_ATTEMPT_SQL = `
       week_window_start,
       updated_at
     )
-    VALUES (
-      $1,
-      $2,
-      $3::timestamptz,
+    SELECT
+      workspace_id,
+      contact_id,
+      attempted_at,
       1,
       1,
       1,
-      jsonb_build_array($4::text),
-      date_trunc('day', $3::timestamptz),
-      date_trunc('week', $3::timestamptz),
+      jsonb_build_array($16::text),
+      date_trunc('day', attempted_at),
+      date_trunc('week', attempted_at),
       now()
-    )
+    FROM canonical_insert
     ON CONFLICT (workspace_id, contact_id)
     DO UPDATE SET
       last_attempt_at = GREATEST(
@@ -113,7 +155,7 @@ const RECORD_ATTEMPT_SQL = `
           THEN 1
         ELSE contact_attempt_ledger.attempts_this_week + 1
       END,
-      outcomes = jsonb_build_array($4::text)
+      outcomes = jsonb_build_array($16::text)
         || contact_attempt_ledger.outcomes,
       day_window_start = GREATEST(
         contact_attempt_ledger.day_window_start,
@@ -133,7 +175,7 @@ const RECORD_ATTEMPT_SQL = `
     attempt_number,
     outcome
   )
-  SELECT $1, $2, $3::timestamptz, attempts_total, $4
+  SELECT $1, $5, $6::timestamptz, attempts_total, $16
   FROM updated_ledger
 `;
 
@@ -146,20 +188,59 @@ export const recordLeadConnectorAttemptTelemetry = async (
   database: LeadConnectorDatabase,
   record: ParallelTelemetryRecord,
   logWarning?: LearningWarningLogger,
+  options: { timezone?: string } = {},
 ): Promise<boolean> => {
   const calls = record.group.calls.filter(
     (call): call is typeof call & { contactId: string } => Boolean(call.contactId),
   );
   try {
     await Promise.all(
-      calls.map((call) =>
-        database.query(RECORD_ATTEMPT_SQL, [
+      calls.map((call) => {
+        const classification = classifyLearningObservation(record.group, call);
+        const localSlot = resolveLocalCalendarSlot(
+          call.dialStartedAt,
+          options.timezone ?? 'UTC',
+        );
+        const segmentId =
+          record.group.campaignSegment?.trim() || record.group.queueId;
+        const observedUntilAt =
+          call.terminatedAt ??
+          call.answeredAt ??
+          record.group.completedAt ??
+          null;
+        const persistedDecisionContext = call.decisionContext
+          ? JSON.stringify({
+              ...call.decisionContext,
+              realized: {
+                profileId: record.group.profile.id,
+                fanout: record.group.profile.fanout,
+                staggerMs: record.group.profile.staggerMs,
+                parallelPosition: call.position,
+              },
+            })
+          : null;
+
+        return database.query(RECORD_ATTEMPT_SQL, [
           record.group.workspaceId,
+          record.group.groupId,
+          call.position,
+          segmentId,
           call.contactId,
           call.dialStartedAt,
+          classification.outcomeClass === 'response'
+            ? (call.answeredAt ?? null)
+            : null,
+          observedUntilAt,
+          localSlot.hourOfDay,
+          localSlot.dayOfWeek,
+          classification.outcomeClass,
+          classification.censorReason,
+          call.decisionContext?.schemaVersion ?? null,
+          call.predictiveDecisionId ?? null,
+          persistedDecisionContext,
           outcomeForCall(record, call),
-        ]),
-      ),
+        ]);
+      }),
     );
     return true;
   } catch (cause: unknown) {

@@ -8,7 +8,8 @@ import { tmpdir } from 'node:os';
 import Redis from 'ioredis';
 import { Pool } from 'pg';
 
-import { migrateDialerDatabase } from '../src/database/migrations';
+import { migrateDialerDatabase, rollbackDialerDatabaseMigration,
+  DIALER_DATABASE_LEARNING_INTEGRITY_MIGRATION_ID } from '../src/database/migrations';
 import {
   createSyntheticDialerFixture,
   resolveLabScale,
@@ -313,16 +314,49 @@ const main = async () => {
       fixture,
       scale,
     });
+    const countObservations = () => database.query<{ count: string }>(
+      'SELECT COUNT(*)::text AS count FROM dialer_learning_observations',
+    ).then((result) => result.rows[0]?.count);
+    const rowsBeforeRollback = await countObservations();
+    await rollbackDialerDatabaseMigration(database, DIALER_DATABASE_LEARNING_INTEGRITY_MIGRATION_ID);
+    const removed = await database.query<{ count: string }>(`
+      SELECT COUNT(*)::text AS count FROM pg_constraint
+      WHERE conrelid = 'dialer_learning_observations'::regclass AND conname IN (
+        'dialer_learning_observation_timestamps_check',
+        'dialer_learning_decision_context_schema_required_check'
+      )
+    `);
+    const ledgerAfterRollback = await database.query<{ migration_id: string }>(
+      'SELECT migration_id FROM consuelo_dialer_schema_migrations ORDER BY migration_id',
+    );
+    if (removed.rows[0]?.count !== '0' || ledgerAfterRollback.rows.length !== 4 ||
+        ledgerAfterRollback.rows.some((row) => row.migration_id === DIALER_DATABASE_LEARNING_INTEGRITY_MIGRATION_ID) ||
+        rowsBeforeRollback !== await countObservations()) {
+      throw new Error('Integrity rollback did not preserve prior data/schema');
+    }
+    await migrateDialerDatabase(database);
+    const restored = await database.query<{ count: string }>(`
+      SELECT COUNT(*)::text AS count FROM pg_constraint
+      WHERE conrelid = 'dialer_learning_observations'::regclass AND conname IN (
+        'dialer_learning_observation_timestamps_check',
+        'dialer_learning_decision_context_schema_required_check'
+      )
+    `);
+    if (restored.rows[0]?.count !== '2' || rowsBeforeRollback !== await countObservations()) {
+      throw new Error('Integrity reapply did not restore constraints and preserve data');
+    }
     const migrationRows = await database.query<{ migration_id: string }>(
       'SELECT migration_id FROM consuelo_dialer_schema_migrations ORDER BY migration_id',
     );
     const fixtureCounts = await database.query<{
       ledger_count: string;
       outcome_count: string;
+      canonical_count: string;
     }>(
       `SELECT
          (SELECT COUNT(*) FROM contact_attempt_ledger WHERE workspace_id = $1)::text AS ledger_count,
-         (SELECT COUNT(*) FROM consuelo_lead_connector_call_outcomes WHERE workspace_id = $1)::text AS outcome_count`,
+         (SELECT COUNT(*) FROM consuelo_lead_connector_call_outcomes WHERE workspace_id = $1)::text AS outcome_count,
+         (SELECT COUNT(*) FROM dialer_learning_observations WHERE workspace_id = $1)::text AS canonical_count`,
       [LAB_WORKSPACE_ID],
     );
 
@@ -337,12 +371,16 @@ const main = async () => {
         externalProvidersUsed: false,
       },
       migration: {
+        rollbackVerified: true,
         durationMs: migrationMs,
         applied: migrationRows.rows.map((row) => row.migration_id),
       },
       persistedFixture: {
         candidateLedgerRows: Number(fixtureCounts.rows[0]?.ledger_count ?? 0),
         trainingOutcomeRows: Number(fixtureCounts.rows[0]?.outcome_count ?? 0),
+        canonicalObservationRows: Number(
+          fixtureCounts.rows[0]?.canonical_count ?? 0,
+        ),
       },
       benchmarks,
     };
