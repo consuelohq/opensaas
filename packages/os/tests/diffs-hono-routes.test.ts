@@ -257,6 +257,8 @@ describe('Hono Diffs routes', () => {
     expect(html).toContain('>Users &amp; installs</span>');
     expect(html).toContain('.workspace-route-menu[hidden]');
     expect(html).toContain('/gateway/diffs/repositories/acme/app/pulls');
+    expect(html).toContain('const routePrefix = "/diffs/acme/app/pull/";');
+    expect(html).not.toContain('const routePrefix = "/acme/app/pull/";');
     expect(html).not.toContain('consuelohq/opensaas');
     expect(html).not.toContain('diffs.consuelohq.com');
   });

@@ -42,10 +42,15 @@ describe('bootstrap partial-install recovery CLI', () => {
 
     expectOrdered(body, [
       'install_verified_runtime',
-      'persist_runtime_paths',
       'ensure_dependencies',
       'prepare_recovery_cli',
       'ensure_command_on_path',
+      'ensure_named_bun_runtime',
+      'ensure_install_id',
+      'ensure_portless',
+      'ensure_caddy',
+      'ensure_cloudflared',
+      'persist_runtime_paths',
       'run_onboarding',
       'activate_verified_runtime',
       'finalize_recovery_cli',

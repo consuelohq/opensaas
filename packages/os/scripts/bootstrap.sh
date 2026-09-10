@@ -1978,16 +1978,16 @@ main() {
   render_dependency_progress
   prompt_dependency_setup
   ensure_bun
+  install_verified_runtime
+  ensure_dependencies
+  prepare_recovery_cli
+  ensure_command_on_path
   ensure_named_bun_runtime
   ensure_install_id
   ensure_portless
   ensure_caddy
   ensure_cloudflared
-  install_verified_runtime
   persist_runtime_paths
-  ensure_dependencies
-  prepare_recovery_cli
-  ensure_command_on_path
   run_onboarding
   activate_verified_runtime
   finalize_recovery_cli
