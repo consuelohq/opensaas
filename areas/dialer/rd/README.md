@@ -1,6 +1,6 @@
 # RD inbound routing program
 
-Status: RD0 coordination is being established; product alignment is not yet frozen.
+Status: RD0 contract frozen at rd-1; resolve its receipt PR live for integration.
 Integration lane: `stream/dialer`. Area: `dialer`.
 Coordinator: the parent RD0 conversation. Preferred execution model: GPT-6 Astra, High reasoning.
 
@@ -8,7 +8,7 @@ Coordinator: the parent RD0 conversation. Preferred execution model: GPT-6 Astra
 
 1. Read [COORDINATION.md](COORDINATION.md) for startup, publish, recovery, and copyable final responses.
 2. Read [GRAPH.md](GRAPH.md) for the requested work ID and its prerequisites.
-3. Read [DESIGN.md](DESIGN.md) for locked invariants and open product decisions.
+3. Read [DESIGN.md](DESIGN.md) for the frozen contract and owned tenant activation gates.
 4. Read [ACCEPTANCE.md](ACCEPTANCE.md) for the scientific and failure-testing contract.
 5. Inspect the requested node's receipt under `receipts/`, its scoped task workpad, and live GitHub state.
 
@@ -44,8 +44,8 @@ select Astra / High in the child or use supported explicit model controls.
 
 - RD0 was authorized on 2026-09-09 America/New_York. Coordination task:
   [PR #2437](https://github.com/consuelohq/opensaas/pull/2437).
-- RD0 housekeeping can land before the product contract is frozen. Keep its
-  architecture status `alignment_open` until the decisions in DESIGN.md are resolved.
+- RD0 decisions were confirmed on 2026-09-09; completion amendment: [PR #2442](https://github.com/consuelohq/opensaas/pull/2442).
+  Tenant activation settings have later owners and do not keep RD0 alignment open.
 - RD1 requires the frozen RD0 contract and verified integration of the relevant
   existing Dialer/scientific foundation into the chosen stream.
 - Earlier discovery identified #2014 and #2404, siblings #2091/#2111/#2116/#2146,

@@ -10,8 +10,9 @@ Confirm task-scoped stream.context resolves this stream's AGENTS.md and RD entry
 Review the diff for unrelated edits. Use the workspace's applicable docs checks.
 No runtime test is required for Markdown-only coordination changes.
 
-RD0 is complete only after material DESIGN.md decisions and node contracts are
-approved. Coordination documents can integrate while alignment remains open.
+RD0 completion requires the frozen DESIGN.md contract and node contracts to land
+with validation. Tenant configuration gates in DESIGN.md belong to their named
+implementation/activation owners; they do not prevent RD1 domain work.
 
 ## Lab structure from RD2 onward
 
@@ -49,7 +50,9 @@ and disabled in live deployment. A shared harness does not mean shared data.
 | App restart with waiting callers | Durable queue and surviving carrier legs reconcile |
 | Redis loss/stale presence | Postgres authority preserved; availability cannot override occupancy |
 | Browser refresh/network loss | Transport loss distinguished from media termination |
-| No staffed eligible queue or max wait | Bounded offers and configured fallback |
+| Owner busy/ineligible or owner offer times out | Wider eligible pool; no automatic wait for owner or repeated owner loop |
+| No staffed eligible queue or max wait | Bounded offers; explicit callback/voicemail choices |
+| Voicemail selected or storage unavailable | Disclosed recording policy; durable message or truthful unavailable outcome; no automatic callback |
 | Call ends during wrap-up | Capacity returns only under wrap-up policy |
 | Callback no-answer/cancel/reschedule | Obligation and capacity converge; attempts stay bounded |
 | CRM/calendar unavailable | Explicit safe fallback; no invented booking or customer identity |
