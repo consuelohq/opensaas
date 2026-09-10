@@ -4,13 +4,16 @@
   "mode": "full",
   "branch": "task/os/cancel-unpaid-cloud-provisioning-and-require-checkout",
   "base": "origin/task/os/cancel-unpaid-cloud-provisioning-and-require-checkout",
-  "headSha": "dd5a31100d6f932c542ded38786be67afe20adad",
-  "changeHash": "bb27964b8fc110bb000a3539fe14e13726e3d82fe5016626fb80a291af0b0ce0",
+  "headSha": "14e03e0e76d6bf872140bf3ecf44564c353eb834",
+  "changeHash": "39293b6cf36bcf7d38aec9aa4658e885fb96c87fd034422be1a05f616b1c122b",
   "changedFiles": [
     "packages/os/cloudflare/os-device-authority/src/routes/workspace-nodes.ts",
-    "packages/os/tests/launcher-nodes-control-plane.test.ts"
+    "packages/os/cloudflare/os-device-authority/src/services/managed-cloud-billing.ts",
+    "packages/os/scripts/lib/nodes-site.ts",
+    "packages/os/tests/launcher-nodes-control-plane.test.ts",
+    "packages/os/tests/settings-site.test.ts"
   ],
-  "verifiedAt": "2026-09-10T00:42:46.620Z",
+  "verifiedAt": "2026-09-10T00:51:42.278Z",
   "review": {
     "skipped": false,
     "passed": true,
@@ -24,12 +27,36 @@
       "kind": "selection",
       "passed": true,
       "changedFiles": [
+        ".task/os/cancel-unpaid-cloud-provisioning-and-require-checkout/evidence-log.json",
+        ".task/os/cancel-unpaid-cloud-provisioning-and-require-checkout/read-log.json",
         ".task/os/cancel-unpaid-cloud-provisioning-and-require-checkout/workpad.md",
-        ".task/tasks/os/cancel-unpaid-cloud-provisioning-and-require-checkout.json",
         "packages/os/cloudflare/os-device-authority/src/routes/workspace-nodes.ts",
-        "packages/os/tests/launcher-nodes-control-plane.test.ts"
+        "packages/os/cloudflare/os-device-authority/src/services/managed-cloud-billing.ts",
+        "packages/os/scripts/lib/nodes-site.ts",
+        "packages/os/tests/launcher-nodes-control-plane.test.ts",
+        "packages/os/tests/settings-site.test.ts"
       ],
       "matchedRules": [
+        {
+          "id": "os-managed-cloud-checkout-observability",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Managed-cloud checkout, Stripe synthetic testing, PostHog funnel instrumentation, Sentry error reporting, and checkout security changes must prove focused billing/auth/release contracts without selecting the historically noisy unrelated OS package suite.",
+          "matchedFiles": [
+            "packages/os/cloudflare/os-device-authority/src/services/managed-cloud-billing.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-internal-workspace-shell",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Internal workspace shell, Sites root, and trace/config chrome changes must prove the workspace root always converges on Home across daemon refreshes, the shared route switcher stays consistent, disabled agent surfaces remain re-enableable, and syntax stays valid. These tests share process.env and local MCP daemons, so files run serially to prevent cross-file agent-verification interference.",
+          "matchedFiles": [
+            "packages/os/tests/settings-site.test.ts"
+          ],
+          "origin": "explicit"
+        },
         {
           "id": "os-managed-cloud-one-click-provisioning",
           "critical": true,
@@ -37,12 +64,76 @@
           "reason": "One-click managed-cloud control-plane, launcher, provisioning-runner, enrollment, and Worker changes must prove their focused security and lifecycle contracts without selecting the historically red unrelated OS package suite.",
           "matchedFiles": [
             "packages/os/cloudflare/os-device-authority/src/routes/workspace-nodes.ts",
-            "packages/os/tests/launcher-nodes-control-plane.test.ts"
+            "packages/os/scripts/lib/nodes-site.ts",
+            "packages/os/tests/launcher-nodes-control-plane.test.ts",
+            "packages/os/tests/settings-site.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-github-source-control",
+          "critical": true,
+          "exclusive": true,
+          "reason": "GitHub App source-control onboarding, installation handoff, workspace repository materialization, and Diffs credential brokering must prove their focused security and UX contracts without selecting the historically red unrelated OS package suite.",
+          "matchedFiles": [
+            "packages/os/tests/settings-site.test.ts"
           ],
           "origin": "explicit"
         }
       ],
       "selectedSuites": [
+        {
+          "name": "OS managed cloud checkout observability contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "vitest",
+            "run",
+            "tests/managed-cloud-checkout-observability.test.ts",
+            "tests/cloud-first-web-onboarding.test.ts",
+            "tests/os-device-authority-worker.test.ts",
+            "tests/os-device-authority-release-contract.test.ts",
+            "tests/os-web-auth-contract.test.ts",
+            "tests/os-device-authority-architecture.test.ts",
+            "tests/os-universal-login.test.ts",
+            "tests/security-scan.test.ts"
+          ],
+          "ruleId": "os-managed-cloud-checkout-observability",
+          "critical": true
+        },
+        {
+          "name": "OS managed cloud checkout observability syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "ruleId": "os-managed-cloud-checkout-observability",
+          "critical": true
+        },
+        {
+          "name": "OS internal workspace shell contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "--no-file-parallelism",
+            "tests/artifacts.test.ts",
+            "tests/settings-site.test.ts",
+            "tests/settings-control-plane.test.ts",
+            "tests/launcher-nodes-materialization.test.ts",
+            "tests/observability-traces-site.test.ts",
+            "tests/workspace-chrome.test.ts",
+            "tests/sites-cli.test.ts",
+            "tests/launcher-local-customization.test.ts",
+            "tests/install-state.test.ts",
+            "tests/local-agent-connectivity.test.ts",
+            "tests/internal-launcher-regressions.test.ts"
+          ],
+          "ruleId": "os-internal-workspace-shell",
+          "critical": true
+        },
         {
           "name": "OS one-click managed cloud contracts",
           "command": [
@@ -81,12 +172,21 @@
           "critical": true
         },
         {
-          "name": "OS one-click managed cloud syntax contracts",
+          "name": "OS GitHub source-control contracts",
           "command": [
-            "node",
-            "packages/os/scripts/check-syntax.js"
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/github-source-control-authority.test.ts",
+            "tests/source-control-config.test.ts",
+            "tests/settings-hono-routes.test.ts",
+            "tests/settings-site.test.ts",
+            "tests/diffs-hono-routes.test.ts",
+            "tests/settings-sites-gateway-endpoints.test.ts",
+            "tests/os-device-authority-worker.test.ts"
           ],
-          "ruleId": "os-managed-cloud-one-click-provisioning",
+          "ruleId": "os-github-source-control",
           "critical": true
         }
       ],
@@ -95,6 +195,79 @@
       "run": true,
       "runResults": [
         {
+          "name": "OS managed cloud checkout observability contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "vitest",
+            "run",
+            "tests/managed-cloud-checkout-observability.test.ts",
+            "tests/cloud-first-web-onboarding.test.ts",
+            "tests/os-device-authority-worker.test.ts",
+            "tests/os-device-authority-release-contract.test.ts",
+            "tests/os-web-auth-contract.test.ts",
+            "tests/os-device-authority-architecture.test.ts",
+            "tests/os-universal-login.test.ts",
+            "tests/security-scan.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-managed-cloud-checkout-observability",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1723,
+          "outputTail": "39m{\"event\":\"consuelo.os.checkout\",\"event_id\":\"evt_synthetic_1\",\"event_name\":\"checkout_synthetic_completed\",\"synthetic\":true,\"account_id\":\"user_internal_123\",\"stripe_session_id\":\"cs_test_synthetic_123\",\"plan_id\":\"performance\",\"outcome\":\"success\"}\n\n\u001b[90mstdout\u001b[2m | tests/managed-cloud-checkout-observability.test.ts\u001b[2m > \u001b[22m\u001b[2msynthetic Stripe checkout\u001b[2m > \u001b[22m\u001b[2maccepts a signed sandbox completion without creating workspace or provisioning state\n\u001b[22m\u001b[39m{\"event\":\"consuelo.os.checkout\",\"event_id\":\"evt_synthetic_2\",\"event_name\":\"checkout_synthetic_completed\",\"synthetic\":true,\"account_id\":\"user_internal_123\",\"stripe_session_id\":\"cs_test_synthetic_123\",\"plan_id\":\"performance\",\"outcome\":\"success\"}\n\n \u001b[32m✓\u001b[39m tests/managed-cloud-checkout-observability.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 66\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-architecture.test.ts \u001b[2m(\u001b[22m\u001b[2m26 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 76\u001b[2mms\u001b[22m\u001b[39m\n\u001b[90mstdout\u001b[2m | tests/cloud-first-web-onboarding.test.ts\u001b[2m > \u001b[22m\u001b[2mcloud-first web onboarding\u001b[2m > \u001b[22m\u001b[2mfulfills one paid checkout only after a valid Stripe webhook and is idempotent\n\u001b[22m\u001b[39m{\"event\":\"consuelo.os.checkout\",\"event_id\":\"evt_checkout_1\",\"event_name\":\"checkout_plan_selected\",\"synthetic\":false,\"account_id\":\"user_13f3fb3d7f31a07691f2\",\"plan_id\":\"performance\",\"outcome\":\"started\"}\n\n\u001b[90mstdout\u001b[2m | tests/cloud-first-web-onboarding.test.ts\u001b[2m > \u001b[22m\u001b[2mcloud-first web onboarding\u001b[2m > \u001b[22m\u001b[2mfulfills one paid checkout only after a valid Stripe webhook and is idempotent\n\u001b[22m\u001b[39m{\"event\":\"consuelo.os.checkout\",\"event_id\":\"evt_checkout_2\",\"event_name\":\"checkout_session_created\",\"synthetic\":false,\"account_id\":\"user_13f3fb3d7f31a07691f2\",\"checkout_id\":\"mcc_7a4ce5819ef0a7a830dec55cecfa\",\"stripe_session_id\":\"cs_test_performance\",\"plan_id\":\"performance\",\"pricing_version\":\"cloud-first-onboarding-test\",\"monthly_price_cents\":14000,\"currency\":\"USD\",\"outcome\":\"success\"}\n\n\u001b[90mstdout\u001b[2m | tests/cloud-first-web-onboarding.test.ts\u001b[2m > \u001b[22m\u001b[2mcloud-first web onboarding\u001b[2m > \u001b[22m\u001b[2mfulfills one paid checkout only after a valid Stripe webhook and is idempotent\n\u001b[22m\u001b[39m{\"event\":\"consuelo.os.checkout\",\"event_id\":\"evt_checkout_3\",\"event_name\":\"checkout_completed\",\"synthetic\":false,\"account_id\":\"user_13f3fb3d7f31a07691f2\",\"checkout_id\":\"mcc_7a4ce5819ef0a7a830dec55cecfa\",\"stripe_session_id\":\"cs_test_performance\",\"plan_id\":\"performance\",\"pricing_version\":\"cloud-first-onboarding-test\",\"monthly_price_cents\":14000,\"currency\":\"USD\",\"outcome\":\"success\"}\n\n\u001b[90mstdout\u001b[2m | tests/cloud-first-web-onboarding.test.ts\u001b[2m > \u001b[22m\u001b[2mcloud-first web onboarding\u001b[2m > \u001b[22m\u001b[2mfulfills one paid checkout only after a valid Stripe webhook and is idempotent\n\u001b[22m\u001b[39m{\"event\":\"consuelo.os.checkout\",\"event_id\":\"evt_checkout_4\",\"event_name\":\"checkout_completed\",\"synthetic\":false,\"account_id\":\"user_13f3fb3d7f31a07691f2\",\"checkout_id\":\"mcc_7a4ce5819ef0a7a830dec55cecfa\",\"stripe_session_id\":\"cs_test_performance\",\"plan_id\":\"performance\",\"pricing_version\":\"cloud-first-onboarding-test\",\"monthly_price_cents\":14000,\"currency\":\"USD\",\"outcome\":\"success\"}\n\n \u001b[32m✓\u001b[39m tests/cloud-first-web-onboarding.test.ts \u001b[2m(\u001b[22m\u001b[2m13 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 100\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-worker.test.ts \u001b[2m(\u001b[22m\u001b[2m33 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 155\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-universal-login.test.ts \u001b[2m(\u001b[22m\u001b[2m13 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 67\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-release-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m18 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 854\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should stop release before remote mutation when readiness fails \u001b[33m 540\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m8 passed\u001b[39m\u001b[22m\u001b[90m (8)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m125 passed\u001b[39m\u001b[22m\u001b[90m (125)\u001b[39m\n\u001b[2m   Start at \u001b[22m 20:51:04\n\u001b[2m   Duration \u001b[22m 1.45s\u001b[2m (transform 2.37s, setup 170ms, import 2.83s, tests 1.36s, environment 1ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS managed cloud checkout observability syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "cwd": ".",
+          "ruleId": "os-managed-cloud-checkout-observability",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 2293,
+          "outputTail": "workspace script syntax checks passed\n"
+        },
+        {
+          "name": "OS internal workspace shell contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "--no-file-parallelism",
+            "tests/artifacts.test.ts",
+            "tests/settings-site.test.ts",
+            "tests/settings-control-plane.test.ts",
+            "tests/launcher-nodes-materialization.test.ts",
+            "tests/observability-traces-site.test.ts",
+            "tests/workspace-chrome.test.ts",
+            "tests/sites-cli.test.ts",
+            "tests/launcher-local-customization.test.ts",
+            "tests/install-state.test.ts",
+            "tests/local-agent-connectivity.test.ts",
+            "tests/internal-launcher-regressions.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-internal-workspace-shell",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 28465,
+          "outputTail": "s with immutable versions and stale base-version protection \u001b[33m 594\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m keeps reserved page versions protected and returns structured publish errors \u001b[33m 464\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m patches reader sections with auto-merge, same-section conflict, and leases \u001b[33m 886\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/local-agent-connectivity.test.ts \u001b[2m(\u001b[22m\u001b[2m14 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 4363\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should detect local agents when provisioning uses the supplied user home \u001b[33m 393\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m persists verified only after the installed stdio command completes an MCP handshake \u001b[33m 1003\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m persists verification outcomes independently for each configured agent \u001b[33m 574\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m requires re-verification after a selected client is reconfigured \u001b[33m 816\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m requires re-verification when the package-root MCP server changes \u001b[33m 797\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/settings-control-plane.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 133\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/settings-site.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 141\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/launcher-local-customization.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 89\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/launcher-nodes-materialization.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 52\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/artifacts.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 61\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/observability-traces-site.test.ts \u001b[2m(\u001b[22m\u001b[2m15 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 48\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/internal-launcher-regressions.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 15\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/workspace-chrome.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m11 passed\u001b[39m\u001b[22m\u001b[90m (11)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m92 passed\u001b[39m\u001b[22m\u001b[90m (92)\u001b[39m\n\u001b[2m   Start at \u001b[22m 20:51:08\n\u001b[2m   Duration \u001b[22m 28.22s\u001b[2m (transform 285ms, setup 54ms, import 1.27s, tests 26.08s, environment 0ms)\u001b[22m\n\n$ vitest run --no-file-parallelism tests/artifacts.test.ts tests/settings-site.test.ts tests/settings-control-plane.test.ts tests/launcher-nodes-materialization.test.ts tests/observability-traces-site.test.ts tests/workspace-chrome.test.ts tests/sites-cli.test.ts tests/launcher-local-customization.test.ts tests/install-state.test.ts tests/local-agent-connectivity.test.ts tests/internal-launcher-regressions.test.ts\n786 |   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);\n787 | }\n788 | \n789 | export function readManagedComponentState(home: string): ManagedComponentState {\n790 |   const root = componentsRoot(home);\n791 |   const provenanceEnvelope = readJson(join(root, PROVENANCE_FILE));\n                                   ^\nSyntaxError: JSON Parse error: Expected '}'\n      at readManagedComponentState (/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-cancel-unpaid-cloud-provisioning-and-require-checkout/packages/os/scripts/lib/managed-components.ts:791:30)\n      at readExistingState (/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-cancel-unpaid-cloud-provisioning-and-require-checkout/packages/os/scripts/lib/managed-component-install.ts:315:17)\n      at provisionManagedComponentIndexes (/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-cancel-unpaid-cloud-provisioning-and-require-checkout/packages/os/scripts/lib/managed-component-install.ts:479:20)\n      at provisionLocalOs (/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-cancel-unpaid-cloud-provisioning-and-require-checkout/packages/os/scripts/lib/install-state.ts:1987:19)\n      at /Users/kokayi/.consuelo/node/tasks/worktrees/task-os-cancel-unpaid-cloud-provisioning-and-require-checkout/packages/os/[eval]:3:43\n\nBun v1.3.14 (macOS arm64)\n"
+        },
+        {
           "name": "OS one-click managed cloud contracts",
           "command": [
             "bun",
@@ -123,8 +296,8 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 2168,
-          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-cancel-unpaid-cloud-provisioning-and-require-checkout/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/managed-cloud-node-instance-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 54\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-public-pricing.test.ts \u001b[2m(\u001b[22m\u001b[2m6 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 28\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-node-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 29\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/platform-managed-cloud-node.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 51\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-pricing.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 14\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/cloudflare-worker-release-readiness.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-architecture.test.ts \u001b[2m(\u001b[22m\u001b[2m26 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 71\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-one-click-provisioning.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 65\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/launcher-nodes-control-plane.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 49\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-node-enrollment-cli.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 1110\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m parses explicit home, onboarding, and status paths \u001b[33m 1104\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-one-click-runner.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 5\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-node-enrollment.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 1146\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m persists one owner-only node keypair and reuses it across enrollment retries \u001b[33m 1123\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/settings-site.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 231\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-release-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m18 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 703\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should stop release before remote mutation when readiness fails \u001b[33m 375\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m14 passed\u001b[39m\u001b[22m\u001b[90m (14)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m109 passed\u001b[39m\u001b[22m\u001b[90m (109)\u001b[39m\n\u001b[2m   Start at \u001b[22m 20:42:40\n\u001b[2m   Duration \u001b[22m 1.76s\u001b[2m (transform 5.32s, setup 390ms, import 5.79s, tests 3.56s, environment 1ms)\u001b[22m\n\n$ vitest run tests/managed-cloud-one-click-provisioning.test.ts tests/managed-cloud-one-click-runner.test.ts tests/launcher-nodes-control-plane.test.ts tests/settings-site.test.ts tests/cloudflare-worker-release-readiness.test.ts tests/os-device-authority-architecture.test.ts tests/os-device-authority-release-contract.test.ts tests/managed-cloud-node-enrollment.test.ts tests/managed-cloud-node-enrollment-cli.test.ts tests/platform-managed-cloud-node.test.ts tests/managed-cloud-pricing.test.ts tests/managed-cloud-public-pricing.test.ts tests/managed-cloud-node-instance-contract.test.ts tests/managed-cloud-node-contract.test.ts\n"
+          "durationMs": 2156,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-cancel-unpaid-cloud-provisioning-and-require-checkout/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/managed-cloud-node-instance-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 69\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/platform-managed-cloud-node.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 84\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-node-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 21\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-public-pricing.test.ts \u001b[2m(\u001b[22m\u001b[2m6 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 46\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-pricing.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 14\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/cloudflare-worker-release-readiness.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 8\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-one-click-provisioning.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 47\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-architecture.test.ts \u001b[2m(\u001b[22m\u001b[2m26 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 65\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-node-enrollment-cli.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 1049\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m parses explicit home, onboarding, and status paths \u001b[33m 1042\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-one-click-runner.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 7\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-node-enrollment.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 1076\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m persists one owner-only node keypair and reuses it across enrollment retries \u001b[33m 1048\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/launcher-nodes-control-plane.test.ts \u001b[2m(\u001b[22m\u001b[2m10 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 82\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/settings-site.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 234\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-release-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m18 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 684\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should stop release before remote mutation when readiness fails \u001b[33m 376\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m14 passed\u001b[39m\u001b[22m\u001b[90m (14)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m110 passed\u001b[39m\u001b[22m\u001b[90m (110)\u001b[39m\n\u001b[2m   Start at \u001b[22m 20:51:37\n\u001b[2m   Duration \u001b[22m 1.84s\u001b[2m (transform 5.22s, setup 276ms, import 5.98s, tests 3.49s, environment 1ms)\u001b[22m\n\n$ vitest run tests/managed-cloud-one-click-provisioning.test.ts tests/managed-cloud-one-click-runner.test.ts tests/launcher-nodes-control-plane.test.ts tests/settings-site.test.ts tests/cloudflare-worker-release-readiness.test.ts tests/os-device-authority-architecture.test.ts tests/os-device-authority-release-contract.test.ts tests/managed-cloud-node-enrollment.test.ts tests/managed-cloud-node-enrollment-cli.test.ts tests/platform-managed-cloud-node.test.ts tests/managed-cloud-pricing.test.ts tests/managed-cloud-public-pricing.test.ts tests/managed-cloud-node-instance-contract.test.ts tests/managed-cloud-node-contract.test.ts\n"
         },
         {
           "name": "OS device authority Worker contract",
@@ -142,24 +315,33 @@
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 1903,
-          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-cancel-unpaid-cloud-provisioning-and-require-checkout\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/os-device-authority-worker.test.ts \u001b[2m(\u001b[22m\u001b[2m33 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 140\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m33 passed\u001b[39m\u001b[22m\u001b[90m (33)\u001b[39m\n\u001b[2m   Start at \u001b[22m 20:42:42\n\u001b[2m   Duration \u001b[22m 1.24s\u001b[2m (transform 768ms, setup 0ms, import 925ms, tests 140ms, environment 0ms)\u001b[22m\n\n"
+          "durationMs": 1006,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-cancel-unpaid-cloud-provisioning-and-require-checkout\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/os-device-authority-worker.test.ts \u001b[2m(\u001b[22m\u001b[2m33 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 87\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m33 passed\u001b[39m\u001b[22m\u001b[90m (33)\u001b[39m\n\u001b[2m   Start at \u001b[22m 20:51:39\n\u001b[2m   Duration \u001b[22m 618ms\u001b[2m (transform 367ms, setup 0ms, import 445ms, tests 87ms, environment 0ms)\u001b[22m\n\n"
         },
         {
-          "name": "OS one-click managed cloud syntax contracts",
+          "name": "OS GitHub source-control contracts",
           "command": [
-            "node",
-            "packages/os/scripts/check-syntax.js"
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/github-source-control-authority.test.ts",
+            "tests/source-control-config.test.ts",
+            "tests/settings-hono-routes.test.ts",
+            "tests/settings-site.test.ts",
+            "tests/diffs-hono-routes.test.ts",
+            "tests/settings-sites-gateway-endpoints.test.ts",
+            "tests/os-device-authority-worker.test.ts"
           ],
           "cwd": ".",
-          "ruleId": "os-managed-cloud-one-click-provisioning",
+          "ruleId": "os-github-source-control",
           "critical": true,
           "status": "passed",
           "exitCode": 0,
           "signal": null,
           "error": null,
-          "durationMs": 2520,
-          "outputTail": "workspace script syntax checks passed\n"
+          "durationMs": 1752,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-cancel-unpaid-cloud-provisioning-and-require-checkout/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/source-control-config.test.ts \u001b[2m(\u001b[22m\u001b[2m7 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 53\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-worker.test.ts \u001b[2m(\u001b[22m\u001b[2m33 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 205\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/settings-site.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 242\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/settings-sites-gateway-endpoints.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 280\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/github-source-control-authority.test.ts \u001b[2m(\u001b[22m\u001b[2m10 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 486\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/diffs-hono-routes.test.ts \u001b[2m(\u001b[22m\u001b[2m10 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 152\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/settings-hono-routes.test.ts \u001b[2m(\u001b[22m\u001b[2m14 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 426\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m7 passed\u001b[39m\u001b[22m\u001b[90m (7)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m90 passed\u001b[39m\u001b[22m\u001b[90m (90)\u001b[39m\n\u001b[2m   Start at \u001b[22m 20:51:40\n\u001b[2m   Duration \u001b[22m 1.54s\u001b[2m (transform 2.76s, setup 118ms, import 4.60s, tests 1.84s, environment 1ms)\u001b[22m\n\n$ vitest run tests/github-source-control-authority.test.ts tests/source-control-config.test.ts tests/settings-hono-routes.test.ts tests/settings-site.test.ts tests/diffs-hono-routes.test.ts tests/settings-sites-gateway-endpoints.test.ts tests/os-device-authority-worker.test.ts\n(node:44744) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n(node:44740) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
         }
       ],
       "failedSuites": []

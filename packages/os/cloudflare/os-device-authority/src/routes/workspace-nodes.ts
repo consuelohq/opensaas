@@ -27,6 +27,10 @@ import { b64Decode, hasGrantedScope, hash } from '../utils';
 import { bearerToken } from '../services/mcp-proxy';
 import { authenticateInternalWorkspaceSession } from './web-auth';
 import { buildManagedCloudPublicCatalog } from '../services/managed-cloud-pricing';
+import {
+  ManagedCloudBillingError,
+  startManagedCloudNodeCheckout,
+} from '../services/managed-cloud-billing';
 import { publicManagedCloudProvisioningJob } from '../../../../scripts/lib/managed-cloud-provisioning';
 
 const jsonHeaders = { 'cache-control': 'no-store' } as const;
@@ -644,6 +648,30 @@ async function handleInternalNodePricing(
   }
 }
 
+async function canonicalAccountEmail(
+  runtime: DeviceAuthorityRuntime,
+  accountId: string,
+): Promise<string | undefined> {
+  const repository = runtime.installControlPlaneRepository;
+  if (!repository) return undefined;
+  try {
+    let cursor: string | undefined;
+    do {
+      const page = await repository.listUsers({
+        nowMs: runtime.now(),
+        limit: 100,
+        ...(cursor ? { cursor } : {}),
+      });
+      const match = page.items.find((user) => user.userId === accountId);
+      if (match?.email?.trim()) return match.email.trim();
+      cursor = page.nextCursor;
+    } while (cursor);
+  } catch {
+    return undefined;
+  }
+  return undefined;
+}
+
 async function handleInternalCreateProvisioning(
   request: Request,
   runtime: DeviceAuthorityRuntime,
@@ -687,15 +715,54 @@ async function handleInternalCreateProvisioning(
       return json({ job: publicManagedCloudProvisioningJob(cancelled) }, { headers: jsonHeaders });
     }
 
-    // Paid managed-cloud nodes must enter the provisioning queue only from the
-    // verified Stripe checkout completion path. This endpoint previously
-    // created an unpaid `requested` job directly from the Nodes page. Fail
-    // closed until the workspace checkout handoff is completed below.
-    return errorResponse(
-      409,
-      'MANAGED_CLOUD_CHECKOUT_REQUIRED',
-      'Checkout must be completed before a cloud node can be provisioned.',
-    );
+    const workspaceId = workspace.workspaceId?.trim();
+    if (!workspaceId) {
+      return errorResponse(409, 'WORKSPACE_ID_UNAVAILABLE', 'This workspace is not ready for managed cloud checkout yet.');
+    }
+    const email = await canonicalAccountEmail(runtime, auth.session.accountId);
+    if (!email) {
+      return errorResponse(503, 'MANAGED_CLOUD_IDENTITY_UNAVAILABLE', 'Your verified account email is temporarily unavailable for cloud checkout.');
+    }
+    const planId = typeof body?.planId === 'string' ? body.planId.trim() : '';
+    const region = typeof body?.region === 'string' ? body.region.trim() : '';
+    const pricingVersion = typeof body?.pricingVersion === 'string' ? body.pricingVersion.trim() : '';
+    const idempotencyKey = typeof body?.idempotencyKey === 'string' ? body.idempotencyKey.trim() : '';
+    try {
+      const checkout = await startManagedCloudNodeCheckout({
+        runtime,
+        accountId: auth.session.accountId,
+        email,
+        workspaceId,
+        workspaceSlug: workspace.workspaceSlug,
+        workspaceHost: workspace.workspaceHost,
+        workspaceName: workspace.displayName,
+        planId,
+        region,
+        pricingVersion,
+        idempotencyKey,
+      });
+      const sessionId = checkout.stripeCheckoutSessionId?.trim();
+      const url = checkout.stripeCheckoutUrl?.trim();
+      if (!sessionId || !url) {
+        return errorResponse(503, 'MANAGED_CLOUD_BILLING_UNAVAILABLE', 'Cloud checkout is temporarily unavailable.');
+      }
+      return json({
+        checkout: {
+          sessionId,
+          url,
+          planId: checkout.planId,
+          region: checkout.region,
+          pricingVersion: checkout.pricingVersion,
+          monthlyPriceCents: checkout.monthlyPriceCents,
+          currency: checkout.currency,
+        },
+      }, { headers: jsonHeaders });
+    } catch (error: unknown) {
+      if (error instanceof ManagedCloudBillingError) {
+        return errorResponse(error.status, `MANAGED_CLOUD_${error.code}`, error.message);
+      }
+      throw error;
+    }
   } catch {
     return serviceUnavailableResponse();
   }
