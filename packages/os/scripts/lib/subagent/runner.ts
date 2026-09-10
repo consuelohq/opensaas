@@ -142,6 +142,12 @@ try {
       signal,
       setupFailureMessage,
     ));
+    provider.stdin?.on('error', (error: NodeJS.ErrnoException) => {
+      if (error.code === 'EPIPE' || error.code === 'ERR_STREAM_DESTROYED' || finished) return;
+      setupFailureMessage = error.message;
+      signalProviderProcess(provider, 'SIGTERM');
+      scheduleProviderProcessEscalation(provider, 250);
+    });
     provider.stdin?.end(fs.readFileSync(launch.stdinPath));
     const closeLogFds = () => {
       try { fs.closeSync(stdoutFd); } catch {}
