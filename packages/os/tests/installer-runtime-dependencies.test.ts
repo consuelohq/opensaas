@@ -356,6 +356,29 @@ describe('public installer runtime dependencies', () => {
     );
   });
 
+  it('should verify the signed runtime and prepare recovery before persisting managed install state', () => {
+    const main = extractShellFunction(readBootstrap(), 'main');
+    const verifiedRuntime = main.indexOf('install_verified_runtime');
+    const dependencies = main.indexOf('ensure_dependencies');
+    const recoveryCli = main.indexOf('prepare_recovery_cli');
+    const managedWrites = [
+      'ensure_named_bun_runtime',
+      'ensure_install_id',
+      'ensure_portless',
+      'ensure_caddy',
+      'ensure_cloudflared',
+      'persist_runtime_paths',
+    ];
+
+    expect(verifiedRuntime).toBeGreaterThanOrEqual(0);
+    expect(verifiedRuntime).toBeLessThan(dependencies);
+    expect(dependencies).toBeLessThan(recoveryCli);
+    for (const functionName of managedWrites) {
+      const managedWrite = main.indexOf(functionName);
+      expect(managedWrite, functionName).toBeGreaterThan(recoveryCli);
+    }
+  });
+
   it('should stage one smoke-test worker without contending with the live supervisor', () => {
     const installer = readDaemonInstaller();
     const daemon = readFileSync(
