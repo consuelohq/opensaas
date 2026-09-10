@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/move-dialer-stream-instructions-to-os-canonical-path",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 2435,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2435",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-move-dialer-stream-instructions-to-os-canonical-path",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_941d24df3722",
+  "tmuxSession": "opensaas-dialer-move-dialer-stream-instructions-to-os-canonical--941d24df",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-move-dialer-stream-instructions-to-os-canonical-path/.task/session.json",
+  "createdAt": "2026-09-10T01:34:44.986Z"
+}

@@ -17,7 +17,7 @@ describe('workspace stream instructions', () => {
     const result = readStreamInstructions('dialer');
     expect(result.exists).toBe(true);
     expect(result.path).toBe(
-      resolve(import.meta.dirname, '../../streams/dialer/AGENTS.md'),
+      resolve(import.meta.dirname, '../../../os/streams/dialer/AGENTS.md'),
     );
     expect(result.content).toContain('# Consuelo Dialer agent instructions');
   });

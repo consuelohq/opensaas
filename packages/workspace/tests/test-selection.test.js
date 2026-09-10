@@ -1554,4 +1554,24 @@ describe('test selection registry', () => {
     expect(suiteNames).not.toContain('@consuelo/os package test');
   });
 
+  it('uses focused stream instruction contracts instead of the broad OS package suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/workspace/scripts/lib/stream-instructions.js',
+      '--changed-file',
+      'packages/os/tests/dialer-stream-instructions.test.ts',
+      '--changed-file',
+      'packages/workspace/streams/dialer/AGENTS.md',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-stream-instructions');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(suiteNames).toEqual(['OS stream instruction contracts']);
+  });
+
 });

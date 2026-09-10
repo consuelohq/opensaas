@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 function streamInstructionPath(area) {
-  return path.resolve(__dirname, '..', '..', 'streams', area, 'AGENTS.md');
+  return path.resolve(__dirname, '..', '..', '..', 'os', 'streams', area, 'AGENTS.md');
 }
 
 function readStreamInstructions(area) {
