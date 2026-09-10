@@ -1,0 +1,53 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/security/daily-security-maintenance-2026-09-01",
+  "base": "origin/stream/security",
+  "headSha": "917611e7908c08ab3cb619087abf02214dcbadbd",
+  "changeHash": "bbe6ad26c328edeef20758bfb67da1b574e6a8edfa9e3313875dbd3358e10e22",
+  "changedFiles": [
+    "packages/workspace/bun.lock",
+    "packages/workspace/package-lock.json",
+    "packages/workspace/package.json"
+  ],
+  "verifiedAt": "2026-09-01T14:02:34.926Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/security/daily-security-maintenance-2026-09-01/evidence-log.json",
+        ".task/security/daily-security-maintenance-2026-09-01/read-log.json",
+        ".task/security/daily-security-maintenance-2026-09-01/workpad.md",
+        ".task/tasks/security/daily-security-maintenance-2026-09-01.json",
+        "packages/workspace/bun.lock",
+        "packages/workspace/package-lock.json",
+        "packages/workspace/package.json"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

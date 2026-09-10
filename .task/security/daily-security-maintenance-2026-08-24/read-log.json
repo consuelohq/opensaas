@@ -1,0 +1,15 @@
+{
+  "files": [
+    ".task/security/daily-security-maintenance-2026-08-23/workpad.md",
+    ".task/security/daily-security-maintenance-2026-08-24/verify.json",
+    ".task/security/daily-security-maintenance-2026-08-24/workpad.md",
+    "packages/os/scripts/lib/security-scan-runner.ts",
+    "packages/os/scripts/lib/security-scan.ts",
+    "packages/os/scripts/verify.js",
+    "packages/workspace/scripts/review.js",
+    "packages/workspace/scripts/task-push.js",
+    "packages/workspace/scripts/test-selection.js",
+    "packages/workspace/scripts/verify.js"
+  ],
+  "updatedAt": "2026-08-24T15:23:53.731Z"
+}

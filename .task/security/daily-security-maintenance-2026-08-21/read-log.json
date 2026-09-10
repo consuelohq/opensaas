@@ -1,0 +1,8 @@
+{
+  "files": [
+    ".task/security/daily-security-maintenance-2026-08-21/workpad.md",
+    "packages/consuelo-website/package.json",
+    "packages/os/scripts/security-scan.ts"
+  ],
+  "updatedAt": "2026-08-21T13:50:01.957Z"
+}

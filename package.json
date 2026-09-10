@@ -213,6 +213,7 @@
     "@swc/core": "1.13.3",
     "@lingui/core": "5.1.2",
     "@lingui/swc-plugin": "5.6.0",
+    "linkify-it": "5.0.2",
     "@types/qs": "6.9.16",
     "@graphql-tools/merge": "patch:@graphql-tools/merge@9.1.7#./packages/twenty-server/patches/@graphql-tools+merge+9.1.7.patch"
   },
