@@ -14,6 +14,7 @@ const REPO_ROOT = resolve(
   '..',
 );
 const DEFAULT_BOOTSTRAP_PATH = 'packages/os/scripts/bootstrap.sh';
+const DEFAULT_WINDOWS_BOOTSTRAP_PATH = 'packages/os/scripts/bootstrap.ps1';
 const DEFAULT_WORKER_NAME = 'consuelo-os-install';
 const DEFAULT_DOMAIN = 'install.consuelohq.com';
 const DEFAULT_PATHNAME = '/os';
@@ -31,6 +32,7 @@ function writeErr(message = ''): void {
 
 type Options = {
   scriptPath: string;
+  windowsScriptPath: string;
   workerName: string;
   domain: string;
   pathname: string;
@@ -106,14 +108,15 @@ export function materializeHostedBootstrap(
 function printHelp() {
   writeOut(`Usage: bun run os:release-install -- [options]
 
-Release the Consuelo OS curl installer to Cloudflare Workers.
+Release the Consuelo OS shell and PowerShell installers to Cloudflare Workers.
 
-This is an operator-only script. It reads the public bootstrap source from
-packages/os/scripts/bootstrap.sh, generates a tiny Worker, deploys it with
-wrangler, then verifies the public install URL.
+This is an operator-only script. It reads the maintained shell and Windows
+bootstrap sources, generates one Worker, deploys it with wrangler, then verifies
+both public installer URLs.
 
 Options:
   --script-path <path>          Bootstrap source path. Default: ${DEFAULT_BOOTSTRAP_PATH}
+  --windows-script-path <path>  Windows bootstrap source path. Default: ${DEFAULT_WINDOWS_BOOTSTRAP_PATH}
   --worker-name <name>          Cloudflare Worker name. Default: ${DEFAULT_WORKER_NAME}
   --domain <domain>             Worker custom domain. Default: ${DEFAULT_DOMAIN}
   --pathname <path>             Installer path on domain. Default: ${DEFAULT_PATHNAME}
@@ -137,6 +140,7 @@ Examples:
 function parseArgs(argv: string[]): Options {
   const options: Options = {
     scriptPath: DEFAULT_BOOTSTRAP_PATH,
+    windowsScriptPath: DEFAULT_WINDOWS_BOOTSTRAP_PATH,
     workerName: DEFAULT_WORKER_NAME,
     domain: DEFAULT_DOMAIN,
     pathname: DEFAULT_PATHNAME,
@@ -159,6 +163,9 @@ function parseArgs(argv: string[]): Options {
         process.exit(0);
       case '--script-path':
         options.scriptPath = requireValue(argv, ++index, arg);
+        break;
+      case '--windows-script-path':
+        options.windowsScriptPath = requireValue(argv, ++index, arg);
         break;
       case '--worker-name':
         options.workerName = requireValue(argv, ++index, arg);
@@ -249,15 +256,182 @@ export function buildWorkerSource(
   bootstrap: string,
   options: Pick<Options, 'pathname'>,
   sha256: string,
+  windowsBootstrap = '',
+  trustedKeysJson = '{}',
 ): string {
   const bootstrapLiteral = JSON.stringify(bootstrap);
+  const windowsBootstrapLiteral = JSON.stringify(windowsBootstrap);
   const pathLiteral = JSON.stringify(options.pathname);
   const shaLiteral = JSON.stringify(sha256);
 
   return `const BOOTSTRAP = ${bootstrapLiteral};
+const WINDOWS_BOOTSTRAP = ${windowsBootstrapLiteral};
 const INSTALL_PATH = ${pathLiteral};
+const WINDOWS_INSTALL_PATH = \`\${INSTALL_PATH}.ps1\`;
 const RELEASE_PATH = \`\${INSTALL_PATH}/releases/\`;
 const BOOTSTRAP_SHA256 = ${shaLiteral};
+const TRUSTED_RELEASE_KEYS = ${trustedKeysJson};
+const DIGEST_PATTERN = /^sha256:[a-f0-9]{64}$/;
+const WINDOWS_OBJECT_KEY_PATTERN = /^bundles\\/sha256:[a-f0-9]{64}\\/[A-Za-z0-9._+-]+\\.tar\\.gz$/;
+
+const isRecord = (value) => Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+const canonicalize = (value) => {
+  if (Array.isArray(value)) return value.map(canonicalize);
+  if (isRecord(value)) {
+    return Object.fromEntries(
+      Object.keys(value).sort().flatMap((key) =>
+        value[key] === undefined ? [] : [[key, canonicalize(value[key])]],
+      ),
+    );
+  }
+  return value;
+};
+
+const decodeBase64 = (value) => {
+  const binary = atob(value);
+  return Uint8Array.from(binary, (character) => character.charCodeAt(0));
+};
+
+const decodeBase64Url = (value) => {
+  const normalized = value.replace(/-/g, '+').replace(/_/g, '/');
+  return decodeBase64(normalized + '='.repeat((4 - (normalized.length % 4)) % 4));
+};
+
+const publicKeyBytes = (pem) => decodeBase64(
+  pem
+    .replace('-----BEGIN PUBLIC KEY-----', '')
+    .replace('-----END PUBLIC KEY-----', '')
+    .replace(/\\s+/g, ''),
+);
+
+const verifyChannelManifest = async (manifest, expectedChannel) => {
+  if (!isRecord(manifest) || !isRecord(manifest.payload) || !isRecord(manifest.signature)) {
+    throw new Error('release manifest contract is invalid');
+  }
+  const payload = manifest.payload;
+  const signature = manifest.signature;
+  if (
+    payload.kind !== 'consuelo-os-channel-manifest' ||
+    payload.schemaVersion !== 1 ||
+    payload.channel !== expectedChannel ||
+    !Array.isArray(payload.platforms) ||
+    signature.algorithm !== 'ed25519' ||
+    typeof signature.keyId !== 'string' ||
+    typeof signature.signature !== 'string'
+  ) {
+    throw new Error('release manifest contract is invalid');
+  }
+  const trustedPem = TRUSTED_RELEASE_KEYS[signature.keyId];
+  if (typeof trustedPem !== 'string' || trustedPem.length === 0) {
+    throw new Error('release signing key is not trusted');
+  }
+  try {
+    const publicKey = await crypto.subtle.importKey(
+      'spki',
+      publicKeyBytes(trustedPem),
+      { name: 'Ed25519' },
+      false,
+      ['verify'],
+    );
+    const accepted = await crypto.subtle.verify(
+      { name: 'Ed25519' },
+      publicKey,
+      decodeBase64Url(signature.signature),
+      new TextEncoder().encode(JSON.stringify(canonicalize(payload))),
+    );
+    if (!accepted) throw new Error('release manifest signature is invalid');
+    return payload;
+  } catch {
+    throw new Error('release manifest signature verification failed');
+  }
+};
+
+const resolveWindowsBundle = (payload) => {
+  const matches = payload.platforms.filter((entry) =>
+    isRecord(entry) && entry.platform === 'windows' && entry.architecture === 'x64',
+  );
+  if (matches.length !== 1) {
+    throw new Error('stable release must publish exactly one windows-x64 bundle');
+  }
+  const bundle = matches[0];
+  const expectedObjectPrefix = 'bundles/' + bundle.bundleId + '/';
+  if (
+    typeof bundle.bundleId !== 'string' ||
+    !DIGEST_PATTERN.test(bundle.bundleId) ||
+    typeof bundle.archiveDigest !== 'string' ||
+    !DIGEST_PATTERN.test(bundle.archiveDigest) ||
+    typeof bundle.cloudflareObjectKey !== 'string' ||
+    !WINDOWS_OBJECT_KEY_PATTERN.test(bundle.cloudflareObjectKey) ||
+    !bundle.cloudflareObjectKey.startsWith(expectedObjectPrefix)
+  ) {
+    throw new Error('stable windows-x64 bundle contract is invalid');
+  }
+  return bundle;
+};
+
+const powerShellQuote = (value) => "'" + value.replaceAll("'", "''") + "'";
+
+const windowsInstallerResponse = async (request, env, url) => {
+  if (request.method !== 'GET' && request.method !== 'HEAD') {
+    return new Response('Method not allowed\\n', {
+      status: 405,
+      headers: {
+        allow: 'GET, HEAD',
+        'content-type': 'text/plain; charset=utf-8',
+        'x-content-type-options': 'nosniff',
+      },
+    });
+  }
+
+  try {
+    if (!WINDOWS_BOOTSTRAP.trim()) throw new Error('windows bootstrap is unavailable');
+    const pointer = await env.CONSUELO_OS_RELEASES.get('channels/stable.json');
+    if (!pointer) throw new Error('stable release is unavailable');
+    const manifestText = await new Response(pointer.body).text();
+    if (manifestText.length > 1024 * 1024) throw new Error('stable release manifest is too large');
+    const manifest = JSON.parse(manifestText);
+    const payload = await verifyChannelManifest(manifest, 'stable');
+    const bundle = resolveWindowsBundle(payload);
+    const bundleUrl = new URL(RELEASE_PATH + bundle.cloudflareObjectKey, url.origin).toString();
+    const installerUrl = new URL(WINDOWS_INSTALL_PATH, url.origin).toString();
+    const script =
+      '& {\\n' +
+      '  $consueloPrincipal = [Security.Principal.WindowsPrincipal]::new([Security.Principal.WindowsIdentity]::GetCurrent())\\n' +
+      '  if (-not $consueloPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {\\n' +
+      '    $consueloElevatedScript = Join-Path ([IO.Path]::GetTempPath()) (\"consuelo-os-\" + [guid]::NewGuid().ToString(\"N\") + \".ps1\")\\n' +
+      '    try {\\n' +
+      '      Invoke-WebRequest -UseBasicParsing -Uri ' + powerShellQuote(installerUrl) + ' -OutFile $consueloElevatedScript\\n' +
+      '      $consueloElevatedPath = \"\\\"\" + $consueloElevatedScript.Replace(\"\\\"\", \"\\\"\\\"\") + \"\\\"\"\\n' +
+      '      $consueloProcess = Start-Process powershell.exe -Verb RunAs -Wait -PassThru -ArgumentList @(' +
+        powerShellQuote('-NoProfile') + ', ' + powerShellQuote('-ExecutionPolicy') + ', ' + powerShellQuote('Bypass') + ', ' + powerShellQuote('-File') + ', $consueloElevatedPath)\\n' +
+      '      if ($consueloProcess.ExitCode -ne 0) { throw \"Elevated Consuelo OS installer exited with code $($consueloProcess.ExitCode).\" }\\n' +
+      '    } finally {\\n' +
+      '      Remove-Item -LiteralPath $consueloElevatedScript -Force -ErrorAction SilentlyContinue\\n' +
+      '    }\\n' +
+      '    return\\n' +
+      '  }\\n' +
+      '  & {\\n' + WINDOWS_BOOTSTRAP.trimEnd() + '\\n  } -BundleUrl ' + powerShellQuote(bundleUrl) +
+      ' -BundleSha256 ' + powerShellQuote(bundle.archiveDigest.slice('sha256:'.length)) + '\\n' +
+      '}\\n';
+    return new Response(request.method === 'HEAD' ? null : script, {
+      status: 200,
+      headers: {
+        'cache-control': 'public, max-age=60, must-revalidate',
+        'content-type': 'text/x-powershell; charset=utf-8',
+        'x-content-type-options': 'nosniff',
+      },
+    });
+  } catch {
+    return new Response('Windows installer unavailable\\n', {
+      status: 503,
+      headers: {
+        'cache-control': 'no-store',
+        'content-type': 'text/plain; charset=utf-8',
+        'x-content-type-options': 'nosniff',
+      },
+    });
+  }
+};
 
 export default {
   async fetch(request, env) {
@@ -266,6 +440,10 @@ export default {
 
       if (url.pathname === '/') {
         return Response.redirect(new URL(INSTALL_PATH, url.origin), 302);
+      }
+
+      if (url.pathname === WINDOWS_INSTALL_PATH) {
+        return windowsInstallerResponse(request, env, url);
       }
 
       if (url.pathname.startsWith(RELEASE_PATH)) {
@@ -414,24 +592,70 @@ async function verifyInstallUrl(
   throw new Error(`Installer verification failed after ${options.verifyAttempts} attempts: ${message}`);
 }
 
+async function verifyWindowsInstallUrl(
+  url: string,
+  options: Pick<Options, 'verifyAttempts' | 'verifyDelayMs'>,
+) {
+  let lastError: unknown = null;
+
+  for (let attempt = 1; attempt <= options.verifyAttempts; attempt += 1) {
+    writeOut(`Verifying ${url} (attempt ${attempt}/${options.verifyAttempts})`);
+    try {
+      const response = await fetch(url, {
+        headers: { 'user-agent': 'consuelo-os-release-operator/1.0' },
+      });
+      const text = await response.text();
+      const contentType = response.headers.get('content-type') || '';
+      if (!response.ok) throw new Error(`Windows installer URL returned ${response.status}`);
+      if (!contentType.includes('powershell') && !text.includes('Invoke-ConsueloWindowsBootstrap')) {
+        throw new Error(`Windows installer URL did not look like PowerShell. content-type=${contentType}`);
+      }
+      if (!/-BundleUrl 'https:\/\/[^']+\/os\/releases\/bundles\/sha256:[a-f0-9]{64}\/[A-Za-z0-9._+-]+\.tar\.gz'/.test(text)) {
+        throw new Error('Windows installer is missing a release-bound bundle URL');
+      }
+      if (!/-BundleSha256 '[a-f0-9]{64}'/.test(text)) {
+        throw new Error('Windows installer is missing a release-bound SHA-256 digest');
+      }
+      writeOut(`Verified ${url}`);
+      return;
+    } catch (error: unknown) {
+      lastError = error;
+      const message = error instanceof Error ? error.message : String(error);
+      if (attempt === options.verifyAttempts) break;
+      writeErr(`Verification not ready: ${message}`);
+      await sleep(options.verifyDelayMs);
+    }
+  }
+
+  const message = lastError instanceof Error ? lastError.message : String(lastError);
+  throw new Error(`Windows installer verification failed after ${options.verifyAttempts} attempts: ${message}`);
+}
+
 async function main() {
   const options = parseArgs(process.argv.slice(2));
   options.pathname = normalizePathname(options.pathname);
 
   const bootstrapPath = resolve(REPO_ROOT, options.scriptPath);
+  const windowsBootstrapPath = resolve(REPO_ROOT, options.windowsScriptPath);
   const bootstrap = materializeHostedBootstrap(
     readFileSync(bootstrapPath, 'utf8'),
   );
+  const windowsBootstrap = readFileSync(windowsBootstrapPath, 'utf8');
+  const trustedKeys = trustedReleaseKeysJson();
   const sha256 = createHash('sha256').update(bootstrap).digest('hex');
   const installUrl = `https://${options.domain}${options.pathname}`;
+  const windowsInstallUrl = `${installUrl}.ps1`;
 
   writeOut(`bootstrap=${options.scriptPath}`);
+  writeOut(`windowsBootstrap=${options.windowsScriptPath}`);
   writeOut(`sha256=${sha256}`);
   writeOut(`installUrl=${installUrl}`);
+  writeOut(`windowsInstallUrl=${windowsInstallUrl}`);
 
   if (options.verifyOnly) {
     try {
       await verifyInstallUrl(installUrl, sha256, options);
+      await verifyWindowsInstallUrl(windowsInstallUrl, options);
     } catch (error: unknown) {
       throw new Error(
         `Hosted installer verification failed for ${installUrl}`,
@@ -444,7 +668,10 @@ async function main() {
   const tempDir = mkdtempSync(join(tmpdir(), 'consuelo-os-install-worker-'));
   const workerPath = join(tempDir, 'worker.js');
   const wranglerPath = join(tempDir, 'wrangler.toml');
-  writeFileSync(workerPath, buildWorkerSource(bootstrap, options, sha256));
+  writeFileSync(
+    workerPath,
+    buildWorkerSource(bootstrap, options, sha256, windowsBootstrap, trustedKeys),
+  );
   const releaseBucket = requiredEnvironmentValue(
     'CONSUELO_OS_RELEASE_R2_BUCKET',
   );
@@ -482,6 +709,7 @@ async function main() {
 
     if (!options.dryRun && !options.noDeploy && !options.noVerify) {
       await verifyInstallUrl(installUrl, sha256, options);
+      await verifyWindowsInstallUrl(windowsInstallUrl, options);
     }
   } finally {
     if (options.keepTemp) {

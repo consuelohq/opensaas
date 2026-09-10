@@ -12,11 +12,19 @@ every script supports `--help` and `--json`.
 
 ## first-time OS bootstrap
 
-`bootstrap` is the pre-Bun Mac installer entrypoint. It is also served by the production app route at `/os` so a first-time user can run:
+`bootstrap.sh` is the pre-Bun macOS/Linux installer entrypoint. The hosted installer Worker serves it at `/os`.
 
 ```bash
 curl -fsSL https://install.consuelohq.com/os | bash
 ```
+
+On native Windows x64, paste this into PowerShell:
+
+```powershell
+irm https://install.consuelohq.com/os.ps1 | iex
+```
+
+`/os.ps1` resolves the current signed stable release, verifies its Ed25519 channel signature inside the hosted installer Worker, selects the `windows-x64` bundle, and binds that immutable bundle URL and SHA-256 digest into the maintained `bootstrap.ps1` before PowerShell executes it. If service registration needs elevation, the installer re-launches itself through the normal Windows UAC prompt.
 
 Repo-local checks:
 
@@ -52,7 +60,7 @@ Background services stay user-level only. Baseline labels are `com.consuelo.syst
 
 After LaunchAgent cutover, the installer probes the same local port the daemon resolves from `WORKSPACE_DAEMON_PORT`, the OS `.env` values, and the `46321` default. `WORKSPACE_CUTOVER_LOCAL_HEALTH_URL` remains an explicit repair/testing override.
 
-The hosted endpoint is implemented in the app server Consuelo API module as `GET /os`. Production DNS/Railway must map `install.consuelohq.com` to that service and preserve the `/os` path. Use `CONSUELO_OS_BOOTSTRAP_SCRIPT_PATH` only if the deployed process does not run from the repo root.
+The hosted installer is the dedicated Cloudflare Worker `consuelo-os-install`. It serves `/os`, `/os.ps1`, signed release channel pointers, and immutable release bundles from the `CONSUELO_OS_RELEASES` R2 binding.
 
 Runtime artifact note: portless is optional. Baseline public install must work on `http://127.0.0.1:46321` without portless. Optional hosted portless install uses `https://install.consuelohq.com/os/bin/portless/darwin-<arch>/portless` plus the sibling `.sha256` file only when explicitly enabled. See `docs/installer-runtime-release-checklist.md` for the exact URL set, SHA format, fallback behavior, and clean-machine smoke checklist.
 

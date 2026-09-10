@@ -2,11 +2,11 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2691,
-    "mappedTestCount": 2606,
+    "testFileCount": 2693,
+    "mappedTestCount": 2608,
     "unmappedTestCount": 85,
-    "ruleCount": 79,
-    "explicitRuleCount": 60,
+    "ruleCount": 80,
+    "explicitRuleCount": 61,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
@@ -44,6 +44,7 @@
       "packages/twenty-front/src/modules/views/utils": 14,
       "packages/twenty-server/test/integration/metadata/suites/object-metadata/utils": 14,
       "packages/twenty-server/test/integration/metadata/suites/skill/utils": 14,
+      "packages/consuelo-website/tests": 13,
       "packages/lead-connector/src/embed": 13,
       "packages/os/tests/distribution": 13,
       "packages/twenty-front/src/modules/navigation-menu-item/utils": 13,
@@ -56,7 +57,6 @@
       "packages/twenty-server/test/integration/metadata/suites/view-group/utils": 12,
       "packages/twenty-server/test/integration/metadata/suites/view/utils": 12,
       "packages/twenty-server/test/integration/twenty-config/utils": 12,
-      "packages/consuelo-website/tests": 11,
       "packages/documentation/tests": 11,
       "packages/twenty-front/src/modules/page-layout/hooks": 11,
       "packages/twenty-front/src/modules/workflow/workflow-diagram/utils": 11,
@@ -635,7 +635,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 596,
+      "test": 598,
       "spec": 152,
       "tests-dir": 8,
       "other": 7,
@@ -1524,6 +1524,55 @@
       "critical": true,
       "exclusive": true,
       "reason": "Lifecycle updater, managed ingress dependency convergence, Caddy topology reload decisions, immutable release handoff, worker drain/load-balancer evacuation, detached activation, platform restart, and discoverable lifecycle-tool changes must run the exact lifecycle/facade/tool contracts without selecting unrelated package-wide OS tests.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-public-windows-installer-and-landing-command",
+      "source": [
+        "packages/workspace/scripts/os-release-install.ts",
+        "packages/os/tests/hosted-release-worker-contract.test.ts",
+        "packages/consuelo-website/src/components/home/HomeHero.astro",
+        "packages/consuelo-website/src/data/home-content.ts",
+        "packages/consuelo-website/src/lib/install-command.ts",
+        "packages/consuelo-website/tests/install-command.test.ts",
+        "packages/consuelo-website/tests/install-command-source.test.js"
+      ],
+      "tests": [
+        {
+          "name": "Hosted shell and PowerShell installer Worker contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/hosted-release-worker-contract.test.ts"
+          ]
+        },
+        {
+          "name": "Platform-aware landing install command contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/consuelo-website/tests/install-command.test.ts",
+            "packages/consuelo-website/tests/install-command-source.test.js"
+          ]
+        },
+        {
+          "name": "Consuelo website Astro check",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/consuelo-website",
+            "astro",
+            "--",
+            "check"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Hosted Windows installer and landing-command changes must prove signed stable bundle binding, Windows/macOS/Linux command selection, copy behavior, and Astro source validity without selecting unrelated package-wide OS tests.",
       "origin": "explicit"
     },
     {
@@ -3888,6 +3937,16 @@
     },
     {
       "path": "packages/consuelo-website/tests/homepage-responsive.test.mjs",
+      "group": "packages/consuelo-website/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/consuelo-website/tests/install-command-source.test.js",
+      "group": "packages/consuelo-website/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/consuelo-website/tests/install-command.test.ts",
       "group": "packages/consuelo-website/tests",
       "kind": "test"
     },

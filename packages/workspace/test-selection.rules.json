@@ -862,6 +862,54 @@
       "reason": "Lifecycle updater, managed ingress dependency convergence, Caddy topology reload decisions, immutable release handoff, worker drain/load-balancer evacuation, detached activation, platform restart, and discoverable lifecycle-tool changes must run the exact lifecycle/facade/tool contracts without selecting unrelated package-wide OS tests."
     },
     {
+      "id": "os-public-windows-installer-and-landing-command",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/workspace/scripts/os-release-install.ts",
+        "packages/os/tests/hosted-release-worker-contract.test.ts",
+        "packages/consuelo-website/src/components/home/HomeHero.astro",
+        "packages/consuelo-website/src/data/home-content.ts",
+        "packages/consuelo-website/src/lib/install-command.ts",
+        "packages/consuelo-website/tests/install-command.test.ts",
+        "packages/consuelo-website/tests/install-command-source.test.js"
+      ],
+      "tests": [
+        {
+          "name": "Hosted shell and PowerShell installer Worker contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/hosted-release-worker-contract.test.ts"
+          ]
+        },
+        {
+          "name": "Platform-aware landing install command contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/consuelo-website/tests/install-command.test.ts",
+            "packages/consuelo-website/tests/install-command-source.test.js"
+          ]
+        },
+        {
+          "name": "Consuelo website Astro check",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/consuelo-website",
+            "astro",
+            "--",
+            "check"
+          ]
+        }
+      ],
+      "reason": "Hosted Windows installer and landing-command changes must prove signed stable bundle binding, Windows/macOS/Linux command selection, copy behavior, and Astro source validity without selecting unrelated package-wide OS tests."
+    },
+    {
       "id": "os-launcher-copy-interaction",
       "critical": true,
       "exclusive": true,
