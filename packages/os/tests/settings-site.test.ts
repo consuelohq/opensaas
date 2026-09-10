@@ -230,6 +230,7 @@ describe('configuration site', () => {
     expect(nodesHtml).not.toContain('class="node-card"');
     expect(nodesHtml).toContain('id="add-node-dialog"');
     expect(nodesHtml).toContain('Create cloud node');
+    expect(nodesHtml).toContain('Continue to checkout');
     expect(nodesHtml).toContain('Always available');
     expect(nodesHtml).toContain('Starter');
     expect(nodesHtml).toContain('Standard');
@@ -255,7 +256,9 @@ describe('configuration site', () => {
     expect(nodesHtml).toContain('aria-live');
     expect(nodesHtml).not.toContain('e2-standard-');
     expect(nodesHtml).not.toContain('e2-medium');
-    expect(nodesHtml).toContain('currentProvisioningKey = null; updateCreateButton(); return;');
+    expect(nodesHtml).toContain('window.location.assign(checkout.url)');
+    expect(nodesHtml).toContain('Checkout cancelled. No cloud node was created.');
+    expect(nodesHtml).toContain('Checkout complete. Payment confirmation and provisioning will continue automatically.');
     expect(nodesHtml).not.toMatch(/e2-(?:medium|standard)/);
     expect(nodesHtml).not.toContain('machineType');
     expect(nodesHtml).not.toContain('providerCost');
