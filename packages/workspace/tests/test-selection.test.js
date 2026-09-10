@@ -140,6 +140,31 @@ describe('test selection registry', () => {
     }
   });
 
+  it('uses focused durable subagent contracts instead of the broad OS package suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/lib/subagent/lifecycle.ts',
+      '--changed-file',
+      'packages/os/tests/subagent-lifecycle-regressions.test.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const runtimeSuite = data.selectedSuites.find(
+      (suite) => suite.ruleId === 'os-subagent-runtime'
+        && suite.name === 'OS durable subagent runtime contracts',
+    );
+
+    expect(matchedRuleIds).toContain('os-subagent-runtime');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(runtimeSuite?.command).toEqual(expect.arrayContaining([
+      'packages/os/tests/subagent-orchestration-contract.test.ts',
+      'packages/os/tests/subagent-lifecycle-regressions.test.ts',
+      'packages/os/tests/subagent-executable-discovery.test.ts',
+    ]));
+  });
+
   it('suppresses a broad auto package suite when explicit critical coverage fully owns the changed code', () => {
     const registryPath = path.join(
       os.tmpdir(),
