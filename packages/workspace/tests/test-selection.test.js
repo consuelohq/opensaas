@@ -630,6 +630,30 @@ describe('test selection registry', () => {
     ]);
   });
 
+  it('uses focused public Windows installer and landing-command contracts', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/workspace/scripts/os-release-install.ts',
+      '--changed-file',
+      'packages/consuelo-website/src/components/home/HomeHero.astro',
+      '--changed-file',
+      'packages/consuelo-website/src/lib/install-command.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-public-windows-installer-and-landing-command');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(suiteNames).toEqual([
+      'Hosted shell and PowerShell installer Worker contracts',
+      'Platform-aware landing install command contracts',
+      'Consuelo website Astro check',
+    ]);
+  });
+
   it('uses focused OS release freshness contracts instead of the broad OS package suite', () => {
     const result = run([
       'check',

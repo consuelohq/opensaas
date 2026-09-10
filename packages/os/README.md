@@ -131,7 +131,7 @@ bun run install:local -- --yes
 
 The installer prepares `CONSUELO_HOME`, local runtime folders, skill metadata, and optional agent links. Consuelo OS runs a background service on the Mac so agents and apps can reach it while you work, similar to common Mac utilities that keep a helper running in the background.
 
-## First-time Mac install
+## First-time install
 
 Hosted install path:
 
@@ -139,7 +139,13 @@ Hosted install path:
 curl -fsSL https://install.consuelohq.com/os | bash
 ```
 
-The hosted `/os` route is implemented by the production app server and serves the maintained source at `packages/os/scripts/bootstrap.sh` as a shell script. Railway/DNS should map `install.consuelohq.com` to the same production service that serves the app API, with the path `/os` left intact. If the deployed working directory differs from the repo root, set `CONSUELO_OS_BOOTSTRAP_SCRIPT_PATH` to the absolute path of `packages/os/scripts/bootstrap.sh` in that container.
+On native Windows x64, paste this into PowerShell:
+
+```powershell
+irm https://install.consuelohq.com/os.ps1 | iex
+```
+
+The dedicated Cloudflare Worker `consuelo-os-install` serves both maintained bootstrap sources: `/os` for `packages/os/scripts/bootstrap.sh` and `/os.ps1` for `packages/os/scripts/bootstrap.ps1`. The Windows route verifies the signed stable release pointer before binding its `windows-x64` bundle URL and digest into the PowerShell bootstrap. The public PowerShell bootstrap self-elevates through the normal Windows UAC prompt when service registration requires administrator rights.
 
 Repo-local bootstrap testing:
 
