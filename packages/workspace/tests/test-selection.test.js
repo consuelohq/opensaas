@@ -688,6 +688,7 @@ describe('test selection registry', () => {
       'packages/os',
       'test',
       'tests/distribution/runtime-bundle.test.ts',
+      'tests/distribution/release-publication-preparer.test.ts',
     ]);
   });
 
@@ -1562,7 +1563,9 @@ describe('test selection registry', () => {
       '--changed-file',
       'packages/os/tests/dialer-stream-instructions.test.ts',
       '--changed-file',
-      'packages/workspace/streams/dialer/AGENTS.md',
+      'areas/dialer/AGENTS.md',
+      '--changed-file',
+      'packages/os/streams/dialer/AGENTS.md',
       '--json',
     ]);
     const data = json(result);

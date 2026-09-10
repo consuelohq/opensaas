@@ -774,6 +774,8 @@
         "packages/os/scripts/lib/streams/instructions.ts",
         "packages/os/tests/dialer-stream-instructions.test.ts",
         "packages/os/streams/**/AGENTS.md",
+        "packages/os/streams/dialer/**",
+        "areas/dialer/**",
         "packages/workspace/scripts/lib/stream-instructions.js",
         "packages/workspace/scripts/lib/stream-instructions.test.ts",
         "packages/workspace/streams/**/AGENTS.md"
@@ -787,13 +789,14 @@
             "vitest",
             "run",
             "packages/workspace/scripts/lib/stream-instructions.test.ts",
-            "packages/os/tests/dialer-stream-instructions.test.ts"
+            "packages/os/tests/dialer-stream-instructions.test.ts",
+            "packages/workspace/tests/dialer-validation-runbook.test.ts"
           ]
         }
       ],
       "critical": true,
       "exclusive": true,
-      "reason": "Stream instruction storage and resolver changes must prove the OS-owned canonical path without selecting the unrelated package-wide OS suite.",
+      "reason": "Stream instruction storage and resolver changes must prove repository area guidance is preferred when present, OS stream fallback remains available for product-owned streams, and Dialer project context never ships as customer runtime content.",
       "origin": "explicit"
     },
     {
@@ -1185,7 +1188,8 @@
     {
       "id": "os-runtime-bundle-distribution-contract",
       "source": [
-        "packages/os/tests/distribution/runtime-bundle.test.ts"
+        "packages/os/tests/distribution/runtime-bundle.test.ts",
+        "packages/os/tests/distribution/release-publication-preparer.test.ts"
       ],
       "tests": [
         {
@@ -1195,7 +1199,8 @@
             "--cwd",
             "packages/os",
             "test",
-            "tests/distribution/runtime-bundle.test.ts"
+            "tests/distribution/runtime-bundle.test.ts",
+            "tests/distribution/release-publication-preparer.test.ts"
           ]
         }
       ],
@@ -1288,6 +1293,7 @@
         "packages/os/tests/fixtures/tool-package-baseline.json",
         "packages/os/tests/cli-update-routing.test.ts",
         "packages/os/tests/lifecycle-engine.test.ts",
+        "packages/os/tests/lifecycle-retention-uninstall.test.ts",
         "packages/os/tests/lifecycle-facade.test.ts",
         "packages/os/tests/lifecycle-tool-surface.test.ts",
         "packages/os/tests/native-lifecycle-operation.test.ts",
@@ -1326,6 +1332,7 @@
             "vitest",
             "run",
             "packages/os/tests/lifecycle-engine.test.ts",
+            "packages/os/tests/lifecycle-retention-uninstall.test.ts",
             "packages/os/tests/lifecycle-restart-contract.test.ts",
             "packages/os/tests/lifecycle-ingress-continuity.test.ts",
             "packages/os/tests/linux-ingress-continuity.test.ts",

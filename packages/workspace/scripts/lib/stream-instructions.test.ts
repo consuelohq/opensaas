@@ -17,9 +17,11 @@ describe('workspace stream instructions', () => {
     const result = readStreamInstructions('dialer');
     expect(result.exists).toBe(true);
     expect(result.path).toBe(
-      resolve(import.meta.dirname, '../../../os/streams/dialer/AGENTS.md'),
+      resolve(import.meta.dirname, '../../../../areas/dialer/AGENTS.md'),
     );
-    expect(result.content).toContain('# Consuelo Dialer agent instructions');
+    expect(result.content).toContain('# Dialer development, validation, and release runbook');
+    expect(result.content).toContain('Pipeline stage = predictive queue');
+    expect(result.content).toContain('RD inbound routing program');
   });
 
   it('returns an explicit empty state when a stream has no instructions', () => {
@@ -27,5 +29,13 @@ describe('workspace stream instructions', () => {
       exists: false,
       content: '',
     });
+  });
+
+  it('falls back to OS stream instructions when an area has no repository runbook', () => {
+    const result = readStreamInstructions('media');
+    expect(result.exists).toBe(true);
+    expect(result.path).toBe(
+      resolve(import.meta.dirname, '../../../os/streams/media/AGENTS.md'),
+    );
   });
 });
