@@ -97,12 +97,15 @@ export const finalizePredictiveDecision = async (
   },
 ): Promise<void> => {
   try {
-    await database.query(FINALIZE_PREDICTIVE_DECISION_SQL, [
+    const result = await database.query(FINALIZE_PREDICTIVE_DECISION_SQL, [
       input.decisionId,
       input.workspaceId,
       JSON.stringify(input.selectedContactIds),
       input.selectedAt ?? new Date().toISOString(),
     ]);
+    if (result.rowCount === 0) {
+      throw new Error('Predictive decision was not found in the workspace');
+    }
   } catch (cause: unknown) {
     throw new Error('Failed to finalize predictive decision', { cause });
   }

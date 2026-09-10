@@ -92,6 +92,9 @@ describeIntegration('local dialer lab service integration', () => {
       expect(result.migration.applied).toContain(
         '20260815_004_contextual_predictive_science_hardening',
       );
+      expect(result.migration.applied).toContain(
+        '20260815_005_learning_observation_integrity',
+      );
       expect(result.persistedFixture).toEqual({
         candidateLedgerRows: 250,
         trainingOutcomeRows: 1_000,

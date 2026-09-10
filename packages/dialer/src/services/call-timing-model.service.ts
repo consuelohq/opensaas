@@ -17,7 +17,15 @@ export const rankHazardEstimates = (
       return right.sampleSize - left.sampleSize;
     }
 
-    return right.answerRate - left.answerRate;
+    if (right.answerRate !== left.answerRate) {
+      return right.answerRate - left.answerRate;
+    }
+
+    if (left.dayOfWeek !== right.dayOfWeek) {
+      return left.dayOfWeek - right.dayOfWeek;
+    }
+
+    return left.hourOfDay - right.hourOfDay;
   });
 
 export class CallTimingModel {

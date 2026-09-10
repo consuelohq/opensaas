@@ -311,11 +311,15 @@ describe('Railway dialer-server runtime composition', () => {
   it('finalizes predictive actions only after provider initiation and only for created legs', async () => {
     const source = await readFile(new URL('./railway.ts', import.meta.url), 'utf8');
     const liveStart = source.indexOf('initiateProviderCalls: (input) =>');
-    const liveEnd = source.indexOf('generateTwilioCustomerTwiml', liveStart);
+    const liveEnd = source.indexOf('const parallel:', liveStart);
+    expect(liveStart).toBeGreaterThanOrEqual(0);
+    expect(liveEnd).toBeGreaterThan(liveStart);
     const liveBlock = source.slice(liveStart, liveEnd);
-    expect(liveBlock.indexOf('dialer.parallel.initiateGroup')).toBeLessThan(
-      liveBlock.indexOf('finalizeSelectedDecisionRecords'),
-    );
+    const initiateIndex = liveBlock.indexOf('dialer.parallel.initiateGroup');
+    const finalizeIndex = liveBlock.indexOf('finalizeSelectedDecisionRecords');
+    expect(initiateIndex).toBeGreaterThanOrEqual(0);
+    expect(finalizeIndex).toBeGreaterThanOrEqual(0);
+    expect(initiateIndex).toBeLessThan(finalizeIndex);
 
     const selected = [
       {

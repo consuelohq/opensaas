@@ -162,8 +162,11 @@ export class PredictiveSelectionModel {
         });
       }
 
+      const hasMissingHazardEvidence = ranked.some(
+        (candidate) => candidate.hazardSource === 'missing',
+      );
       ranked.sort((left, right) => {
-        if (right.score !== left.score) {
+        if (!hasMissingHazardEvidence && right.score !== left.score) {
           return right.score - left.score;
         }
 

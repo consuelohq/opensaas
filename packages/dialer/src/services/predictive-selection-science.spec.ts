@@ -116,4 +116,45 @@ describe('scientific predictive selection contract', () => {
     expect(result.ranked[0]!.score).toBeCloseTo(result.ranked[1]!.score, 12);
     expect('staleDecayFactor' in result.ranked[0]!).toBe(false);
   });
+
+  it('preserves FIFO for a decision set when any candidate lacks comparable hazard evidence', async () => {
+    const model = new PredictiveSelectionModel(
+      store({
+        getHazardEstimates: async () => [
+          {
+            segmentId: 'segment-1',
+            attemptNumber: 1,
+            hourOfDay: 12,
+            dayOfWeek: 6,
+            answerRate: 0.2,
+            sampleSize: 100,
+            lowerBound: 0.133366933,
+            upperBound: 0.288829165,
+          },
+        ],
+      }),
+    );
+
+    const result = await model.rankCandidates({
+      workspaceId: 'workspace-1',
+      segmentId: 'segment-1',
+      localTimezone: 'UTC',
+      callableWindowEndHour: 20,
+      evaluatedAt: new Date('2026-08-15T12:00:00.000Z'),
+      candidates: [
+        { contactId: 'supported-first', position: 1, attemptsUsed: 0, lastAttemptAt: null },
+        { contactId: 'missing-second', position: 2, attemptsUsed: 1, lastAttemptAt: null },
+      ],
+    });
+
+    expect(result.ranked.map((candidate) => candidate.contactId)).toEqual([
+      'supported-first',
+      'missing-second',
+    ]);
+    expect(result.ranked[1]).toMatchObject({
+      hazardSource: 'missing',
+      answerProbability: 0,
+    });
+  });
+
 });

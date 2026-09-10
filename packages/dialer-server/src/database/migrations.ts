@@ -14,6 +14,8 @@ export const DIALER_DATABASE_CONTEXTUAL_SCIENCE_MIGRATION_ID =
   '20260815_003_contextual_predictive_science';
 export const DIALER_DATABASE_CONTEXTUAL_SCIENCE_HARDENING_MIGRATION_ID =
   '20260815_004_contextual_predictive_science_hardening';
+export const DIALER_DATABASE_LEARNING_INTEGRITY_MIGRATION_ID =
+  '20260815_005_learning_observation_integrity';
 
 const CREATE_MIGRATION_TABLE_SQL = `
   CREATE TABLE IF NOT EXISTS consuelo_dialer_schema_migrations (
@@ -155,6 +157,46 @@ const HARDEN_CONTEXTUAL_OBSERVATION_SCHEMA_SQL = `
   END $$;
 `;
 
+const HARDEN_LEARNING_OBSERVATION_INTEGRITY_SQL = `
+  DO $$
+  BEGIN
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_constraint
+      WHERE conname = 'dialer_learning_observation_timestamps_check'
+    ) THEN
+      ALTER TABLE dialer_learning_observations
+        ADD CONSTRAINT dialer_learning_observation_timestamps_check
+        CHECK (
+          observed_until_at IS NOT NULL AND
+          (
+            (outcome_class = 'response' AND response_at IS NOT NULL) OR
+            (outcome_class <> 'response' AND response_at IS NULL)
+          ) AND
+          (response_at IS NULL OR response_at >= attempted_at) AND
+          observed_until_at >= attempted_at AND
+          (response_at IS NULL OR observed_until_at >= response_at)
+        )
+        NOT VALID;
+    END IF;
+
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_constraint
+      WHERE conname = 'dialer_learning_decision_context_schema_required_check'
+    ) THEN
+      ALTER TABLE dialer_learning_observations
+        ADD CONSTRAINT dialer_learning_decision_context_schema_required_check
+        CHECK (
+          decision_context IS NULL OR (
+            jsonb_typeof(decision_context) = 'object' AND
+            feature_schema_version IS NOT NULL AND
+            (decision_context->>'schemaVersion' = feature_schema_version::text) IS TRUE
+          )
+        )
+        NOT VALID;
+    END IF;
+  END $$;
+`;
+
 type Migration = {
   id: string;
   up: (database: LeadConnectorDatabase) => Promise<void>;
@@ -212,6 +254,18 @@ const migrations: readonly Migration[] = [
         await database.query(HARDEN_CONTEXTUAL_OBSERVATION_SCHEMA_SQL);
       } catch (cause: unknown) {
         throw new Error('Failed to harden contextual predictive science schema', {
+          cause,
+        });
+      }
+    },
+  },
+  {
+    id: DIALER_DATABASE_LEARNING_INTEGRITY_MIGRATION_ID,
+    up: async (database) => {
+      try {
+        await database.query(HARDEN_LEARNING_OBSERVATION_INTEGRITY_SQL);
+      } catch (cause: unknown) {
+        throw new Error('Failed to harden learning observation integrity', {
           cause,
         });
       }

@@ -81,4 +81,20 @@ describe('predictive decision logging', () => {
     expect(update.values[2]).toBe(JSON.stringify(['contact-2', 'contact-1']));
     expect(update.values[3]).toBe('2026-08-15T12:00:01.000Z');
   });
+
+  it('fails when finalization matches no persisted decision in the workspace', async () => {
+    const database: LeadConnectorDatabase = {
+      query: async <T>() => ({ rows: [] as T[], rowCount: 0 }),
+    };
+
+    await expect(
+      finalizePredictiveDecision(database, {
+        workspaceId: 'workspace-other',
+        decisionId: 'decision-missing',
+        selectedContactIds: ['contact-1'],
+        selectedAt: '2026-08-15T12:00:02.000Z',
+      }),
+    ).rejects.toThrow('Failed to finalize predictive decision');
+  });
+
 });

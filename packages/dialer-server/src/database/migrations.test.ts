@@ -6,6 +6,7 @@ import {
   DIALER_DATABASE_BASELINE_MIGRATION_ID,
   DIALER_DATABASE_CONTEXTUAL_SCIENCE_MIGRATION_ID,
   DIALER_DATABASE_CONTEXTUAL_SCIENCE_HARDENING_MIGRATION_ID,
+  DIALER_DATABASE_LEARNING_INTEGRITY_MIGRATION_ID,
   DIALER_DATABASE_PREDICTIVE_LEARNING_MIGRATION_ID,
   migrateDialerDatabase,
 } from './migrations';
@@ -67,6 +68,7 @@ describe('dialer database migrations', () => {
         DIALER_DATABASE_PREDICTIVE_LEARNING_MIGRATION_ID,
         DIALER_DATABASE_CONTEXTUAL_SCIENCE_MIGRATION_ID,
         DIALER_DATABASE_CONTEXTUAL_SCIENCE_HARDENING_MIGRATION_ID,
+        DIALER_DATABASE_LEARNING_INTEGRITY_MIGRATION_ID,
       ]),
     );
   });
@@ -79,6 +81,11 @@ describe('dialer database migrations', () => {
     expect(sql).toContain('dialer_learning_feature_schema_version_check');
     expect(sql).toContain('dialer_learning_decision_context_schema_check');
     expect(sql).toContain("decision_context->>'schemaVersion'");
+    expect(sql).toContain('dialer_learning_observation_timestamps_check');
+    expect(sql).toContain("outcome_class = 'response' AND response_at IS NOT NULL");
+    expect(sql).toContain('observed_until_at IS NOT NULL');
+    expect(sql).toContain('dialer_learning_decision_context_schema_required_check');
+    expect(sql).toContain("(decision_context->>'schemaVersion' = feature_schema_version::text) IS TRUE");
     expect(sql).not.toMatch(/UPDATE\s+dialer_learning_observations\s+SET/i);
   });
 
@@ -147,6 +154,6 @@ describe('dialer database migrations', () => {
     expect(callSessionCreates).toHaveLength(1);
     expect(observationCreates).toHaveLength(1);
     expect(decisionCreates).toHaveLength(1);
-    expect(migrationInserts).toHaveLength(4);
+    expect(migrationInserts).toHaveLength(5);
   });
 });
