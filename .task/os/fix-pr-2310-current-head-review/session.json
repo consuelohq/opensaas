@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_f81078b13f2d",
+  "tmuxSession": "opensaas-os-fix-pr-2310-current-head-review-f81078b1",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-pr-2310-current-head-review",
+  "branch": "task/os/fix-pr-2310-current-head-review",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-pr-2310-current-head-review",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-pr-2310-current-head-review",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2328,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2328",
+  "createdAt": "2026-08-31T19:20:08.757Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-pr-2310-current-head-review/.task/os/fix-pr-2310-current-head-review/session.json"
+}

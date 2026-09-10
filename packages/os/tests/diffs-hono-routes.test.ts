@@ -231,6 +231,17 @@ describe('Hono Diffs routes', () => {
   });
 
   it('serves the existing Diffs UI through the authenticated workspace route', async () => {
+    writeFileSync(join(home, 'consuelo.yaml'), [
+      'version: 1',
+      'launcher:',
+      '  extraSections:',
+      '    - id: internal',
+      '      label: Internal',
+      '      links:',
+      '        - label: Users & installs',
+      '          href: https://internal.consuelohq.com/users',
+      '',
+    ].join('\n'));
     const response = await handleRequest(signedRequest({
       method: 'GET',
       path: '/diffs',
@@ -242,8 +253,12 @@ describe('Hono Diffs routes', () => {
     expect(html).toContain('data-workspace-shell');
     expect(html).toContain('data-workspace-chrome');
     expect(html).toContain('aria-current="page" href="/diffs"');
+    expect(html).toContain('data-custom-route-group="internal"');
+    expect(html).toContain('>Users &amp; installs</span>');
     expect(html).toContain('.workspace-route-menu[hidden]');
     expect(html).toContain('/gateway/diffs/repositories/acme/app/pulls');
+    expect(html).toContain('const routePrefix = "/diffs/acme/app/pull/";');
+    expect(html).not.toContain('const routePrefix = "/acme/app/pull/";');
     expect(html).not.toContain('consuelohq/opensaas');
     expect(html).not.toContain('diffs.consuelohq.com');
   });

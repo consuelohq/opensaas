@@ -203,6 +203,7 @@ export type WebOAuthState = {
   nonce: string;
   intent: 'login' | 'signup';
   returnPath: string;
+  targetHost?: string;
   expiresAt: number;
 };
 
@@ -551,6 +552,10 @@ export type Store = {
   byManagedCloudProvisioningJob(
     jobId: string,
   ): Promise<ManagedCloudProvisioningJob | undefined>;
+  byManagedCloudProvisioningNode(
+    nodeId: string,
+  ): Promise<ManagedCloudProvisioningJob | undefined>;
+  delManagedCloudProvisioningNode(nodeId: string): Promise<void>;
   claimNextManagedCloudProvisioningJob(input: {
     leaseId: string;
     nowMs: number;

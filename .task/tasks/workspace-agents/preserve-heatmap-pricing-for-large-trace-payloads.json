@@ -1,0 +1,16 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/preserve-heatmap-pricing-for-large-trace-payloads",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 2394,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2394",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-preserve-heatmap-pricing-for-large-trace-payloads",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_c5e3bf31eee6",
+  "tmuxSession": "opensaas-workspace-agents-preserve-heatmap-pricing-for-large-trace-payload-c5e3bf31",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-preserve-heatmap-pricing-for-large-trace-payloads/.task/session.json",
+  "createdAt": "2026-09-05T01:23:49.215Z"
+}

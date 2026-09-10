@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/fix-internal-diffs-pr-url-parsing",
+  "events": [
+    {
+      "id": "82de9f02-b802-4e2f-9a82-8352649b4747",
+      "occurred_at": "2026-09-01T01:09:34.359Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/pr-ref.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-internal-diffs-pr-url-parsing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-internal-diffs-pr-url-parsing"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-09-01T01:09:34.464Z"
+}

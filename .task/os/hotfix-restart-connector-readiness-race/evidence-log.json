@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/hotfix-restart-connector-readiness-race",
+  "events": [
+    {
+      "id": "22929630-7887-4402-958a-cc342bd37981",
+      "occurred_at": "2026-09-01T17:15:13.343Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/hotfix-restart-connector-readiness-race/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/hotfix-restart-connector-readiness-race",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/hotfix-restart-connector-readiness-race"
+      }
+    },
+    {
+      "id": "11c40dc9-1b85-4531-8dad-2ed5be9c2131",
+      "occurred_at": "2026-09-01T17:16:31.484Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/hotfix-restart-connector-readiness-race/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/hotfix-restart-connector-readiness-race",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/hotfix-restart-connector-readiness-race"
+      }
+    },
+    {
+      "id": "4f2af8ce-649e-4719-8552-3fb78adec57d",
+      "occurred_at": "2026-09-01T17:17:37.967Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/hotfix-restart-connector-readiness-race/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/hotfix-restart-connector-readiness-race",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/hotfix-restart-connector-readiness-race"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-09-01T17:17:38.062Z"
+}

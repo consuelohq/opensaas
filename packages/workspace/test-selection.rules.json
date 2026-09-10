@@ -122,6 +122,28 @@
       "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy."
     },
     {
+      "id": "workspace-stream-sync-runtime",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/workspace/scripts/stream-sync.js",
+        "packages/workspace/tests/stream-sync-node-modules.test.js",
+        "packages/workspace/tests/stream-sync-generated-registry-conflict.test.js"
+      ],
+      "tests": [
+        {
+          "name": "workspace stream sync runtime contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/stream-sync-node-modules.test.js",
+            "packages/workspace/tests/stream-sync-generated-registry-conflict.test.js"
+          ]
+        }
+      ],
+      "reason": "Stream synchronization changes must prove temporary-worktree dependency linking, stale-conflict recovery, generated-registry regeneration, and fail-closed behavior before a stream is pushed."
+    },
+    {
       "id": "workspace-explore-bench-compatibility",
       "critical": true,
       "source": [
@@ -314,6 +336,31 @@
       "exclusive": true
     },
     {
+      "id": "os-trace-sqlite-runtime",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/scripts/lib/trace-database-schema.ts",
+        "packages/os/scripts/lib/trace-sites-local-read-backend.ts",
+        "packages/os/tests/trace-sites-gateway-live-endpoints.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS Trace SQLite Node runtime compatibility",
+          "command": [
+            "node",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/trace-sites-gateway-live-endpoints.test.ts",
+            "--config",
+            "vitest.config.ts"
+          ],
+          "cwd": "packages/os"
+        }
+      ],
+      "reason": "Trace SQLite adapter changes must execute the gateway history contract under Node so the node:sqlite fallback is exercised directly rather than inferred from Bun coverage."
+    },
+    {
       "id": "os-explore-retrieval-science",
       "critical": true,
       "exclusive": true,
@@ -332,6 +379,7 @@
         "packages/os/scripts/lib/facade/executor.ts",
         "packages/os/scripts/lib/cloudflare-worker-release-readiness.ts",
         "packages/os/scripts/lib/explore-bench.js",
+        "packages/os/scripts/lib/index/embedder.js",
         "packages/os/scripts/lib/index/embedding-gateway.js",
         "packages/os/scripts/lib/index/indexer.js",
         "packages/os/scripts/lib/index/store.js",
@@ -525,7 +573,8 @@
         "packages/os/scripts/lib/workspace-cloudflare-d1-route-registry.ts",
         "packages/os/tests/cloudflare-d1-route-registry.test.ts",
         "packages/os/tests/lifecycle-engine.test.ts",
-        "packages/os/tests/workspace-node-registry-routing.test.ts"
+        "packages/os/tests/workspace-node-registry-routing.test.ts",
+        "packages/os/tests/workspace-route-heartbeat-write-budget.test.ts"
       ],
       "tests": [
         {
@@ -550,6 +599,14 @@
             "test",
             "tests/lifecycle-engine.test.ts",
             "tests/workspace-node-registry-routing.test.ts"
+          ]
+        },
+        {
+          "name": "OS heartbeat D1 write budget",
+          "command": [
+            "bun",
+            "test",
+            "packages/os/tests/workspace-route-heartbeat-write-budget.test.ts"
           ]
         }
       ],
@@ -714,6 +771,31 @@
         }
       ],
       "reason": "Shared generated OS tool manifests, facade schemas, registry metadata, and generated workspace types must prove deterministic generation and syntax without waking unrelated lifecycle execution."
+    },
+    {
+      "id": "os-lifecycle-connector-readiness",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/scripts/lib/lifecycle/connector-readiness.ts",
+        "packages/os/tests/lifecycle-connector-readiness.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS lifecycle connector readiness contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/lifecycle-connector-readiness.test.ts",
+            "packages/os/tests/lifecycle-engine.test.ts",
+            "packages/os/tests/workspace-node-heartbeat-script.test.ts",
+            "packages/os/tests/workspace-node-heartbeat-client.test.ts"
+          ]
+        }
+      ],
+      "reason": "Public connector acceptance changes must prove lifecycle fail-closed behavior, heartbeat reconciliation, and signed MCP readiness without selecting the unrelated package-wide OS suite."
     },
     {
       "id": "os-lifecycle-update-handoff",
@@ -1268,7 +1350,9 @@
         "packages/os/scripts/lib/settings-materialization.ts",
         "packages/os/scripts/lib/workspace-chrome.ts",
         "packages/os/scripts/lib/observability-traces-site.ts",
+        "packages/os/tests/workspace-chrome.test.ts",
         "packages/os/tests/settings-site.test.ts",
+        "packages/os/tests/settings-control-plane.test.ts",
         "packages/os/tests/artifacts.test.ts",
         "packages/os/tests/launcher-nodes-materialization.test.ts",
         "packages/os/tests/observability-traces-site.test.ts",
@@ -1289,8 +1373,10 @@
             "--no-file-parallelism",
             "tests/artifacts.test.ts",
             "tests/settings-site.test.ts",
+            "tests/settings-control-plane.test.ts",
             "tests/launcher-nodes-materialization.test.ts",
             "tests/observability-traces-site.test.ts",
+            "tests/workspace-chrome.test.ts",
             "tests/sites-cli.test.ts",
             "tests/launcher-local-customization.test.ts",
             "tests/install-state.test.ts",
@@ -2115,7 +2201,8 @@
       "source": [
         "packages/os/scripts/lib/subagent/**",
         "packages/os/tools/subagent/**",
-        "packages/os/tests/subagent-orchestration-contract.test.ts"
+        "packages/os/tests/subagent-orchestration-contract.test.ts",
+        "packages/os/tests/subagent-runner-termination.test.ts"
       ],
       "tests": [
         {
@@ -2125,7 +2212,8 @@
             "x",
             "vitest",
             "run",
-            "packages/os/tests/subagent-orchestration-contract.test.ts"
+            "packages/os/tests/subagent-orchestration-contract.test.ts",
+            "packages/os/tests/subagent-runner-termination.test.ts"
           ]
         },
         {
@@ -2136,7 +2224,7 @@
           ]
         }
       ],
-      "reason": "Durable Grok/Codex orchestration, provider capabilities, active-run status, idempotency, and deadline behavior must prove the focused subagent contract without selecting the unrelated whole-OS package baseline."
+      "reason": "Durable subagent orchestration, provider capabilities, active-run status, idempotency, deadline behavior, and provider stdin termination must prove the focused subagent contracts without selecting the unrelated whole-OS package baseline."
     },
     {
       "id": "os-test-environment-isolation",
@@ -2245,7 +2333,8 @@
         "packages/os/tests/mcp-gateway.test.ts",
         "packages/os/tests/work-session-code-call.test.ts",
         "packages/os/scripts/lib/work-session-protection.ts",
-        "packages/os/tests/code-call.test.ts"
+        "packages/os/tests/code-call.test.ts",
+        "packages/os/tests/code-call-process-regressions.test.ts"
       ],
       "tests": [
         {
@@ -2259,7 +2348,8 @@
             "packages/os/tests/session-start-foundation.test.ts",
             "packages/os/tests/generated-error-code-parity.test.ts",
             "packages/os/tests/mcp-gateway.test.ts",
-            "packages/os/tests/code-call.test.ts"
+            "packages/os/tests/code-call.test.ts",
+            "packages/os/tests/code-call-process-regressions.test.ts"
           ]
         },
         {
@@ -2270,7 +2360,7 @@
           ]
         }
       ],
-      "reason": "Work-session Code Call and MCP routing must prove bounded execution, protected Consuelo state, session-authority validation, public schema limits, and generated error-code parity without selecting unrelated package-wide OS tests."
+      "reason": "Work-session Code Call and MCP routing must prove bounded execution, protected Consuelo state, session-authority validation, public schema limits, generated error-code parity, and child-process stdin/exit lifecycle behavior without selecting unrelated package-wide OS tests."
     },
     {
       "id": "os-script-parity-audit",

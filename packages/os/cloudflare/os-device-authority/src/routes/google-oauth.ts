@@ -30,7 +30,11 @@ import {
 import { registerApprovedWorkspaceRoute } from '../services/connectors';
 import { recordCanonicalInstallIdentity } from '../services/install-identity';
 import { finishMcpOAuthGoogleCallback } from '../services/mcp-oauth';
-import { accountNotFoundPage, completeWebGoogleLogin } from './web-auth';
+import {
+  accountNotFoundPage,
+  completeWebGoogleLogin,
+  PRIVATE_INTERNAL_SITE_HOST,
+} from './web-auth';
 
 function deviceAuthorizationCorrelationId(request: Request): string {
   const cloudflareRayId = request.headers.get('cf-ray')?.trim();
@@ -75,6 +79,10 @@ async function handleGoogleOAuthRequest(
         const state = rand('web_state', 24);
         const nonce = rand('web_nonce', 24);
         const intent = url.searchParams.get('intent') === 'signup' ? 'signup' : 'login';
+        const requestedTargetHost = url.searchParams.get('target_host')?.trim().toLowerCase() ?? '';
+        if (requestedTargetHost && requestedTargetHost !== PRIVATE_INTERNAL_SITE_HOST) {
+          return json({ error: 'handoff_target_denied' }, { status: 403 });
+        }
         await input.store.putWebOAuthState({
           state,
           nonce,
@@ -82,6 +90,7 @@ async function handleGoogleOAuthRequest(
           returnPath: normalizeAuthReturnPath(
             url.searchParams.get('return_to'),
           ),
+          ...(requestedTargetHost ? { targetHost: requestedTargetHost } : {}),
           expiresAt: now() + TTL_MS,
         });
         return Response.redirect(
@@ -188,6 +197,7 @@ async function handleGoogleOAuthRequest(
             accountId,
             email: identity.email,
             returnPath: webOAuthState.returnPath,
+            targetHost: webOAuthState.targetHost,
             cloudOnboardingEligible: resolved.created,
           });
         } catch (error: unknown) {
@@ -328,6 +338,13 @@ async function handleGoogleOAuthRequest(
             grant,
             defaultSiteSnapshot: input.defaultSiteSnapshot,
           });
+          await input.store.delOAuthState(stateValue);
+          await commitGrantApproval({
+            store: input.store,
+            grant,
+            accountId,
+            nowMs: now(),
+          });
         } catch (error: unknown) {
           const failureMessage = await failGrantWorkspaceRouteSetup({
             store: input.store,
@@ -343,13 +360,6 @@ async function handleGoogleOAuthRequest(
             { status: 502 },
           );
         }
-        await input.store.delOAuthState(stateValue);
-        await commitGrantApproval({
-          store: input.store,
-          grant,
-          accountId,
-          nowMs: now(),
-        });
         await recordCanonicalInstallIdentity(runtime, grant);
         return text(
           page({

@@ -1,0 +1,26 @@
+*** Begin Patch
+*** Update File: packages/os/scripts/lib/subagent/runner.ts
+@@
+   writeMarker(launch.exitMarkerPath, {
+     runId: launch.runId,
+     ownerToken: launch.ownerToken,
+     runnerPid: process.pid,
+     providerPid: provider?.pid,
+     outcome,
+     exitCode,
+     ...(signal ? { signal } : {}),
+     ...(error ? { error } : {}),
+     endedAt: Date.now(),
+   });
+-  process.exitCode = exitCode;
++  process.exit(exitCode);
+ }
+@@
+     provider = spawn(launch.command[0], launch.command.slice(1), {
+       cwd: launch.cwd,
+       env: process.env,
+-      detached: true,
++      detached: false,
+       stdio: ['pipe', stdoutFd, stderrFd],
+     }) as ProviderChild;
+*** End Patch

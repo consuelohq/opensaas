@@ -1,0 +1,20 @@
+{
+  "area": "dialer-algorithm",
+  "stream": "stream/dialer-algorithm",
+  "taskBranch": "task/dialer-algorithm/stabilize-durable-subagent-exit-marker-ci",
+  "baseBranch": "stream/dialer-algorithm",
+  "sourceBranch": "stream/dialer-algorithm",
+  "startFrom": "stream",
+  "prNumber": 2449,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2449",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2449",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2449/stabilize-durable-subagent-exit-marker-ci",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2449",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2449/stabilize-durable-subagent-exit-marker-ci",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-algorithm-stabilize-durable-subagent-exit-marker-ci",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_aa8afea5e540",
+  "tmuxSession": "opensaas-dialer-algorithm-stabilize-durable-subagent-exit-marker-ci-aa8afea5",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-algorithm-stabilize-durable-subagent-exit-marker-ci/.task/dialer-algorithm/stabilize-durable-subagent-exit-marker-ci/session.json",
+  "createdAt": "2026-09-10T03:27:50.503Z"
+}

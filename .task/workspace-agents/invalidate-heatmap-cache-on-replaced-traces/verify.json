@@ -1,0 +1,185 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace-agents/invalidate-heatmap-cache-on-replaced-traces",
+  "base": "stream/workspace-agents",
+  "headSha": "03a1dd748c0f842cdba02641fd9fc3ec8dba84a4",
+  "changeHash": "a66426df5d5bcbd1585b17ce284a12fc8de90c127eb12792da45009deb55728d",
+  "changedFiles": [
+    "packages/os/scripts/lib/trace-sites-local-read-backend.ts",
+    "packages/os/tests/trace-sites-gateway-live-endpoints.test.ts"
+  ],
+  "verifiedAt": "2026-09-05T00:58:45.871Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/workspace-agents/invalidate-heatmap-cache-on-replaced-traces.json",
+        ".task/tasks/workspace-agents/preserve-heatmap-aggregate-cost-accuracy.json",
+        ".task/workspace-agents/invalidate-heatmap-cache-on-replaced-traces/evidence-log.json",
+        ".task/workspace-agents/invalidate-heatmap-cache-on-replaced-traces/read-log.json",
+        ".task/workspace-agents/invalidate-heatmap-cache-on-replaced-traces/workpad.md",
+        ".task/workspace-agents/preserve-heatmap-aggregate-cost-accuracy/evidence-log.json",
+        ".task/workspace-agents/preserve-heatmap-aggregate-cost-accuracy/read-log.json",
+        ".task/workspace-agents/preserve-heatmap-aggregate-cost-accuracy/verify.json",
+        ".task/workspace-agents/preserve-heatmap-aggregate-cost-accuracy/workpad.md",
+        "packages/os/scripts/lib/trace-sites-local-read-backend.ts",
+        "packages/os/tests/trace-sites-gateway-live-endpoints.test.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "trace-site-pagination",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Current OS Trace gateway and Trace Burn changes must prove authenticated history paging, canonical TraceStore resolution, safe redaction, and OS-owned virtual-list/browser behavior.",
+          "matchedFiles": [
+            "packages/os/scripts/lib/trace-sites-local-read-backend.ts",
+            "packages/os/tests/trace-sites-gateway-live-endpoints.test.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "OS trace gateway and Trace Burn contracts",
+          "command": [
+            "bun",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "--root",
+            "packages/os",
+            "tests/trace-sites-history-endpoint-contract.test.ts",
+            "tests/trace-sites-gateway-read-layer.test.ts",
+            "tests/trace-history-redaction.test.ts",
+            "tests/trace-site-inspector-os-owned.test.ts",
+            "tests/observability-traces-site.test.ts",
+            "tests/redaction.test.ts",
+            "tests/runtime-bundle-managed-site-assets.test.ts",
+            "tests/trace-sites-gateway-live-endpoints.test.ts"
+          ],
+          "ruleId": "trace-site-pagination",
+          "critical": true
+        },
+        {
+          "name": "OS canonical TraceStore runtime boundary",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/trace-sites-runtime-boundary.test.ts"
+          ],
+          "ruleId": "trace-site-pagination",
+          "critical": true
+        },
+        {
+          "name": "OS trace persistence and session search contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "--root",
+            "packages/os",
+            "tests/trace-persistence.test.ts",
+            "tests/trace-search-query.test.ts"
+          ],
+          "ruleId": "trace-site-pagination",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "OS trace gateway and Trace Burn contracts",
+          "command": [
+            "bun",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "--root",
+            "packages/os",
+            "tests/trace-sites-history-endpoint-contract.test.ts",
+            "tests/trace-sites-gateway-read-layer.test.ts",
+            "tests/trace-history-redaction.test.ts",
+            "tests/trace-site-inspector-os-owned.test.ts",
+            "tests/observability-traces-site.test.ts",
+            "tests/redaction.test.ts",
+            "tests/runtime-bundle-managed-site-assets.test.ts",
+            "tests/trace-sites-gateway-live-endpoints.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "trace-site-pagination",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1203,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-invalidate-heatmap-cache-on-replaced-traces/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/redaction.test.ts \u001b[2m(\u001b[22m\u001b[2m6 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 5\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/trace-sites-gateway-read-layer.test.ts \u001b[2m(\u001b[22m\u001b[2m10 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 8\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/trace-sites-history-endpoint-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 6\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/trace-history-redaction.test.ts \u001b[2m(\u001b[22m\u001b[2m7 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 5\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/trace-site-inspector-os-owned.test.ts \u001b[2m(\u001b[22m\u001b[2m16 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 6\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/observability-traces-site.test.ts \u001b[2m(\u001b[22m\u001b[2m15 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 40\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/trace-sites-gateway-live-endpoints.test.ts \u001b[2m(\u001b[22m\u001b[2m15 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 78\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/runtime-bundle-managed-site-assets.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 144\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m8 passed\u001b[39m\u001b[22m\u001b[90m (8)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m76 passed\u001b[39m\u001b[22m\u001b[90m (76)\u001b[39m\n\u001b[2m   Start at \u001b[22m 20:58:41\n\u001b[2m   Duration \u001b[22m 299ms\u001b[2m (transform 579ms, setup 152ms, import 557ms, tests 292ms, environment 1ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS canonical TraceStore runtime boundary",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/trace-sites-runtime-boundary.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "trace-site-pagination",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 490,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-invalidate-heatmap-cache-on-replaced-traces/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/trace-sites-runtime-boundary.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m3 passed\u001b[39m\u001b[22m\u001b[90m (3)\u001b[39m\n\u001b[2m   Start at \u001b[22m 20:58:41\n\u001b[2m   Duration \u001b[22m 87ms\u001b[2m (transform 14ms, setup 12ms, import 10ms, tests 3ms, environment 0ms)\u001b[22m\n\n$ vitest run tests/trace-sites-runtime-boundary.test.ts\n"
+        },
+        {
+          "name": "OS trace persistence and session search contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "--root",
+            "packages/os",
+            "tests/trace-persistence.test.ts",
+            "tests/trace-search-query.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "trace-site-pagination",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 3577,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-invalidate-heatmap-cache-on-replaced-traces/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/trace-search-query.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 12\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/trace-persistence.test.ts \u001b[2m(\u001b[22m\u001b[2m12 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 3242\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m persists a silent facade success with redacted input and serves it through the Hono read backend \u001b[33m 1193\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m persists code.call and batch parent envelopes alongside nested child traces \u001b[33m 625\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m persists durable Codex child events once under the originating trace across later attachments \u001b[33m 402\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m16 passed\u001b[39m\u001b[22m\u001b[90m (16)\u001b[39m\n\u001b[2m   Start at \u001b[22m 20:58:42\n\u001b[2m   Duration \u001b[22m 3.40s\u001b[2m (transform 57ms, setup 27ms, import 98ms, tests 3.25s, environment 0ms)\u001b[22m\n\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

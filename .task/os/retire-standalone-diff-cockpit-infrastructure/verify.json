@@ -1,0 +1,207 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/retire-standalone-diff-cockpit-infrastructure",
+  "base": "origin/stream/os",
+  "headSha": "bc613b6720d66942d7c360c8224b2198a5bdb730",
+  "changeHash": "de686fa2f82e9737f6277238b92086df8eb235aaaae476476f6b43c3205f00dc",
+  "changedFiles": [
+    "cron_jobs/README.md",
+    "cron_jobs/diff_cockpit/.env.example",
+    "cron_jobs/diff_cockpit/cron.json",
+    "cron_jobs/index.ts",
+    "cron_jobs/tests/cron_jobs.test.ts",
+    "packages/diff-cockpit/README.md",
+    "packages/diff-cockpit/package.json",
+    "packages/diff-cockpit/src/index.ts",
+    "packages/diff-cockpit/src/worker.ts",
+    "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+    "packages/diff-cockpit/wrangler.toml",
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/hooks/README.md",
+    "packages/workspace/hooks/diff-cockpit/cache-refresh.ts",
+    "packages/workspace/scripts/diff_cockpit.ts",
+    "packages/workspace/scripts/task-push.js"
+  ],
+  "verifiedAt": "2026-08-31T23:31:27.620Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/retire-standalone-diff-cockpit-infrastructure/evidence-log.json",
+        ".task/os/retire-standalone-diff-cockpit-infrastructure/read-log.json",
+        ".task/os/retire-standalone-diff-cockpit-infrastructure/workpad.md",
+        ".task/tasks/os/retire-standalone-diff-cockpit-infrastructure.json",
+        "cron_jobs/README.md",
+        "cron_jobs/diff_cockpit/.env.example",
+        "cron_jobs/diff_cockpit/cron.json",
+        "cron_jobs/index.ts",
+        "cron_jobs/tests/cron_jobs.test.ts",
+        "packages/diff-cockpit/README.md",
+        "packages/diff-cockpit/package.json",
+        "packages/diff-cockpit/src/index.ts",
+        "packages/diff-cockpit/src/worker.ts",
+        "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+        "packages/diff-cockpit/wrangler.toml",
+        "packages/workspace/SCRIPTS.md",
+        "packages/workspace/hooks/README.md",
+        "packages/workspace/hooks/diff-cockpit/cache-refresh.ts",
+        "packages/workspace/scripts/diff_cockpit.ts",
+        "packages/workspace/scripts/task-push.js"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-publish-gate",
+          "critical": true,
+          "reason": "Review, verify, and task push changes must prove publish-gate behavior.",
+          "matchedFiles": [
+            "packages/workspace/scripts/task-push.js"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "workspace-audit-docs",
+          "critical": false,
+          "reason": "Workspace script/docs changes should keep audit behavior covered.",
+          "matchedFiles": [
+            "packages/workspace/SCRIPTS.md"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "auto:@consuelo/diff-cockpit:package-test",
+          "critical": false,
+          "reason": "Auto-discovered package test script for packages/diff-cockpit.",
+          "matchedFiles": [
+            "packages/diff-cockpit/README.md",
+            "packages/diff-cockpit/package.json",
+            "packages/diff-cockpit/src/index.ts",
+            "packages/diff-cockpit/src/worker.ts",
+            "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+            "packages/diff-cockpit/wrangler.toml"
+          ],
+          "origin": "auto"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace verification stamp tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/verification.test.js"
+          ],
+          "ruleId": "workspace-publish-gate",
+          "critical": true
+        },
+        {
+          "name": "workspace audit tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/audit/audit.test.ts"
+          ],
+          "ruleId": "workspace-audit-docs",
+          "critical": false
+        },
+        {
+          "name": "@consuelo/diff-cockpit package test",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/diff-cockpit",
+            "test"
+          ],
+          "ruleId": "auto:@consuelo/diff-cockpit:package-test",
+          "critical": false
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace verification stamp tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/verification.test.js"
+          ],
+          "cwd": ".",
+          "ruleId": "workspace-publish-gate",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 605,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-retire-standalone-diff-cockpit-infrastructure\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/verification.test.js \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 255\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m5 passed\u001b[39m\u001b[22m\u001b[90m (5)\u001b[39m\n\u001b[2m   Start at \u001b[22m 19:31:26\n\u001b[2m   Duration \u001b[22m 339ms\u001b[2m (transform 11ms, setup 0ms, import 17ms, tests 255ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "workspace audit tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/audit/audit.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "workspace-audit-docs",
+          "critical": false,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 511,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-retire-standalone-diff-cockpit-infrastructure\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/audit/audit.test.ts \u001b[2m(\u001b[22m\u001b[2m1 test\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 143\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m   Start at \u001b[22m 19:31:27\n\u001b[2m   Duration \u001b[22m 255ms\u001b[2m (transform 48ms, setup 0ms, import 53ms, tests 143ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "@consuelo/diff-cockpit package test",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/diff-cockpit",
+            "test"
+          ],
+          "cwd": ".",
+          "ruleId": "auto:@consuelo/diff-cockpit:package-test",
+          "critical": false,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 51,
+          "outputTail": "repo [0.11ms]\n(pass) parsePullRequestLocator > accepts a GitHub PR URL [0.08ms]\n(pass) parsePullRequestLocator > accepts the cockpit route shape [0.02ms]\n(pass) buildDiffCockpitUrl > builds the canonical internal Diffs URL [0.02ms]\n(pass) standalone Diffs retirement > removes the standalone Worker and automatic KV cache warmers while preserving hostname safety [0.52ms]\n(pass) normalizeReviewItems > keeps GitHub review thread resolution as source of truth for AI comments [0.37ms]\n(pass) createGithubCodeBrowserLoader > loads the packages tree with latest commit metadata and commit count [0.74ms]\n(pass) createGithubCodeBrowserLoader > renders markdown file contents when the selected file is markdown [0.47ms]\n(pass) createGithubCodeHistoryLoader > loads path history and builds commit tree links [0.19ms]\n(pass) createGithubPullRequestIndexLoader > fetches all PR states and enriches homepage metadata [0.54ms]\n(pass) createGithubPullRequestLoader > fetches live GitHub PR metadata, files, review comments, and commits [0.73ms]\n(pass) createGithubPullRequestLoader > throws a clear error when GitHub PR metadata fails [0.11ms]\n(pass) createGithubPullRequestLoader > skips stream commits for non-stream branches [0.13ms]\n(pass) createGithubPullRequestLoader > handles empty file, comment, and review arrays [0.07ms]\n(pass) buildFileTree > groups files by path segment and preserves file metadata [0.07ms]\n(pass) createGithubPullRequestIndexLoader GraphQL mergeability > loads all PRs with mergeability in paginated GraphQL requests when token is available [0.31ms]\n(pass) pull request index grouping > derives stream ownership from stream and task branches [0.03ms]\n(pass) pull request index grouping > groups pull requests into collapsible sections and filters by stream [0.12ms]\n(pass) pull request index grouping > streams section shows open streams by default and all streams when toggled [0.04ms]\n(pass) pull request index grouping > scores dotted fuzzy PR search across PR fields [0.23ms]\n(pass) renderCodeBrowserPage > renders the main packages browser shell and history shell [0.52ms]\n(pass) renderIndexPage > renders a Graphite-like PR inbox with command search and load-more sections [1.12ms]\n(pass) renderReviewPage > keeps the existing PR route and the right review panel closed by default [2.85ms]\n(pass) createWorker > updates GitHub review threads through the review thread API endpoint [1.04ms]\n(pass) createWorker > invalidates PR cache for resolved GitHub review-thread webhooks [3.02ms]\n(pass) createWorker > does not silently default the standalone homepage to OpenSaaS [0.10ms]\n(pass) createWorker > routes the standalone homepage to the configured repository shell [0.39ms]\n(pass) createWorker > hydrates PR pages from shared API cache when available [0.47ms]\n(pass) createWorker > keeps the PR loading shell when shared API cache misses [0.11ms]\n(pass) createWorker > merges a pull request through the merge API endpoint [0.19ms]\n(pass) createWorker > routes code browser pages and APIs for main packages and history [0.55ms]\n(pass) createWorker > refresh endpoint uses waitUntil so cron does not block on slow cache warming [1.04ms]\n(pass) createWorker > server-renders warmed inbox and PR pages from shared API cache [0.62ms]\n(pass) createWorker > refresh stores homepage snapshots in durable shared storage for cross-device first paint [0.47ms]\n(pass) createWorker > refresh endpoint protects and prewarms homepage and PR API cache entries [0.77ms]\n(pass) createWorker > returns homepage API shared cache headers and 304 for unchanged ETags [0.26ms]\n(pass) createWorker > prewarms a bounded hot PR set from the homepage snapshot when no explicit pulls are provided [1.33ms]\n(pass) createWorker > uses strict shared cache headers for open PR details and long cache headers for inactive PR details [0.24ms]\n(pass) createWorker > returns PR API cache headers and 304 for unchanged ETags [0.22ms]\n\n 39 pass\n 0 fail\n 398 expect() calls\nRan 39 tests across 1 file. [35.00ms]\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

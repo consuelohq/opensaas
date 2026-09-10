@@ -1,0 +1,19 @@
+{
+  "area": "dialer-algorithm",
+  "stream": "stream/dialer-algorithm",
+  "taskBranch": "task/dialer-algorithm/repair-os-synthetic-dry-run-ci-contract",
+  "baseBranch": "stream/dialer-algorithm",
+  "sourceBranch": "stream/dialer-algorithm",
+  "startFrom": "stream",
+  "prNumber": 2069,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2069",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2069",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2069/repair-os-synthetic-dry-run-ci-contract",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2069",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2069/repair-os-synthetic-dry-run-ci-contract",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-repair-os-synthetic-dry-run-ci-contract",
+  "taskSession": "tsk_4917cb518149",
+  "tmuxSession": "opensaas-dialer-algorithm-repair-os-synthetic-dry-run-ci-contract-4917cb51",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-repair-os-synthetic-dry-run-ci-contract/.task/dialer-algorithm/repair-os-synthetic-dry-run-ci-contract/session.json",
+  "createdAt": "2026-08-15T10:56:11.798Z"
+}

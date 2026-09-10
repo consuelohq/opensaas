@@ -22,7 +22,7 @@ describe('workspace root Home materialization', () => {
     expect(existsSync(result.environmentsIndexPath)).toBe(true);
 
     const rootHtml = readFileSync(result.indexPath, 'utf8');
-    expect(rootHtml).toContain('<title>Overview - Consuelo OS</title>');
+    expect(rootHtml).toContain('<title>Home - Consuelo OS</title>');
     expect(rootHtml).toContain('data-workspace-shell');
     expect(rootHtml).toContain('data-workspace-route-trigger');
     expect(rootHtml).toContain('/gateway/configuration/snapshot');

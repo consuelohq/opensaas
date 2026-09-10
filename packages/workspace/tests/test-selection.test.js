@@ -140,6 +140,60 @@ describe('test selection registry', () => {
     }
   });
 
+  it('keeps Dialer integration regressions on current focused OS rules', () => {
+    const rulesPath = path.resolve(
+      path.dirname(fileURLToPath(import.meta.url)),
+      '../test-selection.rules.json',
+    );
+    const rules = JSON.parse(fs.readFileSync(rulesPath, 'utf8')).rules;
+    const codeCall = rules.find((rule) => rule.id === 'os-work-session-code-call');
+    const subagent = rules.find((rule) => rule.id === 'os-subagent-runtime');
+
+    expect(codeCall?.tests[0]?.command).toContain(
+      'packages/os/tests/code-call-process-regressions.test.ts',
+    );
+    expect(subagent?.tests[0]?.command).toContain(
+      'packages/os/tests/subagent-runner-termination.test.ts',
+    );
+  });
+
+  it('selects an explicit Node SQLite trace compatibility contract', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/lib/trace-database-schema.ts',
+      '--json',
+    ]));
+    const nodeSuite = data.selectedSuites.find(
+      (suite) => suite.ruleId === 'os-trace-sqlite-runtime',
+    );
+
+    expect(data.matchedRules.map((rule) => rule.id)).toContain(
+      'os-trace-sqlite-runtime',
+    );
+    expect(nodeSuite?.command?.[0]).toBe('node');
+    expect(nodeSuite?.cwd).toBe('packages/os');
+    expect(nodeSuite?.command).toContain(
+      'tests/trace-sites-gateway-live-endpoints.test.ts',
+    );
+  });
+
+  it('routes stream-sync changes through the focused merge contract', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/workspace/scripts/stream-sync.js',
+      '--json',
+    ]));
+
+    expect(data.matchedRules.map((rule) => rule.id)).toContain(
+      'workspace-stream-sync-runtime',
+    );
+    expect(data.selectedSuites.map((suite) => suite.name)).toContain(
+      'workspace stream sync runtime contracts',
+    );
+  });
+
   it('suppresses a broad auto package suite when explicit critical coverage fully owns the changed code', () => {
     const registryPath = path.join(
       os.tmpdir(),
@@ -678,6 +732,8 @@ describe('test selection registry', () => {
       '--changed-file',
       'packages/os/cloudflare/workspace-edge/wrangler.toml',
       '--changed-file',
+      'packages/os/scripts/lib/index/embedder.js',
+      '--changed-file',
       'packages/os/scripts/lib/index/embedding-gateway.js',
       '--changed-file',
       'packages/os/tests/explore-runtime-routing.test.ts',
@@ -810,6 +866,8 @@ describe('test selection registry', () => {
       'packages/os/tests/lifecycle-engine.test.ts',
       '--changed-file',
       'packages/os/tests/workspace-node-registry-routing.test.ts',
+      '--changed-file',
+      'packages/os/tests/workspace-route-heartbeat-write-budget.test.ts',
       '--json',
     ]);
     const data = json(result);
@@ -826,6 +884,8 @@ describe('test selection registry', () => {
         'OS hosted-site lifecycle and node routing contracts',
       ]),
     );
+    expect(data.selectedSuites.flatMap((suite) => suite.command))
+      .toContain('packages/os/tests/workspace-route-heartbeat-write-budget.test.ts');
   });
 
   it('uses the frozen OS Bun lock contract instead of the broad OS package suite', () => {
@@ -1542,6 +1602,35 @@ describe('test selection registry', () => {
     ]));
   });
 
+  it('routes connector readiness changes through focused lifecycle coverage', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/lib/lifecycle/connector-readiness.ts',
+      '--changed-file',
+      'packages/os/tests/lifecycle-connector-readiness.test.ts',
+      '--json',
+    ]));
+
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const connectorReadinessSuite = data.selectedSuites.find(
+      (suite) => suite.ruleId === 'os-lifecycle-connector-readiness',
+    );
+    expect(matchedRuleIds).toContain('os-lifecycle-connector-readiness');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(connectorReadinessSuite?.critical).toBe(true);
+    expect(connectorReadinessSuite?.command).toEqual([
+      'bun',
+      'x',
+      'vitest',
+      'run',
+      'packages/os/tests/lifecycle-connector-readiness.test.ts',
+      'packages/os/tests/lifecycle-engine.test.ts',
+      'packages/os/tests/workspace-node-heartbeat-script.test.ts',
+      'packages/os/tests/workspace-node-heartbeat-client.test.ts',
+    ]);
+  });
+
   it('routes partial-install recovery CLI changes through focused critical coverage', () => {
     const data = json(run([
       'check',
@@ -1673,6 +1762,10 @@ describe('test selection registry', () => {
       '--changed-file',
       'packages/os/scripts/lib/workspace-chrome.ts',
       '--changed-file',
+      'packages/os/tests/workspace-chrome.test.ts',
+      '--changed-file',
+      'packages/os/tests/settings-control-plane.test.ts',
+      '--changed-file',
       'packages/os/scripts/lib/observability-traces-site.ts',
       '--changed-file',
       'packages/os/tests/launcher-nodes-materialization.test.ts',
@@ -1692,8 +1785,10 @@ describe('test selection registry', () => {
     expect(suite?.critical).toBe(true);
     expect(suite?.command).toEqual(expect.arrayContaining([
       'tests/settings-site.test.ts',
+      'tests/settings-control-plane.test.ts',
       'tests/launcher-nodes-materialization.test.ts',
       'tests/observability-traces-site.test.ts',
+      'tests/workspace-chrome.test.ts',
       'tests/sites-cli.test.ts',
       'tests/launcher-local-customization.test.ts',
       'tests/internal-launcher-regressions.test.ts',

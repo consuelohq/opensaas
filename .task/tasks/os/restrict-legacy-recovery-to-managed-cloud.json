@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/restrict-legacy-recovery-to-managed-cloud",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2406,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2406",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-restrict-legacy-recovery-to-managed-cloud",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_e1f201edfe8b",
+  "tmuxSession": "opensaas-os-restrict-legacy-recovery-to-managed-cloud-e1f201ed",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-restrict-legacy-recovery-to-managed-cloud/.task/session.json",
+  "createdAt": "2026-09-08T03:16:13.213Z"
+}

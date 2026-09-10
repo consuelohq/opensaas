@@ -1,0 +1,104 @@
+{
+  "version": 1,
+  "worktree_id": "task/explore/bound-interactive-explore-embedding-failure-latency",
+  "events": [
+    {
+      "id": "e8171b0e-8733-4f04-950f-0058145203d2",
+      "occurred_at": "2026-09-08T14:34:49.591Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/index/indexer.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/explore/bound-interactive-explore-embedding-failure-latency",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/explore/bound-interactive-explore-embedding-failure-latency"
+      }
+    },
+    {
+      "id": "cc9f07fa-2a5b-4a2c-bef4-5eca5ff4b7bd",
+      "occurred_at": "2026-09-08T14:34:49.729Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/explore-index-hydration-fallback.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/explore/bound-interactive-explore-embedding-failure-latency",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/explore/bound-interactive-explore-embedding-failure-latency"
+      }
+    },
+    {
+      "id": "09aaeb26-8077-44d1-8e0b-221afc8d5144",
+      "occurred_at": "2026-09-08T14:36:16.021Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/explore/bound-interactive-explore-embedding-failure-latency",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/explore/bound-interactive-explore-embedding-failure-latency"
+      }
+    },
+    {
+      "id": "cfe1ab19-86f7-4249-b4c9-b3f4db334c61",
+      "occurred_at": "2026-09-08T14:37:00.539Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/explore.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/explore/bound-interactive-explore-embedding-failure-latency",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/explore/bound-interactive-explore-embedding-failure-latency"
+      }
+    },
+    {
+      "id": "ffdb74d4-eddc-4099-9062-f6f6d8029062",
+      "occurred_at": "2026-09-08T14:37:09.441Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/explore.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/explore/bound-interactive-explore-embedding-failure-latency",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/explore/bound-interactive-explore-embedding-failure-latency"
+      }
+    },
+    {
+      "id": "580abbd2-f66d-45e5-ba75-d1d9583746c4",
+      "occurred_at": "2026-09-08T14:40:29.631Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/semantic-embedding-gateway.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/explore/bound-interactive-explore-embedding-failure-latency",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/explore/bound-interactive-explore-embedding-failure-latency"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-09-08T14:40:29.716Z"
+}

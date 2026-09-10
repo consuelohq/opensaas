@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/dialer-algorithm/recover-stale-conflicted-stream-sync-worktrees",
+  "events": [
+    {
+      "id": "f6a83655-3b01-400b-b94f-213869af17cd",
+      "occurred_at": "2026-08-16T02:44:37.414Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/paths.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer-algorithm/recover-stale-conflicted-stream-sync-worktrees",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer-algorithm/recover-stale-conflicted-stream-sync-worktrees"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-16T02:44:37.474Z"
+}

@@ -111,8 +111,242 @@ const EXPLICIT_NODE_LIFECYCLE_RECOVERY_TOOLS = new Set([
   'lifecycle.update',
 ]);
 
+const LEGACY_LIFECYCLE_RELEASE_CHANNELS = new Set([
+  'stable',
+  'beta',
+  'canary',
+  'dev',
+]);
+
+type LegacyLifecycleRewriteResult =
+  | { ok: true; body: string }
+  | { ok: false; code: string; message: string };
+
 function isJsonObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+export function legacyLifecycleBootstrapCommand(channel: string, platform = 'darwin'): string {
+  const script = [
+    'import { chmodSync, existsSync, lstatSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";',
+    'import { isAbsolute, resolve } from "node:path";',
+    `const channel=${JSON.stringify(channel)};`,
+    'const defaultReleaseBaseUrl="https://install.consuelohq.com/os/releases";',
+    'const home=process.env.CONSUELO_HOME?.trim();',
+    'if(!home||!isAbsolute(home))throw new Error("CONSUELO_HOME unavailable");',
+    'const runtimeDir=resolve(home,"runtime");',
+    'mkdirSync(runtimeDir,{recursive:true,mode:0o700});',
+    'const trustPath=resolve(runtimeDir,"trusted-release-keys.json");',
+    'const validateReleaseKeys=(value,label)=>{',
+    'if(!value||typeof value!=="object"||Array.isArray(value))throw new Error(label+" invalid");',
+    'const entries=Object.entries(value);',
+    'if(entries.length===0||entries.length>32)throw new Error(label+" invalid");',
+    'for(const [keyId,publicKey] of entries){if(typeof publicKey!=="string"||keyId.length===0||keyId.length>128||keyId.trim()!==keyId||publicKey.length===0||publicKey.length>8192||publicKey.trim()!==publicKey||!publicKey.startsWith("-----BEGIN PUBLIC KEY-----")||!publicKey.endsWith("-----END PUBLIC KEY-----")||publicKey.includes("PRIVATE KEY"))throw new Error(label+" invalid");}',
+    'return value;',
+    '};',
+    'const metadataUrl="http://metadata.google.internal/computeMetadata/v1/instance/attributes/startup-script";',
+    'const readManagedCloudStartupScript=async(required)=>{',
+    'const controller=new AbortController();',
+    'const timeout=setTimeout(()=>controller.abort(),750);',
+    'let response;',
+    'try{response=await fetch(metadataUrl,{headers:{"Metadata-Flavor":"Google"},signal:controller.signal});}catch{if(required)throw new Error("managed cloud startup metadata unavailable");return undefined;}finally{clearTimeout(timeout);}',
+    'if(!response.ok){if(required)throw new Error("managed cloud startup metadata unavailable");return undefined;}',
+    'const startupScript=await response.text();',
+    'if(startupScript.length===0||startupScript.length>262144)throw new Error("managed cloud startup metadata invalid");',
+    'return startupScript;',
+    '};',
+    'const assignment=(startupScript,name,required)=>{',
+    'const quote=String.fromCharCode(39);',
+    'const prefix="  "+name+"="+quote;',
+    'const suffix=quote+" "+String.fromCharCode(92);',
+    'const lines=startupScript.split(/\\r?\\n/).filter((line)=>line.startsWith("  "+name+"="));',
+    'if(lines.length===0&&!required)return undefined;',
+    'if(lines.length!==1)throw new Error("managed cloud release metadata missing");',
+    'const line=lines[0];',
+    'if(!line.startsWith(prefix)||!line.endsWith(suffix))throw new Error("managed cloud release metadata malformed");',
+    'const value=line.slice(prefix.length,line.length-suffix.length);',
+    'if(!value||value.includes(quote))throw new Error("managed cloud release metadata malformed");',
+    'return value;',
+    '};',
+    'const validateManagedCloudReleaseBase=(value)=>{',
+    'const url=new URL(value);',
+    'if(url.protocol!=="https:"||url.hostname!=="storage.googleapis.com"||url.username||url.password||url.port||url.search||url.hash||url.pathname.split("/").filter(Boolean).length===0)throw new Error("managed cloud release origin is not trusted");',
+    'return value;',
+    '};',
+    'const explicitReleaseBaseUrl=process.env.CONSUELO_RELEASE_BASE_URL?.trim();',
+    'let releaseBaseUrl=explicitReleaseBaseUrl||defaultReleaseBaseUrl;',
+    'let releaseKeys;',
+    'let gcpMetadataAuth=false;',
+    'if(existsSync(trustPath)){',
+    'const existing=lstatSync(trustPath);',
+    'if(existing.isSymbolicLink()||!existing.isFile()||(typeof process.getuid==="function"&&existing.uid!==process.getuid())||(existing.mode&0o022)!==0)throw new Error("trusted release key path is unsafe");',
+    'const encoded=readFileSync(trustPath,"utf8");',
+    'if(encoded.length===0||encoded.length>65536)throw new Error("trusted release key file invalid");',
+    'let parsed;',
+    'try{parsed=JSON.parse(encoded);}catch{throw new Error("trusted release key file invalid");}',
+    'releaseKeys=validateReleaseKeys(parsed,"trusted release key file");',
+    'if(!explicitReleaseBaseUrl){',
+    'const startupScript=await readManagedCloudStartupScript(false);',
+    'if(startupScript){',
+    'const metadataReleaseBaseUrl=assignment(startupScript,"CONSUELO_RELEASE_BASE_URL",false);',
+    'const metadataReleaseKeysJson=assignment(startupScript,"CONSUELO_RELEASE_PUBLIC_KEYS_JSON",false);',
+    'if(metadataReleaseBaseUrl!==undefined||metadataReleaseKeysJson!==undefined){',
+    'if(metadataReleaseBaseUrl===undefined||metadataReleaseKeysJson===undefined)throw new Error("managed cloud release metadata missing");',
+    'releaseBaseUrl=validateManagedCloudReleaseBase(metadataReleaseBaseUrl);',
+    'if(metadataReleaseKeysJson.length>65536)throw new Error("managed cloud release key metadata too large");',
+    'let metadataReleaseKeys;',
+    'try{metadataReleaseKeys=JSON.parse(metadataReleaseKeysJson);}catch{throw new Error("managed cloud release key metadata invalid");}',
+    'validateReleaseKeys(metadataReleaseKeys,"managed cloud release key metadata");',
+    'gcpMetadataAuth=true;',
+    '}',
+    '}',
+    '}',
+    '}else{',
+    'const startupScript=await readManagedCloudStartupScript(true);',
+    'releaseBaseUrl=validateManagedCloudReleaseBase(assignment(startupScript,"CONSUELO_RELEASE_BASE_URL",true));',
+    'const releaseKeysJson=assignment(startupScript,"CONSUELO_RELEASE_PUBLIC_KEYS_JSON",true);',
+    'if(releaseKeysJson.length>65536)throw new Error("managed cloud release key metadata too large");',
+    'let metadataReleaseKeys;',
+    'try{metadataReleaseKeys=JSON.parse(releaseKeysJson);}catch{throw new Error("managed cloud release key metadata invalid");}',
+    'releaseKeys=validateReleaseKeys(metadataReleaseKeys,"managed cloud release key metadata");',
+    'const temporaryTrustPath=trustPath+".recovery-"+process.pid+"-"+Date.now();',
+    'writeFileSync(temporaryTrustPath,JSON.stringify(releaseKeys,null,2)+"\\n",{encoding:"utf8",mode:0o600,flag:"wx"});',
+    'chmodSync(temporaryTrustPath,0o600);',
+    'renameSync(temporaryTrustPath,trustPath);',
+    'chmodSync(trustPath,0o600);',
+    'gcpMetadataAuth=true;',
+    '}',
+    'const releaseUrl=new URL(releaseBaseUrl);',
+    'if(releaseUrl.protocol!=="https:"||releaseUrl.username||releaseUrl.password||releaseUrl.hash)throw new Error("release origin is not trusted");',
+    'if(!gcpMetadataAuth&&process.env.CONSUELO_RELEASE_GCP_METADATA_AUTH==="1"&&releaseUrl.hostname==="storage.googleapis.com"&&!releaseUrl.port&&!releaseUrl.search&&releaseUrl.pathname.split("/").filter(Boolean).length>0)gcpMetadataAuth=true;',
+    'const lifecyclePath=resolve(runtimeDir,"current","scripts","lifecycle.ts");',
+    'if(!existsSync(lifecyclePath))throw new Error("legacy lifecycle updater unavailable");',
+    'const childEnv={...process.env,CONSUELO_RELEASE_BASE_URL:releaseBaseUrl,CONSUELO_RELEASE_PUBLIC_KEYS_JSON:JSON.stringify(releaseKeys)};',
+    'if(gcpMetadataAuth)childEnv.CONSUELO_RELEASE_GCP_METADATA_AUTH="1";else delete childEnv.CONSUELO_RELEASE_GCP_METADATA_AUTH;',
+    'const child=Bun.spawnSync([process.execPath,lifecyclePath,"update","--channel",channel,"--yes","--json"],{env:childEnv});',
+    'if(child.stdout)process.stdout.write(child.stdout);',
+    'if(child.stderr)process.stderr.write(child.stderr);',
+    'process.exit(child.exitCode??1);',
+  ].join('');
+  if (script.includes("'")) {
+    throw new Error('legacy lifecycle bootstrap must remain shell-literal safe');
+  }
+  if (platform === 'windows') {
+    return [
+      'powershell.exe -NoLogo -NoProfile -NonInteractive -Command "',
+      '$legacyBun=$null;',
+      "if($env:CONSUELO_HOME){$candidate=Join-Path $env:CONSUELO_HOME 'bin\\bun.exe';if(Test-Path -LiteralPath $candidate -PathType Leaf){$legacyBun=$candidate}};",
+      "if(-not $legacyBun -and $env:BUN_BIN -and (Test-Path -LiteralPath $env:BUN_BIN -PathType Leaf)){$legacyBun=$env:BUN_BIN};",
+      "if(-not $legacyBun){$command=Get-Command bun.exe -ErrorAction SilentlyContinue;if(-not $command){$command=Get-Command bun -ErrorAction SilentlyContinue};if($command){$legacyBun=$command.Source}};",
+      "if(-not $legacyBun -and $env:USERPROFILE){$candidate=Join-Path $env:USERPROFILE '.bun\\bin\\bun.exe';if(Test-Path -LiteralPath $candidate -PathType Leaf){$legacyBun=$candidate}};",
+      "if(-not $legacyBun){[Console]::Error.WriteLine('legacy Bun runtime unavailable');exit 127};",
+      `& $legacyBun -e '${script}';`,
+      'exit $LASTEXITCODE"',
+    ].join('');
+  }
+
+  const resolver = [
+    'legacy_bun="";',
+    'if [ -n "${CONSUELO_HOME:-}" ] && [ -x "$CONSUELO_HOME/bin/consuelo-os" ]; then legacy_bun="$CONSUELO_HOME/bin/consuelo-os";',
+    'elif [ -n "${BUN_BIN:-}" ] && [ -x "$BUN_BIN" ]; then legacy_bun="$BUN_BIN";',
+    'elif command -v bun >/dev/null 2>&1; then legacy_bun="$(command -v bun)";',
+    'elif [ -x "$HOME/.bun/bin/bun" ]; then legacy_bun="$HOME/.bun/bin/bun";',
+    'else printf "%s\\n" "legacy Bun runtime unavailable" >&2; exit 127; fi;',
+  ].join('');
+  if (resolver.includes("'")) {
+    throw new Error('legacy lifecycle Bun resolver must remain shell-literal safe');
+  }
+  return `${resolver}"$legacy_bun" -e '${script}'`;
+}
+
+function rewriteLegacyLifecycleUpdate(
+  requestBody: string,
+  platform: string,
+): LegacyLifecycleRewriteResult {
+  let payload: unknown;
+  try {
+    payload = JSON.parse(requestBody) as unknown;
+  } catch {
+    return {
+      ok: false,
+      code: 'WORKSPACE_NODE_LEGACY_LIFECYCLE_INPUT_INVALID',
+      message: 'Stale-node lifecycle recovery requires a valid MCP request body.',
+    };
+  }
+  if (!isJsonObject(payload) || payload.method !== 'tools/call') {
+    return {
+      ok: false,
+      code: 'WORKSPACE_NODE_LEGACY_LIFECYCLE_INPUT_INVALID',
+      message: 'Stale-node lifecycle recovery requires a facade tools/call request.',
+    };
+  }
+  const params = payload.params;
+  if (!isJsonObject(params) || params.name !== 'call') {
+    return {
+      ok: false,
+      code: 'WORKSPACE_NODE_LEGACY_LIFECYCLE_INPUT_INVALID',
+      message: 'Stale-node lifecycle recovery requires the Consuelo facade call tool.',
+    };
+  }
+  const argumentsValue = params.arguments;
+  if (!isJsonObject(argumentsValue) || argumentsValue.tool !== 'lifecycle.update') {
+    return {
+      ok: false,
+      code: 'WORKSPACE_NODE_LEGACY_LIFECYCLE_INPUT_INVALID',
+      message: 'Stale-node lifecycle recovery only supports lifecycle.update.',
+    };
+  }
+  const lifecycleInput = argumentsValue.input ?? {};
+  if (!isJsonObject(lifecycleInput)) {
+    return {
+      ok: false,
+      code: 'WORKSPACE_NODE_LEGACY_LIFECYCLE_INPUT_INVALID',
+      message: 'Stale-node lifecycle recovery input must be an object.',
+    };
+  }
+  const unexpectedKeys = Object.keys(lifecycleInput).filter(
+    (key) => key !== 'channel' && key !== 'version',
+  );
+  if (unexpectedKeys.length > 0) {
+    return {
+      ok: false,
+      code: 'WORKSPACE_NODE_LEGACY_LIFECYCLE_INPUT_INVALID',
+      message: 'Stale-node lifecycle recovery received unsupported input fields.',
+    };
+  }
+  if (Object.prototype.hasOwnProperty.call(lifecycleInput, 'version')) {
+    return {
+      ok: false,
+      code: 'WORKSPACE_NODE_LEGACY_LIFECYCLE_VERSION_UNSUPPORTED',
+      message: 'Exact-version updates are unavailable until the node reaches a modern lifecycle facade.',
+    };
+  }
+  const channel = lifecycleInput.channel ?? 'stable';
+  if (
+    typeof channel !== 'string'
+    || !LEGACY_LIFECYCLE_RELEASE_CHANNELS.has(channel)
+  ) {
+    return {
+      ok: false,
+      code: 'WORKSPACE_NODE_LEGACY_LIFECYCLE_INPUT_INVALID',
+      message: 'Stale-node lifecycle recovery supports stable, beta, canary, or dev only.',
+    };
+  }
+  return {
+    ok: true,
+    body: JSON.stringify({
+      ...payload,
+      params: {
+        ...params,
+        arguments: {
+          tool: 'mac.call',
+          input: {
+            command: legacyLifecycleBootstrapCommand(channel, platform),
+          },
+        },
+      },
+    }),
+  };
 }
 
 async function centralMcpFacadeOutcome(response: Response): Promise<CentralMcpFacadeOutcome> {
@@ -465,6 +699,7 @@ export async function proxyCentralMcpRequest(input: {
         message: routingInspection.message,
       });
     }
+    let proxyRequestBody = requestBody;
     const headerNodeId =
       input.request.headers.get('x-consuelo-node-id')?.trim() || undefined;
     if (
@@ -563,6 +798,22 @@ export async function proxyCentralMcpRequest(input: {
         strictReadiness &&
         routingInspection.facadeTool !== undefined &&
         EXPLICIT_NODE_LIFECYCLE_RECOVERY_TOOLS.has(routingInspection.facadeTool);
+      if (
+        strictReadiness
+        && routingInspection.facadeTool === 'lifecycle.update'
+        && safeNode.compatibility !== 'compatible'
+      ) {
+        const legacyRewrite = rewriteLegacyLifecycleUpdate(requestBody, safeNode.platform);
+        if (!legacyRewrite.ok) {
+          return centralMcpSafeError({
+            status: 400,
+            code: legacyRewrite.code,
+            message: legacyRewrite.message,
+            details: { nodeId: resolution.nodeId },
+          });
+        }
+        proxyRequestBody = legacyRewrite.body;
+      }
       if (
         !lifecycleRecovery &&
         (
@@ -673,7 +924,7 @@ export async function proxyCentralMcpRequest(input: {
     const proxyRequest = await centralMcpProxyRequest({
       request: input.request,
       ...(input.request.method === 'POST'
-        ? { body: stripMcpRoutingNodeId(requestBody) }
+        ? { body: stripMcpRoutingNodeId(proxyRequestBody) }
         : {}),
       resolution,
       upstreamUrl: centralMcpUpstreamUrl({
