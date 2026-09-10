@@ -703,6 +703,20 @@ describe('renderIndexPage', () => {
     expect(html).not.toContain('class="pagination"');
     expect(html).not.toContain('pageSize');
   });
+
+  test('keeps mounted PR navigation inside the configured Diffs path', () => {
+    const mountedHtml = renderIndexPage(
+      { owner: 'consuelohq', repo: 'opensaas' },
+      null,
+      '',
+      { mountPath: '/diffs' },
+    );
+    const standaloneHtml = renderIndexPage({ owner: 'consuelohq', repo: 'opensaas' });
+
+    expect(mountedHtml).toContain('const routePrefix = "/diffs/consuelohq/opensaas/pull/";');
+    expect(mountedHtml).not.toContain('const routePrefix = "/consuelohq/opensaas/pull/";');
+    expect(standaloneHtml).toContain('const routePrefix = "/consuelohq/opensaas/pull/";');
+  });
 });
 
 describe('renderReviewPage', () => {
