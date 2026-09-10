@@ -29,6 +29,7 @@ describeIntegration('local dialer lab service integration', () => {
     expect(exitCode, stderr).toBe(0);
     const result = JSON.parse(stdout) as {
       ok: boolean;
+      simulation?: { scenarioCount: number; allWorkersExited: boolean; replayWithoutEffects: boolean; redisLossPreservedState: boolean; deterministicReplay: boolean; };
       inbound: {
         assertions: number;
         concurrentWinners: number;
@@ -78,6 +79,11 @@ describeIntegration('local dialer lab service integration', () => {
     };
 
     expect(result.ok).toBe(true);
+    expect(result.simulation?.scenarioCount).toBeGreaterThanOrEqual(14);
+    expect(result.simulation?.allWorkersExited).toBe(true);
+    expect(result.simulation?.replayWithoutEffects).toBe(true);
+    expect(result.simulation?.redisLossPreservedState).toBe(true);
+    expect(result.simulation?.deterministicReplay).toBe(true);
     expect(result.inbound.concurrentWinners).toBe(1);
     expect(result.inbound.replayWithoutEffects).toBe(true);
     expect(result.inbound.assertions).toBeGreaterThanOrEqual(20);
@@ -143,5 +149,5 @@ describeIntegration('local dialer lab service integration', () => {
       redisClosed: true,
       tempDirectoryRemoved: true,
     });
-  }, 30_000);
+  }, 60_000);
 });
