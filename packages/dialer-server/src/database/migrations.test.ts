@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'bun:test';
+import { INBOUND_MIGRATION_ID } from '../inbound/migration';
 
 import type { LeadConnectorDatabase } from '@consuelo/lead-connector';
 
@@ -69,6 +70,7 @@ describe('dialer database migrations', () => {
         DIALER_DATABASE_CONTEXTUAL_SCIENCE_MIGRATION_ID,
         DIALER_DATABASE_CONTEXTUAL_SCIENCE_HARDENING_MIGRATION_ID,
         DIALER_DATABASE_LEARNING_INTEGRITY_MIGRATION_ID,
+        INBOUND_MIGRATION_ID,
       ]),
     );
   });
@@ -82,10 +84,16 @@ describe('dialer database migrations', () => {
     expect(sql).toContain('dialer_learning_decision_context_schema_check');
     expect(sql).toContain("decision_context->>'schemaVersion'");
     expect(sql).toContain('dialer_learning_observation_timestamps_check');
-    expect(sql).toContain("outcome_class = 'response' AND response_at IS NOT NULL");
+    expect(sql).toContain(
+      "outcome_class = 'response' AND response_at IS NOT NULL",
+    );
     expect(sql).toContain('observed_until_at IS NOT NULL');
-    expect(sql).toContain('dialer_learning_decision_context_schema_required_check');
-    expect(sql).toContain("(decision_context->>'schemaVersion' = feature_schema_version::text) IS TRUE");
+    expect(sql).toContain(
+      'dialer_learning_decision_context_schema_required_check',
+    );
+    expect(sql).toContain(
+      "(decision_context->>'schemaVersion' = feature_schema_version::text) IS TRUE",
+    );
     expect(sql).not.toMatch(/UPDATE\s+dialer_learning_observations\s+SET/i);
   });
 
@@ -142,18 +150,24 @@ describe('dialer database migrations', () => {
       call.text.includes('CREATE TABLE IF NOT EXISTS dialer_call_sessions'),
     );
     const observationCreates = harness.calls.filter((call) =>
-      call.text.includes('CREATE TABLE IF NOT EXISTS dialer_learning_observations'),
+      call.text.includes(
+        'CREATE TABLE IF NOT EXISTS dialer_learning_observations',
+      ),
     );
     const decisionCreates = harness.calls.filter((call) =>
-      call.text.includes('CREATE TABLE IF NOT EXISTS dialer_predictive_decisions'),
+      call.text.includes(
+        'CREATE TABLE IF NOT EXISTS dialer_predictive_decisions',
+      ),
     );
-    const migrationInserts = harness.calls.filter((call) =>
-      call.text.includes('INSERT INTO consuelo_dialer_schema_migrations'),
+    const migrationInserts = harness.calls.filter(
+      (call) =>
+        call.text.includes('INSERT INTO consuelo_dialer_schema_migrations') &&
+        call.values.length === 1,
     );
 
     expect(callSessionCreates).toHaveLength(1);
     expect(observationCreates).toHaveLength(1);
     expect(decisionCreates).toHaveLength(1);
-    expect(migrationInserts).toHaveLength(5);
+    expect(migrationInserts).toHaveLength(6);
   });
 });
