@@ -20,6 +20,7 @@ started: 2026-09-11
 
 - `packages/os/tests/trace-request-budget.test.ts`
 
+
 ## key decisions
 
 - none yet
@@ -73,6 +74,7 @@ bun run task:finish
 - 2026-09-11 20:51:17 `verify`: failed — COMMAND_FAILED
 - 2026-09-11 20:55:54 `verify`: failed — COMMAND_FAILED
 - 2026-09-11 20:59:15 `verify`: passed — OK
+- 2026-09-11 21:11:38 `verify`: passed — OK
 
 ## Validation and release preparation
 - RED: one sparse filter produced 43 history requests in 600ms before repair.
@@ -82,3 +84,7 @@ bun run task:finish
 - Live and history transport remain same-origin and authenticated; private responses use no-store.
 - Stable 0.1.86 source ca84eb7 -> canary 0.1.115 source eb3615f: 231 OS files, no migration files. Includes installer/auth/recovery changes.
 - Pending operational acceptance: immutable canary publication, local update, hosted site artifact publication, authenticated MCP/heartbeat checks, then exact stable promotion.
+
+## workspace-owned: files read
+
+- `.agents/skills/monitor-ci/SKILL.md`
