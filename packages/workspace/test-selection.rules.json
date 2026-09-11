@@ -374,7 +374,9 @@
         "packages/os/scripts/lib/trace-search-query.ts",
         "packages/os/tests/trace-persistence.test.ts",
         "packages/os/tests/trace-search-query.test.ts",
-        "packages/os/tests/trace-sites-gateway-live-endpoints.test.ts"
+        "packages/os/tests/trace-sites-gateway-live-endpoints.test.ts",
+        "packages/os/scripts/lib/trace-cursor-stream.ts",
+        "packages/os/tests/trace-request-budget.test.ts"
       ],
       "tests": [
         {
@@ -416,6 +418,16 @@
             "packages/os",
             "tests/trace-persistence.test.ts",
             "tests/trace-search-query.test.ts"
+          ]
+        },
+        {
+          "name": "OS trace browser request budget and persistent stream",
+          "command": [
+            "bun",
+            "test",
+            "packages/os/tests/trace-request-budget.test.ts",
+            "--timeout",
+            "15000"
           ]
         }
       ],

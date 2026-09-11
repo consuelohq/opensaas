@@ -10,6 +10,7 @@ export type TraceLivePage = TraceHistoryPage;
 export type TracePrefetchRequestDetail = {
   cursor: string;
   query?: string;
+  signal?: AbortSignal;
   rowCount: number;
   lastVirtualIndex: number;
   accept: (rows: TraceRecord[], nextCursor: string | null) => void;
@@ -17,12 +18,14 @@ export type TracePrefetchRequestDetail = {
 };
 
 export type TraceHistoryTransport = {
-  fetchJson: (url: string) => Promise<unknown>;
+  fetchJson: (url: string, signal?: AbortSignal) => Promise<unknown>;
+  openEvents?: (url: string) => EventSource;
 };
 
 declare global {
   interface Window {
     __consueloTraceHistoryTransport?: TraceHistoryTransport;
+    __tracePaginationDispose?: () => void;
   }
 }
 
@@ -118,43 +121,42 @@ export function deriveTraceLiveCursor(rows: Iterable<TraceRecord>): string {
 }
 
 export function installTracePaginationTransport(): () => void {
-  const inFlight = new Set<string>();
+  window.__tracePaginationDispose?.();
   const handlePrefetch = (event: Event) => {
-    if (!(event instanceof CustomEvent)) return;
+    if (!(event instanceof CustomEvent) || event.defaultPrevented) return;
     const detail = prefetchDetail(event.detail);
     if (!detail) return;
     event.preventDefault();
-    const requestKey = `${detail.query ?? ''}\u0000${detail.cursor}`;
-    if (inFlight.has(requestKey)) return;
-
-    inFlight.add(requestKey);
-    void fetchTraceHistoryPage(detail.cursor, detail.query ?? '')
-      .then((page) => detail.accept(page.rows, page.nextCursor))
-      .catch(() => detail.fail())
-      .finally(() => inFlight.delete(requestKey));
-  };
-
-  document.addEventListener('trace:prefetch-request', handlePrefetch);
-  return () =>
-    document.removeEventListener('trace:prefetch-request', handlePrefetch);
-}
-
-async function fetchTraceHistoryPage(
-  cursor: string,
-  query = '',
-): Promise<TraceHistoryPage> {
-  try {
+    if (detail.signal?.aborted) {
+      detail.fail();
+      return;
+    }
     const transport = window.__consueloTraceHistoryTransport;
     if (!transport) {
-      throw new Error('Trusted trace history transport is unavailable.');
+      detail.fail();
+      return;
     }
-    const payload = await transport.fetchJson(traceHistoryUrl(cursor, 100, query));
-    return parseTraceHistoryResponse(payload);
-  } catch (error: unknown) {
-    throw error instanceof Error
-      ? error
-      : new Error('Trace history request failed.');
-  }
+    void transport
+      .fetchJson(
+        traceHistoryUrl(detail.cursor, 100, detail.query ?? ''),
+        detail.signal,
+      )
+      .then(parseTraceHistoryResponse)
+      .then((page) => {
+        if (!detail.signal?.aborted) detail.accept(page.rows, page.nextCursor);
+      })
+      .catch(() => {
+        if (!detail.signal?.aborted) detail.fail();
+      });
+  };
+  document.addEventListener('trace:prefetch-request', handlePrefetch);
+  const dispose = () => {
+    document.removeEventListener('trace:prefetch-request', handlePrefetch);
+    if (window.__tracePaginationDispose === dispose)
+      delete window.__tracePaginationDispose;
+  };
+  window.__tracePaginationDispose = dispose;
+  return dispose;
 }
 
 function prefetchDetail(value: unknown): TracePrefetchRequestDetail | null {
