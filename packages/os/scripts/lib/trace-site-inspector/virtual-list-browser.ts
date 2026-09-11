@@ -72,7 +72,12 @@ type TraceListDiagnostics = {
   mounted: number;
   range: string;
   nextCursor: string | null;
-  lastMutation: 'initial' | 'live-incremental' | 'rebuild' | 'history' | 'replace';
+  lastMutation:
+    | 'initial'
+    | 'live-incremental'
+    | 'rebuild'
+    | 'history'
+    | 'replace';
 };
 
 type VirtualTraceItem = {
@@ -153,6 +158,25 @@ class TraceVirtualListController {
   private nextCursor: string | null;
   private lastRequestedCursor: string | null = null;
   private fetching = false;
+  private requestGeneration = 0;
+  private requestAbort = new AbortController();
+  private scrollIntent = false;
+  private previousScrollTop = 0;
+  private readonly loadMore = document.createElement('button');
+  private readonly markScrollIntent = () => {
+    this.scrollIntent = true;
+  };
+  private readonly markKeyIntent = (event: KeyboardEvent) => {
+    if (['ArrowDown', 'PageDown', 'End', ' '].includes(event.key))
+      this.scrollIntent = true;
+  };
+  private readonly handleScroll = () => {
+    const top = this.target.scroller.scrollTop;
+    const advance = this.scrollIntent && top > this.previousScrollTop;
+    this.previousScrollTop = top;
+    this.scrollIntent = false;
+    if (advance) this.maybeRequestNextPage(this.lastVisibleRootIndex());
+  };
   private searchRows: TraceRecord[] | null = null;
   private searchNextCursor: string | null = null;
   private searchQuery = '';
@@ -187,6 +211,28 @@ class TraceVirtualListController {
     this.virtualizer._willUpdate();
     this.replaceOwnedMap();
     this.render(this.virtualizer);
+    this.target.scroller.addEventListener('wheel', this.markScrollIntent, {
+      passive: true,
+    });
+    this.target.scroller.addEventListener('touchmove', this.markScrollIntent, {
+      passive: true,
+    });
+    this.target.scroller.addEventListener('pointerdown', this.markScrollIntent);
+    this.target.scroller.addEventListener('keydown', this.markKeyIntent);
+    this.target.scroller.addEventListener('scroll', this.handleScroll, {
+      passive: true,
+    });
+    this.loadMore.type = 'button';
+    this.loadMore.dataset.traceLoadOlder = '';
+    this.loadMore.addEventListener('click', () =>
+      this.maybeRequestNextPage(this.lastVisibleRootIndex(), true),
+    );
+    (
+      this.target.scroller
+        .closest('.trxTablePane')
+        ?.querySelector('.trxFooter') ?? this.target.scroller.parentElement
+    )?.append(this.loadMore);
+    this.updateLoadMore();
   }
 
   isMountedOn(target: TraceListTarget): boolean {
@@ -198,6 +244,19 @@ class TraceVirtualListController {
   }
 
   destroy(): void {
+    this.invalidateRequests();
+    this.target.scroller.removeEventListener('wheel', this.markScrollIntent);
+    this.target.scroller.removeEventListener(
+      'touchmove',
+      this.markScrollIntent,
+    );
+    this.target.scroller.removeEventListener(
+      'pointerdown',
+      this.markScrollIntent,
+    );
+    this.target.scroller.removeEventListener('keydown', this.markKeyIntent);
+    this.target.scroller.removeEventListener('scroll', this.handleScroll);
+    this.loadMore.remove();
     this.unmount();
     this.target.scroller.removeAttribute('data-trace-virtual-list');
     this.target.content.removeAttribute('data-trace-virtual-content');
@@ -208,17 +267,32 @@ class TraceVirtualListController {
     traceWindow().__traceRowsByTraceId = this.ownedMap;
   }
 
+  private invalidateRequests(): void {
+    this.requestGeneration += 1;
+    this.requestAbort.abort();
+    this.requestAbort = new AbortController();
+    this.fetching = false;
+    this.searchPending = false;
+    this.lastRequestedCursor = null;
+    this.scrollIntent = false;
+  }
+
   syncFilters(): void {
+    this.invalidateRequests();
     this.refreshItems();
     this.commitItems(true);
   }
 
   setSearchQuery(query: string): void {
     const normalized = query.trim().toLowerCase();
-    if (normalized === this.searchQuery && (this.searchRows !== null || this.searchPending || !normalized)) {
+    if (
+      normalized === this.searchQuery &&
+      (this.searchRows !== null || this.searchPending || !normalized)
+    ) {
       this.syncFilters();
       return;
     }
+    this.invalidateRequests();
     this.searchQuery = normalized;
     this.searchRows = null;
     this.searchNextCursor = null;
@@ -287,7 +361,7 @@ class TraceVirtualListController {
     if (nextCursor !== this.nextCursor) this.lastRequestedCursor = null;
     this.nextCursor = nextCursor;
     this.updateDiagnostics();
-    this.maybeRequestNextPage(this.lastVisibleRootIndex());
+    this.updateLoadMore();
   }
 
   scrollToKey(key: string): void {
@@ -303,13 +377,15 @@ class TraceVirtualListController {
     if (!this.items.length) return '';
     const target = traceWindow();
     const current = target.__traceKeyboardKey || currentSelectedKey();
-    const currentIndex = this.items.findIndex((item) => item.traceKey === current);
+    const currentIndex = this.items.findIndex(
+      (item) => item.traceKey === current,
+    );
     const nextIndex = nextTraceInteractionIndex(
       this.items.length,
       currentIndex,
       direction,
     );
-    const key = nextIndex >= 0 ? this.items[nextIndex]?.traceKey ?? '' : '';
+    const key = nextIndex >= 0 ? (this.items[nextIndex]?.traceKey ?? '') : '';
     if (!key) return '';
     target.__traceKeyboardKey = key;
     this.applyHighlightedKey(key);
@@ -385,7 +461,9 @@ class TraceVirtualListController {
   }
 
   private applyHighlightedKey(key: string): void {
-    for (const row of this.target.content.querySelectorAll<HTMLElement>('.trxRow')) {
+    for (const row of this.target.content.querySelectorAll<HTMLElement>(
+      '.trxRow',
+    )) {
       const active = Boolean(key) && row.dataset.traceKey === key;
       row.classList.toggle('selected', active);
       row.setAttribute('aria-selected', String(active));
@@ -530,7 +608,16 @@ class TraceVirtualListController {
       first === undefined || last === undefined ? 'empty' : `${first}-${last}`;
     this.updateDiagnostics();
     this.updateFooter(this.firstVisibleRootIndex(virtualItems));
-    this.maybeRequestNextPage(this.lastVisibleRootIndex(virtualItems));
+    this.updateLoadMore();
+  }
+
+  private updateLoadMore(): void {
+    const cursor =
+      this.searchRows !== null ? this.searchNextCursor : this.nextCursor;
+    this.loadMore.hidden = !cursor;
+    this.loadMore.disabled = this.fetching || this.searchPending;
+    this.loadMore.textContent =
+      this.fetching || this.searchPending ? 'Loading…' : 'Load older traces';
   }
 
   private updateDiagnostics(): void {
@@ -589,7 +676,9 @@ class TraceVirtualListController {
   }
 
   private requestInitialSearch(query: string): void {
+    const generation = this.requestGeneration;
     this.searchPending = true;
+    this.updateLoadMore();
     this.target.scroller.dataset.traceSearch = 'loading';
     const event = new CustomEvent<TracePrefetchRequestDetail>(
       'trace:prefetch-request',
@@ -597,11 +686,16 @@ class TraceVirtualListController {
         cancelable: true,
         detail: {
           cursor: 'latest',
+          signal: this.requestAbort.signal,
           query,
           rowCount: this.rows.length,
           lastVirtualIndex: -1,
           accept: (rows, nextCursor) => {
-            if (this.searchQuery !== query) return;
+            if (
+              this.searchQuery !== query ||
+              generation !== this.requestGeneration
+            )
+              return;
             this.searchPending = false;
             this.searchRows = mergeTraceRows([], rows, {
               direction: 'append',
@@ -615,16 +709,26 @@ class TraceVirtualListController {
             this.commitItems(true);
           },
           fail: () => {
-            if (this.searchQuery !== query) return;
+            if (
+              this.searchQuery !== query ||
+              generation !== this.requestGeneration
+            )
+              return;
             this.searchPending = false;
             this.target.scroller.dataset.traceSearch = 'failed';
+            this.updateLoadMore();
           },
         },
       },
     );
     document.dispatchEvent(event);
     queueMicrotask(() => {
-      if (this.searchQuery !== query || !this.searchPending) return;
+      if (
+        this.searchQuery !== query ||
+        generation !== this.requestGeneration ||
+        !this.searchPending
+      )
+        return;
       if (!event.defaultPrevented) {
         this.searchPending = false;
         this.target.scroller.dataset.traceSearch = 'unhandled';
@@ -632,7 +736,10 @@ class TraceVirtualListController {
     });
   }
 
-  private appendSearchPage(rows: TraceRecord[], nextCursor: string | null): void {
+  private appendSearchPage(
+    rows: TraceRecord[],
+    nextCursor: string | null,
+  ): void {
     this.searchNextCursor = nextCursor;
     this.lastRequestedCursor = null;
     this.fetching = false;
@@ -646,26 +753,33 @@ class TraceVirtualListController {
     this.commitItems(false);
   }
 
-  private maybeRequestNextPage(lastVirtualIndex: number | null): void {
+  private maybeRequestNextPage(
+    lastVirtualIndex: number | null,
+    explicit = false,
+  ): void {
     if (this.searchPending) return;
     const searchActive = this.searchRows !== null;
     const nextCursor = searchActive ? this.searchNextCursor : this.nextCursor;
     if (
       nextCursor === this.lastRequestedCursor ||
-      !shouldPrefetchTracePage({
-        lastVirtualIndex,
-        rowCount: this.filteredRows.length,
-        threshold: PREFETCH_THRESHOLD,
-        nextCursor,
-        fetching: this.fetching,
-      })
+      (!explicit &&
+        !shouldPrefetchTracePage({
+          lastVirtualIndex,
+          rowCount: this.filteredRows.length,
+          threshold: PREFETCH_THRESHOLD,
+          nextCursor,
+          fetching: this.fetching,
+        })) ||
+      this.fetching
     )
       return;
 
     const cursor = nextCursor;
     if (!cursor) return;
+    const generation = this.requestGeneration;
     this.lastRequestedCursor = cursor;
     this.fetching = true;
+    this.updateLoadMore();
     this.target.scroller.dataset.tracePrefetch = 'requested';
     const event = new CustomEvent<TracePrefetchRequestDetail>(
       'trace:prefetch-request',
@@ -673,28 +787,33 @@ class TraceVirtualListController {
         cancelable: true,
         detail: {
           cursor,
+          signal: this.requestAbort.signal,
           ...(searchActive ? { query: this.searchQuery } : {}),
           rowCount: this.visibleRows.length,
           lastVirtualIndex: lastVirtualIndex ?? -1,
-          accept: (rows, cursorAfterPage) =>
-            searchActive
-              ? this.appendSearchPage(rows, cursorAfterPage)
-              : this.appendPage(rows, cursorAfterPage),
+          accept: (rows, cursorAfterPage) => {
+            if (generation !== this.requestGeneration) return;
+            if (searchActive) this.appendSearchPage(rows, cursorAfterPage);
+            else this.appendPage(rows, cursorAfterPage);
+          },
           fail: () => {
+            if (generation !== this.requestGeneration) return;
             this.fetching = false;
             this.lastRequestedCursor = null;
             this.target.scroller.dataset.tracePrefetch = 'failed';
+            this.updateLoadMore();
           },
         },
       },
     );
     document.dispatchEvent(event);
     queueMicrotask(() => {
-      if (!this.fetching) return;
-      this.fetching = false;
+      if (!this.fetching || generation !== this.requestGeneration) return;
+      if (!event.defaultPrevented) this.fetching = false;
       this.target.scroller.dataset.tracePrefetch = event.defaultPrevented
         ? 'handled'
         : 'unhandled';
+      this.updateLoadMore();
     });
   }
 }
@@ -768,11 +887,7 @@ function appendRootCells(button: HTMLElement, row: TraceRecord): void {
     check.className = 'trxCheck';
     cell.append(check);
   });
-  appendCell(
-    button,
-    'trxStart mono',
-    formatTraceTime(row),
-  );
+  appendCell(button, 'trxStart mono', formatTraceTime(row));
   appendCell(button, 'trxToolCell', '', (cell) => {
     setTraceTooltip(cell, `${formatted.toolLabel} · stored as ${sourceTool}`);
     const icon = document.createElement('span');
@@ -785,24 +900,30 @@ function appendRootCells(button: HTMLElement, row: TraceRecord): void {
   });
   appendCell(button, 'trxLatency', formatDuration(row.durationMs, row.latency));
   appendCell(button, 'trxTokens', formatCompact(totalTokens(row)));
-  appendCell(button, 'trxBranch', stripTaskPrefix(sessionDisplayName(row)), (cell) => {
-    setTraceTooltip(cell, branch);
-    applySessionColor(cell, branch);
-  });
+  appendCell(
+    button,
+    'trxBranch',
+    stripTaskPrefix(sessionDisplayName(row)),
+    (cell) => {
+      setTraceTooltip(cell, branch);
+      applySessionColor(cell, branch);
+    },
+  );
   appendCell(button, 'trxJson trxInputCell', formatted.inputLabel, (cell) => {
     setTraceTooltip(cell, formatted.inputFull || formatted.inputLabel);
   });
   appendCell(button, 'trxJson trxOutputCell', formatted.outputLabel, (cell) =>
     setTraceTooltip(cell, formatted.outputFull || formatted.outputLabel),
   );
-  appendNodeCell(button, formatted.nodeLabel, formatted.routeLabel, formatted.nodeId);
+  appendNodeCell(
+    button,
+    formatted.nodeLabel,
+    formatted.routeLabel,
+    formatted.nodeId,
+  );
   appendCell(button, 'trxJson trxTraceCell', itemTraceId(row));
   appendStatusCell(button, status);
-  appendCell(
-    button,
-    'trxCost',
-    traceCostLabel(row),
-  );
+  appendCell(button, 'trxCost', traceCostLabel(row));
 }
 
 function appendChildCells(
@@ -839,17 +960,27 @@ function appendChildCells(
     formatDuration(child.durationMs, child.latency),
   );
   appendCell(button, 'trxTokens', formatCompact(totalTokens(child)));
-  appendCell(button, 'trxBranch', stripTaskPrefix(sessionDisplayName(parent)), (cell) => {
-    setTraceTooltip(cell, branch);
-    applySessionColor(cell, branch);
-  });
+  appendCell(
+    button,
+    'trxBranch',
+    stripTaskPrefix(sessionDisplayName(parent)),
+    (cell) => {
+      setTraceTooltip(cell, branch);
+      applySessionColor(cell, branch);
+    },
+  );
   appendCell(button, 'trxJson trxInputCell', formatted.inputLabel, (cell) => {
     setTraceTooltip(cell, formatted.inputFull || formatted.inputLabel);
   });
   appendCell(button, 'trxJson trxOutputCell', formatted.outputLabel, (cell) =>
     setTraceTooltip(cell, formatted.outputFull || formatted.outputLabel),
   );
-  appendNodeCell(button, formatted.nodeLabel, formatted.routeLabel, formatted.nodeId);
+  appendNodeCell(
+    button,
+    formatted.nodeLabel,
+    formatted.routeLabel,
+    formatted.nodeId,
+  );
   appendCell(button, 'trxJson trxTraceCell', clean(child.traceId));
   appendStatusCell(button, status);
   appendCell(button, 'trxCost', traceCostLabel(child));
@@ -1120,8 +1251,12 @@ function traceCostLabel(row: TraceRecord): string {
     inputTokens: number(row.inputTokens),
     outputTokens: number(row.outputTokens),
     totalTokens: totalTokens(row),
-    rawInputJson: costPayload(row.rawResolvedInputJson ?? row.rawInputJson ?? row.input),
-    rawResolvedInputJson: costPayload(row.rawResolvedInputJson ?? row.resolvedInput),
+    rawInputJson: costPayload(
+      row.rawResolvedInputJson ?? row.rawInputJson ?? row.input,
+    ),
+    rawResolvedInputJson: costPayload(
+      row.rawResolvedInputJson ?? row.resolvedInput,
+    ),
     rawResultJson: costPayload(row.rawResultJson ?? row.result ?? row.data),
   });
   return estimate?.costLabel ?? '—';
@@ -1372,6 +1507,7 @@ export function installTraceVirtualList(): () => void {
   } | null = null;
   let scheduled = false;
   let searchTimer = 0;
+  let pendingLiveRows: TraceRecord[] = [];
 
   const applyQuery = (query: string) => {
     const normalized = query.trim().toLowerCase();
@@ -1408,6 +1544,10 @@ export function installTraceVirtualList(): () => void {
         pendingReplacement.nextCursor,
       );
       pendingReplacement = null;
+    }
+    if (pendingLiveRows.length) {
+      controller.prependRows(pendingLiveRows);
+      pendingLiveRows = [];
     }
   };
 
@@ -1572,7 +1712,14 @@ export function installTraceVirtualList(): () => void {
 
   traceWindow().__traceVirtualList = {
     appendPage: (rows, nextCursor) => controller?.appendPage(rows, nextCursor),
-    prependRows: (rows) => controller?.prependRows(rows),
+    prependRows: (rows) => {
+      if (controller) controller.prependRows(rows);
+      else
+        pendingLiveRows = mergeTraceRows(pendingLiveRows, rows, {
+          direction: 'prepend',
+          maxRows: MAX_RETAINED_ROWS,
+        });
+    },
     replaceRows: (rows, nextCursor) => {
       if (controller) controller.replaceRows(rows, nextCursor);
       else pendingReplacement = { rows, nextCursor };
@@ -1600,7 +1747,9 @@ export function installTraceVirtualList(): () => void {
     },
     filtersOpen: () => filterPanelOpen,
     setQuery: (query) => {
-      for (const input of document.querySelectorAll<HTMLInputElement>('[data-search]')) {
+      for (const input of document.querySelectorAll<HTMLInputElement>(
+        '[data-search]',
+      )) {
         if (input.value !== query) input.value = query;
       }
       applyQuery(query);

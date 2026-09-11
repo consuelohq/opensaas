@@ -2,8 +2,8 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2710,
-    "mappedTestCount": 2626,
+    "testFileCount": 2711,
+    "mappedTestCount": 2627,
     "unmappedTestCount": 84,
     "ruleCount": 83,
     "explicitRuleCount": 64,
@@ -11,7 +11,7 @@
     "projectCount": 15,
     "packageTestScriptCount": 19,
     "byGroup": {
-      "packages/os/tests": 310,
+      "packages/os/tests": 311,
       "packages/workspace/tests": 67,
       "packages/twenty-server/test/integration/graphql/utils": 65,
       "packages/twenty-sdk/src/cli": 51,
@@ -636,7 +636,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 606,
+      "test": 607,
       "spec": 161,
       "tests-dir": 8,
       "other": 7,
@@ -1028,7 +1028,9 @@
         "packages/os/scripts/lib/trace-search-query.ts",
         "packages/os/tests/trace-persistence.test.ts",
         "packages/os/tests/trace-search-query.test.ts",
-        "packages/os/tests/trace-sites-gateway-live-endpoints.test.ts"
+        "packages/os/tests/trace-sites-gateway-live-endpoints.test.ts",
+        "packages/os/scripts/lib/trace-cursor-stream.ts",
+        "packages/os/tests/trace-request-budget.test.ts"
       ],
       "tests": [
         {
@@ -1070,6 +1072,16 @@
             "packages/os",
             "tests/trace-persistence.test.ts",
             "tests/trace-search-query.test.ts"
+          ]
+        },
+        {
+          "name": "OS trace browser request budget and persistent stream",
+          "command": [
+            "bun",
+            "test",
+            "packages/os/tests/trace-request-budget.test.ts",
+            "--timeout",
+            "15000"
           ]
         }
       ],
@@ -6308,6 +6320,11 @@
     },
     {
       "path": "packages/os/tests/trace-persistence.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/trace-request-budget.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },

@@ -1,3 +1,4 @@
+import { installTraceLiveUpdates } from './live-browser';
 import {
   branchSummary,
   childTraceRecords,
@@ -23,18 +24,16 @@ import {
   workpadTraceValue,
   type InspectorSection,
 } from './inspector-state';
-import {
-  deriveTraceHistoryCursor,
-  deriveTraceLiveCursor,
-  installTracePaginationTransport,
-  parseTraceLiveResponse,
-  traceLiveUrl,
-} from './pagination-browser';
+import { installTracePaginationTransport } from './pagination-browser';
 import { installTraceVirtualList } from './virtual-list-browser';
 import { formatTraceTableRow } from './table-formatters';
-import { nextTraceInteractionIndex, traceIdentityCopyText } from './interactions';
+import {
+  nextTraceInteractionIndex,
+  traceIdentityCopyText,
+} from './interactions';
 
 type TraceWindow = Window & {
+  __traceInspectorInstalled?: boolean;
   __traceRowsByTraceId?: Map<string, TraceRecord>;
   __traceSelectedKey?: string;
   __consueloTraceHistoryTransport?: {
@@ -66,10 +65,6 @@ type FlatValue = {
 let rendering = false;
 let scheduled = false;
 let callSearchFrame = 0;
-let liveCursor = '';
-let livePollInFlight = false;
-let livePollTimer = 0;
-let historyHydrated = false;
 type TraceInteractionScope = 'main' | 'child';
 type TraceInteractionSource = 'hover' | 'keyboard';
 type TraceInteraction = {
@@ -182,10 +177,13 @@ function openTraceSearch(): void {
   if (!shell) {
     shell = document.createElement('div');
     shell.dataset.traceSearchShell = '';
-    shell.innerHTML = '<input type="search" data-trace-search data-search autocomplete="off" spellcheck="false" placeholder="Search traces" aria-label="Search traces"><button type="button" data-trace-search-close aria-label="Close trace search" title="Close search">×</button>';
+    shell.innerHTML =
+      '<input type="search" data-trace-search data-search autocomplete="off" spellcheck="false" placeholder="Search traces" aria-label="Search traces"><button type="button" data-trace-search-close aria-label="Close trace search" title="Close search">×</button>';
     const input = shell.querySelector<HTMLInputElement>('[data-trace-search]');
     input?.addEventListener('input', () => virtualList?.setQuery(input.value));
-    shell.querySelector<HTMLButtonElement>('[data-trace-search-close]')?.addEventListener('click', () => closeTraceSearch());
+    shell
+      .querySelector<HTMLButtonElement>('[data-trace-search-close]')
+      ?.addEventListener('click', () => closeTraceSearch());
     actions.append(shell);
   }
   shell.classList.remove('is-closing');
@@ -198,7 +196,9 @@ function openTraceSearch(): void {
 
 function closeTraceSearch(clearQuery = true): void {
   const virtualList = (window as TraceWindow).__traceVirtualList;
-  const shell = document.querySelector<HTMLElement>('[data-trace-search-shell]');
+  const shell = document.querySelector<HTMLElement>(
+    '[data-trace-search-shell]',
+  );
   const clock = document.querySelector<HTMLElement>('[data-trace-clock]');
   if (clearQuery) virtualList?.setQuery('');
   if (clock) delete clock.dataset.traceSearchHidden;
@@ -514,10 +514,7 @@ function selectedContentMarkup(
 
 function selectedContentSignature(row: TraceRecord): string {
   return [
-    inspectorContentSignature(
-      row,
-      inspectorStore.getSnapshot().displayMode,
-    ),
+    inspectorContentSignature(row, inspectorStore.getSnapshot().displayMode),
     traceNodeLabel(row),
     traceRouteLabel(row),
   ].join(':');
@@ -794,76 +791,12 @@ function scheduleRender(): void {
   });
 }
 
-async function pollLiveRows(): Promise<void> {
-  if (livePollInFlight || document.visibilityState === 'hidden') return;
-  const transport = (window as TraceWindow).__consueloTraceHistoryTransport;
-  if (!transport) return;
-  livePollInFlight = true;
-  try {
-    if (!historyHydrated) {
-      historyHydrated = await hydrateLiveSnapshot();
-      if (!historyHydrated) return;
-    }
-    const page = parseTraceLiveResponse(
-      await transport.fetchJson(traceLiveUrl(liveCursor)),
-    );
-    if (page.rows.length) {
-      (window as TraceWindow).__traceVirtualList?.prependRows(page.rows);
-    }
-    if (page.nextCursor) liveCursor = page.nextCursor;
-  } catch {
-    // Keep the cursor unchanged so the next one-second tick retries safely.
-  } finally {
-    livePollInFlight = false;
-  }
-}
-
-async function hydrateLiveSnapshot(): Promise<boolean> {
-  const transport = (window as TraceWindow).__consueloTraceHistoryTransport;
-  if (!transport) return false;
-  try {
-    const payload = (await transport.fetchJson(
-      '/trace-burn-intelligence/live-traces.json',
-    )) as { rows?: TraceRecord[]; traces?: TraceRecord[] } | TraceRecord[];
-    const rows = Array.isArray(payload)
-      ? payload
-      : Array.isArray(payload.rows)
-        ? payload.rows
-        : Array.isArray(payload.traces)
-          ? payload.traces
-          : [];
-    (window as TraceWindow).__traceVirtualList?.replaceRows(
-      rows,
-      deriveTraceHistoryCursor(rows),
-    );
-    liveCursor = deriveTraceLiveCursor(rows);
-    return true;
-  } catch {
-    // The serialized seed remains the offline fallback.
-    return false;
-  }
-}
-
-function installLivePolling(): void {
-  const refresh = () => void pollLiveRows();
-  window.clearInterval(livePollTimer);
-  void hydrateLiveSnapshot().then((hydrated) => {
-    historyHydrated = hydrated;
-  }).finally(() => {
-    if (!liveCursor) liveCursor = deriveTraceLiveCursor(allRows());
-    livePollTimer = window.setInterval(refresh, 1_000);
-    window.addEventListener('focus', refresh);
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') refresh();
-    });
-    refresh();
-  });
-}
-
 function isTextEditingTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
   if (target.isContentEditable) return true;
-  return Boolean(target.closest('input, textarea, select, [contenteditable="true"]'));
+  return Boolean(
+    target.closest('input, textarea, select, [contenteditable="true"]'),
+  );
 }
 
 function traceRowForInteraction(key: string): TraceRecord | null {
@@ -891,7 +824,9 @@ function inspectorIsOpen(): boolean {
 }
 
 function clearPeerKeyboardTarget(): void {
-  for (const peer of document.querySelectorAll<HTMLElement>('.tiPeer[data-keyboard-target]')) {
+  for (const peer of document.querySelectorAll<HTMLElement>(
+    '.tiPeer[data-keyboard-target]',
+  )) {
     delete peer.dataset.keyboardTarget;
   }
 }
@@ -902,11 +837,18 @@ function moveInspectorPeer(direction: -1 | 1): string {
   ].filter((peer) => !peer.hidden && peer.offsetParent !== null);
   if (!peers.length) return '';
   const preferredKey =
-    lastTraceInteraction?.scope === 'child' && lastTraceInteraction.source === 'keyboard'
+    lastTraceInteraction?.scope === 'child' &&
+    lastTraceInteraction.source === 'keyboard'
       ? lastTraceInteraction.key
       : inspectorStore.getSnapshot().selectedKey;
-  const currentIndex = peers.findIndex((peer) => peer.dataset.traceKey === preferredKey);
-  const nextIndex = nextTraceInteractionIndex(peers.length, currentIndex, direction);
+  const currentIndex = peers.findIndex(
+    (peer) => peer.dataset.traceKey === preferredKey,
+  );
+  const nextIndex = nextTraceInteractionIndex(
+    peers.length,
+    currentIndex,
+    direction,
+  );
   const peer = nextIndex >= 0 ? peers[nextIndex] : undefined;
   const key = peer?.dataset.traceKey ?? '';
   if (!peer || !key) return '';
@@ -994,7 +936,9 @@ function showReturnHomeConfirm(): void {
   </section>`;
   overlay.addEventListener('click', (event) => {
     const target = event.target as HTMLElement;
-    const remember = overlay.querySelector<HTMLInputElement>('[data-home-remember]')?.checked === true;
+    const remember =
+      overlay.querySelector<HTMLInputElement>('[data-home-remember]')
+        ?.checked === true;
     if (target.closest('[data-home-no]')) {
       if (remember) persistReturnHomePreference('stay');
       closeReturnHomeConfirm();
@@ -1009,223 +953,255 @@ function showReturnHomeConfirm(): void {
   overlay.querySelector<HTMLButtonElement>('[data-home-no]')?.focus();
 }
 
-document.addEventListener('pointerover', (event) => {
-  const target = event.target as HTMLElement;
-  const peer = target.closest<HTMLElement>('.tiPeer[data-trace-key]');
-  if (peer?.dataset.traceKey) {
-    rememberTraceInteraction(peer.dataset.traceKey, 'child', 'hover');
-    return;
-  }
-  const row = target.closest<HTMLElement>('.trxRow[data-trace-key]');
-  if (row?.dataset.traceKey) rememberTraceInteraction(row.dataset.traceKey, 'main', 'hover');
-});
+if (!(window as TraceWindow).__traceInspectorInstalled) {
+  (window as TraceWindow).__traceInspectorInstalled = true;
 
-document.addEventListener('keydown', (event) => {
-  const virtualList = (window as TraceWindow).__traceVirtualList;
-  const editing = isTextEditingTarget(event.target);
-
-  if (event.key === 'Escape') {
-    if (traceSearchIsOpen() || document.querySelector('[data-trace-search-shell]')) {
-      event.preventDefault();
-      closeTraceSearch();
+  document.addEventListener('pointerover', (event) => {
+    const target = event.target as HTMLElement;
+    const peer = target.closest<HTMLElement>('.tiPeer[data-trace-key]');
+    if (peer?.dataset.traceKey) {
+      rememberTraceInteraction(peer.dataset.traceKey, 'child', 'hover');
       return;
     }
-    if (document.querySelector('[data-trace-home-confirm]')) {
-      event.preventDefault();
-      closeReturnHomeConfirm();
-      return;
-    }
-    if (virtualList?.filtersOpen()) {
-      event.preventDefault();
-      virtualList.closeFilters();
-      return;
-    }
-    if (inspectorIsOpen()) {
-      event.preventDefault();
-      clearPeerKeyboardTarget();
-      lastTraceInteraction = null;
-      virtualList?.clearSelection();
-      return;
-    }
-    event.preventDefault();
-    showReturnHomeConfirm();
-    return;
-  }
+    const row = target.closest<HTMLElement>('.trxRow[data-trace-key]');
+    if (row?.dataset.traceKey)
+      rememberTraceInteraction(row.dataset.traceKey, 'main', 'hover');
+  });
 
-  if (editing) return;
+  document.addEventListener('keydown', (event) => {
+    const virtualList = (window as TraceWindow).__traceVirtualList;
+    const editing = isTextEditingTarget(event.target);
 
-  if (event.metaKey && event.key === 'ArrowUp') {
-    event.preventDefault();
-    virtualList?.scrollToTop();
-    return;
-  }
-
-  if (!event.metaKey && !event.ctrlKey && !event.altKey && event.key === '/') {
-    event.preventDefault();
-    openTraceSearch();
-    return;
-  }
-
-  if (!event.metaKey && !event.ctrlKey && !event.altKey && event.key.toLowerCase() === 'f') {
-    event.preventDefault();
-    virtualList?.toggleFilters();
-    return;
-  }
-
-  if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'c') {
-    const selection = window.getSelection()?.toString() ?? '';
-    if (selection) return;
-    if (lastTraceInteraction) {
-      event.preventDefault();
-      void copyLastTraceInteraction();
-    }
-    return;
-  }
-
-  const moveUp = event.key === 'ArrowUp' || event.key.toLowerCase() === 'k';
-  const moveDown = event.key === 'ArrowDown' || event.key.toLowerCase() === 'j';
-  if (!event.metaKey && !event.ctrlKey && !event.altKey && (moveUp || moveDown)) {
-    event.preventDefault();
-    const direction: -1 | 1 = moveUp ? -1 : 1;
-    if (inspectorIsOpen()) {
-      moveInspectorPeer(direction);
-      return;
-    }
-    const key = virtualList?.moveFocus(direction) ?? '';
-    if (key) rememberTraceInteraction(key, 'main', 'keyboard');
-    return;
-  }
-
-  if (!event.metaKey && !event.ctrlKey && !event.altKey && event.key === 'Enter') {
-    if (inspectorIsOpen()) {
-      if (lastTraceInteraction?.scope === 'child' && lastTraceInteraction.source === 'keyboard') {
+    if (event.key === 'Escape') {
+      if (
+        traceSearchIsOpen() ||
+        document.querySelector('[data-trace-search-shell]')
+      ) {
+        event.preventDefault();
+        closeTraceSearch();
+        return;
+      }
+      if (document.querySelector('[data-trace-home-confirm]')) {
+        event.preventDefault();
+        closeReturnHomeConfirm();
+        return;
+      }
+      if (virtualList?.filtersOpen()) {
+        event.preventDefault();
+        virtualList.closeFilters();
+        return;
+      }
+      if (inspectorIsOpen()) {
         event.preventDefault();
         clearPeerKeyboardTarget();
-        virtualList?.select(lastTraceInteraction.key);
+        lastTraceInteraction = null;
+        virtualList?.clearSelection();
+        return;
+      }
+      event.preventDefault();
+      showReturnHomeConfirm();
+      return;
+    }
+
+    if (editing) return;
+
+    if (event.metaKey && event.key === 'ArrowUp') {
+      event.preventDefault();
+      virtualList?.scrollToTop();
+      return;
+    }
+
+    if (
+      !event.metaKey &&
+      !event.ctrlKey &&
+      !event.altKey &&
+      event.key === '/'
+    ) {
+      event.preventDefault();
+      openTraceSearch();
+      return;
+    }
+
+    if (
+      !event.metaKey &&
+      !event.ctrlKey &&
+      !event.altKey &&
+      event.key.toLowerCase() === 'f'
+    ) {
+      event.preventDefault();
+      virtualList?.toggleFilters();
+      return;
+    }
+
+    if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'c') {
+      const selection = window.getSelection()?.toString() ?? '';
+      if (selection) return;
+      if (lastTraceInteraction) {
+        event.preventDefault();
+        void copyLastTraceInteraction();
       }
       return;
     }
-    const key = virtualList?.openFocused() ?? '';
-    if (key) {
+
+    const moveUp = event.key === 'ArrowUp' || event.key.toLowerCase() === 'k';
+    const moveDown =
+      event.key === 'ArrowDown' || event.key.toLowerCase() === 'j';
+    if (
+      !event.metaKey &&
+      !event.ctrlKey &&
+      !event.altKey &&
+      (moveUp || moveDown)
+    ) {
       event.preventDefault();
-      rememberTraceInteraction(key, 'main', 'keyboard');
+      const direction: -1 | 1 = moveUp ? -1 : 1;
+      if (inspectorIsOpen()) {
+        moveInspectorPeer(direction);
+        return;
+      }
+      const key = virtualList?.moveFocus(direction) ?? '';
+      if (key) rememberTraceInteraction(key, 'main', 'keyboard');
+      return;
     }
-  }
-});
 
-document.addEventListener('click', async (event) => {
-  const target = event.target as HTMLElement;
-  const peer = target.closest<HTMLElement>('.tiPeer[data-trace-key]');
-  if (peer?.dataset.traceKey) {
-    event.preventDefault();
-    event.stopPropagation();
-    rememberTraceInteraction(peer.dataset.traceKey, 'child', 'hover');
-    clearPeerKeyboardTarget();
-    (window as TraceWindow).__traceVirtualList?.select(peer.dataset.traceKey);
-    return;
-  }
-  const mode = target.closest<HTMLElement>('[data-ti-mode]');
-  if (
-    mode?.dataset.tiMode === 'formatted' ||
-    mode?.dataset.tiMode === 'json' ||
-    mode?.dataset.tiMode === 'workpad'
-  ) {
-    event.preventDefault();
-    event.stopPropagation();
-    inspectorStore.dispatch({
-      type: 'set-display-mode',
-      mode: mode.dataset.tiMode,
-    });
-    return;
-  }
-  if (target.closest('[data-ti-call-rail]')) {
-    event.preventDefault();
-    event.stopPropagation();
-    inspectorStore.dispatch({ type: 'toggle-call-rail' });
-    return;
-  }
-  if (target.closest('[data-ti-fullscreen]')) {
-    event.preventDefault();
-    event.stopPropagation();
-    inspectorStore.dispatch({ type: 'toggle-fullscreen' });
-    return;
-  }
-  if (target.closest('[data-ti-close], [data-ti-back]')) {
-    event.preventDefault();
-    event.stopPropagation();
-    clearPeerKeyboardTarget();
-    lastTraceInteraction = null;
-    (window as TraceWindow).__traceVirtualList?.clearSelection();
-    return;
-  }
-  const copy = target.closest<HTMLElement>('[data-ti-copy]');
-  if (copy) {
-    event.preventDefault();
-    event.stopPropagation();
-    const copyText =
-      copy.closest('.tiSection')?.querySelector('.tiSectionBody')
-        ?.textContent ?? '';
-    try {
-      await navigator.clipboard.writeText(copyText);
-      copy.textContent = 'Copied';
-      window.setTimeout(() => {
-        copy.textContent = 'Copy';
-      }, 1_200);
-    } catch {
-      copy.textContent = 'Copy failed';
+    if (
+      !event.metaKey &&
+      !event.ctrlKey &&
+      !event.altKey &&
+      event.key === 'Enter'
+    ) {
+      if (inspectorIsOpen()) {
+        if (
+          lastTraceInteraction?.scope === 'child' &&
+          lastTraceInteraction.source === 'keyboard'
+        ) {
+          event.preventDefault();
+          clearPeerKeyboardTarget();
+          virtualList?.select(lastTraceInteraction.key);
+        }
+        return;
+      }
+      const key = virtualList?.openFocused() ?? '';
+      if (key) {
+        event.preventDefault();
+        rememberTraceInteraction(key, 'main', 'keyboard');
+      }
     }
-  }
-});
+  });
 
-document.addEventListener('input', (event) => {
-  const target = event.target;
-  if (
-    target instanceof HTMLInputElement &&
-    target.matches('[data-ti-call-search]')
-  ) {
-    inspectorStore.dispatch({ type: 'set-call-query', query: target.value });
-    cancelAnimationFrame(callSearchFrame);
-    callSearchFrame = requestAnimationFrame(render);
-  }
-});
+  document.addEventListener('click', async (event) => {
+    const target = event.target as HTMLElement;
+    const peer = target.closest<HTMLElement>('.tiPeer[data-trace-key]');
+    if (peer?.dataset.traceKey) {
+      event.preventDefault();
+      event.stopPropagation();
+      rememberTraceInteraction(peer.dataset.traceKey, 'child', 'hover');
+      clearPeerKeyboardTarget();
+      (window as TraceWindow).__traceVirtualList?.select(peer.dataset.traceKey);
+      return;
+    }
+    const mode = target.closest<HTMLElement>('[data-ti-mode]');
+    if (
+      mode?.dataset.tiMode === 'formatted' ||
+      mode?.dataset.tiMode === 'json' ||
+      mode?.dataset.tiMode === 'workpad'
+    ) {
+      event.preventDefault();
+      event.stopPropagation();
+      inspectorStore.dispatch({
+        type: 'set-display-mode',
+        mode: mode.dataset.tiMode,
+      });
+      return;
+    }
+    if (target.closest('[data-ti-call-rail]')) {
+      event.preventDefault();
+      event.stopPropagation();
+      inspectorStore.dispatch({ type: 'toggle-call-rail' });
+      return;
+    }
+    if (target.closest('[data-ti-fullscreen]')) {
+      event.preventDefault();
+      event.stopPropagation();
+      inspectorStore.dispatch({ type: 'toggle-fullscreen' });
+      return;
+    }
+    if (target.closest('[data-ti-close], [data-ti-back]')) {
+      event.preventDefault();
+      event.stopPropagation();
+      clearPeerKeyboardTarget();
+      lastTraceInteraction = null;
+      (window as TraceWindow).__traceVirtualList?.clearSelection();
+      return;
+    }
+    const copy = target.closest<HTMLElement>('[data-ti-copy]');
+    if (copy) {
+      event.preventDefault();
+      event.stopPropagation();
+      const copyText =
+        copy.closest('.tiSection')?.querySelector('.tiSectionBody')
+          ?.textContent ?? '';
+      try {
+        await navigator.clipboard.writeText(copyText);
+        copy.textContent = 'Copied';
+        window.setTimeout(() => {
+          copy.textContent = 'Copy';
+        }, 1_200);
+      } catch {
+        copy.textContent = 'Copy failed';
+      }
+    }
+  });
 
-const observer = new MutationObserver((mutations) => {
-  if (rendering) return;
-  if (
-    mutations.every(
-      (mutation) =>
-        mutation.target instanceof Element &&
-        mutation.target.closest('[data-inspector] .tiInspector'),
+  document.addEventListener('input', (event) => {
+    const target = event.target;
+    if (
+      target instanceof HTMLInputElement &&
+      target.matches('[data-ti-call-search]')
+    ) {
+      inspectorStore.dispatch({ type: 'set-call-query', query: target.value });
+      cancelAnimationFrame(callSearchFrame);
+      callSearchFrame = requestAnimationFrame(render);
+    }
+  });
+
+  const observer = new MutationObserver((mutations) => {
+    if (rendering) return;
+    if (
+      mutations.every(
+        (mutation) =>
+          mutation.target instanceof Element &&
+          mutation.target.closest('[data-inspector] .tiInspector'),
+      )
     )
-  )
-    return;
-  scheduleRender();
-});
-const observerRoot =
-  document.querySelector<HTMLElement>('.trxShell, #tbmLiveTraceModal') ??
-  document.documentElement;
-observer.observe(observerRoot, {
-  childList: true,
-  subtree: true,
-  attributes: true,
-  attributeFilter: ['class', 'aria-selected'],
-});
+      return;
+    scheduleRender();
+  });
+  const observerRoot =
+    document.querySelector<HTMLElement>('.trxShell, #tbmLiveTraceModal') ??
+    document.documentElement;
+  observer.observe(observerRoot, {
+    childList: true,
+    subtree: true,
+    attributes: true,
+    attributeFilter: ['class', 'aria-selected'],
+  });
 
-inspectorStore.subscribe((state) => {
-  (window as TraceWindow).__traceSelectedKey = state.selectedKey;
-  scheduleRender();
+  inspectorStore.subscribe((state) => {
+    (window as TraceWindow).__traceSelectedKey = state.selectedKey;
+    scheduleRender();
+    applyLayout();
+  });
+
+  resetInitialTraceSurface();
+  syncRowsFromMap();
+  installTracePaginationTransport();
+  installTraceVirtualList();
+  hydrateInspectorWidth();
+  installTraceClock();
+  installTraceLiveUpdates();
+  document.addEventListener('trace:selection-change', scheduleRender);
+  window.addEventListener('resize', applyLayout);
+  window.setInterval(scheduleRender, 2_000);
   applyLayout();
-});
-
-resetInitialTraceSurface();
-syncRowsFromMap();
-installTracePaginationTransport();
-installTraceVirtualList();
-hydrateInspectorWidth();
-installTraceClock();
-installLivePolling();
-document.addEventListener('trace:selection-change', scheduleRender);
-window.addEventListener('resize', applyLayout);
-window.setInterval(scheduleRender, 2_000);
-applyLayout();
-scheduleRender();
+  scheduleRender();
+}
