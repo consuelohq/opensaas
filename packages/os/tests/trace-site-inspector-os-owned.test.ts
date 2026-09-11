@@ -664,4 +664,166 @@ describe('OS-owned Trace Burn table formatting', () => {
       expect(formatted.outputLabel).toBe('defaults complete');
     }
   });
+
+  it('should summarize production-facing aliases when live trace rows use derived tool labels', () => {
+    const cases: Array<{
+      row: Partial<TraceTableRecord>;
+      inputLabel: string;
+      outputLabel: string;
+    }> = [
+      {
+        row: {
+          name: 'lifecycle.status',
+          input: '{}',
+          rawInputJson: '{}',
+          rawResolvedInputJson: '{}',
+          output: 'command completed',
+          summary: 'command completed',
+          rawResultJson: JSON.stringify({
+            ok: true,
+            code: 'OK',
+            message: 'command completed',
+            data: {
+              schemaVersion: 1,
+              command: 'status',
+              ok: true,
+              result: { operation: 'status', installState: 'valid', version: '0.1.114' },
+            },
+          }),
+        },
+        inputLabel: 'runtime status',
+        outputLabel: 'status loaded',
+      },
+      {
+        row: {
+          name: 'lifecycle.update',
+          input: JSON.stringify({ channel: 'canary', version: '0.1.114' }),
+          output: 'command completed',
+          rawResultJson: JSON.stringify({
+            ok: true,
+            message: 'command completed',
+            data: { result: { operation: 'update', resultingVersion: '0.1.114' } },
+          }),
+        },
+        inputLabel: 'canary · 0.1.114',
+        outputLabel: 'updated 0.1.114',
+      },
+      {
+        row: {
+          name: 'release',
+          input: JSON.stringify({
+            pr: 2432,
+            repo: 'consuelohq/opensaas',
+            channel: 'canary',
+            releaseOnly: true,
+          }),
+          output: 'command completed',
+          rawResultJson: JSON.stringify({
+            ok: true,
+            message: 'command completed',
+            data: { result: { version: '0.1.114', channel: 'canary' } },
+          }),
+        },
+        inputLabel: 'canary · PR #2432',
+        outputLabel: 'released 0.1.114',
+      },
+      {
+        row: {
+          name: 'browser.status',
+          input: '{}',
+          output: 'command completed',
+          rawResultJson: JSON.stringify({ ok: true, message: 'command completed' }),
+        },
+        inputLabel: 'browser status',
+        outputLabel: 'browser ready',
+      },
+      {
+        row: {
+          name: 'session.start',
+          input: JSON.stringify({ kind: 'task', area: 'os', title: 'semantic summaries' }),
+          output: 'command completed',
+          rawResultJson: JSON.stringify({
+            ok: true,
+            message: 'command completed',
+            data: { taskSession: 'tsk_123', branch: 'task/os/semantic-summaries' },
+          }),
+        },
+        inputLabel: 'task · semantic summaries',
+        outputLabel: 'session started',
+      },
+      {
+        row: {
+          name: 'explore',
+          input: JSON.stringify({ query: 'trace input summary', limit: 8 }),
+          output: 'command completed',
+          rawResultJson: JSON.stringify({ ok: true, message: 'command completed' }),
+        },
+        inputLabel: 'trace input summary',
+        outputLabel: 'search complete',
+      },
+      {
+        row: {
+          name: 'memory',
+          input: JSON.stringify({ operation: 'search', keyword: 'trace input summary', limit: 5 }),
+          output: 'command completed',
+          rawResultJson: JSON.stringify({ ok: true, message: 'command completed' }),
+        },
+        inputLabel: 'trace input summary',
+        outputLabel: 'search complete',
+      },
+      {
+        row: {
+          name: 'fs.trash',
+          input: JSON.stringify({ path: '/tmp/obsolete.txt' }),
+          output: 'command completed',
+          rawResultJson: JSON.stringify({ ok: true, message: 'command completed' }),
+        },
+        inputLabel: 'trash obsolete.txt',
+        outputLabel: 'trash complete',
+      },
+      {
+        row: {
+          name: 'subagent',
+          input: JSON.stringify({ provider: 'grok', task: 'review implementation' }),
+          output: 'command completed',
+          rawResultJson: JSON.stringify({ ok: true, message: 'command completed' }),
+        },
+        inputLabel: 'grok · review implementation',
+        outputLabel: 'subagent complete',
+      },
+    ];
+
+    for (const testCase of cases) {
+      expect(formatTraceTableRow(record(testCase.row))).toMatchObject({
+        inputLabel: testCase.inputLabel,
+        outputLabel: testCase.outputLabel,
+      });
+    }
+  });
+
+  it('should summarize the performed action when code calls use waits or command variables', () => {
+    const wait = formatTraceTableRow(
+      record({
+        name: 'code.call',
+        input: JSON.stringify({
+          language: 'bun',
+          mode: 'read',
+          code: "await Bun.sleep(30000); process.stdout.write('poll complete');",
+        }),
+      }),
+    );
+    const command = formatTraceTableRow(
+      record({
+        name: 'code.call',
+        input: JSON.stringify({
+          language: 'bun',
+          mode: 'read',
+          code: "const argv = ['gh', 'run', 'view', '123']; const p = Bun.spawnSync(argv, { stdout: 'pipe' }); process.stdout.write(p.stdout.toString());",
+        }),
+      }),
+    );
+
+    expect(wait.inputLabel).toBe('wait 30s');
+    expect(command.inputLabel).toBe('run gh run view 123');
+  });
 });
