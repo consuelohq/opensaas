@@ -423,6 +423,31 @@
       "exclusive": true
     },
     {
+      "id": "os-trace-sqlite-runtime",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/scripts/lib/trace-database-schema.ts",
+        "packages/os/scripts/lib/trace-sites-local-read-backend.ts",
+        "packages/os/tests/trace-sites-gateway-live-endpoints.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS Trace SQLite Node runtime compatibility",
+          "command": [
+            "node",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/trace-sites-gateway-live-endpoints.test.ts",
+            "--config",
+            "vitest.config.ts"
+          ],
+          "cwd": "packages/os"
+        }
+      ],
+      "reason": "Trace SQLite adapter changes must execute the gateway history contract under Node so the node:sqlite fallback is exercised directly rather than inferred from Bun coverage."
+    },
+    {
       "id": "os-explore-retrieval-science",
       "critical": true,
       "exclusive": true,
@@ -2338,7 +2363,7 @@
           ]
         }
       ],
-      "reason": "Durable Grok/Codex orchestration, provider capabilities, active-run status, idempotency, and deadline behavior must prove the focused subagent contract without selecting the unrelated whole-OS package baseline."
+      "reason": "Durable subagent orchestration, provider capabilities, active-run status, idempotency, deadline behavior, and provider stdin termination must prove the focused subagent contracts without selecting the unrelated whole-OS package baseline."
     },
     {
       "id": "os-test-environment-isolation",
@@ -2475,31 +2500,6 @@
         }
       ],
       "reason": "Work-session Code Call and MCP routing must prove bounded execution, protected Consuelo state, session-authority validation, public schema limits, generated error-code parity, and child-process stdin/exit lifecycle behavior without selecting unrelated package-wide OS tests."
-    },
-    {
-      "id": "os-trace-sqlite-runtime",
-      "critical": true,
-      "exclusive": true,
-      "source": [
-        "packages/os/scripts/lib/trace-database-schema.ts",
-        "packages/os/scripts/lib/trace-sites-local-read-backend.ts",
-        "packages/os/tests/trace-sites-gateway-live-endpoints.test.ts"
-      ],
-      "tests": [
-        {
-          "name": "OS Trace SQLite Node runtime compatibility",
-          "command": [
-            "node",
-            "../../node_modules/vitest/vitest.mjs",
-            "run",
-            "tests/trace-sites-gateway-live-endpoints.test.ts",
-            "--config",
-            "vitest.config.ts"
-          ],
-          "cwd": "packages/os"
-        }
-      ],
-      "reason": "Trace SQLite adapter changes must execute the gateway history contract under Node so the node:sqlite fallback is exercised directly rather than inferred from Bun coverage."
     },
     {
       "id": "os-script-parity-audit",

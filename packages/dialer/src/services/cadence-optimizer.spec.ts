@@ -173,4 +173,40 @@ describe('CadenceOptimizerService', () => {
 
     expect(policy.maxAttemptsPerDay).toBe(1);
   });
+
+  it('uses count-preserving uncertainty before declaring a later attempt unprofitable', () => {
+    const policy = service.computeCadencePolicy({
+      segmentId: 'uncertain:fresh',
+      ageBucket: 'fresh',
+      hazardEstimates: [
+        {
+          segmentId: 'uncertain:fresh',
+          attemptNumber: 1,
+          hourOfDay: 9,
+          dayOfWeek: 1,
+          answerRate: 0.3,
+          sampleSize: 100,
+          successes: 30,
+          trials: 100,
+        },
+        {
+          segmentId: 'uncertain:fresh',
+          attemptNumber: 2,
+          hourOfDay: 14,
+          dayOfWeek: 1,
+          answerRate: 0.1,
+          sampleSize: 10,
+          successes: 1,
+          trials: 10,
+        },
+      ],
+      economics: {
+        valuePerConnection: 1,
+        costPerAttempt: 0.2,
+      },
+    });
+
+    expect(policy.source).toBe('learned');
+    expect(policy.maxAttemptsPerDay).toBe(2);
+  });
 });

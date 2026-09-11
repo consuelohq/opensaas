@@ -1,0 +1,400 @@
+---
+import { homeMemoryMoments } from '../../data/home-content';
+
+const retrieved = homeMemoryMoments.find((moment) => moment.kind === 'retrieved') ?? homeMemoryMoments.at(-1);
+---
+
+<section class="memory-story" data-memory-story data-story-animate aria-label="Workspace memory search restoring project context">
+  <header class="memory-story__header">
+    <div>
+      <p>WORKSPACE MEMORY / PROJECT MERIDIAN</p>
+      <strong>CONTEXT THAT OUTLIVES THE CHAT</strong>
+    </div>
+    <span>{String(homeMemoryMoments.length).padStart(2, '0')} RECORDS</span>
+  </header>
+
+  <div class="memory-story__search" data-memory-search>
+    <label>
+      <span>SEARCH WORKSPACE MEMORY</span>
+      <input value="meridian rollout" readonly aria-label="Memory search query" />
+    </label>
+    <div class="memory-story__search-meta" aria-label="Memory search options">
+      <span>FIELD <strong>CONTENT</strong></span>
+      <span>CATEGORY <strong>ALL</strong></span>
+      <span>LIMIT <strong>10</strong></span>
+    </div>
+  </div>
+
+  <div class="memory-story__body">
+    <div class="memory-story__results" aria-label="Memory search results">
+      <div class="memory-story__results-head">
+        <span>{homeMemoryMoments.length} RESULTS</span>
+        <span>NEWEST FIRST</span>
+      </div>
+      {homeMemoryMoments.map((moment, index) => (
+        <article
+          class:list={['memory-story__record', { 'is-selected': moment.kind === 'retrieved' }]}
+          data-memory-record
+          style={`--memory-index:${index}`}
+        >
+          <span class="memory-story__record-number">{String(index + 1).padStart(2, '0')}</span>
+          <div class="memory-story__record-copy">
+            <span>[{moment.kind}] · {moment.day} {moment.time}</span>
+            <strong>{moment.title}</strong>
+            <p>{moment.detail}</p>
+          </div>
+          <span class="memory-story__record-action">{moment.kind === 'retrieved' ? 'OPEN' : 'MATCH'}</span>
+        </article>
+      ))}
+    </div>
+
+    <aside class="memory-story__detail" aria-label="Restored memory detail">
+      <div class="memory-story__detail-head">
+        <span>GET 04 / CONTENT</span>
+        <strong>{retrieved?.title ?? 'Context resurfaced'}</strong>
+      </div>
+      <div class="memory-story__detail-copy">
+        <span>RESTORED CONTEXT</span>
+        <blockquote>
+          Project Meridian ships under Northstar. Maya owns the rollout. Canary comes before production.
+        </blockquote>
+      </div>
+      <dl>
+        <div><dt>CODENAME</dt><dd>Northstar</dd></div>
+        <div><dt>OWNER</dt><dd>Maya</dd></div>
+        <div><dt>ROLLOUT</dt><dd>Canary → production</dd></div>
+        <div><dt>SOURCE</dt><dd>Workspace memory</dd></div>
+      </dl>
+      <div class="memory-story__restored">
+        <span>NEW SESSION</span>
+        <strong>PRIOR CONTEXT RESTORED</strong>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<style>
+  .memory-story {
+    display: grid;
+    grid-template-rows: auto auto 1fr;
+    width: 100%;
+    aspect-ratio: 2032 / 1192;
+    overflow: hidden;
+    border: 1px solid var(--site-color-brand);
+    background: var(--site-color-on-brand);
+    color: var(--site-color-brand);
+  }
+
+  .memory-story__header {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: clamp(0.65rem, 1.2vw, 0.95rem) clamp(0.75rem, 1.6vw, 1.25rem);
+    border-bottom: 1px solid currentColor;
+  }
+
+  .memory-story__header > div {
+    display: grid;
+    gap: 0.28rem;
+  }
+
+  .memory-story__header p,
+  .memory-story__header > span,
+  .memory-story__results-head,
+  .memory-story__record-copy > span,
+  .memory-story__record-copy p,
+  .memory-story__record-action,
+  .memory-story__detail-head > span,
+  .memory-story__detail-copy > span,
+  .memory-story__restored {
+    margin: 0;
+    font: 640 clamp(0.4rem, 0.58vw, 0.52rem)/1.25 var(--site-font-mono);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .memory-story__header p,
+  .memory-story__header > span,
+  .memory-story__record-copy > span,
+  .memory-story__record-copy p,
+  .memory-story__detail-head > span,
+  .memory-story__detail-copy > span {
+    color: var(--site-color-art-muted);
+  }
+
+  .memory-story__header strong {
+    font-family: var(--site-font-display);
+    font-size: clamp(0.95rem, 1.55vw, 1.35rem);
+    font-weight: 480;
+    line-height: 0.95;
+  }
+
+  .memory-story__search {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: 1rem;
+    padding: clamp(0.6rem, 1.1vw, 0.85rem) clamp(0.75rem, 1.6vw, 1.25rem);
+    border-bottom: 1px solid currentColor;
+    background: color-mix(in srgb, var(--site-color-brand) 3%, var(--site-color-on-brand));
+  }
+
+  .memory-story__search label {
+    display: grid;
+    gap: 0.32rem;
+    min-width: 0;
+  }
+
+  .memory-story__search label > span,
+  .memory-story__search-meta {
+    font: 650 clamp(0.38rem, 0.52vw, 0.46rem)/1 var(--site-font-mono);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .memory-story__search input {
+    width: 100%;
+    border: 0;
+    border-bottom: 1px solid currentColor;
+    border-radius: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--site-color-brand);
+    padding: 0 0 0.3rem;
+    font-family: var(--site-font-display);
+    font-size: clamp(1rem, 1.7vw, 1.45rem);
+    line-height: 1;
+  }
+
+  .memory-story__search-meta {
+    display: flex;
+    gap: clamp(0.6rem, 1.2vw, 1rem);
+    color: var(--site-color-art-muted);
+    white-space: nowrap;
+  }
+
+  .memory-story__search-meta strong {
+    color: var(--site-color-brand);
+  }
+
+  .memory-story__body {
+    display: grid;
+    grid-template-columns: minmax(0, 1.12fr) minmax(15rem, 0.88fr);
+    min-height: 0;
+  }
+
+  .memory-story__results {
+    display: grid;
+    grid-template-rows: auto repeat(4, minmax(0, 1fr));
+    min-height: 0;
+    border-right: 1px solid currentColor;
+  }
+
+  .memory-story__results-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.5rem clamp(0.65rem, 1.3vw, 1rem);
+    border-bottom: 1px solid color-mix(in srgb, var(--site-color-brand) 20%, transparent);
+    color: var(--site-color-art-muted);
+  }
+
+  .memory-story__record {
+    display: grid;
+    grid-template-columns: 1.7rem minmax(0, 1fr) auto;
+    align-items: center;
+    gap: clamp(0.45rem, 0.9vw, 0.75rem);
+    padding: 0 clamp(0.65rem, 1.3vw, 1rem);
+    border-bottom: 1px solid color-mix(in srgb, var(--site-color-brand) 15%, transparent);
+  }
+
+  .memory-story__record:last-child {
+    border-bottom: 0;
+  }
+
+  .memory-story__record-number {
+    color: var(--site-color-art-muted);
+    font: 650 clamp(0.4rem, 0.55vw, 0.48rem)/1 var(--site-font-mono);
+  }
+
+  .memory-story__record-copy {
+    display: grid;
+    gap: 0.12rem;
+    min-width: 0;
+  }
+
+  .memory-story__record-copy strong {
+    overflow: hidden;
+    font-family: var(--site-font-display);
+    font-size: clamp(0.78rem, 1.12vw, 1rem);
+    font-weight: 500;
+    line-height: 1;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .memory-story__record-copy p {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .memory-story__record-action {
+    color: var(--site-color-art-muted);
+  }
+
+  .memory-story__record.is-selected {
+    background: var(--site-color-brand);
+    color: var(--site-color-on-brand);
+  }
+
+  .memory-story__record.is-selected .memory-story__record-number,
+  .memory-story__record.is-selected .memory-story__record-copy > span,
+  .memory-story__record.is-selected .memory-story__record-copy p,
+  .memory-story__record.is-selected .memory-story__record-action {
+    color: color-mix(in srgb, var(--site-color-on-brand) 70%, transparent);
+  }
+
+  .memory-story__detail {
+    display: grid;
+    grid-template-rows: auto auto 1fr auto;
+    min-height: 0;
+  }
+
+  .memory-story__detail-head,
+  .memory-story__detail-copy,
+  .memory-story__detail dl,
+  .memory-story__restored {
+    padding: clamp(0.65rem, 1.2vw, 0.95rem) clamp(0.75rem, 1.5vw, 1.1rem);
+  }
+
+  .memory-story__detail-head,
+  .memory-story__detail-copy,
+  .memory-story__detail dl {
+    border-bottom: 1px solid color-mix(in srgb, var(--site-color-brand) 18%, transparent);
+  }
+
+  .memory-story__detail-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.7rem;
+  }
+
+  .memory-story__detail-head > strong {
+    font: 700 clamp(0.42rem, 0.58vw, 0.52rem)/1 var(--site-font-mono);
+    text-transform: uppercase;
+  }
+
+  .memory-story__detail-copy {
+    display: grid;
+    gap: 0.45rem;
+  }
+
+  .memory-story__detail-copy blockquote {
+    margin: 0;
+    font-family: var(--site-font-display);
+    font-size: clamp(1rem, 1.7vw, 1.5rem);
+    font-weight: 470;
+    line-height: 1.02;
+  }
+
+  .memory-story__detail dl {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-content: center;
+    gap: 0.65rem 1rem;
+    margin: 0;
+  }
+
+  .memory-story__detail dl div {
+    display: grid;
+    gap: 0.16rem;
+  }
+
+  .memory-story__detail dt,
+  .memory-story__detail dd {
+    margin: 0;
+    font: 620 clamp(0.4rem, 0.54vw, 0.48rem)/1.2 var(--site-font-mono);
+    text-transform: uppercase;
+  }
+
+  .memory-story__detail dt {
+    color: var(--site-color-art-muted);
+  }
+
+  .memory-story__detail dd {
+    font-weight: 720;
+  }
+
+  .memory-story__restored {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.6rem;
+    background: color-mix(in srgb, var(--site-color-brand) 7%, var(--site-color-on-brand));
+  }
+
+  .memory-story__restored span {
+    color: var(--site-color-art-muted);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .memory-story[data-story-ready='true'] [data-memory-record] {
+      opacity: 0.24;
+      transform: translateY(7px);
+      transition:
+        opacity var(--site-motion-medium) var(--site-ease-standard),
+        transform var(--site-motion-medium) var(--site-ease-emphasized);
+    }
+
+    .memory-story[data-story-active='true'] [data-memory-record] {
+      opacity: 1;
+      transform: translateY(0);
+      transition-delay: calc(var(--memory-index) * 90ms);
+    }
+  }
+
+  @media (max-width: 760px) {
+    .memory-story {
+      aspect-ratio: auto;
+      min-height: 35rem;
+    }
+
+    .memory-story__header,
+    .memory-story__search {
+      grid-template-columns: 1fr;
+      align-items: start;
+    }
+
+    .memory-story__header {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+
+    .memory-story__search-meta {
+      flex-wrap: wrap;
+    }
+
+    .memory-story__body {
+      grid-template-columns: 1fr;
+    }
+
+    .memory-story__results {
+      border-right: 0;
+      border-bottom: 1px solid currentColor;
+    }
+
+    .memory-story__record {
+      min-height: 4.3rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .memory-story,
+    .memory-story * {
+      transition: none !important;
+    }
+  }
+</style>

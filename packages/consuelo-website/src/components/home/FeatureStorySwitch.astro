@@ -1,0 +1,398 @@
+---
+import { homeSwitchAgents } from '../../data/home-content';
+---
+
+<section class="switch-story" data-switch-story data-story-animate aria-label="One Consuelo workspace staying fixed while the active agent changes">
+  <header class="switch-story__header">
+    <div>
+      <p>AGENT-INDEPENDENT WORKSPACE</p>
+      <strong>CHANGE THE AGENT. KEEP THE WORK.</strong>
+    </div>
+    <span>04 SURFACES / 01 WORKSPACE</span>
+  </header>
+
+  <div class="switch-story__canvas">
+    <div class="switch-story__agents" aria-label="Available agent surfaces">
+      {homeSwitchAgents.map((agent, index) => (
+        <article data-switch-agent style={`--agent-index:${index}`}>
+          <span>{String(index + 1).padStart(2, '0')}</span>
+          <strong>{agent.label}</strong>
+          <small>{agent.role}</small>
+        </article>
+      ))}
+    </div>
+
+    <div class="switch-story__workspace">
+      <div class="switch-story__orbit" aria-hidden="true"></div>
+      <article class="switch-story__work-object" data-switch-work-object>
+        <div class="switch-story__work-head">
+          <span>WORK OBJECT</span>
+          <strong>PROJECT MERIDIAN</strong>
+        </div>
+        <div class="switch-story__artifact">
+          <span>ARTIFACT</span>
+          <strong>release-brief.md</strong>
+          <p>Canary rollout / verification notes / owner context</p>
+        </div>
+        <dl>
+          <div><dt>MEMORY</dt><dd>4 records</dd></div>
+          <div><dt>TOOLS</dt><dd>8 enabled</dd></div>
+          <div><dt>WORKFLOW</dt><dd>release / v3</dd></div>
+          <div><dt>NODE</dt><dd>workspace default</dd></div>
+        </dl>
+      </article>
+    </div>
+
+    <div class="switch-story__handoff">
+      <span>ACTIVE SURFACE</span>
+      <ol>
+        {homeSwitchAgents.map((agent, index) => (
+          <li style={`--agent-index:${index}`}>
+            <span>{agent.label}</span>
+            <strong>{index === homeSwitchAgents.length - 1 ? 'CURRENT' : 'HANDOFF'}</strong>
+          </li>
+        ))}
+      </ol>
+      <p>The workspace is the durable object. Models and interfaces are replaceable clients.</p>
+    </div>
+  </div>
+
+  <footer class="switch-story__footer">
+    <span>SAME MEMORY</span>
+    <strong>SAME ARTIFACT</strong>
+    <span>SAME TOOLS + WORKFLOW</span>
+  </footer>
+</section>
+
+<style>
+  .switch-story {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    width: 100%;
+    aspect-ratio: 2032 / 1192;
+    overflow: hidden;
+    border: 1px solid var(--site-color-brand);
+    background: var(--site-color-on-brand);
+    color: var(--site-color-brand);
+  }
+
+  .switch-story__header,
+  .switch-story__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: clamp(0.65rem, 1.2vw, 0.95rem) clamp(0.75rem, 1.6vw, 1.25rem);
+    font: 650 clamp(0.45rem, 0.64vw, 0.56rem)/1.15 var(--site-font-mono);
+    letter-spacing: 0.075em;
+    text-transform: uppercase;
+  }
+
+  .switch-story__header {
+    border-bottom: 1px solid currentColor;
+  }
+
+  .switch-story__header > div {
+    display: grid;
+    gap: 0.3rem;
+  }
+
+  .switch-story__header p,
+  .switch-story__footer span,
+  .switch-story__footer strong,
+  .switch-story__artifact p,
+  .switch-story__handoff p,
+  .switch-story dl,
+  .switch-story dt,
+  .switch-story dd {
+    margin: 0;
+  }
+
+  .switch-story__header p,
+  .switch-story__header > span,
+  .switch-story__footer span {
+    color: var(--site-color-art-muted);
+  }
+
+  .switch-story__header strong {
+    font-family: var(--site-font-display);
+    font-size: clamp(0.95rem, 1.55vw, 1.35rem);
+    font-weight: 480;
+    line-height: 0.95;
+  }
+
+  .switch-story__canvas {
+    display: grid;
+    grid-template-columns: minmax(9rem, 0.46fr) minmax(18rem, 1.08fr) minmax(10rem, 0.56fr);
+    min-height: 0;
+  }
+
+  .switch-story__agents {
+    display: grid;
+    grid-template-rows: repeat(4, minmax(0, 1fr));
+    border-right: 1px solid currentColor;
+  }
+
+  .switch-story__agents article {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1.6rem minmax(0, 1fr);
+    align-content: center;
+    gap: 0.18rem 0.55rem;
+    padding-inline: clamp(0.6rem, 1.25vw, 0.95rem);
+    border-bottom: 1px solid color-mix(in srgb, var(--site-color-brand) 16%, transparent);
+  }
+
+  .switch-story__agents article:last-child {
+    border-bottom: 0;
+  }
+
+  .switch-story__agents article > span {
+    grid-row: 1 / span 2;
+    align-self: center;
+    color: var(--site-color-art-muted);
+    font: 650 clamp(0.4rem, 0.55vw, 0.48rem)/1 var(--site-font-mono);
+  }
+
+  .switch-story__agents strong {
+    font-family: var(--site-font-display);
+    font-size: clamp(0.82rem, 1.2vw, 1.08rem);
+    font-weight: 500;
+    line-height: 1;
+  }
+
+  .switch-story__agents small {
+    color: var(--site-color-art-muted);
+    font: 620 clamp(0.38rem, 0.5vw, 0.45rem)/1 var(--site-font-mono);
+    letter-spacing: 0.06em;
+  }
+
+  .switch-story__workspace {
+    position: relative;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--site-color-brand) 3%, var(--site-color-on-brand));
+  }
+
+  .switch-story__orbit {
+    position: absolute;
+    width: 74%;
+    aspect-ratio: 1;
+    border: 1px solid color-mix(in srgb, var(--site-color-brand) 18%, transparent);
+    border-radius: 50%;
+  }
+
+  .switch-story__orbit::before,
+  .switch-story__orbit::after {
+    position: absolute;
+    border: 1px solid color-mix(in srgb, var(--site-color-brand) 13%, transparent);
+    border-radius: 50%;
+    content: '';
+  }
+
+  .switch-story__orbit::before {
+    inset: 15%;
+  }
+
+  .switch-story__orbit::after {
+    inset: 31%;
+  }
+
+  .switch-story__work-object {
+    position: relative;
+    z-index: 1;
+    width: min(78%, 29rem);
+    border: 1px solid currentColor;
+    background: var(--site-color-on-brand);
+  }
+
+  .switch-story__work-head,
+  .switch-story__artifact,
+  .switch-story__work-object dl {
+    padding: clamp(0.65rem, 1.2vw, 0.9rem) clamp(0.75rem, 1.4vw, 1rem);
+  }
+
+  .switch-story__work-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+    border-bottom: 1px solid currentColor;
+    font: 650 clamp(0.4rem, 0.56vw, 0.5rem)/1 var(--site-font-mono);
+    letter-spacing: 0.06em;
+  }
+
+  .switch-story__work-head span,
+  .switch-story__artifact > span {
+    color: var(--site-color-art-muted);
+  }
+
+  .switch-story__artifact {
+    display: grid;
+    gap: 0.3rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--site-color-brand) 22%, transparent);
+  }
+
+  .switch-story__artifact > span {
+    font: 650 clamp(0.38rem, 0.5vw, 0.45rem)/1 var(--site-font-mono);
+    letter-spacing: 0.07em;
+  }
+
+  .switch-story__artifact > strong {
+    font-family: var(--site-font-display);
+    font-size: clamp(1.15rem, 2vw, 1.8rem);
+    font-weight: 480;
+    line-height: 0.95;
+  }
+
+  .switch-story__artifact p {
+    font: 600 clamp(0.4rem, 0.56vw, 0.5rem)/1.4 var(--site-font-mono);
+    text-transform: uppercase;
+  }
+
+  .switch-story__work-object dl {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.7rem;
+  }
+
+  .switch-story__work-object dl div {
+    display: grid;
+    gap: 0.16rem;
+  }
+
+  .switch-story__work-object dt,
+  .switch-story__work-object dd {
+    font: 620 clamp(0.38rem, 0.5vw, 0.46rem)/1.2 var(--site-font-mono);
+    text-transform: uppercase;
+  }
+
+  .switch-story__work-object dt {
+    color: var(--site-color-art-muted);
+  }
+
+  .switch-story__work-object dd {
+    font-weight: 700;
+  }
+
+  .switch-story__handoff {
+    display: grid;
+    align-content: center;
+    gap: 0.75rem;
+    padding: clamp(0.75rem, 1.4vw, 1.05rem);
+    border-left: 1px solid currentColor;
+  }
+
+  .switch-story__handoff > span {
+    color: var(--site-color-art-muted);
+    font: 650 clamp(0.4rem, 0.54vw, 0.48rem)/1 var(--site-font-mono);
+    letter-spacing: 0.07em;
+  }
+
+  .switch-story__handoff ol {
+    display: grid;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid color-mix(in srgb, var(--site-color-brand) 24%, transparent);
+    list-style: none;
+  }
+
+  .switch-story__handoff li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding-block: 0.55rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--site-color-brand) 16%, transparent);
+    font: 620 clamp(0.4rem, 0.54vw, 0.48rem)/1 var(--site-font-mono);
+  }
+
+  .switch-story__handoff li strong {
+    color: var(--site-color-art-muted);
+    font-size: 0.85em;
+  }
+
+  .switch-story__handoff p {
+    font: 600 clamp(0.4rem, 0.56vw, 0.5rem)/1.45 var(--site-font-mono);
+    text-transform: uppercase;
+  }
+
+  .switch-story__footer {
+    border-top: 1px solid currentColor;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .switch-story[data-story-ready='true'] [data-switch-agent] {
+      opacity: 0.38;
+      transition:
+        opacity var(--site-motion-medium) var(--site-ease-standard),
+        background var(--site-motion-medium) var(--site-ease-standard);
+    }
+
+    .switch-story[data-story-active='true'] [data-switch-agent] {
+      animation: switch-agent-proof 540ms var(--site-ease-emphasized) both;
+      animation-delay: calc(var(--agent-index) * 170ms);
+    }
+
+    .switch-story[data-story-ready='true'] [data-switch-work-object] {
+      transform: scale(0.985);
+      transition: transform var(--site-motion-slow) var(--site-ease-emphasized);
+    }
+
+    .switch-story[data-story-active='true'] [data-switch-work-object] {
+      transform: scale(1);
+    }
+  }
+
+  @keyframes switch-agent-proof {
+    0% { opacity: 0.38; background: transparent; }
+    45% { opacity: 1; background: color-mix(in srgb, var(--site-color-brand) 9%, transparent); }
+    100% { opacity: 1; background: transparent; }
+  }
+
+  @media (max-width: 760px) {
+    .switch-story {
+      aspect-ratio: auto;
+      min-height: 35rem;
+    }
+
+    .switch-story__canvas {
+      grid-template-columns: 1fr;
+    }
+
+    .switch-story__agents {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-rows: repeat(2, minmax(4rem, auto));
+      border-right: 0;
+      border-bottom: 1px solid currentColor;
+    }
+
+    .switch-story__agents article:nth-child(odd) {
+      border-right: 1px solid color-mix(in srgb, var(--site-color-brand) 16%, transparent);
+    }
+
+    .switch-story__workspace {
+      min-height: 20rem;
+    }
+
+    .switch-story__handoff {
+      border-top: 1px solid currentColor;
+      border-left: 0;
+    }
+
+    .switch-story__header,
+    .switch-story__footer {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .switch-story,
+    .switch-story * {
+      animation: none !important;
+      transition: none !important;
+    }
+  }
+</style>

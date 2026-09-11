@@ -1,0 +1,72 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/website/finish-connect-four-agent-film",
+  "base": "origin/task/website/finish-connect-four-agent-film",
+  "headSha": "8d40ba61b9d78c17326003b8afe6130fe0b5ab3c",
+  "changeHash": "02daa289bf4190c03a95d2f750b43a798d8872059ca19b6dde41e6a47e7a609e",
+  "changedFiles": [
+    "packages/consuelo-website/motion/connect/.gitignore",
+    "packages/consuelo-website/motion/connect/AGENTS.md",
+    "packages/consuelo-website/motion/connect/CLAUDE.md",
+    "packages/consuelo-website/motion/connect/hyperframes.json",
+    "packages/consuelo-website/motion/connect/index.html",
+    "packages/consuelo-website/motion/connect/meta.json",
+    "packages/consuelo-website/motion/connect/package.json",
+    "packages/consuelo-website/motion/connect/source-timing.json",
+    "packages/consuelo-website/public/media/home/connect-live-session-poster.webp",
+    "packages/consuelo-website/public/media/home/connect-live-session.mp4",
+    "packages/consuelo-website/src/data/home-content.ts",
+    "packages/consuelo-website/tests/website-structure.test.js"
+  ],
+  "verifiedAt": "2026-08-31T23:17:16.727Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/website/finish-connect-four-agent-film.json",
+        ".task/website/finish-connect-four-agent-film/evidence-log.json",
+        ".task/website/finish-connect-four-agent-film/read-log.json",
+        ".task/website/finish-connect-four-agent-film/verify.json",
+        ".task/website/finish-connect-four-agent-film/workpad.md",
+        "packages/consuelo-website/motion/connect/.gitignore",
+        "packages/consuelo-website/motion/connect/AGENTS.md",
+        "packages/consuelo-website/motion/connect/CLAUDE.md",
+        "packages/consuelo-website/motion/connect/hyperframes.json",
+        "packages/consuelo-website/motion/connect/index.html",
+        "packages/consuelo-website/motion/connect/meta.json",
+        "packages/consuelo-website/motion/connect/package.json",
+        "packages/consuelo-website/motion/connect/source-timing.json",
+        "packages/consuelo-website/public/media/home/connect-live-session-poster.webp",
+        "packages/consuelo-website/public/media/home/connect-live-session.mp4",
+        "packages/consuelo-website/src/data/home-content.ts",
+        "packages/consuelo-website/tests/website-structure.test.js"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

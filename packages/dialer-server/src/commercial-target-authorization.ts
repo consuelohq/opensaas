@@ -86,6 +86,12 @@ export const resolveCommercialCallTargetInput = async (
 ): Promise<CommercialCallInput> => {
   try {
     if (!leadConnector) throw targetAuthorizationError();
+    const {
+      targetContexts: _untrustedTargetContexts,
+      targetPhone: _untrustedTargetPhone,
+      targetPhones: _untrustedTargetPhones,
+      ...trustedInput
+    } = input;
 
     if (input.source === 'direct') {
       const contactId = readString(input.contactId);
@@ -94,7 +100,7 @@ export const resolveCommercialCallTargetInput = async (
         contactId,
       ]);
       return {
-        ...input,
+        ...trustedInput,
         contactId: target.contactId,
         targetPhone: target.phone,
         targetPhones: undefined,
@@ -119,7 +125,17 @@ export const resolveCommercialCallTargetInput = async (
           .filter((candidate) => candidate.contactId && candidate.phone?.trim())
           .map((candidate) => [
             candidate.contactId,
-            { contactId: candidate.contactId, phone: candidate.phone.trim() },
+            {
+              contactId: candidate.contactId,
+              phone: candidate.phone.trim(),
+              context: {
+                opportunityId: candidate.opportunityId,
+                pipelineId: coordinates.pipelineId,
+                stageId: coordinates.stageId,
+                opportunityStatus: candidate.status,
+                opportunityValue: candidate.monetaryValue,
+              },
+            },
           ]),
       );
       const requestedContactIds = readStringArray(input.contactIds);
@@ -132,17 +148,20 @@ export const resolveCommercialCallTargetInput = async (
       );
       if (targets.some((target) => !target)) throw targetAuthorizationError();
       const resolvedTargets = targets.filter(
-        (target): target is { contactId: string; phone: string } =>
-          target !== undefined,
+        (target): target is NonNullable<typeof target> => target !== undefined,
       );
       if (resolvedTargets.length === 0) throw targetAuthorizationError();
       return {
-        ...input,
+        ...trustedInput,
         queueId: coordinates.pipelineId + ':' + coordinates.stageId,
         pipelineId: coordinates.pipelineId,
         stageId: coordinates.stageId,
         contactIds: resolvedTargets.map((target) => target.contactId),
         targetPhones: resolvedTargets.map((target) => target.phone),
+        targetContexts: resolvedTargets.map((target) => ({
+          contactId: target.contactId,
+          context: target.context,
+        })),
       };
     }
 
@@ -152,7 +171,7 @@ export const resolveCommercialCallTargetInput = async (
       readStringArray(input.contactIds),
     );
     return {
-      ...input,
+      ...trustedInput,
       contactIds: targets.map((target) => target.contactId),
       targetPhones: targets.map((target) => target.phone),
     };

@@ -1,10 +1,12 @@
-import { spawnSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { spawn, spawnSync } from 'node:child_process';
+import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 import { describe, expect, it, vi } from 'vitest';
+
+import { runSubagentProcess } from '../scripts/lib/subagent/runtime';
 
 import {
   preserveFirstTerminationOutcome,
@@ -69,6 +71,99 @@ describe('subagent runner termination', () => {
       expect(result.status).toBe(0);
       expect(readFileSync(marker, 'utf8')).toBe('SIGKILL');
     } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('tolerates EPIPE when a provider closes stdin before the prompt is written', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'subagent-stdin-epipe-'));
+    const script = join(root, 'close-stdin.mjs');
+    writeFileSync(script, [
+      "import { closeSync } from 'node:fs';",
+      'closeSync(0);',
+      'setTimeout(() => process.exit(0), 50);',
+    ].join('\n'));
+
+    try {
+      const result = await runSubagentProcess({
+        command: process.execPath,
+        args: [script],
+        cwd: root,
+        env: process.env,
+        timeoutMs: 2_000,
+        stdin: 'x'.repeat(8 * 1024 * 1024),
+      });
+
+      expect(result.timedOut).toBe(false);
+      expect(result.exitCode).toBe(0);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('writes a completed exit marker when the detached provider closes stdin early', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'subagent-detached-stdin-epipe-'));
+    const runDirectory = join(root, 'run');
+    const provider = join(root, 'close-stdin-provider');
+    mkdirSync(runDirectory, { recursive: true });
+    writeFileSync(provider, [
+      '#!/bin/sh',
+      'exec 0<&-',
+      'sleep 0.05',
+      'exit 0',
+    ].join('\n'));
+    chmodSync(provider, 0o700);
+
+    const stdinPath = join(runDirectory, 'stdin.txt');
+    const stdoutLogPath = join(runDirectory, 'stdout.jsonl');
+    const stderrLogPath = join(runDirectory, 'stderr.log');
+    const exitMarkerPath = join(runDirectory, 'exit.json');
+    const ownerMarkerPath = join(runDirectory, 'owner.json');
+    const runId = 'run_runner_stdin_epipe';
+    writeFileSync(stdinPath, 'x'.repeat(8 * 1024 * 1024));
+    writeFileSync(stdoutLogPath, '');
+    writeFileSync(stderrLogPath, '');
+    writeFileSync(join(runDirectory, 'launch.json'), JSON.stringify({
+      runId,
+      ownerToken: 'owner-runner-stdin-epipe',
+      command: [provider],
+      cwd: root,
+      stdinPath,
+      stdoutLogPath,
+      stderrLogPath,
+      ownerMarkerPath,
+      exitMarkerPath,
+      timeoutMs: 5_000,
+      deadlineAt: Date.now() + 5_000,
+    }, null, 2));
+
+    const runnerPath = fileURLToPath(new URL('../scripts/lib/subagent/runner.ts', import.meta.url));
+    const child = spawn(process.execPath, [runnerPath, runDirectory], {
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    let runnerStderr = '';
+    child.stderr?.setEncoding('utf8');
+    child.stderr?.on('data', (chunk) => { runnerStderr += chunk; });
+
+    try {
+      const exitCode = await new Promise<number | null>((resolve, reject) => {
+        child.once('error', reject);
+        child.once('close', resolve);
+      });
+      expect(exitCode, runnerStderr).toBe(0);
+      expect(existsSync(exitMarkerPath), runnerStderr).toBe(true);
+      const marker = JSON.parse(readFileSync(exitMarkerPath, 'utf8')) as {
+        outcome?: unknown;
+        exitCode?: unknown;
+        error?: unknown;
+      };
+      expect(marker.outcome).toBe('completed');
+      expect(marker.exitCode).toBe(0);
+      expect(marker.error).toBeUndefined();
+    } finally {
+      if (child.pid !== undefined) {
+        try { process.kill(child.pid, 'SIGKILL'); } catch {}
+      }
       rmSync(root, { recursive: true, force: true });
     }
   });

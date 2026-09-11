@@ -27,6 +27,13 @@ const readJsonObject = async (
   }
 };
 
+const stripUntrustedScientificContext = (
+  input: Record<string, unknown>,
+): Record<string, unknown> => {
+  const { targetContexts: _targetContexts, ...trustedInput } = input;
+  return trustedInput;
+};
+
 export const createCallSessionRoutes = (
   dependencies: DialerServerDependencies,
 ) => {
@@ -51,7 +58,7 @@ export const createCallSessionRoutes = (
             identity,
             dependencies.leadConnector,
           )
-        : input;
+        : stripUntrustedScientificContext(input);
       const result = await runApplicationEffect(
         dependencies.application.startCallSession({
           workspaceId: identity.workspaceId,

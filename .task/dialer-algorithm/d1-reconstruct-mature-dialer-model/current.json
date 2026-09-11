@@ -1,0 +1,19 @@
+{
+  "area": "dialer-algorithm",
+  "stream": "stream/dialer-algorithm",
+  "taskBranch": "task/dialer-algorithm/d1-reconstruct-mature-dialer-model",
+  "baseBranch": "stream/dialer-algorithm",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2007,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2007",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2007",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2007/d1-reconstruct-mature-dialer-model",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2007",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2007/d1-reconstruct-mature-dialer-model",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-d1-reconstruct-mature-dialer-model",
+  "taskSession": "tsk_87afa40045e5",
+  "tmuxSession": "opensaas-dialer-algorithm-d1-reconstruct-mature-dialer-model-87afa400",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-d1-reconstruct-mature-dialer-model/.task/dialer-algorithm/d1-reconstruct-mature-dialer-model/session.json",
+  "createdAt": "2026-08-15T03:56:47.473Z"
+}

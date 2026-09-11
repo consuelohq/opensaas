@@ -1,0 +1,19 @@
+{
+  "area": "dialer-algorithm",
+  "stream": "stream/dialer-algorithm",
+  "taskBranch": "task/dialer-algorithm/recover-stale-conflicted-stream-sync-worktrees",
+  "baseBranch": "stream/dialer-algorithm",
+  "sourceBranch": "stream/dialer-algorithm",
+  "startFrom": "stream",
+  "prNumber": 2103,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2103",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2103",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2103/recover-stale-conflicted-stream-sync-worktrees",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2103",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2103/recover-stale-conflicted-stream-sync-worktrees",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-recover-stale-conflicted-stream-sync-worktrees",
+  "taskSession": "tsk_d0dd3f20414e",
+  "tmuxSession": "opensaas-dialer-algorithm-recover-stale-conflicted-stream-sync-worktrees-d0dd3f20",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-recover-stale-conflicted-stream-sync-worktrees/.task/dialer-algorithm/recover-stale-conflicted-stream-sync-worktrees/session.json",
+  "createdAt": "2026-08-16T02:43:36.571Z"
+}
