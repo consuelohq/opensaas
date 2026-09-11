@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/resolve-stream-os-test-selection-sync-conflicts",
+  "events": [
+    {
+      "id": "b2a9dd86-6ca1-4bc5-be59-21eae6b9dc47",
+      "occurred_at": "2026-09-11T04:42:35.591Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/test-selection.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/resolve-stream-os-test-selection-sync-conflicts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/resolve-stream-os-test-selection-sync-conflicts"
+      }
+    },
+    {
+      "id": "7205f7ce-a2a9-475a-8f98-27d33e4bdfbb",
+      "occurred_at": "2026-09-11T04:46:00.563Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/resolve-stream-os-test-selection-sync-conflicts/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/resolve-stream-os-test-selection-sync-conflicts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/resolve-stream-os-test-selection-sync-conflicts"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-09-11T04:46:00.628Z"
+}

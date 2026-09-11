@@ -163,7 +163,62 @@ describe('test selection registry', () => {
       'packages/os/tests/subagent-orchestration-contract.test.ts',
       'packages/os/tests/subagent-lifecycle-regressions.test.ts',
       'packages/os/tests/subagent-executable-discovery.test.ts',
+      'packages/os/tests/subagent-runner-termination.test.ts',
     ]));
+  });
+
+  it('keeps Dialer integration regressions on current focused OS rules', () => {
+    const rulesPath = path.resolve(
+      path.dirname(fileURLToPath(import.meta.url)),
+      '../test-selection.rules.json',
+    );
+    const rules = JSON.parse(fs.readFileSync(rulesPath, 'utf8')).rules;
+    const codeCall = rules.find((rule) => rule.id === 'os-work-session-code-call');
+    const subagent = rules.find((rule) => rule.id === 'os-subagent-runtime');
+
+    expect(codeCall?.tests[0]?.command).toContain(
+      'packages/os/tests/code-call-process-regressions.test.ts',
+    );
+    expect(subagent?.tests[0]?.command).toContain(
+      'packages/os/tests/subagent-runner-termination.test.ts',
+    );
+  });
+
+  it('selects an explicit Node SQLite trace compatibility contract', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/lib/trace-database-schema.ts',
+      '--json',
+    ]));
+    const nodeSuite = data.selectedSuites.find(
+      (suite) => suite.ruleId === 'os-trace-sqlite-runtime',
+    );
+
+    expect(data.matchedRules.map((rule) => rule.id)).toContain(
+      'os-trace-sqlite-runtime',
+    );
+    expect(nodeSuite?.command?.[0]).toBe('node');
+    expect(nodeSuite?.cwd).toBe('packages/os');
+    expect(nodeSuite?.command).toContain(
+      'tests/trace-sites-gateway-live-endpoints.test.ts',
+    );
+  });
+
+  it('routes stream-sync changes through the focused merge contract', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/workspace/scripts/stream-sync.js',
+      '--json',
+    ]));
+
+    expect(data.matchedRules.map((rule) => rule.id)).toContain(
+      'workspace-stream-sync-runtime',
+    );
+    expect(data.selectedSuites.map((suite) => suite.name)).toContain(
+      'workspace stream sync runtime contracts',
+    );
   });
 
   it('suppresses a broad auto package suite when explicit critical coverage fully owns the changed code', () => {
