@@ -3,10 +3,10 @@
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
     "testFileCount": 2693,
-    "mappedTestCount": 2608,
-    "unmappedTestCount": 85,
-    "ruleCount": 80,
-    "explicitRuleCount": 61,
+    "mappedTestCount": 2609,
+    "unmappedTestCount": 84,
+    "ruleCount": 83,
+    "explicitRuleCount": 64,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
@@ -854,6 +854,29 @@
       "critical": true,
       "exclusive": true,
       "reason": "Steering ownership, seeding, caching, operator context, and release-boundary changes must prove that visible user steering is authoritative and no private repository prompt is shipped.",
+      "origin": "explicit"
+    },
+    {
+      "id": "workspace-stream-sync-runtime",
+      "source": [
+        "packages/workspace/scripts/stream-sync.js",
+        "packages/workspace/tests/stream-sync-node-modules.test.js",
+        "packages/workspace/tests/stream-sync-generated-registry-conflict.test.js"
+      ],
+      "tests": [
+        {
+          "name": "workspace stream sync runtime contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/stream-sync-node-modules.test.js",
+            "packages/workspace/tests/stream-sync-generated-registry-conflict.test.js"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Stream synchronization changes must prove temporary-worktree dependency linking, stale-conflict recovery, generated-registry regeneration, and fail-closed behavior before a stream is pushed.",
       "origin": "explicit"
     },
     {
@@ -2987,7 +3010,8 @@
         "packages/os/tools/subagent/**",
         "packages/os/tests/subagent-orchestration-contract.test.ts",
         "packages/os/tests/subagent-lifecycle-regressions.test.ts",
-        "packages/os/tests/subagent-executable-discovery.test.ts"
+        "packages/os/tests/subagent-executable-discovery.test.ts",
+        "packages/os/tests/subagent-runner-termination.test.ts"
       ],
       "tests": [
         {
@@ -3000,7 +3024,8 @@
             "--no-file-parallelism",
             "packages/os/tests/subagent-orchestration-contract.test.ts",
             "packages/os/tests/subagent-lifecycle-regressions.test.ts",
-            "packages/os/tests/subagent-executable-discovery.test.ts"
+            "packages/os/tests/subagent-executable-discovery.test.ts",
+            "packages/os/tests/subagent-runner-termination.test.ts"
           ]
         },
         {
@@ -3123,7 +3148,8 @@
         "packages/os/tests/mcp-gateway.test.ts",
         "packages/os/tests/work-session-code-call.test.ts",
         "packages/os/scripts/lib/work-session-protection.ts",
-        "packages/os/tests/code-call.test.ts"
+        "packages/os/tests/code-call.test.ts",
+        "packages/os/tests/code-call-process-regressions.test.ts"
       ],
       "tests": [
         {
@@ -3137,7 +3163,8 @@
             "packages/os/tests/session-start-foundation.test.ts",
             "packages/os/tests/generated-error-code-parity.test.ts",
             "packages/os/tests/mcp-gateway.test.ts",
-            "packages/os/tests/code-call.test.ts"
+            "packages/os/tests/code-call.test.ts",
+            "packages/os/tests/code-call-process-regressions.test.ts"
           ]
         },
         {
@@ -3150,7 +3177,33 @@
       ],
       "critical": true,
       "exclusive": true,
-      "reason": "Work-session Code Call and MCP routing must prove bounded execution, protected Consuelo state, session-authority validation, public schema limits, and generated error-code parity without selecting unrelated package-wide OS tests.",
+      "reason": "Work-session Code Call and MCP routing must prove bounded execution, protected Consuelo state, session-authority validation, public schema limits, generated error-code parity, and child-process stdin/exit lifecycle behavior without selecting unrelated package-wide OS tests.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-trace-sqlite-runtime",
+      "source": [
+        "packages/os/scripts/lib/trace-database-schema.ts",
+        "packages/os/scripts/lib/trace-sites-local-read-backend.ts",
+        "packages/os/tests/trace-sites-gateway-live-endpoints.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS Trace SQLite Node runtime compatibility",
+          "command": [
+            "node",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/trace-sites-gateway-live-endpoints.test.ts",
+            "--config",
+            "vitest.config.ts"
+          ],
+          "cwd": "packages/os"
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Trace SQLite adapter changes must execute the gateway history contract under Node so the node:sqlite fallback is exercised directly rather than inferred from Bun coverage.",
       "origin": "explicit"
     },
     {
@@ -17130,7 +17183,6 @@
     "packages/workspace/tests/review-run-state.test.js",
     "packages/workspace/tests/session-start-compatibility.test.ts",
     "packages/workspace/tests/stream-lifecycle.test.ts",
-    "packages/workspace/tests/stream-sync-node-modules.test.js",
     "packages/workspace/tests/stream-workpads.test.js",
     "packages/workspace/tests/task-hook-dispatcher.test.ts",
     "packages/workspace/tests/task-hook-workflow-contract.test.ts",
