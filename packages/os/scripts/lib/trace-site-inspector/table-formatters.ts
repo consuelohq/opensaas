@@ -111,7 +111,9 @@ export function semanticToolLabel(
   input = resolvedInput(row),
 ): string {
   const metadata =
-    typeof row.metadata === 'object' && row.metadata !== null && !Array.isArray(row.metadata)
+    typeof row.metadata === 'object' &&
+    row.metadata !== null &&
+    !Array.isArray(row.metadata)
       ? (row.metadata as TraceRecord)
       : null;
   const tool =
@@ -240,7 +242,9 @@ function traceRecordMatchesSearchTerm(
 }
 
 function traceSearchTime(record: TraceRecord): string {
-  const raw = clean(record.startTime ?? record.time ?? record.ts ?? record.displayTime);
+  const raw = clean(
+    record.startTime ?? record.time ?? record.ts ?? record.displayTime,
+  );
   if (!raw) return '';
   const parsed = new Date(raw);
   if (Number.isNaN(parsed.getTime())) return raw;
@@ -248,7 +252,10 @@ function traceSearchTime(record: TraceRecord): string {
     raw,
     parsed.toISOString(),
     parsed.toLocaleDateString('en-US', { timeZone: 'America/New_York' }),
-    parsed.toLocaleString('en-US', { timeZone: 'America/New_York', hour12: false }),
+    parsed.toLocaleString('en-US', {
+      timeZone: 'America/New_York',
+      hour12: false,
+    }),
   ].join(' ');
 }
 
@@ -299,10 +306,15 @@ function summarizeInput(
     const seconds = numeric(input?.seconds);
     const reason = clean(input?.reason);
     const pr = clean(input?.pr);
-    const subject = seconds > 0 ? `wait ${seconds}s` : pr ? `wait for PR #${pr}` : 'wait';
+    const subject =
+      seconds > 0 ? `wait ${seconds}s` : pr ? `wait for PR #${pr}` : 'wait';
     return [subject, reason].filter(Boolean).join(' · ');
   }
   if (tool === 'status') return 'workspace status';
+  if (tool === 'mac.call') {
+    const command = clean(input?.command);
+    return command ? `run ${summarizeCommandText(command)}` : 'mac command';
+  }
   if (tool === 'tools.search' || tool === 'fs.search') {
     return (
       clean(input?.query ?? input?.keyword ?? input?.pattern) ||
@@ -310,10 +322,14 @@ function summarizeInput(
     );
   }
   if (tool === 'fs.read') {
-    return summarizePaths('read', input) || humanPayload(row.input, 'read file');
+    return (
+      summarizePaths('read', input) || humanPayload(row.input, 'read file')
+    );
   }
   if (tool === 'fs.write') {
-    return summarizePaths('write', input) || humanPayload(row.input, 'write file');
+    return (
+      summarizePaths('write', input) || humanPayload(row.input, 'write file')
+    );
   }
   if (tool === 'fs.list') {
     return summarizePaths('list', input) || 'list files';
@@ -432,6 +448,20 @@ function summarizeOutput(
     if (mode === 'verify') return 'verification passed';
     return 'completed';
   }
+  if (tool === 'fs.read') return 'read complete';
+  if (tool === 'fs.write') return 'write complete';
+  if (tool === 'fs.list') return 'list complete';
+  if (tool === 'fs.search' || tool === 'tools.search') return 'search complete';
+  if (tool === 'status') return 'status loaded';
+  if (tool === 'stream.context') return 'context loaded';
+  if (tool === 'git.diff') return 'diff complete';
+  if (tool === 'mac.call') {
+    const command = clean(input?.command);
+    return command ? `${commandProgram(command)} complete` : 'command complete';
+  }
+  if (tool.startsWith('browser')) {
+    return browserSuccessLabel(tool, input);
+  }
   if (tool === 'fs.apply_patch') {
     const paths = patchPaths(input, row);
     return paths.length
@@ -472,15 +502,23 @@ function summarizeOutput(
   }
   if (tool === 'batch') {
     const children = childTraceRecords(row);
-    return children.length
-      ? `${children.length} operations complete`
-      : normalizeSeparators(
-          valueText(row.output ?? row.summary) || 'batch complete',
-        );
+    const operationCount = children.length || batchSteps(input, row).length;
+    if (operationCount) return `${operationCount} operations complete`;
+    const output = valueText(row.output ?? row.summary);
+    return isGenericSuccessMessage(output)
+      ? 'batch complete'
+      : normalizeSeparators(output || 'batch complete');
+  }
+  const message = clean(data?.message ?? result?.message);
+  if (
+    isGenericSuccessMessage(message) ||
+    isGenericSuccessMessage(row.output ?? row.summary)
+  ) {
+    const inferred = genericSuccessLabel(toolLabel, input);
+    if (inferred) return inferred;
   }
   return normalizeSeparators(
-    clean(data?.message ?? result?.message) ||
-      humanPayload(row.output ?? row.summary, 'completed'),
+    message || humanPayload(row.output ?? row.summary, 'completed'),
   );
 }
 
@@ -548,6 +586,10 @@ function summarizeCode(code: string, mode: string): string {
   if (patchFiles.length) {
     return `edit ${patchFiles.length} ${patchFiles.length === 1 ? 'file' : 'files'} · ${patchFiles.join(', ')}`;
   }
+  const indirectFile = codeFileTarget(code);
+  if (indirectFile) {
+    return `${mode === 'edit' ? 'edit' : mode === 'verify' ? 'verify' : 'read'} ${fileName(indirectFile)}`;
+  }
   const assignedWrite = code.match(
     /const\s+([a-zA-Z_$][\w$]*)\s*=\s*['"]([^'"]+)['"][\s\S]{0,800}?Bun\.write\(\s*\1\b/,
   );
@@ -562,6 +604,8 @@ function summarizeCode(code: string, mode: string): string {
   }
   const command = spawnedCommand(code);
   if (command.length) return summarizeSpawnedCommand(command);
+  const shell = summarizeShellCode(code, mode);
+  if (shell) return shell;
   const test = code.match(/(?:vitest|jest|test)\s+(?:run\s+)?([^'"\n;]+)/i);
   if (test) return `test ${test[1].trim()}`;
   if (/matchAll?[\s\S]{0,180}(?:fail|error|test)/i.test(code)) {
@@ -641,6 +685,146 @@ function summarizeSpawnedCommand(command: string[]): string {
   return `run ${command.slice(0, 4).map(fileName).join(' ')}`;
 }
 
+function summarizeCommandText(command: string): string {
+  const normalized = normalizeSeparators(command)
+    .replace(/\s*(?:&&|\|\||;)\s*.*/, '')
+    .trim();
+  if (!normalized) return 'command';
+  return normalized.split(/\s+/).slice(0, 4).join(' ');
+}
+
+function commandProgram(command: string): string {
+  const summary = summarizeCommandText(command);
+  const first = summary.split(/\s+/)[0] || 'command';
+  return fileName(first);
+}
+
+function codeFileTarget(code: string): string {
+  const directPatterns = [
+    /(?:Bun\.file|Bun\.write|readFileSync|readFile|writeFileSync|writeFile)\(\s*['"]([^'"]+)['"]/,
+    /\bPath\(\s*['"]([^'"]+)['"]\s*\)/,
+  ];
+  for (const pattern of directPatterns) {
+    const match = code.match(pattern);
+    if (match?.[1] && looksLikeFilePath(match[1])) return match[1];
+  }
+
+  const assignments = [
+    ...code.matchAll(
+      /\b(?:const|let|var)\s+([a-zA-Z_$][\w$]*)\s*=\s*['"]([^'"]+)['"]/g,
+    ),
+  ];
+  for (const match of assignments) {
+    const variable = match[1];
+    const candidate = match[2];
+    if (!looksLikeFilePath(candidate)) continue;
+    const usedByFileApi = new RegExp(
+      `(?:Bun\\.file|Bun\\.write|readFileSync|readFile|writeFileSync|writeFile)\\(\\s*${escapeRegExp(variable)}\\b`,
+    ).test(code);
+    if (usedByFileApi) return candidate;
+  }
+  return '';
+}
+
+function summarizeShellCode(code: string, mode: string): string {
+  const trimmed = code.trim();
+  if (!trimmed || trimmed.includes('\n')) return '';
+  const command = trimmed.split(/\s*(?:&&|\|\||;)\s*/)[0]?.trim() ?? '';
+  if (!command) return '';
+  const program = command.match(/^([a-zA-Z0-9_.+/-]+)/)?.[1] ?? '';
+  if (!program) return '';
+  const basename = fileName(program);
+  const fileTokens =
+    command.match(/(?:^|\s)([^\s'"<>|]+\.[a-zA-Z0-9_-]{1,16})(?=\s|$)/g) ?? [];
+  const target = fileTokens
+    .map((value) => value.trim())
+    .filter((value) => looksLikeFilePath(value))
+    .at(-1);
+  if (
+    target &&
+    /^(?:cat|head|tail|sed|awk|grep|rg|less|more)$/.test(basename)
+  ) {
+    return `${mode === 'edit' ? 'edit' : 'read'} ${fileName(target)}`;
+  }
+  if (/^(?:rg|grep|find|fd)$/.test(basename)) return `search ${basename}`;
+  return '';
+}
+
+function looksLikeFilePath(value: string): boolean {
+  const candidate = value.trim();
+  if (!candidate || !isUsefulDisplayValue(candidate)) return false;
+  const base = fileName(candidate);
+  return /\.[a-zA-Z0-9_-]{1,16}$/.test(base) && !/^\d+(?:\.\d+)+$/.test(base);
+}
+
+function browserSuccessLabel(
+  tool: string,
+  input: Record<string, unknown> | null,
+): string {
+  const action =
+    clean(input?.action ?? input?.operation) || tool.split('.').at(-1) || '';
+  const normalized = action.toLowerCase();
+  const labels: Record<string, string> = {
+    open: 'page loaded',
+    navigate: 'page loaded',
+    snap: 'snapshot ready',
+    snapshot: 'snapshot ready',
+    eval: 'evaluation complete',
+    evaluate: 'evaluation complete',
+    test: 'test complete',
+    click: 'click complete',
+    type: 'input complete',
+    fill: 'input complete',
+    wait: 'wait complete',
+    status: 'browser ready',
+    close: 'browser closed',
+  };
+  return (
+    labels[normalized] ??
+    (genericSuccessLabel(normalized || 'browser', input) || 'browser complete')
+  );
+}
+
+function isGenericSuccessMessage(value: unknown): boolean {
+  const message = clean(value).toLowerCase();
+  return (
+    /^(?:command |mac command )?completed?$/.test(message) ||
+    /^(?:ok|success|successful|done)$/.test(message)
+  );
+}
+
+function genericSuccessLabel(
+  toolLabel: string,
+  input: Record<string, unknown> | null,
+): string {
+  const explicit = clean(input?.operation ?? input?.action).toLowerCase();
+  const action = explicit || toolLabel.split('.').at(-1)?.toLowerCase() || '';
+  const labels: Record<string, string> = {
+    read: 'read complete',
+    write: 'write complete',
+    edit: 'edit complete',
+    patch: 'patch applied',
+    list: 'list complete',
+    search: 'search complete',
+    find: 'search complete',
+    diff: 'diff complete',
+    verify: 'verification passed',
+    view: 'details loaded',
+    get: 'details loaded',
+    status: 'status loaded',
+    context: 'context loaded',
+    create: 'create complete',
+    update: 'update complete',
+    delete: 'delete complete',
+    remove: 'remove complete',
+    run: 'run complete',
+    call: 'call complete',
+  };
+  return (
+    labels[action] ?? (action ? `${action.replaceAll('_', ' ')} complete` : '')
+  );
+}
+
 function summarizeTests(output: string): string {
   const failed = output.match(/(?:Tests?|test)\s+(\d+)\s+failed/i);
   if (failed) return `${failed[1]} tests failed`;
@@ -684,8 +868,11 @@ function summarizeMcpAuthentication(
   const mode = authModeLabel(clean(input?.authMode));
   const route = clean(input?.route);
   const scope = clean(input?.requiredScope);
-  const prefix = tool === 'authorization.mcp' && !mode ? 'MCP authorization' : mode;
-  return [prefix, route, scope].filter(Boolean).join(' · ') || 'MCP authentication';
+  const prefix =
+    tool === 'authorization.mcp' && !mode ? 'MCP authorization' : mode;
+  return (
+    [prefix, route, scope].filter(Boolean).join(' · ') || 'MCP authentication'
+  );
 }
 
 function authModeLabel(value: string): string {
@@ -738,7 +925,9 @@ function normalizeSeparators(value: string): string {
 
 function humanPayload(value: unknown, fallback: string): string {
   const text = valueText(value);
-  return !isUsefulDisplayValue(text) || isSerializedStructure(text) ? fallback : text;
+  return !isUsefulDisplayValue(text) || isSerializedStructure(text)
+    ? fallback
+    : text;
 }
 
 function isUsefulDisplayValue(value: string): boolean {
