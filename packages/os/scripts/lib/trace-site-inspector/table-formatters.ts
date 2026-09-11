@@ -311,6 +311,14 @@ function summarizeInput(
     return [subject, reason].filter(Boolean).join(' · ');
   }
   if (tool === 'status') return 'workspace status';
+  if (tool.startsWith('lifecycle.')) {
+    const action = tool.split('.').at(-1) || 'status';
+    if (action === 'status') return 'runtime status';
+    if (action === 'update') {
+      return [clean(input?.channel), clean(input?.version)].filter(Boolean).join(' · ') || 'update runtime';
+    }
+    return lifecycleInputLabel(action, input);
+  }
   if (tool === 'mac.call') {
     const command = clean(input?.command);
     return command ? `run ${summarizeCommandText(command)}` : 'mac command';
@@ -333,6 +341,9 @@ function summarizeInput(
   }
   if (tool === 'fs.list') {
     return summarizePaths('list', input) || 'list files';
+  }
+  if (tool === 'fs.trash') {
+    return summarizePaths('trash', input) || 'trash file';
   }
   if (tool === 'fs.apply_patch') {
     const paths = patchPaths(input, row);
@@ -368,6 +379,29 @@ function summarizeInput(
   if (tool === 'verify') {
     return clean(input?.base ?? input?.branch) || 'current task';
   }
+  if (tool === 'release') {
+    const channel = clean(input?.channel);
+    const pr = clean(input?.pr);
+    const repo = clean(input?.repo);
+    const subject = pr ? `PR #${pr}` : repo;
+    return [channel, subject].filter(Boolean).join(' · ') || 'release runtime';
+  }
+  if (tool === 'session.start') {
+    const kind = clean(input?.kind) || 'session';
+    const subject = clean(input?.title ?? input?.path ?? input?.area);
+    return [kind, subject].filter(Boolean).join(' · ');
+  }
+  if (tool === 'explore') {
+    return clean(input?.query) || 'explore workspace';
+  }
+  if (tool === 'memory') {
+    return clean(input?.keyword ?? input?.query ?? input?.operation) || 'memory request';
+  }
+  if (tool === 'subagent') {
+    const provider = clean(input?.provider);
+    const task = clean(input?.task ?? input?.prompt ?? input?.query);
+    return [provider, task].filter(Boolean).join(' · ') || 'subagent request';
+  }
   if (tool.startsWith('task.')) {
     const command = stringArray(input?.command);
     if (command.length) return summarizeSpawnedCommand(command);
@@ -389,6 +423,10 @@ function summarizeInput(
     }
     const action = clean(input?.action);
     if (action) return action;
+    const derivedAction = tool.split('.').at(-1);
+    if (derivedAction && derivedAction !== 'browser') {
+      return `browser ${derivedAction}`;
+    }
     return humanPayload(row.input, 'browser request');
   }
   if (tool === 'stream.context') {
@@ -443,6 +481,13 @@ function summarizeOutput(
       clean(data?.stdout ?? result?.stdout ?? row.output),
     );
     if (testSummary) return testSummary;
+    const codeSummary = summarizeCode(clean(input?.code), clean(input?.mode));
+    if (codeSummary.startsWith('wait ')) return 'wait complete';
+    if (codeSummary.startsWith('search ')) return 'search complete';
+    if (codeSummary.startsWith('test ')) return 'test complete';
+    if (codeSummary.startsWith('run ') || codeSummary.startsWith('git ')) {
+      return 'command complete';
+    }
     if (mode === 'read') return 'read complete';
     if (mode === 'edit') return 'edit complete';
     if (mode === 'verify') return 'verification passed';
@@ -451,10 +496,23 @@ function summarizeOutput(
   if (tool === 'fs.read') return 'read complete';
   if (tool === 'fs.write') return 'write complete';
   if (tool === 'fs.list') return 'list complete';
+  if (tool === 'fs.trash') return 'trash complete';
   if (tool === 'fs.search' || tool === 'tools.search') return 'search complete';
   if (tool === 'status') return 'status loaded';
   if (tool === 'stream.context') return 'context loaded';
   if (tool === 'git.diff') return 'diff complete';
+  if (tool.startsWith('lifecycle.')) {
+    const action = tool.split('.').at(-1) || '';
+    if (action === 'status') return 'status loaded';
+    if (action === 'update') {
+      const lifecycleResult = record(data?.result ?? result?.result);
+      const version = clean(
+        lifecycleResult?.resultingVersion ?? lifecycleResult?.version ?? input?.version,
+      );
+      return version ? `updated ${version}` : 'update complete';
+    }
+    return genericSuccessLabel(tool, input) || 'lifecycle complete';
+  }
   if (tool === 'mac.call') {
     const command = clean(input?.command);
     return command ? `${commandProgram(command)} complete` : 'command complete';
@@ -469,6 +527,13 @@ function summarizeOutput(
       : 'patch applied';
   }
   if (tool === 'verify') return 'verification passed';
+  if (tool === 'release') {
+    const releaseResult = record(data?.result ?? result?.result);
+    const version = clean(releaseResult?.version ?? data?.version ?? result?.version);
+    return version ? `released ${version}` : 'release complete';
+  }
+  if (tool === 'session.start') return 'session started';
+  if (tool === 'explore') return 'search complete';
   if (tool === 'review.run') {
     const summary = record(data?.summary ?? result?.summary);
     const issues = numeric(summary?.blockingIssues ?? summary?.yourIssues);
@@ -586,6 +651,15 @@ function summarizeCode(code: string, mode: string): string {
   if (patchFiles.length) {
     return `edit ${patchFiles.length} ${patchFiles.length === 1 ? 'file' : 'files'} · ${patchFiles.join(', ')}`;
   }
+  const sleep = code.match(/\bBun\.sleep\(\s*(\d+(?:\.\d+)?)\s*\)/);
+  if (sleep) {
+    const milliseconds = Number(sleep[1]);
+    if (Number.isFinite(milliseconds) && milliseconds >= 1000) {
+      const seconds = milliseconds / 1000;
+      return `wait ${Number.isInteger(seconds) ? seconds : seconds.toFixed(1)}s`;
+    }
+    if (Number.isFinite(milliseconds)) return `wait ${milliseconds}ms`;
+  }
   const fileTarget = codeFileTarget(code);
   if (fileTarget) {
     const verb =
@@ -640,9 +714,20 @@ function isWorkpadActivity(
 }
 
 function spawnedCommand(code: string): string[] {
-  const array = code.match(
+  let array = code.match(
     /Bun\.spawn(?:Sync)?\(\s*\[([\s\S]{0,2400}?)\]\s*(?:,|\))/,
   )?.[1];
+  if (!array) {
+    const call = code.match(
+      /Bun\.spawn(?:Sync)?\(\s*([a-zA-Z_$][\w$]*)\s*(?:,|\))/,
+    );
+    if (call?.[1]) {
+      const variable = escapeRegExp(call[1]);
+      array = code.match(
+        new RegExp(`(?:const|let|var)\\s+${variable}\\s*=\\s*\\[([\\s\\S]{0,2400}?)\\]\\s*;`),
+      )?.[1];
+    }
+  }
   if (!array) return [];
   return [...array.matchAll(/"((?:\\.|[^"\\])*)"|'((?:\\.|[^'\\])*)'/g)]
     .map((match) => match[1] ?? match[2] ?? '')
@@ -840,12 +925,23 @@ function genericSuccessLabel(
     update: 'update complete',
     delete: 'delete complete',
     remove: 'remove complete',
+    trash: 'trash complete',
     run: 'run complete',
     call: 'call complete',
   };
   return (
     labels[action] ?? (action ? `${action.replaceAll('_', ' ')} complete` : '')
   );
+}
+
+function lifecycleInputLabel(
+  action: string,
+  input: Record<string, unknown> | null,
+): string {
+  const subject = clean(
+    input?.version ?? input?.channel ?? input?.service ?? input?.operation,
+  );
+  return [action.replaceAll('_', ' '), subject].filter(Boolean).join(' · ');
 }
 
 function summarizeTests(output: string): string {
