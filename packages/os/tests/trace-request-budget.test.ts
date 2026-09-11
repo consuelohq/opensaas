@@ -226,7 +226,8 @@ test('live fallback respects Retry-After, stays quiet when hidden, and retries t
   const page = await browser.newPage();
   try {
     await page.setContent('<div class="trxTablePane"></div>');
-    await page.clock.install();
+    await page.clock.install({ time: new Date('2026-09-11T00:00:00Z') });
+    await page.clock.pauseAt(new Date('2026-09-11T00:00:01Z'));
     await page.addScriptTag({ content: bundle });
     await page.evaluate(`(() => {
       window.calls = [];
@@ -272,7 +273,8 @@ test('one live owner uses SSE without polling and backs off when a stream closes
   const page = await browser.newPage();
   try {
     await page.setContent('<div class="trxTablePane"></div>');
-    await page.clock.install();
+    await page.clock.install({ time: new Date('2026-09-11T00:00:00Z') });
+    await page.clock.pauseAt(new Date('2026-09-11T00:00:01Z'));
     await page.addScriptTag({ content: bundle });
     await page.evaluate(`(() => {
       window.calls=0;window.streams=[];window.rows=[];
@@ -328,7 +330,8 @@ test('the shipped page shows throttling and does not issue requests when its bun
   let recentRequests = 0;
   try {
     page.on('pageerror', (error) => errors.push(error.message));
-    await page.clock.install();
+    await page.clock.install({ time: new Date('2026-09-11T00:00:00Z') });
+    await page.clock.pauseAt(new Date('2026-09-11T00:00:01Z'));
     await page.route('https://traces.test/**', async (route) => {
       if (new URL(route.request().url()).pathname === '/tracing') {
         await route.fulfill({ contentType: 'text/html', body: html });
