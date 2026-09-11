@@ -1,3 +1,4 @@
+import { POSIX_INSTALL_COMMAND } from '../lib/install-command';
 import { siteLinks } from './site-links';
 
 export type HomeAnnouncement = {
@@ -272,7 +273,7 @@ export const homeHeroRotatingAssistant: HomeHeroRotatingAssistantContent = {
   copyInstallAriaLabel: 'Copy install command',
 };
 
-export const INSTALL_COMMAND = 'curl -fsSL https://install.consuelohq.com/os | bash';
+export const INSTALL_COMMAND = POSIX_INSTALL_COMMAND;
 
 export const homeTabs: HomeTab[] = [
   {

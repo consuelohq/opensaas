@@ -2,13 +2,13 @@
 title: How steering works
 description: Understand the durable instructions agents load before using workspace tools.
 status: preview
-verifiedAt: 2026-08-12
+verifiedAt: 2026-09-09
 evidence:
   - source: packages/os/scripts/os.ts
     tests:
       - packages/os/tests/os-get-steering-trace.test.ts
       - packages/os/tests/steering-canonical-source.test.ts
-    runtime: Full steering assembly, node-routing context, trace recording, and repeated-call guards were exercised by focused tests on 2026-08-12.
+    runtime: Local-authoritative steering assembly, same-process file changes, node-routing context, trace recording, and repeated-call guards were exercised by focused tests on 2026-09-09.
 ---
 
 **Steering** is the durable instruction layer an agent loads before it starts work. It establishes the workspace identity, rules, decision process, and core tool-discovery path.
@@ -19,7 +19,7 @@ At the beginning of a conversation, call `get_steering`. The response combines:
 
 - current runtime identity;
 - current, default, and available node context when the request includes workspace routing information;
-- workspace steering Markdown;
+- user-owned Markdown from `~/Consuelo/Steering/`;
 - tool-discovery guidance;
 - the compact core tool manifest.
 
@@ -37,13 +37,16 @@ Use [Nodes](/nodes/) for the product model and [Routing work](/nodes/routing/) f
 
 Within the local steering directory, OS loads:
 
-1. `system_prompt.md`;
-2. `decision.md`;
-3. any other supported `.md` files in alphabetical order.
+1. `system.md` first;
+2. any other supported `.md` files in alphabetical order.
 
-The legacy lowercase file `steering.md` is intentionally ignored.
+`example-system.md`, `decision.md`, and the legacy lowercase file `steering.md` are intentionally ignored.
+
+The runtime does not prepend a repository-owned or bundled system prompt. The visible Steering directory is the source of truth.
 
 ## Refresh deliberately
+
+The local snapshot cache fingerprints the Steering directory and its files. Changes, additions, and removals are picked up on the next steering read without restarting Consuelo. An agent that already loaded steering into its current conversation still needs a deliberate refresh or a new conversation to receive the new text.
 
 Read one exact file when only one rule is needed. Use `refresh_steering` only when the workspace instructions have genuinely changed, and include a concrete reason. Refresh calls are also rate limited.
 

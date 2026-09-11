@@ -787,7 +787,7 @@ important docs:
 * root `AGENTS.md`
 * root `CODING-STANDARDS.md`
 * `packages/workspace/SCRIPTS.md`
-* `packages/workspace/STEERING.md`
+* user-owned `~/Consuelo/Steering/*.md`
 * relevant package docs and package-level agent files
 
 long script usage belongs in `packages/workspace/SCRIPTS.md`, not here.
@@ -929,7 +929,7 @@ when changing workspace tooling, scripts, task workflow, typed facade behavior, 
 
 use the owning source of truth:
 
-- doctrine goes in `packages/workspace/STEERING.md`
+- user/operator doctrine goes in `~/Consuelo/Steering/*.md`
 - decision-engine doctrine goes in `packages/workspace/decision.md`
 - procedural script usage goes in `packages/workspace/SCRIPTS.md`
 - typed tool contracts go in `packages/workspace/tooling/tool-manifest.json`
@@ -1044,7 +1044,7 @@ When changing workspace tooling, scripts, task workflow, typed facade behavior, 
 
 Use the owning source of truth:
 
-* Doctrine goes in `packages/workspace/STEERING.md`.
+* User/operator doctrine goes in `~/Consuelo/Steering/*.md`.
 * Decision-engine doctrine goes in `packages/workspace/decision.md`.
 * Procedural script usage goes in `packages/workspace/SCRIPTS.md`.
 * Typed tool contracts go in `packages/workspace/tooling/tool-manifest.json`.

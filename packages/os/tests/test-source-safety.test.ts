@@ -20,19 +20,23 @@ function defaultTestSources(directory: string): string[] {
   return sources.sort();
 }
 
-function prohibitedSteeringExamples(): string[] {
-  const steering = readFileSync(resolve(osRoot, 'steering', 'system_prompt.md'), 'utf8');
-  const heading = '## Absolute safety rule: never execute destructive-literal tests casually.';
-  const start = steering.indexOf(heading);
-  const end = steering.indexOf('\nThis applies even when the file appears to be testing guardrails.', start);
-  expect(start).toBeGreaterThanOrEqual(0);
-  expect(end).toBeGreaterThan(start);
-  return [...steering.slice(start, end).matchAll(/^- `([^`]+)`$/gm)].map((match) => match[1]);
+function prohibitedTestSourceLiterals(): string[] {
+  return [
+    ['rm', ' -rf', ' /'].join(''),
+    ['rm', ' -rf', ' ~'].join(''),
+    ['disk', 'util erase'].join(''),
+    ['mk', 'fs'].join(''),
+    ['dd', ' if='].join(''),
+    ['shut', 'down'].join(''),
+    ['re', 'boot'].join(''),
+    ['su', 'do'].join(''),
+    ['chmod', ' -R 777', ' /'].join(''),
+  ];
 }
 
 describe('default OS test source safety', () => {
-  it('contains none of the destructive literals prohibited by canonical steering', () => {
-    const prohibited = prohibitedSteeringExamples();
+  it('contains none of the destructive literals prohibited by product test policy', () => {
+    const prohibited = prohibitedTestSourceLiterals();
     expect(prohibited.length).toBeGreaterThan(0);
 
     const violations: Array<{ file: string; line: number; rule: number }> = [];

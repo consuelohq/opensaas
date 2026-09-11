@@ -140,6 +140,33 @@ describe('test selection registry', () => {
     }
   });
 
+  it('uses focused durable subagent contracts instead of the broad OS package suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/lib/subagent/lifecycle.ts',
+      '--changed-file',
+      'packages/os/tests/subagent-lifecycle-regressions.test.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const runtimeSuite = data.selectedSuites.find(
+      (suite) => suite.ruleId === 'os-subagent-runtime'
+        && suite.name === 'OS durable subagent runtime contracts',
+    );
+
+    expect(matchedRuleIds).toContain('os-subagent-runtime');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(runtimeSuite?.command).toEqual(expect.arrayContaining([
+      '--no-file-parallelism',
+      'packages/os/tests/subagent-orchestration-contract.test.ts',
+      'packages/os/tests/subagent-lifecycle-regressions.test.ts',
+      'packages/os/tests/subagent-executable-discovery.test.ts',
+      'packages/os/tests/subagent-runner-termination.test.ts',
+    ]));
+  });
+
   it('keeps Dialer integration regressions on current focused OS rules', () => {
     const rulesPath = path.resolve(
       path.dirname(fileURLToPath(import.meta.url)),
@@ -655,6 +682,30 @@ describe('test selection registry', () => {
       'OS launcher copy interaction contracts',
       'OS launcher Sites materialization contracts',
       'Consuelo website launcher Astro check',
+    ]);
+  });
+
+  it('uses focused public Windows installer and landing-command contracts', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/workspace/scripts/os-release-install.ts',
+      '--changed-file',
+      'packages/consuelo-website/src/components/home/HomeHero.astro',
+      '--changed-file',
+      'packages/consuelo-website/src/lib/install-command.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-public-windows-installer-and-landing-command');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(suiteNames).toEqual([
+      'Hosted shell and PowerShell installer Worker contracts',
+      'Platform-aware landing install command contracts',
+      'Consuelo website Astro check',
     ]);
   });
 
@@ -1493,6 +1544,96 @@ describe('test selection registry', () => {
     }
   });
 
+  it('should provision website package dependencies when an Astro suite runs on a clean checkout', () => {
+    const repo = fs.mkdtempSync(path.join(os.tmpdir(), 'test-selection-website-deps-'));
+    const websiteRoot = path.join(repo, 'packages', 'consuelo-website');
+    const fakeBin = path.join(repo, 'fake-bin');
+    const registryPath = path.join(repo, 'registry.json');
+    const logPath = path.join(repo, 'bun-calls.jsonl');
+
+    try {
+      fs.mkdirSync(websiteRoot, { recursive: true });
+      fs.mkdirSync(fakeBin, { recursive: true });
+      fs.writeFileSync(
+        path.join(websiteRoot, 'package.json'),
+        JSON.stringify({ dependencies: { astro: '6.0.2' } }),
+      );
+      fs.writeFileSync(
+        registryPath,
+        JSON.stringify({
+          version: 1,
+          rules: [
+            {
+              id: 'website-clean-checkout',
+              source: ['packages/consuelo-website/src/**'],
+              critical: true,
+              origin: 'test',
+              tests: [
+                {
+                  name: 'clean website Astro suite',
+                  command: [
+                    'bun',
+                    'run',
+                    '--cwd',
+                    'packages/consuelo-website',
+                    'astro',
+                    '--',
+                    'check',
+                  ],
+                },
+              ],
+            },
+          ],
+        }),
+      );
+      const fakeBun = path.join(fakeBin, 'bun');
+      fs.writeFileSync(
+        fakeBun,
+        `#!/usr/bin/env node\nconst fs = require('node:fs');\nfs.appendFileSync(process.env.TEST_SELECTION_FAKE_BUN_LOG, JSON.stringify({ cwd: process.cwd(), args: process.argv.slice(2) }) + '\\n');\n`,
+      );
+      fs.chmodSync(fakeBun, 0o755);
+
+      const result = run(
+        [
+          'check',
+          '--registry',
+          registryPath,
+          '--changed-file',
+          'packages/consuelo-website/src/pages/index.astro',
+          '--run',
+          '--json',
+        ],
+        {
+          cwd: repo,
+          env: {
+            PATH: `${fakeBin}:${process.env.PATH || ''}`,
+            TEST_SELECTION_FAKE_BUN_LOG: logPath,
+          },
+        },
+      );
+      const data = json(result);
+      const calls = fs.readFileSync(logPath, 'utf8')
+        .trim()
+        .split('\n')
+        .map((line) => JSON.parse(line));
+
+      expect(data.failedSuites).toHaveLength(0);
+      expect(fs.realpathSync(calls[0].cwd)).toBe(fs.realpathSync(websiteRoot));
+      expect(calls[0].args).toEqual(['install', '--frozen-lockfile']);
+      expect(fs.realpathSync(calls[1].cwd)).toBe(fs.realpathSync(repo));
+      expect(calls[1].args).toEqual([
+        'run',
+        '--cwd',
+        'packages/consuelo-website',
+        'astro',
+        '--',
+        'check',
+      ]);
+    } finally {
+      fs.rmSync(repo, { recursive: true, force: true });
+    }
+  });
+
   it('fails timed out suite commands', () => {
     const registryPath = path.join(
       os.tmpdir(),
@@ -2220,6 +2361,30 @@ describe('test selection registry', () => {
       'workspace-session-integration',
     ]) expect(matchedRuleIds).toContain(ruleId);
     expect(suiteNames).toContain('OS media contracts');
+    expect(suiteNames).not.toContain('@consuelo/os package test');
+  });
+
+  it('uses focused local-authoritative steering contracts instead of the broad OS package suite', () => {
+    const changedFiles = [
+      'packages/os/scripts/lib/steering-snapshot-cache.ts',
+      'packages/os/scripts/lib/managed-user-content.ts',
+      'packages/os/scripts/lib/managed-user-content-release.ts',
+      'packages/os/scripts/os.ts',
+      'packages/os/steering/system_prompt.md',
+      'packages/workspace/STEERING.md',
+      'packages/workspace/server.py',
+    ];
+    const args = ['check'];
+    for (const changedFile of changedFiles) args.push('--changed-file', changedFile);
+    args.push('--json');
+    const data = json(run(args));
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-local-steering-authority');
+    expect(suiteNames).toContain('OS local-authoritative steering ownership contract');
+    expect(suiteNames).toContain('OS managed user steering contracts');
+    expect(suiteNames).toContain('Workspace steering guard contracts');
     expect(suiteNames).not.toContain('@consuelo/os package test');
   });
 

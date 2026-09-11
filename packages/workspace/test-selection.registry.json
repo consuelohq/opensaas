@@ -2,11 +2,11 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2708,
-    "mappedTestCount": 2624,
+    "testFileCount": 2710,
+    "mappedTestCount": 2626,
     "unmappedTestCount": 84,
-    "ruleCount": 81,
-    "explicitRuleCount": 62,
+    "ruleCount": 83,
+    "explicitRuleCount": 64,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
@@ -45,6 +45,7 @@
       "packages/twenty-front/src/modules/views/utils": 14,
       "packages/twenty-server/test/integration/metadata/suites/object-metadata/utils": 14,
       "packages/twenty-server/test/integration/metadata/suites/skill/utils": 14,
+      "packages/consuelo-website/tests": 13,
       "packages/lead-connector/src/embed": 13,
       "packages/os/tests/distribution": 13,
       "packages/twenty-front/src/modules/navigation-menu-item/utils": 13,
@@ -57,7 +58,6 @@
       "packages/twenty-server/test/integration/metadata/suites/view-group/utils": 12,
       "packages/twenty-server/test/integration/metadata/suites/view/utils": 12,
       "packages/twenty-server/test/integration/twenty-config/utils": 12,
-      "packages/consuelo-website/tests": 11,
       "packages/documentation/tests": 11,
       "packages/twenty-front/src/modules/page-layout/hooks": 11,
       "packages/twenty-front/src/modules/workflow/workflow-diagram/utils": 11,
@@ -636,7 +636,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 604,
+      "test": 606,
       "spec": 161,
       "tests-dir": 8,
       "other": 7,
@@ -767,6 +767,94 @@
       ],
       "critical": true,
       "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-local-steering-authority",
+      "source": [
+        "packages/os/scripts/lib/steering-snapshot-cache.ts",
+        "packages/os/scripts/lib/managed-user-content.ts",
+        "packages/os/scripts/lib/managed-user-content-release.ts",
+        "packages/os/scripts/lib/install-state.ts",
+        "packages/os/scripts/lib/distribution/runtime-bundle.ts",
+        "packages/os/steering/**",
+        "packages/os/tests/steering-canonical-source.test.ts",
+        "packages/os/tests/managed-user-content.test.ts",
+        "packages/os/tests/test-source-safety.test.ts",
+        "packages/os/tests/session-integration-guidance.test.ts",
+        "packages/os/tests/install-state.test.ts",
+        "packages/os/tests/lifecycle-engine.test.ts",
+        "packages/os/tests/lifecycle-retention-uninstall.test.ts",
+        "packages/os/tests/distribution/runtime-bundle.test.ts",
+        "packages/os/tests/distribution/release-publication-preparer.test.ts",
+        "packages/os/plans/consuelo-os-foundation/plan.md",
+        "packages/os/plans/consuelo-os-foundation/workers/07-steering-runtime-context.md",
+        "packages/workspace/STEERING.md",
+        "packages/workspace/server.py",
+        "packages/workspace/tests/server_call_test.py"
+      ],
+      "tests": [
+        {
+          "name": "OS local-authoritative steering ownership contract",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/steering-canonical-source.test.ts"
+          ]
+        },
+        {
+          "name": "OS managed user steering contracts",
+          "command": [
+            "bunx",
+            "vitest",
+            "run",
+            "packages/os/tests/managed-user-content.test.ts"
+          ]
+        },
+        {
+          "name": "OS steering session guidance contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/session-integration-guidance.test.ts"
+          ]
+        },
+        {
+          "name": "OS local steering install and release contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/install-state.test.ts",
+            "tests/distribution/release-publication-preparer.test.ts"
+          ]
+        },
+        {
+          "name": "Workspace steering guard contracts",
+          "command": [
+            "python3",
+            "packages/workspace/tests/server_call_test.py"
+          ]
+        },
+        {
+          "name": "OS local-authoritative steering syntax",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Steering ownership, seeding, caching, operator context, and release-boundary changes must prove that visible user steering is authoritative and no private repository prompt is shipped.",
       "origin": "explicit"
     },
     {
@@ -1574,6 +1662,55 @@
       "critical": true,
       "exclusive": true,
       "reason": "Lifecycle updater, managed ingress dependency convergence, Caddy topology reload decisions, immutable release handoff, worker drain/load-balancer evacuation, detached activation, platform restart, and discoverable lifecycle-tool changes must run the exact lifecycle/facade/tool contracts without selecting unrelated package-wide OS tests.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-public-windows-installer-and-landing-command",
+      "source": [
+        "packages/workspace/scripts/os-release-install.ts",
+        "packages/os/tests/hosted-release-worker-contract.test.ts",
+        "packages/consuelo-website/src/components/home/HomeHero.astro",
+        "packages/consuelo-website/src/data/home-content.ts",
+        "packages/consuelo-website/src/lib/install-command.ts",
+        "packages/consuelo-website/tests/install-command.test.ts",
+        "packages/consuelo-website/tests/install-command-source.test.js"
+      ],
+      "tests": [
+        {
+          "name": "Hosted shell and PowerShell installer Worker contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/hosted-release-worker-contract.test.ts"
+          ]
+        },
+        {
+          "name": "Platform-aware landing install command contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/consuelo-website/tests/install-command.test.ts",
+            "packages/consuelo-website/tests/install-command-source.test.js"
+          ]
+        },
+        {
+          "name": "Consuelo website Astro check",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/consuelo-website",
+            "astro",
+            "--",
+            "check"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Hosted Windows installer and landing-command changes must prove signed stable bundle binding, Windows/macOS/Linux command selection, copy behavior, and Astro source validity without selecting unrelated package-wide OS tests.",
       "origin": "explicit"
     },
     {
@@ -2809,7 +2946,6 @@
         "packages/os/skills/task/SKILL.md",
         "packages/workspace/task.md",
         "packages/workspace/senior-engineer.md",
-        "packages/os/steering/system_prompt.md",
         "packages/workspace/scripts/session-start.ts",
         "packages/os/tests/session-integration-guidance.test.ts",
         "packages/os/tests/task-hook-workflow-contract.test.ts",
@@ -2900,17 +3036,22 @@
         "packages/os/scripts/lib/subagent/**",
         "packages/os/tools/subagent/**",
         "packages/os/tests/subagent-orchestration-contract.test.ts",
+        "packages/os/tests/subagent-lifecycle-regressions.test.ts",
+        "packages/os/tests/subagent-executable-discovery.test.ts",
         "packages/os/tests/subagent-runner-termination.test.ts"
       ],
       "tests": [
         {
-          "name": "OS durable subagent orchestration contracts",
+          "name": "OS durable subagent runtime contracts",
           "command": [
             "bun",
             "x",
             "vitest",
             "run",
+            "--no-file-parallelism",
             "packages/os/tests/subagent-orchestration-contract.test.ts",
+            "packages/os/tests/subagent-lifecycle-regressions.test.ts",
+            "packages/os/tests/subagent-executable-discovery.test.ts",
             "packages/os/tests/subagent-runner-termination.test.ts"
           ]
         },
@@ -3937,6 +4078,16 @@
     },
     {
       "path": "packages/consuelo-website/tests/homepage-responsive.test.mjs",
+      "group": "packages/consuelo-website/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/consuelo-website/tests/install-command-source.test.js",
+      "group": "packages/consuelo-website/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/consuelo-website/tests/install-command.test.ts",
       "group": "packages/consuelo-website/tests",
       "kind": "test"
     },
