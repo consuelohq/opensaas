@@ -388,7 +388,7 @@ describe('OS-owned Trace Burn table formatting', () => {
     expect(formatted.inputLabel).not.toBe('request details');
   });
 
-  it('gives common trace tools concise semantic input and output labels', () => {
+  it('should provide semantic labels when formatting common trace tools', () => {
     const cases: Array<{
       name: string;
       input?: Record<string, unknown>;
@@ -575,7 +575,7 @@ describe('OS-owned Trace Burn table formatting', () => {
     }
   });
 
-  it('extracts concrete file targets from indirect and shell code calls', () => {
+  it('should extract file targets when code calls use indirect or shell paths', () => {
     const bunRead = formatTraceTableRow(
       record({
         name: 'code.call',
@@ -606,13 +606,46 @@ describe('OS-owned Trace Burn table formatting', () => {
         }),
       }),
     );
+    const bunWrite = formatTraceTableRow(
+      record({
+        name: 'code.call',
+        input: JSON.stringify({
+          language: 'bun',
+          mode: 'read',
+          code: "await Bun.write('/tmp/settings.json', 'ok');",
+        }),
+      }),
+    );
+    const rgSearch = formatTraceTableRow(
+      record({
+        name: 'code.call',
+        input: JSON.stringify({
+          language: 'bash',
+          mode: 'read',
+          code: 'rg needle packages/os/scripts/cli.ts',
+        }),
+      }),
+    );
+    const grepSearch = formatTraceTableRow(
+      record({
+        name: 'code.call',
+        input: JSON.stringify({
+          language: 'bash',
+          mode: 'read',
+          code: 'grep needle packages/os/scripts/cli.ts',
+        }),
+      }),
+    );
 
     expect(bunRead.inputLabel).toBe('read config-overrides.json');
     expect(pythonEdit.inputLabel).toBe('edit ba-plus-server.ts');
     expect(bashRead.inputLabel).toBe('read cli.ts');
+    expect(bunWrite.inputLabel).toBe('write settings.json');
+    expect(rgSearch.inputLabel).toBe('search needle');
+    expect(grepSearch.inputLabel).toBe('search needle');
   });
 
-  it('does not let generic success messages overwrite a more useful action summary', () => {
+  it('should preserve action summaries when results contain generic success messages', () => {
     for (const message of [
       'command completed',
       'mac command completed',

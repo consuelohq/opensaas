@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_d295ddf11aab",
+  "tmuxSession": "opensaas-os-fix-trace-summary-review-semantics-d295ddf1",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-trace-summary-review-semantics",
+  "branch": "task/os/fix-trace-summary-review-semantics",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-trace-summary-review-semantics",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-trace-summary-review-semantics",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2457,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2457",
+  "createdAt": "2026-09-11T04:53:49.687Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-trace-summary-review-semantics/.task/os/fix-trace-summary-review-semantics/session.json"
+}

@@ -586,21 +586,17 @@ function summarizeCode(code: string, mode: string): string {
   if (patchFiles.length) {
     return `edit ${patchFiles.length} ${patchFiles.length === 1 ? 'file' : 'files'} · ${patchFiles.join(', ')}`;
   }
-  const indirectFile = codeFileTarget(code);
-  if (indirectFile) {
-    return `${mode === 'edit' ? 'edit' : mode === 'verify' ? 'verify' : 'read'} ${fileName(indirectFile)}`;
-  }
-  const assignedWrite = code.match(
-    /const\s+([a-zA-Z_$][\w$]*)\s*=\s*['"]([^'"]+)['"][\s\S]{0,800}?Bun\.write\(\s*\1\b/,
-  );
-  const directWrite = code.match(/Bun\.write\(\s*['"]([^'"]+)['"]/);
-  const writePath = assignedWrite?.[2] ?? directWrite?.[1];
-  if (writePath) return `edit ${fileName(writePath)}`;
-  const file = code.match(
-    /(?:Bun\.file|readFileSync|readFile)\(\s*['"]([^'"]+)['"]/,
-  );
-  if (file) {
-    return `${mode === 'edit' ? 'edit' : 'read'} ${fileName(file[1])}`;
+  const fileTarget = codeFileTarget(code);
+  if (fileTarget) {
+    const verb =
+      fileTarget.operation === 'write'
+        ? 'write'
+        : mode === 'edit'
+          ? 'edit'
+          : mode === 'verify'
+            ? 'verify'
+            : 'read';
+    return `${verb} ${fileName(fileTarget.path)}`;
   }
   const command = spawnedCommand(code);
   if (command.length) return summarizeSpawnedCommand(command);
@@ -699,14 +695,31 @@ function commandProgram(command: string): string {
   return fileName(first);
 }
 
-function codeFileTarget(code: string): string {
-  const directPatterns = [
-    /(?:Bun\.file|Bun\.write|readFileSync|readFile|writeFileSync|writeFile)\(\s*['"]([^'"]+)['"]/,
-    /\bPath\(\s*['"]([^'"]+)['"]\s*\)/,
+function codeFileTarget(
+  code: string,
+): { path: string; operation: 'read' | 'write' | 'path' } | null {
+  const directPatterns: Array<{
+    operation: 'read' | 'write' | 'path';
+    pattern: RegExp;
+  }> = [
+    {
+      operation: 'write',
+      pattern: /(?:Bun\.write|writeFileSync|writeFile)\(\s*['"]([^'"]+)['"]/,
+    },
+    {
+      operation: 'read',
+      pattern: /(?:Bun\.file|readFileSync|readFile)\(\s*['"]([^'"]+)['"]/,
+    },
+    {
+      operation: 'path',
+      pattern: /\bPath\(\s*['"]([^'"]+)['"]\s*\)/,
+    },
   ];
-  for (const pattern of directPatterns) {
+  for (const { operation, pattern } of directPatterns) {
     const match = code.match(pattern);
-    if (match?.[1] && looksLikeFilePath(match[1])) return match[1];
+    if (match?.[1] && looksLikeFilePath(match[1])) {
+      return { path: match[1], operation };
+    }
   }
 
   const assignments = [
@@ -718,12 +731,16 @@ function codeFileTarget(code: string): string {
     const variable = match[1];
     const candidate = match[2];
     if (!looksLikeFilePath(candidate)) continue;
-    const usedByFileApi = new RegExp(
-      `(?:Bun\\.file|Bun\\.write|readFileSync|readFile|writeFileSync|writeFile)\\(\\s*${escapeRegExp(variable)}\\b`,
+    const usedByWriteApi = new RegExp(
+      `(?:Bun\\.write|writeFileSync|writeFile)\\(\\s*${escapeRegExp(variable)}\\b`,
     ).test(code);
-    if (usedByFileApi) return candidate;
+    if (usedByWriteApi) return { path: candidate, operation: 'write' };
+    const usedByReadApi = new RegExp(
+      `(?:Bun\\.file|readFileSync|readFile)\\(\\s*${escapeRegExp(variable)}\\b`,
+    ).test(code);
+    if (usedByReadApi) return { path: candidate, operation: 'read' };
   }
-  return '';
+  return null;
 }
 
 function summarizeShellCode(code: string, mode: string): string {
@@ -740,13 +757,19 @@ function summarizeShellCode(code: string, mode: string): string {
     .map((value) => value.trim())
     .filter((value) => looksLikeFilePath(value))
     .at(-1);
-  if (
-    target &&
-    /^(?:cat|head|tail|sed|awk|grep|rg|less|more)$/.test(basename)
-  ) {
+  if (/^(?:rg|grep)$/.test(basename)) {
+    const query = command
+      .split(/\s+/)
+      .slice(1)
+      .find((value) => !value.startsWith('-') && !looksLikeFilePath(value));
+    return query
+      ? `search ${query.replace(/^['"]|['"]$/g, '')}`
+      : `search ${basename}`;
+  }
+  if (target && /^(?:cat|head|tail|sed|awk|less|more)$/.test(basename)) {
     return `${mode === 'edit' ? 'edit' : 'read'} ${fileName(target)}`;
   }
-  if (/^(?:rg|grep|find|fd)$/.test(basename)) return `search ${basename}`;
+  if (/^(?:find|fd)$/.test(basename)) return `search ${basename}`;
   return '';
 }
 
