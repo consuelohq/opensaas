@@ -149,7 +149,7 @@ test('cursor SSE sends real frames and remains open for subsequent local reads u
   expect(reads).toBe(stoppedAt);
 }, 10000);
 
-test('sparse filtered history advances exactly once per explicit load', async () => {
+test('an underfilled page advances once per downward scroll gesture without a button', async () => {
   const page = await browser.newPage();
   try {
     await page.setContent(
@@ -164,18 +164,27 @@ test('sparse filtered history advances exactly once per explicit load', async ()
     })()`);
     await page.waitForTimeout(100);
     expect(await page.evaluate('window.requests.length')).toBe(0);
-    await page.getByRole('button', { name: 'Load older traces' }).click();
+    await page.locator('[data-trace-virtual-list]').hover();
+    await page.mouse.wheel(0, 300);
+    await page.waitForFunction('window.requests.length === 1');
     expect(await page.evaluate('window.requests.length')).toBe(1);
     await page.waitForTimeout(100);
     expect(
-      await page.getByRole('button', { name: 'Loading…' }).isDisabled(),
-    ).toBe(true);
+      await page.locator('[data-trace-virtual-list]').getAttribute('aria-busy'),
+    ).toBe('true');
+    expect(await page.locator('[data-trace-load-older]').count()).toBe(0);
+    await page.evaluate(`document.querySelector('[data-trace-virtual-list]').addEventListener('wheel', () => { window.pendingWheelReceived = true; }, {once:true})`);
+    await page.mouse.wheel(0, 300);
+    await page.waitForFunction('window.pendingWheelReceived === true');
+    expect(await page.evaluate('window.requests.length')).toBe(1);
     await page.evaluate(
       "window.requests[0].accept([{id:'older',tool:'fs.read'}], 'id:next')",
     );
     await page.waitForTimeout(100);
     expect(await page.evaluate('window.requests.length')).toBe(1);
-    await page.getByRole('button', { name: 'Load older traces' }).click();
+    await page.locator('[data-trace-virtual-list]').hover();
+    await page.mouse.wheel(0, 300);
+    await page.waitForFunction('window.requests.length === 2');
     expect(await page.evaluate('window.requests.length')).toBe(2);
   } finally {
     await page.close();
@@ -533,3 +542,135 @@ test('the shipped page hydrates and receives native EventSource deltas over one 
     await server.stop(true);
   }
 }, 15000);
+
+test('the shipped page shows persisted history after an idle day with its header and rows inside the viewport', async () => {
+  const { buildObservabilityTracesSite } =
+    await import('../scripts/lib/observability-traces-site');
+  const { createLocalTraceSitesReadBackend } =
+    await import('../scripts/lib/trace-sites-local-read-backend');
+  const { ensureTraceDatabaseSchema, openTraceDatabase } =
+    await import('../scripts/lib/trace-database-schema');
+  const dbPath = join(temp, 'idle-history.db');
+  ensureTraceDatabaseSchema(dbPath);
+  const db = openTraceDatabase(dbPath);
+  const insert = db.query(
+    'INSERT INTO tool_traces (id, trace_id, ts, tool, ok, status, code, exit_code, source) VALUES (?, ?, ?, ?, ?, ?, ?, ?, "test")',
+  );
+  insert.run(
+    'yesterday',
+    'yesterday',
+    '2026-09-11T12:00:00Z',
+    'fs.read',
+    1,
+    'ok',
+    'OK',
+    0,
+  );
+  for (let i = 0; i < 250; i++)
+    insert.run(
+      'auth-' + i,
+      'auth-' + i,
+      '2026-09-12T12:00:00Z',
+      'authentication.mcp',
+      1,
+      'ok',
+      'OK',
+      0,
+    );
+  insert.run(
+    'denied',
+    'denied',
+    '2026-09-12T13:00:00Z',
+    'authentication.mcp',
+    0,
+    'error',
+    'DENIED',
+    1,
+  );
+  insert.run('last-auth', 'last-auth', '2026-09-12T14:00:00Z', 'authentication.mcp', 1, 'ok', 'OK', 0);
+  insert.run('success-override', 'success-override', '2026-09-12T14:01:00Z', 'authentication.mcp', 1, 'error', 'OK', 1);
+  insert.run('success-fallback', 'success-fallback', '2026-09-12T14:02:00Z', 'authentication.mcp', 0, 'ok', 'OK', 0);
+  insert.run('error-code', 'error-code', '2026-09-12T14:03:00Z', 'authentication.mcp', 1, 'ok', 'DENIED', 0);
+  db.close();
+  const backend = createLocalTraceSitesReadBackend({ dbPath });
+  const endpoints = createTraceSitesGatewayLiveEndpoints({
+    backend,
+    resolveScope: traceGatewayScopeFromHeaders,
+  });
+  let historyRequests = 0;
+  let streamCursor: string | null = null;
+  const page = await browser.newPage({
+    viewport: { width: 1280, height: 720 },
+  });
+  try {
+    await page.route('https://traces.test/**', async (route) => {
+      const url = new URL(route.request().url());
+      if (url.pathname === '/tracing')
+        return route.fulfill({
+          contentType: 'text/html',
+          body: buildObservabilityTracesSite(),
+        });
+      if (url.pathname === '/gateway/traces/events') streamCursor = url.searchParams.get('cursor');
+      if (url.pathname !== '/gateway/traces/recent')
+        return route.fulfill({ status: 503, body: 'No stream for this test' });
+      historyRequests++;
+      const response = await endpoints.handle(
+        new Request(
+          'https://testing.consuelohq.com' + url.pathname + url.search,
+        ),
+      );
+      await route.fulfill({
+        status: response.status,
+        contentType: 'application/json',
+        body: await response.text(),
+      });
+    });
+    await page.goto('https://traces.test/tracing', {
+      waitUntil: 'domcontentloaded',
+    });
+    await page.waitForFunction(
+      'window.__traceVirtualList?.diagnostics()?.retained > 0',
+    );
+    const geometry = await page.evaluate(() => {
+      const rect = (selector: string) =>
+        document.querySelector(selector)!.getBoundingClientRect().toJSON();
+      return {
+        pane: rect('.trxTablePane'),
+        header: rect('.trxHead'),
+        scroller: rect('[data-trace-virtual-list]'),
+        row: rect('.trxRow'),
+      };
+    });
+    expect(geometry.header.top - geometry.pane.top).toBeLessThan(50);
+    expect(geometry.scroller.height).toBeGreaterThan(400);
+    expect(geometry.row.top).toBeGreaterThanOrEqual(geometry.header.bottom - 1);
+    expect(geometry.row.bottom).toBeLessThan(geometry.scroller.bottom);
+    expect(
+      await page.evaluate("window.__traceRowsByTraceId.has('yesterday')"),
+    ).toBe(true);
+    expect(
+      await page.evaluate("window.__traceRowsByTraceId.has('denied')"),
+    ).toBe(true);
+    expect(await page.locator('[data-trace-load-older]').count()).toBe(0);
+    expect(historyRequests).toBe(1);
+    expect(streamCursor).toBe('000000000256');
+    expect(await page.evaluate("window.__traceRowsByTraceId.has('error-code')")).toBe(true);
+    expect(await page.evaluate("window.__traceRowsByTraceId.has('success-override') || window.__traceRowsByTraceId.has('success-fallback')")).toBe(false);
+  } finally {
+    await page.close();
+  }
+}, 15000);
+
+
+test('an unhandled history search clears its loading state', async () => {
+  const page = await browser.newPage();
+  try {
+    await page.setContent('<div data-trace-virtual-list style="height:300px;overflow:auto"></div>');
+    await page.addScriptTag({ content: bundle });
+    await page.evaluate("window.__traceRowsByTraceId = new Map(); window.TraceList.installTraceVirtualList()");
+    await page.waitForFunction('window.__traceVirtualList?.diagnostics()');
+    await page.evaluate("window.__traceVirtualList.setQuery('tool:fs.read')");
+    await page.waitForFunction("document.querySelector('[data-trace-virtual-list]').dataset.traceSearch === 'unhandled'");
+    expect(await page.locator('[data-trace-virtual-list]').getAttribute('aria-busy')).toBe('false');
+  } finally { await page.close(); }
+});
