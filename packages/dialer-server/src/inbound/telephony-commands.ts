@@ -45,7 +45,11 @@ export const createTelephonyCommands = (options: TelephonyOptions) => {
           state.workspaceId,
           owner.requestId,
         );
-        if (!session || session.mode !== 'waiting') return;
+        if (
+          !session ||
+          !['waiting', 'callback_requested'].includes(session.mode)
+        )
+          return;
         const effects = await readTelephonyEffects(
           client,
           state.workspaceId,
@@ -102,6 +106,7 @@ export const createTelephonyCommands = (options: TelephonyOptions) => {
             { clock: options.clock },
           );
         } else if (
+          session.mode === 'waiting' &&
           owner.phase === 'connecting' &&
           owner.winnerEndpointId &&
           !effects.some((effect) => effect.kind === 'bridge_caller')
@@ -294,14 +299,18 @@ export const createTelephonyCommands = (options: TelephonyOptions) => {
             if (!session || !state?.owner)
               throw new Error('Effect no longer owns capacity');
             const owner = state.owner;
+            const sessionActive = ['waiting', 'callback_requested'].includes(
+              session.mode,
+            );
             const allowed =
               effect.kind === 'terminate' ||
-              (session.mode === 'waiting' &&
+              (sessionActive &&
                 (effect.kind === 'offer'
                   ? owner.phase === 'offering' &&
                     (options.clock?.() ?? new Date().toISOString()) <
                       owner.offerExpiresAt
-                  : owner.phase === 'connecting' &&
+                  : session.mode === 'waiting' &&
+                    owner.phase === 'connecting' &&
                     owner.winnerEndpointId === effect.endpoint_id));
             if (!allowed) {
               await client.query(

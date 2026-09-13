@@ -1,3 +1,4 @@
+import { CALLBACK_MIGRATION_ID } from '../inbound/callback-migration';
 import { TELEPHONY_MIGRATION_ID } from '../inbound/telephony-migration';
 import { ROUTING_MIGRATION_ID } from '../inbound/routing-migration';
 import assert from 'node:assert/strict';
@@ -46,6 +47,7 @@ export const verifyLearningRollbackChain = async (
     );
     await client.query('ROLLBACK TO SAVEPOINT newer_migration_guard');
     for (const id of [
+      CALLBACK_MIGRATION_ID,
       TELEPHONY_MIGRATION_ID,
       ROUTING_MIGRATION_ID,
       REP_CAPACITY_MIGRATION_ID,
@@ -84,7 +86,7 @@ export const verifyLearningRollbackChain = async (
     const restored = await client.query<{ count: number }>(
       'SELECT COUNT(*)::int AS count FROM consuelo_dialer_schema_migrations',
     );
-    assert.equal(restored.rows[0]?.count, 9);
+    assert.equal(restored.rows[0]?.count, 10);
     const emptyLearning = await client.query<{ count: number }>(
       'SELECT COUNT(*)::int AS count FROM dialer_learning_observations',
     );

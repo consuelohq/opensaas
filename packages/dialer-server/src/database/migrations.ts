@@ -1,4 +1,9 @@
 import {
+  CALLBACK_MIGRATION_ID,
+  CREATE_CALLBACK_SQL,
+  DROP_CALLBACK_SQL,
+} from '../inbound/callback-migration';
+import {
   TELEPHONY_MIGRATION_ID,
   CREATE_TELEPHONY_SQL,
   DROP_TELEPHONY_SQL,
@@ -358,6 +363,11 @@ const migrations: readonly Migration[] = [
       database.query(CREATE_TELEPHONY_SQL).then(() => undefined),
     down: (database) =>
       database.query(DROP_TELEPHONY_SQL).then(() => undefined),
+  },
+  {
+    id: CALLBACK_MIGRATION_ID,
+    up: (database) => database.query(CREATE_CALLBACK_SQL).then(() => undefined),
+    down: (database) => database.query(DROP_CALLBACK_SQL).then(() => undefined),
   },
 ];
 

@@ -8,13 +8,21 @@ import {
 } from './telephony-twiml';
 
 describe('inbound transport boundaries', () => {
-  it('keeps the caller on a bounded wait with explicit choices', () => {
-    const xml = waitingTwiml('https://voice.example/wait', true);
-    expect(xml).toContain('<Gather');
-    expect(xml).toContain('numDigits="1"');
-    expect(xml).toContain('<Redirect');
-    expect(xml).not.toContain('<Number');
-    expect(xml).not.toContain('<Record');
+  it('keeps callback language hidden unless the number has an active policy', () => {
+    const disabled = waitingTwiml('https://voice.example/wait', true);
+    expect(disabled).toContain('<Gather');
+    expect(disabled).toContain('<Redirect');
+    expect(disabled).not.toContain('request a callback');
+    const enabled = waitingTwiml(
+      'https://voice.example/wait',
+      true,
+      false,
+      'We can call you back & keep your place.',
+    );
+    expect(enabled).toContain('We can call you back &amp; keep your place.');
+    expect(enabled).toContain('Press 1 to request a callback.');
+    expect(enabled).not.toContain('<Number');
+    expect(enabled).not.toContain('<Record');
   });
   it('requires explicit phone acceptance before joining media', () => {
     const xml = screeningTwiml('https://voice.example/accept?a=1&b=2', 'phone');

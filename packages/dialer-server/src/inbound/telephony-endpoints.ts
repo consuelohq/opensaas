@@ -136,7 +136,7 @@ export const createTelephonyEndpoints = (
       );
       if (action === 'status') return '<Response/>';
       const { state, effect, session } = found;
-      if (!state?.owner || session.mode !== 'waiting') return hangupTwiml();
+      if (!state?.owner || !['waiting', 'callback_requested'].includes(session.mode)) return hangupTwiml();
       const target = options.endpoints.find(
         (item) =>
           item.workspaceId === number.workspaceId &&

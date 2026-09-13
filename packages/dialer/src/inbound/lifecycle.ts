@@ -65,11 +65,11 @@ const lifecycles: Record<InboundKind, Lifecycle> = {
     initial: 'requested',
     edges: {
       requested: ['scheduled', 'cancelled', 'expired'],
-      scheduled: ['offering', 'cancelled', 'expired'],
+      scheduled: ['offering', 'cancelled', 'expired', 'exhausted'],
       offering: ['scheduled', 'dialing', 'cancelled', 'expired'],
       dialing: ['connected', 'unknown', 'retry_due', 'exhausted'],
       unknown: ['connected', 'retry_due', 'exhausted', 'cancelled'],
-      retry_due: ['scheduled', 'cancelled', 'expired'],
+      retry_due: ['scheduled', 'cancelled', 'expired', 'exhausted'],
       connected: ['fulfilled'],
     },
   },

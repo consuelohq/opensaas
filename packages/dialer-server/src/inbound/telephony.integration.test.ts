@@ -1,3 +1,4 @@
+import { CALLBACK_MIGRATION_ID } from './callback-migration';
 import { protectTelephonyConfiguration } from './telephony-configuration-store';
 import { createInboundOperator } from './operator';
 import { createInboundRoutes } from '../routes/inbound';
@@ -613,34 +614,33 @@ suite('inbound runtime with real Postgres and simulated carrier', () => {
     await restarted.tick();
     expect(redirects).toBe(2);
   });
-  it('retains a callback request and bounds the no-answer fallback', async () => {
+  it('does not promise a callback when RD6 activation is disabled on the number', async () => {
     await incoming();
     milliseconds += 121000;
     await tick();
     const id = telephonyId('account', 'caller');
-    expect(
-      await service.handle(
-        'number-one',
-        'wait',
-        { AccountSid: 'account', CallSid: 'caller' },
-        id,
-      ),
-    ).toContain('No representative');
-    expect(
-      await service.handle(
-        'number-one',
-        'wait',
-        { AccountSid: 'account', CallSid: 'caller', Digits: '1' },
-        id,
-      ),
-    ).toContain('request has been saved');
+    const fallback = await service.handle(
+      'number-one',
+      'wait',
+      { AccountSid: 'account', CallSid: 'caller' },
+      id,
+    );
+    expect(fallback).toContain('No representative');
+    expect(fallback).not.toContain('request a callback');
+    const unsupported = await service.handle(
+      'number-one',
+      'wait',
+      { AccountSid: 'account', CallSid: 'caller', Digits: '1' },
+      id,
+    );
+    expect(unsupported).not.toContain('request has been saved');
     await service.handle('number-one', 'caller-status', {
       AccountSid: 'account',
       CallSid: 'caller',
       CallStatus: 'completed',
     });
     expect((await journal.replay('workspace', 'request', id))!.state).toBe(
-      'callback_requested',
+      'abandoned',
     );
   });
   it('accepts late voicemail completion and deletes it on its retention deadline', async () => {
@@ -678,6 +678,7 @@ suite('inbound runtime with real Postgres and simulated carrier', () => {
     expect(deleted).toBe(1);
   });
   it('rolls an empty telephony schema down and up while protecting immutable facts', async () => {
+    await rollbackDialerDatabaseMigration(pool, CALLBACK_MIGRATION_ID);
     await rollbackDialerDatabaseMigration(pool, TELEPHONY_MIGRATION_ID);
     await migrateDialerDatabase(pool);
     await incoming();
@@ -862,6 +863,7 @@ suite('inbound runtime with real Postgres and simulated carrier', () => {
     ).toBe(1);
   });
   it('refuses rollback while a live caller or uncertain effect exists', async () => {
+    await rollbackDialerDatabaseMigration(pool, CALLBACK_MIGRATION_ID);
     await incoming();
     await expect(
       rollbackDialerDatabaseMigration(pool, TELEPHONY_MIGRATION_ID),

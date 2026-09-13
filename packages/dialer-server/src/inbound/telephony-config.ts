@@ -1,3 +1,4 @@
+import { decodeCallbackPolicy } from '@consuelo/dialer';
 import type { InboundNumber, InboundEndpoint } from './telephony-contracts';
 
 const record = (value: unknown): Record<string, unknown> => {
@@ -53,6 +54,10 @@ export const parseTelephonyConfig = (
     const number = record(value);
     if (typeof number.enabled !== 'boolean')
       throw new Error('Number enabled must be explicit');
+    const callback =
+      number.callback === null || number.callback === undefined
+        ? null
+        : decodeCallbackPolicy(record(number.callback));
     let voicemail: InboundNumber['voicemail'] = null;
     if (number.voicemail !== null && number.voicemail !== undefined) {
       const policy = record(number.voicemail);
@@ -74,6 +79,7 @@ export const parseTelephonyConfig = (
       did: phone(number.did),
       enabled: number.enabled,
       maxActiveRequests: integer(number.maxActiveRequests, 1, 1000),
+      callback,
       voicemail,
     };
   });

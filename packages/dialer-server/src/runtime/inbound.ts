@@ -7,6 +7,7 @@ import { createInboundTelephony } from '../inbound/telephony';
 import { createOutboundCapacity } from '../inbound/outbound-capacity';
 import { createTwilioInboundCarrier } from '../inbound/twilio-carrier';
 import { parseTelephonyConfig } from '../inbound/telephony-config';
+import { createCallbackRecipientCipher } from '../inbound/callback-recipient-cipher';
 
 type Environment = Record<string, string | undefined>;
 export const inboundEnabled = (environment: Environment) =>
@@ -32,6 +33,16 @@ export const createInboundRuntime = async (environment: Environment) => {
     environment.DIALER_INBOUND_CONFIG_JSON ?? '',
     accountSid,
   );
+  const callbackEnabled = config.numbers.some((number) => Boolean(number.callback));
+  const callbackRecipientSecret =
+    environment.DIALER_CALLBACK_RECIPIENT_SECRET?.trim();
+  if (callbackEnabled && !callbackRecipientSecret)
+    throw new Error(
+      'DIALER_CALLBACK_RECIPIENT_SECRET is required when callbacks are enabled',
+    );
+  const callbackRecipientCipher = callbackRecipientSecret
+    ? createCallbackRecipientCipher(callbackRecipientSecret)
+    : undefined;
   const pool = new Pool({
     connectionString: environment.DATABASE_URL,
     max: 10,
@@ -59,6 +70,7 @@ export const createInboundRuntime = async (environment: Environment) => {
       carrier,
       publicUrl,
       authToken,
+      callbackRecipientCipher,
     });
     const outbound = createOutboundCapacity({ pool, carrier, accountSid });
     const ownsWorkspace = (workspaceId: string) =>
@@ -149,6 +161,7 @@ export const getInboundRuntime = (
         environment.TWILIO_AUTH_TOKEN,
         environment.DIALER_SERVER_PUBLIC_URL,
         environment.DIALER_INBOUND_CONFIG_JSON,
+        environment.DIALER_CALLBACK_RECIPIENT_SECRET,
       ]),
     )
     .digest('hex');

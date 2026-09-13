@@ -295,6 +295,43 @@ export const claimRepCapacityCommand = async (
         throw new InboundPersistenceError(
           'Offer command does not own capacity',
         );
+    } else if (command.type === 'start_callback') {
+      const callback = await readInboundSnapshot(
+        client,
+        state.workspaceId,
+        'callback',
+        command.entityId,
+      );
+      const obligation = (
+        await client.query<{ state: { attempts?: Array<{ assignmentId: string; capacityId: string; generation: number }> } }>(
+          'SELECT state FROM dialer_callback_obligations WHERE workspace_id=$1 AND callback_id=$2',
+          [state.workspaceId, command.entityId],
+        )
+      ).rows[0]?.state;
+      const latest = obligation?.attempts?.[obligation.attempts.length - 1];
+      const competing = await client.query(
+        `SELECT 1 FROM dialer_inbound_commands
+         WHERE workspace_id=$1 AND command_id<>$2
+           AND command->>'type'='start_callback'
+           AND command->>'entityId'=$3
+           AND status IN ('dispatched','unknown') LIMIT 1`,
+        [state.workspaceId, commandId, command.entityId],
+      );
+      if (
+        competing.rowCount ||
+        command.kind !== 'callback' ||
+        callback?.identity.kind !== 'callback' ||
+        callback.identity.requestId !== state.owner.requestId ||
+        callback.state !== 'dialing' ||
+        state.owner.phase !== 'connecting' ||
+        !state.owner.winnerEndpointId ||
+        latest?.assignmentId !== state.owner.assignmentId ||
+        latest.capacityId !== state.capacityId ||
+        latest.generation !== state.owner.generation
+      )
+        throw new InboundPersistenceError(
+          'Callback command does not own capacity',
+        );
     } else if (command.type === 'bridge') {
       const competing = await client.query(
         `SELECT 1 FROM dialer_inbound_commands command

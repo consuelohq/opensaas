@@ -7,7 +7,7 @@ export const isManagedCapacityCommand = async (
   command: InboundCommand,
 ) => {
   try {
-    if (!['offer', 'bridge'].includes(command.type)) return false;
+    if (!['offer', 'bridge', 'start_callback'].includes(command.type)) return false;
     const installed = await client.query<{ installed: boolean }>(
       "SELECT to_regclass('dialer_rep_capacity') IS NOT NULL AS installed",
     );
@@ -17,9 +17,15 @@ export const isManagedCapacityCommand = async (
        ON capacity.workspace_id=assignment.workspace_id
        AND capacity.capacity_id=assignment.snapshot->'identity'->>'capacityId'
      WHERE assignment.workspace_id=$1 AND assignment.kind='assignment'
-       AND assignment.entity_id=CASE WHEN $2='offer' THEN $3 ELSE
-         (SELECT snapshot->'identity'->>'assignmentId' FROM dialer_inbound_entities
-          WHERE workspace_id=$1 AND kind='bridge' AND entity_id=$3) END LIMIT 1`,
+       AND assignment.entity_id=CASE
+         WHEN $2='offer' THEN $3
+         WHEN $2='bridge' THEN
+           (SELECT snapshot->'identity'->>'assignmentId' FROM dialer_inbound_entities
+            WHERE workspace_id=$1 AND kind='bridge' AND entity_id=$3)
+         ELSE
+           (SELECT state->'attempts'->-1->>'assignmentId' FROM dialer_callback_obligations
+            WHERE workspace_id=$1 AND callback_id=$3)
+       END LIMIT 1`,
       [workspaceId, command.type, command.entityId],
     );
     return Boolean(result.rowCount);

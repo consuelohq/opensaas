@@ -1,3 +1,4 @@
+import { CALLBACK_MIGRATION_ID } from '../inbound/callback-migration';
 import { describe, expect, it } from 'bun:test';
 import { fileURLToPath } from 'node:url';
 
@@ -88,6 +89,7 @@ describeIntegration('local dialer lab service integration', () => {
     expect(result.inbound.replayWithoutEffects).toBe(true);
     expect(result.inbound.assertions).toBeGreaterThanOrEqual(20);
     expect(result.migration.rollbackVerified).toBe(true);
+    expect(result.migration.applied).toContain(CALLBACK_MIGRATION_ID);
       expect(result.migration.learningRollbackChainVerified).toBe(true);
     expect(result.migration.applied).toContain('20260910_006_inbound_journal');
     expect(result.isolation.postgresPort).not.toBe(result.isolation.redisPort);

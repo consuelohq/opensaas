@@ -1,4 +1,4 @@
-import type { RoutingRequestMetadata } from '@consuelo/dialer';
+import type { CallbackPolicy, RoutingRequestMetadata } from '@consuelo/dialer';
 export type InboundNumber = {
   numberId: string;
   workspaceId: string;
@@ -7,6 +7,7 @@ export type InboundNumber = {
   did: string;
   enabled: boolean;
   maxActiveRequests: number;
+  callback?: CallbackPolicy | null;
   voicemail: null | {
     disclosure: string;
     maxSeconds: number;

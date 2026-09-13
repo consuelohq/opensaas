@@ -100,6 +100,16 @@ RD2 owns reusable simulator/process-crash infrastructure; reuse the isolated lab
 entry and `runInboundJournalScenarios`. RD3 owns reservation services, endpoint
 acceptance, capacity ownership generations and wrap-up. Add versioned state/event
 extensions for those fields; do not repurpose identity fields or add Redis ownership.
-RD5 owns provider/media reconciliation. RD6 owns callback attempts, scheduling and
-rescheduling revisions. The current callback identity records the original promise;
-it is not yet a scheduler. These contracts do not prove two-way audio or authorize calls.
+RD5 owns live inbound provider/media reconciliation. RD6 now owns durable callback
+obligations, bounded attempt/retry state, scheduling/rescheduling revisions, encrypted
+recipient retention, callback-specific provider-effect reconciliation, and the additive
+010 callback schema. A callback fulfillment request preserves the original queue-entry
+time but is distinct from the ended live caller request. Due work reuses RD4 routing and
+RD3 shared capacity: no rep capacity is reserved before the service window, the rep is
+confirmed first, and only then may the customer dial cross the provider boundary.
+Unknown provider effects and cancellation intent remain capacity-protected until
+reconciliation. Per-number callback language is hidden unless an RD6 policy and
+recipient-encryption runtime are both active. Calendar booking remains provider-neutral
+and defaults to unavailable; no external booking may be reported confirmed without
+provider/evidence references. These tests prove simulator/provider-state convergence,
+not live carrier delivery or two-way audio.
