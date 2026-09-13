@@ -1,3 +1,4 @@
+import { CALLBACK_MIGRATION_ID } from './callback-migration';
 import { TELEPHONY_MIGRATION_ID } from './telephony-migration';
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 import { randomUUID } from 'node:crypto';
@@ -444,6 +445,7 @@ suite('transactional inbound routing', () => {
     expect(await routing.readDecision(policy.workspaceId, 'future')).toBeNull();
   });
   it('rejects rollback with active routing and preserves older journal after safe down/up', async () => {
+    await rollbackDialerDatabaseMigration(pool, CALLBACK_MIGRATION_ID);
     await request('caller');
     await ready('alice');
     seconds = 1;

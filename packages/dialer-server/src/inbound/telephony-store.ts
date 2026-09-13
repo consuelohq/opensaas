@@ -25,6 +25,7 @@ export const moveTelephonyEntity = async (
     identity?: InboundEvent['identity'];
     evidence?: InboundEvent['evidence'];
     command?: InboundCommand['type'];
+    commandId?: string;
     clock?: () => string;
   } = {},
 ): Promise<InboundSnapshot> => {
@@ -67,7 +68,8 @@ export const moveTelephonyEntity = async (
     commands: options.command
       ? [
           {
-            commandId: telephonyId(entityId, options.command),
+            commandId:
+              options.commandId ?? telephonyId(entityId, options.command),
             entityId,
             kind,
             eventId,

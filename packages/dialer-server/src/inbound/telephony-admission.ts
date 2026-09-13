@@ -4,6 +4,8 @@ import {
   decodeRoutingRequestMetadata,
   type RepCapacityState,
 } from '@consuelo/dialer';
+import type { CallbackRecipientCipher } from './callback-recipient-cipher';
+import { createPostgresCallbacks } from './callbacks';
 import type {
   InboundEndpoint,
   InboundEnrichment,
@@ -41,6 +43,7 @@ export type TelephonyOptions = {
   authToken: string;
   clock?: () => string;
   enrich?: InboundEnrichment;
+  callbackRecipientCipher?: CallbackRecipientCipher;
 };
 export const telephonyUrl = (
   options: TelephonyOptions,
@@ -59,6 +62,13 @@ export const telephonyUrl = (
   ).toString();
 export const createTelephonyAdmission = (options: TelephonyOptions) => {
   const { pool } = options;
+  const callbacks = options.callbackRecipientCipher
+    ? createPostgresCallbacks({
+        pool,
+        recipientCipher: options.callbackRecipientCipher,
+        clock: options.clock,
+      })
+    : null;
   const byNumber = (id: string) => {
     const number = options.numbers.find((item) => item.numberId === id);
     if (!number) throw new Error('Unknown inbound number');
@@ -115,7 +125,7 @@ export const createTelephonyAdmission = (options: TelephonyOptions) => {
           input.workspaceId,
           effect.request_id,
         );
-        if (!session || session.mode !== 'waiting')
+        if (!session || !['waiting', 'callback_requested'].includes(session.mode))
           throw new Error('Caller no longer waiting');
         const operationId =
           input.operationId ??
@@ -307,7 +317,7 @@ export const createTelephonyAdmission = (options: TelephonyOptions) => {
         );
         if (!session || session.caller_sid !== facts.CallSid)
           throw new Error('Caller identity mismatch');
-        if (session.mode !== 'waiting') return hangupTwiml();
+        if (!['waiting', 'callback_requested'].includes(session.mode)) return hangupTwiml();
         const request = await readInboundSnapshot(
           client,
           number.workspaceId,
@@ -335,13 +345,96 @@ export const createTelephonyAdmission = (options: TelephonyOptions) => {
           return waitingTwiml(
             telephonyUrl(options, number.numberId, 'wait', requestId),
             Boolean(number.voicemail),
+            false,
+            callbacks ? (number.callback?.disclosure ?? null) : null,
           );
         }
-        if (
-          facts.Digits === '1' ||
-          (facts.Digits === '2' && number.voicemail)
-        ) {
-          if (request.state === 'offering')
+        const callbackPolicy = number.callback ?? null;
+        const callbackSelected =
+          facts.Digits === '1' && callbackPolicy !== null && callbacks !== null;
+        if (callbackSelected || (facts.Digits === '2' && number.voicemail)) {
+          if (callbackSelected) {
+            if (!facts.From || request.identity.kind !== 'request')
+              throw new Error('Callback recipient evidence is unavailable');
+            const at = await routingTime(client, options.clock);
+            const callbackId = telephonyId(requestId, 'callback');
+            const callbackRequestId = telephonyId(requestId, 'callback-request');
+            const routing = (
+              await client.query<{ metadata: import('@consuelo/dialer').RoutingRequestMetadata }>(
+                'SELECT metadata FROM dialer_routing_entries WHERE workspace_id=$1 AND request_id=$2',
+                [number.workspaceId, requestId],
+              )
+            ).rows[0]?.metadata;
+            const queue = (
+              await client.query<{ policy: import('@consuelo/dialer').InboundQueuePolicy }>(
+                'SELECT policy FROM dialer_routing_queues WHERE workspace_id=$1 AND queue_id=$2',
+                [number.workspaceId, number.queueId],
+              )
+            ).rows[0]?.policy;
+            if (!routing || !queue)
+              throw new Error('Callback routing evidence is unavailable');
+            await recordTelephonyFact(
+              client,
+              number.workspaceId,
+              requestId,
+              telephonyId(requestId, 'callback-consent'),
+              'callback_consent',
+            );
+            await callbacks.requestOnClient(
+              client,
+              {
+                operationId: telephonyId(requestId, 'callback-requested'),
+                workspaceId: number.workspaceId,
+                callbackId,
+                requestId: callbackRequestId,
+                sourceRequestId: requestId,
+                numberId: number.numberId,
+                queueId: number.queueId,
+                originalEnteredAt: request.identity.enteredAt,
+                consentReference: telephonyId(requestId, 'callback-consent'),
+                recipient: facts.From,
+                timezone: queue.timezone,
+                notBefore: at,
+                deadline: new Date(
+                  Date.parse(at) + callbackPolicy.immediateWindowMilliseconds,
+                ).toISOString(),
+                metadata: {
+                  requiredSkills: routing.requiredSkills,
+                  ownerRepId: routing.ownerRepId,
+                  ownerStatus: routing.ownerStatus,
+                },
+                policy: callbackPolicy,
+              },
+              at,
+            );
+          }
+          if (request.state === 'offering') {
+            const owned = (
+              await client.query<{ snapshot: import('@consuelo/dialer').RepCapacityState }>(
+                `SELECT snapshot FROM dialer_rep_capacity
+                 WHERE workspace_id=$1 AND snapshot->'owner'->>'requestId'=$2 LIMIT 2`,
+                [number.workspaceId, requestId],
+              )
+            ).rows;
+            if (owned.length > 1)
+              throw new Error('Live request owns more than one capacity slot');
+            const state = owned[0]?.snapshot;
+            if (state?.owner)
+              await executeRepCapacityOnClient(
+                client,
+                {
+                  workspaceId: number.workspaceId,
+                  capacityId: state.capacityId,
+                  expectedVersion: state.version,
+                  operationId: telephonyId(requestId, 'callback-live-cancel'),
+                  action: {
+                    type: 'cancel',
+                    assignmentId: state.owner.assignmentId,
+                    generation: state.owner.generation,
+                  },
+                },
+                { clock: options.clock },
+              );
             await moveTelephonyEntity(
               client,
               number.workspaceId,
@@ -350,6 +443,7 @@ export const createTelephonyAdmission = (options: TelephonyOptions) => {
               'queued',
               { clock: options.clock },
             );
+          }
           const mode =
             facts.Digits === '1' ? 'callback_requested' : 'voicemail';
           await moveTelephonyEntity(
@@ -421,6 +515,7 @@ export const createTelephonyAdmission = (options: TelephonyOptions) => {
           telephonyUrl(options, number.numberId, 'wait', requestId),
           Boolean(number.voicemail),
           fallback,
+          callbacks ? (number.callback?.disclosure ?? null) : null,
         );
       } catch (cause: unknown) {
         if (cause instanceof Error) throw cause;

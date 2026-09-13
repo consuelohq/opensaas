@@ -1,4 +1,6 @@
 import { createTelephonyReconciliation } from './telephony-reconciliation';
+import { createPostgresCallbacks } from './callbacks';
+import { createCallbackTelephony } from './callback-telephony';
 import { randomUUID } from 'node:crypto';
 import { Effect } from 'effect';
 import type { RepCapacityState, InboundStoredCommand } from '@consuelo/dialer';
@@ -36,6 +38,16 @@ export const createInboundTelephony = (options: TelephonyOptions) => {
   const capacity = createPostgresRepCapacity(pool, { clock: options.clock });
   const routing = createPostgresInboundRouting(pool, { clock: options.clock });
   const journal = createPostgresInboundJournal(pool);
+  const callbacks = options.callbackRecipientCipher
+    ? createPostgresCallbacks({
+        pool,
+        recipientCipher: options.callbackRecipientCipher,
+        clock: options.clock,
+      })
+    : null;
+  const callbackTelephony = callbacks
+    ? createCallbackTelephony(options, callbacks)
+    : null;
   const admission = createTelephonyAdmission(options);
   const commands = createTelephonyCommands(options);
   const { reportCaller, reconcile } = createTelephonyReconciliation(
@@ -68,7 +80,7 @@ export const createInboundTelephony = (options: TelephonyOptions) => {
         const number = queues[(cursor + offset) % queues.length]!;
         const sessions = (
           await pool.query<TelephonySession>(
-            "SELECT * FROM dialer_telephony_sessions WHERE workspace_id=$1 AND queue_id=$2 AND mode<>'ended' ORDER BY request_id LIMIT 1001",
+            "SELECT * FROM dialer_telephony_sessions WHERE workspace_id=$1 AND queue_id=$2 AND mode IN ('waiting','voicemail') ORDER BY request_id LIMIT 1001",
             [number.workspaceId, number.queueId],
           )
         ).rows;
@@ -90,11 +102,17 @@ export const createInboundTelephony = (options: TelephonyOptions) => {
             }
           });
         await attempt(() =>
-          routing.tick({
-            workspaceId: number.workspaceId,
-            queueId: number.queueId,
-            decisionId: 'tel:' + randomUUID(),
-          }),
+          callbacks
+            ? callbacks.tick({
+                workspaceId: number.workspaceId,
+                queueId: number.queueId,
+                cycleId: 'tel:' + randomUUID(),
+              })
+            : routing.tick({
+                workspaceId: number.workspaceId,
+                queueId: number.queueId,
+                decisionId: 'tel:' + randomUUID(),
+              }),
         );
         const states = await capacity.list({
           workspaceId: number.workspaceId,
@@ -111,12 +129,18 @@ export const createInboundTelephony = (options: TelephonyOptions) => {
         ).rows;
         for (const effect of pending)
           await attempt(() => commands.execute(effect));
+        if (callbackTelephony)
+          await attempt(() => callbackTelephony.executePending(number.workspaceId));
         for (const state of await capacity.list({
           workspaceId: number.workspaceId,
           ownedOnly: true,
           limit: 1000,
         }))
           await attempt(() => reconcile(state));
+        if (callbackTelephony)
+          await attempt(() => callbackTelephony.reconcile(number.workspaceId));
+        if (callbacks)
+          await attempt(() => callbacks.purgeRecipients(number.workspaceId));
         const recordings = (
           await pool.query<{ recording_sid: string }>(
             'SELECT recording_sid FROM dialer_telephony_voicemail WHERE workspace_id=$1 AND deleted_at IS NULL AND expires_at<=$2 ORDER BY expires_at LIMIT 100',
@@ -154,6 +178,11 @@ export const createInboundTelephony = (options: TelephonyOptions) => {
   ) => {
     try {
       const number = options.numbers.find((item) => item.numberId === numberId);
+      if (action === 'callback-join' || action === 'callback-status') {
+        if (!callbackTelephony || !reference)
+          throw new Error('Callback telephony is not enabled');
+        return callbackTelephony.handle(numberId, action, facts, reference);
+      }
       if (action === 'caller-status') {
         if (!number || facts.AccountSid !== number.accountSid || !facts.CallSid)
           throw new Error('Caller status account mismatch');
@@ -197,6 +226,8 @@ export const createInboundTelephony = (options: TelephonyOptions) => {
     tick,
     reconcile,
     commands,
+    callbacks,
+    callbackTelephony,
     application: {
       tick: () => effect(tick),
       accept: (input: Parameters<typeof admission.accept>[0]) =>

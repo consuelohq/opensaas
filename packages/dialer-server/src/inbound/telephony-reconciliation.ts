@@ -103,6 +103,11 @@ export const createTelephonyReconciliation = (
         initial.owner.requestId,
       );
       if (!session) return;
+      const callbackFulfillment = await pool.query(
+        'SELECT 1 FROM dialer_callback_obligations WHERE workspace_id=$1 AND request_id=$2 LIMIT 1',
+        [initial.workspaceId, session.request_id],
+      );
+      if (callbackFulfillment.rowCount) return;
       const owner = initial.owner;
       const number = options.numbers.find(
         (item) => item.numberId === session.number_id,

@@ -1,4 +1,5 @@
 import { TELEPHONY_MIGRATION_ID } from '../inbound/telephony-migration';
+import { CALLBACK_MIGRATION_ID } from '../inbound/callback-migration';
 import { ROUTING_MIGRATION_ID } from '../inbound/routing-migration';
 import { describe, expect, it } from 'bun:test';
 import { INBOUND_MIGRATION_ID } from '../inbound/migration';
@@ -64,6 +65,9 @@ describe('dialer database migrations', () => {
     expect(sql).toContain('decision_context');
     expect(sql).toContain('dialer_predictive_decisions');
     expect(sql).toContain('selection_probabilities');
+    expect(sql).toContain('dialer_callback_obligations');
+    expect(sql).toContain('dialer_callback_effects');
+    expect(sql).toContain('dialer_callback_bookings');
     expect(sql).not.toContain('core.workspace_settings');
     expect(sql).not.toContain('core.contact_attempt_hazard_hourly_mv');
     expect(harness.applied).toEqual(
@@ -77,6 +81,7 @@ describe('dialer database migrations', () => {
         REP_CAPACITY_MIGRATION_ID,
         ROUTING_MIGRATION_ID,
         TELEPHONY_MIGRATION_ID,
+        CALLBACK_MIGRATION_ID,
       ]),
     );
   });
@@ -174,6 +179,6 @@ describe('dialer database migrations', () => {
     expect(callSessionCreates).toHaveLength(1);
     expect(observationCreates).toHaveLength(1);
     expect(decisionCreates).toHaveLength(1);
-    expect(migrationInserts).toHaveLength(9);
+    expect(migrationInserts).toHaveLength(10);
   });
 });

@@ -20,18 +20,24 @@ export const waitingTwiml = (
   url: string,
   voicemail: boolean,
   fallback = false,
-) =>
-  response(
+  callbackDisclosure: string | null = null,
+) => {
+  const prompt =
+    (fallback ? 'No representative is available. ' : 'Please hold. ') +
+    (callbackDisclosure
+      ? escapeXml(callbackDisclosure) + ' Press 1 to request a callback.'
+      : '') +
+    (voicemail ? ' Press 2 to leave a voicemail.' : '');
+  return response(
     '<Gather numDigits="1" timeout="5" action="' +
       escapeXml(url) +
       '" method="POST"><Say>' +
-      (fallback ? 'No representative is available. ' : 'Please hold. ') +
-      'Press 1 to request a callback.' +
-      (voicemail ? ' Press 2 to leave a voicemail.' : '') +
+      prompt +
       '</Say><Pause length="2"/></Gather><Redirect method="POST">' +
       escapeXml(url) +
       '</Redirect>',
   );
+};
 export const screeningTwiml = (url: string, kind: 'phone' | 'browser') =>
   response(
     kind === 'phone'
