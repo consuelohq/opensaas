@@ -5,7 +5,10 @@ import {
   type RepCapacityState,
 } from '@consuelo/dialer';
 import type { CallbackRecipientCipher } from './callback-recipient-cipher';
-import { createPostgresCallbacks } from './callbacks';
+import {
+  createPostgresCallbacks,
+  type CallbackConsentAdapter,
+} from './callbacks';
 import type {
   InboundEndpoint,
   InboundEnrichment,
@@ -44,6 +47,7 @@ export type TelephonyOptions = {
   clock?: () => string;
   enrich?: InboundEnrichment;
   callbackRecipientCipher?: CallbackRecipientCipher;
+  callbackConsent?: CallbackConsentAdapter;
 };
 export const telephonyUrl = (
   options: TelephonyOptions,

@@ -1,5 +1,6 @@
 import { TELEPHONY_MIGRATION_ID } from '../inbound/telephony-migration';
 import { CALLBACK_MIGRATION_ID } from '../inbound/callback-migration';
+import { CUSTOMER_ENTRY_MIGRATION_ID } from '../inbound/customer-entry-migration';
 import { ROUTING_MIGRATION_ID } from '../inbound/routing-migration';
 import { describe, expect, it } from 'bun:test';
 import { INBOUND_MIGRATION_ID } from '../inbound/migration';
@@ -82,6 +83,7 @@ describe('dialer database migrations', () => {
         ROUTING_MIGRATION_ID,
         TELEPHONY_MIGRATION_ID,
         CALLBACK_MIGRATION_ID,
+        CUSTOMER_ENTRY_MIGRATION_ID,
       ]),
     );
   });
@@ -179,6 +181,6 @@ describe('dialer database migrations', () => {
     expect(callSessionCreates).toHaveLength(1);
     expect(observationCreates).toHaveLength(1);
     expect(decisionCreates).toHaveLength(1);
-    expect(migrationInserts).toHaveLength(10);
+    expect(migrationInserts).toHaveLength(11);
   });
 });

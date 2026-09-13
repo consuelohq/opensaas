@@ -43,6 +43,7 @@ export const createInboundTelephony = (options: TelephonyOptions) => {
         pool,
         recipientCipher: options.callbackRecipientCipher,
         clock: options.clock,
+        consent: options.callbackConsent,
       })
     : null;
   const callbackTelephony = callbacks

@@ -1,4 +1,10 @@
 import type { CallbackPolicy, RoutingRequestMetadata } from '@consuelo/dialer';
+export type CustomerEntryPolicy = {
+  publicId: string;
+  rateWindowMilliseconds: number;
+  maxRequestsPerClient: number;
+  maxRequestsPerNumber: number;
+};
 export type InboundNumber = {
   numberId: string;
   workspaceId: string;
@@ -8,6 +14,7 @@ export type InboundNumber = {
   enabled: boolean;
   maxActiveRequests: number;
   callback?: CallbackPolicy | null;
+  customerEntry?: CustomerEntryPolicy | null;
   voicemail: null | {
     disclosure: string;
     maxSeconds: number;

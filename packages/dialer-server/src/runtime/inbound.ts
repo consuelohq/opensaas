@@ -8,6 +8,10 @@ import { createOutboundCapacity } from '../inbound/outbound-capacity';
 import { createTwilioInboundCarrier } from '../inbound/twilio-carrier';
 import { parseTelephonyConfig } from '../inbound/telephony-config';
 import { createCallbackRecipientCipher } from '../inbound/callback-recipient-cipher';
+import {
+  createCustomerEntryConsentAdapter,
+  createInboundCustomerApplication,
+} from '../inbound/customer-entry';
 
 type Environment = Record<string, string | undefined>;
 export const inboundEnabled = (environment: Environment) =>
@@ -43,6 +47,14 @@ export const createInboundRuntime = async (environment: Environment) => {
   const callbackRecipientCipher = callbackRecipientSecret
     ? createCallbackRecipientCipher(callbackRecipientSecret)
     : undefined;
+  const customerEntryEnabled = config.numbers.some((number) =>
+    Boolean(number.customerEntry),
+  );
+  const customerEntrySecret = environment.DIALER_CUSTOMER_ENTRY_SECRET?.trim();
+  if (customerEntryEnabled && !customerEntrySecret)
+    throw new Error(
+      'DIALER_CUSTOMER_ENTRY_SECRET is required when public customer entry is enabled',
+    );
   const pool = new Pool({
     connectionString: environment.DATABASE_URL,
     max: 10,
@@ -64,6 +76,9 @@ export const createInboundRuntime = async (environment: Environment) => {
     }
     await protectTelephonyConfiguration(pool, config);
     const carrier = await createTwilioInboundCarrier(accountSid, authToken);
+    const callbackConsent = customerEntryEnabled
+      ? createCustomerEntryConsentAdapter({ pool })
+      : undefined;
     const telephony = createInboundTelephony({
       pool,
       ...config,
@@ -71,7 +86,16 @@ export const createInboundRuntime = async (environment: Environment) => {
       publicUrl,
       authToken,
       callbackRecipientCipher,
+      callbackConsent,
     });
+    const customer = customerEntrySecret
+      ? createInboundCustomerApplication({
+          pool,
+          numbers: config.numbers,
+          callbacks: telephony.callbacks,
+          secret: customerEntrySecret,
+        })
+      : undefined;
     const outbound = createOutboundCapacity({ pool, carrier, accountSid });
     const ownsWorkspace = (workspaceId: string) =>
       config.numbers.some((number) => number.workspaceId === workspaceId);
@@ -135,6 +159,7 @@ export const createInboundRuntime = async (environment: Environment) => {
     return {
       ...telephony,
       operator,
+      customer,
       outbound,
       admitOutboundRep,
       ownsWorkspace,
@@ -162,6 +187,7 @@ export const getInboundRuntime = (
         environment.DIALER_SERVER_PUBLIC_URL,
         environment.DIALER_INBOUND_CONFIG_JSON,
         environment.DIALER_CALLBACK_RECIPIENT_SECRET,
+        environment.DIALER_CUSTOMER_ENTRY_SECRET,
       ]),
     )
     .digest('hex');
