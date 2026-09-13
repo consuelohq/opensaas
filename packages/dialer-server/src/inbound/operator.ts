@@ -330,6 +330,10 @@ export const createInboundOperator = (
     const input = object(raw);
     const ownership = fence(raw);
     const endpointId = text(input.endpointId);
+    const attemptId =
+      input.attemptId === undefined
+        ? randomUUID()
+        : text(input.attemptId, 96);
     const rep = await state(identity);
     const effect = (
       await pool.query<{ call_sid: string | null }>(
@@ -350,6 +354,13 @@ export const createInboundOperator = (
         ...ownership,
         endpointId,
         callSid: effect.call_sid,
+        operationId: telephonyId(
+          'operator-accept',
+          identity.userId,
+          ownership.assignmentId,
+          endpointId,
+          attemptId,
+        ),
       });
     } catch {
       return {

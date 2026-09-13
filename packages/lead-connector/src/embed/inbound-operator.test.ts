@@ -152,6 +152,7 @@ describe('inbound operator adapter', () => {
       assignmentId: 'assignment-1',
       generation: 7,
       endpointId: 'browser-1',
+      attemptId: 'browser-action-1',
     });
     expect(result.status).toBe('stale');
     expect(requests[0]?.url).toBe(
@@ -165,6 +166,7 @@ describe('inbound operator adapter', () => {
       assignmentId: 'assignment-1',
       generation: 7,
       endpointId: 'browser-1',
+      attemptId: 'browser-action-1',
     });
   });
 });

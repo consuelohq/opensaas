@@ -71,6 +71,33 @@ export const createLeadConnectorEmbedController = (input: {
     return state.inboundOperator;
   };
 
+  const inboundEndpointKind = (endpointId: string): 'browser' | 'phone' | null =>
+    state.inboundOperator.rep.endpoints.find(
+      (endpoint) => endpoint.endpointId === endpointId,
+    )?.kind ?? null;
+
+  const snapshotHasBrowserWork = (
+    snapshot: Pick<InboundOperatorState, 'offers' | 'rep'>,
+  ): boolean => {
+    const isBrowserEndpoint = (endpointId: string | null): boolean =>
+      endpointId !== null &&
+      snapshot.rep.endpoints.some(
+        (endpoint) =>
+          endpoint.endpointId === endpointId && endpoint.kind === 'browser',
+      );
+    if (
+      snapshot.rep.assignment &&
+      ['connecting', 'connected', 'unknown'].includes(
+        snapshot.rep.assignment.phase,
+      ) &&
+      isBrowserEndpoint(snapshot.rep.assignment.endpointId)
+    )
+      return true;
+    return snapshot.offers.some((offer) =>
+      offer.eligibleEndpoints.some(isBrowserEndpoint),
+    );
+  };
+
   const runInbound = async <T>(
     operation: () => Promise<T>,
   ): Promise<T | null> => {
@@ -79,6 +106,7 @@ export const createLeadConnectorEmbedController = (input: {
     } catch (error: unknown) {
       if (error instanceof EmbedSessionExpiredError) {
         input.inboundOperatorApi?.setSessionToken(null);
+        input.voice.rejectIncoming();
         dispatchInbound({
           type: 'FAILED',
           code: 'SESSION_EXPIRED',
@@ -110,7 +138,10 @@ export const createLeadConnectorEmbedController = (input: {
         const snapshot = await runInbound(() =>
           input.inboundOperatorApi!.getSnapshot(),
         );
-        if (snapshot) dispatchInbound({ type: 'SNAPSHOT_LOADED', snapshot });
+        if (snapshot) {
+          if (!snapshotHasBrowserWork(snapshot)) input.voice.rejectIncoming();
+          dispatchInbound({ type: 'SNAPSHOT_LOADED', snapshot });
+        }
       } finally {
         inboundRefresh = null;
       }
@@ -434,6 +465,14 @@ export const createLeadConnectorEmbedController = (input: {
     }): Promise<void> => {
       if (!input.inboundOperatorApi) return;
       try {
+        const browserReady =
+          inputValue.ready &&
+          inputValue.endpoints.some((endpoint) => endpoint.kind === 'browser');
+        if (browserReady) {
+          await input.voice.prepare();
+        } else {
+          input.voice.rejectIncoming();
+        }
         dispatchInbound({ type: 'ACTION_STARTED', action: 'readiness' });
         const snapshot = await runInbound(() =>
           input.inboundOperatorApi!.setReadiness(inputValue),
@@ -462,8 +501,12 @@ export const createLeadConnectorEmbedController = (input: {
           action: 'accept',
           assignmentId: inputValue.assignmentId,
         });
+        const acceptance = {
+          ...inputValue,
+          attemptId: globalThis.crypto.randomUUID(),
+        };
         const result = await runInbound(() =>
-          input.inboundOperatorApi!.acceptOffer(inputValue),
+          input.inboundOperatorApi!.acceptOffer(acceptance),
         );
         if (!result) return;
         if (result.accepted && result.snapshot) {
@@ -472,7 +515,24 @@ export const createLeadConnectorEmbedController = (input: {
             action: 'accept',
             snapshot: result.snapshot,
           });
+          if (inboundEndpointKind(inputValue.endpointId) === 'browser') {
+            try {
+              await input.voice.acceptIncoming();
+            } catch (error: unknown) {
+              dispatchInbound({
+                type: 'RECOVERY_REQUIRED',
+                code: 'INBOUND_BROWSER_MEDIA_FAILED',
+                message:
+                  error instanceof Error
+                    ? error.message
+                    : 'Inbound browser media failed to connect.',
+              });
+            }
+          }
         } else {
+          if (inboundEndpointKind(inputValue.endpointId) === 'browser') {
+            input.voice.rejectIncoming();
+          }
           dispatchInbound({
             type: 'ACTION_REJECTED',
             action: 'accept',
@@ -511,6 +571,7 @@ export const createLeadConnectorEmbedController = (input: {
           input.inboundOperatorApi!.declineOffer(inputValue),
         );
         if (!result) return;
+        input.voice.rejectIncoming();
         if (result.accepted || result.status === 'declined') {
           if (result.snapshot) {
             dispatchInbound({
@@ -552,7 +613,10 @@ export const createLeadConnectorEmbedController = (input: {
         const snapshot = await runInbound(() =>
           input.inboundOperatorApi!.reconnect(),
         );
-        if (snapshot) dispatchInbound({ type: 'RECONNECTED', snapshot });
+        if (snapshot) {
+          if (!snapshotHasBrowserWork(snapshot)) input.voice.rejectIncoming();
+          dispatchInbound({ type: 'RECONNECTED', snapshot });
+        }
       } catch (error: unknown) {
         dispatchInbound({
           type: 'FAILED',
