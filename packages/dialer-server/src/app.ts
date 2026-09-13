@@ -1,4 +1,5 @@
 import { createInboundOperatorRoutes } from './routes/inbound-operator';
+import { createInboundCustomerRoutes } from './routes/inbound-customer';
 import { createInboundRoutes } from './routes/inbound';
 import { Hono } from 'hono';
 
@@ -28,6 +29,8 @@ export function createDialerServer(dependencies: DialerServerDependencies) {
   app.route('/', createHealthRoutes());
   if (dependencies.inbound)
     app.route('/', createInboundRoutes(dependencies.inbound));
+  if (dependencies.inbound?.customer)
+    app.route('/', createInboundCustomerRoutes(dependencies.inbound.customer));
   app.route('/', createLeadConnectorPublicRoutes(dependencies));
   if (dependencies.commercial) {
     app.route('/', createCommercialPublicRoutes(dependencies.commercial));

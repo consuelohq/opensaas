@@ -4,6 +4,11 @@ import {
   DROP_CALLBACK_SQL,
 } from '../inbound/callback-migration';
 import {
+  CUSTOMER_ENTRY_MIGRATION_ID,
+  CREATE_CUSTOMER_ENTRY_SQL,
+  DROP_CUSTOMER_ENTRY_SQL,
+} from '../inbound/customer-entry-migration';
+import {
   TELEPHONY_MIGRATION_ID,
   CREATE_TELEPHONY_SQL,
   DROP_TELEPHONY_SQL,
@@ -368,6 +373,13 @@ const migrations: readonly Migration[] = [
     id: CALLBACK_MIGRATION_ID,
     up: (database) => database.query(CREATE_CALLBACK_SQL).then(() => undefined),
     down: (database) => database.query(DROP_CALLBACK_SQL).then(() => undefined),
+  },
+  {
+    id: CUSTOMER_ENTRY_MIGRATION_ID,
+    up: (database) =>
+      database.query(CREATE_CUSTOMER_ENTRY_SQL).then(() => undefined),
+    down: (database) =>
+      database.query(DROP_CUSTOMER_ENTRY_SQL).then(() => undefined),
   },
 ];
 

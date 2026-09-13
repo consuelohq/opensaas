@@ -58,6 +58,27 @@ export const parseTelephonyConfig = (
       number.callback === null || number.callback === undefined
         ? null
         : decodeCallbackPolicy(record(number.callback));
+    const customerEntry =
+      number.customerEntry === null || number.customerEntry === undefined
+        ? null
+        : (() => {
+            const policy = record(number.customerEntry);
+            return {
+              publicId: id(policy.publicId),
+              rateWindowMilliseconds: integer(
+                policy.rateWindowMilliseconds,
+                1_000,
+                86_400_000,
+              ),
+              maxRequestsPerClient: integer(policy.maxRequestsPerClient, 1, 1_000),
+              maxRequestsPerNumber: integer(policy.maxRequestsPerNumber, 1, 10_000),
+            };
+          })();
+    if (
+      customerEntry &&
+      customerEntry.maxRequestsPerNumber < customerEntry.maxRequestsPerClient
+    )
+      throw new Error('Customer entry number limit must cover its client limit');
     let voicemail: InboundNumber['voicemail'] = null;
     if (number.voicemail !== null && number.voicemail !== undefined) {
       const policy = record(number.voicemail);
@@ -80,6 +101,7 @@ export const parseTelephonyConfig = (
       enabled: number.enabled,
       maxActiveRequests: integer(number.maxActiveRequests, 1, 1000),
       callback,
+      customerEntry,
       voicemail,
     };
   });
@@ -100,6 +122,11 @@ export const parseTelephonyConfig = (
   });
   unique(numbers.map((number) => number.numberId));
   unique(numbers.map((number) => number.did));
+  unique(
+    numbers.flatMap((number) =>
+      number.customerEntry ? [number.customerEntry.publicId] : [],
+    ),
+  );
   unique(
     endpoints.map(
       (endpoint) =>
