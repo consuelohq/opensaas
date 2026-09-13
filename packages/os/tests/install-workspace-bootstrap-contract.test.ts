@@ -514,19 +514,18 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
     );
   });
 
-  it('should honor preselected daemon flags without reprompting during interactive setup', () => {
+  it('should default daemon setup on while honoring explicit skip/install flags without prompting', () => {
     const installSource = fs.readFileSync(
       join(process.cwd(), 'scripts', 'install.ts'),
       'utf8',
     );
 
+    expect(installSource).toContain('let installDaemons = !options.skipDaemons;');
     expect(installSource).toContain('if (options.installDaemons) {');
     expect(installSource).toContain('installDaemons = true;');
     expect(installSource).toContain('} else if (options.skipDaemons) {');
     expect(installSource).toContain('installDaemons = false;');
-    expect(installSource.indexOf('if (options.installDaemons) {')).toBeLessThan(
-      installSource.indexOf("message: 'install local background service?'"),
-    );
+    expect(installSource).not.toContain("message: 'install local background service?'");
   });
 
   it('should resolve OS home silently instead of prompting for it in interactive setup', () => {

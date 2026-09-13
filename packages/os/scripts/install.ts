@@ -3,18 +3,12 @@
 import fs from 'node:fs';
 import {
   cancel,
-  groupMultiselect,
   isCancel,
-  multiselect,
   note,
-  select,
   text,
 } from '@clack/prompts';
 
-import {
-  getDefaultSelectedSkillNames,
-  getGroupedOnboardingSkillOptions,
-} from './lib/onboarding-skills';
+import { getDefaultSelectedSkillNames } from './lib/onboarding-skills';
 import {
   info,
   printEnd,
@@ -244,10 +238,6 @@ export function createInstallerProgressSteps(
           ? 'active'
           : 'pending',
   }));
-}
-
-export function formatLocalAgentsPromptMessage(count: number): string {
-  return `${count} agents found — press Space to not connect to this workspace, Enter to continue`;
 }
 
 export function renderInstallerProgress(
@@ -540,7 +530,7 @@ export type PendingWorkspaceSelection = {
 };
 
 export type DeviceLoginAttemptResult = {
-  status: 'approved' | 'fallback' | 'skipped' | 'workspace_required';
+  status: 'approved' | 'skipped' | 'workspace_required';
   verificationUrl?: string;
   workspaceBootstrap?: WorkspaceBootstrap;
   workspaceSelection?: PendingWorkspaceSelection;
@@ -688,46 +678,69 @@ function sanitizeTerminalOutput(value: string): string {
   return value.replace(/[\u0000-\u001f\u007f]/g, '');
 }
 
-function terminalLink(label: string, url: string): string {
-  return `\u001B]8;;${url}\u0007${label}\u001B]8;;\u0007`;
+class DeviceAuthorizationError extends Error {
+  constructor(
+    readonly telemetryErrorCode: InstallErrorCode,
+    message: string,
+  ) {
+    super(message);
+    this.name = 'DeviceAuthorizationError';
+  }
+}
+
+export function deviceLoginPromptLines(input: {
+  userCode: string;
+  verificationUrl: string;
+  browserOpened: boolean;
+  copied: boolean;
+}): string[] {
+  const formattedCode = input.userCode
+    .replace(/[^a-z0-9]/gi, '')
+    .toUpperCase()
+    .replace(/(.{4})(?=.)/g, '$1-');
+  const lines = [
+    'Approve Consuelo OS in your browser.',
+    '',
+    `    ${formattedCode}`,
+    '',
+    'Confirm this code in the browser.',
+  ];
+  if (!input.browserOpened) {
+    lines.push('', 'Open this link to continue:', input.verificationUrl);
+    if (input.copied) lines.push('Authorization URL copied to clipboard.');
+  }
+  return lines;
 }
 
 async function printDeviceLoginPrompt(input: {
   userCode: string;
   verificationUrl: string;
+  browserOpened: boolean;
 }): Promise<void> {
   const sanitizedVerificationUrl = sanitizeTerminalOutput(
     input.verificationUrl,
   );
 
   try {
-    const copied = await copyDeviceVerificationUrl(sanitizedVerificationUrl);
-    const formattedCode = input.userCode
-      .replace(/[^a-z0-9]/gi, '')
-      .toUpperCase()
-      .replace(/(.{4})(?=.)/g, '$1-');
-    const openLink = terminalLink('click here', sanitizedVerificationUrl);
-    const copyState = copied
-      ? 'Auth URL copied to clipboard.'
-      : 'Copying not available; use the full URL below.';
+    let copied = false;
+    if (!input.browserOpened) {
+      copied = await copyDeviceVerificationUrl(sanitizedVerificationUrl);
+    }
 
     note(
-      [
-        'Approve in your browser to finish signing in.',
-        '',
-        `    ${formattedCode}`,
-        '',
-        'Make sure your browser shows this code.',
-        copyState,
-        `Open link: ${openLink}`,
-        `Full URL: ${sanitizedVerificationUrl}`,
-      ].join('\n'),
+      deviceLoginPromptLines({
+        userCode: input.userCode,
+        verificationUrl: sanitizedVerificationUrl,
+        browserOpened: input.browserOpened,
+        copied,
+      }).join('\n'),
       'Consuelo OS',
     );
   } catch (error: unknown) {
     const reason = formatUnknownError(error);
-
-    info(`authorize Consuelo OS in your browser: ${sanitizedVerificationUrl}`);
+    if (!input.browserOpened) {
+      info(`Open this link to continue: ${sanitizedVerificationUrl}`);
+    }
     info(`device login prompt fell back to plain URL: ${reason}`);
   }
 }
@@ -942,36 +955,27 @@ export async function attemptWorkspaceDeviceLogin(
     });
     if (liveDeviceCode.status !== 'started') {
       input.diagnostics.recordHttp('device.code', 503, liveDeviceCode.status);
-      recordInstallerStep(input.diagnostics, 'device_login', 'complete', {
-        status: 'fallback',
-      });
-      await input.telemetry?.recordFailure({
-        stage: 'device_auth',
-        errorCode: liveDeviceCode.telemetryErrorCode,
-        impact: 'recoverable',
-        error: new Error(liveDeviceCode.message),
-        context: { deviceLoginStatus: 'fallback' },
-      });
-      info(
-        'Device login unavailable; continuing with local workspace bootstrap.',
+      throw new DeviceAuthorizationError(
+        liveDeviceCode.telemetryErrorCode,
+        liveDeviceCode.message,
       );
-      return { status: 'fallback' };
     }
     input.diagnostics.recordHttp('device.code', 200, liveDeviceCode.status);
 
     const session = liveDeviceCode.session;
-    await dependencies.printDeviceLoginPrompt({
-      userCode: session.userCode,
-      verificationUrl: session.verificationUriComplete,
-    });
-    recordInstallerStep(input.diagnostics, 'device_login', 'prompt_displayed', {
-      displayed: true,
-    });
     const browserOpened = await dependencies.openDeviceVerificationUrl(
       session.verificationUriComplete,
     );
     recordInstallerStep(input.diagnostics, 'device_login', 'browser_open', {
       opened: browserOpened,
+    });
+    await dependencies.printDeviceLoginPrompt({
+      userCode: session.userCode,
+      verificationUrl: session.verificationUriComplete,
+      browserOpened,
+    });
+    recordInstallerStep(input.diagnostics, 'device_login', 'prompt_displayed', {
+      displayed: true,
     });
 
     const deadlineMs = Date.now() + DEVICE_LOGIN_POLL_TIMEOUT_MS;
@@ -1101,7 +1105,7 @@ export async function attemptWorkspaceDeviceLogin(
 
       input.diagnostics.recordHttp('device.poll', 400, pollResult.status);
       const details: Record<string, unknown> = {
-        status: 'fallback',
+        status: 'failed',
         pollStatus: pollResult.status,
       };
       if ('message' in pollResult) details.message = pollResult.message;
@@ -1112,47 +1116,24 @@ export async function attemptWorkspaceDeviceLogin(
         'complete',
         details,
       );
-      await input.telemetry?.recordFailure({
-        stage: 'device_auth',
-        errorCode:
-          'telemetryErrorCode' in pollResult
-            ? pollResult.telemetryErrorCode
-            : 'DEVICE_AUTH_POLL_FAILED',
-        impact: 'recoverable',
-        error: new Error(
-          'message' in pollResult && pollResult.message
-            ? pollResult.message
-            : `device authorization ended with ${pollResult.status}`,
-        ),
-        context: { deviceLoginStatus: 'fallback' },
-      });
-      info(
-        'Device login unavailable; continuing with local workspace bootstrap.',
+      throw new DeviceAuthorizationError(
+        'telemetryErrorCode' in pollResult && pollResult.telemetryErrorCode
+          ? pollResult.telemetryErrorCode
+          : 'DEVICE_AUTH_POLL_FAILED',
+        'message' in pollResult && pollResult.message
+          ? pollResult.message
+          : `device authorization ended with ${pollResult.status}`,
       );
-      return {
-        status: 'fallback',
-        verificationUrl: session.verificationUriComplete,
-      };
     }
 
     recordInstallerStep(input.diagnostics, 'device_login', 'complete', {
-      status: 'fallback',
+      status: 'failed',
       reason: 'timeout',
     });
-    await input.telemetry?.recordFailure({
-      stage: 'device_auth',
-      errorCode: 'DEVICE_AUTH_TIMEOUT',
-      impact: 'recoverable',
-      error: new Error('device authorization timed out'),
-      context: { deviceLoginStatus: 'fallback' },
-    });
-    info(
-      'Device login was not approved before timeout; continuing with local workspace bootstrap.',
+    throw new DeviceAuthorizationError(
+      'DEVICE_AUTH_TIMEOUT',
+      'Device authorization timed out. Restart the installer and approve the browser request.',
     );
-    return {
-      status: 'fallback',
-      verificationUrl: session.verificationUriComplete,
-    };
   } catch (error: unknown) {
     const message = formatUnknownError(error);
     recordInstallerStep(input.diagnostics, 'device_login', 'failed', {
@@ -1160,15 +1141,15 @@ export async function attemptWorkspaceDeviceLogin(
     });
     await input.telemetry?.recordFailure({
       stage: 'device_auth',
-      errorCode: 'DEVICE_AUTH_UNAVAILABLE',
-      impact: 'recoverable',
+      errorCode:
+        error instanceof DeviceAuthorizationError
+          ? error.telemetryErrorCode
+          : 'DEVICE_AUTH_UNAVAILABLE',
+      impact: 'fatal',
       error,
-      context: { deviceLoginStatus: 'fallback' },
+      context: { deviceLoginStatus: 'failed' },
     });
-    info(
-      'Device login unavailable; continuing with local workspace bootstrap.',
-    );
-    return { status: 'fallback' };
+    throw error instanceof Error ? error : new Error(message);
   }
 }
 
@@ -1258,30 +1239,9 @@ async function promptOptions(
     assertClackTtyReady(options);
 
     recordInstallerStep(diagnostics, 'workspace', 'start');
-    renderInstallerProgress('workspace');
-    info(
-      'finish workspace identity, security, skills, agents, service, and health.',
-    );
     const clackIo = getClackIo();
 
-    let mode: OsMode = options.mode ?? 'local';
-    if (!options.mode) {
-      const selectedMode = await select({
-        ...clackIo,
-        message: 'choose an OS mode',
-        initialValue: 'local',
-        options: [
-          { value: 'local' as const, label: 'local' },
-          { value: 'cloud' as const, label: 'cloud' },
-        ],
-      });
-      if (isCancel(selectedMode)) {
-        cancel('setup cancelled.');
-        process.exit(0);
-      }
-      mode = selectedMode;
-      recordPromptDecision(diagnostics, 'os.mode', mode);
-    }
+    const mode: OsMode = options.mode ?? 'local';
 
     if (mode === 'cloud') {
       info(
@@ -1294,7 +1254,6 @@ async function promptOptions(
     recordInstallerStep(diagnostics, 'security', 'start');
     const home = resolveOsHome(options.home);
 
-    renderInstallerProgress('security');
     const deviceLogin = await attemptWorkspaceDeviceLogin({
       dryRun: options.dryRun,
       home,
@@ -1316,94 +1275,39 @@ async function promptOptions(
     });
 
     recordInstallerStep(diagnostics, 'skills', 'start');
-    renderInstallerProgress('skills');
-    const skillPrompt = getGroupedOnboardingSkillOptions();
-    const selectedSkills = await groupMultiselect({
-      ...clackIo,
-      message:
-        'select skills to enable — Use Space to select skills, press Enter to continue',
-      options: skillPrompt.options,
-      initialValues: skillPrompt.initialValues,
-      cursorAt: skillPrompt.cursorAt,
-      selectableGroups: skillPrompt.selectableGroups,
-      groupSpacing: skillPrompt.groupSpacing,
-      required: false,
-    });
-    if (isCancel(selectedSkills)) {
-      cancel('setup cancelled.');
-      process.exit(0);
-    }
-    recordPromptDecision(diagnostics, 'skills.selected', selectedSkills);
+    const selectedSkills =
+      options.selectedSkills.length > 0
+        ? options.selectedSkills
+        : getDefaultSelectedSkillNames();
     recordInstallerStep(diagnostics, 'skills', 'complete', {
-      selectedCount: Array.isArray(selectedSkills) ? selectedSkills.length : 0,
+      selectedCount: selectedSkills.length,
     });
 
     const artifactMode = options.artifactMode;
 
     recordInstallerStep(diagnostics, 'agents', 'start');
-    renderInstallerProgress('agents');
     const detectedAgents = detectAgents(home).filter(
       (agent) => agent.detected && agent.support === 'native',
     );
-    let connectAgents: AgentName[] = options.skipAgents ? [] : options.connectAgents;
-    if (!options.skipAgents && detectedAgents.length > 0) {
-      const selectedAgents = await multiselect({
-        ...clackIo,
-        message: formatLocalAgentsPromptMessage(detectedAgents.length),
-        options: detectedAgents.map((agent) => ({
-          value: agent.name,
-          label: agent.label,
-          hint: agent.homePath,
-        })),
-        initialValues:
-          options.connectAgents.length > 0
-            ? options.connectAgents
-            : detectedAgents.map((agent) => agent.name),
-        required: false,
-      });
-      if (isCancel(selectedAgents)) {
-        cancel('setup cancelled.');
-        process.exit(0);
-      }
-      connectAgents = selectedAgents as AgentName[];
-      recordPromptDecision(diagnostics, 'agents.selected', connectAgents);
-    }
+    const connectAgents: AgentName[] = options.skipAgents
+      ? []
+      : options.connectAgents.length > 0
+        ? options.connectAgents
+        : detectedAgents.map((agent) => agent.name);
     recordInstallerStep(diagnostics, 'agents', 'complete', {
       detectedCount: detectedAgents.length,
       selectedCount: connectAgents.length,
     });
 
     recordInstallerStep(diagnostics, 'service', 'start');
-    renderInstallerProgress('service');
     let installDaemons = !options.skipDaemons;
     if (options.installDaemons) {
       installDaemons = true;
     } else if (options.skipDaemons) {
       installDaemons = false;
-    } else {
-      const selectedInstallDaemons = await select({
-        ...clackIo,
-        message: 'install local background service?',
-        initialValue: 'yes',
-        options: [
-          { value: 'yes' as const, label: 'Yes' },
-          { value: 'no' as const, label: 'No' },
-        ],
-      });
-      if (isCancel(selectedInstallDaemons)) {
-        cancel('setup cancelled.');
-        process.exit(0);
-      }
-      installDaemons = selectedInstallDaemons === 'yes';
-      recordPromptDecision(
-        diagnostics,
-        'service.install_daemons',
-        selectedInstallDaemons,
-      );
     }
     recordInstallerStep(diagnostics, 'service', 'complete', { installDaemons });
     recordInstallerStep(diagnostics, 'health', 'start');
-    renderInstallerProgress('health');
     return {
       ...options,
       mode,
