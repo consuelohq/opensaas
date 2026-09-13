@@ -431,13 +431,43 @@ suite('inbound runtime with real Postgres and simulated carrier', () => {
     expect(snapshot.rep.repId).toBe('alice');
     expect(snapshot.offers.length).toBe(1);
     const offer = snapshot.offers[0]!;
-    const accepted = await api.acceptOffer({
-      assignmentId: offer.assignmentId,
-      generation: offer.generation,
-      endpointId: 'browser',
+    const secondTab = createLeadConnectorInboundOperatorApi({
+      baseUrl: 'https://voice.example',
+      fetch: async (input, init) => app.request(String(input), init),
     });
-    expect(accepted.accepted).toBe(true);
-    expect(accepted.snapshot!.rep.capacityPhase).toBe('connecting');
+    secondTab.setSessionToken('fixture-session');
+    const tabInputs = [
+      {
+        assignmentId: offer.assignmentId,
+        generation: offer.generation,
+        endpointId: 'browser',
+        attemptId: 'tab-one-accept',
+      },
+      {
+        assignmentId: offer.assignmentId,
+        generation: offer.generation,
+        endpointId: 'browser',
+        attemptId: 'tab-two-accept',
+      },
+    ] as const;
+    const attempts = await Promise.all([
+      api.acceptOffer(tabInputs[0]),
+      secondTab.acceptOffer(tabInputs[1]),
+    ]);
+    expect(attempts.filter((attempt) => attempt.accepted)).toHaveLength(1);
+    expect(attempts.map((attempt) => attempt.status).sort()).toEqual([
+      'accepted',
+      'stale',
+    ]);
+    const winningIndex = attempts.findIndex((attempt) => attempt.accepted);
+    expect(attempts[winningIndex]!.snapshot!.rep.capacityPhase).toBe(
+      'connecting',
+    );
+    const retried = await [api, secondTab][winningIndex]!.acceptOffer(
+      tabInputs[winningIndex]!,
+    );
+    expect(retried.accepted).toBe(true);
+    expect(retried.snapshot!.rep.capacityPhase).toBe('connecting');
     await expect(
       api.updateConfiguration(snapshot.configuration),
     ).rejects.toThrow();
