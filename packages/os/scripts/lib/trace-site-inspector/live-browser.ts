@@ -35,11 +35,17 @@ export function installTraceLiveUpdates(): () => void {
     status = document.createElement('div');
     status.dataset.traceLiveStatus = '';
     status.setAttribute('role', 'status');
-    status.style.cssText = 'padding:6px 12px;font:12px system-ui;color:inherit';
-    (document.querySelector('.trxTablePane') ?? document.body).prepend(status);
+    status.style.cssText =
+      'display:inline-block;margin-left:12px;max-width:42vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom;font:12px system-ui;color:inherit';
+    (
+      document.querySelector('.trxTraceTotal, .trxFooter') ?? document.body
+    ).append(status);
   }
   const setStatus = (message: string) => {
-    if (!disposed && status) status.textContent = message;
+    if (!disposed && status) {
+      status.textContent = message;
+      status.title = message;
+    }
   };
   const active = () => !disposed && document.visibilityState !== 'hidden';
   const closeStream = () => {
@@ -152,6 +158,7 @@ export function installTraceLiveUpdates(): () => void {
           rows?: TraceRecord[];
           traces?: TraceRecord[];
           nextCursor?: string | null;
+          liveCursor?: string;
         };
         if (!active() || owner !== generation) return;
         const rows = Array.isArray(payload)
@@ -162,7 +169,8 @@ export function installTraceLiveUpdates(): () => void {
           rows,
           deriveTraceHistoryCursor(rows, payload.nextCursor),
         );
-        cursor = deriveTraceLiveCursor(rows);
+        // Start after the snapshot watermark, including rows hidden by the table.
+        cursor = payload.liveCursor || deriveTraceLiveCursor(rows);
         hydrated = true;
         setStatus(
           rows.length ? 'Live' : 'No traces yet. Waiting for new activity.',

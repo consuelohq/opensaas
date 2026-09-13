@@ -307,6 +307,7 @@ async function cursorPageResponse(
             ? page.rows
             : page.rows.map(redactTraceHistoryRow),
         nextCursor: page.nextCursor,
+        ...(page.liveCursor ? { liveCursor: page.liveCursor } : {}),
       },
     });
   } catch {
