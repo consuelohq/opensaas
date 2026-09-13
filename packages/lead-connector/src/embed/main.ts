@@ -1,6 +1,7 @@
 import './styles.css';
 
 import { createLeadConnectorEmbedApi } from './api-client.js';
+import { createLeadConnectorInboundOperatorApi } from './inbound-operator.js';
 import { createLeadConnectorAgentVoice } from './agent-voice.js';
 import { resolveLeadConnectorContactName } from './contact-label.js';
 import { createLeadConnectorEmbedController } from './controller.js';
@@ -23,9 +24,18 @@ const surface = resolveLeadConnectorSurface(window.location.pathname);
 document.body.dataset.surface = surface;
 
 const api = createLeadConnectorEmbedApi({ baseUrl: window.location.origin });
+const inboundOperatorApi = createLeadConnectorInboundOperatorApi({
+  baseUrl: window.location.origin,
+});
 const voice = createLeadConnectorAgentVoice({ getToken: api.getVoiceToken });
-const controller = createLeadConnectorEmbedController({ api, voice, surface });
+const controller = createLeadConnectorEmbedController({
+  api,
+  voice,
+  surface,
+  inboundOperatorApi,
+});
 let refreshTimer: ReturnType<typeof setInterval> | null = null;
+let inboundRefreshTimer: ReturnType<typeof setInterval> | null = null;
 let bootstrapTimer: ReturnType<typeof setTimeout> | null = null;
 
 const failBootstrap = (): void => {
@@ -89,6 +99,8 @@ const bridge = createLeadConnectorParentBridge(window, {
 const stopRefresh = (): void => {
   if (refreshTimer) clearInterval(refreshTimer);
   refreshTimer = null;
+  if (inboundRefreshTimer) clearInterval(inboundRefreshTimer);
+  inboundRefreshTimer = null;
 };
 
 const updateRefresh = (): void => {
@@ -108,6 +120,16 @@ const updateRefresh = (): void => {
   if (state.activeSessionId && active) bridge.sendBusy(state.activeSessionId);
   if (state.activeSessionId && state.phase === 'completed') {
     bridge.sendCompleted(state.activeSessionId);
+  }
+  if (surface === 'admin' && state.sessionToken && !inboundRefreshTimer) {
+    inboundRefreshTimer = setInterval(
+      () => void controller.loadInboundOperator(),
+      5000,
+    );
+  }
+  if ((!state.sessionToken || surface !== 'admin') && inboundRefreshTimer) {
+    clearInterval(inboundRefreshTimer);
+    inboundRefreshTimer = null;
   }
 };
 
@@ -162,7 +184,9 @@ controller.subscribe((state) => {
   updateRefresh();
 });
 
-const openHostedBilling = async (operation: () => Promise<string | null>): Promise<void> => {
+const openHostedBilling = async (
+  operation: () => Promise<string | null>,
+): Promise<void> => {
   try {
     const popup = window.open('about:blank', '_blank');
     if (popup) popup.opener = null;
@@ -218,7 +242,11 @@ root.addEventListener('click', (event) => {
     controller.updateSetup({ mode: 'queue', callingMode: 'predictive' });
   }
   if (action === 'setup-single') {
-    controller.updateSetup({ mode: 'single', callingMode: 'single', requestedFanout: 1 });
+    controller.updateSetup({
+      mode: 'single',
+      callingMode: 'single',
+      requestedFanout: 1,
+    });
   }
   if (action === 'refresh' || action === 'refresh-resources') {
     void controller.refreshResources();
@@ -226,7 +254,9 @@ root.addEventListener('click', (event) => {
   if (action === 'return-home') controller.returnHome();
   if (action === 'start-configured') void controller.startConfiguredCall();
   if (action === 'select-single-number') {
-    const field = root.querySelector<HTMLInputElement>('[data-field="single-phone"]');
+    const field = root.querySelector<HTMLInputElement>(
+      '[data-field="single-phone"]',
+    );
     const target = field
       ? normalizeClickToCallTarget({ phone: field.value })
       : null;
@@ -253,7 +283,8 @@ root.addEventListener('click', (event) => {
     controller.clearBillingPreview();
   }
   if (action === 'manage-billing') {
-    const hasSubscription = controller.getState().commercialDashboard?.subscription !== null;
+    const hasSubscription =
+      controller.getState().commercialDashboard?.subscription !== null;
     void openHostedBilling(() =>
       hasSubscription
         ? controller.openBillingPortal()
@@ -265,6 +296,56 @@ root.addEventListener('click', (event) => {
   }
   if (action === 'load-more-history') {
     void controller.loadMoreCallHistory();
+  }
+  if (action === 'inbound-reconnect') {
+    void controller.reconnectInbound();
+  }
+  if (action === 'inbound-readiness') {
+    const endpoints = [
+      ...root.querySelectorAll<HTMLInputElement>(
+        '[data-field="inbound-endpoint"]',
+      ),
+    ]
+      .filter(
+        (endpoint) =>
+          endpoint.checked &&
+          endpoint.dataset.endpointId &&
+          endpoint.dataset.endpointKind,
+      )
+      .map((endpoint) => ({
+        endpointId: endpoint.dataset.endpointId!,
+        kind:
+          endpoint.dataset.endpointKind === 'phone'
+            ? ('phone' as const)
+            : ('browser' as const),
+      }));
+    void controller.setInboundReadiness({
+      ready: actionElement.dataset.ready === 'true',
+      endpoints,
+    });
+  }
+  if (action === 'inbound-accept') {
+    const assignmentId = actionElement.dataset.assignmentId;
+    const endpointId = actionElement.dataset.endpointId;
+    const generation = Number(actionElement.dataset.generation);
+    if (assignmentId && endpointId && Number.isSafeInteger(generation)) {
+      void controller.acceptInboundOffer({
+        assignmentId,
+        generation,
+        endpointId,
+      });
+    }
+  }
+  if (action === 'inbound-decline') {
+    const assignmentId = actionElement.dataset.assignmentId;
+    const generation = Number(actionElement.dataset.generation);
+    if (assignmentId && Number.isSafeInteger(generation)) {
+      void controller.declineInboundOffer({
+        assignmentId,
+        generation,
+        reason: 'rep_declined',
+      });
+    }
   }
   if (action === 'release-number' && actionElement.dataset.phoneNumber) {
     void controller.releaseNumber(actionElement.dataset.phoneNumber);
@@ -333,11 +414,18 @@ root.addEventListener('change', (event) => {
   }
   if (target.dataset.field === 'line-count') {
     const requestedFanout = Number(target.value);
-    if (requestedFanout === 1 || requestedFanout === 2 || requestedFanout === 3) {
+    if (
+      requestedFanout === 1 ||
+      requestedFanout === 2 ||
+      requestedFanout === 3
+    ) {
       controller.updateSetup({ requestedFanout });
     }
   }
-  if (target.dataset.field === 'local-presence' && target instanceof HTMLInputElement) {
+  if (
+    target.dataset.field === 'local-presence' &&
+    target instanceof HTMLInputElement
+  ) {
     controller.updateSetup({ preferLocalPresence: target.checked });
   }
   if (target.dataset.field === 'caller-id') {
@@ -416,10 +504,33 @@ root.addEventListener('submit', (event) => {
     const userId = String(data.get('userId') ?? '').trim();
     if (query && userId) {
       void controller.searchNumbers({
-        ...( /^\d{3}$/.test(query) ? { areaCode: query } : { contains: query }),
+        ...(/^\d{3}$/.test(query) ? { areaCode: query } : { contains: query }),
         userId,
       });
     }
+    return;
+  }
+  if (form.dataset.form === 'inbound-wrap-up') {
+    const assignmentId = form.dataset.assignmentId;
+    const generation = Number(form.dataset.generation);
+    if (assignmentId && Number.isSafeInteger(generation)) {
+      void controller.finishInboundWrapUp({
+        assignmentId,
+        generation,
+        disposition: String(data.get('disposition') ?? 'connected'),
+        note: String(data.get('note') ?? '').trim() || undefined,
+      });
+    }
+    return;
+  }
+  if (form.dataset.form === 'inbound-configuration') {
+    void controller.updateInboundConfiguration({
+      ...controller.getState().inboundOperator.configuration,
+      numberLabel: String(data.get('numberLabel') ?? '').trim(),
+      teamName: String(data.get('teamName') ?? '').trim(),
+      hoursLabel: String(data.get('hoursLabel') ?? '').trim(),
+      overflowLabel: String(data.get('overflowLabel') ?? '').trim(),
+    });
     return;
   }
   if (form.dataset.form !== 'disposition') return;
@@ -435,7 +546,10 @@ root.addEventListener('submit', (event) => {
 });
 
 const refreshIdleResources = (): void => {
-  void Promise.all([controller.refreshResources(), controller.loadCommercial()]);
+  void Promise.all([
+    controller.refreshResources(),
+    controller.loadCommercial(),
+  ]);
 };
 
 const idleRefreshScheduler = createLeadConnectorIdleRefreshScheduler({

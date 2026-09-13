@@ -946,7 +946,6 @@ summary {
   }
 }
 
-
 /* Queue-first calling preparation */
 .admin-setup-layout {
   display: grid;
@@ -1288,5 +1287,84 @@ summary {
 
   .setup-actions {
     display: grid;
+  }
+}
+
+.inbound-operator-panel {
+  display: grid;
+  gap: 16px;
+  margin: 24px 0;
+}
+
+.inbound-operator-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.inbound-readiness,
+.inbound-offers,
+.inbound-queue,
+.inbound-configuration {
+  min-width: 0;
+}
+
+.inbound-endpoint-list,
+.inbound-offers {
+  display: grid;
+  gap: 10px;
+}
+
+.inbound-endpoint-row,
+.inbound-offer {
+  align-items: center;
+  border: 1px solid var(--border-color, #d9dde7);
+  border-radius: 10px;
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+  padding: 12px;
+}
+
+.inbound-endpoint-row span,
+.inbound-offer span {
+  color: var(--muted-text, #697386);
+  display: grid;
+  font-size: 12px;
+  gap: 2px;
+}
+
+.inbound-offer h3 {
+  margin: 2px 0;
+}
+
+.inbound-wrap-up {
+  border-top: 1px solid var(--border-color, #d9dde7);
+  display: grid;
+  gap: 10px;
+  margin-top: 8px;
+  padding-top: 16px;
+}
+
+.inbound-wrap-up textarea,
+.inbound-wrap-up select {
+  margin-top: 4px;
+  width: 100%;
+}
+
+.inbound-configuration-form {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.inbound-configuration-form input {
+  margin-top: 4px;
+  width: 100%;
+}
+
+@media (max-width: 800px) {
+  .inbound-operator-grid {
+    grid-template-columns: 1fr;
   }
 }
