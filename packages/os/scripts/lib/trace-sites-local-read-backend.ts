@@ -309,7 +309,7 @@ async function readTraceHistoryPage(
     const search = compileTraceHistorySearch(input.query ?? '');
     // Filter hidden authentication checks before LIMIT, so idle checks cannot crowd out tools.
     const visible = input.site === 'trace-burn-intelligence'
-      ? "NOT (coalesce(tool, '') = 'authentication.mcp' AND ok = 1 AND coalesce(status, 'ok') IN ('ok', 'success') AND coalesce(code, 'OK') = 'OK' AND coalesce(exit_code, 0) = 0)"
+      ? "NOT (trim(coalesce(tool, '')) = 'authentication.mcp' AND (coalesce(ok, 0) = 1 OR (coalesce(status, 'ok') = 'ok' AND coalesce(code, 'OK') = 'OK' AND coalesce(exit_code, 0) = 0)) AND trim(coalesce(code, '')) IN ('', 'OK', 'SUCCESS'))"
       : '1 = 1';
     const sql = TRACE_HISTORY_PAGE_SQL.replace(
       'WHERE rowid < ?',

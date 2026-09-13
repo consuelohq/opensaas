@@ -173,8 +173,9 @@ test('an underfilled page advances once per downward scroll gesture without a bu
       await page.locator('[data-trace-virtual-list]').getAttribute('aria-busy'),
     ).toBe('true');
     expect(await page.locator('[data-trace-load-older]').count()).toBe(0);
+    await page.evaluate(`document.querySelector('[data-trace-virtual-list]').addEventListener('wheel', () => { window.pendingWheelReceived = true; }, {once:true})`);
     await page.mouse.wheel(0, 300);
-    await page.waitForTimeout(100);
+    await page.waitForFunction('window.pendingWheelReceived === true');
     expect(await page.evaluate('window.requests.length')).toBe(1);
     await page.evaluate(
       "window.requests[0].accept([{id:'older',tool:'fs.read'}], 'id:next')",
@@ -587,6 +588,9 @@ test('the shipped page shows persisted history after an idle day with its header
     1,
   );
   insert.run('last-auth', 'last-auth', '2026-09-12T14:00:00Z', 'authentication.mcp', 1, 'ok', 'OK', 0);
+  insert.run('success-override', 'success-override', '2026-09-12T14:01:00Z', 'authentication.mcp', 1, 'error', 'OK', 1);
+  insert.run('success-fallback', 'success-fallback', '2026-09-12T14:02:00Z', 'authentication.mcp', 0, 'ok', 'OK', 0);
+  insert.run('error-code', 'error-code', '2026-09-12T14:03:00Z', 'authentication.mcp', 1, 'ok', 'DENIED', 0);
   db.close();
   const backend = createLocalTraceSitesReadBackend({ dbPath });
   const endpoints = createTraceSitesGatewayLiveEndpoints({
@@ -649,9 +653,24 @@ test('the shipped page shows persisted history after an idle day with its header
     ).toBe(true);
     expect(await page.locator('[data-trace-load-older]').count()).toBe(0);
     expect(historyRequests).toBe(1);
-    expect(streamCursor).toBe('000000000253');
-    await page.screenshot({ path: '/tmp/tracing-idle-fixed.png' });
+    expect(streamCursor).toBe('000000000256');
+    expect(await page.evaluate("window.__traceRowsByTraceId.has('error-code')")).toBe(true);
+    expect(await page.evaluate("window.__traceRowsByTraceId.has('success-override') || window.__traceRowsByTraceId.has('success-fallback')")).toBe(false);
   } finally {
     await page.close();
   }
 }, 15000);
+
+
+test('an unhandled history search clears its loading state', async () => {
+  const page = await browser.newPage();
+  try {
+    await page.setContent('<div data-trace-virtual-list style="height:300px;overflow:auto"></div>');
+    await page.addScriptTag({ content: bundle });
+    await page.evaluate("window.__traceRowsByTraceId = new Map(); window.TraceList.installTraceVirtualList()");
+    await page.waitForFunction('window.__traceVirtualList?.diagnostics()');
+    await page.evaluate("window.__traceVirtualList.setQuery('tool:fs.read')");
+    await page.waitForFunction("document.querySelector('[data-trace-virtual-list]').dataset.traceSearch === 'unhandled'");
+    expect(await page.locator('[data-trace-virtual-list]').getAttribute('aria-busy')).toBe('false');
+  } finally { await page.close(); }
+});
