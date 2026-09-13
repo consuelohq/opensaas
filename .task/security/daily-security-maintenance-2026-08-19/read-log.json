@@ -1,0 +1,11 @@
+{
+  "files": [
+    ".task/security/daily-security-maintenance-2026-08-18/workpad.md",
+    ".task/security/daily-security-maintenance-2026-08-19/workpad.md",
+    "packages/os/Dockerfile",
+    "packages/os/package.json",
+    "packages/os/scripts/lib/security-scan.ts",
+    "packages/os/scripts/office.ts"
+  ],
+  "updatedAt": "2026-08-19T13:38:13.352Z"
+}

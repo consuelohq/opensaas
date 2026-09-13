@@ -1,0 +1,51 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/security/daily-security-maintenance-2026-08-23",
+  "base": "origin/stream/security",
+  "headSha": "6562f225166243c9f0cfb6ba22d9a24665ada809",
+  "changeHash": "40622a60e2f8983d0289ce4ece67a5f27888aeccbe3cef1074981ffc672831bc",
+  "changedFiles": [
+    "yarn.lock"
+  ],
+  "verifiedAt": "2026-08-23T13:54:24.916Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/security/daily-security-maintenance-2026-08-23/current.json",
+        ".task/security/daily-security-maintenance-2026-08-23/evidence-log.json",
+        ".task/security/daily-security-maintenance-2026-08-23/read-log.json",
+        ".task/security/daily-security-maintenance-2026-08-23/session.json",
+        ".task/security/daily-security-maintenance-2026-08-23/workpad.md",
+        ".task/tasks/security/daily-security-maintenance-2026-08-23.json",
+        "yarn.lock"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "pass",
+      "zeroSuiteReason": "no testable source files changed",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

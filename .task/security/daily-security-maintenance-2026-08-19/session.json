@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_8d508bc169ef",
+  "tmuxSession": "opensaas-security-daily-security-maintenance-2026-08-19-8d508bc1",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/daily-security-maintenance-2026-08-19",
+  "branch": "task/security/daily-security-maintenance-2026-08-19",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-security-daily-security-maintenance-2026-08-19",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-security-daily-security-maintenance-2026-08-19",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2164,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2164",
+  "createdAt": "2026-08-19T13:24:50.216Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-security-daily-security-maintenance-2026-08-19/.task/security/daily-security-maintenance-2026-08-19/session.json"
+}
