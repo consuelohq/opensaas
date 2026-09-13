@@ -5,8 +5,8 @@
     "testFileCount": 2711,
     "mappedTestCount": 2627,
     "unmappedTestCount": 84,
-    "ruleCount": 83,
-    "explicitRuleCount": 64,
+    "ruleCount": 84,
+    "explicitRuleCount": 65,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
@@ -2051,6 +2051,7 @@
         "packages/os/cloudflare/os-device-authority/src/routes/google-oauth.ts",
         "packages/os/cloudflare/os-device-authority/src/routes/install-control-plane.ts",
         "packages/os/cloudflare/os-device-authority/src/services/canonical-device-identity.ts",
+        "packages/os/cloudflare/os-device-authority/src/services/canonical-user.ts",
         "packages/os/cloudflare/os-device-authority/src/services/install-identity.ts",
         "packages/os/cloudflare/workspace-edge/migrations/0005_install_user_workspace_verification.sql",
         "packages/os/scripts/lib/install-control-plane-d1.ts",
@@ -2091,6 +2092,57 @@
       "critical": true,
       "exclusive": true,
       "reason": "Native OS device-approval and canonical-identity changes must prove the exact auth, tenant, and control-plane contracts without selecting unsafe unrelated package-wide OS tests.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-installer-device-onboarding",
+      "source": [
+        "packages/os/scripts/install.ts",
+        "packages/os/scripts/lib/workspace-device-authorization.ts",
+        "packages/os/scripts/lib/workspace-device-login-client.ts",
+        "packages/os/scripts/compact-daemon-output.test.ts",
+        "packages/os/scripts/install-tty.test.ts",
+        "packages/os/scripts/onboarding-flow.test.ts",
+        "packages/os/tests/bootstrap-source.test.ts",
+        "packages/os/tests/install-workspace-bootstrap-contract.test.ts",
+        "packages/os/tests/installer-onboarding-ui.test.ts",
+        "packages/os/tests/installer-runtime-dependencies.test.ts",
+        "packages/os/tests/installer-telemetry-onboarding-wiring.test.ts",
+        "packages/os/tests/windows-bootstrap-source.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS installer device onboarding contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "scripts/compact-daemon-output.test.ts",
+            "scripts/install-tty.test.ts",
+            "scripts/onboarding-flow.test.ts",
+            "tests/bootstrap-source.test.ts",
+            "tests/install-workspace-bootstrap-contract.test.ts",
+            "tests/installer-onboarding-ui.test.ts",
+            "tests/installer-telemetry-onboarding-wiring.test.ts",
+            "tests/windows-bootstrap-source.test.ts"
+          ]
+        },
+        {
+          "name": "OS installer runtime structure contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/installer-runtime-dependencies.test.ts",
+            "-t",
+            "should persist portless only when available before public daemon installation|should install a named Consuelo service executable before daemon generation|should verify the signed runtime and prepare recovery before persisting managed install state"
+          ]
+        }
+      ],
+      "critical": true,
+      "reason": "Default-local installer, browser device authorization, and onboarding UX changes must prove focused CLI, telemetry, platform, and runtime-ordering contracts without selecting the historically noisy unrelated OS package suite.",
       "origin": "explicit"
     },
     {
