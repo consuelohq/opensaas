@@ -307,9 +307,13 @@ async function readTraceHistoryPage(
     if (beforeRowid <= 1) return { rows: [], nextCursor: null };
     const pageSize = Math.max(1, Math.floor(input.limit));
     const search = compileTraceHistorySearch(input.query ?? '');
+    // Filter hidden authentication checks before LIMIT, so idle checks cannot crowd out tools.
+    const visible = input.site === 'trace-burn-intelligence'
+      ? "NOT (coalesce(tool, '') = 'authentication.mcp' AND ok = 1 AND coalesce(status, 'ok') IN ('ok', 'success') AND coalesce(code, 'OK') = 'OK' AND coalesce(exit_code, 0) = 0)"
+      : '1 = 1';
     const sql = TRACE_HISTORY_PAGE_SQL.replace(
       'WHERE rowid < ?',
-      `WHERE rowid < ? AND ${search.sql}`,
+      `WHERE rowid < ? AND (${visible}) AND ${search.sql}`,
     );
     const rows = db
       .query(sql)
@@ -317,6 +321,7 @@ async function readTraceHistoryPage(
     const pageRows = rows.slice(0, pageSize);
     return {
       rows: pageRows.map(historyRowFromTraceRow),
+      ...(input.cursor === 'latest' ? { liveCursor: rowidToCursor(beforeRowid - 1) } : {}),
       nextCursor:
         rows.length > pageSize && pageRows.length > 0
           ? rowidToCursor(pageRows[pageRows.length - 1].rowid)

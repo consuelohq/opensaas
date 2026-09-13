@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/restore-tracing-layout-initial-history-and-automatic-infinite-scroll",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2465,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2465",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-restore-tracing-layout-initial-history-and-automatic-infinite-scroll",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_dca14fa9c0ee",
+  "tmuxSession": "opensaas-os-restore-tracing-layout-initial-history-and-autom-dca14fa9",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-restore-tracing-layout-initial-history-and-automatic-infinite-scroll/.task/session.json",
+  "createdAt": "2026-09-13T15:57:45.242Z"
+}
