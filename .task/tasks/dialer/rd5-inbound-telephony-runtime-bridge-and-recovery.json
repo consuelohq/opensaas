@@ -1,0 +1,20 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/rd5-inbound-telephony-runtime-bridge-and-recovery",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 2468,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2468",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2468",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2468/rd5-inbound-telephony-runtime-bridge-and-recovery",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2468",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2468/rd5-inbound-telephony-runtime-bridge-and-recovery",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-rd5-inbound-telephony-runtime-bridge-and-recovery",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_f34a011209a0",
+  "tmuxSession": "opensaas-dialer-rd5-inbound-telephony-runtime-bridge-and-recover-f34a0112",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-rd5-inbound-telephony-runtime-bridge-and-recovery/.task/dialer/rd5-inbound-telephony-runtime-bridge-and-recovery/session.json",
+  "createdAt": "2026-09-13T17:56:35.421Z"
+}

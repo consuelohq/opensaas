@@ -1,3 +1,5 @@
+import { createInboundOperatorRoutes } from './routes/inbound-operator';
+import { createInboundRoutes } from './routes/inbound';
 import { Hono } from 'hono';
 
 import type { DialerServerDependencies } from './contracts';
@@ -24,12 +26,16 @@ import { createVoiceRoutes } from './routes/voice';
 export function createDialerServer(dependencies: DialerServerDependencies) {
   const app = new Hono<{ Variables: DialerVariables }>();
   app.route('/', createHealthRoutes());
+  if (dependencies.inbound)
+    app.route('/', createInboundRoutes(dependencies.inbound));
   app.route('/', createLeadConnectorPublicRoutes(dependencies));
   if (dependencies.commercial) {
     app.route('/', createCommercialPublicRoutes(dependencies.commercial));
   }
   app.route('/', createEmbedRoutes(dependencies));
   app.use('/v1/*', createAuthenticationMiddleware(dependencies));
+  if (dependencies.inbound)
+    app.route('/', createInboundOperatorRoutes(dependencies.inbound.operator));
   if (dependencies.commercial) {
     app.route('/', createCommercialRoutes(dependencies.commercial));
   }
