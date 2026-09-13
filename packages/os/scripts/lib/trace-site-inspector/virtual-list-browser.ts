@@ -164,7 +164,7 @@ class TraceVirtualListController {
   private draggingScrollbar = false;
   private retryHistoryAt = 0;
   private readonly requestFromScroll = () => {
-    if (this.scrollFrame) return;
+    if (this.scrollFrame || this.fetching || this.searchPending) return;
     this.scrollFrame = requestAnimationFrame(() => {
       this.scrollFrame = 0;
       const scroller = this.target.scroller;
@@ -748,6 +748,7 @@ class TraceVirtualListController {
       if (!event.defaultPrevented) {
         this.searchPending = false;
         this.target.scroller.dataset.traceSearch = 'unhandled';
+        this.updateHistoryState();
       }
     });
   }
