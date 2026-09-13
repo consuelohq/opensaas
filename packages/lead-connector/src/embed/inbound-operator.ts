@@ -107,6 +107,7 @@ export type InboundOperatorApi = {
     assignmentId: string;
     generation: number;
     endpointId: string;
+    attemptId: string;
   }) => Promise<InboundOperatorActionResult>;
   declineOffer: (input: {
     assignmentId: string;

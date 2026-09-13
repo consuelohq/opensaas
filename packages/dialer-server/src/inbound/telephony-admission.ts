@@ -1,6 +1,9 @@
 import { createTelephonyEndpoints } from './telephony-endpoints';
 import type { Pool } from 'pg';
-import { decodeRoutingRequestMetadata } from '@consuelo/dialer';
+import {
+  decodeRoutingRequestMetadata,
+  type RepCapacityState,
+} from '@consuelo/dialer';
 import type {
   InboundEndpoint,
   InboundEnrichment,
@@ -70,6 +73,7 @@ export const createTelephonyAdmission = (options: TelephonyOptions) => {
       generation: number;
       endpointId: string;
       callSid: string;
+      operationId?: string;
     },
     screened = false,
   ) =>
@@ -113,22 +117,38 @@ export const createTelephonyAdmission = (options: TelephonyOptions) => {
         );
         if (!session || session.mode !== 'waiting')
           throw new Error('Caller no longer waiting');
+        const operationId =
+          input.operationId ??
+          telephonyId(input.assignmentId, input.endpointId, 'accept');
+        const priorAcceptance = (
+          await client.query<{ snapshot: RepCapacityState }>(
+            'SELECT snapshot FROM dialer_rep_capacity_events WHERE workspace_id=$1 AND operation_id=$2',
+            [input.workspaceId, operationId],
+          )
+        ).rows[0]?.snapshot;
+        if (priorAcceptance) {
+          const priorOwner = priorAcceptance.owner;
+          if (
+            priorOwner?.assignmentId === input.assignmentId &&
+            priorOwner.generation === input.generation &&
+            priorOwner.winnerEndpointId === input.endpointId &&
+            ['connecting', 'connected'].includes(priorOwner.phase)
+          )
+            return { accepted: true as const };
+          throw new Error('Acceptance operation identity collision');
+        }
         if (
           state.owner.winnerEndpointId === input.endpointId &&
           ['connecting', 'connected'].includes(state.owner.phase)
         )
-          return { accepted: true as const };
+          throw new Error('Offer already accepted by another action');
         await executeRepCapacityOnClient(
           client,
           {
             workspaceId: input.workspaceId,
             capacityId: state.capacityId,
             expectedVersion: state.version,
-            operationId: telephonyId(
-              input.assignmentId,
-              input.endpointId,
-              'accept',
-            ),
+            operationId,
             action: {
               type: 'accept',
               assignmentId: input.assignmentId,
