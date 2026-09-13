@@ -1,7 +1,28 @@
-import { ROUTING_MIGRATION_ID, CREATE_ROUTING_SQL, DROP_ROUTING_SQL } from '../inbound/routing-migration';
-import { REP_CAPACITY_MIGRATION_ID, CREATE_REP_CAPACITY_SQL, DROP_REP_CAPACITY_SQL } from '../inbound/rep-capacity-migration';
-import { ROLLBACK_CONTEXTUAL_HARDENING_SQL, ROLLBACK_CONTEXTUAL_SCIENCE_SQL, ROLLBACK_PREDICTIVE_LEARNING_SQL } from './learning-migration-rollbacks';
-import { CREATE_INBOUND_SCHEMA_SQL, DROP_INBOUND_SCHEMA_SQL, INBOUND_MIGRATION_ID } from '../inbound/migration';
+import {
+  TELEPHONY_MIGRATION_ID,
+  CREATE_TELEPHONY_SQL,
+  DROP_TELEPHONY_SQL,
+} from '../inbound/telephony-migration';
+import {
+  ROUTING_MIGRATION_ID,
+  CREATE_ROUTING_SQL,
+  DROP_ROUTING_SQL,
+} from '../inbound/routing-migration';
+import {
+  REP_CAPACITY_MIGRATION_ID,
+  CREATE_REP_CAPACITY_SQL,
+  DROP_REP_CAPACITY_SQL,
+} from '../inbound/rep-capacity-migration';
+import {
+  ROLLBACK_CONTEXTUAL_HARDENING_SQL,
+  ROLLBACK_CONTEXTUAL_SCIENCE_SQL,
+  ROLLBACK_PREDICTIVE_LEARNING_SQL,
+} from './learning-migration-rollbacks';
+import {
+  CREATE_INBOUND_SCHEMA_SQL,
+  DROP_INBOUND_SCHEMA_SQL,
+  INBOUND_MIGRATION_ID,
+} from '../inbound/migration';
 import {
   initializeLeadConnectorPersistence,
   type LeadConnectorDatabase,
@@ -220,7 +241,11 @@ const ROLLBACK_LEARNING_INTEGRITY_SQL = `
 
 type MigrationUp = (database: LeadConnectorDatabase) => Promise<void>;
 type Migration =
-  | { id: typeof DIALER_DATABASE_BASELINE_MIGRATION_ID; up: MigrationUp; down?: never }
+  | {
+      id: typeof DIALER_DATABASE_BASELINE_MIGRATION_ID;
+      up: MigrationUp;
+      down?: never;
+    }
   | { id: string; up: MigrationUp; down: MigrationUp };
 
 const migrations: readonly Migration[] = [
@@ -240,7 +265,8 @@ const migrations: readonly Migration[] = [
   },
   {
     id: DIALER_DATABASE_PREDICTIVE_LEARNING_MIGRATION_ID,
-    down: (database) => database.query(ROLLBACK_PREDICTIVE_LEARNING_SQL).then(() => undefined),
+    down: (database) =>
+      database.query(ROLLBACK_PREDICTIVE_LEARNING_SQL).then(() => undefined),
     up: async (database) => {
       try {
         await database.query(CREATE_PREDICTIVE_LEARNING_OBSERVATIONS_SQL);
@@ -256,7 +282,8 @@ const migrations: readonly Migration[] = [
   },
   {
     id: DIALER_DATABASE_CONTEXTUAL_SCIENCE_MIGRATION_ID,
-    down: (database) => database.query(ROLLBACK_CONTEXTUAL_SCIENCE_SQL).then(() => undefined),
+    down: (database) =>
+      database.query(ROLLBACK_CONTEXTUAL_SCIENCE_SQL).then(() => undefined),
     up: async (database) => {
       try {
         await database.query(ADD_CONTEXTUAL_OBSERVATION_FIELDS_SQL);
@@ -264,22 +291,29 @@ const migrations: readonly Migration[] = [
         await database.query(CREATE_PREDICTIVE_DECISIONS_SQL);
         await database.query(CREATE_PREDICTIVE_DECISIONS_SCOPE_INDEX_SQL);
       } catch (cause: unknown) {
-        throw new Error('Failed to initialize contextual predictive science schema', {
-          cause,
-        });
+        throw new Error(
+          'Failed to initialize contextual predictive science schema',
+          {
+            cause,
+          },
+        );
       }
     },
   },
   {
     id: DIALER_DATABASE_CONTEXTUAL_SCIENCE_HARDENING_MIGRATION_ID,
-    down: (database) => database.query(ROLLBACK_CONTEXTUAL_HARDENING_SQL).then(() => undefined),
+    down: (database) =>
+      database.query(ROLLBACK_CONTEXTUAL_HARDENING_SQL).then(() => undefined),
     up: async (database) => {
       try {
         await database.query(HARDEN_CONTEXTUAL_OBSERVATION_SCHEMA_SQL);
       } catch (cause: unknown) {
-        throw new Error('Failed to harden contextual predictive science schema', {
-          cause,
-        });
+        throw new Error(
+          'Failed to harden contextual predictive science schema',
+          {
+            cause,
+          },
+        );
       }
     },
   },
@@ -301,18 +335,29 @@ const migrations: readonly Migration[] = [
   },
   {
     id: INBOUND_MIGRATION_ID,
-    up: (database) => database.query(CREATE_INBOUND_SCHEMA_SQL).then(() => undefined),
-    down: (database) => database.query(DROP_INBOUND_SCHEMA_SQL).then(() => undefined),
+    up: (database) =>
+      database.query(CREATE_INBOUND_SCHEMA_SQL).then(() => undefined),
+    down: (database) =>
+      database.query(DROP_INBOUND_SCHEMA_SQL).then(() => undefined),
   },
   {
     id: REP_CAPACITY_MIGRATION_ID,
-    up: (database) => database.query(CREATE_REP_CAPACITY_SQL).then(() => undefined),
-    down: (database) => database.query(DROP_REP_CAPACITY_SQL).then(() => undefined),
+    up: (database) =>
+      database.query(CREATE_REP_CAPACITY_SQL).then(() => undefined),
+    down: (database) =>
+      database.query(DROP_REP_CAPACITY_SQL).then(() => undefined),
   },
   {
     id: ROUTING_MIGRATION_ID,
     up: (database) => database.query(CREATE_ROUTING_SQL).then(() => undefined),
     down: (database) => database.query(DROP_ROUTING_SQL).then(() => undefined),
+  },
+  {
+    id: TELEPHONY_MIGRATION_ID,
+    up: (database) =>
+      database.query(CREATE_TELEPHONY_SQL).then(() => undefined),
+    down: (database) =>
+      database.query(DROP_TELEPHONY_SQL).then(() => undefined),
   },
 ];
 
@@ -345,13 +390,17 @@ export const rollbackDialerDatabaseMigration = async (
   database: LeadConnectorDatabase,
   migrationId: string,
 ): Promise<void> => {
-  const migration = migrations.find((candidate) => candidate.id === migrationId);
+  const migration = migrations.find(
+    (candidate) => candidate.id === migrationId,
+  );
   if (!migration?.down) {
     throw new Error('This migration has no supported rollback');
   }
   try {
     await migration.down(database);
   } catch (cause: unknown) {
-    throw new Error('Failed to roll back standalone dialer migration', { cause });
+    throw new Error('Failed to roll back standalone dialer migration', {
+      cause,
+    });
   }
 };

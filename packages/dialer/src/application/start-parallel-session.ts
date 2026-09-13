@@ -21,6 +21,11 @@ import { executeCleanupActions } from './cleanup-actions.js';
 
 export type StartParallelSessionOptions = {
   providerTimeoutMs?: number;
+  onProgress?: (event: {
+    groupId: string;
+    conferenceName: string;
+    calls: readonly ParallelCall[];
+  }) => Promise<void>;
 };
 
 const DEFAULT_PROVIDER_TIMEOUT_MS = 30_000;
@@ -100,6 +105,23 @@ export const startParallelSession = (
 
     const createCalls = Effect.gen(function* () {
       const calls: ParallelCall[] = [];
+      const reportProgress = () =>
+        Effect.tryPromise({
+          try: () =>
+            options.onProgress?.({
+              groupId,
+              conferenceName: group.conferenceName,
+              calls: [...calls],
+            }) ?? Promise.resolve(),
+          catch: (cause) =>
+            new DialerStateError({
+              operation: 'persist-creation-progress',
+              message: 'Provider creation progress could not be persisted',
+              retryable: false,
+              cause,
+            }),
+        });
+      yield* reportProgress();
       for (let index = 0; index < input.customerNumbers.length; index += 1) {
         if (index > 0) yield* clock.sleep(input.profile.staggerMs);
 
@@ -137,6 +159,7 @@ export const startParallelSession = (
         };
         calls.push(call);
         yield* state.registerCall(groupId, call, ACTIVE_CALL_TTL_SECONDS);
+        yield* reportProgress();
       }
 
       const result: ParallelDialResult = {

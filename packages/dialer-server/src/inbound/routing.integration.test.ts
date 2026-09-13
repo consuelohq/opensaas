@@ -1,3 +1,4 @@
+import { TELEPHONY_MIGRATION_ID } from './telephony-migration';
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 import { randomUUID } from 'node:crypto';
 import { Pool } from 'pg';
@@ -466,6 +467,7 @@ suite('transactional inbound routing', () => {
       'request',
       'caller',
     );
+    await rollbackDialerDatabaseMigration(pool, TELEPHONY_MIGRATION_ID);
     await rollbackDialerDatabaseMigration(pool, ROUTING_MIGRATION_ID);
     await migrateDialerDatabase(pool);
     expect(
