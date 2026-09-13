@@ -1,3 +1,4 @@
+import { ROUTING_MIGRATION_ID } from '../inbound/routing-migration';
 import { describe, expect, it } from 'bun:test';
 import { INBOUND_MIGRATION_ID } from '../inbound/migration';
 import { REP_CAPACITY_MIGRATION_ID } from '../inbound/rep-capacity-migration';
@@ -73,6 +74,7 @@ describe('dialer database migrations', () => {
         DIALER_DATABASE_LEARNING_INTEGRITY_MIGRATION_ID,
         INBOUND_MIGRATION_ID,
         REP_CAPACITY_MIGRATION_ID,
+        ROUTING_MIGRATION_ID,
       ]),
     );
   });
@@ -170,6 +172,6 @@ describe('dialer database migrations', () => {
     expect(callSessionCreates).toHaveLength(1);
     expect(observationCreates).toHaveLength(1);
     expect(decisionCreates).toHaveLength(1);
-    expect(migrationInserts).toHaveLength(7);
+    expect(migrationInserts).toHaveLength(8);
   });
 });

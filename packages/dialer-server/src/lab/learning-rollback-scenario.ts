@@ -1,3 +1,4 @@
+import { ROUTING_MIGRATION_ID } from '../inbound/routing-migration';
 import assert from 'node:assert/strict';
 import type { Pool } from 'pg';
 import {
@@ -31,7 +32,7 @@ export const verifyLearningRollbackChain = async (pool: Pool): Promise<true> => 
       database, DIALER_DATABASE_CONTEXTUAL_SCIENCE_HARDENING_MIGRATION_ID,
     ));
     await client.query('ROLLBACK TO SAVEPOINT newer_migration_guard');
-    for (const id of [REP_CAPACITY_MIGRATION_ID, INBOUND_MIGRATION_ID, DIALER_DATABASE_LEARNING_INTEGRITY_MIGRATION_ID,
+    for (const id of [ROUTING_MIGRATION_ID, REP_CAPACITY_MIGRATION_ID, INBOUND_MIGRATION_ID, DIALER_DATABASE_LEARNING_INTEGRITY_MIGRATION_ID,
       DIALER_DATABASE_CONTEXTUAL_SCIENCE_HARDENING_MIGRATION_ID, DIALER_DATABASE_CONTEXTUAL_SCIENCE_MIGRATION_ID]) {
       await rollbackDialerDatabaseMigration(database, id);
     }
@@ -60,7 +61,7 @@ export const verifyLearningRollbackChain = async (pool: Pool): Promise<true> => 
     const restored = await client.query<{ count: number }>(
       'SELECT COUNT(*)::int AS count FROM consuelo_dialer_schema_migrations',
     );
-    assert.equal(restored.rows[0]?.count, 7);
+    assert.equal(restored.rows[0]?.count, 8);
     const emptyLearning = await client.query<{ count: number }>(
       'SELECT COUNT(*)::int AS count FROM dialer_learning_observations',
     );

@@ -1,3 +1,4 @@
+import { ROUTING_MIGRATION_ID, CREATE_ROUTING_SQL, DROP_ROUTING_SQL } from '../inbound/routing-migration';
 import { REP_CAPACITY_MIGRATION_ID, CREATE_REP_CAPACITY_SQL, DROP_REP_CAPACITY_SQL } from '../inbound/rep-capacity-migration';
 import { ROLLBACK_CONTEXTUAL_HARDENING_SQL, ROLLBACK_CONTEXTUAL_SCIENCE_SQL, ROLLBACK_PREDICTIVE_LEARNING_SQL } from './learning-migration-rollbacks';
 import { CREATE_INBOUND_SCHEMA_SQL, DROP_INBOUND_SCHEMA_SQL, INBOUND_MIGRATION_ID } from '../inbound/migration';
@@ -307,6 +308,11 @@ const migrations: readonly Migration[] = [
     id: REP_CAPACITY_MIGRATION_ID,
     up: (database) => database.query(CREATE_REP_CAPACITY_SQL).then(() => undefined),
     down: (database) => database.query(DROP_REP_CAPACITY_SQL).then(() => undefined),
+  },
+  {
+    id: ROUTING_MIGRATION_ID,
+    up: (database) => database.query(CREATE_ROUTING_SQL).then(() => undefined),
+    down: (database) => database.query(DROP_ROUTING_SQL).then(() => undefined),
   },
 ];
 

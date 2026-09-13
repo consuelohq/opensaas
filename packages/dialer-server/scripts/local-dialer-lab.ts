@@ -1,4 +1,5 @@
 #!/usr/bin/env bun
+import { ROUTING_MIGRATION_ID } from '../src/inbound/routing-migration';
 
 import { mkdtemp, mkdir, readFile, rm } from 'node:fs/promises';
 import { createConnection, createServer } from 'node:net';
@@ -327,6 +328,7 @@ const main = async () => {
     const rowsBeforeRollback = await countObservations();
     const inbound = await runInboundJournalScenarios(pool);
     const simulation = await runInboundSimulationScenarios({ pool, redis, databaseUrl, seed });
+    await rollbackDialerDatabaseMigration(database, ROUTING_MIGRATION_ID);
     await rollbackDialerDatabaseMigration(database, REP_CAPACITY_MIGRATION_ID);
     await rollbackDialerDatabaseMigration(database, INBOUND_MIGRATION_ID);
     const inboundRemoved = await pool.query<{ table_name: string | null }>(

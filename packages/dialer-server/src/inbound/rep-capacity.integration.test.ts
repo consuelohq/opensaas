@@ -1,3 +1,4 @@
+import { ROUTING_MIGRATION_ID } from './routing-migration';
 import { afterAll, beforeAll, describe, expect, it } from 'bun:test';
 import { randomUUID } from 'node:crypto';
 import { Pool } from 'pg';
@@ -643,6 +644,7 @@ suite('Postgres shared rep capacity', () => {
     offered = (await execute(offered, { type: 'cancel', ...fence(offered) }))
       .state;
     expect(offered.owner).toBeNull();
+    await rollbackDialerDatabaseMigration(pool, ROUTING_MIGRATION_ID);
     await rollbackDialerDatabaseMigration(pool, REP_CAPACITY_MIGRATION_ID);
     expect(
       (await pool.query("SELECT to_regclass('dialer_rep_capacity') AS name"))
