@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_1feb0ef4d161",
+  "tmuxSession": "opensaas-os-close-os-connection-and-trace-review-findings-1feb0ef4",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/close-os-connection-and-trace-review-findings",
+  "branch": "task/os/close-os-connection-and-trace-review-findings",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-close-os-connection-and-trace-review-findings",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-close-os-connection-and-trace-review-findings",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2377,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2377",
+  "createdAt": "2026-09-04T15:45:32.043Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-close-os-connection-and-trace-review-findings/.task/os/close-os-connection-and-trace-review-findings/session.json"
+}

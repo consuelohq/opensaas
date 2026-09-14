@@ -32,7 +32,6 @@ export function createStreamEffect(
 
     const files = [
       { path: `packages/os/streams/${area}/AGENTS.md`, content: DEFAULT_STREAM_INSTRUCTIONS },
-      { path: `packages/workspace/streams/${area}/AGENTS.md`, content: DEFAULT_STREAM_INSTRUCTIONS },
     ];
     const commit = yield* context.remote.commitFiles({
       parentSha: source.sha,

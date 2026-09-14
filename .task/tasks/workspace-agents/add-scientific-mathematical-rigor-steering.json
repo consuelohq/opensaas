@@ -1,0 +1,16 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/add-scientific-mathematical-rigor-steering",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 2416,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2416",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-add-scientific-mathematical-rigor-steering",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_ccb1aea72e6d",
+  "tmuxSession": "opensaas-workspace-agents-add-scientific-mathematical-rigor-steering-ccb1aea7",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-add-scientific-mathematical-rigor-steering/.task/session.json",
+  "createdAt": "2026-09-08T14:46:11.032Z"
+}

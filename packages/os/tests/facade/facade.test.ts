@@ -7,7 +7,12 @@ import { describe, expect, it } from 'vitest';
 
 import { getCurrentTask, resolveTaskBranch } from '../../scripts/lib/facade/branch-resolver';
 import { runBatch } from '../../scripts/lib/facade/batch';
-import { executeTool, getToolManifestEntry, manifestEntries } from '../../scripts/lib/facade/executor';
+import {
+  executeTool,
+  getToolManifestEntry,
+  manifestEntries,
+  resolveInternalExecutionInput,
+} from '../../scripts/lib/facade/executor';
 import { getInputSchema } from '../../scripts/lib/facade/schemas';
 import type { CommandArgument, CommandPlan, ToolInput, ToolRunner } from '../../scripts/lib/facade/types';
 import { redactDeploymentTraceInput } from '../../tools/deployment-provider/redaction';
@@ -144,6 +149,19 @@ function executableEntries() {
   return manifestEntries.filter((entry) => !entry.command.internal && entry.sessionRequired !== true && !SNAPSHOT_EXCLUDED_TOOLS.has(entry.name));
 }
 
+function runnableEntries() {
+  return executableEntries().filter((entry) => {
+    const schema = getInputSchema(entry.inputSchema);
+    return schema?.safeParse(exampleInput(entry.name)).success === true;
+  });
+}
+
+function syntheticDryRunEntries() {
+  return runnableEntries().filter(
+    (entry) => entry.capabilities.mutating && !entry.command.dryRunFlag,
+  );
+}
+
 describe('typed facade executor', () => {
   it('provides fs.patch facade guidance with the fs.apply_patch manifest entry', async () => {
     const result = await executeTool('fs.patch', { path: 'tmp/example.txt' }, stableOptions(successfulRunner()));
@@ -229,6 +247,78 @@ describe('typed facade executor', () => {
     expect(observedTimeoutMs).toBe(600_000);
   });
 
+  it('uses a call execution timeout without adding timeout to typed tool input', async () => {
+    let observedTimeoutMs = 0;
+    const result = await executeTool('session.start', {
+      kind: 'work',
+      path: '/tmp/session-runtime-scope',
+    }, {
+      ...stableOptions(async (_plan, timeoutMs) => {
+        observedTimeoutMs = timeoutMs;
+        return { stdout: JSON.stringify({ ok: true }), stderr: '', exitCode: 0 };
+      }),
+      timeoutMs: 12_000,
+    });
+
+    expect(result.code).not.toBe('VALIDATION_ERROR');
+    expect(observedTimeoutMs).toBe(12_000);
+  });
+
+  it('routes the effective call timeout into timeout-aware internal adapters', () => {
+    const deploymentEntry = getToolManifestEntry('deployment.detect');
+    const subagentEntry = getToolManifestEntry('subagent');
+    expect(deploymentEntry).not.toBeNull();
+    expect(subagentEntry).not.toBeNull();
+
+    const deploymentInput = { provider: 'vercel' };
+    const resolvedDeployment = resolveInternalExecutionInput(
+      deploymentEntry!,
+      deploymentInput,
+      { timeoutMs: 12_000 },
+    );
+    expect(resolvedDeployment).toMatchObject({ provider: 'vercel', timeoutMs: 12_000 });
+    expect(deploymentInput).toEqual({ provider: 'vercel' });
+
+    expect(resolveInternalExecutionInput(
+      deploymentEntry!,
+      { provider: 'vercel', timeout: 9_000 },
+      {},
+    )).toMatchObject({ timeout: 9_000, timeoutMs: 9_000 });
+
+    const subagentInput = { provider: 'codex', action: 'run' };
+    const resolvedSubagent = resolveInternalExecutionInput(
+      subagentEntry!,
+      subagentInput,
+      { timeoutMs: 7_000 },
+    );
+    expect(resolvedSubagent).toMatchObject({
+      provider: 'codex',
+      action: 'run',
+      timeoutMs: 7_000,
+    });
+    expect(subagentInput).toEqual({ provider: 'codex', action: 'run' });
+  });
+
+  it('uses a call execution timeout for internal runner-backed tools', async () => {
+    let observedTimeoutMs = 0;
+    const result = await executeTool('task.ensureSynced', {
+      branch: TEST_BRANCH,
+    }, {
+      ...stableOptions(async (_plan, timeoutMs) => {
+        observedTimeoutMs = timeoutMs;
+        return {
+          stdout: JSON.stringify({ aheadBehind: { behind: 0 } }),
+          stderr: '',
+          exitCode: 0,
+        };
+      }),
+      timeoutMs: 4_000,
+    });
+
+    expect(result.ok).toBe(true);
+    expect(observedTimeoutMs).toBe(4_000);
+  });
+
   it('plans canonical memory search through the memory runtime', async () => {
     const plans: CommandPlan[] = [];
     const result = await executeTool('memory', {
@@ -304,7 +394,7 @@ describe('typed facade executor', () => {
     expect(result).toMatchSnapshot();
   });
 
-  it.each(executableEntries().map((entry) => entry.name))('returns a timeout envelope for %s', async (toolName) => {
+  it.each(runnableEntries().map((entry) => entry.name))('returns a timeout envelope for %s', async (toolName) => {
     const result = await executeTool(toolName, exampleInput(toolName), stableOptions(timeoutRunner()));
     expect(result.code).toBe('TIMEOUT');
     expect(result.ok).toBe(false);
@@ -435,9 +525,15 @@ describe('typed facade executor', () => {
     expect(result.code).toBe('VALIDATION_ERROR');
   });
 
-  it.each(manifestEntries.filter((entry) => entry.name !== 'worker.call' && entry.capabilities.mutating && !entry.command.dryRunFlag && entry.sessionRequired !== true).map((entry) => entry.name))('supports synthetic dry-run for %s', async (toolName) => {
+  it.each(syntheticDryRunEntries().map((entry) => entry.name))('supports synthetic dry-run for %s', async (toolName) => {
     const plans: CommandPlan[] = [];
-    const result = await executeTool(toolName, { ...exampleInput(toolName), dryRun: true }, stableOptions(successfulRunner(), plans));
+    const input = { ...exampleInput(toolName), dryRun: true };
+    const entry = getToolManifestEntry(toolName);
+    const schema = entry ? getInputSchema(entry.inputSchema) : null;
+    const parsed = schema?.safeParse(input);
+    expect(parsed?.success, `${toolName} must accept dryRun when it advertises synthetic dry-run behavior`).toBe(true);
+    expect(parsed && parsed.success ? (parsed.data as ToolInput).dryRun : undefined).toBe(true);
+    const result = await executeTool(toolName, input, stableOptions(successfulRunner(), plans));
     expect(result.code).toBe('DRY_RUN');
     expect(plans).toHaveLength(0);
   });
@@ -1372,6 +1468,27 @@ describe('typed facade executor', () => {
       expect(result.ok).toBe(true);
       expect(result.code).toBe('OK');
       expect(result.data?.stdout?.trim()).toBe('standalone');
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('applies a call execution timeout to the internal code.call runtime', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-code-call-envelope-timeout-'));
+    try {
+      const result = await executeTool('code.call', {
+        language: 'python',
+        mode: 'read',
+        code: 'import time\ntime.sleep(2)',
+        cwd: tempRoot,
+      }, {
+        ...stableOptions(successfulRunner()),
+        cwd: tempRoot,
+        timeoutMs: 50,
+      });
+
+      expect(result.ok).toBe(false);
+      expect(result.code).toBe('TIMEOUT');
     } finally {
       rmSync(tempRoot, { recursive: true, force: true });
     }

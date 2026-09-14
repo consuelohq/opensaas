@@ -464,6 +464,96 @@ export const createCallbackTelephony = (
     }
   };
 
+  const reconcileKnownEffect = async (
+    effect: CallbackEffect,
+    number: TelephonyOptions['numbers'][number],
+    conferenceName: string,
+    conferenceRequestId: string,
+  ) => {
+    try {
+      if (
+        !effect.call_sid ||
+        !['dispatched', 'unknown'].includes(effect.status)
+      )
+        return;
+      const updateStatus = async (
+        status: Extract<CallbackEffect['status'], 'succeeded' | 'failed'>,
+      ) => {
+        try {
+          await pool.query(
+            `UPDATE dialer_callback_effects
+             SET status=$5,updated_at=clock_timestamp()
+             WHERE workspace_id=$1 AND callback_id=$2 AND attempt_id=$3 AND effect_kind=$4
+               AND status IN ('dispatched','unknown')`,
+            [
+              effect.workspace_id,
+              effect.callback_id,
+              effect.attempt_id,
+              effect.effect_kind,
+              status,
+            ],
+          );
+        } catch (cause: unknown) {
+          if (cause instanceof Error) throw cause;
+          throw new Error('Async operation rejected with a non-Error cause', {
+            cause,
+          });
+        }
+      };
+      let call = await options.carrier.call(effect.call_sid);
+      if (call.accountSid !== number.accountSid)
+        throw new Error('Callback provider account mismatch during effect reconciliation');
+      if (effect.effect_kind === 'customer_dial') {
+        await updateStatus('succeeded');
+        return;
+      }
+      if (effect.effect_kind === 'rep_bridge') {
+        if (terminalCarrierStatus(call.status)) {
+          await updateStatus('failed');
+          return;
+        }
+        const joined = (await options.carrier.participants(conferenceName)).some(
+          (participant) => participant.callSid === effect.call_sid,
+        );
+        if (!joined) {
+          try {
+            await options.carrier.redirect(
+              effect.call_sid,
+              conferenceTwiml(
+                conferenceName,
+                telephonyUrl(
+                  options,
+                  number.numberId,
+                  'conference',
+                  conferenceRequestId,
+                ),
+                'rep',
+              ),
+            );
+          } catch {
+            return;
+          }
+        }
+        await updateStatus('succeeded');
+        return;
+      }
+      if (!terminalCarrierStatus(call.status)) {
+        try {
+          await options.carrier.end(effect.call_sid);
+        } catch {
+          return;
+        }
+        call = await options.carrier.call(effect.call_sid);
+        if (call.accountSid !== number.accountSid)
+          throw new Error('Callback provider account mismatch after termination retry');
+      }
+      if (terminalCarrierStatus(call.status)) await updateStatus('succeeded');
+    } catch (cause: unknown) {
+      if (cause instanceof Error) throw cause;
+      throw new Error('Async operation rejected with a non-Error cause', { cause });
+    }
+  };
+
   const reconcilePreAttemptCancellation = async (
     workspaceId: string,
     callbackId: string,
@@ -619,16 +709,9 @@ export const createCallbackTelephony = (
         state.owner.generation !== attempt.generation
       )
         return;
-      const effects = await readEffects(pool, workspaceId, callbackId, attempt.attemptId);
-      const rep = effects.find((effect) => effect.effect_kind === 'rep_bridge');
-      const customer = effects.find((effect) => effect.effect_kind === 'customer_dial');
-      const unresolved = effects.some((effect) =>
-        ['dispatched', 'unknown'].includes(effect.status),
-      );
-      if (unresolved || !rep?.call_sid || !customer?.call_sid) {
-        if (unresolved) await markUnknown(workspaceId, callbackId, attempt.attemptId, rep?.command_id ?? customer?.command_id ?? telephonyId(callbackId, 'unknown'));
-        return;
-      }
+      let effects = await readEffects(pool, workspaceId, callbackId, attempt.attemptId);
+      let rep = effects.find((effect) => effect.effect_kind === 'rep_bridge');
+      let customer = effects.find((effect) => effect.effect_kind === 'customer_dial');
       const number = options.numbers.find(
         (candidate) => candidate.numberId === callback.numberId,
       );
@@ -638,6 +721,36 @@ export const createCallbackTelephony = (
         callback.state.requestId,
       );
       if (!number || !session) return;
+      for (const effect of effects)
+        await reconcileKnownEffect(
+          effect,
+          number,
+          session.conference_name,
+          session.request_id,
+        );
+      effects = await readEffects(pool, workspaceId, callbackId, attempt.attemptId);
+      rep = effects.find((effect) => effect.effect_kind === 'rep_bridge');
+      customer = effects.find((effect) => effect.effect_kind === 'customer_dial');
+      if (rep?.status === 'succeeded' && customer?.status === 'pending') {
+        await executeEffect(customer);
+        effects = await readEffects(pool, workspaceId, callbackId, attempt.attemptId);
+        rep = effects.find((effect) => effect.effect_kind === 'rep_bridge');
+        customer = effects.find((effect) => effect.effect_kind === 'customer_dial');
+      }
+      if (rep?.command_id ?? customer?.command_id)
+        await settleCommand(
+          workspaceId,
+          (rep?.command_id ?? customer!.command_id),
+          callbackId,
+          attempt.attemptId,
+        );
+      const unresolved = effects.some((effect) =>
+        ['dispatched', 'unknown'].includes(effect.status),
+      );
+      if (unresolved || !rep?.call_sid || !customer?.call_sid) {
+        if (unresolved) await markUnknown(workspaceId, callbackId, attempt.attemptId, rep?.command_id ?? customer?.command_id ?? telephonyId(callbackId, 'unknown'));
+        return;
+      }
       const [repCall, customerCall, participants] = await Promise.all([
         options.carrier.call(rep.call_sid),
         options.carrier.call(customer.call_sid),
@@ -648,7 +761,11 @@ export const createCallbackTelephony = (
         customerCall.accountSid !== number.accountSid
       )
         throw new Error('Callback provider account mismatch during reconciliation');
-      const participantIds = new Set(participants.map((participant) => participant.callSid));
+      const participantIds = new Set(
+        participants
+          .filter((participant) => !participant.muted && !participant.hold)
+          .map((participant) => participant.callSid),
+      );
       const bothJoined =
         participantIds.has(rep.call_sid) && participantIds.has(customer.call_sid);
       if (
@@ -802,6 +919,15 @@ export const createCallbackTelephony = (
             'customer',
             customer.call_sid,
           );
+        const freshRep = await options.carrier.call(rep.call_sid);
+        const freshCustomer = await options.carrier.call(customer.call_sid);
+        if (
+          freshRep.accountSid !== number.accountSid ||
+          freshCustomer.accountSid !== number.accountSid ||
+          !terminalCarrierStatus(freshRep.status) ||
+          !terminalCarrierStatus(freshCustomer.status)
+        )
+          return;
         const current = await capacity.read(workspaceId, attempt.capacityId);
         if (current?.owner)
           await capacity.execute({

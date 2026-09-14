@@ -54,14 +54,21 @@ const [primaryAssistant, secondaryAssistant] = heroCopy.assistants;
       </a>
     </div>
 
-    <button class="os-hero__command" type="button" data-copy-install aria-label={heroCopy.copyInstallAriaLabel}>
-      <code>{INSTALL_COMMAND}</code>
+    <button class="os-hero__command" type="button" data-copy-install data-copy-default={heroCopy.copyLabel} aria-label={heroCopy.copyInstallAriaLabel}>
+      <code data-install-command>{INSTALL_COMMAND}</code>
       <span data-copy-label>{heroCopy.copyLabel}</span>
     </button>
   </div>
 </section>
 
-<script define:vars={{ INSTALL_COMMAND, copyLabel: heroCopy.copyLabel }}>
+<script>
+  import { installCommandForPlatform } from '../../lib/install-command';
+
+  const command = installCommandForPlatform(navigator.platform || navigator.userAgent);
+  document.querySelectorAll('[data-install-command]').forEach((node) => {
+    node.textContent = command;
+  });
+
   const labels = Array.from(document.querySelectorAll('[data-copy-label]')).filter(
     (label) => label instanceof HTMLElement,
   );
@@ -73,7 +80,7 @@ const [primaryAssistant, secondaryAssistant] = heroCopy.assistants;
       }
 
       try {
-        await navigator.clipboard.writeText(INSTALL_COMMAND);
+        await navigator.clipboard.writeText(command);
       } catch {
         return;
       }
@@ -82,6 +89,7 @@ const [primaryAssistant, secondaryAssistant] = heroCopy.assistants;
         label.textContent = 'COPIED';
       });
       window.setTimeout(() => {
+        const copyLabel = button.getAttribute('data-copy-default') ?? 'COPY';
         labels.forEach((label) => {
           label.textContent = copyLabel;
         });

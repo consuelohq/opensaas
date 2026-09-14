@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/atomically-replace-lifecycle-recovery-wrapper",
+  "events": [
+    {
+      "id": "9fe89d93-6e35-4ecd-a517-9f6a3b30cede",
+      "occurred_at": "2026-08-29T01:07:08.053Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/atomically-replace-lifecycle-recovery-wrapper/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/atomically-replace-lifecycle-recovery-wrapper",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/atomically-replace-lifecycle-recovery-wrapper"
+      }
+    },
+    {
+      "id": "fa5d29b5-5958-4873-a3d4-1580ffc86f9a",
+      "occurred_at": "2026-08-29T01:07:13.105Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/install-state.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/atomically-replace-lifecycle-recovery-wrapper",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/atomically-replace-lifecycle-recovery-wrapper"
+      }
+    },
+    {
+      "id": "c4226459-ff94-4582-ab8e-065ea996770f",
+      "occurred_at": "2026-08-29T01:07:17.296Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/install-state.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/atomically-replace-lifecycle-recovery-wrapper",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/atomically-replace-lifecycle-recovery-wrapper"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-29T01:07:17.425Z"
+}

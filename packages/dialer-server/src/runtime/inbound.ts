@@ -8,12 +8,62 @@ import { createOutboundCapacity } from '../inbound/outbound-capacity';
 import { createTwilioInboundCarrier } from '../inbound/twilio-carrier';
 import { parseTelephonyConfig } from '../inbound/telephony-config';
 import { createCallbackRecipientCipher } from '../inbound/callback-recipient-cipher';
+import { createPostgresRepCapacity } from '../inbound/rep-capacity';
+import type { InboundEndpoint } from '../inbound/telephony-contracts';
 import {
   createCustomerEntryConsentAdapter,
   createInboundCustomerApplication,
 } from '../inbound/customer-entry';
 
 type Environment = Record<string, string | undefined>;
+const DEFAULT_REP_POLICY = {
+  offerMilliseconds: 12_000,
+  presenceMilliseconds: 120_000,
+  wrapUpMilliseconds: 30_000,
+  cooldownMilliseconds: 5_000,
+  escalationMilliseconds: 30_000,
+} as const;
+
+export const reconcileConfiguredRepCapacity = async (
+  pool: Pool,
+  endpoints: readonly InboundEndpoint[],
+) => {
+  try {
+    const capacity = createPostgresRepCapacity(pool);
+    const reps = [
+      ...new Map(
+        endpoints.map((endpoint) => [
+          endpoint.workspaceId + ':' + endpoint.repId,
+          { workspaceId: endpoint.workspaceId, repId: endpoint.repId },
+        ]),
+      ).values(),
+    ];
+    for (const rep of reps) {
+      const existing = await pool.query<{ capacity_id: string }>(
+        'SELECT capacity_id FROM dialer_rep_capacity WHERE workspace_id=$1 AND rep_id=$2',
+        [rep.workspaceId, rep.repId],
+      );
+      if (existing.rows[0]) continue;
+      await capacity.execute({
+        workspaceId: rep.workspaceId,
+        capacityId: rep.repId,
+        operationId: 'runtime-register:' + rep.repId,
+        expectedVersion: 0,
+        action: {
+          type: 'register',
+          repId: rep.repId,
+          policy: DEFAULT_REP_POLICY,
+        },
+      });
+    }
+  } catch (cause: unknown) {
+    if (cause instanceof Error) throw cause;
+    throw new Error('Configured rep reconciliation failed with a non-Error cause', {
+      cause,
+    });
+  }
+};
+
 export const inboundEnabled = (environment: Environment) =>
   environment.DIALER_INBOUND_ENABLED === 'true';
 export const createInboundRuntime = async (environment: Environment) => {
@@ -74,6 +124,7 @@ export const createInboundRuntime = async (environment: Environment) => {
           'Configure the queue policy before enabling its inbound number',
         );
     }
+    await reconcileConfiguredRepCapacity(pool, config.endpoints);
     await protectTelephonyConfiguration(pool, config);
     const carrier = await createTwilioInboundCarrier(accountSid, authToken);
     const callbackConsent = customerEntryEnabled

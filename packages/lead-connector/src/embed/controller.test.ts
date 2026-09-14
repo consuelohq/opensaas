@@ -404,6 +404,37 @@ describe('LeadConnector embed controller', () => {
     );
   });
 
+  it('reuses one acceptance attempt id when the first response is lost', async () => {
+    const inboundOperatorApi = createInboundApi();
+    const attempts: string[] = [];
+    let calls = 0;
+    inboundOperatorApi.acceptOffer = mock(async (input) => {
+      attempts.push(input.attemptId);
+      calls++;
+      if (calls === 1) throw new Error('response lost after accept commit');
+      return {
+        accepted: true,
+        status: 'accepted' as const,
+        snapshot: createInboundSnapshot('connecting'),
+      };
+    });
+    const controller = createLeadConnectorEmbedController({
+      api: createApi(),
+      voice: createVoice(),
+      inboundOperatorApi,
+    });
+    await controller.authenticate('opaque-parent-ciphertext');
+    const input = {
+      assignmentId: 'assignment-1',
+      generation: 7,
+      endpointId: 'browser',
+    };
+    await controller.acceptInboundOffer(input);
+    await controller.acceptInboundOffer(input);
+    expect(attempts).toHaveLength(2);
+    expect(attempts[1]).toBe(attempts[0]);
+  });
+
   it('rejects the local ringing browser leg when RD5 rejects a stale offer', async () => {
     const inboundOperatorApi = createInboundApi();
     inboundOperatorApi.acceptOffer = mock(async () => ({

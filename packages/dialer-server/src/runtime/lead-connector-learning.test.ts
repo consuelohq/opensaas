@@ -196,4 +196,57 @@ describe('LeadConnector learning initialization', () => {
       queries.some((query) => query.values.includes('competing_winner')),
     ).toBe(true);
   });
+
+  it('uses the attempt start as the conservative observation horizon when no later lifecycle timestamp exists', async () => {
+    const queries: Array<{ text: string; values: readonly unknown[] }> = [];
+    const database: LeadConnectorDatabase = {
+      query: async <T>(text: string, values: readonly unknown[] = []) => {
+        queries.push({ text, values });
+        return { rows: [] as T[] };
+      },
+    };
+    const attemptedAt = '2026-08-15T12:00:00.000Z';
+    const record: ParallelTelemetryRecord = {
+      group: {
+        groupId: 'group-no-end',
+        conferenceName: 'conference-no-end',
+        status: 'failed',
+        winnerSid: null,
+        calls: [{
+          callSid: 'call-no-end',
+          customerNumber: '+15550000001',
+          fromNumber: '+15550000011',
+          position: 1,
+          status: 'failed',
+          contactId: 'contact-no-end',
+          dialStartedAt: attemptedAt,
+        }],
+        workspaceId: 'workspace-no-end',
+        queueId: 'queue-no-end',
+        userId: 'user-no-end',
+        createdAt: attemptedAt,
+        profile: {
+          id: 'balanced',
+          fanout: 1,
+          staggerMs: 0,
+          amdPolicy: 'human-or-unknown',
+          terminationPolicy: 'winner-take-all',
+        },
+        resolverReason: 'test',
+        cleanupFailures: [],
+      },
+      telemetry: { winnerRate: 0, wastedLegs: 1, connectLatencyMs: null },
+      success: false,
+    };
+
+    await expect(recordLeadConnectorAttemptTelemetry(database, record)).resolves.toBe(true);
+    expect(queries).toHaveLength(1);
+    const values = queries[0]!.values;
+    expect(values[5]).toBe(attemptedAt);
+    expect(values[6]).toBeNull();
+    expect(values[7]).toBe(attemptedAt);
+    expect(values[10]).toBe('non_response');
+    expect(values[11]).toBeNull();
+  });
+
 });

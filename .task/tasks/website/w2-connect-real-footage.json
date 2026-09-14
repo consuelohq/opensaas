@@ -1,0 +1,16 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/w2-connect-real-footage",
+  "baseBranch": "stream/website",
+  "sourceBranch": "stream/website",
+  "startFrom": "stream",
+  "prNumber": 2341,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2341",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-w2-connect-real-footage",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_2571a036a127",
+  "tmuxSession": "opensaas-website-w2-connect-real-footage-2571a036",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-w2-connect-real-footage/.task/session.json",
+  "createdAt": "2026-08-31T21:48:29.571Z"
+}

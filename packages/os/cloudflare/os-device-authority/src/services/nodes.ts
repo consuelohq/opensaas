@@ -1,11 +1,14 @@
 import type { AccountWorkspace, WorkspaceAgentName, WorkspaceNode, WorkspaceNodeRole } from '../types';
 import { workspaceIdFromSlug } from '../utils';
+import { MODERN_MCP_PROTOCOL_VERSION } from '../../../../scripts/lib/mcp-protocol';
 
 export const WORKSPACE_NODE_HEARTBEAT_TTL_MS = 60_000;
 export const WORKSPACE_NODE_HEARTBEAT_STALE_MULTIPLIER = 3;
 export const WORKSPACE_NODE_SIGNATURE_MAX_AGE_MS = 5 * 60_000;
 
 export type WorkspaceNodePresence = 'online' | 'stale' | 'offline';
+export type WorkspaceNodeReadiness = 'ready' | 'not_ready' | 'unknown';
+export type WorkspaceNodeCompatibility = 'compatible' | 'incompatible' | 'unknown';
 
 export type SafeWorkspaceNode = {
   workspaceId: string;
@@ -15,6 +18,10 @@ export type SafeWorkspaceNode = {
   platform: string;
   architecture: string;
   channel: string;
+  osVersion: string | null;
+  mcpProtocolVersion: string | null;
+  readiness: WorkspaceNodeReadiness;
+  compatibility: WorkspaceNodeCompatibility;
   connectorId: string | null;
   capabilities: string[];
   agents: WorkspaceAgentName[] | null;
@@ -65,6 +72,29 @@ export function workspaceNodePresence(
   return 'offline';
 }
 
+export function workspaceNodeCompatibility(
+  node: WorkspaceNode,
+): WorkspaceNodeCompatibility {
+  const protocol = node.mcpProtocolVersion?.trim();
+  if (!protocol) return 'unknown';
+  return protocol === MODERN_MCP_PROTOCOL_VERSION ? 'compatible' : 'incompatible';
+}
+
+export function workspaceNodeReadiness(
+  node: WorkspaceNode,
+  nowMs: number,
+): WorkspaceNodeReadiness {
+  const presence = workspaceNodePresence(node, nowMs);
+  if (presence !== 'online' || (node.state ?? 'active') !== 'active') return 'not_ready';
+  if (node.mcpReady === false || workspaceNodeCompatibility(node) === 'incompatible') {
+    return 'not_ready';
+  }
+  if (node.mcpReady === true && workspaceNodeCompatibility(node) === 'compatible') {
+    return 'ready';
+  }
+  return 'unknown';
+}
+
 export function safeWorkspaceNode(
   node: WorkspaceNode,
   nowMs: number,
@@ -77,6 +107,10 @@ export function safeWorkspaceNode(
     platform: node.platform ?? 'unknown',
     architecture: node.architecture ?? 'unknown',
     channel: node.channel ?? 'stable',
+    osVersion: node.osVersion?.trim() || null,
+    mcpProtocolVersion: node.mcpProtocolVersion?.trim() || null,
+    readiness: workspaceNodeReadiness(node, nowMs),
+    compatibility: workspaceNodeCompatibility(node),
     connectorId: node.connectorId ?? null,
     capabilities: [...(node.capabilities ?? [])].sort(),
     agents: node.agents === undefined ? null : [...node.agents],

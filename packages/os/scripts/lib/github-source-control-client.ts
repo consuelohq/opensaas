@@ -147,24 +147,30 @@ export function githubInstallationConnectionId(connectionRef: string): string | 
 export async function startGitHubSourceControlInstall(input: {
   home: string;
   returnPath: string;
+  repositoryOwners?: string[];
+  manageAccess?: boolean;
   fetchImpl?: typeof fetch;
-}): Promise<{ installUrl: string }> {
+}): Promise<{ authorizationUrl: string }> {
   try {
     const body = await signedAuthorityPost(
       input.home,
       '/workspace/source-control/github/install/start',
-      { returnPath: input.returnPath },
+      {
+        returnPath: input.returnPath,
+        repositoryOwners: Array.isArray(input.repositoryOwners) ? input.repositoryOwners : [],
+        manageAccess: input.manageAccess === true,
+      },
       input.fetchImpl,
     );
-    const installUrl = requiredString(
-      body && typeof body === 'object' ? (body as Record<string, unknown>).installUrl : undefined,
-      'installation URL',
+    const authorizationUrl = requiredString(
+      body && typeof body === 'object' ? (body as Record<string, unknown>).authorizationUrl : undefined,
+      'authorization URL',
     );
-    const url = new URL(installUrl);
-    if (url.origin !== 'https://github.com' || !url.pathname.startsWith('/apps/')) {
-      throw new Error('The GitHub connection service returned an invalid installation URL.');
+    const url = new URL(authorizationUrl);
+    if (url.origin !== 'https://github.com' || url.pathname !== '/login/oauth/authorize') {
+      throw new Error('The GitHub connection service returned an invalid authorization URL.');
     }
-    return { installUrl: url.toString() };
+    return { authorizationUrl: url.toString() };
   } catch (error: unknown) {
     if (error instanceof Error) throw error;
     throw new Error('GitHub connection could not be started.');

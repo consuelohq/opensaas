@@ -47,6 +47,10 @@ function backend(overrides: Partial<TraceSitesGatewayReadBackendAdapter> = {}) {
             traceName: 'fs.read',
             status: 'success',
             ok: true,
+            input: 'private input',
+            output: 'private output',
+            rawInput: { secret: 'input' },
+            rawOutput: { secret: 'output' },
           },
         ],
         nextCursor: '000000000041',
@@ -78,7 +82,7 @@ function backend(overrides: Partial<TraceSitesGatewayReadBackendAdapter> = {}) {
 }
 
 describe('Trace Sites authenticated history endpoint contract', () => {
-  it('denies rich history unless the authenticated Trace Burn request opts into raw payload access', async () => {
+  it('returns persisted redacted history when Home explicitly omits raw payloads', async () => {
     const fixture = backend();
     const endpoints = createTraceSitesGatewayLiveEndpoints({
       backend: fixture.adapter,
@@ -96,12 +100,28 @@ describe('Trace Sites authenticated history endpoint contract', () => {
       ),
     );
 
-    expect(response.status).toBe(403);
-    expect(await response.json()).toMatchObject({
-      ok: false,
-      error: { code: 'RAW_PAYLOAD_ACCESS_DENIED' },
+    const body = (await response.json()) as {
+      data: { rows: Array<Record<string, unknown>> };
+    };
+    expect(response.status).toBe(200);
+    expect(body).toMatchObject({
+      ok: true,
+      data: {
+        rows: [
+          {
+            recordId: 'row_older',
+            traceId: 'trc_older',
+            name: 'fs.read',
+            status: 'success',
+          },
+        ],
+      },
     });
-    expect(fixture.calls).toHaveLength(0);
+    expect(body.data.rows[0]).not.toHaveProperty('input');
+    expect(body.data.rows[0]).not.toHaveProperty('output');
+    expect(body.data.rows[0]).not.toHaveProperty('rawInput');
+    expect(body.data.rows[0]).not.toHaveProperty('rawOutput');
+    expect(fixture.calls).toHaveLength(1);
   });
 
   it('routes older history to the OS backend with the authenticated workspace and returns its cursor', async () => {

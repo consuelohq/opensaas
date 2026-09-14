@@ -1,0 +1,9 @@
+{
+  "files": [
+    "packages/os/cloudflare/os-device-authority/src/services/mcp-proxy.ts",
+    "packages/os/scripts/lib/tool-scope-authorization.ts",
+    "packages/os/tests/workspace-node-registry-routing.test.ts",
+    "packages/workspace/scripts/task-push.js"
+  ],
+  "updatedAt": "2026-08-29T07:42:29.309Z"
+}

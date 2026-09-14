@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/allow-lifecycle-update-recovery-for-stale-nodes",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2296,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2296",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-allow-lifecycle-update-recovery-for-stale-nodes",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_6ee1ab9baf41",
+  "tmuxSession": "opensaas-os-allow-lifecycle-update-recovery-for-stale-nodes-6ee1ab9b",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-allow-lifecycle-update-recovery-for-stale-nodes/.task/session.json",
+  "createdAt": "2026-08-29T07:32:43.707Z"
+}

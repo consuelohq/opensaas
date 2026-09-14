@@ -251,6 +251,7 @@ export const createCustomerEntryController = (options: {
   };
   const listeners = new Set<(next: CustomerEntryState) => void>();
   let inFlight: Promise<CustomerCallbackResult> | null = null;
+  let pendingRequest: { fingerprint: string; idempotencyKey: string } | null = null;
   const emit = () => {
     for (const listener of listeners) listener(state);
   };
@@ -273,12 +274,20 @@ export const createCustomerEntryController = (options: {
     input: CustomerCallbackRequest,
   ): Promise<CustomerCallbackResult> => {
     if (inFlight) return inFlight;
-    const idempotencyKey =
-      options.createIdempotencyKey?.() ?? crypto.randomUUID();
+    const fingerprint = JSON.stringify(input);
+    if (pendingRequest?.fingerprint !== fingerprint) {
+      pendingRequest = {
+        fingerprint,
+        idempotencyKey:
+          options.createIdempotencyKey?.() ?? crypto.randomUUID(),
+      };
+    }
+    const idempotencyKey = pendingRequest.idempotencyKey;
     update({ ...state, phase: 'submitting', error: null });
     inFlight = options.api
       .requestCallback(options.publicId, { ...input, idempotencyKey })
       .then((result) => {
+        pendingRequest = null;
         update({ ...state, phase: 'ready', result, error: null });
         return result;
       })
@@ -297,14 +306,21 @@ export const createCustomerEntryController = (options: {
     if (!token) throw new Error('Callback management capability is unavailable');
     return token;
   };
+  const projectManagementFailure = (cause: unknown, fallback: string): never => {
+    const error = cause instanceof Error ? cause : new Error(fallback, { cause });
+    update({ ...state, phase: 'ready', error: error.message });
+    throw error;
+  };
   const readCallback = async () => {
     try {
       const result = await options.api.readCallback(options.publicId, requireToken());
       update({ ...state, phase: 'ready', result, error: null });
       return result;
     } catch (cause: unknown) {
-      if (cause instanceof Error) throw cause;
-      throw new Error('Callback status rejected with a non-Error cause', { cause });
+      return projectManagementFailure(
+        cause,
+        'Callback status rejected with a non-Error cause',
+      );
     }
   };
   const rescheduleCallback = async (serviceWindowId: string) => {
@@ -317,8 +333,10 @@ export const createCustomerEntryController = (options: {
       update({ ...state, phase: 'ready', result, error: null });
       return result;
     } catch (cause: unknown) {
-      if (cause instanceof Error) throw cause;
-      throw new Error('Callback reschedule rejected with a non-Error cause', { cause });
+      return projectManagementFailure(
+        cause,
+        'Callback reschedule rejected with a non-Error cause',
+      );
     }
   };
   const cancelCallback = async () => {
@@ -330,8 +348,10 @@ export const createCustomerEntryController = (options: {
       update({ ...state, phase: 'ready', result, error: null });
       return result;
     } catch (cause: unknown) {
-      if (cause instanceof Error) throw cause;
-      throw new Error('Callback cancellation rejected with a non-Error cause', { cause });
+      return projectManagementFailure(
+        cause,
+        'Callback cancellation rejected with a non-Error cause',
+      );
     }
   };
   const restoreManagementToken = async (managementToken: string) => {
@@ -344,8 +364,10 @@ export const createCustomerEntryController = (options: {
       update({ ...state, phase: 'ready', result: restored, error: null });
       return restored;
     } catch (cause: unknown) {
-      if (cause instanceof Error) throw cause;
-      throw new Error('Callback restore rejected with a non-Error cause', { cause });
+      return projectManagementFailure(
+        cause,
+        'Callback restore rejected with a non-Error cause',
+      );
     }
   };
   return {

@@ -142,6 +142,7 @@ export type ExecuteToolOptions = {
   now?: () => number;
   randomUUID?: () => string;
   logMode?: LogMode;
+  timeoutMs?: number;
 };
 
 export type BatchExecutionContext = {

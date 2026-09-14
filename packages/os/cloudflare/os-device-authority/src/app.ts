@@ -37,6 +37,8 @@ export type CreateDeviceAuthorityHandlerInput = {
   githubAppId?: string;
   githubAppSlug?: string;
   githubAppPrivateKey?: string;
+  githubAppClientId?: string;
+  githubAppClientSecret?: string;
   fetchImpl?: typeof fetch;
   workspaceRouteRegistry?: WorkspaceRouteRegistryBinding;
   workspaceConnectorProvisioner?: WorkspaceConnectorProvisioner;

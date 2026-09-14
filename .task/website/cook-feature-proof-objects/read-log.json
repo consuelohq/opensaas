@@ -1,0 +1,8 @@
+{
+  "files": [
+    "packages/consuelo-website/tests/website-structure.test.js",
+    "packages/os/scripts/lib/settings-site.ts",
+    "packages/os/scripts/memory.js"
+  ],
+  "updatedAt": "2026-09-01T02:11:51.582Z"
+}

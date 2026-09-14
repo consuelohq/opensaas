@@ -127,6 +127,7 @@ export type OsConfig = {
 export type ProvisionOptions = {
   home?: string;
   userHome?: string;
+  recoveryPackageRoot?: string;
   mode?: OsMode;
   port?: number;
   dryRun?: boolean;
@@ -499,7 +500,7 @@ function materializeVisibleUserRoot(input: {
   if (input.dryRun) {
     return [
       ...actions,
-      ...['Steering/system.md', 'Steering/example-steering.md', 'Tools/TOOLS.md', 'Skills/skills.json'].map(
+      ...['Steering/system.md', 'Steering/example-system.md', 'Tools/TOOLS.md', 'Skills/skills.json'].map(
         (relative) => ({
           type: 'create_file' as const,
           path: path.join(input.userRoot, ...relative.split('/')),
@@ -510,22 +511,13 @@ function materializeVisibleUserRoot(input: {
     ];
   }
 
-  // Shared with the update path so an existing user who never reinstalls still receives this.
-  // The steering body must be passed here too: without it a fresh install writes the "could not be
-  // read" fallback as the example, even though the bundled steering is sitting right there.
-  const steeringSource = path.join(
-    PACKAGE_ROOT,
-    'steering',
-    'system_prompt.md',
-  );
+  // Shared with the update path so an existing user who never reinstalls still receives managed
+  // catalogs and the excluded example while preserving user-owned steering.
   const reconciled = reconcileManagedUserContent({
     userRoot: input.userRoot,
     tools: toolManifest.tools,
     skillsIndex: fs.existsSync(skillsIndexSource)
       ? fs.readFileSync(skillsIndexSource, 'utf8')
-      : undefined,
-    steeringBody: fs.existsSync(steeringSource)
-      ? fs.readFileSync(steeringSource, 'utf8')
       : undefined,
   });
   for (const action of reconciled) {
@@ -539,9 +531,14 @@ function materializeVisibleUserRoot(input: {
   return actions;
 }
 
-function materializeLifecycleCommand(
+function shellSingleQuoted(value: string): string {
+  return `'${value.replaceAll("'", `'"'"'`)}'`;
+}
+
+export function materializeLifecycleCommand(
   home: string,
   dryRun: boolean,
+  options: { recoveryPackageRoot?: string } = {},
 ): ProvisionAction[] {
   const commandPath = path.join(home, 'bin', 'consuelo');
   const source = [
@@ -550,6 +547,7 @@ function materializeLifecycleCommand(
     'OS_HOME="${CONSUELO_HOME:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"',
     'BUN_EXECUTABLE="${BUN_BIN:-}"',
     'PACKAGE_ROOT="${CONSUELO_OS_PACKAGE_ROOT:-}"',
+    `RECOVERY_PACKAGE_ROOT=${shellSingleQuoted(options.recoveryPackageRoot?.trim() ?? '')}`,
     'if [ -f "$OS_HOME/.env" ]; then',
     '  while IFS= read -r line || [ -n "$line" ]; do',
     '    case "$line" in',
@@ -563,6 +561,8 @@ function materializeLifecycleCommand(
     '  LIFECYCLE_SCRIPT="$PACKAGE_ROOT/scripts/lifecycle.ts"',
     'elif [ -f "$OS_HOME/runtime/current/scripts/lifecycle.ts" ]; then',
     '  LIFECYCLE_SCRIPT="$OS_HOME/runtime/current/scripts/lifecycle.ts"',
+    'elif [ -n "$RECOVERY_PACKAGE_ROOT" ] && [ -f "$RECOVERY_PACKAGE_ROOT/scripts/lifecycle.ts" ]; then',
+    '  LIFECYCLE_SCRIPT="$RECOVERY_PACKAGE_ROOT/scripts/lifecycle.ts"',
     'fi',
     'if [ ! -f "$LIFECYCLE_SCRIPT" ]; then',
     '  echo "OS lifecycle runtime is not installed. Run: curl -fsSL https://install.consuelohq.com/os | bash" >&2',
@@ -609,9 +609,21 @@ function materializeLifecycleCommand(
         ? 'created'
         : 'updated';
   if (!dryRun && existing !== source) {
-    fs.mkdirSync(path.dirname(commandPath), { recursive: true });
-    fs.writeFileSync(commandPath, source, { mode: 0o755 });
-    fs.chmodSync(commandPath, 0o755);
+    const commandDirectory = path.dirname(commandPath);
+    fs.mkdirSync(commandDirectory, { recursive: true });
+    const stagingDirectory = fs.mkdtempSync(path.join(commandDirectory, '.consuelo-lifecycle-'));
+    const stagedCommandPath = path.join(stagingDirectory, 'consuelo');
+    try {
+      fs.writeFileSync(stagedCommandPath, source, { mode: 0o755 });
+      fs.chmodSync(stagedCommandPath, 0o755);
+      fs.renameSync(stagedCommandPath, commandPath);
+    } finally {
+      try {
+        fs.rmSync(stagingDirectory, { recursive: true, force: true });
+      } catch {
+        // Best-effort cleanup must not mask the write/rename result.
+      }
+    }
   }
   return [{
     type: 'create_file',
@@ -1714,7 +1726,9 @@ export function provisionLocalOs(
   }
 
   actions.push(...materializeVisibleUserRoot({ userRoot, dryRun }));
-  actions.push(...materializeLifecycleCommand(home, dryRun));
+  actions.push(...materializeLifecycleCommand(home, dryRun, {
+    recoveryPackageRoot: options.recoveryPackageRoot,
+  }));
 
   let config = readJsonFile<OsConfig>(configPath);
   if (config) {

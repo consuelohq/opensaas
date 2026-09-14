@@ -1,0 +1,16 @@
+{
+  "area": "explore",
+  "stream": "stream/explore",
+  "taskBranch": "task/explore/align-explore-regression-test-names-with-review-convention",
+  "baseBranch": "stream/explore",
+  "sourceBranch": "stream/explore",
+  "startFrom": "stream",
+  "prNumber": 2422,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2422",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-explore-align-explore-regression-test-names-with-review-convention",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_8e06adb6282f",
+  "tmuxSession": "opensaas-explore-align-explore-regression-test-names-with-review--8e06adb6",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-explore-align-explore-regression-test-names-with-review-convention/.task/session.json",
+  "createdAt": "2026-09-08T15:08:05.891Z"
+}

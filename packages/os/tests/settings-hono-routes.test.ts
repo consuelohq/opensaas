@@ -216,13 +216,13 @@ describe('Hono Configuration routes', () => {
     });
   });
 
-  it('starts GitHub installation from Configuration without asking for connection bindings', async () => {
+  it('starts GitHub authorization from Configuration without asking for connection bindings', async () => {
     const authorityCalls: Request[] = [];
     vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
       const request = input instanceof Request ? input : new Request(input, init);
       authorityCalls.push(request.clone());
       return Response.json({
-        installUrl: 'https://github.com/apps/consuelo-os/installations/new?state=ghs_test',
+        authorizationUrl: 'https://github.com/login/oauth/authorize?client_id=Iv1.test&state=ghs_test',
       });
     });
 
@@ -239,7 +239,7 @@ describe('Hono Configuration routes', () => {
     expect(response.headers.get('cache-control')).toBe('no-store');
     const html = await response.text();
     expect(html).toContain('Opening GitHub…');
-    expect(html).toContain('https://github.com/apps/consuelo-os/installations/new?state=ghs_test');
+    expect(html).toContain('https://github.com/login/oauth/authorize?client_id=Iv1.test&amp;state=ghs_test');
     expect(html).toContain('href="/diffs"');
     expect(html).toContain('requestAnimationFrame');
     expect(html).toContain('window.location.replace');
@@ -255,6 +255,66 @@ describe('Hono Configuration routes', () => {
       workspaceId,
       nodeId: 'node_configuration_hono',
       returnPath: '/diffs',
+      manageAccess: false,
+    });
+  });
+
+  it('starts GitHub authorization when legacy source-control defaults are invalid', async () => {
+    const invalidWorkspace = createDefaultWorkspaceYamlConfig({
+      workspaceId,
+      workspaceName: 'Configuration Hono',
+      workspaceSlug: 'configuration-hono',
+      workspaceHost: 'configuration-hono.consuelohq.com',
+    });
+    invalidWorkspace.defaults.project = 'missing-project';
+    writeYamlConfig(
+      resolveConsueloHomeLayout(home).workspaceConfigPath(workspaceId),
+      invalidWorkspace,
+      false,
+    );
+    let authorityBody: Record<string, unknown> | undefined;
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
+      const request = input instanceof Request ? input : new Request(input, init);
+      authorityBody = await request.clone().json() as Record<string, unknown>;
+      return Response.json({
+        authorizationUrl: 'https://github.com/login/oauth/authorize?client_id=Iv1.test&state=ghs_invalid_default',
+      });
+    });
+
+    const path = '/gateway/configuration/source-control/github/connect?return_to=%2Fdiffs';
+    const response = await handleRequest(signedRequest({
+      method: 'GET',
+      path,
+      nonce: 'configuration-github-invalid-default-nonce',
+    }));
+
+    expect(response.status).toBe(200);
+    expect(authorityBody).toMatchObject({ repositoryOwners: [] });
+  });
+
+  it('propagates Manage GitHub access intent to Device Authority', async () => {
+    let authorityBody: Record<string, unknown> | undefined;
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async (input, init) => {
+      const request = input instanceof Request ? input : new Request(input, init);
+      authorityBody = await request.clone().json() as Record<string, unknown>;
+      return Response.json({
+        authorizationUrl: 'https://github.com/login/oauth/authorize?client_id=Iv1.test&state=ghs_manage',
+      });
+    });
+
+    const path = '/gateway/configuration/source-control/github/connect?return_to=%2Fconfiguration&mode=manage';
+    const response = await handleRequest(signedRequest({
+      method: 'GET',
+      path,
+      nonce: 'configuration-github-manage-nonce',
+    }));
+
+    expect(response.status).toBe(200);
+    expect(authorityBody).toMatchObject({
+      workspaceId,
+      nodeId: 'node_configuration_hono',
+      returnPath: '/configuration',
+      manageAccess: true,
     });
   });
 

@@ -1,0 +1,11 @@
+{
+  "files": [
+    ".task/explore/fix-explore-gateway-identity-and-runtime-routing/workpad.md",
+    "packages/os/SCRIPTS.md",
+    "packages/os/manifests/generated/tool.manifest.json",
+    "packages/os/scripts/lib/index/embedding-gateway.js",
+    "packages/os/tests/tool-package-layout.test.ts",
+    "packages/os/tools/decision-engine/manifest.ts"
+  ],
+  "updatedAt": "2026-08-15T18:42:52.753Z"
+}

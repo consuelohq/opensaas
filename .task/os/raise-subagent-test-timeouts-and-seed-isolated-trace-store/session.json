@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_e5058a37ebe8",
+  "tmuxSession": "opensaas-os-raise-subagent-test-timeouts-and-seed-isolated-t-e5058a37",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/raise-subagent-test-timeouts-and-seed-isolated-trace-store",
+  "branch": "task/os/raise-subagent-test-timeouts-and-seed-isolated-trace-store",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-raise-subagent-test-timeouts-and-seed-isolated-trace-store",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-raise-subagent-test-timeouts-and-seed-isolated-trace-store",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2314,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2314",
+  "createdAt": "2026-08-30T19:55:44.401Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-raise-subagent-test-timeouts-and-seed-isolated-trace-store/.task/os/raise-subagent-test-timeouts-and-seed-isolated-trace-store/session.json"
+}

@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "target": "controlled_trial",
+  "alpha": 0.05,
+  "minimumIndependentBenchmarkCases": 50,
+  "plannedEvaluatedBenchmarkCases": 50,
+  "minimumRelevanceDiscordantCases": 10,
+  "minimumShadowObservations": 50,
+  "minimumDistinctShadowQuestions": 20,
+  "maximumShadowErrors": 0,
+  "maximumRequiredNodeRegressions": 0,
+  "claim": "Versioned pre-specified E6 gate criteria, fixed before sufficient paired promotion evidence exists. Eligibility means controlled-trial/manual promotion review only; it never authorizes an automatic production cutover."
+}

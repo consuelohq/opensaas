@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/fix-pr-2310-validation-wrapper-signal-exit",
+  "events": [
+    {
+      "id": "b30f3008-0f4e-4328-8d31-de6628b3247b",
+      "occurred_at": "2026-08-31T21:11:48.950Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/session-integration-guidance.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-pr-2310-validation-wrapper-signal-exit",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-pr-2310-validation-wrapper-signal-exit"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-31T21:11:49.013Z"
+}

@@ -75,6 +75,8 @@ suite('RD6 callback telephony with real Postgres and simulated carrier', () => {
   let participants: { callSid: string; muted: boolean; hold: boolean }[];
   let carrier: InboundCarrier;
   let loseCustomerResponse: boolean;
+  let loseRepRedirectResponse: boolean;
+  let failEndFor: string | null;
   let capacity: ReturnType<typeof createPostgresRepCapacity>;
   let service: ReturnType<typeof createInboundTelephony>;
   let callbacks: ReturnType<typeof createPostgresCallbacks>;
@@ -107,6 +109,8 @@ suite('RD6 callback telephony with real Postgres and simulated carrier', () => {
     participants = [];
     calls = new Map();
     loseCustomerResponse = false;
+    loseRepRedirectResponse = false;
+    failEndFor = null;
     let sequence = 0;
     carrier = {
       offer: async (input) => {
@@ -130,8 +134,14 @@ suite('RD6 callback telephony with real Postgres and simulated carrier', () => {
       },
       redirect: async (sid) => {
         redirects.push(sid);
+        if (loseRepRedirectResponse) {
+          loseRepRedirectResponse = false;
+          throw new Error('provider accepted rep redirect but response was lost');
+        }
       },
       end: async (sid) => {
+        if (failEndFor === sid)
+          throw new Error('provider termination result is unknown');
         calls.set(sid, { sid, accountSid: 'account', status: 'completed' });
       },
       call: async (sid) => {
@@ -349,6 +359,84 @@ suite('RD6 callback telephony with real Postgres and simulated carrier', () => {
     expect(offerTargets.filter((target) => target === '+18285550123')).toHaveLength(1);
     expect((await capacity.read('workspace', 'slot'))!.owner?.phase).toBe('connected');
     expect((await callbacks.read('workspace', 'callback-one'))!.state.status).toBe('connected');
+  });
+
+  it('reconciles a lost rep-bridge response before starting the customer dial', async () => {
+    await requestCallback();
+    await service.tick();
+    const { repSid } = await acceptLatestRep();
+    loseRepRedirectResponse = true;
+    await service.tick();
+    expect((await capacity.read('workspace', 'slot'))!.owner?.phase).toBe('unknown');
+    expect((await callbacks.read('workspace', 'callback-one'))!.state.status).toBe('unknown');
+    expect(redirects.filter((sid) => sid === repSid)).toHaveLength(2);
+    expect(offerTargets.filter((target) => target === '+18285550123')).toHaveLength(1);
+
+    participants = [{ callSid: repSid, muted: false, hold: false }];
+    await service.tick();
+    expect(offerTargets.filter((target) => target === '+18285550123')).toHaveLength(1);
+  });
+
+  it('does not mark a callback connected until both participants are audible', async () => {
+    await requestCallback();
+    await service.tick();
+    const { repSid } = await acceptLatestRep();
+    await service.tick();
+    const customerSid = [...calls.keys()].find((sid) => sid.startsWith('customer-call-'))!;
+    await service.handle(
+      'number-one',
+      'callback-join',
+      { AccountSid: 'account', CallSid: customerSid },
+      'callback-one',
+    );
+    participants = [
+      { callSid: repSid, muted: true, hold: false },
+      { callSid: customerSid, muted: false, hold: false },
+    ];
+    await service.tick();
+    expect((await capacity.read('workspace', 'slot'))!.owner?.phase).not.toBe('connected');
+    expect((await callbacks.read('workspace', 'callback-one'))!.state.status).not.toBe('connected');
+
+    participants[0] = { callSid: repSid, muted: false, hold: false };
+    await service.tick();
+    expect((await capacity.read('workspace', 'slot'))!.owner?.phase).toBe('connected');
+    expect((await callbacks.read('workspace', 'callback-one'))!.state.status).toBe('connected');
+  });
+
+  it('keeps connected capacity fenced until an ambiguous surviving-leg termination is proven terminal', async () => {
+    await requestCallback();
+    await service.tick();
+    const { repSid } = await acceptLatestRep();
+    await service.tick();
+    const customerSid = [...calls.keys()].find((sid) => sid.startsWith('customer-call-'))!;
+    await service.handle(
+      'number-one',
+      'callback-join',
+      { AccountSid: 'account', CallSid: customerSid },
+      'callback-one',
+    );
+    participants = [
+      { callSid: repSid, muted: false, hold: false },
+      { callSid: customerSid, muted: false, hold: false },
+    ];
+    await service.tick();
+    expect((await capacity.read('workspace', 'slot'))!.owner?.phase).toBe('connected');
+
+    calls.set(customerSid, {
+      sid: customerSid,
+      accountSid: 'account',
+      status: 'completed',
+    });
+    participants = [];
+    failEndFor = repSid;
+    await service.tick();
+    expect(calls.get(repSid)?.status).toBe('in-progress');
+    expect((await capacity.read('workspace', 'slot'))!.owner).not.toBeNull();
+
+    failEndFor = null;
+    await service.tick();
+    expect(calls.get(repSid)?.status).toBe('completed');
+    expect((await capacity.read('workspace', 'slot'))!.owner?.phase).toBe('wrap_up');
   });
 
   it('turns an authenticated DTMF callback choice into a durable encrypted obligation before hangup', async () => {

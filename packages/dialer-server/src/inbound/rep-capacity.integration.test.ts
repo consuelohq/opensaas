@@ -1,4 +1,5 @@
 import { CALLBACK_MIGRATION_ID } from './callback-migration';
+import { CUSTOMER_ENTRY_MIGRATION_ID } from './customer-entry-migration';
 import { TELEPHONY_MIGRATION_ID } from './telephony-migration';
 import { ROUTING_MIGRATION_ID } from './routing-migration';
 import { afterAll, beforeAll, describe, expect, it } from 'bun:test';
@@ -138,6 +139,38 @@ suite('Postgres shared rep capacity', () => {
   const fence = (state: RepCapacityState) => ({
     assignmentId: state.owner!.assignmentId,
     generation: state.generation,
+  });
+
+  it('keeps shared capacity unavailable until the rep is ready and withdraws it when they go away', async () => {
+    seconds = 0;
+    let { state } = await service.execute({
+      workspaceId,
+      capacityId: 'readiness-projection',
+      operationId: randomUUID(),
+      expectedVersion: 0,
+      action: { type: 'register', repId: 'readiness-projection', policy },
+    });
+    expect(
+      (await journal.replay(workspaceId, 'capacity', state.capacityId))?.state,
+    ).toBe('unavailable');
+
+    ({ state } = await execute(state, {
+      type: 'readiness',
+      ready: true,
+      endpoints: [{ endpointId: 'web', kind: 'browser', healthy: true }],
+    }));
+    expect(
+      (await journal.replay(workspaceId, 'capacity', state.capacityId))?.state,
+    ).toBe('available');
+
+    ({ state } = await execute(state, {
+      type: 'readiness',
+      ready: false,
+      endpoints: [{ endpointId: 'web', kind: 'browser', healthy: true }],
+    }));
+    expect(
+      (await journal.replay(workspaceId, 'capacity', state.capacityId))?.state,
+    ).toBe('unavailable');
   });
 
   it('commits one winner across competing inbound and outbound connections', async () => {
@@ -622,6 +655,10 @@ suite('Postgres shared rep capacity', () => {
   });
 
   it('preserves identity uniqueness, history immutability and populated migration rollback', async () => {
+    await rollbackDialerDatabaseMigration(pool, CUSTOMER_ENTRY_MIGRATION_ID);
+    await rollbackDialerDatabaseMigration(pool, CALLBACK_MIGRATION_ID);
+    await rollbackDialerDatabaseMigration(pool, TELEPHONY_MIGRATION_ID);
+    await rollbackDialerDatabaseMigration(pool, ROUTING_MIGRATION_ID);
     await pool.query(CREATE_REP_CAPACITY_SQL);
     const state = await ready('migration');
     await expect(
@@ -646,9 +683,6 @@ suite('Postgres shared rep capacity', () => {
     offered = (await execute(offered, { type: 'cancel', ...fence(offered) }))
       .state;
     expect(offered.owner).toBeNull();
-    await rollbackDialerDatabaseMigration(pool, CALLBACK_MIGRATION_ID);
-    await rollbackDialerDatabaseMigration(pool, TELEPHONY_MIGRATION_ID);
-    await rollbackDialerDatabaseMigration(pool, ROUTING_MIGRATION_ID);
     await rollbackDialerDatabaseMigration(pool, REP_CAPACITY_MIGRATION_ID);
     expect(
       (await pool.query("SELECT to_regclass('dialer_rep_capacity') AS name"))

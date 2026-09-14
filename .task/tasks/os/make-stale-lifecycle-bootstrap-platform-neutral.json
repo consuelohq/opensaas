@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/make-stale-lifecycle-bootstrap-platform-neutral",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2409,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2409",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-make-stale-lifecycle-bootstrap-platform-neutral",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_6ad3dd4e1f70",
+  "tmuxSession": "opensaas-os-make-stale-lifecycle-bootstrap-platform-neutral-6ad3dd4e",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-make-stale-lifecycle-bootstrap-platform-neutral/.task/session.json",
+  "createdAt": "2026-09-08T04:10:37.729Z"
+}

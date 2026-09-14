@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-launcher-diffs-github-authorization",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2357,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2357",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-launcher-diffs-github-authorization",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_b3b8ce6cfe27",
+  "tmuxSession": "opensaas-os-fix-launcher-diffs-github-authorization-b3b8ce6c",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-launcher-diffs-github-authorization/.task/session.json",
+  "createdAt": "2026-09-01T01:14:31.623Z"
+}

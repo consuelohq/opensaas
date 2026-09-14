@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_87afa40045e5",
+  "tmuxSession": "opensaas-dialer-algorithm-d1-reconstruct-mature-dialer-model-87afa400",
+  "area": "dialer-algorithm",
+  "stream": "stream/dialer-algorithm",
+  "taskBranch": "task/dialer-algorithm/d1-reconstruct-mature-dialer-model",
+  "branch": "task/dialer-algorithm/d1-reconstruct-mature-dialer-model",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-d1-reconstruct-mature-dialer-model",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-d1-reconstruct-mature-dialer-model",
+  "prNumber": 2007,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2007",
+  "createdAt": "2026-08-15T03:56:47.473Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-d1-reconstruct-mature-dialer-model/.task/dialer-algorithm/d1-reconstruct-mature-dialer-model/session.json"
+}

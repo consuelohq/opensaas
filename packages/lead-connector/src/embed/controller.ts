@@ -46,6 +46,7 @@ export const createLeadConnectorEmbedController = (input: {
   let resourceRefresh: Promise<void> | null = null;
   let commercialRefresh: Promise<void> | null = null;
   let inboundRefresh: Promise<void> | null = null;
+  let pendingInboundAcceptance: { key: string; attemptId: string } | null = null;
   const listeners = new Set<(state: LeadConnectorEmbedState) => void>();
 
   const publish = (): void => {
@@ -501,14 +502,22 @@ export const createLeadConnectorEmbedController = (input: {
           action: 'accept',
           assignmentId: inputValue.assignmentId,
         });
+        const acceptanceKey = `${inputValue.assignmentId}:${inputValue.generation}:${inputValue.endpointId}`;
+        if (pendingInboundAcceptance?.key !== acceptanceKey) {
+          pendingInboundAcceptance = {
+            key: acceptanceKey,
+            attemptId: globalThis.crypto.randomUUID(),
+          };
+        }
         const acceptance = {
           ...inputValue,
-          attemptId: globalThis.crypto.randomUUID(),
+          attemptId: pendingInboundAcceptance.attemptId,
         };
         const result = await runInbound(() =>
           input.inboundOperatorApi!.acceptOffer(acceptance),
         );
         if (!result) return;
+        pendingInboundAcceptance = null;
         if (result.accepted && result.snapshot) {
           dispatchInbound({
             type: 'ACTION_CONFIRMED',

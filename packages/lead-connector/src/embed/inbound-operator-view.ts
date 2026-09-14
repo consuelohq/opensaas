@@ -24,7 +24,7 @@ const endpointRow = (
   '" data-endpoint-kind="' +
   escapeHtml(endpoint.kind) +
   '"' +
-  (ready ? ' checked' : '') +
+  (endpoint.active ?? ready ? ' checked' : '') +
   (endpoint.healthy ? '' : ' disabled') +
   ' />' +
   '<span><strong>' +
@@ -53,11 +53,13 @@ const renderOffers = (state: InboundOperatorState): string => {
   }
   return state.offers
     .map((offer) => {
-      const endpoint = state.rep.endpoints.find(
+      const eligible = state.rep.endpoints.filter(
         (candidate) =>
           offer.eligibleEndpoints.includes(candidate.endpointId) &&
           candidate.healthy,
       );
+      const endpoint =
+        eligible.find((candidate) => candidate.kind === 'browser') ?? eligible[0];
       const disabled = Boolean(state.pendingAction) || !endpoint;
       return (
         '<article class="inbound-offer" data-assignment-id="' +
@@ -111,7 +113,7 @@ export const renderInboundOperatorPanel = (
   const readyLabel = state.rep.ready
     ? 'Ready for inbound'
     : 'Away from inbound';
-  const canToggle = !state.pendingAction && state.rep.presence !== 'offline';
+  const canToggle = !state.pendingAction && !state.rep.assignment;
   const hoursLabel = phaseLabel(state.queue.businessHours);
   const overflowLabel = phaseLabel(state.queue.overflow);
   const recovery =
@@ -179,14 +181,6 @@ export const renderInboundOperatorPanel = (
     escapeHtml(state.configuration.hoursLabel) +
     '</dd></div><div><dt>Fallback</dt><dd>' +
     escapeHtml(state.configuration.overflowLabel) +
-    '</dd></div></dl><form class="inbound-configuration-form" data-form="inbound-configuration"><label>Number label<input name="numberLabel" maxlength="80" value="' +
-    escapeHtml(state.configuration.numberLabel) +
-    '" /></label><label>Team name<input name="teamName" maxlength="80" value="' +
-    escapeHtml(state.configuration.teamName) +
-    '" /></label><label>Hours<input name="hoursLabel" maxlength="120" value="' +
-    escapeHtml(state.configuration.hoursLabel) +
-    '" /></label><label>Overflow<input name="overflowLabel" maxlength="120" value="' +
-    escapeHtml(state.configuration.overflowLabel) +
-    '" /></label><button type="submit" class="button button--secondary">Save inbound configuration</button></form></article></div></section>'
+    '</dd></div></dl><p class="resource-empty">Inbound configuration is managed by the server.</p></article></div></section>'
   );
 };

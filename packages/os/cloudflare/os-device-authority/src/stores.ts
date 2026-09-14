@@ -441,6 +441,14 @@ export class DurableStore implements Store {
   async putGitHubSourceControlInstallState(state: GitHubSourceControlInstallState) {
     try {
       await this.storage.put(`gss:${state.state}`, state);
+      if (this.storage.setAlarm) {
+        const currentAlarm = this.storage.getAlarm
+          ? await this.storage.getAlarm()
+          : null;
+        if (currentAlarm === null || state.expiresAt < currentAlarm) {
+          await this.storage.setAlarm(state.expiresAt);
+        }
+      }
     } catch {
       throw new Error('github source-control install state write failed');
     }
@@ -457,6 +465,29 @@ export class DurableStore implements Store {
       await this.storage.delete(`gss:${state}`);
     } catch {
       throw new Error('github source-control install state delete failed');
+    }
+  }
+  async cleanupExpiredGitHubSourceControlInstallStates(nowMs: number) {
+    try {
+      if (!this.storage.list) return;
+      const states = await this.storage.list<GitHubSourceControlInstallState>({ prefix: 'gss:' });
+      let nextExpiresAt: number | undefined;
+      for (const [key, state] of states.entries()) {
+        if (state.expiresAt <= nowMs) {
+          await this.storage.delete(key);
+          continue;
+        }
+        if (nextExpiresAt === undefined || state.expiresAt < nextExpiresAt) {
+          nextExpiresAt = state.expiresAt;
+        }
+      }
+      if (nextExpiresAt !== undefined && this.storage.setAlarm) {
+        await this.storage.setAlarm(nextExpiresAt);
+      } else if (nextExpiresAt === undefined && this.storage.deleteAlarm) {
+        await this.storage.deleteAlarm();
+      }
+    } catch {
+      throw new Error('github source-control install state cleanup failed');
     }
   }
   async putGitHubSourceControlConnection(connection: GitHubSourceControlConnection) {
@@ -876,6 +907,7 @@ export class DurableStore implements Store {
         if (boundAccountId === accountId) {
           await storage.delete(`wni:${nodeId}`);
         }
+        await storage.delete(managedCloudProvisioningNodeKey(nodeId));
         await storage.put(
           `wnl:${accountId}`,
           nodeIds.filter((candidate) => candidate !== nodeId),
@@ -928,6 +960,7 @@ export class DurableStore implements Store {
             (await storage.get<string[]>(`wnh:${node.workspaceHost}`)) ?? [];
           await storage.delete(`wn:${input.accountId}:${input.nodeId}`);
           await storage.delete(`wni:${input.nodeId}`);
+          await storage.delete(managedCloudProvisioningNodeKey(input.nodeId));
           await storage.put(
             `wnl:${input.accountId}`,
             nodeIds.filter((candidate) => candidate !== input.nodeId),
@@ -1341,6 +1374,19 @@ export class DurableStore implements Store {
       const job = await this.storage.get<ManagedCloudProvisioningJob>(managedCloudProvisioningJobKey(jobId));
       return job ? cloneManagedCloudProvisioningJob(job) : undefined;
     } catch { throw new Error('managed cloud provisioning job read failed'); }
+  }
+  async byManagedCloudProvisioningNode(nodeId: string) {
+    try {
+      const jobId = await this.storage.get<string>(managedCloudProvisioningNodeKey(nodeId));
+      if (!jobId) return undefined;
+      const job = await this.storage.get<ManagedCloudProvisioningJob>(managedCloudProvisioningJobKey(jobId));
+      return job ? cloneManagedCloudProvisioningJob(job) : undefined;
+    } catch { throw new Error('managed cloud provisioning node read failed'); }
+  }
+  async delManagedCloudProvisioningNode(nodeId: string) {
+    try {
+      await this.storage.delete(managedCloudProvisioningNodeKey(nodeId));
+    } catch { throw new Error('managed cloud provisioning node delete failed'); }
   }
   async claimNextManagedCloudProvisioningJob(input: { leaseId: string; nowMs: number; leaseExpiresAt: number; enrollmentNonce: string; enrollmentExpiresAt: number }) {
     const claim = async (storage: StorageLike) => {
@@ -1814,6 +1860,7 @@ export function createMemoryDeviceGrantStore(): Store {
       }
       workspaceNodes.delete(`${accountId}:${nodeId}`);
       if (boundAccountId === accountId) workspaceNodeAccounts.delete(nodeId);
+      managedCloudProvisioningNode.delete(nodeId);
       for (const [key, affinity] of workspaceTaskAffinities) {
         if (affinity.accountId === accountId && affinity.ownerNodeId === nodeId) {
           workspaceTaskAffinities.delete(key);
@@ -1839,6 +1886,7 @@ export function createMemoryDeviceGrantStore(): Store {
       if (workspaceNodeAccounts.get(input.nodeId) === input.accountId) {
         workspaceNodeAccounts.delete(input.nodeId);
       }
+      managedCloudProvisioningNode.delete(input.nodeId);
       for (const [affinityKey, affinity] of workspaceTaskAffinities) {
         if (affinity.accountId === input.accountId && affinity.ownerNodeId === input.nodeId) {
           workspaceTaskAffinities.delete(affinityKey);
@@ -2089,6 +2137,8 @@ export function createMemoryDeviceGrantStore(): Store {
       return Promise.resolve({ status: 'created' as const, job: cloneManagedCloudProvisioningJob(job) });
     },
     byManagedCloudProvisioningJob(jobId) { const job = managedCloudProvisioningJobs.get(jobId); return Promise.resolve(job ? cloneManagedCloudProvisioningJob(job) : undefined); },
+    byManagedCloudProvisioningNode(nodeId) { const jobId = managedCloudProvisioningNode.get(nodeId); const job = jobId ? managedCloudProvisioningJobs.get(jobId) : undefined; return Promise.resolve(job ? cloneManagedCloudProvisioningJob(job) : undefined); },
+    delManagedCloudProvisioningNode(nodeId) { managedCloudProvisioningNode.delete(nodeId); return Promise.resolve(); },
     claimNextManagedCloudProvisioningJob(input) {
       for (const jobId of managedCloudProvisioningQueue) { const job = managedCloudProvisioningJobs.get(jobId); if (!job || managedCloudProvisioningTerminal(job.status) || job.status === 'booting' || job.status === 'connecting') continue; if (job.leaseId && (job.leaseExpiresAt ?? 0) > input.nowMs) continue; const updated = { ...job, status: 'provisioning' as const, leaseId: input.leaseId, leaseExpiresAt: input.leaseExpiresAt, enrollmentNonce: job.enrollmentNonce ?? input.enrollmentNonce, enrollmentExpiresAt: job.enrollmentExpiresAt && job.enrollmentExpiresAt > input.nowMs ? job.enrollmentExpiresAt : input.enrollmentExpiresAt, updatedAt: input.nowMs }; managedCloudProvisioningJobs.set(jobId, updated); return Promise.resolve({ status: 'claimed' as const, job: cloneManagedCloudProvisioningJob(updated) }); }
       return Promise.resolve({ status: 'empty' as const });

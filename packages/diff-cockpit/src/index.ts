@@ -264,7 +264,8 @@ type WorkerExecutionContext = {
 
 const DEFAULT_OWNER = 'consuelohq';
 const DEFAULT_REPO = 'opensaas';
-const COCKPIT_ORIGIN = 'https://diffs.consuelohq.com';
+const WORKSPACE_DIFFS_ORIGIN = 'https://internal.consuelohq.com/diffs';
+const LEGACY_WORKER_ORIGIN = 'https://diffs.consuelohq.com';
 const MAX_PAGES = 10;
 const INDEX_OPEN_PULL_LIMIT = 75;
 const INDEX_RECENT_PULL_LIMIT = 75;
@@ -364,6 +365,17 @@ export function parsePullRequestLocator(
     };
   }
 
+  const internalDiffsMatch = value.match(
+    /^https:\/\/internal\.consuelohq\.com\/diffs\/([^/]+)\/([^/]+)\/pull\/(\d+)(?:[/?#].*)?$/,
+  );
+  if (internalDiffsMatch) {
+    return {
+      owner: internalDiffsMatch[1] || defaultOwner,
+      repo: internalDiffsMatch[2] || fallbackRepo,
+      number: Number(internalDiffsMatch[3]),
+    };
+  }
+
   const routeMatch = value.match(/^\/?([^/]+)\/([^/]+)\/pull\/(\d+)(?:[/?#].*)?$/);
   if (routeMatch) {
     return {
@@ -392,7 +404,7 @@ export function parseRepoLocator(input: string, defaultRepo = `${DEFAULT_OWNER}/
 }
 
 export function buildDiffCockpitUrl(locator: PullRequestLocator): string {
-  return `${COCKPIT_ORIGIN}/${encodeURIComponent(locator.owner)}/${encodeURIComponent(
+  return `${WORKSPACE_DIFFS_ORIGIN}/${encodeURIComponent(locator.owner)}/${encodeURIComponent(
     locator.repo,
   )}/pull/${locator.number}`;
 }
@@ -959,7 +971,7 @@ export function renderIndexPage(
       <div class="footer-links" aria-label="Footer links"><a href="#pull-requests">Inbox</a></div>
     </footer>
   </div>
-${initialDataScript}${initialEtagScript}  <script type="module">${renderIndexClientScript(apiPath, repo)}</script>
+${initialDataScript}${initialEtagScript}  <script type="module">${renderIndexClientScript(apiPath, repo, options)}</script>
 </body>
 </html>`;
 }
@@ -2293,7 +2305,7 @@ async function handleGithubWebhook(deps: GithubWebhookDeps): Promise<Response> {
     return internalJson({ ok: false, error: 'missing pull request locator' }, 400);
   }
   try {
-    const invalidated = await invalidatePullRequestReviewCache(deps.edgeCache, COCKPIT_ORIGIN, { owner, repo: repoName, number: pullNumber });
+    const invalidated = await invalidatePullRequestReviewCache(deps.edgeCache, LEGACY_WORKER_ORIGIN, { owner, repo: repoName, number: pullNumber });
     return internalJson({ ok: true, event, action, invalidated: [invalidated.path], edgeInvalidated: invalidated.edgeInvalidated });
   } catch (error: unknown) {
     return internalJson({ ok: false, error: getErrorMessage(error) }, 502);
@@ -3412,8 +3424,15 @@ function escapeAttribute(value) { return escapeHtml(value); }
 `;
 }
 
-function renderIndexClientScript(apiPath: string, repo: RepoLocator): string {
-  const routePrefix = `/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/pull/`;
+function renderIndexClientScript(
+  apiPath: string,
+  repo: RepoLocator,
+  options: DiffCockpitRenderOptions = {},
+): string {
+  const routePrefix = `${mountedPath(
+    `/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/pull`,
+    options,
+  )}/`;
   const repoLabel = `${repo.owner}/${repo.repo}`;
   return `
 const apiPath = ${JSON.stringify(apiPath)};
@@ -3566,6 +3585,7 @@ function loadCachedIndex() { clearStaleIndexCaches(); const cached = readCachedI
 let lastIndexLoadAt = 0;
 let indexLoadInFlight = null;
 let currentIndexEtag = readInitialIndexEtag();
+const indexAuthRetryDelaysMs = [250, 1000, 2500];
 function readScriptJson(id) {
   const element = document.getElementById(id);
   if (!element || !element.textContent) return null;
@@ -3574,6 +3594,13 @@ function readScriptJson(id) {
 }
 function readInitialIndexData() { return readScriptJson('diff-cockpit-index-initial-data'); }
 function readInitialIndexEtag() { return readScriptJson('diff-cockpit-index-initial-etag') || ''; }
+function fetchIndexWithAuthRetry(headers, attempt = 0) {
+  return fetch(apiPath, { headers, cache: 'no-cache' }).then((response) => {
+    if (response.status !== 401 || attempt >= indexAuthRetryDelaysMs.length) return response;
+    return new Promise((resolve) => window.setTimeout(resolve, indexAuthRetryDelaysMs[attempt]))
+      .then(() => fetchIndexWithAuthRetry(headers, attempt + 1));
+  });
+}
 function loadIndex(options = {}) {
   const initial = options.useCache === false ? null : readInitialIndexData();
   const cached = options.useCache === false ? null : (initial || loadCachedIndex());
@@ -3582,7 +3609,7 @@ function loadIndex(options = {}) {
   lastIndexLoadAt = Date.now();
   const headers = { accept: 'application/json' };
   if (currentIndexEtag) headers['If-None-Match'] = currentIndexEtag;
-  indexLoadInFlight = fetch(apiPath, { headers, cache: 'no-cache' })
+  indexLoadInFlight = fetchIndexWithAuthRetry(headers)
     .then((response) => {
       if (response.status === 304) return null;
       if (!response.ok) throw new Error('Live PR index fetch failed: ' + response.status);

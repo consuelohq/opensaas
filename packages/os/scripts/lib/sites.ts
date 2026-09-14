@@ -9,11 +9,11 @@ import {
   refreshArtifactsSite,
   type ArtifactCatalog,
 } from './artifacts';
-import { loadGlobalYamlConfig } from './consuelo-home';
 import { buildObservabilityTracesSite } from './observability-traces-site';
 import { materializeConfigurationSite } from './settings-materialization';
 import { renderConfigurationSite } from './settings-site';
 import type { WorkspaceChromeOptions } from './workspace-chrome';
+import { loadWorkspaceChromeOptions } from './workspace-chrome-config';
 
 export type SitesAction = {
   type: 'create_dir' | 'create_file';
@@ -553,17 +553,9 @@ function baseStyles(): string {
   `;
 }
 
-function loadWorkspaceChromeOptions(home: string): WorkspaceChromeOptions {
-  const configPath = path.join(home, 'consuelo.yaml');
-  if (!fs.existsSync(configPath)) return {};
-  const config = loadGlobalYamlConfig(configPath);
-  const extraSections = config.launcher?.extraSections ?? [];
-  return extraSections.length > 0 ? { extraSections } : {};
-}
-
 function buildSitesIndex(chromeOptions: WorkspaceChromeOptions = {}): string {
   // The workspace root is the operational home for an authenticated OS workspace.
-  // Keep it identical to Overview so every daemon refresh, update, and restart converges
+  // Keep it identical to Home so every daemon refresh, update, and restart converges
   // on the same default page instead of resurrecting Nodes or the retired local launcher.
   return renderConfigurationSite('configuration', chromeOptions);
 }

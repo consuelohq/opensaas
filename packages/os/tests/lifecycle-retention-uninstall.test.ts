@@ -68,7 +68,6 @@ const requiredRuntimePaths = [
   'manifests/generated/tool.manifest.json',
   'manifests/generated/core.manifest.json',
   'hooks/dispatcher.js',
-  'steering/system_prompt.md',
   'streams/tools/AGENTS.md',
   'skills/task/SKILL.md',
   'skills/task/skill.json',

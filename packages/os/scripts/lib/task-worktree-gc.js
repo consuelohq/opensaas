@@ -3,7 +3,7 @@ const path = require('path');
 
 const { getConsueloHome } = require('./paths');
 const { listDurableTaskSessionMetadata } = require('./task-registry');
-const { evictDurableTaskWorktree, getTaskInactivityAgeMs } = require('./task-worktree-eviction');
+const { evictDurableTaskWorktree, getTaskInactivityAgeMs, pruneExpiredTaskRecoveryArchives } = require('./task-worktree-eviction');
 
 const DEFAULT_TASK_EVICTION_IDLE_MS = 24 * 60 * 60 * 1000;
 const DEFAULT_TASK_GC_INTERVAL_MS = 60 * 60 * 1000;
@@ -33,9 +33,21 @@ function runTaskWorktreeGc(options = {}) {
     evicted: [],
     skipped: [],
     errors: [],
+    prunedArchives: [],
+  };
+  const metadataEntries = listDurableTaskSessionMetadata({ home });
+  const protectedSnapshotRoots = new Set();
+  const protectRecovery = (recovery) => {
+    if (!recovery || typeof recovery !== 'object') return;
+    for (const candidate of [recovery.manifestPath, recovery.bundlePath]) {
+      if (typeof candidate === 'string' && candidate.trim()) {
+        protectedSnapshotRoots.add(path.dirname(path.resolve(candidate)));
+      }
+    }
   };
 
-  for (const metadata of listDurableTaskSessionMetadata({ home })) {
+  for (const metadata of metadataEntries) {
+    protectRecovery(metadata.recovery);
     result.scanned += 1;
     const taskSession = metadata.taskSession;
     const worktreePath = metadata.worktreePath || metadata.worktree;
@@ -69,11 +81,30 @@ function runTaskWorktreeGc(options = {}) {
         inactiveMs,
         recovery: evicted.recovery || null,
       });
+      protectRecovery(evicted.recovery);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       result.errors.push({ taskSession, taskBranch: metadata.taskBranch, message });
       if (options.onError) options.onError(error, metadata);
     }
+  }
+  const prune = options.prune || pruneExpiredTaskRecoveryArchives;
+  try {
+    const pruned = prune({
+      home,
+      now: nowMs,
+      protectedSnapshotRoots: [...protectedSnapshotRoots],
+    });
+    result.prunedArchives = pruned.removed;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    const context = {
+      taskSession: null,
+      taskBranch: null,
+      scope: 'archive-pruning',
+    };
+    result.errors.push({ ...context, message });
+    if (options.onError) options.onError(error, context);
   }
   return result;
 }

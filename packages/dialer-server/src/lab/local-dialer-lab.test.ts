@@ -4,6 +4,7 @@ import {
   createSyntheticDialerFixture,
   resolveLabScale,
   summarizeSamples,
+  validatePredictiveLearningScience,
 } from './local-dialer-lab';
 
 describe('local dialer lab fixtures', () => {
@@ -80,4 +81,35 @@ describe('local dialer lab fixtures', () => {
       maxMs: 10,
     });
   });
+
+  it('fails predictive science validation when the idempotency probe cannot persist', async () => {
+    const database = {
+      query: async <T>(text: string) => {
+        if (text.includes('WITH canonical_insert AS')) {
+          throw new Error('forced telemetry write failure');
+        }
+        return { rows: [] as T[] };
+      },
+    };
+
+    try {
+      await validatePredictiveLearningScience(
+        database,
+        'workspace-lab-failure',
+        '2026-08-15T12:00:00.000Z',
+      );
+      throw new Error('expected predictive science validation to fail');
+    } catch (error: unknown) {
+      expect(error).toBeInstanceOf(Error);
+      const failure = error as Error & { cause?: unknown };
+      expect(failure.message).toBe(
+        'Local dialer lab predictive science validation failed',
+      );
+      expect(failure.cause).toBeInstanceOf(Error);
+      expect((failure.cause as Error).message).toBe(
+        'Idempotency probe telemetry failed to persist',
+      );
+    }
+  });
+
 });

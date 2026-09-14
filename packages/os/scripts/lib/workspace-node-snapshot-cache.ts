@@ -16,6 +16,10 @@ export type WorkspaceNodeSnapshotNode = {
   platform: string;
   architecture: string;
   channel: string;
+  osVersion: string | null;
+  mcpProtocolVersion: string | null;
+  readiness: 'ready' | 'not_ready' | 'unknown';
+  compatibility: 'compatible' | 'incompatible' | 'unknown';
   capabilities: string[];
   agents: string[] | null;
   createdAt: string;
@@ -113,6 +117,8 @@ export function parseWorkspaceNodeSnapshot(value: unknown): WorkspaceNodeSnapsho
     const role = node.role;
     const presence = node.presence;
     const state = node.state;
+    const readiness = node.readiness ?? 'unknown';
+    const compatibility = node.compatibility ?? 'unknown';
     if (role !== 'home' && role !== 'member') {
       throw new Error(`workspace node snapshot node ${index} role is invalid`);
     }
@@ -121,6 +127,16 @@ export function parseWorkspaceNodeSnapshot(value: unknown): WorkspaceNodeSnapsho
     }
     if (state !== 'active' && state !== 'revoked') {
       throw new Error(`workspace node snapshot node ${index} state is invalid`);
+    }
+    if (readiness !== 'ready' && readiness !== 'not_ready' && readiness !== 'unknown') {
+      throw new Error(`workspace node snapshot node ${index} readiness is invalid`);
+    }
+    if (
+      compatibility !== 'compatible'
+      && compatibility !== 'incompatible'
+      && compatibility !== 'unknown'
+    ) {
+      throw new Error(`workspace node snapshot node ${index} compatibility is invalid`);
     }
     const agents = node.agents === null || node.agents === undefined
       ? null
@@ -139,6 +155,16 @@ export function parseWorkspaceNodeSnapshot(value: unknown): WorkspaceNodeSnapsho
         `workspace node snapshot node ${index} architecture`,
       ),
       channel: requiredString(node.channel, `workspace node snapshot node ${index} channel`),
+      osVersion: nullableString(
+        node.osVersion,
+        `workspace node snapshot node ${index} osVersion`,
+      ),
+      mcpProtocolVersion: nullableString(
+        node.mcpProtocolVersion,
+        `workspace node snapshot node ${index} mcpProtocolVersion`,
+      ),
+      readiness,
+      compatibility,
       capabilities: stringArray(
         node.capabilities,
         `workspace node snapshot node ${index} capabilities`,

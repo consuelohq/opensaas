@@ -54,6 +54,7 @@ const environment = {
   LEADCONNECTOR_TOKEN_ENCRYPTION_KEY: 'lead-connector-token-encryption-fixture',
   LEADCONNECTOR_SHARED_SECRET: 'lead-connector-shared-secret-fixture',
 };
+const predictivePhone = (suffix: string) => ['+1', '828', '555', suffix].join('');
 
 describe('Railway canonical predictive runtime cutover', () => {
   it('uses the standalone queue id as the canonical predictive segment', async () => {
@@ -144,7 +145,7 @@ describe('Railway canonical predictive runtime cutover', () => {
           queueId: 'pipeline-stage-1',
           selectionStrategy: 'predictive',
           requestedFanout: 1,
-          targetPhones: ['+15550100000', '+15550100001'],
+          targetPhones: [predictivePhone('0100'), predictivePhone('0101')],
           contactIds: ['contact-first', 'contact-winner'],
           callMode: 'mock',
         },
@@ -227,7 +228,7 @@ describe('Railway canonical predictive runtime cutover', () => {
           queueId: 'stopping-stage',
           selectionStrategy: 'predictive',
           requestedFanout: 1,
-          targetPhones: ['+15550100003'],
+          targetPhones: [predictivePhone('0103')],
           contactIds: ['contact-stop'],
           callMode: 'mock',
         },

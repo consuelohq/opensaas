@@ -7,6 +7,7 @@ import {
   rollbackDialerDatabaseMigration,
 } from '../database/migrations';
 import { CALLBACK_MIGRATION_ID } from './callback-migration';
+import { CUSTOMER_ENTRY_MIGRATION_ID } from './customer-entry-migration';
 import { createPostgresInboundRouting } from './routing';
 import { createPostgresRepCapacity } from './rep-capacity';
 import { createCallbackRecipientCipher } from './callback-recipient-cipher';
@@ -279,6 +280,7 @@ suite('RD6 callbacks with real Postgres', () => {
   });
 
   it('blocks rollback until callback obligations are terminal and retained recipients are purged', async () => {
+    await rollbackDialerDatabaseMigration(pool, CUSTOMER_ENTRY_MIGRATION_ID);
     await request();
     try {
       await rollbackDialerDatabaseMigration(pool, CALLBACK_MIGRATION_ID);

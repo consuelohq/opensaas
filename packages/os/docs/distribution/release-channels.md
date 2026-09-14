@@ -9,7 +9,7 @@ Consuelo OS publishes immutable, signed runtime bundles and moves signed channel
 - A changed closure gets exactly one stable SemVer. Patch is the default intent; minor or major must be selected explicitly; the first release requires `CONSUELO_OS_FIRST_RELEASE_VERSION`.
 - The same source commit and release fingerprint reuse the same allocation after retry.
 - Each platform archive is built once with that assigned version. The archive bytes, bundle manifest, detached Ed25519 signature, GitHub asset digest, and Cloudflare R2 object digest must agree.
-- The release-set bundle ID identifies the complete required platform set: `darwin-arm64`, `linux-x64`, and `windows-x64`.
+- The release-set bundle ID identifies the complete required platform set for new publications: `darwin-arm64`, `darwin-x64`, `linux-x64`, and `windows-x64`. Historical releases retain their originally signed platform inventory, so expanding the required set does not invalidate prior rollback targets.
 - The release rule is explicit: promotion never rebuilds or relabels an archive. It changes only the signed channel pointer, Deployment evidence, GitHub Release prerelease/latest status, and the corresponding protected channel branch.
 - Legal promotion edges are only `dev -> canary`, `canary -> beta`, and `beta -> stable`.
 - A protected promotion may use an exact bundle from the source channel's recorded history when a newer publication has already advanced that source pointer. The bundle must remain a verified immutable release that previously occupied the source channel, and the target channel must move forward in SemVer. Intentional downgrades use rollback instead of promotion.

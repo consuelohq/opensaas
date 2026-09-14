@@ -96,23 +96,29 @@ export const projectRepCapacity = async (
       event.capacityId,
     );
     if (!previous) {
+      const desired = next.ready ? 'available' : 'unavailable';
       if (capacity) {
         if (
           capacity.identity.kind !== 'capacity' ||
           capacity.identity.repId !== next.repId ||
-          capacity.state !== 'available'
+          !['available', 'unavailable'].includes(capacity.state)
         )
           throw new InboundPersistenceError(
             'Capacity identity cannot be safely adopted',
           );
       }
-      await move(
-        'capacity',
-        event.capacityId,
-        'available',
-        'none',
-        capacity ? undefined : { kind: 'capacity', repId: next.repId, slot: 0 },
-      );
+      if (!capacity) {
+        await move(
+          'capacity',
+          event.capacityId,
+          'available',
+          'none',
+          { kind: 'capacity', repId: next.repId, slot: 0 },
+        );
+        capacity = current.get('capacity:' + event.capacityId)!;
+      }
+      if (capacity.state !== desired)
+        await move('capacity', event.capacityId, desired);
     } else if (event.action.type === 'offer' && next.owner) {
       const request = await readInboundSnapshot(
         client,
@@ -206,7 +212,9 @@ export const projectRepCapacity = async (
           await assignmentMove('ended', 'reconciled_ended');
       }
       const desired = !next.owner
-        ? 'available'
+        ? next.ready
+          ? 'available'
+          : 'unavailable'
         : next.owner.phase === 'offering'
           ? 'reserved'
           : next.owner.phase === 'unknown' && capacity.state === 'connected'
@@ -234,6 +242,10 @@ export const projectRepCapacity = async (
         else if (!commands.some((command) => command.type === 'notify'))
           notify(item, 'notify');
       }
+    } else if (event.action.type === 'readiness') {
+      const desired = next.ready ? 'available' : 'unavailable';
+      if (capacity?.state !== desired)
+        await move('capacity', event.capacityId, desired);
     }
     if (!events.length)
       await move('capacity', event.capacityId, capacity?.state ?? 'available');

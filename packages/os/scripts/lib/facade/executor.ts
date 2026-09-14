@@ -96,7 +96,12 @@ function refreshTaskSessionActivity(
 }
 
 const MAX_LOG_COMMAND_CHARS = 4000;
-const WORK_SESSION_FS_TOOLS = new Set(['fs.write', 'fs.apply_patch', 'fs.trash']);
+const WORK_SESSION_FS_MUTATION_TOOLS = new Set(['fs.write', 'fs.apply_patch', 'fs.trash']);
+const WORK_SESSION_FS_CONTEXT_TOOLS = new Set(['fs.read', 'fs.list', 'fs.search']);
+const WORK_SESSION_FS_TOOLS = new Set([
+  ...WORK_SESSION_FS_MUTATION_TOOLS,
+  ...WORK_SESSION_FS_CONTEXT_TOOLS,
+]);
 const WORK_SESSION_AUTHORITY_TOOLS = new Set([...WORK_SESSION_FS_TOOLS, 'code.call']);
 
 function isWorkSessionFsTool(toolName: string): boolean {
@@ -367,7 +372,8 @@ export async function executeTool<TData = unknown>(
       return result as ToolResult<TData>;
     }
 
-    const internalResult = await executeInternalTool<TData>(entry, scopedInput, {
+    const internalInput = resolveInternalExecutionInput(entry, scopedInput, options);
+    const internalResult = await executeInternalTool<TData>(entry, internalInput, {
       cwd,
       env,
       rawInput: input,
@@ -412,7 +418,7 @@ export async function executeTool<TData = unknown>(
     const facadeCmd = formatFacadeCommand(toolName, commandInput);
     const facadeCmdForLog = formatFacadeCommandForLog(toolName, commandInput);
 
-    const timeoutMs = getTimeoutMs(entry, commandInput);
+    const timeoutMs = getTimeoutMs(entry, commandInput, options);
     const runResult = (toolName === 'browser' || toolName.startsWith('browser.'))
       ? await withNodeResourceLock({
         lockPath: nodeResourceLockPath(resolveBrowserConfig(env).profilePath),
@@ -893,9 +899,11 @@ async function executeInternalTool<TData>(
   }
 
   if (internal === 'code.call') {
-    const codeCallInput = typeof input.timeout === 'number'
-      ? input
-      : { ...input, timeout: entry.defaultTimeout };
+    const codeCallInput = typeof context.options.timeoutMs === 'number'
+      ? { ...input, timeout: context.options.timeoutMs }
+      : typeof input.timeout === 'number'
+        ? input
+        : { ...input, timeout: entry.defaultTimeout };
     const result = await executeCodeCall(codeCallInput as CodeCallInput, {
       cwd: context.cwd,
       env: context.env,
@@ -1028,7 +1036,7 @@ async function executeInternalTool<TData>(
       cwd: resolveWorkspaceCommandCwd(context.cwd, 'stream:context'),
       env: { ...context.env },
     };
-    const runResult = await context.runner(plan, entry.defaultTimeout);
+    const runResult = await context.runner(plan, getTimeoutMs(entry, input, context.options));
     const data = parseStdout(runResult.stdout, true).data as Record<string, unknown> | null;
     const aheadBehind = data && typeof data === 'object' ? data.aheadBehind as Record<string, unknown> | undefined : undefined;
     const behind = typeof aheadBehind?.behind === 'number' ? aheadBehind.behind : undefined;
@@ -1315,13 +1323,15 @@ function buildCommandPlan(
 
   if (entry.command.jsonFlag) args.push(entry.command.jsonFlag);
   if (entry.command.dryRunFlag && input.dryRun === true) args.push(entry.command.dryRunFlag);
+  const runtimeScoped = entry.command.executionScope === 'runtime';
 
   return {
     command: 'bun',
     args,
-    cwd: entry.command.executionScope === 'runtime' ? runtimePackageRoot : resolveWorkspaceCommandCwd(cwd, script, input),
+    cwd: runtimeScoped ? runtimePackageRoot : resolveWorkspaceCommandCwd(cwd, script, input),
     env: {
       ...env,
+      ...(runtimeScoped ? { CONSUELO_TOOL_CALLER_CWD: cwd } : {}),
       ...(branch ? { TASK_BRANCH: branch } : {}),
       ...(typeof input.taskWorktree === 'string' ? { TASK_WORKTREE: input.taskWorktree } : {}),
     },
@@ -1362,10 +1372,28 @@ function appendArgument(args: string[], argument: CommandArgument, input: ToolIn
   args.push(String(value));
 }
 
-function getTimeoutMs(entry: ToolManifestEntry, input: ToolInput): number {
+function getTimeoutMs(
+  entry: ToolManifestEntry,
+  input: ToolInput,
+  options: ExecuteToolOptions = {},
+): number {
+  if (typeof options.timeoutMs === 'number') return options.timeoutMs;
   if (typeof input.timeout === 'number') return input.timeout;
   if (typeof input.timeoutMs === 'number') return input.timeoutMs;
   return entry.defaultTimeout;
+}
+
+export function resolveInternalExecutionInput(
+  entry: ToolManifestEntry,
+  input: ToolInput,
+  options: ExecuteToolOptions = {},
+): ToolInput {
+  const internal = entry.command.internal;
+  if (internal !== 'deployment' && internal !== 'subagent') return input;
+  return {
+    ...input,
+    timeoutMs: getTimeoutMs(entry, input, options),
+  };
 }
 
 async function runWithRetry(

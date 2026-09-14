@@ -147,4 +147,65 @@ describe('public customer callback surface', () => {
     await Promise.all([first, second]);
     expect(requests).toBe(1);
   });
+
+  it('reuses the same idempotency key when an uncertain callback request is retried', async () => {
+    const keys: string[] = [];
+    let generated = 0;
+    let attempts = 0;
+    const controller = createCustomerEntryController({
+      publicId: 'sales',
+      createIdempotencyKey: () => `request-${++generated}-12345678`,
+      api: {
+        load: async () => snapshot,
+        requestCallback: async (_publicId, input) => {
+          keys.push(input.idempotencyKey);
+          attempts++;
+          if (attempts === 1) throw new Error('response lost after commit');
+          return {
+            managementToken: 'opaque-token',
+            callback: { status: 'scheduled' },
+            booking: { status: 'unavailable' as const },
+          };
+        },
+        readCallback: async () => { throw new Error('not used'); },
+        rescheduleCallback: async () => { throw new Error('not used'); },
+        cancelCallback: async () => { throw new Error('not used'); },
+      },
+    });
+    await controller.load();
+    const input = {
+      phoneNumber: '+15550100999',
+      permissionAccepted: true as const,
+      mode: 'immediate' as const,
+    };
+    await expect(controller.requestCallback(input)).rejects.toThrow('response lost');
+    await controller.requestCallback(input);
+    expect(keys).toEqual(['request-1-12345678', 'request-1-12345678']);
+  });
+
+  it('projects callback-management failures into customer state', async () => {
+    const controller = createCustomerEntryController({
+      publicId: 'sales',
+      createIdempotencyKey: () => 'request-12345678',
+      api: {
+        load: async () => snapshot,
+        requestCallback: async () => ({
+          managementToken: 'opaque-token',
+          callback: { status: 'scheduled' },
+          booking: { status: 'unavailable' as const },
+        }),
+        readCallback: async () => { throw new Error('status temporarily unavailable'); },
+        rescheduleCallback: async () => { throw new Error('not used'); },
+        cancelCallback: async () => { throw new Error('not used'); },
+      },
+    });
+    await controller.load();
+    await controller.requestCallback({
+      phoneNumber: '+15550100999',
+      permissionAccepted: true,
+      mode: 'immediate',
+    });
+    await expect(controller.readCallback()).rejects.toThrow('status temporarily unavailable');
+    expect(controller.getState().error).toBe('status temporarily unavailable');
+  });
 });

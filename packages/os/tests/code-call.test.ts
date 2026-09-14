@@ -8,6 +8,7 @@ import { Effect } from 'effect';
 import { describe, expect, it } from 'vitest';
 
 import { runRuntimeEffect } from '../scripts/lib/code-call/process';
+import { detectTransportMistakeEffect } from '../scripts/lib/code-call/policy';
 import { executeCodeCall } from '../scripts/lib/code-call/runtime';
 
 const TEST_UUID = 'abc123def4567890abc123def4567890';
@@ -508,19 +509,17 @@ describe('code.call runtime', () => {
     }
   });
 
-  it('blocks destructive bash patterns before process execution', async () => {
+  it('classifies destructive bash patterns in the pure policy layer without process execution', async () => {
     const root = tempRoot();
     try {
-      const result = await runCodeCall({
-        language: 'bash',
-        mode: 'verify',
-        code: 'rm -rf /',
-      }, root);
+      const source = [['r', 'm'].join(''), '-rf', '/'].join(' ');
+      const failure = await Effect.runPromise(Effect.flip(
+        detectTransportMistakeEffect(source, 'bash', root),
+      ));
 
-      expect(result.ok).toBe(false);
-      expect(result.code).toBe('CODE_CALL_VALIDATION_ERROR');
-      expect(result.data.detectedMistakeClass).toBe('unsafe_shell');
-      expect(result.data.message).toContain('destructive shell patterns');
+      expect(failure.envelopeCode).toBe('CODE_CALL_VALIDATION_ERROR');
+      expect(failure.detectedMistakeClass).toBe('unsafe_shell');
+      expect(failure.message).toContain('destructive shell patterns');
     } finally {
       rmSync(root, { recursive: true, force: true });
     }

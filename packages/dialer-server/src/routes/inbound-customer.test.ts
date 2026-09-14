@@ -76,12 +76,13 @@ describe('public inbound customer routes', () => {
   it('rejects forged internal authority and passes the edge client address to admission', async () => {
     const fixture = createApplication();
     const routes = createInboundCustomerRoutes(fixture.application);
+    const validDomesticPhone = ['(828)', '555', '0123'].join(' ');
 
     const forged = await routes.request('/v1/inbound/customer/sales/callbacks', {
       method: 'POST',
       headers: { 'content-type': 'application/json', 'cf-connecting-ip': '203.0.113.10' },
       body: JSON.stringify({
-        phoneNumber: '+15550100999',
+        phoneNumber: validDomesticPhone,
         permissionAccepted: true,
         idempotencyKey: 'request-12345678',
         mode: 'immediate',
@@ -95,7 +96,7 @@ describe('public inbound customer routes', () => {
       method: 'POST',
       headers: { 'content-type': 'application/json', 'cf-connecting-ip': '203.0.113.10' },
       body: JSON.stringify({
-        phoneNumber: '+15550100999',
+        phoneNumber: validDomesticPhone,
         permissionAccepted: true,
         idempotencyKey: 'request-12345678',
         mode: 'immediate',
@@ -106,6 +107,25 @@ describe('public inbound customer routes', () => {
     expect(fixture.calls[0]?.operation).toBe('requestCallback');
     expect(fixture.calls[0]?.args[0]).toBe('sales');
     expect(fixture.calls[0]?.args[1]).toBe('203.0.113.10');
+  });
+
+  it('normalizes a domestic formatted phone number before callback admission', async () => {
+    const fixture = createApplication();
+    const routes = createInboundCustomerRoutes(fixture.application);
+    const response = await routes.request('/v1/inbound/customer/sales/callbacks', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        phoneNumber: '(828) 555-0123',
+        permissionAccepted: true,
+        idempotencyKey: 'request-12345678',
+        mode: 'immediate',
+      }),
+    });
+    expect(response.status).toBe(201);
+    expect(fixture.calls[0]?.args[2]).toMatchObject({
+      phoneNumber: '+18285550123',
+    });
   });
 
   it('requires an opaque capability header for status, reschedule, and cancellation', async () => {

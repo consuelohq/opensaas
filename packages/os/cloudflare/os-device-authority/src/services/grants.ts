@@ -255,6 +255,9 @@ export async function commitGrantApproval(input: {
       nodeId,
       expiresAt: connectorExpiresAt,
     });
+    if (input.grant.nodeIdentityRotatedAt !== undefined) {
+      await input.store.delManagedCloudProvisioningNode(nodeId);
+    }
     return input.grant;
   } catch (error: unknown) {
     throw new Error(

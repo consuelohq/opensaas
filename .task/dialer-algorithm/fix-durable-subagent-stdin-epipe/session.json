@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_49a474c2ac5b",
+  "tmuxSession": "opensaas-dialer-algorithm-fix-durable-subagent-stdin-epipe-49a474c2",
+  "area": "dialer-algorithm",
+  "stream": "stream/dialer-algorithm",
+  "taskBranch": "task/dialer-algorithm/fix-durable-subagent-stdin-epipe",
+  "branch": "task/dialer-algorithm/fix-durable-subagent-stdin-epipe",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-fix-durable-subagent-stdin-epipe",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-fix-durable-subagent-stdin-epipe",
+  "prNumber": 2141,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2141",
+  "createdAt": "2026-08-16T06:41:28.927Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-fix-durable-subagent-stdin-epipe/.task/dialer-algorithm/fix-durable-subagent-stdin-epipe/session.json"
+}

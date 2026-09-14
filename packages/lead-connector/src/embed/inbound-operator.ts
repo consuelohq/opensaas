@@ -17,6 +17,7 @@ export type InboundOperatorEndpoint = {
   endpointId: string;
   kind: InboundOperatorEndpointKind;
   healthy: boolean;
+  active?: boolean;
   label: string;
 };
 

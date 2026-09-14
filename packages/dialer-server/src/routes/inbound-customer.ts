@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import { bodyLimit } from 'hono/body-limit';
+import { normalizePhone as normalizeSharedPhone } from '@consuelo/contacts';
 
 export type PublicCallbackRequest = {
   phoneNumber: string;
@@ -53,7 +54,7 @@ const clientAddress = (headers: Headers): string => {
 };
 
 const normalizePhone = (value: string): string | null => {
-  const normalized = value.replace(/[\s().-]/g, '');
+  const normalized = normalizeSharedPhone(value);
   return /^\+[1-9]\d{7,14}$/.test(normalized) ? normalized : null;
 };
 

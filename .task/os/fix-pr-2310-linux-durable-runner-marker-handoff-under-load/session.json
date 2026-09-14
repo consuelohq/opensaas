@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_4bf33de0336d",
+  "tmuxSession": "opensaas-os-fix-pr-2310-linux-durable-runner-marker-handoff--4bf33de0",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-pr-2310-linux-durable-runner-marker-handoff-under-load",
+  "branch": "task/os/fix-pr-2310-linux-durable-runner-marker-handoff-under-load",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-pr-2310-linux-durable-runner-marker-handoff-under-load",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-pr-2310-linux-durable-runner-marker-handoff-under-load",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2332,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2332",
+  "createdAt": "2026-08-31T20:15:05.248Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-pr-2310-linux-durable-runner-marker-handoff-under-load/.task/os/fix-pr-2310-linux-durable-runner-marker-handoff-under-load/session.json"
+}

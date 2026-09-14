@@ -124,9 +124,56 @@ describe('inbound operator state', () => {
     expect(html).toContain('Connecting');
     expect(html).toContain('Waiting callers');
     expect(html).toContain('Reconnect state');
-    expect(html).toContain('Save inbound configuration');
-    expect(html).toContain('name="hoursLabel"');
+    expect(html).not.toContain('Save inbound configuration');
+    expect(html).not.toContain('data-form="inbound-configuration"');
     expect(html).toContain('data-assignment-id="assignment-1"');
+  });
+
+  test('allows an offline unowned rep to go ready', () => {
+    const state = reduceInboundOperatorState(
+      createInitialInboundOperatorState(),
+      {
+        type: 'SNAPSHOT_LOADED',
+        snapshot: {
+          ...snapshot,
+          rep: {
+            ...snapshot.rep,
+            ready: false,
+            presence: 'offline',
+            capacityPhase: null,
+            assignment: null,
+          },
+          offers: [],
+        },
+      },
+    );
+    const html = renderInboundOperatorPanel(state);
+    expect(html).toContain('Go ready');
+    expect(html).not.toContain('data-action="inbound-readiness" disabled');
+  });
+
+  test('prefers a healthy browser endpoint over an eligible phone endpoint for offer acceptance', () => {
+    const state = reduceInboundOperatorState(
+      createInitialInboundOperatorState(),
+      {
+        type: 'SNAPSHOT_LOADED',
+        snapshot: {
+          ...snapshot,
+          rep: {
+            ...snapshot.rep,
+            endpoints: [snapshot.rep.endpoints[1]!, snapshot.rep.endpoints[0]!],
+          },
+          offers: [
+            {
+              ...snapshot.offers[0]!,
+              eligibleEndpoints: ['phone-1', 'browser-1'],
+            },
+          ],
+        },
+      },
+    );
+    const html = renderInboundOperatorPanel(state);
+    expect(html).toContain('data-endpoint-id="browser-1"');
   });
 });
 

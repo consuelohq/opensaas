@@ -586,18 +586,17 @@ export const validatePredictiveLearningScience = async (
     });
 
     const idempotentRecord = createIngestRecord(workspaceId, 1_000, baseTime);
-    await recordLeadConnectorAttemptTelemetry(
-      database,
-      idempotentRecord,
-      undefined,
-      { timezone: 'UTC' },
-    );
-    await recordLeadConnectorAttemptTelemetry(
-      database,
-      idempotentRecord,
-      undefined,
-      { timezone: 'UTC' },
-    );
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      const stored = await recordLeadConnectorAttemptTelemetry(
+        database,
+        idempotentRecord,
+        undefined,
+        { timezone: 'UTC' },
+      );
+      if (!stored) {
+        throw new Error('Idempotency probe telemetry failed to persist');
+      }
+    }
     const idempotency = await database.query<{
       canonical_rows: number;
       ledger_attempts: number;

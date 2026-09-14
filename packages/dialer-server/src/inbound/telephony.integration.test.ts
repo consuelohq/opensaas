@@ -1,4 +1,5 @@
 import { CALLBACK_MIGRATION_ID } from './callback-migration';
+import { CUSTOMER_ENTRY_MIGRATION_ID } from './customer-entry-migration';
 import { protectTelephonyConfiguration } from './telephony-configuration-store';
 import { createInboundOperator } from './operator';
 import { createInboundRoutes } from '../routes/inbound';
@@ -678,6 +679,7 @@ suite('inbound runtime with real Postgres and simulated carrier', () => {
     expect(deleted).toBe(1);
   });
   it('rolls an empty telephony schema down and up while protecting immutable facts', async () => {
+    await rollbackDialerDatabaseMigration(pool, CUSTOMER_ENTRY_MIGRATION_ID);
     await rollbackDialerDatabaseMigration(pool, CALLBACK_MIGRATION_ID);
     await rollbackDialerDatabaseMigration(pool, TELEPHONY_MIGRATION_ID);
     await migrateDialerDatabase(pool);
@@ -863,6 +865,7 @@ suite('inbound runtime with real Postgres and simulated carrier', () => {
     ).toBe(1);
   });
   it('refuses rollback while a live caller or uncertain effect exists', async () => {
+    await rollbackDialerDatabaseMigration(pool, CUSTOMER_ENTRY_MIGRATION_ID);
     await rollbackDialerDatabaseMigration(pool, CALLBACK_MIGRATION_ID);
     await incoming();
     await expect(

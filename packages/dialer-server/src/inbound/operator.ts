@@ -18,7 +18,47 @@ import {
 import { readTelephonyCapacity, telephonyId } from './telephony-store';
 import { routingTime } from './routing-store';
 import type { TelephonyOptions } from './telephony-admission';
+import type { InboundEndpoint } from './telephony-contracts';
 import type { createInboundTelephony } from './telephony';
+
+export const projectOperatorEndpoints = (
+  configuredEndpoints: readonly InboundEndpoint[],
+  workspaceId: string,
+  repId: string,
+  activeEndpoints: RepCapacityState['endpoints'],
+) =>
+  configuredEndpoints
+    .filter(
+      (endpoint) =>
+        endpoint.workspaceId === workspaceId && endpoint.repId === repId,
+    )
+    .map((endpoint) => {
+      const active = activeEndpoints.find(
+        (candidate) =>
+          candidate.endpointId === endpoint.endpointId &&
+          candidate.kind === endpoint.kind,
+      );
+      return {
+        endpointId: endpoint.endpointId,
+        kind: endpoint.kind,
+        healthy: active?.healthy ?? true,
+        active: Boolean(active),
+        label: endpoint.kind === 'browser' ? 'Browser' : 'Forwarding phone',
+      };
+    });
+
+export const selectOperatorQueuePolicy = (
+  policies: readonly InboundQueuePolicy[],
+  repId: string,
+  requestQueueId: string | null,
+) => {
+  const eligible = policies.filter((policy) =>
+    policy.profiles.some((profile) => profile.repId === repId),
+  );
+  return requestQueueId
+    ? eligible.find((policy) => policy.queueId === requestQueueId)
+    : eligible[0];
+};
 
 const object = (value: unknown): Record<string, unknown> => {
   if (!value || typeof value !== 'object' || Array.isArray(value))
@@ -87,17 +127,28 @@ export const createInboundOperator = (
               previous.capacityId,
             ))!;
             const at = await routingTime(client, options.clock);
+            const owner = rep.owner;
+            const request = owner
+              ? await readInboundSnapshot(
+                  client,
+                  identity.workspaceId,
+                  'request',
+                  owner.requestId,
+                )
+              : null;
             const queues = (
               await client.query<{ policy: InboundQueuePolicy }>(
                 'SELECT policy FROM dialer_routing_queues WHERE workspace_id=$1 ORDER BY queue_id',
                 [identity.workspaceId],
               )
             ).rows;
-            const policy = queues.find((row) =>
-              row.policy.profiles.some(
-                (profile) => profile.repId === identity.userId,
-              ),
-            )?.policy;
+            const policy = selectOperatorQueuePolicy(
+              queues.map((row) => row.policy),
+              identity.userId,
+              request?.identity.kind === 'request'
+                ? request.identity.queueId
+                : null,
+            );
             const number = options.numbers.find(
               (number) =>
                 number.workspaceId === identity.workspaceId &&
@@ -120,15 +171,6 @@ export const createInboundOperator = (
                 [identity.workspaceId],
               )
             ).rows;
-            const owner = rep.owner;
-            const request = owner
-              ? await readInboundSnapshot(
-                  client,
-                  identity.workspaceId,
-                  'request',
-                  owner.requestId,
-                )
-              : null;
             const enteredAt =
               request?.identity.kind === 'request'
                 ? request.identity.enteredAt
@@ -161,13 +203,12 @@ export const createInboundOperator = (
                       : 'away',
                 capacityPhase: owner?.phase ?? null,
                 assignment,
-                endpoints: rep.endpoints.map((endpoint) => ({
-                  ...endpoint,
-                  label:
-                    endpoint.kind === 'browser'
-                      ? 'Browser'
-                      : 'Forwarding phone',
-                })),
+                endpoints: projectOperatorEndpoints(
+                  options.endpoints,
+                  identity.workspaceId,
+                  identity.userId,
+                  rep.endpoints,
+                ),
               },
               offers:
                 owner?.direction === 'inbound' && owner.phase === 'offering'
@@ -286,11 +327,13 @@ export const createInboundOperator = (
                   item.endpointId === endpoint.endpointId &&
                   item.kind === endpoint.kind,
               );
-              if (!configured || !known)
-                throw new Error(
-                  'Endpoint must be provisioned and health-checked',
-                );
-              return { ...known };
+              if (!configured)
+                throw new Error('Endpoint must be provisioned');
+              return {
+                endpointId: configured.endpointId,
+                kind: configured.kind,
+                healthy: known?.healthy ?? true,
+              };
             });
             await executeRepCapacityOnClient(
               client,

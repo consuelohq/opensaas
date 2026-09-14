@@ -46,12 +46,13 @@ export const startCustomerEntry = (): void => {
         ...(mode === 'scheduled' && serviceWindowId
           ? { serviceWindowId }
           : {}),
-      });
+      }).catch(() => undefined);
       return;
     }
     if (form.dataset.form === 'customer-reschedule') {
       const serviceWindowId = String(data.get('serviceWindowId') ?? '').trim();
-      if (serviceWindowId) void controller.rescheduleCallback(serviceWindowId);
+      if (serviceWindowId)
+        void controller.rescheduleCallback(serviceWindowId).catch(() => undefined);
     }
   });
 
@@ -61,8 +62,10 @@ export const startCustomerEntry = (): void => {
         ? event.target.closest<HTMLElement>('[data-action]')
         : null;
     const action = target?.dataset.action;
-    if (action === 'customer-refresh') void controller.readCallback();
-    if (action === 'customer-cancel') void controller.cancelCallback();
+    if (action === 'customer-refresh')
+      void controller.readCallback().catch(() => undefined);
+    if (action === 'customer-cancel')
+      void controller.cancelCallback().catch(() => undefined);
   });
 
   void controller.load().then(async () => {
@@ -73,5 +76,5 @@ export const startCustomerEntry = (): void => {
     } catch {
       sessionStorage.removeItem(storageKey);
     }
-  });
+  }).catch(() => undefined);
 };

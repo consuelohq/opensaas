@@ -1,0 +1,16 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/refine-connect-evidence-film-pacing-and-transitions",
+  "baseBranch": "stream/website",
+  "sourceBranch": "stream/website",
+  "startFrom": "stream",
+  "prNumber": 2348,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2348",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-refine-connect-evidence-film-pacing-and-transitions",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_ea3a611fe6cb",
+  "tmuxSession": "opensaas-website-refine-connect-evidence-film-pacing-and-transiti-ea3a611f",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-refine-connect-evidence-film-pacing-and-transitions/.task/session.json",
+  "createdAt": "2026-08-31T23:24:42.829Z"
+}
