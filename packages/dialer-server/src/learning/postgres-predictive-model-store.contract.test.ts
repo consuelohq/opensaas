@@ -68,6 +68,9 @@ describe('Postgres predictive model store contract', () => {
     const statement = harness.calls.find((call) =>
       call.text.includes('ROW_NUMBER() OVER'),
     );
+    expect(statement?.text).toContain('segment_contacts');
+    expect(statement?.text).toContain('segment_id = $2');
+    expect(statement?.text).toContain('JOIN segment_contacts');
     expect(statement?.text).toContain('PARTITION BY workspace_id, contact_id');
     expect(statement?.text).toContain('ORDER BY attempted_at, group_id, position');
     expect(statement?.text).toContain('canonical_attempt_count');
@@ -111,6 +114,9 @@ describe('Postgres predictive model store contract', () => {
     const statement = harness.calls.find((call) =>
       call.text.includes('local_hour') && call.text.includes('local_day_of_week'),
     );
+    expect(statement?.text).toContain('segment_contacts');
+    expect(statement?.text).toContain('segment_id = $2');
+    expect(statement?.text).toContain('JOIN segment_contacts');
     expect(statement?.text).toContain('local_hour');
     expect(statement?.text).toContain('local_day_of_week');
     expect(statement?.text).not.toContain('AT TIME ZONE');

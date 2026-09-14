@@ -209,6 +209,35 @@
       "reason": "Steering ownership, seeding, caching, operator context, and release-boundary changes must prove that visible user steering is authoritative and no private repository prompt is shipped."
     },
     {
+      "id": "os-stream-guidance-ownership",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/scripts/lib/managed-component-install.ts",
+        "packages/os/scripts/lib/streams/creation.ts",
+        "packages/os/streams/**/AGENTS.md",
+        "packages/os/tests/dialer-stream-instructions.test.ts",
+        "packages/os/tests/managed-components.test.ts",
+        "packages/os/tests/stream-service.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS stream guidance ownership contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/dialer-stream-instructions.test.ts",
+            "tests/managed-components.test.ts",
+            "tests/stream-service.test.ts"
+          ]
+        }
+      ],
+      "reason": "Managed stream guidance creation, installation, cleanup, and Dialer source-only ownership must prove their focused lifecycle contracts without selecting the unrelated historically red package-wide OS suite."
+    },
+    {
       "id": "workspace-stream-sync-runtime",
       "critical": true,
       "exclusive": true,
@@ -1886,6 +1915,7 @@
       "exclusive": true,
       "source": [
         "packages/os/skills/**",
+        "packages/os/tests/fixtures/skills/**",
         "packages/os/tests/branch-skill.test.ts",
         "packages/os/tests/cli-skill-routing.test.ts",
         "packages/os/tests/onboarding-skills.test.ts",
@@ -1907,6 +1937,7 @@
             "tests/branch-skill.test.ts",
             "tests/cli-skill-routing.test.ts",
             "tests/onboarding-skills.test.ts",
+            "tests/skill-migration.test.ts",
             "tests/skill-selection-cli.test.ts",
             "tests/skills-registry.test.ts"
           ]

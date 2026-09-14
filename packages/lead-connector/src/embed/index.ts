@@ -34,6 +34,26 @@ export {
 } from './api-client.js';
 export type { LeadConnectorEmbedApi } from './api-client.js';
 
+export {
+  createInitialInboundOperatorState,
+  createLeadConnectorInboundOperatorApi,
+  reduceInboundOperatorState,
+} from './inbound-operator.js';
+export type {
+  InboundOperatorActionResult,
+  InboundOperatorApi,
+  InboundOperatorAssignment,
+  InboundOperatorConfiguration,
+  InboundOperatorEndpoint,
+  InboundOperatorEndpointKind,
+  InboundOperatorOffer,
+  InboundOperatorQueueSnapshot,
+  InboundOperatorSnapshot,
+  InboundOperatorState,
+  InboundOperatorStateEvent,
+} from './inbound-operator.js';
+export { renderInboundOperatorPanel } from './inbound-operator-view.js';
+
 export { createLeadConnectorAgentVoice } from './agent-voice.js';
 export type { LeadConnectorAgentVoice } from './agent-voice.js';
 export { createLeadConnectorEmbedController } from './controller.js';

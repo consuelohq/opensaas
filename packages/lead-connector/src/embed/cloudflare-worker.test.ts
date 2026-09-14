@@ -100,6 +100,35 @@ describe('LeadConnector Cloudflare embed edge', () => {
     }
   });
 
+  it('serves public customer routes through a non-iframe, non-voice application shell', async () => {
+    const fixture = createEnvironment();
+    const worker = createLeadConnectorEdgeWorker(
+      fixture.environment.fetchOrigin,
+    );
+    const response = await worker.fetch(
+      new Request('https://dialer.example.test/call/sales'),
+      fixture.environment,
+    );
+
+    expect(response.status).toBe(200);
+    expect(fixture.originRequests).toHaveLength(0);
+    expect(fixture.assetRequests).toHaveLength(1);
+    const shellRequest = new URL(fixture.assetRequests[0]!.url);
+    expect(shellRequest.pathname).toBe('/');
+    expect(shellRequest.searchParams.get('__shell')).toBeTruthy();
+    expect(response.headers.get('cache-control')).toBe('no-store');
+    expect(response.headers.get('x-frame-options')).toBe('DENY');
+    expect(response.headers.get('content-security-policy')).toContain(
+      "frame-ancestors 'none'",
+    );
+    expect(response.headers.get('content-security-policy')).not.toContain(
+      'wss://*.twilio.com',
+    );
+    expect(response.headers.get('permissions-policy')).toContain(
+      'microphone=()',
+    );
+  });
+
   it('serves other static assets without rewriting them to the application shell', async () => {
     const fixture = createEnvironment();
     const worker = createLeadConnectorEdgeWorker(

@@ -2,11 +2,11 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2711,
-    "mappedTestCount": 2627,
+    "testFileCount": 2733,
+    "mappedTestCount": 2649,
     "unmappedTestCount": 84,
-    "ruleCount": 83,
-    "explicitRuleCount": 64,
+    "ruleCount": 84,
+    "explicitRuleCount": 65,
     "autoRuleCount": 19,
     "projectCount": 15,
     "packageTestScriptCount": 19,
@@ -36,6 +36,7 @@
       "packages/twenty-server/test/integration/metadata/suites/field-metadata/composite": 17,
       "packages/twenty-server/test/integration/rest/suites": 17,
       "packages/twenty-front/src/modules/object-metadata/hooks": 16,
+      "packages/lead-connector/src/embed": 15,
       "packages/twenty-e2e-testing/tests": 15,
       "packages/twenty-front/src/modules/spreadsheet-import/utils": 15,
       "packages/twenty-shared/src/utils": 15,
@@ -46,7 +47,6 @@
       "packages/twenty-server/test/integration/metadata/suites/object-metadata/utils": 14,
       "packages/twenty-server/test/integration/metadata/suites/skill/utils": 14,
       "packages/consuelo-website/tests": 13,
-      "packages/lead-connector/src/embed": 13,
       "packages/os/tests/distribution": 13,
       "packages/twenty-front/src/modules/navigation-menu-item/utils": 13,
       "packages/twenty-shared/src/utils/filter/utils": 13,
@@ -66,6 +66,7 @@
       "packages/twenty-server/test/integration/metadata/suites/page-layout-widget/utils": 11,
       "packages/twenty-server/test/integration/metadata/suites/role/utils": 11,
       "packages/api/src/routes": 10,
+      "packages/dialer-server/src/inbound": 10,
       "packages/twenty-front/src/modules/object-metadata/utils": 10,
       "packages/twenty-front/src/modules/object-record/record-field/ui/utils": 10,
       "packages/twenty-server/src/engine/core-modules/billing/utils": 10,
@@ -96,6 +97,7 @@
       "packages/twenty-server/test/integration/metadata/suites/navigation-menu-item/utils": 8,
       "packages/twenty-server/test/integration/metadata/suites/page-layout": 8,
       "packages/twenty-server/test/integration/metadata/suites/view-filter-group/utils": 8,
+      "packages/dialer-server/src/runtime": 7,
       "packages/lead-connector/src": 7,
       "packages/twenty-front/src/modules/favorites/utils": 7,
       "packages/twenty-front/src/modules/object-record/cache/utils": 7,
@@ -115,7 +117,6 @@
       "packages/twenty-server/test/integration/metadata/suites/skill": 7,
       "packages/twenty-shared/src/utils/strings": 7,
       "packages/twenty-shared/src/utils/url": 7,
-      "packages/dialer-server/src/runtime": 6,
       "packages/lead-connector/src/deployment": 6,
       "packages/twenty-front/src/hooks": 6,
       "packages/twenty-front/src/modules/ai/utils": 6,
@@ -136,6 +137,7 @@
       "packages/twenty-server/test/integration/metadata/suites/front-component": 6,
       "packages/twenty-shared/src/utils/validation": 6,
       "packages/consuelo-design/upstream/open-design/apps/web/src/components": 5,
+      "packages/dialer-server/src/lab": 5,
       "packages/twenty-front/src/modules/apollo/utils": 5,
       "packages/twenty-front/src/modules/auth/sign-in-up/hooks": 5,
       "packages/twenty-front/src/modules/dialer/hooks": 5,
@@ -156,6 +158,7 @@
       "packages/consuelo-design/upstream/open-design/apps/web/src/i18n": 4,
       "packages/consuelo-design/upstream/open-design/apps/web/src/runtime": 4,
       "packages/dialer-server/src/learning": 4,
+      "packages/dialer/src/inbound": 4,
       "packages/os/tools/deployment-provider": 4,
       "packages/twenty-front/src/modules/activities/hooks": 4,
       "packages/twenty-front/src/modules/apollo/optimistic-effect/group-by/utils": 4,
@@ -236,7 +239,6 @@
       "packages/consuelo-design/upstream/open-design/apps/web/src/state": 2,
       "packages/consuelo-design/upstream/open-design/apps/web/src/utils": 2,
       "packages/contacts/src": 2,
-      "packages/dialer-server/src/lab": 2,
       "packages/dialer/src/application": 2,
       "packages/diff-cockpit/tests": 2,
       "packages/os/tests/audit": 2,
@@ -337,8 +339,10 @@
       "packages/consuelo-design/upstream/open-design/tools/pack/src": 1,
       "packages/dialer-server/src/database": 1,
       "packages/dialer-server/src/release": 1,
+      "packages/dialer-server/src/routes": 1,
       "packages/dialer/src": 1,
       "packages/dialer/src/infrastructure/redis": 1,
+      "packages/dialer/tests": 1,
       "packages/os/tools/artifacts": 1,
       "packages/os/tools/codemode": 1,
       "packages/os/tools/composed": 1,
@@ -636,11 +640,11 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 607,
+      "test": 622,
       "spec": 161,
+      "integration": 9,
       "tests-dir": 8,
       "other": 7,
-      "integration": 2,
       "e2e": 1
     }
   },
@@ -855,6 +859,36 @@
       "critical": true,
       "exclusive": true,
       "reason": "Steering ownership, seeding, caching, operator context, and release-boundary changes must prove that visible user steering is authoritative and no private repository prompt is shipped.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-stream-guidance-ownership",
+      "source": [
+        "packages/os/scripts/lib/managed-component-install.ts",
+        "packages/os/scripts/lib/streams/creation.ts",
+        "packages/os/streams/**/AGENTS.md",
+        "packages/os/tests/dialer-stream-instructions.test.ts",
+        "packages/os/tests/managed-components.test.ts",
+        "packages/os/tests/stream-service.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS stream guidance ownership contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/dialer-stream-instructions.test.ts",
+            "tests/managed-components.test.ts",
+            "tests/stream-service.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Managed stream guidance creation, installation, cleanup, and Dialer source-only ownership must prove their focused lifecycle contracts without selecting the unrelated historically red package-wide OS suite.",
       "origin": "explicit"
     },
     {
@@ -2571,6 +2605,7 @@
       "id": "os-bundled-skill-contract",
       "source": [
         "packages/os/skills/**",
+        "packages/os/tests/fixtures/skills/**",
         "packages/os/tests/branch-skill.test.ts",
         "packages/os/tests/cli-skill-routing.test.ts",
         "packages/os/tests/onboarding-skills.test.ts",
@@ -2592,6 +2627,7 @@
             "tests/branch-skill.test.ts",
             "tests/cli-skill-routing.test.ts",
             "tests/onboarding-skills.test.ts",
+            "tests/skill-migration.test.ts",
             "tests/skill-selection-cli.test.ts",
             "tests/skills-registry.test.ts"
           ]
@@ -4224,6 +4260,71 @@
       "kind": "test"
     },
     {
+      "path": "packages/dialer-server/src/inbound/callback-recipient-cipher.test.ts",
+      "group": "packages/dialer-server/src/inbound",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/inbound/callback-telephony.integration.test.ts",
+      "group": "packages/dialer-server/src/inbound",
+      "kind": "integration"
+    },
+    {
+      "path": "packages/dialer-server/src/inbound/callbacks.integration.test.ts",
+      "group": "packages/dialer-server/src/inbound",
+      "kind": "integration"
+    },
+    {
+      "path": "packages/dialer-server/src/inbound/customer-entry.integration.test.ts",
+      "group": "packages/dialer-server/src/inbound",
+      "kind": "integration"
+    },
+    {
+      "path": "packages/dialer-server/src/inbound/operator.test.ts",
+      "group": "packages/dialer-server/src/inbound",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/inbound/rep-capacity.integration.test.ts",
+      "group": "packages/dialer-server/src/inbound",
+      "kind": "integration"
+    },
+    {
+      "path": "packages/dialer-server/src/inbound/routing.integration.test.ts",
+      "group": "packages/dialer-server/src/inbound",
+      "kind": "integration"
+    },
+    {
+      "path": "packages/dialer-server/src/inbound/telephony-config.test.ts",
+      "group": "packages/dialer-server/src/inbound",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/inbound/telephony.integration.test.ts",
+      "group": "packages/dialer-server/src/inbound",
+      "kind": "integration"
+    },
+    {
+      "path": "packages/dialer-server/src/inbound/telephony.test.ts",
+      "group": "packages/dialer-server/src/inbound",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/lab/inbound-lab-cleanup.test.ts",
+      "group": "packages/dialer-server/src/lab",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/lab/inbound-simulator.test.ts",
+      "group": "packages/dialer-server/src/lab",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/lab/inbound-worker-protocol.test.ts",
+      "group": "packages/dialer-server/src/lab",
+      "kind": "test"
+    },
+    {
       "path": "packages/dialer-server/src/lab/local-dialer-lab.integration.test.ts",
       "group": "packages/dialer-server/src/lab",
       "kind": "integration"
@@ -4269,9 +4370,19 @@
       "kind": "test"
     },
     {
+      "path": "packages/dialer-server/src/routes/inbound-customer.test.ts",
+      "group": "packages/dialer-server/src/routes",
+      "kind": "test"
+    },
+    {
       "path": "packages/dialer-server/src/runtime/embed-session.test.ts",
       "group": "packages/dialer-server/src/runtime",
       "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/runtime/inbound-registration.integration.test.ts",
+      "group": "packages/dialer-server/src/runtime",
+      "kind": "integration"
     },
     {
       "path": "packages/dialer-server/src/runtime/lead-connector-learning.test.ts",
@@ -4352,6 +4463,26 @@
       "path": "packages/dialer/src/domain/parallel-transition.spec.ts",
       "group": "packages/dialer/src/domain",
       "kind": "spec"
+    },
+    {
+      "path": "packages/dialer/src/inbound/callback-scheduler.test.ts",
+      "group": "packages/dialer/src/inbound",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer/src/inbound/lifecycle.test.ts",
+      "group": "packages/dialer/src/inbound",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer/src/inbound/rep-capacity.test.ts",
+      "group": "packages/dialer/src/inbound",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer/src/inbound/routing-policy.test.ts",
+      "group": "packages/dialer/src/inbound",
+      "kind": "test"
     },
     {
       "path": "packages/dialer/src/infrastructure/redis/redis-parallel-store.test.ts",
@@ -4447,6 +4578,11 @@
       "path": "packages/dialer/src/services/whittle-index.spec.ts",
       "group": "packages/dialer/src/services",
       "kind": "spec"
+    },
+    {
+      "path": "packages/dialer/tests/inbound-build.test.mjs",
+      "group": "packages/dialer/tests",
+      "kind": "test"
     },
     {
       "path": "packages/diff-cockpit/tests/bun-test.d.ts",
@@ -4674,12 +4810,22 @@
       "kind": "test"
     },
     {
+      "path": "packages/lead-connector/src/embed/customer.test.ts",
+      "group": "packages/lead-connector/src/embed",
+      "kind": "test"
+    },
+    {
       "path": "packages/lead-connector/src/embed/embed-build.contract.test.ts",
       "group": "packages/lead-connector/src/embed",
       "kind": "test"
     },
     {
       "path": "packages/lead-connector/src/embed/idle-refresh.test.ts",
+      "group": "packages/lead-connector/src/embed",
+      "kind": "test"
+    },
+    {
+      "path": "packages/lead-connector/src/embed/inbound-operator.test.ts",
       "group": "packages/lead-connector/src/embed",
       "kind": "test"
     },

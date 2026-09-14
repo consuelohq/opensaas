@@ -5,6 +5,7 @@ COPY . .
 RUN yarn install --immutable
 
 FROM oven/bun:1.3.14 AS build
+COPY --from=dependencies /usr/local/bin/node /usr/local/bin/node
 WORKDIR /app
 COPY --from=dependencies /app /app
 RUN bun run --cwd packages/logger build

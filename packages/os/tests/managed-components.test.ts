@@ -531,6 +531,23 @@ describe('managed metadata migration and ownership', () => {
 });
 
 describe('visible steering provisioning integration', () => {
+  it('removes a stale globally-visible Dialer steering file during provisioning', () => {
+    const steeringRoot = join(userRoot, 'Steering');
+    const target = join(steeringRoot, 'dialer-AGENTS.md');
+    mkdirSync(steeringRoot, { recursive: true });
+    writeFileSync(target, '# stale stream-scoped guidance\n');
+
+    provisionManagedComponentIndexes({
+      home,
+      selectedSkills: [],
+      dryRun: false,
+      generatedAt: '2026-07-23T00:00:00.000Z',
+      userRoot,
+    });
+
+    expect(existsSync(target)).toBe(false);
+  });
+
   it('does not copy stream-scoped dialer instructions into the visible user root', () => {
     const actions = provisionManagedComponentIndexes({
       home,

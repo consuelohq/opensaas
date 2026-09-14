@@ -2388,4 +2388,37 @@ describe('test selection registry', () => {
     expect(suiteNames).not.toContain('@consuelo/os package test');
   });
 
+  it('keeps the RD8 Dialer steering reconciliation on focused OS contracts', () => {
+    const changedFiles = [
+      'packages/os/SCRIPTS.md',
+      'packages/os/scripts/lib/distribution/runtime-bundle.ts',
+      'packages/os/scripts/lib/managed-component-install.ts',
+      'packages/os/scripts/lib/streams/creation.ts',
+      'packages/os/streams/dialer/AGENTS.md',
+      'packages/os/tests/audit/fixtures/script-parity-classifications.json',
+      'packages/os/tests/dialer-stream-instructions.test.ts',
+      'packages/os/tests/distribution/release-publication-preparer.test.ts',
+      'packages/os/tests/distribution/runtime-bundle.test.ts',
+      'packages/os/tests/fixtures/skills/task-workspace.SKILL.md',
+      'packages/os/tests/lifecycle-engine.test.ts',
+      'packages/os/tests/lifecycle-retention-uninstall.test.ts',
+      'packages/os/tests/managed-components.test.ts',
+      'packages/os/tests/stream-service.test.ts',
+    ];
+    const args = ['check'];
+    for (const changedFile of changedFiles) args.push('--changed-file', changedFile);
+    args.push('--json');
+    const data = json(run(args));
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-stream-guidance-ownership');
+    expect(matchedRuleIds).toContain('os-bundled-skill-contract');
+    expect(matchedRuleIds).toContain('os-script-parity-audit');
+    expect(suiteNames).toContain('OS stream guidance ownership contracts');
+    expect(suiteNames).toContain('OS bundled skill contracts');
+    expect(suiteNames).toContain('OS script parity audit contracts');
+    expect(suiteNames).not.toContain('@consuelo/os package test');
+  });
+
 });

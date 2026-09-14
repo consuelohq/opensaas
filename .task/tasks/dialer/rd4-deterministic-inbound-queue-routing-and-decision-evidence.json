@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/rd4-deterministic-inbound-queue-routing-and-decision-evidence",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 2464,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2464",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-rd4-deterministic-inbound-queue-routing-and-decision-evidence",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_c8da4b2b5dd2",
+  "tmuxSession": "opensaas-dialer-rd4-deterministic-inbound-queue-routing-and-deci-c8da4b2b",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-rd4-deterministic-inbound-queue-routing-and-decision-evidence/.task/session.json",
+  "createdAt": "2026-09-13T15:52:40.368Z"
+}

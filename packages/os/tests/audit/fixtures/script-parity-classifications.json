@@ -1319,6 +1319,10 @@
       "status": "os-only-intentional",
       "reason": "OS-owned observability cost estimator derives non-zero trace cost estimates from runtime model/token metadata; no workspace-script counterpart is intended."
     },
+    "scripts/lib/trace-cursor-stream.ts": {
+      "status": "os-only-needs-review",
+      "reason": "scripts/lib/trace-cursor-stream.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+    },
     "scripts/lib/trace-database-schema.ts": {
       "status": "os-only-needs-review",
       "reason": "scripts/lib/trace-database-schema.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
@@ -1350,6 +1354,10 @@
     "scripts/lib/trace-site-inspector/interactions.ts": {
       "status": "os-only-needs-review",
       "reason": "scripts/lib/trace-site-inspector/interactions.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+    },
+    "scripts/lib/trace-site-inspector/live-browser.ts": {
+      "status": "os-only-needs-review",
+      "reason": "scripts/lib/trace-site-inspector/live-browser.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
     },
     "scripts/lib/trace-site-inspector/model.ts": {
       "status": "os-only-needs-review",
