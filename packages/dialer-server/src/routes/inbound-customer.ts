@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import { bodyLimit } from 'hono/body-limit';
-import { normalizePhone as normalizeSharedPhone } from '@consuelo/contacts';
+import { parsePhoneNumberFromString } from 'libphonenumber-js';
 
 export type PublicCallbackRequest = {
   phoneNumber: string;
@@ -54,8 +54,19 @@ const clientAddress = (headers: Headers): string => {
 };
 
 const normalizePhone = (value: string): string | null => {
-  const normalized = normalizeSharedPhone(value);
-  return /^\+[1-9]\d{7,14}$/.test(normalized) ? normalized : null;
+  const trimmed = value.trim();
+  if (trimmed.length === 0) return null;
+  const digits = trimmed.replace(/\D/g, '');
+  if (
+    !trimmed.startsWith('+') &&
+    digits.length !== 10 &&
+    !(digits.length === 11 && digits.startsWith('1'))
+  )
+    return null;
+  const parsed = trimmed.startsWith('+')
+    ? parsePhoneNumberFromString(trimmed)
+    : parsePhoneNumberFromString(trimmed, 'US');
+  return parsed?.isValid() === true ? parsed.number : null;
 };
 
 const callbackRequest = (value: unknown): PublicCallbackRequest | null => {
