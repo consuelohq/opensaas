@@ -146,7 +146,9 @@ export type DialerServerApplication = {
     } | null,
     DialerApplicationError
   >;
-  startCallRecording?: (input: { callSid: string }) => Effect.Effect<
+  startCallRecording?: (input: {
+    callSid: string;
+  }) => Effect.Effect<
     { recordingSid: string; status: string },
     DialerApplicationError | Error
   >;
@@ -233,6 +235,9 @@ export type LeadConnectorServerApplication = {
 };
 
 export type DialerServerDependencies = {
+  inbound?: NonNullable<
+    Awaited<ReturnType<typeof import('./runtime/inbound').createInboundRuntime>>
+  >;
   application: DialerServerApplication;
   transfers?: DialerTransferApplication;
   callOperations?: ReturnType<typeof createCallOperationsApplication>;

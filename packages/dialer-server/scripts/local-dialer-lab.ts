@@ -1,14 +1,25 @@
 #!/usr/bin/env bun
+import { CALLBACK_MIGRATION_ID } from '../src/inbound/callback-migration';
+import { CUSTOMER_ENTRY_MIGRATION_ID } from '../src/inbound/customer-entry-migration';
+import { TELEPHONY_MIGRATION_ID } from '../src/inbound/telephony-migration';
+import { ROUTING_MIGRATION_ID } from '../src/inbound/routing-migration';
 
 import { mkdtemp, mkdir, readFile, rm } from 'node:fs/promises';
 import { createConnection, createServer } from 'node:net';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 
+import { INBOUND_MIGRATION_ID } from '../src/inbound/migration';
+import { REP_CAPACITY_MIGRATION_ID } from '../src/inbound/rep-capacity-migration';
+import { stopLabResources } from '../src/lab/inbound-lab-cleanup';
+import { runInboundSimulationScenarios } from '../src/lab/inbound-simulation-scenarios';
+import { runInboundJournalScenarios } from '../src/lab/inbound-journal-scenarios';
+import { verifyLearningRollbackChain } from '../src/lab/learning-rollback-scenario';
 import Redis from 'ioredis';
 import { Pool } from 'pg';
 
-import { migrateDialerDatabase } from '../src/database/migrations';
+import { migrateDialerDatabase, rollbackDialerDatabaseMigration,
+  DIALER_DATABASE_LEARNING_INTEGRITY_MIGRATION_ID } from '../src/database/migrations';
 import {
   createSyntheticDialerFixture,
   resolveLabScale,
@@ -313,6 +324,52 @@ const main = async () => {
       fixture,
       scale,
     });
+    const learningRollbackChainVerified = await verifyLearningRollbackChain(pool);
+    const countObservations = () => database.query<{ count: string }>(
+      'SELECT COUNT(*)::text AS count FROM dialer_learning_observations',
+    ).then((result) => result.rows[0]?.count);
+    const rowsBeforeRollback = await countObservations();
+    const inbound = await runInboundJournalScenarios(pool);
+    const simulation = await runInboundSimulationScenarios({ pool, redis, databaseUrl, seed });
+    await rollbackDialerDatabaseMigration(database, CUSTOMER_ENTRY_MIGRATION_ID);
+    await rollbackDialerDatabaseMigration(database, CALLBACK_MIGRATION_ID);
+    await rollbackDialerDatabaseMigration(database, TELEPHONY_MIGRATION_ID);
+    await rollbackDialerDatabaseMigration(database, ROUTING_MIGRATION_ID);
+    await rollbackDialerDatabaseMigration(database, REP_CAPACITY_MIGRATION_ID);
+    await rollbackDialerDatabaseMigration(database, INBOUND_MIGRATION_ID);
+    const inboundRemoved = await pool.query<{ table_name: string | null }>(
+      "SELECT to_regclass('dialer_inbound_entities')::text AS table_name",
+    );
+    if (inboundRemoved.rows[0]?.table_name !== null) {
+      throw new Error('Inbound rollback left schema behind');
+    }
+    await rollbackDialerDatabaseMigration(database, DIALER_DATABASE_LEARNING_INTEGRITY_MIGRATION_ID);
+    const removed = await database.query<{ count: string }>(`
+      SELECT COUNT(*)::text AS count FROM pg_constraint
+      WHERE conrelid = 'dialer_learning_observations'::regclass AND conname IN (
+        'dialer_learning_observation_timestamps_check',
+        'dialer_learning_decision_context_schema_required_check'
+      )
+    `);
+    const ledgerAfterRollback = await database.query<{ migration_id: string }>(
+      'SELECT migration_id FROM consuelo_dialer_schema_migrations ORDER BY migration_id',
+    );
+    if (removed.rows[0]?.count !== '0' || ledgerAfterRollback.rows.length !== 4 ||
+        ledgerAfterRollback.rows.some((row) => row.migration_id === DIALER_DATABASE_LEARNING_INTEGRITY_MIGRATION_ID) ||
+        rowsBeforeRollback !== await countObservations()) {
+      throw new Error('Integrity rollback did not preserve prior data/schema');
+    }
+    await migrateDialerDatabase(database);
+    const restored = await database.query<{ count: string }>(`
+      SELECT COUNT(*)::text AS count FROM pg_constraint
+      WHERE conrelid = 'dialer_learning_observations'::regclass AND conname IN (
+        'dialer_learning_observation_timestamps_check',
+        'dialer_learning_decision_context_schema_required_check'
+      )
+    `);
+    if (restored.rows[0]?.count !== '2' || rowsBeforeRollback !== await countObservations()) {
+      throw new Error('Integrity reapply did not restore constraints and preserve data');
+    }
     const migrationRows = await database.query<{ migration_id: string }>(
       'SELECT migration_id FROM consuelo_dialer_schema_migrations ORDER BY migration_id',
     );
@@ -339,6 +396,8 @@ const main = async () => {
         externalProvidersUsed: false,
       },
       migration: {
+        rollbackVerified: true,
+        learningRollbackChainVerified,
         durationMs: migrationMs,
         applied: migrationRows.rows.map((row) => row.migration_id),
       },
@@ -350,25 +409,24 @@ const main = async () => {
         ),
       },
       benchmarks,
+      inbound,
+      simulation,
     };
   } finally {
     redis?.disconnect();
     await pool?.end().catch(() => undefined);
     try {
-      await redisServer?.stop();
-      await postgres?.stop();
+      const cleanup = await stopLabResources({
+        stops: [async () => redisServer?.stop(), async () => postgres?.stop()],
+        closed: async () => ({
+          postgresClosed: !(await canConnect(postgresPort)),
+          redisClosed: !(await canConnect(redisPort)),
+        }),
+        remove: () => rm(root, { recursive: true, force: true }),
+      });
+      if (result) result.cleanup = cleanup;
     } catch (cause: unknown) {
       cleanupError = cause;
-    }
-    const postgresClosed = !(await canConnect(postgresPort));
-    const redisClosed = !(await canConnect(redisPort));
-    await rm(root, { recursive: true, force: true });
-    if (result) {
-      result.cleanup = {
-        postgresClosed,
-        redisClosed,
-        tempDirectoryRemoved: true,
-      };
     }
   }
 

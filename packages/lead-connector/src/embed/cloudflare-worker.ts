@@ -29,6 +29,9 @@ const APPLICATION_SHELL_PATHS = new Set([
   '/overlay/',
 ]);
 
+const isCustomerShellPath = (pathname: string): boolean =>
+  pathname.startsWith('/call/') && pathname.length > '/call/'.length;
+
 const STABLE_MARKETPLACE_ASSET_PATHS = new Set([
   '/consuelo-lead-connector-click-to-call.js',
   '/consuelo-lead-connector-click-to-call.css',
@@ -42,23 +45,27 @@ const shouldProxy = (pathname: string): boolean =>
 type AssetRequest = {
   request: Request;
   applicationShell: boolean;
+  customerShell: boolean;
 };
 
 const assetRequest = (request: Request): AssetRequest => {
   const source = new URL(request.url);
   if (
     ['GET', 'HEAD'].includes(request.method) &&
-    APPLICATION_SHELL_PATHS.has(source.pathname)
+    (APPLICATION_SHELL_PATHS.has(source.pathname) ||
+      isCustomerShellPath(source.pathname))
   ) {
+    const customerShell = isCustomerShellPath(source.pathname);
     source.pathname = '/';
     source.search = '';
     source.searchParams.set('__shell', crypto.randomUUID());
     return {
       request: new Request(source, request),
       applicationShell: true,
+      customerShell,
     };
   }
-  return { request, applicationShell: false };
+  return { request, applicationShell: false, customerShell: false };
 };
 
 const originUrl = (request: Request, origin: string): URL => {
@@ -73,18 +80,28 @@ const iframeSafeResponse = (
   response: Response,
   applicationShell: boolean,
   pathname: string,
+  customerShell: boolean,
 ): Response => {
   const headers = new Headers(response.headers);
   if (applicationShell) headers.set('cache-control', 'no-store');
   if (STABLE_MARKETPLACE_ASSET_PATHS.has(pathname)) {
     headers.set('cache-control', 'no-cache, max-age=0, must-revalidate');
   }
-  headers.delete('x-frame-options');
-  headers.set(
-    'content-security-policy',
-    `default-src 'self'; connect-src 'self' ${BROWSER_VOICE_CONNECT_SOURCES.join(' ')}; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; frame-ancestors ${LEAD_CONNECTOR_PARENT_ORIGINS.join(' ')}`,
-  );
-  headers.set('permissions-policy', 'microphone=(self)');
+  if (customerShell) {
+    headers.set('x-frame-options', 'DENY');
+    headers.set(
+      'content-security-policy',
+      "default-src 'self'; connect-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; frame-ancestors 'none'",
+    );
+    headers.set('permissions-policy', 'microphone=()');
+  } else {
+    headers.delete('x-frame-options');
+    headers.set(
+      'content-security-policy',
+      `default-src 'self'; connect-src 'self' ${BROWSER_VOICE_CONNECT_SOURCES.join(' ')}; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; frame-ancestors ${LEAD_CONNECTOR_PARENT_ORIGINS.join(' ')}`,
+    );
+    headers.set('permissions-policy', 'microphone=(self)');
+  }
   headers.set('referrer-policy', 'strict-origin-when-cross-origin');
   headers.set('x-content-type-options', 'nosniff');
   return new Response(response.body, {
@@ -115,7 +132,12 @@ export const createLeadConnectorEdgeWorker = (
     }
     const asset = assetRequest(request);
     return environment.ASSETS.fetch(asset.request).then((response) =>
-      iframeSafeResponse(response, asset.applicationShell, source.pathname),
+      iframeSafeResponse(
+        response,
+        asset.applicationShell,
+        source.pathname,
+        asset.customerShell,
+      ),
     );
   },
 });

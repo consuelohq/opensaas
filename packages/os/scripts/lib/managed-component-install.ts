@@ -440,6 +440,16 @@ export function provisionManagedComponentIndexes(input: {
   actions.push(...legacy.actions);
 
   const userRoot = input.userRoot ?? path.join(os.homedir(), 'Consuelo');
+  const staleDialerSteering = path.join(userRoot, 'Steering', 'dialer-AGENTS.md');
+  if (!input.dryRun && fs.existsSync(staleDialerSteering)) {
+    const content = fs.readFileSync(staleDialerSteering);
+    const digest = createHash('sha256').update(content).digest('hex').slice(0, 12);
+    const archiveDir = path.join(input.home, 'components', 'legacy-stream-steering');
+    fs.mkdirSync(archiveDir, { recursive: true, mode: 0o700 });
+    const archivePath = path.join(archiveDir, `dialer-AGENTS.${digest}.md`);
+    if (!fs.existsSync(archivePath)) fs.writeFileSync(archivePath, content, { mode: 0o600 });
+    fs.rmSync(staleDialerSteering, { force: true });
+  }
   const sourceBundle = runtimeBundleIdentity(runtimeComponents);
   const componentsRoot = path.join(input.home, 'components');
   const skillsIndexPath = path.join(componentsRoot, 'installed-skills.json');

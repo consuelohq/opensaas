@@ -9,7 +9,22 @@ const readRepoFile = (path: string) =>
 
 describe('dialer validation runbook contract', () => {
   const runbook = readRepoFile('areas/dialer/AGENTS.md');
+  const rdReadme = readRepoFile('areas/dialer/rd/README.md');
+  const rdCoordination = readRepoFile('areas/dialer/rd/COORDINATION.md');
   const codeReview = readRepoFile('scripts/code-review.sh');
+
+  it('owns the Dialer product model and RD coordination as repository-local guidance', () => {
+    expect(runbook).toContain('## Product, embedded GoHighLevel, and RD contract');
+    expect(runbook).toContain('Pipeline stage = predictive queue');
+    expect(runbook).toContain('Railway, Cloudflare, and Marketplace are separate deployments');
+    expect(runbook).toContain('RD inbound routing program');
+    expect(runbook).toContain('(rd/README.md)');
+    expect(rdReadme).toContain('areas/dialer');
+    expect(rdCoordination).toContain('areas/dialer/rd/README.md');
+    expect(`${runbook}\n${rdReadme}\n${rdCoordination}`).not.toContain(
+      'packages/os/streams/dialer',
+    );
+  });
 
   it('documents the complete local infrastructure and reset contract', () => {
     expect(runbook).toContain('brew install postgresql@17 redis pgvector');

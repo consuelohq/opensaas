@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/rd8-reconcile-current-main-into-dialer-stream",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2479,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2479",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-rd8-reconcile-current-main-into-dialer-stream",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_15212ebd12f0",
+  "tmuxSession": "opensaas-dialer-rd8-reconcile-current-main-into-dialer-stream-15212ebd",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-rd8-reconcile-current-main-into-dialer-stream/.task/session.json",
+  "createdAt": "2026-09-14T04:41:49.440Z"
+}

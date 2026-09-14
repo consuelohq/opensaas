@@ -76,6 +76,7 @@ describe('LeadConnector browser architecture and branding', () => {
       outdir: directory,
       target: 'browser',
       minify: true,
+      splitting: true,
     });
     expect(result.success).toBe(true);
     const built = readdirSync(directory, {
@@ -93,10 +94,14 @@ describe('LeadConnector browser architecture and branding', () => {
       for (const marker of forbiddenBundledServerMarkers) {
         expect(scanned).not.toContain(marker);
       }
-      if (relativePath.endsWith('.js')) {
-        expect(scanned).toContain('SessionId');
-      }
     }
+    const javascript = built
+      .filter((path) => path.endsWith('.js'))
+      .map((path) => readFileSync(join(directory, path), 'utf8'));
+    expect(javascript.some((text) => text.includes('SessionId'))).toBe(true);
+    const bootstrap = readFileSync(join(directory, 'main.js'), 'utf8');
+    expect(bootstrap).not.toContain('SessionId');
+    expect(bootstrap).not.toContain('@twilio/voice-sdk');
     expect(readFileSync(join(embedRoot, 'index.html'), 'utf8')).toContain(
       'href="./main.css"',
     );
@@ -241,7 +246,7 @@ describe('LeadConnector browser architecture and branding', () => {
   });
 
   it('wires progressive commercial billing forms and confirmation actions to the controller', () => {
-    const source = readFileSync(join(embedRoot, 'main.ts'), 'utf8');
+    const source = readFileSync(join(embedRoot, 'internal-main.ts'), 'utf8');
     expect(source).toContain(
       "form.dataset.form === 'commercial-billing-checkout'",
     );
@@ -256,7 +261,7 @@ describe('LeadConnector browser architecture and branding', () => {
   });
 
   it('restarts the trusted parent bootstrap exchange when authentication is retried', () => {
-    const source = readFileSync(join(embedRoot, 'main.ts'), 'utf8');
+    const source = readFileSync(join(embedRoot, 'internal-main.ts'), 'utf8');
     expect(source).toContain("if (action === 'retry') {");
     expect(source).toContain('bridge.requestUserContext();');
   });
