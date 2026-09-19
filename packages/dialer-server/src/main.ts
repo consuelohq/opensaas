@@ -11,7 +11,10 @@ if (import.meta.main) {
   const server = Bun.serve({
     hostname: runtime.hostname,
     port: runtime.port,
-    fetch: app.fetch,
+    fetch: (request, server) =>
+      app.fetch(request, {
+        clientAddress: server.requestIP(request)?.address ?? 'unknown',
+      }),
     websocket,
   });
   runtime.dependencies.inbound?.start();

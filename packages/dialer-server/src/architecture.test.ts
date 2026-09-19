@@ -29,6 +29,7 @@ describe('dialer-server architecture', () => {
     expect(existsSync(resolve(srcRoot, 'app.ts'))).toBe(true);
     expect(existsSync(resolve(srcRoot, 'main.ts'))).toBe(true);
     expect(read('src/main.ts')).toContain('Bun.serve({');
+    expect(read('src/main.ts')).toContain('server.requestIP(request)?.address');
     expect(read('src/app.ts')).not.toContain('Bun.serve');
   });
 

@@ -66,6 +66,11 @@ export const reconcileConfiguredRepCapacity = async (
 
 export const inboundEnabled = (environment: Environment) =>
   environment.DIALER_INBOUND_ENABLED === 'true';
+
+export const hasEnabledCustomerEntry = (
+  numbers: readonly { readonly enabled: boolean; readonly customerEntry?: unknown }[],
+) => numbers.some((number) => number.enabled && Boolean(number.customerEntry));
+
 export const createInboundRuntime = async (environment: Environment) => {
   if (!inboundEnabled(environment)) return undefined;
   const accountSid = environment.TWILIO_ACCOUNT_SID?.trim();
@@ -97,9 +102,7 @@ export const createInboundRuntime = async (environment: Environment) => {
   const callbackRecipientCipher = callbackRecipientSecret
     ? createCallbackRecipientCipher(callbackRecipientSecret)
     : undefined;
-  const customerEntryEnabled = config.numbers.some((number) =>
-    Boolean(number.customerEntry),
-  );
+  const customerEntryEnabled = hasEnabledCustomerEntry(config.numbers);
   const customerEntrySecret = environment.DIALER_CUSTOMER_ENTRY_SECRET?.trim();
   if (customerEntryEnabled && !customerEntrySecret)
     throw new Error(
@@ -139,7 +142,7 @@ export const createInboundRuntime = async (environment: Environment) => {
       callbackRecipientCipher,
       callbackConsent,
     });
-    const customer = customerEntrySecret
+    const customer = customerEntryEnabled && customerEntrySecret
       ? createInboundCustomerApplication({
           pool,
           numbers: config.numbers,

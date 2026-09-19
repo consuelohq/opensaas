@@ -114,6 +114,37 @@ export type CallbackStoreOptions = {
   readonly calendar?: CallbackCalendarAdapter;
 };
 
+export const cancelConfirmedCallbackBooking = async (input: {
+  readonly booking: CallbackBookingResult;
+  readonly request: CallbackBookingRequest;
+  readonly calendar?: CallbackCalendarAdapter;
+}): Promise<CallbackBookingResult> => {
+  try {
+    if (input.booking.status !== 'confirmed') return input.booking;
+    if (!input.booking.providerReference)
+      throw new Error('Confirmed callback booking is missing its provider reference');
+    if (!input.calendar)
+      throw new Error('Confirmed callback booking requires a calendar adapter');
+    const result = decodeCallbackBookingResult(
+      await input.calendar.cancel({
+        ...input.request,
+        providerReference: input.booking.providerReference,
+      }),
+    );
+    if (result.status !== 'cancelled')
+      throw new Error('Callback provider booking was not confirmed cancelled');
+    return {
+      ...result,
+      providerReference: result.providerReference ?? input.booking.providerReference,
+    };
+  } catch (cause: unknown) {
+    if (cause instanceof Error) throw cause;
+    throw new Error('Callback provider booking cancellation rejected with a non-Error cause', {
+      cause,
+    });
+  }
+};
+
 const eventId = (operationId: string, suffix: string) =>
   digestId(operationId, suffix);
 const recipientReference = (callbackId: string) => digestId(callbackId, 'recipient');
@@ -283,6 +314,85 @@ export const createPostgresCallbacks = (options: CallbackStoreOptions) => {
   const { pool } = options;
   const routing = createPostgresInboundRouting(pool, { clock: options.clock });
   const capacity = createPostgresRepCapacity(pool, { clock: options.clock });
+
+  const operationAlreadyApplied = async (workspaceId: string, operationId: string) => {
+    try {
+      const result = await pool.query(
+        `SELECT 1 FROM dialer_callback_events
+         WHERE workspace_id=$1 AND operation_id=$2 LIMIT 1`,
+        [workspaceId, operationId],
+      );
+      return Boolean(result.rowCount);
+    } catch (cause: unknown) {
+      if (cause instanceof Error) throw cause;
+      throw new Error('Callback operation lookup rejected with a non-Error cause', {
+        cause,
+      });
+    }
+  };
+
+  const cancelConfirmedBookingForRevision = async (row: StoredCallback) => {
+    try {
+      const existing = await pool.query<{
+        status: CallbackBookingResult['status'];
+        provider_reference: string | null;
+        evidence_reference: string | null;
+      }>(
+        `SELECT status,provider_reference,evidence_reference
+         FROM dialer_callback_bookings
+         WHERE workspace_id=$1 AND callback_id=$2 AND revision=$3`,
+        [row.workspace_id, row.callback_id, row.state.revision],
+      );
+      const stored = existing.rows[0];
+      if (!stored || stored.status !== 'confirmed') return;
+      const request: CallbackBookingRequest = {
+        workspaceId: row.workspace_id,
+        callbackId: row.callback_id,
+        revision: row.state.revision,
+        timezone: row.state.timezone,
+        windowStart: row.state.notBefore,
+        windowEnd: row.state.deadline,
+      };
+      const cancelled = await cancelConfirmedCallbackBooking({
+        booking: {
+          status: stored.status,
+          providerReference: stored.provider_reference,
+          evidenceReference: stored.evidence_reference,
+        },
+        request,
+        calendar: options.calendar,
+      });
+      const updated = await pool.query(
+        `UPDATE dialer_callback_bookings
+         SET status=$4,provider_reference=$5,evidence_reference=$6
+         WHERE workspace_id=$1 AND callback_id=$2 AND revision=$3 AND status='confirmed'`,
+        [
+          row.workspace_id,
+          row.callback_id,
+          row.state.revision,
+          cancelled.status,
+          cancelled.providerReference,
+          cancelled.evidenceReference,
+        ],
+      );
+      if (updated.rowCount !== 1) {
+        const current = await pool.query<{
+          status: CallbackBookingResult['status'];
+        }>(
+          `SELECT status FROM dialer_callback_bookings
+           WHERE workspace_id=$1 AND callback_id=$2 AND revision=$3`,
+          [row.workspace_id, row.callback_id, row.state.revision],
+        );
+        if (current.rows[0]?.status !== 'cancelled')
+          throw new Error('Callback provider booking cancellation could not be persisted');
+      }
+    } catch (cause: unknown) {
+      if (cause instanceof Error) throw cause;
+      throw new Error('Callback booking reconciliation rejected with a non-Error cause', {
+        cause,
+      });
+    }
+  };
 
   const projectAction = async (
     client: PoolClient,
@@ -763,6 +873,8 @@ export const createPostgresCallbacks = (options: CallbackStoreOptions) => {
       throw new Error('Callback reschedule window is no longer fulfillable');
     if (!isInboundQueueOpen(queuePolicy, input.notBefore))
       throw new Error('Callback reschedule must begin during staffed hours');
+    if (!(await operationAlreadyApplied(input.workspaceId, input.operationId)))
+      await cancelConfirmedBookingForRevision(row);
     return apply(input.workspaceId, input.callbackId, {
       type: 'reschedule',
       operationId: input.operationId,
@@ -786,6 +898,15 @@ export const createPostgresCallbacks = (options: CallbackStoreOptions) => {
   }) => {
     try {
     const at = options.clock?.() ?? new Date().toISOString();
+    const operationApplied = await operationAlreadyApplied(
+      input.workspaceId,
+      input.operationId,
+    );
+    if (!operationApplied) {
+      const row = await loadCallback(pool, input.workspaceId, input.callbackId);
+      if (!row) throw new Error('Callback obligation is missing');
+      if (!terminal(row.state.status)) await cancelConfirmedBookingForRevision(row);
+    }
     if (input.reconciled)
       return apply(input.workspaceId, input.callbackId, {
         type: 'cancel',

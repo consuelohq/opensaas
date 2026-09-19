@@ -1,5 +1,8 @@
 import { createInboundOperatorRoutes } from './routes/inbound-operator';
-import { createInboundCustomerRoutes } from './routes/inbound-customer';
+import {
+  createInboundCustomerRoutes,
+  type InboundCustomerBindings,
+} from './routes/inbound-customer';
 import { createInboundRoutes } from './routes/inbound';
 import { Hono } from 'hono';
 
@@ -25,7 +28,10 @@ import { createTwilioMediaRoutes } from './routes/twilio-media';
 import { createVoiceRoutes } from './routes/voice';
 
 export function createDialerServer(dependencies: DialerServerDependencies) {
-  const app = new Hono<{ Variables: DialerVariables }>();
+  const app = new Hono<{
+    Variables: DialerVariables;
+    Bindings: InboundCustomerBindings;
+  }>();
   app.route('/', createHealthRoutes());
   if (dependencies.inbound)
     app.route('/', createInboundRoutes(dependencies.inbound));
