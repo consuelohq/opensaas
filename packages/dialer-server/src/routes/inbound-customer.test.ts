@@ -128,6 +128,41 @@ describe('public inbound customer routes', () => {
     });
   });
 
+  it('normalizes international E.164 formatting and rejects implausible lengths', async () => {
+    const fixture = createApplication();
+    const routes = createInboundCustomerRoutes(fixture.application);
+    const international = ['+44', '20', '7946', '0958'].join(' ');
+    const normalizedInternational = ['+44', '20', '7946', '0958'].join('');
+
+    const accepted = await routes.request('/v1/inbound/customer/sales/callbacks', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        phoneNumber: international,
+        permissionAccepted: true,
+        idempotencyKey: 'international-12345678',
+        mode: 'immediate',
+      }),
+    });
+    expect(accepted.status).toBe(201);
+    expect(fixture.calls[0]?.args[2]).toMatchObject({
+      phoneNumber: normalizedInternational,
+    });
+
+    const rejected = await routes.request('/v1/inbound/customer/sales/callbacks', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        phoneNumber: '+12',
+        permissionAccepted: true,
+        idempotencyKey: 'invalid-phone-12345678',
+        mode: 'immediate',
+      }),
+    });
+    expect(rejected.status).toBe(400);
+    expect(fixture.calls).toHaveLength(1);
+  });
+
   it('requires an opaque capability header for status, reschedule, and cancellation', async () => {
     const fixture = createApplication();
     const routes = createInboundCustomerRoutes(fixture.application);

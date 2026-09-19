@@ -1,6 +1,5 @@
 import { Hono } from 'hono';
 import { bodyLimit } from 'hono/body-limit';
-import { parsePhoneNumberFromString } from 'libphonenumber-js';
 
 export type PublicCallbackRequest = {
   phoneNumber: string;
@@ -56,17 +55,15 @@ const clientAddress = (headers: Headers): string => {
 const normalizePhone = (value: string): string | null => {
   const trimmed = value.trim();
   if (trimmed.length === 0) return null;
+  if (!/^\+?[0-9().\-\s]+$/.test(trimmed)) return null;
   const digits = trimmed.replace(/\D/g, '');
-  if (
-    !trimmed.startsWith('+') &&
-    digits.length !== 10 &&
-    !(digits.length === 11 && digits.startsWith('1'))
-  )
-    return null;
-  const parsed = trimmed.startsWith('+')
-    ? parsePhoneNumberFromString(trimmed)
-    : parsePhoneNumberFromString(trimmed, 'US');
-  return parsed?.isValid() === true ? parsed.number : null;
+  if (trimmed.startsWith('+')) {
+    const normalized = `+${digits}`;
+    return /^\+[1-9]\d{7,14}$/.test(normalized) ? normalized : null;
+  }
+  if (digits.length === 10) return `+1${digits}`;
+  if (digits.length === 11 && digits.startsWith('1')) return `+${digits}`;
+  return null;
 };
 
 const callbackRequest = (value: unknown): PublicCallbackRequest | null => {
