@@ -1,4 +1,5 @@
 import { CALLBACK_MIGRATION_ID } from '../inbound/callback-migration';
+import { CALLBACK_BOOKING_EVENTS_MIGRATION_ID } from '../inbound/callback-booking-event-migration';
 import { CUSTOMER_ENTRY_MIGRATION_ID } from '../inbound/customer-entry-migration';
 import { TELEPHONY_MIGRATION_ID } from '../inbound/telephony-migration';
 import { ROUTING_MIGRATION_ID } from '../inbound/routing-migration';
@@ -48,6 +49,7 @@ export const verifyLearningRollbackChain = async (
     );
     await client.query('ROLLBACK TO SAVEPOINT newer_migration_guard');
     for (const id of [
+      CALLBACK_BOOKING_EVENTS_MIGRATION_ID,
       CUSTOMER_ENTRY_MIGRATION_ID,
       CALLBACK_MIGRATION_ID,
       TELEPHONY_MIGRATION_ID,
@@ -88,7 +90,7 @@ export const verifyLearningRollbackChain = async (
     const restored = await client.query<{ count: number }>(
       'SELECT COUNT(*)::int AS count FROM consuelo_dialer_schema_migrations',
     );
-    assert.equal(restored.rows[0]?.count, 11);
+    assert.equal(restored.rows[0]?.count, 12);
     const emptyLearning = await client.query<{ count: number }>(
       'SELECT COUNT(*)::int AS count FROM dialer_learning_observations',
     );

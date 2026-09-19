@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 
 import {
+  createCustomerEntryApi,
   createCustomerEntryController,
   renderCustomerEntry,
   type CustomerEntrySnapshot,
@@ -26,6 +27,31 @@ const snapshot: CustomerEntrySnapshot = {
 };
 
 describe('public customer callback surface', () => {
+  it('reads the standard nested public API error envelope', async () => {
+    const api = createCustomerEntryApi({
+      baseUrl: 'https://calls.example.test',
+      fetch: async () =>
+        new Response(
+          JSON.stringify({
+            error: {
+              code: 'CUSTOMER_CALLBACK_RATE_LIMITED',
+              message: 'Too many callback requests',
+              retryable: true,
+            },
+          }),
+          { status: 429, headers: { 'content-type': 'application/json' } },
+        ),
+    });
+    await expect(
+      api.requestCallback('sales', {
+        phoneNumber: '+15550100999',
+        permissionAccepted: true,
+        idempotencyKey: 'request-12345678',
+        mode: 'immediate',
+      }),
+    ).rejects.toThrow('Too many callback requests');
+  });
+
   it('shows direct calling and truthful callback promises without inventing an ETA', () => {
     const html = renderCustomerEntry({ phase: 'ready', snapshot, result: null, error: null });
     expect(html).toContain('href="tel:+15550100123"');

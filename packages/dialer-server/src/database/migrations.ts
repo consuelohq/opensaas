@@ -4,6 +4,11 @@ import {
   DROP_CALLBACK_SQL,
 } from '../inbound/callback-migration';
 import {
+  CALLBACK_BOOKING_EVENTS_MIGRATION_ID,
+  CREATE_CALLBACK_BOOKING_EVENTS_SQL,
+  DROP_CALLBACK_BOOKING_EVENTS_SQL,
+} from '../inbound/callback-booking-event-migration';
+import {
   CUSTOMER_ENTRY_MIGRATION_ID,
   CREATE_CUSTOMER_ENTRY_SQL,
   DROP_CUSTOMER_ENTRY_SQL,
@@ -380,6 +385,13 @@ const migrations: readonly Migration[] = [
       database.query(CREATE_CUSTOMER_ENTRY_SQL).then(() => undefined),
     down: (database) =>
       database.query(DROP_CUSTOMER_ENTRY_SQL).then(() => undefined),
+  },
+  {
+    id: CALLBACK_BOOKING_EVENTS_MIGRATION_ID,
+    up: (database) =>
+      database.query(CREATE_CALLBACK_BOOKING_EVENTS_SQL).then(() => undefined),
+    down: (database) =>
+      database.query(DROP_CALLBACK_BOOKING_EVENTS_SQL).then(() => undefined),
   },
 ];
 

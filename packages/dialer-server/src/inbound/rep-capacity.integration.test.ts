@@ -1,4 +1,5 @@
 import { CALLBACK_MIGRATION_ID } from './callback-migration';
+import { CALLBACK_BOOKING_EVENTS_MIGRATION_ID } from './callback-booking-event-migration';
 import { CUSTOMER_ENTRY_MIGRATION_ID } from './customer-entry-migration';
 import { TELEPHONY_MIGRATION_ID } from './telephony-migration';
 import { ROUTING_MIGRATION_ID } from './routing-migration';
@@ -655,6 +656,7 @@ suite('Postgres shared rep capacity', () => {
   });
 
   it('preserves identity uniqueness, history immutability and populated migration rollback', async () => {
+    await rollbackDialerDatabaseMigration(pool, CALLBACK_BOOKING_EVENTS_MIGRATION_ID);
     await rollbackDialerDatabaseMigration(pool, CUSTOMER_ENTRY_MIGRATION_ID);
     await rollbackDialerDatabaseMigration(pool, CALLBACK_MIGRATION_ID);
     await rollbackDialerDatabaseMigration(pool, TELEPHONY_MIGRATION_ID);

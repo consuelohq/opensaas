@@ -295,6 +295,7 @@ jobs:
           RAILWAY_DIALER_PUBLIC_ORIGIN: ${{ vars.RAILWAY_DIALER_PUBLIC_ORIGIN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_DIALER_WORKER_API_TOKEN }}
+          DIALER_EDGE_PROXY_SECRET: ${{ secrets.DIALER_EDGE_PROXY_SECRET }}
           LEADCONNECTOR_MARKETPLACE_BOOTSTRAP_SHA256: ${{ vars.LEADCONNECTOR_MARKETPLACE_BOOTSTRAP_SHA256 }}
           LEADCONNECTOR_PRODUCTION_EMBED_URL: ${{ vars.LEADCONNECTOR_PRODUCTION_EMBED_URL }}
         run: |
@@ -307,6 +308,7 @@ jobs:
             RAILWAY_DIALER_PUBLIC_ORIGIN \
             CLOUDFLARE_ACCOUNT_ID \
             CLOUDFLARE_API_TOKEN \
+            DIALER_EDGE_PROXY_SECRET \
             LEADCONNECTOR_MARKETPLACE_BOOTSTRAP_SHA256 \
             LEADCONNECTOR_PRODUCTION_EMBED_URL; do
             if [[ -z "${!name:-}" ]]; then
@@ -335,6 +337,26 @@ jobs:
           --environment "$RAILWAY_DIALER_ENVIRONMENT_ID"
           --service "$RAILWAY_DIALER_SERVICE_ID"
           --json
+
+      - name: Configure dialer edge identity secret
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_DIALER_PROJECT_TOKEN }}
+          RAILWAY_DIALER_ENVIRONMENT_ID: ${{ vars.RAILWAY_DIALER_ENVIRONMENT_ID }}
+          RAILWAY_DIALER_SERVICE_ID: ${{ vars.RAILWAY_DIALER_SERVICE_ID }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_DIALER_WORKER_API_TOKEN }}
+          DIALER_EDGE_PROXY_SECRET: ${{ secrets.DIALER_EDGE_PROXY_SECRET }}
+        run: |
+          set -euo pipefail
+          printf '%s' "$DIALER_EDGE_PROXY_SECRET" |
+            bunx @railway/cli@5.27.2 variables \
+              --service "$RAILWAY_DIALER_SERVICE_ID" \
+              --environment "$RAILWAY_DIALER_ENVIRONMENT_ID" \
+              --set-from-stdin DIALER_EDGE_PROXY_SECRET \
+              --skip-deploys
+          printf '%s' "$DIALER_EDGE_PROXY_SECRET" |
+            bunx wrangler@4.33.1 secret put DIALER_EDGE_PROXY_SECRET \
+              --config packages/lead-connector/wrangler.jsonc
 
       - name: Snapshot Railway deployment
         id: railway-before

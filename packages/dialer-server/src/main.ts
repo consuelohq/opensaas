@@ -3,6 +3,7 @@
 import { websocket } from 'hono/bun';
 
 import { createDialerServer } from './app';
+import { resolveTrustedClientAddress } from './runtime/edge-client-identity';
 import { loadDialerServerRuntime } from './runtime/environment';
 
 if (import.meta.main) {
@@ -11,10 +12,19 @@ if (import.meta.main) {
   const server = Bun.serve({
     hostname: runtime.hostname,
     port: runtime.port,
-    fetch: (request, server) =>
-      app.fetch(request, {
-        clientAddress: server.requestIP(request)?.address ?? 'unknown',
-      }),
+    fetch: (request, server) => {
+      const socketAddress = server.requestIP(request)?.address ?? 'unknown';
+      const edgeSecret = process.env.DIALER_EDGE_PROXY_SECRET;
+      const clientAddress = resolveTrustedClientAddress(
+        request,
+        socketAddress,
+        edgeSecret,
+      );
+      return app.fetch(request, {
+        clientAddress: clientAddress ?? 'unknown',
+        trustedClientIdentity: !edgeSecret?.trim() || clientAddress !== null,
+      });
+    },
     websocket,
   });
   runtime.dependencies.inbound?.start();

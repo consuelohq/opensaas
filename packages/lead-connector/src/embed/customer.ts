@@ -185,20 +185,47 @@ export const renderCustomerEntry = (state: CustomerEntryState): string => {
   </main>`;
 };
 
-export const createCustomerEntryApi = (input: { baseUrl: string }): CustomerApi => {
+export const createCustomerEntryApi = (input: {
+  baseUrl: string;
+  fetch?: (
+    request: string | URL | Request,
+    init?: RequestInit,
+  ) => Promise<Response>;
+}): CustomerApi => {
+  const fetchCustomer = input.fetch ?? fetch;
   const request = async <T>(
     path: string,
     init: RequestInit = {},
   ): Promise<T> => {
     try {
-      const response = await fetch(new URL(path, input.baseUrl), init);
-      const body = (await response.json()) as T | { error?: string };
-      if (!response.ok)
-        throw new Error(
-          typeof (body as { error?: string }).error === 'string'
-            ? (body as { error: string }).error
-            : 'Customer request failed',
-        );
+      const response = await fetchCustomer(new URL(path, input.baseUrl), init);
+      const body = (await response.json()) as
+        | T
+        | {
+            error?: {
+              code?: unknown;
+              message?: unknown;
+              retryable?: unknown;
+            };
+          };
+      if (!response.ok) {
+        const publicError = (body as {
+          error?: { code?: unknown; message?: unknown; retryable?: unknown };
+        }).error;
+        const message =
+          publicError && typeof publicError.message === 'string'
+            ? publicError.message
+            : 'Customer request failed';
+        const error = new Error(message) as Error & {
+          code?: string;
+          retryable?: boolean;
+        };
+        if (publicError && typeof publicError.code === 'string')
+          error.code = publicError.code;
+        if (publicError && typeof publicError.retryable === 'boolean')
+          error.retryable = publicError.retryable;
+        throw error;
+      }
       return body as T;
     } catch (cause: unknown) {
       if (cause instanceof Error) throw cause;

@@ -1,0 +1,201 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/dialer/rd8-close-final-review-contract-gaps",
+  "base": "origin/stream/dialer",
+  "headSha": "d9780da6e3c21921b34fc6f77a0ef300d1bff30a",
+  "changeHash": "165028a3a272038330b41e2af69e57e8831bec9da270b1e3ecd31182b63239ae",
+  "changedFiles": [
+    ".github/workflows/consuelo-production-release.yaml",
+    "packages/dialer-server/README.md",
+    "packages/dialer-server/scripts/local-dialer-lab.ts",
+    "packages/dialer-server/src/database/migrations.test.ts",
+    "packages/dialer-server/src/database/migrations.ts",
+    "packages/dialer-server/src/inbound/callback-booking-event-migration.ts",
+    "packages/dialer-server/src/inbound/callbacks.integration.test.ts",
+    "packages/dialer-server/src/inbound/callbacks.ts",
+    "packages/dialer-server/src/inbound/rep-capacity.integration.test.ts",
+    "packages/dialer-server/src/inbound/routing.integration.test.ts",
+    "packages/dialer-server/src/inbound/telephony.integration.test.ts",
+    "packages/dialer-server/src/lab/learning-rollback-scenario.ts",
+    "packages/dialer-server/src/lab/local-dialer-lab.integration.test.ts",
+    "packages/dialer-server/src/main.ts",
+    "packages/dialer-server/src/routes/inbound-customer.test.ts",
+    "packages/dialer-server/src/routes/inbound-customer.ts",
+    "packages/dialer-server/src/runtime/edge-client-identity.test.ts",
+    "packages/dialer-server/src/runtime/edge-client-identity.ts",
+    "packages/lead-connector/README.md",
+    "packages/lead-connector/src/embed/cloudflare-worker.test.ts",
+    "packages/lead-connector/src/embed/cloudflare-worker.ts",
+    "packages/lead-connector/src/embed/customer.test.ts",
+    "packages/lead-connector/src/embed/customer.ts"
+  ],
+  "verifiedAt": "2026-09-19T15:57:02.635Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".github/workflows/consuelo-production-release.yaml",
+        ".task/dialer/rd8-close-final-review-contract-gaps/evidence-log.json",
+        ".task/dialer/rd8-close-final-review-contract-gaps/read-log.json",
+        ".task/dialer/rd8-close-final-review-contract-gaps/workpad.md",
+        ".task/tasks/dialer/rd8-close-final-review-contract-gaps.json",
+        "packages/dialer-server/README.md",
+        "packages/dialer-server/scripts/local-dialer-lab.ts",
+        "packages/dialer-server/src/database/migrations.test.ts",
+        "packages/dialer-server/src/database/migrations.ts",
+        "packages/dialer-server/src/inbound/callback-booking-event-migration.ts",
+        "packages/dialer-server/src/inbound/callbacks.integration.test.ts",
+        "packages/dialer-server/src/inbound/callbacks.ts",
+        "packages/dialer-server/src/inbound/rep-capacity.integration.test.ts",
+        "packages/dialer-server/src/inbound/routing.integration.test.ts",
+        "packages/dialer-server/src/inbound/telephony.integration.test.ts",
+        "packages/dialer-server/src/lab/learning-rollback-scenario.ts",
+        "packages/dialer-server/src/lab/local-dialer-lab.integration.test.ts",
+        "packages/dialer-server/src/main.ts",
+        "packages/dialer-server/src/routes/inbound-customer.test.ts",
+        "packages/dialer-server/src/routes/inbound-customer.ts",
+        "packages/dialer-server/src/runtime/edge-client-identity.test.ts",
+        "packages/dialer-server/src/runtime/edge-client-identity.ts",
+        "packages/lead-connector/README.md",
+        "packages/lead-connector/src/embed/cloudflare-worker.test.ts",
+        "packages/lead-connector/src/embed/cloudflare-worker.ts",
+        "packages/lead-connector/src/embed/customer.test.ts",
+        "packages/lead-connector/src/embed/customer.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "dialer-server-package",
+          "critical": true,
+          "reason": "Dialer server changes must prove Hono transport, Twilio boundary, and standalone lifecycle contracts.",
+          "matchedFiles": [
+            "packages/dialer-server/README.md",
+            "packages/dialer-server/scripts/local-dialer-lab.ts",
+            "packages/dialer-server/src/database/migrations.test.ts",
+            "packages/dialer-server/src/database/migrations.ts",
+            "packages/dialer-server/src/inbound/callback-booking-event-migration.ts",
+            "packages/dialer-server/src/inbound/callbacks.integration.test.ts",
+            "packages/dialer-server/src/inbound/callbacks.ts",
+            "packages/dialer-server/src/inbound/rep-capacity.integration.test.ts",
+            "packages/dialer-server/src/inbound/routing.integration.test.ts",
+            "packages/dialer-server/src/inbound/telephony.integration.test.ts",
+            "packages/dialer-server/src/lab/learning-rollback-scenario.ts",
+            "packages/dialer-server/src/lab/local-dialer-lab.integration.test.ts",
+            "packages/dialer-server/src/main.ts",
+            "packages/dialer-server/src/routes/inbound-customer.test.ts",
+            "packages/dialer-server/src/routes/inbound-customer.ts",
+            "packages/dialer-server/src/runtime/edge-client-identity.test.ts",
+            "packages/dialer-server/src/runtime/edge-client-identity.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "lead-connector-package",
+          "critical": true,
+          "reason": "LeadConnector provider changes must prove OAuth, token, resource, webhook, architecture, and branding contracts.",
+          "matchedFiles": [
+            "packages/lead-connector/README.md",
+            "packages/lead-connector/src/embed/cloudflare-worker.test.ts",
+            "packages/lead-connector/src/embed/cloudflare-worker.ts",
+            "packages/lead-connector/src/embed/customer.test.ts",
+            "packages/lead-connector/src/embed/customer.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "dialer-server Hono contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-server/src"
+          ],
+          "ruleId": "dialer-server-package",
+          "critical": true
+        },
+        {
+          "name": "LeadConnector provider contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/lead-connector/src"
+          ],
+          "ruleId": "lead-connector-package",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "dialer-server Hono contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-server/src"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-server-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1450,
+          "outputTail": "kip) inbound runtime with real Postgres and simulated carrier > admits signed public requests and serves the real RD7A authenticated adapter\n(skip) inbound runtime with real Postgres and simulated carrier > commits only one winner across concurrent browser and phone acceptance\n(skip) inbound runtime with real Postgres and simulated carrier > protects and drains an uncertain bridge without reporting connection\n(skip) inbound runtime with real Postgres and simulated carrier > restarts after bridge claim and dispatches each pending effect once\n(skip) inbound runtime with real Postgres and simulated carrier > does not promise a callback when RD6 activation is disabled on the number\n(skip) inbound runtime with real Postgres and simulated carrier > accepts late voicemail completion and deletes it on its retention deadline\n(skip) inbound runtime with real Postgres and simulated carrier > rolls an empty telephony schema down and up while protecting immutable facts\n(skip) inbound runtime with real Postgres and simulated carrier > shares capacity with outbound and retains partial creation uncertainty\n(skip) inbound runtime with real Postgres and simulated carrier > admits a duplicate incoming call once and never redials the caller\n(skip) inbound runtime with real Postgres and simulated carrier > connects only after acceptance and both unmuted participants, then wraps up\n(skip) inbound runtime with real Postgres and simulated carrier > protects unknown create outcomes across restart and never creates another offer\n(skip) inbound runtime with real Postgres and simulated carrier > rejects stale and cross-rep acceptance and cleans an abandoned caller\n(skip) inbound runtime with real Postgres and simulated carrier > persists explicit voicemail selection without recording an ordinary call\n(skip) inbound runtime with real Postgres and simulated carrier > refuses rollback while a live caller or uncertain effect exists\n(skip) inbound runtime with real Postgres and simulated carrier > (unnamed)\n(skip) RD7B customer entry with real Postgres > deduplicates public requests, persists explicit permission, and survives restart\n(skip) RD7B customer entry with real Postgres > uses server-authored service windows for reschedule and cancels the RD6 obligation\n(skip) RD6 callbacks with real Postgres > does not reserve early and creates one attempt only after rep acceptance\n(skip) RD6 callbacks with real Postgres > releases no-answer capacity, retries on policy backoff, and preserves original entry\n(skip) RD6 callbacks with real Postgres > blocks rollback until callback obligations are terminal and retained recipients are purged\n(skip) RD6 callbacks with real Postgres > records calendar unavailability truthfully and purges recipients after retention\n(skip) RD6 callbacks with real Postgres > does not repeat a provider cancellation after an uncertain dispatched effect\n(skip) transactional inbound routing > commits one reservation for duplicate ticks and replays immutable decision evidence\n(skip) transactional inbound routing > does not split a reservation from its evidence when persistence fails\n(skip) transactional inbound routing > expires safe offers, moves to another rep and bounds attempts across recreation\n(skip) transactional inbound routing > protects dispatched offers through expiry and escalation without reoffering\n(skip) transactional inbound routing > does not resurrect abandoned callers and records unserviceable predecessors\n(skip) transactional inbound routing > keeps callback not-before, config versions, fallback and replay after restart\n(skip) transactional inbound routing > preserves one owner under independent routing worker processes\n(skip) transactional inbound routing > rejects future request evidence without reserving capacity\n(skip) transactional inbound routing > rejects rollback with active routing and preserves older journal after safe down/up\n\n 212 pass\n 58 skip\n 0 fail\n 1152 expect() calls\nRan 270 tests across 55 files. [1428.00ms]\n"
+        },
+        {
+          "name": "LeadConnector provider contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/lead-connector/src"
+          ],
+          "cwd": ".",
+          "ruleId": "lead-connector-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1438,
+          "outputTail": " before acceptance and disconnects the partial leg [0.20ms]\n(pass) LeadConnector browser agent voice > waits for the inbound browser leg and accepts it only after explicit authority approval [0.23ms]\n(pass) LeadConnector browser agent voice > rejects a pending inbound browser leg without treating it as connected [0.11ms]\n\npackages/lead-connector/src/embed/idle-refresh.test.ts:\n(pass) LeadConnector idle refresh scheduling > uses focus and visible transitions without polling and fully cleans up across remounts [0.25ms]\n\npackages/lead-connector/src/embed/inbound-operator.test.ts:\n(pass) inbound operator state > projects an authoritative snapshot without inventing capacity [0.08ms]\n(pass) inbound operator state > stale acceptance keeps the offer actionable and reports the server reason [0.03ms]\n(pass) inbound operator state > renders endpoint readiness, truthful connecting state, queue visibility, and recovery controls [0.19ms]\n(pass) inbound operator state > allows an offline unowned rep to go ready [0.04ms]\n(pass) inbound operator state > prefers a healthy browser endpoint over an eligible phone endpoint for offer acceptance [0.04ms]\n(pass) inbound operator adapter > sends fenced actions through authenticated UI routes [0.38ms]\n\npackages/lead-connector/src/deployment/custom-menu.test.ts:\n(pass) LeadConnector custom menu deployment contract > targets one sandbox location in iframe mode with microphone permission [0.28ms]\n(pass) LeadConnector custom menu deployment contract > updates an existing sandbox menu instead of creating duplicates [0.77ms]\n\npackages/lead-connector/src/deployment/worker-release.test.ts:\n(pass) LeadConnector production worker release > extracts one deploy version from Wrangler structured output [0.16ms]\n(pass) LeadConnector production worker release > verifies shells, proxy health, CSP, and exact launcher asset hashes [0.64ms]\n\npackages/lead-connector/src/deployment/marketplace-bootstrap.test.ts:\n(pass) stable HighLevel Marketplace bootstrap > loads the launcher assets from one stable HTTPS origin without credentials [0.21ms]\n(pass) stable HighLevel Marketplace bootstrap > rejects non-HTTPS asset origins [0.05ms]\n(pass) stable HighLevel Marketplace bootstrap > verifies the built loader against the approved one-time source SHA-256 [0.17ms]\n(pass) stable HighLevel Marketplace bootstrap > is emitted as a dedicated one-time Marketplace installation artifact [0.41ms]\n\npackages/lead-connector/src/deployment/release-workflow.contract.test.ts:\n(pass) dialer GitHub release workflow contract > classifies the complete deployed dialer surface and validates all three packages [0.48ms]\n(pass) dialer GitHub release workflow contract > builds clean Railway workspace dependencies in package order [0.33ms]\n(pass) dialer GitHub release workflow contract > releases dialer changes from main in fail-closed provider order with deployment-only secrets [0.22ms]\n(pass) dialer GitHub release workflow contract > provides explicit-id manual rollback and never guesses a previous release [0.22ms]\n\npackages/lead-connector/src/deployment/production-menu.test.ts:\n(pass) LeadConnector production custom menu deployment > updates one configured menu id and verifies exact persisted read-back [0.45ms]\n(pass) LeadConnector production custom menu deployment > fails closed when the configured id belongs to a different menu [0.11ms]\n\npackages/lead-connector/src/deployment/commercial-artifacts.test.ts:\n(pass) commercial deployment artifacts > installs an admin-only GHL menu at /admin with microphone permission [0.04ms]\n(pass) commercial deployment artifacts > builds independently versioned marketplace JavaScript and CSS artifacts [0.09ms]\n(pass) commercial deployment artifacts > centers a responsive modal backdrop while preserving a stable native launcher [0.10ms]\n(pass) commercial deployment artifacts > removes obsolete metering workspace and build references [2.02ms]\n\n 150 pass\n 0 fail\n 1243 expect() calls\nRan 150 tests across 28 files. [1421.00ms]\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [
+      {
+        "category": "database-script",
+        "file": "packages/dialer-server/src/database/migrations.test.ts",
+        "severity": "warning",
+        "message": "database reset/migration/sync script changed"
+      },
+      {
+        "category": "database-script",
+        "file": "packages/dialer-server/src/database/migrations.ts",
+        "severity": "warning",
+        "message": "database reset/migration/sync script changed"
+      }
+    ],
+    "findings": []
+  },
+  "commandVersion": 2
+}

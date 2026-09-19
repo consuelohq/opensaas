@@ -48,6 +48,7 @@ Required infrastructure:
 - `REDIS_URL`
 - `DIALER_SERVER_PUBLIC_URL`
 - `DIALER_SERVER_EMBED_SESSION_SECRET`
+- `DIALER_EDGE_PROXY_SECRET` (shared only with the Cloudflare dialer Worker for signed client attribution)
 - `TWILIO_ACCOUNT_SID`
 - `TWILIO_AUTH_TOKEN`
 - `LEADCONNECTOR_CLIENT_ID`

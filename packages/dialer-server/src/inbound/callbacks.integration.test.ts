@@ -7,6 +7,7 @@ import {
   rollbackDialerDatabaseMigration,
 } from '../database/migrations';
 import { CALLBACK_MIGRATION_ID } from './callback-migration';
+import { CALLBACK_BOOKING_EVENTS_MIGRATION_ID } from './callback-booking-event-migration';
 import { CUSTOMER_ENTRY_MIGRATION_ID } from './customer-entry-migration';
 import { createPostgresInboundRouting } from './routing';
 import { createPostgresRepCapacity } from './rep-capacity';
@@ -280,6 +281,7 @@ suite('RD6 callbacks with real Postgres', () => {
   });
 
   it('blocks rollback until callback obligations are terminal and retained recipients are purged', async () => {
+    await rollbackDialerDatabaseMigration(pool, CALLBACK_BOOKING_EVENTS_MIGRATION_ID);
     await rollbackDialerDatabaseMigration(pool, CUSTOMER_ENTRY_MIGRATION_ID);
     await request();
     try {
@@ -383,7 +385,16 @@ suite('RD6 callbacks with real Postgres', () => {
       `SELECT status FROM dialer_callback_bookings
        WHERE workspace_id='workspace' AND callback_id='callback-one' AND revision=2`,
     );
-    expect(priorBooking.rows[0]?.status).toBe('cancelled');
+    expect(priorBooking.rows[0]?.status).toBe('confirmed');
+    const priorBookingEvents = await pool.query<{ event_kind: string }>(
+      `SELECT event_kind FROM dialer_callback_booking_events
+       WHERE workspace_id='workspace' AND callback_id='callback-one' AND revision=2
+       ORDER BY recorded_at,event_kind`,
+    );
+    expect(priorBookingEvents.rows.map((row) => row.event_kind).sort()).toEqual([
+      'cancel_dispatched',
+      'cancelled',
+    ]);
     expect(await calendar.book('workspace', 'callback-one')).toMatchObject({
       status: 'confirmed',
       providerReference: 'calendar-event-1',
@@ -405,7 +416,12 @@ suite('RD6 callbacks with real Postgres', () => {
       `SELECT status FROM dialer_callback_bookings
        WHERE workspace_id='workspace' AND callback_id='callback-one' AND revision=3`,
     );
-    expect(finalBooking.rows[0]?.status).toBe('cancelled');
+    expect(finalBooking.rows[0]?.status).toBe('confirmed');
+    expect(await calendar.book('workspace', 'callback-one')).toMatchObject({
+      status: 'cancelled',
+      providerReference: 'calendar-event-1',
+      evidenceReference: 'calendar-evidence-2',
+    });
     seconds = 211;
     expect(await calendar.purgeRecipients('workspace')).toBe(1);
     expect((await calendar.read('workspace', 'callback-one'))!.recipientRetained).toBe(false);
@@ -418,5 +434,50 @@ suite('RD6 callbacks with real Postgres', () => {
        WHERE obligation.workspace_id='workspace' AND obligation.callback_id='callback-one'`,
     );
     expect(JSON.stringify(raw.rows)).not.toContain('+18285550123');
+  });
+
+  it('does not repeat a provider cancellation after an uncertain dispatched effect', async () => {
+    await request();
+    let cancellations = 0;
+    const calendar = makeService({
+      book: async () => ({
+        status: 'confirmed',
+        providerReference: 'calendar-event-uncertain',
+        evidenceReference: 'calendar-evidence-confirmed',
+      }),
+      cancel: async () => {
+        cancellations++;
+        throw new Error('provider response lost');
+      },
+    });
+    await calendar.reschedule({
+      workspaceId: 'workspace',
+      callbackId: 'callback-one',
+      operationId: 'reschedule-booking',
+      timezone: 'UTC',
+      notBefore: at(20),
+      deadline: at(80),
+    });
+    await calendar.book('workspace', 'callback-one');
+
+    await expect(
+      calendar.cancel({
+        workspaceId: 'workspace',
+        callbackId: 'callback-one',
+        operationId: 'cancel-uncertain',
+        reconciled: false,
+      }),
+    ).rejects.toThrow('provider response lost');
+    expect(cancellations).toBe(1);
+
+    await expect(
+      calendar.cancel({
+        workspaceId: 'workspace',
+        callbackId: 'callback-one',
+        operationId: 'cancel-uncertain',
+        reconciled: false,
+      }),
+    ).rejects.toThrow('outcome is unknown');
+    expect(cancellations).toBe(1);
   });
 });

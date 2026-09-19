@@ -92,6 +92,30 @@ describe('public inbound customer routes', () => {
     expect(forged.status).toBe(400);
     expect(fixture.calls).toHaveLength(0);
 
+    const untrusted = await routes.request(
+      '/v1/inbound/customer/sales/callbacks',
+      {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          phoneNumber: validDomesticPhone,
+          permissionAccepted: true,
+          idempotencyKey: 'request-untrusted-1234',
+          mode: 'immediate',
+        }),
+      },
+      { clientAddress: 'unknown', trustedClientIdentity: false },
+    );
+    expect(untrusted.status).toBe(503);
+    expect(await untrusted.json()).toEqual({
+      error: {
+        code: 'EDGE_PROXY_UNAVAILABLE',
+        message: 'Customer callback service is temporarily unavailable',
+        retryable: true,
+      },
+    });
+    expect(fixture.calls).toHaveLength(0);
+
     const accepted = await routes.request(
       '/v1/inbound/customer/sales/callbacks',
       {
@@ -109,7 +133,7 @@ describe('public inbound customer routes', () => {
           mode: 'immediate',
         }),
       },
-      { clientAddress: 'server-observed-client' },
+      { clientAddress: 'server-observed-client', trustedClientIdentity: true },
     );
     expect(accepted.status).toBe(201);
     expect(fixture.calls).toHaveLength(1);
@@ -215,5 +239,105 @@ describe('public inbound customer routes', () => {
       'rescheduleCallback',
       'cancelCallback',
     ]);
+  });
+
+  it('returns the standard nested error envelope for every public customer failure class', async () => {
+    const fixture = createApplication();
+    const routes = createInboundCustomerRoutes(fixture.application);
+
+    const invalidEntry = await routes.request('/v1/inbound/customer/!');
+    expect(await invalidEntry.json()).toEqual({
+      error: {
+        code: 'INVALID_CUSTOMER_ENTRY',
+        message: 'Invalid customer entry',
+        retryable: false,
+      },
+    });
+
+    const invalidCallback = await routes.request(
+      '/v1/inbound/customer/sales/callbacks',
+      { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' },
+    );
+    expect(await invalidCallback.json()).toEqual({
+      error: {
+        code: 'INVALID_CALLBACK_REQUEST',
+        message: 'Invalid callback request',
+        retryable: false,
+      },
+    });
+
+    fixture.application.requestCallback = async () => {
+      throw new Error('CUSTOMER_CALLBACK_RATE_LIMITED');
+    };
+    const rateLimited = await routes.request(
+      '/v1/inbound/customer/sales/callbacks',
+      {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          phoneNumber: '+18285550123',
+          permissionAccepted: true,
+          idempotencyKey: 'request-12345678',
+          mode: 'immediate',
+        }),
+      },
+    );
+    expect(rateLimited.status).toBe(429);
+    expect(await rateLimited.json()).toEqual({
+      error: {
+        code: 'CUSTOMER_CALLBACK_RATE_LIMITED',
+        message: 'Too many callback requests',
+        retryable: true,
+      },
+    });
+
+    const capability = await routes.request(
+      '/v1/inbound/customer/sales/callbacks/status',
+    );
+    expect(await capability.json()).toEqual({
+      error: {
+        code: 'CALLBACK_CAPABILITY_REQUIRED',
+        message: 'Callback capability required',
+        retryable: false,
+      },
+    });
+
+    const reschedule = await routes.request(
+      '/v1/inbound/customer/sales/callbacks/reschedule',
+      {
+        method: 'POST',
+        headers: {
+          authorization: 'Callback opaque-management-token-123456',
+          'content-type': 'application/json',
+        },
+        body: '{}',
+      },
+    );
+    expect(await reschedule.json()).toEqual({
+      error: {
+        code: 'INVALID_CALLBACK_RESCHEDULE',
+        message: 'Invalid reschedule request',
+        retryable: false,
+      },
+    });
+
+    const cancellation = await routes.request(
+      '/v1/inbound/customer/sales/callbacks/cancel',
+      {
+        method: 'POST',
+        headers: {
+          authorization: 'Callback opaque-management-token-123456',
+          'content-type': 'application/json',
+        },
+        body: '{',
+      },
+    );
+    expect(await cancellation.json()).toEqual({
+      error: {
+        code: 'INVALID_CALLBACK_CANCELLATION',
+        message: 'Invalid cancellation request',
+        retryable: false,
+      },
+    });
   });
 });
