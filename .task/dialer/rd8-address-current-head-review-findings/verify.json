@@ -1,0 +1,115 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/dialer/rd8-address-current-head-review-findings",
+  "base": "origin/stream/dialer",
+  "headSha": "0fdec1b3dc8e0271ee2465ecd5a67113fa83f3db",
+  "changeHash": "605d51dca6056dedfcb2cd59d9884126c6ea01bd6b3fcb8f02de87659b1f5538",
+  "changedFiles": [
+    "packages/dialer-server/src/app.ts",
+    "packages/dialer-server/src/architecture.test.ts",
+    "packages/dialer-server/src/inbound/callback-booking.test.ts",
+    "packages/dialer-server/src/inbound/callbacks.integration.test.ts",
+    "packages/dialer-server/src/inbound/callbacks.ts",
+    "packages/dialer-server/src/main.ts",
+    "packages/dialer-server/src/routes/inbound-customer.test.ts",
+    "packages/dialer-server/src/routes/inbound-customer.ts",
+    "packages/dialer-server/src/runtime/inbound-customer-entry-activation.test.ts",
+    "packages/dialer-server/src/runtime/inbound.ts"
+  ],
+  "verifiedAt": "2026-09-19T14:55:40.778Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/dialer/rd8-address-current-head-review-findings/evidence-log.json",
+        ".task/dialer/rd8-address-current-head-review-findings/read-log.json",
+        ".task/dialer/rd8-address-current-head-review-findings/workpad.md",
+        ".task/tasks/dialer/rd8-address-current-head-review-findings.json",
+        "packages/dialer-server/src/app.ts",
+        "packages/dialer-server/src/architecture.test.ts",
+        "packages/dialer-server/src/inbound/callback-booking.test.ts",
+        "packages/dialer-server/src/inbound/callbacks.integration.test.ts",
+        "packages/dialer-server/src/inbound/callbacks.ts",
+        "packages/dialer-server/src/main.ts",
+        "packages/dialer-server/src/routes/inbound-customer.test.ts",
+        "packages/dialer-server/src/routes/inbound-customer.ts",
+        "packages/dialer-server/src/runtime/inbound-customer-entry-activation.test.ts",
+        "packages/dialer-server/src/runtime/inbound.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "dialer-server-package",
+          "critical": true,
+          "reason": "Dialer server changes must prove Hono transport, Twilio boundary, and standalone lifecycle contracts.",
+          "matchedFiles": [
+            "packages/dialer-server/src/app.ts",
+            "packages/dialer-server/src/architecture.test.ts",
+            "packages/dialer-server/src/inbound/callback-booking.test.ts",
+            "packages/dialer-server/src/inbound/callbacks.integration.test.ts",
+            "packages/dialer-server/src/inbound/callbacks.ts",
+            "packages/dialer-server/src/main.ts",
+            "packages/dialer-server/src/routes/inbound-customer.test.ts",
+            "packages/dialer-server/src/routes/inbound-customer.ts",
+            "packages/dialer-server/src/runtime/inbound-customer-entry-activation.test.ts",
+            "packages/dialer-server/src/runtime/inbound.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "dialer-server Hono contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-server/src"
+          ],
+          "ruleId": "dialer-server-package",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "dialer-server Hono contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-server/src"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-server-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 827,
+          "outputTail": "real Postgres and simulated carrier > returns a bounded fallback and never creates a callback without explicit choice\n(skip) inbound runtime with real Postgres and simulated carrier > admits signed public requests and serves the real RD7A authenticated adapter\n(skip) inbound runtime with real Postgres and simulated carrier > commits only one winner across concurrent browser and phone acceptance\n(skip) inbound runtime with real Postgres and simulated carrier > protects and drains an uncertain bridge without reporting connection\n(skip) inbound runtime with real Postgres and simulated carrier > restarts after bridge claim and dispatches each pending effect once\n(skip) inbound runtime with real Postgres and simulated carrier > does not promise a callback when RD6 activation is disabled on the number\n(skip) inbound runtime with real Postgres and simulated carrier > accepts late voicemail completion and deletes it on its retention deadline\n(skip) inbound runtime with real Postgres and simulated carrier > rolls an empty telephony schema down and up while protecting immutable facts\n(skip) inbound runtime with real Postgres and simulated carrier > shares capacity with outbound and retains partial creation uncertainty\n(skip) inbound runtime with real Postgres and simulated carrier > admits a duplicate incoming call once and never redials the caller\n(skip) inbound runtime with real Postgres and simulated carrier > connects only after acceptance and both unmuted participants, then wraps up\n(skip) inbound runtime with real Postgres and simulated carrier > protects unknown create outcomes across restart and never creates another offer\n(skip) inbound runtime with real Postgres and simulated carrier > rejects stale and cross-rep acceptance and cleans an abandoned caller\n(skip) inbound runtime with real Postgres and simulated carrier > persists explicit voicemail selection without recording an ordinary call\n(skip) inbound runtime with real Postgres and simulated carrier > refuses rollback while a live caller or uncertain effect exists\n(skip) inbound runtime with real Postgres and simulated carrier > (unnamed)\n(skip) RD7B customer entry with real Postgres > deduplicates public requests, persists explicit permission, and survives restart\n(skip) RD7B customer entry with real Postgres > uses server-authored service windows for reschedule and cancels the RD6 obligation\n(skip) RD6 callbacks with real Postgres > does not reserve early and creates one attempt only after rep acceptance\n(skip) RD6 callbacks with real Postgres > releases no-answer capacity, retries on policy backoff, and preserves original entry\n(skip) RD6 callbacks with real Postgres > blocks rollback until callback obligations are terminal and retained recipients are purged\n(skip) RD6 callbacks with real Postgres > records calendar unavailability truthfully and purges recipients after retention\n(skip) transactional inbound routing > commits one reservation for duplicate ticks and replays immutable decision evidence\n(skip) transactional inbound routing > does not split a reservation from its evidence when persistence fails\n(skip) transactional inbound routing > expires safe offers, moves to another rep and bounds attempts across recreation\n(skip) transactional inbound routing > protects dispatched offers through expiry and escalation without reoffering\n(skip) transactional inbound routing > does not resurrect abandoned callers and records unserviceable predecessors\n(skip) transactional inbound routing > keeps callback not-before, config versions, fallback and replay after restart\n(skip) transactional inbound routing > preserves one owner under independent routing worker processes\n(skip) transactional inbound routing > rejects future request evidence without reserving capacity\n(skip) transactional inbound routing > rejects rollback with active routing and preserves older journal after safe down/up\n\n 206 pass\n 57 skip\n 0 fail\n 1128 expect() calls\nRan 263 tests across 54 files. [817.00ms]\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -25,6 +25,10 @@ export type InboundCustomerApplication = {
   cancelCallback: (publicId: string, managementToken: string) => Promise<unknown>;
 };
 
+export type InboundCustomerBindings = {
+  readonly clientAddress?: string;
+};
+
 const jsonObject = (value: unknown): Record<string, unknown> | null =>
   value !== null && typeof value === 'object' && !Array.isArray(value)
     ? (value as Record<string, unknown>)
@@ -43,14 +47,8 @@ const managementToken = (authorization: string | undefined): string | null => {
   return match?.[1] ?? null;
 };
 
-const clientAddress = (headers: Headers): string => {
-  const cloudflare = headers.get('cf-connecting-ip')?.trim();
-  if (cloudflare) return cloudflare;
-  const forwarded = headers.get('x-forwarded-for')?.split(',')[0]?.trim();
-  if (forwarded) return forwarded;
-  const direct = headers.get('x-real-ip')?.trim();
-  return direct || 'unknown';
-};
+const clientAddress = (value: string | undefined): string =>
+  value?.trim() || 'unknown';
 
 const normalizePhone = (value: string): string | null => {
   const trimmed = value.trim();
@@ -116,7 +114,7 @@ const parseJson = async (request: Request): Promise<unknown | null> => {
 export const createInboundCustomerRoutes = (
   application: InboundCustomerApplication,
 ) => {
-  const routes = new Hono();
+  const routes = new Hono<{ Bindings: InboundCustomerBindings }>();
   routes.use('/v1/inbound/customer/*', bodyLimit({ maxSize: 8192 }));
 
   routes.get('/v1/inbound/customer/:publicId', async (context) => {
@@ -137,7 +135,7 @@ export const createInboundCustomerRoutes = (
     try {
       const result = await application.requestCallback(
         entryId,
-        clientAddress(context.req.raw.headers),
+        clientAddress(context.env?.clientAddress),
         input,
       );
       return context.json(result, 201);

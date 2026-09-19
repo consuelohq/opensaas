@@ -73,7 +73,7 @@ describe('public inbound customer routes', () => {
     ]);
   });
 
-  it('rejects forged internal authority and passes the edge client address to admission', async () => {
+  it('rejects forged authority and uses only the server-observed client address', async () => {
     const fixture = createApplication();
     const routes = createInboundCustomerRoutes(fixture.application);
     const validDomesticPhone = ['(828)', '555', '0123'].join(' ');
@@ -92,21 +92,30 @@ describe('public inbound customer routes', () => {
     expect(forged.status).toBe(400);
     expect(fixture.calls).toHaveLength(0);
 
-    const accepted = await routes.request('/v1/inbound/customer/sales/callbacks', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json', 'cf-connecting-ip': '203.0.113.10' },
-      body: JSON.stringify({
-        phoneNumber: validDomesticPhone,
-        permissionAccepted: true,
-        idempotencyKey: 'request-12345678',
-        mode: 'immediate',
-      }),
-    });
+    const accepted = await routes.request(
+      '/v1/inbound/customer/sales/callbacks',
+      {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'cf-connecting-ip': '198.51.100.10',
+          'x-forwarded-for': '198.51.100.11',
+          'x-real-ip': '198.51.100.12',
+        },
+        body: JSON.stringify({
+          phoneNumber: validDomesticPhone,
+          permissionAccepted: true,
+          idempotencyKey: 'request-12345678',
+          mode: 'immediate',
+        }),
+      },
+      { clientAddress: 'server-observed-client' },
+    );
     expect(accepted.status).toBe(201);
     expect(fixture.calls).toHaveLength(1);
     expect(fixture.calls[0]?.operation).toBe('requestCallback');
     expect(fixture.calls[0]?.args[0]).toBe('sales');
-    expect(fixture.calls[0]?.args[1]).toBe('203.0.113.10');
+    expect(fixture.calls[0]?.args[1]).toBe('server-observed-client');
   });
 
   it('normalizes a domestic formatted phone number before callback admission', async () => {

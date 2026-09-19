@@ -334,17 +334,21 @@ suite('RD6 callbacks with real Postgres', () => {
       evidenceReference: null,
     });
 
+    const cancelledProviderBookings: string[] = [];
     const calendar = makeService({
       book: async () => ({
         status: 'confirmed',
         providerReference: 'calendar-event-1',
         evidenceReference: 'calendar-evidence-1',
       }),
-      cancel: async () => ({
-        status: 'cancelled',
-        providerReference: 'calendar-event-1',
-        evidenceReference: 'calendar-evidence-2',
-      }),
+      cancel: async (input) => {
+        cancelledProviderBookings.push(input.providerReference);
+        return {
+          status: 'cancelled',
+          providerReference: input.providerReference,
+          evidenceReference: 'calendar-evidence-2',
+        };
+      },
     });
     await calendar.reschedule({
       workspaceId: 'workspace',
@@ -366,14 +370,42 @@ suite('RD6 callbacks with real Postgres', () => {
       evidenceReference: 'calendar-evidence-1',
     });
 
-    seconds = 30;
+    await calendar.reschedule({
+      workspaceId: 'workspace',
+      callbackId: 'callback-one',
+      operationId: 'reschedule-two',
+      timezone: 'UTC',
+      notBefore: at(30),
+      deadline: at(85),
+    });
+    expect(cancelledProviderBookings).toEqual(['calendar-event-1']);
+    const priorBooking = await pool.query<{ status: string }>(
+      `SELECT status FROM dialer_callback_bookings
+       WHERE workspace_id='workspace' AND callback_id='callback-one' AND revision=2`,
+    );
+    expect(priorBooking.rows[0]?.status).toBe('cancelled');
+    expect(await calendar.book('workspace', 'callback-one')).toMatchObject({
+      status: 'confirmed',
+      providerReference: 'calendar-event-1',
+    });
+
+    seconds = 31;
     await calendar.cancel({
       workspaceId: 'workspace',
       callbackId: 'callback-one',
       operationId: 'cancel-one',
       reconciled: false,
     });
+    expect(cancelledProviderBookings).toEqual([
+      'calendar-event-1',
+      'calendar-event-1',
+    ]);
     expect((await calendar.read('workspace', 'callback-one'))!.state.status).toBe('cancelled');
+    const finalBooking = await pool.query<{ status: string }>(
+      `SELECT status FROM dialer_callback_bookings
+       WHERE workspace_id='workspace' AND callback_id='callback-one' AND revision=3`,
+    );
+    expect(finalBooking.rows[0]?.status).toBe('cancelled');
     seconds = 211;
     expect(await calendar.purgeRecipients('workspace')).toBe(1);
     expect((await calendar.read('workspace', 'callback-one'))!.recipientRetained).toBe(false);
