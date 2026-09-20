@@ -153,9 +153,6 @@ no-test waiver: not applicable.
 
 ## workspace-owned: activity log
 
-- 2026-08-15 19:56:19 fs.trash: `.github/workflows/ci-server.yaml`
-- 2026-08-15 19:56:22 fs.trash: `.github/workflows/ci-shared.yaml`
-- 2026-08-15 19:56:25 fs.trash: `.github/workflows/ci-test-docker-compose.yaml`
 - 2026-08-15 19:56:29 fs.trash: `.github/workflows/ci-utils.yaml`
 - 2026-08-15 19:56:56 fs.write: `.task/twenty-migration/m4-remove-legacy-twenty-application-tree/workpad.md`
 - 2026-08-15 19:57:47 fs.trash: `packages/workspace/scripts/ci/lint-changed-frontend-files.mjs`
@@ -202,6 +199,9 @@ no-test waiver: not applicable.
 - 2026-08-16 07:08:14 fs.write: `.task/twenty-migration/m4-remove-legacy-twenty-application-tree/workpad.md`
 - 2026-08-16 07:09:10 fs.write: `.task/twenty-migration/m4-remove-legacy-twenty-application-tree/workpad.md`
 - 2026-08-16 07:12:31 fs.write: `.task/twenty-migration/m4-remove-legacy-twenty-application-tree/workpad.md`
+- 2026-09-20 23:47:54 fs.write: `.task/twenty-migration/m4-remove-legacy-twenty-application-tree/workpad.md`
+- 2026-09-20 23:48:05 fs.write: `.task/twenty-migration/m4-remove-legacy-twenty-application-tree/workpad.md`
+- 2026-09-20 23:48:53 fs.write: `.task/twenty-migration/m4-remove-legacy-twenty-application-tree/workpad.md`
 - managed by workspace tooling.
 
 ## workspace-owned: validation evidence
@@ -217,6 +217,8 @@ no-test waiver: not applicable.
 - 2026-08-16 07:04:53 `verify`: passed — OK
 - 2026-08-16 07:12:53 `review.run`: passed — OK
 - 2026-08-16 07:13:15 `verify`: passed — OK
+- 2026-09-20 23:48:24 `review.run`: passed — OK
+- 2026-09-20 23:48:47 `verify`: passed — OK
 
 ## key decisions
 
@@ -549,3 +551,48 @@ Fallback: on failure, inspect the completed job before any new mutation; on pend
 A new repair SHA must pass GitHub Consuelo verify plus dialer and all native platform checks before M4 promotion. M5 remains blocked.
 
 - 2026-08-16 07:12:31 append: `.task/twenty-migration/m4-remove-legacy-twenty-application-tree/workpad.md`
+
+- 2026-09-20 23:47:54 write: `.task/twenty-migration/m4-remove-legacy-twenty-application-tree/workpad.md`
+
+
+## M4 recovery and host-native lifecycle repair — 2026-09-20
+
+### Live-state reconstruction
+
+- `origin/main`: `fb5107b89101eb2109d513e9e2065419dfef5e7a`; M1/M2/M3 commits are not ancestors of main.
+- `origin/stream/twenty-migration`: `02ebe7733e3f6de79b59ef6e692f93f5bbbf234c`; M1 #2019, M2 #2040, and M3 #2045 are merged here.
+- PR #2053 is still open at `ba638d357cdd6adefd47cfcb857c4f4c9449f33b` and remains the canonical focused M4 deletion PR.
+- PR #2047 is an older divergent M4 attempt; it is neither ancestor nor descendant of #2053 and contains unrelated accumulated history.
+- Current main still contains all eight legacy Twenty package trees and root `start` still launches `twenty-server`/`twenty-front`; M4 removes the application tree and preserves the M3 standalone dialer-server start.
+- Historical disk pressure is resolved; current root filesystem has about 16 GiB free.
+- Railway CLI is not linked/authenticated in this checkout. No live Railway state is being inferred from repository config alone.
+
+### Test-first contract for CI platform repair
+
+- Behavior: shared lifecycle-engine baseline runtime bundles must match the host platform and architecture so the same contract suite executes on Linux/macOS; explicit mismatch tests remain deliberately mismatched.
+- RED evidence: GitHub run `31933345242`, verify job `95131568037`, failed 29 lifecycle tests on Linux, including `lifecycle-engine.test.ts:1389`, with `LifecycleError: runtime bundle platform darwin does not match linux`.
+- Remote head verification before edit: the five shared baseline bundles still used `platform: 'darwin'` and `architecture: 'arm64'`.
+- Implementation: only `bundle100`, `bundle110`, `bundle190`, `bundle1100`, and `legacyRecoveryBundle` now use `process.platform` and `process.arch`.
+- No production code changed and explicit wrong-platform/wrong-architecture tests were not rewritten.
+
+### GREEN evidence
+
+- Exact registry suite `OS lifecycle update handoff contracts`: 9 files / 136 tests passed.
+- `node packages/os/scripts/check-syntax.js`: passed.
+- `bun x vitest run packages/os/tests/facade/facade.test.ts -t "lifecycle\\.(status|update)"`: 9 passed, 694 skipped.
+- Facade tests emit an existing non-fatal trace persistence warning when a Node-side test fixture cannot load `bun:sqlite`; the asserted contract results remain green and the warning is unrelated to this fixture change.
+
+### Next gate
+
+Run task-local review and canonical verify against `origin/stream/twenty-migration`, then push the repaired #2053 head and require fresh GitHub checks before promotion into the stream. M5 licensing/identity and M6 Bun remain separate follow-on tasks.
+
+- 2026-09-20 23:48:05 append: `.task/twenty-migration/m4-remove-legacy-twenty-application-tree/workpad.md`
+
+### Publish gate — 2026-09-20
+
+- Strict review against `origin/stream/twenty-migration`: passed with 0 blocking findings and 0 documentation opportunities.
+- Canonical `verify`: passed; `publishValid: true`, `mode: full`, review passed, DB guard passed with 0 risks/findings.
+- Local focused lifecycle evidence remains 9 files / 136 tests green, plus syntax and lifecycle facade snapshots.
+- Next: push the repaired task head and require fresh GitHub checks on the new SHA before stream promotion.
+
+- 2026-09-20 23:48:53 append: `.task/twenty-migration/m4-remove-legacy-twenty-application-tree/workpad.md`

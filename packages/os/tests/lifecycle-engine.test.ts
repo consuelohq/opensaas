@@ -119,43 +119,43 @@ beforeAll(async () => {
   privateKey = pair.privateKey;
   publicKeyPem = pair.publicKey.export({ type: 'spki', format: 'pem' }).toString();
   bundle100 = await buildRuntimeBundle({
-    architecture: 'arm64',
+    architecture: process.arch,
     includePaths: requiredRuntimePaths,
     minimumUpdaterVersion: '1.0.0',
-    platform: 'darwin',
+    platform: process.platform,
     sourceCommit: 'fixture-100',
     sourceRoot: osRoot,
     version: '1.0.0',
   });
   bundle110 = await buildRuntimeBundle({
-    architecture: 'arm64',
+    architecture: process.arch,
     includePaths: requiredRuntimePaths,
     minimumUpdaterVersion: '1.0.0',
-    platform: 'darwin',
+    platform: process.platform,
     sourceCommit: 'fixture-110',
     sourceRoot: osRoot,
     version: '1.1.0',
   });
   bundle190 = await buildRuntimeBundle({
-    architecture: 'arm64',
+    architecture: process.arch,
     includePaths: requiredRuntimePaths,
     minimumUpdaterVersion: '1.0.0',
-    platform: 'darwin',
+    platform: process.platform,
     sourceCommit: 'fixture-190',
     sourceRoot: osRoot,
     version: '1.9.0',
   });
   bundle1100 = await buildRuntimeBundle({
-    architecture: 'arm64',
+    architecture: process.arch,
     includePaths: requiredRuntimePaths,
     minimumUpdaterVersion: '1.0.0',
-    platform: 'darwin',
+    platform: process.platform,
     sourceCommit: 'fixture-1100',
     sourceRoot: osRoot,
     version: '1.10.0',
   });
   legacyRecoveryBundle = await buildRuntimeBundle({
-    architecture: 'arm64',
+    architecture: process.arch,
     includePaths: requiredRuntimePaths.filter(
       (runtimePath) =>
         runtimePath !== 'scripts/lib/lifecycle/connector-readiness.ts' &&
@@ -163,7 +163,7 @@ beforeAll(async () => {
         runtimePath !== 'scripts/lib/workspace-node-heartbeat-client.ts',
     ),
     minimumUpdaterVersion: '1.0.0',
-    platform: 'darwin',
+    platform: process.platform,
     sourceCommit: 'fixture-legacy-recovery',
     sourceRoot: osRoot,
     version: '0.9.0',

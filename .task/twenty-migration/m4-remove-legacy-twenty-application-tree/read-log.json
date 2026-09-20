@@ -7,12 +7,14 @@
     "packages/os/package.json",
     "packages/os/scripts/ci-plan.ts",
     "packages/os/tests/code-call-snapshot.test.ts",
+    "packages/os/tests/lifecycle-engine.test.ts",
     "packages/workspace/scripts/lib/git.js",
     "packages/workspace/scripts/lib/task-node-modules.js",
     "packages/workspace/scripts/test-selection.js",
     "packages/workspace/scripts/verify.js",
+    "packages/workspace/test-selection.registry.json",
     "packages/workspace/tests/twenty-migration-runtime-boundary.test.ts",
     "scripts/validate-dockerfiles.sh"
   ],
-  "updatedAt": "2026-08-16T07:01:10.170Z"
+  "updatedAt": "2026-09-20T23:47:20.438Z"
 }
