@@ -23,12 +23,9 @@ const WEBSITE_CONTEXT_FILES = [
 
 const DEPLOYMENT_DOCKERFILES = [
   'Dockerfile',
-  'packages/twenty-docker/twenty/Dockerfile',
 ] as const;
 
 const DEPLOYED_PACKAGE_MANIFESTS = [
-  'packages/twenty-server/package.json',
-  'packages/twenty-front/package.json',
   'packages/api/package.json',
   'packages/agent/package.json',
   'packages/coaching/package.json',

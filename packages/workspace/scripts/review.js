@@ -123,7 +123,7 @@ function parseArgs(argv) {
 
 function run(cmd, args, opts = {}) {
   try {
-    return execFileSync(cmd, args, { encoding: 'utf8', maxBuffer: 10 * 1024 * 1024, ...opts }).trim();
+    return execFileSync(cmd, args, { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, ...opts }).trim();
   } catch {
     return '';
   }
@@ -185,6 +185,7 @@ function getChangedRepoFiles(base) {
 
   try {
     for (const change of getTrackedChanges(gitRoot())) {
+      if (change.deleted) continue;
       files.add(change.path);
     }
   } catch {

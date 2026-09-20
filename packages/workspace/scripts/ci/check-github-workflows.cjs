@@ -50,13 +50,10 @@ const changedActionFiles = changedFiles.filter((file) =>
 );
 
 const pullRequestTargetAllowlist = new Set([
-  '.github/workflows/ci-utils.yaml',
   '.github/workflows/preview-env-dispatch.yaml',
 ]);
 
 const writePermissionAllowlist = new Set([
-  '.github/workflows/ci-breaking-changes.yaml',
-  '.github/workflows/ci-utils.yaml',
   '.github/workflows/cd-deploy-main.yaml',
   '.github/workflows/cd-deploy-tag.yaml',
   '.github/workflows/consuelo-os-runtime-promote.yaml',

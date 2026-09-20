@@ -384,8 +384,8 @@ bun run code-call -- --area dialer git diff
 bun run code-call -- --branch task/dialer/fix-thing git status --short
 bun run code-call -- --pr 210 yarn jest --runInBand packages/dialer/src/queue.test.ts
 bun run code-call -- --github "https://app.graphite.com/github/pr/consuelohq/opensaas/686/some-slug" git status --short
-bun run code-call -- --branch task/dialer/fix-thing yarn prettier --write packages/twenty-front/src/foo.ts
-bun run code-call -- --branch task/dialer/fix-thing npx nx typecheck twenty-front
+bun run code-call -- --branch task/dialer/fix-thing yarn prettier --write packages/dialer-server/src/app.ts
+bun run code-call -- --branch task/dialer/fix-thing bun run --cwd packages/dialer-server typecheck
 bun run code-call -- --branch task/dialer/fix-thing bun run review
 bun run code-call -- --branch task/dialer/fix-thing git diff --check
 ```

@@ -9,9 +9,10 @@ const read = (...parts: string[]) =>
 describe('dialer GitHub release workflow contract', () => {
   it('classifies the complete deployed dialer surface and validates all three packages', () => {
     const ci = read('.github', 'workflows', 'consuelo-ci.yaml');
-    expect(ci).toContain('^packages/dialer-server/');
-    expect(ci).toContain('^packages/lead-connector/');
-    expect(ci).toContain('^packages/logger/');
+    const planner = read('packages', 'os', 'scripts', 'ci-plan.ts');
+    expect(planner).toContain("file.startsWith('packages/dialer-server/')");
+    expect(planner).toContain("file.startsWith('packages/lead-connector/')");
+    expect(planner).toContain("file.startsWith('packages/logger/')");
     expect(ci).toContain('bun test packages/dialer/src');
     expect(ci).toContain('bun test packages/dialer-server/src');
     expect(ci).toContain('bun test packages/lead-connector/src');

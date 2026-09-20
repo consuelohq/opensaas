@@ -28,7 +28,45 @@ function json(result) {
   return JSON.parse(result.stdout);
 }
 
+describe('test selection runtime safety', () => {
+  it('reserves enough suite output for repository-scale CI runs', () => {
+    const source = fs.readFileSync(script, 'utf8');
+    const runSuitesSource = source.slice(
+      source.indexOf('function runSuites'),
+      source.indexOf('function testFileExtension'),
+    );
+
+    expect(source).toContain(
+      'const TEST_SUITE_OUTPUT_MAX_BUFFER = 64 * 1024 * 1024;',
+    );
+    expect(runSuitesSource).toContain(
+      'maxBuffer: TEST_SUITE_OUTPUT_MAX_BUFFER',
+    );
+  });
+});
+
 describe('test selection registry', () => {
+  it('writes check results to --out independently of stdout', () => {
+    const out = path.join(
+      os.tmpdir(),
+      `test-selection-check-${process.pid}-${Date.now()}.json`,
+    );
+    const result = run([
+      'check',
+      '--changed-file',
+      'README.md',
+      '--out',
+      out,
+      '--json',
+    ]);
+
+    expect(result.status).toBe(0);
+    const data = JSON.parse(fs.readFileSync(out, 'utf8'));
+    expect(data.kind).toBe('selection');
+    expect(data.changedFiles).toContain('README.md');
+    fs.rmSync(out, { force: true });
+  });
+
   it('discovers and seeds the existing test inventory', () => {
     const out = path.join(os.tmpdir(), `test-selection-${Date.now()}.json`);
     const result = run(['generate', '--out', out, '--json']);
@@ -58,10 +96,6 @@ describe('test selection registry', () => {
       registry.rules.some((rule) => rule.id === 'workspace-publish-gate'),
     ).toBe(true);
     expect(
-      registry.rules.find((rule) => rule.id === 'frontend-lint-config-contract')
-        ?.exclusive,
-    ).toBe(true);
-    expect(
       registry.rules.find(
         (rule) => rule.id === 'auto:@consuelo/dialer-server:package-test',
       ),
@@ -76,27 +110,6 @@ describe('test selection registry', () => {
         (rule) => rule.id === 'auto:@consuelo/os:package-test',
       )?.tests[0]?.command,
     ).toEqual(['bun', 'run', '--cwd', 'packages/os', 'test']);
-    const explicitTwentyFront = registry.rules.find(
-      (rule) => rule.id === 'twenty-front-project',
-    );
-    expect(explicitTwentyFront?.tests[0]?.command).toEqual([
-      'npx',
-      'nx',
-      'test',
-      'twenty-front',
-      '--coverage=false',
-    ]);
-
-    const autoTwentyShared = registry.rules.find(
-      (rule) => rule.id === 'auto:twenty-shared:test',
-    );
-    expect(autoTwentyShared?.tests[0]?.command).toEqual([
-      'npx',
-      'nx',
-      'test',
-      'twenty-shared',
-      '--coverage=false',
-    ]);
   });
 
   it('routes current OS Trace inspector changes only to existing OS-owned suites', () => {
@@ -189,64 +202,6 @@ describe('test selection registry', () => {
     );
     expect(uncovered.selectedSuites.map((suite) => suite.name)).toContain(
       'broad package suite',
-    );
-  });
-
-  it('uses exclusive frontend config contracts instead of unrelated package suites', () => {
-    const result = run([
-      'check',
-      '--changed-file',
-      'packages/twenty-front/eslint.config.mjs',
-      '--changed-file',
-      'packages/twenty-ui/eslint.config.mjs',
-      '--changed-file',
-      'packages/eslint-rules/eslint.config.react.mjs',
-      '--json',
-    ]);
-    const data = json(result);
-    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
-    const suiteNames = data.selectedSuites.map((suite) => suite.name);
-
-    expect(matchedRuleIds).toContain('frontend-lint-config-contract');
-    expect(matchedRuleIds).not.toContain('twenty-front-project');
-    expect(matchedRuleIds).not.toContain('auto:twenty-front:test');
-    expect(matchedRuleIds).not.toContain('auto:twenty-ui:test');
-    expect(matchedRuleIds).not.toContain('auto:twenty-eslint-rules:test');
-    expect(suiteNames).toEqual(
-      expect.arrayContaining([
-        'changed frontend lint helper tests',
-        'GitHub workflow policy tests',
-        'changed GitHub workflow security checks',
-        'changed frontend files lint',
-      ]),
-    );
-  });
-
-  it('keeps runtime source on the broader project suite alongside an exclusive config contract', () => {
-    const result = run([
-      'check',
-      '--changed-file',
-      'packages/twenty-front/eslint.config.mjs',
-      '--changed-file',
-      'packages/twenty-front/src/modules/dialer/hooks/useDialer.ts',
-      '--json',
-    ]);
-    const data = json(result);
-    const configRule = data.matchedRules.find(
-      (rule) => rule.id === 'frontend-lint-config-contract',
-    );
-    const projectRule = data.matchedRules.find(
-      (rule) => rule.id === 'twenty-front-project',
-    );
-
-    expect(configRule?.matchedFiles).toEqual([
-      'packages/twenty-front/eslint.config.mjs',
-    ]);
-    expect(projectRule?.matchedFiles).toEqual([
-      'packages/twenty-front/src/modules/dialer/hooks/useDialer.ts',
-    ]);
-    expect(data.selectedSuites.map((suite) => suite.name)).toContain(
-      'twenty-front test target',
     );
   });
 
@@ -642,28 +597,6 @@ describe('test selection registry', () => {
     ]);
   });
 
-  it('uses focused M1 call-start compatibility contracts instead of the full Twenty server suite', () => {
-    const result = run([
-      'check',
-      '--changed-file',
-      'packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.ts',
-      '--changed-file',
-      'packages/twenty-server/src/engine/core-modules/consuelo-api/infrastructure/twenty-dialer-call-start.infrastructure.ts',
-      '--json',
-    ]);
-    const data = json(result);
-    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
-
-    expect(matchedRuleIds).toContain('twenty-migration-call-start-orchestration');
-    expect(matchedRuleIds).not.toContain('twenty-server-project');
-    expect(matchedRuleIds).not.toContain('auto:twenty-server:test');
-    expect(data.selectedSuites).toHaveLength(1);
-    expect(data.selectedSuites[0]).toMatchObject({
-      name: 'Twenty call-start compatibility contracts',
-      ruleId: 'twenty-migration-call-start-orchestration',
-    });
-  });
-
   it('selects the Hono dialer-server suite for standalone server changes', () => {
     const result = run([
       'check',
@@ -860,7 +793,7 @@ describe('test selection registry', () => {
         rules: [
           {
             id: 'noise-suite',
-            source: ['packages/twenty-sdk/**'],
+            source: ['packages/example-sdk/**'],
             tests: [{ name: 'noise suite', command: [process.execPath, '-e', ''] }],
             critical: false,
             reason: 'fixture',
@@ -875,8 +808,8 @@ describe('test selection registry', () => {
     fs.writeFileSync(path.join(repo, 'README.md'), 'base\n');
     spawnSync('git', ['add', '.'], { cwd: repo });
     spawnSync('git', ['commit', '-m', 'base'], { cwd: repo });
-    fs.mkdirSync(path.join(repo, 'packages/twenty-sdk'), { recursive: true });
-    fs.writeFileSync(path.join(repo, 'packages/twenty-sdk/install-noise.ts'), 'export {};\n');
+    fs.mkdirSync(path.join(repo, 'packages/example-sdk'), { recursive: true });
+    fs.writeFileSync(path.join(repo, 'packages/example-sdk/install-noise.ts'), 'export {};\n');
 
     const result = spawnSync(
       'node',

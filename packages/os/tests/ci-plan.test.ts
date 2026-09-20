@@ -13,26 +13,12 @@ describe('Consuelo CI plan', () => {
     });
   });
 
-  it('keeps legacy Twenty package-only changes outside Consuelo verification', () => {
+  it('routes package removals through Consuelo verification', () => {
     expect(classifyConsueloChanges(['packages/twenty-front/src/App.tsx'])).toEqual({
-      verify: false,
-      workflowSecurity: false,
-      osContracts: false,
-      dialer: false,
-      sitesGatewayCloudflare: false,
-    });
-  });
-
-  it('keeps the temporary Twenty Consuelo API bridge in the dialer lane', () => {
-    expect(
-      classifyConsueloChanges([
-        'packages/twenty-server/src/engine/core-modules/consuelo-api/consuelo-api.controller.ts',
-      ]),
-    ).toEqual({
       verify: true,
       workflowSecurity: false,
       osContracts: false,
-      dialer: true,
+      dialer: false,
       sitesGatewayCloudflare: false,
     });
   });
