@@ -15,7 +15,10 @@ started: 2026-09-21
 
 ## files changed
 
-- none yet
+- `packages/workspace/bun.lock`
+- `packages/workspace/package-lock.json`
+- `packages/workspace/package.json`
+
 
 ## key decisions
 
