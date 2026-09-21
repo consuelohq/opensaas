@@ -2,15 +2,24 @@ import path from 'node:path';
 
 import { Hono, type Context } from 'hono';
 
-import { authorizeSignedRequest } from '../middleware/auth';
+import { ARTIFACT_LOCAL_SHARE_CSRF_PLACEHOLDER } from '../../lib/artifacts';
+import { hasAnyWorkspaceEdgeNodeHeaders } from '../../lib/workspace-edge-node-auth';
+import {
+  authorizeSignedRequest,
+  hasSignedGatewayHeaders,
+  loadAuthConfigForRequest,
+  requestHeaders,
+} from '../middleware/auth';
 import { internalError, invalidRequest, jsonResponse } from '../middleware/errors';
 import {
   authorizeArtifactShareSession,
   claimArtifactShare,
   createArtifactShare,
   getArtifactShareStatus,
+  getOrCreateLocalArtifactShareCsrf,
   listArtifactShares,
   revokeArtifactShare,
+  verifyLocalArtifactShareCsrf,
   type ArtifactShareRecord,
 } from '../services/artifact-sharing';
 import {
@@ -28,10 +37,45 @@ type ArtifactRouteDependencies = {
   now?: () => number;
 };
 
-function publicArtifactResponse(pathname: string): Response {
+function isLoopbackRequest(request: Request): boolean {
+  try {
+    const hostname = new URL(request.url).hostname.toLowerCase();
+    return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]' || hostname === '::1';
+  } catch {
+    return false;
+  }
+}
+
+function isSameOriginLoopbackMutation(request: Request): boolean {
+  if (!isLoopbackRequest(request)) return false;
+  try {
+    const requestOrigin = new URL(request.url).origin;
+    return request.headers.get('origin') === requestOrigin;
+  } catch {
+    return false;
+  }
+}
+
+function publicArtifactResponse(request: Request): Response {
+  const pathname = new URL(request.url).pathname;
   const file = resolveArtifactPublicFile(pathname);
   if (!file) return new Response('Artifact not found', { status: 404 });
-  return new Response(file.body, {
+
+  let body = file.body;
+  if (
+    file.contentType.startsWith('text/html')
+    && (pathname === '/artifacts' || pathname === '/artifacts/')
+  ) {
+    const html = new TextDecoder().decode(file.body);
+    const replacement = isLoopbackRequest(request)
+      ? getOrCreateLocalArtifactShareCsrf(resolveArtifactsHome())
+      : '';
+    body = new TextEncoder().encode(
+      html.replaceAll(ARTIFACT_LOCAL_SHARE_CSRF_PLACEHOLDER, replacement),
+    );
+  }
+
+  return new Response(body, {
     status: 200,
     headers: {
       'content-type': file.contentType,
@@ -56,12 +100,41 @@ function authorizeWrite(
   path: string,
   body: string,
 ): Promise<Response | null> {
-  return authorizeSignedRequest({
-    request,
-    path,
-    body,
-    requiredScope: 'route:/gateway/artifacts:write',
-  });
+  const headers = requestHeaders(request);
+  if (
+    !isLoopbackRequest(request)
+    || hasSignedGatewayHeaders(headers)
+    || hasAnyWorkspaceEdgeNodeHeaders(headers)
+  ) {
+    return authorizeSignedRequest({
+      request,
+      path,
+      body,
+      requiredScope: 'route:/gateway/artifacts:write',
+    });
+  }
+
+  const localCsrf = request.headers.get('x-consuelo-artifact-share-csrf') ?? '';
+  if (
+    !isSameOriginLoopbackMutation(request)
+    || !verifyLocalArtifactShareCsrf(resolveArtifactsHome(), localCsrf)
+  ) {
+    return Promise.resolve(jsonResponse({
+      ok: false,
+      error: {
+        code: 'ARTIFACT_SHARE_CSRF_FAILED',
+        message: 'A current local Artifacts page is required to change private links.',
+      },
+    }, 403));
+  }
+
+  return Promise.resolve(null);
+}
+
+function publicArtifactShareUrl(relativeUrl: string): string {
+  const workspaceHost = loadAuthConfigForRequest().workspaceHost.trim().toLowerCase();
+  if (!workspaceHost) throw new Error('workspace host is required for artifact sharing');
+  return new URL(relativeUrl, `https://${workspaceHost}`).toString();
 }
 
 function shareSecurityHeaders(contentType?: string): Headers {
@@ -239,8 +312,8 @@ export function createArtifactRoutes(
   const app = new Hono();
   const now = dependencies.now ?? Date.now;
 
-  app.get('/artifacts', (context) => publicArtifactResponse(context.req.path));
-  app.get('/artifacts/*', (context) => publicArtifactResponse(context.req.path));
+  app.get('/artifacts', (context) => publicArtifactResponse(context.req.raw));
+  app.get('/artifacts/*', (context) => publicArtifactResponse(context.req.raw));
 
   app.post('/share/artifacts/:shareId/claim', async (context) => {
     const shareId = context.req.param('shareId');
@@ -445,7 +518,7 @@ export function createArtifactRoutes(
           createdAt: share.createdAt,
           expiresAt: share.expiresAt,
           active: share.active,
-          url: share.url,
+          url: publicArtifactShareUrl(share.url),
         },
       }, 201);
     } catch (error: unknown) {
