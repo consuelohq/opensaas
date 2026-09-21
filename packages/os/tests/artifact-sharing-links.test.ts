@@ -151,7 +151,7 @@ describe('artifact private share links', () => {
     await expect(viewer.text()).resolves.toContain('Shared with Mom');
   });
 
-  it('lets the loopback Artifacts page create and revoke a private link with its local CSRF capability', async () => {
+  it('keeps pre-upgrade loopback Artifacts pages compatible while enforcing same-origin sharing', async () => {
     const app = createArtifactRoutes({ now: () => nowMs });
     const page = await app.fetch(new Request('http://127.0.0.1:46321/artifacts', {
       headers: { accept: 'text/html' },
@@ -173,7 +173,7 @@ describe('artifact private share links', () => {
     const artifactId = ((await catalog.json()) as { artifacts: Array<{ id: string }> }).artifacts[0]!.id;
     const createPath = `/gateway/artifacts/${artifactId}/shares`;
 
-    const missingCsrf = await app.fetch(new Request(`http://127.0.0.1:46321${createPath}`, {
+    const legacyCreated = await app.fetch(new Request(`http://127.0.0.1:46321${createPath}`, {
       method: 'POST',
       headers: {
         origin: 'http://127.0.0.1:46321',
@@ -181,7 +181,9 @@ describe('artifact private share links', () => {
       },
       body: '{}',
     }));
-    expect(missingCsrf.status).toBe(403);
+    expect(legacyCreated.status).toBe(201);
+    const legacyBody = await legacyCreated.json() as { share: { url: string } };
+    expect(legacyBody.share.url).toMatch(/^https:\/\/artifact-share\.consuelohq\.com\/share\/artifacts\//);
 
     const wrongOrigin = await app.fetch(new Request(`http://127.0.0.1:46321${createPath}`, {
       method: 'POST',
@@ -193,6 +195,17 @@ describe('artifact private share links', () => {
       body: '{}',
     }));
     expect(wrongOrigin.status).toBe(403);
+
+    const wrongCsrf = await app.fetch(new Request(`http://127.0.0.1:46321${createPath}`, {
+      method: 'POST',
+      headers: {
+        origin: 'http://127.0.0.1:46321',
+        'content-type': 'application/json',
+        'x-consuelo-artifact-share-csrf': 'definitely-not-the-current-capability',
+      },
+      body: '{}',
+    }));
+    expect(wrongCsrf.status).toBe(403);
 
     const created = await app.fetch(new Request(`http://127.0.0.1:46321${createPath}`, {
       method: 'POST',
