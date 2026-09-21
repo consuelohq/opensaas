@@ -33,7 +33,9 @@ describe('dialer GitHub release workflow contract', () => {
     const dockerfile = read('packages', 'dialer-server', 'Dockerfile');
     const railway = read('packages', 'dialer-server', 'railway.json');
     expect(dockerfile).toContain('FROM oven/bun:1.3.14 AS dependencies');
-    expect(dockerfile).toContain('RUN bun install --frozen-lockfile');
+    expect(dockerfile).toContain(
+      'RUN bun install --frozen-lockfile --ignore-scripts',
+    );
     expect(dockerfile).not.toContain('yarn install');
     const builds = [
       'bun run --cwd packages/logger build',
