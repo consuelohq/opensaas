@@ -66,6 +66,18 @@ describe('buildDiffCockpitUrl', () => {
   });
 });
 
+describe('review page progressive hydration', () => {
+  test('retries transient auth handoff failures and batches long diff rendering', () => {
+    const html = renderReviewPage({ owner: 'consuelohq', repo: 'opensaas', number: 1991 });
+
+    expect(html).toContain('reviewAuthRetryDelaysMs');
+    expect(html).toContain('fetchReviewWithAuthRetry');
+    expect(html).toContain('diffRenderBatchSize');
+    expect(html).toContain('requestIdleCallback');
+    expect(html).not.toContain("els.diff.innerHTML = state.data.files.map(renderDiffFile).join('')");
+  });
+});
+
 describe('standalone Diffs retirement', () => {
   test('removes the standalone Worker and automatic KV cache warmers while preserving hostname safety', () => {
     expect(existsSync(resolve(repositoryRoot, 'packages/diff-cockpit/wrangler.toml'))).toBe(false);
@@ -671,7 +683,9 @@ describe('renderIndexPage', () => {
     expect(html).not.toContain('data-page-next');
     expect(html).toContain('data-toggle-streams');
     expect(html).toContain('showAllStreams');
-    expect(html).toContain("cacheSchemaVersion = 'v4-mergeability-live'");
+    expect(html).toContain("cacheSchemaVersion = 'v5-server-snapshot-progressive'");
+    expect(html).toContain('const clientCacheTtlMs = 2 * 60 * 1000');
+    expect(html).toContain('Date.now() - cachedAt > clientCacheTtlMs');
     expect(html).toContain('clearStaleIndexCaches');
     expect(html).toContain('localStorage.getItem(cacheKey)');
     expect(html).toContain('mergeIndexWithCache');
