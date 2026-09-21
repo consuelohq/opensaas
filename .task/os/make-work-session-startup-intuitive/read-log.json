@@ -1,0 +1,22 @@
+{
+  "files": [
+    ".task/os/make-work-session-startup-intuitive/workpad.md",
+    "packages/os/TOOLS.md",
+    "packages/os/package.json",
+    "packages/os/scripts/generate-docs.ts",
+    "packages/os/tests/session-start-foundation.test.ts",
+    "packages/os/tools/task-lifecycle/handler.ts",
+    "packages/os/tools/task-lifecycle/manifest.ts",
+    "packages/os/tools/task-lifecycle/schema.ts",
+    "packages/workspace/manifests/manifest.config.json",
+    "packages/workspace/package.json",
+    "packages/workspace/scripts/generate-docs.ts",
+    "packages/workspace/scripts/generate-tool-manifest.ts",
+    "packages/workspace/scripts/lib/facade/schemas.ts",
+    "packages/workspace/scripts/session-start.ts",
+    "packages/workspace/tests/tool-manifest.test.ts",
+    "packages/workspace/tests/workflow-intent.test.ts",
+    "packages/workspace/tooling/tool-manifest.json"
+  ],
+  "updatedAt": "2026-09-21T02:44:08.643Z"
+}
