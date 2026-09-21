@@ -188,6 +188,7 @@ type TreeDigest = {
 };
 
 const ARTIFACTS_ROUTE = '/artifacts';
+export const ARTIFACT_LOCAL_SHARE_CSRF_PLACEHOLDER = '__CONSUELO_LOCAL_ARTIFACT_SHARE_CSRF__';
 const ARTIFACTS_TITLE = 'Consuelo Artifacts';
 const ARTIFACTS_DESCRIPTION = 'Private Consuelo artifacts, guides, specifications, plans, websites, and durable generated outputs.';
 const CONSUELO_MARK_PATH = path.resolve(
@@ -449,6 +450,7 @@ function renderArtifactsIndex(
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="consuelo-local-artifact-share-csrf" content="${ARTIFACT_LOCAL_SHARE_CSRF_PLACEHOLDER}" />
   <title>${ARTIFACTS_TITLE}</title>
   <meta name="description" content="${ARTIFACTS_DESCRIPTION}" />
   <link rel="canonical" href="/artifacts" />
@@ -528,6 +530,7 @@ function renderArtifactsIndex(
     const buttons = Array.from(document.querySelectorAll('[data-filter]'));
     const searchRow = document.querySelector('.search-row');
     const input = document.querySelector('.search-input');
+    const localShareCsrf = document.querySelector('meta[name=\"consuelo-local-artifact-share-csrf\"]')?.getAttribute('content') || '';
     let activeFilter = 'all';
     const apply = () => { const query = String(input && input.value || '').trim().toLowerCase(); for (const item of items) { const matchesFilter = activeFilter === 'all' || item.dataset.template === activeFilter; const matchesQuery = !query || item.textContent.toLowerCase().includes(query); item.hidden = !(matchesFilter && matchesQuery); } };
     for (const button of buttons) button.addEventListener('click', () => { activeFilter = button.dataset.filter || 'all'; for (const candidate of buttons) candidate.classList.toggle('active', candidate === button); apply(); });
@@ -546,7 +549,10 @@ function renderArtifactsIndex(
           const response = await fetch('/gateway/artifacts/' + encodeURIComponent(artifactId) + '/shares', {
             method: 'POST',
             credentials: 'same-origin',
-            headers: { 'content-type': 'application/json' },
+            headers: {
+              'content-type': 'application/json',
+              ...(localShareCsrf ? { 'x-consuelo-artifact-share-csrf': localShareCsrf } : {}),
+            },
             body: JSON.stringify({}),
           });
           if (!response.ok) throw new Error('share link request failed');
