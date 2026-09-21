@@ -123,8 +123,7 @@ Local tracing uses SQLite. Hosted surfaces can send selected events to cloud obs
 Install repo dependencies from the monorepo root:
 
 ```bash
-corepack enable
-yarn install
+bun install --frozen-lockfile
 ```
 
 Run OS checks through `packages/os`:

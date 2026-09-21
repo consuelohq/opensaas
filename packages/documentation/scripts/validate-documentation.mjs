@@ -235,11 +235,11 @@ assert(
 );
 assert(
   !workspaces.includes('packages/documentation'),
-  'packages/documentation must stay outside root Yarn workspaces',
+  'packages/documentation must stay outside root Bun workspaces',
 );
 assert(
   !workspaces.includes('packages/consuelo-docs'),
-  'legacy Mintlify package must not remain in root Yarn workspaces',
+  'legacy Mintlify package must not remain in root Bun workspaces',
 );
 assert(
   !existsSync('../consuelo-docs'),

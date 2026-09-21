@@ -2,9 +2,9 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 659,
+    "testFileCount": 660,
     "mappedTestCount": 576,
-    "unmappedTestCount": 83,
+    "unmappedTestCount": 84,
     "ruleCount": 75,
     "explicitRuleCount": 62,
     "autoRuleCount": 13,
@@ -12,7 +12,7 @@
     "packageTestScriptCount": 20,
     "byGroup": {
       "packages/os/tests": 312,
-      "packages/workspace/tests": 62,
+      "packages/workspace/tests": 63,
       "packages/os/tests/media": 34,
       "packages/consuelo-design/upstream/open-design/apps/daemon": 21,
       "packages/dialer-server/src": 19,
@@ -91,7 +91,7 @@
       "tests": 1
     },
     "byKind": {
-      "test": 603,
+      "test": 604,
       "spec": 29,
       "__tests__": 11,
       "other": 7,
@@ -6178,6 +6178,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/workspace/tests/twenty-migration-bun-cutover.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/workspace/tests/twenty-migration-identity-license.test.ts",
       "group": "packages/workspace/tests",
       "kind": "test"
@@ -6292,6 +6297,7 @@
     "packages/workspace/tests/tool-manifest.test.ts",
     "packages/workspace/tests/trace-home.test.ts",
     "packages/workspace/tests/trace-site-inspector.test.ts",
+    "packages/workspace/tests/twenty-migration-bun-cutover.test.ts",
     "packages/workspace/tests/twenty-migration-identity-license.test.ts",
     "packages/workspace/tests/twenty-migration-runtime-boundary.test.ts",
     "packages/workspace/tests/verification.test.js",

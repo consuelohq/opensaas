@@ -1,6 +1,6 @@
 {
   "setup-worktree": [
     "nvm use",
-    "yarn install"
+    "bun install --frozen-lockfile"
   ]
 }
