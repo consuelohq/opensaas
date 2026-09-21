@@ -3196,7 +3196,7 @@ body[data-review-drawer="open"] .review-panel-backdrop { display:block; }
 .badge { display:inline-flex; align-items:center; border:1px solid var(--line); border-radius:999px; padding:2px 7px; font-size:11px; color:var(--muted); background:var(--surface); }
 .kbd { font:11px/1.2 "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; border:1px solid var(--line); border-radius:5px; padding:2px 5px; background:var(--soft); color:var(--ink); }
 .error { border:1px solid var(--danger); color:var(--danger); background:var(--surface); padding:14px; border-radius:10px; }
-@media (max-width: 1180px) {
+@media (min-width: 761px) and (max-width: 1180px) {
   .review-page .layout { grid-template-columns:minmax(0, 1fr); }
   .review-page .file-pane-resizer { display:none; }
   .review-page .file-pane { position:fixed; left:0; top:76px; bottom:0; width:min(420px, 88vw); z-index:9; transform:translateX(-102%); transition:transform .18s ease; border-right:1px solid var(--line); border-top:0; box-shadow:20px 0 50px rgba(0,0,0,.32); }
