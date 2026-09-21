@@ -64,6 +64,10 @@ describe('Consuelo Artifacts', () => {
     expect(html).toContain('<h1>Artifacts</h1>');
     expect(html).toContain('Recently Updated');
     expect(html).toContain('/artifacts/specs/os-artifacts');
+    expect(html).toContain('data-share-artifact');
+    expect(html).toContain('data-artifact-id="artifact-');
+    expect(html).toContain('navigator.share');
+    expect(html).toContain('/gateway/artifacts/');
 
     const sourceV2 = writeHtml('source-v2.html', '<h1>Version two</h1>');
     expect(() => publishArtifact({
