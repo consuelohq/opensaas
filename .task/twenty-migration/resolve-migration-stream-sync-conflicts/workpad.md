@@ -75,6 +75,8 @@ no-test waiver: not applicable.
 - 2026-09-21 00:06:25 fs.write: `.task/twenty-migration/resolve-migration-stream-sync-conflicts/workpad.md`
 - 2026-09-21 00:09:22 fs.write: `.task/twenty-migration/resolve-migration-stream-sync-conflicts/workpad.md`
 - 2026-09-21 00:11:04 fs.write: `.task/twenty-migration/resolve-migration-stream-sync-conflicts/workpad.md`
+- 2026-09-21 00:11:41 fs.write: `.task/twenty-migration/resolve-migration-stream-sync-conflicts/workpad.md`
+- 2026-09-21 00:14:23 fs.write: `.task/twenty-migration/resolve-migration-stream-sync-conflicts/workpad.md`
 
 ## Resolution evidence
 
@@ -146,3 +148,27 @@ Canonical verify against origin/main completed with a real critical-suite failur
 - The fix preserves the M4 architecture contract instead of weakening the test or test-selection rule.
 
 - 2026-09-21 00:11:04 append: `.task/twenty-migration/resolve-migration-stream-sync-conflicts/workpad.md`
+
+## Full verify retry plan — after code-call repair
+
+Wait reason: run canonical verify on committed HEAD fa1f0c786e after repairing the integration-only code.call architecture failures.
+Duration: poll every 30s while the single verify process is active.
+Resume action: read /tmp/twenty-migration-sync-verify-final.json, stderr, and verify.json as soon as the process exits.
+Expected signal: passed=true and publishValid=true with no critical failed suites.
+Fallback: inspect the exact failed selected suite before any further code change; do not launch duplicate verify processes while one is active.
+
+- 2026-09-21 00:11:41 append: `.task/twenty-migration/resolve-migration-stream-sync-conflicts/workpad.md`
+
+## Canonical integration gate — GREEN
+
+- Strict review against origin/main: 0 blocking findings.
+- Canonical full verify on HEAD fa1f0c786e: passed=true, publishValid=true.
+- Critical M4 deletion boundary suite passed.
+- Critical OS code.call snapshot/architecture suite passed after the integration repair.
+- OS work-session Code Call/MCP authority contracts passed.
+- Consuelo CI planner contracts passed.
+- CLI package tests passed 10/10.
+- DB guard passed with 0 risks/findings.
+- Published the real two-parent merge ancestry to the task branch: remote head fa1f0c786e contains both origin/main and origin/stream/twenty-migration as ancestors.
+
+- 2026-09-21 00:14:23 append: `.task/twenty-migration/resolve-migration-stream-sync-conflicts/workpad.md`
