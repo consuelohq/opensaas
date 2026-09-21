@@ -635,6 +635,14 @@ if [ "$dry_run" -eq 0 ]; then
 fi
 
 run_generate_daemons
+# The generator writes into the mutable OS security directory. Resolve the
+# generated paths again after generation so a first dry-run/install does not
+# keep pointing at the retired in-release fallback paths selected above.
+workspace_generated_plist="$(resolve_generated_plist "$workspace_label")"
+caddy_generated_plist="$(resolve_generated_plist "$caddy_label")"
+portless_generated_plist="$(resolve_generated_plist "$portless_label")"
+watchdog_generated_plist="$(resolve_generated_plist "$watchdog_label")"
+availability_generated_plist="$(resolve_generated_plist "$availability_label")"
 if [ -f "$portless_generated_plist" ]; then
   portless_enabled=1
 fi
