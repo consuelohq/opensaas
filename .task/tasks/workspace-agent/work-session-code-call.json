@@ -1,0 +1,22 @@
+{
+  "area": "workspace-agent",
+  "stream": "stream/workspace-agent",
+  "taskBranch": "task/workspace-agent/work-session-code-call",
+  "baseBranch": "stream/workspace-agent",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1994,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1994",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1994",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1994/work-session-code-call",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1994",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1994/work-session-code-call",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agent-work-session-code-call",
+  "taskSession": "tsk_3ce99bb8dc6b",
+  "tmuxSession": "opensaas-workspace-agent-work-session-code-call-3ce99bb8",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agent-work-session-code-call/.task/workspace-agent/work-session-code-call/session.json",
+  "createdAt": "2026-08-15T02:38:27.675Z",
+  "branch": "task/workspace-agent/work-session-code-call",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agent-work-session-code-call",
+  "tmuxCreated": true
+}

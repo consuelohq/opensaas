@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_f665fdfee606",
+  "tmuxSession": "opensaas-os-expose-explicit-cloud-node-targeting-in-chatgpt--f665fdfe",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/expose-explicit-cloud-node-targeting-in-chatgpt-os-call",
+  "branch": "task/os/expose-explicit-cloud-node-targeting-in-chatgpt-os-call",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-expose-explicit-cloud-node-targeting-in-chatgpt-os-call",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-expose-explicit-cloud-node-targeting-in-chatgpt-os-call",
+  "prNumber": 1978,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1978",
+  "createdAt": "2026-08-15T01:14:19.667Z",
+  "tmuxCreated": false,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-expose-explicit-cloud-node-targeting-in-chatgpt-os-call/.task/os/expose-explicit-cloud-node-targeting-in-chatgpt-os-call/session.json"
+}

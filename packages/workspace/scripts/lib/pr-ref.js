@@ -58,11 +58,15 @@ function parseRecognizedUrl(value, expectedRepository) {
     return null;
   }
 
-  if (host === 'diffs.consuelohq.com') {
-    if (segments.length >= 4 && segments[2] === 'pull') {
-      const repo = `${segments[0]}/${segments[1]}`;
+  if (
+    host === 'diffs.consuelohq.com' ||
+    (host === 'internal.consuelohq.com' && segments[0] === 'diffs')
+  ) {
+    const offset = host === 'internal.consuelohq.com' ? 1 : 0;
+    if (segments.length >= offset + 4 && segments[offset + 2] === 'pull') {
+      const repo = `${segments[offset]}/${segments[offset + 1]}`;
       assertRepositoryMatches(repo, expectedRepository);
-      const prNumber = toPositivePrNumber(segments[3]);
+      const prNumber = toPositivePrNumber(segments[offset + 3]);
       if (!prNumber) throw new Error(`invalid PR number in ${value}`);
       return { prNumber, repo, source: 'diffs' };
     }

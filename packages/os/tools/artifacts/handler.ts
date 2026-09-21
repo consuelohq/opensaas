@@ -7,6 +7,7 @@ export const toolHandlers = [
       "script": "artifacts",
       "subcommand": "check",
       "branchMode": "none",
+      "executionScope": "runtime",
       "jsonFlag": "--json",
       "dryRunFlag": "--dry-run",
       "arguments": []
@@ -18,6 +19,7 @@ export const toolHandlers = [
       "script": "artifacts",
       "subcommand": "generate-demo",
       "branchMode": "none",
+      "executionScope": "runtime",
       "jsonFlag": "--json",
       "dryRunFlag": "--dry-run",
       "arguments": [
@@ -45,6 +47,7 @@ export const toolHandlers = [
       "script": "artifacts",
       "subcommand": "generate-digital-eguide",
       "branchMode": "none",
+      "executionScope": "runtime",
       "jsonFlag": "--json",
       "dryRunFlag": "--dry-run",
       "arguments": [
@@ -77,6 +80,7 @@ export const toolHandlers = [
       "script": "artifacts",
       "subcommand": "generate-email",
       "branchMode": "none",
+      "executionScope": "runtime",
       "jsonFlag": "--json",
       "dryRunFlag": "--dry-run",
       "arguments": [
@@ -104,6 +108,7 @@ export const toolHandlers = [
       "script": "artifacts",
       "subcommand": "generate-image-brief",
       "branchMode": "none",
+      "executionScope": "runtime",
       "jsonFlag": "--json",
       "dryRunFlag": "--dry-run",
       "arguments": [
@@ -131,6 +136,7 @@ export const toolHandlers = [
       "script": "artifacts",
       "subcommand": "generate-motion-frame",
       "branchMode": "none",
+      "executionScope": "runtime",
       "jsonFlag": "--json",
       "dryRunFlag": "--dry-run",
       "arguments": [
@@ -158,6 +164,7 @@ export const toolHandlers = [
       "script": "artifacts",
       "subcommand": "generate-website",
       "branchMode": "none",
+      "executionScope": "runtime",
       "jsonFlag": "--json",
       "dryRunFlag": "--dry-run",
       "arguments": [
@@ -185,6 +192,7 @@ export const toolHandlers = [
       "script": "artifacts",
       "subcommand": "get-design-system",
       "branchMode": "none",
+      "executionScope": "runtime",
       "jsonFlag": "--json",
       "dryRunFlag": "--dry-run",
       "arguments": []
@@ -196,6 +204,7 @@ export const toolHandlers = [
       "script": "artifacts",
       "subcommand": "list-design-systems",
       "branchMode": "none",
+      "executionScope": "runtime",
       "jsonFlag": "--json",
       "dryRunFlag": "--dry-run",
       "arguments": []
@@ -207,6 +216,7 @@ export const toolHandlers = [
       "script": "artifacts",
       "subcommand": "list-skills",
       "branchMode": "none",
+      "executionScope": "runtime",
       "jsonFlag": "--json",
       "dryRunFlag": "--dry-run",
       "arguments": []
@@ -218,6 +228,7 @@ export const toolHandlers = [
       "script": "artifacts",
       "subcommand": "od:build",
       "branchMode": "none",
+      "executionScope": "runtime",
       "jsonFlag": "--json",
       "dryRunFlag": "--dry-run",
       "arguments": []
@@ -229,6 +240,7 @@ export const toolHandlers = [
       "script": "artifacts",
       "subcommand": "publish",
       "branchMode": "none",
+      "executionScope": "runtime",
       "jsonFlag": "--json",
       "dryRunFlag": "--dry-run",
       "arguments": [
@@ -276,6 +288,7 @@ export const toolHandlers = [
       "script": "artifacts",
       "subcommand": "railway:check",
       "branchMode": "none",
+      "executionScope": "runtime",
       "jsonFlag": "--json",
       "dryRunFlag": "--dry-run",
       "arguments": []
@@ -287,6 +300,7 @@ export const toolHandlers = [
       "script": "artifacts",
       "subcommand": "refresh",
       "branchMode": "none",
+      "executionScope": "runtime",
       "jsonFlag": "--json",
       "dryRunFlag": "--dry-run",
       "arguments": [
@@ -304,6 +318,7 @@ export const toolHandlers = [
       "script": "artifacts",
       "subcommand": "render-hyperframes",
       "branchMode": "none",
+      "executionScope": "runtime",
       "jsonFlag": "--json",
       "dryRunFlag": "--dry-run",
       "arguments": [
@@ -331,6 +346,7 @@ export const toolHandlers = [
       "script": "artifacts",
       "subcommand": "run",
       "branchMode": "none",
+      "executionScope": "runtime",
       "jsonFlag": "--json",
       "dryRunFlag": "--dry-run",
       "arguments": []
@@ -342,6 +358,7 @@ export const toolHandlers = [
       "script": "artifacts",
       "subcommand": "ui:bg",
       "branchMode": "none",
+      "executionScope": "runtime",
       "jsonFlag": "--json",
       "dryRunFlag": "--dry-run",
       "arguments": []
@@ -353,6 +370,7 @@ export const toolHandlers = [
       "script": "artifacts",
       "subcommand": "ui:logs",
       "branchMode": "none",
+      "executionScope": "runtime",
       "jsonFlag": "--json",
       "dryRunFlag": "--dry-run",
       "arguments": []
@@ -364,6 +382,7 @@ export const toolHandlers = [
       "script": "artifacts",
       "subcommand": "ui:status",
       "branchMode": "none",
+      "executionScope": "runtime",
       "jsonFlag": "--json",
       "dryRunFlag": "--dry-run",
       "arguments": []
@@ -375,6 +394,7 @@ export const toolHandlers = [
       "script": "artifacts",
       "subcommand": "ui:stop",
       "branchMode": "none",
+      "executionScope": "runtime",
       "jsonFlag": "--json",
       "dryRunFlag": "--dry-run",
       "arguments": []
@@ -386,6 +406,7 @@ export const toolHandlers = [
       "script": "artifacts",
       "subcommand": "upstream-status",
       "branchMode": "none",
+      "executionScope": "runtime",
       "jsonFlag": "--json",
       "dryRunFlag": "--dry-run",
       "arguments": []

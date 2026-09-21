@@ -51,6 +51,7 @@ import {
   initializeCallOperationsPersistence,
 } from '../call-operations/persistence';
 import { migrateDialerDatabase } from '../database/migrations';
+import { finalizePredictiveDecision } from '../learning/predictive-decision-log';
 import type { LeadConnectorApplicationLayer } from '../lead-connector-application';
 import { loadDialerPlanCatalog } from '../plans/catalog';
 import {
@@ -61,7 +62,7 @@ import {
 import {
   recordLeadConnectorAttemptTelemetry,
 } from './lead-connector-learning';
-import { rankPredictiveLeadConnectorTargets } from './predictive-target-ranking';
+import { rankPredictiveTargetsWithDecision } from './predictive-target-ranking';
 
 import { normalizeAsyncError } from '../errors/normalize-async-error';
 
@@ -73,6 +74,18 @@ export type RailwayRuntimeResources = {
   database?: LeadConnectorDatabase;
   cache?: LeadConnectorCache;
   redis?: RailwayRedisClient;
+};
+
+export const selectSuccessfullyCreatedTargets = <
+  T extends { contactId: string },
+>(
+  targets: readonly T[],
+  createdCalls: readonly { contactId?: string | null; callSid: string }[],
+): T[] => {
+  const createdContactIds = new Set(
+    createdCalls.flatMap((call) => (call.contactId ? [call.contactId] : [])),
+  );
+  return targets.filter((target) => createdContactIds.has(target.contactId));
 };
 
 type PgPoolLike = {
@@ -785,6 +798,38 @@ export const createRailwayDialerApplicationLayers = async (
     const recordingStatusCallbackUrl =
       publicUrl + '/webhooks/twilio/recording-status';
     const pendingQueues = new Map<string, CallableTarget[]>();
+    const finalizeSelectedDecisionRecords = async (
+      workspaceId: string,
+      selected: CallableTarget[],
+    ): Promise<void> => {
+      if (!database) return;
+      const selectedByDecision = new Map<string, string[]>();
+      for (const target of selected) {
+        if (!target.predictiveDecisionId) continue;
+        const contactIds =
+          selectedByDecision.get(target.predictiveDecisionId) ?? [];
+        contactIds.push(target.contactId);
+        selectedByDecision.set(target.predictiveDecisionId, contactIds);
+      }
+      try {
+        await Promise.all(
+          [...selectedByDecision.entries()].map(
+            ([decisionId, selectedContactIds]) =>
+              finalizePredictiveDecision(database, {
+                workspaceId,
+                decisionId,
+                selectedContactIds,
+              }),
+          ),
+        );
+      } catch (cause: unknown) {
+        writeRuntimeEvent({
+          event: 'dialer.predictive.decision_finalize_unavailable',
+          workspaceId,
+          error: cause instanceof Error ? cause.message : String(cause),
+        });
+      }
+    };
     const safeTo = safeNumbers(
       environment,
       'CONSUELO_SCENARIO_SAFE_TO_NUMBERS',
@@ -802,10 +847,22 @@ export const createRailwayDialerApplicationLayers = async (
             : `leadconnector:${userId}:${randomUUID()}`;
           const phones = input.targetPhones ?? [];
           const contactIds = input.contactIds ?? [];
-          const selected = phones.map((phone, index) => ({
-            contactId: contactIds[index] ?? `leadconnector:${randomUUID()}`,
-            phone: normalizePhone(phone),
-          }));
+          const sourceContextByContactId = new Map(
+            (input.targetContexts ?? []).map((entry) => [
+              entry.contactId,
+              entry.context,
+            ]),
+          );
+          const selected = phones.map((phone, index) => {
+            const contactId =
+              contactIds[index] ?? `leadconnector:${randomUUID()}`;
+            const sourceContext = sourceContextByContactId.get(contactId);
+            return {
+              contactId,
+              phone: normalizePhone(phone),
+              ...(sourceContext ? { sourceContext } : {}),
+            };
+          });
           if (selected.length > 0) {
             pendingQueues.set(`${workspaceId}:${queueId}`, selected);
           }
@@ -822,6 +879,7 @@ export const createRailwayDialerApplicationLayers = async (
         workspaceId,
         queueId,
         requestedFanout,
+        preferLocalPresence,
         fallbackPhonesByContactId,
       }) =>
         tryEffect('resolve-queue-targets', () => {
@@ -835,40 +893,58 @@ export const createRailwayDialerApplicationLayers = async (
             }),
           );
           const candidates = pending.length > 0 ? pending : fallback;
-          const ranking = database
-            ? rankPredictiveLeadConnectorTargets({
+          if (!database) return Promise.resolve(candidates.slice(0, requestedFanout));
+          return rankPredictiveTargetsWithDecision({
                 database,
                 workspaceId,
+                segmentId: queueId,
                 targets: candidates,
                 timezone:
                   environment.DIALER_LOCAL_TIMEZONE ?? 'America/New_York',
                 callableWindowEndHour: Number(
                   environment.DIALER_CALLABLE_WINDOW_END_HOUR ?? '20',
                 ),
+                preferLocalPresence,
                 onFallback: (details) =>
                   writeRuntimeEvent({
                     event: 'dialer.predictive.fifo_fallback',
                     ...details,
                   }),
-              })
-            : Promise.resolve(candidates);
-          return ranking.then((ranked) => ranked.slice(0, requestedFanout));
+              }).then((ranking) => {
+                if (ranking.decisionLogError) {
+                  writeRuntimeEvent({
+                    event: 'dialer.predictive.decision_log_unavailable',
+                    workspaceId,
+                    error: ranking.decisionLogError,
+                  });
+                }
+                return ranking.rankedTargets.slice(0, requestedFanout);
+              });
         }),
       createDirectQueue: () => Effect.succeed(`direct:${randomUUID()}`),
     };
 
     const calls: DialerCallRepositoryService = {
-      createMockCalls: ({ targets: selected, callerIds }) =>
-        Effect.succeed(
-          selected.map((target, index) => ({
-            callSid: `mock_${randomUUID().replaceAll('-', '')}`,
-            contactId: target.contactId,
-            customerNumber: target.phone,
-            callerId: callerIds[index],
-            status: 'mocked',
-            position: index + 1,
-          })),
-        ),
+      createMockCalls: ({ workspaceId, targets: selected, callerIds }) =>
+        Effect.promise(async () => {
+          try {
+            const createdCalls = selected.map((target, index) => ({
+              callSid: `mock_${randomUUID().replaceAll('-', '')}`,
+              contactId: target.contactId,
+              customerNumber: target.phone,
+              callerId: callerIds[index],
+              status: 'mocked' as const,
+              position: index + 1,
+            }));
+            await finalizeSelectedDecisionRecords(
+              workspaceId,
+              selectSuccessfullyCreatedTargets(selected, createdCalls),
+            );
+            return createdCalls;
+          } catch (cause: unknown) {
+            throw normalizeAsyncError(cause);
+          }
+        }),
     };
 
     const callRuntime: DialerCallRuntimeService = {
@@ -1038,6 +1114,16 @@ export const createRailwayDialerApplicationLayers = async (
               ),
             );
             groupId = result.groupId;
+            const createdCalls = result.calls.map((call) => ({
+              callSid: call.callSid,
+              contactId: input.targets[call.position - 1]?.contactId ?? null,
+            }));
+            yield* Effect.promise(() =>
+              finalizeSelectedDecisionRecords(
+                input.workspaceId,
+                selectSuccessfullyCreatedTargets(input.targets, createdCalls),
+              ),
+            );
             for (const call of result.calls) {
               const transferred = yield* tryEffect(
                 'transfer-caller-id-lock',
@@ -1237,6 +1323,10 @@ export const createRailwayDialerApplicationLayers = async (
                     event: 'dialer.learning.persistence_unavailable',
                     ...details,
                   }),
+                {
+                  timezone:
+                    environment.DIALER_LOCAL_TIMEZONE ?? 'America/New_York',
+                },
               )
             : Promise.resolve(true);
           return persistence.then(() => {

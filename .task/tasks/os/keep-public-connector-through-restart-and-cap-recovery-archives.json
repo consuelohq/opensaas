@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/keep-public-connector-through-restart-and-cap-recovery-archives",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2309,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2309",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-keep-public-connector-through-restart-and-cap-recovery-archives",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_8fbe95c253ea",
+  "tmuxSession": "opensaas-os-keep-public-connector-through-restart-and-cap-re-8fbe95c2",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-keep-public-connector-through-restart-and-cap-recovery-archives/.task/session.json",
+  "createdAt": "2026-08-30T17:40:42.696Z"
+}

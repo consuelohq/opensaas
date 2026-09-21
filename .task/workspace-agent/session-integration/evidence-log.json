@@ -1,0 +1,1112 @@
+{
+  "version": 1,
+  "worktree_id": "task/workspace-agent/session-integration",
+  "events": [
+    {
+      "id": "f0db49ac-8eb1-4051-af45-262d4b5690ef",
+      "occurred_at": "2026-08-15T06:56:55.522Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/workspace-agent/session-integration/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "c49f1b1a-aafc-4b2f-82f6-5f314a6d1f17",
+      "occurred_at": "2026-08-15T06:59:21.093Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/skills/task/SKILL.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "9f43c656-5d22-48c6-9a34-af5d1519f74f",
+      "occurred_at": "2026-08-15T06:59:30.096Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/task-hook-workflow-contract.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "074b6bfa-5f65-4738-b8ec-391d4cf22425",
+      "occurred_at": "2026-08-15T06:59:43.092Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/session-start-foundation.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "26ffbc5f-f12b-4fd5-8025-12cc5d1c4ba8",
+      "occurred_at": "2026-08-15T07:00:38.098Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/hooks/task/workflow.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "ac37d099-ff45-4673-bec0-fc8ea66bb88a",
+      "occurred_at": "2026-08-15T07:00:46.186Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tools/task-lifecycle/schema.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "680f88db-42d9-44fc-8cc5-ff008b51ebf9",
+      "occurred_at": "2026-08-15T07:01:00.437Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tools/task-lifecycle/handler.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "f77c57ef-e8ce-4492-b936-58f54c3df50b",
+      "occurred_at": "2026-08-15T07:02:11.771Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/task.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "afb4d769-385c-47f0-9773-f36fd7cbb83b",
+      "occurred_at": "2026-08-15T07:02:15.566Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/gh.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "b3ababbe-e788-440a-afb0-286029042be8",
+      "occurred_at": "2026-08-15T07:03:16.591Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "d15d55a4-e112-4942-ac1f-1a2b7c1cfc6a",
+      "occurred_at": "2026-08-15T07:03:39.639Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/task-hook-workflow-contract.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "30b06701-434f-4d0f-898b-f929da6f0dec",
+      "occurred_at": "2026-08-15T07:04:28.963Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/session-start.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "2d967419-a9a6-4f98-b293-cbf5117a22ae",
+      "occurred_at": "2026-08-15T07:04:29.651Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/streams/workspace-agent/AGENTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "402e1ae7-2382-4038-a5e8-1025341a047a",
+      "occurred_at": "2026-08-15T07:04:47.062Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/work-session-code-call.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "2de797f8-e7e2-4639-9f08-aa3cd499bf82",
+      "occurred_at": "2026-08-15T07:05:00.080Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/hooks/task/guidance.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "59af5eb9-4846-4c0d-95d6-88894722c15c",
+      "occurred_at": "2026-08-15T07:05:06.093Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/task-hooks.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "ce213ff1-68c0-4496-81ca-e4c4a045cef8",
+      "occurred_at": "2026-08-15T07:05:08.599Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/work-session.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "1e154448-0e15-46a0-9c40-56b1d66a5deb",
+      "occurred_at": "2026-08-15T07:05:09.229Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/work-session-fs.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "c2e54f37-e07a-494c-86c9-15448a14a01b",
+      "occurred_at": "2026-08-15T07:05:09.861Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/private-workspace-session-recovery.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "ce343c64-3563-4f36-a045-a1dd8ccbf21b",
+      "occurred_at": "2026-08-15T07:05:44.919Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/hooks/task/guidance.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "6613dbe1-3ae8-4931-b8a1-f12b90ed0576",
+      "occurred_at": "2026-08-15T07:06:56.902Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/sites.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "bd8eaa45-9839-4116-96b4-3b09bbfba8dd",
+      "occurred_at": "2026-08-15T07:06:59.695Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/os-release.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "89a5dc00-1b23-4169-8465-d8c55acfd482",
+      "occurred_at": "2026-08-15T07:07:40.090Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/test-selection.registry.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "bb646001-4022-4efe-9ee2-f9f0fd1cc0e6",
+      "occurred_at": "2026-08-15T07:08:24.155Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tooling/tool-manifest.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "f60809b6-05f5-4663-9636-7fb8a4feade2",
+      "occurred_at": "2026-08-15T07:08:45.772Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tooling/tool-manifest.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "f2528e31-9e5f-4d3b-97fb-574d5e74470a",
+      "occurred_at": "2026-08-15T07:09:15.309Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/generate-tool-manifest.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "5f47ade1-8244-4965-bdaa-b2ea99d441fd",
+      "occurred_at": "2026-08-15T07:09:22.482Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/manifests/manifest.config.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "24079799-a2c8-41e1-a29b-d4d9ecf01319",
+      "occurred_at": "2026-08-15T07:09:57.741Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/session-start.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "53e5ee69-345b-44d5-b121-e52d166dabe2",
+      "occurred_at": "2026-08-15T07:10:11.377Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/schemas.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "15fd6ca5-cb13-4531-9cc7-9207cf74f375",
+      "occurred_at": "2026-08-15T07:10:29.773Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "36df8a26-b875-46de-b2db-14863e8eba2a",
+      "occurred_at": "2026-08-15T07:10:35.514Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/work-session.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "c2c3abb9-aadb-409b-a869-f210216cf637",
+      "occurred_at": "2026-08-15T07:10:51.079Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/workflow-intent.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "859872d4-acf9-4241-8d89-a2b0cca123f3",
+      "occurred_at": "2026-08-15T07:11:20.070Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/facade/schemas.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "e4b39d7b-7b2d-4744-8739-3fa573e448e8",
+      "occurred_at": "2026-08-15T07:11:25.753Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/schemas.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "6d7e7530-9fc8-42cc-920c-2a857f82daa9",
+      "occurred_at": "2026-08-15T07:12:29.279Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/consuelo-home.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "354e2569-499c-4fe9-b3f1-168ed241d3d0",
+      "occurred_at": "2026-08-15T07:15:39.020Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/test-selection.rules.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "011e1c81-5d4f-4b62-8257-71e6b067f6f1",
+      "occurred_at": "2026-08-15T07:16:36.089Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/test-selection.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "a9b38b8c-c0cf-4160-8906-7a906f8be374",
+      "occurred_at": "2026-08-15T07:21:05.952Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/documentation/src/content/docs/build/skills/bundled/task.mdx",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "d52b1f24-6c2b-4d0b-a985-504d7baad56b",
+      "occurred_at": "2026-08-15T07:21:58.694Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/documentation/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "b43c4f21-8c38-4702-ab75-f6bfe69fec49",
+      "occurred_at": "2026-08-15T07:22:58.567Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/documentation/AUTHORING.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "14b6c35c-079f-46d9-97d7-8e717c63ec90",
+      "occurred_at": "2026-08-15T07:23:30.068Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/documentation/src/content/docs/reference/tools.mdx",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "c16fef81-e65e-42e2-8cbf-6c1a6272771a",
+      "occurred_at": "2026-08-15T07:23:38.063Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/documentation/src/content/docs/build/workflows.mdx",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "e8c80eb5-5a21-4bc0-bcc0-592717f4a306",
+      "occurred_at": "2026-08-15T07:25:35.872Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/workspace-agent/session-integration/verify.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "c3e55835-8c3f-42b3-8494-630d2980c580",
+      "occurred_at": "2026-08-15T07:25:47.121Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/test-selection.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "ad10f9f0-ff00-4ea1-b9f4-005224297d27",
+      "occurred_at": "2026-08-15T07:25:53.177Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/test-selection.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "cfa7bde5-95a3-4cc0-8702-720374479dd7",
+      "occurred_at": "2026-08-15T07:27:42.454Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/tool-manifest.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "4d3cd525-bcb6-408f-ae36-8dc37eb29735",
+      "occurred_at": "2026-08-15T07:27:47.729Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/tool-manifest.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "5079cf71-0328-4ab7-800f-e87cdf3ff045",
+      "occurred_at": "2026-08-15T07:28:07.174Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/fixtures/tool-package-baseline.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "683eab73-03a2-4dab-9ae4-677f1d0462a7",
+      "occurred_at": "2026-08-15T07:45:57.014Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/facade/schemas.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "815edb4b-a835-48d4-9904-eb5e753c65cc",
+      "occurred_at": "2026-08-15T07:46:03.518Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/facade/schemas.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "41d31f35-b118-4986-95fb-87448b951707",
+      "occurred_at": "2026-08-15T07:46:14.957Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/facade/schemas.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "2c8136d5-10be-447c-93c2-fdb14327b12d",
+      "occurred_at": "2026-08-15T07:46:38.172Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/work-session-fs.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "2574f322-c12a-4a92-9cfe-4ac2ffe08625",
+      "occurred_at": "2026-08-15T07:46:53.660Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "7cae475f-9582-4713-949b-5a0e840fc5ea",
+      "occurred_at": "2026-08-15T07:47:05.467Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/session-start.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "be3de7e9-e8cd-433b-b61e-b00cbea7908f",
+      "occurred_at": "2026-08-15T07:47:10.778Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tools/task-lifecycle/schema.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "54e01a5e-3d12-4144-bbad-ff25a00c5acf",
+      "occurred_at": "2026-08-15T07:47:16.314Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tools/task-lifecycle/schema.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "17096584-c975-4371-ad33-cd17d88505b6",
+      "occurred_at": "2026-08-15T07:47:21.310Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/generate-types.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "7e6631ab-e619-46c0-ae5a-7de225b190a6",
+      "occurred_at": "2026-08-15T07:47:53.940Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/test-selection.rules.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "a80744a9-e8ef-49a1-a722-0edfa68bcd4a",
+      "occurred_at": "2026-08-15T07:48:19.803Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/workspace-project-cwd.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "1d02785e-8a82-4ed0-a7d5-75f00bfadb2b",
+      "occurred_at": "2026-08-15T07:48:26.837Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/code-call/location.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "1e58e442-b9f4-4878-aab8-f78fce6b7125",
+      "occurred_at": "2026-08-15T07:50:26.930Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/work-session.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "ba74bdae-aa12-41c3-9edb-b6392d459184",
+      "occurred_at": "2026-08-15T07:52:06.189Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/observability-traces-site.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "e39b0d9c-2bf3-48d4-930d-2aef372a9928",
+      "occurred_at": "2026-08-15T07:52:13.735Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/observability-traces-site.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "21fc40db-f383-4407-886d-5344a5ab8706",
+      "occurred_at": "2026-08-15T07:53:53.307Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/session-start-foundation.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "02fb4e4a-426b-4a81-b5f5-c9b996a5fc7c",
+      "occurred_at": "2026-08-15T07:54:11.102Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/observability-traces-site.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "acd06376-45fc-4dd4-8497-9c765499eb46",
+      "occurred_at": "2026-08-15T07:55:07.868Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/work-session-code-call.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "5547ea53-49bd-418b-a025-f04f9859432d",
+      "occurred_at": "2026-08-15T07:55:14.690Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/work-session-code-call.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "f271a816-fc98-4e5c-848a-74b7d0d4d997",
+      "occurred_at": "2026-08-15T07:58:31.832Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/tool-manifest.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    },
+    {
+      "id": "b7a3de39-4e00-4c4e-964c-14c0fe65dd7b",
+      "occurred_at": "2026-08-15T07:58:36.988Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/tool-manifest.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-integration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-integration"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-15T07:58:37.051Z"
+}

@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_b152e2ee5ca0",
+  "tmuxSession": "opensaas-os-close-internal-dashboard-stream-review-blockers-b152e2ee",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/close-internal-dashboard-stream-review-blockers",
+  "branch": "task/os/close-internal-dashboard-stream-review-blockers",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-close-internal-dashboard-stream-review-blockers",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-close-internal-dashboard-stream-review-blockers",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2399,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2399",
+  "createdAt": "2026-09-05T03:47:26.358Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-close-internal-dashboard-stream-review-blockers/.task/os/close-internal-dashboard-stream-review-blockers/session.json"
+}

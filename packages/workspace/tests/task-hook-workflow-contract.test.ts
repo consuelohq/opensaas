@@ -3,9 +3,9 @@ import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
 
 const TASK_SKILL_EXCERPT = `
-stream.context → task.start → scoped workpad + test-first contract → decision-engine research → focused red test or no-test waiver → implementation → focused green test → validation / verify → task.push → task.pr → stream review PR → task.finish
+stream.context → session.start({ kind: "task" }) → scoped workpad + test-first contract → decision-engine research → focused red test or no-test waiver → implementation → focused green test → validation / verify → task.push → task.pr → stream review PR → task.finish
 
-For task-scoped work, task.start returns data.taskSession.
+For task-scoped work, session.start({ kind: "task" }) returns data.taskSession. task.start remains a compatibility alias.
 Pass taskSession at the top level of every task-scoped workspace.call.
 Every task must keep its task-local scoped workpad current enough for another agent to continue without chat history.
 For non-trivial code changes, implementation must not begin until the scoped workpad contains a Test-first contract and either a focused test has been written or updated and run red, or a no-test waiver explains why no test is appropriate and what validation replaces it.
@@ -23,6 +23,7 @@ type ManifestTool = {
 
 const manifestFixture: ManifestTool[] = [
   tool('stream.inspect', 'stream.context', false, 'StreamContextInput'),
+  tool('session.begin', 'task.start', false, 'SessionStartInput'),
   tool('task.begin', 'task.start', false, 'TaskStartInput'),
   tool('fs.put', 'workpad.write', true, 'FsWriteInput'),
   tool('code.evaluate', 'decision.research', true, 'CodeRunInput'),
@@ -100,6 +101,8 @@ describe('Workspace manifest-driven task workflow hooks contract', () => {
     expect(registry.subscriptions()).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ event: 'workflow.intent.task.detected', workflow: 'task' }),
+        expect.objectContaining({ event: 'tool.preInvoke', tool: 'session.start' }),
+        expect.objectContaining({ event: 'tool.postInvoke', tool: 'session.start' }),
         expect.objectContaining({ event: 'tool.preInvoke', tool: 'task.start' }),
         expect.objectContaining({ event: 'tool.postInvoke', tool: 'task.start' }),
         expect.objectContaining({ event: 'tool.preInvoke', tool: 'task.push' }),
@@ -138,8 +141,9 @@ describe('Workspace manifest-driven task workflow hooks contract', () => {
 
     const guidance = registry.handle({
       event: 'tool.preInvoke',
-      tool: 'task.start',
+      tool: 'session.start',
       workflow: 'task',
+      input: { kind: 'task', area: 'workspace-agents', title: 'implement later' },
       state: { area: 'workspace-agents', title: 'implement later', hasStreamContext: false },
     });
 
@@ -148,7 +152,7 @@ describe('Workspace manifest-driven task workflow hooks contract', () => {
         workflow: 'task',
         stage: 'stream-context',
         event: 'tool.preInvoke',
-        blockedAction: expect.objectContaining({ requestedTool: 'task.start' }),
+        blockedAction: expect.objectContaining({ requestedTool: 'session.start' }),
         requiredNextAction: expect.objectContaining({
           capability: 'stream.context',
           tool: 'stream.inspect',
@@ -160,7 +164,7 @@ describe('Workspace manifest-driven task workflow hooks contract', () => {
     );
 
     expect(guidance.requiredNextAction.tool).toBe('stream.inspect');
-    expect(guidance.blockedAction.requestedTool).toBe('task.start');
+    expect(guidance.blockedAction.requestedTool).toBe('session.start');
   });
 
   test('post-task-start guidance injects task session and workpad bootstrap at the tool layer', async () => {
@@ -169,8 +173,9 @@ describe('Workspace manifest-driven task workflow hooks contract', () => {
 
     const guidance = registry.handle({
       event: 'tool.postInvoke',
-      tool: 'task.start',
+      tool: 'session.start',
       workflow: 'task',
+      input: { kind: 'task' },
       result: {
         taskSession: 'tsk_abc123',
         area: 'workspace-agents',
@@ -200,6 +205,62 @@ describe('Workspace manifest-driven task workflow hooks contract', () => {
 
     expect(guidance.requiredNextAction.input.path).toBe('.task/workspace-agents/example/workpad.md');
     expect(guidance.requiredNextAction.input.content).toContain('Test-first contract');
+  });
+
+  test('does not treat work-mode session.start as a task workflow event', async () => {
+    const { createTaskWorkflowHookRegistry } = await loadWorkflowModule();
+    const registry = createTaskWorkflowHookRegistry({ manifest: manifestFixture, skillText: TASK_SKILL_EXCERPT });
+
+    expect(registry.handle({
+      event: 'tool.preInvoke',
+      tool: 'session.start',
+      workflow: 'task',
+      input: { kind: 'work', path: '/tmp/work' },
+      state: { hasStreamContext: false },
+    })).toBeNull();
+
+    expect(registry.handle({
+      event: 'tool.postInvoke',
+      tool: 'session.start',
+      workflow: 'task',
+      input: { kind: 'work', path: '/tmp/work' },
+      result: { workSession: 'wrk_example', taskSession: 'tsk_stale' },
+    })).toBeNull();
+  });
+
+  test('requires an explicit task kind for umbrella session.start task hooks', async () => {
+    const { createTaskWorkflowHookRegistry } = await loadWorkflowModule();
+    const registry = createTaskWorkflowHookRegistry({ manifest: manifestFixture, skillText: TASK_SKILL_EXCERPT });
+
+    expect(registry.handle({
+      event: 'tool.preInvoke',
+      tool: 'session.start',
+      workflow: 'task',
+      input: { area: 'os', title: 'missing kind' },
+      state: { hasStreamContext: false },
+    })).toBeNull();
+  });
+
+  test('keeps task.start as a compatibility alias for task workflow hooks', async () => {
+    const { createTaskWorkflowHookRegistry } = await loadWorkflowModule();
+    const registry = createTaskWorkflowHookRegistry({ manifest: manifestFixture, skillText: TASK_SKILL_EXCERPT });
+
+    const guidance = registry.handle({
+      event: 'tool.postInvoke',
+      tool: 'task.start',
+      workflow: 'task',
+      result: {
+        taskSession: 'tsk_legacy',
+        area: 'os',
+        branch: 'task/os/legacy',
+        worktreePath: '/tmp/legacy',
+      },
+    });
+
+    expect(guidance).toEqual(expect.objectContaining({
+      stage: 'workpad-bootstrap',
+      contextInjection: expect.objectContaining({ taskSession: 'tsk_legacy' }),
+    }));
   });
 
   test('publish guidance is a staged plan from validation to stream review PR and task finish', async () => {

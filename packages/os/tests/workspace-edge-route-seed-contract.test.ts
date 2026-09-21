@@ -30,6 +30,11 @@ type WorkspaceEdgeRouteSeedContract = {
     input?: WorkspaceEdgeRouteSeedInput,
   ) => unknown;
   createWorkspaceEdgeRouteSeedSql: (input?: WorkspaceEdgeRouteSeedInput) => string;
+  createWorkspaceReleaseManagedSiteRefreshSql: (input: {
+    versionId: string;
+    snapshotWorkspaceId: string;
+    siteContentHashes: Record<string, string>;
+  }) => string;
 };
 
 type WorkspaceEdgeRouteSeedScriptContract = {
@@ -44,6 +49,7 @@ async function loadWorkspaceEdgeRouteSeedContract(): Promise<WorkspaceEdgeRouteS
   const missingExports = [
     'createWorkspaceEdgeRouteSeedRecord',
     'createWorkspaceEdgeRouteSeedSql',
+    'createWorkspaceReleaseManagedSiteRefreshSql',
   ].filter((name) => typeof module[name as keyof WorkspaceEdgeRouteSeedContract] !== 'function');
 
   if (missingExports.length > 0) {
@@ -105,6 +111,7 @@ contractDescribe('workspace edge route seed contract', () => {
       '/settings',
       '/gateway/traces/events',
       '/gateway/traces',
+      '/gateway/configuration/source-control/github',
       '/gateway/configuration/overlay',
       '/gateway/configuration',
       '/gateway/settings/overlay',
@@ -112,7 +119,9 @@ contractDescribe('workspace edge route seed contract', () => {
       '/gateway/environments/upsert',
       '/gateway/environments/delete',
       '/gateway/environments',
+      '/gateway/secrets/install',
       '/gateway/secrets',
+      '/artifacts',
       '/gateway/artifacts',
       '/gateway/diffs/write',
       '/gateway/diffs',
@@ -152,6 +161,16 @@ contractDescribe('workspace edge route seed contract', () => {
           serviceName: 'trace-sites-read-layer',
           gatewayRouteFamily: '/gateway/traces/*',
           publicSiteRouteFamily: '/observability/*',
+        }),
+      }),
+      expect.objectContaining({
+        pathPrefix: '/gateway/configuration/source-control/github',
+        auth: 'workspace-session',
+        target: expect.objectContaining({
+          kind: 'consuelo-gateway-service',
+          serviceName: 'configuration-sites-write-endpoints',
+          gatewayRouteFamily: '/gateway/configuration/*',
+          publicSiteRouteFamily: '/configuration/*',
         }),
       }),
       expect.objectContaining({
@@ -228,6 +247,16 @@ contractDescribe('workspace edge route seed contract', () => {
         pathPrefix: '/settings',
         auth: 'public',
         target: { kind: 'redirect', location: '/configuration', statusCode: 308 },
+      }),
+      expect.objectContaining({
+        pathPrefix: '/artifacts',
+        auth: 'workspace-session',
+        target: expect.objectContaining({
+          kind: 'consuelo-gateway-service',
+          serviceName: 'artifacts-sites-read-layer',
+          gatewayRouteFamily: '/gateway/artifacts/*',
+          publicSiteRouteFamily: '/artifacts/*',
+        }),
       }),
       expect.objectContaining({
         pathPrefix: '/gateway/artifacts',
@@ -310,7 +339,6 @@ contractDescribe('workspace edge route seed contract', () => {
     );
     expect(snapshotRoutes.map((route) => route.pathPrefix)).toEqual([
       '/',
-      '/artifacts',
       '/observability',
       '/observability/traces',
       '/traces',
@@ -323,6 +351,13 @@ contractDescribe('workspace edge route seed contract', () => {
       '/environments',
       '/secrets',
     ]);
+    expect(record.routes.find((route) => route.pathPrefix === '/artifacts')).toMatchObject({
+      auth: 'workspace-session',
+      target: {
+        kind: 'consuelo-gateway-service',
+        serviceName: 'artifacts-sites-read-layer',
+      },
+    });
     expect(record.routes).toEqual(expect.arrayContaining([
       expect.objectContaining({
         pathPrefix: '/diffs',
@@ -523,6 +558,155 @@ contractDescribe('workspace edge route seed contract', () => {
     expect(record.routes.find((route) => route.pathPrefix === '/trace-burn-intelligence')).toMatchObject({
       target: { kind: 'site-snapshot', versionId: 'sha256-release' },
     });
+  });
+
+  it('refreshes only release-managed private site snapshots across existing workspace rows', async () => {
+    const seed = await loadWorkspaceEdgeRouteSeedContract();
+    const db = new Database(':memory:');
+    db.exec(`
+      CREATE TABLE workspace_route_registry (
+        hostname TEXT PRIMARY KEY,
+        workspace_id TEXT NOT NULL,
+        workspace_slug TEXT NOT NULL,
+        workspace_host TEXT NOT NULL,
+        base_domain TEXT NOT NULL,
+        route_path_prefix TEXT NOT NULL,
+        route_surface TEXT NOT NULL,
+        route_status TEXT NOT NULL,
+        route_target_kind TEXT NOT NULL,
+        target_origin_url TEXT NOT NULL,
+        connector_id TEXT,
+        connector_status TEXT,
+        record_json TEXT NOT NULL,
+        revoked_at TEXT,
+        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+      );
+    `);
+    const record = seed.createWorkspaceEdgeRouteSeedRecord({
+      ...INTERNAL_SEED_IDENTITY,
+      siteSnapshotKey: 'sites/workspace_testing/launcher/sha256-old/index.html',
+      siteVersionId: 'sha256-old',
+      publishedSiteIds: [
+        'launcher', 'artifacts', 'traces', 'diffs', 'docs',
+        'configuration', 'tools', 'nodes', 'environments', 'secrets',
+      ],
+      connectorId: 'connector_home',
+      tunnelOriginUrl: 'https://connector-home.example.test',
+    }) as {
+      hostname: string;
+      workspaceId: string;
+      workspaceSlug: string;
+      baseDomain: string;
+      routes: Array<{
+        pathPrefix: string;
+        target: {
+          kind: string;
+          siteId?: string;
+          versionId?: string;
+          manifestKey?: string;
+          htmlKey?: string;
+          contentHash?: string;
+          connectorId?: string;
+        };
+      }>;
+      defaultNodeId?: string;
+      nodeTargets?: Array<Record<string, unknown>>;
+    };
+    record.defaultNodeId = 'node_home';
+    record.nodeTargets = [{
+      nodeId: 'node_home',
+      connectorId: 'connector_home',
+      connectorStatus: 'connected',
+      tunnelOriginUrl: 'https://connector-home.example.test',
+      state: 'active',
+      lastSeenAt: 1_786_473_600_000,
+      heartbeatTtlMs: 60_000,
+    }];
+    for (const route of record.routes) {
+      if (route.target.siteId === 'artifacts' || route.target.siteId === 'docs') {
+        route.target.versionId = 'sha256-user-published';
+        route.target.manifestKey =
+          'sites/workspace_internal/' + route.target.siteId + '/sha256-user-published/index.html';
+        route.target.htmlKey = route.target.manifestKey;
+        route.target.contentHash = 'f'.repeat(64);
+      }
+    }
+    db.query(
+      'INSERT INTO workspace_route_registry (' +
+        'hostname, workspace_id, workspace_slug, workspace_host, base_domain, ' +
+        'route_path_prefix, route_surface, route_status, route_target_kind, ' +
+        'target_origin_url, connector_id, connector_status, record_json' +
+        ') VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+    ).run(
+      record.hostname,
+      record.workspaceId,
+      record.workspaceSlug,
+      record.hostname,
+      record.baseDomain,
+      '/mcp',
+      'os',
+      'active',
+      'os-connector',
+      'https://connector-home.example.test',
+      'connector_home',
+      'connected',
+      JSON.stringify(record),
+    );
+    const managedSiteIds = [
+      'launcher', 'traces', 'configuration', 'tools', 'nodes', 'environments', 'secrets',
+    ];
+    const siteContentHashes = Object.fromEntries(
+      managedSiteIds.map((siteId, index) => [siteId, String(index + 1).repeat(64).slice(0, 64)]),
+    );
+
+    db.exec(seed.createWorkspaceReleaseManagedSiteRefreshSql({
+      versionId: 'sha256-new-release',
+      snapshotWorkspaceId: 'workspace_testing',
+      siteContentHashes,
+    }));
+
+    const row = db.query<{ record_json: string }, []>(
+      "SELECT record_json FROM workspace_route_registry WHERE hostname = 'internal.consuelohq.com'",
+    ).get();
+    if (!row) throw new Error('refreshed route row was not found');
+    const refreshed = JSON.parse(row.record_json) as typeof record;
+    expect(refreshed.defaultNodeId).toBe('node_home');
+    expect(refreshed.nodeTargets).toEqual([
+      expect.objectContaining({ nodeId: 'node_home', connectorId: 'connector_home' }),
+    ]);
+    expect(refreshed.routes.find((route) => route.pathPrefix === '/mcp')).toMatchObject({
+      target: { kind: 'os-connector', connectorId: 'connector_home' },
+    });
+    for (const siteId of managedSiteIds) {
+      expect(refreshed.routes.find((route) => route.target.siteId === siteId)).toMatchObject({
+        target: {
+          kind: 'site-snapshot',
+          siteId,
+          versionId: 'sha256-new-release',
+          manifestKey: 'sites/workspace_testing/' + siteId + '/sha256-new-release/index.html',
+          htmlKey: 'sites/workspace_testing/' + siteId + '/sha256-new-release/index.html',
+          contentHash: siteContentHashes[siteId],
+        },
+      });
+    }
+    expect(refreshed.routes.find((route) => route.target.siteId === 'docs')).toMatchObject({
+      target: {
+        siteId: 'docs',
+        versionId: 'sha256-user-published',
+        manifestKey: 'sites/workspace_internal/docs/sha256-user-published/index.html',
+        contentHash: 'f'.repeat(64),
+      },
+    });
+    expect(refreshed.routes.find((route) => route.pathPrefix === '/artifacts')).toMatchObject({
+      auth: 'workspace-session',
+      target: {
+        kind: 'consuelo-gateway-service',
+        serviceName: 'artifacts-sites-read-layer',
+      },
+    });
+    expect(refreshed.routes.some((route) => route.target.siteId === 'artifacts')).toBe(false);
+    db.close();
   });
 
   it('should reject invalid publication sets before creating route records', async () => {

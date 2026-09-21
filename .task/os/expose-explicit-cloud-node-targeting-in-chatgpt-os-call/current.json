@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/expose-explicit-cloud-node-targeting-in-chatgpt-os-call",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1978,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1978",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1978",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1978/expose-explicit-cloud-node-targeting-in-chatgpt-os-call",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1978",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1978/expose-explicit-cloud-node-targeting-in-chatgpt-os-call",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-expose-explicit-cloud-node-targeting-in-chatgpt-os-call",
+  "taskSession": "tsk_f665fdfee606",
+  "tmuxSession": "opensaas-os-expose-explicit-cloud-node-targeting-in-chatgpt--f665fdfe",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-expose-explicit-cloud-node-targeting-in-chatgpt-os-call/.task/os/expose-explicit-cloud-node-targeting-in-chatgpt-os-call/session.json",
+  "createdAt": "2026-08-15T01:14:19.668Z"
+}

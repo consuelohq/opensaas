@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "source": {
+    "caseFile": "packages/os/explore-bench/cases.v1.json",
+    "reportFile": "packages/os/explore-bench/reports/e2-live-challenger.json",
+    "benchmarkCaseCount": 10,
+    "retrievalSurface": "packages/os",
+    "variant": "e2-live-challenger"
+  },
+  "method": "jeffreys-smoothed-binomial-rank-bins",
+  "status": "provisional",
+  "minimumCasesForCalibratedStatus": 50,
+  "caseCount": 10,
+  "observationCount": 92,
+  "prior": {
+    "alpha": 0.5,
+    "beta": 0.5
+  },
+  "bins": [
+    {
+      "name": "r1",
+      "minRank": 1,
+      "maxRank": 1,
+      "samples": 10,
+      "relevant": 9,
+      "estimatedRelevanceRate": 0.8636363636363636
+    },
+    {
+      "name": "r2_3",
+      "minRank": 2,
+      "maxRank": 3,
+      "samples": 19,
+      "relevant": 6,
+      "estimatedRelevanceRate": 0.325
+    },
+    {
+      "name": "r4_5",
+      "minRank": 4,
+      "maxRank": 5,
+      "samples": 18,
+      "relevant": 2,
+      "estimatedRelevanceRate": 0.13157894736842105
+    },
+    {
+      "name": "r6_10",
+      "minRank": 6,
+      "maxRank": 10,
+      "samples": 45,
+      "relevant": 4,
+      "estimatedRelevanceRate": 0.09782608695652174
+    }
+  ],
+  "leaveOneCaseOutBrier": 0.12369133031942595,
+  "claim": "Provisional empirical retrieval support by rank bin. This artifact is not a posterior probability model and must not be described as calibrated until the minimum independent benchmark-case threshold and calibration review are satisfied."
+}

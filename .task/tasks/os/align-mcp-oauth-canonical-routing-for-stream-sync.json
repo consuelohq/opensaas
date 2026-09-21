@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/align-mcp-oauth-canonical-routing-for-stream-sync",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1981,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1981",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1981",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1981/align-mcp-oauth-canonical-routing-for-stream-sync",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1981",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1981/align-mcp-oauth-canonical-routing-for-stream-sync",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-align-mcp-oauth-canonical-routing-for-stream-sync",
+  "taskSession": "tsk_ba1cd49774e8",
+  "tmuxSession": "opensaas-os-align-mcp-oauth-canonical-routing-for-stream-syn-ba1cd497",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-align-mcp-oauth-canonical-routing-for-stream-sync/.task/os/align-mcp-oauth-canonical-routing-for-stream-sync/session.json",
+  "createdAt": "2026-08-15T01:24:27.721Z"
+}

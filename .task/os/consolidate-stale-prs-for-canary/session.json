@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_9a19216ddcdd",
+  "tmuxSession": "opensaas-os-consolidate-stale-prs-for-canary-9a19216d",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/consolidate-stale-prs-for-canary",
+  "branch": "task/os/consolidate-stale-prs-for-canary",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-consolidate-stale-prs-for-canary",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-consolidate-stale-prs-for-canary",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2233,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2233",
+  "createdAt": "2026-08-28T02:04:01.652Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-consolidate-stale-prs-for-canary/.task/os/consolidate-stale-prs-for-canary/session.json"
+}

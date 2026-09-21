@@ -21,6 +21,7 @@ export type CompiledTraceHistorySearch = {
 const TRACE_SEARCH_FIELD_ALIASES: Record<string, TraceSearchField> = {
   tool: 'tool',
   branch: 'branch',
+  session: 'branch',
   status: 'status',
   node: 'node',
   route: 'route',
@@ -75,7 +76,12 @@ function compileTerm(term: TraceSearchTerm): CompiledTraceHistorySearch | null {
       return likeClause(["lower(coalesce(tool, ''))"], like);
     case 'branch':
       return likeClause(
-        ["lower(coalesce(branch, ''))", "lower(coalesce(task_session, ''))"],
+        [
+          "lower(coalesce(branch, ''))",
+          "lower(coalesce(task_session, ''))",
+          "lower(coalesce(work_session, ''))",
+          "lower(coalesce(work_path, ''))",
+        ],
         like,
       );
     case 'node':
@@ -111,6 +117,8 @@ function compileTerm(term: TraceSearchTerm): CompiledTraceHistorySearch | null {
           "lower(coalesce(tool, ''))",
           "lower(coalesce(branch, ''))",
           "lower(coalesce(task_session, ''))",
+          "lower(coalesce(work_session, ''))",
+          "lower(coalesce(work_path, ''))",
           "lower(coalesce(status, ''))",
           "lower(coalesce(code, ''))",
           "lower(coalesce(trace_id, ''))",

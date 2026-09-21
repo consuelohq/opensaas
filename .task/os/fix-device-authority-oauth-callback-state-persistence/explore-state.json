@@ -1,0 +1,1461 @@
+{
+  "query": "MemoryStore DurableStore os-device-authority",
+  "budget": 8,
+  "results": [
+    {
+      "path": "packages/os/cloudflare/os-device-authority/src/index.ts",
+      "score": 0.9474,
+      "belief_prior": 0.7237,
+      "symbol": "DurableStore",
+      "chunk_type": "class",
+      "file_outline": "GoogleIdentityError GoogleIdentityError.constructor json text methodNotAllowed b64 b64Decode rand userCode hash hmac devicePublicKeyThumbprint slug cleanCode showCode htmlEscape params verifyUrl stringField expectedDeviceProofPayload page DurableStore DurableStore.constructor DurableStore.put DurableStore.byHash DurableStore.byUserCode DurableStore.del DurableStore.putOAuthState DurableStore.byOAuthState DurableStore.delOAuthState createMemoryDeviceGrantStore approvalAuth verifyDevicePublicKeyProof googleConfigured googleConfig redirectUri googleAuthRedirect googleIdentity googleApprovalErrorMessage approveGrant approvedJson createOsDeviceAuthorityHandler createOsDeviceAuthorityHandler createOsDeviceAuthorityHandler OsDeviceGrantDurableObject OsDeviceGrantDurableObject.handler OsDeviceGrantDurableObject.constructor OsDeviceGrantDurableObject.fetch",
+      "typed_edges": [],
+      "is_implementation": true,
+      "file_size": 26970,
+      "chunk_count": 62,
+      "last_modified": null,
+      "has_test": false,
+      "package": "os",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 0.5526,
+      "reason": "hybrid match: class DurableStore",
+      "preview": "class DurableStore implements Store {",
+      "graph_connections": [],
+      "graph_connection_count": 0,
+      "lines": {
+        "start": 106,
+        "end": 106
+      },
+      "target": {
+        "key": "packages/os/cloudflare/os-device-authority/src/index.ts:class:DurableStore:106-106",
+        "path": "packages/os/cloudflare/os-device-authority/src/index.ts",
+        "kind": "class",
+        "name": "DurableStore",
+        "symbol_path": "DurableStore",
+        "node_type": "class_declaration",
+        "parent_name": null,
+        "lines": {
+          "start": 106,
+          "end": 106
+        },
+        "content_hash": "71867ce2cd0fee58381b707e324d36926d87ad5fbdca0ee09d54c4f7e99a9432",
+        "preview": "class DurableStore implements Store {"
+      },
+      "retrieval_types": [
+        "semantic",
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0.6666666666666666,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0,
+        "connectedToOtherTopResults": false,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0,
+        "graphRelevance": 0,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.4125,
+        "nameMatch": 1,
+        "rawScore": 0.9474083333333334,
+        "recency": 0.2,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0.6666666666666666,
+        "structuralScore": 1,
+        "tokenCoverage": 0.75,
+        "weightedEdges": 0
+      }
+    },
+    {
+      "path": "packages/os/tests/os-device-authority-worker.test.ts",
+      "score": 0.9302,
+      "belief_prior": 0.7151,
+      "symbol": "b64",
+      "chunk_type": "function",
+      "file_outline": "b64 authAssertion form startGrant proofFields googleFetch createVerifiedCanonicalDirectory createCapturedRouteRegistry createCapturedWorkspaceConnectorProvisioner seedGoogleAccountWorkspace failingGoogleTokenFetch successfulWorkspaceRouteSetup",
+      "typed_edges": [
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/app.ts",
+          "type": "imported_by",
+          "symbol": "../cloudflare/os-device-authority/src/app"
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/stores.ts",
+          "type": "imported_by",
+          "symbol": "../cloudflare/os-device-authority/src/stores"
+        },
+        {
+          "path": "packages/os/scripts/lib/connector-origin-hostname.ts",
+          "type": "imported_by",
+          "symbol": "../scripts/lib/connector-origin-hostname"
+        },
+        {
+          "path": "packages/os/scripts/lib/install-control-plane.ts",
+          "type": "imported_by",
+          "symbol": "../scripts/lib/install-control-plane"
+        },
+        {
+          "path": "packages/os/scripts/lib/workspace-cloudflare-d1-route-registry.ts",
+          "type": "imported_by",
+          "symbol": "../scripts/lib/workspace-cloudflare-d1-route-registry"
+        },
+        {
+          "path": "packages/os/scripts/lib/workspace-device-authorization.ts",
+          "type": "imported_by",
+          "symbol": "../scripts/lib/workspace-device-authorization"
+        },
+        {
+          "path": "packages/os/scripts/lib/workspace-device-login-client.ts",
+          "type": "imported_by",
+          "symbol": "../scripts/lib/workspace-device-login-client"
+        },
+        {
+          "path": "packages/os/scripts/lib/workspace-edge-node-auth.ts",
+          "type": "imported_by",
+          "symbol": "../scripts/lib/workspace-edge-node-auth"
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/app.ts",
+          "type": "imports",
+          "symbol": "../cloudflare/os-device-authority/src/app"
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/stores.ts",
+          "type": "imports",
+          "symbol": "../cloudflare/os-device-authority/src/stores"
+        },
+        {
+          "path": "packages/os/scripts/lib/connector-origin-hostname.ts",
+          "type": "imports",
+          "symbol": "../scripts/lib/connector-origin-hostname"
+        },
+        {
+          "path": "packages/os/scripts/lib/install-control-plane.ts",
+          "type": "imports",
+          "symbol": "../scripts/lib/install-control-plane"
+        },
+        {
+          "path": "packages/os/scripts/lib/workspace-cloudflare-d1-route-registry.ts",
+          "type": "imports",
+          "symbol": "../scripts/lib/workspace-cloudflare-d1-route-registry"
+        },
+        {
+          "path": "packages/os/scripts/lib/workspace-device-authorization.ts",
+          "type": "imports",
+          "symbol": "../scripts/lib/workspace-device-authorization"
+        },
+        {
+          "path": "packages/os/scripts/lib/workspace-device-login-client.ts",
+          "type": "imports",
+          "symbol": "../scripts/lib/workspace-device-login-client"
+        },
+        {
+          "path": "packages/os/scripts/lib/workspace-edge-node-auth.ts",
+          "type": "imports",
+          "symbol": "../scripts/lib/workspace-edge-node-auth"
+        },
+        {
+          "path": "packages/os/tests/artifact-render.test.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/os/tests/artifacts-edge-redirect.test.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/os/tests/artifacts-hono-routes.test.ts",
+          "type": "sibling",
+          "symbol": null
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 95720,
+      "chunk_count": 50,
+      "last_modified": 1786749518,
+      "has_test": false,
+      "package": "os",
+      "changed_in_branch": true,
+      "evidence_state": "read",
+      "information_value": 1.5385,
+      "reason": "hybrid match: function b64",
+      "preview": "function b64(bytes: Uint8Array): string { let s = ''; for (const b of bytes) s += String.fromCharCode(b);",
+      "graph_connections": [
+        "packages/os/cloudflare/os-device-authority/src/app.ts",
+        "packages/os/cloudflare/os-device-authority/src/stores.ts",
+        "packages/os/scripts/lib/connector-origin-hostname.ts",
+        "packages/os/scripts/lib/install-control-plane.ts",
+        "packages/os/scripts/lib/workspace-cloudflare-d1-route-registry.ts",
+        "packages/os/scripts/lib/workspace-device-authorization.ts",
+        "packages/os/scripts/lib/workspace-device-login-client.ts",
+        "packages/os/scripts/lib/workspace-edge-node-auth.ts"
+      ],
+      "graph_connection_count": 8,
+      "lines": {
+        "start": 33,
+        "end": 37
+      },
+      "target": {
+        "key": "packages/os/tests/os-device-authority-worker.test.ts:function:b64:33-37",
+        "path": "packages/os/tests/os-device-authority-worker.test.ts",
+        "kind": "function",
+        "name": "b64",
+        "symbol_path": "b64",
+        "node_type": "function_declaration",
+        "parent_name": null,
+        "lines": {
+          "start": 33,
+          "end": 37
+        },
+        "content_hash": "946ce01b9ec783b768ea0f57f9de7cef1e61dd6b49c3725db5089246c8392203",
+        "preview": "function b64(bytes: Uint8Array): string { let s = ''; for (const b of bytes) s += String.fromCharCode(b);"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0.3333333333333333,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 1,
+        "connectedToOtherTopResults": true,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.5633333333333334,
+        "graphRelevance": 0.5633333333333334,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.175,
+        "nameMatch": 1,
+        "rawScore": 0.9301666666666667,
+        "recency": 1,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0.3333333333333333,
+        "structuralScore": 1,
+        "tokenCoverage": 0.5,
+        "weightedEdges": 16.900000000000002
+      }
+    },
+    {
+      "path": "packages/workspace/scripts/os-release-device-auth.ts",
+      "score": 0.8289,
+      "belief_prior": 0.6644,
+      "symbol": "verifyDeviceAuthority",
+      "chunk_type": "function",
+      "file_outline": "writeOut writeErr printHelp parseArgs run fetchWithDefaults requestFailureMessage readJson readText verifyDeviceAuthority main",
+      "typed_edges": [
+        {
+          "path": "packages/os/scripts/lib/device-authority-release-readiness.ts",
+          "type": "imported_by",
+          "symbol": "../../os/scripts/lib/device-authority-release-readiness"
+        },
+        {
+          "path": "packages/os/scripts/lib/sites.ts",
+          "type": "imported_by",
+          "symbol": "../../os/scripts/lib/sites"
+        },
+        {
+          "path": "packages/os/scripts/lib/device-authority-release-readiness.ts",
+          "type": "imports",
+          "symbol": "../../os/scripts/lib/device-authority-release-readiness"
+        },
+        {
+          "path": "packages/os/scripts/lib/sites.ts",
+          "type": "imports",
+          "symbol": "../../os/scripts/lib/sites"
+        },
+        {
+          "path": "packages/workspace/scripts/agent.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/ai-review.js",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/audit.js",
+          "type": "sibling",
+          "symbol": null
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 6301,
+      "chunk_count": 16,
+      "last_modified": 1786702610,
+      "has_test": false,
+      "package": "workspace",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 1.0068,
+      "reason": "hybrid match: function verifyDeviceAuthority",
+      "preview": "async function verifyDeviceAuthority(): Promise<void> { try { const health = await readJson(HEALTH_URL);",
+      "graph_connections": [
+        "packages/os/scripts/lib/device-authority-release-readiness.ts",
+        "packages/os/scripts/lib/sites.ts",
+        "packages/workspace/scripts/agent.js",
+        "packages/workspace/scripts/ai-review.js",
+        "packages/workspace/scripts/audit.js"
+      ],
+      "graph_connection_count": 5,
+      "lines": {
+        "start": 138,
+        "end": 176
+      },
+      "target": {
+        "key": "packages/workspace/scripts/os-release-device-auth.ts:function:verifyDeviceAuthority:138-176",
+        "path": "packages/workspace/scripts/os-release-device-auth.ts",
+        "kind": "function",
+        "name": "verifyDeviceAuthority",
+        "symbol_path": "verifyDeviceAuthority",
+        "node_type": "function_declaration",
+        "parent_name": null,
+        "lines": {
+          "start": 138,
+          "end": 176
+        },
+        "content_hash": "e15282f208b321b8ba3253f4aa05696c0fcf35f567fb19d1ff0064be4a7fc68d",
+        "preview": "async function verifyDeviceAuthority(): Promise<void> { try { const health = await readJson(HEALTH_URL);"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0.5,
+        "connectedToOtherTopResults": false,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.1633333333333333,
+        "graphRelevance": 0.1633333333333333,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.41250000000000003,
+        "nameMatch": 1,
+        "rawScore": 0.8288750000000003,
+        "recency": 1,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0,
+        "structuralScore": 1,
+        "tokenCoverage": 0.5,
+        "weightedEdges": 4.8999999999999995
+      }
+    },
+    {
+      "path": "packages/os/cloudflare/os-device-authority/src/app.ts",
+      "score": 0.7245,
+      "belief_prior": 0.6122,
+      "symbol": null,
+      "chunk_type": null,
+      "file_outline": null,
+      "typed_edges": [
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/constants.ts",
+          "type": "imports",
+          "symbol": "./constants"
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/constants.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/http.ts",
+          "type": "imports",
+          "symbol": "./http"
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/http.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/routes/device.ts",
+          "type": "imports",
+          "symbol": "./routes/device"
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/routes/google-oauth.ts",
+          "type": "imports",
+          "symbol": "./routes/google-oauth"
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/routes/health.ts",
+          "type": "imports",
+          "symbol": "./routes/health"
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/routes/install-control-plane.ts",
+          "type": "imports",
+          "symbol": "./routes/install-control-plane"
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/routes/managed-cloud-provisioning.ts",
+          "type": "imports",
+          "symbol": "./routes/managed-cloud-provisioning"
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/routes/mcp-oauth.ts",
+          "type": "imports",
+          "symbol": "./routes/mcp-oauth"
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/routes/mcp-proxy.ts",
+          "type": "imports",
+          "symbol": "./routes/mcp-proxy"
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/routes/web-auth.ts",
+          "type": "imports",
+          "symbol": "./routes/web-auth"
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/routes/workspace-agents.ts",
+          "type": "imports",
+          "symbol": "./routes/workspace-agents"
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/routes/workspace-nodes.ts",
+          "type": "imports",
+          "symbol": "./routes/workspace-nodes"
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/services/managed-cloud-pricing.ts",
+          "type": "imports",
+          "symbol": "./services/managed-cloud-pricing"
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/stores.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/types.ts",
+          "type": "imports",
+          "symbol": "./types"
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/worker.ts",
+          "type": "imported_by",
+          "symbol": "./app"
+        },
+        {
+          "path": "packages/os/tests/cloud-first-web-onboarding.test.ts",
+          "type": "imported_by",
+          "symbol": "../cloudflare/os-device-authority/src/app"
+        },
+        {
+          "path": "packages/os/tests/install-control-plane-cloudflare.test.ts",
+          "type": "imported_by",
+          "symbol": "../cloudflare/os-device-authority/src/app"
+        },
+        {
+          "path": "packages/os/tests/internal-dashboard-integration.test.ts",
+          "type": "imported_by",
+          "symbol": "../cloudflare/os-device-authority/src/app"
+        },
+        {
+          "path": "packages/os/tests/launcher-nodes-control-plane.test.ts",
+          "type": "imported_by",
+          "symbol": "../cloudflare/os-device-authority/src/app"
+        },
+        {
+          "path": "packages/os/tests/managed-cloud-one-click-provisioning.test.ts",
+          "type": "imported_by",
+          "symbol": "../cloudflare/os-device-authority/src/app"
+        },
+        {
+          "path": "packages/os/tests/native-google-device-approval.test.ts",
+          "type": "imported_by",
+          "symbol": "../cloudflare/os-device-authority/src/app"
+        },
+        {
+          "path": "packages/os/tests/os-device-agent-status.test.ts",
+          "type": "imported_by",
+          "symbol": "../cloudflare/os-device-authority/src/app"
+        },
+        {
+          "path": "packages/os/tests/os-device-approval-auth-hardening-contract.test.ts",
+          "type": "imported_by",
+          "symbol": "../cloudflare/os-device-authority/src/app"
+        },
+        {
+          "path": "packages/os/tests/os-device-authority-architecture.test.ts",
+          "type": "imported_by",
+          "symbol": "../cloudflare/os-device-authority/src/app"
+        },
+        {
+          "path": "packages/os/tests/os-device-authority-worker.test.ts",
+          "type": "imported_by",
+          "symbol": "../cloudflare/os-device-authority/src/app"
+        },
+        {
+          "path": "packages/os/tests/os-universal-login.test.ts",
+          "type": "imported_by",
+          "symbol": "../cloudflare/os-device-authority/src/app"
+        },
+        {
+          "path": "packages/os/tests/workspace-node-registry-routing.test.ts",
+          "type": "imported_by",
+          "symbol": "../cloudflare/os-device-authority/src/app"
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/constants.ts",
+          "type": "imported_by",
+          "symbol": "./constants"
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/constants.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/http.ts",
+          "type": "imported_by",
+          "symbol": "./http"
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/http.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/routes/device.ts",
+          "type": "imported_by",
+          "symbol": "./routes/device"
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/routes/google-oauth.ts",
+          "type": "imported_by",
+          "symbol": "./routes/google-oauth"
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/routes/health.ts",
+          "type": "imported_by",
+          "symbol": "./routes/health"
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/routes/install-control-plane.ts",
+          "type": "imported_by",
+          "symbol": "./routes/install-control-plane"
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/routes/managed-cloud-provisioning.ts",
+          "type": "imported_by",
+          "symbol": "./routes/managed-cloud-provisioning"
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/routes/mcp-oauth.ts",
+          "type": "imported_by",
+          "symbol": "./routes/mcp-oauth"
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/routes/mcp-proxy.ts",
+          "type": "imported_by",
+          "symbol": "./routes/mcp-proxy"
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/routes/web-auth.ts",
+          "type": "imported_by",
+          "symbol": "./routes/web-auth"
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/routes/workspace-agents.ts",
+          "type": "imported_by",
+          "symbol": "./routes/workspace-agents"
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/routes/workspace-nodes.ts",
+          "type": "imported_by",
+          "symbol": "./routes/workspace-nodes"
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/services/managed-cloud-pricing.ts",
+          "type": "imported_by",
+          "symbol": "./services/managed-cloud-pricing"
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/stores.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/types.ts",
+          "type": "imported_by",
+          "symbol": "./types"
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/types.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/utils.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/worker.ts",
+          "type": "imports",
+          "symbol": "./app"
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/worker.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/os/tests/cloud-first-web-onboarding.test.ts",
+          "type": "imports",
+          "symbol": "../cloudflare/os-device-authority/src/app"
+        },
+        {
+          "path": "packages/os/tests/install-control-plane-cloudflare.test.ts",
+          "type": "imports",
+          "symbol": "../cloudflare/os-device-authority/src/app"
+        },
+        {
+          "path": "packages/os/tests/internal-dashboard-integration.test.ts",
+          "type": "imports",
+          "symbol": "../cloudflare/os-device-authority/src/app"
+        },
+        {
+          "path": "packages/os/tests/launcher-nodes-control-plane.test.ts",
+          "type": "imports",
+          "symbol": "../cloudflare/os-device-authority/src/app"
+        },
+        {
+          "path": "packages/os/tests/managed-cloud-one-click-provisioning.test.ts",
+          "type": "imports",
+          "symbol": "../cloudflare/os-device-authority/src/app"
+        },
+        {
+          "path": "packages/os/tests/native-google-device-approval.test.ts",
+          "type": "imports",
+          "symbol": "../cloudflare/os-device-authority/src/app"
+        },
+        {
+          "path": "packages/os/tests/os-device-agent-status.test.ts",
+          "type": "imports",
+          "symbol": "../cloudflare/os-device-authority/src/app"
+        },
+        {
+          "path": "packages/os/tests/os-device-approval-auth-hardening-contract.test.ts",
+          "type": "imports",
+          "symbol": "../cloudflare/os-device-authority/src/app"
+        },
+        {
+          "path": "packages/os/tests/os-device-authority-architecture.test.ts",
+          "type": "imports",
+          "symbol": "../cloudflare/os-device-authority/src/app"
+        },
+        {
+          "path": "packages/os/tests/os-device-authority-worker.test.ts",
+          "type": "imports",
+          "symbol": "../cloudflare/os-device-authority/src/app"
+        },
+        {
+          "path": "packages/os/tests/os-universal-login.test.ts",
+          "type": "imports",
+          "symbol": "../cloudflare/os-device-authority/src/app"
+        },
+        {
+          "path": "packages/os/tests/workspace-node-registry-routing.test.ts",
+          "type": "imports",
+          "symbol": "../cloudflare/os-device-authority/src/app"
+        }
+      ],
+      "is_implementation": false,
+      "file_size": null,
+      "chunk_count": null,
+      "last_modified": 1786743244,
+      "has_test": false,
+      "package": "os",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 1.3961,
+      "reason": "hybrid match: chunk app.ts",
+      "preview": "",
+      "graph_connections": [
+        "packages/os/cloudflare/os-device-authority/src/constants.ts",
+        "packages/os/cloudflare/os-device-authority/src/http.ts",
+        "packages/os/cloudflare/os-device-authority/src/routes/device.ts",
+        "packages/os/cloudflare/os-device-authority/src/routes/google-oauth.ts",
+        "packages/os/cloudflare/os-device-authority/src/routes/health.ts",
+        "packages/os/cloudflare/os-device-authority/src/routes/install-control-plane.ts",
+        "packages/os/cloudflare/os-device-authority/src/routes/managed-cloud-provisioning.ts",
+        "packages/os/cloudflare/os-device-authority/src/routes/mcp-oauth.ts"
+      ],
+      "graph_connection_count": 8,
+      "lines": {
+        "start": 1,
+        "end": 1
+      },
+      "target": {
+        "key": "packages/os/cloudflare/os-device-authority/src/app.ts:chunk:anonymous:1-1",
+        "path": "packages/os/cloudflare/os-device-authority/src/app.ts",
+        "kind": null,
+        "name": null,
+        "symbol_path": null,
+        "node_type": null,
+        "parent_name": null,
+        "lines": {
+          "start": 1,
+          "end": 1
+        },
+        "content_hash": null,
+        "preview": ""
+      },
+      "retrieval_types": [
+        "imported_by"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0.3333333333333333,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0.5,
+        "connectedToOtherTopResults": true,
+        "embeddingSimilarity": 0.843115,
+        "graphCentrality": 1,
+        "graphRelevance": 1,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": false,
+        "implementationBonus": 0,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.175,
+        "nameMatch": 1,
+        "rawScore": 0.7244741666666668,
+        "recency": 1,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0.3333333333333333,
+        "structuralScore": 0.25,
+        "tokenCoverage": 0.5,
+        "weightedEdges": 56.69999999999999
+      }
+    },
+    {
+      "path": "packages/os/cloudflare/os-device-authority/src/stores.ts",
+      "score": 0.7245,
+      "belief_prior": 0.6122,
+      "symbol": null,
+      "chunk_type": null,
+      "file_outline": null,
+      "typed_edges": [
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/app.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/constants.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/http.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/services/mcp-proxy.ts",
+          "type": "imports",
+          "symbol": "../stores"
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/app.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/constants.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/http.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/services/mcp-proxy.ts",
+          "type": "imported_by",
+          "symbol": "../stores"
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/types.ts",
+          "type": "imports",
+          "symbol": "./types"
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/utils.ts",
+          "type": "imports",
+          "symbol": "./utils"
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/worker.ts",
+          "type": "imported_by",
+          "symbol": "./stores"
+        },
+        {
+          "path": "packages/os/scripts/lib/managed-cloud-provisioning.ts",
+          "type": "imports",
+          "symbol": "../../../scripts/lib/managed-cloud-provisioning"
+        },
+        {
+          "path": "packages/os/tests/canonical-device-identity.test.ts",
+          "type": "imported_by",
+          "symbol": "../cloudflare/os-device-authority/src/stores"
+        },
+        {
+          "path": "packages/os/tests/cloud-first-web-onboarding.test.ts",
+          "type": "imported_by",
+          "symbol": "../cloudflare/os-device-authority/src/stores"
+        },
+        {
+          "path": "packages/os/tests/foundation-finish-line-regressions.test.ts",
+          "type": "imported_by",
+          "symbol": "../cloudflare/os-device-authority/src/stores"
+        },
+        {
+          "path": "packages/os/tests/install-control-plane-cloudflare.test.ts",
+          "type": "imported_by",
+          "symbol": "../cloudflare/os-device-authority/src/stores"
+        },
+        {
+          "path": "packages/os/tests/internal-dashboard-integration.test.ts",
+          "type": "imported_by",
+          "symbol": "../cloudflare/os-device-authority/src/stores"
+        },
+        {
+          "path": "packages/os/tests/launcher-nodes-control-plane.test.ts",
+          "type": "imported_by",
+          "symbol": "../cloudflare/os-device-authority/src/stores"
+        },
+        {
+          "path": "packages/os/tests/managed-cloud-one-click-provisioning.test.ts",
+          "type": "imported_by",
+          "symbol": "../cloudflare/os-device-authority/src/stores"
+        },
+        {
+          "path": "packages/os/tests/mcp-central-proxy-scope.test.ts",
+          "type": "imported_by",
+          "symbol": "../cloudflare/os-device-authority/src/stores"
+        },
+        {
+          "path": "packages/os/tests/native-google-device-approval.test.ts",
+          "type": "imported_by",
+          "symbol": "../cloudflare/os-device-authority/src/stores"
+        },
+        {
+          "path": "packages/os/tests/os-device-agent-status.test.ts",
+          "type": "imported_by",
+          "symbol": "../cloudflare/os-device-authority/src/stores"
+        },
+        {
+          "path": "packages/os/tests/os-device-approval-auth-hardening-contract.test.ts",
+          "type": "imported_by",
+          "symbol": "../cloudflare/os-device-authority/src/stores"
+        },
+        {
+          "path": "packages/os/tests/os-device-authority-architecture.test.ts",
+          "type": "imported_by",
+          "symbol": "../cloudflare/os-device-authority/src/stores"
+        },
+        {
+          "path": "packages/os/tests/os-device-authority-worker.test.ts",
+          "type": "imported_by",
+          "symbol": "../cloudflare/os-device-authority/src/stores"
+        },
+        {
+          "path": "packages/os/tests/os-universal-login.test.ts",
+          "type": "imported_by",
+          "symbol": "../cloudflare/os-device-authority/src/stores"
+        },
+        {
+          "path": "packages/os/tests/workspace-node-registry-routing.test.ts",
+          "type": "imported_by",
+          "symbol": "../cloudflare/os-device-authority/src/stores"
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/types.ts",
+          "type": "imported_by",
+          "symbol": "./types"
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/utils.ts",
+          "type": "imported_by",
+          "symbol": "./utils"
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/worker.ts",
+          "type": "imports",
+          "symbol": "./stores"
+        },
+        {
+          "path": "packages/os/scripts/lib/managed-cloud-provisioning.ts",
+          "type": "imported_by",
+          "symbol": "../../../scripts/lib/managed-cloud-provisioning"
+        },
+        {
+          "path": "packages/os/tests/canonical-device-identity.test.ts",
+          "type": "imports",
+          "symbol": "../cloudflare/os-device-authority/src/stores"
+        },
+        {
+          "path": "packages/os/tests/cloud-first-web-onboarding.test.ts",
+          "type": "imports",
+          "symbol": "../cloudflare/os-device-authority/src/stores"
+        },
+        {
+          "path": "packages/os/tests/foundation-finish-line-regressions.test.ts",
+          "type": "imports",
+          "symbol": "../cloudflare/os-device-authority/src/stores"
+        },
+        {
+          "path": "packages/os/tests/install-control-plane-cloudflare.test.ts",
+          "type": "imports",
+          "symbol": "../cloudflare/os-device-authority/src/stores"
+        },
+        {
+          "path": "packages/os/tests/internal-dashboard-integration.test.ts",
+          "type": "imports",
+          "symbol": "../cloudflare/os-device-authority/src/stores"
+        },
+        {
+          "path": "packages/os/tests/launcher-nodes-control-plane.test.ts",
+          "type": "imports",
+          "symbol": "../cloudflare/os-device-authority/src/stores"
+        },
+        {
+          "path": "packages/os/tests/managed-cloud-one-click-provisioning.test.ts",
+          "type": "imports",
+          "symbol": "../cloudflare/os-device-authority/src/stores"
+        },
+        {
+          "path": "packages/os/tests/mcp-central-proxy-scope.test.ts",
+          "type": "imports",
+          "symbol": "../cloudflare/os-device-authority/src/stores"
+        },
+        {
+          "path": "packages/os/tests/native-google-device-approval.test.ts",
+          "type": "imports",
+          "symbol": "../cloudflare/os-device-authority/src/stores"
+        },
+        {
+          "path": "packages/os/tests/os-device-agent-status.test.ts",
+          "type": "imports",
+          "symbol": "../cloudflare/os-device-authority/src/stores"
+        },
+        {
+          "path": "packages/os/tests/os-device-approval-auth-hardening-contract.test.ts",
+          "type": "imports",
+          "symbol": "../cloudflare/os-device-authority/src/stores"
+        },
+        {
+          "path": "packages/os/tests/os-device-authority-architecture.test.ts",
+          "type": "imports",
+          "symbol": "../cloudflare/os-device-authority/src/stores"
+        },
+        {
+          "path": "packages/os/tests/os-device-authority-worker.test.ts",
+          "type": "imports",
+          "symbol": "../cloudflare/os-device-authority/src/stores"
+        },
+        {
+          "path": "packages/os/tests/os-universal-login.test.ts",
+          "type": "imports",
+          "symbol": "../cloudflare/os-device-authority/src/stores"
+        },
+        {
+          "path": "packages/os/tests/workspace-node-registry-routing.test.ts",
+          "type": "imports",
+          "symbol": "../cloudflare/os-device-authority/src/stores"
+        }
+      ],
+      "is_implementation": false,
+      "file_size": null,
+      "chunk_count": null,
+      "last_modified": 1786743244,
+      "has_test": false,
+      "package": "os",
+      "changed_in_branch": false,
+      "evidence_state": "read",
+      "information_value": 1.3961,
+      "reason": "hybrid match: chunk stores.ts",
+      "preview": "",
+      "graph_connections": [
+        "packages/os/cloudflare/os-device-authority/src/app.ts",
+        "packages/os/cloudflare/os-device-authority/src/constants.ts",
+        "packages/os/cloudflare/os-device-authority/src/http.ts",
+        "packages/os/cloudflare/os-device-authority/src/services/mcp-proxy.ts",
+        "packages/os/cloudflare/os-device-authority/src/types.ts",
+        "packages/os/cloudflare/os-device-authority/src/utils.ts",
+        "packages/os/cloudflare/os-device-authority/src/worker.ts",
+        "packages/os/scripts/lib/managed-cloud-provisioning.ts"
+      ],
+      "graph_connection_count": 8,
+      "lines": {
+        "start": 1,
+        "end": 1
+      },
+      "target": {
+        "key": "packages/os/cloudflare/os-device-authority/src/stores.ts:chunk:anonymous:1-1",
+        "path": "packages/os/cloudflare/os-device-authority/src/stores.ts",
+        "kind": null,
+        "name": null,
+        "symbol_path": null,
+        "node_type": null,
+        "parent_name": null,
+        "lines": {
+          "start": 1,
+          "end": 1
+        },
+        "content_hash": null,
+        "preview": ""
+      },
+      "retrieval_types": [
+        "imported_by"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0.3333333333333333,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0.5,
+        "connectedToOtherTopResults": true,
+        "embeddingSimilarity": 0.843115,
+        "graphCentrality": 1,
+        "graphRelevance": 1,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": false,
+        "implementationBonus": 0,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.175,
+        "nameMatch": 1,
+        "rawScore": 0.7244741666666668,
+        "recency": 1,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0.3333333333333333,
+        "structuralScore": 0.25,
+        "tokenCoverage": 0.5,
+        "weightedEdges": 41.8
+      }
+    },
+    {
+      "path": "packages/api/src/shared/dialer.ts",
+      "score": 0.7104,
+      "belief_prior": 0.6052,
+      "symbol": "getInMemoryLockStore",
+      "chunk_type": "function",
+      "file_outline": "getLogger haversineMiles loadAreaCodeLocations getAreaCodeDistanceMiles buildLocalPresenceService getCallerIdLockService getInMemoryLockStore buildDialer getDialerForWorkspace invalidateDialerCache ensureDialer",
+      "typed_edges": [
+        {
+          "path": "packages/api/src/routes/__tests__/local-presence.spec.ts",
+          "type": "imports",
+          "symbol": "../../shared/dialer"
+        },
+        {
+          "path": "packages/api/src/routes/__tests__/twilio-settings.spec.ts",
+          "type": "imports",
+          "symbol": "../../shared/dialer"
+        },
+        {
+          "path": "packages/api/src/routes/__tests__/voice.spec.ts",
+          "type": "imports",
+          "symbol": "../../shared/dialer"
+        },
+        {
+          "path": "packages/api/src/shared/db.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/api/src/routes/__tests__/local-presence.spec.ts",
+          "type": "imported_by",
+          "symbol": "../../shared/dialer"
+        },
+        {
+          "path": "packages/api/src/routes/__tests__/twilio-settings.spec.ts",
+          "type": "imported_by",
+          "symbol": "../../shared/dialer"
+        },
+        {
+          "path": "packages/api/src/routes/__tests__/voice.spec.ts",
+          "type": "imported_by",
+          "symbol": "../../shared/dialer"
+        },
+        {
+          "path": "packages/api/src/shared/db.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/dialer/src/index.ts",
+          "type": "imports",
+          "symbol": "@consuelo/dialer"
+        },
+        {
+          "path": "packages/dialer/src/index.ts",
+          "type": "imported_by",
+          "symbol": "@consuelo/dialer"
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 8471,
+      "chunk_count": 22,
+      "last_modified": null,
+      "has_test": false,
+      "package": "api",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 1.1844,
+      "reason": "hybrid match: function getInMemoryLockStore",
+      "preview": "function getInMemoryLockStore(): InMemoryLockStore { if (!_inMemoryStore) { _inMemoryStore = new InMemoryLockStore();",
+      "graph_connections": [
+        "packages/api/src/routes/__tests__/local-presence.spec.ts",
+        "packages/api/src/routes/__tests__/twilio-settings.spec.ts",
+        "packages/api/src/routes/__tests__/voice.spec.ts",
+        "packages/api/src/shared/db.ts",
+        "packages/dialer/src/index.ts"
+      ],
+      "graph_connection_count": 5,
+      "lines": {
+        "start": 182,
+        "end": 187
+      },
+      "target": {
+        "key": "packages/api/src/shared/dialer.ts:function:getInMemoryLockStore:182-187",
+        "path": "packages/api/src/shared/dialer.ts",
+        "kind": "function",
+        "name": "getInMemoryLockStore",
+        "symbol_path": "getInMemoryLockStore",
+        "node_type": "function_declaration",
+        "parent_name": null,
+        "lines": {
+          "start": 182,
+          "end": 187
+        },
+        "content_hash": "7493dbe98f9660c1aab71fb1eb64168df17bf7e0448ea648872dbfccbe358822",
+        "preview": "function getInMemoryLockStore(): InMemoryLockStore { if (!_inMemoryStore) { _inMemoryStore = new InMemoryLockStore();"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0.3333333333333333,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0,
+        "connectedToOtherTopResults": false,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.2866666666666667,
+        "graphRelevance": 0.2866666666666667,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.0625,
+        "nameMatch": 0,
+        "rawScore": 0.7104416666666667,
+        "recency": 0.2,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0.3333333333333333,
+        "structuralScore": 1,
+        "tokenCoverage": 0.25,
+        "weightedEdges": 8.6
+      }
+    },
+    {
+      "path": "packages/agent/src/pi-extensions/preference-inference.ts",
+      "score": 0.699,
+      "belief_prior": 0.5995,
+      "symbol": "createPreferenceInference",
+      "chunk_type": "function",
+      "file_outline": "createPreferenceInference",
+      "typed_edges": [
+        {
+          "path": "packages/agent/src/pi-extensions/after-turn.types.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/agent/src/pi-extensions/coaching-extension.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/agent/src/pi-extensions/coaching-lifecycle.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/logger/src/index.ts",
+          "type": "imports",
+          "symbol": "@consuelo/logger"
+        },
+        {
+          "path": "packages/logger/src/index.ts",
+          "type": "imported_by",
+          "symbol": "@consuelo/logger"
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 1486,
+      "chunk_count": 4,
+      "last_modified": null,
+      "has_test": false,
+      "package": "agent",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 1.1214,
+      "reason": "hybrid match: function createPreferenceInference",
+      "preview": "export const createPreferenceInference = ( memoryStore: MemoryStore, ): AfterTurnExtension => ({",
+      "graph_connections": [
+        "packages/agent/src/pi-extensions/after-turn.types.ts",
+        "packages/agent/src/pi-extensions/coaching-extension.ts",
+        "packages/agent/src/pi-extensions/coaching-lifecycle.ts",
+        "packages/logger/src/index.ts"
+      ],
+      "graph_connection_count": 4,
+      "lines": {
+        "start": 15,
+        "end": 50
+      },
+      "target": {
+        "key": "packages/agent/src/pi-extensions/preference-inference.ts:function:createPreferenceInference:15-50",
+        "path": "packages/agent/src/pi-extensions/preference-inference.ts",
+        "kind": "function",
+        "name": "createPreferenceInference",
+        "symbol_path": "createPreferenceInference",
+        "node_type": "arrow_function",
+        "parent_name": null,
+        "lines": {
+          "start": 15,
+          "end": 50
+        },
+        "content_hash": "1628629528b3e70fa8bcfa630a496317a926f944d6356b1da44957715409099e",
+        "preview": "export const createPreferenceInference = ( memoryStore: MemoryStore, ): AfterTurnExtension => ({"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0.3333333333333333,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0,
+        "connectedToOtherTopResults": false,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.09666666666666666,
+        "graphRelevance": 0.09666666666666666,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.0625,
+        "nameMatch": 0,
+        "rawScore": 0.6990416666666668,
+        "recency": 0.2,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0.3333333333333333,
+        "structuralScore": 1,
+        "tokenCoverage": 0.25,
+        "weightedEdges": 2.9
+      }
+    },
+    {
+      "path": "packages/os/tests/oauth-device-http-client.test.ts",
+      "score": 0.6664,
+      "belief_prior": 0.5832,
+      "symbol": "describe: workspace device-login HTTP client",
+      "chunk_type": "test",
+      "file_outline": "jsonResponse",
+      "typed_edges": [
+        {
+          "path": "packages/os/scripts/lib/workspace-device-authorization.ts",
+          "type": "imported_by",
+          "symbol": "../scripts/lib/workspace-device-authorization"
+        },
+        {
+          "path": "packages/os/scripts/lib/workspace-device-login-client.ts",
+          "type": "imported_by",
+          "symbol": "../scripts/lib/workspace-device-login-client"
+        },
+        {
+          "path": "packages/os/scripts/lib/workspace-device-authorization.ts",
+          "type": "imports",
+          "symbol": "../scripts/lib/workspace-device-authorization"
+        },
+        {
+          "path": "packages/os/scripts/lib/workspace-device-login-client.ts",
+          "type": "imports",
+          "symbol": "../scripts/lib/workspace-device-login-client"
+        },
+        {
+          "path": "packages/os/tests/artifact-render.test.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/os/tests/artifacts-edge-redirect.test.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/os/tests/artifacts-hono-routes.test.ts",
+          "type": "sibling",
+          "symbol": null
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 6796,
+      "chunk_count": 4,
+      "last_modified": 1785977532,
+      "has_test": false,
+      "package": "os",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 1.8756,
+      "reason": "hybrid match: test describe: workspace device-login HTTP client",
+      "preview": "describe('workspace device-login HTTP client', () => { it('requests a GitHub-shaped device code from consuelohq.com with a retained device key pair', async () => { const deviceKeyPair = generateWorkspaceDeviceKeyPair();",
+      "graph_connections": [
+        "packages/os/scripts/lib/workspace-device-authorization.ts",
+        "packages/os/scripts/lib/workspace-device-login-client.ts",
+        "packages/os/tests/artifact-render.test.ts",
+        "packages/os/tests/artifacts-edge-redirect.test.ts",
+        "packages/os/tests/artifacts-hono-routes.test.ts"
+      ],
+      "graph_connection_count": 5,
+      "lines": {
+        "start": 25,
+        "end": 115
+      },
+      "target": {
+        "key": "packages/os/tests/oauth-device-http-client.test.ts:test:describe: workspace device-login HTTP client:25-115",
+        "path": "packages/os/tests/oauth-device-http-client.test.ts",
+        "kind": "test",
+        "name": "describe: workspace device-login HTTP client",
+        "symbol_path": "describe: workspace device-login HTTP client",
+        "node_type": "call_expression",
+        "parent_name": null,
+        "lines": {
+          "start": 25,
+          "end": 115
+        },
+        "content_hash": "6a0173e248afe9c888adcae62ed373cf46f748da72663290cd67927a6ef42b70",
+        "preview": "describe('workspace device-login HTTP client', () => { it('requests a GitHub-shaped device code from consuelohq.com with a retained device key pair', async () => { const deviceKeyPair = generateWorkspaceDeviceKeyPair();"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0.5,
+        "connectedToOtherTopResults": false,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.1633333333333333,
+        "graphRelevance": 0.1633333333333333,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.2125,
+        "nameMatch": 1,
+        "rawScore": 0.666375,
+        "recency": 0.5,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0,
+        "structuralScore": 0.85,
+        "tokenCoverage": 0.25,
+        "weightedEdges": 4.8999999999999995
+      }
+    }
+  ],
+  "source_routes": [],
+  "index_stats": {
+    "total_files": 15672,
+    "total_chunks": 80241,
+    "last_indexed": "2026-08-15T01:15:37.238Z",
+    "last_full_index": "2026-05-28T22:34:26.578Z",
+    "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da/openrouter-qwen-qwen3-embedding-4b-2560d-workspace-code-retrieval-v1",
+    "embedding_config_id": "openrouter-qwen-qwen3-embedding-4b-2560d-workspace-code-retrieval-v1",
+    "embedding_dimensions": 2560,
+    "files_indexed": 1,
+    "chunks_embedded": 358
+  },
+  "belief_version": 2,
+  "beliefs": {
+    "packages/os/cloudflare/os-device-authority/src/index.ts": {
+      "prior": 0.7237,
+      "posterior": 0.7237,
+      "observations": []
+    },
+    "packages/os/tests/os-device-authority-worker.test.ts": {
+      "prior": 0.7151,
+      "posterior": 0.7151,
+      "observations": []
+    },
+    "packages/workspace/scripts/os-release-device-auth.ts": {
+      "prior": 0.6644,
+      "posterior": 0.6644,
+      "observations": []
+    },
+    "packages/os/cloudflare/os-device-authority/src/app.ts": {
+      "prior": 0.6122,
+      "posterior": 0.6122,
+      "observations": []
+    },
+    "packages/os/cloudflare/os-device-authority/src/stores.ts": {
+      "prior": 0.6122,
+      "posterior": 0.6122,
+      "observations": []
+    },
+    "packages/api/src/shared/dialer.ts": {
+      "prior": 0.6052,
+      "posterior": 0.6052,
+      "observations": []
+    },
+    "packages/agent/src/pi-extensions/preference-inference.ts": {
+      "prior": 0.5995,
+      "posterior": 0.5995,
+      "observations": []
+    },
+    "packages/os/tests/oauth-device-http-client.test.ts": {
+      "prior": 0.5832,
+      "posterior": 0.5832,
+      "observations": []
+    }
+  },
+  "belief_event_ids": [],
+  "branch": "task/os/fix-device-authority-oauth-callback-state-persistence",
+  "mode": "exploring",
+  "worktree_id": "task/os/fix-device-authority-oauth-callback-state-persistence",
+  "updated_at": "2026-08-15T01:17:10.168Z"
+}

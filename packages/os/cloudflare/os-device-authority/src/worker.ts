@@ -10,6 +10,8 @@ import {
   DEFAULT_SITE_SNAPSHOT_VERSION_ID,
   ORIGIN,
 } from './constants';
+import { createDefaultManagedCloudPricingRuntime } from '../../../scripts/lib/managed-cloud-public-pricing';
+import { createCheckoutObservability } from './services/checkout-observability';
 import { createWorkspaceConnectorProvisionerFromEnv } from './services/connectors';
 import { managedCloudPricingFromJson } from './services/managed-cloud-pricing';
 import { DurableStore } from './stores';
@@ -17,6 +19,7 @@ import type { Env, StateLike } from './types';
 
 export class OsDeviceGrantDurableObject {
   private handler: (request: Request) => Promise<Response>;
+  private store: DurableStore;
 
   constructor(state: StateLike, env: Env) {
     const installControlPlaneRepository =
@@ -46,8 +49,9 @@ export class OsDeviceGrantDurableObject {
           fetchImpl: (url, init) => globalThis.fetch(url, init),
         })
       : undefined;
+    this.store = new DurableStore(state.storage);
     this.handler = createOsDeviceAuthorityHandler({
-      store: new DurableStore(state.storage),
+      store: this.store,
       installControlPlaneRepository,
       installDiagnosticBundleStore,
       installTelemetryObserver,
@@ -56,6 +60,13 @@ export class OsDeviceGrantDurableObject {
       approvalAssertionSecret: env.OS_DEVICE_AUTH_ASSERTION_SECRET,
       googleOAuthClientId: env.GOOGLE_OAUTH_CLIENT_ID,
       googleOAuthClientSecret: env.GOOGLE_OAUTH_CLIENT_SECRET,
+      googleWorkspaceOAuthClientId: env.GOOGLE_WORKSPACE_OAUTH_CLIENT_ID,
+      googleWorkspaceOAuthClientSecret: env.GOOGLE_WORKSPACE_OAUTH_CLIENT_SECRET,
+      githubAppId: env.GITHUB_APP_ID,
+      githubAppSlug: env.GITHUB_APP_SLUG,
+      githubAppPrivateKey: env.GITHUB_APP_PRIVATE_KEY,
+      githubAppClientId: env.GITHUB_APP_CLIENT_ID,
+      githubAppClientSecret: env.GITHUB_APP_CLIENT_SECRET,
       workspaceRouteRegistry: env.WORKSPACE_ROUTE_REGISTRY,
       workspaceConnectorProvisioner: createWorkspaceConnectorProvisionerFromEnv(
         env,
@@ -63,15 +74,30 @@ export class OsDeviceGrantDurableObject {
       ),
       workspaceEdgeInternalSigningSecret:
         env.WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET,
+      operatorEnrollmentResetSecret: env.OS_ENROLLMENT_RESET_SECRET,
       operationalLogger: env.OS_DEVICE_AUTH_LOGGER,
       managedCloudProvisionerSecret: env.OS_MANAGED_CLOUD_PROVISIONER_SECRET,
       managedCloudEnrollmentSecret: env.OS_MANAGED_CLOUD_ENROLLMENT_SECRET,
       stripeSecretKey: env.OS_STRIPE_SECRET_KEY,
       stripeWebhookSecret: env.OS_STRIPE_WEBHOOK_SECRET,
       stripeApiBaseUrl: env.OS_STRIPE_API_BASE_URL,
+      stripeSyntheticSecretKey: env.OS_STRIPE_SYNTHETIC_SECRET_KEY,
+      stripeSyntheticWebhookSecret: env.OS_STRIPE_SYNTHETIC_WEBHOOK_SECRET,
+      stripeSyntheticAccountIds: env.OS_STRIPE_SYNTHETIC_ACCOUNT_IDS,
+      stripeSyntheticWorkspaceIds: env.OS_STRIPE_SYNTHETIC_WORKSPACE_IDS,
+      checkoutObservability:
+        env.POSTHOG_API_KEY?.trim() || env.SENTRY_DSN?.trim()
+          ? createCheckoutObservability({
+              posthogApiKey: env.POSTHOG_API_KEY,
+              posthogHost: env.POSTHOG_HOST,
+              sentryDsn: env.SENTRY_DSN,
+              fetchImpl: (url, init) => globalThis.fetch(url, init),
+            })
+          : undefined,
       managedCloudPricing: managedCloudPricingFromJson({
         policyJson: env.OS_MANAGED_CLOUD_PRICING_POLICY_JSON,
         rateCardsJson: env.OS_MANAGED_CLOUD_RATE_CARDS_JSON,
+        fallback: createDefaultManagedCloudPricingRuntime(),
       }),
       defaultSiteSnapshot: {
         key:
@@ -86,6 +112,10 @@ export class OsDeviceGrantDurableObject {
 
   fetch(request: Request): Promise<Response> {
     return this.handler(request);
+  }
+
+  alarm(): Promise<void> {
+    return this.store.cleanupExpiredGitHubSourceControlInstallStates(Date.now());
   }
 }
 

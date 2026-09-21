@@ -1,0 +1,20 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/align-rolling-reload-fixture-with-supervisor-capability",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2247,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2247",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2247",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2247/align-rolling-reload-fixture-with-supervisor-capability",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2247",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2247/align-rolling-reload-fixture-with-supervisor-capability",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-align-rolling-reload-fixture-with-supervisor-capability",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_78445ee03dd6",
+  "tmuxSession": "opensaas-os-align-rolling-reload-fixture-with-supervisor-cap-78445ee0",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-align-rolling-reload-fixture-with-supervisor-capability/.task/os/align-rolling-reload-fixture-with-supervisor-capability/session.json",
+  "createdAt": "2026-08-28T23:02:32.140Z"
+}

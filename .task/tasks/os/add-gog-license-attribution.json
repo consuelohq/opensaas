@@ -1,0 +1,20 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-gog-license-attribution",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2206,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2206",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2206",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2206/add-gog-license-attribution",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2206",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2206/add-gog-license-attribution",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-add-gog-license-attribution",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_8cca4cebc6de",
+  "tmuxSession": "opensaas-os-add-gog-license-attribution-8cca4ceb",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-add-gog-license-attribution/.task/os/add-gog-license-attribution/session.json",
+  "createdAt": "2026-08-26T05:41:52.697Z"
+}

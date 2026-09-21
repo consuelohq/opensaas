@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_7012c71e6a94",
+  "tmuxSession": "opensaas-os-close-final-codex-stable-findings-7012c71e",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/close-final-codex-stable-findings",
+  "branch": "task/os/close-final-codex-stable-findings",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-close-final-codex-stable-findings",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-close-final-codex-stable-findings",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2216,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2216",
+  "createdAt": "2026-08-26T14:51:23.543Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-close-final-codex-stable-findings/.task/os/close-final-codex-stable-findings/session.json"
+}

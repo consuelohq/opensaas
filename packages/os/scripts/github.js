@@ -2,6 +2,7 @@
 
 const { execFileSync } = require('child_process');
 const { DEFAULT_REPO, collectPrReview, createPrReviewJson } = require('./lib/pr-review-collector');
+const { resolveGitHubCliPath } = require('./lib/github-cli.ts');
 
 const PRESET_FIELDS = {
   summary: ['number', 'title', 'url', 'headRefName', 'baseRefName', 'state'],
@@ -91,7 +92,7 @@ function requirePr(args) {
 function gh(args, options = {}) {
   const command = ['gh', ...args];
   if (options.dryRun) return { command, stdout: '', data: null };
-  const stdout = execFileSync('gh', args, { encoding: 'utf8', maxBuffer: 20 * 1024 * 1024 }).trim();
+  const stdout = execFileSync(resolveGitHubCliPath(), args, { encoding: 'utf8', maxBuffer: 20 * 1024 * 1024 }).trim();
   return { command, stdout, data: parseMaybeJson(stdout) };
 }
 

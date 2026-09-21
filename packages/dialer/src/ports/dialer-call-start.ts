@@ -1,6 +1,10 @@
 import { Context, type Effect } from 'effect';
 
 import type { DialerApplicationError } from '../errors/dialer-errors.js';
+import type {
+  PredictiveDecisionContext,
+  PredictiveSourceContext,
+} from '../types.js';
 
 export type DialerCallSource = 'direct' | 'queue';
 export type DialerCallSelectionStrategy = 'single' | 'predictive';
@@ -15,6 +19,10 @@ export type StartDialerCallInput = {
   targetPhones?: string[] | null;
   contactId?: string | null;
   contactIds?: string[] | null;
+  targetContexts?: Array<{
+    contactId: string;
+    context: PredictiveSourceContext;
+  }> | null;
   queueId?: string | null;
   callerIdNumber?: string | null;
   preferLocalPresence?: boolean | null;
@@ -55,6 +63,9 @@ export type CallableTarget = {
   contactId: string;
   phone: string;
   queueItemId?: string;
+  sourceContext?: PredictiveSourceContext;
+  predictiveDecisionId?: string;
+  decisionContext?: PredictiveDecisionContext;
 };
 
 export type DialerCallContext = {
@@ -73,6 +84,7 @@ export type DialerTargetRepositoryService = {
     input: DialerCallContext & {
       queueId: string;
       requestedFanout: number;
+      preferLocalPresence?: boolean;
       fallbackPhonesByContactId: ReadonlyMap<string, string>;
     },
   ) => Effect.Effect<CallableTarget[], DialerApplicationError>;

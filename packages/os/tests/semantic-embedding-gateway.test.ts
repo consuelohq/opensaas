@@ -40,8 +40,15 @@ type GatewayModule = {
   createGatewayEmbeddingAudit: (payload: GatewayPayload) => GatewayAudit;
   requestGatewayEmbeddings: (
     texts: string[],
-    options?: { kind?: string },
+    options?: { kind?: string; timeoutMs?: number },
     runtime?: { config?: EmbeddingConfig; fetchImpl?: typeof fetch; installId?: string; repoHash?: string },
+  ) => Promise<Float32Array[]>;
+};
+
+type EmbedderModule = {
+  embedTexts: (
+    texts: string[],
+    options?: { kind?: string; provider?: string; timeoutMs?: number },
   ) => Promise<Float32Array[]>;
 };
 
@@ -163,6 +170,143 @@ describe('OS semantic embedding gateway default', () => {
     expect(body.items[0]?.text).toBe('code chunk');
     expect(vectors[0]).toBeInstanceOf(Float32Array);
     expect(vectors[0]).toHaveLength(4);
+  });
+
+  it('should use shorter query deadlines when comparing query embeddings with document hydration', async () => {
+    const gateway = loadIndexModule<GatewayModule>('embedding-gateway.js');
+    const configModule = loadIndexModule<EmbeddingConfigModule>('embedding-config.js');
+    const config = configModule.getEmbeddingConfig({ dimensions: 4 });
+    const observedTimeouts: number[] = [];
+    const timeoutSpy = vi.spyOn(AbortSignal, 'timeout').mockImplementation((timeoutMs: number) => {
+      observedTimeouts.push(timeoutMs);
+      return new AbortController().signal;
+    });
+    const fetchImpl = vi.fn(async () => new Response(JSON.stringify({ data: [{ embedding: makeVector(4) }] }), {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    }));
+
+    try {
+      await gateway.requestGatewayEmbeddings(['query text'], { kind: 'query' }, { config, fetchImpl });
+      await gateway.requestGatewayEmbeddings(['document text'], { kind: 'document' }, { config, fetchImpl });
+    } finally {
+      timeoutSpy.mockRestore();
+    }
+
+    expect(observedTimeouts).toEqual([4_000, 8_000]);
+  });
+
+  it('should honor a smaller request deadline when the hydration budget is nearly exhausted', async () => {
+    const gateway = loadIndexModule<GatewayModule>('embedding-gateway.js');
+    const configModule = loadIndexModule<EmbeddingConfigModule>('embedding-config.js');
+    const config = configModule.getEmbeddingConfig({ dimensions: 4 });
+    const observedTimeouts: number[] = [];
+    const timeoutSpy = vi.spyOn(AbortSignal, 'timeout').mockImplementation((timeoutMs: number) => {
+      observedTimeouts.push(timeoutMs);
+      return new AbortController().signal;
+    });
+    const fetchImpl = vi.fn(async () => new Response(JSON.stringify({ data: [{ embedding: makeVector(4) }] }), {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    }));
+
+    try {
+      await gateway.requestGatewayEmbeddings(
+        ['document text'],
+        { kind: 'document', timeoutMs: 1_250 },
+        { config, fetchImpl },
+      );
+    } finally {
+      timeoutSpy.mockRestore();
+    }
+
+    expect(observedTimeouts).toEqual([1_250]);
+  });
+
+  it('should mark only unavailable gateway failures when classifying semantic availability', async () => {
+    const gateway = loadIndexModule<GatewayModule>('embedding-gateway.js');
+    const configModule = loadIndexModule<EmbeddingConfigModule>('embedding-config.js');
+    const config = configModule.getEmbeddingConfig({ dimensions: 4 });
+
+    let localValidationError: unknown;
+    try {
+      await gateway.requestGatewayEmbeddings(['x'.repeat(4_001)], { kind: 'document' }, {
+        config,
+        fetchImpl: vi.fn(),
+      });
+    } catch (error: unknown) {
+      localValidationError = error;
+    }
+    expect(localValidationError).toBeInstanceOf(Error);
+    expect((localValidationError as Error & { semanticUnavailable?: boolean }).semanticUnavailable).not.toBe(true);
+
+    let providerError: unknown;
+    try {
+      await gateway.requestGatewayEmbeddings(['document text'], { kind: 'document' }, {
+        config,
+        fetchImpl: vi.fn(async () => new Response('provider timeout', { status: 503 })),
+      });
+    } catch (error: unknown) {
+      providerError = error;
+    }
+    expect(providerError).toBeInstanceOf(Error);
+    expect((providerError as Error & { semanticUnavailable?: boolean }).semanticUnavailable).toBe(true);
+  });
+
+  it('should mark gateway body-read failures unavailable when response headers already succeeded', async () => {
+    const gateway = loadIndexModule<GatewayModule>('embedding-gateway.js');
+    const configModule = loadIndexModule<EmbeddingConfigModule>('embedding-config.js');
+    const config = configModule.getEmbeddingConfig({ dimensions: 4 });
+    const bodyFailure = new DOMException('response body deadline reached', 'TimeoutError');
+    const fetchImpl = vi.fn(async () => ({
+      ok: true,
+      status: 200,
+      json: async () => {
+        throw bodyFailure;
+      },
+    }) as Response);
+
+    let observedError: unknown;
+    try {
+      await gateway.requestGatewayEmbeddings(['document text'], { kind: 'document' }, { config, fetchImpl });
+    } catch (error: unknown) {
+      observedError = error;
+    }
+
+    expect(observedError).toBeInstanceOf(Error);
+    expect((observedError as Error & { semanticUnavailable?: boolean }).semanticUnavailable).toBe(true);
+    expect((observedError as Error).cause).toBe(bodyFailure);
+  });
+
+  it('should preserve semantic unavailability when direct OpenRouter transport times out', async () => {
+    const originalFetch = globalThis.fetch;
+    const originalApiKey = process.env.CONSUELO_OPENROUTER_API_KEY;
+    const transportFailure = new DOMException('provider deadline reached', 'TimeoutError');
+    globalThis.fetch = vi.fn(async () => {
+      throw transportFailure;
+    }) as typeof fetch;
+    process.env.CONSUELO_OPENROUTER_API_KEY = 'test-openrouter-key';
+
+    try {
+      const embedder = loadIndexModule<EmbedderModule>('embedder.js');
+      let observedError: unknown;
+      try {
+        await embedder.embedTexts(['document text'], {
+          kind: 'document',
+          provider: 'openrouter',
+          timeoutMs: 1_000,
+        });
+      } catch (error: unknown) {
+        observedError = error;
+      }
+
+      expect(observedError).toBeInstanceOf(Error);
+      expect((observedError as Error & { semanticUnavailable?: boolean }).semanticUnavailable).toBe(true);
+    } finally {
+      globalThis.fetch = originalFetch;
+      if (originalApiKey === undefined) delete process.env.CONSUELO_OPENROUTER_API_KEY;
+      else process.env.CONSUELO_OPENROUTER_API_KEY = originalApiKey;
+    }
   });
 
   it('keeps local embeddings as explicit opt-in mode', () => {

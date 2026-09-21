@@ -1,0 +1,120 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/dialer-algorithm/d1-reconstruct-mature-dialer-model",
+  "base": "origin/task/dialer-algorithm/d1-reconstruct-mature-dialer-model",
+  "headSha": "057076e26d0813a3fbfaaee933f221fb0747f6a4",
+  "changeHash": "2eb8ee2932bf4a79cf944839bce843d562eb6c1a2f3a543c31bcdeaa3c3ddb15",
+  "changedFiles": [
+    "packages/dialer/MODEL.md",
+    "packages/dialer/src/index.ts",
+    "packages/dialer/src/services/call-timing-model.service.ts",
+    "packages/dialer/src/services/index.ts",
+    "packages/dialer/src/services/predictive-selection-model.contract.spec.ts",
+    "packages/dialer/src/services/predictive-selection-model.ts",
+    "packages/dialer/src/services/retry-decision-model.contract.spec.ts",
+    "packages/dialer/src/services/retry-decision-model.ts",
+    "packages/dialer/src/services/stopping-model.spec.ts",
+    "packages/dialer/src/services/stopping-model.ts",
+    "packages/dialer/src/types.ts"
+  ],
+  "verifiedAt": "2026-08-15T04:11:51.802Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/dialer-algorithm/d1-reconstruct-mature-dialer-model/current.json",
+        ".task/dialer-algorithm/d1-reconstruct-mature-dialer-model/evidence-log.json",
+        ".task/dialer-algorithm/d1-reconstruct-mature-dialer-model/explore-state.json",
+        ".task/dialer-algorithm/d1-reconstruct-mature-dialer-model/read-log.json",
+        ".task/dialer-algorithm/d1-reconstruct-mature-dialer-model/session.json",
+        ".task/dialer-algorithm/d1-reconstruct-mature-dialer-model/workpad.md",
+        ".task/tasks/dialer-algorithm/d1-reconstruct-mature-dialer-model.json",
+        "packages/dialer/MODEL.md",
+        "packages/dialer/src/index.ts",
+        "packages/dialer/src/services/call-timing-model.service.ts",
+        "packages/dialer/src/services/index.ts",
+        "packages/dialer/src/services/predictive-selection-model.contract.spec.ts",
+        "packages/dialer/src/services/predictive-selection-model.ts",
+        "packages/dialer/src/services/retry-decision-model.contract.spec.ts",
+        "packages/dialer/src/services/retry-decision-model.ts",
+        "packages/dialer/src/services/stopping-model.spec.ts",
+        "packages/dialer/src/services/stopping-model.ts",
+        "packages/dialer/src/types.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "dialer-package",
+          "critical": true,
+          "reason": "Dialer changes are call-path critical and must run package specs.",
+          "matchedFiles": [
+            "packages/dialer/MODEL.md",
+            "packages/dialer/src/index.ts",
+            "packages/dialer/src/services/call-timing-model.service.ts",
+            "packages/dialer/src/services/index.ts",
+            "packages/dialer/src/services/predictive-selection-model.contract.spec.ts",
+            "packages/dialer/src/services/predictive-selection-model.ts",
+            "packages/dialer/src/services/retry-decision-model.contract.spec.ts",
+            "packages/dialer/src/services/retry-decision-model.ts",
+            "packages/dialer/src/services/stopping-model.spec.ts",
+            "packages/dialer/src/services/stopping-model.ts",
+            "packages/dialer/src/types.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "dialer specs",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer/src"
+          ],
+          "ruleId": "dialer-package",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "dialer specs",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer/src"
+          ],
+          "ruleId": "dialer-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1811,
+          "outputTail": "pling > should merge loaded posterior values instead of using defaults [0.05ms]\n(pass) ParallelStrategyResolver > thompson sampling > should sample all profiles exactly once when no explicit profileId is set [0.04ms]\n(pass) ParallelStrategyResolver > fallback behavior > should fallback to balanced when posterior loading fails without throwing [3.22ms]\n(pass) ParallelStrategyResolver > profile lookup APIs > should return profile by id [0.02ms]\n(pass) ParallelStrategyResolver > profile lookup APIs > should return all profiles [0.02ms]\n\npackages/dialer/src/services/whittle-index.spec.ts:\n(pass) WhittleIndexService > should increase index as answer rate increases [0.03ms]\n(pass) WhittleIndexService > should increase urgency bonus as callable window closes [0.01ms]\n(pass) WhittleIndexService > should increase exploration bonus when segment sample size is low [0.01ms]\n(pass) WhittleIndexService > should reduce index as cost per attempt increases [0.01ms]\n(pass) WhittleIndexService > should rank candidates by index descending and position ascending for ties [0.06ms]\n(pass) WhittleIndexService > should apply max urgency bonus when zero hours remain in window\n(pass) WhittleIndexService > should produce near zero exploration bonus with very high sample size [0.01ms]\n(pass) WhittleIndexService > should set index to negative cost when all positive components are zero\n(pass) WhittleIndexService > should allow negative index values when cost exceeds reward\n\npackages/dialer/src/services/call-timing-model.spec.ts:\n(pass) CallTimingModel > should return null when segment has insufficient sample size [0.12ms]\n(pass) CallTimingModel > should return optimal retry time when enough observations exist [0.04ms]\n\npackages/dialer/src/services/retry-decision-model.contract.spec.ts:\n(pass) mature retry decision contract > separates whether to retry from the learned preferred timing window [0.34ms]\n(pass) mature retry decision contract > keeps retrying within the cap when stopping evidence is missing [0.07ms]\n(pass) mature retry decision contract > stops on answered calls, the attempt cap, or observed negative expected value [0.08ms]\n\npackages/dialer/src/services/parallel-lifecycle.contract.spec.ts:\n(pass) parallel dial lifecycle contract > keeps customer legs muted without provider hold music until the agent starts the conference [1.02ms]\n(pass) parallel dial lifecycle contract > retains a callback that arrives while later legs are still being created [2.16ms]\n(pass) parallel dial lifecycle contract > keeps exactly one durable winner under simultaneous human callbacks [3.98ms]\n(pass) parallel dial lifecycle contract > claims telemetry emission exactly once under concurrent callbacks [3.62ms]\n(pass) parallel dial lifecycle contract > records failed loser cleanup and clears it after reconciliation succeeds [2.68ms]\n(pass) parallel dial lifecycle contract > does not persist a false winner-unmute failure before the participant enters [0.91ms]\n(pass) parallel dial lifecycle contract > records failed winner unmute and clears it after reconciliation succeeds [1.09ms]\n(pass) parallel dial lifecycle contract > completes the group when the selected winner hangs up [2.26ms]\n(pass) parallel dial lifecycle contract > persists workspace ownership and rejects cross-workspace access [3.91ms]\n(pass) parallel dial lifecycle contract > ignores an answered callback after the same leg is terminal [3.57ms]\n\npackages/dialer/src/infrastructure/redis/redis-parallel-store.test.ts:\n(pass) RedisParallelStore > registers calls and reverse mappings atomically and cleans the full group [1.66ms]\n(pass) RedisParallelStore > claims one winner and one telemetry emission and serializes group operations [4.68ms]\n(pass) RedisParallelStore > renews an owned group lock while a long operation is running [180.87ms]\n(pass) RedisParallelStore > deletes known group keys when the persisted group JSON is malformed [0.43ms]\n\n 181 pass\n 0 fail\n 387 expect() calls\nRan 181 tests across 18 files. [1.79s]\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

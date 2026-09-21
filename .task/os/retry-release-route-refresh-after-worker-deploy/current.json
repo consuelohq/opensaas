@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/retry-release-route-refresh-after-worker-deploy",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2056,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2056",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2056",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2056/retry-release-route-refresh-after-worker-deploy",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2056",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2056/retry-release-route-refresh-after-worker-deploy",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-retry-release-route-refresh-after-worker-deploy",
+  "taskSession": "tsk_0196193d2b0b",
+  "tmuxSession": "opensaas-os-retry-release-route-refresh-after-worker-deploy-0196193d",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-retry-release-route-refresh-after-worker-deploy/.task/os/retry-release-route-refresh-after-worker-deploy/session.json",
+  "createdAt": "2026-08-15T08:50:36.343Z"
+}

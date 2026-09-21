@@ -32,7 +32,7 @@ export const toolSchemas = [
         "deterministic": false,
         "safeToRetry": false
       },
-      "defaultTimeout": 300000,
+      "defaultTimeout": 900000,
       "inputSchema": "SubagentInput",
       "outputSchema": "SubagentOutput",
       "exampleInput": {

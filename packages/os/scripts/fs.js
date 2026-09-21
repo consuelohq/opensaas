@@ -16,7 +16,7 @@ function out(s = '') { process.stdout.write(s + '\n'); }
 function err(s = '') { process.stderr.write(s + '\n'); process.exitCode = 1; }
 
 function readStdin() {
-  try { return fs.readFileSync('/dev/stdin', 'utf8'); } catch { return ''; }
+  try { return fs.readFileSync(0, 'utf8'); } catch { return ''; }
 }
 
 function resolve(p) { return path.resolve(process.cwd(), p); }
@@ -268,6 +268,74 @@ async function cmdSearch(argv) {
 
 // ── list ──
 
+function isMissingExecutableError(error) {
+  return Boolean(error && typeof error === 'object' && error.code === 'ENOENT');
+}
+
+function compilePortableFindPattern(patternValue) {
+  if (!patternValue) return null;
+  if (patternValue.includes('*') || patternValue.includes('?')) {
+    const escaped = patternValue
+      .replace(/[.+^${}()|[\]\\]/g, '\\$&')
+      .replace(/\*/g, '.*')
+      .replace(/\?/g, '.');
+    return new RegExp(`^${escaped}$`, 'i');
+  }
+  return new RegExp(patternValue.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+}
+
+function portableListEntries(targetPath, options = {}) {
+  const root = path.resolve(targetPath);
+  const rootStats = fs.statSync(root);
+  if (!rootStats.isDirectory()) return [targetPath];
+
+  const includeHidden = options.hidden || options.showAll;
+  const maxDepth = Math.max(1, options.depth || (options.tree ? 3 : 1));
+  const pattern = compilePortableFindPattern(options.findPattern);
+  const extension = options.ext
+    ? String(options.ext).replace(/^\./, '').toLowerCase()
+    : null;
+  const output = [];
+
+  function visit(directory, relativeDirectory, currentDepth) {
+    const entries = fs.readdirSync(directory, { withFileTypes: true })
+      .filter((entry) => includeHidden || !entry.name.startsWith('.'))
+      .sort((left, right) => left.name.localeCompare(right.name));
+
+    for (const entry of entries) {
+      const relativePath = relativeDirectory
+        ? path.join(relativeDirectory, entry.name)
+        : entry.name;
+      const isDirectory = entry.isDirectory();
+      const isFile = entry.isFile();
+      const typeAllowed = (!options.dirsOnly && !options.filesOnly)
+        || (options.dirsOnly && isDirectory)
+        || (options.filesOnly && isFile);
+      const extensionAllowed = !extension
+        || (isFile && path.extname(entry.name).slice(1).toLowerCase() === extension);
+      const patternAllowed = !pattern || pattern.test(entry.name) || pattern.test(relativePath);
+
+      if (typeAllowed && extensionAllowed && patternAllowed) {
+        const suffix = isDirectory ? path.sep : '';
+        const prefix = options.tree ? '  '.repeat(currentDepth - 1) : '';
+        output.push(`${prefix}${relativePath}${suffix}`);
+      }
+
+      if (isDirectory && currentDepth < maxDepth && (options.tree || options.findPattern || extension)) {
+        visit(path.join(directory, entry.name), relativePath, currentDepth + 1);
+      }
+    }
+  }
+
+  visit(root, '', 1);
+  return output;
+}
+
+function renderPortableList(targetPath, options) {
+  const entries = portableListEntries(targetPath, options);
+  if (entries.length > 0) process.stdout.write(`${entries.join('\n')}\n`);
+}
+
 function cmdList(argv) {
   if (argv.includes('--help') || argv.length === 0) {
     out('usage: bun run fs -- list [path] [options]');
@@ -293,7 +361,7 @@ function cmdList(argv) {
   }
 
   const args = [];
-  let path = '.';
+  let targetPath = '.';
   let mode = 'eza'; // eza or fd
   let depth = null;
   let findPattern = null;
@@ -316,7 +384,7 @@ function cmdList(argv) {
     else if (a === '--hidden') hidden = true;
     else if (a === '--git') gitStatus = true;
     else if (a === '--all') showAll = true;
-    else if (!a.startsWith('-')) path = a;
+    else if (!a.startsWith('-')) targetPath = a;
   }
 
   if (mode === 'fd' || ext) {
@@ -324,7 +392,7 @@ function cmdList(argv) {
     const cmd = ['fd'];
     if (findPattern) cmd.push(findPattern);
     else cmd.push('.'); // match everything
-    cmd.push(path);
+    cmd.push(targetPath);
     if (depth) cmd.push('--max-depth', String(depth));
     else if (!depth) cmd.push('--max-depth', '3');
     if (dirsOnly) cmd.push('--type', 'd');
@@ -335,7 +403,17 @@ function cmdList(argv) {
       const result = execFileSync(cmd[0], cmd.slice(1), { encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 });
       process.stdout.write(result);
     } catch (e) {
-      if (e.stdout) process.stdout.write(e.stdout);
+      if (isMissingExecutableError(e)) {
+        renderPortableList(targetPath, {
+          depth,
+          findPattern,
+          dirsOnly,
+          filesOnly,
+          ext,
+          hidden,
+          showAll,
+        });
+      } else if (e.stdout) process.stdout.write(e.stdout);
       else err('fd failed: ' + (e.message || ''));
     }
   } else {
@@ -352,12 +430,21 @@ function cmdList(argv) {
     if (dirsOnly) cmd.push('--only-dirs');
     if (filesOnly) cmd.push('--only-files');
     cmd.push('--git-ignore');
-    cmd.push(path);
+    cmd.push(targetPath);
     try {
       const result = execFileSync(cmd[0], cmd.slice(1), { encoding: 'utf8', maxBuffer: 10 * 1024 * 1024 });
       process.stdout.write(result);
     } catch (e) {
-      if (e.stdout) process.stdout.write(e.stdout);
+      if (isMissingExecutableError(e)) {
+        renderPortableList(targetPath, {
+          tree,
+          depth,
+          dirsOnly,
+          filesOnly,
+          hidden,
+          showAll,
+        });
+      } else if (e.stdout) process.stdout.write(e.stdout);
       else err('eza failed: ' + (e.message || ''));
     }
   }
@@ -530,17 +617,6 @@ function readPatchPayload({ patchText, patchFile }) {
   return stdinContent;
 }
 
-function assertSafePatchPath(rawPath) {
-  if (!rawPath || typeof rawPath !== 'string') throw new Error('unsafe patch path: empty path');
-  if (path.isAbsolute(rawPath)) throw new Error(`unsafe patch path: ${rawPath}`);
-  const parts = rawPath.split(/[\\/]+/).filter(Boolean);
-  if (parts.includes('..') || parts.includes('.git')) throw new Error(`unsafe patch path: ${rawPath}`);
-  const resolved = resolve(rawPath);
-  const relative = path.relative(process.cwd(), resolved);
-  if (relative.startsWith('..') || path.isAbsolute(relative)) throw new Error(`unsafe patch path: ${rawPath}`);
-  return { rawPath, resolved };
-}
-
 function parsePatchHeader(line, prefix) {
   if (!line.startsWith(prefix)) return null;
   return line.slice(prefix.length).trim();
@@ -690,7 +766,10 @@ function conflictForPatchPath(existing, incoming) {
   return `conflicting patch operations for ${incoming.rawPath} and ${existing.path}`;
 }
 
-function applyPatchOperations(operations) {
+function applyPatchOperations(operations, resolveMutationPath) {
+  if (typeof resolveMutationPath !== 'function') {
+    throw new Error('apply-patch requires a bounded mutation-path resolver');
+  }
   const plannedWrites = new Map();
   const plannedDeletes = new Map();
   const touched = [];
@@ -725,7 +804,7 @@ function applyPatchOperations(operations) {
   }
 
   for (const operation of operations) {
-    const target = assertSafePatchPath(operation.path);
+    const target = resolveMutationPath(operation.path);
     if (operation.type === 'add') {
       if (fs.existsSync(target.resolved) || plannedWrites.has(target.resolved)) throw new Error(`patch target already exists: ${operation.path}`);
       if (plannedDeletes.has(target.resolved)) throw new Error(conflictForPatchPath(plannedDeletes.get(target.resolved), target));
@@ -741,7 +820,7 @@ function applyPatchOperations(operations) {
     if (operation.type === 'update') {
       const updatedContent = applyUpdateHunks(operation.path, plannedContent(target), operation.hunks);
       if (operation.moveTo) {
-        const moveTarget = assertSafePatchPath(operation.moveTo);
+        const moveTarget = resolveMutationPath(operation.moveTo);
         if (target.resolved === moveTarget.resolved) throw new Error(`conflicting patch operations for ${operation.path} and ${operation.moveTo}`);
         if (fs.existsSync(moveTarget.resolved) || plannedWrites.has(moveTarget.resolved)) throw new Error(`patch move target already exists: ${operation.moveTo}`);
         if (plannedDeletes.has(moveTarget.resolved)) throw new Error(conflictForPatchPath(plannedDeletes.get(moveTarget.resolved), moveTarget));
@@ -792,7 +871,7 @@ function applyPlannedPatchMutations(plan) {
   }
 }
 
-function cmdApplyPatch(argv) {
+async function cmdApplyPatch(argv) {
   if (argv.includes('--help')) { applyPatchHelp(); return; }
 
   const dryRun = argv.includes('--dry-run');
@@ -810,8 +889,12 @@ function cmdApplyPatch(argv) {
   if (payload === null) return;
 
   try {
+    const { resolveBoundedMutationPath } = await import('./lib/fs/mutation-path.ts');
     const operations = parseApplyPatch(payload);
-    const plan = applyPatchOperations(operations);
+    const plan = applyPatchOperations(
+      operations,
+      (rawPath) => resolveBoundedMutationPath(rawPath, { root: process.cwd() }),
+    );
 
     out(`── apply-patch ──`);
     out(`operations: ${operations.length}`);
@@ -879,7 +962,7 @@ function cmdHttp(argv) {
 
 // ── trash ──
 
-function cmdTrash(argv) {
+async function cmdTrash(argv) {
   if (argv.includes('--help') || argv.length === 0) {
     out('usage: bun run fs -- trash <path> [path...]');
     out('');
@@ -891,10 +974,15 @@ function cmdTrash(argv) {
     out('  trash a.ts b.ts c.ts');
     return;
   }
+  const { resolveBoundedMutationPath } = await import('./lib/fs/mutation-path.ts');
   for (const target of argv) {
     if (target.startsWith('-')) continue;
     try {
-      execFileSync('trash', [target], { encoding: 'utf8' });
+      const bounded = resolveBoundedMutationPath(target, {
+        root: process.cwd(),
+        mustExist: true,
+      });
+      execFileSync('trash', [bounded.resolved], { encoding: 'utf8' });
       out(`trashed: ${target}`);
     } catch (e) {
       err(`failed to trash ${target}: ${e.message}`);
@@ -918,9 +1006,9 @@ async function main() {
     case 'list': cmdList(rest); break;
     case 'write': await cmdWrite(rest); break;
     case 'patch': cmdPatch(rest); break;
-    case 'apply-patch': cmdApplyPatch(rest); break;
+    case 'apply-patch': await cmdApplyPatch(rest); break;
     case 'http': cmdHttp(rest); break;
-    case 'trash': cmdTrash(rest); break;
+    case 'trash': await cmdTrash(rest); break;
     default:
       err(`unknown command: ${command}`);
       mainHelp();

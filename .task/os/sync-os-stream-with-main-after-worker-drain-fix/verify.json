@@ -1,0 +1,46 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/sync-os-stream-with-main-after-worker-drain-fix",
+  "base": "origin/stream/os",
+  "headSha": "9ecfb19f33ad0ce85744593d8048c350f25c1216",
+  "changeHash": "46853225e9a351576376383a76312ee99a75837994fc434f6f61658e84f171f7",
+  "changedFiles": [],
+  "verifiedAt": "2026-08-16T03:02:02.681Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/sync-os-stream-with-main-after-worker-drain-fix/current.json",
+        ".task/os/sync-os-stream-with-main-after-worker-drain-fix/session.json",
+        ".task/os/sync-os-stream-with-main-after-worker-drain-fix/workpad.md",
+        ".task/tasks/os/sync-os-stream-with-main-after-worker-drain-fix.json"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "pass",
+      "zeroSuiteReason": "changed files are docs or task metadata",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

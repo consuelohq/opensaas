@@ -27,6 +27,18 @@ describe('trace history search query', () => {
     expect(compiled.values.some((value) => String(value).startsWith('2026-08-14'))).toBe(true);
   });
 
+  it('treats session search as the existing branch facet plus work-session identity and path', () => {
+    expect(parseTraceSearchTerms('session:raycast')).toEqual([
+      { field: 'branch', value: 'raycast' },
+    ]);
+    const compiled = compileTraceHistorySearch('session:raycast');
+    expect(compiled.sql).toContain('branch');
+    expect(compiled.sql).toContain('task_session');
+    expect(compiled.sql).toContain('work_session');
+    expect(compiled.sql).toContain('work_path');
+    expect(compiled.values).toEqual(['%raycast%', '%raycast%', '%raycast%', '%raycast%']);
+  });
+
   it('keeps free-text full-history search on non-payload metadata columns', () => {
     const compiled = compileTraceHistorySearch('trc_history_3');
     expect(compiled.sql).toContain('trace_id');

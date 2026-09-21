@@ -1,6 +1,10 @@
 export const OS_TOOLS_SCOPE = 'os:tools';
 export const MCP_CALL_SCOPE = 'mcp:call';
 
+export const CENTRAL_MCP_EXECUTION_FACADE_TOOLS = new Set([
+  'security.scan',
+]);
+
 export const CENTRAL_MCP_READ_ONLY_FACADE_TOOLS = new Set([
   'artifacts.check',
   'artifacts.getDesignSystem',
@@ -30,6 +34,7 @@ export const CENTRAL_MCP_READ_ONLY_FACADE_TOOLS = new Set([
   'fs.search',
   'git.diff',
   'git.status',
+  'lifecycle.status',
   'linear.issue',
   'linear.labels',
   'linear.projects',
@@ -44,6 +49,7 @@ export const CENTRAL_MCP_READ_ONLY_FACADE_TOOLS = new Set([
   'media.probe',
   'media.qa',
   'media.timeline.validate',
+  'monitor.errors',
   'prReview',
   'review.run',
   'sentry.config',
@@ -86,6 +92,9 @@ export function resolveCentralMcpFacadeScope(
   const normalized = toolName.trim();
   const actionCategory = resolveToolActionCategory(normalized, toolInput);
   if (actionCategory) return 'tool:' + normalized + ':' + actionCategory;
+  if (CENTRAL_MCP_EXECUTION_FACADE_TOOLS.has(normalized)) {
+    return MCP_CALL_SCOPE;
+  }
 
   return CENTRAL_MCP_READ_ONLY_FACADE_TOOLS.has(normalized)
     ? 'tool:' + normalized + ':read'

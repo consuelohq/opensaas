@@ -3,9 +3,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 
-import { refreshDiffCockpitCache } from '../packages/workspace/hooks/diff-cockpit/cache-refresh';
-
-export type CronJobKind = 'diff-cockpit' | 'sites-launcher';
+export type CronJobKind = 'sites-launcher';
 
 export type CronJobManifest = {
   schema: 'consuelo.cron.v1';
@@ -14,26 +12,9 @@ export type CronJobManifest = {
   enabled: boolean;
   intervalMs: number;
   envFile?: string;
-  repo?: string;
-  prLimit?: number;
   origin?: string;
-  codePaths?: string[];
-  warmPullLimit?: number;
-  warmIntervalMs?: number;
   refreshCommand?: string[];
   expectedCacheControl?: string;
-};
-
-export type DiffCockpitPullFingerprint = {
-  number: number;
-  title: string;
-  state: string;
-  draft: boolean;
-  updatedAt: string;
-  headRef: string;
-  baseRef: string;
-  headSha: string;
-  author: string;
 };
 
 export type CronJobState = {
@@ -55,7 +36,7 @@ export type CronJobStateEntry = {
   lastCheckedAt?: string;
   lastChangedAt?: string;
   lastFingerprint?: string;
-  lastPayload?: DiffCockpitPullFingerprint[] | SitesLauncherSnapshot;
+  lastPayload?: SitesLauncherSnapshot;
   lastStatus?: 'changed' | 'unchanged' | 'skipped' | 'error';
   lastError?: string;
   lastCacheRefreshAt?: string;
@@ -85,13 +66,9 @@ type RunOnceOptions = {
 
 const DEFAULT_ROOT = 'cron_jobs';
 const DEFAULT_INTERVAL_MS = 30_000;
-const DEFAULT_REPO = 'consuelohq/opensaas';
-const DEFAULT_ORIGIN = 'https://diffs.consuelohq.com';
 const DEFAULT_SITES_ORIGIN = 'https://sites.consuelohq.com';
 const DEFAULT_SITES_REFRESH_COMMAND = ['bun', 'packages/os/scripts/os.ts', 'sites', 'refresh', '--json'];
 const DEFAULT_SITES_EXPECTED_CACHE_CONTROL = 'public, max-age=60, s-maxage=86400';
-const DEFAULT_WARM_PULL_LIMIT = 20;
-const DEFAULT_WARM_INTERVAL_MS = 5 * 60_000;
 
 export function statePath(): string {
   return path.join(process.env.HOME || process.cwd(), '.consuelo', 'state', 'cron_jobs.json');
@@ -105,7 +82,6 @@ async function main(): Promise<void> {
   try {
     const [command = 'help', ...args] = process.argv.slice(2);
     if (command === 'help' || command === '--help' || command === '-h') return writeLine(usage());
-    if (command === 'provision') return provisionCommand(args);
     if (command === 'list') return listCommand(args);
     if (command === 'run-once') return runOnceCommand(args);
     if (command === 'watch') return watchCommand(args);
@@ -128,29 +104,6 @@ export function sanitizeName(input: string): string {
 
 export function launchAgentLabel(name: string): string {
   return `com.consuelo.cronjobs.${sanitizeName(name)}`;
-}
-
-async function provisionCommand(args: string[]): Promise<void> {
-  const name = sanitizeName(args[0] || '');
-  const root = flag(args, '--root') || DEFAULT_ROOT;
-  const dir = path.join(root, name.replace(/-/g, '_'));
-  await mkdir(dir, { recursive: true });
-  const manifest: CronJobManifest = {
-    schema: 'consuelo.cron.v1',
-    name,
-    kind: 'diff-cockpit',
-    enabled: true,
-    intervalMs: positiveNumber(flag(args, '--interval-ms'), DEFAULT_INTERVAL_MS),
-    envFile: '.env',
-    repo: flag(args, '--repo') || DEFAULT_REPO,
-    prLimit: positiveNumber(flag(args, '--pr-limit'), 50),
-    origin: flag(args, '--origin') || DEFAULT_ORIGIN,
-    codePaths: ['packages'],
-  };
-  await writeJson(path.join(dir, 'cron.json'), manifest);
-  await writeFile(path.join(dir, '.env.example'), envExample(), 'utf8');
-  await writeFile(path.join(dir, 'README.md'), jobReadme(name), 'utf8');
-  writeLine(`provisioned ${name} at ${dir}`);
 }
 
 async function listCommand(args: string[]): Promise<void> {
@@ -259,13 +212,13 @@ export async function runOnce(options: RunOnceOptions = {}): Promise<{
   changed: number;
   skipped: number;
   errors: number;
-  jobs: Array<{ name: string; status: string; changedPulls?: number[]; error?: string }>;
+  jobs: Array<{ name: string; status: string; error?: string }>;
 }> {
   const stateFile = options.statePath || statePath();
   const logFile = options.logPath || logPath();
   const state = readState(stateFile);
   const jobs = (await discoverJobs(options.root || DEFAULT_ROOT)).filter((job) => !options.only || job.manifest.name === options.only);
-  const result = { checked: 0, changed: 0, skipped: 0, errors: 0, jobs: [] as Array<{ name: string; status: string; changedPulls?: number[]; error?: string }> };
+  const result = { checked: 0, changed: 0, skipped: 0, errors: 0, jobs: [] as Array<{ name: string; status: string; error?: string }> };
 
   for (const job of jobs) {
     const name = job.manifest.name;
@@ -277,66 +230,21 @@ export async function runOnce(options: RunOnceOptions = {}): Promise<{
 
     try {
       const env = { ...process.env, ...readEnvFile(path.join(job.dir, job.manifest.envFile || '.env')) };
-
-      if (job.manifest.kind === 'sites-launcher') {
-        const now = options.now || new Date();
-        const command = job.manifest.refreshCommand || parseCommand(env.SITES_LAUNCHER_REFRESH_COMMAND) || DEFAULT_SITES_REFRESH_COMMAND;
-        const origin = job.manifest.origin || env.SITES_LAUNCHER_ORIGIN || DEFAULT_SITES_ORIGIN;
-        const expectedCacheControl = job.manifest.expectedCacheControl || env.SITES_LAUNCHER_EXPECTED_CACHE_CONTROL || DEFAULT_SITES_EXPECTED_CACHE_CONTROL;
-        if (!options.dryRun) {
-          await refreshSitesLauncher({ command, runner: options.commandRunner });
-        }
-        const current = await loadSitesLauncherSnapshot({ origin, expectedCacheControl, fetcher: options.fetcher || fetch });
-        const previous = state.jobs[name]?.lastPayload || null;
-        const previousFingerprint = stableFingerprint(previous);
-        const currentFingerprint = stableFingerprint(current);
-        const changed = previousFingerprint !== currentFingerprint;
-        result.checked += 1;
-        if (changed) result.changed += 1;
-        result.jobs.push({ name, status: changed ? 'changed' : 'unchanged' });
-        state.jobs[name] = {
-          lastCheckedAt: now.toISOString(),
-          lastChangedAt: changed ? now.toISOString() : state.jobs[name]?.lastChangedAt,
-          lastFingerprint: currentFingerprint,
-          lastPayload: current,
-          lastStatus: changed ? 'changed' : 'unchanged',
-          lastError: '',
-          lastCacheRefreshAt: !options.dryRun ? now.toISOString() : state.jobs[name]?.lastCacheRefreshAt,
-        };
-        await appendLog(logFile, name + ': ' + (options.dryRun ? 'checked' : 'refreshed') + ' status=' + current.status + ' cache-control=' + current.cacheControl + (current.cfCacheStatus ? ' cf-cache-status=' + current.cfCacheStatus : '') + (options.dryRun ? ' dry-run' : ''));
-        continue;
+      const now = options.now || new Date();
+      const command = job.manifest.refreshCommand || parseCommand(env.SITES_LAUNCHER_REFRESH_COMMAND) || DEFAULT_SITES_REFRESH_COMMAND;
+      const origin = job.manifest.origin || env.SITES_LAUNCHER_ORIGIN || DEFAULT_SITES_ORIGIN;
+      const expectedCacheControl = job.manifest.expectedCacheControl || env.SITES_LAUNCHER_EXPECTED_CACHE_CONTROL || DEFAULT_SITES_EXPECTED_CACHE_CONTROL;
+      if (!options.dryRun) {
+        await refreshSitesLauncher({ command, runner: options.commandRunner });
       }
-
-      const previous = Array.isArray(state.jobs[name]?.lastPayload) ? state.jobs[name]?.lastPayload as DiffCockpitPullFingerprint[] : [];
-      const current = await loadDiffCockpitFingerprint({
-        repo: job.manifest.repo || env.DIFF_COCKPIT_REPO || DEFAULT_REPO,
-        prLimit: job.manifest.prLimit || positiveNumber(env.DIFF_COCKPIT_PR_LIMIT, 50),
-        githubToken: env.GITHUB_TOKEN,
-        fetcher: options.fetcher || fetch,
-      });
+      const current = await loadSitesLauncherSnapshot({ origin, expectedCacheControl, fetcher: options.fetcher || fetch });
+      const previous = state.jobs[name]?.lastPayload || null;
       const previousFingerprint = stableFingerprint(previous);
       const currentFingerprint = stableFingerprint(current);
       const changed = previousFingerprint !== currentFingerprint;
-      const changedPulls = previous.length === 0 ? current.map((pull) => pull.number) : changedPullNumbers(previous, current);
-      const warmPullLimit = job.manifest.warmPullLimit || positiveNumber(env.DIFF_COCKPIT_WARM_PULL_LIMIT, DEFAULT_WARM_PULL_LIMIT);
-      const warmIntervalMs = job.manifest.warmIntervalMs || positiveNumber(env.DIFF_COCKPIT_WARM_INTERVAL_MS, DEFAULT_WARM_INTERVAL_MS);
-      const warmPulls = selectWarmPullNumbers(previous, current, warmPullLimit);
-      const now = options.now || new Date();
-      const refreshCache = shouldRefreshWarmCache(changed, state.jobs[name], now, warmIntervalMs);
-      if (refreshCache && !options.dryRun) {
-        await refreshDiffCockpitCache({
-          repo: job.manifest.repo || env.DIFF_COCKPIT_REPO || DEFAULT_REPO,
-          pulls: warmPulls,
-          codePaths: job.manifest.codePaths || ['packages'],
-          reason: `cron.${name}`,
-          origin: job.manifest.origin || env.DIFF_COCKPIT_ORIGIN || DEFAULT_ORIGIN,
-          token: env.DIFF_COCKPIT_REFRESH_TOKEN,
-        });
-      }
-
       result.checked += 1;
       if (changed) result.changed += 1;
-      result.jobs.push({ name, status: changed ? 'changed' : 'unchanged', changedPulls });
+      result.jobs.push({ name, status: changed ? 'changed' : 'unchanged' });
       state.jobs[name] = {
         lastCheckedAt: now.toISOString(),
         lastChangedAt: changed ? now.toISOString() : state.jobs[name]?.lastChangedAt,
@@ -344,9 +252,9 @@ export async function runOnce(options: RunOnceOptions = {}): Promise<{
         lastPayload: current,
         lastStatus: changed ? 'changed' : 'unchanged',
         lastError: '',
-        lastCacheRefreshAt: refreshCache && !options.dryRun ? now.toISOString() : state.jobs[name]?.lastCacheRefreshAt,
+        lastCacheRefreshAt: !options.dryRun ? now.toISOString() : state.jobs[name]?.lastCacheRefreshAt,
       };
-      await appendLog(logFile, `${name}: ${changed ? 'changed' : 'unchanged'}${changedPulls.length ? ` pulls=${changedPulls.join(',')}` : ''}${options.dryRun ? ' dry-run' : ''}`);
+      await appendLog(logFile, name + ': ' + (options.dryRun ? 'checked' : 'refreshed') + ' status=' + current.status + ' cache-control=' + current.cacheControl + (current.cfCacheStatus ? ' cf-cache-status=' + current.cfCacheStatus : '') + (options.dryRun ? ' dry-run' : ''));
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : String(error);
       result.errors += 1;
@@ -412,116 +320,14 @@ async function runCommand(command: string[], cwd: string): Promise<CommandResult
   ]);
   return { stdout, stderr, exitCode };
 }
-export async function loadDiffCockpitFingerprint(options: {
-  repo: string;
-  prLimit: number;
-  githubToken?: string;
-  fetcher?: typeof fetch;
-}): Promise<DiffCockpitPullFingerprint[]> {
-  const [owner, name] = parseRepo(options.repo);
-  const url = `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(name)}/pulls?state=all&sort=updated&direction=desc&per_page=${encodeURIComponent(String(options.prLimit))}`;
-  const headers: Record<string, string> = {
-    accept: 'application/vnd.github+json',
-    'user-agent': 'consuelo-cron/diff-cockpit',
-  };
-  if (options.githubToken) headers.authorization = `Bearer ${options.githubToken}`;
-
-  const controller = new AbortController();
-  const timeoutHandle = setTimeout(() => controller.abort(), 15_000);
-  let response: Response;
-  try {
-    response = await (options.fetcher || fetch)(url, {
-      headers,
-      signal: controller.signal,
-    });
-  } catch (error: unknown) {
-    if (error instanceof Error && error.name === 'AbortError') {
-      throw new Error('GitHub PR fingerprint fetch timed out after 15000ms');
-    }
-    throw error;
-  } finally {
-    clearTimeout(timeoutHandle);
-  }
-
-  if (!response.ok) throw new Error(`GitHub PR fingerprint fetch failed with HTTP ${response.status}`);
-  const payload = await response.json();
-  if (!Array.isArray(payload)) throw new Error('GitHub PR fingerprint response was not an array');
-  return payload.map(normalizePull).filter((pull): pull is DiffCockpitPullFingerprint => Boolean(pull));
-}
-
-export function changedPullNumbers(previous: DiffCockpitPullFingerprint[], current: DiffCockpitPullFingerprint[]): number[] {
-  const previousByNumber = new Map(previous.map((pull) => [pull.number, stableFingerprint(pull)]));
-  const currentByNumber = new Map(current.map((pull) => [pull.number, stableFingerprint(pull)]));
-  const changed = new Set<number>();
-  for (const [number, value] of currentByNumber) {
-    if (previousByNumber.get(number) !== value) changed.add(number);
-  }
-  for (const number of previousByNumber.keys()) {
-    if (!currentByNumber.has(number)) changed.add(number);
-  }
-  return [...changed].sort((a, b) => a - b);
-}
-
-export function selectWarmPullNumbers(
-  previous: DiffCockpitPullFingerprint[],
-  current: DiffCockpitPullFingerprint[],
-  limit = DEFAULT_WARM_PULL_LIMIT,
-): number[] {
-  const cappedLimit = Math.max(1, Math.floor(limit));
-  const selected = new Set<number>();
-  const add = (number: number) => {
-    if (selected.size < cappedLimit && Number.isInteger(number) && number > 0) selected.add(number);
-  };
-  const changed = previous.length === 0 ? current.map((pull) => pull.number) : changedPullNumbers(previous, current);
-  for (const number of changed) add(number);
-  for (const pull of current) {
-    if (pull.state === 'open') add(pull.number);
-  }
-  for (const pull of current) add(pull.number);
-  return [...selected];
-}
-
-function shouldRefreshWarmCache(
-  changed: boolean,
-  entry: CronJobStateEntry | undefined,
-  now: Date,
-  intervalMs: number,
-): boolean {
-  if (changed) return true;
-  if (!entry?.lastCacheRefreshAt) return true;
-  const lastRefreshMs = Date.parse(entry.lastCacheRefreshAt);
-  if (!Number.isFinite(lastRefreshMs)) return true;
-  return now.getTime() - lastRefreshMs >= intervalMs;
-}
-
 export function stableFingerprint(value: unknown): string {
   return JSON.stringify(sortValue(value));
-}
-
-function normalizePull(value: unknown): DiffCockpitPullFingerprint | null {
-  if (!isRecord(value)) return null;
-  const head = isRecord(value.head) ? value.head : {};
-  const base = isRecord(value.base) ? value.base : {};
-  const user = isRecord(value.user) ? value.user : {};
-  const number = Number(value.number);
-  if (!Number.isInteger(number)) return null;
-  return {
-    number,
-    title: stringValue(value.title),
-    state: stringValue(value.state),
-    draft: Boolean(value.draft),
-    updatedAt: stringValue(value.updated_at),
-    headRef: stringValue(head.ref),
-    baseRef: stringValue(base.ref),
-    headSha: stringValue(head.sha),
-    author: stringValue(user.login),
-  };
 }
 
 function validateManifest(manifest: CronJobManifest, manifestPath: string): void {
   if (manifest.schema !== 'consuelo.cron.v1') throw new Error(`invalid cron schema in ${manifestPath}`);
   if (!manifest.name) throw new Error(`missing cron name in ${manifestPath}`);
-  if (manifest.kind !== 'diff-cockpit' && manifest.kind !== 'sites-launcher') throw new Error(`unsupported cron kind in ${manifestPath}: ${manifest.kind}`);
+  if (manifest.kind !== 'sites-launcher') throw new Error(`unsupported cron kind in ${manifestPath}: ${manifest.kind}`);
   if (!Number.isFinite(manifest.intervalMs) || manifest.intervalMs < 1000) throw new Error(`invalid intervalMs in ${manifestPath}`);
 }
 
@@ -575,30 +381,14 @@ function parseCommand(value: string | undefined): string[] | null {
   return value.trim().split(/\s+/).filter(Boolean);
 }
 
-function envExample(): string {
-  return [
-    'DIFF_COCKPIT_ORIGIN=https://diffs.consuelohq.com',
-    'DIFF_COCKPIT_REPO=consuelohq/opensaas',
-    'DIFF_COCKPIT_REFRESH_TOKEN=',
-    'GITHUB_TOKEN=',
-    'DIFF_COCKPIT_PR_LIMIT=50',
-    '',
-  ].join('\n');
-}
-
-function jobReadme(name: string): string {
-  return `# ${name}\n\nLocal Consuelo cron job. Copy \`.env.example\` to \`.env\` and keep secrets local.\n`;
-}
-
 function launchAgentPlist(input: { label: string; bunPath: string; repoRoot: string; intervalMs: number }): string {
   return `<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n<plist version="1.0">\n<dict>\n  <key>Label</key>\n  <string>${escapeXml(input.label)}</string>\n  <key>ProgramArguments</key>\n  <array>\n    <string>${escapeXml(input.bunPath)}</string>\n    <string>cron_jobs/index.ts</string>\n    <string>watch</string>\n    <string>--interval-ms</string>\n    <string>${String(input.intervalMs)}</string>\n  </array>\n  <key>WorkingDirectory</key>\n  <string>${escapeXml(input.repoRoot)}</string>\n  <key>RunAtLoad</key>\n  <true/>\n  <key>KeepAlive</key>\n  <true/>\n  <key>StandardOutPath</key>\n  <string>${escapeXml(logPath())}</string>\n  <key>StandardErrorPath</key>\n  <string>${escapeXml(logPath().replace(/\\.log$/, '.err.log'))}</string>\n</dict>\n</plist>\n`;
 }
 
 function usage(): string {
   return [
-    'usage: bun run cron -- provision <name> [--interval-ms 30000]',
-    '       bun run cron -- list',
-    '       bun run cron -- run-once [--job diff-cockpit] [--dry-run] [--force]',
+    'usage: bun run cron -- list',
+    '       bun run cron -- run-once [--job sites-launcher] [--dry-run] [--force]',
     '       bun run cron -- watch [--interval-ms 30000]',
     '       bun run cron -- install [--name opensaas] [--interval-ms 30000]',
     '       bun run cron -- status|logs|uninstall',
@@ -619,20 +409,10 @@ function positiveNumber(value: string | number | undefined, fallback: number): n
   return number;
 }
 
-function parseRepo(repo: string): [string, string] {
-  const [owner, name] = repo.split('/');
-  if (!owner || !name) throw new Error(`repo must be owner/name, received ${repo}`);
-  return [owner, name];
-}
-
 function sortValue(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(sortValue);
   if (!isRecord(value)) return value;
   return Object.fromEntries(Object.keys(value).sort().map((key) => [key, sortValue(value[key])]));
-}
-
-function stringValue(value: unknown): string {
-  return typeof value === 'string' ? value : '';
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

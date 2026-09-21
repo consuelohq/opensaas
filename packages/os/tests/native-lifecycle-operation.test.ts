@@ -292,6 +292,8 @@ describe('native lifecycle detached operations', () => {
         HOME: '/Users/tester',
         USER: 'tester',
         BUN_BIN: '/opt/homebrew/bin/bun',
+        CONSUELO_OS_WORKER_BASE_PORT: '46321',
+        CONSUELO_OS_PORT: '46322',
         XPC_SERVICE_NAME: 'com.consuelo.system',
       },
       spawnProcess: (command, args, options) => {
@@ -337,6 +339,8 @@ describe('native lifecycle detached operations', () => {
     expect(plist).toContain('<key>KeepAlive</key>\n  <false/>');
     expect(plist).toContain('<key>LaunchOnlyOnce</key>\n  <true/>');
     expect(plist).toContain('<string>CONSUELO_HOME=' + home + '</string>');
+    expect(plist).toContain('<string>CONSUELO_OS_WORKER_BASE_PORT=46321</string>');
+    expect(plist).toContain('<string>CONSUELO_OS_PORT=46322</string>');
     expect(plist).toContain('<string>--target-version</string>');
     expect(plist).toContain('<string>1.5.0</string>');
     expect(plist).toContain('<string>--channel</string>');
@@ -363,6 +367,8 @@ describe('native lifecycle detached operations', () => {
         PATH: '/usr/bin:/bin',
         BUN_BIN: '/usr/bin/bun',
         CONSUELO_OS_DAEMON_PROCESS: '1',
+        CONSUELO_OS_WORKER_BASE_PORT: '46321',
+        CONSUELO_OS_PORT: '46322',
         INVOCATION_ID: 'systemd-invocation',
       },
       spawnProcess: (command, args, options) => {
@@ -396,6 +402,8 @@ describe('native lifecycle detached operations', () => {
         '--property=UMask=0077',
         '--setenv=CONSUELO_HOME=' + home,
         '--setenv=BUN_BIN=/usr/bin/bun',
+        '--setenv=CONSUELO_OS_WORKER_BASE_PORT=46321',
+        '--setenv=CONSUELO_OS_PORT=46322',
         '/usr/bin/bun',
         '/runtime/scripts/native-lifecycle-operation.ts',
         '--target-version',

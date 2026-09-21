@@ -6,6 +6,8 @@ import {
   renderConfigurationSite,
   type ConfigurationPageId,
 } from './settings-site';
+import type { WorkspaceChromeOptions } from './workspace-chrome';
+import { loadWorkspaceChromeOptions } from './workspace-chrome-config';
 
 export const CONFIGURATION_SITE_PAGES: ConfigurationPageId[] = [
   'configuration',
@@ -64,6 +66,7 @@ export function getConfigurationMaterializationPaths(
 export function materializeConfigurationSite(
   home: string,
   snapshot: SettingsSnapshot = buildSettingsSnapshot(home),
+  chromeOptions: WorkspaceChromeOptions = loadWorkspaceChromeOptions(home),
 ): MaterializedConfigurationSite {
   const paths = getConfigurationMaterializationPaths(home);
 
@@ -86,7 +89,7 @@ export function materializeConfigurationSite(
     ['secrets', paths.secretsIndexPath],
   ];
   for (const [page, indexPath] of pagePaths) {
-    fs.writeFileSync(indexPath, renderConfigurationSite(page), { mode: 0o600 });
+    fs.writeFileSync(indexPath, renderConfigurationSite(page, chromeOptions), { mode: 0o600 });
   }
 
   fs.writeFileSync(

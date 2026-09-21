@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_93c047b187f3",
+  "tmuxSession": "opensaas-os-eliminate-mcp-transport-outages-during-os-update-93c047b1",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/eliminate-mcp-transport-outages-during-os-updates",
+  "branch": "task/os/eliminate-mcp-transport-outages-during-os-updates",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-eliminate-mcp-transport-outages-during-os-updates",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-eliminate-mcp-transport-outages-during-os-updates",
+  "prNumber": 2086,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2086",
+  "createdAt": "2026-08-16T02:02:00.816Z",
+  "tmuxCreated": false,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-eliminate-mcp-transport-outages-during-os-updates/.task/os/eliminate-mcp-transport-outages-during-os-updates/session.json"
+}

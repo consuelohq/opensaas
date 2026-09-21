@@ -1,0 +1,61 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/website/prototype-feature-story-stage-remember-observe",
+  "base": "origin/stream/website",
+  "headSha": "88d52452f04e17e6e458e001d04000ebb8ccef4f",
+  "changeHash": "64db8935cab49b092ebab1de106385d8918ed0b9bcf075bcb2315a1e317bbaec",
+  "changedFiles": [
+    "packages/consuelo-website/DESIGN.md",
+    "packages/consuelo-website/src/components/home/FeatureStoryMemory.astro",
+    "packages/consuelo-website/src/components/home/FeatureStoryObserve.astro",
+    "packages/consuelo-website/src/components/home/HomeFeaturePreview.astro",
+    "packages/consuelo-website/src/data/home-content.ts",
+    "packages/consuelo-website/tests/homepage-mobile-layout.test.mjs",
+    "packages/consuelo-website/tests/website-structure.test.js"
+  ],
+  "verifiedAt": "2026-09-01T01:14:55.803Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/website/prototype-feature-story-stage-remember-observe.json",
+        ".task/website/prototype-feature-story-stage-remember-observe/evidence-log.json",
+        ".task/website/prototype-feature-story-stage-remember-observe/read-log.json",
+        ".task/website/prototype-feature-story-stage-remember-observe/workpad.md",
+        "packages/consuelo-website/DESIGN.md",
+        "packages/consuelo-website/src/components/home/FeatureStoryMemory.astro",
+        "packages/consuelo-website/src/components/home/FeatureStoryObserve.astro",
+        "packages/consuelo-website/src/components/home/HomeFeaturePreview.astro",
+        "packages/consuelo-website/src/data/home-content.ts",
+        "packages/consuelo-website/tests/homepage-mobile-layout.test.mjs",
+        "packages/consuelo-website/tests/website-structure.test.js"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

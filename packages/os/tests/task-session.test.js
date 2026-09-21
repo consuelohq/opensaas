@@ -194,3 +194,19 @@ test('terminateTaskTmuxSession closes an explicit existing tmux session', () => 
     ['kill-session', '-t', 'explicit-session'],
   ]);
 });
+
+test('writeTaskSessionMetadata mirrors session state into the durable registry', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'os-task-session-registry-'));
+  const oldHome = process.env.CONSUELO_HOME;
+  try {
+    process.env.CONSUELO_HOME = path.join(root, 'home');
+    const worktreePath = path.join(root, 'worktree'); fs.mkdirSync(worktreePath, { recursive: true });
+    const branch = 'task/workspace-agent/registry-mirror';
+    const metadata = taskSession.writeTaskSessionMetadata({ area: 'workspace-agent', stream: 'stream/workspace-agent', taskBranch: branch, worktreePath }, false);
+    const registry = require('../scripts/lib/task-registry.js');
+    expect(registry.readDurableTaskSessionMetadata(metadata.taskSession)).toMatchObject({ taskSession: metadata.taskSession, taskBranch: branch, worktreePath });
+  } finally {
+    if (oldHome === undefined) delete process.env.CONSUELO_HOME; else process.env.CONSUELO_HOME = oldHome;
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});

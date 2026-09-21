@@ -49,8 +49,8 @@ export function reconcileManagedUserContentForRelease(input: {
       'tool.manifest.json',
     ),
   );
-  // With no manifest there is no catalog to write, but the system prompt and example still matter,
-  // so reconcile with an empty tool list rather than skipping entirely.
+  // With no manifest there is no catalog to write, but user steering seeding and the generic
+  // excluded example still matter, so reconcile with an empty tool list rather than skipping.
   const tools = manifest?.tools ?? [];
 
   const skillsIndexPath = path.join(input.releasePath, 'skills', 'skills.json');
@@ -58,21 +58,10 @@ export function reconcileManagedUserContentForRelease(input: {
     ? fs.readFileSync(skillsIndexPath, 'utf8')
     : undefined;
 
-  // Read from the release being activated, so the example is exactly the steering this node serves.
-  const steeringPath = path.join(
-    input.releasePath,
-    'steering',
-    'system_prompt.md',
-  );
-  const steeringBody = fs.existsSync(steeringPath)
-    ? fs.readFileSync(steeringPath, 'utf8')
-    : undefined;
-
   return reconcileManagedUserContent({
     userRoot,
     tools,
     skillsIndex,
-    steeringBody,
   });
 }
 

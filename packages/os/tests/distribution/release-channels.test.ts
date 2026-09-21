@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   CHANNEL_MANIFEST_SCHEMA_VERSION,
+  DEFAULT_REQUIRED_RELEASE_PLATFORMS,
   canonicalBundleSignatureJson,
   RELEASE_TAG_PREFIX,
   StaleReleaseStateError,
@@ -116,6 +117,7 @@ function completeBundles(
 ): PlatformBundlePublication[] {
   return [
     bundle('darwin', 'arm64', version, releaseFingerprint, sourceCommit),
+    bundle('darwin', 'x64', version, releaseFingerprint, sourceCommit),
     bundle('linux', 'x64', version, releaseFingerprint, sourceCommit),
     bundle('windows', 'x64', version, releaseFingerprint, sourceCommit),
   ];
@@ -130,6 +132,7 @@ function publish(
     now?: string;
     bundles?: PlatformBundlePublication[];
     immutableTags?: string[];
+    requiredPlatforms?: string[];
   } = {},
 ) {
   const version = options.version ?? '1.2.3';
@@ -161,6 +164,9 @@ function publish(
       version,
     },
     releaseFingerprint,
+    ...(options.requiredPlatforms
+      ? { requiredPlatforms: options.requiredPlatforms }
+      : {}),
     sourceCommit,
   } as const;
   const result = publishDevRelease(state, input, {
@@ -172,6 +178,43 @@ function publish(
 }
 
 describe('Consuelo OS release channels', () => {
+  it('requires native Intel macOS in every new coherent release set', () => {
+    expect(DEFAULT_REQUIRED_RELEASE_PLATFORMS).toEqual([
+      'darwin-arm64',
+      'darwin-x64',
+      'linux-x64',
+      'windows-x64',
+    ]);
+
+    const legacyBundles = [
+      bundle('darwin', 'arm64'),
+      bundle('linux', 'x64'),
+      bundle('windows', 'x64'),
+    ];
+    expect(() => publish(createEmptyReleaseState(), { bundles: legacyBundles })).toThrow(
+      'release is missing required platform darwin-x64',
+    );
+  });
+
+  it('keeps historical three-platform releases verifiable after the required platform set expands', () => {
+    const legacyRequiredPlatforms = [
+      'darwin-arm64',
+      'linux-x64',
+      'windows-x64',
+    ];
+    const legacyBundles = [
+      bundle('darwin', 'arm64'),
+      bundle('linux', 'x64'),
+      bundle('windows', 'x64'),
+    ];
+    const legacy = publish(createEmptyReleaseState(), {
+      bundles: legacyBundles,
+      requiredPlatforms: legacyRequiredPlatforms,
+    });
+
+    expect(() => verifyReleaseStateConsensus(legacy.state, legacy.input.bundleId)).not.toThrow();
+  });
+
   it('requires one explicit seed for the first release and defaults later changes to patch', () => {
     expect(() => calculateNextReleaseVersion({ immutableTags: [], intent: 'patch' })).toThrow(
       'first Consuelo OS release requires an explicit seed version',
@@ -389,6 +432,79 @@ describe('Consuelo OS release channels', () => {
       from: 'dev',
       to: 'beta',
     }, { now: NOW, signer: dev.signer })).toThrow('illegal channel transition: dev -> beta');
+  });
+
+  it('can promote an exact verified bundle from source-channel history after the source pointer advances', () => {
+    const first = publish(createEmptyReleaseState());
+    const second = publish(first.state, {
+      version: '1.2.4',
+      releaseFingerprint: NEXT_FINGERPRINT,
+      sourceCommit: 'fedcba9876543210fedcba9876543210fedcba98',
+      now: '2026-07-24T00:00:00.000Z',
+    });
+
+    const promoted = promoteReleaseChannel(second.state, {
+      bundleId: first.input.bundleId,
+      from: 'dev',
+      to: 'canary',
+    }, { now: '2026-07-24T01:00:00.000Z', signer: second.signer });
+
+    expect(promoted.state.channels.canary?.payload).toMatchObject({
+      bundleId: first.input.bundleId,
+      sourceChannel: 'dev',
+      version: '1.2.3',
+    });
+    expect(promoted.state.audit.at(-1)).toMatchObject({
+      action: 'promote',
+      bundleId: first.input.bundleId,
+      fromChannel: 'dev',
+    });
+  });
+
+  it('never turns historical-source promotion into an implicit rollback of the target channel', () => {
+    const first = publish(createEmptyReleaseState());
+    const firstCanary = promoteReleaseChannel(first.state, {
+      bundleId: first.input.bundleId,
+      from: 'dev',
+      to: 'canary',
+    }, { now: NOW, signer: first.signer });
+    const second = publish(firstCanary.state, {
+      version: '1.2.4',
+      releaseFingerprint: NEXT_FINGERPRINT,
+      sourceCommit: 'fedcba9876543210fedcba9876543210fedcba98',
+      now: '2026-07-24T00:00:00.000Z',
+    });
+    const secondCanary = promoteReleaseChannel(second.state, {
+      bundleId: second.input.bundleId,
+      from: 'dev',
+      to: 'canary',
+    }, { now: '2026-07-24T00:10:00.000Z', signer: second.signer });
+
+    expect(() => promoteReleaseChannel(secondCanary.state, {
+      bundleId: first.input.bundleId,
+      from: 'dev',
+      to: 'canary',
+    }, { now: '2026-07-24T01:00:00.000Z', signer: second.signer })).toThrow(
+      'promotion would move canary backwards from 1.2.4 to 1.2.3; use rollback for an intentional downgrade',
+    );
+  });
+
+  it('rejects a historical-source promotion when the exact bundle never occupied that source channel', () => {
+    const first = publish(createEmptyReleaseState());
+    const unrelatedBundle = `sha256:${'9'.repeat(64)}`;
+    const tampered = structuredClone(first.state);
+    tampered.releases[unrelatedBundle] = {
+      ...tampered.releases[first.input.bundleId],
+      bundleId: unrelatedBundle,
+    };
+
+    expect(() => promoteReleaseChannel(tampered, {
+      bundleId: unrelatedBundle,
+      from: 'dev',
+      to: 'canary',
+    }, { now: '2026-07-24T01:00:00.000Z', signer: first.signer })).toThrow(
+      'verified immutable release does not exist in source channel dev history',
+    );
   });
 
   it('requires explicit stable approval and a manual stable deployment environment', () => {

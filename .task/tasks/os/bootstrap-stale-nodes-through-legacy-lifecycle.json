@@ -1,0 +1,20 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/bootstrap-stale-nodes-through-legacy-lifecycle",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2305,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2305",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2305",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2305/bootstrap-stale-nodes-through-legacy-lifecycle",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2305",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2305/bootstrap-stale-nodes-through-legacy-lifecycle",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-bootstrap-stale-nodes-through-legacy-lifecycle",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_5b900ab174b0",
+  "tmuxSession": "opensaas-os-bootstrap-stale-nodes-through-legacy-lifecycle-5b900ab1",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-bootstrap-stale-nodes-through-legacy-lifecycle/.task/os/bootstrap-stale-nodes-through-legacy-lifecycle/session.json",
+  "createdAt": "2026-09-08T02:31:15.043Z"
+}

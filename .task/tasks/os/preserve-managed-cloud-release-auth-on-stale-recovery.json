@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/preserve-managed-cloud-release-auth-on-stale-recovery",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2418,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2418",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-preserve-managed-cloud-release-auth-on-stale-recovery",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_40f4561c5b47",
+  "tmuxSession": "opensaas-os-preserve-managed-cloud-release-auth-on-stale-rec-40f4561c",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-preserve-managed-cloud-release-auth-on-stale-recovery/.task/session.json",
+  "createdAt": "2026-09-08T14:50:57.725Z"
+}

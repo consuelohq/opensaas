@@ -1,0 +1,20 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/reconcile-stable-os-stream-with-main",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2213,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2213",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2213",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2213/reconcile-stable-os-stream-with-main",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2213",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2213/reconcile-stable-os-stream-with-main",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-reconcile-stable-os-stream-with-main",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_289548507e3f",
+  "tmuxSession": "opensaas-os-reconcile-stable-os-stream-with-main-28954850",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-reconcile-stable-os-stream-with-main/.task/os/reconcile-stable-os-stream-with-main/session.json",
+  "createdAt": "2026-08-26T06:37:11.702Z"
+}

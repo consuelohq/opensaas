@@ -1,3 +1,4 @@
+import { generateKeyPairSync } from 'node:crypto';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -10,6 +11,7 @@ import {
   materializeHostedBootstrap,
   trustedReleaseKeysJson,
 } from '../../workspace/scripts/os-release-install';
+import { createEd25519ChannelSigner } from '../scripts/lib/distribution/release-channels';
 
 describe('hosted OS installer release worker', () => {
   it('should inject the public release trust anchor when the hosted bootstrap contains the placeholder', () => {
@@ -134,5 +136,141 @@ describe('hosted OS installer release worker', () => {
       'channels/nightly.json',
       `bundles/${bundleId}/runtime.tar.gz`,
     ]);
+  });
+
+  it('should expose a stable Windows x64 PowerShell installer route', () => {
+    const worker = buildWorkerSource(
+      '#!/usr/bin/env bash\n',
+      { pathname: '/os' },
+      'a'.repeat(64),
+      '[CmdletBinding()]\nparam()\n',
+    );
+
+    expect(worker).toContain('WINDOWS_INSTALL_PATH');
+    expect(worker).toContain('channels/stable.json');
+    expect(worker).toContain("platform === 'windows'");
+    expect(worker).toContain("architecture === 'x64'");
+    expect(worker).toContain('Windows installer unavailable');
+  });
+
+  it('should verify the signed stable pointer before binding the Windows bundle', async () => {
+    const { privateKey, publicKey } = generateKeyPairSync('ed25519');
+    const publicKeyPem = publicKey.export({ format: 'pem', type: 'spki' }).toString();
+    const signer = createEd25519ChannelSigner({
+      keyId: 'fixture-release-key',
+      privateKeyPem: privateKey.export({ format: 'pem', type: 'pkcs8' }).toString(),
+      publicKeyPem,
+    });
+    const bundleId = `sha256:${'3'.repeat(64)}`;
+    const archiveDigest = `sha256:${'2'.repeat(64)}`;
+    const objectKey = `bundles/${bundleId}/consuelo-os-1.2.3-windows-x64.tar.gz`;
+    const manifest = signer.sign({
+      kind: 'consuelo-os-channel-manifest',
+      schemaVersion: 1,
+      channel: 'stable',
+      sourceChannel: 'beta',
+      version: '1.2.3',
+      sourceCommit: 'fixture-source',
+      bundleId: `sha256:${'4'.repeat(64)}`,
+      releaseFingerprint: `sha256:${'5'.repeat(64)}`,
+      revision: 7,
+      promotedAt: '2026-09-10T00:00:00.000Z',
+      evidence: [{ kind: 'test', reference: 'fixture' }],
+      platforms: [{
+        platform: 'windows',
+        architecture: 'x64',
+        bundleId,
+        archiveDigest,
+        cloudflareObjectKey: objectKey,
+        githubAssetName: 'consuelo-os-1.2.3-windows-x64.tar.gz',
+      }],
+    }, '2026-09-10T00:00:00.000Z');
+    const worker = buildWorkerSource(
+      '#!/usr/bin/env bash\n',
+      { pathname: '/os' },
+      'a'.repeat(64),
+      '[CmdletBinding()]\nparam([string]$BundleUrl, [string]$BundleSha256)\nWrite-Output $BundleUrl\n',
+      JSON.stringify({ 'fixture-release-key': publicKeyPem }),
+    );
+    const moduleDirectory = mkdtempSync(join(tmpdir(), 'consuelo-windows-installer-worker-'));
+    const modulePath = join(moduleDirectory, 'worker.mjs');
+    writeFileSync(modulePath, worker);
+    const generated = await (async () => {
+      try {
+        return await import(
+          /* @vite-ignore */ `${pathToFileURL(modulePath).href}?fixture=${Date.now()}`
+        );
+      } finally {
+        rmSync(moduleDirectory, { recursive: true, force: true });
+      }
+    })();
+    const response = await generated.default.fetch(
+      new Request('https://install.consuelohq.com/os.ps1'),
+      {
+        CONSUELO_OS_RELEASES: {
+          async get(key: string) {
+            if (key !== 'channels/stable.json') return null;
+            return {
+              body: JSON.stringify(manifest),
+              httpEtag: '"fixture"',
+              writeHttpMetadata() {},
+            };
+          },
+        },
+      },
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get('content-type')).toBe('text/x-powershell; charset=utf-8');
+    const body = await response.text();
+    expect(body).toContain('Start-Process powershell.exe');
+    expect(body).toContain('-Verb RunAs');
+    expect(body).toContain("Invoke-WebRequest -UseBasicParsing -Uri 'https://install.consuelohq.com/os.ps1'");
+    expect(body).toContain(`/os/releases/${objectKey}`);
+    expect(body).toContain(archiveDigest.slice('sha256:'.length));
+
+    const head = await generated.default.fetch(
+      new Request('https://install.consuelohq.com/os.ps1', { method: 'HEAD' }),
+      {
+        CONSUELO_OS_RELEASES: {
+          async get(key: string) {
+            if (key !== 'channels/stable.json') return null;
+            return {
+              body: JSON.stringify(manifest),
+              httpEtag: '"fixture"',
+              writeHttpMetadata() {},
+            };
+          },
+        },
+      },
+    );
+    expect(head.status).toBe(200);
+    expect(await head.text()).toBe('');
+
+    const post = await generated.default.fetch(
+      new Request('https://install.consuelohq.com/os.ps1', { method: 'POST' }),
+      { CONSUELO_OS_RELEASES: { async get() { return null; } } },
+    );
+    expect(post.status).toBe(405);
+    expect(post.headers.get('allow')).toBe('GET, HEAD');
+
+    const tamperedManifest = structuredClone(manifest);
+    tamperedManifest.payload.platforms[0].archiveDigest = `sha256:${'9'.repeat(64)}`;
+    const rejected = await generated.default.fetch(
+      new Request('https://install.consuelohq.com/os.ps1'),
+      {
+        CONSUELO_OS_RELEASES: {
+          async get() {
+            return {
+              body: JSON.stringify(tamperedManifest),
+              httpEtag: '"tampered"',
+              writeHttpMetadata() {},
+            };
+          },
+        },
+      },
+    );
+    expect(rejected.status).toBe(503);
+    expect(await rejected.text()).toBe('Windows installer unavailable\n');
   });
 });

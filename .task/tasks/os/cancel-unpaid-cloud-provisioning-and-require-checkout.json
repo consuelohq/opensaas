@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/cancel-unpaid-cloud-provisioning-and-require-checkout",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2428,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2428",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-cancel-unpaid-cloud-provisioning-and-require-checkout",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_351e99cac72b",
+  "tmuxSession": "opensaas-os-cancel-unpaid-cloud-provisioning-and-require-che-351e99ca",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-cancel-unpaid-cloud-provisioning-and-require-checkout/.task/session.json",
+  "createdAt": "2026-09-10T00:38:48.669Z"
+}

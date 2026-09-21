@@ -24,8 +24,8 @@
     {
       "name": "branch",
       "title": "Branch",
-      "description": "Align on large engineering projects, investigate hidden risks, and decompose them into dependency-aware branch and PR stacks that can be executed across focused chats or agents.",
-      "trigger": "Invoke when Ko asks to decompose or branch a large project into multiple PRs, chats, or agents; plan an epic across sequential and parallel workstreams; decide what can run in parallel; freeze a technical branch stack; or execute an established 'Branch N approved, go' plan. Do not invoke for ordinary Git branch commands or a single already-scoped repo task.",
+      "description": "Turn large phases, epics, migrations, or planning sessions into a dependency graph of compact work IDs so focused chats and agents can manage context, execute safe sequential and parallel lanes, and rejoin through one required finalization node.",
+      "trigger": "Invoke proactively when a phase, epic, migration, or long planning session is too large for one safe task or PR, needs context or memory management across focused chats, contains meaningful dependencies, or can benefit from parallel agents or branched chats. Also invoke when Ko asks to decompose or branch a project, decide what can run in parallel, freeze a Branch Graph, use a branched chat, or execute an approved short work ID such as 'D0 approved, go' or a legacy 'Branch N approved, go'. Do not invoke for ordinary Git branch commands or a single already-scoped repo task.",
       "entrypoint": "SKILL.md",
       "load": {
         "type": "resource",
@@ -39,7 +39,9 @@
         "repo",
         "architecture",
         "branch-decomposition",
-        "parallel-work"
+        "parallel-work",
+        "dependency-graph",
+        "workstream-fanout"
       ],
       "tools": [
         "os.get_steering",
@@ -90,6 +92,34 @@
         "observability",
         "browser",
         "deployments"
+      ],
+      "tools": [
+        "os.get_steering",
+        "os.call"
+      ],
+      "subskills": []
+    },
+    {
+      "name": "google",
+      "title": "Google",
+      "description": "Use Gmail, Calendar, Drive, Docs, Sheets, and Contacts through Consuelo OS with first-use Google authorization and saved account access.",
+      "trigger": "use when the user asks to read, search, create, edit, send, schedule, upload, or otherwise work with Google Workspace data in Gmail, Calendar, Drive, Docs, Sheets, or Contacts",
+      "entrypoint": "SKILL.md",
+      "load": {
+        "type": "resource",
+        "path": "skills/google/SKILL.md"
+      },
+      "permission": "guidance",
+      "requiresApproval": false,
+      "status": "active",
+      "capabilities": [
+        "google-workspace",
+        "gmail",
+        "calendar",
+        "drive",
+        "docs",
+        "sheets",
+        "contacts"
       ],
       "tools": [
         "os.get_steering",

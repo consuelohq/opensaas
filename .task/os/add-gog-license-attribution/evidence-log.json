@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/add-gog-license-attribution",
+  "events": [
+    {
+      "id": "eb6d17bf-52f7-4aa5-98be-8a80a949deb9",
+      "occurred_at": "2026-08-26T05:42:25.552Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/managed-gog.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/add-gog-license-attribution",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/add-gog-license-attribution"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-26T05:42:25.625Z"
+}

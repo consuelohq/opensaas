@@ -1,0 +1,19 @@
+{
+  "area": "dialer-algorithm",
+  "stream": "stream/dialer-algorithm",
+  "taskBranch": "task/dialer-algorithm/isolate-os-subagent-executable-discovery-tests",
+  "baseBranch": "stream/dialer-algorithm",
+  "sourceBranch": "stream/dialer-algorithm",
+  "startFrom": "stream",
+  "prNumber": 2095,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2095",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2095",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2095/isolate-os-subagent-executable-discovery-tests",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2095",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2095/isolate-os-subagent-executable-discovery-tests",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-isolate-os-subagent-executable-discovery-tests",
+  "taskSession": "tsk_0def7683f2d8",
+  "tmuxSession": "opensaas-dialer-algorithm-isolate-os-subagent-executable-discovery-tests-0def7683",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-isolate-os-subagent-executable-discovery-tests/.task/dialer-algorithm/isolate-os-subagent-executable-discovery-tests/session.json",
+  "createdAt": "2026-08-16T02:01:40.641Z"
+}

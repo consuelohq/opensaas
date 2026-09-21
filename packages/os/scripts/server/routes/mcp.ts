@@ -1,9 +1,10 @@
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { Hono } from 'hono';
 
 import {
   handleMcpGatewayJsonRpc,
   resolveMcpGatewayRequiredScope,
+  type McpFacadeExecutionOptions,
 } from '../../lib/mcp-gateway';
 import { validateModernMcpHttpRequest } from '../../lib/mcp-protocol';
 import {
@@ -29,13 +30,35 @@ import {
 import { internalError, jsonResponse } from '../middleware/errors';
 import { queueGatewayAuthenticationTraceSafely } from '../../lib/trace-persistence';
 import type { TraceRoutingContext } from '../../lib/trace-routing-context';
-import { logLocalOsServerError } from '../logger';
+import { logLocalOsServerError, logLocalOsServerEvent } from '../logger';
 import { validateMcpRequestOrigin } from '../security/mcp-origin';
 import { executeLocalOsFacadeTool } from '../services/call-service';
 import { resolveMcpRequestSession } from '../services/mcp-session';
 import { readGuardedLocalOsSteering } from '../services/steering-service';
 
 const MCP_PATH = '/mcp';
+const MCP_REQUEST_ID_PATTERN = /^[a-zA-Z0-9._:-]{8,128}$/;
+
+type McpRouteVariables = {
+  requestId: string;
+};
+
+function resolveMcpRequestId(request: Request): string {
+  const provided = request.headers.get('x-consuelo-request-id')?.trim();
+  return provided && MCP_REQUEST_ID_PATTERN.test(provided)
+    ? provided
+    : randomUUID();
+}
+
+function resolveOpenAiSessionReceiptKey(request: Request): string | undefined {
+  const raw = request.headers.get('x-openai-session')?.trim();
+  if (!raw) return undefined;
+  return createHash('sha256')
+    .update(['openai-session', raw].join('\n'))
+    .digest('hex')
+    .slice(0, 16);
+}
+
 
 type McpRouteDependencies = {
   getSteering: (
@@ -46,6 +69,7 @@ type McpRouteDependencies = {
     toolName: string,
     toolInput: Record<string, unknown>,
     routing?: TraceRoutingContext,
+    execution?: McpFacadeExecutionOptions,
   ) => Promise<unknown>;
 };
 
@@ -89,9 +113,9 @@ function trustedNodeRoutingContext(input: {
 
 const defaultDependencies: McpRouteDependencies = {
   getSteering: readGuardedLocalOsSteering,
-  executeFacadeTool: async (toolName, toolInput, routing) => {
+  executeFacadeTool: async (toolName, toolInput, routing, execution) => {
     try {
-      return await executeLocalOsFacadeTool(toolName, toolInput, routing);
+      return await executeLocalOsFacadeTool(toolName, toolInput, routing, execution);
     } catch (error: unknown) {
       logLocalOsServerError(
         'local_os.mcp_tool_execution_failed',
@@ -134,12 +158,27 @@ function resolveSteeringCallerKey(input: {
 
 export function createMcpRoutes(
   dependencies: McpRouteDependencies = defaultDependencies,
-): Hono {
-  const app = new Hono();
+) {
+  const app = new Hono<{ Variables: McpRouteVariables }>();
+
+  app.use(MCP_PATH, async (context, next) => {
+    const requestId = resolveMcpRequestId(context.req.raw);
+    const connectorKey = resolveOpenAiSessionReceiptKey(context.req.raw);
+    context.set('requestId', requestId);
+    logLocalOsServerEvent('local_os.mcp_request_received', {
+      requestId,
+      route: MCP_PATH,
+      method: context.req.method,
+      ...(connectorKey ? { connectorKey } : {}),
+    });
+    await next();
+    context.header('x-consuelo-request-id', requestId);
+  });
 
   app.all(MCP_PATH, async (context) => {
     try {
       const request = context.req.raw;
+      const requestId = context.get('requestId');
 
       try {
         const config = loadAuthConfigForRequest();
@@ -178,10 +217,10 @@ export function createMcpRoutes(
       }
 
       const body = await request.clone().text();
-      const rawMaterialDenied = admitRawMcpBody(body);
+      const rawMaterialDenied = admitRawMcpBody(body, requestId);
       if (rawMaterialDenied) return rawMaterialDenied;
 
-      const decodedMaterialDenied = admitDecodedMcpBody(body);
+      const decodedMaterialDenied = admitDecodedMcpBody(body, requestId);
       if (decodedMaterialDenied) return decodedMaterialDenied;
 
       const mcpScope = resolveMcpGatewayRequiredScope(body);
@@ -259,8 +298,10 @@ export function createMcpRoutes(
       });
       const result = await handleMcpGatewayJsonRpc(body, {
         getSteering: () => dependencies.getSteering(steeringCallerKey, nodeRouting),
-        executeFacadeTool: (toolName, toolInput) =>
-          dependencies.executeFacadeTool(toolName, toolInput, traceRouting),
+        executeFacadeTool: (toolName, toolInput, execution) =>
+          execution
+            ? dependencies.executeFacadeTool(toolName, toolInput, traceRouting, execution)
+            : dependencies.executeFacadeTool(toolName, toolInput, traceRouting),
       });
       const response = jsonResponse(result);
       if (session?.responseSessionId) {

@@ -1,0 +1,174 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/fix-stream-os-ci-contract-gates",
+  "base": "origin/stream/os",
+  "headSha": "ae1cb343562c90e871d7cd693bbd37533a11f858",
+  "changeHash": "ff954f8fcece9e46a1a591000d173b1754145df17fdc79446ebf65b1682e4601",
+  "changedFiles": [
+    "packages/os/tests/subagent-executable-discovery.test.ts",
+    "packages/workspace/scripts/test-selection.js",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "verifiedAt": "2026-09-11T05:22:57.479Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/fix-stream-os-ci-contract-gates/current.json",
+        ".task/os/fix-stream-os-ci-contract-gates/evidence-log.json",
+        ".task/os/fix-stream-os-ci-contract-gates/read-log.json",
+        ".task/os/fix-stream-os-ci-contract-gates/session.json",
+        ".task/os/fix-stream-os-ci-contract-gates/verify.json",
+        ".task/os/fix-stream-os-ci-contract-gates/workpad.md",
+        ".task/tasks/os/fix-stream-os-ci-contract-gates.json",
+        "packages/os/tests/subagent-executable-discovery.test.ts",
+        "packages/workspace/scripts/test-selection.js",
+        "packages/workspace/tests/test-selection.test.js"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-test-selection",
+          "critical": true,
+          "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy.",
+          "matchedFiles": [
+            "packages/workspace/scripts/test-selection.js",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-subagent-runtime",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Durable subagent orchestration, provider capabilities, active-run status, idempotency, deadline behavior, and provider stdin termination must prove the focused subagent contracts without selecting the unrelated whole-OS package baseline.",
+          "matchedFiles": [
+            "packages/os/tests/subagent-executable-discovery.test.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true
+        },
+        {
+          "name": "OS durable subagent runtime contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "--no-file-parallelism",
+            "packages/os/tests/subagent-orchestration-contract.test.ts",
+            "packages/os/tests/subagent-lifecycle-regressions.test.ts",
+            "packages/os/tests/subagent-executable-discovery.test.ts",
+            "packages/os/tests/subagent-runner-termination.test.ts"
+          ],
+          "ruleId": "os-subagent-runtime",
+          "critical": true
+        },
+        {
+          "name": "OS subagent syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "ruleId": "os-subagent-runtime",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "cwd": ".",
+          "ruleId": "workspace-test-selection",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 5608,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-stream-os-ci-contract-gates\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/test-selection.test.js \u001b[2m(\u001b[22m\u001b[2m80 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 5186\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m discovers and seeds the existing test inventory \u001b[33m 1664\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m provisions OS package dependencies before selected OS suites on a clean checkout \u001b[33m 438\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m80 passed\u001b[39m\u001b[22m\u001b[90m (80)\u001b[39m\n\u001b[2m   Start at \u001b[22m 01:22:33\n\u001b[2m   Duration \u001b[22m 5.33s\u001b[2m (transform 24ms, setup 0ms, import 33ms, tests 5.19s, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS durable subagent runtime contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "--no-file-parallelism",
+            "packages/os/tests/subagent-orchestration-contract.test.ts",
+            "packages/os/tests/subagent-lifecycle-regressions.test.ts",
+            "packages/os/tests/subagent-executable-discovery.test.ts",
+            "packages/os/tests/subagent-runner-termination.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-subagent-runtime",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 16819,
+          "outputTail": ".\\n\\nstatus/wait/logs attach to an existing run and never spawn. requestId makes start retries idempotent.\\n\\nRead-only review policy: do not edit files or run shell commands. Use workspace MCP tools for repository and GitHub context. --output-format json\",\"durationMs\":249,\"exitCode\":1,\"traceId\":\"trc_a18e64a43fff\",\"ok\":false,\"code\":\"COMMAND_FAILED\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-11T05:22:54.015Z\"}\n{\"level\":\"info\",\"tool\":\"subagent\",\"command\":\"workspace subagent\",\"implementationCommand\":\"/[REDACTED_SECRET]/.grok/bin/grok --no-auto-update --permission-mode auto --max-turns 32 --deny Edit --deny Write --deny Bash --no-memory --no-subagents -p Use core steering.\\nFollow the instruction file exactly. Prefer workspace tooling when available.\\nReturn valid JSON only.\\n\\nUse workspace tooling first. Raw shell is allowed only as a fallback and must be reported.\\n\\nInstruction file: /Users/kokayi/.[REDACTED_SECRET].md\\n\\nRead the instruction file first. Treat that file as the full user request.\\n\\nstatus/wait/logs attach to an existing run and never spawn. requestId makes start retries idempotent.\\n\\nRead-only review policy: do not edit files or run shell commands. Use workspace MCP tools for repository and GitHub context. --output-format json\",\"durationMs\":231,\"exitCode\":0,\"traceId\":\"trc_dfd05fd2121d\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-11T05:22:54.251Z\"}\n{\"level\":\"info\",\"tool\":\"subagent\",\"command\":\"workspace subagent\",\"implementationCommand\":\"/[REDACTED_SECRET]/.local/bin/agent --no-auto-update --permission-mode auto --max-turns 32 --deny Edit --deny Write --deny Bash --no-memory --no-subagents -p Use core steering.\\nFollow the instruction file exactly. Prefer workspace tooling when available.\\nReturn valid JSON only.\\n\\nUse workspace tooling first. Raw shell is allowed only as a fallback and must be reported.\\n\\nInstruction file: /Users/kokayi/.[REDACTED_SECRET].md\\n\\nRead the instruction file first. Treat that file as the full user request.\\n\\nstatus/wait/logs attach to an existing run and never spawn. requestId makes start retries idempotent.\\n\\nRead-only review policy: do not edit files or run shell commands. Use workspace MCP tools for repository and GitHub context. --output-format json\",\"durationMs\":244,\"exitCode\":0,\"traceId\":\"trc_49abf5cb90fa\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-11T05:22:54.500Z\"}\n{\"level\":\"info\",\"tool\":\"subagent\",\"command\":\"workspace subagent\",\"implementationCommand\":\"/[REDACTED_SECRET] --no-auto-update --permission-mode auto --max-turns 32 --deny Edit --deny Write --deny Bash --no-memory --no-subagents -p Use core steering.\\nFollow the instruction file exactly. Prefer workspace tooling when available.\\nReturn valid JSON only.\\n\\nUse workspace tooling first. Raw shell is allowed only as a fallback and must be reported.\\n\\nInstruction file: /Users/kokayi/.[REDACTED_SECRET].md\\n\\nRead the instruction file first. Treat that file as the full user request.\\n\\nstatus/wait/logs attach to an existing run and never spawn. requestId makes start retries idempotent.\\n\\nRead-only review policy: do not edit files or run shell commands. Use workspace MCP tools for repository and GitHub context. --output-format json\",\"durationMs\":232,\"exitCode\":0,\"traceId\":\"trc_9476b841899e\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-11T05:22:54.736Z\"}\n{\"level\":\"info\",\"tool\":\"subagent\",\"command\":\"workspace subagent\",\"implementationCommand\":\"/[REDACTED_SECRET] -p\",\"durationMs\":26,\"exitCode\":127,\"traceId\":\"trc_cc141022b6a3\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-11T05:22:54.766Z\"}\n"
+        },
+        {
+          "name": "OS subagent syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "cwd": ".",
+          "ruleId": "os-subagent-runtime",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1873,
+          "outputTail": "workspace script syntax checks passed\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

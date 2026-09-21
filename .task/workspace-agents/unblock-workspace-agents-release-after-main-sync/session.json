@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_1b92ea9214f2",
+  "tmuxSession": "opensaas-workspace-agents-unblock-workspace-agents-release-after-main-sync-1b92ea92",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/unblock-workspace-agents-release-after-main-sync",
+  "branch": "task/workspace-agents/unblock-workspace-agents-release-after-main-sync",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-unblock-workspace-agents-release-after-main-sync",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-unblock-workspace-agents-release-after-main-sync",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2237,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2237",
+  "createdAt": "2026-08-27T00:48:59.256Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-unblock-workspace-agents-release-after-main-sync/.task/workspace-agents/unblock-workspace-agents-release-after-main-sync/session.json"
+}

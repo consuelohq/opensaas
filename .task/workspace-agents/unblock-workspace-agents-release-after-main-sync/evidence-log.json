@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "worktree_id": "task/workspace-agents/unblock-workspace-agents-release-after-main-sync",
+  "events": [
+    {
+      "id": "122e3fd6-3f51-41f5-a017-9028ad9d5f9b",
+      "occurred_at": "2026-08-27T00:49:18.313Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/audit/script-parity-audit.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/unblock-workspace-agents-release-after-main-sync",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/unblock-workspace-agents-release-after-main-sync"
+      }
+    },
+    {
+      "id": "02066847-d0d2-4e03-9c0c-c192eed1c18f",
+      "occurred_at": "2026-08-27T00:49:35.172Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/workspace-project-cwd.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/unblock-workspace-agents-release-after-main-sync",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/unblock-workspace-agents-release-after-main-sync"
+      }
+    },
+    {
+      "id": "bcd4a848-e61c-4054-8b20-07c97159ed5b",
+      "occurred_at": "2026-08-27T00:53:52.609Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/test-selection.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/unblock-workspace-agents-release-after-main-sync",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/unblock-workspace-agents-release-after-main-sync"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-27T00:53:52.670Z"
+}

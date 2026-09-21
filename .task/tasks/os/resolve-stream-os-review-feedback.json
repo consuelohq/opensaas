@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/resolve-stream-os-review-feedback",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2356,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2356",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-resolve-stream-os-review-feedback",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_430a9b74bd33",
+  "tmuxSession": "opensaas-os-resolve-stream-os-review-feedback-430a9b74",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-resolve-stream-os-review-feedback/.task/session.json",
+  "createdAt": "2026-09-01T01:12:58.975Z"
+}

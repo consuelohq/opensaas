@@ -1,0 +1,30 @@
+{
+  "files": [
+    ".github/workflows/consuelo-os-runtime-publish.yaml",
+    ".task/os/add-one-command-release-and-update-tool/workpad.md",
+    "packages/documentation/src/content/docs/reference/tools.mdx",
+    "packages/os/docs/distribution/release-channels.md",
+    "packages/os/scripts/github.js",
+    "packages/os/scripts/lib/distribution/release-channels.ts",
+    "packages/os/scripts/lib/lifecycle/engine.ts",
+    "packages/os/scripts/lib/release-orchestrator.ts",
+    "packages/os/scripts/release-channels.ts",
+    "packages/os/scripts/release.ts",
+    "packages/os/tests/distribution/release-channels.test.ts",
+    "packages/os/tests/lifecycle-facade.test.ts",
+    "packages/os/tests/lifecycle-tool-surface.test.ts",
+    "packages/os/tests/tool-manifest.test.ts",
+    "packages/os/tests/tool-package-layout.test.ts",
+    "packages/os/tools/deployment-provider/handler.ts",
+    "packages/os/tools/deployment-provider/manifest.ts",
+    "packages/os/tools/deployment-provider/schema.ts",
+    "packages/os/tools/lifecycle/handler.ts",
+    "packages/os/tools/lifecycle/schema.ts",
+    "packages/os/tools/package.ts",
+    "packages/os/tools/registry.ts",
+    "packages/workspace/scripts/task-push.js",
+    "packages/workspace/scripts/verify.js",
+    "packages/workspace/test-selection.rules.json"
+  ],
+  "updatedAt": "2026-08-26T02:50:28.343Z"
+}

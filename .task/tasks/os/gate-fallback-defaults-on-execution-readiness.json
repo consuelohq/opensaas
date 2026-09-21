@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/gate-fallback-defaults-on-execution-readiness",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2294,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2294",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-gate-fallback-defaults-on-execution-readiness",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_d37800a1dbae",
+  "tmuxSession": "opensaas-os-gate-fallback-defaults-on-execution-readiness-d37800a1",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-gate-fallback-defaults-on-execution-readiness/.task/session.json",
+  "createdAt": "2026-08-29T06:43:22.456Z"
+}

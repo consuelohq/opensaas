@@ -1,0 +1,64 @@
+---
+title: Workflows
+description: Give long-running work a shape that survives multiple chats, agents, tasks, and days.
+status: preview
+verifiedAt: 2026-08-15
+evidence:
+  - source: packages/os/skills/branch/SKILL.md
+    tests:
+      - packages/os/tests/branch-skill.test.ts
+    runtime: The Branch workflow contract and its terminal finalization rules were verified on 2026-08-15.
+  - source: packages/workspace/scripts/task-start.js
+    tests:
+      - packages/documentation/tests/navigation-memory.test.ts
+    runtime: Task isolation and stream integration remain the execution layer beneath workflow planning.
+---
+
+Workflows give long-running work a shape that people and agents can keep in working memory.
+
+The first workflow is **Branch Graph**. It takes one large planning session, turns it into a dependency graph of small work IDs, sends focused units into separate chats or task branches, and brings the whole graph back through one required finalization node.
+
+## Why workflows exist
+
+Large work has two different problems:
+
+1. **Execution management** — what must happen, in what order, and what can run in parallel.
+2. **Context management** — which chat or agent needs which slice of the plan, and where durable truth lives after sibling conversations diverge.
+
+A workflow solves both by giving the work explicit boundaries and a durable rejoin point.
+
+The parent conversation can keep the long-horizon architecture. Focused chats can spend their working memory on one bounded problem. The repository, workpads, task PRs, and streams preserve what actually happened.
+
+## Available workflow
+
+### [Branch Graph](/workflows/branch-graph/)
+
+Use Branch Graph for a phase, epic, migration, or long planning session that is too large for one safe task or PR. It provides:
+
+- compact issue-style work IDs such as `D0`, `M1`, or `OS2`;
+- explicit dependency arrows and parallel waves;
+- focused branched chats with bounded contracts;
+- streams as integration memory between parallel work;
+- an optional fresh subagent review near the end;
+- a required final cleanup node that reconciles every task and review before shipping.
+
+The workflow is most useful when the planning conversation contains more context than any one implementation chat should carry.
+
+## The durable memory model
+
+A workflow does not depend on every agent remembering every conversation.
+
+```text
+parent chat        -> why, architecture, dependency graph
+work ID            -> one bounded contract
+child chat         -> focused working memory
+workpad + task PR  -> durable execution evidence
+stream             -> integration memory across sibling work
+finalization node  -> review, cleanup, shipping, local sync
+```
+
+This separation lets work continue for days without turning one chat into an unbounded transcript.
+
+## Technical workflow plumbing
+
+The repository also has lower-level task workflow machinery documented under [Build workflows](/build/workflows/). That surface explains execution plumbing. This section explains the human and agent coordination model that sits above it.

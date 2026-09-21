@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_7b4f167bc35f",
+  "tmuxSession": "opensaas-dialer-algorithm-classify-latest-main-os-scripts-before-stream-sy-7b4f167b",
+  "area": "dialer-algorithm",
+  "stream": "stream/dialer-algorithm",
+  "taskBranch": "task/dialer-algorithm/classify-latest-main-os-scripts-before-stream-sync",
+  "branch": "task/dialer-algorithm/classify-latest-main-os-scripts-before-stream-sync",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-classify-latest-main-os-scripts-before-stream-sync",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-classify-latest-main-os-scripts-before-stream-sync",
+  "prNumber": 2093,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2093",
+  "createdAt": "2026-08-15T20:12:49.417Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-classify-latest-main-os-scripts-before-stream-sync/.task/dialer-algorithm/classify-latest-main-os-scripts-before-stream-sync/session.json"
+}

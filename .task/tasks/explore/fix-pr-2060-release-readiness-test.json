@@ -1,0 +1,16 @@
+{
+  "area": "explore",
+  "stream": "stream/explore",
+  "taskBranch": "task/explore/fix-pr-2060-release-readiness-test",
+  "baseBranch": "stream/explore",
+  "sourceBranch": "stream/explore",
+  "startFrom": "stream",
+  "prNumber": 2284,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2284",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-explore-fix-pr-2060-release-readiness-test",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_aedc63531dae",
+  "tmuxSession": "opensaas-explore-fix-pr-2060-release-readiness-test-aedc6353",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-explore-fix-pr-2060-release-readiness-test/.task/session.json",
+  "createdAt": "2026-08-29T04:44:47.117Z"
+}

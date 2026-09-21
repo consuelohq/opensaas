@@ -234,6 +234,16 @@ export function installSealedCredential(input: {
     'workspace ID',
   );
   const nodeId = requiredIdentifier(input.recipient?.nodeId, 'node ID');
+  const existing = readRecord(recordPath(input.home, bindingId));
+  if (
+    existing &&
+    (existing.workspaceId !== workspaceId || existing.nodeId !== nodeId)
+  ) {
+    fail(
+      'InvalidInput',
+      'sealed credential binding is already owned by a different workspace or node',
+    );
+  }
 
   // Throws on any recipient mismatch or tampering before anything touches disk.
   const plaintext = openSealedCredential({
@@ -257,7 +267,6 @@ export function installSealedCredential(input: {
       cipher.final(),
     ]);
     const timestamp = (input.now?.() ?? new Date()).toISOString();
-    const existing = readRecord(recordPath(input.home, bindingId));
     record = {
       version: RECORD_VERSION,
       workspaceId,
