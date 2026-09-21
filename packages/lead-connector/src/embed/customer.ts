@@ -25,7 +25,7 @@ export type CustomerCallbackResult = {
     deadline?: string;
   };
   booking: {
-    status: 'unavailable' | 'requested' | 'confirmed' | 'cancelled' | 'cancel_pending';
+    status: 'unavailable' | 'requested' | 'confirmed' | 'cancelled' | 'cancel_pending' | 'booking_pending';
     providerReference?: string | null;
     evidenceReference?: string | null;
   };
@@ -83,6 +83,7 @@ const renderBookingTruth = (
   const cancelled = result.callback.status === 'cancelled';
   const cancellationPending =
     result.callback.status === 'cancel_pending' || booking.status === 'cancel_pending';
+  const bookingPending = booking.status === 'booking_pending';
   const confirmed =
     booking.status === 'confirmed' &&
     Boolean(booking.providerReference) &&
@@ -94,19 +95,23 @@ const renderBookingTruth = (
       : result.callback.status === 'exhausted'
         ? { title: 'Callback attempts finished', detail: 'We could not complete your callback within the allowed attempts. You can call us or request another callback.' }
         : null;
-  const canManage = !terminalMessage && !cancelled && !cancellationPending;
+  const canManage = !terminalMessage && !cancelled && !cancellationPending && !bookingPending;
   const title = terminalMessage?.title ?? (cancelled
     ? 'Callback cancelled'
     : cancellationPending
       ? 'Cancellation pending'
-      : confirmed
+      : bookingPending
+        ? 'Booking confirmation pending'
+        : confirmed
         ? 'Appointment confirmed'
         : 'Callback requested');
   const detail = terminalMessage?.detail ?? (cancelled
     ? 'This callback has been cancelled.'
     : cancellationPending
       ? 'We are confirming the cancellation. It has not been marked complete yet.'
-      : confirmed
+      : bookingPending
+        ? 'Your callback request is saved. We are checking whether the calendar booking completed.'
+        : confirmed
         ? 'The calendar provider returned confirmation evidence.'
     : booking.status === 'requested'
       ? 'The booking request is still awaiting provider confirmation.'

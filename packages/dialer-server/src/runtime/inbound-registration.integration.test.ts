@@ -73,6 +73,26 @@ suite('inbound runtime configured rep registration', () => {
     } finally { await runtime?.close(); }
   });
 
+  it('requires fresh readiness after restarting with a replacement rep endpoint', async () => {
+    const original = [{ workspaceId: 'device-workspace', repId: 'rep',
+      endpointId: 'old-browser', kind: 'browser' as const, address: 'old-device' }];
+    await reconcileConfiguredRepCapacity(pool, original);
+    const authority = createPostgresRepCapacity(pool);
+    const registered = (await authority.read('device-workspace', 'rep'))!;
+    await authority.execute({ workspaceId: 'device-workspace', capacityId: 'rep',
+      expectedVersion: registered.version, operationId: 'device-ready',
+      action: { type: 'readiness', ready: true,
+        endpoints: [{ endpointId: 'old-browser', kind: 'browser', healthy: true }] } });
+    await reconcileConfiguredRepCapacity(pool, [{ ...original[0]!,
+      endpointId: 'new-browser', address: 'new-device' }]);
+    const restarted = (await authority.read('device-workspace', 'rep'))!;
+    expect(restarted.ready).toBe(false);
+    expect(restarted.endpoints.some((endpoint) => endpoint.healthy)).toBe(false);
+    await reconcileConfiguredRepCapacity(pool, [{ ...original[0]!,
+      endpointId: 'new-browser', address: 'new-device' }]);
+    expect((await authority.read('device-workspace', 'rep'))?.version).toBe(restarted.version);
+  });
+
   it('registers each configured rep before the runtime exposes inbound routes', async () => {
     await reconcileConfiguredRepCapacity(pool, [
       {

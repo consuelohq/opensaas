@@ -1,3 +1,4 @@
+import { CALLBACK_BOOKING_ATTEMPTS_MIGRATION_ID, CREATE_CALLBACK_BOOKING_ATTEMPTS_SQL, DROP_CALLBACK_BOOKING_ATTEMPTS_SQL } from '../inbound/callback-booking-attempt-migration';
 import {
   CALLBACK_MIGRATION_ID,
   CREATE_CALLBACK_SQL,
@@ -392,6 +393,11 @@ const migrations: readonly Migration[] = [
       database.query(CREATE_CALLBACK_BOOKING_EVENTS_SQL).then(() => undefined),
     down: (database) =>
       database.query(DROP_CALLBACK_BOOKING_EVENTS_SQL).then(() => undefined),
+  },
+  {
+    id: CALLBACK_BOOKING_ATTEMPTS_MIGRATION_ID,
+    up: (database) => database.query(CREATE_CALLBACK_BOOKING_ATTEMPTS_SQL).then(() => undefined),
+    down: (database) => database.query(DROP_CALLBACK_BOOKING_ATTEMPTS_SQL).then(() => undefined),
   },
 ];
 

@@ -174,6 +174,23 @@ describe('public customer callback surface', () => {
     expect(html).not.toContain('Callback cancelled');
   });
 
+  it('shows an unknown booking outcome without offering conflicting management actions', () => {
+    const html = renderCustomerEntry({
+      phase: 'ready', snapshot, error: null,
+      result: {
+        managementToken: 'opaque-token',
+        callback: { status: 'scheduled' },
+        booking: { status: 'booking_pending', providerReference: null, evidenceReference: null },
+      },
+    });
+    expect(html).toContain('Booking confirmation pending');
+    expect(html).toContain('Refresh');
+    expect(html).not.toContain('Cancellation pending');
+    expect(html).not.toContain('Appointment confirmed');
+    expect(html).not.toContain('Reschedule callback');
+    expect(html).not.toContain('Cancel callback');
+  });
+
   it('coalesces a double-submit onto one idempotent callback request', async () => {
     let requests = 0;
     let resolveRequest: ((value: unknown) => void) | undefined;

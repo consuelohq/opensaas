@@ -1,3 +1,4 @@
+import { CALLBACK_BOOKING_ATTEMPTS_MIGRATION_ID } from './callback-booking-attempt-migration';
 import { afterEach, beforeEach, describe, expect, it } from 'bun:test';
 import { randomUUID } from 'node:crypto';
 import { Pool } from 'pg';
@@ -297,6 +298,7 @@ suite('RD6 callbacks with real Postgres', () => {
   });
 
   it('blocks rollback until callback obligations are terminal and retained recipients are purged', async () => {
+    await rollbackDialerDatabaseMigration(pool, CALLBACK_BOOKING_ATTEMPTS_MIGRATION_ID);
     await rollbackDialerDatabaseMigration(pool, CALLBACK_BOOKING_EVENTS_MIGRATION_ID);
     await rollbackDialerDatabaseMigration(pool, CUSTOMER_ENTRY_MIGRATION_ID);
     await request();
@@ -312,6 +314,7 @@ suite('RD6 callbacks with real Postgres', () => {
       );
     }
 
+    await migrateDialerDatabase(pool);
     seconds = 30;
     await callbacks.cancel({
       workspaceId: 'workspace',
@@ -322,6 +325,9 @@ suite('RD6 callbacks with real Postgres', () => {
     expect((await callbacks.read('workspace', 'callback-one'))!.state.status).toBe(
       'cancelled',
     );
+    await rollbackDialerDatabaseMigration(pool, CALLBACK_BOOKING_ATTEMPTS_MIGRATION_ID);
+    await rollbackDialerDatabaseMigration(pool, CALLBACK_BOOKING_EVENTS_MIGRATION_ID);
+    await rollbackDialerDatabaseMigration(pool, CUSTOMER_ENTRY_MIGRATION_ID);
     try {
       await rollbackDialerDatabaseMigration(pool, CALLBACK_MIGRATION_ID);
       throw new Error('Expected retained callback recipient to block rollback');
@@ -450,6 +456,72 @@ suite('RD6 callbacks with real Postgres', () => {
        WHERE obligation.workspace_id='workspace' AND obligation.callback_id='callback-one'`,
     );
     expect(JSON.stringify(raw.rows)).not.toContain('+18285550123');
+  });
+
+  it('claims calendar creation once across concurrency and reconciles its unknown outcome after restart', async () => {
+    await request();
+    let bookings = 0;
+    let resolve: (() => void) | undefined;
+    const pending = new Promise<void>((done) => { resolve = done; });
+    let entered: (() => void) | undefined;
+    const dispatched = new Promise<void>((done) => { entered = done; });
+    let known = false;
+    const adapter = {
+      book: async () => { bookings++; entered!(); if (bookings === 2) resolve!(); await pending; throw new Error('booking response lost'); },
+      cancel: async () => ({ status: 'unavailable' as const, providerReference: null, evidenceReference: null }),
+      reconcileBooking: async () => known
+        ? { status: 'confirmed' as const, providerReference: 'one-booking', evidenceReference: 'observed-booking' }
+        : null,
+    };
+    const service = makeService(adapter);
+    const first = service.book('workspace', 'callback-one');
+    const firstSettled = first.catch((error: unknown) => error);
+    await dispatched;
+    const second = service.book('workspace', 'callback-one');
+    await second.catch((error: unknown) => error);
+    resolve!();
+    await firstSettled;
+    expect(bookings).toBe(1);
+    expect(await makeService(adapter).readBooking('workspace', 'callback-one', 1))
+      .toMatchObject({ status: 'booking_pending' });
+    await expect(service.cancel({ workspaceId: 'workspace', callbackId: 'callback-one',
+      operationId: 'cancel-unknown-booking', reconciled: false })).rejects.toThrow('creation outcome is unknown');
+    await expect(service.reschedule({ workspaceId: 'workspace', callbackId: 'callback-one',
+      operationId: 'reschedule-unknown-booking', timezone: 'UTC', notBefore: at(30), deadline: at(120) }))
+      .rejects.toThrow('creation outcome is unknown');
+    expect((await service.read('workspace', 'callback-one'))?.state.revision).toBe(1);
+    await expect(pool.query('UPDATE dialer_callback_booking_attempts SET revision=2'))
+      .rejects.toThrow();
+    const rollback = await rollbackDialerDatabaseMigration(pool, CALLBACK_BOOKING_ATTEMPTS_MIGRATION_ID)
+      .catch((error: unknown) => error);
+    expect(rollback).toBeInstanceOf(Error);
+    expect((rollback as Error).cause).toMatchObject({ message: 'Retain callback booking attempt evidence before rollback' });
+    known = true;
+    const results = await Promise.all([makeService(adapter).book('workspace', 'callback-one'),
+      makeService(adapter).book('workspace', 'callback-one')]);
+    expect(results).toEqual([results[0], results[0]]);
+    expect(results[0]).toMatchObject({ status: 'confirmed', providerReference: 'one-booking' });
+    expect(bookings).toBe(1);
+    expect((await pool.query('SELECT * FROM dialer_callback_bookings')).rowCount).toBe(1);
+  });
+
+  it('rejects stale management before cancelling the newly selected revision', async () => {
+    await request();
+    let cancellations = 0;
+    const service = makeService({
+      book: async (input) => ({ status: 'confirmed', providerReference: `booking-${input.revision}`, evidenceReference: 'evidence' }),
+      cancel: async (input) => { cancellations++; return { status: 'cancelled', providerReference: input.providerReference, evidenceReference: 'cancel-evidence' }; },
+    });
+    await service.book('workspace', 'callback-one');
+    await service.reschedule({ workspaceId: 'workspace', callbackId: 'callback-one',
+      operationId: 'first-window', timezone: 'UTC', notBefore: at(30), deadline: at(120) });
+    await service.book('workspace', 'callback-one');
+    const stale = { workspaceId: 'workspace', callbackId: 'callback-one',
+      operationId: 'stale-window', expectedRevision: 1, timezone: 'UTC', notBefore: at(60), deadline: at(150) };
+    await expect(service.reschedule(stale)).rejects.toThrow('revision changed');
+    expect(cancellations).toBe(1);
+    expect((await service.read('workspace', 'callback-one'))?.state.revision).toBe(2);
+    expect(await service.readBooking('workspace', 'callback-one', 2)).toMatchObject({ status: 'confirmed', providerReference: 'booking-2' });
   });
 
   it('reconciles a lost calendar cancellation after restart and restores management without duplicate effects', async () => {
