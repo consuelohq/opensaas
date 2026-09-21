@@ -1,7 +1,7 @@
 FROM oven/bun:1.3.14 AS dependencies
 WORKDIR /app
 COPY . .
-RUN bun install --frozen-lockfile
+RUN bun install --frozen-lockfile --ignore-scripts
 
 FROM oven/bun:1.3.14 AS build
 WORKDIR /app
