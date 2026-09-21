@@ -1558,7 +1558,12 @@
         "packages/os/tests/launcher-local-customization.test.ts",
         "packages/os/tests/install-state.test.ts",
         "packages/os/tests/local-agent-connectivity.test.ts",
-        "packages/os/tests/internal-launcher-regressions.test.ts"
+        "packages/os/tests/internal-launcher-regressions.test.ts",
+        "packages/os/scripts/server/routes/artifacts.ts",
+        "packages/os/scripts/server/services/artifact-sharing.ts",
+        "packages/os/tests/artifact-sharing-links.test.ts",
+        "packages/os/tests/artifacts-hono-routes.test.ts",
+        "packages/os/tests/artifacts-edge-routing.test.ts"
       ],
       "tests": [
         {
@@ -1570,6 +1575,9 @@
             "test",
             "--no-file-parallelism",
             "tests/artifacts.test.ts",
+            "tests/artifacts-edge-routing.test.ts",
+            "tests/artifacts-hono-routes.test.ts",
+            "tests/artifact-sharing-links.test.ts",
             "tests/settings-site.test.ts",
             "tests/settings-control-plane.test.ts",
             "tests/launcher-nodes-materialization.test.ts",

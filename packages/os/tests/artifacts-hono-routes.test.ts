@@ -163,6 +163,12 @@ describe('Hono Artifacts routes', () => {
       { method: 'GET', path: '/gateway/artifacts', trust: 'signed' },
       { method: 'GET', path: '/gateway/artifacts/:artifactId', trust: 'signed' },
       { method: 'GET', path: '/gateway/artifacts/:artifactId/versions', trust: 'signed' },
+      { method: 'GET', path: '/gateway/artifacts/:artifactId/shares', trust: 'signed' },
+      { method: 'POST', path: '/gateway/artifacts/:artifactId/shares', trust: 'signed' },
+      { method: 'DELETE', path: '/gateway/artifacts/:artifactId/shares/:shareId', trust: 'signed' },
+      { method: 'GET', path: '/share/artifacts/:shareId', trust: 'public' },
+      { method: 'GET', path: '/share/artifacts/:shareId/*', trust: 'public' },
+      { method: 'POST', path: '/share/artifacts/:shareId/claim', trust: 'public' },
     ]));
     expect(readFileSync(new URL('../scripts/server/app.ts', import.meta.url), 'utf8')).toContain(
       "app.route('/', createArtifactRoutes());",

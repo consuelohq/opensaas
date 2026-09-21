@@ -432,6 +432,7 @@ function renderArtifactsIndex(
           <h3><a href="${escapeHtml(entry.url)}">${escapeHtml(entry.title)}</a></h3>
           <div class="post-meta">▣ Updated <time datetime="${escapeHtml(entry.updatedAt)}">${escapeHtml(new Date(entry.updatedAt).toLocaleDateString('en-US'))}</time> · ${entry.versionCount} version${entry.versionCount === 1 ? '' : 's'}</div>
           <p>${escapeHtml(entry.path)}</p>
+          <div class="post-actions"><button type="button" data-share-artifact data-artifact-id="${escapeHtml(entry.id)}" data-artifact-title="${escapeHtml(entry.title)}">Share</button></div>
         </article>`).join('');
   const searchData = JSON.stringify(entries.map((entry) => ({
     id: entry.id,
@@ -488,6 +489,9 @@ function renderArtifactsIndex(
     .post-list { display:grid; gap:26px; }
     .post-item h3 { margin:0 0 6px; font-size:17px; line-height:1.45; }
     .post-meta, .post-item p { margin:0 0 4px; color:var(--quiet); font-size:13px; line-height:1.5; }
+    .post-actions { margin-top:8px; }
+    .post-actions button { color:var(--muted); font-size:13px; }
+    .post-actions button[aria-busy="true"] { cursor:wait; opacity:.62; }
     .empty { color:var(--quiet); }
     footer { padding:24px 0 0; color:var(--muted); font-size:13px; }
     [hidden] { display:none !important; }
@@ -529,6 +533,52 @@ function renderArtifactsIndex(
     for (const button of buttons) button.addEventListener('click', () => { activeFilter = button.dataset.filter || 'all'; for (const candidate of buttons) candidate.classList.toggle('active', candidate === button); apply(); });
     document.querySelector('[data-search-toggle]')?.addEventListener('click', () => { searchRow.hidden = !searchRow.hidden; if (!searchRow.hidden) input.focus(); });
     input?.addEventListener('input', apply);
+    for (const shareButton of document.querySelectorAll('[data-share-artifact]')) {
+      shareButton.addEventListener('click', async () => {
+        if (!(shareButton instanceof HTMLButtonElement) || shareButton.getAttribute('aria-busy') === 'true') return;
+        const artifactId = String(shareButton.dataset.artifactId || '').trim();
+        const title = String(shareButton.dataset.artifactTitle || 'Consuelo artifact').trim();
+        if (!artifactId) return;
+        const originalLabel = shareButton.textContent || 'Share';
+        shareButton.setAttribute('aria-busy', 'true');
+        shareButton.textContent = 'Creating link…';
+        try {
+          const response = await fetch('/gateway/artifacts/' + encodeURIComponent(artifactId) + '/shares', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({}),
+          });
+          if (!response.ok) throw new Error('share link request failed');
+          const payload = await response.json();
+          const relativeUrl = String(payload?.share?.url || '');
+          if (!relativeUrl) throw new Error('share link missing');
+          const url = new URL(relativeUrl, location.origin).toString();
+          if (navigator.share) {
+            try {
+              await navigator.share({ title, url });
+              shareButton.textContent = 'Shared';
+            } catch {
+              shareButton.textContent = originalLabel;
+              return;
+            }
+          } else if (navigator.clipboard?.writeText) {
+            await navigator.clipboard.writeText(url);
+            shareButton.textContent = 'Copied';
+          } else {
+            window.prompt('Copy this private link', url);
+            shareButton.textContent = 'Link ready';
+          }
+        } catch {
+          shareButton.textContent = 'Try again';
+        } finally {
+          shareButton.removeAttribute('aria-busy');
+          window.setTimeout(() => {
+            if (shareButton.textContent !== 'Try again') shareButton.textContent = originalLabel;
+          }, 1800);
+        }
+      });
+    }
   </script>
 </body>
 </html>`;

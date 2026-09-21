@@ -2,8 +2,8 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2711,
-    "mappedTestCount": 2627,
+    "testFileCount": 2712,
+    "mappedTestCount": 2628,
     "unmappedTestCount": 84,
     "ruleCount": 84,
     "explicitRuleCount": 65,
@@ -11,7 +11,7 @@
     "projectCount": 15,
     "packageTestScriptCount": 19,
     "byGroup": {
-      "packages/os/tests": 311,
+      "packages/os/tests": 312,
       "packages/workspace/tests": 67,
       "packages/twenty-server/test/integration/graphql/utils": 65,
       "packages/twenty-sdk/src/cli": 51,
@@ -636,7 +636,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 607,
+      "test": 608,
       "spec": 161,
       "tests-dir": 8,
       "other": 7,
@@ -2236,7 +2236,12 @@
         "packages/os/tests/launcher-local-customization.test.ts",
         "packages/os/tests/install-state.test.ts",
         "packages/os/tests/local-agent-connectivity.test.ts",
-        "packages/os/tests/internal-launcher-regressions.test.ts"
+        "packages/os/tests/internal-launcher-regressions.test.ts",
+        "packages/os/scripts/server/routes/artifacts.ts",
+        "packages/os/scripts/server/services/artifact-sharing.ts",
+        "packages/os/tests/artifact-sharing-links.test.ts",
+        "packages/os/tests/artifacts-hono-routes.test.ts",
+        "packages/os/tests/artifacts-edge-routing.test.ts"
       ],
       "tests": [
         {
@@ -2248,6 +2253,9 @@
             "test",
             "--no-file-parallelism",
             "tests/artifacts.test.ts",
+            "tests/artifacts-edge-routing.test.ts",
+            "tests/artifacts-hono-routes.test.ts",
+            "tests/artifact-sharing-links.test.ts",
             "tests/settings-site.test.ts",
             "tests/settings-control-plane.test.ts",
             "tests/launcher-nodes-materialization.test.ts",
@@ -4782,6 +4790,11 @@
     },
     {
       "path": "packages/os/tests/artifact-render.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/artifact-sharing-links.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },

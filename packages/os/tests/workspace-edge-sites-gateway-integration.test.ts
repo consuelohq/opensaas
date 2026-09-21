@@ -591,7 +591,21 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
       },
     });
 
-    const gatewayRoutes = record.routes.filter((route) => route.target.kind === 'consuelo-gateway-service');
+    const gatewayRoutes = record.routes.filter(
+      (route) => route.target.kind === 'consuelo-gateway-service' && route.auth === 'workspace-session',
+    );
+    const publicGatewayRoutes = record.routes.filter(
+      (route) => route.target.kind === 'consuelo-gateway-service' && route.auth === 'public',
+    );
+    expect(publicGatewayRoutes).toEqual([
+      expect.objectContaining({
+        pathPrefix: '/share/artifacts',
+        target: expect.objectContaining({
+          serviceName: 'artifacts-sites-share-layer',
+          gatewayRouteFamily: '/share/artifacts/*',
+        }),
+      }),
+    ]);
     expect(gatewayRoutes.length).toBeGreaterThan(0);
     for (const route of gatewayRoutes) {
       expect(route.auth).toBe('workspace-session');
