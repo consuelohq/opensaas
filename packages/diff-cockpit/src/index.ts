@@ -3196,7 +3196,7 @@ body[data-review-drawer="open"] .review-panel-backdrop { display:block; }
 .badge { display:inline-flex; align-items:center; border:1px solid var(--line); border-radius:999px; padding:2px 7px; font-size:11px; color:var(--muted); background:var(--surface); }
 .kbd { font:11px/1.2 "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; border:1px solid var(--line); border-radius:5px; padding:2px 5px; background:var(--soft); color:var(--ink); }
 .error { border:1px solid var(--danger); color:var(--danger); background:var(--surface); padding:14px; border-radius:10px; }
-@media (min-width: 761px) and (max-width: 1180px) {
+@media (min-width: 761px) and (max-width: 1366px) {
   .review-page .layout { grid-template-columns:minmax(0, 1fr); }
   .review-page .file-pane-resizer { display:none; }
   .review-page .file-pane { position:fixed; left:0; top:76px; bottom:0; width:min(420px, 88vw); z-index:9; transform:translateX(-102%); transition:transform .18s ease; border-right:1px solid var(--line); border-top:0; box-shadow:20px 0 50px rgba(0,0,0,.32); }
@@ -4563,7 +4563,46 @@ function markdownHeadingLevel(value) {
 function renderInlineMarkdown(value) {
   const backtick = String.fromCharCode(96);
   const escaped = replaceDelimited(replaceDelimited(escapeHtml(String(value || '')), backtick, '<code>', '</code>'), '**', '<strong>', '</strong>');
-  return restoreSafeMarkdownTags(renderMarkdownLinks(escaped));
+  return restoreSafeMarkdownTags(renderMarkdownLinks(renderInlineEmphasis(escaped)));
+}
+
+function renderInlineEmphasis(value) {
+  return replaceInlineEmphasisMarker(
+    replaceInlineEmphasisMarker(String(value || ''), '_'),
+    '*',
+  );
+}
+
+function replaceInlineEmphasisMarker(value, marker) {
+  const whitespace = String.fromCharCode(9, 10);
+  const openBoundary = ' ([{>' + whitespace;
+  const closeBoundary = ' )]},.!?:;<' + whitespace;
+  let output = '';
+  let cursor = 0;
+  while (cursor < value.length) {
+    const start = value.indexOf(marker, cursor);
+    if (start === -1) return output + value.slice(cursor);
+    const before = start > 0 ? value.charAt(start - 1) : '';
+    const insideCode = value.lastIndexOf('<code>', start) > value.lastIndexOf('</code>', start);
+    const insideStrong = value.lastIndexOf('<strong>', start) > value.lastIndexOf('</strong>', start);
+    if (insideCode || insideStrong || (before && !openBoundary.includes(before))) {
+      output += value.slice(cursor, start + marker.length);
+      cursor = start + marker.length;
+      continue;
+    }
+    const end = value.indexOf(marker, start + marker.length);
+    if (end === -1) return output + value.slice(cursor);
+    const after = end + marker.length < value.length ? value.charAt(end + marker.length) : '';
+    const content = value.slice(start + marker.length, end);
+    if (!content || content.startsWith(' ') || content.endsWith(' ') || (after && !closeBoundary.includes(after))) {
+      output += value.slice(cursor, start + marker.length);
+      cursor = start + marker.length;
+      continue;
+    }
+    output += value.slice(cursor, start) + '<em>' + content + '</em>';
+    cursor = end + marker.length;
+  }
+  return output;
 }
 
 function restoreSafeMarkdownTags(value) {
