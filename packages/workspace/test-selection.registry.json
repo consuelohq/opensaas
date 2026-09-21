@@ -2,9 +2,9 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 2733,
-    "mappedTestCount": 2649,
-    "unmappedTestCount": 84,
+    "testFileCount": 2739,
+    "mappedTestCount": 2657,
+    "unmappedTestCount": 82,
     "ruleCount": 84,
     "explicitRuleCount": 65,
     "autoRuleCount": 19,
@@ -50,6 +50,7 @@
       "packages/os/tests/distribution": 13,
       "packages/twenty-front/src/modules/navigation-menu-item/utils": 13,
       "packages/twenty-shared/src/utils/filter/utils": 13,
+      "packages/dialer-server/src/inbound": 12,
       "packages/twenty-server/src/engine/twenty-orm/utils": 12,
       "packages/twenty-server/test/integration/graphql/suites/object-records-permissions": 12,
       "packages/twenty-server/test/integration/metadata/suites/page-layout/utils": 12,
@@ -66,7 +67,7 @@
       "packages/twenty-server/test/integration/metadata/suites/page-layout-widget/utils": 11,
       "packages/twenty-server/test/integration/metadata/suites/role/utils": 11,
       "packages/api/src/routes": 10,
-      "packages/dialer-server/src/inbound": 10,
+      "packages/dialer-server/src/runtime": 10,
       "packages/twenty-front/src/modules/object-metadata/utils": 10,
       "packages/twenty-front/src/modules/object-record/record-field/ui/utils": 10,
       "packages/twenty-server/src/engine/core-modules/billing/utils": 10,
@@ -97,7 +98,6 @@
       "packages/twenty-server/test/integration/metadata/suites/navigation-menu-item/utils": 8,
       "packages/twenty-server/test/integration/metadata/suites/page-layout": 8,
       "packages/twenty-server/test/integration/metadata/suites/view-filter-group/utils": 8,
-      "packages/dialer-server/src/runtime": 7,
       "packages/lead-connector/src": 7,
       "packages/twenty-front/src/modules/favorites/utils": 7,
       "packages/twenty-front/src/modules/object-record/cache/utils": 7,
@@ -342,6 +342,7 @@
       "packages/dialer-server/src/routes": 1,
       "packages/dialer/src": 1,
       "packages/dialer/src/infrastructure/redis": 1,
+      "packages/dialer/src/infrastructure/twilio": 1,
       "packages/dialer/tests": 1,
       "packages/os/tools/artifacts": 1,
       "packages/os/tools/codemode": 1,
@@ -640,7 +641,7 @@
     "byKind": {
       "__tests__": 1237,
       "test-dir": 688,
-      "test": 622,
+      "test": 628,
       "spec": 161,
       "integration": 9,
       "tests-dir": 8,
@@ -2825,9 +2826,19 @@
     {
       "id": "dialer-server-package",
       "source": [
-        "packages/dialer-server/**"
+        "packages/dialer-server/**",
+        "packages/contacts/**"
       ],
       "tests": [
+        {
+          "name": "dialer-server contacts prerequisite",
+          "command": [
+            "yarn",
+            "nx",
+            "run",
+            "@consuelo/contacts:build"
+          ]
+        },
         {
           "name": "dialer-server Hono contracts",
           "command": [
@@ -2838,7 +2849,7 @@
         }
       ],
       "critical": true,
-      "reason": "Dialer server changes must prove Hono transport, Twilio boundary, and standalone lifecycle contracts.",
+      "reason": "Dialer server and shared phone-normalization changes must build contacts runtime exports before proving Hono transport, Twilio boundary, and standalone lifecycle contracts.",
       "origin": "explicit"
     },
     {
@@ -4260,6 +4271,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/dialer-server/src/inbound/callback-booking.test.ts",
+      "group": "packages/dialer-server/src/inbound",
+      "kind": "test"
+    },
+    {
       "path": "packages/dialer-server/src/inbound/callback-recipient-cipher.test.ts",
       "group": "packages/dialer-server/src/inbound",
       "kind": "test"
@@ -4278,6 +4294,11 @@
       "path": "packages/dialer-server/src/inbound/customer-entry.integration.test.ts",
       "group": "packages/dialer-server/src/inbound",
       "kind": "integration"
+    },
+    {
+      "path": "packages/dialer-server/src/inbound/enrichment.test.ts",
+      "group": "packages/dialer-server/src/inbound",
+      "kind": "test"
     },
     {
       "path": "packages/dialer-server/src/inbound/operator.test.ts",
@@ -4375,7 +4396,22 @@
       "kind": "test"
     },
     {
+      "path": "packages/dialer-server/src/runtime/edge-client-identity.test.ts",
+      "group": "packages/dialer-server/src/runtime",
+      "kind": "test"
+    },
+    {
       "path": "packages/dialer-server/src/runtime/embed-session.test.ts",
+      "group": "packages/dialer-server/src/runtime",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/runtime/inbound-customer-entry-activation.test.ts",
+      "group": "packages/dialer-server/src/runtime",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/runtime/inbound-enrichment.test.ts",
       "group": "packages/dialer-server/src/runtime",
       "kind": "test"
     },
@@ -4487,6 +4523,11 @@
     {
       "path": "packages/dialer/src/infrastructure/redis/redis-parallel-store.test.ts",
       "group": "packages/dialer/src/infrastructure/redis",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer/src/infrastructure/twilio/create-outcome.test.ts",
+      "group": "packages/dialer/src/infrastructure/twilio",
       "kind": "test"
     },
     {
@@ -17385,8 +17426,6 @@
     "packages/consuelo-website/tests/site-header.test.mjs",
     "packages/consuelo-website/tests/social-card.test.mjs",
     "packages/consuelo-website/tests/website-structure.test.js",
-    "packages/contacts/src/queues.spec.ts",
-    "packages/contacts/src/utils.spec.ts",
     "packages/documentation/tests/build.test.ts",
     "packages/documentation/tests/connect.test.ts",
     "packages/documentation/tests/foundation.test.ts",

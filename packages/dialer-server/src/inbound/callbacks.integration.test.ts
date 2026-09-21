@@ -452,6 +452,43 @@ suite('RD6 callbacks with real Postgres', () => {
     expect(JSON.stringify(raw.rows)).not.toContain('+18285550123');
   });
 
+  it('reconciles a lost calendar cancellation after restart and restores management without duplicate effects', async () => {
+    await request();
+    let cancellations = 0;
+    let resolved = false;
+    let wrongReference = false;
+    const reconciliationInputs: unknown[] = [];
+    const adapter = {
+      book: async () => ({ status: 'confirmed' as const, providerReference: 'booking-recovery', evidenceReference: 'booking-evidence' }),
+      cancel: async () => { cancellations++; throw new Error('provider response lost'); },
+      reconcileCancellation: async (input: unknown) => {
+        reconciliationInputs.push(input);
+        return resolved
+          ? { status: 'cancelled' as const, providerReference: wrongReference ? 'different-booking' : 'booking-recovery', evidenceReference: 'reconciled-evidence' }
+          : { status: 'unavailable' as const, providerReference: null, evidenceReference: null };
+      },
+    };
+    const first = makeService(adapter);
+    await first.book('workspace', 'callback-one');
+    const command = { workspaceId: 'workspace', callbackId: 'callback-one', operationId: 'cancel-recovery', reconciled: false };
+    await expect(first.cancel(command)).rejects.toThrow('provider response lost');
+    const restarted = makeService(adapter);
+    expect(await restarted.readBooking('workspace', 'callback-one', 1)).toMatchObject({ status: 'cancel_pending' });
+    expect(reconciliationInputs).toHaveLength(1);
+    resolved = true;
+    wrongReference = true;
+    await expect(restarted.cancel(command)).rejects.toThrow();
+    expect(await pool.query("SELECT 1 FROM dialer_callback_booking_events WHERE event_kind='cancelled'").then((result) => result.rowCount)).toBe(0);
+    wrongReference = false;
+    expect(await restarted.readBooking('workspace', 'callback-one', 1)).toMatchObject({ status: 'cancelled', providerReference: 'booking-recovery' });
+    await restarted.cancel(command);
+    await restarted.cancel(command);
+    expect((await restarted.read('workspace', 'callback-one'))?.state.status).toBe('cancelled');
+    expect(cancellations).toBe(1);
+    expect(reconciliationInputs[0]).toMatchObject({ workspaceId: 'workspace', callbackId: 'callback-one', revision: 1, providerReference: 'booking-recovery' });
+    expect(await pool.query("SELECT 1 FROM dialer_callback_booking_events WHERE event_kind='cancelled'").then((result) => result.rowCount)).toBe(1);
+  });
+
   it('does not repeat a provider cancellation after an uncertain dispatched effect', async () => {
     await request();
     let cancellations = 0;

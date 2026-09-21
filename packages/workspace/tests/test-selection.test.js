@@ -1156,22 +1156,24 @@ describe('test selection registry', () => {
     ]);
   });
 
-  it('selects the Hono dialer-server suite for standalone server changes', () => {
-    const result = run([
-      'check',
-      '--changed-file',
-      'packages/dialer-server/src/app.ts',
-      '--json',
-    ]);
-    const data = json(result);
-    const serverSuite = data.selectedSuites.find(
-      (suite) => suite.ruleId === 'dialer-server-package',
+  it.each([
+    'packages/dialer-server/src/app.ts',
+    'packages/contacts/src/utils.ts',
+  ])('builds shared runtime exports before server tests when %s changes', (changedFile) => {
+    const data = json(run(['check', '--changed-file', changedFile, '--json']));
+    const prerequisite = data.selectedSuites.findIndex(
+      (suite) => suite.name === 'dialer-server contacts prerequisite',
     );
-
-    expect(serverSuite?.command).toEqual([
-      'bun',
-      'test',
-      'packages/dialer-server/src',
+    const server = data.selectedSuites.findIndex(
+      (suite) => suite.name === 'dialer-server Hono contracts',
+    );
+    expect(prerequisite).toBeGreaterThanOrEqual(0);
+    expect(server).toBeGreaterThan(prerequisite);
+    expect(data.selectedSuites[prerequisite].command).toEqual([
+      'yarn', 'nx', 'run', '@consuelo/contacts:build',
+    ]);
+    expect(data.selectedSuites[server].command).toEqual([
+      'bun', 'test', 'packages/dialer-server/src',
     ]);
   });
 
