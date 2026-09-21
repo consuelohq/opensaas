@@ -1,0 +1,11 @@
+{
+  "files": [
+    ".task/os/polish-diffs-responsive-panels-and-readability/workpad.md",
+    "packages/diff-cockpit/package.json",
+    "packages/diff-cockpit/src/index.ts",
+    "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+    "packages/documentation/src/styles/docs.css",
+    "packages/os/scripts/server/routes/diffs.ts"
+  ],
+  "updatedAt": "2026-09-21T03:10:55.791Z"
+}
