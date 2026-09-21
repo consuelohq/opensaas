@@ -39,13 +39,56 @@ const protectedProductManifests = [
 ];
 
 const activeOperationalSurfaces = [
+  '.dockerignore',
+  '.gitignore',
+  '.husky/pre-commit',
+  '.cursor/worktrees.json',
+  'AGENTS.md',
+  'eslint.config.mjs',
   'areas/dialer/AGENTS.md',
+  'nx.json',
+  'packages/agent/src/skill-executor.ts',
+  'packages/consuelo-design/RAILWAY.md',
+  'packages/eslint-rules/index.ts',
+  'packages/eslint-rules/project.json',
+  'packages/eslint-rules/rules/mdx-component-newlines.ts',
+  'packages/eslint-rules/rules/no-angle-bracket-placeholders.ts',
   'scripts/code-review.sh',
   'packages/os/SCRIPTS.md',
   'packages/os/operator/prompts/review.md',
   'packages/os/scripts/artifacts-design.ts',
   'packages/os/scripts/ci-plan.ts',
+  'packages/os/scripts/review.js',
+  'packages/workspace/scripts/review.js',
   'packages/workspace/scripts/ci/check-github-workflows.cjs',
+];
+
+const retiredTwentyOperationalSurfaces = [
+  '.agent/init.sh',
+  '.claude/skills/worktree-batch/SKILL.md',
+  '.cursor/rules/README.mdc',
+  '.cursor/rules/architecture.mdc',
+  '.cursor/rules/changelog-process.mdc',
+  '.cursor/rules/code-style.mdc',
+  '.cursor/rules/creating-syncable-entity.mdc',
+  '.cursor/rules/file-structure.mdc',
+  '.cursor/rules/react-general-guidelines.mdc',
+  '.cursor/rules/react-state-management.mdc',
+  '.cursor/rules/server-migrations.mdc',
+  '.cursor/rules/testing-guidelines.mdc',
+  '.cursor/rules/translations.mdc',
+  '.cursor/rules/typescript-guidelines.mdc',
+  '.cursor/skills/syncable-entity-builder-and-validation/SKILL.md',
+  '.cursor/skills/syncable-entity-cache-and-transform/SKILL.md',
+  '.cursor/skills/syncable-entity-integration/SKILL.md',
+  '.cursor/skills/syncable-entity-runner-and-actions/SKILL.md',
+  '.cursor/skills/syncable-entity-testing/SKILL.md',
+  '.cursor/skills/syncable-entity-types-and-constants/SKILL.md',
+  '.github/CLA.md',
+  'tests/postman/consuelo.postman_collection.json',
+  'tests/postman/consuelo.postman_environment.json',
+  'tests/postman/consuelo.local.postman_environment.json',
+  'tests/postman/consuelo.railway.postman_environment.json',
 ];
 
 type PackageManifest = {
@@ -112,6 +155,17 @@ describe('M4 Twenty physical deletion boundary', () => {
       const source = readRepoFile(path);
       expect(source, path).not.toContain('packages/twenty-');
       expect(source, path).not.toContain('packages/create-twenty-app');
+      expect(source, path).not.toContain('twenty-server');
+      expect(source, path).not.toContain('twenty-front');
+      expect(source, path).not.toContain('twenty-shared');
+      expect(source, path).not.toContain('twenty-ui');
+      expect(source, path).not.toContain('twenty-sdk');
+    }
+  });
+
+  it('removes obsolete Twenty-only editor, agent, CLA, and API collection surfaces', () => {
+    for (const path of retiredTwentyOperationalSurfaces) {
+      expect(existsSync(repoPath(path)), path).toBe(false);
     }
   });
 });

@@ -109,4 +109,3 @@ xfs-*/
 /.task/read-log.json
 /.task/explore-state.json
 /.task/handoff.md
-/.task/twenty-server.log

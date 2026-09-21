@@ -72,5 +72,6 @@
     "autoprefixer": "^10.4.21",
     "playwright": "^1.56.1",
     "postcss": "^8.5.3"
-  }
+  },
+  "license": "MIT"
 }
