@@ -137,4 +137,4 @@ bun --cwd packages/os test
 
 ## license
 
-Consuelo OS is MIT licensed.
+Consuelo-owned packages use Apache-2.0 where declared in their package metadata. This repository also contains MIT-licensed and inherited AGPL-3.0 material. See [LICENSE](LICENSE) and [NOTICE](NOTICE) for the exact boundary and attributions.

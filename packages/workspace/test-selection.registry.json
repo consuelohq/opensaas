@@ -2,23 +2,22 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 672,
-    "mappedTestCount": 590,
-    "unmappedTestCount": 82,
-    "ruleCount": 76,
+    "testFileCount": 659,
+    "mappedTestCount": 576,
+    "unmappedTestCount": 83,
+    "ruleCount": 75,
     "explicitRuleCount": 62,
-    "autoRuleCount": 14,
+    "autoRuleCount": 13,
     "projectCount": 9,
     "packageTestScriptCount": 20,
     "byGroup": {
       "packages/os/tests": 312,
-      "packages/workspace/tests": 61,
+      "packages/workspace/tests": 62,
       "packages/os/tests/media": 34,
       "packages/consuelo-design/upstream/open-design/apps/daemon": 21,
       "packages/dialer-server/src": 19,
       "packages/dialer/src/services": 18,
       "packages/consuelo-design/upstream/open-design": 14,
-      "packages/eslint-rules/rules": 14,
       "packages/consuelo-website/tests": 13,
       "packages/lead-connector/src/embed": 13,
       "packages/os/tests/distribution": 13,
@@ -92,8 +91,8 @@
       "tests": 1
     },
     "byKind": {
-      "test": 602,
-      "spec": 43,
+      "test": 603,
+      "spec": 29,
       "__tests__": 11,
       "other": 7,
       "tests-dir": 6,
@@ -2915,27 +2914,6 @@
       "critical": false,
       "reason": "Auto-discovered package test script for packages/consuelo-design/upstream/open-design.",
       "origin": "auto"
-    },
-    {
-      "id": "auto:twenty-eslint-rules:test",
-      "source": [
-        "packages/eslint-rules/**"
-      ],
-      "tests": [
-        {
-          "name": "twenty-eslint-rules test",
-          "command": [
-            "npx",
-            "nx",
-            "test",
-            "twenty-eslint-rules",
-            "--coverage=false"
-          ]
-        }
-      ],
-      "critical": false,
-      "reason": "Auto-discovered Nx test target for packages/eslint-rules.",
-      "origin": "auto"
     }
   ],
   "tests": [
@@ -3793,76 +3771,6 @@
       "path": "packages/documentation/tests/start.test.ts",
       "group": "packages/documentation/tests",
       "kind": "test"
-    },
-    {
-      "path": "packages/eslint-rules/rules/component-props-naming.spec.ts",
-      "group": "packages/eslint-rules/rules",
-      "kind": "spec"
-    },
-    {
-      "path": "packages/eslint-rules/rules/effect-components.spec.ts",
-      "group": "packages/eslint-rules/rules",
-      "kind": "spec"
-    },
-    {
-      "path": "packages/eslint-rules/rules/graphql-resolvers-should-be-guarded.spec.ts",
-      "group": "packages/eslint-rules/rules",
-      "kind": "spec"
-    },
-    {
-      "path": "packages/eslint-rules/rules/inject-workspace-repository.spec.ts",
-      "group": "packages/eslint-rules/rules",
-      "kind": "spec"
-    },
-    {
-      "path": "packages/eslint-rules/rules/matching-state-variable.spec.ts",
-      "group": "packages/eslint-rules/rules",
-      "kind": "spec"
-    },
-    {
-      "path": "packages/eslint-rules/rules/max-consts-per-file.spec.ts",
-      "group": "packages/eslint-rules/rules",
-      "kind": "spec"
-    },
-    {
-      "path": "packages/eslint-rules/rules/no-hardcoded-colors.spec.ts",
-      "group": "packages/eslint-rules/rules",
-      "kind": "spec"
-    },
-    {
-      "path": "packages/eslint-rules/rules/no-navigate-prefer-link.spec.ts",
-      "group": "packages/eslint-rules/rules",
-      "kind": "spec"
-    },
-    {
-      "path": "packages/eslint-rules/rules/no-state-useref.spec.ts",
-      "group": "packages/eslint-rules/rules",
-      "kind": "spec"
-    },
-    {
-      "path": "packages/eslint-rules/rules/rest-api-methods-should-be-guarded.spec.ts",
-      "group": "packages/eslint-rules/rules",
-      "kind": "spec"
-    },
-    {
-      "path": "packages/eslint-rules/rules/sort-css-properties-alphabetically.spec.ts",
-      "group": "packages/eslint-rules/rules",
-      "kind": "spec"
-    },
-    {
-      "path": "packages/eslint-rules/rules/styled-components-prefixed-with-styled.spec.ts",
-      "group": "packages/eslint-rules/rules",
-      "kind": "spec"
-    },
-    {
-      "path": "packages/eslint-rules/rules/use-getLoadable-and-getValue-to-get-atoms.spec.ts",
-      "group": "packages/eslint-rules/rules",
-      "kind": "spec"
-    },
-    {
-      "path": "packages/eslint-rules/rules/useRecoilCallback-has-dependency-array.spec.ts",
-      "group": "packages/eslint-rules/rules",
-      "kind": "spec"
     },
     {
       "path": "packages/lead-connector/src/application.contract.test.ts",
@@ -6270,6 +6178,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/workspace/tests/twenty-migration-identity-license.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/workspace/tests/twenty-migration-runtime-boundary.test.ts",
       "group": "packages/workspace/tests",
       "kind": "test"
@@ -6379,6 +6292,7 @@
     "packages/workspace/tests/tool-manifest.test.ts",
     "packages/workspace/tests/trace-home.test.ts",
     "packages/workspace/tests/trace-site-inspector.test.ts",
+    "packages/workspace/tests/twenty-migration-identity-license.test.ts",
     "packages/workspace/tests/twenty-migration-runtime-boundary.test.ts",
     "packages/workspace/tests/verification.test.js",
     "packages/workspace/tests/wait.test.js",
@@ -6420,12 +6334,10 @@
       "lint": false
     },
     {
-      "name": "twenty-eslint-rules",
+      "name": "consuelo-eslint-rules",
       "root": "packages/eslint-rules",
       "file": "packages/eslint-rules/project.json",
-      "testTargets": [
-        "test"
-      ],
+      "testTargets": [],
       "typecheck": true,
       "lint": true
     },

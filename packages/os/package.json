@@ -152,5 +152,6 @@
   },
   "overrides": {
     "tar": "7.5.22"
-  }
+  },
+  "license": "Apache-2.0"
 }
