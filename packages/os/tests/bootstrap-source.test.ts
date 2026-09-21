@@ -112,97 +112,57 @@ describe('bootstrap source refresh controls', () => {
     expect(bootstrap).not.toContain('REPO_ARCHIVE_URL');
   });
 
-  it('asks for local or cloud before dependency setup', () => {
+  it('defaults the hosted installer to local without a mode prompt while preserving explicit cloud mode', () => {
     const bootstrap = readBootstrap();
 
     expect(bootstrap).toContain('choose_os_mode');
-    expect(bootstrap).toContain('Choose Consuelo OS mode:');
-    expect(bootstrap).toContain('prompt_select');
-    expect(bootstrap).toContain('◆ %s');
-    expect(bootstrap).toContain('○ %s');
-    expect(bootstrap).toContain('read -rsn1');
+    expect(bootstrap).toContain('OS_MODE="local"');
+    expect(bootstrap).not.toContain('Choose Consuelo OS mode:');
+    expect(bootstrap).not.toContain('render_os_mode_select');
+    expect(bootstrap).not.toContain('Choose local or cloud before setup.');
     expect(bootstrap).toContain(
       'CONTACT_URL="https://consuelohq.com/contact/"',
     );
     expect(bootstrap).toContain('open_contact_url');
-    expect(bootstrap).not.toContain('Enter 1 or 2:');
-
-    expect(bootstrap.indexOf('choose_os_mode')).toBeLessThan(
-      bootstrap.indexOf('prompt_dependency_setup'),
-    );
+    expect(bootstrap).toContain('--mode <mode>      local or cloud');
+    expect(bootstrap).toContain('local|cloud) OS_MODE="$1"');
     expect(bootstrap.indexOf('choose_os_mode')).toBeLessThan(
       bootstrap.indexOf('ensure_bun'),
     );
   });
 
-  it('redraws selector choices in place instead of duplicating on arrow keys', () => {
+  it('does not carry an interactive shell selector now that hosted choices are defaulted', () => {
     const bootstrap = readBootstrap();
-    const promptSelect = extractShellFunction(bootstrap, 'prompt_select');
-
-    expect(promptSelect).toContain('prompt_lines=4');
-    expect(promptSelect).toContain('rendered=0');
-    expect(promptSelect).toContain('if [ "$rendered" -eq 1 ]; then');
-    expect(promptSelect).toContain(
-      'printf \'\\033[%sA\' "$prompt_lines" > /dev/tty',
-    );
-    expect(promptSelect).toContain(
-      'printf \'\\033[2K%s\\n\' "$message" > /dev/tty',
-    );
-    expect(promptSelect).not.toContain("printf '\\n' > /dev/tty");
+    expect(bootstrap).not.toContain('prompt_select()');
+    expect(bootstrap).not.toContain('Use arrow keys and Enter.');
   });
 
   it('exits the cloud path before source download or dependency install', () => {
     const bootstrap = readBootstrap();
+    const main = extractShellFunction(bootstrap, 'main');
 
     expect(bootstrap).toContain('handle_cloud_mode');
     expect(bootstrap).toContain(
       'Consuelo cloud is handled by the Consuelo team. Opening the contact page.',
     );
     expect(bootstrap).toContain('exit 0');
-    expect(bootstrap).toContain('OS_MODE="cloud"');
-    expect(bootstrap).toContain('handle_cloud_mode');
+    expect(bootstrap).toContain('local|cloud) OS_MODE="$1"');
 
-    expect(bootstrap.indexOf('handle_cloud_mode')).toBeLessThan(
-      bootstrap.indexOf('install_verified_runtime'),
-    );
-    expect(bootstrap.indexOf('handle_cloud_mode')).toBeLessThan(
-      bootstrap.indexOf('ensure_dependencies'),
+    expect(main.indexOf('handle_cloud_mode')).toBeLessThan(
+      main.indexOf('setup_local_runtime'),
     );
   });
 
-  it('uses one dependency gate before the Bun onboarding UI for local installs', () => {
+  it('installs required local dependencies without a redundant confirmation gate', () => {
     const bootstrap = readBootstrap();
 
-    expect(bootstrap).toContain(
+    expect(bootstrap).not.toContain('prompt_dependency_setup');
+    expect(bootstrap).not.toContain('render_dependency_progress');
+    expect(bootstrap).not.toContain(
       'Consuelo OS needs its dependencies to continue.',
     );
-    expect(bootstrap).toContain('yes');
-    expect(bootstrap).toContain('no');
-    expect(bootstrap).toContain('DEPENDENCY_STATUS="cancelled"');
-    expect(bootstrap).toContain('render_dependency_progress');
-    expect(bootstrap).toContain('CONSUELO OS');
-    expect(bootstrap).not.toContain('CONSUELO  OS');
-    expect(bootstrap).not.toContain('C O N S U E L O');
-    expect(bootstrap).toContain('● dependencies');
-    expect(bootstrap).toContain('○ security');
-    expect(bootstrap).not.toContain('○ home');
-    expect(bootstrap).toContain('○ workspace');
-    expect(bootstrap).toContain('○ security');
-    expect(bootstrap).toContain('○ skills');
-    expect(bootstrap).toContain('○ agents');
-    expect(bootstrap).toContain('○ service');
-    expect(bootstrap).toContain('○ health');
-    expect(bootstrap).not.toContain('○ artifacts');
-    expect(bootstrap).not.toContain('Press Enter to continue');
-    expect(bootstrap).not.toContain('prompt_enter');
-    expect(bootstrap).not.toContain(
-      'Consuelo OS needs the local runtime source to continue.',
-    );
-    expect(bootstrap).not.toContain(
-      'Consuelo OS needs its local runtime dependencies to continue.',
-    );
-    expect(bootstrap).not.toContain('We can download/setup this now.');
-    expect(bootstrap).not.toContain('We can install/setup this now.');
+    expect(bootstrap).toContain('ensure_bun');
+    expect(bootstrap).toContain('ensure_dependencies');
   });
 
   it('resolves existing legacy nested installs before creating a fresh flattened home', () => {
@@ -303,13 +263,20 @@ describe('bootstrap source refresh controls', () => {
   it('should activate the verified runtime after onboarding succeeds and before daemon installation', () => {
     const bootstrap = readBootstrap();
     const main = extractShellFunction(bootstrap, 'main');
+    const setupLocalRuntime = extractShellFunction(
+      bootstrap,
+      'setup_local_runtime',
+    );
     const daemonInstall = extractShellFunction(
       bootstrap,
       'install_daemons_quiet',
     );
 
-    expect(main).toContain('install_verified_runtime');
-    expect(main.indexOf('install_verified_runtime')).toBeLessThan(
+    expect(setupLocalRuntime).toContain('install_verified_runtime');
+    expect(main).toContain(
+      'run_quiet_with_loading_dots "Installing Consuelo OS" setup_local_runtime',
+    );
+    expect(main.indexOf('setup_local_runtime')).toBeLessThan(
       main.indexOf('run_onboarding'),
     );
     expect(main.indexOf('run_onboarding')).toBeLessThan(

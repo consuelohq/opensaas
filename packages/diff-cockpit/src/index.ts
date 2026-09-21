@@ -1002,7 +1002,7 @@ export function renderReviewPage(
   )}#${locator.number}</title>
   <style>${renderStyles()}</style>
 </head>
-<body class="review-page" data-review-drawer="closed" data-ai-sidebar="closed" data-file-pane-collapsed="false" data-file-pane-drawer="open" data-comments-visible="true" data-current-view="diff" data-api-path="${escapeAttribute(apiPath)}">
+<body class="review-page" data-review-drawer="closed" data-file-pane-collapsed="false" data-file-pane-drawer="closed" data-comments-visible="true" data-current-view="diff" data-api-path="${escapeAttribute(apiPath)}">
   <header class="topbar review-topbar">
     <div>
       <p class="eyebrow"><a href="${escapeAttribute(homePath)}">Consuelo Diffs</a></p>
@@ -1027,7 +1027,10 @@ export function renderReviewPage(
       <div id="tree-root" class="tree-root" data-trees-library="@pierre/trees">Loading…</div>
     </aside>
     <div id="file-pane-resizer" class="file-pane-resizer" role="separator" aria-label="Resize file pane" aria-orientation="vertical"></div>
-    <button id="mobile-files-toggle" class="mobile-files-toggle" type="button" aria-label="Close files" aria-expanded="true">×</button>
+    <button id="mobile-files-toggle" class="mobile-files-toggle" type="button" aria-label="Open files" aria-expanded="false">
+      <span class="mobile-files-icon mobile-files-icon-tree" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M5 6.5h5l2 2h7v9H5z"></path><path d="M8 12h8M8 15h8"></path></svg></span>
+      <span class="mobile-files-icon mobile-files-icon-close" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="m7 7 10 10M17 7 7 17"></path></svg></span>
+    </button>
     <button id="mobile-file-backdrop" class="mobile-file-backdrop" type="button" aria-label="Close files"></button>
     <section class="review-pane" aria-label="File diff">
       <div id="selected-file" class="selected-file">Select a file</div>
@@ -1035,7 +1038,7 @@ export function renderReviewPage(
     </section>
     <aside id="review-drawer" class="review-drawer" aria-label="Review panel" aria-hidden="true">
       <div class="drawer-head">
-        <strong>panel</strong>
+        <strong>Review</strong>
         <button id="drawer-close" type="button">Close</button>
       </div>
       <div id="drawer-content" class="drawer-content">
@@ -1057,13 +1060,7 @@ export function renderReviewPage(
         <div id="drawer-commits" class="drawer-section drawer-section-closed"><div class="drawer-section-head"><button class="drawer-section-toggle" type="button" data-drawer-section-toggle="commits" aria-expanded="false"><span>Commits</span><span class="drawer-section-caret">›</span></button></div></div>
       </div>
     </aside>
-    <aside id="ai-comments-sidebar" class="ai-comments-sidebar" aria-label="Comments" aria-hidden="true">
-      <div class="ai-comments-head">
-        <div><strong>Comments</strong><p id="ai-comments-summary" class="muted">Loading review comments…</p></div>
-        <button id="ai-comments-close" type="button">Close</button>
-      </div>
-      <div id="ai-comments-content" class="ai-comments-content"><div class="comment-card muted">Loading CodeRabbit and Codex comments…</div></div>
-    </aside>
+    <button id="review-panel-backdrop" class="review-panel-backdrop" type="button" aria-label="Close review panel"></button>
     <div id="commit-popover" class="commit-popover" role="dialog" aria-label="Commits" hidden></div>
     <div id="mergeability-popover" class="commit-popover" role="dialog" aria-label="Mergeability" hidden></div>
   </main>
@@ -3103,10 +3100,15 @@ body[data-file-pane-collapsed="true"] .file-pane, body[data-file-pane-collapsed=
 .file-pane-resizer:hover { opacity:1; }
 .pane-heading { position:sticky; top:0; z-index:2; display:flex; justify-content:space-between; padding:14px 14px 10px; background:var(--paper); border-bottom:1px solid var(--line); font-weight:650; }
 .tree-root { padding:8px; }
-.tree-node { display:flex; align-items:center; gap:6px; width:100%; text-align:left; padding:5px 8px; color:var(--ink); overflow:hidden; white-space:nowrap; }
+.tree-node { display:flex; align-items:center; gap:7px; width:100%; min-height:30px; text-align:left; padding:5px 8px; color:var(--ink); overflow:hidden; white-space:nowrap; border-radius:6px; }
 .tree-label { overflow:hidden; text-overflow:ellipsis; flex:1; }
 .tree-stats { color:var(--quiet); margin-left:auto; font-variant-numeric:tabular-nums; }
-.file-icon { color:var(--quiet); width:16px; text-align:center; }
+.review-page .file-icon { display:inline-flex; align-items:center; justify-content:center; width:22px; min-width:22px; height:18px; border:1px solid color-mix(in srgb, var(--line) 74%, transparent); border-radius:4px; color:var(--muted); background:color-mix(in srgb, var(--surface) 72%, transparent); font:600 9px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing:-.02em; }
+.file-status-dot { width:7px; height:7px; flex:0 0 7px; border-radius:999px; background:var(--quiet); }
+.file-status-dot[data-status="added"] { background:#3fb950; }
+.file-status-dot[data-status="removed"] { background:#f85149; }
+.file-status-dot[data-status="renamed"] { background:#a371f7; }
+.file-status-dot[data-status="modified"] { background:#d29922; }
 .tree-node:hover, .tree-node[aria-current="true"], .tree-node.is-visible { background:var(--soft); text-decoration:none; }
 .tree-node.file { cursor:pointer; }
 .tree-children { margin-left:14px; padding-left:10px; border-left:1px solid var(--line); }
@@ -3119,7 +3121,6 @@ body[data-file-pane-collapsed="true"] .file-pane, body[data-file-pane-collapsed=
 .tree-depth-3 { --tree-depth:3; }
 .directory-toggle { display:flex; align-items:center; gap:6px; width:100%; text-align:left; padding:5px 8px; color:var(--ink); }
 .tree-twist { color:var(--quiet); width:12px; text-align:center; }
-.status { color:var(--quiet); font-size:12px; margin-right:5px; }
 .review-pane { min-width:0; overflow-y:auto; overflow-x:hidden; background:var(--paper); overscroll-behavior:contain; }
 .selected-file { position:sticky; top:0; z-index:1; padding:12px 16px; border-bottom:1px solid var(--line); background:var(--paper); font-size:13px; color:var(--muted); overflow-wrap:anywhere; }
 .diff-root { padding:0; max-width:100%; overflow-x:hidden; }
@@ -3137,26 +3138,21 @@ body[data-comments-visible="false"] .inline-comment { display:none; }
 .diff-line.add { background:rgba(31, 136, 61, .18); }
 .diff-line.del { background:rgba(248, 81, 73, .18); }
 .diff-line.hunk { color:var(--quiet); background:var(--soft); }
-.mobile-files-toggle { display:none; position:fixed; left:18px; bottom:18px; z-index:11; width:54px; height:54px; align-items:center; justify-content:center; border-radius:999px; border:1px solid var(--line); background:var(--surface); box-shadow:0 12px 30px rgba(0,0,0,.28); font-size:22px; }
+.mobile-files-toggle { display:none; position:fixed; left:18px; bottom:calc(18px + env(safe-area-inset-bottom)); z-index:11; width:54px; height:54px; align-items:center; justify-content:center; border-radius:999px; border:1px solid var(--line); background:var(--surface); box-shadow:0 12px 30px rgba(0,0,0,.28); }
+.mobile-files-icon { width:22px; height:22px; display:inline-flex; align-items:center; justify-content:center; }
+.mobile-files-icon svg { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+.mobile-files-icon-close { display:none; }
+body[data-file-pane-drawer="open"] .mobile-files-icon-tree { display:none; }
+body[data-file-pane-drawer="open"] .mobile-files-icon-close { display:inline-flex; }
 .mobile-file-backdrop { display:none; }
-.ai-comments-sidebar { position:absolute; top:0; right:0; width:min(380px, 36vw); height:100%; transform:translateX(0); transition:transform .16s ease; border-left:1px solid var(--line); background:var(--paper); z-index:4; overflow:auto; }
-body[data-ai-sidebar="closed"] .ai-comments-sidebar { transform:translateX(100%); }
-body[data-ai-sidebar="open"] .review-pane { margin-right:min(380px, 36vw); }
-.ai-comments-head { position:sticky; top:0; z-index:2; display:flex; justify-content:space-between; align-items:flex-start; gap:12px; padding:14px; border-bottom:1px solid var(--line); background:var(--paper); }
-.ai-comments-head p { margin:4px 0 0; font-size:12px; }
-.ai-comments-content { display:grid; gap:8px; padding:10px; }
-.ai-review-card { border:1px solid var(--line); border-radius:12px; background:var(--surface); overflow:hidden; }
-.ai-review-card.is-resolved { opacity:.68; }
-.ai-review-summary { width:100%; display:grid; grid-template-columns:auto minmax(0, 1fr) auto auto; gap:8px; align-items:start; padding:10px; text-align:left; }
-.ai-review-main { min-width:0; display:grid; gap:3px; }
-.ai-review-main strong, .ai-review-main span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.ai-review-main span { color:var(--muted); font-size:12px; }
-.ai-review-expanded { border-top:1px solid var(--line); padding:10px; display:grid; gap:10px; }
 .ai-review-actions { display:flex; flex-wrap:wrap; gap:6px; }
 .ai-review-action { display:inline-flex; align-items:center; min-height:28px; border:1px solid var(--line); border-radius:999px; padding:4px 9px; color:var(--muted); background:var(--paper); font-size:12px; }
-@media (max-width: 1120px) { body[data-ai-sidebar="open"] .review-pane { margin-right:0; } .ai-comments-sidebar { width:min(420px, 92vw); z-index:6; box-shadow:-18px 0 45px rgba(0,0,0,.22); } }
-.review-drawer { position:absolute; top:0; right:0; width:min(480px, 92vw); height:100%; transform:translateX(100%); transition:transform .16s ease; background:var(--surface); border-left:1px solid var(--line); box-shadow:-18px 0 45px rgba(0, 0, 0, .22); z-index:5; overflow:auto; }
+.merge-confirm-actions { display:flex; align-items:center; justify-content:flex-end; gap:8px; margin-top:12px; }
+.merge-confirm-button { min-height:30px; padding:5px 11px; border-radius:999px; }
+.review-drawer { position:absolute; top:0; right:0; width:min(520px, 94vw); height:100%; transform:translateX(100%); transition:transform .16s ease; background:var(--surface); border-left:1px solid var(--line); box-shadow:-18px 0 45px rgba(0, 0, 0, .22); z-index:5; overflow:auto; }
 body[data-review-drawer="open"] .review-drawer { transform:translateX(0); }
+.review-panel-backdrop { display:none; position:absolute; inset:0; z-index:4; background:transparent; cursor:default; }
+body[data-review-drawer="open"] .review-panel-backdrop { display:block; }
 .drawer-head { position:sticky; top:0; z-index:2; display:flex; justify-content:space-between; align-items:center; padding:14px; border-bottom:1px solid var(--line); background:var(--surface); }
 .drawer-content { padding:14px; display:grid; gap:10px; }
 .action-grid { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:8px; }
@@ -3167,8 +3163,14 @@ body[data-review-drawer="open"] .review-drawer { transform:translateX(0); }
 .drawer-section-state { color:var(--quiet); font-size:11px; font-weight:500; text-transform:uppercase; letter-spacing:.05em; }
 .drawer-section-caret { color:var(--quiet); font-size:14px; }
 .drawer-section-body { display:grid; gap:0; }
-.comment-card, .commit-card { padding:10px 12px; border-top:1px solid var(--line); }
+.comment-card, .commit-card { padding:12px 14px; border-top:1px solid var(--line); }
 .drawer-section-body > .comment-card:first-child, .drawer-section-body > .commit-card:first-child { border-top:0; }
+.review-comment-card { display:grid; gap:10px; cursor:default; }
+.review-comment-card[data-comment-jump] { cursor:pointer; }
+.review-comment-card[data-comment-jump]:hover { background:color-mix(in srgb, var(--soft) 68%, transparent); }
+.review-comment-head { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; min-width:0; }
+.review-comment-source { display:flex; align-items:center; gap:7px; min-width:0; flex-wrap:wrap; }
+.review-comment-location { color:var(--muted); font-size:12px; overflow-wrap:anywhere; }
 .review-summary-card { display:flex; flex-wrap:wrap; gap:6px; }
 .summary-chip { margin-right:0; cursor:pointer; }
 .prompt-preview { max-height:360px; overflow:auto; }
@@ -3186,12 +3188,25 @@ body[data-review-drawer="open"] .review-drawer { transform:translateX(0); }
 .commit-title { margin:0 0 4px; font-weight:650; }
 .commit-delta { color:var(--quiet); }
 .comment-meta, .commit-meta { color:var(--quiet); font-size:12px; margin-bottom:5px; }
-.comment-body { font-size:13px; line-height:1.5; }
+.comment-body { min-width:0; font-size:14px; line-height:1.62; overflow-wrap:anywhere; word-break:break-word; }
 .comment-body pre, .comment-body code { font-family:Menlo, Monaco, Consolas, monospace; background:var(--soft); border-radius:4px; padding:1px 4px; }
+.comment-body sub { font-size:11px; line-height:1.3; vertical-align:baseline; }
+.comment-body sub sub { display:inline-flex; align-items:center; margin:1px 2px 1px 0; padding:2px 6px; border:1px solid var(--line); border-radius:999px; background:var(--soft); color:var(--muted); font-size:10px; font-weight:650; letter-spacing:.02em; }
 .comment-jump { display:inline-flex; margin-left:6px; color:var(--accent); }
 .badge { display:inline-flex; align-items:center; border:1px solid var(--line); border-radius:999px; padding:2px 7px; font-size:11px; color:var(--muted); background:var(--surface); }
 .kbd { font:11px/1.2 "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; border:1px solid var(--line); border-radius:5px; padding:2px 5px; background:var(--soft); color:var(--ink); }
 .error { border:1px solid var(--danger); color:var(--danger); background:var(--surface); padding:14px; border-radius:10px; }
+@media (min-width: 761px) and (max-width: 1180px) {
+  .review-page .layout { grid-template-columns:minmax(0, 1fr); }
+  .review-page .file-pane-resizer { display:none; }
+  .review-page .file-pane { position:fixed; left:0; top:76px; bottom:0; width:min(420px, 88vw); z-index:9; transform:translateX(-102%); transition:transform .18s ease; border-right:1px solid var(--line); border-top:0; box-shadow:20px 0 50px rgba(0,0,0,.32); }
+  .review-page[data-file-pane-collapsed="true"] .file-pane { display:block; }
+  body[data-file-pane-drawer="open"] .file-pane { transform:translateX(0); }
+  .review-page .mobile-files-toggle { display:flex; }
+  .review-page .mobile-file-backdrop { display:none; position:fixed; inset:76px 0 0; z-index:8; background:rgba(0,0,0,.22); }
+  body[data-file-pane-drawer="open"] .mobile-file-backdrop { display:block; }
+  body[data-review-drawer="open"] .review-panel-backdrop { background:rgba(0,0,0,.12); }
+}
 @media (max-width: 760px) {
   .wiki-topbar { align-items:flex-start; flex-direction:column; padding:20px 0; }
   .nav { gap:14px; flex-wrap:wrap; }
@@ -3250,6 +3265,11 @@ body[data-review-drawer="open"] .review-drawer { transform:translateX(0); }
   body[data-file-pane-drawer="open"] .mobile-files-toggle { background:var(--ink); color:var(--paper); }
   .mobile-file-backdrop { display:none; position:fixed; inset:0; z-index:8; background:rgba(0,0,0,.35); }
   body[data-file-pane-drawer="open"] .mobile-file-backdrop { display:block; }
+  .review-drawer { width:100vw; max-width:100vw; border-left:0; }
+  .drawer-content { padding:10px; }
+  .comment-card, .commit-card { padding:12px; }
+  .review-comment-head { align-items:flex-start; }
+  .comment-body { font-size:14px; line-height:1.65; }
 
 @media (max-width: 760px) {
   .index-shell{max-width:calc(100vw - 28px);padding:0 0 calc(92px + env(safe-area-inset-bottom));}
@@ -3650,7 +3670,8 @@ function renderReviewClientScript(apiPath: string, writeApiPath = apiPath): stri
   return `
 const apiPath = ${JSON.stringify(apiPath)};
 const writeApiPath = ${JSON.stringify(writeApiPath)};
-const state = { data: null, selected: null, diffModule: null, treeModule: null, activeFile: null, inlineCommentsVisible: true, currentView: false, observer: null, collapsedFolders: new Set(), expandedReviewItems: new Set(), drawerSections: { status: true, summary: true, prompt: false, checks: false, comments: false, commits: false } };
+const defaultCollapsedRoots = new Set(['.github', '.task']);
+const state = { data: null, selected: null, diffModule: null, treeModule: null, activeFile: null, inlineCommentsVisible: true, currentView: false, observer: null, collapsedFolders: new Set(), collapsedFoldersInitialized: false, drawerSections: { status: true, summary: true, prompt: false, checks: false, comments: false, commits: false } };
 const els = {
   title: document.getElementById('pr-title'),
   meta: document.getElementById('pr-meta'),
@@ -3662,11 +3683,8 @@ const els = {
   navMergeability: document.getElementById('mergeability-nav-button'),
   navCommits: document.getElementById('commit-nav-button'),
   aiCommentsToggle: document.getElementById('ai-comments-toggle'),
-  aiCommentsSidebar: document.getElementById('ai-comments-sidebar'),
-  aiCommentsClose: document.getElementById('ai-comments-close'),
-  aiCommentsSummary: document.getElementById('ai-comments-summary'),
-  aiCommentsContent: document.getElementById('ai-comments-content'),
   drawerClose: document.getElementById('drawer-close'),
+  reviewPanelBackdrop: document.getElementById('review-panel-backdrop'),
   copyAll: document.getElementById('copy-all-comments'),
   copyReviewLink: document.getElementById('copy-review-link'),
   copyCurrentCommitLink: document.getElementById('copy-current-commit-link'),
@@ -3691,8 +3709,8 @@ const els = {
 
 els.drawerToggle.addEventListener('click', () => preserveDiffViewport(() => setDrawer(document.body.dataset.reviewDrawer !== 'open')));
 els.drawerClose.addEventListener('click', () => preserveDiffViewport(() => setDrawer(false)));
-els.aiCommentsToggle.addEventListener('click', () => preserveDiffViewport(() => setAiSidebar(document.body.dataset.aiSidebar !== 'open')));
-els.aiCommentsClose.addEventListener('click', () => preserveDiffViewport(() => setAiSidebar(false)));
+els.reviewPanelBackdrop.addEventListener('click', () => preserveDiffViewport(() => setDrawer(false)));
+els.aiCommentsToggle.addEventListener('click', () => preserveDiffViewport(() => openReviewDrawerSection('comments')));
 els.mobileFilesToggle.addEventListener('click', () => preserveDiffViewport(() => setFilePaneDrawer(document.body.dataset.filePaneDrawer !== 'open')));
 els.mobileFileBackdrop.addEventListener('click', () => preserveDiffViewport(() => setFilePaneDrawer(false)));
 els.copyAll.addEventListener('click', () => copyText(buildCommentsMarkdown()));
@@ -3711,8 +3729,8 @@ document.addEventListener('click', (event) => {
   if (mergeabilityButton) { toggleMergeabilityPopover(); return; }
   const closeMergeability = event.target.closest('[data-close-mergeability]');
   if (closeMergeability) { closeMergeabilityPopover(); return; }
-  const aiToggle = event.target.closest('[data-ai-review-toggle]');
-  if (aiToggle) { toggleReviewItem(aiToggle.dataset.reviewItemId); return; }
+  const confirmMerge = event.target.closest('[data-confirm-merge]');
+  if (confirmMerge) { confirmMergePullRequest(); return; }
   const aiCopyLink = event.target.closest('[data-ai-review-copy-link]');
   if (aiCopyLink) { copyReviewItemField(aiCopyLink.dataset.reviewItemId, 'link'); return; }
   const aiCopyBody = event.target.closest('[data-ai-review-copy-body]');
@@ -3722,17 +3740,21 @@ document.addEventListener('click', (event) => {
   const aiResolve = event.target.closest('[data-ai-review-resolve]');
   if (aiResolve) { resolveReviewItem(aiResolve.dataset.reviewItemId); return; }
   const jumpButton = event.target.closest('[data-comment-jump]');
-  if (jumpButton) navigateToComment(jumpButton.dataset.commentFile, jumpButton.dataset.commentLine);
+  if (jumpButton) {
+    navigateToComment(jumpButton.dataset.commentFile, jumpButton.dataset.commentLine);
+    preserveDiffViewport(() => setDrawer(false));
+  }
 });
+document.addEventListener('pointerdown', handleOutsidePointerDown);
 els.openChatGpt.addEventListener('click', () => openChatGptPrompt());
 els.copyCodex.addEventListener('click', () => copyText(buildCodexPrompt()));
 
-els.mergePrButton.addEventListener('click', () => mergePullRequest());
+els.mergePrButton.addEventListener('click', () => renderMergeConfirmation());
 document.addEventListener('keydown', (event) => {
   if (event.target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(event.target.tagName)) return;
   if (event.key === 'p') preserveDiffViewport(() => setDrawer(document.body.dataset.reviewDrawer !== 'open'));
   if (event.key === 'f') toggleFilePane();
-  if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'm') { event.preventDefault(); mergePullRequest(); return; }
+  if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'm') { event.preventDefault(); renderMergeConfirmation(); return; }
   if (event.key === 'm') toggleMergeabilityPopover();
   if (event.key === 'v') toggleCurrentView();
   if (event.key === 'i') toggleInlineComments();
@@ -3808,19 +3830,47 @@ function preserveDiffViewport(callback) {
 function setDrawer(open) {
   document.body.dataset.reviewDrawer = open ? 'open' : 'closed';
   els.drawerToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  if (!open) els.aiCommentsToggle.setAttribute('aria-expanded', 'false');
   document.getElementById('review-drawer').setAttribute('aria-hidden', open ? 'false' : 'true');
 }
-function setAiSidebar(open) {
-  document.body.dataset.aiSidebar = open ? 'open' : 'closed';
-  els.aiCommentsToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-  els.aiCommentsSidebar.setAttribute('aria-hidden', open ? 'false' : 'true');
+function openReviewDrawerSection(sectionId) {
+  if (sectionId) state.drawerSections[sectionId] = true;
+  renderDrawer();
+  setDrawer(true);
+  els.aiCommentsToggle.setAttribute('aria-expanded', sectionId === 'comments' ? 'true' : 'false');
+  window.requestAnimationFrame(() => {
+    const section = sectionId ? document.getElementById('drawer-' + sectionId) : null;
+    if (section) section.scrollIntoView({ block: 'nearest' });
+  });
+}
+function handleOutsidePointerDown(event) {
+  const target = event.target;
+  if (!target || typeof target.closest !== 'function') return;
+  if (
+    document.body.dataset.reviewDrawer === 'open'
+    && !target.closest('#review-drawer')
+    && !target.closest('#drawer-toggle')
+    && !target.closest('#ai-comments-toggle')
+  ) {
+    preserveDiffViewport(() => setDrawer(false));
+  }
+  if (!els.commitPopover.hidden && !target.closest('#commit-popover') && !target.closest('[data-open-commits]')) {
+    closeCommitPopover();
+  }
+  if (
+    !els.mergeabilityPopover.hidden
+    && !target.closest('#mergeability-popover')
+    && !target.closest('[data-open-mergeability]')
+    && !target.closest('#merge-pr-button')
+  ) {
+    closeMergeabilityPopover();
+  }
 }
 function setFilePaneDrawer(open) {
   if (open) document.body.dataset.filePaneCollapsed = 'false';
   document.body.dataset.filePaneDrawer = open ? 'open' : 'closed';
   els.mobileFilesToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
   els.mobileFilesToggle.setAttribute('aria-label', open ? 'Close files' : 'Open files');
-  els.mobileFilesToggle.textContent = open ? '×' : '▣';
 }
 function readInitialReviewData() {
   const element = document.getElementById('diff-cockpit-initial-data');
@@ -3837,6 +3887,7 @@ function readInitialReviewEtag() {
 
 function applyReviewData(data) {
   state.data = data;
+  initializeDefaultCollapsedFolders(state.data.tree);
   const previousFile = state.selected && state.selected.filename;
   const files = state.data.files || [];
   state.selected = files.find((file) => file.filename === previousFile) || files[0] || null;
@@ -3847,7 +3898,6 @@ function applyReviewData(data) {
   renderLongDiffs();
   setupActiveFileObserver();
   renderDrawer();
-  renderAiCommentsSidebar();
 }
 
 function startReviewRevalidation() {
@@ -3881,13 +3931,23 @@ function loadLiveData() {
     );
 }
 
-async function mergePullRequest() {
+function renderMergeConfirmation() {
   if (!state.data?.pull) {
     renderMergeResult('Load PR data before merging.');
     return;
   }
   const pull = state.data.pull;
-  if (!window.confirm('Merge PR #' + pull.number + ' into ' + pull.baseRef + '?')) return;
+  closeCommitPopover();
+  els.mergeabilityPopover.hidden = false;
+  els.mergeabilityPopover.innerHTML = '<div class="commit-popover-head"><strong>Merge PR #' + escapeHtml(pull.number) + '</strong><button type="button" data-close-mergeability>Close</button></div><div class="commit-card"><p class="commit-title">Merge into ' + escapeHtml(pull.baseRef || 'base branch') + '?</p><p class="muted">This uses the existing protected Diffs merge action.</p><div class="merge-confirm-actions"><button class="ai-review-action" type="button" data-close-mergeability>Cancel</button><button class="action-button merge-confirm-button" type="button" data-confirm-merge>Merge PR</button></div></div>';
+}
+
+async function confirmMergePullRequest() {
+  if (!state.data?.pull) {
+    renderMergeResult('Load PR data before merging.');
+    return;
+  }
+  const pull = state.data.pull;
   renderMergeResult('Merging PR #' + pull.number + '…');
   try {
     const response = await fetch(${mutationApiPathVariable} + '/merge', { method: 'POST', headers: { accept: 'application/json' } });
@@ -3941,12 +4001,25 @@ function renderTreeNode(node, depth) {
   if (node.type === 'file') {
     const current = state.selected && state.selected.filename === node.file.filename;
     const visible = state.activeFile === node.file.filename;
-    return '<div class="tree-branch tree-depth-' + Math.min(depth, 3) + '"><button class="tree-node file ' + (visible ? 'is-visible' : '') + '" type="button" data-file="' + escapeAttribute(node.file.filename) + '" aria-current="' + (current ? 'true' : 'false') + '"><span class="file-icon">' + escapeHtml(fileIcon(node.file.filename)) + '</span><span class="status">' + escapeHtml(statusToken(node.file.status)) + '</span><span class="tree-label">' + escapeHtml(node.name) + '</span><span class="tree-stats">+' + escapeHtml(node.file.additions) + ' −' + escapeHtml(node.file.deletions) + '</span>' + fileCommentBadge(node.file.filename) + '</button></div>';
+    const status = statusKind(node.file.status);
+    const label = statusLabel(node.file.status);
+    return '<div class="tree-branch tree-depth-' + Math.min(depth, 3) + '"><button class="tree-node file ' + (visible ? 'is-visible' : '') + '" type="button" data-file="' + escapeAttribute(node.file.filename) + '" aria-current="' + (current ? 'true' : 'false') + '"><span class="file-icon">' + escapeHtml(fileIcon(node.file.filename)) + '</span><span class="file-status-dot" data-status="' + escapeAttribute(status) + '" title="' + escapeAttribute(label) + '" aria-label="' + escapeAttribute(label) + '"></span><span class="tree-label">' + escapeHtml(node.name) + '</span><span class="tree-stats">+' + escapeHtml(node.file.additions) + ' −' + escapeHtml(node.file.deletions) + '</span>' + fileCommentBadge(node.file.filename) + '</button></div>';
   }
   const folderPath = node.path || node.name;
   const collapsed = state.collapsedFolders.has(folderPath);
   const children = collapsed ? '' : '<div class="tree-children">' + node.children.map((child) => renderTreeNode(child, depth + 1)).join('') + '</div>';
   return '<div class="tree-branch tree-depth-' + Math.min(depth, 3) + '"><button class="directory-toggle" type="button" data-folder-path="' + escapeAttribute(folderPath) + '" aria-expanded="' + String(!collapsed) + '"><span class="tree-twist">' + (collapsed ? '›' : '⌄') + '</span><span class="tree-label">' + escapeHtml(node.name) + '</span></button>' + children + '</div>';
+}
+
+function initializeDefaultCollapsedFolders(tree) {
+  if (state.collapsedFoldersInitialized) return;
+  const roots = tree && Array.isArray(tree.children) ? tree.children : [];
+  for (const node of roots) {
+    if (node && node.type === 'directory' && defaultCollapsedRoots.has(node.name)) {
+      state.collapsedFolders.add(node.path || node.name);
+    }
+  }
+  state.collapsedFoldersInitialized = true;
 }
 
 function fileCommentBadge(filename) {
@@ -4010,38 +4083,62 @@ function aiReviewItems() {
     }));
 }
 
-function renderAiCommentsSidebar() {
-  const items = aiReviewItems();
-  const unresolved = items.filter((item) => !item.isResolved).length;
-  els.aiCommentsSummary.textContent = formatCountLabel(items.length, 'comment') + ' · ' + unresolved.toLocaleString() + ' unresolved';
-  els.aiCommentsContent.innerHTML = items.length ? items.map(renderAiReviewItem).join('') : '<div class="comment-card muted">No CodeRabbit or Codex comments found.</div>';
+function unifiedReviewItems() {
+  const items = [...aiReviewItems()];
+  const seen = new Set(items.map((item) => item.htmlUrl || [item.author, item.path || '', item.line || '', item.body].join('|')));
+  for (const comment of state.data?.comments || []) {
+    const key = comment.url || [comment.author, comment.path || '', comment.line || '', comment.body].join('|');
+    if (seen.has(key)) continue;
+    seen.add(key);
+    items.push({
+      id: comment.nodeId || comment.id,
+      provider: comment.provider,
+      source: comment.source,
+      author: comment.author,
+      body: comment.body,
+      htmlUrl: comment.url,
+      createdAt: comment.createdAt,
+      path: comment.path,
+      line: comment.line,
+      isResolved: false,
+      isOutdated: false,
+      canResolve: false,
+      resolutionSource: 'local',
+    });
+  }
+  return items.sort((left, right) => {
+    const pathOrder = String(left.path || '').localeCompare(String(right.path || ''));
+    if (pathOrder !== 0) return pathOrder;
+    const lineOrder = Number(left.line || 0) - Number(right.line || 0);
+    return lineOrder || String(left.createdAt || '').localeCompare(String(right.createdAt || ''));
+  });
 }
 
-function renderAiReviewItem(item) {
-  const expanded = state.expandedReviewItems.has(item.id);
-  const stateClass = item.isResolved ? 'is-resolved' : 'is-unresolved';
-  const stateLabel = item.isResolved ? 'resolved' : 'unresolved';
-  const sourceLabel = item.canResolve ? 'GitHub thread' : 'local only';
-  const location = item.path ? item.path + (item.line ? ':' + item.line : '') : 'conversation';
-  const jump = item.path ? '<button class="ai-review-action" type="button" data-comment-jump data-comment-file="' + escapeAttribute(item.path) + '" data-comment-line="' + escapeAttribute(String(item.line || '')) + '">jump</button>' : '';
-  const body = expanded ? '<div class="ai-review-expanded"><div class="comment-body">' + renderMarkdown(item.body) + '</div><div class="ai-review-actions"><button class="ai-review-action" type="button" data-ai-review-copy-link data-review-item-id="' + escapeAttribute(item.id) + '">copy link</button><button class="ai-review-action" type="button" data-ai-review-copy-body data-review-item-id="' + escapeAttribute(item.id) + '">copy body</button><button class="ai-review-action" type="button" data-ai-review-copy-prompt data-review-item-id="' + escapeAttribute(item.id) + '">copy prompt</button>' + jump + renderReviewResolveButton(item) + '</div></div>' : '';
-  return '<article class="ai-review-card ' + stateClass + '"><button class="ai-review-summary" type="button" data-ai-review-toggle data-review-item-id="' + escapeAttribute(item.id) + '" aria-expanded="' + String(expanded) + '"><span class="badge">' + escapeHtml(item.provider) + '</span><span class="ai-review-main"><strong>' + escapeHtml(location) + '</strong><span>' + escapeHtml(previewText(item.body, 126)) + '</span></span><span class="badge">' + escapeHtml(stateLabel) + '</span><span class="badge">' + escapeHtml(sourceLabel) + '</span></button>' + body + '</article>';
+function renderUnifiedReviewComment(item) {
+  const stateClass = item.isResolved ? ' is-resolved' : '';
+  const jumpAttributes = item.path
+    ? ' data-comment-jump data-comment-file="' + escapeAttribute(item.path) + '" data-comment-line="' + escapeAttribute(String(item.line || '')) + '"'
+    : '';
+  const location = item.path
+    ? item.path + (item.line ? ':' + item.line : '')
+    : 'Pull request conversation';
+  const resolved = item.isResolved ? '<span class="badge">resolved</span>' : '';
+  const copyLink = item.htmlUrl ? '<button class="ai-review-action" type="button" data-ai-review-copy-link data-review-item-id="' + escapeAttribute(item.id) + '">copy link</button>' : '';
+  return '<article class="comment-card review-comment-card' + stateClass + '"' + jumpAttributes + '>' +
+    '<div class="review-comment-head"><div class="review-comment-source"><strong>' + escapeHtml(item.author || item.provider) + '</strong><span class="badge">' + escapeHtml(item.provider) + '</span></div>' + resolved + '</div>' +
+    '<div class="review-comment-location">' + escapeHtml(location) + '</div>' +
+    '<div class="comment-body">' + renderMarkdown(item.body) + '</div>' +
+    '<div class="ai-review-actions">' + copyLink + '<button class="ai-review-action" type="button" data-ai-review-copy-body data-review-item-id="' + escapeAttribute(item.id) + '">copy body</button><button class="ai-review-action" type="button" data-ai-review-copy-prompt data-review-item-id="' + escapeAttribute(item.id) + '">copy prompt</button>' + renderReviewResolveButton(item) + '</div>' +
+  '</article>';
 }
 
 function renderReviewResolveButton(item) {
-  if (!item.canResolve || !item.threadId) return '<span class="badge">' + escapeHtml(item.resolutionSource || 'local') + '</span>';
+  if (!item.canResolve || !item.threadId) return '';
   return '<button class="ai-review-action" type="button" data-ai-review-resolve data-review-item-id="' + escapeAttribute(item.id) + '">' + (item.isResolved ? 'mark unresolved' : 'mark resolved') + '</button>';
 }
 
-function toggleReviewItem(itemId) {
-  if (!itemId) return;
-  if (state.expandedReviewItems.has(itemId)) state.expandedReviewItems.delete(itemId);
-  else state.expandedReviewItems.add(itemId);
-  renderAiCommentsSidebar();
-}
-
 function findReviewItem(itemId) {
-  return aiReviewItems().find((item) => item.id === itemId) || null;
+  return unifiedReviewItems().find((item) => item.id === itemId) || null;
 }
 
 function copyReviewItemField(itemId, field) {
@@ -4068,10 +4165,10 @@ async function resolveReviewItem(itemId) {
     const response = await fetch(${mutationApiPathVariable} + '/review-threads/' + encodeURIComponent(item.threadId) + '/' + action, { method: 'POST', headers: { accept: 'application/json' } });
     if (!response.ok) return;
     item.isResolved = !item.isResolved;
-    renderAiCommentsSidebar();
+    renderDrawer();
     loadLiveData();
   } catch {
-    renderAiCommentsSidebar();
+    renderDrawer();
   }
 }
 
@@ -4080,12 +4177,12 @@ function previewText(value, maxLength) {
   return compact.length > maxLength ? compact.slice(0, maxLength - 1) + '…' : compact;
 }
 function renderDrawer() {
-  const comments = state.data.comments || [];
+  const reviewItems = unifiedReviewItems();
   const commits = reviewCommits();
   const checks = state.data.checks || [];
   const pull = state.data.pull;
   const mergeLabel = mergeabilityLabel(pull);
-  const commentsLabel = comments.length.toLocaleString() + ' ' + (comments.length === 1 ? 'comment' : 'comments');
+  const commentsLabel = reviewItems.length.toLocaleString() + ' ' + (reviewItems.length === 1 ? 'comment' : 'comments');
   const commitsLabel = commits.length.toLocaleString() + ' ' + (commits.length === 1 ? 'commit' : 'commits');
   const checksLabel = checks.length.toLocaleString() + ' ' + (checks.length === 1 ? 'check' : 'checks');
   els.navMergeability.textContent = mergeLabel;
@@ -4098,7 +4195,7 @@ function renderDrawer() {
   els.drawerSummary.innerHTML = renderDrawerSection('summary', 'Review summary', summaryBody, true);
   els.drawerPrompt.innerHTML = renderDrawerSection('prompt', 'Prompt for AI agents', promptBody, false);
   els.drawerChecks.innerHTML = renderDrawerSection('checks', 'Checks', checks.length ? checks.map(renderCheck).join('') : '<div class="comment-card muted">No checks found.</div>', false);
-  els.drawerComments.innerHTML = renderDrawerSection('comments', 'Comments', comments.length ? comments.map(renderComment).join('') : '<div class="comment-card muted">No review comments found.</div>', false);
+  els.drawerComments.innerHTML = renderDrawerSection('comments', 'Comments', reviewItems.length ? reviewItems.map(renderUnifiedReviewComment).join('') : '<div class="comment-card muted">No review comments found.</div>', false);
   els.drawerCommits.innerHTML = renderDrawerSection('commits', 'Commits', commits.length ? commits.map(renderCommit).join('') : '<div class="commit-card muted">No commits found for this PR.</div>', false);
 }
 
@@ -4406,7 +4503,23 @@ function markdownHeadingLevel(value) {
 
 function renderInlineMarkdown(value) {
   const backtick = String.fromCharCode(96);
-  return renderMarkdownLinks(replaceDelimited(replaceDelimited(escapeHtml(String(value || '')), backtick, '<code>', '</code>'), '**', '<strong>', '</strong>'));
+  const escaped = replaceDelimited(replaceDelimited(escapeHtml(String(value || '')), backtick, '<code>', '</code>'), '**', '<strong>', '</strong>');
+  return restoreSafeMarkdownTags(renderMarkdownLinks(escaped));
+}
+
+function restoreSafeMarkdownTags(value) {
+  const safeTags = {
+    '&lt;sub&gt;': '<sub>',
+    '&lt;/sub&gt;': '</sub>',
+    '&lt;sup&gt;': '<sup>',
+    '&lt;/sup&gt;': '</sup>',
+    '&lt;br&gt;': '<br>',
+    '&lt;br/&gt;': '<br>',
+    '&lt;br /&gt;': '<br>',
+  };
+  let output = String(value || '');
+  for (const [encoded, html] of Object.entries(safeTags)) output = output.split(encoded).join(html);
+  return output;
 }
 
 function replaceDelimited(value, marker, openTag, closeTag) {
@@ -4458,12 +4571,6 @@ function navigateToComment(file, line) {
   if (comment) comment.scrollIntoView({ block: 'center' });
 }
 
-function setupCommentJumps() {
-  document.querySelectorAll('[data-comment-jump]').forEach((button) => {
-    button.addEventListener('click', () => navigateToComment(button.dataset.commentFile, button.dataset.commentLine));
-  });
-}
-
 function setupActiveFileObserver() {
   if (state.observer) state.observer.disconnect();
   const reviewPane = els.diff.closest('.review-pane');
@@ -4472,7 +4579,6 @@ function setupActiveFileObserver() {
   if (state.scrollHandler && reviewPane) reviewPane.removeEventListener('scroll', state.scrollHandler);
   state.scrollHandler = () => window.requestAnimationFrame(updateActiveFileFromViewport);
   if (reviewPane) reviewPane.addEventListener('scroll', state.scrollHandler, { passive: true });
-  setupCommentJumps();
   updateActiveFileFromViewport();
 }
 
@@ -4536,9 +4642,20 @@ function fileIcon(filename) {
   if (extension === 'ts' || extension === 'tsx') return 'TS';
   if (extension === 'js' || extension === 'jsx') return 'JS';
   if (extension === 'json') return '{}';
-  if (extension === 'md') return 'M';
-  if (extension === 'toml' || extension === 'yml' || extension === 'yaml') return '⚙';
-  return '•';
+  if (extension === 'md') return 'MD';
+  if (extension === 'toml') return 'TM';
+  if (extension === 'yml' || extension === 'yaml') return 'YML';
+  return '·';
+}
+
+function statusKind(status) {
+  if (status === 'added' || status === 'removed' || status === 'renamed') return status;
+  return 'modified';
+}
+
+function statusLabel(status) {
+  const kind = statusKind(status);
+  return kind.charAt(0).toUpperCase() + kind.slice(1);
 }
 
 function statusToken(status) {

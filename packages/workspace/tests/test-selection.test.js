@@ -461,6 +461,25 @@ describe('test selection registry', () => {
     ]);
   });
 
+  it('uses focused installer device onboarding contracts instead of the broad OS package suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/onboarding-flow.test.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-installer-device-onboarding');
+    expect(suiteNames).not.toContain('@consuelo/os package test');
+    expect(suiteNames).toEqual([
+      'OS installer device onboarding contracts',
+      'OS installer runtime structure contracts',
+    ]);
+  });
+
   it('uses focused MCP admission contracts instead of the broad OS package suite', () => {
     const result = run([
       'check',
@@ -1858,6 +1877,16 @@ describe('test selection registry', () => {
       'packages/os/scripts/lib/artifacts.ts',
       '--changed-file',
       'packages/os/tests/artifacts.test.ts',
+      '--changed-file',
+      'packages/os/scripts/server/routes/artifacts.ts',
+      '--changed-file',
+      'packages/os/scripts/server/services/artifact-sharing.ts',
+      '--changed-file',
+      'packages/os/tests/artifact-sharing-links.test.ts',
+      '--changed-file',
+      'packages/os/tests/artifacts-hono-routes.test.ts',
+      '--changed-file',
+      'packages/os/tests/artifacts-edge-routing.test.ts',
       '--changed-file',
       'packages/os/tests/distribution/release-channels-cli.test.ts',
       '--changed-file',

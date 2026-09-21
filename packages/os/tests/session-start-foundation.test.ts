@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, readFileSync, realpathSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -21,7 +21,7 @@ import { inspectMcpNodeRoutingBody } from '../scripts/lib/mcp-node-routing';
 import { MCP_ROUTE_SOURCE_HEADER } from '../scripts/lib/mcp-node-routing';
 import { executeTool } from '../scripts/lib/facade/executor';
 import type { CommandPlan } from '../scripts/lib/facade/types';
-import { startTaskSession } from '../scripts/session-start';
+import { startTaskSession, startWorkSession } from '../scripts/session-start';
 import { createDefaultNodeYamlConfig, resolveConsueloHomeLayout, writeYamlConfig } from '../scripts/lib/consuelo-home';
 import { createWorkSession, readWorkSession } from '../scripts/lib/work-session';
 import {
@@ -132,18 +132,19 @@ describe('session.start foundation', () => {
     expect(schema).not.toBeNull();
     expect(schema?.safeParse({ kind: 'task', area: 'workspace-agent', title: 'example', workflow: 'task', createStream: true }).success).toBe(true);
     expect(schema?.safeParse({ kind: 'work', path: '/tmp/example-work' }).success).toBe(true);
-    expect(schema?.safeParse({ kind: 'work' }).success).toBe(false);
+    expect(schema?.safeParse({ kind: 'work' }).success).toBe(true);
+    expect(schema?.safeParse({ kind: 'work', title: 'voice shortcut' }).success).toBe(true);
     expect(schema?.safeParse({ kind: 'task', area: 'workspace-agent' }).success).toBe(false);
     expect(schema?.safeParse({ kind: 'task', area: 'workspace-agent', title: 'example', workflow: 'media' }).success).toBe(false);
     expect(schema?.safeParse({ kind: 'task', area: 'workspace-agent', title: 'example', pr: 2036 }).success).toBe(false);
-    expect(schema?.safeParse({ kind: 'work', path: '/tmp/example-work', title: 'not-allowed' }).success).toBe(false);
+    expect(schema?.safeParse({ kind: 'work', path: '/tmp/example-work', title: 'voice shortcut' }).success).toBe(true);
   });
 
   it('should execute session.start from the shipped OS runtime package', async () => {
     const plans: CommandPlan[] = [];
     const result = await executeTool('session.start', {
       kind: 'work',
-      path: '/tmp/session-runtime-scope',
+      title: 'voice shortcut',
     }, {
       cwd: process.cwd(),
       runner: async (plan) => {
@@ -161,6 +162,9 @@ describe('session.start foundation', () => {
     expect(plans).toHaveLength(1);
     expect(realpathSync(plans[0].cwd)).toBe(realpathSync(fileURLToPath(new URL('..', import.meta.url))));
     expect(plans[0].args.slice(0, 3)).toEqual(['run', 'session:start', '--']);
+    expect(plans[0].args).toContain('--title');
+    expect(plans[0].args).toContain('voice shortcut');
+    expect(plans[0].args).not.toContain('--path');
   });
 
   it('should preserve the configured project cwd when runtime session.start delegates task creation', async () => {
@@ -223,6 +227,112 @@ describe('session.start foundation', () => {
       workSession: metadata.workSession,
       path: metadata.path,
     });
+  });
+
+  it('should create an isolated default directory when a work session omits path', () => {
+    const root = mkdtempSync(join(tmpdir(), 'consuelo-session-foundation-'));
+    tempRoots.push(root);
+    const home = join(root, '.consuelo');
+    const layout = resolveConsueloHomeLayout(home);
+    writeYamlConfig(
+      layout.nodeConfigPath,
+      createDefaultNodeYamlConfig({
+        nodeId: 'node_test_owner',
+        nodeName: 'Test Mac',
+        workspaceId: 'workspace_test',
+      }),
+      false,
+    );
+
+    const metadata = startWorkSession({
+      home,
+      userHome: root,
+      title: 'Voice Shortcut',
+      now: () => new Date('2026-08-15T01:00:00.000Z'),
+      randomUUID: () => '12345678-1234-4234-9234-123456789abc',
+    });
+
+    expect(metadata.path).toContain(join('Library', 'Application Support', 'Consuelo Work Sessions'));
+    expect(metadata.path).toContain('voice-shortcut');
+    expect(existsSync(metadata.path)).toBe(true);
+  });
+
+  it('should create a missing explicit ordinary directory before starting a work session', () => {
+    const root = mkdtempSync(join(tmpdir(), 'consuelo-session-foundation-'));
+    tempRoots.push(root);
+    const home = join(root, '.consuelo');
+    const workPath = join(root, 'new-work-root');
+    const layout = resolveConsueloHomeLayout(home);
+    writeYamlConfig(
+      layout.nodeConfigPath,
+      createDefaultNodeYamlConfig({
+        nodeId: 'node_test_owner',
+        nodeName: 'Test Mac',
+        workspaceId: 'workspace_test',
+      }),
+      false,
+    );
+
+    const metadata = startWorkSession({
+      home,
+      userHome: root,
+      path: workPath,
+      now: () => new Date('2026-08-15T01:00:00.000Z'),
+      randomUUID: () => '12345678-1234-4234-9234-123456789abc',
+    });
+
+    expect(existsSync(workPath)).toBe(true);
+    expect(realpathSync(metadata.path)).toBe(realpathSync(workPath));
+  });
+
+  it('should not create a missing explicit directory inside Consuelo-managed state', () => {
+    const root = mkdtempSync(join(tmpdir(), 'consuelo-session-foundation-'));
+    tempRoots.push(root);
+    const home = join(root, '.consuelo');
+    const protectedPath = join(home, 'unsafe-work-root');
+    const layout = resolveConsueloHomeLayout(home);
+    writeYamlConfig(
+      layout.nodeConfigPath,
+      createDefaultNodeYamlConfig({
+        nodeId: 'node_test_owner',
+        nodeName: 'Test Mac',
+        workspaceId: 'workspace_test',
+      }),
+      false,
+    );
+
+    expect(() => startWorkSession({
+      home,
+      userHome: root,
+      path: protectedPath,
+      now: () => new Date('2026-08-15T01:00:00.000Z'),
+      randomUUID: () => '12345678-1234-4234-9234-123456789abc',
+    })).toThrow(/Consuelo-managed state|omit path|narrower ordinary directory/i);
+    expect(existsSync(protectedPath)).toBe(false);
+  });
+
+  it('should keep protected parent roots blocked and explain the safe recovery path', () => {
+    const root = mkdtempSync(join(tmpdir(), 'consuelo-session-foundation-'));
+    tempRoots.push(root);
+    const home = join(root, '.consuelo');
+    const layout = resolveConsueloHomeLayout(home);
+    writeYamlConfig(
+      layout.nodeConfigPath,
+      createDefaultNodeYamlConfig({
+        nodeId: 'node_test_owner',
+        nodeName: 'Test Mac',
+        workspaceId: 'workspace_test',
+      }),
+      false,
+    );
+
+    expect(() => startWorkSession({
+      home,
+      userHome: root,
+      path: root,
+      now: () => new Date('2026-08-15T01:00:00.000Z'),
+      randomUUID: () => '12345678-1234-4234-9234-123456789abc',
+    })).toThrow(/omit path|narrower ordinary directory/i);
   });
 
   it('should preserve legacy task affinity reads when node affinity is generalized', async () => {

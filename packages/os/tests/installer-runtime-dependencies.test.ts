@@ -324,11 +324,15 @@ describe('public installer runtime dependencies', () => {
     expect(bootstrap.indexOf('ensure_portless')).toBeLessThan(
       bootstrap.indexOf('persist_runtime_paths'),
     );
-    const main = extractShellFunction(bootstrap, 'main');
-    expect(main.indexOf('install_verified_runtime')).toBeLessThan(
-      main.indexOf('persist_runtime_paths'),
+    const setupLocalRuntime = extractShellFunction(
+      bootstrap,
+      'setup_local_runtime',
     );
-    expect(main.indexOf('persist_runtime_paths')).toBeLessThan(
+    const main = extractShellFunction(bootstrap, 'main');
+    expect(setupLocalRuntime.indexOf('install_verified_runtime')).toBeLessThan(
+      setupLocalRuntime.indexOf('persist_runtime_paths'),
+    );
+    expect(main.indexOf('setup_local_runtime')).toBeLessThan(
       main.indexOf('maybe_install_daemons'),
     );
   });
@@ -347,20 +351,26 @@ describe('public installer runtime dependencies', () => {
     expect(namedRuntime).toContain('/bin/mv -f');
     expect(namedRuntime).toContain('BUN_BIN="$target"');
 
-    const main = extractShellFunction(bootstrap, 'main');
-    expect(main.indexOf('ensure_bun')).toBeLessThan(
-      main.indexOf('ensure_named_bun_runtime'),
+    const setupLocalRuntime = extractShellFunction(
+      bootstrap,
+      'setup_local_runtime',
     );
-    expect(main.indexOf('ensure_named_bun_runtime')).toBeLessThan(
-      main.indexOf('persist_runtime_paths'),
+    expect(setupLocalRuntime.indexOf('ensure_bun')).toBeLessThan(
+      setupLocalRuntime.indexOf('ensure_named_bun_runtime'),
+    );
+    expect(setupLocalRuntime.indexOf('ensure_named_bun_runtime')).toBeLessThan(
+      setupLocalRuntime.indexOf('persist_runtime_paths'),
     );
   });
 
   it('should verify the signed runtime and prepare recovery before persisting managed install state', () => {
-    const main = extractShellFunction(readBootstrap(), 'main');
-    const verifiedRuntime = main.indexOf('install_verified_runtime');
-    const dependencies = main.indexOf('ensure_dependencies');
-    const recoveryCli = main.indexOf('prepare_recovery_cli');
+    const setupLocalRuntime = extractShellFunction(
+      readBootstrap(),
+      'setup_local_runtime',
+    );
+    const verifiedRuntime = setupLocalRuntime.indexOf('install_verified_runtime');
+    const dependencies = setupLocalRuntime.indexOf('ensure_dependencies');
+    const recoveryCli = setupLocalRuntime.indexOf('prepare_recovery_cli');
     const managedWrites = [
       'ensure_named_bun_runtime',
       'ensure_install_id',
@@ -374,7 +384,7 @@ describe('public installer runtime dependencies', () => {
     expect(verifiedRuntime).toBeLessThan(dependencies);
     expect(dependencies).toBeLessThan(recoveryCli);
     for (const functionName of managedWrites) {
-      const managedWrite = main.indexOf(functionName);
+      const managedWrite = setupLocalRuntime.indexOf(functionName);
       expect(managedWrite, functionName).toBeGreaterThan(recoveryCli);
     }
   });
