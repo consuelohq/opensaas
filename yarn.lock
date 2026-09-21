@@ -4566,6 +4566,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@consuelo/dialer-server@workspace:packages/dialer-server"
   dependencies:
+    "@consuelo/contacts": "workspace:*"
     "@consuelo/dialer": "workspace:*"
     "@consuelo/lead-connector": "workspace:*"
     "@types/bun": "npm:latest"

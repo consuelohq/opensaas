@@ -11,7 +11,7 @@ import {
   createInboundCustomerApplication,
 } from './customer-entry';
 import { createPostgresInboundRouting } from './routing';
-import type { InboundNumber } from './telephony-contracts';
+import type { InboundEnrichment, InboundNumber } from './telephony-contracts';
 
 const port = Number(process.env.CONSUELO_RD7B_PG_PORT);
 const suite =
@@ -70,7 +70,10 @@ suite('RD7B customer entry with real Postgres', () => {
   let seconds = 0;
   const now = () => at(seconds);
 
-  const makeApplication = () => {
+  const makeApplication = (
+    calendar?: Parameters<typeof createPostgresCallbacks>[0]['calendar'],
+    enrich?: InboundEnrichment,
+  ) => {
     const consent = createCustomerEntryConsentAdapter({ pool, clock: now });
     const callbacks = createPostgresCallbacks({
       pool,
@@ -79,12 +82,14 @@ suite('RD7B customer entry with real Postgres', () => {
       ),
       clock: now,
       consent,
+      calendar,
     });
     return createInboundCustomerApplication({
       pool,
       numbers: [number],
       callbacks,
       secret: 'fixture-customer-entry-capability-secret-rd7b',
+      enrich,
       clock: now,
     });
   };
@@ -116,6 +121,22 @@ suite('RD7B customer entry with real Postgres', () => {
     await admin?.query('DROP DATABASE IF EXISTS ' + database);
     await admin?.end();
   }, 30_000);
+
+  it('persists CRM owner enrichment for public callbacks without exposing it publicly', async () => {
+    const application = makeApplication(undefined, async (input) => {
+      expect(input).toEqual({ workspaceId: 'workspace', caller: '+14155552671' });
+      return { requiredSkills: [], ownerRepId: 'alice', ownerStatus: 'known',
+        kind: 'live', notBefore: null, deadline: null };
+    });
+    const result = await application.requestCallback('sales', '203.0.113.10', {
+      phoneNumber: '+14155552671', permissionAccepted: true,
+      idempotencyKey: 'owner-request-1234', mode: 'immediate',
+    });
+    const entries = await pool.query('SELECT metadata FROM dialer_routing_entries');
+    expect(entries.rows).toHaveLength(1);
+    expect(entries.rows[0].metadata).toMatchObject({ ownerRepId: 'alice', ownerStatus: 'known' });
+    expect(JSON.stringify(result)).not.toContain('alice');
+  });
 
   it('deduplicates public requests, persists explicit permission, and survives restart', async () => {
     const application = makeApplication();
@@ -195,6 +216,78 @@ suite('RD7B customer entry with real Postgres', () => {
     await expect(
       restarted.readCallback('sales', first.managementToken + 'x'),
     ).rejects.toThrow();
+  });
+
+  it('projects append-only booking cancellation into customer responses after restart', async () => {
+    let bookings = 0;
+    let cancellations = 0;
+    const calendar = {
+      book: async () => {
+        bookings++;
+        return {
+          status: 'confirmed' as const,
+          providerReference: 'calendar-one',
+          evidenceReference: 'calendar-confirmed',
+        };
+      },
+      cancel: async () => {
+        cancellations++;
+        return {
+          status: 'cancelled' as const,
+          providerReference: 'calendar-one',
+          evidenceReference: 'calendar-cancelled',
+        };
+      },
+    };
+    const application = makeApplication(calendar);
+    const created = await application.requestCallback('sales', '203.0.113.20', {
+      phoneNumber: '+15550100998',
+      permissionAccepted: true,
+      idempotencyKey: 'booking-cancel-1234',
+      mode: 'immediate',
+    });
+    expect(created.booking.status).toBe('confirmed');
+    const cancelled = await application.cancelCallback('sales', created.managementToken);
+    expect(cancelled).toMatchObject({
+      callback: { status: 'cancelled' },
+      booking: { status: 'cancelled', evidenceReference: 'calendar-cancelled' },
+    });
+    const restarted = makeApplication(calendar);
+    expect(await restarted.readCallback('sales', created.managementToken)).toEqual(cancelled);
+    expect(await restarted.cancelCallback('sales', created.managementToken)).toEqual(cancelled);
+    expect(bookings).toBe(1);
+    expect(cancellations).toBe(1);
+    const original = await pool.query('SELECT status FROM dialer_callback_bookings');
+    expect(original.rows).toEqual([{ status: 'confirmed' }]);
+  });
+
+  it('reports uncertain booking cancellation without repeating provider effects on read or retry', async () => {
+    let cancellations = 0;
+    const calendar = {
+      book: async () => ({
+        status: 'confirmed' as const,
+        providerReference: 'calendar-unknown',
+        evidenceReference: 'calendar-confirmed',
+      }),
+      cancel: async (): Promise<never> => {
+        cancellations++;
+        throw new Error('provider response lost');
+      },
+    };
+    const application = makeApplication(calendar);
+    const created = await application.requestCallback('sales', '203.0.113.21', {
+      phoneNumber: '+15550100997',
+      permissionAccepted: true,
+      idempotencyKey: 'booking-unknown-1234',
+      mode: 'immediate',
+    });
+    await expect(application.cancelCallback('sales', created.managementToken)).rejects.toThrow();
+    const restarted = makeApplication(calendar);
+    const pending = await restarted.readCallback('sales', created.managementToken);
+    expect(pending.booking.status).toBe('cancel_pending');
+    expect(pending.booking.evidenceReference).toBeNull();
+    await expect(restarted.cancelCallback('sales', created.managementToken)).rejects.toThrow();
+    expect(cancellations).toBe(1);
   });
 
   it('uses server-authored service windows for reschedule and cancels the RD6 obligation', async () => {

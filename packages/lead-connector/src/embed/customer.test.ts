@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'bun:test';
 
 import {
+  createCustomerEntryApi,
   createCustomerEntryController,
   renderCustomerEntry,
   type CustomerEntrySnapshot,
@@ -26,6 +27,49 @@ const snapshot: CustomerEntrySnapshot = {
 };
 
 describe('public customer callback surface', () => {
+  it('renders terminal callback outcomes ahead of old booking confirmation and removes mutation controls', () => {
+    for (const [status, title] of [
+      ['fulfilled', 'Callback completed'],
+      ['expired', 'Callback window expired'],
+      ['exhausted', 'Callback attempts finished'],
+    ]) {
+      const html = renderCustomerEntry({ phase: 'ready', snapshot, error: null, result: {
+        managementToken: 'opaque-token', callback: { status },
+        booking: { status: 'confirmed', providerReference: 'event', evidenceReference: 'evidence' },
+      } });
+      expect(html).toContain(title!);
+      expect(html).not.toContain('<h2>Callback requested</h2>');
+      expect(html).not.toContain('Appointment confirmed');
+      expect(html).not.toContain('data-action="customer-cancel"');
+      expect(html).not.toContain('data-form="customer-reschedule"');
+    }
+  });
+
+  it('reads the standard nested public API error envelope', async () => {
+    const api = createCustomerEntryApi({
+      baseUrl: 'https://calls.example.test',
+      fetch: async () =>
+        new Response(
+          JSON.stringify({
+            error: {
+              code: 'CUSTOMER_CALLBACK_RATE_LIMITED',
+              message: 'Too many callback requests',
+              retryable: true,
+            },
+          }),
+          { status: 429, headers: { 'content-type': 'application/json' } },
+        ),
+    });
+    await expect(
+      api.requestCallback('sales', {
+        phoneNumber: '+15550100999',
+        permissionAccepted: true,
+        idempotencyKey: 'request-12345678',
+        mode: 'immediate',
+      }),
+    ).rejects.toThrow('Too many callback requests');
+  });
+
   it('shows direct calling and truthful callback promises without inventing an ETA', () => {
     const html = renderCustomerEntry({ phase: 'ready', snapshot, result: null, error: null });
     expect(html).toContain('href="tel:+15550100123"');
@@ -100,6 +144,33 @@ describe('public customer callback surface', () => {
       },
     });
     expect(html).toContain('Cancellation pending');
+    expect(html).not.toContain('Callback cancelled');
+  });
+
+  it('prioritizes cancellation over an older confirmed appointment', () => {
+    for (const status of ['cancelled', 'cancel_pending']) {
+      const html = renderCustomerEntry({
+        phase: 'ready', snapshot, error: null,
+        result: {
+          callback: { status },
+          booking: { status: 'confirmed', providerReference: 'old-booking', evidenceReference: 'old-evidence' },
+        },
+      });
+      expect(html).toContain(status === 'cancelled' ? 'Callback cancelled' : 'Cancellation pending');
+      expect(html).not.toContain('Appointment confirmed');
+    }
+  });
+
+  it('shows a pending calendar cancellation without claiming confirmation', () => {
+    const html = renderCustomerEntry({
+      phase: 'ready', snapshot, error: null,
+      result: {
+        callback: { status: 'scheduled' },
+        booking: { status: 'cancel_pending', providerReference: 'calendar-one', evidenceReference: null },
+      },
+    });
+    expect(html).toContain('Cancellation pending');
+    expect(html).not.toContain('Appointment confirmed');
     expect(html).not.toContain('Callback cancelled');
   });
 

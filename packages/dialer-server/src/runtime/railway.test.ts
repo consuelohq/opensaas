@@ -340,7 +340,7 @@ describe('Railway dialer-server runtime composition', () => {
     ];
     expect(
       selectSuccessfullyCreatedTargets(selected, [
-        { contactId: 'contact-b', callSid: 'CA_created' },
+        { position: 2, callSid: 'CA_created' },
       ]).map((target) => target.contactId),
     ).toEqual(['contact-b']);
   });
@@ -522,4 +522,12 @@ describe('Railway dialer-server runtime composition', () => {
       calls: [{ contactId: 'contact-1', status: 'mocked' }],
     });
   });
+});
+
+it('attributes a partially created group by target position when contacts repeat', () => {
+  const targets = [{ contactId: 'same-contact', decisionId: 'first' },
+    { contactId: 'same-contact', decisionId: 'second' }];
+  expect(selectSuccessfullyCreatedTargets(targets, [{
+    callSid: 'first-call', position: 1,
+  }])).toEqual([targets[0]!]);
 });

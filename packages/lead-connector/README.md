@@ -15,6 +15,11 @@ It does not own telephony, Twilio lifecycle logic, caller-ID locks, or winner se
 
 Provider OAuth tokens, Shared Secret, token-encryption key, Twilio credentials, and server signing keys never enter browser code or static assets.
 
+The production Worker and Railway dialer server also share the dedicated
+`DIALER_EDGE_PROXY_SECRET` secret. The Worker uses it only to authenticate the
+Cloudflare-observed client address forwarded to public customer callback APIs;
+the browser never receives this value.
+
 ## Static embed deployment
 
 Build and deploy the Cloudflare static application:

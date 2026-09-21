@@ -9,7 +9,7 @@ import { createTwilioInboundCarrier } from '../inbound/twilio-carrier';
 import { parseTelephonyConfig } from '../inbound/telephony-config';
 import { createCallbackRecipientCipher } from '../inbound/callback-recipient-cipher';
 import { createPostgresRepCapacity } from '../inbound/rep-capacity';
-import type { InboundEndpoint } from '../inbound/telephony-contracts';
+import type { InboundEndpoint, InboundEnrichment } from '../inbound/telephony-contracts';
 import {
   createCustomerEntryConsentAdapter,
   createInboundCustomerApplication,
@@ -67,11 +67,15 @@ export const reconcileConfiguredRepCapacity = async (
 export const inboundEnabled = (environment: Environment) =>
   environment.DIALER_INBOUND_ENABLED === 'true';
 
+export const hasEnabledCallbacks = (
+  numbers: readonly { readonly enabled: boolean; readonly callback?: unknown }[],
+) => numbers.some((number) => number.enabled && Boolean(number.callback));
+
 export const hasEnabledCustomerEntry = (
   numbers: readonly { readonly enabled: boolean; readonly customerEntry?: unknown }[],
 ) => numbers.some((number) => number.enabled && Boolean(number.customerEntry));
 
-export const createInboundRuntime = async (environment: Environment) => {
+export const createInboundRuntime = async (environment: Environment, enrich?: InboundEnrichment) => {
   if (!inboundEnabled(environment)) return undefined;
   const accountSid = environment.TWILIO_ACCOUNT_SID?.trim();
   const authToken = environment.TWILIO_AUTH_TOKEN?.trim();
@@ -92,7 +96,7 @@ export const createInboundRuntime = async (environment: Environment) => {
     environment.DIALER_INBOUND_CONFIG_JSON ?? '',
     accountSid,
   );
-  const callbackEnabled = config.numbers.some((number) => Boolean(number.callback));
+  const callbackEnabled = hasEnabledCallbacks(config.numbers);
   const callbackRecipientSecret =
     environment.DIALER_CALLBACK_RECIPIENT_SECRET?.trim();
   if (callbackEnabled && !callbackRecipientSecret)
@@ -141,6 +145,7 @@ export const createInboundRuntime = async (environment: Environment) => {
       authToken,
       callbackRecipientCipher,
       callbackConsent,
+      enrich,
     });
     const customer = customerEntryEnabled && customerEntrySecret
       ? createInboundCustomerApplication({
@@ -148,6 +153,7 @@ export const createInboundRuntime = async (environment: Environment) => {
           numbers: config.numbers,
           callbacks: telephony.callbacks,
           secret: customerEntrySecret,
+          enrich,
         })
       : undefined;
     const outbound = createOutboundCapacity({ pool, carrier, accountSid });
@@ -230,6 +236,7 @@ let shared: Promise<Runtime> | undefined;
 let sharedKey: string | undefined;
 export const getInboundRuntime = (
   environment: Environment,
+  enrich?: InboundEnrichment,
 ): Promise<Runtime> => {
   if (!inboundEnabled(environment)) return Promise.resolve(undefined);
   const key = createHash('sha256')
@@ -249,7 +256,7 @@ export const getInboundRuntime = (
     throw new Error('Inbound runtime configuration changed within one process');
   if (!shared) {
     sharedKey = key;
-    shared = createInboundRuntime(environment).catch((cause) => {
+    shared = createInboundRuntime(environment, enrich).catch((cause) => {
       shared = undefined;
       sharedKey = undefined;
       throw cause;

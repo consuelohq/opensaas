@@ -1,3 +1,4 @@
+import { normalizePhone } from '@consuelo/contacts';
 import { Hono } from 'hono';
 import { bodyLimit } from 'hono/body-limit';
 
@@ -27,6 +28,7 @@ export type InboundCustomerApplication = {
 
 export type InboundCustomerBindings = {
   readonly clientAddress?: string;
+  readonly trustedClientIdentity?: boolean;
 };
 
 const jsonObject = (value: unknown): Record<string, unknown> | null =>
@@ -49,20 +51,6 @@ const managementToken = (authorization: string | undefined): string | null => {
 
 const clientAddress = (value: string | undefined): string =>
   value?.trim() || 'unknown';
-
-const normalizePhone = (value: string): string | null => {
-  const trimmed = value.trim();
-  if (trimmed.length === 0) return null;
-  if (!/^\+?[0-9().\-\s]+$/.test(trimmed)) return null;
-  const digits = trimmed.replace(/\D/g, '');
-  if (trimmed.startsWith('+')) {
-    const normalized = `+${digits}`;
-    return /^\+[1-9]\d{7,14}$/.test(normalized) ? normalized : null;
-  }
-  if (digits.length === 10) return `+1${digits}`;
-  if (digits.length === 11 && digits.startsWith('1')) return `+${digits}`;
-  return null;
-};
 
 const callbackRequest = (value: unknown): PublicCallbackRequest | null => {
   const input = jsonObject(value);
@@ -114,16 +102,32 @@ const parseJson = async (request: Request): Promise<unknown | null> => {
 export const createInboundCustomerRoutes = (
   application: InboundCustomerApplication,
 ) => {
+  const error = (code: string, message: string, retryable: boolean) => ({
+    error: { code, message, retryable },
+  });
   const routes = new Hono<{ Bindings: InboundCustomerBindings }>();
-  routes.use('/v1/inbound/customer/*', bodyLimit({ maxSize: 8192 }));
+  routes.use('/v1/inbound/customer/*', bodyLimit({
+    maxSize: 8192,
+    onError: (context) => context.json(
+      error('CALLBACK_REQUEST_TOO_LARGE', 'Callback request is too large', false),
+      413,
+    ),
+  }));
 
   routes.get('/v1/inbound/customer/:publicId', async (context) => {
     const entryId = publicId(context.req.param('publicId'));
-    if (!entryId) return context.json({ error: 'Invalid customer entry' }, 404);
+    if (!entryId)
+      return context.json(
+        error('INVALID_CUSTOMER_ENTRY', 'Invalid customer entry', false),
+        404,
+      );
     try {
       return context.json(await application.snapshot(entryId));
     } catch {
-      return context.json({ error: 'Customer entry unavailable' }, 404);
+      return context.json(
+        error('CUSTOMER_ENTRY_UNAVAILABLE', 'Customer entry unavailable', true),
+        404,
+      );
     }
   });
 
@@ -131,7 +135,19 @@ export const createInboundCustomerRoutes = (
     const entryId = publicId(context.req.param('publicId'));
     const input = callbackRequest(await parseJson(context.req.raw));
     if (!entryId || !input)
-      return context.json({ error: 'Invalid callback request' }, 400);
+      return context.json(
+        error('INVALID_CALLBACK_REQUEST', 'Invalid callback request', false),
+        400,
+      );
+    if (context.env?.trustedClientIdentity === false)
+      return context.json(
+        error(
+          'EDGE_PROXY_UNAVAILABLE',
+          'Customer callback service is temporarily unavailable',
+          true,
+        ),
+        503,
+      );
     try {
       const result = await application.requestCallback(
         entryId,
@@ -142,10 +158,31 @@ export const createInboundCustomerRoutes = (
     } catch (cause: unknown) {
       const message = cause instanceof Error ? cause.message : '';
       if (message === 'CUSTOMER_CALLBACK_RATE_LIMITED')
-        return context.json({ error: 'Too many callback requests' }, 429);
+        return context.json(
+          error(
+            'CUSTOMER_CALLBACK_RATE_LIMITED',
+            'Too many callback requests',
+            true,
+          ),
+          429,
+        );
       if (message === 'CUSTOMER_CALLBACK_INVALID')
-        return context.json({ error: 'Callback request is unavailable' }, 409);
-      return context.json({ error: 'Callback request could not be committed' }, 409);
+        return context.json(
+          error(
+            'CUSTOMER_CALLBACK_UNAVAILABLE',
+            'Callback request is unavailable',
+            false,
+          ),
+          409,
+        );
+      return context.json(
+        error(
+          'CUSTOMER_CALLBACK_COMMIT_FAILED',
+          'Callback request could not be committed',
+          true,
+        ),
+        409,
+      );
     }
   });
 
@@ -153,11 +190,25 @@ export const createInboundCustomerRoutes = (
     const entryId = publicId(context.req.param('publicId'));
     const token = managementToken(context.req.header('authorization'));
     if (!entryId || !token)
-      return context.json({ error: 'Callback capability required' }, 401);
+      return context.json(
+        error(
+          'CALLBACK_CAPABILITY_REQUIRED',
+          'Callback capability required',
+          false,
+        ),
+        401,
+      );
     try {
       return context.json(await application.readCallback(entryId, token));
     } catch {
-      return context.json({ error: 'Callback capability is invalid' }, 401);
+      return context.json(
+        error(
+          'CALLBACK_CAPABILITY_INVALID',
+          'Callback capability is invalid',
+          false,
+        ),
+        401,
+      );
     }
   });
 
@@ -175,7 +226,14 @@ export const createInboundCustomerRoutes = (
         typeof body.serviceWindowId !== 'string' ||
         !/^[A-Za-z0-9._~-]{8,512}$/.test(body.serviceWindowId)
       )
-        return context.json({ error: 'Invalid reschedule request' }, 400);
+        return context.json(
+          error(
+            'INVALID_CALLBACK_RESCHEDULE',
+            'Invalid reschedule request',
+            false,
+          ),
+          400,
+        );
       try {
         return context.json(
           await application.rescheduleCallback(
@@ -185,7 +243,14 @@ export const createInboundCustomerRoutes = (
           ),
         );
       } catch {
-        return context.json({ error: 'Callback reschedule rejected' }, 409);
+        return context.json(
+          error(
+            'CALLBACK_RESCHEDULE_REJECTED',
+            'Callback reschedule rejected',
+            false,
+          ),
+          409,
+        );
       }
     },
   );
@@ -195,11 +260,25 @@ export const createInboundCustomerRoutes = (
     const token = managementToken(context.req.header('authorization'));
     const body = jsonObject(await parseJson(context.req.raw));
     if (!entryId || !token || !body || !exactKeys(body, []))
-      return context.json({ error: 'Invalid cancellation request' }, 400);
+      return context.json(
+        error(
+          'INVALID_CALLBACK_CANCELLATION',
+          'Invalid cancellation request',
+          false,
+        ),
+        400,
+      );
     try {
       return context.json(await application.cancelCallback(entryId, token));
     } catch {
-      return context.json({ error: 'Callback cancellation rejected' }, 409);
+      return context.json(
+        error(
+          'CALLBACK_CANCELLATION_REJECTED',
+          'Callback cancellation rejected',
+          false,
+        ),
+        409,
+      );
     }
   });
 

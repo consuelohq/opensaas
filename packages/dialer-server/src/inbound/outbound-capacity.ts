@@ -239,6 +239,28 @@ export const createOutboundCapacity = (options: {
         });
       }
     });
+  const creationRejected = (
+    workspaceId: string,
+    sessionId: string,
+    event: { groupId: string; conferenceName: string; calls: readonly { callSid: string }[] },
+  ) => withInboundTransaction(pool, workspaceId, async (client) => {
+    try {
+      const row = (await client.query<OutboundBinding>(
+        'SELECT * FROM dialer_telephony_outbound WHERE workspace_id=$1 AND session_id=$2',
+        [workspaceId, sessionId],
+      )).rows[0];
+      if (!row || row.status !== 'creating' || row.group_id !== event.groupId ||
+          row.conference_name !== event.conferenceName ||
+          row.call_sids.length !== event.calls.length ||
+          !row.call_sids.every((sid, index) => event.calls[index]?.callSid === sid))
+        throw new Error('Incomplete outbound rejection evidence');
+      await recordTelephonyFact(client, workspaceId, row.request_id,
+        telephonyId(sessionId, 'creation-rejected'), 'outbound_creation_rejected');
+    } catch (cause: unknown) {
+      throw new Error('Incomplete outbound rejection evidence', { cause });
+    }
+  });
+
   const settleOffer = async (
     row: OutboundBinding,
     status: 'succeeded' | 'failed',
@@ -425,7 +447,14 @@ export const createOutboundCapacity = (options: {
           if (overdue.rowCount) await unknown(workspaceId, row.session_id);
           continue;
         }
-        if (row.call_sids.length !== row.planned_calls) continue;
+        if (row.call_sids.length !== row.planned_calls) {
+          const rejected = await pool.query(
+            `SELECT 1 FROM dialer_telephony_facts WHERE workspace_id=$1 AND request_id=$2
+             AND fact_id=$3 AND classification='outbound_creation_rejected'`,
+            [workspaceId, row.request_id, telephonyId(telephonyId(row.session_id, 'creation-rejected'))],
+          );
+          if (!rejected.rowCount) continue;
+        }
         const calls = await Promise.all(
           [...row.call_sids, ...(row.rep_sid ? [row.rep_sid] : [])].map((sid) =>
             options.carrier.call(sid),
@@ -587,5 +616,5 @@ export const createOutboundCapacity = (options: {
       });
     }
   };
-  return { begin, progress, complete, unknown, admitRep, tick };
+  return { begin, progress, creationRejected, complete, unknown, admitRep, tick };
 };

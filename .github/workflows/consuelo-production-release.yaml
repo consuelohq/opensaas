@@ -67,7 +67,7 @@ jobs:
           fi
           git diff --name-only "$before" "$GITHUB_SHA" > "$RUNNER_TEMP/dialer-release-changes.txt"
           cat "$RUNNER_TEMP/dialer-release-changes.txt"
-          if grep -Eq '^(packages/(dialer|dialer-server|lead-connector|logger)/|\.github/workflows/(consuelo-ci|consuelo-production-release|consuelo-dialer-rollback)\.yaml$|package\.json$|yarn\.lock$|\.yarnrc\.yml$|\.yarn/|nx\.json$|tsconfig[^/]*\.json$)' "$RUNNER_TEMP/dialer-release-changes.txt"; then
+          if grep -Eq '^(packages/(dialer|dialer-server|lead-connector|logger|contacts)/|\.github/workflows/(consuelo-ci|consuelo-production-release|consuelo-dialer-rollback)\.yaml$|package\.json$|yarn\.lock$|\.yarnrc\.yml$|\.yarn/|nx\.json$|tsconfig[^/]*\.json$)' "$RUNNER_TEMP/dialer-release-changes.txt"; then
             echo "release=true" >> "$GITHUB_OUTPUT"
           else
             echo "release=false" >> "$GITHUB_OUTPUT"
@@ -275,10 +275,11 @@ jobs:
 
       - name: Validate dialer release source
         run: |
+          bun run --cwd packages/logger build
+          bun run --cwd packages/contacts build
           bun test packages/dialer/src
           bun test packages/dialer-server/src
           bun test packages/lead-connector/src
-          bun run --cwd packages/logger build
           bun run --cwd packages/dialer typecheck
           bun run --cwd packages/dialer-server typecheck
           bun run --cwd packages/lead-connector typecheck
@@ -295,6 +296,7 @@ jobs:
           RAILWAY_DIALER_PUBLIC_ORIGIN: ${{ vars.RAILWAY_DIALER_PUBLIC_ORIGIN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_DIALER_WORKER_API_TOKEN }}
+          DIALER_EDGE_PROXY_SECRET: ${{ secrets.DIALER_EDGE_PROXY_SECRET }}
           LEADCONNECTOR_MARKETPLACE_BOOTSTRAP_SHA256: ${{ vars.LEADCONNECTOR_MARKETPLACE_BOOTSTRAP_SHA256 }}
           LEADCONNECTOR_PRODUCTION_EMBED_URL: ${{ vars.LEADCONNECTOR_PRODUCTION_EMBED_URL }}
         run: |
@@ -307,6 +309,7 @@ jobs:
             RAILWAY_DIALER_PUBLIC_ORIGIN \
             CLOUDFLARE_ACCOUNT_ID \
             CLOUDFLARE_API_TOKEN \
+            DIALER_EDGE_PROXY_SECRET \
             LEADCONNECTOR_MARKETPLACE_BOOTSTRAP_SHA256 \
             LEADCONNECTOR_PRODUCTION_EMBED_URL; do
             if [[ -z "${!name:-}" ]]; then
@@ -335,6 +338,26 @@ jobs:
           --environment "$RAILWAY_DIALER_ENVIRONMENT_ID"
           --service "$RAILWAY_DIALER_SERVICE_ID"
           --json
+
+      - name: Configure dialer edge identity secret
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_DIALER_PROJECT_TOKEN }}
+          RAILWAY_DIALER_ENVIRONMENT_ID: ${{ vars.RAILWAY_DIALER_ENVIRONMENT_ID }}
+          RAILWAY_DIALER_SERVICE_ID: ${{ vars.RAILWAY_DIALER_SERVICE_ID }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_DIALER_WORKER_API_TOKEN }}
+          DIALER_EDGE_PROXY_SECRET: ${{ secrets.DIALER_EDGE_PROXY_SECRET }}
+        run: |
+          set -euo pipefail
+          printf '%s' "$DIALER_EDGE_PROXY_SECRET" |
+            bunx @railway/cli@5.27.2 variables \
+              --service "$RAILWAY_DIALER_SERVICE_ID" \
+              --environment "$RAILWAY_DIALER_ENVIRONMENT_ID" \
+              --set-from-stdin DIALER_EDGE_PROXY_SECRET \
+              --skip-deploys
+          printf '%s' "$DIALER_EDGE_PROXY_SECRET" |
+            bunx wrangler@4.33.1 secret put DIALER_EDGE_PROXY_SECRET \
+              --config packages/lead-connector/wrangler.jsonc
 
       - name: Snapshot Railway deployment
         id: railway-before

@@ -1,4 +1,5 @@
 import { CALLBACK_MIGRATION_ID } from './callback-migration';
+import { CALLBACK_BOOKING_EVENTS_MIGRATION_ID } from './callback-booking-event-migration';
 import { CUSTOMER_ENTRY_MIGRATION_ID } from './customer-entry-migration';
 import { protectTelephonyConfiguration } from './telephony-configuration-store';
 import { createInboundOperator } from './operator';
@@ -679,6 +680,7 @@ suite('inbound runtime with real Postgres and simulated carrier', () => {
     expect(deleted).toBe(1);
   });
   it('rolls an empty telephony schema down and up while protecting immutable facts', async () => {
+    await rollbackDialerDatabaseMigration(pool, CALLBACK_BOOKING_EVENTS_MIGRATION_ID);
     await rollbackDialerDatabaseMigration(pool, CUSTOMER_ENTRY_MIGRATION_ID);
     await rollbackDialerDatabaseMigration(pool, CALLBACK_MIGRATION_ID);
     await rollbackDialerDatabaseMigration(pool, TELEPHONY_MIGRATION_ID);
@@ -693,6 +695,35 @@ suite('inbound runtime with real Postgres and simulated carrier', () => {
       pool.query("UPDATE dialer_telephony_facts SET classification='changed'"),
     ).rejects.toThrow('immutable');
   });
+  it('releases a definitively rejected partial group only after all known legs end, including restart', async () => {
+    const options = { pool, carrier, accountSid: 'account', clock };
+    const outbound = createOutboundCapacity(options);
+    await outbound.begin({ workspaceId: 'workspace', userId: 'alice',
+      sessionId: 'rejected-session', plannedCalls: 2 });
+    const progress = { groupId: 'partial-group', conferenceName: 'partial-conference',
+      calls: [{ callSid: 'known-partial-leg' }] };
+    await outbound.progress('workspace', 'rejected-session', progress);
+    calls.set('known-partial-leg', { sid: 'known-partial-leg', accountSid: 'account', status: 'in-progress' });
+    await expect(outbound.creationRejected('workspace', 'rejected-session', {
+      ...progress, calls: [],
+    })).rejects.toThrow('Inbound transaction failed');
+    expect((await pool.query(
+      "SELECT 1 FROM dialer_telephony_facts WHERE classification='outbound_creation_rejected'",
+    )).rowCount).toBe(0);
+    await outbound.creationRejected('workspace', 'rejected-session', progress);
+    await outbound.unknown('workspace', 'rejected-session');
+    const restarted = createOutboundCapacity(options);
+    await restarted.tick('workspace');
+    expect((await capacity.read('workspace', 'slot'))!.owner).not.toBeNull();
+    calls.set('known-partial-leg', { sid: 'known-partial-leg', accountSid: 'account', status: 'completed' });
+    await restarted.tick('workspace');
+    expect((await capacity.read('workspace', 'slot'))!.owner).toBeNull();
+    await restarted.tick('workspace');
+    expect((await pool.query(
+      'SELECT status FROM dialer_telephony_outbound WHERE session_id=$1', ['rejected-session'],
+    )).rows[0].status).toBe('ended');
+  });
+
   it('shares capacity with outbound and retains partial creation uncertainty', async () => {
     const outbound = createOutboundCapacity({
       pool,
@@ -865,6 +896,7 @@ suite('inbound runtime with real Postgres and simulated carrier', () => {
     ).toBe(1);
   });
   it('refuses rollback while a live caller or uncertain effect exists', async () => {
+    await rollbackDialerDatabaseMigration(pool, CALLBACK_BOOKING_EVENTS_MIGRATION_ID);
     await rollbackDialerDatabaseMigration(pool, CUSTOMER_ENTRY_MIGRATION_ID);
     await rollbackDialerDatabaseMigration(pool, CALLBACK_MIGRATION_ID);
     await incoming();

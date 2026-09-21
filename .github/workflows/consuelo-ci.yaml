@@ -105,6 +105,7 @@ jobs:
           if has_change '^packages/dialer/'; then dialer=true; verify=true; fi
           if has_change '^packages/dialer-server/'; then dialer=true; verify=true; fi
           if has_change '^packages/lead-connector/'; then dialer=true; verify=true; fi
+          if has_change '^packages/contacts/'; then dialer=true; verify=true; fi
           if has_change '^packages/logger/'; then dialer=true; verify=true; fi
           if has_change '^packages/api/'; then verify=true; fi
           if has_change '^packages/consuelo-core/'; then verify=true; fi
@@ -170,6 +171,12 @@ jobs:
         if: needs.consuelo-changes.outputs.verify == 'true' && needs.consuelo-changes.outputs.os_contracts == 'true'
         working-directory: packages/os
         run: bun install --frozen-lockfile
+
+      - name: Build shared dialer input helpers
+        if: needs.consuelo-changes.outputs.verify == 'true' && needs.consuelo-changes.outputs.dialer == 'true'
+        run: |
+          bun run --cwd packages/logger build
+          bun run --cwd packages/contacts build
 
       - name: Run workspace verify
         if: needs.consuelo-changes.outputs.verify == 'true'
@@ -265,6 +272,8 @@ jobs:
       - name: Run dialer release package tests
         if: needs.consuelo-changes.outputs.dialer == 'true'
         run: |
+          bun run --cwd packages/logger build
+          bun run --cwd packages/contacts build
           bun test packages/dialer/src
           bun test packages/dialer-server/src
           bun test packages/lead-connector/src

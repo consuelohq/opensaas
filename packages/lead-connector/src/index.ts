@@ -80,6 +80,7 @@ export {
   createLeadConnectorTask,
   getLeadConnectorContact,
   listLeadConnectorContacts,
+  lookupLeadConnectorContactOwner,
   listLeadConnectorPipelines,
   recordLeadConnectorDisposition,
   resolveLeadConnectorQueueCandidates,

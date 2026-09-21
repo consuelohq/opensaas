@@ -96,6 +96,14 @@ export type CallbackRead = {
   readonly recipientExpiresAt: string;
 };
 
+export type CallbackBookingRead =
+  | CallbackBookingResult
+  | {
+      readonly status: 'cancel_pending';
+      readonly providerReference: string;
+      readonly evidenceReference: null;
+    };
+
 export type CallbackCalendarAdapter = {
   readonly book: (input: CallbackBookingRequest) => Promise<CallbackBookingResult>;
   readonly cancel: (
@@ -331,7 +339,11 @@ export const createPostgresCallbacks = (options: CallbackStoreOptions) => {
     }
   };
 
-  const cancelConfirmedBookingForRevision = async (row: StoredCallback) => {
+  const readBookingForRevision = async (
+    workspaceId: string,
+    callbackId: string,
+    revision: number,
+  ): Promise<CallbackBookingRead | null> => {
     try {
       const existing = await pool.query<{
         status: CallbackBookingResult['status'];
@@ -341,10 +353,67 @@ export const createPostgresCallbacks = (options: CallbackStoreOptions) => {
         `SELECT status,provider_reference,evidence_reference
          FROM dialer_callback_bookings
          WHERE workspace_id=$1 AND callback_id=$2 AND revision=$3`,
-        [row.workspace_id, row.callback_id, row.state.revision],
+        [workspaceId, callbackId, revision],
       );
       const stored = existing.rows[0];
+      if (!stored) return null;
+      if (stored.status !== 'confirmed')
+        return {
+          status: stored.status,
+          providerReference: stored.provider_reference,
+          evidenceReference: stored.evidence_reference,
+        };
+
+      const events = await pool.query<{
+        event_kind: 'cancel_dispatched' | 'cancelled';
+        provider_reference: string;
+        evidence_reference: string | null;
+      }>(
+        `SELECT event_kind,provider_reference,evidence_reference
+         FROM dialer_callback_booking_events
+         WHERE workspace_id=$1 AND callback_id=$2 AND revision=$3`,
+        [workspaceId, callbackId, revision],
+      );
+      const cancelled = events.rows.find((event) => event.event_kind === 'cancelled');
+      if (cancelled)
+        return {
+          status: 'cancelled',
+          providerReference: cancelled.provider_reference,
+          evidenceReference: cancelled.evidence_reference,
+        };
+      if (events.rows.some((event) => event.event_kind === 'cancel_dispatched'))
+        return {
+          status: 'cancel_pending',
+          providerReference: stored.provider_reference!,
+          evidenceReference: null,
+        };
+      return {
+        status: stored.status,
+        providerReference: stored.provider_reference,
+        evidenceReference: stored.evidence_reference,
+      };
+    } catch (cause: unknown) {
+      if (cause instanceof Error) throw cause;
+      throw new Error('Callback booking lookup rejected with a non-Error cause', {
+        cause,
+      });
+    }
+  };
+
+  const cancelConfirmedBookingForRevision = async (row: StoredCallback) => {
+    try {
+      const stored = await readBookingForRevision(
+        row.workspace_id,
+        row.callback_id,
+        row.state.revision,
+      );
+      if (stored?.status === 'cancel_pending')
+        throw new Error('Callback provider booking cancellation outcome is unknown');
       if (!stored || stored.status !== 'confirmed') return;
+      if (!stored.providerReference)
+        throw new Error('Confirmed callback booking is missing its provider reference');
+      if (!options.calendar)
+        throw new Error('Confirmed callback booking requires a calendar adapter');
       const request: CallbackBookingRequest = {
         workspaceId: row.workspace_id,
         callbackId: row.callback_id,
@@ -353,39 +422,54 @@ export const createPostgresCallbacks = (options: CallbackStoreOptions) => {
         windowStart: row.state.notBefore,
         windowEnd: row.state.deadline,
       };
-      const cancelled = await cancelConfirmedCallbackBooking({
-        booking: {
-          status: stored.status,
-          providerReference: stored.provider_reference,
-          evidenceReference: stored.evidence_reference,
-        },
-        request,
-        calendar: options.calendar,
-      });
-      const updated = await pool.query(
-        `UPDATE dialer_callback_bookings
-         SET status=$4,provider_reference=$5,evidence_reference=$6
-         WHERE workspace_id=$1 AND callback_id=$2 AND revision=$3 AND status='confirmed'`,
+      const dispatched = await pool.query(
+        `INSERT INTO dialer_callback_booking_events(
+           workspace_id,callback_id,revision,event_kind,provider_reference,evidence_reference
+         ) VALUES($1,$2,$3,'cancel_dispatched',$4,NULL)
+         ON CONFLICT DO NOTHING RETURNING event_kind`,
         [
           row.workspace_id,
           row.callback_id,
           row.state.revision,
-          cancelled.status,
+          stored.providerReference,
+        ],
+      );
+      if (dispatched.rowCount !== 1) {
+        const current = await readBookingForRevision(
+          row.workspace_id,
+          row.callback_id,
+          row.state.revision,
+        );
+        if (current?.status === 'cancelled') return;
+        throw new Error('Callback provider booking cancellation outcome is unknown');
+      }
+      const cancelled = await cancelConfirmedCallbackBooking({
+        booking: stored,
+        request,
+        calendar: options.calendar,
+      });
+      if (!cancelled.providerReference || !cancelled.evidenceReference)
+        throw new Error('Callback provider booking cancellation is missing durable evidence');
+      await pool.query(
+        `INSERT INTO dialer_callback_booking_events(
+           workspace_id,callback_id,revision,event_kind,provider_reference,evidence_reference
+         ) VALUES($1,$2,$3,'cancelled',$4,$5)
+         ON CONFLICT DO NOTHING`,
+        [
+          row.workspace_id,
+          row.callback_id,
+          row.state.revision,
           cancelled.providerReference,
           cancelled.evidenceReference,
         ],
       );
-      if (updated.rowCount !== 1) {
-        const current = await pool.query<{
-          status: CallbackBookingResult['status'];
-        }>(
-          `SELECT status FROM dialer_callback_bookings
-           WHERE workspace_id=$1 AND callback_id=$2 AND revision=$3`,
-          [row.workspace_id, row.callback_id, row.state.revision],
-        );
-        if (current.rows[0]?.status !== 'cancelled')
-          throw new Error('Callback provider booking cancellation could not be persisted');
-      }
+      const current = await readBookingForRevision(
+        row.workspace_id,
+        row.callback_id,
+        row.state.revision,
+      );
+      if (current?.status !== 'cancelled')
+        throw new Error('Callback provider booking cancellation could not be persisted');
     } catch (cause: unknown) {
       if (cause instanceof Error) throw cause;
       throw new Error('Callback booking reconciliation rejected with a non-Error cause', {
@@ -565,10 +649,14 @@ export const createPostgresCallbacks = (options: CallbackStoreOptions) => {
       return { duplicate: true as const, state: duplicate.rows[0].snapshot };
     const row = await loadCallback(client, workspaceId, callbackId, true);
     if (!row) throw new Error('Callback obligation is missing');
+    if (action.type === 'reschedule' && !row.recipient_ciphertext)
+      throw new Error('Callback recipient has been purged');
     const before = row.state;
     const after = applyCallbackAction(before, action);
     await projectAction(client, before, after, action);
-    let recipientExpiresAt = row.recipient_expires_at.toISOString();
+    let recipientExpiresAt = action.type === 'reschedule'
+      ? new Date(Date.parse(after.deadline) + row.policy.recipientRetentionMilliseconds).toISOString()
+      : row.recipient_expires_at.toISOString();
     if (terminal(after.status)) {
       recipientExpiresAt = new Date(
         Math.min(
@@ -1257,20 +1345,14 @@ export const createPostgresCallbacks = (options: CallbackStoreOptions) => {
       windowStart: row.state.notBefore,
       windowEnd: row.state.deadline,
     };
-    const existing = await pool.query<{
-      status: CallbackBookingResult['status'];
-      provider_reference: string | null;
-      evidence_reference: string | null;
-    }>(
-      'SELECT status,provider_reference,evidence_reference FROM dialer_callback_bookings WHERE workspace_id=$1 AND callback_id=$2 AND revision=$3',
-      [workspaceId, callbackId, row.state.revision],
+    const existing = await readBookingForRevision(
+      workspaceId,
+      callbackId,
+      row.state.revision,
     );
-    if (existing.rows[0])
-      return {
-        status: existing.rows[0].status,
-        providerReference: existing.rows[0].provider_reference,
-        evidenceReference: existing.rows[0].evidence_reference,
-      } satisfies CallbackBookingResult;
+    if (existing?.status === 'cancel_pending')
+      throw new Error('Callback provider booking cancellation outcome is unknown');
+    if (existing) return existing;
     const result = decodeCallbackBookingResult(
       options.calendar
         ? await options.calendar.book(request)
@@ -1323,6 +1405,7 @@ export const createPostgresCallbacks = (options: CallbackStoreOptions) => {
     request,
     requestOnClient,
     read,
+    readBooking: readBookingForRevision,
     readRecipient,
     apply,
     reschedule,

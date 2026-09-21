@@ -1,5 +1,6 @@
 import { TELEPHONY_MIGRATION_ID } from '../inbound/telephony-migration';
 import { CALLBACK_MIGRATION_ID } from '../inbound/callback-migration';
+import { CALLBACK_BOOKING_EVENTS_MIGRATION_ID } from '../inbound/callback-booking-event-migration';
 import { CUSTOMER_ENTRY_MIGRATION_ID } from '../inbound/customer-entry-migration';
 import { ROUTING_MIGRATION_ID } from '../inbound/routing-migration';
 import { describe, expect, it } from 'bun:test';
@@ -17,8 +18,8 @@ import {
   migrateDialerDatabase,
 } from './migrations';
 
-const createDatabaseHarness = () => {
-  const applied = new Set<string>();
+const createDatabaseHarness = (initialApplied: readonly string[] = []) => {
+  const applied = new Set<string>(initialApplied);
   const calls: Array<{ text: string; values: readonly unknown[] }> = [];
   const database: LeadConnectorDatabase = {
     query: async <T>(text: string, values: readonly unknown[] = []) => {
@@ -69,6 +70,7 @@ describe('dialer database migrations', () => {
     expect(sql).toContain('dialer_callback_obligations');
     expect(sql).toContain('dialer_callback_effects');
     expect(sql).toContain('dialer_callback_bookings');
+    expect(sql).toContain('dialer_callback_booking_events');
     expect(sql).not.toContain('core.workspace_settings');
     expect(sql).not.toContain('core.contact_attempt_hazard_hourly_mv');
     expect(harness.applied).toEqual(
@@ -84,6 +86,7 @@ describe('dialer database migrations', () => {
         TELEPHONY_MIGRATION_ID,
         CALLBACK_MIGRATION_ID,
         CUSTOMER_ENTRY_MIGRATION_ID,
+        CALLBACK_BOOKING_EVENTS_MIGRATION_ID,
       ]),
     );
   });
@@ -181,6 +184,33 @@ describe('dialer database migrations', () => {
     expect(callSessionCreates).toHaveLength(1);
     expect(observationCreates).toHaveLength(1);
     expect(decisionCreates).toHaveLength(1);
-    expect(migrationInserts).toHaveLength(11);
+    expect(migrationInserts).toHaveLength(12);
+  });
+
+  it('upgrades an RD7B schema with only the additive booking-event migration', async () => {
+    const previousMigrations = [
+      DIALER_DATABASE_BASELINE_MIGRATION_ID,
+      DIALER_DATABASE_PREDICTIVE_LEARNING_MIGRATION_ID,
+      DIALER_DATABASE_CONTEXTUAL_SCIENCE_MIGRATION_ID,
+      DIALER_DATABASE_CONTEXTUAL_SCIENCE_HARDENING_MIGRATION_ID,
+      DIALER_DATABASE_LEARNING_INTEGRITY_MIGRATION_ID,
+      INBOUND_MIGRATION_ID,
+      REP_CAPACITY_MIGRATION_ID,
+      ROUTING_MIGRATION_ID,
+      TELEPHONY_MIGRATION_ID,
+      CALLBACK_MIGRATION_ID,
+      CUSTOMER_ENTRY_MIGRATION_ID,
+    ] as const;
+    const harness = createDatabaseHarness(previousMigrations);
+
+    await migrateDialerDatabase(harness.database);
+
+    const sql = harness.calls.map((call) => call.text).join('\n');
+    expect(sql).toContain('CREATE TABLE IF NOT EXISTS dialer_callback_booking_events');
+    expect(sql).not.toContain('CREATE TABLE IF NOT EXISTS dialer_callback_obligations');
+    expect(sql).not.toContain('CREATE TABLE IF NOT EXISTS dialer_customer_callback_admission');
+    expect(harness.applied).toEqual(
+      new Set([...previousMigrations, CALLBACK_BOOKING_EVENTS_MIGRATION_ID]),
+    );
   });
 });
