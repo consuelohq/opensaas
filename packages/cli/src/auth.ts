@@ -2,10 +2,29 @@ import { createHash, randomBytes } from 'node:crypto';
 import { createServer } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import open from 'open';
-import { createLogger } from '@consuelo/logger';
 import type { CliConfig, CliOsAuth } from './config.js';
 
-const logger = createLogger('CLI:Auth');
+interface AuthLogger {
+  info: (message: string) => void;
+  warn: (message: string) => void;
+}
+
+const NOOP_AUTH_LOGGER: AuthLogger = {
+  info: () => {},
+  warn: () => {},
+};
+
+async function loadAuthLogger(): Promise<AuthLogger> {
+  const loggerSpecifier = '@consuelo/logger';
+  try {
+    const loggerModule = (await import(loggerSpecifier)) as {
+      createLogger?: (scope: string) => AuthLogger;
+    };
+    return loggerModule.createLogger?.('CLI:Auth') ?? NOOP_AUTH_LOGGER;
+  } catch {
+    return NOOP_AUTH_LOGGER;
+  }
+}
 
 export const OS_AUTHORITY_ORIGIN = 'https://os.consuelohq.com';
 export const OS_OPERATOR_CLIENT_ID = 'consuelo-os-operator-cli';
@@ -340,6 +359,7 @@ export function applyHostedAuthResult(
 export async function authenticateHosted(
   opts: AuthOptions = {},
 ): Promise<AuthResult> {
+  const logger = await loadAuthLogger();
   const { verifier, challenge } = createPkcePair();
   const state = base64Url(randomBytes(24));
   const capture = await startLoopbackCapture({

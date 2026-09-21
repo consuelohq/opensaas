@@ -55,7 +55,7 @@ describe('GitHub workflow policy', () => {
     expect(readWorkflow('consuelo-ci.yaml').jobs['workspace-contracts']).toBeUndefined();
   });
 
-  test('uses one package-manager-neutral Consuelo CI setup boundary', () => {
+  test('uses one Bun-owned Consuelo CI setup boundary', () => {
     const workflow = readFileSync(join(workflowDir, 'consuelo-ci.yaml'), 'utf8');
     const setupAction = readFileSync(
       join(repoRoot, '.github/actions/consuelo-ci-setup/action.yaml'),
@@ -66,12 +66,14 @@ describe('GitHub workflow policy', () => {
     expect(setupAction).toContain("default: '1.3.14'");
     expect(setupAction).toContain('uses: actions/setup-node@v4');
     expect(setupAction).toContain("default: '24'");
-    expect(setupAction).toContain('uses: ./.github/actions/yarn-install');
+    expect(setupAction).toContain('uses: ./.github/actions/bun-install');
+    expect(setupAction).toContain('working-directory: packages/workspace');
     expect(setupAction).toContain('working-directory: packages/os');
     expect(setupAction).toContain('bun install --frozen-lockfile');
     expect(workflow).toContain('uses: ./.github/actions/consuelo-ci-setup');
     expect(workflow).not.toContain('uses: oven-sh/setup-bun@v2');
     expect(workflow).not.toContain('uses: ./.github/actions/yarn-install');
+    expect(workflow).toContain("install-workspace: 'true'");
     expect(workflow).toContain("setup-node: 'false'");
   });
 
@@ -88,7 +90,7 @@ describe('GitHub workflow policy', () => {
     expect(policy).toContain('const usesMutableBranch = /@(?:main|master)');
   });
 
-  test('keeps OS-only Consuelo lanes off the root Yarn install', () => {
+  test('keeps OS-only Consuelo lanes off the root Bun install', () => {
     const workflow = readWorkflow('consuelo-ci.yaml');
 
     for (const jobName of ['os-contracts', 'sites-gateway-cloudflare']) {
