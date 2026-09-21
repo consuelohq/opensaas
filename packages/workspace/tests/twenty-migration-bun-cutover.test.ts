@@ -9,6 +9,7 @@ const read = (path: string): string => readFileSync(repoPath(path), 'utf8');
 
 type RootManifest = {
   dependencies?: Record<string, string>;
+  devDependencies?: Record<string, string>;
   packageManager?: string;
   engines?: Record<string, string>;
   workspaces?: string[] | { packages?: string[] };
@@ -71,6 +72,25 @@ describe('M6 Bun root package-manager cutover', () => {
     ) as RootManifest;
 
     expect(dialer.dependencies?.['@sentry/node']).toBe('^10.38.0');
+  });
+
+  it('keeps independent Bun toolchains self-contained on clean runners', () => {
+    const os = JSON.parse(read('packages/os/package.json')) as RootManifest;
+    const leadConnector = JSON.parse(
+      read('packages/lead-connector/package.json'),
+    ) as RootManifest;
+    const dialerServerTsconfig = JSON.parse(
+      read('packages/dialer-server/tsconfig.json'),
+    ) as { compilerOptions?: { types?: string[] } };
+    const leadConnectorTsconfig = JSON.parse(
+      read('packages/lead-connector/tsconfig.json'),
+    ) as { compilerOptions?: { types?: string[] } };
+
+    expect(os.devDependencies?.wrangler).toBe('^4.27.0');
+    expect(leadConnector.devDependencies?.jsdom).toBe('22.1.0');
+    expect(leadConnector.devDependencies?.['@types/jsdom']).toBe('^21.1.7');
+    expect(dialerServerTsconfig.compilerOptions?.types).toEqual(['bun']);
+    expect(leadConnectorTsconfig.compilerOptions?.types).toEqual(['bun']);
   });
 
   it('uses Bun for active root bootstrap and standalone dialer builds', () => {

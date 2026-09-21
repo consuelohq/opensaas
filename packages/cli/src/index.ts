@@ -3,8 +3,6 @@
 globalThis.__consuelo_cli_mode = true;
 
 import { Command } from 'commander';
-import { initCommand } from './commands/init.js';
-import { coachCommand } from './commands/coach.js';
 import { registerContacts } from './commands/contacts.js';
 import { registerCalls } from './commands/calls.js';
 import { registerQueue } from './commands/queue.js';
@@ -16,8 +14,6 @@ import { registerMigrate } from './commands/migrate.js';
 import { registerOs } from './commands/os.js';
 import { registerSkillCommands } from './commands/skills.js';
 import { registerUpdate } from './commands/update.js';
-import { registerLogin } from './commands/login.js';
-import { analyticsCommand } from './commands/analytics.js';
 import { statusCommand, registerStatus } from './commands/status.js';
 import { loadConfig } from './config.js';
 import { initSentry, captureError } from './sentry.js';
@@ -54,6 +50,7 @@ program
       if (isConfigured) {
         await statusCommand();
       } else {
+        const { initCommand } = await import('./commands/init.js');
         await initCommand({});
       }
     } catch (err: unknown) {
@@ -74,6 +71,7 @@ program
   .option('--template <type>', 'project template (full, minimal, api-only)')
   .action(async (opts) => {
     try {
+      const { initCommand } = await import('./commands/init.js');
       await initCommand({
         managed: opts.managed,
         yes: opts.yes,
@@ -92,7 +90,18 @@ program
   .command('coach')
   .description('analyze a call transcript')
   .option('--transcript <file>', 'path to transcript file')
-  .action((opts) => coachCommand({ transcript: opts.transcript }));
+  .action(async (opts) => {
+    try {
+      const { coachCommand } = await import('./commands/coach.js');
+      await coachCommand({ transcript: opts.transcript });
+    } catch (err: unknown) {
+      handleCommandError(err, {
+        code: 'CLI_ERROR',
+        friendlyMessage: 'coach failed — check your configuration and try again',
+        command: 'coach',
+      });
+    }
+  });
 
 // phase 8 command groups
 registerContacts(program);
@@ -107,7 +116,22 @@ registerStatus(program);
 registerOs(program);
 registerSkillCommands(program);
 registerUpdate(program);
-registerLogin(program);
+
+program
+  .command('login')
+  .description('sign in to Consuelo OS')
+  .action(async () => {
+    try {
+      const { loginCommand } = await import('./commands/login.js');
+      await loginCommand();
+    } catch (err: unknown) {
+      handleCommandError(err, {
+        code: 'CLI_ERROR',
+        friendlyMessage: 'login failed — try signing in again',
+        command: 'login',
+      });
+    }
+  });
 
 program
   .command('analytics')
@@ -115,7 +139,17 @@ program
   .argument('[callSid]', 'call SID to tag results with', '')
   .option('--transcript <file>', 'path to transcript file')
   .action(async (callSid, opts) => {
-    await analyticsCommand(callSid, { transcript: opts.transcript });
+    try {
+      const { analyticsCommand } = await import('./commands/analytics.js');
+      await analyticsCommand(callSid, { transcript: opts.transcript });
+    } catch (err: unknown) {
+      handleCommandError(err, {
+        code: 'CLI_ERROR',
+        friendlyMessage:
+          'analytics failed — check your configuration and try again',
+        command: 'analytics',
+      });
+    }
   });
 
 program
