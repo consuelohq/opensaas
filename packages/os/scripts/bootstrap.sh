@@ -490,6 +490,9 @@ check_mac_prerequisites() {
   local os_name
   os_name="$(uname -s 2>/dev/null || true)"
   if [ "$os_name" != "Darwin" ]; then
+    if [ "$DRY_RUN" -eq 1 ]; then
+      return 0
+    fi
     fail "Consuelo OS local bootstrap currently supports macOS. Detected: ${os_name:-unknown}."
   fi
 
