@@ -9,7 +9,6 @@ export const rule: Rule.RuleModule = {
     docs: {
       description:
         'Enforce JSX/HTML component tags are on separate lines in MDX files to prevent Crowdin translation issues',
-      recommended: true,
     },
     fixable: 'whitespace',
     messages: {
@@ -25,7 +24,8 @@ export const rule: Rule.RuleModule = {
     return {
       // Check JSX opening tags that have content on the same line
       JSXOpeningElement: (node: TSESTree.JSXOpeningElement) => {
-        const tokenAfter = sourceCode.getTokenAfter(node as any);
+        const eslintNode = node as unknown as Rule.Node;
+        const tokenAfter = sourceCode.getTokenAfter(eslintNode);
 
         if (!tokenAfter) {
           return;
@@ -34,10 +34,8 @@ export const rule: Rule.RuleModule = {
         // Check if there's content on the same line after the opening tag
         if (node.loc.end.line === tokenAfter.loc.start.line) {
           // Allow if it's a closing tag immediately after (self-closing pattern)
-          const nextNode = (sourceCode as any).getNodeByRangeIndex?.(
-            tokenAfter.range[0],
-          );
-          if (nextNode?.type === 'JSXClosingElement') {
+          const nextNode = sourceCode.getNodeByRangeIndex(tokenAfter.range[0]);
+          if (String(nextNode?.type) === 'JSXClosingElement') {
             return;
           }
 
@@ -51,16 +49,17 @@ export const rule: Rule.RuleModule = {
           }
 
           context.report({
-            node: node as any,
+            node: eslintNode,
             messageId: 'tagOnSameLine',
-            fix: (fixer) => fixer.insertTextAfter(node as any, '\n'),
+            fix: (fixer) => fixer.insertTextAfter(eslintNode, '\n'),
           });
         }
       },
 
       // Check JSX closing tags that have content on the same line before them
       JSXClosingElement: (node: TSESTree.JSXClosingElement) => {
-        const tokenBefore = sourceCode.getTokenBefore(node as any);
+        const eslintNode = node as unknown as Rule.Node;
+        const tokenBefore = sourceCode.getTokenBefore(eslintNode);
 
         if (!tokenBefore) {
           return;
@@ -69,10 +68,8 @@ export const rule: Rule.RuleModule = {
         // Check if there's content on the same line before the closing tag
         if (node.loc.start.line === tokenBefore.loc.end.line) {
           // Check if it's actual content (not whitespace or opening tag)
-          const prevNode = (sourceCode as any).getNodeByRangeIndex?.(
-            tokenBefore.range[0],
-          );
-          if (prevNode?.type === 'JSXOpeningElement') {
+          const prevNode = sourceCode.getNodeByRangeIndex(tokenBefore.range[0]);
+          if (String(prevNode?.type) === 'JSXOpeningElement') {
             return; // This is handled by the opening tag check
           }
 
@@ -84,14 +81,14 @@ export const rule: Rule.RuleModule = {
           // If there's any non-whitespace content before the closing tag on same line
           if (textBetween.trim() !== '' || tokenBefore.type === 'Punctuator') {
             context.report({
-              node: node as any,
+              node: eslintNode,
               messageId: 'tagOnSameLine',
-              fix: (fixer) => fixer.insertTextBefore(node as any, '\n'),
+              fix: (fixer) => fixer.insertTextBefore(eslintNode, '\n'),
             });
           }
         }
       },
-    };
+    } as unknown as Rule.RuleListener;
   },
 };
 

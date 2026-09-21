@@ -409,6 +409,18 @@ const buildSecretGatewayRoutes = (): WorkspaceRouteD1Route[] => [
 const buildArtifactsGatewayRoutes = (): WorkspaceRouteD1Route[] => [
   {
     surface: 'sites',
+    pathPrefix: '/share/artifacts',
+    auth: 'public',
+    status: 'active',
+    target: {
+      kind: 'consuelo-gateway-service',
+      serviceName: 'artifacts-sites-share-layer',
+      gatewayRouteFamily: '/share/artifacts/*',
+      publicSiteRouteFamily: '/share/artifacts/*',
+    },
+  },
+  {
+    surface: 'sites',
     pathPrefix: '/artifacts',
     auth: 'workspace-session',
     status: 'active',

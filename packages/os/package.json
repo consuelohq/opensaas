@@ -148,9 +148,12 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "vitest": "^4.1.5"
+    "vitest": "^4.1.5",
+    "wrangler": "^4.27.0"
   },
   "overrides": {
     "tar": "7.5.22"
-  }
+  },
+  "license": "Apache-2.0",
+  "packageManager": "bun@1.3.14"
 }

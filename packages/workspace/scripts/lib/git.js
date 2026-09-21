@@ -1,9 +1,17 @@
 const { execFileSync } = require('child_process');
 
+const GIT_OUTPUT_MAX_BUFFER = 64 * 1024 * 1024;
+
 function runGit(args, options = {}) {
   const cwd = options.cwd || process.cwd();
   const env = options.env ? { ...process.env, ...options.env } : process.env;
-  return execFileSync('git', args, { cwd, env, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] }).trim();
+  return execFileSync('git', args, {
+    cwd,
+    env,
+    encoding: 'utf8',
+    stdio: ['pipe', 'pipe', 'pipe'],
+    maxBuffer: GIT_OUTPUT_MAX_BUFFER,
+  }).trim();
 }
 
 function runGitMaybe(args, options = {}) {
@@ -167,6 +175,7 @@ function captureStagedIndexState(repoRoot, baseSha) {
     cwd: repoRoot,
     encoding: 'utf8',
     stdio: ['pipe', 'pipe', 'pipe'],
+    maxBuffer: GIT_OUTPUT_MAX_BUFFER,
   });
   const paths = pathOutput.split('\0').filter(Boolean);
   return paths.map((filePath) => ({
@@ -175,6 +184,7 @@ function captureStagedIndexState(repoRoot, baseSha) {
       cwd: repoRoot,
       encoding: 'utf8',
       stdio: ['pipe', 'pipe', 'pipe'],
+      maxBuffer: GIT_OUTPUT_MAX_BUFFER,
     }),
   }));
 }
@@ -190,6 +200,7 @@ function restoreStagedIndexState(repoRoot, snapshot) {
       encoding: 'utf8',
       input: entry.entries,
       stdio: ['pipe', 'pipe', 'pipe'],
+      maxBuffer: GIT_OUTPUT_MAX_BUFFER,
     });
   }
 }
@@ -282,7 +293,10 @@ function getTrackedChanges(repoRoot) {
     '.',
     ':!node_modules',
   ], {
-    cwd: repoRoot, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'],
+    cwd: repoRoot,
+    encoding: 'utf8',
+    stdio: ['pipe', 'pipe', 'pipe'],
+    maxBuffer: GIT_OUTPUT_MAX_BUFFER,
   });
   if (!output || !output.trim()) return [];
 

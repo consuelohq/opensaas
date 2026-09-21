@@ -1,0 +1,10 @@
+{
+  "files": [
+    ".github/workflows/consuelo-ci.yaml",
+    ".task/twenty-migration/consuelo-ci-authority/workpad.md",
+    "packages/twenty-utils/dangerfile.ts",
+    "packages/workspace/scripts/review.js",
+    "packages/workspace/tests/api-breaking-workflow-build-toolchain.test.ts"
+  ],
+  "updatedAt": "2026-08-15T02:32:05.342Z"
+}
