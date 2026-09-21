@@ -8,6 +8,7 @@ const repoPath = (path: string): string => resolve(repoRoot, path);
 const read = (path: string): string => readFileSync(repoPath(path), 'utf8');
 
 type RootManifest = {
+  dependencies?: Record<string, string>;
   packageManager?: string;
   engines?: Record<string, string>;
   workspaces?: string[] | { packages?: string[] };
@@ -52,6 +53,24 @@ describe('M6 Bun root package-manager cutover', () => {
     expect(read('.github/actions/consuelo-ci-setup/action.yaml')).toContain(
       './.github/actions/bun-install',
     );
+  });
+
+  it('installs the independent workspace toolchain before running repository verify', () => {
+    const setup = read('.github/actions/consuelo-ci-setup/action.yaml');
+    const workflow = read('.github/workflows/consuelo-ci.yaml');
+
+    expect(setup).toContain('install-workspace:');
+    expect(setup).toContain('working-directory: packages/workspace');
+    expect(setup).toContain('bun install --frozen-lockfile');
+    expect(workflow).toContain("install-workspace: 'true'");
+  });
+
+  it('declares direct runtime instrumentation dependencies in the dialer package', () => {
+    const dialer = JSON.parse(
+      read('packages/dialer/package.json'),
+    ) as RootManifest;
+
+    expect(dialer.dependencies?.['@sentry/node']).toBe('^10.38.0');
   });
 
   it('uses Bun for active root bootstrap and standalone dialer builds', () => {

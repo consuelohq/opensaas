@@ -18,6 +18,10 @@ inputs:
     description: Install the root workspace dependency graph.
     required: false
     default: 'true'
+  install-workspace:
+    description: Install the independent packages/workspace Bun dependency graph.
+    required: false
+    default: 'false'
   install-os:
     description: Install the packages/os Bun dependency graph.
     required: false
@@ -40,6 +44,12 @@ runs:
     - name: Install repository dependencies
       if: ${{ inputs.install-root == 'true' }}
       uses: ./.github/actions/bun-install
+
+    - name: Install workspace toolchain dependencies
+      if: ${{ inputs.install-workspace == 'true' }}
+      shell: bash
+      working-directory: packages/workspace
+      run: bun install --frozen-lockfile
 
     - name: Install OS dependencies
       if: ${{ inputs.install-os == 'true' }}
