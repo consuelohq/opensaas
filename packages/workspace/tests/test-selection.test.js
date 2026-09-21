@@ -506,6 +506,25 @@ describe('test selection registry', () => {
     ]);
   });
 
+  it('uses focused installer device onboarding contracts instead of the broad OS package suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/onboarding-flow.test.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-installer-device-onboarding');
+    expect(suiteNames).not.toContain('@consuelo/os package test');
+    expect(suiteNames).toEqual([
+      'OS installer device onboarding contracts',
+      'OS installer runtime structure contracts',
+    ]);
+  });
+
   it('uses focused MCP admission contracts instead of the broad OS package suite', () => {
     const result = run([
       'check',

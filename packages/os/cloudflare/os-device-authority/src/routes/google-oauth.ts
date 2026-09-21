@@ -292,6 +292,9 @@ async function handleGoogleOAuthRequest(
         const denial = describeCanonicalDeviceIdentityDenial(
           canonicalIdentity.reason,
         );
+        grant.status = 'denied';
+        grant.failureMessage = denial.message;
+        await input.store.put(grant);
         const correlationId = deviceAuthorizationCorrelationId(request);
         return text(
           page({
@@ -306,6 +309,21 @@ async function handleGoogleOAuthRequest(
               'x-consuelo-correlation-id': correlationId,
             },
           },
+        );
+      }
+      if (canonicalIdentity.status === 'workspace_required') {
+        grant.canonicalUserId = canonicalIdentity.canonicalUserId;
+        grant.accountId = canonicalIdentity.operatingAccountId;
+        grant.accountEmail = identity.email;
+        grant.accountAuthMethod = 'google';
+        await input.store.put(grant);
+        await input.store.delOAuthState(stateValue);
+        return text(
+          page({
+            code: oauthState.userCode,
+            origin,
+            message: `Approved for ${identity.email}. Return to your terminal to name this workspace.`,
+          }),
         );
       }
       const accountId = canonicalIdentity.operatingAccountId;
