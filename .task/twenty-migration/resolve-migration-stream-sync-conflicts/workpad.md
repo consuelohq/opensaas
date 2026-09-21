@@ -72,6 +72,9 @@ no-test waiver: not applicable.
 
 - 2026-09-21 00:00:05 fs.write: `.task/twenty-migration/resolve-migration-stream-sync-conflicts/workpad.md`
 - 2026-09-21 00:02:00 fs.write: `.task/twenty-migration/resolve-migration-stream-sync-conflicts/workpad.md`
+- 2026-09-21 00:06:25 fs.write: `.task/twenty-migration/resolve-migration-stream-sync-conflicts/workpad.md`
+- 2026-09-21 00:09:22 fs.write: `.task/twenty-migration/resolve-migration-stream-sync-conflicts/workpad.md`
+- 2026-09-21 00:11:04 fs.write: `.task/twenty-migration/resolve-migration-stream-sync-conflicts/workpad.md`
 
 ## Resolution evidence
 
@@ -93,3 +96,53 @@ no-test waiver: not applicable.
 Next: inspect task-push/merge behavior, run strict review + canonical verify, then publish PR #2485 into the stream.
 
 - 2026-09-21 00:02:00 append: `.task/twenty-migration/resolve-migration-stream-sync-conflicts/workpad.md`
+
+## workspace-owned: validation evidence
+
+- 2026-09-21 00:04:06 `review.run`: passed — OK
+- 2026-09-21 00:04:34 `review.run`: passed — OK
+- 2026-09-21 00:05:45 `verify`: failed — COMMAND_FAILED
+- 2026-09-21 00:11:17 `review.run`: passed — OK
+
+## workspace-owned: files read
+
+- none yet
+
+## Verify wait — 2026-09-20
+
+Wait reason: canonical verify is still actively running after the facade call timed out; process inspection shows verify.js and its selected lifecycle Vitest suite are live.
+Duration: 30s.
+Resume action: inspect the same verify processes and the task verify.json stamp.
+Expected signal: verify processes exit and a publish-valid verify record appears.
+Fallback: if still active, continue one bounded wait; if exited without a stamp, inspect the persisted evidence/log output before deciding whether a retry is warranted.
+
+- 2026-09-21 00:06:25 append: `.task/twenty-migration/resolve-migration-stream-sync-conflicts/workpad.md`
+
+## Full verify integration failure
+
+Canonical verify against origin/main completed with a real critical-suite failure:
+- failing rule: twenty-migration-os-reference-cleanup
+- failing suite: OS code.call snapshot contracts
+- failing assertion: packages/os/tests/code-call-service-architecture.test.ts requires every code-call module to contain no raw `try { }` / `catch (...)` orchestration.
+- current main's packages/os/scripts/lib/code-call/location.ts contains two raw synchronous try/catch helpers (`gitOutput` and `canonicalGitPath`), and HEAD is otherwise identical to origin/main for that file.
+- decision: preserve the architecture contract and repair location.ts using non-throwing/guarded synchronous primitives; do not weaken or remove M4's focused rule.
+- RED evidence: full verify selected the focused M4 rule and failed the architecture suite at code-call-service-architecture.test.ts:80. CLI package tests and DB guard were green in the same run.
+
+- 2026-09-21 00:09:22 append: `.task/twenty-migration/resolve-migration-stream-sync-conflicts/workpad.md`
+
+- 2026-09-21 00:10:23 apply-patch: `packages/os/scripts/lib/code-call/location.ts`
+- 2026-09-21 00:10:47 apply-patch: `packages/os/scripts/lib/code-call/process.ts`
+## Code-call architecture integration repair — GREEN
+
+- Enumerated all raw await/try/catch matches under packages/os/scripts/lib/code-call after the first fix; only process.ts remained.
+- location.ts:
+  - gitOutput now captures sync git failures through Effect.try + Effect.catchAll + Effect.runSync.
+  - canonicalGitPath now reuses realpathIfExistsEffect through Effect.runSync.
+- process.ts:
+  - canonicalPath now uses Effect.try/catchAll/runSync instead of raw try/catch.
+  - synchronous stdin.end failure capture now uses Effect.try/catchAll/runSync while preserving EPIPE/ERR_STREAM_DESTROYED tolerance and rethrowing unexpected failures.
+- Focused architecture/snapshot suite: 2 files / 6 tests passed.
+- Broader code.call regression suite: 4 files / 43 passed, 1 existing skip.
+- The fix preserves the M4 architecture contract instead of weakening the test or test-selection rule.
+
+- 2026-09-21 00:11:04 append: `.task/twenty-migration/resolve-migration-stream-sync-conflicts/workpad.md`
