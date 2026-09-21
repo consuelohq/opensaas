@@ -89,7 +89,7 @@ function seedSensitiveExecution(): void {
 describe('Doctor execution log redaction', () => {
   it('redacts persisted execution rows and events while keeping useful fields', () => {
     seedSensitiveExecution();
-    const db = new Database(join(tempHome, 'consuelo.db'), { readonly: true });
+    const db = new Database(join(tempHome, 'node', 'db', 'consuelo.db'), { readonly: true });
     try {
       const execution = db.query('SELECT * FROM skill_executions WHERE trace_id = ?').get('trc_redaction_fixture') as Record<string, unknown>;
       const events = db.query('SELECT * FROM execution_events WHERE trace_id = ? ORDER BY id ASC').all('trc_redaction_fixture') as Array<Record<string, unknown>>;

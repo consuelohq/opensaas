@@ -17,6 +17,7 @@ import { removeSafeTempDir } from './safe-temp-cleanup';
 
 const PACKAGE_ROOT = process.cwd();
 const SYSTEM_PATH = ['/usr/bin', '/bin', '/usr/sbin', '/sbin'].join(delimiter);
+const TEST_INSTALL_ID = 'ins_12345678-1234-4123-8123-123456789abc';
 const tempHomes: string[] = [];
 
 function createTempHome(prefix: string): string {
@@ -47,6 +48,7 @@ function runBootstrapDryRun(
         ...process.env,
         HOME: home,
         CONSUELO_HOME: join(home, '.consuelo', 'os'),
+        CONSUELO_INSTALL_ID: TEST_INSTALL_ID,
         CONSUELO_OS_SOURCE_DIR: join(home, 'source'),
         CONSUELO_OS_ALLOW_GLOBAL_RUNTIME_LOOKUP: '0',
         PATH: SYSTEM_PATH,
@@ -180,7 +182,11 @@ function resolvePersistedBunBin(
   });
 }
 
-function writeCloudflaredPlist(filePath: string, label: string): void {
+function writeCloudflaredPlist(
+  filePath: string,
+  label: string,
+  programPath = '/tmp/cloudflared',
+): void {
   writeFileSync(
     filePath,
     [
@@ -192,7 +198,7 @@ function writeCloudflaredPlist(filePath: string, label: string): void {
       `  <string>${label}</string>`,
       '  <key>ProgramArguments</key>',
       '  <array>',
-      '    <string>/tmp/cloudflared</string>',
+      `    <string>${programPath}</string>`,
       '    <string>tunnel</string>',
       '    <string>run</string>',
       '  </array>',
@@ -502,6 +508,7 @@ describe('public installer runtime dependencies', () => {
           ...process.env,
           HOME: home,
           CONSUELO_HOME: join(home, '.consuelo', 'os'),
+          CONSUELO_INSTALL_ID: TEST_INSTALL_ID,
           CONSUELO_OS_SOURCE_DIR: sourceDir,
           CONSUELO_OS_ALLOW_GLOBAL_RUNTIME_LOOKUP: '0',
           BUN_CAPTURE_FILE: bunCaptureFile,
@@ -568,6 +575,7 @@ describe('public installer runtime dependencies', () => {
           ...process.env,
           HOME: home,
           CONSUELO_HOME: join(home, '.consuelo', 'os'),
+          CONSUELO_INSTALL_ID: TEST_INSTALL_ID,
           CONSUELO_OS_SOURCE_DIR: sourceDir,
           CONSUELO_OS_ALLOW_GLOBAL_RUNTIME_LOOKUP: '0',
           PATH: [binDir, SYSTEM_PATH].join(delimiter),
@@ -580,6 +588,52 @@ describe('public installer runtime dependencies', () => {
       'dry-run: would verify and install stable runtime from https://install.consuelohq.com/os/releases',
     );
     expect(result.stderr).not.toContain('reused Consuelo OS source');
+  });
+
+  it('should allow bootstrap dry-runs on unsupported platforms without allowing a real install', () => {
+    const home = createTempHome('consuelo-os-installer-runtime-linux-plan-');
+    const binDir = join(home, 'bin');
+    mkdirSync(binDir, { recursive: true });
+    writeExecutable(
+      join(binDir, 'uname'),
+      '#!/bin/sh\nif [ "$1" = "-s" ]; then echo Linux; else echo x86_64; fi\n',
+    );
+    writeExecutable(join(binDir, 'bun'), '#!/bin/sh\nexit 0\n');
+
+    const dryRun = runBootstrapDryRun(home, {
+      PATH: [binDir, SYSTEM_PATH].join(delimiter),
+    });
+    expect(dryRun.status, dryRun.stderr).toBe(0);
+    expect(dryRun.stderr).not.toContain(
+      'Consuelo OS local bootstrap currently supports macOS',
+    );
+
+    const realInstall = spawnSync(
+      '/bin/bash',
+      [
+        join(PACKAGE_ROOT, 'scripts', 'bootstrap.sh'),
+        '--yes',
+        '--json',
+        '--mode',
+        'local',
+      ],
+      {
+        cwd: PACKAGE_ROOT,
+        encoding: 'utf8',
+        env: {
+          ...process.env,
+          HOME: home,
+          CONSUELO_HOME: join(home, '.consuelo', 'os'),
+          CONSUELO_INSTALL_ID: TEST_INSTALL_ID,
+          CONSUELO_OS_ALLOW_GLOBAL_RUNTIME_LOOKUP: '0',
+          PATH: [binDir, SYSTEM_PATH].join(delimiter),
+        },
+      },
+    );
+    expect(realInstall.status).not.toBe(0);
+    expect(realInstall.stderr).toContain(
+      'Consuelo OS local bootstrap currently supports macOS. Detected: Linux.',
+    );
   });
 
   it('should reject an incomplete local source when the daemon installer is missing', () => {
@@ -612,6 +666,7 @@ describe('public installer runtime dependencies', () => {
           ...process.env,
           HOME: home,
           CONSUELO_HOME: join(home, '.consuelo', 'os'),
+          CONSUELO_INSTALL_ID: TEST_INSTALL_ID,
           CONSUELO_OS_SOURCE_DIR: join(home, 'source'),
           CONSUELO_OS_ALLOW_GLOBAL_RUNTIME_LOOKUP: '0',
           PATH: [binDir, SYSTEM_PATH].join(delimiter),
@@ -822,7 +877,9 @@ describe('public installer runtime dependencies', () => {
   it('should include generated connector and heartbeat services in daemon dry-run output only when their plists exist', () => {
     const home = createTempHome('consuelo-os-installer-runtime-daemons-');
     const generatedDir = join(home, 'security', 'generated');
+    const cloudflaredBin = join(home, 'cloudflared');
     mkdirSync(generatedDir, { recursive: true });
+    writeExecutable(cloudflaredBin, '#!/bin/sh\nexit 0\n');
 
     const absentResult = spawnSync(
       '/bin/bash',
@@ -839,6 +896,7 @@ describe('public installer runtime dependencies', () => {
             HOME: home,
             CONSUELO_DAEMON_HOME: home,
             CONSUELO_SECURITY_GENERATED_DIR: generatedDir,
+            CLOUDFLARED_BIN: cloudflaredBin,
             PORTLESS_DAEMON_PATH: SYSTEM_PATH,
             PATH: SYSTEM_PATH,
           }),
@@ -859,6 +917,7 @@ describe('public installer runtime dependencies', () => {
     writeCloudflaredPlist(
       join(generatedDir, 'com.consuelo.os.cloudflared.connector-123.plist'),
       'com.consuelo.os.cloudflared.connector-123',
+      cloudflaredBin,
     );
     writeCloudflaredPlist(
       join(generatedDir, 'com.consuelo.os.node-heartbeat.node-member.plist'),
@@ -879,6 +938,7 @@ describe('public installer runtime dependencies', () => {
             HOME: home,
             CONSUELO_DAEMON_HOME: home,
             CONSUELO_SECURITY_GENERATED_DIR: generatedDir,
+            CLOUDFLARED_BIN: cloudflaredBin,
             PORTLESS_DAEMON_PATH: SYSTEM_PATH,
             PATH: SYSTEM_PATH,
           }),
@@ -947,10 +1007,13 @@ describe('public installer runtime dependencies', () => {
     const osHome = join(home, '.consuelo');
     const generatedDir = join(osHome, 'node', 'security', 'generated');
     const connectorLabel = 'com.consuelo.os.cloudflared.connector-flat-home';
+    const cloudflaredBin = join(home, 'cloudflared');
     mkdirSync(generatedDir, { recursive: true });
+    writeExecutable(cloudflaredBin, '#!/bin/sh\nexit 0\n');
     writeCloudflaredPlist(
       join(generatedDir, `${connectorLabel}.plist`),
       connectorLabel,
+      cloudflaredBin,
     );
 
     const result = spawnSync(
@@ -967,6 +1030,7 @@ describe('public installer runtime dependencies', () => {
           HOME: home,
           CONSUELO_HOME: osHome,
           CONSUELO_DAEMON_HOME: home,
+          CLOUDFLARED_BIN: cloudflaredBin,
           PORTLESS_DAEMON_PATH: SYSTEM_PATH,
           PATH: SYSTEM_PATH,
         }),

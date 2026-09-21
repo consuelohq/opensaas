@@ -110,8 +110,8 @@ describe('prelaunch local OS port cutover', () => {
       cloudflareTunnelToken: 'cloudflared_tunnel_token_fixture',
     };
 
-    provisionLocalOs({ home, mode: 'local', port: 8_960, workspaceBootstrap });
-    provisionLocalOs({ home, mode: 'local', workspaceBootstrap });
+    provisionLocalOs({ home, mode: 'local', port: 8_960, workspaceBootstrap, platform: 'darwin' });
+    provisionLocalOs({ home, mode: 'local', workspaceBootstrap, platform: 'darwin' });
 
     const config = JSON.parse(readFileSync(join(home, 'config.json'), 'utf8')) as { port: number };
     const caddy = readFileSync(join(home, 'node', 'caddy', 'Caddyfile'), 'utf8');
@@ -146,8 +146,8 @@ describe('prelaunch local OS port cutover', () => {
       cloudflareTunnelToken: 'cloudflared_tunnel_token_fixture',
     };
 
-    provisionLocalOs({ home, mode: 'local', port: 47_001, workspaceBootstrap });
-    provisionLocalOs({ home, mode: 'local', workspaceBootstrap });
+    provisionLocalOs({ home, mode: 'local', port: 47_001, workspaceBootstrap, platform: 'darwin' });
+    provisionLocalOs({ home, mode: 'local', workspaceBootstrap, platform: 'darwin' });
 
     const config = JSON.parse(readFileSync(join(home, 'config.json'), 'utf8')) as { port: number };
     const caddy = readFileSync(join(home, 'node', 'caddy', 'Caddyfile'), 'utf8');
@@ -199,8 +199,8 @@ describe('prelaunch local OS port cutover', () => {
     };
     const explicitPort = resolveLocalOsPortOverride({ CONSUELO_OS_PORT: '8960' });
 
-    provisionLocalOs({ home, mode: 'local', port: 8_960, workspaceBootstrap });
-    provisionLocalOs({ home, mode: 'local', port: explicitPort, workspaceBootstrap });
+    provisionLocalOs({ home, mode: 'local', port: 8_960, workspaceBootstrap, platform: 'darwin' });
+    provisionLocalOs({ home, mode: 'local', port: explicitPort, workspaceBootstrap, platform: 'darwin' });
 
     const config = JSON.parse(readFileSync(join(home, 'config.json'), 'utf8')) as { port: number };
     const caddy = readFileSync(join(home, 'node', 'caddy', 'Caddyfile'), 'utf8');

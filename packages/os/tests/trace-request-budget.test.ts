@@ -1,8 +1,11 @@
 import { afterAll, beforeAll, expect, test } from 'bun:test';
 import { execFileSync } from 'node:child_process';
+import { once } from 'node:events';
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { createServer } from 'node:http';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { chromium, type Browser } from 'playwright';
 import {
   createTraceSitesGatewayLiveEndpoints,
@@ -13,20 +16,77 @@ import { createFixtureTraceSitesReadBackend } from '../scripts/lib/trace-sites-g
 let browser: Browser;
 let bundle: string;
 const temp = mkdtempSync(join(tmpdir(), 'trace-request-regression-'));
+const testDirectory = dirname(fileURLToPath(import.meta.url));
+
+async function createFetchTestServer(
+  fetchHandler: (request: Request) => Response | Promise<Response>,
+) {
+  const server = createServer(async (incoming, outgoing) => {
+    const controller = new AbortController();
+    incoming.on('aborted', () => controller.abort());
+    outgoing.on('close', () => {
+      if (!outgoing.writableEnded) controller.abort();
+    });
+    try {
+      const chunks: Buffer[] = [];
+      for await (const chunk of incoming) chunks.push(Buffer.from(chunk));
+      const origin = 'http://' + (incoming.headers.host || '127.0.0.1');
+      const method = incoming.method || 'GET';
+      const request = new Request(new URL(incoming.url || '/', origin), {
+        method,
+        headers: incoming.headers as HeadersInit,
+        body: method === 'GET' || method === 'HEAD' ? undefined : Buffer.concat(chunks),
+        signal: controller.signal,
+      });
+      const response = await fetchHandler(request);
+      outgoing.statusCode = response.status;
+      response.headers.forEach((value, key) => outgoing.setHeader(key, value));
+      outgoing.flushHeaders();
+      if (!response.body) {
+        outgoing.end();
+        return;
+      }
+      const reader = response.body.getReader();
+      while (!outgoing.destroyed) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        outgoing.write(Buffer.from(value));
+      }
+      if (!outgoing.destroyed) outgoing.end();
+    } catch (error: unknown) {
+      if (!controller.signal.aborted && !outgoing.headersSent) {
+        outgoing.statusCode = 500;
+        outgoing.end(String(error));
+      }
+    }
+  });
+  server.listen(0, '127.0.0.1');
+  await once(server, 'listening');
+  const address = server.address();
+  if (!address || typeof address === 'string') throw new Error('test server did not bind a TCP port');
+  return {
+    port: address.port,
+    stop: () =>
+      new Promise<void>((resolveStop, rejectStop) =>
+        server.close((error) => (error ? rejectStop(error) : resolveStop())),
+      ),
+  };
+}
+
 beforeAll(async () => {
   writeFileSync(
     join(temp, 'entry.ts'),
     'import { installTraceVirtualList } from ' +
       JSON.stringify(
         resolve(
-          import.meta.dir,
+          testDirectory,
           '../scripts/lib/trace-site-inspector/virtual-list-browser.ts',
         ),
       ) +
       '; import { installTraceLiveUpdates } from ' +
       JSON.stringify(
         resolve(
-          import.meta.dir,
+          testDirectory,
           '../scripts/lib/trace-site-inspector/live-browser.ts',
         ),
       ) +
@@ -329,7 +389,7 @@ test('the shipped page shows throttling and does not issue requests when its bun
   const html = buildObservabilityTracesSite();
   const inspector = readFileSync(
     resolve(
-      import.meta.dir,
+      testDirectory,
       '../assets/vendor/observability-traces-v38/inspector.js',
     ),
     'utf8',
@@ -484,10 +544,7 @@ test('the shipped page hydrates and receives native EventSource deltas over one 
     resolveScope: traceGatewayScopeFromHeaders,
   });
   const html = buildObservabilityTracesSite();
-  const server = Bun.serve({
-    port: 0,
-    hostname: '127.0.0.1',
-    fetch(request) {
+  const server = await createFetchTestServer((request) => {
       const path = new URL(request.url).pathname;
       if (path === '/tracing')
         return new Response(html, { headers: { 'content-type': 'text/html' } });
@@ -500,7 +557,6 @@ test('the shipped page hydrates and receives native EventSource deltas over one 
         { signal: request.signal },
       );
       return endpoints.handle(forwarded);
-    },
   });
   const page = await browser.newPage();
   const errors: string[] = [];
@@ -539,7 +595,7 @@ test('the shipped page hydrates and receives native EventSource deltas over one 
     expect(errors).toEqual([]);
   } finally {
     await page.close();
-    await server.stop(true);
+    await server.stop();
   }
 }, 15000);
 
@@ -554,7 +610,7 @@ test('the shipped page shows persisted history after an idle day with its header
   ensureTraceDatabaseSchema(dbPath);
   const db = openTraceDatabase(dbPath);
   const insert = db.query(
-    'INSERT INTO tool_traces (id, trace_id, ts, tool, ok, status, code, exit_code, source) VALUES (?, ?, ?, ?, ?, ?, ?, ?, "test")',
+    "INSERT INTO tool_traces (id, trace_id, ts, tool, ok, status, code, exit_code, source) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'test')",
   );
   insert.run(
     'yesterday',

@@ -1,4 +1,5 @@
 import { defineConfig } from 'vitest/config';
+import { fileURLToPath } from 'node:url';
 
 export default defineConfig({
   test: {
@@ -7,6 +8,7 @@ export default defineConfig({
   resolve: {
     alias: {
       'bun:test': 'vitest',
+      'bun:sqlite': fileURLToPath(new URL('./tests/helpers/bun-sqlite-vitest.ts', import.meta.url)),
     },
   },
 });
