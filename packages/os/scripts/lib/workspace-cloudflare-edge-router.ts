@@ -533,7 +533,12 @@ const buildGatewayNodeProxyRequest = async (input: {
         ? new Uint8Array()
         : new Uint8Array(await input.request.clone().arrayBuffer());
     const headers = new Headers();
-    for (const name of ['accept', 'content-type', 'last-event-id']) {
+    for (const name of [
+      'accept',
+      'content-type',
+      'if-none-match',
+      'last-event-id',
+    ]) {
       const value = input.request.headers.get(name);
       if (value) headers.set(name, value);
     }
