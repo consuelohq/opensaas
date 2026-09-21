@@ -109,6 +109,12 @@ export type CallbackCalendarAdapter = {
   readonly cancel: (
     input: CallbackBookingRequest & { readonly providerReference: string },
   ) => Promise<CallbackBookingResult>;
+  // Observe authenticated provider state; never blindly repeat an uncertain cancel.
+  readonly reconcileCancellation?: (
+    input: Pick<CallbackBookingRequest, 'workspaceId' | 'callbackId' | 'revision'> & {
+      readonly providerReference: string;
+    },
+  ) => Promise<CallbackBookingResult>;
 };
 export type CallbackConsentAdapter = (
   input: CallbackConsentRequest,
@@ -141,6 +147,8 @@ export const cancelConfirmedCallbackBooking = async (input: {
     );
     if (result.status !== 'cancelled')
       throw new Error('Callback provider booking was not confirmed cancelled');
+    if (result.providerReference && result.providerReference !== input.booking.providerReference)
+      throw new Error('Callback cancellation provider reference mismatch');
     return {
       ...result,
       providerReference: result.providerReference ?? input.booking.providerReference,
@@ -400,9 +408,43 @@ export const createPostgresCallbacks = (options: CallbackStoreOptions) => {
     }
   };
 
+  const readReconciledBooking = async (
+    workspaceId: string,
+    callbackId: string,
+    revision: number,
+  ): Promise<CallbackBookingRead | null> => {
+    try {
+      const stored = await readBookingForRevision(workspaceId, callbackId, revision);
+      if (stored?.status !== 'cancel_pending' || !options.calendar?.reconcileCancellation)
+        return stored;
+      const result = decodeCallbackBookingResult(
+        await options.calendar.reconcileCancellation({
+          workspaceId,
+          callbackId,
+          revision,
+          providerReference: stored.providerReference,
+        }),
+      );
+      if (result.status !== 'cancelled') return stored;
+      if (result.providerReference !== stored.providerReference || !result.evidenceReference)
+        throw new Error('Callback cancellation reconciliation requires matching provider evidence');
+      await pool.query(
+        `INSERT INTO dialer_callback_booking_events(
+           workspace_id,callback_id,revision,event_kind,provider_reference,evidence_reference
+         ) VALUES($1,$2,$3,'cancelled',$4,$5)
+         ON CONFLICT DO NOTHING`,
+        [workspaceId, callbackId, revision, result.providerReference, result.evidenceReference],
+      );
+      return readBookingForRevision(workspaceId, callbackId, revision);
+    } catch (cause: unknown) {
+      if (cause instanceof Error) throw cause;
+      throw new Error('Callback cancellation reconciliation rejected with a non-Error cause', { cause });
+    }
+  };
+
   const cancelConfirmedBookingForRevision = async (row: StoredCallback) => {
     try {
-      const stored = await readBookingForRevision(
+      const stored = await readReconciledBooking(
         row.workspace_id,
         row.callback_id,
         row.state.revision,
@@ -435,7 +477,7 @@ export const createPostgresCallbacks = (options: CallbackStoreOptions) => {
         ],
       );
       if (dispatched.rowCount !== 1) {
-        const current = await readBookingForRevision(
+        const current = await readReconciledBooking(
           row.workspace_id,
           row.callback_id,
           row.state.revision,
@@ -1345,7 +1387,7 @@ export const createPostgresCallbacks = (options: CallbackStoreOptions) => {
       windowStart: row.state.notBefore,
       windowEnd: row.state.deadline,
     };
-    const existing = await readBookingForRevision(
+    const existing = await readReconciledBooking(
       workspaceId,
       callbackId,
       row.state.revision,
@@ -1405,7 +1447,7 @@ export const createPostgresCallbacks = (options: CallbackStoreOptions) => {
     request,
     requestOnClient,
     read,
-    readBooking: readBookingForRevision,
+    readBooking: readReconciledBooking,
     readRecipient,
     apply,
     reschedule,

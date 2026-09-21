@@ -219,6 +219,26 @@ suite('inbound runtime with real Postgres and simulated carrier', () => {
       Direction: 'inbound',
       To: 'fixture-did',
     });
+  it('enforces independent number limits within the same workspace under concurrent admission', async () => {
+    const numbers = [
+      { ...number, maxActiveRequests: 1 },
+      { ...number, numberId: 'number-two', did: 'second-fixture-did', maxActiveRequests: 2 },
+    ];
+    const isolated = createInboundTelephony({ pool, numbers, endpoints: [], carrier,
+      publicUrl: 'https://voice.example', authToken: 'secret', clock });
+    await isolated.handle('number-one', 'incoming', {
+      AccountSid: 'account', CallSid: 'caller-one', Direction: 'inbound', To: number.did,
+    });
+    const attempts = await Promise.all([0, 1, 2].map((index) => isolated.handle('number-two', 'incoming', {
+      AccountSid: 'account', CallSid: `second-caller-${index}`, Direction: 'inbound', To: 'second-fixture-did',
+    })));
+    expect(attempts.filter((twiml) => twiml.includes('<Hangup'))).toHaveLength(1);
+    const counts = await pool.query<{ number_id: string; count: string }>(
+      "SELECT number_id,count(*)::text FROM dialer_telephony_sessions WHERE mode='waiting' GROUP BY number_id ORDER BY number_id",
+    );
+    expect(counts.rows).toEqual([{ number_id: 'number-one', count: '1' }, { number_id: 'number-two', count: '2' }]);
+  });
+
   const tick = async () => {
     const result = await service.tick();
     expect(result.failures).toBe(0);

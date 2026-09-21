@@ -117,3 +117,10 @@ public ID or assume that loading the static shell proves the backend is enabled.
 Capture request/decision/assignment IDs, generation, provider leg IDs, queue/offer/
 connection timing, observed outcomes and cleanup evidence. Redact customer numbers
 and credentials. Start with one call and two test reps before any load test.
+
+
+### Calendar cancellation recovery
+
+A calendar adapter may supply `reconcileCancellation` to observe authenticated provider state for the exact workspace, callback revision, and provider booking reference. A timed-out cancellation stays `cancel_pending`; refreshing the callback or retrying management invokes reconciliation rather than blindly cancelling again. Only a matching provider reference with durable cancellation evidence closes that uncertainty. Adapters without this capability leave uncertain cancellations pending and require provider-side investigation. Any deployed calendar integration must implement and test this recovery port; a real GoHighLevel calendar adapter is still not composed.
+
+Disabled numbers reject new callers but keep existing carrier-effect reconciliation and shared rep capacity ownership while work drains. A retired number whose queue was removed can start without that queue. Caller admission limits apply separately to each number, including when several numbers share one workspace.

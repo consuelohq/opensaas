@@ -2128,9 +2128,19 @@
       "id": "dialer-server-package",
       "critical": true,
       "source": [
-        "packages/dialer-server/**"
+        "packages/dialer-server/**",
+        "packages/contacts/**"
       ],
       "tests": [
+        {
+          "name": "dialer-server contacts prerequisite",
+          "command": [
+            "yarn",
+            "nx",
+            "run",
+            "@consuelo/contacts:build"
+          ]
+        },
         {
           "name": "dialer-server Hono contracts",
           "command": [
@@ -2140,7 +2150,7 @@
           ]
         }
       ],
-      "reason": "Dialer server changes must prove Hono transport, Twilio boundary, and standalone lifecycle contracts."
+      "reason": "Dialer server and shared phone-normalization changes must build contacts runtime exports before proving Hono transport, Twilio boundary, and standalone lifecycle contracts."
     },
     {
       "id": "lead-connector-package",

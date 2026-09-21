@@ -102,7 +102,12 @@ export const createInboundTelephony = (options: TelephonyOptions) => {
               );
             }
           });
-        await attempt(() =>
+        const queue = await pool.query(
+          'SELECT 1 FROM dialer_routing_queues WHERE workspace_id=$1 AND queue_id=$2',
+          [number.workspaceId, number.queueId],
+        );
+        // Retired queues stop allocating, while existing carrier effects still drain.
+        if (queue.rowCount) await attempt(() =>
           callbacks
             ? callbacks.tick({
                 workspaceId: number.workspaceId,

@@ -202,8 +202,8 @@ export const createTelephonyAdmission = (options: TelephonyOptions) => {
         if (await readTelephonySession(client, number.workspaceId, requestId))
           return;
         const count = await client.query<{ count: string }>(
-          "SELECT count(*) FROM dialer_telephony_sessions WHERE workspace_id=$1 AND mode='waiting'",
-          [number.workspaceId],
+          "SELECT count(*) FROM dialer_telephony_sessions WHERE workspace_id=$1 AND number_id=$2 AND mode='waiting'",
+          [number.workspaceId, number.numberId],
         );
         const rejected =
           Number(count.rows[0]?.count) >= number.maxActiveRequests;

@@ -121,7 +121,7 @@ export const createInboundRuntime = async (environment: Environment, enrich?: In
   });
   try {
     await migrateDialerDatabase(pool);
-    for (const number of config.numbers) {
+    for (const number of config.numbers.filter((number) => number.enabled)) {
       const queue = await pool.query(
         'SELECT queue_id FROM dialer_routing_queues WHERE workspace_id=$1 AND queue_id=$2',
         [number.workspaceId, number.queueId],
@@ -131,7 +131,24 @@ export const createInboundRuntime = async (environment: Environment, enrich?: In
           'Configure the queue policy before enabling its inbound number',
         );
     }
-    await reconcileConfiguredRepCapacity(pool, config.endpoints);
+    const configuredWorkspaces = [...new Set(config.numbers.map((number) => number.workspaceId))];
+    // Disabled numbers can still own live legs or an uncertain external effect.
+    const draining = await pool.query<{ workspace_id: string }>(
+      `SELECT workspace_id FROM dialer_telephony_sessions
+       WHERE workspace_id=ANY($1::text[]) AND mode <> 'ended'
+       UNION
+       SELECT workspace_id FROM dialer_rep_capacity
+       WHERE workspace_id=ANY($1::text[]) AND snapshot->'owner' <> 'null'::jsonb`,
+      [configuredWorkspaces],
+    );
+    const ownedWorkspaces = new Set([
+      ...config.numbers.filter((number) => number.enabled).map((number) => number.workspaceId),
+      ...draining.rows.map((row) => row.workspace_id),
+    ]);
+    await reconcileConfiguredRepCapacity(
+      pool,
+      config.endpoints.filter((endpoint) => ownedWorkspaces.has(endpoint.workspaceId)),
+    );
     await protectTelephonyConfiguration(pool, config);
     const carrier = await createTwilioInboundCarrier(accountSid, authToken);
     const callbackConsent = customerEntryEnabled
@@ -158,7 +175,7 @@ export const createInboundRuntime = async (environment: Environment, enrich?: In
       : undefined;
     const outbound = createOutboundCapacity({ pool, carrier, accountSid });
     const ownsWorkspace = (workspaceId: string) =>
-      config.numbers.some((number) => number.workspaceId === workspaceId);
+      ownedWorkspaces.has(workspaceId);
     let stopped = false;
     let active: Promise<void> | undefined;
     let timer: ReturnType<typeof setTimeout> | undefined;
@@ -168,9 +185,7 @@ export const createInboundRuntime = async (environment: Environment, enrich?: In
         active = (async () => {
           try {
             const result = await telephony.tick();
-            for (const workspaceId of new Set(
-              config.numbers.map((number) => number.workspaceId),
-            ))
+            for (const workspaceId of ownedWorkspaces)
               await outbound.tick(workspaceId);
             if (result.failures)
               process.stderr.write(
@@ -209,9 +224,7 @@ export const createInboundRuntime = async (environment: Environment, enrich?: In
       }
     };
     const admitOutboundRep = (input: Parameters<typeof outbound.admitRep>[0]) =>
-      outbound.admitRep(input, [
-        ...new Set(config.numbers.map((number) => number.workspaceId)),
-      ]);
+      outbound.admitRep(input, [...ownedWorkspaces]);
     const operator = createInboundOperator(
       { pool, ...config, carrier, publicUrl, authToken },
       telephony,
