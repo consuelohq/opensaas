@@ -734,7 +734,7 @@ describe('renderIndexPage', () => {
 });
 
 describe('renderReviewPage', () => {
-  test('keeps the existing PR route and the right review panel closed by default', () => {
+  test('renders one responsive review surface with readable comments and native page controls', () => {
     const html = renderReviewPage({
       owner: 'consuelohq',
       repo: 'opensaas',
@@ -742,14 +742,11 @@ describe('renderReviewPage', () => {
     });
 
     expect(html).toContain('data-review-drawer="closed"');
-    expect(html).toContain('data-ai-sidebar="closed"');
-    expect(html).not.toContain('<body class="review-page" data-review-drawer="closed" data-ai-sidebar="open"');
-    expect(html).toContain('id="ai-comments-sidebar"');
+    expect(html).not.toContain('data-ai-sidebar=');
+    expect(html).not.toContain('id="ai-comments-sidebar"');
     expect(html).toContain('id="ai-comments-toggle"');
-    expect(html).toContain('aria-label="Comments"');
-    expect(html).toContain('<div><strong>Comments</strong>');
-    expect(html).not.toContain('AI comments</button>');
-    expect(html).not.toContain('<strong>AI comments</strong>');
+    expect(html).toContain('id="review-panel-backdrop"');
+    expect(html).toContain('aria-label="Close review panel"');
     expect(html).toContain('@pierre/diffs');
     expect(html).toContain('@pierre/trees');
     expect(html).toContain('/api/consuelohq/opensaas/pull/708');
@@ -774,12 +771,14 @@ describe('renderReviewPage', () => {
     expect(script).toContain('sortCommitsNewestFirst');
     expect(script).toContain('new Date(right.committedAt || 0).getTime()');
     expect(script).toContain("els.aiCommentsToggle.textContent = formatCountLabel(aiCommentCount, 'comment')");
+    expect(script).toContain("openReviewDrawerSection('comments')");
+    expect(script).not.toContain('setAiSidebar');
     expect(html).toContain('data-review-drawer="closed"');
     expect(html).toContain('data-file-pane-collapsed="false"');
     expect(html).toContain('data-comments-visible="true"');
     expect(html).toContain('data-current-view="diff"');
     expect(html).toContain('>Panel</button>');
-    expect(html).toContain('<strong>panel</strong>');
+    expect(html).toContain('<strong>Review</strong>');
     expect(html).toContain('id="mergeability-button"');
     expect(html).toContain('id="merge-pr-button"');
     expect(html).toContain('id="mergeability-popover"');
@@ -791,9 +790,13 @@ describe('renderReviewPage', () => {
     expect(html).toContain('id="drawer-status"');
     expect(html).toContain('id="drawer-checks"');
     expect(html).toContain('id="mobile-files-toggle"');
-    expect(html).toContain('aria-label="Close files"');
+    expect(html).toContain('aria-label="Open files"');
+    expect(html).toContain('class="mobile-files-icon mobile-files-icon-tree"');
+    expect(html).toContain('<svg');
     expect(html).toContain('class="mobile-file-backdrop"');
     expect(html).toContain('body[data-file-pane-drawer="open"] .file-pane');
+    expect(html).toContain('@media (min-width: 761px) and (max-width: 1180px)');
+    expect(html).toContain('.review-page .file-pane { position:fixed;');
     expect(html).toContain('@media (max-width: 760px)');
     expect(html).toContain('.layout { height:calc(100dvh - 132px); grid-template-columns:minmax(0, 1fr); }');
     expect(html).toContain('.diff-line { grid-template-columns:34px 34px minmax(0, 1fr); padding:0 6px 0 0; }');
@@ -837,7 +840,6 @@ describe('renderReviewPage', () => {
     expect(script).not.toContain("behavior: 'smooth'");
     expect(script).toContain('preserveDiffViewport');
     expect(script).toContain('preserveDiffViewport(() => setDrawer');
-    expect(script).toContain('preserveDiffViewport(() => setAiSidebar');
     expect(script).toContain('preserveDiffViewport(() => setFilePaneDrawer');
     expect(script).toContain('captureDiffViewport');
     expect(script).toContain('restoreDiffViewport');
@@ -851,14 +853,20 @@ describe('renderReviewPage', () => {
     expect(html).toContain('tree-depth-');
     expect(html).toContain('directory-toggle');
     expect(script).toContain('collapsedFolders');
+    expect(script).toContain("new Set(['.github', '.task'])");
+    expect(script).toContain('initializeDefaultCollapsedFolders');
     expect(script).toContain('toggleFolder');
+    expect(html).toContain('file-status-dot');
+    expect(script).toContain('statusLabel');
+    expect(script).not.toContain("<span class=\\\"status\\\">' + escapeHtml(statusToken(node.file.status))");
     expect(script).toContain('data-open-commits');
     expect(script).toContain('renderCommitPopover');
     expect(script).toContain('closeCommitPopover');
     expect(script).toContain('renderMergeabilityPopover');
     expect(script).toContain('closeMergeabilityPopover');
     expect(script).toContain('data-open-mergeability');
-    expect(script).toContain('mergePullRequest');
+    expect(script).toContain('renderMergeConfirmation');
+    expect(script).toContain('confirmMergePullRequest');
     expect(script).toContain("apiPath + '/merge'");
     expect(script).toContain('event.metaKey || event.ctrlKey');
     expect(script).toContain("mergeabilityLabel");
@@ -879,11 +887,18 @@ describe('renderReviewPage', () => {
     expect(script).toContain('copyReviewLink');
     expect(script).toContain('copyCurrentCommitLink');
     expect(script).toContain('renderMarkdownBlocks');
-    expect(script).toContain('renderAiCommentsSidebar');
-    expect(script).toContain('data-ai-review-toggle');
+    expect(script).toContain('renderUnifiedReviewComment');
+    expect(script).not.toContain('data-ai-review-toggle');
     expect(script).toContain('copyReviewItemField');
     expect(script).toContain('resolveReviewItem');
     expect(script).toContain("apiPath + '/review-threads/'");
+    expect(script).toContain('restoreSafeMarkdownTags');
+    expect(script).toContain("'&lt;sub&gt;': '<sub>'");
+    expect(html).toContain('.comment-body sub');
+    expect(script).not.toContain('window.confirm');
+    expect(script).toContain('renderMergeConfirmation');
+    expect(script).toContain('confirmMergePullRequest');
+    expect(script).toContain("document.addEventListener('pointerdown', handleOutsidePointerDown)");
     expect(() => new Function(script || '')).not.toThrow();
   });
 });

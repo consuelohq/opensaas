@@ -3,7 +3,7 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { createWorkSession } from '../../os/scripts/lib/work-session';
+import { parseWorkOptions, startWorkSession } from '../../os/scripts/session-start';
 import { resolveActiveWorkspaceProjectCwd } from '../../os/scripts/lib/workspace-project-cwd';
 
 type SessionKind = 'task' | 'work';
@@ -74,12 +74,10 @@ export async function main(): Promise<void> {
     await startTaskSession(args);
     return;
   }
-  if (!args.path) throw new Error('--path is required for work sessions');
-  if (args.forwarded.some((argument) => argument !== '--json')) {
-    throw new Error('work sessions accept only --kind, --path, and --json');
-  }
-  const metadata = createWorkSession({
+  const workOptions = parseWorkOptions(args.forwarded);
+  const metadata = startWorkSession({
     path: args.path,
+    title: workOptions.title,
     managedRepoRoot: resolveActiveWorkspaceProjectCwd() ?? process.cwd(),
   });
   const result = {

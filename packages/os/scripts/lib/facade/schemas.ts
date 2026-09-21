@@ -466,7 +466,8 @@ const SessionWorkStartInput = z.object({
   ...requestFields,
   ...dryRunField,
   kind: z.literal('work'),
-  path: z.string().min(1),
+  path: optionalString,
+  title: optionalString,
 }).strict();
 
 export const SessionStartInput = z.union([
@@ -1556,7 +1557,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   FsHttpInput: '{ url: string; method?: "get" | "post" | "put" | "patch" | "delete" | "head"; headers?: Record<string, string>; body?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   HttpInput: '{ url: string; method?: "get" | "post" | "put" | "patch" | "delete" | "head"; headers?: Record<string, string>; body?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   FsTrashInput: '{ path: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string; workSession?: string }',
-  SessionStartInput: '({ kind: "task"; stream?: string; area?: string; title?: string; workflow?: "task" | "artifacts" | "media"; bodyFile?: string; startFrom?: "main" | "stream"; dryRun?: boolean; requestId?: string; taskSession?: string } | { kind: "work"; path: string; dryRun?: boolean; requestId?: string; taskSession?: string })',
+  SessionStartInput: '({ kind: "task"; stream?: string; area?: string; title?: string; workflow?: "task" | "artifacts" | "media"; bodyFile?: string; startFrom?: "main" | "stream"; dryRun?: boolean; requestId?: string; taskSession?: string } | { kind: "work"; path?: string; title?: string; dryRun?: boolean; requestId?: string; taskSession?: string })',
   TaskStartInput: '{ stream?: string; area?: string; title?: string; workflow?: "task" | "artifacts" | "media"; description?: string; pr?: string | number; github?: string; bodyFile?: string; startFrom?: "main" | "stream"; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskInitInput: '{ area: string; branch: string; pr?: string | number; github?: string; worktree?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskPushInput: '{ branch?: string; repo?: string; pr?: string | number; github?: string; message: string; changed?: boolean; files?: string[]; approved?: boolean; reason?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
