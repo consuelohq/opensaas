@@ -622,6 +622,26 @@ contractDescribe('workspace edge Sites snapshot and Consuelo Sites Gateway integ
       for (const header of Object.values(auth.WORKSPACE_EDGE_NODE_HEADERS)) {
         expect(request.headers.get(header), new URL(request.url).pathname + ' missing ' + header).toBeTruthy();
       }
+      expect(request.headers.get('cookie'), new URL(request.url).pathname + ' leaked workspace browser cookie').toBeNull();
+    }
+
+    const publicShareCookie = 'consuelo_artifact_share_share-example=session-share';
+    const publicShare = await router.fetch(new Request(
+      'https://internal.consuelohq.com/share/artifacts/share-example',
+      {
+        headers: {
+          cookie: 'consuelo_workspace_session=session-internal; ' + publicShareCookie + '; noise=1',
+          accept: 'text/html',
+        },
+      },
+    ));
+    expect(publicShare.status).toBe(200);
+    expect(upstreamRequests).toHaveLength(gatewayRoutes.length + 1);
+    const shareUpstream = upstreamRequests.at(-1)!;
+    expect(new URL(shareUpstream.url).pathname).toBe('/share/artifacts/share-example');
+    expect(shareUpstream.headers.get('cookie')).toBe(publicShareCookie);
+    for (const header of Object.values(auth.WORKSPACE_EDGE_NODE_HEADERS)) {
+      expect(shareUpstream.headers.get(header), 'public artifact share missing ' + header).toBeTruthy();
     }
   });
 
