@@ -82,6 +82,8 @@ describe('dialer GitHub release workflow contract', () => {
       cursor = next;
     }
     expect(release).toContain('RAILWAY_DIALER_PROJECT_TOKEN');
+    expect(release).not.toContain('Link Railway release target');
+    expect(release).not.toContain('@railway/cli@5.27.2 link');
     expect(release).toContain('CLOUDFLARE_DIALER_WORKER_API_TOKEN');
     expect(release).toContain(
       'consuelo-lead-connector-click-to-call.marketplace-loader.html',

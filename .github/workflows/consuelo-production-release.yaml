@@ -325,19 +325,6 @@ jobs:
           packages/lead-connector/dist/embed-app/consuelo-lead-connector-click-to-call.marketplace-loader.html
           > "$RUNNER_TEMP/leadconnector-marketplace-bootstrap.json"
 
-      - name: Link Railway release target
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_DIALER_PROJECT_TOKEN }}
-          RAILWAY_DIALER_PROJECT_ID: ${{ vars.RAILWAY_DIALER_PROJECT_ID }}
-          RAILWAY_DIALER_ENVIRONMENT_ID: ${{ vars.RAILWAY_DIALER_ENVIRONMENT_ID }}
-          RAILWAY_DIALER_SERVICE_ID: ${{ vars.RAILWAY_DIALER_SERVICE_ID }}
-        run: >-
-          bunx @railway/cli@5.27.2 link
-          --project "$RAILWAY_DIALER_PROJECT_ID"
-          --environment "$RAILWAY_DIALER_ENVIRONMENT_ID"
-          --service "$RAILWAY_DIALER_SERVICE_ID"
-          --json
-
       - name: Snapshot Railway deployment
         id: railway-before
         env:

@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/fix-railway-project-token-release-auth",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2512,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2512",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-fix-railway-project-token-release-auth",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_7c6618b674e9",
+  "tmuxSession": "opensaas-dialer-fix-railway-project-token-release-auth-7c6618b6",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-fix-railway-project-token-release-auth/.task/session.json",
+  "createdAt": "2026-09-21T12:11:41.071Z"
+}
