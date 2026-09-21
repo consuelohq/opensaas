@@ -1,0 +1,31 @@
+{
+  "files": [
+    ".task/os/eliminate-mcp-transport-outages-during-os-updates/workpad.md",
+    "packages/os/SCRIPTS.md",
+    "packages/os/package.json",
+    "packages/os/scripts/consuelo-reload.js",
+    "packages/os/scripts/generate-system-daemons.sh",
+    "packages/os/scripts/install-system-daemons.sh",
+    "packages/os/scripts/lib/consuelo-home.ts",
+    "packages/os/scripts/lib/lifecycle/engine.ts",
+    "packages/os/scripts/lib/lifecycle/service.ts",
+    "packages/os/scripts/lib/lifecycle/types.ts",
+    "packages/os/scripts/lib/platforms/linux.ts",
+    "packages/os/scripts/lib/worker-pool.ts",
+    "packages/os/scripts/lifecycle.ts",
+    "packages/os/scripts/server/main.ts",
+    "packages/os/scripts/server/routes/health.ts",
+    "packages/os/scripts/server/supervisor.ts",
+    "packages/os/scripts/start-consuelo-daemon.sh",
+    "packages/os/tests/consuelo-reload.test.ts",
+    "packages/os/tests/daemon-bun-path.test.ts",
+    "packages/os/tests/lifecycle-ingress-continuity.test.ts",
+    "packages/os/tests/lifecycle-restart-contract.test.ts",
+    "packages/os/tests/linux-ingress-continuity.test.ts",
+    "packages/os/tests/worker-pool-lifecycle.test.ts",
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "updatedAt": "2026-08-16T02:08:48.627Z"
+}

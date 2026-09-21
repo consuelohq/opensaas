@@ -1,0 +1,16 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/cook-feature-proof-objects",
+  "baseBranch": "stream/website",
+  "sourceBranch": "stream/website",
+  "startFrom": "stream",
+  "prNumber": 2361,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2361",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-cook-feature-proof-objects",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_55c7bff0b57c",
+  "tmuxSession": "opensaas-website-cook-feature-proof-objects-55c7bff0",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-cook-feature-proof-objects/.task/session.json",
+  "createdAt": "2026-09-01T01:54:35.178Z"
+}

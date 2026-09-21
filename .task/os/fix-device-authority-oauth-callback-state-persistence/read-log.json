@@ -1,0 +1,19 @@
+{
+  "files": [
+    ".task/os/fix-device-authority-oauth-callback-state-persistence/workpad.md",
+    "packages/os/cloudflare/os-device-authority/package.json",
+    "packages/os/cloudflare/os-device-authority/src/app.ts",
+    "packages/os/cloudflare/os-device-authority/src/constants.ts",
+    "packages/os/cloudflare/os-device-authority/src/routes/google-oauth.ts",
+    "packages/os/cloudflare/os-device-authority/src/routes/mcp-oauth.ts",
+    "packages/os/cloudflare/os-device-authority/src/services/google-oauth.ts",
+    "packages/os/cloudflare/os-device-authority/src/services/mcp-oauth.ts",
+    "packages/os/cloudflare/os-device-authority/src/stores.ts",
+    "packages/os/cloudflare/os-device-authority/src/worker.ts",
+    "packages/os/cloudflare/os-device-authority/wrangler.jsonc",
+    "packages/os/cloudflare/os-device-authority/wrangler.toml",
+    "packages/os/package.json",
+    "packages/os/tests/os-device-authority-worker.test.ts"
+  ],
+  "updatedAt": "2026-08-15T01:27:32.477Z"
+}

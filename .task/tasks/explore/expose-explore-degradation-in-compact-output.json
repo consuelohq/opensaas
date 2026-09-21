@@ -1,0 +1,16 @@
+{
+  "area": "explore",
+  "stream": "stream/explore",
+  "taskBranch": "task/explore/expose-explore-degradation-in-compact-output",
+  "baseBranch": "stream/explore",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2303,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2303",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-explore-expose-explore-degradation-in-compact-output",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_c9497747cc99",
+  "tmuxSession": "opensaas-explore-expose-explore-degradation-in-compact-output-c9497747",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-explore-expose-explore-degradation-in-compact-output/.task/session.json",
+  "createdAt": "2026-08-29T08:12:26.825Z"
+}

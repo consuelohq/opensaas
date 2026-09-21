@@ -957,6 +957,7 @@ export function projectAuthorityWorkspaceNodeToDashboardDevice(
     nodeId: node.nodeId,
     ...(canonicalUserId ? { userId: canonicalUserId } : {}),
     ...(node.workspaceId ? { workspaceId: node.workspaceId } : {}),
+    ...(node.workspaceHost ? { workspaceHost: node.workspaceHost } : {}),
     ...(node.displayName || node.nodeName
       ? { displayName: node.displayName ?? node.nodeName }
       : {}),

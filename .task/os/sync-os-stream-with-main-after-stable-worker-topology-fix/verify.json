@@ -1,0 +1,47 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/sync-os-stream-with-main-after-stable-worker-topology-fix",
+  "base": "origin/stream/os",
+  "headSha": "c624332c6d34edb857f622276fb7403a53cc3deb",
+  "changeHash": "46864c672b8d24548d3497af4c5aba0d4d7b7cc5eb00e53959244be3e05bd060",
+  "changedFiles": [],
+  "verifiedAt": "2026-08-16T03:31:14.217Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/sync-os-stream-with-main-after-stable-worker-topology-fix/current.json",
+        ".task/os/sync-os-stream-with-main-after-stable-worker-topology-fix/session.json",
+        ".task/os/sync-os-stream-with-main-after-stable-worker-topology-fix/verify.json",
+        ".task/os/sync-os-stream-with-main-after-stable-worker-topology-fix/workpad.md",
+        ".task/tasks/os/sync-os-stream-with-main-after-stable-worker-topology-fix.json"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "pass",
+      "zeroSuiteReason": "changed files are docs or task metadata",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

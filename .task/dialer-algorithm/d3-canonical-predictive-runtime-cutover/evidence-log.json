@@ -1,0 +1,312 @@
+{
+  "version": 1,
+  "worktree_id": "task/dialer-algorithm/d3-canonical-predictive-runtime-cutover",
+  "events": [
+    {
+      "id": "cbd44b13-c346-4f4e-a15c-d33cb7108089",
+      "occurred_at": "2026-08-15T04:45:34.416Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/dialer-server/src/runtime/predictive-target-ranking.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer-algorithm/d3-canonical-predictive-runtime-cutover",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer-algorithm/d3-canonical-predictive-runtime-cutover"
+      }
+    },
+    {
+      "id": "8af34568-7ba9-4ba0-92c1-319620c0be02",
+      "occurred_at": "2026-08-15T04:45:51.885Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/dialer/src/services/predictive-selection-model.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer-algorithm/d3-canonical-predictive-runtime-cutover",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer-algorithm/d3-canonical-predictive-runtime-cutover"
+      }
+    },
+    {
+      "id": "0f025e48-6bf2-46f1-93e1-930c728e98df",
+      "occurred_at": "2026-08-15T04:45:51.946Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/dialer-server/src/runtime/railway.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer-algorithm/d3-canonical-predictive-runtime-cutover",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer-algorithm/d3-canonical-predictive-runtime-cutover"
+      }
+    },
+    {
+      "id": "8e9cab17-3347-400a-b1f8-fc15cb2d69ca",
+      "occurred_at": "2026-08-15T04:46:08.502Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/dialer-algorithm/d2-scientific-predictive-learning-persistence/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer-algorithm/d3-canonical-predictive-runtime-cutover",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer-algorithm/d3-canonical-predictive-runtime-cutover"
+      }
+    },
+    {
+      "id": "5439291f-f5c4-4519-ad97-9104d54832f4",
+      "occurred_at": "2026-08-15T04:48:45.508Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/dialer-server/src/runtime/railway.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer-algorithm/d3-canonical-predictive-runtime-cutover",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer-algorithm/d3-canonical-predictive-runtime-cutover"
+      }
+    },
+    {
+      "id": "771cc1d8-8d8e-4a51-86ad-f4c57c5bc5e8",
+      "occurred_at": "2026-08-15T04:48:48.461Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/dialer-server/src/runtime/railway.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer-algorithm/d3-canonical-predictive-runtime-cutover",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer-algorithm/d3-canonical-predictive-runtime-cutover"
+      }
+    },
+    {
+      "id": "f4528c57-a5ad-4dd7-851e-12f24ff4e317",
+      "occurred_at": "2026-08-15T04:49:08.402Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/dialer-server/src/runtime/railway.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer-algorithm/d3-canonical-predictive-runtime-cutover",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer-algorithm/d3-canonical-predictive-runtime-cutover"
+      }
+    },
+    {
+      "id": "f6634c37-e197-4eae-9433-239f07144841",
+      "occurred_at": "2026-08-15T04:49:46.289Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/dialer-server/src/runtime/predictive-runtime-cutover.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer-algorithm/d3-canonical-predictive-runtime-cutover",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer-algorithm/d3-canonical-predictive-runtime-cutover"
+      }
+    },
+    {
+      "id": "32861183-33ca-4069-bbcf-47baf9dafdaf",
+      "occurred_at": "2026-08-15T04:50:18.593Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/dialer-server/src/runtime/railway.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer-algorithm/d3-canonical-predictive-runtime-cutover",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer-algorithm/d3-canonical-predictive-runtime-cutover"
+      }
+    },
+    {
+      "id": "15085c2b-0661-417d-b66c-d0d68176c8a7",
+      "occurred_at": "2026-08-15T04:51:11.123Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/dialer-server/scripts/local-dialer-lab.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer-algorithm/d3-canonical-predictive-runtime-cutover",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer-algorithm/d3-canonical-predictive-runtime-cutover"
+      }
+    },
+    {
+      "id": "6f6061cc-d70e-4689-91ad-e47e7037e105",
+      "occurred_at": "2026-08-15T04:51:41.876Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/dialer-server/src/lab/local-dialer-lab.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer-algorithm/d3-canonical-predictive-runtime-cutover",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer-algorithm/d3-canonical-predictive-runtime-cutover"
+      }
+    },
+    {
+      "id": "6b8bbd16-4530-42a0-8775-06429a9db7f6",
+      "occurred_at": "2026-08-15T04:51:53.989Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/dialer-server/src/runtime/lead-connector-learning.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer-algorithm/d3-canonical-predictive-runtime-cutover",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer-algorithm/d3-canonical-predictive-runtime-cutover"
+      }
+    },
+    {
+      "id": "1af36a8d-f071-4b3b-9221-722105761a40",
+      "occurred_at": "2026-08-15T04:52:59.280Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/dialer/MODEL.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer-algorithm/d3-canonical-predictive-runtime-cutover",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer-algorithm/d3-canonical-predictive-runtime-cutover"
+      }
+    },
+    {
+      "id": "f243e098-9a28-43e1-853f-be7e71e0b0cb",
+      "occurred_at": "2026-08-15T04:53:38.129Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/dialer/src/ports/dialer-call-start.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer-algorithm/d3-canonical-predictive-runtime-cutover",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer-algorithm/d3-canonical-predictive-runtime-cutover"
+      }
+    },
+    {
+      "id": "52218017-a3e8-49c0-8569-f5fc33ee1c71",
+      "occurred_at": "2026-08-15T04:53:43.203Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/dialer/src/application/start-dialer-call.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer-algorithm/d3-canonical-predictive-runtime-cutover",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer-algorithm/d3-canonical-predictive-runtime-cutover"
+      }
+    },
+    {
+      "id": "bf322164-0744-4049-9ed7-2c3ba07ceccb",
+      "occurred_at": "2026-08-15T04:53:51.234Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/dialer/src/errors/dialer-errors.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer-algorithm/d3-canonical-predictive-runtime-cutover",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer-algorithm/d3-canonical-predictive-runtime-cutover"
+      }
+    },
+    {
+      "id": "2bc28704-3976-49e4-9136-ba79b4cf1a36",
+      "occurred_at": "2026-08-15T04:56:34.840Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/dialer-algorithm/d3-canonical-predictive-runtime-cutover/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer-algorithm/d3-canonical-predictive-runtime-cutover",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer-algorithm/d3-canonical-predictive-runtime-cutover"
+      }
+    },
+    {
+      "id": "cf9db679-d6ec-47ce-a0e7-cfe20837ba2d",
+      "occurred_at": "2026-08-15T04:56:54.333Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/dialer-server/src/runtime/predictive-target-ranking.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer-algorithm/d3-canonical-predictive-runtime-cutover",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer-algorithm/d3-canonical-predictive-runtime-cutover"
+      }
+    },
+    {
+      "id": "247eab60-e005-4fe8-98ed-4dee1d07e038",
+      "occurred_at": "2026-08-15T04:57:28.007Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/dialer-server/src/learning/postgres-predictive-model-store.contract.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer-algorithm/d3-canonical-predictive-runtime-cutover",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer-algorithm/d3-canonical-predictive-runtime-cutover"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-15T04:57:28.071Z"
+}

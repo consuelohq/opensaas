@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/dialer/reconnect-leadconnector-overlay-after-ghl-route-changes",
+  "events": [
+    {
+      "id": "a19f9e54-06ce-4145-86e5-f76d8195e00b",
+      "occurred_at": "2026-08-05T00:02:20.679Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/dialer/reconnect-leadconnector-overlay-after-ghl-route-changes/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/reconnect-leadconnector-overlay-after-ghl-route-changes",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/reconnect-leadconnector-overlay-after-ghl-route-changes"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-05T00:02:20.743Z"
+}

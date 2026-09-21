@@ -9,6 +9,7 @@ export type WorkerRuntimeState = {
   beginRequest(): boolean;
   endRequest(): void;
   startDraining(): void;
+  stopAcceptingRequests(): void;
   snapshot(): WorkerRuntimeSnapshot;
   waitForIdle(timeoutMs: number): Promise<boolean>;
 };
@@ -24,6 +25,7 @@ export function createWorkerRuntimeState(input: {
 }): WorkerRuntimeState {
   let activeRequests = 0;
   let draining = false;
+  let acceptingRequests = true;
   const idleWaiters = new Set<IdleWaiter>();
 
   const resolveIdleWaiters = (): void => {
@@ -37,7 +39,7 @@ export function createWorkerRuntimeState(input: {
 
   return {
     beginRequest() {
-      if (draining) return false;
+      if (!acceptingRequests) return false;
       activeRequests += 1;
       return true;
     },
@@ -50,6 +52,10 @@ export function createWorkerRuntimeState(input: {
     },
     startDraining() {
       draining = true;
+      resolveIdleWaiters();
+    },
+    stopAcceptingRequests() {
+      acceptingRequests = false;
       resolveIdleWaiters();
     },
     snapshot() {

@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/make-os-lifecycle-restarts-connector-safe",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1999,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1999",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1999",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1999/make-os-lifecycle-restarts-connector-safe",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1999",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1999/make-os-lifecycle-restarts-connector-safe",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-make-os-lifecycle-restarts-connector-safe",
+  "taskSession": "tsk_d25980cd5827",
+  "tmuxSession": "opensaas-os-make-os-lifecycle-restarts-connector-safe-d25980cd",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-make-os-lifecycle-restarts-connector-safe/.task/os/make-os-lifecycle-restarts-connector-safe/session.json",
+  "createdAt": "2026-08-15T02:59:03.767Z"
+}

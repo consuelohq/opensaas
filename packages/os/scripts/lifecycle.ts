@@ -80,6 +80,7 @@ type ParsedLifecycleArgs = {
   command: string;
   positional: string[];
   channel?: LifecycleReleaseChannel;
+  expectedVersion?: string;
   check: boolean;
   yes: boolean;
   dryRun: boolean;
@@ -161,6 +162,13 @@ function parseArgs(argv: string[]): ParsedLifecycleArgs {
         throw new Error(`unsupported release channel: ${value}`);
       }
       parsed.channel = value as LifecycleReleaseChannel;
+      index += 1;
+    } else if (arg === '--version') {
+      const value = nextValue(argv, index, arg);
+      if (!/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/.test(value)) {
+        throw new Error(`unsupported release version: ${value}`);
+      }
+      parsed.expectedVersion = value;
       index += 1;
     } else if (arg === '--home') {
       parsed.home = nextValue(argv, index, arg);
@@ -364,6 +372,9 @@ function validateCommandArgs(parsed: ParsedLifecycleArgs): void {
   }
   if (parsed.channel && !['install', 'update'].includes(parsed.command)) {
     throw new Error('--channel is only valid for install or update');
+  }
+  if (parsed.expectedVersion && parsed.command !== 'update') {
+    throw new Error('--version is only valid for update');
   }
   if (parsed.snoozedUntil && parsed.command !== 'updates') {
     throw new Error('--until is only valid for update notification snooze');
@@ -579,8 +590,12 @@ export function createDefaultLifecycleServiceController(input: {
   }
   return createReloadServiceController({
     osRoot: input.osRoot,
+    activeRuntimeRoot: lifecyclePaths.currentLink,
+    home: lifecycleHome,
     nodeHome: lifecyclePaths.nodeDir,
+    runtimeExecutable: bunExecutable,
     platform,
+    environment: process.env,
   });
 }
 
@@ -613,7 +628,7 @@ export const createDefaultLifecycleEngine = (input: {
   progress: (event: LifecycleProgressEvent) => void;
 }): LifecycleEngine => {
   const osRoot = resolve(import.meta.dirname, '..');
-  const port = process.env.CONSUELO_OS_PORT || process.env.PORT || '46321';
+  const port = process.env.CONSUELO_OS_WORKER_BASE_PORT || process.env.WORKSPACE_DAEMON_PORT || process.env.CONSUELO_OS_PORT || process.env.PORT || '46321';
   const releaseBaseUrl =
     process.env.CONSUELO_RELEASE_BASE_URL?.trim() || DEFAULT_RELEASE_BASE_URL;
   return createLifecycleEngine({
@@ -726,6 +741,7 @@ async function executeCommand(
     case 'update':
       return engine.update({
         channel: parsed.channel,
+        expectedVersion: parsed.expectedVersion,
         check: parsed.check,
         yes: parsed.yes,
       });
@@ -816,36 +832,44 @@ export async function runLifecycleCli(
         env: environment,
       });
     let result: LifecycleOperationResult;
-    if (runsInsideActiveDaemon && parsed.command === 'update' && !parsed.check) {
+    if (runsInsideActiveDaemon && parsed.command === 'restart') {
+      const accepted = await operationLauncher.launch({ kind: 'restart' });
+      result = {
+        operation: 'restart',
+        changed: true,
+        detail: {
+          detached: true,
+          accepted: accepted.accepted,
+          operationId: accepted.operationId,
+        },
+      };
+    } else if (runsInsideActiveDaemon && parsed.command === 'update' && !parsed.check) {
       const checked = await engine.update({
         channel: parsed.channel,
+        expectedVersion: parsed.expectedVersion,
         check: true,
         yes: parsed.yes,
       });
-      if (checked.updateAvailable !== true) {
-        result = checked;
-      } else {
-        if (!checked.version) {
-          throw lifecycleError(
-            'MANIFEST_INVALID',
-            'update check did not return a target release version',
-          );
-        }
-        const accepted = await operationLauncher.launch({
-          kind: 'update',
-          targetVersion: checked.version,
-          ...(parsed.channel ? { channel: parsed.channel } : {}),
-        });
-        result = {
-          ...checked,
-          detail: {
-            ...checked.detail,
-            detached: true,
-            accepted: accepted.accepted,
-            operationId: accepted.operationId,
-          },
-        };
+      if (!checked.version) {
+        throw lifecycleError(
+          'MANIFEST_INVALID',
+          'update check did not return a target release version',
+        );
       }
+      const accepted = await operationLauncher.launch({
+        kind: 'update',
+        targetVersion: checked.version,
+        ...(parsed.channel ? { channel: parsed.channel } : {}),
+      });
+      result = {
+        ...checked,
+        detail: {
+          ...checked.detail,
+          detached: true,
+          accepted: accepted.accepted,
+          operationId: accepted.operationId,
+        },
+      };
     } else {
       result = await executeCommand(parsed, engine);
     }

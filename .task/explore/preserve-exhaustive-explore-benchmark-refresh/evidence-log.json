@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "worktree_id": "task/explore/preserve-exhaustive-explore-benchmark-refresh",
+  "events": [
+    {
+      "id": "b0c34e51-8dd9-4b75-a9da-5a6f37bbe40e",
+      "occurred_at": "2026-08-29T08:02:13.568Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/explore-bench.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/explore/preserve-exhaustive-explore-benchmark-refresh",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/explore/preserve-exhaustive-explore-benchmark-refresh"
+      }
+    },
+    {
+      "id": "0d5bb548-2f37-43d3-aa3f-0890406f2cd2",
+      "occurred_at": "2026-08-29T08:04:28.343Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/explore-index-hydration-fallback.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/explore/preserve-exhaustive-explore-benchmark-refresh",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/explore/preserve-exhaustive-explore-benchmark-refresh"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-29T08:04:28.428Z"
+}

@@ -1,0 +1,445 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/expose-explicit-cloud-node-targeting-in-chatgpt-os-call",
+  "base": "stream/os",
+  "headSha": "5dbf656803f63d55473e5c61a01641b5012afa5d",
+  "changeHash": "0475f532f1893e37037ea17207bb220034c40ae78da64aad9a7983798a2ffcc3",
+  "changedFiles": [
+    ".github/workflows/consuelo-production-release.yaml",
+    "packages/dialer-server/scripts/write-release-manifest.ts",
+    "packages/dialer-server/src/release/production-release.test.ts",
+    "packages/dialer-server/src/release/production-release.ts",
+    "packages/lead-connector/EMBED.md",
+    "packages/lead-connector/scripts/verify-marketplace-bootstrap.ts",
+    "packages/lead-connector/src/deployment/marketplace-bootstrap.test.ts",
+    "packages/lead-connector/src/deployment/marketplace-bootstrap.ts",
+    "packages/lead-connector/src/deployment/release-workflow.contract.test.ts",
+    "packages/lead-connector/src/embed/architecture.contract.test.ts",
+    "packages/lead-connector/src/embed/click-to-call-runtime.test.ts",
+    "packages/lead-connector/src/embed/public/consuelo-lead-connector-click-to-call.js",
+    "packages/lead-connector/wrangler.jsonc",
+    "packages/os/cloudflare/os-device-authority/src/routes/mcp-oauth.ts",
+    "packages/os/cloudflare/os-device-authority/src/services/mcp-oauth.ts",
+    "packages/os/tests/operator-oauth-client.test.ts",
+    "packages/os/tests/os-device-authority-worker.test.ts",
+    "packages/workspace/server.py",
+    "packages/workspace/test-selection.registry.json",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/server_call_test.py",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "verifiedAt": "2026-08-15T01:17:29.624Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".github/workflows/consuelo-production-release.yaml",
+        ".task/dialer/simplify-dialer-production-ghl-bootstrap/current.json",
+        ".task/dialer/simplify-dialer-production-ghl-bootstrap/evidence-log.json",
+        ".task/dialer/simplify-dialer-production-ghl-bootstrap/read-log.json",
+        ".task/dialer/simplify-dialer-production-ghl-bootstrap/session.json",
+        ".task/dialer/simplify-dialer-production-ghl-bootstrap/verify.json",
+        ".task/dialer/simplify-dialer-production-ghl-bootstrap/workpad.md",
+        ".task/os/expose-explicit-cloud-node-targeting-in-chatgpt-os-call/current.json",
+        ".task/os/expose-explicit-cloud-node-targeting-in-chatgpt-os-call/evidence-log.json",
+        ".task/os/expose-explicit-cloud-node-targeting-in-chatgpt-os-call/read-log.json",
+        ".task/os/expose-explicit-cloud-node-targeting-in-chatgpt-os-call/session.json",
+        ".task/os/expose-explicit-cloud-node-targeting-in-chatgpt-os-call/verify.json",
+        ".task/os/expose-explicit-cloud-node-targeting-in-chatgpt-os-call/workpad.md",
+        ".task/os/fix-chatgpt-cimd-oauth-reconnect-on-cloudflare/current.json",
+        ".task/os/fix-chatgpt-cimd-oauth-reconnect-on-cloudflare/evidence-log.json",
+        ".task/os/fix-chatgpt-cimd-oauth-reconnect-on-cloudflare/read-log.json",
+        ".task/os/fix-chatgpt-cimd-oauth-reconnect-on-cloudflare/session.json",
+        ".task/os/fix-chatgpt-cimd-oauth-reconnect-on-cloudflare/verify.json",
+        ".task/os/fix-chatgpt-cimd-oauth-reconnect-on-cloudflare/workpad.md",
+        ".task/tasks/dialer/simplify-dialer-production-ghl-bootstrap.json",
+        ".task/tasks/os/expose-explicit-cloud-node-targeting-in-chatgpt-os-call.json",
+        ".task/tasks/os/fix-chatgpt-cimd-oauth-reconnect-on-cloudflare.json",
+        "packages/dialer-server/scripts/write-release-manifest.ts",
+        "packages/dialer-server/src/release/production-release.test.ts",
+        "packages/dialer-server/src/release/production-release.ts",
+        "packages/lead-connector/EMBED.md",
+        "packages/lead-connector/scripts/verify-marketplace-bootstrap.ts",
+        "packages/lead-connector/src/deployment/marketplace-bootstrap.test.ts",
+        "packages/lead-connector/src/deployment/marketplace-bootstrap.ts",
+        "packages/lead-connector/src/deployment/release-workflow.contract.test.ts",
+        "packages/lead-connector/src/embed/architecture.contract.test.ts",
+        "packages/lead-connector/src/embed/click-to-call-runtime.test.ts",
+        "packages/lead-connector/src/embed/public/consuelo-lead-connector-click-to-call.js",
+        "packages/lead-connector/wrangler.jsonc",
+        "packages/os/cloudflare/os-device-authority/src/routes/mcp-oauth.ts",
+        "packages/os/cloudflare/os-device-authority/src/services/mcp-oauth.ts",
+        "packages/os/tests/operator-oauth-client.test.ts",
+        "packages/os/tests/os-device-authority-worker.test.ts",
+        "packages/workspace/server.py",
+        "packages/workspace/test-selection.registry.json",
+        "packages/workspace/test-selection.rules.json",
+        "packages/workspace/tests/server_call_test.py",
+        "packages/workspace/tests/test-selection.test.js"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-test-selection",
+          "critical": true,
+          "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy.",
+          "matchedFiles": [
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-chatgpt-mcp-oauth",
+          "critical": true,
+          "exclusive": true,
+          "reason": "ChatGPT MCP OAuth client binding and authorization changes must prove the exact client/redirect, Worker, architecture, release, and syntax contracts without selecting unrelated package-wide OS tests.",
+          "matchedFiles": [
+            "packages/os/cloudflare/os-device-authority/src/routes/mcp-oauth.ts",
+            "packages/os/cloudflare/os-device-authority/src/services/mcp-oauth.ts",
+            "packages/os/tests/operator-oauth-client.test.ts",
+            "packages/os/tests/os-device-authority-worker.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-device-approval-canonical-identity",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Native OS device-approval and canonical-identity changes must prove the exact auth, tenant, and control-plane contracts without selecting unsafe unrelated package-wide OS tests.",
+          "matchedFiles": [
+            "packages/os/tests/os-device-authority-worker.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "dialer-server-package",
+          "critical": true,
+          "reason": "Dialer server changes must prove Hono transport, Twilio boundary, and standalone lifecycle contracts.",
+          "matchedFiles": [
+            "packages/dialer-server/scripts/write-release-manifest.ts",
+            "packages/dialer-server/src/release/production-release.test.ts",
+            "packages/dialer-server/src/release/production-release.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "lead-connector-package",
+          "critical": true,
+          "reason": "LeadConnector provider changes must prove OAuth, token, resource, webhook, architecture, and branding contracts.",
+          "matchedFiles": [
+            "packages/lead-connector/EMBED.md",
+            "packages/lead-connector/scripts/verify-marketplace-bootstrap.ts",
+            "packages/lead-connector/src/deployment/marketplace-bootstrap.test.ts",
+            "packages/lead-connector/src/deployment/marketplace-bootstrap.ts",
+            "packages/lead-connector/src/deployment/release-workflow.contract.test.ts",
+            "packages/lead-connector/src/embed/architecture.contract.test.ts",
+            "packages/lead-connector/src/embed/click-to-call-runtime.test.ts",
+            "packages/lead-connector/src/embed/public/consuelo-lead-connector-click-to-call.js",
+            "packages/lead-connector/wrangler.jsonc"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "server-ci-task-contract",
+          "critical": true,
+          "reason": "Server CI changes must scope lint and typecheck to directly changed Twenty server runtime files while retaining dependency propagation.",
+          "matchedFiles": [
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true
+        },
+        {
+          "name": "OS ChatGPT MCP OAuth contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/operator-oauth-client.test.ts",
+            "tests/os-device-authority-worker.test.ts",
+            "tests/os-device-authority-architecture.test.ts",
+            "tests/os-device-authority-release-contract.test.ts"
+          ],
+          "ruleId": "os-chatgpt-mcp-oauth",
+          "critical": true
+        },
+        {
+          "name": "OS ChatGPT MCP OAuth syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "ruleId": "os-chatgpt-mcp-oauth",
+          "critical": true
+        },
+        {
+          "name": "OS canonical device approval contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/canonical-device-identity.test.ts",
+            "tests/install-control-plane.test.ts",
+            "tests/install-control-plane-d1.test.ts",
+            "tests/oauth-device-page-contract.test.ts",
+            "tests/internal-dashboard-integration.test.ts",
+            "tests/native-google-device-approval.test.ts",
+            "tests/os-device-authority-worker.test.ts"
+          ],
+          "ruleId": "os-device-approval-canonical-identity",
+          "critical": true
+        },
+        {
+          "name": "dialer-server Hono contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-server/src"
+          ],
+          "ruleId": "dialer-server-package",
+          "critical": true
+        },
+        {
+          "name": "LeadConnector provider contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/lead-connector/src"
+          ],
+          "ruleId": "lead-connector-package",
+          "critical": true
+        },
+        {
+          "name": "changed server task selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "TypeORM CLI compatibility contract",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 2177,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-expose-explicit-cloud-node-targeting-in-chatgpt-os-call\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/test-selection.test.js \u001b[2m(\u001b[22m\u001b[2m32 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 1873\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m discovers and seeds the existing test inventory \u001b[33m 926\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m32 passed\u001b[39m\u001b[22m\u001b[90m (32)\u001b[39m\n\u001b[2m   Start at \u001b[22m 21:17:22\n\u001b[2m   Duration \u001b[22m 1.95s\u001b[2m (transform 14ms, setup 0ms, import 20ms, tests 1.87s, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS ChatGPT MCP OAuth contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/operator-oauth-client.test.ts",
+            "tests/os-device-authority-worker.test.ts",
+            "tests/os-device-authority-architecture.test.ts",
+            "tests/os-device-authority-release-contract.test.ts"
+          ],
+          "ruleId": "os-chatgpt-mcp-oauth",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 863,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-expose-explicit-cloud-node-targeting-in-chatgpt-os-call/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/operator-oauth-client.test.ts \u001b[2m(\u001b[22m\u001b[2m30 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-architecture.test.ts \u001b[2m(\u001b[22m\u001b[2m25 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 27\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-worker.test.ts \u001b[2m(\u001b[22m\u001b[2m27 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 65\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-release-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m11 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 507\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should stop release before remote mutation when readiness fails \u001b[33m 432\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m4 passed\u001b[39m\u001b[22m\u001b[90m (4)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m93 passed\u001b[39m\u001b[22m\u001b[90m (93)\u001b[39m\n\u001b[2m   Start at \u001b[22m 21:17:24\n\u001b[2m   Duration \u001b[22m 642ms\u001b[2m (transform 677ms, setup 0ms, import 661ms, tests 603ms, environment 0ms)\u001b[22m\n\n$ vitest run tests/operator-oauth-client.test.ts tests/os-device-authority-worker.test.ts tests/os-device-authority-architecture.test.ts tests/os-device-authority-release-contract.test.ts\n"
+        },
+        {
+          "name": "OS ChatGPT MCP OAuth syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "ruleId": "os-chatgpt-mcp-oauth",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1586,
+          "outputTail": "workspace script syntax checks passed\n"
+        },
+        {
+          "name": "OS canonical device approval contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/canonical-device-identity.test.ts",
+            "tests/install-control-plane.test.ts",
+            "tests/install-control-plane-d1.test.ts",
+            "tests/oauth-device-page-contract.test.ts",
+            "tests/internal-dashboard-integration.test.ts",
+            "tests/native-google-device-approval.test.ts",
+            "tests/os-device-authority-worker.test.ts"
+          ],
+          "ruleId": "os-device-approval-canonical-identity",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 508,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-expose-explicit-cloud-node-targeting-in-chatgpt-os-call/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/oauth-device-page-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/install-control-plane-d1.test.ts \u001b[2m(\u001b[22m\u001b[2m6 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 11\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/install-control-plane.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 13\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/canonical-device-identity.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 9\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/native-google-device-approval.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 19\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/internal-dashboard-integration.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 33\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-worker.test.ts \u001b[2m(\u001b[22m\u001b[2m27 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 63\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m7 passed\u001b[39m\u001b[22m\u001b[90m (7)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m62 passed\u001b[39m\u001b[22m\u001b[90m (62)\u001b[39m\n\u001b[2m   Start at \u001b[22m 21:17:26\n\u001b[2m   Duration \u001b[22m 353ms\u001b[2m (transform 633ms, setup 0ms, import 886ms, tests 149ms, environment 0ms)\u001b[22m\n\n$ vitest run tests/canonical-device-identity.test.ts tests/install-control-plane.test.ts \"tests/install-control-plane-d1.test.ts\" tests/oauth-device-page-contract.test.ts tests/internal-dashboard-integration.test.ts tests/native-google-device-approval.test.ts tests/os-device-authority-worker.test.ts\n"
+        },
+        {
+          "name": "dialer-server Hono contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-server/src"
+          ],
+          "ruleId": "dialer-server-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 606,
+          "outputTail": "ovider group request [0.04ms]\n(pass) Twilio provider test mode > does not claim carrier delivery or callbacks for test credentials [0.01ms]\n\npackages/dialer-server/src/runtime/railway.test.ts:\n(pass) LeadConnector dialer learning > records an atomic attempt and outcome for every completed carrier leg [0.11ms]\n(pass) LeadConnector dialer learning > does not fail carrier callback handling when learning persistence is unavailable [0.05ms]\n(pass) Railway dialer-server runtime composition > selects the test dialer for follow-up operations on test-mode groups [0.12ms]\n(pass) Railway dialer-server runtime composition > keeps existing groups without a provider mode on the live dialer [0.04ms]\n(pass) Railway dialer-server runtime composition > fails closed when a test-mode group outlives its test credentials [0.03ms]\n(pass) Railway dialer-server runtime composition > composes durable LeadConnector configuration and encrypted installation storage [1.38ms]\n(pass) Railway dialer-server runtime composition > preserves input order when standalone learned data is not available [1.18ms]\n(pass) Railway dialer-server runtime composition > ranks predictive targets from LeadConnector learned outcomes without Twenty model rows [0.49ms]\n(pass) Railway dialer-server runtime composition > starts a mock standalone call session without Twenty or the compatibility API [0.81ms]\n\npackages/dialer-server/src/runtime/lead-connector-learning.test.ts:\n(pass) LeadConnector learning initialization > creates the attempt ledger before the outcome model tables [1.03ms]\n\npackages/dialer-server/src/release/production-release.test.ts:\n(pass) dialer production release safety > selects the new Railway deployment instead of racing the previous latest [0.06ms]\n(pass) dialer production release safety > smokes only non-mutating health/auth/signature boundaries [0.24ms]\n(pass) dialer production release safety > builds a secret-free release manifest from immutable deployment evidence [0.07ms]\n(pass) dialer production release safety > refuses to serialize a release manifest from non-green evidence [0.03ms]\n(pass) dialer production release safety > requires immutable one-time Marketplace bootstrap evidence [0.01ms]\n(pass) dialer production release safety > rolls Railway back to one explicit deployment id through the public API [0.10ms]\n\npackages/dialer-server/src/call-operations/application.test.ts:\n(pass) Effect call-operations transcription application > keeps inbound and outbound buffers separate and persists provider metadata only [1.65ms]\n(pass) Effect call-operations transcription application > processes duplicate frames once and flushes a terminal remainder once [0.18ms]\n(pass) Effect call-operations transcription application > keeps transcript rows idempotent when a provider stream reconnects [0.23ms]\n(pass) Effect call-operations transcription application > marks transcription failed on provider timeout without failing the call boundary [22.42ms]\n(pass) Effect call-operations transcription application > does not begin provider work when workspace transcription is disabled [0.07ms]\n\npackages/dialer-server/src/call-operations/persistence.test.ts:\n(pass) call-operations persistence > initializes canonical workspace settings, sessions, legs, segments, and transfer-compatible events [0.12ms]\n(pass) call-operations persistence > uses a workspace-scoped idempotent insert for transcript metadata [0.15ms]\n(pass) call-operations persistence > atomically upserts the canonical session and all provider legs [0.12ms]\n(pass) call-operations persistence > persists recording provider metadata without retaining a raw recording URL [0.07ms]\n\npackages/dialer-server/src/call-operations/groq.test.ts:\n(pass) Groq speech-to-text adapter > uses the OpenAI-compatible audio endpoint and returns provider-grounded metadata [0.70ms]\n(pass) Groq speech-to-text adapter > fails closed when credentials are absent [0.08ms]\n\n 138 pass\n 0 fail\n 690 expect() calls\nRan 138 tests across 29 files. [599.00ms]\n"
+        },
+        {
+          "name": "LeadConnector provider contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/lead-connector/src"
+          ],
+          "ruleId": "lead-connector-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 680,
+          "outputTail": "ture and branding > publishes a separate wrapped Marketplace artifact while keeping the public script executable [0.18ms]\n(pass) LeadConnector browser architecture and branding > creates the iframe on demand and preserves a busy session across route changes [0.05ms]\n(pass) LeadConnector browser architecture and branding > keeps comma-separated selector literals safe for Marketplace editor persistence [0.16ms]\n(pass) LeadConnector browser architecture and branding > wires progressive commercial billing forms and confirmation actions to the controller [0.06ms]\n(pass) LeadConnector browser architecture and branding > restarts the trusted parent bootstrap exchange when authentication is retried [0.03ms]\n\npackages/lead-connector/src/embed/agent-voice.test.ts:\n(pass) LeadConnector browser agent voice > gets microphone permission, registers the device, and resolves after the agent call is accepted [0.32ms]\n(pass) LeadConnector browser agent voice > rejects if the media call fails before acceptance and disconnects the partial leg [0.15ms]\n\npackages/lead-connector/src/embed/idle-refresh.test.ts:\n(pass) LeadConnector idle refresh scheduling > uses focus and visible transitions without polling and fully cleans up across remounts [0.12ms]\n\npackages/lead-connector/src/deployment/custom-menu.test.ts:\n(pass) LeadConnector custom menu deployment contract > targets one sandbox location in iframe mode with microphone permission [0.05ms]\n(pass) LeadConnector custom menu deployment contract > updates an existing sandbox menu instead of creating duplicates [0.22ms]\n\npackages/lead-connector/src/deployment/worker-release.test.ts:\n(pass) LeadConnector production worker release > extracts one deploy version from Wrangler structured output [0.07ms]\n(pass) LeadConnector production worker release > verifies shells, proxy health, CSP, and exact launcher asset hashes [0.27ms]\n\npackages/lead-connector/src/deployment/marketplace-bootstrap.test.ts:\n(pass) stable HighLevel Marketplace bootstrap > loads the launcher assets from one stable HTTPS origin without credentials [0.05ms]\n(pass) stable HighLevel Marketplace bootstrap > rejects non-HTTPS asset origins [0.01ms]\n(pass) stable HighLevel Marketplace bootstrap > verifies the built loader against the approved one-time source SHA-256 [0.06ms]\n(pass) stable HighLevel Marketplace bootstrap > is emitted as a dedicated one-time Marketplace installation artifact [0.16ms]\n\npackages/lead-connector/src/deployment/release-workflow.contract.test.ts:\n(pass) dialer GitHub release workflow contract > classifies the complete deployed dialer surface and validates all three packages [0.23ms]\n(pass) dialer GitHub release workflow contract > builds clean Railway workspace dependencies in package order [0.31ms]\n(pass) dialer GitHub release workflow contract > releases dialer changes from main in fail-closed provider order with deployment-only secrets [0.76ms]\n(pass) dialer GitHub release workflow contract > provides explicit-id manual rollback and never guesses a previous release [0.19ms]\n\npackages/lead-connector/src/deployment/production-menu.test.ts:\n(pass) LeadConnector production custom menu deployment > updates one configured menu id and verifies exact persisted read-back [0.28ms]\n(pass) LeadConnector production custom menu deployment > fails closed when the configured id belongs to a different menu [0.09ms]\n\npackages/lead-connector/src/deployment/commercial-artifacts.test.ts:\n(pass) commercial deployment artifacts > installs an admin-only GHL menu at /admin with microphone permission [0.02ms]\n(pass) commercial deployment artifacts > builds independently versioned marketplace JavaScript and CSS artifacts [0.04ms]\n(pass) commercial deployment artifacts > centers a responsive modal backdrop while preserving a stable native launcher [0.06ms]\n(pass) commercial deployment artifacts > removes obsolete metering workspace and build references [2.05ms]\n\n 122 pass\n 0 fail\n 1055 expect() calls\nRan 122 tests across 26 files. [672.00ms]\n"
+        },
+        {
+          "name": "changed server task selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 62,
+          "outputTail": "No changed Twenty server runtime files require lint or typecheck.\nRunning server lint and baseline-aware typecheck for 1 directly changed file(s).\nTwenty server typecheck matched 1 known baseline diagnostic(s).\nRunning server lint and baseline-aware typecheck for 1 directly changed file(s).\nNo changed Twenty server schema files require GraphQL generation.\nNo changed Twenty server runtime files require migration generation.\nNo changesgeneratedTwenty server migration drift matched 2 known baseline operation(s).\ngeneratedgenerated✔ parseCliArguments resolves comparison SHAs (0.569125ms)\n✔ parseCliArguments selects GraphQL generation mode (0.052542ms)\n✔ parseCliArguments selects migration generation mode (0.052959ms)\n✔ filterServerTaskFiles excludes root and config-only triggers (0.072958ms)\n✔ filterGraphqlGenerationFiles keeps only server schema and generated files (0.061083ms)\n✔ buildEslintArguments selects the owning project config and stdin filename (0.046875ms)\n✔ ESLint diagnostic comparison tracks new error multiplicity without line numbers (0.156667ms)\n✔ runChangedFileLint accepts base-existing errors and rejects a new changed-file error (0.745375ms)\n✔ runChangedFileLint allows explicit lint baseline debt but rejects diagnostics beyond it (0.64525ms)\n✔ buildTypecheckArguments uses standard TypeScript without emitting (0.078917ms)\n✔ TypeScript diagnostic baseline comparison rejects only new diagnostic keys (0.186417ms)\n✔ runChangedServerTask skips Nx for config-only changes (0.284875ms)\n✔ runChangedServerTask executes lint and baseline-aware typecheck for server runtime changes (0.076917ms)\n✔ runChangedServerTask rejects a new TypeScript diagnostic outside the baseline (0.078167ms)\n✔ server lint configuration resolves the existing workspace rules project (0.309042ms)\n✔ runGraphqlGenerationCheck skips generation without schema changes (0.063583ms)\n✔ runGraphqlGenerationCheck generates and verifies committed outputs (0.141625ms)\n✔ runMigrationGenerationCheck skips generation without server runtime changes (0.060375ms)\n✔ runMigrationGenerationCheck accepts a no-change TypeORM exit (0.085291ms)\n✔ runMigrationGenerationCheck accepts and removes exact known migration drift (0.156666ms)\n✔ runMigrationGenerationCheck rejects changed drift beyond the baseline (0.102084ms)\n✔ runMigrationGenerationCheck rejects and removes generated drift (0.099084ms)\nℹ tests 22\nℹ suites 0\nℹ pass 22\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 38.505083\n"
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 131,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/workspace/tests/github-workflow-policy.test.js:\n(pass) GitHub workflow policy > does not include retired automation workflows [0.08ms]\n(pass) GitHub workflow policy > does not reference retired CI credentials or the disabled Chromatic job [2.53ms]\n(pass) GitHub workflow policy > does not retain privileged allowlist entries for deleted workflows [0.16ms]\n(pass) GitHub workflow policy > runs typecheck and test from the filtered frontend file set [0.04ms]\n(pass) GitHub workflow policy > installs Bun and scopes shared tasks to changed frontend files [0.04ms]\n(pass) GitHub workflow policy > scopes native OS distribution tests to relevant changed files [0.04ms]\n(pass) GitHub workflow policy > runs Docker Compose CI with the pgvector PostgreSQL image required by migrations [0.03ms]\n(pass) GitHub workflow policy > uses available hosted runners for the Server and Front build pipelines [0.05ms]\n(pass) GitHub workflow policy > builds Consuelo backend workspace dependencies before server typecheck [0.04ms]\n(pass) GitHub workflow policy > installs Bun before the Server unit-test job runs Bun package tests [0.03ms]\n(pass) GitHub workflow policy > allows enough time for Danger dependency installation and execution [0.03ms]\n(pass) GitHub workflow policy > explicitly allowlists the API breaking-changes workflow write permissions [0.02ms]\n\n 12 pass\n 0 fail\n 53 expect() calls\nRan 12 tests across 1 file. [127.00ms]\n"
+        },
+        {
+          "name": "TypeORM CLI compatibility contract",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 689,
+          "outputTail": "✔ Twenty server uses the Node 24-compatible TypeORM ts-node wrapper (0.257458ms)\n✔ the configured TypeORM wrapper resolves from the installed package (634.428708ms)\nℹ tests 2\nℹ suites 0\nℹ pass 2\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 665.69825\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -5,6 +5,7 @@ import {
   MANAGED_CLOUD_PROVISIONING_LEASE_MS,
   publicManagedCloudProvisioningJob,
 } from '../../../../scripts/lib/managed-cloud-provisioning';
+import { createWorkspaceReleaseManagedSiteRefreshSql } from '../../../../scripts/lib/workspace-edge-route-seed';
 import { json } from '../http';
 import type { DeviceAuthorityRuntime, Grant } from '../types';
 import {
@@ -61,6 +62,60 @@ async function readObject(request: Request): Promise<Record<string, unknown> | u
       : undefined;
   } catch {
     return undefined;
+  }
+}
+
+async function handleReleaseSiteSnapshotRefresh(
+  request: Request,
+  runtime: DeviceAuthorityRuntime,
+): Promise<Response> {
+  if (!(await sameSecret(bearerToken(request), runtime.managedCloudProvisionerSecret))) {
+    return unauthorized();
+  }
+  if (!runtime.workspaceRouteRegistry?.exec) {
+    return json(
+      { error: { code: 'WORKSPACE_ROUTE_REGISTRY_UNAVAILABLE', message: 'Workspace route registry is unavailable.' } },
+      { status: 503, headers: jsonHeaders },
+    );
+  }
+  const body = await readObject(request);
+  const siteContentHashes = body?.siteContentHashes;
+  if (
+    typeof body?.versionId !== 'string'
+    || typeof body.snapshotWorkspaceId !== 'string'
+    || !siteContentHashes
+    || typeof siteContentHashes !== 'object'
+    || Array.isArray(siteContentHashes)
+  ) {
+    return json(
+      { error: { code: 'INVALID_RELEASE_SITE_SNAPSHOT_REFRESH', message: 'Release site snapshot refresh payload is invalid.' } },
+      { status: 400, headers: jsonHeaders },
+    );
+  }
+  let sql: string;
+  try {
+    sql = createWorkspaceReleaseManagedSiteRefreshSql({
+      versionId: body.versionId,
+      snapshotWorkspaceId: body.snapshotWorkspaceId,
+      siteContentHashes: siteContentHashes as Record<string, string>,
+    });
+  } catch {
+    return json(
+      { error: { code: 'INVALID_RELEASE_SITE_SNAPSHOT_REFRESH', message: 'Release site snapshot refresh payload is invalid.' } },
+      { status: 400, headers: jsonHeaders },
+    );
+  }
+  try {
+    await runtime.workspaceRouteRegistry.exec(sql);
+    return json(
+      { ok: true, updated: true, versionId: body.versionId },
+      { headers: jsonHeaders },
+    );
+  } catch {
+    return json(
+      { error: { code: 'WORKSPACE_ROUTE_REFRESH_FAILED', message: 'Workspace site routes could not be refreshed.' } },
+      { status: 503, headers: jsonHeaders },
+    );
   }
 }
 
@@ -282,6 +337,9 @@ export function registerManagedCloudProvisioningRoutes(
   app: Hono,
   runtime: DeviceAuthorityRuntime,
 ): void {
+  app.post('/internal/release/site-snapshots/refresh', (context) =>
+    handleReleaseSiteSnapshotRefresh(context.req.raw, runtime),
+  );
   app.post('/internal/managed-cloud/provisioning/claim', (context) =>
     handleClaim(context.req.raw, runtime),
   );

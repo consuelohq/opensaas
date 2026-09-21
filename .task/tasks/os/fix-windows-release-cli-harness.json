@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-windows-release-cli-harness",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2261,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2261",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-windows-release-cli-harness",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_b943be37e8a6",
+  "tmuxSession": "opensaas-os-fix-windows-release-cli-harness-b943be37",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-windows-release-cli-harness/.task/session.json",
+  "createdAt": "2026-08-29T00:40:16.866Z"
+}

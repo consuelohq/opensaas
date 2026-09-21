@@ -1,0 +1,10 @@
+{
+  "files": [
+    "packages/consuelo-website/package.json",
+    "packages/os/scripts/lib/artifacts.ts",
+    "packages/os/scripts/security-scan.ts",
+    "packages/os/scripts/test-selection.js",
+    "packages/os/scripts/verify.js"
+  ],
+  "updatedAt": "2026-08-17T13:19:08.044Z"
+}

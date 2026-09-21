@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_f7b8d754319c",
+  "tmuxSession": "opensaas-workspace-agents-restack-browser-isolation-on-current-main-f7b8d754",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/restack-browser-isolation-on-current-main",
+  "branch": "task/workspace-agents/restack-browser-isolation-on-current-main",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-restack-browser-isolation-on-current-main",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-restack-browser-isolation-on-current-main",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2218,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2218",
+  "createdAt": "2026-08-26T15:03:12.165Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-restack-browser-isolation-on-current-main/.task/workspace-agents/restack-browser-isolation-on-current-main/session.json"
+}

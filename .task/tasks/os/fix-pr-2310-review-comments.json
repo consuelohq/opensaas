@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-pr-2310-review-comments",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2327,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2327",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-pr-2310-review-comments",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_e6e4aec1f76d",
+  "tmuxSession": "opensaas-os-fix-pr-2310-review-comments-e6e4aec1",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-pr-2310-review-comments/.task/session.json",
+  "createdAt": "2026-08-31T18:16:04.732Z"
+}

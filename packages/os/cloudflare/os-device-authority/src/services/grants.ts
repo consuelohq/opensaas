@@ -255,6 +255,9 @@ export async function commitGrantApproval(input: {
       nodeId,
       expiresAt: connectorExpiresAt,
     });
+    if (input.grant.nodeIdentityRotatedAt !== undefined) {
+      await input.store.delManagedCloudProvisioningNode(nodeId);
+    }
     return input.grant;
   } catch (error: unknown) {
     throw new Error(
@@ -338,6 +341,7 @@ export function approvedJson(
     [TOKEN_KEY]: rand('osat', 32),
     token_type: 'bearer',
     ...(g.canonicalUserId ? { user_id: g.canonicalUserId } : {}),
+    ...(g.accountEmail ? { account_email: g.accountEmail } : {}),
     workspace_id: workspace.workspaceId,
     workspace_slug: workspace.workspaceSlug,
     workspace_host: workspace.workspaceHost,

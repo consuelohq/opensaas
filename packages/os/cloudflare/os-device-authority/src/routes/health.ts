@@ -6,6 +6,7 @@ import {
   authorizationServerMetadata,
   oauthProtectedResourceMetadata,
 } from '../services/mcp-oauth';
+import { syntheticCheckoutConfigured } from '../services/synthetic-checkout';
 import { universalLoginResponse } from './web-auth';
 
 export function registerHealthRoutes(
@@ -24,6 +25,8 @@ export function registerHealthRoutes(
       managed_cloud_billing_configured: Boolean(
         runtime.stripeSecretKey?.trim() && runtime.stripeWebhookSecret?.trim(),
       ),
+      managed_cloud_synthetic_checkout_configured: syntheticCheckoutConfigured(runtime),
+      checkout_observability_configured: Boolean(runtime.checkoutObservability),
     }),
   );
   app.all('/.well-known/oauth-authorization-server', () =>

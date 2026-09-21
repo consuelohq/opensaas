@@ -221,6 +221,7 @@ describe('Consuelo OS reload lifecycle', () => {
       desiredWorkers: 2,
       basePort: 46321,
       supervisorPid: 900,
+      supportsRuntimeCurrentRollingReload: true,
       generatedAt: '2026-08-11T00:00:00.000Z',
       workers: [
         { workerId: 'worker-0', workerInstanceId: 'old-0', state: 'ready', port: 46321, pid: 101, restartCount: 0 },
@@ -239,7 +240,7 @@ describe('Consuelo OS reload lifecycle', () => {
       encoding: 'utf8',
     });
 
-    expect(result.status).toBe(0);
+    expect(result.status, `${result.stdout}\n${result.stderr}`).toBe(0);
     expect(readFileSync(harness.signalLog, 'utf8')).toContain('-USR2 900');
     const launchCommands = existsSync(harness.launchLog)
       ? readFileSync(harness.launchLog, 'utf8')

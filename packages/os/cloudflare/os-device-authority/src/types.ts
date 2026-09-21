@@ -49,6 +49,7 @@ export type Grant = {
   devicePublicKeyThumbprint: string;
   lastPoll?: number;
   accountId?: string;
+  accountEmail?: string;
   accountAuthMethod?: StrongerAuthMethod;
   connectorToken?: string;
   connectorExpiresAt?: number;
@@ -110,6 +111,10 @@ export type WorkspaceNode = {
   capabilities?: string[];
   agents?: WorkspaceAgentName[];
   connectorStatus?: 'connected' | 'disconnected';
+  osVersion?: string;
+  bundleId?: string;
+  mcpProtocolVersion?: string;
+  mcpReady?: boolean;
   state?: 'active' | 'revoked';
   devicePublicKeyJwk?: string;
   devicePublicKeyThumbprint: string;
@@ -133,6 +138,25 @@ export type WorkspaceTaskAffinity = {
 export type WorkspaceTaskAffinityClaim = {
   status: 'created' | 'existing' | 'conflict';
   affinity: WorkspaceTaskAffinity;
+};
+
+export type WorkspaceSessionKind = 'task' | 'work';
+
+export type WorkspaceSessionAffinity = {
+  accountId: string;
+  workspaceId?: string;
+  workspaceHost: string;
+  sessionKind: WorkspaceSessionKind;
+  sessionId: string;
+  ownerNodeId: string;
+  createdAt: number;
+  updatedAt: number;
+  expiresAt?: number;
+};
+
+export type WorkspaceSessionAffinityClaim = {
+  status: 'created' | 'existing' | 'conflict';
+  affinity: WorkspaceSessionAffinity;
 };
 
 export type WorkspaceAgentName =
@@ -179,6 +203,7 @@ export type WebOAuthState = {
   nonce: string;
   intent: 'login' | 'signup';
   returnPath: string;
+  targetHost?: string;
   expiresAt: number;
 };
 
@@ -312,6 +337,47 @@ export type McpOAuthRefreshToken = {
   issuedAt: number;
 };
 
+export type GitHubSourceControlRepository = {
+  id: number;
+  nameWithOwner: string;
+  defaultBranch: string;
+};
+
+export type GitHubSourceControlInstallState = {
+  state: string;
+  workspaceId: string;
+  workspaceHost: string;
+  nodeId: string;
+  returnPath: string;
+  repositoryOwners: string[];
+  manageAccess: boolean;
+  oauthCodeVerifier: string;
+  githubUserAccessToken?: string;
+  expiresAt: number;
+};
+
+export type GitHubSourceControlConnection = {
+  connectionId: string;
+  workspaceId: string;
+  workspaceHost: string;
+  installationId: number;
+  accountLogin: string;
+  repositorySelection: 'all' | 'selected';
+  repositories: GitHubSourceControlRepository[];
+  createdAt: number;
+  updatedAt: number;
+};
+
+export type GitHubSourceControlHandoff = {
+  tokenHash: string;
+  connectionId: string;
+  workspaceId: string;
+  workspaceHost: string;
+  nodeId: string;
+  returnPath: string;
+  expiresAt: number;
+};
+
 export type WorkspaceRouteRegistryBinding = WorkspaceRouteD1Database;
 export type DefaultSiteSnapshot = {
   key: string;
@@ -371,8 +437,25 @@ export type Store = {
     tokenHash: string,
   ): Promise<McpOAuthRefreshToken | undefined>;
   delMcpOAuthRefreshToken(tokenHash: string): Promise<void>;
+  putGitHubSourceControlInstallState(state: GitHubSourceControlInstallState): Promise<void>;
+  byGitHubSourceControlInstallState(state: string): Promise<GitHubSourceControlInstallState | undefined>;
+  delGitHubSourceControlInstallState(state: string): Promise<void>;
+  putGitHubSourceControlConnection(connection: GitHubSourceControlConnection): Promise<void>;
+  byGitHubSourceControlConnection(connectionId: string): Promise<GitHubSourceControlConnection | undefined>;
+  putGitHubSourceControlHandoff(handoff: GitHubSourceControlHandoff): Promise<void>;
+  consumeGitHubSourceControlHandoff(input: {
+    tokenHash: string;
+    workspaceId: string;
+    nodeId: string;
+    nowMs: number;
+  }): Promise<GitHubSourceControlHandoff | undefined>;
   putAccountWorkspace(workspace: AccountWorkspace): Promise<void>;
   byAccountWorkspace(accountId: string): Promise<AccountWorkspace | undefined>;
+  resetWorkspaceEnrollment(input: {
+    accountId: string;
+    workspaceId: string;
+    workspaceHost: string;
+  }): Promise<{ nodesRemoved: number }>;
   createWorkspaceCloudTrial(
     trial: WorkspaceCloudTrial,
   ): Promise<WorkspaceCloudTrial>;
@@ -435,6 +518,23 @@ export type Store = {
     taskSession: string;
     ownerNodeId: string;
   }): Promise<boolean>;
+  byWorkspaceSessionAffinity(input: {
+    accountId: string;
+    workspaceHost: string;
+    sessionKind: WorkspaceSessionKind;
+    sessionId: string;
+    nowMs?: number;
+  }): Promise<WorkspaceSessionAffinity | undefined>;
+  claimWorkspaceSessionAffinity(
+    affinity: WorkspaceSessionAffinity,
+  ): Promise<WorkspaceSessionAffinityClaim>;
+  releaseWorkspaceSessionAffinity(input: {
+    accountId: string;
+    workspaceHost: string;
+    sessionKind: WorkspaceSessionKind;
+    sessionId: string;
+    ownerNodeId: string;
+  }): Promise<boolean>;
   putNodeBootstrapCredential(
     credential: NodeBootstrapCredential,
   ): Promise<void>;
@@ -452,6 +552,10 @@ export type Store = {
   byManagedCloudProvisioningJob(
     jobId: string,
   ): Promise<ManagedCloudProvisioningJob | undefined>;
+  byManagedCloudProvisioningNode(
+    nodeId: string,
+  ): Promise<ManagedCloudProvisioningJob | undefined>;
+  delManagedCloudProvisioningNode(nodeId: string): Promise<void>;
   claimNextManagedCloudProvisioningJob(input: {
     leaseId: string;
     nowMs: number;
@@ -484,6 +588,9 @@ export type StorageTransactionLike = {
 };
 export type StorageLike = StorageTransactionLike & {
   list?<T>(options?: { prefix?: string }): Promise<Map<string, T>>;
+  getAlarm?(): Promise<number | null>;
+  setAlarm?(scheduledTime: number): Promise<void>;
+  deleteAlarm?(): Promise<void>;
   transaction?<T>(
     closure: (transaction: StorageTransactionLike) => Promise<T>,
   ): Promise<T>;
@@ -500,8 +607,16 @@ export type Env = {
   OS_DEVICE_AUTH_ASSERTION_SECRET?: string;
   GOOGLE_OAUTH_CLIENT_ID?: string;
   GOOGLE_OAUTH_CLIENT_SECRET?: string;
+  GOOGLE_WORKSPACE_OAUTH_CLIENT_ID?: string;
+  GOOGLE_WORKSPACE_OAUTH_CLIENT_SECRET?: string;
+  GITHUB_APP_ID?: string;
+  GITHUB_APP_SLUG?: string;
+  GITHUB_APP_PRIVATE_KEY?: string;
+  GITHUB_APP_CLIENT_ID?: string;
+  GITHUB_APP_CLIENT_SECRET?: string;
   WORKSPACE_ROUTE_REGISTRY?: WorkspaceRouteRegistryBinding;
   WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET?: string;
+  OS_ENROLLMENT_RESET_SECRET?: string;
   OS_DEVICE_AUTH_DEFAULT_SITE_SNAPSHOT_KEY?: string;
   OS_DEVICE_AUTH_DEFAULT_SITE_SNAPSHOT_VERSION_ID?: string;
   CLOUDFLARE_ACCOUNT_ID?: string;
@@ -518,12 +633,49 @@ export type Env = {
   OS_STRIPE_SECRET_KEY?: string;
   OS_STRIPE_WEBHOOK_SECRET?: string;
   OS_STRIPE_API_BASE_URL?: string;
+  OS_STRIPE_SYNTHETIC_SECRET_KEY?: string;
+  OS_STRIPE_SYNTHETIC_WEBHOOK_SECRET?: string;
+  OS_STRIPE_SYNTHETIC_ACCOUNT_IDS?: string;
+  OS_STRIPE_SYNTHETIC_WORKSPACE_IDS?: string;
   OS_DEVICE_AUTH_LOGGER?: DeviceAuthorityLogger;
   INSTALL_DIAGNOSTICS?: InstallDiagnosticR2Bucket;
   OS_INSTALL_SUCCESS_DIAGNOSTIC_RETENTION_DAYS?: string;
   SENTRY_DSN?: string;
   POSTHOG_API_KEY?: string;
   POSTHOG_HOST?: string;
+};
+
+export type CheckoutTelemetryEventName =
+  | 'checkout_catalog_viewed'
+  | 'checkout_plan_selected'
+  | 'checkout_session_created'
+  | 'checkout_cancelled'
+  | 'checkout_completed'
+  | 'checkout_failed'
+  | 'checkout_synthetic_session_created'
+  | 'checkout_synthetic_completed'
+  | 'checkout_synthetic_failed';
+
+export type CheckoutTelemetryEvent = {
+  name: CheckoutTelemetryEventName;
+  accountId?: string;
+  checkoutId?: string;
+  stripeSessionId?: string;
+  planId?: string;
+  pricingVersion?: string;
+  monthlyPriceCents?: number;
+  currency?: string;
+  synthetic: boolean;
+  outcome?: 'started' | 'success' | 'cancelled' | 'error';
+  errorCode?: string;
+  durationMs?: number;
+  cloudflareRayId?: string;
+  dedupeKey?: string;
+};
+
+export type CheckoutObservability = {
+  observe(event: CheckoutTelemetryEvent): Promise<void>;
+  captureException(error: unknown, event: CheckoutTelemetryEvent): Promise<void>;
 };
 
 export type DeviceAuthorityOperationalLogContext = {
@@ -549,10 +701,18 @@ export type DeviceAuthorityRuntime = {
   approvalAssertionSecret?: string;
   googleOAuthClientId?: string;
   googleOAuthClientSecret?: string;
+  googleWorkspaceOAuthClientId?: string;
+  googleWorkspaceOAuthClientSecret?: string;
+  githubAppId?: string;
+  githubAppSlug?: string;
+  githubAppPrivateKey?: string;
+  githubAppClientId?: string;
+  githubAppClientSecret?: string;
   fetchImpl: typeof fetch;
   workspaceRouteRegistry?: WorkspaceRouteRegistryBinding;
   workspaceConnectorProvisioner?: WorkspaceConnectorProvisioner;
   workspaceEdgeInternalSigningSecret?: string;
+  operatorEnrollmentResetSecret?: string;
   defaultSiteSnapshot?: DefaultSiteSnapshot;
   managedCloudPricing?: ManagedCloudPricingRuntime;
   managedCloudProvisionerSecret?: string;
@@ -560,6 +720,11 @@ export type DeviceAuthorityRuntime = {
   stripeSecretKey?: string;
   stripeWebhookSecret?: string;
   stripeApiBaseUrl?: string;
+  stripeSyntheticSecretKey?: string;
+  stripeSyntheticWebhookSecret?: string;
+  stripeSyntheticAccountIds?: string;
+  stripeSyntheticWorkspaceIds?: string;
+  checkoutObservability?: CheckoutObservability;
   operationalLogger?: DeviceAuthorityLogger;
   installControlPlaneRepository?: InstallControlPlaneRepository;
   installDiagnosticBundleStore?: InstallDiagnosticBundleStore;

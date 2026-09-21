@@ -5,7 +5,7 @@ import { readEffectiveCoreManifest } from './manifest';
 import { manifestOverlayPath } from './manifest-overlay';
 import { readSteeringSkillCatalog } from './steering-skills';
 
-const PRIMARY_STEERING_FILES = ['system_prompt.md'] as const;
+const PRIMARY_STEERING_FILES = ['system.md'] as const;
 const EXCLUDED_STEERING_FILES = new Set([
   'steering.md',
   'decision.md',
@@ -147,13 +147,6 @@ function readSteeringMarkdownFiles(
 function buildSteeringSnapshot(input: SteeringSnapshotInput): SteeringSnapshotCacheEntry {
   const dependencies = createDependencyTracker();
   const sections: string[] = [];
-
-  for (const file of readSteeringMarkdownFiles(
-    path.join(input.packageRoot, 'steering'),
-    dependencies.track,
-  )) {
-    sections.push('', `# bundled ${file.name}`, '', file.content);
-  }
 
   for (const file of readSteeringMarkdownFiles(input.visibleSteeringDir, dependencies.track)) {
     sections.push('', `# ${file.name}`, '', file.content);

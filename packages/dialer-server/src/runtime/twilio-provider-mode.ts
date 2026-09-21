@@ -1,5 +1,6 @@
 import {
   DialerRequestError,
+  type CallableTarget,
   type ParallelDialOptions,
   type TwilioCredentials,
 } from '@consuelo/dialer';
@@ -16,7 +17,7 @@ type ProviderGroupInput = {
   queueId: string;
   userId: string;
   callMode: ProviderCallMode;
-  targets: Array<{ contactId: string; phone: string }>;
+  targets: CallableTarget[];
   callerIds: string[];
 };
 
@@ -78,6 +79,12 @@ export const buildProviderGroupOptions = (
   customerNumbers: input.targets.map((target) => target.phone),
   queueId: input.queueId,
   contactIds: input.targets.map((target) => target.contactId),
+  predictiveDecisionIds: input.targets.map(
+    (target) => target.predictiveDecisionId ?? null,
+  ),
+  decisionContexts: input.targets.map(
+    (target) => target.decisionContext ?? null,
+  ),
   userId: input.userId,
   fromNumbers: [...input.callerIds],
   statusCallbackUrl: `${publicUrl}/webhooks/twilio/status`,

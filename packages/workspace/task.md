@@ -21,8 +21,10 @@ start → work → publish → clean up
 Canonical flow:
 
 ```text
-stream.context → task.start → scoped workpad + test-first contract → decision-engine research → focused red test or no-test waiver → implementation → focused green test → validation / verify → task.push → task.pr → stream review PR → task.finish
+stream.context → session.start({ kind: "task" }) → scoped workpad + test-first contract → decision-engine research → focused red test or no-test waiver → implementation → focused green test → validation / verify → task.push → task.pr → stream review PR → task.finish
 ```
+`session.start({ kind: "task" })` is the canonical constructor for repository tasks. `task.start` remains a compatibility alias for existing callers. Use `session.start({ kind: "work", path })` only for ordinary node-local filesystem work; a work session must never be used to edit the managed default repository or a registered task worktree.
+
 For non-trivial code changes, implementation must not begin until the scoped workpad contains a Test-first contract and either:
 
 a focused test has been written or updated and run red, or
@@ -47,7 +49,7 @@ await workspace.call({
 })
 ```
 
-For task-scoped work, `task.start` returns `data.taskSession`.
+For task-scoped work, `session.start({ kind: "task" })` returns `data.taskSession`.
 
 Treat that exact value as the task handle for the rest of the task:
 
@@ -131,8 +133,9 @@ Create one focused task branch:
 
 ```ts
 await workspace.call({
-  tool: "task.start",
+  tool: "session.start",
   input: {
+    kind: "task",
     area: "<area>",
     title: "<task title>",
     startFrom: "main",
@@ -176,7 +179,7 @@ For diffs, use the workspace/GitHub tool surface where available. Only fall back
 
 Task Session Handling — Canonical Task Context
 taskSession is the canonical handle for task-scoped work.
-When task.start returns:
+When session.start({ kind: "task" }) returns:
 const taskSession = result.data.taskSession
 Every task-scoped call must pass that value at the top level:
 await workspace.call({
@@ -189,7 +192,7 @@ await workspace.call({
   },
   timeout: 120,
 })
-Correct task-scoped command execution uses code.call, not code.call, code.call, raw shell, or host escape hatches:
+Correct task-scoped command execution uses code.call, not legacy task.exec, raw shell, or host escape hatches:
 await workspace.call({
   tool: "code.call",
   taskSession,
@@ -209,10 +212,10 @@ syntax checks
 codegen commands
 small diagnostic commands
 language-specific validation commands
-Do not use code.call for normal command execution. If either appears in an old workpad, handoff, or copied example, treat it as legacy guidance and translate it to code.call.
+Do not use task.exec for normal command execution. If it appears in an old workpad, handoff, or copied example, treat it as legacy guidance and translate it to code.call.
 Avoid this legacy shape:
 await workspace.call({
-  tool: "code.call",
+  tool: "task.exec",
   taskSession,
   input: {
     command: ["bun", "--cwd", "packages/workspace", "test"],
@@ -243,7 +246,7 @@ await workspace.call({
   },
 })
 That should return VALIDATION_ERROR.
-If a task-scoped call returns TASK_SESSION_REQUIRED or TASK_SESSION_NOT_FOUND, first check that the exact taskSession returned by task.start was passed at the top level. Do not switch to branch-threading, root task metadata, code.call, code.call, or host shell fallback as the default recovery path.
+If a task-scoped call returns TASK_SESSION_REQUIRED or TASK_SESSION_NOT_FOUND, first check that the exact taskSession returned by session.start({ kind: "task" }) was passed at the top level. Do not switch to branch-threading, root task metadata, task.exec, or host shell fallback as the default recovery path.
 Inside code.run and batch, pass taskSession on the outer workspace.call. Nested workspace.* calls inherit task context.
 
 
@@ -267,7 +270,7 @@ Example:
 
 Agents must update the workpad at these checkpoints:
 
-1. Immediately after `task.start`
+1. Immediately after `session.start({ kind: "task" })`
    - acceptance criteria
    - plan
    - initial assumptions
@@ -618,11 +621,8 @@ await workspace.call({
         from: 1,
         to: 40
       });
-      const patch = await workspace.fs.patch({
-        path: "packages/workspace/SCRIPTS.md",
-        from: 12,
-        to: 18,
-        contentFile: "/tmp/replacement.md"
+      const patch = await workspace.fs.apply_patch({
+        patchFile: "/tmp/change.patch"
       });
       const after = await workspace.fs.read({
         path: "packages/workspace/SCRIPTS.md",
@@ -780,7 +780,7 @@ console.log(JSON.stringify({
   stderr: stderr.slice(-12000),
 }, null, 2))
 
-process.exit(proc.exitCode)
+process.exit(proc.exitCode ?? 1)
 `.trim(),
     maxResultChars: 30000,
   },
@@ -865,7 +865,7 @@ for (const cmd of commands) {
     stderr: stderr.slice(-6000),
   }, null, 2))
 
-  if (proc.exitCode !== 0) process.exit(proc.exitCode)
+  if (proc.exitCode !== 0) process.exit(proc.exitCode ?? 1)
 }
 `.trim(),
     maxResultChars: 30000,
@@ -1171,7 +1171,7 @@ console.log(JSON.stringify({
   stderr: stderr.slice(-12000),
 }, null, 2))
 
-process.exit(proc.exitCode)
+process.exit(proc.exitCode ?? 1)
 `.trim(),
     maxResultChars: 30000,
   },
@@ -1206,7 +1206,7 @@ console.log(JSON.stringify({
   stderr: stderr.slice(-12000),
 }, null, 2))
 
-process.exit(proc.exitCode)
+process.exit(proc.exitCode ?? 1)
 `.trim(),
     maxResultChars: 30000,
   },
@@ -1256,7 +1256,7 @@ for (const cmd of commands) {
       failed: result,
       results,
     }, null, 2))
-    process.exit(proc.exitCode)
+    process.exit(proc.exitCode ?? 1)
   }
 }
 
@@ -1310,7 +1310,7 @@ Record the command, trace ID, and meaningful failure signal in the scoped workpa
 Implement the change.
 Rerun the focused command through code.call and capture green.
 Record the command, trace ID, and result in the scoped workpad.
-Do not use code.call, code.call, host shell tools, or ad hoc terminal commands for TDD evidence when code.call can run the command.
+Do not use task.exec, host shell tools, or ad hoc terminal commands for TDD evidence when code.call can run the command.
 Common validation command examples
 Workspace package test:
 await workspace.call({
@@ -1337,7 +1337,7 @@ console.log(JSON.stringify({
   stderr: stderr.slice(-12000),
 }, null, 2))
 
-process.exit(proc.exitCode)
+process.exit(proc.exitCode ?? 1)
 `.trim(),
     maxResultChars: 30000,
   },
@@ -1369,7 +1369,7 @@ console.log(JSON.stringify({
   stderr: stderr.slice(-12000),
 }, null, 2))
 
-process.exit(proc.exitCode)
+process.exit(proc.exitCode ?? 1)
 `.trim(),
     maxResultChars: 30000,
   },
@@ -1466,7 +1466,7 @@ for (const cmd of commands) {
       failed: result,
       results,
     }, null, 2))
-    process.exit(proc.exitCode)
+    process.exit(proc.exitCode ?? 1)
   }
 }
 
@@ -1999,7 +1999,7 @@ Completed tasks may leave scoped metadata on main, such as:
 
 Do not treat `staleTask` as active context. It is historical metadata.
 
-Continue using the explicit `taskSession` returned by `task.start`.
+Continue using the explicit `taskSession` returned by `session.start({ kind: "task" })`.
 
 Only repair metadata when it affects the active task session, the active task worktree, or the current publish/merge operation.
 
@@ -2086,5 +2086,5 @@ Before saying “done,” verify and report:
 - commit SHA or merge SHA
 - files changed
 - validation run
-- local state if the user requested lo
+- local state if the user requested local sync
 

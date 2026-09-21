@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_ba1cd49774e8",
+  "tmuxSession": "opensaas-os-align-mcp-oauth-canonical-routing-for-stream-syn-ba1cd497",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/align-mcp-oauth-canonical-routing-for-stream-sync",
+  "branch": "task/os/align-mcp-oauth-canonical-routing-for-stream-sync",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-align-mcp-oauth-canonical-routing-for-stream-sync",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-align-mcp-oauth-canonical-routing-for-stream-sync",
+  "prNumber": 1981,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1981",
+  "createdAt": "2026-08-15T01:24:27.721Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-align-mcp-oauth-canonical-routing-for-stream-sync/.task/os/align-mcp-oauth-canonical-routing-for-stream-sync/session.json"
+}

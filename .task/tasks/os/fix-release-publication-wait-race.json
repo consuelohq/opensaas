@@ -1,0 +1,20 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-release-publication-wait-race",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2217,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2217",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2217",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2217/fix-release-publication-wait-race",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2217",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2217/fix-release-publication-wait-race",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-release-publication-wait-race",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_5e55668973f7",
+  "tmuxSession": "opensaas-os-fix-release-publication-wait-race-5e556689",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-release-publication-wait-race/.task/os/fix-release-publication-wait-race/session.json",
+  "createdAt": "2026-08-26T14:59:12.728Z"
+}

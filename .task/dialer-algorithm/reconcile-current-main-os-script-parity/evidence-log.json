@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "worktree_id": "task/dialer-algorithm/reconcile-current-main-os-script-parity",
+  "events": [
+    {
+      "id": "0c85f2ca-cadf-4ae3-881d-9181bc6d46b1",
+      "occurred_at": "2026-08-16T02:51:10.888Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/stream-sync.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer-algorithm/reconcile-current-main-os-script-parity",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer-algorithm/reconcile-current-main-os-script-parity"
+      }
+    },
+    {
+      "id": "9d564bd5-abc2-4e6a-aabc-82425ad9dd10",
+      "occurred_at": "2026-08-16T02:51:16.996Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/git.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer-algorithm/reconcile-current-main-os-script-parity",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer-algorithm/reconcile-current-main-os-script-parity"
+      }
+    },
+    {
+      "id": "aa1e89c6-9b5f-452d-b337-ee56a8923107",
+      "occurred_at": "2026-08-16T02:52:53.655Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/audit/script-parity-audit.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer-algorithm/reconcile-current-main-os-script-parity",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer-algorithm/reconcile-current-main-os-script-parity"
+      }
+    },
+    {
+      "id": "90ff4892-b895-47fa-8d33-835a3f5182d7",
+      "occurred_at": "2026-08-16T02:53:42.404Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/stream-sync-generated-registry-conflict.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer-algorithm/reconcile-current-main-os-script-parity",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer-algorithm/reconcile-current-main-os-script-parity"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-16T02:53:42.468Z"
+}

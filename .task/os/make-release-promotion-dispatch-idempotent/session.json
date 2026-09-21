@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_533b12f79b7b",
+  "tmuxSession": "opensaas-os-make-release-promotion-dispatch-idempotent-533b12f7",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/make-release-promotion-dispatch-idempotent",
+  "branch": "task/os/make-release-promotion-dispatch-idempotent",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-make-release-promotion-dispatch-idempotent",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-make-release-promotion-dispatch-idempotent",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2222,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2222",
+  "createdAt": "2026-08-26T15:15:45.796Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-make-release-promotion-dispatch-idempotent/.task/os/make-release-promotion-dispatch-idempotent/session.json"
+}

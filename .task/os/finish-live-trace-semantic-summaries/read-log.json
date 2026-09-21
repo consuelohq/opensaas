@@ -1,0 +1,8 @@
+{
+  "files": [
+    ".task/os/finish-live-trace-semantic-summaries/workpad.md",
+    "packages/os/package.json",
+    "packages/os/tests/trace-site-inspector-os-owned.test.ts"
+  ],
+  "updatedAt": "2026-09-11T14:16:05.735Z"
+}

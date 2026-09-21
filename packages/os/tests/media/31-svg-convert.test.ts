@@ -1,6 +1,5 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { spawnSync } from 'node:child_process';
 
 import { describe, expect, it } from 'vitest';
 
@@ -18,21 +17,13 @@ import {
 
 function writeFixturePng(dir: string): string {
   const path = join(dir, 'fixture.png');
-  const result = spawnSync('ffmpeg', [
-    '-hide_banner',
-    '-loglevel',
-    'error',
-    '-f',
-    'lavfi',
-    '-i',
-    'color=c=white:s=8x8:d=1',
-    '-vf',
-    'drawbox=x=2:y=2:w=4:h=4:color=black:t=fill',
-    '-frames:v',
-    '1',
+  writeFileSync(
     path,
-  ], { encoding: 'utf8' });
-  expect(result.status, 'ffmpeg should generate fixture PNG: ' + result.stderr).toBe(0);
+    Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAGUlEQVR4nGP4TwAwEK2AgYEBBQ+EArJ9AQDEFs8xYAHzPwAAAABJRU5ErkJggg==',
+      'base64',
+    ),
+  );
   return path;
 }
 

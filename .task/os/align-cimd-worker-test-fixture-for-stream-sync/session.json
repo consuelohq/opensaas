@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_ad8b0c1d2fda",
+  "tmuxSession": "opensaas-os-align-cimd-worker-test-fixture-for-stream-sync-ad8b0c1d",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/align-cimd-worker-test-fixture-for-stream-sync",
+  "branch": "task/os/align-cimd-worker-test-fixture-for-stream-sync",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-align-cimd-worker-test-fixture-for-stream-sync",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-align-cimd-worker-test-fixture-for-stream-sync",
+  "prNumber": 1980,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1980",
+  "createdAt": "2026-08-15T01:19:38.231Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-align-cimd-worker-test-fixture-for-stream-sync/.task/os/align-cimd-worker-test-fixture-for-stream-sync/session.json"
+}

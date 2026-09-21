@@ -46,7 +46,7 @@ const learnLinks = [
           </ul>
         </details>
 
-        <details class="docs-browse-group" data-docs-browse-group open>
+        <details class="docs-browse-group" data-docs-browse-group>
           <summary>
             <span>Learn</span>
             <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m8 10 4 4 4-4" /></svg>
@@ -230,7 +230,7 @@ const learnLinks = [
 
     .docs-browse-header {
       align-items: center;
-      border-bottom: 1px solid var(--docs-line);
+      border-bottom: 0;
       display: flex;
       height: var(--sl-nav-height);
       justify-content: space-between;
@@ -238,8 +238,9 @@ const learnLinks = [
     }
 
     .docs-browse-header strong {
-      font-size: var(--sl-text-lg);
+      font-size: 1.125rem;
       font-weight: 600;
+      line-height: 1.25rem;
     }
 
     .docs-browse-close {
@@ -263,11 +264,10 @@ const learnLinks = [
       gap: 0;
       margin-inline: auto;
       max-width: 52rem;
-      padding: 1.4rem var(--sl-nav-pad-x) 3rem;
+      padding: 1rem var(--sl-nav-pad-x) 2.5rem;
     }
 
     .docs-browse-group {
-      border-bottom: 1px solid var(--docs-line);
       margin: 0;
       padding: 0;
     }
@@ -277,10 +277,12 @@ const learnLinks = [
       color: var(--docs-muted);
       cursor: pointer;
       display: flex;
-      font-size: clamp(1.2rem, 3vw, 1.55rem);
+      font-size: 1rem;
       justify-content: space-between;
+      line-height: 1.5rem;
       list-style: none;
-      padding: 1rem 0;
+      min-height: 2.25rem;
+      padding: 0.375rem 0;
     }
 
     .docs-browse-group summary::-webkit-details-marker {
@@ -297,10 +299,10 @@ const learnLinks = [
 
     .docs-browse-group ul {
       display: grid;
-      gap: 0.1rem;
+      gap: 0;
       list-style: none;
       margin: 0;
-      padding: 0 0 1.1rem;
+      padding: 0 0 0.75rem;
     }
 
     .docs-browse-group a,
@@ -312,9 +314,11 @@ const learnLinks = [
     .docs-browse-group a {
       align-items: center;
       display: flex;
-      font-size: var(--sl-text-base);
+      font-size: 0.9375rem;
       justify-content: space-between;
-      padding: 0.52rem 0;
+      line-height: 1.5rem;
+      min-height: 2.25rem;
+      padding: 0.375rem 0;
     }
 
     .docs-browse-group a:hover,
@@ -331,29 +335,34 @@ const learnLinks = [
 
     .docs-browse-getting-started {
       display: grid;
-      gap: 1.1rem;
-      padding-top: 1.75rem;
+      gap: 0.75rem;
+      padding-top: 0.75rem;
     }
 
     .getting-started-link {
       color: var(--docs-muted);
-      font-size: clamp(1.2rem, 3vw, 1.55rem);
+      font-size: 1rem;
+      line-height: 1.5rem;
     }
 
     .docs-browse-actions {
       display: grid;
-      gap: 0.65rem;
+      gap: 0.5rem;
     }
 
     .docs-browse-actions a {
       align-items: center;
       border: 1px solid var(--docs-line-strong);
-      border-radius: 0.45rem;
+      border-radius: 0.375rem;
       color: var(--docs-ink);
       display: flex;
+      font-size: 0.875rem;
+      font-weight: 500;
       justify-content: center;
-      min-height: 2.7rem;
+      line-height: 1.25rem;
+      min-height: 2.25rem;
       text-decoration: none;
+      transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
     }
 
     .docs-browse-actions a:first-child {

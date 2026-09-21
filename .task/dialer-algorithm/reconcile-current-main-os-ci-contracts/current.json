@@ -1,0 +1,19 @@
+{
+  "area": "dialer-algorithm",
+  "stream": "stream/dialer-algorithm",
+  "taskBranch": "task/dialer-algorithm/reconcile-current-main-os-ci-contracts",
+  "baseBranch": "stream/dialer-algorithm",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2071,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2071",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2071",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2071/reconcile-current-main-os-ci-contracts",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2071",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2071/reconcile-current-main-os-ci-contracts",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-reconcile-current-main-os-ci-contracts",
+  "taskSession": "tsk_f69537e8511a",
+  "tmuxSession": "opensaas-dialer-algorithm-reconcile-current-main-os-ci-contracts-f69537e8",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-reconcile-current-main-os-ci-contracts/.task/dialer-algorithm/reconcile-current-main-os-ci-contracts/session.json",
+  "createdAt": "2026-08-15T11:29:41.681Z"
+}

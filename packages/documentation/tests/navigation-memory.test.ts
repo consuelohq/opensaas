@@ -10,6 +10,8 @@ const promotedPages = [
   'tools/index.mdx',
   'tools/tool-list.mdx',
   'skills/index.mdx',
+  'workflows/index.mdx',
+  'workflows/branch-graph.mdx',
   'steering/index.mdx',
   'memory/index.mdx',
   'memory/workpads.mdx',
@@ -37,7 +39,7 @@ const preservedDetailPages = [
   'sites/index.mdx',
 ] as const;
 
-describe('promoted Tools, Skills, Steering, and Memory documentation contract', () => {
+describe('promoted Tools, Skills, Workflows, Steering, and Memory documentation contract', () => {
   test('publishes the new top-level landing pages without deleting existing detail docs', () => {
     for (const sourcePath of [...promotedPages, ...preservedDetailPages]) {
       expect(existsSync(packageFile(`src/content/docs/${sourcePath}`))).toBe(true);
@@ -48,6 +50,8 @@ describe('promoted Tools, Skills, Steering, and Memory documentation contract', 
       "label: 'Tools', slug: 'tools'",
       "label: 'Tool List', slug: 'tools/tool-list'",
       "label: 'Skills', slug: 'skills'",
+      "label: 'Workflows', slug: 'workflows'",
+      "label: 'Branch Graph', slug: 'workflows/branch-graph'",
       "label: 'Steering', slug: 'steering'",
       "label: 'Memory', slug: 'memory'",
       "label: 'Workpads', slug: 'memory/workpads'",
@@ -93,7 +97,7 @@ describe('promoted Tools, Skills, Steering, and Memory documentation contract', 
     for (const sourcePath of promotedPages) {
       const source = read(`src/content/docs/${sourcePath}`);
       expect(source).toContain('status: preview');
-      expect(source).toMatch(/verifiedAt: 2026-08-(11|12|14)/);
+      expect(source).toMatch(/verifiedAt: 2026-08-(11|12|14|15)/);
       expect(source).toContain('evidence:');
       expect(source).toContain('source:');
     }
@@ -134,6 +138,29 @@ describe('promoted Tools, Skills, Steering, and Memory documentation contract', 
       'worktrees',
     ]) expect(streams).toContain(term);
     expect(streams).toContain('packages/os/scripts/lib/streams/context-runtime.ts');
+  });
+
+  test('documents Branch Graph as context management with fresh-chat branching and terminal cleanup', () => {
+    const branchGraph = read('src/content/docs/workflows/branch-graph.mdx');
+    const navigation = read('src/lib/docs-navigation.ts');
+
+    for (const term of [
+      'context management',
+      'working memory',
+      'Branch in new chat',
+      'task PR',
+      'stream PR',
+      'failing checks',
+      'subagent',
+      'canary',
+      'Consuelo update',
+    ]) expect(branchGraph.toLowerCase()).toContain(term.toLowerCase());
+
+    expect(branchGraph).toMatch(/1.?3 letters/i);
+    expect(branchGraph).toContain('/images/workflows/branch-in-new-chat.jpg');
+    expect(existsSync(packageFile('public/images/workflows/branch-in-new-chat.jpg'))).toBe(true);
+    expect(navigation).toContain("{ label: 'Workflows', slug: 'workflows'");
+    expect(navigation).toContain("label: 'Branch Graph', slug: 'workflows/branch-graph'");
   });
 
   test('references evidence files that exist in the current repository', () => {

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_8a585394c11b",
+  "tmuxSession": "opensaas-os-fix-device-authority-oauth-callback-state-persis-8a585394",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-device-authority-oauth-callback-state-persistence",
+  "branch": "task/os/fix-device-authority-oauth-callback-state-persistence",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-device-authority-oauth-callback-state-persistence",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-device-authority-oauth-callback-state-persistence",
+  "prNumber": 1979,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1979",
+  "createdAt": "2026-08-15T01:15:21.851Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-device-authority-oauth-callback-state-persistence/.task/os/fix-device-authority-oauth-callback-state-persistence/session.json"
+}

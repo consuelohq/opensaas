@@ -333,6 +333,70 @@ describe('public installer runtime dependencies', () => {
     );
   });
 
+  it('should install a named Consuelo service executable before daemon generation', () => {
+    const bootstrap = readBootstrap();
+    const namedRuntime = extractShellFunction(
+      bootstrap,
+      'ensure_named_bun_runtime',
+    );
+
+    expect(namedRuntime).toContain('consuelo-os');
+    expect(namedRuntime).toContain('/bin/cp -c');
+    expect(namedRuntime).toContain('/bin/cp -p');
+    expect(namedRuntime).toContain('/usr/bin/cmp -s');
+    expect(namedRuntime).toContain('/bin/mv -f');
+    expect(namedRuntime).toContain('BUN_BIN="$target"');
+
+    const main = extractShellFunction(bootstrap, 'main');
+    expect(main.indexOf('ensure_bun')).toBeLessThan(
+      main.indexOf('ensure_named_bun_runtime'),
+    );
+    expect(main.indexOf('ensure_named_bun_runtime')).toBeLessThan(
+      main.indexOf('persist_runtime_paths'),
+    );
+  });
+
+  it('should verify the signed runtime and prepare recovery before persisting managed install state', () => {
+    const main = extractShellFunction(readBootstrap(), 'main');
+    const verifiedRuntime = main.indexOf('install_verified_runtime');
+    const dependencies = main.indexOf('ensure_dependencies');
+    const recoveryCli = main.indexOf('prepare_recovery_cli');
+    const managedWrites = [
+      'ensure_named_bun_runtime',
+      'ensure_install_id',
+      'ensure_portless',
+      'ensure_caddy',
+      'ensure_cloudflared',
+      'persist_runtime_paths',
+    ];
+
+    expect(verifiedRuntime).toBeGreaterThanOrEqual(0);
+    expect(verifiedRuntime).toBeLessThan(dependencies);
+    expect(dependencies).toBeLessThan(recoveryCli);
+    for (const functionName of managedWrites) {
+      const managedWrite = main.indexOf(functionName);
+      expect(managedWrite, functionName).toBeGreaterThan(recoveryCli);
+    }
+  });
+
+  it('should stage one smoke-test worker without contending with the live supervisor', () => {
+    const installer = readDaemonInstaller();
+    const daemon = readFileSync(
+      join(PACKAGE_ROOT, 'scripts', 'start-consuelo-daemon.sh'),
+      'utf8',
+    );
+
+    expect(installer).toContain('CONSUELO_OS_SINGLE_WORKER_SMOKE_TEST=1');
+    expect(daemon).toContain(
+      'if [ "${CONSUELO_OS_SINGLE_WORKER_SMOKE_TEST:-0}" = "1" ]; then',
+    );
+    expect(daemon).toContain('CONSUELO_OS_WORKER_ID="smoke-worker"');
+    expect(daemon).toContain('scripts/server/main.ts');
+    expect(daemon.indexOf('scripts/server/main.ts')).toBeLessThan(
+      daemon.lastIndexOf('scripts/server/supervisor.ts'),
+    );
+  });
+
   it('should use the regular local port when Portless is disabled by default', () => {
     const home = createTempHome('consuelo-os-installer-runtime-bootstrap-');
     const result = runBootstrapDryRun(home);

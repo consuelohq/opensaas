@@ -1,0 +1,51 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/fix-internal-diffs-pr-url-parsing",
+  "base": "origin/stream/os",
+  "headSha": "a601d5e828a9470f13907bf541ff9cf8fe56a946",
+  "changeHash": "1c7a19407ec54b2ccfcf96e44c4082bec3f111fa6a00cc82ef49bf17eba4a824",
+  "changedFiles": [
+    "packages/workspace/scripts/lib/pr-ref.js",
+    "packages/workspace/tests/pr-ref.test.js"
+  ],
+  "verifiedAt": "2026-09-01T01:11:25.849Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/fix-internal-diffs-pr-url-parsing/evidence-log.json",
+        ".task/os/fix-internal-diffs-pr-url-parsing/read-log.json",
+        ".task/os/fix-internal-diffs-pr-url-parsing/workpad.md",
+        ".task/tasks/os/fix-internal-diffs-pr-url-parsing.json",
+        "packages/workspace/scripts/lib/pr-ref.js",
+        "packages/workspace/tests/pr-ref.test.js"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -245,6 +245,7 @@ export const workspaceBootstrapFromApprovedDeviceGrant = (
   workspaceId: input.workspaceId,
   workspaceSlug: input.workspaceSlug,
   workspaceHost: input.workspaceHost,
+  ...(input.accountEmail ? { accountEmail: input.accountEmail } : {}),
   ...(input.nodeId ? { nodeId: input.nodeId } : {}),
   ...(input.nodeName ? { nodeName: input.nodeName } : {}),
   ...(input.nodeRole ? { nodeRole: input.nodeRole } : {}),

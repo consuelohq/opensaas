@@ -1,0 +1,19 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/automate-dialer-production-release",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1839,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1839",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1839",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1839/automate-dialer-production-release",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1839",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1839/automate-dialer-production-release",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-automate-dialer-production-release",
+  "taskSession": "tsk_d9df57eb8c11",
+  "tmuxSession": "opensaas-dialer-automate-dialer-production-release-d9df57eb",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-automate-dialer-production-release/.task/dialer/automate-dialer-production-release/session.json",
+  "createdAt": "2026-08-11T21:17:21.180Z"
+}

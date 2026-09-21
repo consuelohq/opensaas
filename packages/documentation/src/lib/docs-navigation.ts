@@ -153,6 +153,11 @@ const skillsItems: SidebarItem[] = [
   ...buildGroupItems('Skills'),
 ];
 
+const workflowsItems: SidebarItem[] = [
+  { label: 'Overview', slug: 'workflows' },
+  { label: 'Branch Graph', slug: 'workflows/branch-graph' },
+];
+
 const steeringItems: SidebarItem[] = [
   { label: 'Overview', slug: 'steering' },
   ...buildGroupItems('Steering'),
@@ -220,6 +225,7 @@ export const docsSections = [
   { label: 'Tools', slug: 'tools', description: 'Find the operations agents can call, including workspace, browser, media, workflows, and more.' },
   { label: 'Sites', slug: 'sites', description: 'Create, preview, publish, and manage sites from workspace content.' },
   { label: 'Skills', slug: 'skills', description: 'Install, use, and create reusable agent instructions and scripts.' },
+  { label: 'Workflows', slug: 'workflows', description: 'Shape long-running work so people and agents can split context safely, execute in parallel, and rejoin cleanly.' },
   { label: 'Steering', slug: 'steering', description: 'Control the workspace and project instructions every agent starts from.' },
   { label: 'Memory', slug: 'memory', description: 'Carry durable work state across agents with workpads, handoffs, streams, files, and saved memory.' },
   { label: 'Observe', slug: 'observe', description: 'Inspect runs, traces, tool calls, artifacts, and logs.' },
@@ -242,6 +248,7 @@ const sectionItemsBySlug: Record<string, SidebarItem[]> = {
   tools: toolsItems,
   sites: sitesItems,
   skills: skillsItems,
+  workflows: workflowsItems,
   steering: steeringItems,
   memory: memoryItems,
   observe: observeItems,

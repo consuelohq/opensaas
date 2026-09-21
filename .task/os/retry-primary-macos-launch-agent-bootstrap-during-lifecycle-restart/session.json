@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_4c139abd4403",
+  "tmuxSession": "opensaas-os-retry-primary-macos-launch-agent-bootstrap-durin-4c139abd",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/retry-primary-macos-launch-agent-bootstrap-during-lifecycle-restart",
+  "branch": "task/os/retry-primary-macos-launch-agent-bootstrap-during-lifecycle-restart",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-retry-primary-macos-launch-agent-bootstrap-during-lifecycle-restart",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-retry-primary-macos-launch-agent-bootstrap-during-lifecycle-restart",
+  "prNumber": 2085,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2085",
+  "createdAt": "2026-08-15T19:40:22.849Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-retry-primary-macos-launch-agent-bootstrap-during-lifecycle-restart/.task/os/retry-primary-macos-launch-agent-bootstrap-during-lifecycle-restart/session.json"
+}

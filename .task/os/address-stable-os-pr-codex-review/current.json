@@ -1,0 +1,20 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/address-stable-os-pr-codex-review",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2211,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2211",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2211",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2211/address-stable-os-pr-codex-review",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2211",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2211/address-stable-os-pr-codex-review",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-address-stable-os-pr-codex-review",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_3a58dd303a3c",
+  "tmuxSession": "opensaas-os-address-stable-os-pr-codex-review-3a58dd30",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-address-stable-os-pr-codex-review/.task/os/address-stable-os-pr-codex-review/session.json",
+  "createdAt": "2026-08-26T06:12:07.508Z"
+}

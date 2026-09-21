@@ -1,0 +1,408 @@
+{
+  "version": 1,
+  "worktree_id": "task/explore/e6-explore-challenger-promotion-gate",
+  "events": [
+    {
+      "id": "39eaf4b7-94e7-46fe-a122-9322bb553ac9",
+      "occurred_at": "2026-08-16T03:10:58.572Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/explore.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/explore/e6-explore-challenger-promotion-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/explore/e6-explore-challenger-promotion-gate"
+      }
+    },
+    {
+      "id": "96597f50-8a25-4c4c-843a-8db43c16bde6",
+      "occurred_at": "2026-08-16T03:11:26.741Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/test-selection.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/explore/e6-explore-challenger-promotion-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/explore/e6-explore-challenger-promotion-gate"
+      }
+    },
+    {
+      "id": "7b50469e-fe5e-4bcf-aea2-097a2e64e96b",
+      "occurred_at": "2026-08-16T03:11:30.166Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/test-selection.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/explore/e6-explore-challenger-promotion-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/explore/e6-explore-challenger-promotion-gate"
+      }
+    },
+    {
+      "id": "0c1611e4-a7d8-4616-b5b0-0b06e674a918",
+      "occurred_at": "2026-08-16T03:13:33.715Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/explore-output-contract.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/explore/e6-explore-challenger-promotion-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/explore/e6-explore-challenger-promotion-gate"
+      }
+    },
+    {
+      "id": "e11e9dde-dbbf-4abf-92d0-2b1a711af9b9",
+      "occurred_at": "2026-08-16T03:13:42.133Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/explore-promotion-gate.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/explore/e6-explore-challenger-promotion-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/explore/e6-explore-challenger-promotion-gate"
+      }
+    },
+    {
+      "id": "9ada8201-f3e3-4701-919d-423a21874a29",
+      "occurred_at": "2026-08-16T03:16:20.311Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/test-selection.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/explore/e6-explore-challenger-promotion-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/explore/e6-explore-challenger-promotion-gate"
+      }
+    },
+    {
+      "id": "21ed2034-f662-4af2-a582-2e0075bc2217",
+      "occurred_at": "2026-08-16T03:16:28.643Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/run-changed-server-task.test.mjs",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/explore/e6-explore-challenger-promotion-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/explore/e6-explore-challenger-promotion-gate"
+      }
+    },
+    {
+      "id": "fcd66746-5100-460c-a97d-566048135eac",
+      "occurred_at": "2026-08-16T03:16:37.307Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/github-workflow-policy.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/explore/e6-explore-challenger-promotion-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/explore/e6-explore-challenger-promotion-gate"
+      }
+    },
+    {
+      "id": "e3a74373-2274-424b-ae35-273f795fa8b2",
+      "occurred_at": "2026-08-16T03:16:44.451Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/typeorm-cli-contract.test.mjs",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/explore/e6-explore-challenger-promotion-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/explore/e6-explore-challenger-promotion-gate"
+      }
+    },
+    {
+      "id": "a305239d-657c-4c40-97c8-68dd1a639f9a",
+      "occurred_at": "2026-08-16T03:17:41.158Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/state/explore-promotion-gate.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/explore/e6-explore-challenger-promotion-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/explore/e6-explore-challenger-promotion-gate"
+      }
+    },
+    {
+      "id": "5fbb0c4d-976d-4b79-a71a-1cd24824f9de",
+      "occurred_at": "2026-08-16T03:19:33.364Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/search/explore-output.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/explore/e6-explore-challenger-promotion-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/explore/e6-explore-challenger-promotion-gate"
+      }
+    },
+    {
+      "id": "56b8335b-ae5e-4f77-b162-658f7afc26db",
+      "occurred_at": "2026-08-16T03:19:39.214Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/explore-output-contract.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/explore/e6-explore-challenger-promotion-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/explore/e6-explore-challenger-promotion-gate"
+      }
+    },
+    {
+      "id": "d755ff5f-a41f-4af1-8a7c-41b703b1654f",
+      "occurred_at": "2026-08-16T03:21:59.176Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/state/explore-voi-policy.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/explore/e6-explore-challenger-promotion-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/explore/e6-explore-challenger-promotion-gate"
+      }
+    },
+    {
+      "id": "da0cfc3e-cba3-472d-88e7-29f34f949f42",
+      "occurred_at": "2026-08-16T03:21:59.323Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/state/explore-promotion-criteria.v1.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/explore/e6-explore-challenger-promotion-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/explore/e6-explore-challenger-promotion-gate"
+      }
+    },
+    {
+      "id": "6295af08-0927-4424-93e4-8f6993a44934",
+      "occurred_at": "2026-08-16T03:22:25.421Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/explore-bench.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/explore/e6-explore-challenger-promotion-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/explore/e6-explore-challenger-promotion-gate"
+      }
+    },
+    {
+      "id": "519eb1b6-b9ef-46fa-9211-59a2fa32f407",
+      "occurred_at": "2026-08-16T03:22:33.963Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/explore-bench.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/explore/e6-explore-challenger-promotion-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/explore/e6-explore-challenger-promotion-gate"
+      }
+    },
+    {
+      "id": "ec96f07b-8699-4ed1-bfe9-7239319017c3",
+      "occurred_at": "2026-08-16T03:23:02.026Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/explore-bench.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/explore/e6-explore-challenger-promotion-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/explore/e6-explore-challenger-promotion-gate"
+      }
+    },
+    {
+      "id": "00e5d34c-e98f-4fca-8293-4f5e22da51e8",
+      "occurred_at": "2026-08-16T03:23:45.703Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/explore-promotion-gate.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/explore/e6-explore-challenger-promotion-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/explore/e6-explore-challenger-promotion-gate"
+      }
+    },
+    {
+      "id": "ea845ce9-50a0-4f23-840f-039f49f80436",
+      "occurred_at": "2026-08-16T03:23:56.136Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/explore-promotion-gate.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/explore/e6-explore-challenger-promotion-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/explore/e6-explore-challenger-promotion-gate"
+      }
+    },
+    {
+      "id": "92b7d0c0-3e50-4826-81bb-c697a53db624",
+      "occurred_at": "2026-08-16T03:24:46.877Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/state/explore-promotion-gate.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/explore/e6-explore-challenger-promotion-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/explore/e6-explore-challenger-promotion-gate"
+      }
+    },
+    {
+      "id": "e3201db1-111e-43da-9114-beca4ff69371",
+      "occurred_at": "2026-08-16T03:27:04.463Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/explore-promotion-gate.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/explore/e6-explore-challenger-promotion-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/explore/e6-explore-challenger-promotion-gate"
+      }
+    },
+    {
+      "id": "7d9ac4c7-5097-48f2-ad28-742cbaff9c63",
+      "occurred_at": "2026-08-16T03:27:33.624Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/explore.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/explore/e6-explore-challenger-promotion-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/explore/e6-explore-challenger-promotion-gate"
+      }
+    },
+    {
+      "id": "8b69afcc-4b54-4bd8-ac52-fff9aa35c20c",
+      "occurred_at": "2026-08-16T03:33:04.783Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/explore/e6-explore-challenger-promotion-gate/verify.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/explore/e6-explore-challenger-promotion-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/explore/e6-explore-challenger-promotion-gate"
+      }
+    },
+    {
+      "id": "1df40a0e-ae72-4ee1-9ecb-0cae7ed5c9aa",
+      "occurred_at": "2026-08-16T03:34:00.362Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/explore/e6-explore-challenger-promotion-gate/verify.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/explore/e6-explore-challenger-promotion-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/explore/e6-explore-challenger-promotion-gate"
+      }
+    },
+    {
+      "id": "d2abfaea-ca23-4b0d-9ffa-edff8bf18abf",
+      "occurred_at": "2026-08-16T03:34:50.513Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/explore/e6-explore-challenger-promotion-gate/verify.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/explore/e6-explore-challenger-promotion-gate",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/explore/e6-explore-challenger-promotion-gate"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-16T03:34:50.581Z"
+}

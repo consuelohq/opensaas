@@ -82,6 +82,8 @@ describe('Consuelo OS release-channel workflows', () => {
     expect(workflow).toContain('--plan-only');
     expect(workflow).toContain("if: steps.plan.outputs.changed == 'true'");
     expect(workflow).toContain('darwin-arm64');
+    expect(workflow).toContain('darwin-x64');
+    expect(workflow).toContain('macos-15-intel');
     expect(workflow).toContain('linux-x64');
     expect(workflow).toContain('windows-x64');
     expect(workflow).toContain('Build deterministic Windows service host');
@@ -114,6 +116,10 @@ describe('Consuelo OS release-channel workflows', () => {
     expect(publishStep?.run).toContain('"${tag_args[@]}"');
     expect(workflow).toContain('actions/runs/${GITHUB_RUN_ID}');
     expect(workflow).toContain('--now \"${release_time}\"');
+    expect(workflow).toContain(
+      '--migration \"release-${{ needs.plan.outputs.version }}-reconcile-caddy-gateway:scripts/migrations/reconcile-caddy-worker-pool.ts\"',
+    );
+    expect(workflow.match(/reconcile-caddy-gateway:scripts\/migrations\/reconcile-caddy-worker-pool\.ts/g)).toHaveLength(1);
     expect(workflow).toContain('--source-root .');
     expect(workflow).not.toContain('--source-root packages/os');
     expect(workflow).toContain('--state \"../../${RELEASE_STATE_PATH}\"');

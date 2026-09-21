@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_ef14c926438d",
+  "tmuxSession": "opensaas-os-finish-updater-rolling-handoff-and-watchdog-conv-ef14c926",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/finish-updater-rolling-handoff-and-watchdog-convergence",
+  "branch": "task/os/finish-updater-rolling-handoff-and-watchdog-convergence",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-finish-updater-rolling-handoff-and-watchdog-convergence",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-finish-updater-rolling-handoff-and-watchdog-convergence",
+  "prNumber": 2138,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2138",
+  "createdAt": "2026-08-16T06:31:49.018Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-finish-updater-rolling-handoff-and-watchdog-convergence/.task/os/finish-updater-rolling-handoff-and-watchdog-convergence/session.json"
+}

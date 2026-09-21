@@ -26,6 +26,13 @@ import {
   managedCloudSignupCatalog,
   startManagedCloudCheckout,
 } from '../services/managed-cloud-billing';
+import {
+  SyntheticCheckoutError,
+  handleSyntheticStripeWebhook,
+  readSyntheticCheckoutSession,
+  startSyntheticStripeCheckout,
+  syntheticCheckoutAllowed,
+} from '../services/synthetic-checkout';
 
 export const AUTHORITY_SESSION_COOKIE = '__Host-consuelo_os_authority';
 export const WORKSPACE_SESSION_COOKIE = '__Host-consuelo_os_session';
@@ -35,6 +42,7 @@ const AUTHORITY_SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 const WORKSPACE_HANDOFF_TTL_MS = 60 * 1000;
 const WORKSPACE_SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 const INTERNAL_AUTH_HEADER = 'x-consuelo-internal-auth-secret';
+export const PRIVATE_INTERNAL_SITE_HOST = 'internal.consuelohq.com';
 
 function cookieValue(request: Request, name: string): string {
   const raw = request.headers.get('cookie') ?? '';
@@ -149,6 +157,21 @@ function activeMemberships(
     );
 }
 
+async function activePrivateInternalMembership(
+  runtime: DeviceAuthorityRuntime,
+  accountId: string,
+): Promise<WorkspaceMembership | undefined> {
+  try {
+    return activeMemberships(
+      await runtime.store.listWorkspaceMemberships(accountId),
+    ).find(
+      (membership) => membership.workspaceHost.toLowerCase() === PRIVATE_INTERNAL_SITE_HOST,
+    );
+  } catch {
+    throw new Error('private internal workspace membership lookup failed');
+  }
+}
+
 function canonicalWorkspaceHost(value: string): string {
   const normalized = value.trim().toLowerCase();
   if (
@@ -190,22 +213,21 @@ async function authoritySession(
   }
 }
 
-async function issueHandoff(input: {
+async function issueWorkspaceHandoff(input: {
   runtime: DeviceAuthorityRuntime;
-  session: AuthoritySession;
-  membership: WorkspaceMembership;
+  accountId: string;
+  workspaceId: string;
+  workspaceHost: string;
   returnPath: string;
 }): Promise<Response> {
   try {
     const token = rand('wlh', 32);
     const nowMs = input.runtime.now();
-    const workspaceHost = canonicalWorkspaceHost(
-      input.membership.workspaceHost,
-    );
+    const workspaceHost = canonicalWorkspaceHost(input.workspaceHost);
     await input.runtime.store.putWorkspaceLoginHandoff({
       tokenHash: await hash(token),
-      accountId: input.session.accountId,
-      workspaceId: input.membership.workspaceId,
+      accountId: input.accountId,
+      workspaceId: input.workspaceId,
       workspaceHost,
       returnPath: normalizeAuthReturnPath(input.returnPath),
       nonce: rand('handoff_nonce', 16),
@@ -221,6 +243,21 @@ async function issueHandoff(input: {
   } catch {
     return json({ error: 'handoff_unavailable' }, { status: 503 });
   }
+}
+
+async function issueHandoff(input: {
+  runtime: DeviceAuthorityRuntime;
+  session: AuthoritySession;
+  membership: WorkspaceMembership;
+  returnPath: string;
+}): Promise<Response> {
+  return issueWorkspaceHandoff({
+    runtime: input.runtime,
+    accountId: input.session.accountId,
+    workspaceId: input.membership.workspaceId,
+    workspaceHost: input.membership.workspaceHost,
+    returnPath: input.returnPath,
+  });
 }
 
 async function pendingCloudOnboardingResponse(input: {
@@ -365,6 +402,7 @@ export async function completeWebGoogleLogin(input: {
   accountId: string;
   email: string;
   returnPath: string;
+  targetHost?: string;
   cloudOnboardingEligible: boolean;
 }): Promise<Response> {
   try {
@@ -384,6 +422,9 @@ export async function completeWebGoogleLogin(input: {
       'return_to',
       normalizeAuthReturnPath(input.returnPath),
     );
+    if (input.targetHost === PRIVATE_INTERNAL_SITE_HOST) {
+      location.searchParams.set('target_host', PRIVATE_INTERNAL_SITE_HOST);
+    }
     return redirectWithCookies(location.toString(), [
       authorityCookie(token, AUTHORITY_SESSION_TTL_MS / 1000),
     ]);
@@ -492,6 +533,44 @@ function checkoutConfirmationPage(sessionId: string): string {
   });
 }
 
+
+function syntheticCheckoutPage(
+  runtime: DeviceAuthorityRuntime,
+  csrfToken: string,
+  cancelled: boolean,
+): string {
+  const catalog = managedCloudSignupCatalog(runtime);
+  const quotes = catalog.quotes.filter((quote) => isPaidCloudFirstPlanId(quote.plan.id));
+  const planOptions = quotes.map((quote, index) => {
+    const id = `synthetic-plan-${quote.plan.id}`;
+    return `<div class="plan-choice"><input class="plan-radio" id="${id}" type="radio" name="plan_id" value="${htmlEscape(quote.plan.id)}"${index === 0 ? ' checked' : ''}><label class="plan-card" for="${id}"><span><span class="plan-name">${htmlEscape(quote.plan.name)}</span><span class="plan-detail">${quote.plan.cpu.vcpus} vCPU · ${quote.plan.memoryGb} GB</span></span><span class="plan-price">${htmlEscape(formatUsdMonthly(quote.monthlyPriceCents))}<small>Stripe sandbox</small></span></label></div>`;
+  }).join('');
+  const cancelledNote = cancelled
+    ? '<p class="error-text">The previous synthetic checkout was cancelled. No production billing or provisioning state changed.</p>'
+    : '';
+  return authShell({
+    title: 'Synthetic checkout',
+    topActionHref: '/auth/workspaces',
+    topActionLabel: 'Back',
+    body: `<section class="auth-card auth-card--plans"><h1>Stripe checkout test</h1><p class="lede">Internal synthetic lane. This uses Stripe sandbox credentials through the production Consuelo routing surface. It cannot provision a real cloud node.</p>${cancelledNote}<form method="post" action="/auth/synthetic/checkout/start"><input type="hidden" name="csrf_token" value="${htmlEscape(csrfToken)}"><div class="plan-options" role="radiogroup" aria-label="Synthetic cloud plan">${planOptions}</div><button class="primary-button" type="submit">Open Stripe sandbox checkout</button></form></section>`,
+  });
+}
+
+function syntheticCheckoutResultPage(input: {
+  planId: string;
+  paymentStatus: string;
+  status: string;
+  runId: string;
+}): string {
+  const paid = input.paymentStatus === 'paid' && input.status === 'complete';
+  return authShell({
+    title: paid ? 'Synthetic payment succeeded' : 'Synthetic payment result',
+    topActionHref: '/auth/synthetic/checkout',
+    topActionLabel: 'Run another',
+    body: `<section class="auth-card"><h1>${paid ? 'Synthetic payment succeeded' : 'Synthetic payment result'}</h1><p class="lede">${paid ? 'Stripe sandbox completed the payment path successfully.' : 'Stripe returned the synthetic checkout result shown below.'} No production workspace, subscription fulfillment, or cloud VM was created by this synthetic lane.</p><div class="progress-status"><small>Sandbox result</small><strong>${htmlEscape(planDisplayName(input.planId || 'unknown'))}</strong><div class="progress-detail">Payment: ${htmlEscape(input.paymentStatus || 'unknown')} · Session: ${htmlEscape(input.status || 'unknown')} · Run: ${htmlEscape(input.runId || 'unknown')}</div></div></section>`,
+  });
+}
+
 function onboardingErrorPage(message: string): string {
   return authShell({
     title: 'Setup unavailable',
@@ -516,8 +595,39 @@ async function handleWebAuthRequest(
       await runtime.store.listWorkspaceMemberships(session.accountId),
     );
     const returnPath = normalizeAuthReturnPath(url.searchParams.get('return_to'));
+    const requestedTargetHost = url.searchParams.get('target_host')?.trim().toLowerCase() ?? '';
+    if (requestedTargetHost && requestedTargetHost !== PRIVATE_INTERNAL_SITE_HOST) {
+      return json({ error: 'handoff_target_denied' }, { status: 403 });
+    }
+    if (requestedTargetHost === PRIVATE_INTERNAL_SITE_HOST) {
+      const membership = memberships.find(
+        (candidate) => candidate.workspaceHost.toLowerCase() === requestedTargetHost,
+      );
+      if (!membership) {
+        return json({ error: 'workspace_access_denied' }, { status: 403 });
+      }
+      return issueHandoff({ runtime, session, membership, returnPath });
+    }
     const choice = resolveMembershipChoice(memberships);
     if (choice.kind === 'none') {
+      if (session.cloudOnboardingEligible === true) {
+        const activeCheckout = url.searchParams.get('checkout') === 'cancelled'
+          ? await runtime.store.byAccountManagedCloudCheckout(session.accountId)
+          : undefined;
+        await runtime.checkoutObservability?.observe({
+          name: activeCheckout ? 'checkout_cancelled' : 'checkout_catalog_viewed',
+          accountId: session.accountId,
+          checkoutId: activeCheckout?.checkoutId,
+          stripeSessionId: activeCheckout?.stripeCheckoutSessionId,
+          planId: activeCheckout?.planId,
+          pricingVersion: activeCheckout?.pricingVersion,
+          monthlyPriceCents: activeCheckout?.monthlyPriceCents,
+          currency: activeCheckout?.currency,
+          synthetic: false,
+          outcome: activeCheckout ? 'cancelled' : 'started',
+          cloudflareRayId: request.headers.get('cf-ray')?.trim() || undefined,
+        });
+      }
       return text(
         session.cloudOnboardingEligible === true
           ? noMembershipPage(runtime, session.csrfToken)
@@ -538,6 +648,117 @@ async function handleWebAuthRequest(
         returnPath,
       }),
     );
+  }
+
+
+  if (url.pathname === '/auth/synthetic/checkout') {
+    if (request.method !== 'GET') return methodNotAllowed('GET');
+    const session = await authoritySession(request, runtime);
+    if (!session || !(await syntheticCheckoutAllowed(runtime, session.accountId))) {
+      return new Response('Not found\n', { status: 404 });
+    }
+    await runtime.checkoutObservability?.observe({
+      name: 'checkout_catalog_viewed',
+      accountId: session.accountId,
+      synthetic: true,
+      outcome: url.searchParams.get('checkout') === 'cancelled' ? 'cancelled' : 'started',
+      cloudflareRayId: request.headers.get('cf-ray')?.trim() || undefined,
+    });
+    return text(syntheticCheckoutPage(
+      runtime,
+      session.csrfToken,
+      url.searchParams.get('checkout') === 'cancelled',
+    ));
+  }
+
+  if (url.pathname === '/auth/synthetic/checkout/start') {
+    if (request.method !== 'POST') return methodNotAllowed('POST');
+    if (request.headers.get('origin') !== runtime.origin) {
+      return json({ error: 'csrf_failed' }, { status: 403 });
+    }
+    const session = await authoritySession(request, runtime);
+    if (!session || !(await syntheticCheckoutAllowed(runtime, session.accountId))) {
+      return new Response('Not found\n', { status: 404 });
+    }
+    const body = await params(request);
+    if (body.get('csrf_token') !== session.csrfToken) {
+      return json({ error: 'csrf_failed' }, { status: 403 });
+    }
+    const planId = body.get('plan_id')?.trim() ?? '';
+    await runtime.checkoutObservability?.observe({
+      name: 'checkout_plan_selected',
+      accountId: session.accountId,
+      planId,
+      synthetic: true,
+      outcome: 'started',
+      cloudflareRayId: request.headers.get('cf-ray')?.trim() || undefined,
+    });
+    try {
+      const checkout = await startSyntheticStripeCheckout({
+        runtime,
+        accountId: session.accountId,
+        planId,
+      });
+      return Response.redirect(checkout.url, 302);
+    } catch (error: unknown) {
+      if (error instanceof SyntheticCheckoutError) {
+        return text(onboardingErrorPage(error.message), { status: error.status });
+      }
+      await runtime.checkoutObservability?.captureException(error, {
+        name: 'checkout_synthetic_failed',
+        accountId: session.accountId,
+        planId,
+        synthetic: true,
+        outcome: 'error',
+        errorCode: 'SYNTHETIC_UNAVAILABLE',
+      });
+      return text(onboardingErrorPage('Synthetic checkout is temporarily unavailable.'), { status: 503 });
+    }
+  }
+
+  if (url.pathname === '/auth/synthetic/checkout/result') {
+    if (request.method !== 'GET') return methodNotAllowed('GET');
+    const session = await authoritySession(request, runtime);
+    if (!session || !(await syntheticCheckoutAllowed(runtime, session.accountId))) {
+      return new Response('Not found\n', { status: 404 });
+    }
+    try {
+      const result = await readSyntheticCheckoutSession({
+        runtime,
+        accountId: session.accountId,
+        sessionId: url.searchParams.get('session_id')?.trim() ?? '',
+      });
+      return text(syntheticCheckoutResultPage(result));
+    } catch (error: unknown) {
+      if (error instanceof SyntheticCheckoutError) {
+        return text(onboardingErrorPage(error.message), { status: error.status });
+      }
+      return text(onboardingErrorPage('Synthetic checkout result is temporarily unavailable.'), { status: 503 });
+    }
+  }
+
+  if (url.pathname === '/webhooks/stripe-synthetic') {
+    if (request.method !== 'POST') return methodNotAllowed('POST');
+    const rawBody = await request.text();
+    try {
+      const result = await handleSyntheticStripeWebhook({
+        runtime,
+        rawBody,
+        signatureHeader: request.headers.get('stripe-signature') ?? '',
+      });
+      return json({ received: true, handled: result.handled }, { headers: { 'cache-control': 'no-store' } });
+    } catch (error: unknown) {
+      if (error instanceof SyntheticCheckoutError) {
+        return json({ error: error.code.toLowerCase() }, { status: error.status });
+      }
+      await runtime.checkoutObservability?.captureException(error, {
+        name: 'checkout_synthetic_failed',
+        synthetic: true,
+        outcome: 'error',
+        errorCode: 'SYNTHETIC_WEBHOOK_FAILED',
+      });
+      return json({ error: 'synthetic_checkout_unavailable' }, { status: 503 });
+    }
   }
 
   if (url.pathname === '/onboarding/workspace') {
@@ -571,6 +792,14 @@ async function handleWebAuthRequest(
       if (!isPaidCloudFirstPlanId(planId)) {
         return text(onboardingErrorPage('Choose a supported Consuelo Cloud plan.'), { status: 400 });
       }
+      await runtime.checkoutObservability?.observe({
+        name: 'checkout_plan_selected',
+        accountId: session.accountId,
+        planId,
+        synthetic: false,
+        outcome: 'started',
+        cloudflareRayId: request.headers.get('cf-ray')?.trim() || undefined,
+      });
       const checkout = await startManagedCloudCheckout({
         runtime,
         accountId: session.accountId,
@@ -712,6 +941,36 @@ async function handleWebAuthRequest(
     });
   }
 
+  if (url.pathname === '/internal/auth/session/handoff') {
+    if (request.method !== 'POST') return methodNotAllowed('POST');
+    const auth = await authenticateInternalWorkspaceSession(request, runtime, {
+      requireWorkspaceId: false,
+    });
+    if (!auth.ok) return auth.response;
+    const targetHost = request.headers
+      .get('x-consuelo-target-workspace-host')
+      ?.trim()
+      .toLowerCase() ?? '';
+    if (targetHost !== PRIVATE_INTERNAL_SITE_HOST) {
+      return json({ error: 'handoff_target_denied' }, { status: 403 });
+    }
+    const membership = await activePrivateInternalMembership(
+      runtime,
+      auth.session.accountId,
+    );
+    if (!membership) {
+      return json({ error: 'workspace_access_denied' }, { status: 403 });
+    }
+    const body = await params(request);
+    return issueWorkspaceHandoff({
+      runtime,
+      accountId: auth.session.accountId,
+      workspaceId: membership.workspaceId,
+      workspaceHost: targetHost,
+      returnPath: body.get('return_to') ?? '/',
+    });
+  }
+
   if (url.pathname === '/auth/consume') {
     if (request.method !== 'GET') return methodNotAllowed('GET');
     const token = url.searchParams.get('handoff') ?? '';
@@ -772,8 +1031,26 @@ async function handleWebAuthRequest(
 
   if (url.pathname === '/internal/auth/session/validate') {
     if (request.method !== 'POST') return methodNotAllowed('POST');
-    const auth = await authenticateInternalWorkspaceSession(request, runtime);
+    const requireWorkspaceId = Boolean(
+      request.headers.get('x-consuelo-workspace-id')?.trim(),
+    );
+    const auth = await authenticateInternalWorkspaceSession(request, runtime, {
+      requireWorkspaceId,
+    });
     if (!auth.ok) return auth.response;
+    const requestedWorkspaceHost = request.headers
+      .get('x-consuelo-workspace-host')
+      ?.trim()
+      .toLowerCase() ?? '';
+    if (requestedWorkspaceHost === PRIVATE_INTERNAL_SITE_HOST) {
+      const membership = await activePrivateInternalMembership(
+        runtime,
+        auth.session.accountId,
+      );
+      if (!membership || auth.session.workspaceId !== membership.workspaceId) {
+        return json({ error: 'workspace_access_denied' }, { status: 403 });
+      }
+    }
     return new Response(null, {
       status: 204,
       headers: { 'cache-control': 'no-store' },
@@ -795,12 +1072,17 @@ export function registerWebAuthRoutes(
     '/auth/handoff',
     '/auth/consume',
     '/auth/logout',
+    '/auth/synthetic/checkout',
+    '/auth/synthetic/checkout/start',
+    '/auth/synthetic/checkout/result',
     '/onboarding/workspace',
     '/onboarding/provisioning',
     '/onboarding/status',
     '/onboarding/checkout/success',
     '/onboarding/checkout/status',
     '/webhooks/stripe',
+    '/webhooks/stripe-synthetic',
+    '/internal/auth/session/handoff',
     '/internal/auth/session/validate',
   ]) {
     app.all(path, (context) => handleWebAuthRequest(context.req.raw, runtime));

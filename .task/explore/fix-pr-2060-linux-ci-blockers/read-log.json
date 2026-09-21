@@ -1,0 +1,10 @@
+{
+  "files": [
+    "packages/os/package.json",
+    "packages/os/scripts/fs.js",
+    "packages/workspace/scripts/lib/github.js",
+    "packages/workspace/scripts/test-selection.js",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "updatedAt": "2026-08-29T06:13:19.721Z"
+}

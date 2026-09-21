@@ -1,0 +1,16 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/scope-home-heatmap-cache",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 2393,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2393",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-scope-home-heatmap-cache",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_6db89af29a98",
+  "tmuxSession": "opensaas-workspace-agents-scope-home-heatmap-cache-6db89af2",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-scope-home-heatmap-cache/.task/session.json",
+  "createdAt": "2026-09-05T01:14:14.629Z"
+}

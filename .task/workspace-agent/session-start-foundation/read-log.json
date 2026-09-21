@@ -1,0 +1,12 @@
+{
+  "files": [
+    ".task/workspace-agent/session-start-foundation/verify.json",
+    "packages/os/cloudflare/os-device-authority/src/services/mcp-proxy.ts",
+    "packages/os/cloudflare/os-device-authority/src/stores.ts",
+    "packages/os/scripts/lib/facade/schemas.ts",
+    "packages/os/tests/fixtures/tool-package-baseline.json",
+    "packages/os/tests/tool-package-layout.test.ts",
+    "packages/os/tools/task-lifecycle/handler.ts"
+  ],
+  "updatedAt": "2026-08-15T02:03:04.011Z"
+}

@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/preserve-in-flight-mcp-requests-during-worker-rolling-reload",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2102,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2102",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2102",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2102/preserve-in-flight-mcp-requests-during-worker-rolling-reload",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2102",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2102/preserve-in-flight-mcp-requests-during-worker-rolling-reload",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-preserve-in-flight-mcp-requests-during-worker-rolling-reload",
+  "taskSession": "tsk_9d991d7e9ac2",
+  "tmuxSession": "opensaas-os-preserve-in-flight-mcp-requests-during-worker-ro-9d991d7e",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-preserve-in-flight-mcp-requests-during-worker-rolling-reload/.task/os/preserve-in-flight-mcp-requests-during-worker-rolling-reload/session.json",
+  "createdAt": "2026-08-16T02:41:43.934Z"
+}
