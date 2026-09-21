@@ -52,6 +52,10 @@ function shareStorePath(home: string): string {
   return path.join(home, 'artifacts', 'shares.json');
 }
 
+function localArtifactShareCsrfPath(home: string): string {
+  return path.join(home, 'artifacts', '.share-owner-csrf');
+}
+
 function emptyStore(): ArtifactShareStore {
   return { version: 1, shares: {} };
 }
@@ -94,6 +98,37 @@ function equalHash(expectedHash: string, secret: string): boolean {
 
 function randomSecret(): string {
   return randomBytes(32).toString('base64url');
+}
+
+export function getOrCreateLocalArtifactShareCsrf(home: string): string {
+  const file = localArtifactShareCsrfPath(home);
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  if (!fs.existsSync(file)) {
+    const token = randomSecret();
+    try {
+      fs.writeFileSync(file, `${token}
+`, { encoding: 'utf8', mode: 0o600, flag: 'wx' });
+    } catch (error: unknown) {
+      const code = error && typeof error === 'object' && 'code' in error
+        ? String((error as { code?: unknown }).code ?? '')
+        : '';
+      if (code !== 'EEXIST') throw error;
+    }
+  }
+  const token = fs.readFileSync(file, 'utf8').trim();
+  if (!/^[A-Za-z0-9_-]{32,}$/u.test(token)) {
+    throw new Error('local artifact share CSRF capability is invalid');
+  }
+  return token;
+}
+
+export function verifyLocalArtifactShareCsrf(home: string, provided: string): boolean {
+  const token = provided.trim();
+  if (!token) return false;
+  const expected = getOrCreateLocalArtifactShareCsrf(home);
+  const left = Buffer.from(expected);
+  const right = Buffer.from(token);
+  return left.length === right.length && timingSafeEqual(left, right);
 }
 
 function randomShareId(): string {

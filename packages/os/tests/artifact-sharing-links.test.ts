@@ -108,10 +108,12 @@ describe('artifact private share links', () => {
       share: { id: string; artifactId: string; expiresAt: string; url: string };
     };
     expect(createdBody.share.artifactId).toBe(artifactId);
-    expect(createdBody.share.url).toMatch(/^\/share\/artifacts\/share-[A-Za-z0-9_-]+#[A-Za-z0-9_-]{32,}$/);
+    expect(createdBody.share.url).toMatch(/^https:\/\/artifact-share\.consuelohq\.com\/share\/artifacts\/share-[A-Za-z0-9_-]+#[A-Za-z0-9_-]{32,}$/);
     expect(createdBody.share.url).not.toContain('?token=');
 
-    const [publicPath, secret] = createdBody.share.url.split('#');
+    const createdUrl = new URL(createdBody.share.url);
+    const publicPath = createdUrl.pathname;
+    const secret = createdUrl.hash.slice(1);
     expect(publicPath).toBeTruthy();
     expect(secret).toBeTruthy();
     const persistedShares = readFileSync(join(home, 'artifacts', 'shares.json'), 'utf8');
@@ -149,6 +151,75 @@ describe('artifact private share links', () => {
     await expect(viewer.text()).resolves.toContain('Shared with Mom');
   });
 
+  it('lets the loopback Artifacts page create and revoke a private link with its local CSRF capability', async () => {
+    const app = createArtifactRoutes({ now: () => nowMs });
+    const page = await app.fetch(new Request('http://127.0.0.1:46321/artifacts', {
+      headers: { accept: 'text/html' },
+    }));
+    expect(page.status).toBe(200);
+    const html = await page.text();
+    const localCsrf = html.match(/name="consuelo-local-artifact-share-csrf" content="([^"]+)"/)?.[1] ?? '';
+    expect(localCsrf).toMatch(/^[A-Za-z0-9_-]{32,}$/);
+
+    const remotePage = await app.fetch(new Request('https://artifact-share.consuelohq.com/artifacts', {
+      headers: { accept: 'text/html' },
+    }));
+    expect(remotePage.status).toBe(200);
+    const remoteHtml = await remotePage.text();
+    expect(remoteHtml).not.toContain(localCsrf);
+    expect(remoteHtml).not.toContain('__CONSUELO_LOCAL_ARTIFACT_SHARE_CSRF__');
+
+    const catalog = await app.fetch(signedRequest('/gateway/artifacts', 'GET', 'local-share-catalog'));
+    const artifactId = ((await catalog.json()) as { artifacts: Array<{ id: string }> }).artifacts[0]!.id;
+    const createPath = `/gateway/artifacts/${artifactId}/shares`;
+
+    const missingCsrf = await app.fetch(new Request(`http://127.0.0.1:46321${createPath}`, {
+      method: 'POST',
+      headers: {
+        origin: 'http://127.0.0.1:46321',
+        'content-type': 'application/json',
+      },
+      body: '{}',
+    }));
+    expect(missingCsrf.status).toBe(403);
+
+    const wrongOrigin = await app.fetch(new Request(`http://127.0.0.1:46321${createPath}`, {
+      method: 'POST',
+      headers: {
+        origin: 'https://evil.example',
+        'content-type': 'application/json',
+        'x-consuelo-artifact-share-csrf': localCsrf,
+      },
+      body: '{}',
+    }));
+    expect(wrongOrigin.status).toBe(403);
+
+    const created = await app.fetch(new Request(`http://127.0.0.1:46321${createPath}`, {
+      method: 'POST',
+      headers: {
+        origin: 'http://127.0.0.1:46321',
+        'content-type': 'application/json',
+        'x-consuelo-artifact-share-csrf': localCsrf,
+      },
+      body: '{}',
+    }));
+    expect(created.status).toBe(201);
+    const createdBody = await created.json() as { share: { id: string; url: string } };
+    expect(createdBody.share.url).toMatch(/^https:\/\/artifact-share\.consuelohq\.com\/share\/artifacts\//);
+
+    const revoked = await app.fetch(new Request(
+      `http://127.0.0.1:46321${createPath}/${createdBody.share.id}`,
+      {
+        method: 'DELETE',
+        headers: {
+          origin: 'http://127.0.0.1:46321',
+          'x-consuelo-artifact-share-csrf': localCsrf,
+        },
+      },
+    ));
+    expect(revoked.status).toBe(200);
+  });
+
   it('lists shares without secrets, revokes them immediately, and expires them', async () => {
     const app = createArtifactRoutes({ now: () => nowMs });
     const catalog = await app.fetch(signedRequest('/gateway/artifacts', 'GET', 'share-catalog-2'));
@@ -162,7 +233,9 @@ describe('artifact private share links', () => {
       JSON.stringify({ expiresInSeconds: 60 }),
     ));
     const createdBody = await created.json() as { share: { id: string; url: string } };
-    const [publicPath, secret] = createdBody.share.url.split('#');
+    const createdUrl = new URL(createdBody.share.url);
+    const publicPath = createdUrl.pathname;
+    const secret = createdUrl.hash.slice(1);
 
     const listed = await app.fetch(signedRequest(createPath, 'GET', 'share-list'));
     expect(listed.status).toBe(200);
@@ -193,7 +266,9 @@ describe('artifact private share links', () => {
       JSON.stringify({ expiresInSeconds: 60 }),
     ));
     const secondBody = await second.json() as { share: { url: string } };
-    const [secondPath, secondSecret] = secondBody.share.url.split('#');
+    const secondUrl = new URL(secondBody.share.url);
+    const secondPath = secondUrl.pathname;
+    const secondSecret = secondUrl.hash.slice(1);
     nowMs += 61_000;
     const expiredClaim = await app.fetch(new Request(`http://127.0.0.1:46321${secondPath}/claim`, {
       method: 'POST',
