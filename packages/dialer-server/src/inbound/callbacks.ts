@@ -1,3 +1,4 @@
+import { createCallbackBookingAuthority, type PendingCallbackBooking } from './callback-booking-authority';
 import { createHash, randomUUID } from 'node:crypto';
 import type { Pool, PoolClient } from 'pg';
 import {
@@ -97,6 +98,7 @@ export type CallbackRead = {
 };
 
 export type CallbackBookingRead =
+  | PendingCallbackBooking
   | CallbackBookingResult
   | {
       readonly status: 'cancel_pending';
@@ -105,6 +107,8 @@ export type CallbackBookingRead =
     };
 
 export type CallbackCalendarAdapter = {
+  // Reconcile by the durable workspace/callback/revision identity; null means unknown.
+  readonly reconcileBooking?: (input: CallbackBookingRequest) => Promise<CallbackBookingResult | null>;
   readonly book: (input: CallbackBookingRequest) => Promise<CallbackBookingResult>;
   readonly cancel: (
     input: CallbackBookingRequest & { readonly providerReference: string },
@@ -328,6 +332,7 @@ const terminal = (status: CallbackObligationState['status']) =>
 
 export const createPostgresCallbacks = (options: CallbackStoreOptions) => {
   const { pool } = options;
+  const bookingAuthority = createCallbackBookingAuthority(pool, options.calendar);
   const routing = createPostgresInboundRouting(pool, { clock: options.clock });
   const capacity = createPostgresRepCapacity(pool, { clock: options.clock });
 
@@ -364,7 +369,7 @@ export const createPostgresCallbacks = (options: CallbackStoreOptions) => {
         [workspaceId, callbackId, revision],
       );
       const stored = existing.rows[0];
-      if (!stored) return null;
+      if (!stored) return bookingAuthority.readPending(workspaceId, callbackId, revision);
       if (stored.status !== 'confirmed')
         return {
           status: stored.status,
@@ -444,11 +449,14 @@ export const createPostgresCallbacks = (options: CallbackStoreOptions) => {
 
   const cancelConfirmedBookingForRevision = async (row: StoredCallback) => {
     try {
+      await bookingAuthority.suppressUnstarted(row.workspace_id, row.callback_id, row.state.revision);
       const stored = await readReconciledBooking(
         row.workspace_id,
         row.callback_id,
         row.state.revision,
       );
+      if (stored?.status === 'booking_pending')
+        throw new Error('Callback provider booking creation outcome is unknown');
       if (stored?.status === 'cancel_pending')
         throw new Error('Callback provider booking cancellation outcome is unknown');
       if (!stored || stored.status !== 'confirmed') return;
@@ -681,6 +689,7 @@ export const createPostgresCallbacks = (options: CallbackStoreOptions) => {
     workspaceId: string,
     callbackId: string,
     action: CallbackAction,
+    expectedRevision?: number,
   ) => {
     try {
     const duplicate = await client.query<{ snapshot: CallbackObligationState }>(
@@ -691,6 +700,8 @@ export const createPostgresCallbacks = (options: CallbackStoreOptions) => {
       return { duplicate: true as const, state: duplicate.rows[0].snapshot };
     const row = await loadCallback(client, workspaceId, callbackId, true);
     if (!row) throw new Error('Callback obligation is missing');
+    if (expectedRevision !== undefined && row.state.revision !== expectedRevision)
+      throw new Error('Callback revision changed during management');
     if (action.type === 'reschedule' && !row.recipient_ciphertext)
       throw new Error('Callback recipient has been purged');
     const before = row.state;
@@ -975,15 +986,16 @@ export const createPostgresCallbacks = (options: CallbackStoreOptions) => {
     }
   };
 
-  const apply = (workspaceId: string, callbackId: string, action: CallbackAction) =>
+  const apply = (workspaceId: string, callbackId: string, action: CallbackAction, expectedRevision?: number) =>
     withInboundTransaction(pool, workspaceId, (client) =>
-      applyOnClient(client, workspaceId, callbackId, action),
+      applyOnClient(client, workspaceId, callbackId, action, expectedRevision),
     );
 
   const reschedule = async (input: {
     workspaceId: string;
     callbackId: string;
     operationId: string;
+    expectedRevision?: number;
     timezone: string;
     notBefore: string;
     deadline: string;
@@ -1003,8 +1015,11 @@ export const createPostgresCallbacks = (options: CallbackStoreOptions) => {
       throw new Error('Callback reschedule window is no longer fulfillable');
     if (!isInboundQueueOpen(queuePolicy, input.notBefore))
       throw new Error('Callback reschedule must begin during staffed hours');
-    if (!(await operationAlreadyApplied(input.workspaceId, input.operationId)))
+    if (!(await operationAlreadyApplied(input.workspaceId, input.operationId))) {
+      if (input.expectedRevision !== undefined && row.state.revision !== input.expectedRevision)
+        throw new Error('Callback revision changed during management');
       await cancelConfirmedBookingForRevision(row);
+    }
     return apply(input.workspaceId, input.callbackId, {
       type: 'reschedule',
       operationId: input.operationId,
@@ -1012,7 +1027,7 @@ export const createPostgresCallbacks = (options: CallbackStoreOptions) => {
       timezone: input.timezone,
       notBefore: input.notBefore,
       deadline: input.deadline,
-    });
+    }, row.state.revision);
   
     } catch (cause: unknown) {
       if (cause instanceof Error) throw cause;
@@ -1032,9 +1047,10 @@ export const createPostgresCallbacks = (options: CallbackStoreOptions) => {
       input.workspaceId,
       input.operationId,
     );
+    const current = await loadCallback(pool, input.workspaceId, input.callbackId);
+    if (!current) throw new Error('Callback obligation is missing');
     if (!operationApplied) {
-      const row = await loadCallback(pool, input.workspaceId, input.callbackId);
-      if (!row) throw new Error('Callback obligation is missing');
+      const row = current;
       if (!terminal(row.state.status)) await cancelConfirmedBookingForRevision(row);
     }
     if (input.reconciled)
@@ -1043,14 +1059,14 @@ export const createPostgresCallbacks = (options: CallbackStoreOptions) => {
         operationId: input.operationId,
         at,
         reconciled: true,
-      });
+      }, current.state.revision);
 
     const pending = await apply(input.workspaceId, input.callbackId, {
       type: 'cancel',
       operationId: input.operationId,
       at,
       reconciled: false,
-    });
+    }, current.state.revision);
     if (pending.state.status !== 'cancel_pending') return pending;
 
     const row = await loadCallback(pool, input.workspaceId, input.callbackId);
@@ -1395,29 +1411,11 @@ export const createPostgresCallbacks = (options: CallbackStoreOptions) => {
     if (existing?.status === 'cancel_pending')
       throw new Error('Callback provider booking cancellation outcome is unknown');
     if (existing) return existing;
-    const result = decodeCallbackBookingResult(
-      options.calendar
-        ? await options.calendar.book(request)
-        : {
-            status: 'unavailable',
-            providerReference: null,
-            evidenceReference: null,
-          },
-    );
-    await pool.query(
-      `INSERT INTO dialer_callback_bookings(
-         workspace_id,callback_id,revision,status,provider_reference,evidence_reference
-       ) VALUES($1,$2,$3,$4,$5,$6) ON CONFLICT DO NOTHING`,
-      [
-        workspaceId,
-        callbackId,
-        row.state.revision,
-        result.status,
-        result.providerReference,
-        result.evidenceReference,
-      ],
-    );
+    await bookingAuthority.dispatch(request);
+    const result = await readReconciledBooking(workspaceId, callbackId, row.state.revision);
+    if (!result) throw new Error('Callback booking dispatch evidence is missing');
     return result;
+
   
     } catch (cause: unknown) {
       if (cause instanceof Error) throw cause;

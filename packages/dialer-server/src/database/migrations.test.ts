@@ -1,3 +1,4 @@
+import { CALLBACK_BOOKING_ATTEMPTS_MIGRATION_ID } from '../inbound/callback-booking-attempt-migration';
 import { TELEPHONY_MIGRATION_ID } from '../inbound/telephony-migration';
 import { CALLBACK_MIGRATION_ID } from '../inbound/callback-migration';
 import { CALLBACK_BOOKING_EVENTS_MIGRATION_ID } from '../inbound/callback-booking-event-migration';
@@ -71,6 +72,7 @@ describe('dialer database migrations', () => {
     expect(sql).toContain('dialer_callback_effects');
     expect(sql).toContain('dialer_callback_bookings');
     expect(sql).toContain('dialer_callback_booking_events');
+    expect(sql).toContain('dialer_callback_booking_attempts');
     expect(sql).not.toContain('core.workspace_settings');
     expect(sql).not.toContain('core.contact_attempt_hazard_hourly_mv');
     expect(harness.applied).toEqual(
@@ -87,6 +89,7 @@ describe('dialer database migrations', () => {
         CALLBACK_MIGRATION_ID,
         CUSTOMER_ENTRY_MIGRATION_ID,
         CALLBACK_BOOKING_EVENTS_MIGRATION_ID,
+        CALLBACK_BOOKING_ATTEMPTS_MIGRATION_ID,
       ]),
     );
   });
@@ -184,10 +187,10 @@ describe('dialer database migrations', () => {
     expect(callSessionCreates).toHaveLength(1);
     expect(observationCreates).toHaveLength(1);
     expect(decisionCreates).toHaveLength(1);
-    expect(migrationInserts).toHaveLength(12);
+    expect(migrationInserts).toHaveLength(13);
   });
 
-  it('upgrades an RD7B schema with only the additive booking-event migration', async () => {
+  it('upgrades an RD7B schema with only the additive booking evidence migrations', async () => {
     const previousMigrations = [
       DIALER_DATABASE_BASELINE_MIGRATION_ID,
       DIALER_DATABASE_PREDICTIVE_LEARNING_MIGRATION_ID,
@@ -210,7 +213,7 @@ describe('dialer database migrations', () => {
     expect(sql).not.toContain('CREATE TABLE IF NOT EXISTS dialer_callback_obligations');
     expect(sql).not.toContain('CREATE TABLE IF NOT EXISTS dialer_customer_callback_admission');
     expect(harness.applied).toEqual(
-      new Set([...previousMigrations, CALLBACK_BOOKING_EVENTS_MIGRATION_ID]),
+      new Set([...previousMigrations, CALLBACK_BOOKING_EVENTS_MIGRATION_ID, CALLBACK_BOOKING_ATTEMPTS_MIGRATION_ID]),
     );
   });
 });

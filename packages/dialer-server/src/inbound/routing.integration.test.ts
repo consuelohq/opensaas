@@ -1,3 +1,4 @@
+import { CALLBACK_BOOKING_ATTEMPTS_MIGRATION_ID } from './callback-booking-attempt-migration';
 import { CALLBACK_MIGRATION_ID } from './callback-migration';
 import { CALLBACK_BOOKING_EVENTS_MIGRATION_ID } from './callback-booking-event-migration';
 import { CUSTOMER_ENTRY_MIGRATION_ID } from './customer-entry-migration';
@@ -447,6 +448,7 @@ suite('transactional inbound routing', () => {
     expect(await routing.readDecision(policy.workspaceId, 'future')).toBeNull();
   });
   it('rejects rollback with active routing and preserves older journal after safe down/up', async () => {
+    await rollbackDialerDatabaseMigration(pool, CALLBACK_BOOKING_ATTEMPTS_MIGRATION_ID);
     await rollbackDialerDatabaseMigration(pool, CALLBACK_BOOKING_EVENTS_MIGRATION_ID);
     await rollbackDialerDatabaseMigration(pool, CUSTOMER_ENTRY_MIGRATION_ID);
     await rollbackDialerDatabaseMigration(pool, CALLBACK_MIGRATION_ID);

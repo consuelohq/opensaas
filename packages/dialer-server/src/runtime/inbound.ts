@@ -1,4 +1,6 @@
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
+import type { RepCapacityState } from '@consuelo/dialer';
+import { withInboundTransaction } from '../inbound/postgres-journal';
 import { protectTelephonyConfiguration } from '../inbound/telephony-configuration-store';
 import { createInboundOperator } from '../inbound/operator';
 import { Pool } from 'pg';
@@ -8,7 +10,7 @@ import { createOutboundCapacity } from '../inbound/outbound-capacity';
 import { createTwilioInboundCarrier } from '../inbound/twilio-carrier';
 import { parseTelephonyConfig } from '../inbound/telephony-config';
 import { createCallbackRecipientCipher } from '../inbound/callback-recipient-cipher';
-import { createPostgresRepCapacity } from '../inbound/rep-capacity';
+import { createPostgresRepCapacity, executeRepCapacityOnClient } from '../inbound/rep-capacity';
 import type { InboundEndpoint, InboundEnrichment } from '../inbound/telephony-contracts';
 import {
   createCustomerEntryConsentAdapter,
@@ -27,6 +29,7 @@ const DEFAULT_REP_POLICY = {
 export const reconcileConfiguredRepCapacity = async (
   pool: Pool,
   endpoints: readonly InboundEndpoint[],
+  workspaceIds: readonly string[] = endpoints.map((endpoint) => endpoint.workspaceId),
 ) => {
   try {
     const capacity = createPostgresRepCapacity(pool);
@@ -54,6 +57,30 @@ export const reconcileConfiguredRepCapacity = async (
           repId: rep.repId,
           policy: DEFAULT_REP_POLICY,
         },
+      });
+    }
+    for (const workspaceId of new Set(workspaceIds)) {
+      await withInboundTransaction(pool, workspaceId, async (client) => {
+        try {
+        const idle = await client.query<{ snapshot: RepCapacityState }>(
+          `SELECT snapshot FROM dialer_rep_capacity WHERE workspace_id=$1
+           AND snapshot->'owner' = 'null'::jsonb AND snapshot->>'ready' = 'true'
+           LIMIT 1001 FOR UPDATE`,
+          [workspaceId],
+        );
+        if (idle.rows.length > 1000) throw new Error('Rep readiness reset bound exceeded');
+        // A restarted process cannot vouch for health measured by an old device session.
+        for (const { snapshot } of idle.rows) {
+          await executeRepCapacityOnClient(client, {
+            workspaceId, capacityId: snapshot.capacityId, expectedVersion: snapshot.version,
+            operationId: 'runtime-readiness:' + randomUUID(),
+            action: { type: 'readiness', ready: false, endpoints: [] },
+          });
+        }
+        } catch (cause: unknown) {
+          if (cause instanceof Error) throw cause;
+          throw new Error('Inbound authority transaction failed', { cause });
+        }
       });
     }
   } catch (cause: unknown) {
@@ -145,11 +172,12 @@ export const createInboundRuntime = async (environment: Environment, enrich?: In
       ...config.numbers.filter((number) => number.enabled).map((number) => number.workspaceId),
       ...draining.rows.map((row) => row.workspace_id),
     ]);
+    await protectTelephonyConfiguration(pool, config);
     await reconcileConfiguredRepCapacity(
       pool,
       config.endpoints.filter((endpoint) => ownedWorkspaces.has(endpoint.workspaceId)),
+      [...ownedWorkspaces],
     );
-    await protectTelephonyConfiguration(pool, config);
     const carrier = await createTwilioInboundCarrier(accountSid, authToken);
     const callbackConsent = customerEntryEnabled
       ? createCustomerEntryConsentAdapter({ pool })

@@ -854,26 +854,32 @@ export const createInboundCustomerApplication = (options: {
         hash(
           `${row.callback_id}:${current.state.revision}:${serviceWindowId}`,
         ).slice(0, 48);
-      await options.callbacks.reschedule({
-        workspaceId: number.workspaceId,
-        callbackId: row.callback_id,
-        operationId,
-        timezone: policy.timezone,
-        notBefore: selected.startsAt,
-        deadline: selected.endsAt,
-      });
+      const alreadySelected =
+        current.state.timezone === policy.timezone &&
+        current.state.notBefore === selected.startsAt &&
+        current.state.deadline === selected.endsAt;
+      if (!alreadySelected) {
+        await options.callbacks.reschedule({
+          workspaceId: number.workspaceId,
+          callbackId: row.callback_id,
+          operationId,
+          expectedRevision: current.state.revision,
+          timezone: policy.timezone,
+          notBefore: selected.startsAt,
+          deadline: selected.endsAt,
+        });
+      }
       await options.pool.query(
-        `UPDATE dialer_customer_callback_admission
-         SET timezone=$3,not_before=$4,deadline=$5,management_expires_at=$6
-         WHERE workspace_id=$1 AND callback_id=$2`,
-        [
-          number.workspaceId,
-          row.callback_id,
-          policy.timezone,
-          selected.startsAt,
-          selected.endsAt,
-          plus(selected.endsAt, number.callback.recipientRetentionMilliseconds),
-        ],
+        `UPDATE dialer_customer_callback_admission admission
+         SET timezone=obligation.state->>'timezone',
+             not_before=(obligation.state->>'notBefore')::timestamptz,
+             deadline=(obligation.state->>'deadline')::timestamptz,
+             management_expires_at=obligation.recipient_expires_at
+         FROM dialer_callback_obligations obligation
+         WHERE admission.workspace_id=$1 AND admission.callback_id=$2
+           AND obligation.workspace_id=admission.workspace_id
+           AND obligation.callback_id=admission.callback_id`,
+        [number.workspaceId, row.callback_id],
       );
       return resultFor(number, row, token, true);
     } catch (cause: unknown) {

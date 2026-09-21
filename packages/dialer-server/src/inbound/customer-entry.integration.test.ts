@@ -290,6 +290,31 @@ suite('RD7B customer entry with real Postgres', () => {
     expect(cancellations).toBe(1);
   });
 
+  it('keeps one revision and booking when a committed reschedule response is retried', async () => {
+    let bookings = 0;
+    let cancellations = 0;
+    const application = makeApplication({
+      book: async () => ({ status: 'confirmed', providerReference: 'booking-' + ++bookings,
+        evidenceReference: 'booking-proof' }),
+      cancel: async (input) => { cancellations++; return { status: 'cancelled',
+        providerReference: input.providerReference, evidenceReference: 'cancel-proof' }; },
+    });
+    const created = await application.requestCallback('sales', '203.0.113.25', {
+      phoneNumber: ['+1', '828', '555', '0123'].join(''), permissionAccepted: true,
+      idempotencyKey: 'reschedule-retry-1234', mode: 'immediate',
+    });
+    const snapshot = await application.snapshot('sales');
+    const future = snapshot.callback.serviceWindows.find((window) => window.startsAt > at(0))!;
+    const first = await application.rescheduleCallback('sales', created.managementToken, future.id);
+    const retried = await application.rescheduleCallback('sales', created.managementToken, future.id);
+    expect(retried).toEqual(first);
+    expect(bookings).toBe(2);
+    expect(cancellations).toBe(1);
+    const state = await pool.query<{ revision: number }>(
+      "SELECT (state->>'revision')::integer AS revision FROM dialer_callback_obligations");
+    expect(state.rows[0]?.revision).toBe(2);
+  });
+
   it('uses server-authored service windows for reschedule and cancels the RD6 obligation', async () => {
     const application = makeApplication();
     const created = await application.requestCallback('sales', '203.0.113.11', {

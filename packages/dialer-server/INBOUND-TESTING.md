@@ -71,7 +71,7 @@ recovery behavior, not PSTN delivery, browser microphone access or two-way audio
    JSON health response through both the Railway origin and the public edge.
    An HTML page or Railway `Application not found` is not readiness.
 2. Back up the deployed database before applying schema changes. Confirm the
-   migration ledger includes the append-only callback booking event migration.
+   migration ledger includes the append-only callback booking event and attempt migrations.
 3. Identify one isolated test workspace and its connected LeadConnector location.
    Confirm its installation has contact-read access. Choose two consenting test
    reps and map their actual provider user IDs to browser/phone endpoints.
@@ -124,3 +124,24 @@ and credentials. Start with one call and two test reps before any load test.
 A calendar adapter may supply `reconcileCancellation` to observe authenticated provider state for the exact workspace, callback revision, and provider booking reference. A timed-out cancellation stays `cancel_pending`; refreshing the callback or retrying management invokes reconciliation rather than blindly cancelling again. Only a matching provider reference with durable cancellation evidence closes that uncertainty. Adapters without this capability leave uncertain cancellations pending and require provider-side investigation. Any deployed calendar integration must implement and test this recovery port; a real GoHighLevel calendar adapter is still not composed.
 
 Disabled numbers reject new callers but keep existing carrier-effect reconciliation and shared rep capacity ownership while work drains. A retired number whose queue was removed can start without that queue. Caller admission limits apply separately to each number, including when several numbers share one workspace.
+
+### Calendar creation recovery and rep readiness
+
+Calendar creation claims a durable `(workspace, callback, revision)` identity before
+calling the adapter. Concurrent submissions dispatch only once. An uncertain
+create remains `booking_pending`; cancellation and rescheduling wait for evidence
+and never assume that a timeout means no appointment exists. `reconcileBooking`
+must look up that exact identity without creating another appointment. Return null
+while unknown, or a decoded result with durable evidence when resolved. An
+`unavailable` reconciliation must prove no late create can still succeed. Adapters
+without reconciliation leave uncertainty pending for investigation. Attempt rows
+are immutable, and rollback refuses to discard them.
+
+Retrying the current service window preserves its revision and booking. Management
+commits compare the observed revision so a stale request cannot silently replace
+a more recent window. Provider cancellation precedes any new revision.
+
+Runtime startup clears readiness and device health for idle capacity in owned
+workspaces. Reps must refresh readiness after restart or endpoint reconfiguration;
+a healthy old browser is not evidence that its replacement is reachable. Capacity
+with an active owner remains protected until its existing effect is reconciled.
