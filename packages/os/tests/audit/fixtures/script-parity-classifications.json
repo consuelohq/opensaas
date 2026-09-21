@@ -1319,6 +1319,10 @@
       "status": "os-only-intentional",
       "reason": "OS-owned observability cost estimator derives non-zero trace cost estimates from runtime model/token metadata; no workspace-script counterpart is intended."
     },
+    "scripts/lib/trace-cursor-stream.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned trace cursor streaming helper powers authenticated live observability updates; no workspace-script counterpart is intended."
+    },
     "scripts/lib/trace-database-schema.ts": {
       "status": "os-only-needs-review",
       "reason": "scripts/lib/trace-database-schema.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
@@ -1350,6 +1354,10 @@
     "scripts/lib/trace-site-inspector/interactions.ts": {
       "status": "os-only-needs-review",
       "reason": "scripts/lib/trace-site-inspector/interactions.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+    },
+    "scripts/lib/trace-site-inspector/live-browser.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned trace inspector browser helper manages live trace updates on the authenticated observability surface; no workspace-script counterpart is intended."
     },
     "scripts/lib/trace-site-inspector/model.ts": {
       "status": "os-only-needs-review",
@@ -1788,6 +1796,10 @@
     "scripts/server/services/diffs-gateway.ts": {
       "status": "os-only-needs-review",
       "reason": "scripts/server/services/diffs-gateway.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+    },
+    "scripts/server/services/diffs-local-cache.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned node-local Diffs cache persists authenticated source-control snapshots for fast first paint without moving refresh compute to the edge; no workspace-script counterpart is intended."
     },
     "scripts/server/services/mcp-session.ts": {
       "status": "os-only-intentional",
