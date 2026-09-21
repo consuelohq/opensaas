@@ -159,3 +159,9 @@ DIALER_RUN_GROQ_TRANSCRIPTION_INTEGRATION=1 \
 ```
 
 Live calls require Ko's explicit authorization for the exact scope.
+
+## Inbound routing acceptance
+
+See [INBOUND-TESTING.md](./INBOUND-TESTING.md) for the delivered SDK/server/UI
+boundaries, GoHighLevel owner enrichment, provider-free checks, deployment
+preflight and the separately authorized live-call ladder.

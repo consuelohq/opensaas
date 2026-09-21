@@ -1,3 +1,4 @@
+import { createLeadConnectorInboundEnrichment } from './inbound-enrichment';
 import { getInboundRuntime } from './inbound';
 import { randomUUID } from 'node:crypto';
 
@@ -81,12 +82,10 @@ export const selectSuccessfullyCreatedTargets = <
   T extends { contactId: string },
 >(
   targets: readonly T[],
-  createdCalls: readonly { contactId?: string | null; callSid: string }[],
+  createdCalls: readonly { position: number; callSid: string }[],
 ): T[] => {
-  const createdContactIds = new Set(
-    createdCalls.flatMap((call) => (call.contactId ? [call.contactId] : [])),
-  );
-  return targets.filter((target) => createdContactIds.has(target.contactId));
+  const positions = new Set(createdCalls.map((call) => call.position));
+  return targets.filter((_target, index) => positions.has(index + 1));
 };
 
 type PgPoolLike = {
@@ -753,7 +752,7 @@ export const createRailwayTransferApplication = async (
     const redis = resources.redis ?? shared!.redis;
     await initializeCallOperationsPersistence(database);
     const runtime = createDialerRuntime(environment, redis);
-    const inbound = await getInboundRuntime(environment);
+    const inbound = await createInboundApplicationRuntime(environment);
     const startProviderGroup = async (
       dialer: Dialer,
       options: ParallelDialOptions,
@@ -781,6 +780,9 @@ export const createRailwayTransferApplication = async (
         const result = await dialer.parallel.initiateGroup(
           { ...options, dialerSessionId: sessionId },
           {
+            onCreationRejected: async (progress) => {
+              if (guarded) await guarded.creationRejected(options.workspaceId, sessionId, progress);
+            },
             onProgress: async (progress) => {
               try {
                 if (guarded)
@@ -841,7 +843,7 @@ export const createRailwayDialerApplicationLayers = async (
       await migrateDialerDatabase(database);
     }
     const runtime = createDialerRuntime(environment, redis);
-    const inbound = await getInboundRuntime(environment);
+    const inbound = await createInboundApplicationRuntime(environment);
     const startProviderGroup = async (
       dialer: Dialer,
       options: ParallelDialOptions,
@@ -869,6 +871,9 @@ export const createRailwayDialerApplicationLayers = async (
         const result = await dialer.parallel.initiateGroup(
           { ...options, dialerSessionId: sessionId },
           {
+            onCreationRejected: async (progress) => {
+              if (guarded) await guarded.creationRejected(options.workspaceId, sessionId, progress);
+            },
             onProgress: async (progress) => {
               try {
                 if (guarded)
@@ -1243,6 +1248,7 @@ export const createRailwayDialerApplicationLayers = async (
             groupId = result.groupId;
             const createdCalls = result.calls.map((call) => ({
               callSid: call.callSid,
+              position: call.position,
               contactId: input.targets[call.position - 1]?.contactId ?? null,
             }));
             yield* Effect.promise(() =>
@@ -1497,4 +1503,7 @@ export const createCommercialApplicationRuntime =
 export const createTransferApplicationRuntime =
   createRailwayTransferApplication;
 
-export const createInboundApplicationRuntime = getInboundRuntime;
+export const createInboundApplicationRuntime = (environment: RailwayEnvironment) =>
+  getInboundRuntime(environment, createLeadConnectorInboundEnrichment(
+    () => createRailwayLeadConnectorApplicationLayer(environment),
+  ));

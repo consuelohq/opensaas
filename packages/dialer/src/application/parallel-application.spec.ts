@@ -195,6 +195,25 @@ const cleanupGroup = (): ParallelGroup => ({
 });
 
 describe('parallel Effect application programs', () => {
+  it('reports definitive rejection separately from unknown creation and cleans known calls', async () => {
+    for (const creationOutcome of ['not_created', 'unknown'] as const) {
+      const state = createState();
+      let attempts = 0;
+      const rejected: string[][] = [];
+      const provider = createProviderLayer({ createCall: () => {
+        attempts++;
+        return attempts === 1 ? Effect.succeed({ callSid: 'known-leg' })
+          : Effect.fail(new DialerProviderError({ operation: 'create-call',
+              message: 'create rejected', retryable: false, creationOutcome }));
+      } });
+      await Effect.runPromise(startParallelSession(baseOptions, {
+        onCreationRejected: async (event) => { rejected.push(event.calls.map((call) => call.callSid)); },
+      }).pipe(Effect.provide(createLayer(state, provider)), Effect.either));
+      expect(rejected).toEqual(creationOutcome === 'not_created' ? [['known-leg']] : []);
+      expect(attempts).toBe(2);
+    }
+  });
+
   it('reports every known created leg before a later provider failure', async () => {
     const state = createState();
     let attempts = 0;

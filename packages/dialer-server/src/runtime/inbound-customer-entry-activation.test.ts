@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 
-import { hasEnabledCustomerEntry } from './inbound';
+import { hasEnabledCustomerEntry, hasEnabledCallbacks } from './inbound';
 
 describe('inbound customer-entry runtime activation', () => {
   it('ignores customer-entry configuration on disabled numbers', () => {
@@ -21,4 +21,10 @@ describe('inbound customer-entry runtime activation', () => {
       ]),
     ).toBe(true);
   });
+});
+
+it('requires callback dependencies only for enabled callback numbers', () => {
+  expect(hasEnabledCallbacks([{ enabled: false, callback: {} }])).toBe(false);
+  expect(hasEnabledCallbacks([{ enabled: true, callback: null }])).toBe(false);
+  expect(hasEnabledCallbacks([{ enabled: true, callback: {} }])).toBe(true);
 });

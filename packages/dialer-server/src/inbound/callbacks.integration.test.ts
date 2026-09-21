@@ -153,6 +153,22 @@ suite('RD6 callbacks with real Postgres', () => {
       policy: callbackPolicy,
     });
 
+  it('retains the encrypted recipient through a later rescheduled window and purges afterward', async () => {
+    await request();
+    await callbacks.reschedule({ workspaceId: 'workspace', callbackId: 'callback-one',
+      operationId: 'later-window', timezone: 'UTC', notBefore: at(600), deadline: at(900) });
+    seconds = 300;
+    const restarted = makeService();
+    expect(await restarted.purgeRecipients('workspace')).toBe(0);
+    expect(await restarted.readRecipient('workspace', 'callback-one')).toBe('+18285550123');
+    expect((await restarted.read('workspace', 'callback-one'))!.recipientExpiresAt).toBe(at(1080));
+    seconds = 1081;
+    expect(await restarted.purgeRecipients('workspace')).toBe(1);
+    await expect(restarted.reschedule({ workspaceId: 'workspace', callbackId: 'callback-one',
+      operationId: 'purged-window', timezone: 'UTC', notBefore: at(1500), deadline: at(1800),
+    })).rejects.toMatchObject({ cause: { message: 'Callback recipient has been purged' } });
+  });
+
   it('does not reserve early and creates one attempt only after rep acceptance', async () => {
     const created = await request();
     expect(created.state.status).toBe('scheduled');

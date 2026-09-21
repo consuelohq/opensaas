@@ -96,6 +96,14 @@ export type CallbackRead = {
   readonly recipientExpiresAt: string;
 };
 
+export type CallbackBookingRead =
+  | CallbackBookingResult
+  | {
+      readonly status: 'cancel_pending';
+      readonly providerReference: string;
+      readonly evidenceReference: null;
+    };
+
 export type CallbackCalendarAdapter = {
   readonly book: (input: CallbackBookingRequest) => Promise<CallbackBookingResult>;
   readonly cancel: (
@@ -335,7 +343,7 @@ export const createPostgresCallbacks = (options: CallbackStoreOptions) => {
     workspaceId: string,
     callbackId: string,
     revision: number,
-  ): Promise<CallbackBookingResult | null> => {
+  ): Promise<CallbackBookingRead | null> => {
     try {
       const existing = await pool.query<{
         status: CallbackBookingResult['status'];
@@ -374,7 +382,11 @@ export const createPostgresCallbacks = (options: CallbackStoreOptions) => {
           evidenceReference: cancelled.evidence_reference,
         };
       if (events.rows.some((event) => event.event_kind === 'cancel_dispatched'))
-        throw new Error('Callback provider booking cancellation outcome is unknown');
+        return {
+          status: 'cancel_pending',
+          providerReference: stored.provider_reference!,
+          evidenceReference: null,
+        };
       return {
         status: stored.status,
         providerReference: stored.provider_reference,
@@ -395,6 +407,8 @@ export const createPostgresCallbacks = (options: CallbackStoreOptions) => {
         row.callback_id,
         row.state.revision,
       );
+      if (stored?.status === 'cancel_pending')
+        throw new Error('Callback provider booking cancellation outcome is unknown');
       if (!stored || stored.status !== 'confirmed') return;
       if (!stored.providerReference)
         throw new Error('Confirmed callback booking is missing its provider reference');
@@ -635,10 +649,14 @@ export const createPostgresCallbacks = (options: CallbackStoreOptions) => {
       return { duplicate: true as const, state: duplicate.rows[0].snapshot };
     const row = await loadCallback(client, workspaceId, callbackId, true);
     if (!row) throw new Error('Callback obligation is missing');
+    if (action.type === 'reschedule' && !row.recipient_ciphertext)
+      throw new Error('Callback recipient has been purged');
     const before = row.state;
     const after = applyCallbackAction(before, action);
     await projectAction(client, before, after, action);
-    let recipientExpiresAt = row.recipient_expires_at.toISOString();
+    let recipientExpiresAt = action.type === 'reschedule'
+      ? new Date(Date.parse(after.deadline) + row.policy.recipientRetentionMilliseconds).toISOString()
+      : row.recipient_expires_at.toISOString();
     if (terminal(after.status)) {
       recipientExpiresAt = new Date(
         Math.min(
@@ -1332,6 +1350,8 @@ export const createPostgresCallbacks = (options: CallbackStoreOptions) => {
       callbackId,
       row.state.revision,
     );
+    if (existing?.status === 'cancel_pending')
+      throw new Error('Callback provider booking cancellation outcome is unknown');
     if (existing) return existing;
     const result = decodeCallbackBookingResult(
       options.calendar
@@ -1385,6 +1405,7 @@ export const createPostgresCallbacks = (options: CallbackStoreOptions) => {
     request,
     requestOnClient,
     read,
+    readBooking: readBookingForRevision,
     readRecipient,
     apply,
     reschedule,

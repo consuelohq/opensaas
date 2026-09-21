@@ -22,9 +22,10 @@ describe('dialer-server architecture', () => {
     expect(manifest.dependencies.hono).toBeDefined();
     expect(manifest.dependencies['@consuelo/dialer']).toBeDefined();
     expect(manifest.dependencies['@consuelo/lead-connector']).toBeDefined();
-    expect(manifest.dependencies['@consuelo/contacts']).toBeUndefined();
+    expect(manifest.dependencies['@consuelo/contacts']).toBe('workspace:*');
     expect(manifest.dependencies['libphonenumber-js']).toBeUndefined();
-    expect(read('src/routes/inbound-customer.ts')).not.toContain('@consuelo/contacts');
+    expect(read('src/routes/inbound-customer.ts')).toContain("import { normalizePhone } from '@consuelo/contacts'");
+    expect(read('src/routes/inbound-customer.ts')).not.toContain('const normalizePhone');
     expect(read('src/routes/inbound-customer.ts')).not.toContain('libphonenumber-js');
     expect(existsSync(resolve(srcRoot, 'app.ts'))).toBe(true);
     expect(existsSync(resolve(srcRoot, 'main.ts'))).toBe(true);

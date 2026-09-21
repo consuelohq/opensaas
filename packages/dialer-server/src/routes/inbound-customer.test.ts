@@ -59,6 +59,35 @@ const createApplication = () => {
 };
 
 describe('public inbound customer routes', () => {
+  it('returns the standard error envelope before admitting an oversized body', async () => {
+    const fixture = createApplication();
+    const response = await createInboundCustomerRoutes(fixture.application).request(
+      '/v1/inbound/customer/sales/callbacks', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ padding: 'x'.repeat(8192) }),
+      },
+    );
+    expect(response.status).toBe(413);
+    expect(response.headers.get('content-type')).toContain('application/json');
+    expect(await response.json()).toEqual({ error: {
+      code: 'CALLBACK_REQUEST_TOO_LARGE', message: 'Callback request is too large', retryable: false,
+    } });
+    expect(fixture.calls).toHaveLength(0);
+  });
+
+  it('rejects structurally plausible numbers that shared contact validation rejects', async () => {
+    const fixture = createApplication();
+    const response = await createInboundCustomerRoutes(fixture.application).request(
+      '/v1/inbound/customer/sales/callbacks', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ phoneNumber: '+10000000000', permissionAccepted: true,
+          idempotencyKey: 'invalid-number-1234', mode: 'immediate' }),
+      },
+    );
+    expect(response.status).toBe(400);
+    expect(fixture.calls).toHaveLength(0);
+  });
+
   it('serves a public snapshot without accepting internal authority from the browser', async () => {
     const fixture = createApplication();
     const routes = createInboundCustomerRoutes(fixture.application);

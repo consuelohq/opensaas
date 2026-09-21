@@ -1,3 +1,4 @@
+import { normalizePhone } from '@consuelo/contacts';
 import { Hono } from 'hono';
 import { bodyLimit } from 'hono/body-limit';
 
@@ -50,20 +51,6 @@ const managementToken = (authorization: string | undefined): string | null => {
 
 const clientAddress = (value: string | undefined): string =>
   value?.trim() || 'unknown';
-
-const normalizePhone = (value: string): string | null => {
-  const trimmed = value.trim();
-  if (trimmed.length === 0) return null;
-  if (!/^\+?[0-9().\-\s]+$/.test(trimmed)) return null;
-  const digits = trimmed.replace(/\D/g, '');
-  if (trimmed.startsWith('+')) {
-    const normalized = `+${digits}`;
-    return /^\+[1-9]\d{7,14}$/.test(normalized) ? normalized : null;
-  }
-  if (digits.length === 10) return `+1${digits}`;
-  if (digits.length === 11 && digits.startsWith('1')) return `+${digits}`;
-  return null;
-};
 
 const callbackRequest = (value: unknown): PublicCallbackRequest | null => {
   const input = jsonObject(value);
@@ -119,7 +106,13 @@ export const createInboundCustomerRoutes = (
     error: { code, message, retryable },
   });
   const routes = new Hono<{ Bindings: InboundCustomerBindings }>();
-  routes.use('/v1/inbound/customer/*', bodyLimit({ maxSize: 8192 }));
+  routes.use('/v1/inbound/customer/*', bodyLimit({
+    maxSize: 8192,
+    onError: (context) => context.json(
+      error('CALLBACK_REQUEST_TOO_LARGE', 'Callback request is too large', false),
+      413,
+    ),
+  }));
 
   routes.get('/v1/inbound/customer/:publicId', async (context) => {
     const entryId = publicId(context.req.param('publicId'));

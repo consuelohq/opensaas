@@ -1,7 +1,7 @@
+import { resolveInboundEnrichment } from './enrichment';
 import { createTelephonyEndpoints } from './telephony-endpoints';
 import type { Pool } from 'pg';
 import {
-  decodeRoutingRequestMetadata,
   type RepCapacityState,
 } from '@consuelo/dialer';
 import type { CallbackRecipientCipher } from './callback-recipient-cipher';
@@ -193,39 +193,10 @@ export const createTelephonyAdmission = (options: TelephonyOptions) => {
     )
       return hangupTwiml('This number is unavailable.');
     const requestId = telephonyId(number.accountSid, facts.CallSid);
-    let metadata = decodeRoutingRequestMetadata({
-      requiredSkills: [],
-      ownerRepId: null,
-      ownerStatus: 'missing',
-      kind: 'live',
-      notBefore: null,
-      deadline: null,
+    const metadata = await resolveInboundEnrichment(options.enrich, {
+      workspaceId: number.workspaceId,
+      caller: facts.From ?? '',
     });
-    if (options.enrich) {
-      let timer: ReturnType<typeof setTimeout> | undefined;
-      try {
-        metadata = decodeRoutingRequestMetadata(
-          await Promise.race([
-            options.enrich({
-              workspaceId: number.workspaceId,
-              caller: facts.From ?? '',
-            }),
-            new Promise<never>((_resolve, reject) => {
-              timer = setTimeout(
-                () => reject(new Error('Enrichment deadline')),
-                500,
-              );
-            }),
-          ]),
-        );
-      } catch {
-        metadata = { ...metadata, ownerStatus: 'unavailable' };
-      } finally {
-        if (timer) clearTimeout(timer);
-      }
-      if (metadata.kind !== 'live')
-        throw new Error('Inbound enrichment must describe a live caller');
-    }
     await withInboundTransaction(pool, number.workspaceId, async (client) => {
       try {
         if (await readTelephonySession(client, number.workspaceId, requestId))

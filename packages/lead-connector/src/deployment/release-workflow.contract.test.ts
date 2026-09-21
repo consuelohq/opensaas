@@ -37,6 +37,7 @@ describe('dialer GitHub release workflow contract', () => {
     );
     const builds = [
       'bun run --cwd packages/logger build',
+      'bun run --cwd packages/contacts build',
       'bun run --cwd packages/dialer build',
       'bun run --cwd packages/lead-connector build',
       'bun run --cwd packages/dialer-server build',
@@ -48,6 +49,7 @@ describe('dialer GitHub release workflow contract', () => {
       cursor = next;
     }
     expect(railway).toContain('packages/logger/**');
+    expect(railway).toContain('packages/contacts/**');
   });
 
   it('releases dialer changes from main in fail-closed provider order with deployment-only secrets', () => {
@@ -59,7 +61,7 @@ describe('dialer GitHub release workflow contract', () => {
     expect(release).toContain('- dialer');
     expect(release).toContain('environment: consuelo dialer / production');
     expect(release).toContain(
-      'packages/(dialer|dialer-server|lead-connector|logger)/',
+      'packages/(dialer|dialer-server|lead-connector|logger|contacts)/',
     );
     expect(release).toContain('bun run --cwd packages/logger build');
     expect(release.indexOf('bun run --cwd packages/logger build')).toBeLessThan(

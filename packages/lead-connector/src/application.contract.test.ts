@@ -23,6 +23,7 @@ import {
   getLeadConnectorContact,
   getValidLeadConnectorAccessToken,
   listLeadConnectorContacts,
+  lookupLeadConnectorContactOwner,
   listLeadConnectorPipelines,
   recordLeadConnectorDisposition,
   resolveLeadConnectorQueueCandidates,
@@ -790,5 +791,56 @@ describe('LeadConnector token and resource contracts', () => {
         url: `${config.apiBaseUrl}/contacts/contact-1`,
       },
     ]);
+  });
+});
+
+
+describe('inbound contact owner lookup', () => {
+  it('uses the installed location and exact phone endpoint without leaking contact data', async () => {
+    const harness = makeHarness(() => ({ contacts: [{
+      id: 'contact-1', locationId: 'location-1', assignedTo: 'rep-1',
+      email: 'private@example.test', phone: '+14155552671',
+    }] }));
+    harness.state.installationsByWorkspace.set('workspace-1', connectedInstallation());
+    const result = await Effect.runPromise(lookupLeadConnectorContactOwner({
+      workspaceId: 'workspace-1', phoneNumber: '+14155552671',
+    }).pipe(Effect.provide(harness.layer)));
+    expect(result).toEqual({ ownerRepId: 'rep-1', ownerStatus: 'known' });
+    const request = harness.state.requests[0]!;
+    const url = new URL(request.url);
+    expect(url.pathname).toBe('/contacts/lookup');
+    expect(url.searchParams.get('locationId')).toBe('location-1');
+    expect(url.searchParams.get('phone')).toBe('+14155552671');
+    expect(url.searchParams.has('query')).toBe(false);
+    expect(request.headers.Version).toBe('v3');
+  });
+
+  it('does not select an owner from missing, duplicate, truncated or foreign matches', async () => {
+    const contact = { locationId: 'location-1', assignedTo: 'rep-1' };
+    for (const [body, ownerStatus] of [
+      [{ contacts: [] }, 'missing'],
+      [{ contacts: [{ locationId: 'location-1' }] }, 'missing'],
+      [{ contacts: [contact, contact] }, 'ambiguous'],
+      [{ contacts: [contact], nextCursor: 'another-page' }, 'ambiguous'],
+      [{ contacts: [{ ...contact, locationId: 'other-location' }] }, 'unavailable'],
+      [{ contacts: [{ assignedTo: 'rep-1' }] }, 'unavailable'],
+      [{ malformed: true }, 'unavailable'],
+    ] as const) {
+      const harness = makeHarness(() => body);
+      harness.state.installationsByWorkspace.set('workspace-1', connectedInstallation());
+      expect(await Effect.runPromise(lookupLeadConnectorContactOwner({
+        workspaceId: 'workspace-1', phoneNumber: '+14155552671',
+      }).pipe(Effect.provide(harness.layer)))).toEqual({ ownerRepId: null, ownerStatus });
+    }
+  });
+
+  it('never looks up another installation when the workspace is disconnected', async () => {
+    const harness = makeHarness(() => ({}));
+    harness.state.installationsByWorkspace.set('workspace-1', connectedInstallation());
+    const result = await Effect.runPromise(lookupLeadConnectorContactOwner({
+      workspaceId: 'workspace-2', phoneNumber: '+14155552671',
+    }).pipe(Effect.provide(harness.layer), Effect.either));
+    expect(Either.isLeft(result)).toBe(true);
+    expect(harness.state.requests).toHaveLength(0);
   });
 });

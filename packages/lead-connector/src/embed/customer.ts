@@ -25,7 +25,7 @@ export type CustomerCallbackResult = {
     deadline?: string;
   };
   booking: {
-    status: 'unavailable' | 'requested' | 'confirmed' | 'cancelled';
+    status: 'unavailable' | 'requested' | 'confirmed' | 'cancelled' | 'cancel_pending';
     providerReference?: string | null;
     evidenceReference?: string | null;
   };
@@ -80,29 +80,42 @@ const renderBookingTruth = (
 ): string => {
   if (!result) return '';
   const booking = result.booking;
+  const cancelled = result.callback.status === 'cancelled';
+  const cancellationPending =
+    result.callback.status === 'cancel_pending' || booking.status === 'cancel_pending';
   const confirmed =
     booking.status === 'confirmed' &&
     Boolean(booking.providerReference) &&
     Boolean(booking.evidenceReference);
-  const title = confirmed
-    ? 'Appointment confirmed'
-    : result.callback.status === 'cancel_pending'
+  const terminalMessage = result.callback.status === 'fulfilled'
+    ? { title: 'Callback completed', detail: 'This callback has been completed.' }
+    : result.callback.status === 'expired'
+      ? { title: 'Callback window expired', detail: 'The service window ended before we could complete your callback. You can call us or request another callback.' }
+      : result.callback.status === 'exhausted'
+        ? { title: 'Callback attempts finished', detail: 'We could not complete your callback within the allowed attempts. You can call us or request another callback.' }
+        : null;
+  const canManage = !terminalMessage && !cancelled && !cancellationPending;
+  const title = terminalMessage?.title ?? (cancelled
+    ? 'Callback cancelled'
+    : cancellationPending
       ? 'Cancellation pending'
-    : result.callback.status === 'cancelled'
-      ? 'Callback cancelled'
-      : 'Callback requested';
-  const detail = confirmed
-    ? 'The calendar provider returned confirmation evidence.'
-    : result.callback.status === 'cancel_pending'
-      ? 'We are reconciling an in-progress call effect before the callback can be marked cancelled.'
+      : confirmed
+        ? 'Appointment confirmed'
+        : 'Callback requested');
+  const detail = terminalMessage?.detail ?? (cancelled
+    ? 'This callback has been cancelled.'
+    : cancellationPending
+      ? 'We are confirming the cancellation. It has not been marked complete yet.'
+      : confirmed
+        ? 'The calendar provider returned confirmation evidence.'
     : booking.status === 'requested'
       ? 'The booking request is still awaiting provider confirmation.'
       : booking.status === 'unavailable'
         ? 'This is a callback request, not a confirmed calendar appointment.'
-        : 'The callback obligation reflects the latest server state.';
+        : 'The callback obligation reflects the latest server state.');
   const reschedule =
     result.managementToken &&
-    result.callback.status !== 'cancelled' &&
+    canManage &&
     snapshot.callback.serviceWindows.length
       ? `<form data-form="customer-reschedule" class="customer-form customer-reschedule">
           <label>Move callback to a staffed service window
@@ -121,8 +134,8 @@ const renderBookingTruth = (
     <h2>${title}</h2>
     <p>${detail}</p>
     ${
-      result.managementToken && result.callback.status !== 'cancelled'
-        ? '<div class="customer-manage"><button class="button button--secondary" type="button" data-action="customer-refresh">Refresh status</button><button class="button button--danger" type="button" data-action="customer-cancel">Cancel callback</button></div>'
+      result.managementToken && !cancelled
+        ? `<div class="customer-manage"><button class="button button--secondary" type="button" data-action="customer-refresh">Refresh status</button>${canManage ? '<button class="button button--danger" type="button" data-action="customer-cancel">Cancel callback</button>' : ''}</div>`
         : ''
     }
     ${reschedule}

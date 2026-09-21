@@ -3,17 +3,18 @@ import type { Pool, PoolClient } from 'pg';
 import {
   isInboundQueueOpen,
   isRepCapacityEligible,
-  type CallbackBookingResult,
   type InboundQueuePolicy,
   type RepCapacityState,
 } from '@consuelo/dialer';
 
 import type {
+  CallbackBookingRead,
   CallbackConsentAdapter,
   createPostgresCallbacks,
 } from './callbacks';
 import { withInboundTransaction } from './postgres-journal';
-import type { InboundNumber } from './telephony-contracts';
+import { resolveInboundEnrichment } from './enrichment';
+import type { InboundEnrichment, InboundNumber } from './telephony-contracts';
 
 export type CustomerServiceWindow = {
   id: string;
@@ -41,7 +42,7 @@ export type CustomerCallbackResult = {
     notBefore: string;
     deadline: string;
   };
-  booking: CallbackBookingResult;
+  booking: CallbackBookingRead;
 };
 
 type CallbackService = ReturnType<typeof createPostgresCallbacks>;
@@ -327,6 +328,7 @@ export const createInboundCustomerApplication = (options: {
   callbacks: CallbackService | null;
   secret: string;
   clock?: () => string;
+  enrich?: InboundEnrichment;
 }) => {
   const secret = requireSecret(options.secret);
   const entries = new Map(
@@ -651,6 +653,10 @@ export const createInboundCustomerApplication = (options: {
         row.callback_id,
       );
       if (current) return current;
+      const metadata = await resolveInboundEnrichment(options.enrich, {
+        workspaceId: number.workspaceId,
+        caller: recipient,
+      });
       await options.callbacks.request({
         operationId: operationIdFor(row.callback_id),
         workspaceId: number.workspaceId,
@@ -666,9 +672,9 @@ export const createInboundCustomerApplication = (options: {
         notBefore: row.not_before.toISOString(),
         deadline: row.deadline.toISOString(),
         metadata: {
-          requiredSkills: [],
-          ownerRepId: null,
-          ownerStatus: 'missing',
+          requiredSkills: metadata.requiredSkills,
+          ownerRepId: metadata.ownerRepId,
+          ownerStatus: metadata.ownerStatus,
         },
         policy: number.callback,
       });
@@ -689,8 +695,9 @@ export const createInboundCustomerApplication = (options: {
   const bookingFor = async (
     number: InboundNumber,
     callbackId: string,
+    revision: number,
     ensure: boolean,
-  ): Promise<CallbackBookingResult> => {
+  ): Promise<CallbackBookingRead> => {
     try {
       if (!options.callbacks)
         return {
@@ -698,24 +705,12 @@ export const createInboundCustomerApplication = (options: {
           providerReference: null,
           evidenceReference: null,
         };
-      const callback = await options.callbacks.read(number.workspaceId, callbackId);
-      if (!callback) throw new Error('CUSTOMER_CALLBACK_INVALID');
-      const existing = await options.pool.query<{
-        status: CallbackBookingResult['status'];
-        provider_reference: string | null;
-        evidence_reference: string | null;
-      }>(
-        `SELECT status,provider_reference,evidence_reference
-         FROM dialer_callback_bookings
-         WHERE workspace_id=$1 AND callback_id=$2 AND revision=$3`,
-        [number.workspaceId, callbackId, callback.state.revision],
+      const existing = await options.callbacks.readBooking(
+        number.workspaceId,
+        callbackId,
+        revision,
       );
-      if (existing.rows[0])
-        return {
-          status: existing.rows[0].status,
-          providerReference: existing.rows[0].provider_reference,
-          evidenceReference: existing.rows[0].evidence_reference,
-        };
+      if (existing) return existing;
       if (ensure) return await options.callbacks.book(number.workspaceId, callbackId);
       return {
         status: 'unavailable',
@@ -751,7 +746,7 @@ export const createInboundCustomerApplication = (options: {
           notBefore: callback.state.notBefore,
           deadline: callback.state.deadline,
         },
-        booking: await bookingFor(number, row.callback_id, ensureBooking),
+        booking: await bookingFor(number, row.callback_id, callback.state.revision, ensureBooking),
       };
     } catch (cause: unknown) {
       if (cause instanceof Error) throw cause;
