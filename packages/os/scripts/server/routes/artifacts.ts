@@ -114,16 +114,26 @@ function authorizeWrite(
     });
   }
 
-  const localCsrf = request.headers.get('x-consuelo-artifact-share-csrf') ?? '';
+  if (!isSameOriginLoopbackMutation(request)) {
+    return Promise.resolve(jsonResponse({
+      ok: false,
+      error: {
+        code: 'ARTIFACT_SHARE_ORIGIN_FAILED',
+        message: 'Artifact share changes must come from the local Artifacts page.',
+      },
+    }, 403));
+  }
+
+  const localCsrf = request.headers.get('x-consuelo-artifact-share-csrf')?.trim() ?? '';
   if (
-    !isSameOriginLoopbackMutation(request)
-    || !verifyLocalArtifactShareCsrf(resolveArtifactsHome(), localCsrf)
+    localCsrf
+    && !verifyLocalArtifactShareCsrf(resolveArtifactsHome(), localCsrf)
   ) {
     return Promise.resolve(jsonResponse({
       ok: false,
       error: {
         code: 'ARTIFACT_SHARE_CSRF_FAILED',
-        message: 'A current local Artifacts page is required to change private links.',
+        message: 'The local Artifacts share capability is invalid.',
       },
     }, 403));
   }
