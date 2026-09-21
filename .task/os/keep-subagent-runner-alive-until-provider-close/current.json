@@ -1,0 +1,20 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/keep-subagent-runner-alive-until-provider-close",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2318,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2318",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2318",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2318/keep-subagent-runner-alive-until-provider-close",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2318",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2318/keep-subagent-runner-alive-until-provider-close",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-keep-subagent-runner-alive-until-provider-close",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_32b18221dee4",
+  "tmuxSession": "opensaas-os-keep-subagent-runner-alive-until-provider-close-32b18221",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-keep-subagent-runner-alive-until-provider-close/.task/os/keep-subagent-runner-alive-until-provider-close/session.json",
+  "createdAt": "2026-08-30T20:52:07.412Z"
+}

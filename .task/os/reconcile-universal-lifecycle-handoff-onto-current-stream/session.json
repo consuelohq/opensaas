@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_030685c5827c",
+  "tmuxSession": "opensaas-os-reconcile-universal-lifecycle-handoff-onto-curre-030685c5",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/reconcile-universal-lifecycle-handoff-onto-current-stream",
+  "branch": "task/os/reconcile-universal-lifecycle-handoff-onto-current-stream",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-reconcile-universal-lifecycle-handoff-onto-current-stream",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-reconcile-universal-lifecycle-handoff-onto-current-stream",
+  "prNumber": 1914,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1914",
+  "createdAt": "2026-08-13T19:57:00.575Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-reconcile-universal-lifecycle-handoff-onto-current-stream/.task/os/reconcile-universal-lifecycle-handoff-onto-current-stream/session.json"
+}

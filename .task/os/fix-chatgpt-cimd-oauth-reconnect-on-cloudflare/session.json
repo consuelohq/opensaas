@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_d12e38b72b8c",
+  "tmuxSession": "opensaas-os-fix-chatgpt-cimd-oauth-reconnect-on-cloudflare-d12e38b7",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-chatgpt-cimd-oauth-reconnect-on-cloudflare",
+  "branch": "task/os/fix-chatgpt-cimd-oauth-reconnect-on-cloudflare",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-chatgpt-cimd-oauth-reconnect-on-cloudflare",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-chatgpt-cimd-oauth-reconnect-on-cloudflare",
+  "prNumber": 1974,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1974",
+  "createdAt": "2026-08-14T22:29:05.207Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-chatgpt-cimd-oauth-reconnect-on-cloudflare/.task/os/fix-chatgpt-cimd-oauth-reconnect-on-cloudflare/session.json"
+}

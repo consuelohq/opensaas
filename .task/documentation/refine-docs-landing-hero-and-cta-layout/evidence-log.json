@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/documentation/refine-docs-landing-hero-and-cta-layout",
+  "events": [
+    {
+      "id": "63bc13d2-0f97-445a-ad6e-43262b2903d1",
+      "occurred_at": "2026-08-14T09:33:28.004Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/documentation/scripts/validate-documentation.mjs",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/documentation/refine-docs-landing-hero-and-cta-layout",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/documentation/refine-docs-landing-hero-and-cta-layout"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-14T09:33:28.064Z"
+}

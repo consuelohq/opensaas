@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/retry-transient-macos-gateway-kickstart-during-lifecycle-updates",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2090,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2090",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2090",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2090/retry-transient-macos-gateway-kickstart-during-lifecycle-updates",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2090",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2090/retry-transient-macos-gateway-kickstart-during-lifecycle-updates",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-retry-transient-macos-gateway-kickstart-during-lifecycle-updates",
+  "taskSession": "tsk_379229b090af",
+  "tmuxSession": "opensaas-os-retry-transient-macos-gateway-kickstart-during-l-379229b0",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-retry-transient-macos-gateway-kickstart-during-lifecycle-updates/.task/os/retry-transient-macos-gateway-kickstart-during-lifecycle-updates/session.json",
+  "createdAt": "2026-08-15T20:08:10.054Z"
+}

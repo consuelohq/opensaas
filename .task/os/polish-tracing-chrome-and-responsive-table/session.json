@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_0fdc77a29a78",
+  "tmuxSession": "opensaas-os-polish-tracing-chrome-and-responsive-table-0fdc77a2",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/polish-tracing-chrome-and-responsive-table",
+  "branch": "task/os/polish-tracing-chrome-and-responsive-table",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-polish-tracing-chrome-and-responsive-table",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-polish-tracing-chrome-and-responsive-table",
+  "prNumber": 2041,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2041",
+  "createdAt": "2026-08-15T07:18:03.796Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-polish-tracing-chrome-and-responsive-table/.task/os/polish-tracing-chrome-and-responsive-table/session.json"
+}

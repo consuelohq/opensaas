@@ -17,7 +17,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const twentyRules = await nxPlugin.loadWorkspaceRules(
-  'packages/twenty-eslint-rules',
+  'packages/eslint-rules',
 );
 
 export default [

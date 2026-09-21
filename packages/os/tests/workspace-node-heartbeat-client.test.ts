@@ -5,6 +5,7 @@ import {
   type WorkspaceNodeHeartbeatConfig,
 } from '../scripts/lib/workspace-node-heartbeat-client';
 import { generateWorkspaceDeviceKeyPair } from '../scripts/lib/workspace-device-login-client';
+import { MODERN_MCP_PROTOCOL_VERSION } from '../scripts/lib/mcp-protocol';
 import { b64Decode } from '../cloudflare/os-device-authority/src/utils';
 
 const baseNow = Date.parse('2026-07-22T20:00:00.000Z');
@@ -57,13 +58,62 @@ describe('workspace node heartbeat client', () => {
           routeReady: true,
           connectorId: 'connector_member',
           edgeRequestSigningSecret: 'wen_heartbeat_reconciled_secret',
+          workspace: {
+            workspaceId: 'workspace_123',
+            workspaceHost: 'workspace-123.consuelohq.com',
+            currentNodeId: 'node_member',
+            defaultNodeId: 'node_home',
+            nodeCount: 2,
+            nodes: [
+              {
+                workspaceId: 'workspace_123',
+                nodeId: 'node_home',
+                displayName: 'Home Mac',
+                role: 'home',
+                platform: 'darwin',
+                architecture: 'arm64',
+                channel: 'canary',
+                capabilities: ['mcp'],
+                agents: ['codex'],
+                createdAt: '2026-07-22T19:00:00.000Z',
+                lastSeenAt: '2026-07-22T19:59:45.000Z',
+                presence: 'online',
+                state: 'active',
+              },
+              {
+                workspaceId: 'workspace_123',
+                nodeId: 'node_member',
+                displayName: 'Cloud node',
+                role: 'member',
+                platform: 'linux',
+                architecture: 'x64',
+                channel: 'canary',
+                capabilities: ['mcp', 'tools'],
+                agents: null,
+                createdAt: '2026-07-22T19:30:00.000Z',
+                lastSeenAt: '2026-07-22T20:00:00.000Z',
+                presence: 'online',
+                state: 'active',
+              },
+            ],
+          },
         });
       },
     });
 
-    const first = await client.send();
+    const first = await client.send({
+      osVersion: '0.1.85',
+      bundleId: 'bundle-cloud-ready',
+      mcpProtocolVersion: MODERN_MCP_PROTOCOL_VERSION,
+      mcpReady: false,
+    });
     nowMs += 30_000;
-    const second = await client.send();
+    const second = await client.send({
+      osVersion: '0.1.85',
+      bundleId: 'bundle-cloud-ready',
+      mcpProtocolVersion: MODERN_MCP_PROTOCOL_VERSION,
+      mcpReady: true,
+    });
 
     expect(first).toEqual({
       nodeId: 'node_member',
@@ -71,6 +121,16 @@ describe('workspace node heartbeat client', () => {
       routeReady: true,
       connectorId: 'connector_member',
       edgeRequestSigningSecret: 'wen_heartbeat_reconciled_secret',
+      workspace: {
+        workspaceId: 'workspace_123',
+        workspaceHost: 'workspace-123.consuelohq.com',
+        currentNodeId: 'node_member',
+        defaultNodeId: 'node_home',
+        nodes: [
+          expect.objectContaining({ nodeId: 'node_home', displayName: 'Home Mac' }),
+          expect.objectContaining({ nodeId: 'node_member', displayName: 'Cloud node' }),
+        ],
+      },
     });
     expect(second).toEqual(first);
     expect(requests).toHaveLength(2);
@@ -87,6 +147,10 @@ describe('workspace node heartbeat client', () => {
         connectorStatus: 'connected',
         capabilities: ['mcp', 'tools'],
         agents: ['codex', 'opencode'],
+        osVersion: '0.1.85',
+        bundleId: 'bundle-cloud-ready',
+        mcpProtocolVersion: MODERN_MCP_PROTOCOL_VERSION,
+        mcpReady: index === 1,
       });
       const signature = request.headers.get('x-consuelo-node-signature');
       expect(signature).toBeTruthy();
@@ -221,5 +285,69 @@ describe('workspace node heartbeat client', () => {
       'workspace node heartbeat failed with HTTP 503',
     );
     await expect(client.send()).rejects.not.toThrow(deviceKeyPair.signingKeyJwk);
+  });
+});
+
+describe('workspace heartbeat error diagnostics', () => {
+  it.each([
+    ['WORKSPACE_ROUTE_QUOTA_EXCEEDED', 'WORKSPACE_ROUTE_QUOTA_EXCEEDED'],
+    ['WORKSPACE_ROUTE_RECONCILIATION_FAILED', 'WORKSPACE_ROUTE_RECONCILIATION_FAILED'],
+    ['WORKSPACE_ROUTE_NOT_READY', 'WORKSPACE_ROUTE_NOT_READY'],
+    ['WORKSPACE_ROUTE_UNKNOWN', undefined],
+    ['Bearer unsafe-provider-secret', undefined],
+  ])(
+    'should expose only recognized authority error codes: %s', async (code, expectedCode) => {
+      const keys = generateWorkspaceDeviceKeyPair();
+      const client = createWorkspaceNodeHeartbeatClient({
+        config: {
+          ...keys, authorityOrigin: 'https://os.consuelohq.com',
+          workspaceId: 'workspace_test', nodeId: 'node_test',
+          connectorStatus: 'connected', capabilities: ['mcp'],
+        },
+        fetchImpl: async () => Response.json({
+          error: { code, message: 'Bearer unsafe-provider-secret' },
+        }, { status: 503 }),
+      });
+      await expect(client.send()).rejects.toMatchObject({
+        status: 503,
+        code: expectedCode,
+      });
+      await expect(client.send()).rejects.not.toThrow('unsafe-provider-secret');
+    },
+  );
+
+  it('should cancel a non-terminating 503 body and preserve the HTTP failure', async () => {
+    const keys = generateWorkspaceDeviceKeyPair();
+    let cancelled = false;
+    let streamController: ReadableStreamDefaultController<Uint8Array>;
+    const body = new ReadableStream<Uint8Array>({
+      start(controller) {
+        streamController = controller;
+        controller.enqueue(new TextEncoder().encode('{"error":'));
+      },
+      cancel() { cancelled = true; },
+    });
+    const client = createWorkspaceNodeHeartbeatClient({
+      config: {
+        ...keys, authorityOrigin: 'https://os.consuelohq.com',
+        workspaceId: 'workspace_test', nodeId: 'node_test',
+        connectorStatus: 'connected', capabilities: ['mcp'],
+      },
+      fetchImpl: async () => new Response(body, { status: 503 }),
+    });
+    let guard: ReturnType<typeof setTimeout> | undefined;
+    try {
+      const failure = await Promise.race([
+        client.send().catch((error: unknown) => error),
+        new Promise((resolve) => {
+          guard = setTimeout(() => resolve('body read did not finish'), 2_000);
+        }),
+      ]);
+      expect(failure).toMatchObject({ status: 503, code: undefined });
+      expect(cancelled).toBe(true);
+    } finally {
+      clearTimeout(guard);
+      if (!cancelled) streamController!.close();
+    }
   });
 });

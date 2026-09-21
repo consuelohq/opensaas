@@ -39,6 +39,7 @@ const requiredFixtureFiles: Record<string, string> = {
   'scripts/server/supervisor.ts': 'export const supervisorFixture = true;\n',
   'scripts/native-lifecycle-operation.ts':
     'export const nativeLifecycleOperationFixture = true;\n',
+  'scripts/retire-legacy-system-daemons.sh': '#!/bin/bash\nexit 0\n',
   'scripts/lib/install-state.ts': 'export const installFixture = true;\n',
   'scripts/managed-components.ts':
     'export const managedComponentsCliFixture = true;\n',
@@ -139,7 +140,7 @@ afterEach(() => {
   for (const root of fixtureRoots.splice(0)) {
     rmSync(root, { force: true, recursive: true });
   }
-});
+}, 120_000);
 
 describe('runtime bundle contract', () => {
   it('defines the integration entrypoint and package-script keys without wiring shared scripts', () => {
@@ -281,7 +282,7 @@ describe('runtime bundle contract', () => {
     expect(build.status).toBe(0);
     expect(existsSync(archivePath)).toBe(true);
     expect(JSON.parse(build.stdout)).toMatchObject({
-      fileCount: Object.keys(requiredFixtureFiles).length,
+      fileCount: Object.keys(requiredFixtureFiles).length - 1,
       outputPath: archivePath,
       version: '2.3.4',
     });
@@ -294,7 +295,7 @@ describe('runtime bundle contract', () => {
     expect(verify.status).toBe(0);
     expect(JSON.parse(verify.stdout)).toMatchObject({
       archivePath,
-      fileCount: Object.keys(requiredFixtureFiles).length,
+      fileCount: Object.keys(requiredFixtureFiles).length - 1,
       valid: true,
       version: '2.3.4',
     });
@@ -352,6 +353,9 @@ describe('runtime bundle contract', () => {
       'source-only',
     );
     expect(classifyRuntimeBundlePath('manifests/manifest.config.ts')).toBe(
+      'source-only',
+    );
+    expect(classifyRuntimeBundlePath('steering/system_prompt.md')).toBe(
       'source-only',
     );
     expect(
@@ -859,6 +863,22 @@ describe('runtime bundle contract', () => {
           role: 'runtime',
         }),
         expect.objectContaining({
+          path: 'scripts/task-worktree-gc.js',
+          role: 'runtime',
+        }),
+        expect.objectContaining({
+          path: 'scripts/lib/task-worktree-eviction.js',
+          role: 'runtime',
+        }),
+        expect.objectContaining({
+          path: 'scripts/lib/task-worktree-gc.js',
+          role: 'runtime',
+        }),
+        expect.objectContaining({
+          path: 'scripts/lib/task-worktree-gc-scheduler.ts',
+          role: 'runtime',
+        }),
+        expect.objectContaining({
           path: 'assets/consuelo-mark.png',
           role: 'runtime',
         }),
@@ -991,17 +1011,7 @@ describe('runtime bundle contract', () => {
     const bundledSteering = archive.entries.find(
       (entry) => entry.path === 'steering/system_prompt.md',
     );
-    const bundledSteeringText = bundledSteering?.bytes.toString('utf8') ?? '';
-    // The property that matters is that no real home path ships to customers. Any absolute
-    // /Users path in the steering must be the redacted placeholder form. This previously pinned
-    // one exact literal from an older revision, which broke as soon as the bundle was resynced
-    // from the canonical workspace steering without testing anything real.
-    for (const match of bundledSteeringText.match(/\/Users\/[^\s`|)]*/g) ?? []) {
-      expect(match.startsWith('/Users/.../')).toBe(true);
-    }
-    expect(bundledSteeringText).not.toContain('/Users/kokayi/');
-    // The bundle is what actually reaches agents, so the governance rules must be in it.
-    expect(bundledSteeringText).toContain('Alignment First');
+    expect(bundledSteering).toBeUndefined();
     expect(readFileSync(join(packageRoot, 'Dockerfile'), 'utf8')).toContain(
       'scripts/build-runtime-bundle.ts',
     );

@@ -51,11 +51,21 @@ export const GET: APIRoute = async ({ request }) => {
   const runtimeEnv = getRuntimeEnv();
 
   try {
+    const textToTranslate = [
+      source.title,
+      ...(source.description ? [source.description] : []),
+      ...source.segments,
+    ];
     const translated = await translateSegments({
-      segments: source.segments,
+      segments: textToTranslate,
       targetLanguage: targetLanguage.code,
       env: runtimeEnv,
     });
+    const translatedTitle = translated.segments[0] ?? source.title;
+    const segmentOffset = source.description ? 2 : 1;
+    const translatedDescription = source.description
+      ? translated.segments[1] ?? source.description
+      : null;
     const payload: TranslationSuccess = {
       ok: true,
       cached: false,
@@ -65,9 +75,9 @@ export const GET: APIRoute = async ({ request }) => {
       route: source.route,
       contentHash: source.contentHash,
       cacheKey,
-      title: source.title,
-      description: source.description,
-      segments: translated.segments,
+      title: translatedTitle,
+      description: translatedDescription,
+      segments: translated.segments.slice(segmentOffset),
     };
     setCachedTranslation(cacheKey, payload);
     return json(payload);

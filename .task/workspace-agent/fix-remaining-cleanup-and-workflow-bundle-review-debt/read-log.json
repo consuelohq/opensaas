@@ -1,0 +1,8 @@
+{
+  "files": [
+    "packages/documentation/AUTHORING.md",
+    "packages/workspace/scripts/lib/task-worktree-eviction.js",
+    "packages/workspace/test-selection.rules.json"
+  ],
+  "updatedAt": "2026-08-16T05:14:12.824Z"
+}

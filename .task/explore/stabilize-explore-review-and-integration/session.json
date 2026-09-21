@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_3cfbc9b8c556",
+  "tmuxSession": "opensaas-explore-stabilize-explore-review-and-integration-3cfbc9b8",
+  "area": "explore",
+  "stream": "stream/explore",
+  "taskBranch": "task/explore/stabilize-explore-review-and-integration",
+  "branch": "task/explore/stabilize-explore-review-and-integration",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-explore-stabilize-explore-review-and-integration",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-explore-stabilize-explore-review-and-integration",
+  "prNumber": 2120,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2120",
+  "createdAt": "2026-08-16T03:49:15.756Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-explore-stabilize-explore-review-and-integration/.task/explore/stabilize-explore-review-and-integration/session.json"
+}

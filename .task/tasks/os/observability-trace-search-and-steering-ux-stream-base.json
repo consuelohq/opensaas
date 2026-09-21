@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/observability-trace-search-and-steering-ux-stream-base",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1932,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1932",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1932",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1932/observability-trace-search-and-steering-ux-stream-base",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1932",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1932/observability-trace-search-and-steering-ux-stream-base",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-observability-trace-search-and-steering-ux-stream-base",
+  "taskSession": "tsk_ccc76b9b49c0",
+  "tmuxSession": "opensaas-os-observability-trace-search-and-steering-ux-strea-ccc76b9b",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-observability-trace-search-and-steering-ux-stream-base/.task/os/observability-trace-search-and-steering-ux-stream-base/session.json",
+  "createdAt": "2026-08-14T01:20:48.865Z"
+}

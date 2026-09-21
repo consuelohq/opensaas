@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/align-cimd-worker-test-fixture-for-stream-sync",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1980,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1980",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1980",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1980/align-cimd-worker-test-fixture-for-stream-sync",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1980",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1980/align-cimd-worker-test-fixture-for-stream-sync",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-align-cimd-worker-test-fixture-for-stream-sync",
+  "taskSession": "tsk_ad8b0c1d2fda",
+  "tmuxSession": "opensaas-os-align-cimd-worker-test-fixture-for-stream-sync-ad8b0c1d",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-align-cimd-worker-test-fixture-for-stream-sync/.task/os/align-cimd-worker-test-fixture-for-stream-sync/session.json",
+  "createdAt": "2026-08-15T01:19:38.232Z"
+}

@@ -1,7 +1,9 @@
+import { createTraceCursorStream } from './trace-cursor-stream';
 import {
   createTraceSitesGatewayReadLayer,
   type TraceSitesGatewayReadBackendAdapter,
   type TraceSitesGatewayReadBackendInput,
+  type TraceSitesGatewayHistoryRow,
   type TraceSitesGatewayReadLayerRequest,
   type TraceSitesGatewayReadLayerResult,
 } from './trace-sites-gateway-read-layer';
@@ -15,6 +17,38 @@ import {
   resolveTraceGatewayDiscovery,
   validateTraceReadQuery,
 } from './trace-sites-gateway-contract';
+
+const REDACTED_TRACE_HISTORY_FIELDS = [
+  'id',
+  'recordId',
+  'traceId',
+  'trace',
+  'startTime',
+  'time',
+  'name',
+  'traceName',
+  'status',
+  'ok',
+  'code',
+  'exitCode',
+  'durationMs',
+  'latency',
+  'tokens',
+  'inputTokens',
+  'outputTokens',
+  'cost',
+  'costLabel',
+] as const;
+
+function redactTraceHistoryRow(
+  row: TraceSitesGatewayHistoryRow,
+): TraceSitesGatewayHistoryRow {
+  return Object.fromEntries(
+    REDACTED_TRACE_HISTORY_FIELDS.flatMap((field) =>
+      row[field] === undefined ? [] : [[field, row[field]]],
+    ),
+  ) as TraceSitesGatewayHistoryRow;
+}
 import type {
   TraceGatewaySessionScope,
   TraceSiteSlug,
@@ -41,6 +75,7 @@ const TRACE_LIVE_ROUTES = new Set([
   '/gateway/traces/aggregates',
   '/gateway/traces/events',
 ]);
+const TRACE_HEATMAP_WINDOW_HOURS = 8 * 24;
 
 export function createTraceSitesGatewayLiveEndpoints(
   options: TraceSitesGatewayLiveEndpointOptions,
@@ -84,8 +119,43 @@ export function createTraceSitesGatewayLiveEndpoints(
         );
       }
 
+      if (
+        url.pathname === '/gateway/traces/events' &&
+        url.searchParams.get('direction') === 'newer'
+      ) {
+        const initial = await cursorPageResponse(
+          url,
+          scope,
+          options.backend,
+          'newer',
+        );
+        return createTraceCursorStream(request, initial, (cursor) => {
+          const next = new URL(url);
+          next.searchParams.set('cursor', cursor);
+          return cursorPageResponse(next, scope, options.backend, 'newer');
+        });
+      }
       if (url.pathname === '/gateway/traces/events') {
         return sseLiveResponse(request, url, scope, readLayer);
+      }
+
+      if (
+        url.pathname === '/gateway/traces/aggregates' &&
+        url.searchParams.get('bucket') === '15m'
+      ) {
+        return hourlyAggregateResponse(url, scope, options.backend);
+      }
+
+      if (
+        url.pathname === '/gateway/traces/aggregates' &&
+        url.searchParams.has('bucket')
+      ) {
+        return aggregateFailureResponse(
+          'TRACE_AGGREGATE_BUCKET_INVALID',
+          'Trace heatmap aggregates require bucket=15m.',
+          400,
+          scope,
+        );
       }
 
       const historyDirection = url.searchParams.get('direction');
@@ -140,6 +210,7 @@ async function cursorPageResponse(
     sourceMode: request.sourceMode,
     cursor: request.cursor,
     limit,
+    ...(request.query ? { query: request.query } : {}),
   };
 
   if (
@@ -161,7 +232,7 @@ async function cursorPageResponse(
     site: request.site,
     cursor: request.cursor,
     limit,
-    includeRawPayload: true,
+    includeRawPayload: request.includeRawPayload === true,
     requesterCanReadRawPayload:
       request.includeRawPayload === true &&
       request.site === 'trace-burn-intelligence' &&
@@ -231,8 +302,12 @@ async function cursorPageResponse(
         workspaceId: request.workspaceId,
         workspaceHost: request.workspaceHost,
         ...(request.nodeId ? { nodeId: request.nodeId } : {}),
-        rows: page.rows,
+        rows:
+          request.includeRawPayload === true
+            ? page.rows
+            : page.rows.map(redactTraceHistoryRow),
         nextCursor: page.nextCursor,
+        ...(page.liveCursor ? { liveCursor: page.liveCursor } : {}),
       },
     });
   } catch {
@@ -243,6 +318,170 @@ async function cursorPageResponse(
       scope,
     );
   }
+}
+
+async function hourlyAggregateResponse(
+  url: URL,
+  scope: TraceGatewaySessionScope,
+  backend: TraceSitesGatewayReadBackendAdapter,
+): Promise<Response> {
+  if (url.searchParams.get('window') !== '8d') {
+    return aggregateFailureResponse(
+      'TRACE_AGGREGATE_WINDOW_INVALID',
+      'Hourly trace aggregates currently support the 8d window.',
+      400,
+      scope,
+    );
+  }
+
+  const request = readRequestFromUrl(url, scope);
+  if (
+    request.workspaceId !== scope.workspaceId ||
+    !canScopeReadTraceSites(scope, request.workspaceHost, request.site) ||
+    !scope.sourceModesAllowed.includes(request.sourceMode)
+  ) {
+    return aggregateFailureResponse(
+      'TRACE_READ_SCOPE_DENIED',
+      'Trace aggregate read scope was denied.',
+      403,
+      scope,
+    );
+  }
+
+  const validation = validateTraceReadQuery({
+    workspaceId: request.workspaceId,
+    workspaceHost: request.workspaceHost,
+    site: request.site,
+    cursor: request.cursor,
+    limit: request.limit,
+    includeRawPayload: false,
+    requesterCanReadRawPayload: false,
+  });
+  if (!validation.ok) {
+    return aggregateFailureResponse(
+      validation.errors[0] ?? 'TRACE_AGGREGATE_QUERY_INVALID',
+      'Trace aggregate query is invalid.',
+      400,
+      scope,
+    );
+  }
+
+  const discovery = resolveTraceGatewayDiscovery({
+    workspaceId: request.workspaceId,
+    workspaceHost: request.workspaceHost,
+    sourceMode: request.sourceMode,
+    bridgeConfigured: request.bridgeConfigured,
+  });
+  if (discovery.sitesHydration === 'unavailable-without-bridge') {
+    return aggregateFailureResponse(
+      'BRIDGE_REQUIRED',
+      'A configured bridge is required before hosted Trace Sites can read local off-network aggregates.',
+      503,
+      scope,
+    );
+  }
+
+  if (url.searchParams.get('scopeOnly') === 'true') {
+    return jsonResponse({
+      ok: true,
+      publicBoundary: 'consuelo-gateway',
+      route: '/gateway/traces/aggregates',
+      data: {
+        workspaceId: request.workspaceId,
+        workspaceHost: request.workspaceHost,
+        ...(request.nodeId ? { nodeId: request.nodeId } : {}),
+        sourceMode: request.sourceMode,
+        site: request.site,
+        scopeOnly: true,
+      },
+    });
+  }
+
+  if (!backend.readHourlyAggregate) {
+    return aggregateFailureResponse(
+      'TRACE_AGGREGATE_UNAVAILABLE',
+      'The hourly trace aggregate backend is unavailable.',
+      503,
+      scope,
+    );
+  }
+
+  const input: TraceSitesGatewayReadBackendInput = {
+    workspaceId: request.workspaceId,
+    workspaceHost: request.workspaceHost,
+    ...(request.nodeId ? { nodeId: request.nodeId } : {}),
+    site: request.site,
+    sourceMode: request.sourceMode,
+    cursor: request.cursor,
+    limit: request.limit ?? DEFAULT_TRACE_READ_POLICY.maxWindowSize,
+  };
+
+  try {
+    const health = await backend.resolveHealth?.(input);
+    if (
+      health?.traceStoreAvailable === false &&
+      health.aggregateCacheAvailable === false
+    ) {
+      return aggregateFailureResponse(
+        'TRACE_STORE_UNAVAILABLE',
+        'The trace store and aggregate cache are unavailable.',
+        503,
+        scope,
+      );
+    }
+    const hourly = await backend.readHourlyAggregate({
+      ...input,
+      hours: TRACE_HEATMAP_WINDOW_HOURS,
+    });
+    return jsonResponse({
+      ok: true,
+      publicBoundary: 'consuelo-gateway',
+      route: '/gateway/traces/aggregates',
+      data: {
+        workspaceId: request.workspaceId,
+        workspaceHost: request.workspaceHost,
+        ...(request.nodeId ? { nodeId: request.nodeId } : {}),
+        sourceMode: request.sourceMode,
+        site: request.site,
+        aggregateSource:
+          health?.traceStoreAvailable === false
+            ? 'aggregate-cache'
+            : 'trace-store',
+        hourly,
+      },
+    });
+  } catch {
+    return aggregateFailureResponse(
+      'TRACE_AGGREGATE_READ_FAILED',
+      'Hourly trace aggregate read failed.',
+      503,
+      scope,
+    );
+  }
+}
+
+function aggregateFailureResponse(
+  code: string,
+  message: string,
+  status: number,
+  scope?: TraceGatewaySessionScope,
+): Response {
+  return jsonResponse(
+    {
+      ok: false,
+      publicBoundary: 'consuelo-gateway',
+      route: '/gateway/traces/aggregates',
+      ...(scope
+        ? {
+            workspaceId: scope.workspaceId,
+            workspaceHost: scope.workspaceHost,
+            ...(scope.nodeId ? { nodeId: scope.nodeId } : {}),
+          }
+        : {}),
+      error: { code, message },
+    },
+    status,
+  );
 }
 
 function historyFailureResponse(
@@ -322,6 +561,7 @@ function readRequestFromUrl(
     sourceMode,
     cursor: url.searchParams.get('cursor') || '000000000000',
     limit,
+    query: url.searchParams.get('query')?.trim() || undefined,
     bridgeConfigured: url.searchParams.get('bridgeConfigured') === 'true',
     includeRawPayload: url.searchParams.get('includeRawPayload') === 'true',
   };
@@ -528,7 +768,10 @@ function statusForFailure(
 function jsonResponse(body: Record<string, unknown>, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { 'content-type': 'application/json; charset=utf-8' },
+    headers: {
+      'content-type': 'application/json; charset=utf-8',
+      'cache-control': 'private, no-store',
+    },
   });
 }
 

@@ -154,7 +154,18 @@ describe('OS steering execution recording', () => {
             routeSource: 'explicit',
             nodes: [
               { nodeId: 'node_local', displayName: 'Local Node', role: 'member', presence: 'online' },
-              { nodeId: 'node_cloud', displayName: 'Cloud Node', role: 'home', platform: 'linux', presence: 'online' },
+              {
+                nodeId: 'node_cloud',
+                displayName: 'Cloud Node',
+                role: 'home',
+                platform: 'linux',
+                presence: 'online',
+                channel: 'canary',
+                osVersion: '0.1.85',
+                mcpProtocolVersion: '2026-07-28',
+                readiness: 'ready',
+                compatibility: 'compatible',
+              },
             ],
           },
         }),
@@ -166,6 +177,14 @@ describe('OS steering execution recording', () => {
     expect(steering).toContain('"routeSource": "explicit"');
     expect(steering).toContain('"displayName": "Cloud Node"');
     expect(steering).toContain('"presence": "online"');
+    expect(steering).toContain('"osVersion": "0.1.85"');
+    expect(steering).toContain('"channel": "canary"');
+    expect(steering).toContain('"mcpProtocolVersion": "2026-07-28"');
+    expect(steering).toContain('"readiness": "ready"');
+    expect(steering).toContain('"compatibility": "compatible"');
+    expect(steering).toContain('pass `nodeId` at the top level of `os.call`');
+    expect(steering).toContain('Nodes are routing targets, not tools');
+    expect(steering).toContain('Omit `nodeId` to use the workspace default node');
   });
 
   it('appends installed skill metadata without inlining skill bodies', () => {
@@ -360,10 +379,11 @@ describe('OS steering execution recording', () => {
       'Steering',
     );
     fs.mkdirSync(steeringDir, { recursive: true });
-    fs.writeFileSync(path.join(steeringDir, 'system_prompt.md'), '# Local system prompt\n\nlocal system body\n');
+    fs.writeFileSync(path.join(steeringDir, 'system.md'), '# Local system prompt\n\nlocal system body\n');
     fs.writeFileSync(path.join(steeringDir, 'decision.md'), '# Local decision\n\nlocal decision body\n');
     fs.writeFileSync(path.join(steeringDir, 'operator-notes.md'), '# Operator notes\n\noperator notes body\n');
-    fs.writeFileSync(path.join(steeringDir, 'dialer-AGENTS.md'), '# Consuelo Dialer agent instructions\n\nunique dialer steering marker\n');
+    fs.writeFileSync(path.join(steeringDir, 'z-last.md'), '# Last notes\n\nlast notes body\n');
+    fs.writeFileSync(path.join(steeringDir, 'example-system.md'), '# Example only\n\nexample must be ignored\n');
     fs.writeFileSync(path.join(steeringDir, 'steering.md'), '# Legacy steering\n\nlegacy body must be ignored\n');
 
     const { first, second } = runOsSnippet<{ first: string; second: string }>(home, `
@@ -371,23 +391,52 @@ describe('OS steering execution recording', () => {
       const path = await import('node:path');
       const { getSteering } = await import('./scripts/os.ts');
       const first = getSteering();
-      fs.writeFileSync(path.join(process.env.CONSUELO_USER_HOME, 'Consuelo', 'Steering', 'system_prompt.md'), '# Local system prompt\\n\\nupdated system body\\n');
+      const steeringDir = path.join(process.env.CONSUELO_USER_HOME, 'Consuelo', 'Steering');
+      fs.writeFileSync(path.join(steeringDir, 'system.md'), '# Local system prompt\\n\\nupdated system body\\n');
+      fs.writeFileSync(path.join(steeringDir, 'zz-hot-added.md'), '# Hot added\\n\\nhot-added-marker\\n');
       const second = getSteering();
       process.stdout.write(JSON.stringify({ first, second }));
     `);
 
-    expect(first).toContain('# system_prompt.md');
+    expect(first).toContain('# system.md');
     expect(first).toContain('local system body');
     expect(first).toContain('# operator-notes.md');
     expect(first).toContain('operator notes body');
-    expect(first).toContain('# dialer-AGENTS.md');
-    expect(first.match(/unique dialer steering marker/g)).toHaveLength(1);
+    expect(first).toContain('# z-last.md');
+    expect(first).not.toContain('# bundled system_prompt.md');
+    expect(first).not.toContain('example must be ignored');
     expect(first).not.toContain('# decision.md');
     expect(first).not.toContain('local decision body');
     expect(first).not.toContain('legacy body must be ignored');
-    expect(first.indexOf('# system_prompt.md')).toBeLessThan(first.indexOf('# operator-notes.md'));
+    expect(first.indexOf('# system.md')).toBeLessThan(first.indexOf('# operator-notes.md'));
+    expect(first.indexOf('# operator-notes.md')).toBeLessThan(first.indexOf('# z-last.md'));
     expect(second).toContain('updated system body');
     expect(second).not.toContain('local system body');
+    expect(second).toContain('hot-added-marker');
+  });
+
+  it('uses the same local-authoritative steering for raw operator context', () => {
+    const home = makeHome();
+    const steeringDir = path.join(
+      String(process.env.CONSUELO_USER_HOME),
+      'Consuelo',
+      'Steering',
+    );
+    fs.mkdirSync(steeringDir, { recursive: true });
+    fs.writeFileSync(
+      path.join(steeringDir, 'system.md'),
+      '# Local raw steering\n\nraw-local-marker\n',
+    );
+
+    const { raw } = runOsSnippet<{ raw: string }>(home, `
+      const { getRawSteering } = await import('./scripts/os.ts');
+      process.stdout.write(JSON.stringify({ raw: getRawSteering() }));
+    `);
+
+    expect(raw).toContain('# system.md');
+    expect(raw).toContain('raw-local-marker');
+    expect(raw).not.toContain('# bundled OS system_prompt.md');
+    expect(raw).not.toContain('Alignment First');
   });
 
   it('reuses an unchanged steering snapshot without rereading authoritative sources', () => {
@@ -402,7 +451,7 @@ describe('OS steering execution recording', () => {
     fs.mkdirSync(userSteeringDir, { recursive: true });
     fs.mkdirSync(skillsDir, { recursive: true });
     fs.mkdirSync(overridesDir, { recursive: true });
-    fs.writeFileSync(path.join(userSteeringDir, 'system_prompt.md'), '# Cached local steering\n\ncache-source-marker\n');
+    fs.writeFileSync(path.join(userSteeringDir, 'system.md'), '# Cached local steering\n\ncache-source-marker\n');
     fs.writeFileSync(path.join(skillsDir, 'skills.json'), `${JSON.stringify({
       version: 1,
       skills: [{
@@ -431,8 +480,7 @@ describe('OS steering execution recording', () => {
       const first = getSteering();
       const packageRoot = getPackageRoot();
       const targets = new Set([
-        path.resolve(packageRoot, 'steering', 'system_prompt.md'),
-        path.resolve(process.env.CONSUELO_USER_HOME, 'Consuelo', 'Steering', 'system_prompt.md'),
+        path.resolve(process.env.CONSUELO_USER_HOME, 'Consuelo', 'Steering', 'system.md'),
         path.resolve(process.env.CONSUELO_HOME, 'skills', 'skills.json'),
         path.resolve(process.env.CONSUELO_HOME, 'security', 'overrides', 'manifest.overlay.json'),
         path.resolve(packageRoot, 'manifests', 'generated', 'core.manifest.json'),
@@ -560,14 +608,14 @@ describe('OS steering execution recording', () => {
     const home = makeHome();
     const steeringDir = path.join(String(process.env.CONSUELO_USER_HOME), 'Consuelo', 'Steering');
     fs.mkdirSync(steeringDir, { recursive: true });
-    fs.writeFileSync(path.join(steeringDir, 'system_prompt.md'), '# Refresh cache test\n\nrefresh-cache-marker\n');
+    fs.writeFileSync(path.join(steeringDir, 'system.md'), '# Refresh cache test\n\nrefresh-cache-marker\n');
 
     const result = runOsSnippet<{ same: boolean; reads: string[] }>(home, `
       const fs = (await import('node:fs')).default;
       const path = await import('node:path');
       const { executeRefreshSteering, getSteering } = await import('./scripts/os.ts');
       const first = getSteering();
-      const target = path.resolve(process.env.CONSUELO_USER_HOME, 'Consuelo', 'Steering', 'system_prompt.md');
+      const target = path.resolve(process.env.CONSUELO_USER_HOME, 'Consuelo', 'Steering', 'system.md');
       const originalReadFileSync = fs.readFileSync;
       const reads = [];
       fs.readFileSync = function(filePath, ...args) {
@@ -601,7 +649,7 @@ describe('OS steering execution recording', () => {
   it('does not poison the cache when a snapshot build fails', () => {
     const home = makeHome();
     const steeringDir = path.join(String(process.env.CONSUELO_USER_HOME), 'Consuelo', 'Steering');
-    const systemPromptPath = path.join(steeringDir, 'system_prompt.md');
+    const systemPromptPath = path.join(steeringDir, 'system.md');
     fs.mkdirSync(systemPromptPath, { recursive: true });
 
     const result = runOsSnippet<{ failed: boolean; second: string }>(home, `
@@ -635,8 +683,8 @@ describe('OS steering execution recording', () => {
     const steeringB = path.join(userHomeB, 'Consuelo', 'Steering');
     fs.mkdirSync(steeringA, { recursive: true });
     fs.mkdirSync(steeringB, { recursive: true });
-    fs.writeFileSync(path.join(steeringA, 'system_prompt.md'), '# A\n\nworkspace-a-marker\n');
-    fs.writeFileSync(path.join(steeringB, 'system_prompt.md'), '# B\n\nworkspace-b-marker\n');
+    fs.writeFileSync(path.join(steeringA, 'system.md'), '# A\n\nworkspace-a-marker\n');
+    fs.writeFileSync(path.join(steeringB, 'system.md'), '# B\n\nworkspace-b-marker\n');
 
     const result = runOsSnippet<{ first: string; second: string }>(homeA, `
       const { getSteering } = await import('./scripts/os.ts');

@@ -149,11 +149,11 @@ export function executeCodeCallEffect(input: CodeCallInput, context: CodeCallCon
     fallback.runtime = normalized.provider.runtime;
     fallback.mode = normalized.mode;
 
-    const cwdResolution = yield* resolveSafeCwdEffect(input, contextCwd);
+    const cwdResolution = yield* resolveSafeCwdEffect(input, contextCwd, context.env || process.env);
     fallback.cwd = cwdResolution.cwd;
 
     if (normalized.mode === 'edit') {
-      yield* validateEditScopeEffect(input, cwdResolution.cwd);
+      yield* validateEditScopeEffect(input, cwdResolution);
     }
     yield* validateEditDryRunEffect(input, cwdResolution.cwd);
     yield* validateSourceInputsEffect(input);
@@ -177,11 +177,31 @@ export function executeCodeCallEffect(input: CodeCallInput, context: CodeCallCon
         env: runtimeEnv(input, context.env || process.env),
         stdin: loaded.stdin,
         timeoutMs: normalized.timeoutMs,
+        writeBoundaryRoot: cwdResolution.writeBoundaryRoot,
+        scratchRoot: staged.stageDir,
+        requireContainment: cwdResolution.containmentRequired,
+        allowBoundaryWrites: normalized.mode === 'edit',
       });
       const after = yield* captureSnapshotEffect(cwdResolution.cwd);
       const filesChanged = changedFiles(before, after);
       const output = yield* truncateOutputEffect(staged.stageDir, run.stdout, run.stderr, normalized.maxResultChars);
       keepStageDir = output.truncated;
+
+      if (run.containmentUnavailable) {
+        return yield* Effect.fail(codeCallServiceError({
+          envelopeCode: 'CODE_CALL_VALIDATION_ERROR',
+          message: 'workSession edit containment is unavailable on this node. Use a supported structured tool or mac.call as the emergency host escape hatch.',
+          detectedMistakeClass: 'containment_unavailable',
+          cwd: cwdResolution.cwd,
+          exitCode: 1,
+          stdout: output.stdout,
+          stderr: output.stderr,
+          filesChanged,
+          truncated: output.truncated,
+          stdoutLogPath: output.stdoutLogPath,
+          stderrLogPath: output.stderrLogPath,
+        }));
+      }
 
       if (run.timedOut) {
         return yield* Effect.fail(codeCallServiceError({

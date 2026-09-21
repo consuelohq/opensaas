@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_48bca96d5edb",
+  "tmuxSession": "opensaas-os-restore-synthetic-checkout-onto-current-producti-48bca96d",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/restore-synthetic-checkout-onto-current-production-device-authority",
+  "branch": "task/os/restore-synthetic-checkout-onto-current-production-device-authority",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-restore-synthetic-checkout-onto-current-production-device-authority",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-restore-synthetic-checkout-onto-current-production-device-authority",
+  "prNumber": 2025,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2025",
+  "createdAt": "2026-08-15T04:48:45.648Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-restore-synthetic-checkout-onto-current-production-device-authority/.task/os/restore-synthetic-checkout-onto-current-production-device-authority/session.json"
+}

@@ -1,0 +1,16 @@
+{
+  "area": "explore",
+  "stream": "stream/explore",
+  "taskBranch": "task/explore/fix-pr-2060-search-portability",
+  "baseBranch": "stream/explore",
+  "sourceBranch": "stream/explore",
+  "startFrom": "stream",
+  "prNumber": 2290,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2290",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-explore-fix-pr-2060-search-portability",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_8d870ee45100",
+  "tmuxSession": "opensaas-explore-fix-pr-2060-search-portability-8d870ee4",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-explore-fix-pr-2060-search-portability/.task/session.json",
+  "createdAt": "2026-08-29T06:28:25.586Z"
+}

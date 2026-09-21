@@ -1,0 +1,15 @@
+{
+  "files": [
+    ".task/documentation/refine-docs-home-navigation-and-responsive-chrome/workpad.md",
+    "packages/documentation/package.json",
+    "packages/documentation/scripts/test-foundation-browser.mjs",
+    "packages/documentation/src/components/BrowseMenu.astro",
+    "packages/documentation/src/components/MobileTableOfContents.astro",
+    "packages/documentation/src/components/PageTitle.astro",
+    "packages/documentation/src/components/SiteTitle.astro",
+    "packages/documentation/src/components/mintlify/CardGroup.astro",
+    "packages/documentation/src/content/docs/index.mdx",
+    "packages/documentation/tests/foundation.test.ts"
+  ],
+  "updatedAt": "2026-08-14T08:55:42.820Z"
+}

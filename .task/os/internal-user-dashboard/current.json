@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/internal-user-dashboard",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1907,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1907",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1907",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1907/internal-user-dashboard",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1907",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1907/internal-user-dashboard",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-internal-user-dashboard",
+  "taskSession": "tsk_6b9d60c1b42e",
+  "tmuxSession": "opensaas-os-internal-user-dashboard-6b9d60c1",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-internal-user-dashboard/.task/os/internal-user-dashboard/session.json",
+  "createdAt": "2026-08-13T17:54:20.130Z"
+}

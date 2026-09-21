@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "worktree_id": "task/workspace-agent/session-observability",
+  "events": [
+    {
+      "id": "ecf6edc6-b51a-4249-b17a-3f468d7c8621",
+      "occurred_at": "2026-08-15T03:24:30.951Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/test-selection.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-observability",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-observability"
+      }
+    },
+    {
+      "id": "7f47856f-e969-40cc-a57d-830eceeb2f42",
+      "occurred_at": "2026-08-15T03:27:20.381Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/test-selection.rules.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-observability",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-observability"
+      }
+    },
+    {
+      "id": "222920e6-5ff9-410e-bf8a-c9bfcb518d2a",
+      "occurred_at": "2026-08-15T03:27:29.113Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/trace-persistence.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-observability",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-observability"
+      }
+    },
+    {
+      "id": "9597db6b-d833-4bc0-992f-6ee305a312bb",
+      "occurred_at": "2026-08-15T03:29:33.467Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/git.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agent/session-observability",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agent/session-observability"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-15T03:29:33.528Z"
+}

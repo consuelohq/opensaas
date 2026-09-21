@@ -1078,7 +1078,10 @@ describe('Consuelo OS public gateway security contract', () => {
     expect(caddyfile).toContain('X-Content-Type-Options "nosniff"');
     expect(caddyfile).toContain('Referrer-Policy "no-referrer"');
     expect(caddyfile).toContain('reverse_proxy 127.0.0.1:8850 {');
-    expect(caddyfile).toContain('header_up -X-Consuelo-Edge-Signature');
+    expect(caddyfile).not.toContain('header_up -X-Consuelo-Edge-Signature');
+    expect(caddyfile).not.toContain('header_up -X-Consuelo-Surface');
+    expect(caddyfile).not.toContain('header_up -X-Consuelo-Connector-Id');
+    expect(caddyfile).toContain('header_up -X-Consuelo-Edge-Cache-Authority');
     expect(caddyfile).toContain('header_up -X-Consuelo-Route');
     expect(caddyfile).not.toContain('header_up X-Forwarded-Host');
     expect(caddyfile).not.toContain('header_up X-Forwarded-Proto');
@@ -1475,7 +1478,10 @@ describe('Consuelo OS public gateway security contract', () => {
       const { provisionLocalOs } = await import('./scripts/lib/install-state.ts');
       const result = provisionLocalOs({ mode: 'local', port: 8999 });
       process.stdout.write(JSON.stringify(result));
-    `, { CONSUELO_OS_WORKER_COUNT: '3' });
+    `, {
+      CONSUELO_OS_WORKER_COUNT: '3',
+      CONSUELO_OS_WORKER_BASE_PORT: '8999',
+    });
 
     const caddyfile = readFileSync(join(tempHome, 'node', 'caddy', 'Caddyfile'), 'utf8');
     expect(caddyfile).toContain(

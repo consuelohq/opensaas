@@ -1,0 +1,11 @@
+{
+  "files": [
+    ".task/os/fix-mcp-oauth-canonical-account-workspace-routing/workpad.md",
+    "packages/os/cloudflare/os-device-authority/src/routes/google-oauth.ts",
+    "packages/os/cloudflare/os-device-authority/src/services/cloud-first-onboarding.ts",
+    "packages/os/cloudflare/os-device-authority/src/services/mcp-oauth.ts",
+    "packages/os/cloudflare/os-device-authority/src/stores.ts",
+    "packages/os/tests/os-device-authority-worker.test.ts"
+  ],
+  "updatedAt": "2026-08-14T23:13:57.504Z"
+}

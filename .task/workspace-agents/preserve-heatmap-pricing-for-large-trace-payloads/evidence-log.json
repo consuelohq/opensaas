@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/workspace-agents/preserve-heatmap-pricing-for-large-trace-payloads",
+  "events": [
+    {
+      "id": "2ce00b3a-50cf-4e05-ba7a-442a6766e010",
+      "occurred_at": "2026-09-05T01:23:55.539Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/trace-cost-estimator.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/preserve-heatmap-pricing-for-large-trace-payloads",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/preserve-heatmap-pricing-for-large-trace-payloads"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-09-05T01:23:55.635Z"
+}

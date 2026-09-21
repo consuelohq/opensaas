@@ -33,6 +33,51 @@ const projectSchema = z.object({
   worktreeRoot: z.union([z.string(), z.record(z.string(), z.string())]).optional(),
 }).strict();
 
+function isSafeLauncherHref(value: string): boolean {
+  if (value.startsWith('/')) {
+    return !value.startsWith('//') && !value.includes('\\');
+  }
+  try {
+    const url = new URL(value);
+    return url.protocol === 'https:' && url.username === '' && url.password === '';
+  } catch {
+    return false;
+  }
+}
+
+const launcherLinkSchema = z.object({
+  label: z.string().trim().min(1).max(80),
+  href: z.string().trim().min(1).max(2048).refine(
+    isSafeLauncherHref,
+    'href must be an HTTPS URL or safe root-relative path',
+  ),
+}).strict();
+
+const launcherSectionSchema = z.object({
+  id: z.string().trim().regex(
+    /^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$/,
+    'id must be a lowercase slug without leading or trailing hyphens',
+  ),
+  label: z.string().trim().min(1).max(80),
+  links: z.array(launcherLinkSchema).min(1).max(20),
+}).strict();
+
+const launcherConfigSchema = z.object({
+  extraSections: z.array(launcherSectionSchema).max(12).default([]),
+}).strict().superRefine((value, context) => {
+  const ids = new Set<string>();
+  value.extraSections.forEach((section, index) => {
+    if (ids.has(section.id)) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['extraSections', index, 'id'],
+        message: `duplicate launcher section id: ${section.id}`,
+      });
+    }
+    ids.add(section.id);
+  });
+});
+
 const workspaceYamlConfigSchema = z.object({
   version: z.literal(1),
   workspace: z.object({
@@ -76,6 +121,7 @@ const globalYamlConfigSchema = z.object({
       }).strict(),
     ]).default({ mode: 'on' }),
   }).strict().default({ channel: 'stable', notifications: { mode: 'on' } }),
+  launcher: launcherConfigSchema.optional(),
 }).strict();
 
 const nodeYamlConfigSchema = z.object({
@@ -93,6 +139,8 @@ const nodeYamlConfigSchema = z.object({
 }).strict();
 
 export type ConsueloProjectConfig = z.infer<typeof projectSchema>;
+export type ConsueloLauncherLinkConfig = z.infer<typeof launcherLinkSchema>;
+export type ConsueloLauncherSectionConfig = z.infer<typeof launcherSectionSchema>;
 export type ConsueloWorkspaceYamlConfig = z.infer<typeof workspaceYamlConfigSchema>;
 export type ConsueloGlobalYamlConfig = z.infer<typeof globalYamlConfigSchema>;
 export type ConsueloNodeYamlConfig = z.infer<typeof nodeYamlConfigSchema>;

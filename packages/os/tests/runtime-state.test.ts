@@ -76,7 +76,7 @@ async function runConcurrentBun(code: string, count: number): Promise<string[]> 
       if (Date.now() >= readyDeadline) {
         throw new Error('concurrent Bun workers did not reach the readiness barrier');
       }
-      await Bun.sleep(5);
+      await new Promise((resolve) => setTimeout(resolve, 5));
     }
     writeFileSync(gatePath, 'go');
     return await Promise.all(runs);

@@ -117,6 +117,8 @@ describe('Windows browser-first device authorization', () => {
     expect(installer).toContain("'url.dll,FileProtocolHandler'");
     expect(installer).not.toContain('Start-Process -FilePath $args[0]');
     expect(installer).toContain("'clip.exe'");
-    expect(installer).toContain('Full URL: ${sanitizedVerificationUrl}');
+    expect(installer).toContain('if (!input.browserOpened)');
+    expect(installer).toContain('Open this link to continue:');
+    expect(installer).not.toContain('Full URL: ${sanitizedVerificationUrl}');
   });
 });

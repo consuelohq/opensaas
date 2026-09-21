@@ -31,6 +31,29 @@ describe('production release MCP security controls', () => {
     );
   });
 
+  it('preflights dedicated Workspace Edge D1 authorization before any OS release mutation', () => {
+    const workflow = readFileSync(workflowPath, 'utf8');
+    const releaseStep = workflow.indexOf('- name: Release Consuelo OS');
+    const releaseCommand = workflow.indexOf('bun run os:release', releaseStep);
+    const tokenCheck = workflow.indexOf('Missing GitHub Actions secret CLOUDFLARE_WORKSPACE_EDGE_API_TOKEN', releaseStep);
+    const d1Preflight = workflow.indexOf('wrangler d1 execute consuelo-workspace-route-registry', releaseStep);
+
+    expect(workflow).toContain(
+      'CLOUDFLARE_WORKSPACE_EDGE_API_TOKEN: ${{ secrets.CLOUDFLARE_WORKSPACE_EDGE_API_TOKEN }}',
+    );
+    expect(workflow).not.toContain(
+      'CLOUDFLARE_WORKSPACE_EDGE_API_TOKEN: ${{ secrets.CLOUDFLARE_WORKSPACE_EDGE_API_TOKEN || secrets.CLOUDFLARE_OS_PROVISIONING_API_TOKEN }}',
+    );
+    expect(releaseStep).toBeGreaterThan(-1);
+    expect(tokenCheck).toBeGreaterThan(releaseStep);
+    expect(d1Preflight).toBeGreaterThan(tokenCheck);
+    expect(releaseCommand).toBeGreaterThan(d1Preflight);
+    expect(workflow.slice(tokenCheck, releaseCommand)).toContain(
+      'CLOUDFLARE_API_TOKEN="${CLOUDFLARE_WORKSPACE_EDGE_API_TOKEN}"',
+    );
+    expect(workflow.slice(tokenCheck, releaseCommand)).toContain('SELECT 1 AS ok');
+  });
+
   it('does not conflate connector-origin migration with full policy reconciliation', () => {
     const workflow = readFileSync(workflowPath, 'utf8');
     const migrationIndex = workflow.indexOf(

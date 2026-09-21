@@ -1,0 +1,7 @@
+{
+  "files": [
+    "packages/lead-connector/src/application.contract.test.ts",
+    "packages/lead-connector/src/application/resources.ts"
+  ],
+  "updatedAt": "2026-08-10T02:45:13.536Z"
+}

@@ -1,6 +1,8 @@
 import { Test, type TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 
+import { createHmac } from 'node:crypto';
+
 import bcrypt from 'bcrypt';
 import { type Repository } from 'typeorm';
 
@@ -47,7 +49,14 @@ describe('AuthService', () => {
   let workspaceInvitationService: WorkspaceInvitationService;
   let permissionsService: PermissionsService;
   let signInUpServiceMock: jest.Mocked<
-    Pick<SignInUpService, 'validatePassword'>
+    Pick<
+      SignInUpService,
+      | 'validatePassword'
+      | 'generateHash'
+      | 'signInUp'
+      | 'computePartialUserFromUserPayload'
+      | 'signUpWithoutWorkspace'
+    >
   >;
 
   beforeEach(async () => {
@@ -102,6 +111,9 @@ describe('AuthService', () => {
           useValue: {
             validatePassword: jest.fn().mockResolvedValue(undefined),
             generateHash: jest.fn(),
+            signInUp: jest.fn(),
+            computePartialUserFromUserPayload: jest.fn(),
+            signUpWithoutWorkspace: jest.fn(),
           },
         },
         {
@@ -188,7 +200,14 @@ describe('AuthService', () => {
     );
     permissionsService = module.get<PermissionsService>(PermissionsService);
     signInUpServiceMock = module.get(SignInUpService) as jest.Mocked<
-      Pick<SignInUpService, 'validatePassword'>
+      Pick<
+        SignInUpService,
+        | 'validatePassword'
+        | 'generateHash'
+        | 'signInUp'
+        | 'computePartialUserFromUserPayload'
+        | 'signUpWithoutWorkspace'
+      >
     >;
   });
 
@@ -199,6 +218,91 @@ describe('AuthService', () => {
 
   it('should be defined', async () => {
     expect(service).toBeDefined();
+  });
+
+  describe('install control-plane user directory sync', () => {
+    const syncSecret = 'test-user-directory-secret';
+    const user = {
+      id: 'user_canonical_123',
+      email: 'ada@consuelo.test',
+      firstName: 'Ada',
+      lastName: 'Lovelace',
+      createdAt: new Date('2026-08-01T12:00:00.000Z'),
+      updatedAt: new Date('2026-08-13T19:10:00.000Z'),
+    } as UserEntity;
+    const workspace = { id: 'workspace_ada' } as WorkspaceEntity;
+
+    it('best-effort syncs the canonical user and workspace after sign-in/up', async () => {
+      twentyConfigServiceGetMock.mockImplementation((key: string) => {
+        if (key === 'OS_DEVICE_AUTH_ORIGIN') return 'https://os.consuelohq.com';
+        if (key === 'OS_DEVICE_AUTH_ASSERTION_SECRET') return syncSecret;
+        return false;
+      });
+      signInUpServiceMock.signInUp.mockResolvedValue({ user, workspace });
+      const fetchSpy = jest
+        .spyOn(global, 'fetch')
+        .mockResolvedValue(new Response(null, { status: 204 }));
+
+      const result = await service.signInUp({
+        workspace: undefined,
+        userData: { type: 'existingUser', existingUser: user },
+        authParams: { provider: AuthProviderEnum.Google },
+      });
+
+      expect(result).toEqual({ user, workspace });
+      expect(fetchSpy).toHaveBeenCalledTimes(1);
+      const [requestUrl, requestInit] = fetchSpy.mock.calls[0]!;
+      expect(String(requestUrl)).toBe(
+        'https://os.consuelohq.com/internal/install-control-plane/users',
+      );
+      expect(requestInit).toMatchObject({ method: 'POST' });
+      const assertion = new Headers(requestInit?.headers).get(
+        'x-consuelo-user-directory-assertion',
+      );
+      expect(assertion).toBeTruthy();
+      const [encodedPayload, encodedSignature] = assertion!.split('.');
+      expect(encodedSignature).toBe(
+        createHmac('sha256', syncSecret)
+          .update(encodedPayload!)
+          .digest('base64url'),
+      );
+      const payload = JSON.parse(
+        Buffer.from(encodedPayload!, 'base64url').toString('utf8'),
+      );
+      expect(payload).toMatchObject({
+        purpose: 'install-control-plane-user-sync',
+        user_id: 'user_canonical_123',
+        email: 'ada@consuelo.test',
+        display_name: 'Ada Lovelace',
+        workspace_id: 'workspace_ada',
+        created_at: '2026-08-01T12:00:00.000Z',
+        updated_at: '2026-08-13T19:10:00.000Z',
+      });
+      expect(Date.parse(payload.expires_at)).toBeGreaterThan(Date.now());
+      fetchSpy.mockRestore();
+    });
+
+    it('never makes successful authentication depend on the control-plane sync', async () => {
+      twentyConfigServiceGetMock.mockImplementation((key: string) => {
+        if (key === 'OS_DEVICE_AUTH_ORIGIN') return 'https://os.consuelohq.com';
+        if (key === 'OS_DEVICE_AUTH_ASSERTION_SECRET') return syncSecret;
+        return false;
+      });
+      signInUpServiceMock.signInUp.mockResolvedValue({ user, workspace });
+      const fetchSpy = jest
+        .spyOn(global, 'fetch')
+        .mockRejectedValue(new Error('control plane unavailable'));
+
+      await expect(
+        service.signInUp({
+          workspace: undefined,
+          userData: { type: 'existingUser', existingUser: user },
+          authParams: { provider: AuthProviderEnum.Google },
+        }),
+      ).resolves.toEqual({ user, workspace });
+
+      fetchSpy.mockRestore();
+    });
   });
 
   it('challenge - user already member of workspace', async () => {

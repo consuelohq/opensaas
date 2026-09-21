@@ -1,6 +1,7 @@
 import {
   createWorkspaceEdgeRouteSeedRecord,
   createWorkspaceEdgeRouteSeedSql,
+  WORKSPACE_RELEASE_MANAGED_SITE_SNAPSHOT_IDS,
 } from '../../../../scripts/lib/workspace-edge-route-seed';
 import {
   resolveWorkspaceRouteFromD1,
@@ -34,6 +35,7 @@ import {
   workspaceIdFromSlug,
 } from '../utils';
 import { grantWorkspace } from './grants';
+import { workspaceNodeReadiness } from './nodes';
 
 export function defaultSiteSnapshot(
   input?: DefaultSiteSnapshot,
@@ -42,6 +44,10 @@ export function defaultSiteSnapshot(
     key: input?.key?.trim() || DEFAULT_SITE_SNAPSHOT_KEY,
     versionId: input?.versionId?.trim() || DEFAULT_SITE_SNAPSHOT_VERSION_ID,
     siteId: input?.siteId?.trim() || DEFAULT_SITE_ID,
+    siteIds:
+      input?.siteIds?.length
+        ? [...input.siteIds]
+        : [...WORKSPACE_RELEASE_MANAGED_SITE_SNAPSHOT_IDS],
     contentType: input?.contentType?.trim() || DEFAULT_SITE_CONTENT_TYPE,
     cachePolicy: input?.cachePolicy ?? 'static-shell',
   };
@@ -142,7 +148,7 @@ export async function registerApprovedWorkspaceRoute(input: {
       baseDomain: baseDomainFromHost(workspace.workspaceHost),
       siteSnapshotKey: snapshot.key,
       siteVersionId: snapshot.versionId,
-      publishedSiteIds: [snapshot.siteId],
+      publishedSiteIds: snapshot.siteIds,
       connectorId: connector.connectorId,
       tunnelOriginUrl: connector.tunnelOriginUrl,
       localServiceUrl: connector.localServiceUrl,
@@ -182,26 +188,65 @@ export async function reconcileWorkspaceRouteState(input: {
   currentNodeId: string;
   nowMs: number;
   defaultSiteSnapshot?: DefaultSiteSnapshot;
-}): Promise<boolean> {
+}): Promise<{
+  routeReady: boolean;
+  defaultNodeId: string;
+  defaultNodeChanged: boolean;
+}> {
   const workspaceId =
     input.workspace.workspaceId ?? workspaceIdFromSlug(input.workspace.workspaceSlug);
   const baseDomain = baseDomainFromHost(input.workspace.workspaceHost);
   const snapshot = defaultSiteSnapshot(input.defaultSiteSnapshot);
-  const defaultNodeId = input.workspace.defaultNodeId ?? input.workspace.homeNodeId;
-  const candidates = input.nodes
-    .filter(
-      (node) =>
-        node.workspaceHost === input.workspace.workspaceHost &&
-        (node.state ?? 'active') === 'active' &&
-        typeof node.connectorId === 'string' &&
-        node.connectorId.trim() !== '',
-    )
-    .sort((left, right) => {
-      if (left.nodeId === defaultNodeId) return -1;
-      if (right.nodeId === defaultNodeId) return 1;
-      return left.createdAt - right.createdAt;
-    });
-  if (!candidates.some((node) => node.nodeId === input.currentNodeId)) return false;
+  const configuredDefaultNodeId = input.workspace.defaultNodeId?.trim() || undefined;
+  const configuredHomeNodeId = input.workspace.homeNodeId?.trim() || undefined;
+  const candidates = input.nodes.filter(
+    (node) =>
+      node.workspaceHost === input.workspace.workspaceHost &&
+      (node.state ?? 'active') === 'active' &&
+      typeof node.connectorId === 'string' &&
+      node.connectorId.trim() !== '',
+  );
+  if (!candidates.some((node) => node.nodeId === input.currentNodeId)) {
+    return {
+      routeReady: false,
+      defaultNodeId: configuredDefaultNodeId ?? configuredHomeNodeId ?? input.currentNodeId,
+      defaultNodeChanged: false,
+    };
+  }
+  const candidateNodeIds = new Set(candidates.map((node) => node.nodeId));
+  const connectedCandidates = candidates
+    .filter((node) => node.connectorStatus === 'connected')
+    .sort((left, right) => left.createdAt - right.createdAt);
+  const readyCandidates = connectedCandidates.filter(
+    (node) => workspaceNodeReadiness(node, input.nowMs) === 'ready',
+  );
+  const readyCandidateNodeIds = new Set(readyCandidates.map((node) => node.nodeId));
+  const configuredDefaultIsActive = Boolean(
+    configuredDefaultNodeId && candidateNodeIds.has(configuredDefaultNodeId),
+  );
+  const configuredHomeIsReady = Boolean(
+    !configuredDefaultNodeId &&
+      configuredHomeNodeId &&
+      readyCandidateNodeIds.has(configuredHomeNodeId),
+  );
+  const fallbackDefaultNodeId =
+    readyCandidates.find((node) => node.nodeId === input.currentNodeId)?.nodeId ??
+    readyCandidates[0]?.nodeId;
+  const selectedDefaultNodeId = configuredDefaultIsActive
+    ? configuredDefaultNodeId
+    : configuredHomeIsReady
+      ? configuredHomeNodeId
+      : fallbackDefaultNodeId;
+  const defaultNodeId =
+    selectedDefaultNodeId ??
+    configuredDefaultNodeId ??
+    configuredHomeNodeId ??
+    input.currentNodeId;
+  candidates.sort((left, right) => {
+    if (left.nodeId === selectedDefaultNodeId) return -1;
+    if (right.nodeId === selectedDefaultNodeId) return 1;
+    return left.createdAt - right.createdAt;
+  });
 
   for (const node of candidates) {
     const connectorId = node.connectorId!.trim();
@@ -217,7 +262,7 @@ export async function reconcileWorkspaceRouteState(input: {
         baseDomain,
         siteSnapshotKey: snapshot.key,
         siteVersionId: snapshot.versionId,
-        publishedSiteIds: [snapshot.siteId],
+        publishedSiteIds: snapshot.siteIds,
         connectorId,
         tunnelOriginUrl,
         localServiceUrl: DEFAULT_CONNECTOR_LOCAL_SERVICE_URL,
@@ -231,7 +276,7 @@ export async function reconcileWorkspaceRouteState(input: {
         lastSeenAt: node.lastSeenAt ?? 0,
         heartbeatTtlMs: 60_000,
       },
-      makeDefault: node.nodeId === defaultNodeId,
+      makeDefault: node.nodeId === selectedDefaultNodeId,
       localServiceUrl: DEFAULT_CONNECTOR_LOCAL_SERVICE_URL,
     });
   }
@@ -243,5 +288,11 @@ export async function reconcileWorkspaceRouteState(input: {
     nowMs: input.nowMs,
     requireOnlineNode: true,
   });
-  return resolved.allowed === true && resolved.nodeId === input.currentNodeId;
+  return {
+    routeReady: resolved.allowed === true && resolved.nodeId === input.currentNodeId,
+    defaultNodeId,
+    defaultNodeChanged:
+      selectedDefaultNodeId !== undefined &&
+      configuredDefaultNodeId !== selectedDefaultNodeId,
+  };
 }

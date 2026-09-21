@@ -1,0 +1,198 @@
+---
+import MobileTocList from './MobileTocList.astro';
+
+const { toc } = Astro.locals.starlightRoute;
+---
+
+{toc && (
+  <div id="docs-mobile-toc-sheet" class="docs-mobile-toc-sheet" data-docs-mobile-toc-sheet hidden aria-hidden="true">
+    <button class="docs-mobile-toc-backdrop" type="button" aria-label="Close table of contents" data-docs-mobile-toc-close></button>
+    <section class="docs-mobile-toc-panel" role="dialog" aria-modal="true" aria-labelledby="docs-mobile-toc-title" data-docs-mobile-toc-panel>
+      <header>
+        <h2 id="docs-mobile-toc-title">On this page</h2>
+        <button class="docs-mobile-toc-close" type="button" aria-label="Close table of contents" data-docs-mobile-toc-close>
+          <svg aria-hidden="true" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18" /></svg>
+        </button>
+      </header>
+      <nav aria-labelledby="docs-mobile-toc-title">
+        <MobileTocList items={toc.items} />
+      </nav>
+    </section>
+  </div>
+)}
+
+<script>
+  import { gsap } from 'gsap';
+
+  const setupMobileToc = () => {
+    document.querySelectorAll('[data-docs-mobile-toc-sheet]').forEach((sheet) => {
+      if (!(sheet instanceof HTMLElement) || sheet.dataset.bound === 'true') return;
+      sheet.dataset.bound = 'true';
+      const panel = sheet.querySelector('[data-docs-mobile-toc-panel]');
+      if (!(panel instanceof HTMLElement)) return;
+      const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+      let activeTrigger: HTMLButtonElement | null = null;
+      let closing = false;
+
+      const finishClose = () => {
+        sheet.hidden = true;
+        sheet.setAttribute('aria-hidden', 'true');
+        document.body.removeAttribute('data-docs-toc-open');
+        activeTrigger?.setAttribute('aria-expanded', 'false');
+        gsap.set(panel, { clearProps: 'transform' });
+        gsap.set(sheet, { clearProps: 'backgroundColor' });
+        closing = false;
+      };
+
+      const close = (restoreFocus = false) => {
+        if (sheet.hidden || closing) return;
+        closing = true;
+        if (reducedMotion.matches) {
+          finishClose();
+          if (restoreFocus) activeTrigger?.focus();
+          return;
+        }
+        gsap.to(panel, {
+          yPercent: 105,
+          duration: 0.3,
+          ease: 'power3.in',
+          onComplete: () => {
+            finishClose();
+            if (restoreFocus) activeTrigger?.focus();
+          },
+        });
+      };
+
+      const open = (trigger: HTMLButtonElement) => {
+        activeTrigger = trigger;
+        closing = false;
+        sheet.hidden = false;
+        sheet.setAttribute('aria-hidden', 'false');
+        trigger.setAttribute('aria-expanded', 'true');
+        document.body.setAttribute('data-docs-toc-open', '');
+        if (reducedMotion.matches) {
+          gsap.set(panel, { clearProps: 'transform' });
+        } else {
+          gsap.fromTo(panel, { yPercent: 105 }, { yPercent: 0, duration: 0.42, ease: 'power3.out' });
+        }
+        requestAnimationFrame(() => {
+          const closeButton = sheet.querySelector('.docs-mobile-toc-close');
+          if (closeButton instanceof HTMLElement) closeButton.focus({ preventScroll: true });
+        });
+      };
+
+      document.querySelectorAll('[data-docs-toc-trigger]').forEach((trigger) => {
+        if (!(trigger instanceof HTMLButtonElement) || trigger.dataset.bound === 'true') return;
+        trigger.dataset.bound = 'true';
+        trigger.setAttribute('aria-expanded', 'false');
+        trigger.addEventListener('click', () => sheet.hidden ? open(trigger) : close(true));
+      });
+
+      sheet.querySelectorAll('[data-docs-mobile-toc-close]').forEach((button) => {
+        button.addEventListener('click', () => close(true));
+      });
+      sheet.querySelectorAll('a').forEach((link) => link.addEventListener('click', () => close()));
+      window.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && !sheet.hidden) close(true);
+      });
+    });
+  };
+
+  setupMobileToc();
+  document.addEventListener('astro:page-load', setupMobileToc);
+</script>
+
+<style>
+  @layer starlight.core {
+    .docs-mobile-toc-sheet {
+      inset: 0;
+      position: fixed;
+      z-index: 70;
+    }
+
+    .docs-mobile-toc-backdrop {
+      background: color-mix(in srgb, var(--docs-paper) 42%, transparent);
+      border: 0;
+      cursor: default;
+      inset: 0;
+      margin: 0;
+      padding: 0;
+      position: absolute;
+      width: 100%;
+    }
+
+    .docs-mobile-toc-panel {
+      background: var(--docs-paper);
+      border: 1px solid var(--docs-line-strong);
+      border-bottom: 0;
+      border-radius: 0.8rem 0.8rem 0 0;
+      bottom: 0;
+      box-shadow: 0 -18px 48px color-mix(in srgb, var(--docs-paper) 72%, transparent);
+      color: var(--docs-ink);
+      left: 0;
+      max-height: min(72vh, 42rem);
+      overflow: auto;
+      padding: 0 1rem max(1.25rem, env(safe-area-inset-bottom));
+      position: absolute;
+      right: 0;
+    }
+
+    .docs-mobile-toc-panel header {
+      align-items: center;
+      background: var(--docs-paper);
+      display: flex;
+      justify-content: space-between;
+      padding: 0.95rem 0 0.75rem;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    .docs-mobile-toc-panel h2 {
+      color: var(--docs-ink);
+      font-size: var(--sl-text-lg);
+      font-weight: 500;
+      margin: 0;
+    }
+
+    .docs-mobile-toc-close {
+      align-items: center;
+      background: transparent;
+      border: 0;
+      color: var(--docs-ink);
+      cursor: pointer;
+      display: inline-flex;
+      height: 2.25rem;
+      justify-content: center;
+      padding: 0.4rem;
+      width: 2.25rem;
+    }
+
+    .docs-mobile-toc-close svg {
+      fill: none;
+      height: 1.15rem;
+      stroke: currentColor;
+      stroke-linecap: round;
+      stroke-width: 1.7;
+      width: 1.15rem;
+    }
+
+    .docs-mobile-toc-close:hover,
+    .docs-mobile-toc-close:focus-visible {
+      color: var(--docs-accent);
+    }
+
+    @media (min-width: 50rem) {
+      .docs-mobile-toc-panel {
+        max-height: min(64vh, 38rem);
+        padding-inline: 1.4rem;
+      }
+    }
+
+    @media (min-width: 72rem) {
+      .docs-mobile-toc-sheet {
+        display: none;
+      }
+    }
+  }
+</style>

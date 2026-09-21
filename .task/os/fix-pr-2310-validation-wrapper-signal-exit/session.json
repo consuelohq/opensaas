@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_143091963f3f",
+  "tmuxSession": "opensaas-os-fix-pr-2310-validation-wrapper-signal-exit-14309196",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-pr-2310-validation-wrapper-signal-exit",
+  "branch": "task/os/fix-pr-2310-validation-wrapper-signal-exit",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-pr-2310-validation-wrapper-signal-exit",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-pr-2310-validation-wrapper-signal-exit",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2336,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2336",
+  "createdAt": "2026-08-31T21:10:25.514Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-pr-2310-validation-wrapper-signal-exit/.task/os/fix-pr-2310-validation-wrapper-signal-exit/session.json"
+}

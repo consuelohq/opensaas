@@ -160,6 +160,10 @@ function isVendoredThirdPartyFile(filePath) {
   return filePath.includes('/upstream/') || filePath.includes('/vendor/');
 }
 
+function isGeneratedArtifactFile(filePath) {
+  return filePath.includes('/generated/') || filePath.includes('/generated-metadata/');
+}
+
 function isReviewableFile(filePath) {
   return filePath.startsWith('packages/')
     && !isVendoredThirdPartyFile(filePath)
@@ -247,7 +251,10 @@ function isLoggerFile(f) {
 }
 
 function isReviewSelfFile(f) {
-  return f === 'packages/workspace/scripts/review.js' || f === 'packages/workspace/scripts/ai-review.js';
+  return f === 'packages/workspace/scripts/review.js'
+    || f === 'packages/workspace/scripts/ai-review.js'
+    || f === 'packages/os/scripts/review.js'
+    || f === 'packages/os/scripts/ai-review.js';
 }
 
 function checkLogging(file, lines) {
@@ -988,6 +995,7 @@ async function main() {
   const allFindings = [];
   const checkResults = {};
   for (const file of files) {
+    if (isGeneratedArtifactFile(file)) continue;
     const lines = readFileLines(file);
     for (const check of ALL_CHECKS) {
       const results = check(file, lines);

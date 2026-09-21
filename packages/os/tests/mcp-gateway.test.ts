@@ -93,6 +93,14 @@ function modernMcpMeta(): JsonObject {
   };
 }
 
+function blockedPolicyFixture(): string {
+  return [
+    ['r', 'm'].join(''),
+    '-' + ['r', 'f'].join(''),
+    String.fromCharCode(47),
+  ].join(' ');
+}
+
 function modernMcpHeaders(method: string, name?: string): Record<string, string> {
   return {
     'mcp-protocol-version': MODERN_MCP_VERSION,
@@ -109,6 +117,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  vi.restoreAllMocks();
   globalThis.fetch = originalFetch;
   delete process.env.CONSUELO_OS_HOME;
   delete process.env.CONSUELO_HOME;
@@ -538,6 +547,39 @@ describe('MCP gateway adapter', () => {
       'get_steering',
       'call',
     ]);
+    const steeringTool = tools.find(
+      (tool) => isJsonObject(tool) && tool.name === 'get_steering',
+    );
+    const callTool = tools.find((tool) => isJsonObject(tool) && tool.name === 'call');
+    expect(steeringTool).toMatchObject({
+      securitySchemes: [
+        { type: 'oauth2', scopes: ['route:/mcp:read'] },
+      ],
+      _meta: {
+        securitySchemes: [
+          { type: 'oauth2', scopes: ['route:/mcp:read'] },
+        ],
+      },
+    });
+    expect(callTool).toMatchObject({
+      securitySchemes: [
+        { type: 'oauth2', scopes: ['mcp:call'] },
+      ],
+      _meta: {
+        securitySchemes: [
+          { type: 'oauth2', scopes: ['mcp:call'] },
+        ],
+      },
+      inputSchema: {
+        properties: {
+          nodeId: {
+            type: 'string',
+            description: expect.stringContaining('top-level'),
+          },
+        },
+      },
+    });
+
     for (const tool of tools) {
       expect(tool).toMatchObject({
         inputSchema: { type: 'object' },
@@ -607,11 +649,14 @@ describe('MCP gateway adapter', () => {
       executeFacadeTool,
     });
 
-    expect(executeFacadeTool).toHaveBeenCalledWith('explore', {
-      query: 'status',
-      taskSession: 'tsk_test',
-      timeout: 12_000,
-    });
+    expect(executeFacadeTool).toHaveBeenCalledWith(
+      'explore',
+      {
+        query: 'status',
+        taskSession: 'tsk_test',
+      },
+      { timeoutMs: 12_000 },
+    );
     expect(response).toMatchObject({
       jsonrpc: '2.0',
       id: 'call-1',
@@ -621,6 +666,87 @@ describe('MCP gateway adapter', () => {
     expect(JSON.stringify(response)).not.toContain('x-consuelo-signature');
   });
 
+});
+
+describe('MCP admission error contract', () => {
+  it('returns a traceable JSON-RPC safety denial instead of a transport-shaped HTTP error', async () => {
+    createConfig();
+    const executeFacadeTool = vi.fn();
+    const app = createMcpRoutes({
+      getSteering: async () => '# OS steering',
+      executeFacadeTool,
+    });
+    const writes: string[] = [];
+    vi.spyOn(process.stderr, 'write').mockImplementation((chunk) => {
+      writes.push(String(chunk));
+      return true;
+    });
+    const fixture = blockedPolicyFixture();
+    const body = JSON.stringify({
+      jsonrpc: '2.0',
+      id: 'blocked-policy-call',
+      method: 'tools/call',
+      params: {
+        name: 'call',
+        arguments: {
+          tool: 'status',
+          input: { reason: fixture },
+        },
+      },
+    });
+
+    const response = await app.request(new Request('http://127.0.0.1:46321/mcp', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body,
+    }));
+    const json = await readJsonResponse(response);
+    const requestId = response.headers.get('x-consuelo-request-id');
+
+    expect(response.status).toBe(200);
+    expect(requestId).toMatch(/^[a-zA-Z0-9._:-]{8,128}$/);
+    expect(json).toMatchObject({
+      jsonrpc: '2.0',
+      id: 'blocked-policy-call',
+      error: {
+        code: -32040,
+        message: 'Request blocked by Consuelo safety policy.',
+        data: {
+          code: 'DANGEROUS_MATERIAL_BLOCKED',
+          requestId,
+        },
+      },
+    });
+    expect(executeFacadeTool).not.toHaveBeenCalled();
+    const log = writes.join('');
+    expect(log).toContain('local_os.mcp_request_received');
+    expect(log).toContain('security.dangerous_material.denied');
+    expect(log).toContain(requestId!);
+    expect(log).not.toContain(fixture);
+  });
+
+  it('keeps ordinary missing-bearer authentication failures as HTTP 401 with the receipt id', async () => {
+    createConfig();
+    const app = createMcpRoutes({
+      getSteering: async () => '# OS steering',
+      executeFacadeTool: vi.fn(),
+    });
+    const body = JSON.stringify({ jsonrpc: '2.0', id: 'safe-tools', method: 'tools/list' });
+
+    const response = await app.request(new Request('http://127.0.0.1:46321/mcp', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body,
+    }));
+
+    expect(response.status).toBe(401);
+    expect(response.headers.get('x-consuelo-request-id')).toMatch(
+      /^[a-zA-Z0-9._:-]{8,128}$/,
+    );
+    await expect(response.json()).resolves.toMatchObject({
+      error: { code: 'MISSING_BEARER' },
+    });
+  });
 });
 
 describe('MCP gateway server route', () => {
@@ -715,6 +841,7 @@ describe('MCP gateway server route', () => {
         arguments: {
           tool: 'explore',
           nodeId: 'node_cloud_test',
+          timeout: 12_000,
           input: { query: 'status' },
         },
       },
@@ -751,6 +878,7 @@ describe('MCP gateway server route', () => {
         defaultNodeId: 'node_home_test',
         routeSource: 'explicit',
       },
+      { timeoutMs: 12_000 },
     );
   });
 

@@ -1,11 +1,9 @@
-import {
-  BadRequestException,
-  InternalServerErrorException,
-  Logger,
-} from '@nestjs/common';
+import { BadRequestException, Logger } from '@nestjs/common';
+
 import { randomUUID } from 'node:crypto';
-import * as Sentry from '@sentry/node';
+
 import { Effect, Layer } from 'effect';
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import {
   DialerCallRepository,
   DialerCallRuntime,
@@ -16,18 +14,22 @@ import {
   type DialerCallRepositoryService,
   type DialerCallRuntimeService,
   type DialerTargetRepositoryService,
+  Dialer,
+  type ParallelDialProfile,
 } from '@consuelo/dialer';
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import { isValidPhone, normalizePhone } from '@consuelo/contacts';
-import { Dialer, type ParallelDialProfile } from '@consuelo/dialer';
 import { type DataSource } from 'typeorm';
 
-import { LegacyDialerService } from 'src/engine/core-modules/consuelo-api/services/legacy-dialer.service';
+import { type LegacyDialerService } from 'src/engine/core-modules/consuelo-api/services/legacy-dialer.service';
 import { getWorkspaceSchemaName } from 'src/engine/workspace-datasource/utils/get-workspace-schema-name.util';
 
 type DialerCallSource = 'direct' | 'queue';
+
 type DialerCallSelectionStrategy = 'single' | 'predictive';
+
 type DialerScenarioCallMode = 'mock' | 'twilio-test' | 'live';
+
 type DialerCallStartStatus = 'mocked' | 'dialing';
 
 export type StartDialerCallInput = {
@@ -172,11 +174,14 @@ export class TwentyDialerCallStartInfrastructure {
           if (input.callMode === 'twilio-test') {
             this.createTwilioTestDialer();
           }
+
           return this.resolveCallerIds({
             callerIdNumber: input.callerIdNumber,
             callMode: input.callMode,
             enforceScenarioAllowlist: input.enforceScenarioAllowlist,
-            targetCount: input.targetCount,
+            targetCount: input.targets.length,
+            preferLocalPresence: input.preferLocalPresence,
+            targets: input.targets,
           });
         }),
       initiateProviderCalls: (input) =>
@@ -229,6 +234,7 @@ export class TwentyDialerCallStartInfrastructure {
         typeof response === 'object' && response !== null && 'code' in response
           ? String((response as { code: unknown }).code)
           : 'INVALID_REQUEST';
+
       return new DialerRequestError({
         code,
         message,
@@ -273,6 +279,7 @@ export class TwentyDialerCallStartInfrastructure {
         err instanceof Error
           ? this.redactPhoneNumbers(err.message)
           : 'queue resolution failed';
+
       this.logger.error('[DialerCallStart] queue resolution failed', {
         workspaceId: params.workspaceId,
         errorMessage,
@@ -320,6 +327,7 @@ export class TwentyDialerCallStartInfrastructure {
         err instanceof Error
           ? this.redactPhoneNumbers(err.message)
           : 'direct target resolution failed';
+
       this.logger.error('[DialerCallStart] direct target resolution failed', {
         workspaceId: params.workspaceId,
         errorMessage,
@@ -359,6 +367,7 @@ export class TwentyDialerCallStartInfrastructure {
         err instanceof Error
           ? this.redactPhoneNumbers(err.message)
           : 'phone-only contact resolution failed';
+
       this.logger.error(
         '[DialerCallStart] phone-only contact resolution failed',
         {
@@ -394,6 +403,7 @@ export class TwentyDialerCallStartInfrastructure {
         err instanceof Error
           ? this.redactPhoneNumbers(err.message)
           : 'phone-only contact batch resolution failed';
+
       this.logger.error(
         '[DialerCallStart] phone-only contact batch resolution failed',
         {
@@ -481,6 +491,7 @@ export class TwentyDialerCallStartInfrastructure {
         err instanceof Error
           ? this.redactPhoneNumbers(err.message)
           : 'queue target resolution failed';
+
       this.logger.error('[DialerCallStart] queue target resolution failed', {
         workspaceId: params.workspaceId,
         errorMessage,
@@ -531,6 +542,8 @@ export class TwentyDialerCallStartInfrastructure {
     callMode: DialerScenarioCallMode;
     enforceScenarioAllowlist: boolean;
     targetCount: number;
+    preferLocalPresence: boolean;
+    targets: Array<{ phone: string }>;
   }): Promise<string[]> {
     const safeFromNumbers = params.enforceScenarioAllowlist
       ? this.readSafePhoneNumbersFromEnv('CONSUELO_SCENARIO_SAFE_FROM_NUMBERS')
@@ -560,7 +573,7 @@ export class TwentyDialerCallStartInfrastructure {
     const dialer = this.legacyDialerService.getDialer();
     const lockService = this.legacyDialerService.getCallerIdLockService();
     const accountNumbers = await dialer.listNumbers();
-    const callerIds: string[] = [];
+    const availableNumbers = [];
 
     for (const number of accountNumbers) {
       const phone = this.tryReadValidPhoneNumber(number.phoneNumber);
@@ -574,7 +587,48 @@ export class TwentyDialerCallStartInfrastructure {
       }
 
       if (await lockService.isNumberAvailable(phone)) {
-        callerIds.push(phone);
+        availableNumbers.push({ ...number, phoneNumber: phone });
+      }
+    }
+
+    if (!params.preferLocalPresence) {
+      return availableNumbers
+        .slice(0, params.targetCount)
+        .map((number) => number.phoneNumber);
+    }
+
+    const callerIds: string[] = [];
+    const remainingNumbers = [...availableNumbers];
+
+    for (const target of params.targets) {
+      if (remainingNumbers.length === 0) {
+        break;
+      }
+
+      const resolution = await dialer.resolveCallerId(
+        {
+          to: target.phone,
+          from: '',
+          localPresence: true,
+        },
+        {
+          numbers: remainingNumbers,
+          primaryNumber: remainingNumbers.find((number) => number.isPrimary),
+        },
+      );
+      const resolved = this.tryReadValidPhoneNumber(resolution.callerIdNumber);
+
+      if (!resolved) {
+        continue;
+      }
+
+      callerIds.push(resolved);
+      const selectedIndex = remainingNumbers.findIndex(
+        (number) => normalizePhone(number.phoneNumber) === resolved,
+      );
+
+      if (selectedIndex >= 0) {
+        remainingNumbers.splice(selectedIndex, 1);
       }
     }
 
@@ -672,6 +726,7 @@ export class TwentyDialerCallStartInfrastructure {
         err instanceof Error
           ? this.redactPhoneNumbers(err.message)
           : 'direct queue creation failed';
+
       this.logger.error('[DialerCallStart] direct queue creation failed', {
         workspaceId: params.workspaceId,
         errorMessage,
@@ -720,6 +775,7 @@ export class TwentyDialerCallStartInfrastructure {
         err instanceof Error
           ? this.redactPhoneNumbers(err.message)
           : 'predictive queue creation failed';
+
       this.logger.error('[DialerCallStart] predictive queue creation failed', {
         workspaceId: params.workspaceId,
         errorMessage,
@@ -771,6 +827,7 @@ export class TwentyDialerCallStartInfrastructure {
         err instanceof Error
           ? this.redactPhoneNumbers(err.message)
           : 'mock call creation failed';
+
       this.logger.error('[DialerCallStart] mock call creation failed', {
         workspaceId: params.workspaceId,
         errorMessage,
@@ -810,6 +867,7 @@ export class TwentyDialerCallStartInfrastructure {
       }
 
       const baseUrl = process.env.API_BASE_URL ?? process.env.SERVER_URL ?? '';
+
       if (params.callMode === 'live' || params.callMode === 'twilio-test') {
         this.assertPublicCallbackBaseUrl(baseUrl);
       }
@@ -828,6 +886,7 @@ export class TwentyDialerCallStartInfrastructure {
         customerTwimlUrl: `${baseUrl}/api/v1/calls/parallel/customer-twiml`,
         profile: { ...MOCK_PARALLEL_PROFILE, fanout: params.targets.length },
       });
+
       groupId = result.groupId;
 
       const calls: DialerCallStartCall[] = [];
@@ -928,6 +987,7 @@ export class TwentyDialerCallStartInfrastructure {
         err instanceof Error
           ? this.redactPhoneNumbers(err.message)
           : 'call row insertion failed';
+
       this.logger.error('[DialerCallStart] call row insertion failed', {
         workspaceId: params.workspaceId,
         errorMessage,

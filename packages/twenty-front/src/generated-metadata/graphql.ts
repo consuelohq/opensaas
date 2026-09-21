@@ -233,11 +233,6 @@ export enum AnalyticsType {
   TRACK = 'TRACK'
 }
 
-export type ApiConfig = {
-  __typename?: 'ApiConfig';
-  mutationMaximumAffectedRecords: Scalars['Float'];
-};
-
 export type ApiKey = {
   __typename?: 'ApiKey';
   createdAt: Scalars['DateTime'];
@@ -461,13 +456,6 @@ export type BarChartSeries = {
   label: Scalars['String'];
 };
 
-export type Billing = {
-  __typename?: 'Billing';
-  billingUrl?: Maybe<Scalars['String']>;
-  isBillingEnabled: Scalars['Boolean'];
-  trialPeriods: Array<BillingTrialPeriod>;
-};
-
 export type BillingEndTrialPeriodOutput = {
   __typename?: 'BillingEndTrialPeriodOutput';
   /** Billing portal URL for payment method update (returned when no payment method exists) */
@@ -575,6 +563,9 @@ export type BillingProductDto = {
 /** The different billing products available */
 export enum BillingProductKey {
   BASE_PRODUCT = 'BASE_PRODUCT',
+  NUMBER_PACK_5 = 'NUMBER_PACK_5',
+  NUMBER_PACK_10 = 'NUMBER_PACK_10',
+  NUMBER_PACK_50 = 'NUMBER_PACK_50',
   WORKFLOW_NODE_EXECUTION = 'WORKFLOW_NODE_EXECUTION'
 }
 
@@ -623,12 +614,6 @@ export type BillingSubscriptionSchedulePhaseItem = {
   quantity?: Maybe<Scalars['Float']>;
 };
 
-export type BillingTrialPeriod = {
-  __typename?: 'BillingTrialPeriod';
-  duration: Scalars['Float'];
-  isCreditCardRequired: Scalars['Boolean'];
-};
-
 export type BillingUpdateOutput = {
   __typename?: 'BillingUpdateOutput';
   /** All billing subscriptions */
@@ -652,17 +637,6 @@ export type CalendarConfiguration = {
   configurationType: WidgetConfigurationType;
 };
 
-export type Captcha = {
-  __typename?: 'Captcha';
-  provider?: Maybe<CaptchaDriverType>;
-  siteKey?: Maybe<Scalars['String']>;
-};
-
-export enum CaptchaDriverType {
-  GOOGLE_RECAPTCHA = 'GOOGLE_RECAPTCHA',
-  TURNSTILE = 'TURNSTILE'
-}
-
 export type ChannelSyncSuccess = {
   __typename?: 'ChannelSyncSuccess';
   success: Scalars['Boolean'];
@@ -673,49 +647,6 @@ export type CheckUserExistOutput = {
   availableWorkspacesCount: Scalars['Float'];
   exists: Scalars['Boolean'];
   isEmailVerified: Scalars['Boolean'];
-};
-
-export type ClientAiModelConfig = {
-  __typename?: 'ClientAIModelConfig';
-  deprecated?: Maybe<Scalars['Boolean']>;
-  inputCostPer1kTokensInCredits: Scalars['Float'];
-  label: Scalars['String'];
-  modelId: Scalars['String'];
-  nativeCapabilities?: Maybe<NativeModelCapabilities>;
-  outputCostPer1kTokensInCredits: Scalars['Float'];
-  provider: ModelProvider;
-};
-
-export type ClientConfig = {
-  __typename?: 'ClientConfig';
-  aiModels: Array<ClientAiModelConfig>;
-  allowRequestsToTwentyIcons: Scalars['Boolean'];
-  analyticsEnabled: Scalars['Boolean'];
-  api: ApiConfig;
-  appVersion?: Maybe<Scalars['String']>;
-  authProviders: AuthProviders;
-  billing: Billing;
-  calendarBookingPageId?: Maybe<Scalars['String']>;
-  canManageFeatureFlags: Scalars['Boolean'];
-  captcha: Captcha;
-  chromeExtensionId?: Maybe<Scalars['String']>;
-  defaultSubdomain?: Maybe<Scalars['String']>;
-  frontDomain: Scalars['String'];
-  isAttachmentPreviewEnabled: Scalars['Boolean'];
-  isClickHouseConfigured: Scalars['Boolean'];
-  isCloudflareIntegrationEnabled: Scalars['Boolean'];
-  isConfigVariablesInDbEnabled: Scalars['Boolean'];
-  isEmailVerificationRequired: Scalars['Boolean'];
-  isGoogleCalendarEnabled: Scalars['Boolean'];
-  isGoogleMessagingEnabled: Scalars['Boolean'];
-  isImapSmtpCaldavEnabled: Scalars['Boolean'];
-  isMicrosoftCalendarEnabled: Scalars['Boolean'];
-  isMicrosoftMessagingEnabled: Scalars['Boolean'];
-  isMultiWorkspaceEnabled: Scalars['Boolean'];
-  publicFeatureFlags: Array<PublicFeatureFlag>;
-  sentry: Sentry;
-  signInPrefilled: Scalars['Boolean'];
-  support: Support;
 };
 
 export type CommandMenuItem = {
@@ -1311,6 +1242,66 @@ export type DestroyViewFilterInput = {
 export type DestroyViewGroupInput = {
   /** The id of the view group to destroy. */
   id: Scalars['UUID'];
+};
+
+export type DialerCallStartCallDto = {
+  __typename?: 'DialerCallStartCallDTO';
+  callSid: Scalars['String'];
+  callerId: Scalars['String'];
+  contactId: Scalars['String'];
+  customerNumber: Scalars['String'];
+  position: Scalars['Int'];
+  status: Scalars['String'];
+};
+
+export type DialerCallStartCapacityDto = {
+  __typename?: 'DialerCallStartCapacityDTO';
+  actualFanout: Scalars['Int'];
+  availableCallerIdCount: Scalars['Int'];
+  blockedReasons: Array<Scalars['String']>;
+  callableTargetCount: Scalars['Int'];
+  reducedCapacityReasons: Array<Scalars['String']>;
+  requestedFanout: Scalars['Int'];
+};
+
+export type DialerCallStartResultDto = {
+  __typename?: 'DialerCallStartResultDTO';
+  actualFanout: Scalars['Int'];
+  calls: Array<DialerCallStartCallDto>;
+  capacity: DialerCallStartCapacityDto;
+  queueId: Scalars['String'];
+  requestedFanout: Scalars['Int'];
+  selectionStrategy: Scalars['String'];
+  sessionId: Scalars['String'];
+  status: Scalars['String'];
+  twilioGroupId?: Maybe<Scalars['String']>;
+};
+
+export type DiscordBotConfig = {
+  __typename?: 'DiscordBotConfig';
+  applicationId: Scalars['String'];
+  botToken: Scalars['String'];
+  clientSecret: Scalars['String'];
+  createdAt: Scalars['DateTime'];
+  id: Scalars['UUID'];
+  interactionsEndpointUrl?: Maybe<Scalars['String']>;
+  publicKey: Scalars['String'];
+  updatedAt: Scalars['DateTime'];
+};
+
+export type DiscordConnectionStatus = {
+  __typename?: 'DiscordConnectionStatus';
+  discordAvatar?: Maybe<Scalars['String']>;
+  discordUserId?: Maybe<Scalars['String']>;
+  discordUsername?: Maybe<Scalars['String']>;
+  linked: Scalars['Boolean'];
+  linkedAt?: Maybe<Scalars['DateTime']>;
+};
+
+export type DiscordInviteUrl = {
+  __typename?: 'DiscordInviteUrl';
+  inviteUrl: Scalars['String'];
+  requiredPermissions: Array<Scalars['String']>;
 };
 
 export type DomainRecord = {
@@ -1910,6 +1901,46 @@ export enum JobState {
   WAITING_CHILDREN = 'WAITING_CHILDREN'
 }
 
+export type KnowledgeCollectionDto = {
+  __typename?: 'KnowledgeCollectionDto';
+  chunkCount: Scalars['Float'];
+  id: Scalars['String'];
+  name: Scalars['String'];
+};
+
+export type KnowledgeCreateCollectionInput = {
+  description?: InputMaybe<Scalars['String']>;
+  name: Scalars['String'];
+};
+
+export type KnowledgeIndexFileInput = {
+  collectionId: Scalars['String'];
+  content?: InputMaybe<Scalars['String']>;
+  fileId: Scalars['String'];
+};
+
+export type KnowledgeIndexResultDto = {
+  __typename?: 'KnowledgeIndexResultDto';
+  chunkCount: Scalars['Float'];
+};
+
+export type KnowledgeSearchInput = {
+  collectionId?: InputMaybe<Scalars['String']>;
+  limit?: InputMaybe<Scalars['Float']>;
+  minSimilarity?: InputMaybe<Scalars['Float']>;
+  query: Scalars['String'];
+};
+
+export type KnowledgeSearchResultDto = {
+  __typename?: 'KnowledgeSearchResultDto';
+  chunkId: Scalars['String'];
+  collectionId: Scalars['String'];
+  collectionName: Scalars['String'];
+  content: Scalars['String'];
+  fileId: Scalars['String'];
+  similarity: Scalars['Float'];
+};
+
 export type LineChartConfiguration = {
   __typename?: 'LineChartConfiguration';
   aggregateFieldMetadataId: Scalars['UUID'];
@@ -2131,15 +2162,6 @@ export type MarketplaceAppRoleObjectPermission = {
   objectUniversalIdentifier: Scalars['String'];
 };
 
-export enum ModelProvider {
-  ANTHROPIC = 'ANTHROPIC',
-  GROQ = 'GROQ',
-  NONE = 'NONE',
-  OPENAI = 'OPENAI',
-  OPENAI_COMPATIBLE = 'OPENAI_COMPATIBLE',
-  XAI = 'XAI'
-}
-
 export type Mutation = {
   __typename?: 'Mutation';
   activateSkill: Skill;
@@ -2169,6 +2191,7 @@ export type Mutation = {
   createEmailingDomain: EmailingDomain;
   createFile: File;
   createFrontComponent: FrontComponent;
+  createKnowledgeCollection: KnowledgeCollectionDto;
   createManyCoreViewFieldGroups: Array<CoreViewFieldGroup>;
   createManyCoreViewFields: Array<CoreViewField>;
   createManyCoreViewGroups: Array<CoreViewGroup>;
@@ -2205,6 +2228,7 @@ export type Mutation = {
   deleteFile: File;
   deleteFrontComponent: FrontComponent;
   deleteJobs: DeleteJobsResponse;
+  deleteKnowledgeCollection: Scalars['Boolean'];
   deleteNavigationMenuItem: NavigationMenuItem;
   deleteOneAgent: Agent;
   deleteOneField: Field;
@@ -2245,6 +2269,7 @@ export type Mutation = {
   getAuthorizationUrlForSSO: GetAuthorizationUrlForSsoOutput;
   getLoginTokenFromCredentials: LoginTokenOutput;
   impersonate: ImpersonateOutput;
+  indexFileInKnowledgeBase: KnowledgeIndexResultDto;
   initiateOTPProvisioning: InitiateTwoFactorAuthenticationProvisioningOutput;
   initiateOTPProvisioningForAuthenticatedUser: InitiateTwoFactorAuthenticationProvisioningOutput;
   installApplication: Scalars['Boolean'];
@@ -2268,9 +2293,11 @@ export type Mutation = {
   skipBookOnboardingStep: OnboardingStepSuccess;
   skipSyncEmailOnboardingStep: OnboardingStepSuccess;
   startChannelSync: ChannelSyncSuccess;
+  startDialerCall: DialerCallStartResultDto;
   switchBillingPlan: BillingUpdateOutput;
   switchSubscriptionInterval: BillingUpdateOutput;
   syncApplication: Scalars['Boolean'];
+  terminateDialerCall: TerminateDialerCallResultDto;
   trackAnalytics: Analytics;
   uninstallApplication: Scalars['Boolean'];
   updateApiKey?: Maybe<ApiKey>;
@@ -2283,6 +2310,7 @@ export type Mutation = {
   updateCoreViewGroup: CoreViewGroup;
   updateCoreViewSort: CoreViewSort;
   updateDatabaseConfigVariable: Scalars['Boolean'];
+  updateDiscordBotConfig: DiscordBotConfig;
   updateFrontComponent: FrontComponent;
   updateLabPublicFeatureFlag: FeatureFlagDto;
   updateNavigationMenuItem: NavigationMenuItem;
@@ -2439,6 +2467,11 @@ export type MutationCreateFileArgs = {
 
 export type MutationCreateFrontComponentArgs = {
   input: CreateFrontComponentInput;
+};
+
+
+export type MutationCreateKnowledgeCollectionArgs = {
+  input: KnowledgeCreateCollectionInput;
 };
 
 
@@ -2618,6 +2651,11 @@ export type MutationDeleteFrontComponentArgs = {
 export type MutationDeleteJobsArgs = {
   jobIds: Array<Scalars['String']>;
   queueName: Scalars['String'];
+};
+
+
+export type MutationDeleteKnowledgeCollectionArgs = {
+  collectionId: Scalars['String'];
 };
 
 
@@ -2808,6 +2846,11 @@ export type MutationImpersonateArgs = {
 };
 
 
+export type MutationIndexFileInKnowledgeBaseArgs = {
+  input: KnowledgeIndexFileInput;
+};
+
+
 export type MutationInitiateOtpProvisioningArgs = {
   loginToken: Scalars['String'];
   origin: Scalars['String'];
@@ -2920,8 +2963,18 @@ export type MutationStartChannelSyncArgs = {
 };
 
 
+export type MutationStartDialerCallArgs = {
+  input: StartDialerCallInput;
+};
+
+
 export type MutationSyncApplicationArgs = {
   manifest: Scalars['JSON'];
+};
+
+
+export type MutationTerminateDialerCallArgs = {
+  input: TerminateDialerCallInput;
 };
 
 
@@ -2989,6 +3042,11 @@ export type MutationUpdateCoreViewSortArgs = {
 export type MutationUpdateDatabaseConfigVariableArgs = {
   key: Scalars['String'];
   value: Scalars['JSON'];
+};
+
+
+export type MutationUpdateDiscordBotConfigArgs = {
+  input: UpdateDiscordBotConfigInput;
 };
 
 
@@ -3191,12 +3249,6 @@ export type MutationVerifyEmailingDomainArgs = {
 
 export type MutationVerifyTwoFactorAuthenticationMethodForAuthenticatedUserArgs = {
   otp: Scalars['String'];
-};
-
-export type NativeModelCapabilities = {
-  __typename?: 'NativeModelCapabilities';
-  twitterSearch?: Maybe<Scalars['Boolean']>;
-  webSearch?: Maybe<Scalars['Boolean']>;
 };
 
 export type NavigationMenuItem = {
@@ -3504,6 +3556,7 @@ export enum PermissionFlagType {
   CODE_INTERPRETER_TOOL = 'CODE_INTERPRETER_TOOL',
   CONNECTED_ACCOUNTS = 'CONNECTED_ACCOUNTS',
   DATA_MODEL = 'DATA_MODEL',
+  DIALER_CALLING = 'DIALER_CALLING',
   DOWNLOAD_FILE = 'DOWNLOAD_FILE',
   EXPORT_CSV = 'EXPORT_CSV',
   HTTP_REQUEST_TOOL = 'HTTP_REQUEST_TOOL',
@@ -3590,19 +3643,6 @@ export type PublicDomain = {
   isValidated: Scalars['Boolean'];
 };
 
-export type PublicFeatureFlag = {
-  __typename?: 'PublicFeatureFlag';
-  key: FeatureFlagKey;
-  metadata: PublicFeatureFlagMetadata;
-};
-
-export type PublicFeatureFlagMetadata = {
-  __typename?: 'PublicFeatureFlagMetadata';
-  description: Scalars['String'];
-  imagePath?: Maybe<Scalars['String']>;
-  label: Scalars['String'];
-};
-
 export type PublicWorkspaceDataOutput = {
   __typename?: 'PublicWorkspaceDataOutput';
   authBypassProviders?: Maybe<AuthBypassProviders>;
@@ -3630,6 +3670,8 @@ export type Query = {
   commandMenuItems: Array<CommandMenuItem>;
   currentUser: User;
   currentWorkspace: Workspace;
+  discordBotConfig?: Maybe<DiscordBotConfig>;
+  discordConnectionStatus: DiscordConnectionStatus;
   eventLogs: EventLogQueryResult;
   field: Field;
   fields: FieldConnection;
@@ -3645,6 +3687,7 @@ export type Query = {
   findWorkspaceInvitations: Array<WorkspaceInvitation>;
   frontComponent?: Maybe<FrontComponent>;
   frontComponents: Array<FrontComponent>;
+  generateDiscordInviteUrl: DiscordInviteUrl;
   getAISystemPromptPreview: AiSystemPromptPreview;
   getAddressDetails: PlaceDetailsResult;
   getApprovedAccessDomains: Array<ApprovedAccessDomain>;
@@ -3688,6 +3731,8 @@ export type Query = {
   getToolInputSchema?: Maybe<Scalars['JSON']>;
   index: Index;
   indexMetadatas: IndexConnection;
+  knowledgeCollections: Array<KnowledgeCollectionDto>;
+  knowledgeSearch: Array<KnowledgeSearchResultDto>;
   lineChartData: LineChartDataOutput;
   listPlans: Array<BillingPlanOutput>;
   navigationMenuItem?: Maybe<NavigationMenuItem>;
@@ -3795,6 +3840,11 @@ export type QueryFindWorkspaceFromInviteHashArgs = {
 
 export type QueryFrontComponentArgs = {
   id: Scalars['UUID'];
+};
+
+
+export type QueryGenerateDiscordInviteUrlArgs = {
+  applicationId: Scalars['String'];
 };
 
 
@@ -3970,6 +4020,11 @@ export type QueryIndexArgs = {
 export type QueryIndexMetadatasArgs = {
   filter?: IndexFilter;
   paging?: CursorPaging;
+};
+
+
+export type QueryKnowledgeSearchArgs = {
+  input: KnowledgeSearchInput;
 };
 
 
@@ -4257,13 +4312,6 @@ export type SendInvitationsOutput = {
   success: Scalars['Boolean'];
 };
 
-export type Sentry = {
-  __typename?: 'Sentry';
-  dsn?: Maybe<Scalars['String']>;
-  environment?: Maybe<Scalars['String']>;
-  release?: Maybe<Scalars['String']>;
-};
-
 export type SetupOidcSsoInput = {
   clientID: Scalars['String'];
   clientSecret: Scalars['String'];
@@ -4330,6 +4378,19 @@ export type StandardOverrides = {
   translations?: Maybe<Scalars['JSON']>;
 };
 
+export type StartDialerCallInput = {
+  callMode?: InputMaybe<Scalars['String']>;
+  callerIdNumber?: InputMaybe<Scalars['String']>;
+  contactId?: InputMaybe<Scalars['String']>;
+  contactIds?: InputMaybe<Array<Scalars['String']>>;
+  queueId?: InputMaybe<Scalars['String']>;
+  requestedFanout: Scalars['Int'];
+  selectionStrategy: Scalars['String'];
+  source: Scalars['String'];
+  targetPhone?: InputMaybe<Scalars['String']>;
+  targetPhones?: InputMaybe<Array<Scalars['String']>>;
+};
+
 export type Subscription = {
   __typename?: 'Subscription';
   logicFunctionLogs: LogicFunctionLogs;
@@ -4368,17 +4429,6 @@ export enum SubscriptionStatus {
   Unpaid = 'Unpaid'
 }
 
-export type Support = {
-  __typename?: 'Support';
-  supportDriver: SupportDriver;
-  supportFrontChatId?: Maybe<Scalars['String']>;
-};
-
-export enum SupportDriver {
-  FRONT = 'FRONT',
-  NONE = 'NONE'
-}
-
 export type SystemHealth = {
   __typename?: 'SystemHealth';
   services: Array<SystemHealthService>;
@@ -4394,6 +4444,16 @@ export type SystemHealthService = {
 export type TasksConfiguration = {
   __typename?: 'TasksConfiguration';
   configurationType: WidgetConfigurationType;
+};
+
+export type TerminateDialerCallInput = {
+  twilioGroupId: Scalars['String'];
+};
+
+export type TerminateDialerCallResultDto = {
+  __typename?: 'TerminateDialerCallResultDTO';
+  status: Scalars['String'];
+  twilioGroupId: Scalars['String'];
 };
 
 export type TimelineConfiguration = {
@@ -4467,6 +4527,13 @@ export type UpdateCommandMenuItemInput = {
   id: Scalars['UUID'];
   isPinned?: InputMaybe<Scalars['Boolean']>;
   label?: InputMaybe<Scalars['String']>;
+};
+
+export type UpdateDiscordBotConfigInput = {
+  applicationId: Scalars['String'];
+  botToken?: InputMaybe<Scalars['String']>;
+  clientSecret?: InputMaybe<Scalars['String']>;
+  publicKey: Scalars['String'];
 };
 
 export type UpdateFieldInput = {
@@ -4982,7 +5049,6 @@ export enum WidgetConfigurationType {
   FIELD = 'FIELD',
   FIELDS = 'FIELDS',
   FIELD_RICH_TEXT = 'FIELD_RICH_TEXT',
-  FILE_PREVIEW = 'FILE_PREVIEW',
   FILES = 'FILES',
   FRONT_COMPONENT = 'FRONT_COMPONENT',
   GAUGE_CHART = 'GAUGE_CHART',
@@ -5005,8 +5071,8 @@ export enum WidgetType {
   FIELD = 'FIELD',
   FIELDS = 'FIELDS',
   FIELD_RICH_TEXT = 'FIELD_RICH_TEXT',
-  FILE_PREVIEW = 'FILE_PREVIEW',
   FILES = 'FILES',
+  FILE_PREVIEW = 'FILE_PREVIEW',
   FRONT_COMPONENT = 'FRONT_COMPONENT',
   GRAPH = 'GRAPH',
   IFRAME = 'IFRAME',

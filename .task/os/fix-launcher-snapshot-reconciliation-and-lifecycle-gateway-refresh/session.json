@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_7143c458024a",
+  "tmuxSession": "opensaas-os-fix-launcher-snapshot-reconciliation-and-lifecyc-7143c458",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-launcher-snapshot-reconciliation-and-lifecycle-gateway-refresh",
+  "branch": "task/os/fix-launcher-snapshot-reconciliation-and-lifecycle-gateway-refresh",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-launcher-snapshot-reconciliation-and-lifecycle-gateway-refresh",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-launcher-snapshot-reconciliation-and-lifecycle-gateway-refresh",
+  "prNumber": 2005,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2005",
+  "createdAt": "2026-08-15T03:36:02.822Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-launcher-snapshot-reconciliation-and-lifecycle-gateway-refresh/.task/os/fix-launcher-snapshot-reconciliation-and-lifecycle-gateway-refresh/session.json"
+}

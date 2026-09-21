@@ -292,6 +292,7 @@
     "test:reader": "bun run --cwd packages/consuelo-design test:reader",
     "os:release": "bun packages/workspace/scripts/os-release.ts",
     "os:release-install": "bun packages/workspace/scripts/os-release-install.ts",
+    "os:release-workspace-edge": "bun packages/workspace/scripts/os-release-workspace-edge.ts",
     "os:release-device-auth": "bun packages/workspace/scripts/os-release-device-auth.ts",
     "operator": "bun packages/os/operator/operator.ts",
     "artifact:render": "bun run --cwd packages/os artifact:render --",

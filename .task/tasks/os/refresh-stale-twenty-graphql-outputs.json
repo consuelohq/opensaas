@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/refresh-stale-twenty-graphql-outputs",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1936,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1936",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1936",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1936/refresh-stale-twenty-graphql-outputs",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1936",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1936/refresh-stale-twenty-graphql-outputs",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-refresh-stale-twenty-graphql-outputs",
+  "taskSession": "tsk_a189c6b7bec9",
+  "tmuxSession": "opensaas-os-refresh-stale-twenty-graphql-outputs-a189c6b7",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-refresh-stale-twenty-graphql-outputs/.task/os/refresh-stale-twenty-graphql-outputs/session.json",
+  "createdAt": "2026-08-14T03:30:25.582Z"
+}

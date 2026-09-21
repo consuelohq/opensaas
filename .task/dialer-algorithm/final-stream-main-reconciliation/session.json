@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_974fa9f896d4",
+  "tmuxSession": "opensaas-dialer-algorithm-final-stream-main-reconciliation-974fa9f8",
+  "area": "dialer-algorithm",
+  "stream": "stream/dialer-algorithm",
+  "taskBranch": "task/dialer-algorithm/final-stream-main-reconciliation",
+  "branch": "task/dialer-algorithm/final-stream-main-reconciliation",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-algorithm-final-stream-main-reconciliation",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-algorithm-final-stream-main-reconciliation",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2445,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2445",
+  "createdAt": "2026-09-10T02:51:50.959Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-algorithm-final-stream-main-reconciliation/.task/dialer-algorithm/final-stream-main-reconciliation/session.json"
+}

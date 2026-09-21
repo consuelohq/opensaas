@@ -1,0 +1,12 @@
+{
+  "files": [
+    ".github/workflows/ci-shared.yaml",
+    ".github/workflows/consuelo-ci.yaml",
+    ".task/dialer/simplify-dialer-production-ghl-bootstrap/workpad.md",
+    "packages/lead-connector/EMBED.md",
+    "packages/lead-connector/src/deployment/marketplace-bootstrap.test.ts",
+    "packages/lead-connector/src/embed/architecture.contract.test.ts",
+    "packages/lead-connector/src/embed/cloudflare-worker.ts"
+  ],
+  "updatedAt": "2026-08-14T22:03:33.185Z"
+}

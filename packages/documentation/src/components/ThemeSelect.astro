@@ -1,0 +1,105 @@
+<docs-theme-toggle class="docs-theme-toggle" data-docs-theme-toggle role="group" aria-label="Display">
+  <button type="button" data-theme-value="auto" aria-label="Use system appearance" title="System" aria-pressed="false">
+    <svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="12" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+  </button>
+  <button type="button" data-theme-value="light" aria-label="Use light appearance" title="Light" aria-pressed="false">
+    <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.66 6.34l1.41-1.41"/></svg>
+  </button>
+  <button type="button" data-theme-value="dark" aria-label="Use dark appearance" title="Dark" aria-pressed="false">
+    <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79Z"/></svg>
+  </button>
+</docs-theme-toggle>
+
+<script>
+  type Theme = 'auto' | 'light' | 'dark';
+  const storageKey = 'starlight-theme';
+  const parseTheme = (value: unknown): Theme => value === 'light' || value === 'dark' ? value : 'auto';
+  const loadTheme = (): Theme => parseTheme(localStorage.getItem(storageKey));
+  const preferredTheme = (): 'light' | 'dark' => matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+
+  const syncThemeToggles = (theme: Theme) => {
+    document.querySelectorAll<HTMLElement>('[data-docs-theme-toggle]').forEach((toggle) => {
+      toggle.querySelectorAll<HTMLButtonElement>('[data-theme-value]').forEach((button) => {
+        button.setAttribute('aria-pressed', String(button.dataset.themeValue === theme));
+      });
+    });
+  };
+
+  const applyTheme = (theme: Theme) => {
+    document.documentElement.dataset.theme = theme === 'auto' ? preferredTheme() : theme;
+    if (theme === 'auto') localStorage.removeItem(storageKey);
+    else localStorage.setItem(storageKey, theme);
+    syncThemeToggles(theme);
+  };
+
+  class DocsThemeToggle extends HTMLElement {
+    connectedCallback() {
+      if (this.dataset.bound === 'true') return;
+      this.dataset.bound = 'true';
+      this.addEventListener('click', (event) => {
+        const button = event.target instanceof Element ? event.target.closest<HTMLButtonElement>('[data-theme-value]') : null;
+        if (!button) return;
+        applyTheme(parseTheme(button.dataset.themeValue));
+      });
+      syncThemeToggles(loadTheme());
+    }
+  }
+
+  if (!customElements.get('docs-theme-toggle')) customElements.define('docs-theme-toggle', DocsThemeToggle);
+  const scheme = matchMedia('(prefers-color-scheme: light)');
+  if (!document.documentElement.dataset.docsThemeListener) {
+    document.documentElement.dataset.docsThemeListener = 'true';
+    scheme.addEventListener('change', () => {
+      if (loadTheme() === 'auto') applyTheme('auto');
+    });
+  }
+  applyTheme(loadTheme());
+  document.addEventListener('astro:after-swap', () => syncThemeToggles(loadTheme()));
+</script>
+
+<style>
+  @layer starlight.core {
+    .docs-theme-toggle {
+      align-items: center;
+      background: color-mix(in srgb, var(--sl-color-gray-6) 45%, transparent);
+      border: 1px solid var(--sl-color-gray-5);
+      border-radius: 0.65rem;
+      display: inline-flex;
+      gap: 0.1rem;
+      padding: 0.2rem;
+    }
+
+    .docs-theme-toggle button {
+      align-items: center;
+      background: transparent;
+      border: 0;
+      border-radius: 0.45rem;
+      color: var(--sl-color-gray-3);
+      cursor: pointer;
+      display: inline-flex;
+      height: 2rem;
+      justify-content: center;
+      padding: 0;
+      width: 2rem;
+    }
+
+    .docs-theme-toggle button:hover {
+      color: var(--sl-color-white);
+    }
+
+    .docs-theme-toggle button[aria-pressed='true'] {
+      background: var(--sl-color-gray-5);
+      color: var(--sl-color-white);
+    }
+
+    .docs-theme-toggle svg {
+      fill: none;
+      height: 1rem;
+      stroke: currentColor;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-width: 1.8;
+      width: 1rem;
+    }
+  }
+</style>

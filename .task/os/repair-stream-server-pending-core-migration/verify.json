@@ -1,0 +1,146 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/repair-stream-server-pending-core-migration",
+  "base": "origin/stream/os",
+  "headSha": "66c2a9bbe96f7c168145af13f38cc9a4d992a41a",
+  "changeHash": "29d92668535c97229a8ccaedfd137da7f4c1cda789b3694d39034fa3b5d3af4a",
+  "changedFiles": [
+    "packages/workspace/scripts/ci/run-changed-server-task.mjs",
+    "packages/workspace/scripts/ci/twenty-server-migration-baseline.json",
+    "packages/workspace/tests/run-changed-server-task.test.mjs"
+  ],
+  "verifiedAt": "2026-08-14T03:14:12.961Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/repair-stream-server-pending-core-migration/current.json",
+        ".task/os/repair-stream-server-pending-core-migration/evidence-log.json",
+        ".task/os/repair-stream-server-pending-core-migration/read-log.json",
+        ".task/os/repair-stream-server-pending-core-migration/session.json",
+        ".task/os/repair-stream-server-pending-core-migration/workpad.md",
+        ".task/tasks/os/repair-stream-server-pending-core-migration.json",
+        "packages/workspace/scripts/ci/run-changed-server-task.mjs",
+        "packages/workspace/scripts/ci/twenty-server-migration-baseline.json",
+        "packages/workspace/tests/run-changed-server-task.test.mjs"
+      ],
+      "matchedRules": [
+        {
+          "id": "server-ci-task-contract",
+          "critical": true,
+          "reason": "Server CI changes must scope lint and typecheck to directly changed Twenty server runtime files while retaining dependency propagation.",
+          "matchedFiles": [
+            "packages/workspace/scripts/ci/run-changed-server-task.mjs",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "changed server task selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "TypeORM CLI compatibility contract",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "changed server task selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 60,
+          "outputTail": "No changed Twenty server runtime files require lint or typecheck.\nRunning server lint and baseline-aware typecheck for 1 directly changed file(s).\nTwenty server typecheck matched 1 known baseline diagnostic(s).\nRunning server lint and baseline-aware typecheck for 1 directly changed file(s).\nNo changed Twenty server schema files require GraphQL generation.\nNo changed Twenty server runtime files require migration generation.\nNo changesgeneratedTwenty server migration drift matched 2 known baseline operation(s).\ngeneratedgenerated✔ parseCliArguments resolves comparison SHAs (0.571125ms)\n✔ parseCliArguments selects GraphQL generation mode (0.052792ms)\n✔ parseCliArguments selects migration generation mode (0.051292ms)\n✔ filterServerTaskFiles excludes root and config-only triggers (0.073542ms)\n✔ filterGraphqlGenerationFiles keeps only server schema and generated files (0.061417ms)\n✔ buildEslintArguments selects the owning project config and stdin filename (0.047625ms)\n✔ ESLint diagnostic comparison tracks new error multiplicity without line numbers (0.156375ms)\n✔ runChangedFileLint accepts base-existing errors and rejects a new changed-file error (0.591125ms)\n✔ runChangedFileLint allows explicit lint baseline debt but rejects diagnostics beyond it (0.654959ms)\n✔ buildTypecheckArguments uses standard TypeScript without emitting (0.082875ms)\n✔ TypeScript diagnostic baseline comparison rejects only new diagnostic keys (0.187541ms)\n✔ runChangedServerTask skips Nx for config-only changes (0.282667ms)\n✔ runChangedServerTask executes lint and baseline-aware typecheck for server runtime changes (0.093333ms)\n✔ runChangedServerTask rejects a new TypeScript diagnostic outside the baseline (0.083083ms)\n✔ server lint configuration resolves the existing workspace rules project (0.14525ms)\n✔ runGraphqlGenerationCheck skips generation without schema changes (0.07125ms)\n✔ runGraphqlGenerationCheck generates and verifies committed outputs (0.150583ms)\n✔ runMigrationGenerationCheck skips generation without server runtime changes (0.06075ms)\n✔ runMigrationGenerationCheck accepts a no-change TypeORM exit (0.096334ms)\n✔ runMigrationGenerationCheck accepts and removes exact known migration drift (0.164375ms)\n✔ runMigrationGenerationCheck rejects changed drift beyond the baseline (0.115542ms)\n✔ runMigrationGenerationCheck rejects and removes generated drift (0.106542ms)\nℹ tests 22\nℹ suites 0\nℹ pass 22\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 37.747292\n"
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 141,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/workspace/tests/github-workflow-policy.test.js:\n(pass) GitHub workflow policy > does not include retired automation workflows [0.08ms]\n(pass) GitHub workflow policy > does not reference retired CI credentials or the disabled Chromatic job [0.68ms]\n(pass) GitHub workflow policy > does not retain privileged allowlist entries for deleted workflows [0.04ms]\n(pass) GitHub workflow policy > runs typecheck and test from the filtered frontend file set [0.04ms]\n(pass) GitHub workflow policy > installs Bun and scopes shared tasks to changed frontend files [0.03ms]\n(pass) GitHub workflow policy > scopes native OS distribution tests to relevant changed files [0.05ms]\n(pass) GitHub workflow policy > runs Docker Compose CI with the pgvector PostgreSQL image required by migrations [0.02ms]\n(pass) GitHub workflow policy > uses available hosted runners for the Server and Front build pipelines [0.05ms]\n(pass) GitHub workflow policy > builds Consuelo backend workspace dependencies before server typecheck [0.03ms]\n(pass) GitHub workflow policy > installs Bun before the Server unit-test job runs Bun package tests [0.03ms]\n(pass) GitHub workflow policy > allows enough time for Danger dependency installation and execution [0.02ms]\n(pass) GitHub workflow policy > explicitly allowlists the API breaking-changes workflow write permissions [0.02ms]\n\n 12 pass\n 0 fail\n 53 expect() calls\nRan 12 tests across 1 file. [135.00ms]\n"
+        },
+        {
+          "name": "TypeORM CLI compatibility contract",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 403,
+          "outputTail": "✔ Twenty server uses the Node 24-compatible TypeORM ts-node wrapper (0.276083ms)\n✔ the configured TypeORM wrapper resolves from the installed package (348.025834ms)\nℹ tests 2\nℹ suites 0\nℹ pass 2\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 379.249709\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -11,6 +11,7 @@ import {
   validOperatorClientId,
   validOperatorRedirectUri,
 } from '../cloudflare/os-device-authority/src/utils';
+import { validChatGptClientMetadataBinding } from '../cloudflare/os-device-authority/src/services/mcp-oauth';
 
 describe('operator OAuth client', () => {
   describe('client id', () => {
@@ -29,6 +30,15 @@ describe('operator OAuth client', () => {
     it('is not accepted by the ChatGPT client validator', () => {
       expect(validChatGptClientId(OPERATOR_OAUTH_CLIENT_ID)).toBe(false);
     });
+
+    it('accepts the current ChatGPT Client ID Metadata Document shape', () => {
+      expect(
+        validChatGptClientId(
+          'https://chatgpt.com/oauth/2Dpr-r7e86Dn/client.json',
+        ),
+      ).toBe(true);
+    });
+
   });
 
   describe('redirect uri', () => {
@@ -75,6 +85,35 @@ describe('operator OAuth client', () => {
 
     it('chatgpt client cannot use a loopback redirect', () => {
       expect(validChatGptRedirectUri('http://127.0.0.1:8765/cb')).toBe(false);
+    });
+
+    it('binds a ChatGPT metadata client id to the same callback id', () => {
+      expect(
+        validChatGptClientMetadataBinding(
+          'https://chatgpt.com/oauth/2Dpr-r7e86Dn/client.json',
+          'https://chatgpt.com/connector/oauth/2Dpr-r7e86Dn',
+        ),
+      ).toBe(true);
+      expect(
+        validChatGptClientMetadataBinding(
+          'https://chatgpt.com/oauth/2Dpr-r7e86Dn/client.json',
+          'https://chatgpt.com/connector/oauth/other-client',
+        ),
+      ).toBe(false);
+    });
+
+    it.each([
+      ['nested path', 'https://chatgpt.com/oauth/a/b/client.json'],
+      ['query string', 'https://chatgpt.com/oauth/a/client.json?x=1'],
+      ['fragment', 'https://chatgpt.com/oauth/a/client.json#x'],
+      ['other origin', 'https://example.com/oauth/a/client.json'],
+    ])('rejects malformed ChatGPT CIMD binding for %s', (_label, clientId) => {
+      expect(
+        validChatGptClientMetadataBinding(
+          clientId,
+          'https://chatgpt.com/connector/oauth/a',
+        ),
+      ).toBe(false);
     });
   });
 

@@ -79,5 +79,12 @@ describe('Twenty dialer adapter architecture', () => {
     expect(parallelInfrastructure).toContain(
       'const runtime: ParallelCompatibilityRuntimeService',
     );
+    expect(startInfrastructure).toContain('targetCount: input.targets.length');
+    expect(startInfrastructure).toContain(
+      'preferLocalPresence: input.preferLocalPresence',
+    );
+    expect(startInfrastructure).not.toContain('targetCount: input.targetCount');
+    expect(parallelInfrastructure).toContain('startCallRecording:');
+    expect(parallelInfrastructure).toContain('retryPendingCleanup:');
   });
 });

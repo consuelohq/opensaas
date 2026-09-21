@@ -118,7 +118,7 @@ export type DialerReleaseManifest = {
   railway: { deploymentId: string; status: string };
   cloudflare: { versionId: string; buildMarker: string };
   assets: { javascriptSha256: string; cssSha256: string };
-  customMenu: { customMenuId: string; readBackVerified: boolean };
+  launcherBootstrap: { sha256: string; installationMode: 'one-time' };
   smoke: DialerProductionSmokeResult;
 };
 
@@ -130,9 +130,14 @@ export const buildDialerReleaseManifest = (
       'Dialer release manifest requires a successful Railway deployment',
     );
   }
-  if (!input.customMenu.readBackVerified) {
+  if (!/^[a-f0-9]{64}$/.test(input.launcherBootstrap.sha256)) {
     throw new Error(
-      'Dialer release manifest requires verified custom-menu read-back',
+      'Dialer release manifest requires a valid launcher bootstrap SHA-256',
+    );
+  }
+  if (input.launcherBootstrap.installationMode !== 'one-time') {
+    throw new Error(
+      'Dialer release manifest requires one-time launcher bootstrap evidence',
     );
   }
   if (!input.smoke.ok) {

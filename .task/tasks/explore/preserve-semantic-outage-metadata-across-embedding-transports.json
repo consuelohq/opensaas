@@ -1,0 +1,16 @@
+{
+  "area": "explore",
+  "stream": "stream/explore",
+  "taskBranch": "task/explore/preserve-semantic-outage-metadata-across-embedding-transports",
+  "baseBranch": "stream/explore",
+  "sourceBranch": "stream/explore",
+  "startFrom": "stream",
+  "prNumber": 2425,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2425",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-explore-preserve-semantic-outage-metadata-across-embedding-transports",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_bcdf9d6928f7",
+  "tmuxSession": "opensaas-explore-preserve-semantic-outage-metadata-across-embeddi-bcdf9d69",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-explore-preserve-semantic-outage-metadata-across-embedding-transports/.task/session.json",
+  "createdAt": "2026-09-08T15:31:32.088Z"
+}

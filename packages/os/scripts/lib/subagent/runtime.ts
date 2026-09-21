@@ -529,7 +529,10 @@ async function executeSubagentAttachmentAction(
   const parser = durableSubagentParser(provider, read.run.traceId || context.traceId);
   let run = reconcileDurableSubagentRun(read.run, context.env, parser);
   if (action === 'wait') {
-    const waitMs = typeof input.waitMs === 'number' ? Math.min(Math.max(0, input.waitMs), SUBAGENT_MAX_TIMEOUT_MS) : SUBAGENT_MAX_TIMEOUT_MS;
+    const waitBudgetMs = subagentTimeoutMs(entry, input);
+    const waitMs = typeof input.waitMs === 'number'
+      ? Math.min(Math.max(0, input.waitMs), SUBAGENT_MAX_TIMEOUT_MS, waitBudgetMs)
+      : Math.min(SUBAGENT_MAX_TIMEOUT_MS, waitBudgetMs);
     const waited = await waitForDurableSubagentRun(run, context.env, waitMs, parser);
     run = waited.run;
     return durableSubagentResult(
@@ -559,8 +562,10 @@ function durableSubagentParser(provider: SubagentProvider, traceId: string) {
   return (stdout: string, stderr: string) => {
     const parsed = parseSubagentOutput(provider, stdout);
     const events = parseSubagentTraceEvents(provider, stdout);
+    const terminalError = provider === 'grok' ? grokCompletionFailure(stdout) : undefined;
     return {
-      completed: Boolean(parsed.finalMessage),
+      completed: Boolean(parsed.finalMessage) && !terminalError,
+      ...(terminalError ? { terminalError } : {}),
       ...(parsed.finalMessage ? { finalMessage: parsed.finalMessage } : {}),
       ...(parsed.usage ? { usage: parsed.usage } : {}),
       summary: buildSubagentRunSummary({ traceId, events, finalMessage: parsed.finalMessage, stdout: `${stdout}${stderr}` }),
@@ -626,7 +631,7 @@ function durableSubagentResult(
     command: run.command,
     stdout: logs.stdout,
     stderr: responseStderr,
-    exitCode: successfulCancel ? 0 : run.exitCode ?? (status === 'completed' ? 0 : 1),
+    exitCode: successfulCancel ? 0 : run.exitCode ?? (status === 'completed' || status === 'starting' || status === 'running' ? 0 : 1),
     ...(run.finalMessage ? { finalMessage: run.finalMessage } : {}),
     ...(run.summary !== undefined ? { summary: run.summary as SubagentData['summary'] } : {}),
     ...(run.usage ? { usage: run.usage } : {}),
@@ -1968,7 +1973,7 @@ function boundSubagentOutput(value: string): string {
   return `${value.slice(0, SUBAGENT_OUTPUT_LIMIT)}\n... [truncated ${value.length - SUBAGENT_OUTPUT_LIMIT} chars]`;
 }
 
-async function runSubagentProcess(input: {
+export async function runSubagentProcess(input: {
   command: string;
   args: string[];
   cwd: string;
@@ -1986,6 +1991,7 @@ async function runSubagentProcess(input: {
     let stderr = '';
     let timedOut = false;
     let settled = false;
+    let stdinFailure: string | undefined;
     let killTimer: NodeJS.Timeout | undefined;
     const finish = (result: RunnerResult & { timedOut: boolean }) => {
       if (settled) return;
@@ -2009,11 +2015,30 @@ async function runSubagentProcess(input: {
     child.stderr.setEncoding('utf8');
     child.stdout.on('data', (chunk) => { stdout = boundSubagentOutput(stdout + chunk); });
     child.stderr.on('data', (chunk) => { stderr = boundSubagentOutput(stderr + chunk); });
+    child.stdin.on('error', (error: NodeJS.ErrnoException) => {
+      if (error.code === 'EPIPE' || error.code === 'ERR_STREAM_DESTROYED' || settled) return;
+      stdinFailure = error.message;
+      stderr = boundSubagentOutput(stderr + `${stderr ? '\n' : ''}${error.message}`);
+      clearTimeout(timeout);
+      child.kill('SIGTERM');
+      if (!killTimer) {
+        killTimer = setTimeout(() => {
+          child.kill('SIGKILL');
+          finish({ stdout, stderr, exitCode: 1, timedOut: false });
+        }, 5000);
+        killTimer.unref?.();
+      }
+    });
     child.on('error', (error) => {
       finish({ stdout, stderr: error.message, exitCode: 1, timedOut: false });
     });
     child.on('close', (code) => {
-      finish({ stdout, stderr, exitCode: timedOut ? 1 : code ?? 0, timedOut });
+      finish({
+        stdout,
+        stderr,
+        exitCode: timedOut || stdinFailure ? 1 : code ?? 0,
+        timedOut,
+      });
     });
     child.stdin.end(input.stdin || '');
   });

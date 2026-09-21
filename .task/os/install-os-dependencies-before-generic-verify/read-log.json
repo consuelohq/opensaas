@@ -1,0 +1,7 @@
+{
+  "files": [
+    ".github/workflows/consuelo-ci.yaml",
+    "packages/os/tests/local-os-server-review-findings.test.ts"
+  ],
+  "updatedAt": "2026-08-14T20:33:35.670Z"
+}

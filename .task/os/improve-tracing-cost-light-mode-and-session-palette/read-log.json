@@ -1,0 +1,14 @@
+{
+  "files": [
+    ".task/os/improve-tracing-cost-light-mode-and-session-palette/workpad.md",
+    "packages/consuelo-design/design-system/manifest.json",
+    "packages/consuelo-website/src/styles/tokens.css",
+    "packages/documentation/src/content/docs/observe/traces.mdx",
+    "packages/os/scripts/lib/observability-traces-site.ts",
+    "packages/os/scripts/lib/trace-cost-estimator.ts",
+    "packages/os/scripts/lib/trace-site-inspector/virtual-list-browser.ts",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "updatedAt": "2026-08-26T05:49:40.455Z"
+}

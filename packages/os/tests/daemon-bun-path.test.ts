@@ -55,7 +55,7 @@ function runDaemonWrapper(workspacePath: string): string {
   return result.stdout.trim();
 }
 
-function runManagedSitesRefreshScenario(
+async function runManagedSitesRefreshScenario(
   refreshExitCode: number,
   options: { hangRefresh?: boolean; timeoutSeconds?: number } = {},
 ): {
@@ -114,10 +114,18 @@ function runManagedSitesRefreshScenario(
     encoding: 'utf8',
   });
 
+  const deadline = Date.now() + 1_000;
+  let calls: string[] = [];
+  while (Date.now() < deadline) {
+    calls = readFileSync(callLog, 'utf8').trim().split('\n').filter(Boolean);
+    if (calls.some((call) => call.includes('/scripts/os.ts sites refresh --json'))) break;
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  }
+
   return {
     status: result.status,
     stderr: result.stderr,
-    calls: readFileSync(callLog, 'utf8').trim().split('\n').filter(Boolean),
+    calls,
     home: consueloHome,
     durationMs: Date.now() - startedAt,
   };
@@ -148,28 +156,25 @@ describe('Consuelo OS daemon Bun PATH', () => {
     expect(outputPath.split(':').slice(-2)).toEqual(['/usr/bin', '/bin']);
   });
 
-  it('should refresh managed Sites from the activated runtime before supervisor startup and continue on refresh failure', () => {
-    const result = runManagedSitesRefreshScenario(17);
+  it('should start the supervisor without making managed Sites refresh a readiness prerequisite', async () => {
+    const result = await runManagedSitesRefreshScenario(17);
 
     expect(result.status).toBe(0);
     expect(result.calls).toHaveLength(2);
-    expect(result.calls[0]).toContain(`${result.home}|`);
-    expect(result.calls[0]).toContain('/scripts/os.ts sites refresh --json');
-    expect(result.calls[1]).toContain('/scripts/server/supervisor.ts');
-    expect(result.stderr).toContain('managed Sites refresh failed');
+    expect(result.calls.some((call) => call.includes(`${result.home}|`) && call.includes('/scripts/os.ts sites refresh --json'))).toBe(true);
+    expect(result.calls.some((call) => call.includes('/scripts/server/supervisor.ts'))).toBe(true);
   });
 
-  it('should continue to supervisor when managed Sites refresh exceeds the startup timeout', () => {
-    const result = runManagedSitesRefreshScenario(0, {
+  it('should continue to supervisor when managed Sites refresh exceeds the startup timeout', async () => {
+    const result = await runManagedSitesRefreshScenario(0, {
       hangRefresh: true,
       timeoutSeconds: 1,
     });
 
     expect(result.status).toBe(0);
     expect(result.durationMs).toBeLessThan(2_500);
-    expect(result.calls[0]).toContain('/scripts/os.ts sites refresh --json');
-    expect(result.calls.at(-1)).toContain('/scripts/server/supervisor.ts');
-    expect(result.stderr).toContain('managed Sites refresh failed');
+    expect(result.calls.some((call) => call.includes('/scripts/os.ts sites refresh --json'))).toBe(true);
+    expect(result.calls.some((call) => call.includes('/scripts/server/supervisor.ts'))).toBe(true);
   });
 
 });

@@ -324,12 +324,86 @@ describe('public installer runtime dependencies', () => {
     expect(bootstrap.indexOf('ensure_portless')).toBeLessThan(
       bootstrap.indexOf('persist_runtime_paths'),
     );
-    const main = extractShellFunction(bootstrap, 'main');
-    expect(main.indexOf('install_verified_runtime')).toBeLessThan(
-      main.indexOf('persist_runtime_paths'),
+    const setupLocalRuntime = extractShellFunction(
+      bootstrap,
+      'setup_local_runtime',
     );
-    expect(main.indexOf('persist_runtime_paths')).toBeLessThan(
+    const main = extractShellFunction(bootstrap, 'main');
+    expect(setupLocalRuntime.indexOf('install_verified_runtime')).toBeLessThan(
+      setupLocalRuntime.indexOf('persist_runtime_paths'),
+    );
+    expect(main.indexOf('setup_local_runtime')).toBeLessThan(
       main.indexOf('maybe_install_daemons'),
+    );
+  });
+
+  it('should install a named Consuelo service executable before daemon generation', () => {
+    const bootstrap = readBootstrap();
+    const namedRuntime = extractShellFunction(
+      bootstrap,
+      'ensure_named_bun_runtime',
+    );
+
+    expect(namedRuntime).toContain('consuelo-os');
+    expect(namedRuntime).toContain('/bin/cp -c');
+    expect(namedRuntime).toContain('/bin/cp -p');
+    expect(namedRuntime).toContain('/usr/bin/cmp -s');
+    expect(namedRuntime).toContain('/bin/mv -f');
+    expect(namedRuntime).toContain('BUN_BIN="$target"');
+
+    const setupLocalRuntime = extractShellFunction(
+      bootstrap,
+      'setup_local_runtime',
+    );
+    expect(setupLocalRuntime.indexOf('ensure_bun')).toBeLessThan(
+      setupLocalRuntime.indexOf('ensure_named_bun_runtime'),
+    );
+    expect(setupLocalRuntime.indexOf('ensure_named_bun_runtime')).toBeLessThan(
+      setupLocalRuntime.indexOf('persist_runtime_paths'),
+    );
+  });
+
+  it('should verify the signed runtime and prepare recovery before persisting managed install state', () => {
+    const setupLocalRuntime = extractShellFunction(
+      readBootstrap(),
+      'setup_local_runtime',
+    );
+    const verifiedRuntime = setupLocalRuntime.indexOf('install_verified_runtime');
+    const dependencies = setupLocalRuntime.indexOf('ensure_dependencies');
+    const recoveryCli = setupLocalRuntime.indexOf('prepare_recovery_cli');
+    const managedWrites = [
+      'ensure_named_bun_runtime',
+      'ensure_install_id',
+      'ensure_portless',
+      'ensure_caddy',
+      'ensure_cloudflared',
+      'persist_runtime_paths',
+    ];
+
+    expect(verifiedRuntime).toBeGreaterThanOrEqual(0);
+    expect(verifiedRuntime).toBeLessThan(dependencies);
+    expect(dependencies).toBeLessThan(recoveryCli);
+    for (const functionName of managedWrites) {
+      const managedWrite = setupLocalRuntime.indexOf(functionName);
+      expect(managedWrite, functionName).toBeGreaterThan(recoveryCli);
+    }
+  });
+
+  it('should stage one smoke-test worker without contending with the live supervisor', () => {
+    const installer = readDaemonInstaller();
+    const daemon = readFileSync(
+      join(PACKAGE_ROOT, 'scripts', 'start-consuelo-daemon.sh'),
+      'utf8',
+    );
+
+    expect(installer).toContain('CONSUELO_OS_SINGLE_WORKER_SMOKE_TEST=1');
+    expect(daemon).toContain(
+      'if [ "${CONSUELO_OS_SINGLE_WORKER_SMOKE_TEST:-0}" = "1" ]; then',
+    );
+    expect(daemon).toContain('CONSUELO_OS_WORKER_ID="smoke-worker"');
+    expect(daemon).toContain('scripts/server/main.ts');
+    expect(daemon.indexOf('scripts/server/main.ts')).toBeLessThan(
+      daemon.lastIndexOf('scripts/server/supervisor.ts'),
     );
   });
 

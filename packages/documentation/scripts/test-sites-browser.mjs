@@ -53,7 +53,7 @@ try {
 
   const sidebar = page.locator('#starlight__sidebar');
   const groups = sidebar.locator('details');
-  if ((await groups.count()) !== 2) throw new Error(`Expected Tools plus nested Sites groups, found ${await groups.count()}`);
+  if ((await groups.count()) !== 1) throw new Error(`Expected one top-level Sites group, found ${await groups.count()}`);
   for (let index = 0; index < await groups.count(); index += 1) {
     if (!(await groups.nth(index).evaluate((element) => element.open))) throw new Error('Sites navigation started collapsed');
   }
@@ -104,7 +104,7 @@ try {
     viewportChecks.push({ name: viewport.name, overflow });
   }
 
-  process.stdout.write(`${JSON.stringify({ ok: true, routes: routes.length, groups: 2, port, viewportChecks }, null, 2)}\n`);
+  process.stdout.write(`${JSON.stringify({ ok: true, routes: routes.length, groups: 1, port, viewportChecks }, null, 2)}\n`);
 } finally {
   await browser?.close();
   await stopDocumentationServer(server);

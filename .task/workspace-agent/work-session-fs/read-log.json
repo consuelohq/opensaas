@@ -1,0 +1,12 @@
+{
+  "files": [
+    "packages/os/scripts/fs.js",
+    "packages/os/scripts/generate-types.ts",
+    "packages/os/scripts/server/services/call-service.ts",
+    "packages/os/src/generated/workspace.d.ts",
+    "packages/os/tests/tool-manifest.test.ts",
+    "packages/workspace/scripts/test-selection.js",
+    "packages/workspace/test-selection.rules.json"
+  ],
+  "updatedAt": "2026-08-15T02:56:55.861Z"
+}

@@ -42,6 +42,7 @@ export type TraceSitesGatewayReadLayerRequest = {
   sourceMode: TraceSourceMode;
   cursor: string;
   limit?: number;
+  query?: string;
   bridgeConfigured?: boolean;
   includeRawPayload?: boolean;
   requesterCanReadRawPayload?: boolean;
@@ -55,6 +56,7 @@ export type TraceSitesGatewayReadBackendInput = {
   sourceMode: TraceSourceMode;
   cursor: string;
   limit: number;
+  query?: string;
 };
 
 export type TraceSitesGatewayReadBackendHealth = {
@@ -83,7 +85,36 @@ export type TraceSitesGatewayHistoryRow = Record<string, unknown> & {
 export type TraceSitesGatewayHistoryPage = {
   rows: TraceSitesGatewayHistoryRow[];
   nextCursor: string | null;
+  liveCursor?: string;
 };
+
+export type TraceSitesGatewayHourlyAggregateBucket = {
+  startedAt: string;
+  calls: number;
+  inputTokens: number;
+  outputTokens: number;
+  tokens: number;
+  cost: number;
+};
+
+export type TraceSitesGatewayHourlyAggregate = {
+  generatedAt: string;
+  windowStart: string;
+  windowEnd: string;
+  buckets: TraceSitesGatewayHourlyAggregateBucket[];
+  totals: {
+    calls: number;
+    inputTokens: number;
+    outputTokens: number;
+    tokens: number;
+    cost: number;
+  };
+};
+
+export type TraceSitesGatewayHourlyAggregateInput =
+  TraceSitesGatewayReadBackendInput & {
+    hours: number;
+  };
 
 export type TraceSitesGatewayCachedAggregate = {
   cursor: string;
@@ -105,6 +136,9 @@ export type TraceSitesGatewayReadBackendAdapter = {
   readNewerPage?: (
     input: TraceSitesGatewayReadBackendInput,
   ) => MaybePromise<TraceSitesGatewayHistoryPage>;
+  readHourlyAggregate?: (
+    input: TraceSitesGatewayHourlyAggregateInput,
+  ) => MaybePromise<TraceSitesGatewayHourlyAggregate>;
   readCachedAggregate: (
     input: TraceSitesGatewayReadBackendInput,
   ) => MaybePromise<TraceSitesGatewayCachedAggregate>;

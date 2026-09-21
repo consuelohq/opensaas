@@ -1,7 +1,7 @@
 import { Effect } from 'effect';
 
 import { codeCallServiceError } from './errors';
-import { isInsidePath, isManagedTaskWorktreePathEffect, realpathIfExistsEffect } from './location';
+import type { ResolvedCwd } from './location';
 import type { TruncatedOutput } from './output';
 import type { CodeCallInput, CodeCallLanguage, CodeCallMode } from './types';
 
@@ -12,43 +12,34 @@ const heredocWrapperPattern = new RegExp('(python3?|node|bun)\\s+-[^\\n]*<<[\'\"
 const base64TransportPattern = new RegExp('base64\\s+(-d|--decode)|Buffer\\.from\\([^)]*base64|atob\\(', 's');
 const unsafeBashPattern = new RegExp('rm\\s+-rf\\s+/|git\\s+reset\\s+--hard|curl\\s+[^|]+\\|\\s*(sh|bash)');
 
-export const validateEditScopeEffect = (input: CodeCallInput, resolvedCwd: string) => Effect.gen(function* () {
-  const explicitTaskWorktree = typeof input.taskWorktree === 'string' && input.taskWorktree.trim().length > 0
-    ? input.taskWorktree
-    : undefined;
-  const managedTaskWorktree = explicitTaskWorktree
-    ? undefined
-    : (yield* isManagedTaskWorktreePathEffect(resolvedCwd))
-      ? resolvedCwd
-      : undefined;
-  const taskWorktree = explicitTaskWorktree || managedTaskWorktree;
-
-  if (!taskWorktree) {
+export const validateEditScopeEffect = (input: CodeCallInput, resolution: ResolvedCwd) => Effect.gen(function* () {
+  if (!resolution.writeBoundaryRoot || !resolution.authorityKind) {
     return yield* Effect.fail(codeCallServiceError({
       envelopeCode: 'CODE_CALL_VALIDATION_ERROR',
-      message: 'mode=edit requires taskSession or an explicit taskWorktree.',
+      message: 'mode=edit requires taskSession or workSession authority.',
       detectedMistakeClass: 'edit_without_task',
-      cwd: resolvedCwd,
+      cwd: resolution.cwd,
     }));
   }
 
-  const resolvedTaskWorktree = yield* realpathIfExistsEffect(taskWorktree);
-  if (!isInsidePath(resolvedCwd, resolvedTaskWorktree)) {
-    return yield* Effect.fail(codeCallServiceError({
-      envelopeCode: 'CODE_CALL_VALIDATION_ERROR',
-      message: 'mode=edit cwd must be inside the explicit taskWorktree.',
-      detectedMistakeClass: 'edit_mode_gated',
-      cwd: resolvedCwd,
-    }));
+  if (resolution.authorityKind === 'task') {
+    const branch = typeof input.branch === 'string' ? input.branch : '';
+    if (!branch.startsWith('task/')) {
+      return yield* Effect.fail(codeCallServiceError({
+        envelopeCode: 'CODE_CALL_VALIDATION_ERROR',
+        message: 'mode=edit refuses non-task branches. Pass a taskSession for isolated repository edits.',
+        detectedMistakeClass: 'edit_mode_gated',
+        cwd: resolution.cwd,
+      }));
+    }
   }
 
-  const branch = typeof input.branch === 'string' ? input.branch : '';
-  if (branch && !branch.startsWith('task/')) {
+  if (resolution.authorityKind === 'work' && typeof input.branch === 'string' && input.branch.length > 0) {
     return yield* Effect.fail(codeCallServiceError({
       envelopeCode: 'CODE_CALL_VALIDATION_ERROR',
-      message: 'mode=edit refuses non-task branches. Pass a taskSession or task worktree for isolated edits.',
+      message: 'workSession edits are filesystem-scoped and may not provide branch.',
       detectedMistakeClass: 'edit_mode_gated',
-      cwd: resolvedCwd,
+      cwd: resolution.cwd,
     }));
   }
 });

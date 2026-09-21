@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_5390629a4392",
+  "tmuxSession": "opensaas-os-repair-launcher-update-freshness-and-auth-routes-5390629a",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/repair-launcher-update-freshness-and-auth-routes",
+  "branch": "task/os/repair-launcher-update-freshness-and-auth-routes",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-launcher-update-freshness-and-auth-routes",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-launcher-update-freshness-and-auth-routes",
+  "prNumber": 1956,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1956",
+  "createdAt": "2026-08-14T09:40:17.727Z",
+  "tmuxCreated": false,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-launcher-update-freshness-and-auth-routes/.task/os/repair-launcher-update-freshness-and-auth-routes/session.json"
+}

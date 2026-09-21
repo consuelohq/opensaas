@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/repair-windows-runtime-bundle-test-timeout",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1922,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1922",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1922",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1922/repair-windows-runtime-bundle-test-timeout",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1922",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1922/repair-windows-runtime-bundle-test-timeout",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-windows-runtime-bundle-test-timeout",
+  "taskSession": "tsk_20484f2598ca",
+  "tmuxSession": "opensaas-os-repair-windows-runtime-bundle-test-timeout-20484f25",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-windows-runtime-bundle-test-timeout/.task/os/repair-windows-runtime-bundle-test-timeout/session.json",
+  "createdAt": "2026-08-13T22:11:56.613Z"
+}

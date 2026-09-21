@@ -43,9 +43,10 @@ function createMockDiagnostics() {
 }
 
 describe('Consuelo OS hosted onboarding flow', () => {
-  test('skills are a real prompt with explicit multiselect instructions', () => {
+  test('skills use the recommended defaults without a multiselect prompt', () => {
     expect(install).toContain('selectedSkills');
-    expect(install).toContain(
+    expect(install).toContain('getDefaultSelectedSkillNames()');
+    expect(install).not.toContain(
       "'select skills to enable — Use Space to select skills, press Enter to continue'",
     );
     expect(install).toContain('createInstallerProgressSteps');
@@ -90,12 +91,13 @@ describe('Consuelo OS hosted onboarding flow', () => {
     expect(install).not.toContain('internal.consuelohq.com');
   });
 
-  test('normal installer attempts real device login and falls back cleanly', () => {
+  test('normal installer requires real device login instead of falling back to anonymous bootstrap', () => {
     expect(install).toContain('attemptWorkspaceDeviceLogin');
     expect(install).toContain('requestWorkspaceDeviceCode');
     expect(install).toContain('pollWorkspaceDeviceAccessToken');
     expect(install).toContain('openDeviceVerificationUrl');
-    expect(install).toContain('Device login unavailable; continuing with local workspace bootstrap.');
+    expect(install).not.toContain('Device login unavailable; continuing with local workspace bootstrap.');
+    expect(install).not.toContain('Device login was not approved before timeout; continuing with local workspace bootstrap.');
     expect(install).toContain("if (liveDeviceCode.status !== 'started')");
     expect(install).not.toContain('workspaceActivation');
     expect(install).not.toContain('app.consuelohq.com/os/activate');
@@ -153,23 +155,29 @@ describe('Consuelo OS hosted onboarding flow', () => {
     })).resolves.toEqual({ status: 'skipped', reason: 'bootstrap_credential_unavailable' });
   });
 
-  test('local and cloud mode labels are plain choices', () => {
-    expect(install).toContain("label: 'local'");
-    expect(install).toContain("label: 'cloud'");
-    expect(install).not.toContain("label: 'local compute'");
-    expect(install).not.toContain("label: 'cloud compute'");
+  test('interactive onboarding defaults to local without asking for a mode', () => {
+    const promptOptionsSource = install.slice(install.indexOf('async function promptOptions'));
+    expect(promptOptionsSource).toContain("const mode: OsMode = options.mode ?? 'local';");
+    expect(promptOptionsSource).not.toContain("message: 'choose an OS mode'");
+    expect(promptOptionsSource).not.toContain("label: 'local'");
+    expect(promptOptionsSource).not.toContain("label: 'cloud'");
     expect(install).not.toContain('workspace URL stays the stable access path');
     expect(install).not.toContain('connect to cloud OS');
   });
 
-  test('agent multiselect explains default-selected detected agents', () => {
-    expect(install).toContain('formatLocalAgentsPromptMessage');
-    expect(install).toContain('found — press Space to not connect to this workspace, Enter to continue');
+  test('skills and detected agents use their recommended defaults without prompting', () => {
+    const promptOptionsSource = install.slice(install.indexOf('async function promptOptions'));
+    expect(promptOptionsSource).toContain('getDefaultSelectedSkillNames()');
+    expect(promptOptionsSource).toContain('detectedAgents.map((agent) => agent.name)');
+    expect(promptOptionsSource).not.toContain('groupMultiselect({');
+    expect(promptOptionsSource).not.toContain('multiselect({');
+    expect(promptOptionsSource).not.toContain('select skills to enable');
+    expect(promptOptionsSource).not.toContain('found — press Space to not connect to this workspace, Enter to continue');
   });
 
-  test('background service confirmation stays in install.ts onboarding intent', () => {
+  test('background service defaults on without a confirmation prompt', () => {
     expect(install).toContain('installDaemons');
-    expect(install).toContain("message: 'install local background service?'");
+    expect(install).not.toContain("message: 'install local background service?'");
     expect(bootstrap).not.toContain('Consuelo OS runs a local background service on your Mac so agents and apps can reach your OS while you work.');
   });
 
@@ -301,12 +309,12 @@ describe('Consuelo OS hosted onboarding flow', () => {
     );
 
     expect(result.status).toBe('workspace_required');
-    expect(order).toEqual(['request-code', 'prompt', 'open', 'runtime-hold', 'sleep', 'poll']);
+    expect(order).toEqual(['request-code', 'open', 'prompt', 'runtime-hold', 'sleep', 'poll']);
     const deviceLoginSteps = steps.filter((step) => step.step === 'device_login');
     expect(deviceLoginSteps.map((step) => step.status)).toEqual([
       'start',
-      'prompt_displayed',
       'browser_open',
+      'prompt_displayed',
       'poll_wait',
       'poll_request',
       'poll_result',
@@ -315,6 +323,47 @@ describe('Consuelo OS hosted onboarding flow', () => {
     expect(deviceLoginSteps.find((step) => step.status === 'prompt_displayed')?.data).toEqual({ displayed: true });
     expect(deviceLoginSteps.find((step) => step.status === 'poll_request')?.data).toEqual({ intervalSeconds: 5 });
     expect(JSON.stringify(deviceLoginSteps.find((step) => step.status === 'prompt_displayed')?.data)).not.toContain('https://');
+  });
+
+  test('should stop immediately when browser authorization is denied', async () => {
+    const { diagnostics } = createMockDiagnostics();
+    const dependencies = {
+      readLocalNodeIdentity: vi.fn(() => undefined),
+      requestWorkspaceDeviceCode: vi.fn(async () => ({
+        status: 'started' as const,
+        deviceKeyPair: {
+          algorithm: 'Ed25519' as const,
+          publicKeyJwk: '{}',
+          signingKeyJwk: '{}',
+        },
+        session: {
+          deviceCode: 'device-secret',
+          userCode: '7YMS4KV8',
+          verificationUri: 'https://os.consuelohq.com/login/device',
+          verificationUriComplete: 'https://os.consuelohq.com/login/device?user_code=7YMS4KV8',
+          expiresAt: new Date(Date.now() + 60_000).toISOString(),
+          intervalSeconds: 5,
+        },
+      })),
+      printDeviceLoginPrompt: vi.fn(async () => undefined),
+      openDeviceVerificationUrl: vi.fn(async () => true),
+      sleep: vi.fn(async () => undefined),
+      withRuntimeHold: vi.fn(async <T>(operation: () => Promise<T>): Promise<T> => operation()),
+      pollWorkspaceDeviceAccessToken: vi.fn(async () => ({
+        status: 'denied' as const,
+        errorCode: 'DEVICE_CODE_DENIED',
+        telemetryErrorCode: 'DEVICE_AUTH_DENIED' as const,
+        message: 'This account could not be verified for device setup.',
+      })),
+    };
+
+    await expect(attemptWorkspaceDeviceLogin(
+      { dryRun: false, home: '/tmp/consuelo-home', diagnostics },
+      dependencies,
+    )).rejects.toThrow('This account could not be verified for device setup.');
+
+    expect(dependencies.pollWorkspaceDeviceAccessToken).toHaveBeenCalledTimes(1);
+    expect(dependencies.sleep).toHaveBeenCalledTimes(1);
   });
 
   test('should record explicit diagnostics breadcrumbs when workspace selection posts', () => {

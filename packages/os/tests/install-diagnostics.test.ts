@@ -75,4 +75,32 @@ describe('development install diagnostics', () => {
     expect(JSON.stringify(report)).not.toContain('testing-ttd');
     expect(JSON.stringify(report)).not.toContain('cloudflared_tunnel_token');
   });
+
+  it('captures a temporary redacted support report for normal installs without persisting raw argv', () => {
+    const diagnostics = createInstallDiagnostics({
+      env: {},
+      home: '/Users/private/.consuelo',
+      argv: ['--workspace-token=secret-value'],
+      captureSupport: true,
+    });
+
+    diagnostics.recordStep('service', 'failed', {
+      errorCode: 'BACKGROUND_SERVICE_START_FAILED',
+    });
+    diagnostics.finish({ status: 'error' });
+
+    try {
+      expect(diagnostics.enabled).toBe(true);
+      const report = fs.readFileSync(
+        path.join(diagnostics.reportDir, 'install-report.json'),
+        'utf8',
+      );
+      expect(report).toContain('BACKGROUND_SERVICE_START_FAILED');
+      expect(report).not.toContain('secret-value');
+      expect(report).not.toContain('workspace-token');
+      expect(report).not.toContain('/Users/private');
+    } finally {
+      fs.rmSync(diagnostics.reportDir, { recursive: true, force: true });
+    }
+  });
 });

@@ -64,9 +64,11 @@ export function buildManagedCloudPublicCatalog(
 export function managedCloudPricingFromJson(input: {
   policyJson?: string;
   rateCardsJson?: string;
+  fallback?: ManagedCloudPricingRuntime;
 }): ManagedCloudPricingRuntime | undefined {
   const policyJson = input.policyJson?.trim();
   const rateCardsJson = input.rateCardsJson?.trim();
+  if (!policyJson && !rateCardsJson) return input.fallback;
   if (!policyJson || !rateCardsJson) return undefined;
   try {
     const policy = JSON.parse(policyJson) as ManagedCloudPricingPolicy;

@@ -1,4 +1,10 @@
 import {
+  parseTraceSearchTerms,
+  type TraceSearchField,
+  type TraceSearchTerm,
+} from '../trace-search-query';
+
+import {
   branchName,
   childTraceRecords,
   clean,
@@ -52,10 +58,9 @@ export type TraceFilterFacets = {
 
 const TOOL_LABELS: Record<string, string> = {
   'fs.apply_patch': 'fs.patch',
-  'fs.search': 'files.search',
   get_steering: 'steering',
+  refresh_steering: 'steering.refresh',
   'review.run': 'review',
-  'tools.search': 'search',
 };
 
 export function isDefaultTraceTableRowVisible(row: TraceRecord): boolean {
@@ -106,7 +111,9 @@ export function semanticToolLabel(
   input = resolvedInput(row),
 ): string {
   const metadata =
-    typeof row.metadata === 'object' && row.metadata !== null && !Array.isArray(row.metadata)
+    typeof row.metadata === 'object' &&
+    row.metadata !== null &&
+    !Array.isArray(row.metadata)
       ? (row.metadata as TraceRecord)
       : null;
   const tool =
@@ -194,24 +201,62 @@ export function matchesTraceTableFilters(
   ) {
     return false;
   }
-  const query = filters.query.trim().toLowerCase();
-  if (!query) return true;
-  return records.some((record) => {
-    const formatted = formatTraceTableRow(record);
-    return [
-      formatted.toolLabel,
-      formatted.inputLabel,
-      formatted.outputLabel,
-      formatted.nodeLabel,
-      formatted.routeLabel,
-      branchName(record),
-      clean(record.traceId ?? record.trace),
-      clean(record.code),
-    ]
-      .join(' ')
-      .toLowerCase()
-      .includes(query);
-  });
+  const terms = parseTraceSearchTerms(filters.query);
+  if (!terms.length) return true;
+  return terms.every((term) =>
+    records.some((record) => traceRecordMatchesSearchTerm(record, term)),
+  );
+}
+
+function traceRecordMatchesSearchTerm(
+  record: TraceRecord,
+  term: TraceSearchTerm,
+): boolean {
+  const formatted = formatTraceTableRow(record);
+  const status = isFailure(record) ? 'error' : 'success';
+  const time = traceSearchTime(record);
+  const values: Record<TraceSearchField, string> = {
+    tool: formatted.toolLabel,
+    branch: branchName(record),
+    status: [status, clean(record.status)].filter(Boolean).join(' '),
+    node: formatted.nodeLabel,
+    route: formatted.routeLabel,
+    trace: clean(record.traceId ?? record.trace),
+    code: clean(record.code),
+    date: time,
+  };
+  if (term.field) return values[term.field].toLowerCase().includes(term.value);
+  return [
+    formatted.toolLabel,
+    formatted.nodeLabel,
+    formatted.routeLabel,
+    branchName(record),
+    clean(record.traceId ?? record.trace),
+    clean(record.code),
+    status,
+    time,
+  ]
+    .join(' ')
+    .toLowerCase()
+    .includes(term.value);
+}
+
+function traceSearchTime(record: TraceRecord): string {
+  const raw = clean(
+    record.startTime ?? record.time ?? record.ts ?? record.displayTime,
+  );
+  if (!raw) return '';
+  const parsed = new Date(raw);
+  if (Number.isNaN(parsed.getTime())) return raw;
+  return [
+    raw,
+    parsed.toISOString(),
+    parsed.toLocaleDateString('en-US', { timeZone: 'America/New_York' }),
+    parsed.toLocaleString('en-US', {
+      timeZone: 'America/New_York',
+      hour12: false,
+    }),
+  ].join(' ');
 }
 
 function summarizeInput(
@@ -251,6 +296,9 @@ function summarizeInput(
       : 'inspect source';
   }
   if (tool === 'get_steering') return 'workspace guidance';
+  if (tool === 'refresh_steering') {
+    return clean(input?.reason) || 'refresh workspace guidance';
+  }
   if (tool === 'authentication.mcp' || tool === 'authorization.mcp') {
     return summarizeMcpAuthentication(input, tool);
   }
@@ -258,10 +306,23 @@ function summarizeInput(
     const seconds = numeric(input?.seconds);
     const reason = clean(input?.reason);
     const pr = clean(input?.pr);
-    const subject = seconds > 0 ? `wait ${seconds}s` : pr ? `wait for PR #${pr}` : 'wait';
+    const subject =
+      seconds > 0 ? `wait ${seconds}s` : pr ? `wait for PR #${pr}` : 'wait';
     return [subject, reason].filter(Boolean).join(' · ');
   }
   if (tool === 'status') return 'workspace status';
+  if (tool.startsWith('lifecycle.')) {
+    const action = tool.split('.').at(-1) || 'status';
+    if (action === 'status') return 'runtime status';
+    if (action === 'update') {
+      return [clean(input?.channel), clean(input?.version)].filter(Boolean).join(' · ') || 'update runtime';
+    }
+    return lifecycleInputLabel(action, input);
+  }
+  if (tool === 'mac.call') {
+    const command = clean(input?.command);
+    return command ? `run ${summarizeCommandText(command)}` : 'mac command';
+  }
   if (tool === 'tools.search' || tool === 'fs.search') {
     return (
       clean(input?.query ?? input?.keyword ?? input?.pattern) ||
@@ -269,13 +330,20 @@ function summarizeInput(
     );
   }
   if (tool === 'fs.read') {
-    return summarizePaths('read', input) || humanPayload(row.input, 'read file');
+    return (
+      summarizePaths('read', input) || humanPayload(row.input, 'read file')
+    );
   }
   if (tool === 'fs.write') {
-    return summarizePaths('write', input) || humanPayload(row.input, 'write file');
+    return (
+      summarizePaths('write', input) || humanPayload(row.input, 'write file')
+    );
   }
   if (tool === 'fs.list') {
     return summarizePaths('list', input) || 'list files';
+  }
+  if (tool === 'fs.trash') {
+    return summarizePaths('trash', input) || 'trash file';
   }
   if (tool === 'fs.apply_patch') {
     const paths = patchPaths(input, row);
@@ -311,6 +379,29 @@ function summarizeInput(
   if (tool === 'verify') {
     return clean(input?.base ?? input?.branch) || 'current task';
   }
+  if (tool === 'release') {
+    const channel = clean(input?.channel);
+    const pr = clean(input?.pr);
+    const repo = clean(input?.repo);
+    const subject = pr ? `PR #${pr}` : repo;
+    return [channel, subject].filter(Boolean).join(' · ') || 'release runtime';
+  }
+  if (tool === 'session.start') {
+    const kind = clean(input?.kind) || 'session';
+    const subject = clean(input?.title ?? input?.path ?? input?.area);
+    return [kind, subject].filter(Boolean).join(' · ');
+  }
+  if (tool === 'explore') {
+    return clean(input?.query) || 'explore workspace';
+  }
+  if (tool === 'memory') {
+    return clean(input?.keyword ?? input?.query ?? input?.operation) || 'memory request';
+  }
+  if (tool === 'subagent') {
+    const provider = clean(input?.provider);
+    const task = clean(input?.task ?? input?.prompt ?? input?.query);
+    return [provider, task].filter(Boolean).join(' · ') || 'subagent request';
+  }
   if (tool.startsWith('task.')) {
     const command = stringArray(input?.command);
     if (command.length) return summarizeSpawnedCommand(command);
@@ -332,6 +423,10 @@ function summarizeInput(
     }
     const action = clean(input?.action);
     if (action) return action;
+    const derivedAction = tool.split('.').at(-1);
+    if (derivedAction && derivedAction !== 'browser') {
+      return `browser ${derivedAction}`;
+    }
     return humanPayload(row.input, 'browser request');
   }
   if (tool === 'stream.context') {
@@ -371,6 +466,7 @@ function summarizeOutput(
     );
   }
   if (tool === 'get_steering') return 'steering loaded';
+  if (tool === 'refresh_steering') return 'steering refreshed';
   const result = resultRecord(row);
   const data = record(result?.data) ?? result;
   if (tool === 'code.call') {
@@ -385,10 +481,44 @@ function summarizeOutput(
       clean(data?.stdout ?? result?.stdout ?? row.output),
     );
     if (testSummary) return testSummary;
+    const codeSummary = summarizeCode(clean(input?.code), clean(input?.mode));
+    if (codeSummary.startsWith('wait ')) return 'wait complete';
+    if (codeSummary.startsWith('search ')) return 'search complete';
+    if (codeSummary.startsWith('test ')) return 'test complete';
+    if (codeSummary.startsWith('run ') || codeSummary.startsWith('git ')) {
+      return 'command complete';
+    }
     if (mode === 'read') return 'read complete';
     if (mode === 'edit') return 'edit complete';
     if (mode === 'verify') return 'verification passed';
     return 'completed';
+  }
+  if (tool === 'fs.read') return 'read complete';
+  if (tool === 'fs.write') return 'write complete';
+  if (tool === 'fs.list') return 'list complete';
+  if (tool === 'fs.trash') return 'trash complete';
+  if (tool === 'fs.search' || tool === 'tools.search') return 'search complete';
+  if (tool === 'status') return 'status loaded';
+  if (tool === 'stream.context') return 'context loaded';
+  if (tool === 'git.diff') return 'diff complete';
+  if (tool.startsWith('lifecycle.')) {
+    const action = tool.split('.').at(-1) || '';
+    if (action === 'status') return 'status loaded';
+    if (action === 'update') {
+      const lifecycleResult = record(data?.result ?? result?.result);
+      const version = clean(
+        lifecycleResult?.resultingVersion ?? lifecycleResult?.version ?? input?.version,
+      );
+      return version ? `updated ${version}` : 'update complete';
+    }
+    return genericSuccessLabel(tool, input) || 'lifecycle complete';
+  }
+  if (tool === 'mac.call') {
+    const command = clean(input?.command);
+    return command ? `${commandProgram(command)} complete` : 'command complete';
+  }
+  if (tool.startsWith('browser')) {
+    return browserSuccessLabel(tool, input);
   }
   if (tool === 'fs.apply_patch') {
     const paths = patchPaths(input, row);
@@ -397,6 +527,13 @@ function summarizeOutput(
       : 'patch applied';
   }
   if (tool === 'verify') return 'verification passed';
+  if (tool === 'release') {
+    const releaseResult = record(data?.result ?? result?.result);
+    const version = clean(releaseResult?.version ?? data?.version ?? result?.version);
+    return version ? `released ${version}` : 'release complete';
+  }
+  if (tool === 'session.start') return 'session started';
+  if (tool === 'explore') return 'search complete';
   if (tool === 'review.run') {
     const summary = record(data?.summary ?? result?.summary);
     const issues = numeric(summary?.blockingIssues ?? summary?.yourIssues);
@@ -430,15 +567,23 @@ function summarizeOutput(
   }
   if (tool === 'batch') {
     const children = childTraceRecords(row);
-    return children.length
-      ? `${children.length} operations complete`
-      : normalizeSeparators(
-          valueText(row.output ?? row.summary) || 'batch complete',
-        );
+    const operationCount = children.length || batchSteps(input, row).length;
+    if (operationCount) return `${operationCount} operations complete`;
+    const output = valueText(row.output ?? row.summary);
+    return isGenericSuccessMessage(output)
+      ? 'batch complete'
+      : normalizeSeparators(output || 'batch complete');
+  }
+  const message = clean(data?.message ?? result?.message);
+  if (
+    isGenericSuccessMessage(message) ||
+    isGenericSuccessMessage(row.output ?? row.summary)
+  ) {
+    const inferred = genericSuccessLabel(toolLabel, input);
+    if (inferred) return inferred;
   }
   return normalizeSeparators(
-    clean(data?.message ?? result?.message) ||
-      humanPayload(row.output ?? row.summary, 'completed'),
+    message || humanPayload(row.output ?? row.summary, 'completed'),
   );
 }
 
@@ -506,20 +651,31 @@ function summarizeCode(code: string, mode: string): string {
   if (patchFiles.length) {
     return `edit ${patchFiles.length} ${patchFiles.length === 1 ? 'file' : 'files'} · ${patchFiles.join(', ')}`;
   }
-  const assignedWrite = code.match(
-    /const\s+([a-zA-Z_$][\w$]*)\s*=\s*['"]([^'"]+)['"][\s\S]{0,800}?Bun\.write\(\s*\1\b/,
-  );
-  const directWrite = code.match(/Bun\.write\(\s*['"]([^'"]+)['"]/);
-  const writePath = assignedWrite?.[2] ?? directWrite?.[1];
-  if (writePath) return `edit ${fileName(writePath)}`;
-  const file = code.match(
-    /(?:Bun\.file|readFileSync|readFile)\(\s*['"]([^'"]+)['"]/,
-  );
-  if (file) {
-    return `${mode === 'edit' ? 'edit' : 'read'} ${fileName(file[1])}`;
+  const sleep = code.match(/\bBun\.sleep\(\s*(\d+(?:\.\d+)?)\s*\)/);
+  if (sleep) {
+    const milliseconds = Number(sleep[1]);
+    if (Number.isFinite(milliseconds) && milliseconds >= 1000) {
+      const seconds = milliseconds / 1000;
+      return `wait ${Number.isInteger(seconds) ? seconds : seconds.toFixed(1)}s`;
+    }
+    if (Number.isFinite(milliseconds)) return `wait ${milliseconds}ms`;
+  }
+  const fileTarget = codeFileTarget(code);
+  if (fileTarget) {
+    const verb =
+      fileTarget.operation === 'write'
+        ? 'write'
+        : mode === 'edit'
+          ? 'edit'
+          : mode === 'verify'
+            ? 'verify'
+            : 'read';
+    return `${verb} ${fileName(fileTarget.path)}`;
   }
   const command = spawnedCommand(code);
   if (command.length) return summarizeSpawnedCommand(command);
+  const shell = summarizeShellCode(code, mode);
+  if (shell) return shell;
   const test = code.match(/(?:vitest|jest|test)\s+(?:run\s+)?([^'"\n;]+)/i);
   if (test) return `test ${test[1].trim()}`;
   if (/matchAll?[\s\S]{0,180}(?:fail|error|test)/i.test(code)) {
@@ -558,9 +714,20 @@ function isWorkpadActivity(
 }
 
 function spawnedCommand(code: string): string[] {
-  const array = code.match(
+  let array = code.match(
     /Bun\.spawn(?:Sync)?\(\s*\[([\s\S]{0,2400}?)\]\s*(?:,|\))/,
   )?.[1];
+  if (!array) {
+    const call = code.match(
+      /Bun\.spawn(?:Sync)?\(\s*([a-zA-Z_$][\w$]*)\s*(?:,|\))/,
+    );
+    if (call?.[1]) {
+      const variable = escapeRegExp(call[1]);
+      array = code.match(
+        new RegExp(`(?:const|let|var)\\s+${variable}\\s*=\\s*\\[([\\s\\S]{0,2400}?)\\]\\s*;`),
+      )?.[1];
+    }
+  }
   if (!array) return [];
   return [...array.matchAll(/"((?:\\.|[^"\\])*)"|'((?:\\.|[^'\\])*)'/g)]
     .map((match) => match[1] ?? match[2] ?? '')
@@ -597,6 +764,184 @@ function summarizeSpawnedCommand(command: string[]): string {
     return query ? `search ${query}` : 'search files';
   }
   return `run ${command.slice(0, 4).map(fileName).join(' ')}`;
+}
+
+function summarizeCommandText(command: string): string {
+  const normalized = normalizeSeparators(command)
+    .replace(/\s*(?:&&|\|\||;)\s*.*/, '')
+    .trim();
+  if (!normalized) return 'command';
+  return normalized.split(/\s+/).slice(0, 4).join(' ');
+}
+
+function commandProgram(command: string): string {
+  const summary = summarizeCommandText(command);
+  const first = summary.split(/\s+/)[0] || 'command';
+  return fileName(first);
+}
+
+function codeFileTarget(
+  code: string,
+): { path: string; operation: 'read' | 'write' | 'path' } | null {
+  const directPatterns: Array<{
+    operation: 'read' | 'write' | 'path';
+    pattern: RegExp;
+  }> = [
+    {
+      operation: 'write',
+      pattern: /(?:Bun\.write|writeFileSync|writeFile)\(\s*['"]([^'"]+)['"]/,
+    },
+    {
+      operation: 'read',
+      pattern: /(?:Bun\.file|readFileSync|readFile)\(\s*['"]([^'"]+)['"]/,
+    },
+    {
+      operation: 'path',
+      pattern: /\bPath\(\s*['"]([^'"]+)['"]\s*\)/,
+    },
+  ];
+  for (const { operation, pattern } of directPatterns) {
+    const match = code.match(pattern);
+    if (match?.[1] && looksLikeFilePath(match[1])) {
+      return { path: match[1], operation };
+    }
+  }
+
+  const assignments = [
+    ...code.matchAll(
+      /\b(?:const|let|var)\s+([a-zA-Z_$][\w$]*)\s*=\s*['"]([^'"]+)['"]/g,
+    ),
+  ];
+  for (const match of assignments) {
+    const variable = match[1];
+    const candidate = match[2];
+    if (!looksLikeFilePath(candidate)) continue;
+    const usedByWriteApi = new RegExp(
+      `(?:Bun\\.write|writeFileSync|writeFile)\\(\\s*${escapeRegExp(variable)}\\b`,
+    ).test(code);
+    if (usedByWriteApi) return { path: candidate, operation: 'write' };
+    const usedByReadApi = new RegExp(
+      `(?:Bun\\.file|readFileSync|readFile)\\(\\s*${escapeRegExp(variable)}\\b`,
+    ).test(code);
+    if (usedByReadApi) return { path: candidate, operation: 'read' };
+  }
+  return null;
+}
+
+function summarizeShellCode(code: string, mode: string): string {
+  const trimmed = code.trim();
+  if (!trimmed || trimmed.includes('\n')) return '';
+  const command = trimmed.split(/\s*(?:&&|\|\||;)\s*/)[0]?.trim() ?? '';
+  if (!command) return '';
+  const program = command.match(/^([a-zA-Z0-9_.+/-]+)/)?.[1] ?? '';
+  if (!program) return '';
+  const basename = fileName(program);
+  const fileTokens =
+    command.match(/(?:^|\s)([^\s'"<>|]+\.[a-zA-Z0-9_-]{1,16})(?=\s|$)/g) ?? [];
+  const target = fileTokens
+    .map((value) => value.trim())
+    .filter((value) => looksLikeFilePath(value))
+    .at(-1);
+  if (/^(?:rg|grep)$/.test(basename)) {
+    const query = command
+      .split(/\s+/)
+      .slice(1)
+      .find((value) => !value.startsWith('-') && !looksLikeFilePath(value));
+    return query
+      ? `search ${query.replace(/^['"]|['"]$/g, '')}`
+      : `search ${basename}`;
+  }
+  if (target && /^(?:cat|head|tail|sed|awk|less|more)$/.test(basename)) {
+    return `${mode === 'edit' ? 'edit' : 'read'} ${fileName(target)}`;
+  }
+  if (/^(?:find|fd)$/.test(basename)) return `search ${basename}`;
+  return '';
+}
+
+function looksLikeFilePath(value: string): boolean {
+  const candidate = value.trim();
+  if (!candidate || !isUsefulDisplayValue(candidate)) return false;
+  const base = fileName(candidate);
+  return /\.[a-zA-Z0-9_-]{1,16}$/.test(base) && !/^\d+(?:\.\d+)+$/.test(base);
+}
+
+function browserSuccessLabel(
+  tool: string,
+  input: Record<string, unknown> | null,
+): string {
+  const action =
+    clean(input?.action ?? input?.operation) || tool.split('.').at(-1) || '';
+  const normalized = action.toLowerCase();
+  const labels: Record<string, string> = {
+    open: 'page loaded',
+    navigate: 'page loaded',
+    snap: 'snapshot ready',
+    snapshot: 'snapshot ready',
+    eval: 'evaluation complete',
+    evaluate: 'evaluation complete',
+    test: 'test complete',
+    click: 'click complete',
+    type: 'input complete',
+    fill: 'input complete',
+    wait: 'wait complete',
+    status: 'browser ready',
+    close: 'browser closed',
+  };
+  return (
+    labels[normalized] ??
+    (genericSuccessLabel(normalized || 'browser', input) || 'browser complete')
+  );
+}
+
+function isGenericSuccessMessage(value: unknown): boolean {
+  const message = clean(value).toLowerCase();
+  return (
+    /^(?:command |mac command )?completed?$/.test(message) ||
+    /^(?:ok|success|successful|done)$/.test(message)
+  );
+}
+
+function genericSuccessLabel(
+  toolLabel: string,
+  input: Record<string, unknown> | null,
+): string {
+  const explicit = clean(input?.operation ?? input?.action).toLowerCase();
+  const action = explicit || toolLabel.split('.').at(-1)?.toLowerCase() || '';
+  const labels: Record<string, string> = {
+    read: 'read complete',
+    write: 'write complete',
+    edit: 'edit complete',
+    patch: 'patch applied',
+    list: 'list complete',
+    search: 'search complete',
+    find: 'search complete',
+    diff: 'diff complete',
+    verify: 'verification passed',
+    view: 'details loaded',
+    get: 'details loaded',
+    status: 'status loaded',
+    context: 'context loaded',
+    create: 'create complete',
+    update: 'update complete',
+    delete: 'delete complete',
+    remove: 'remove complete',
+    trash: 'trash complete',
+    run: 'run complete',
+    call: 'call complete',
+  };
+  return (
+    labels[action] ?? (action ? `${action.replaceAll('_', ' ')} complete` : '')
+  );
+}
+
+function lifecycleInputLabel(
+  action: string,
+  input: Record<string, unknown> | null,
+): string {
+  const subject = clean(
+    input?.version ?? input?.channel ?? input?.service ?? input?.operation,
+  );
+  return [action.replaceAll('_', ' '), subject].filter(Boolean).join(' · ');
 }
 
 function summarizeTests(output: string): string {
@@ -642,8 +987,11 @@ function summarizeMcpAuthentication(
   const mode = authModeLabel(clean(input?.authMode));
   const route = clean(input?.route);
   const scope = clean(input?.requiredScope);
-  const prefix = tool === 'authorization.mcp' && !mode ? 'MCP authorization' : mode;
-  return [prefix, route, scope].filter(Boolean).join(' · ') || 'MCP authentication';
+  const prefix =
+    tool === 'authorization.mcp' && !mode ? 'MCP authorization' : mode;
+  return (
+    [prefix, route, scope].filter(Boolean).join(' · ') || 'MCP authentication'
+  );
 }
 
 function authModeLabel(value: string): string {
@@ -696,7 +1044,9 @@ function normalizeSeparators(value: string): string {
 
 function humanPayload(value: unknown, fallback: string): string {
   const text = valueText(value);
-  return !isUsefulDisplayValue(text) || isSerializedStructure(text) ? fallback : text;
+  return !isUsefulDisplayValue(text) || isSerializedStructure(text)
+    ? fallback
+    : text;
 }
 
 function isUsefulDisplayValue(value: string): boolean {

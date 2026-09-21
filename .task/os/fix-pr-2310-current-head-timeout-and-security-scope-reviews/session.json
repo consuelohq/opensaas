@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_9b775b72cf35",
+  "tmuxSession": "opensaas-os-fix-pr-2310-current-head-timeout-and-security-sc-9b775b72",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-pr-2310-current-head-timeout-and-security-scope-reviews",
+  "branch": "task/os/fix-pr-2310-current-head-timeout-and-security-scope-reviews",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-pr-2310-current-head-timeout-and-security-scope-reviews",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-pr-2310-current-head-timeout-and-security-scope-reviews",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2331,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2331",
+  "createdAt": "2026-08-31T19:53:09.052Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-pr-2310-current-head-timeout-and-security-scope-reviews/.task/os/fix-pr-2310-current-head-timeout-and-security-scope-reviews/session.json"
+}

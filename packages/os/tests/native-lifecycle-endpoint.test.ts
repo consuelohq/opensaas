@@ -21,10 +21,16 @@ import type {
   LifecycleRequest,
   LifecycleResponse,
 } from '../scripts/lib/native-lifecycle-client';
+import {
+  readStoredOperatorToken,
+  readStoredOperatorWorkspaceCredential,
+  resolveStoredOperatorWorkspaceCredential,
+} from '../scripts/lib/operator-token-store';
 
 const temporaryRoots: string[] = [];
 
 afterEach(async () => {
+  vi.unstubAllGlobals();
   await Promise.all(
     temporaryRoots
       .splice(0)
@@ -110,6 +116,293 @@ const requestOverSocket = (
 };
 
 describe('native lifecycle endpoint', () => {
+  it('reuses a valid stored operator credential for native workspace-node enrichment', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'consuelo-native-endpoint-'));
+    temporaryRoots.push(root);
+    const generated = join(root, 'node', 'security', 'generated');
+    mkdirSync(generated, { recursive: true });
+    writeFileSync(
+      join(generated, 'operator-token.json'),
+      JSON.stringify({
+        version: 1,
+        kind: 'consuelo-operator-token',
+        authorityOrigin: 'https://os.consuelohq.com',
+        workspaceHost: 'one.consuelohq.com',
+        accessToken: 'operator-access-token',
+        refreshToken: 'operator-refresh-token',
+        expiresAt: Date.parse('2026-08-14T22:00:00.000Z'),
+        scope: ['workspace:read', 'workspace:nodes:manage'],
+        createdAt: '2026-08-14T20:00:00.000Z',
+      }),
+      { mode: 0o600 },
+    );
+
+    expect(
+      readStoredOperatorWorkspaceCredential({
+        home: root,
+        nowMs: Date.parse('2026-08-14T21:00:00.000Z'),
+      }),
+    ).toEqual({
+      authorityOrigin: 'https://os.consuelohq.com',
+      workspaceHost: 'one.consuelohq.com',
+      accessToken: 'operator-access-token',
+      canManageNodes: true,
+    });
+  });
+
+  it('rotates an expired stored operator credential before workspace-node enrichment', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'consuelo-native-endpoint-'));
+    temporaryRoots.push(root);
+    const generated = join(root, 'node', 'security', 'generated');
+    mkdirSync(generated, { recursive: true });
+    writeFileSync(
+      join(generated, 'operator-token.json'),
+      JSON.stringify({
+        version: 1,
+        kind: 'consuelo-operator-token',
+        authorityOrigin: 'https://os.consuelohq.com',
+        workspaceHost: 'one.consuelohq.com',
+        accessToken: 'expired-access-token',
+        refreshToken: 'operator-refresh-token',
+        expiresAt: Date.parse('2026-08-14T20:59:00.000Z'),
+        scope: ['workspace:read', 'workspace:nodes:manage'],
+        createdAt: '2026-08-14T20:00:00.000Z',
+      }),
+      { mode: 0o600 },
+    );
+
+    let body: URLSearchParams | undefined;
+    const credential = await resolveStoredOperatorWorkspaceCredential({
+      home: root,
+      nowMs: Date.parse('2026-08-14T21:00:00.000Z'),
+      fetchImpl: async (_url, init) => {
+        body = new URLSearchParams((init as RequestInit).body as string);
+        return Response.json({
+          access_token: 'fresh-access-token',
+          refresh_token: 'fresh-refresh-token',
+          expires_in: 3600,
+          scope: 'workspace:read workspace:nodes:manage',
+        });
+      },
+    });
+
+    expect(body?.get('grant_type')).toBe('refresh_token');
+    expect(body?.has('scope')).toBe(false);
+    expect(credential).toEqual({
+      authorityOrigin: 'https://os.consuelohq.com',
+      workspaceHost: 'one.consuelohq.com',
+      accessToken: 'fresh-access-token',
+      canManageNodes: true,
+    });
+    expect(readStoredOperatorToken({ home: root })).toMatchObject({
+      accessToken: 'fresh-access-token',
+      refreshToken: 'fresh-refresh-token',
+      scope: ['workspace:read', 'workspace:nodes:manage'],
+    });
+  });
+
+  it('lists central workspace nodes from the stored operator credential', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'consuelo-native-endpoint-'));
+    temporaryRoots.push(root);
+    const generated = join(root, 'node', 'security', 'generated');
+    mkdirSync(generated, { recursive: true });
+    writeFileSync(
+      join(generated, 'operator-token.json'),
+      JSON.stringify({
+        version: 1,
+        kind: 'consuelo-operator-token',
+        authorityOrigin: 'https://os.consuelohq.com',
+        workspaceHost: 'one.consuelohq.com',
+        accessToken: 'operator-access-token',
+        expiresAt: Date.now() + 5 * 60_000,
+        scope: ['workspace:read', 'workspace:nodes:manage'],
+        createdAt: new Date().toISOString(),
+      }),
+      { mode: 0o600 },
+    );
+
+    const fetchMock = vi.fn(async (request: Request) => {
+      expect(request.headers.get('authorization')).toBe(
+        'Bearer operator-access-token',
+      );
+      return Response.json({
+        workspaceId: 'workspace-one',
+        workspaceHost: 'one.consuelohq.com',
+        currentNodeId: 'node-mac',
+        defaultNodeId: 'node-mac',
+        nodes: [
+          {
+            workspaceId: 'workspace-one',
+            nodeId: 'node-mac',
+            displayName: 'Mac Mini',
+            role: 'home',
+            platform: 'darwin',
+            architecture: 'arm64',
+            channel: 'canary',
+            connectorId: 'connector-mac',
+            capabilities: [],
+            agents: [],
+            createdAt: '2026-08-14T20:00:00.000Z',
+            lastSeenAt: '2026-08-14T21:00:00.000Z',
+            presence: 'online',
+            state: 'active',
+            publicKeyThumbprint: 'thumb-mac',
+          },
+          {
+            workspaceId: 'workspace-one',
+            nodeId: 'cloud-1',
+            displayName: 'Cloud node',
+            role: 'member',
+            platform: 'linux',
+            architecture: 'arm64',
+            channel: 'canary',
+            connectorId: 'connector-cloud',
+            capabilities: [],
+            agents: [],
+            createdAt: '2026-08-14T20:00:00.000Z',
+            lastSeenAt: '2026-08-14T21:00:00.000Z',
+            presence: 'online',
+            state: 'active',
+            publicKeyThumbprint: 'thumb-cloud',
+          },
+        ],
+      });
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const endpoint = await startDefaultNativeLifecycleEndpoint({
+      home: root,
+      env: { CONSUELO_HOME: root },
+    });
+    try {
+      await expect(
+        requestOverSocket(endpoint.socketPath, { kind: 'status.get' }),
+      ).resolves.toMatchObject({
+        workspace: {
+          workspaceId: 'workspace-one',
+          defaultNodeId: 'node-mac',
+          nodes: [
+            { nodeId: 'node-mac', displayName: 'Mac Mini' },
+            { nodeId: 'cloud-1', displayName: 'Cloud node', presence: 'online' },
+          ],
+        },
+      });
+    } finally {
+      await endpoint.close();
+    }
+    expect(fetchMock).toHaveBeenCalledOnce();
+  });
+
+  it('uses a fresh node-authenticated workspace snapshot for read-only discovery without operator OAuth', async () => {
+    const root = await mkdtemp(join(tmpdir(), 'consuelo-native-endpoint-'));
+    temporaryRoots.push(root);
+    mkdirSync(join(root, 'node', 'cache'), { recursive: true });
+    mkdirSync(join(root, 'node'), { recursive: true });
+    mkdirSync(join(root, 'workspaces', 'workspace-one', 'shared'), { recursive: true });
+    writeFileSync(join(root, 'consuelo.yaml'), [
+      'version: 1',
+      'activeWorkspace: workspace-one',
+      'activeNode: node-home',
+      'runtime: {}',
+      'updates:',
+      '  channel: canary',
+      '  notifications:',
+      '    mode: on',
+      '',
+    ].join('\n'));
+    writeFileSync(join(root, 'node', 'node.yaml'), [
+      'version: 1',
+      'node:',
+      '  id: node-home',
+      '  name: Mac Mini',
+      '  role: home',
+      'capabilities: [mcp]',
+      'workspaces:',
+      '  - id: workspace-one',
+      '    state: workspaces/workspace-one/state',
+      '',
+    ].join('\n'));
+    writeFileSync(join(root, 'workspaces', 'workspace-one', 'shared', 'workspace.yaml'), [
+      'version: 1',
+      'workspace:',
+      '  id: workspace-one',
+      '  name: One',
+      '  slug: one',
+      '  host: one.consuelohq.com',
+      'defaults: {}',
+      'projects: []',
+      'routing: {}',
+      'policy: {}',
+      'sites: {}',
+      'agents: {}',
+      '',
+    ].join('\n'));
+    writeFileSync(
+      join(root, 'node', 'cache', 'workspace-nodes.json'),
+      JSON.stringify({
+        version: 1,
+        kind: 'consuelo-workspace-node-snapshot',
+        observedAt: new Date().toISOString(),
+        workspaceId: 'workspace-one',
+        currentNodeId: 'node-home',
+        workspace: {
+          workspaceId: 'workspace-one',
+          workspaceHost: 'one.consuelohq.com',
+          currentNodeId: 'node-home',
+          defaultNodeId: 'cloud-1',
+          nodes: [
+            {
+              workspaceId: 'workspace-one', nodeId: 'node-home', displayName: 'Mac Mini', role: 'home',
+              platform: 'darwin', architecture: 'arm64', channel: 'canary', capabilities: ['mcp'], agents: [],
+              createdAt: '2026-08-14T20:00:00.000Z', lastSeenAt: '2026-08-14T22:00:00.000Z', presence: 'online', state: 'active',
+            },
+            {
+              workspaceId: 'workspace-one', nodeId: 'cloud-1', displayName: 'Cloud node', role: 'member',
+              platform: 'linux', architecture: 'x64', channel: 'canary', capabilities: ['mcp', 'tools'], agents: null,
+              createdAt: '2026-08-14T20:30:00.000Z', lastSeenAt: '2026-08-14T22:00:00.000Z', presence: 'online', state: 'active',
+            },
+          ],
+        },
+      }),
+      { mode: 0o600 },
+    );
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+
+    const endpoint = await startDefaultNativeLifecycleEndpoint({ home: root, env: { CONSUELO_HOME: root } });
+    try {
+      await expect(requestOverSocket(endpoint.socketPath, { kind: 'status.get' })).resolves.toMatchObject({
+        workspace: {
+          workspaceId: 'workspace-one',
+          currentNodeId: 'node-home',
+          defaultNodeId: 'cloud-1',
+          nodes: [
+            { nodeId: 'node-home', displayName: 'Mac Mini' },
+            { nodeId: 'cloud-1', displayName: 'Cloud node', presence: 'online' },
+          ],
+        },
+      });
+      await expect(requestOverSocket(endpoint.socketPath, {
+        kind: 'workspace.default-node.set',
+        nodeId: 'cloud-1',
+      })).resolves.toMatchObject({
+        accepted: false,
+        error: expect.stringMatching(/management sign-in is required/i),
+      });
+    } finally {
+      await endpoint.close();
+    }
+    const fetchedUrls = fetchMock.mock.calls.map(([url]) => String(url));
+    expect(fetchedUrls).toEqual([
+      expect.stringMatching(
+        /^https:\/\/install\.consuelohq\.com\/os\/releases\/channels\//,
+      ),
+    ]);
+    expect(
+      fetchedUrls.some((url) => url.includes('/workspace/nodes')),
+    ).toBe(false);
+  });
+
   it('builds a safe monotonic snapshot from the canonical lifecycle engine and local identity', async () => {
     const root = await mkdtemp(join(tmpdir(), 'consuelo-native-endpoint-'));
     temporaryRoots.push(root);

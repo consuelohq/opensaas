@@ -1,0 +1,105 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/install-os-dependencies-before-generic-verify",
+  "base": "origin/stream/os",
+  "headSha": "76fad7c1c50936ae931f3ef7024d374cd16193e4",
+  "changeHash": "b6dae499aaff1e5db924b73c6029588d42f87e4e27d6b7e4ce02eac4792b6029",
+  "changedFiles": [
+    ".github/workflows/consuelo-ci.yaml",
+    "packages/os/tests/local-os-server-review-findings.test.ts"
+  ],
+  "verifiedAt": "2026-08-14T20:35:40.151Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".github/workflows/consuelo-ci.yaml",
+        ".task/os/install-os-dependencies-before-generic-verify/current.json",
+        ".task/os/install-os-dependencies-before-generic-verify/evidence-log.json",
+        ".task/os/install-os-dependencies-before-generic-verify/read-log.json",
+        ".task/os/install-os-dependencies-before-generic-verify/session.json",
+        ".task/os/install-os-dependencies-before-generic-verify/workpad.md",
+        ".task/tasks/os/install-os-dependencies-before-generic-verify.json",
+        "packages/os/tests/local-os-server-review-findings.test.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "consuelo-ci-immutable-base",
+          "critical": true,
+          "reason": "Consuelo pull-request verification must use an immutable base commit and preserve the focused local OS server review contracts without selecting the broad OS package suite.",
+          "matchedFiles": [
+            ".github/workflows/consuelo-ci.yaml",
+            "packages/os/tests/local-os-server-review-findings.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "auto:@consuelo/os:package-test",
+          "critical": false,
+          "reason": "Auto-discovered package test script for packages/os.",
+          "matchedFiles": [
+            "packages/os/tests/local-os-server-review-findings.test.ts"
+          ],
+          "origin": "auto"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "Consuelo CI immutable base and local server review contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/local-os-server-review-findings.test.ts"
+          ],
+          "ruleId": "consuelo-ci-immutable-base",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "Consuelo CI immutable base and local server review contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/local-os-server-review-findings.test.ts"
+          ],
+          "ruleId": "consuelo-ci-immutable-base",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 594,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-install-os-dependencies-before-generic-verify/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/local-os-server-review-findings.test.ts \u001b[2m(\u001b[22m\u001b[2m20 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 31\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m20 passed\u001b[39m\u001b[22m\u001b[90m (20)\u001b[39m\n\u001b[2m   Start at \u001b[22m 16:35:39\n\u001b[2m   Duration \u001b[22m 240ms\u001b[2m (transform 65ms, setup 0ms, import 130ms, tests 31ms, environment 0ms)\u001b[22m\n\n$ vitest run tests/local-os-server-review-findings.test.ts\n{\"level\":\"warn\",\"event\":\"trace.persistence_failed\",\"code\":\"TRACE_PERSISTENCE_FAILED\",\"message\":\"Cannot find module 'bun:sqlite'\\nRequire stack:\\n- /[REDACTED_SECRET].ts\",\"ts\":\"2026-08-14T20:35:39.845Z\"}\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

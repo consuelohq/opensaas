@@ -1,0 +1,19 @@
+{
+  "area": "documentation",
+  "stream": "stream/documentation",
+  "taskBranch": "task/documentation/refine-desktop-docs-homepage-toward-vercel",
+  "baseBranch": "stream/documentation",
+  "sourceBranch": "stream/documentation",
+  "startFrom": "stream",
+  "prNumber": 1992,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1992",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1992",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1992/refine-desktop-docs-homepage-toward-vercel",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1992",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1992/refine-desktop-docs-homepage-toward-vercel",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-refine-desktop-docs-homepage-toward-vercel",
+  "taskSession": "tsk_6adb33e698eb",
+  "tmuxSession": "opensaas-documentation-refine-desktop-docs-homepage-toward-vercel-6adb33e6",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-refine-desktop-docs-homepage-toward-vercel/.task/documentation/refine-desktop-docs-homepage-toward-vercel/session.json",
+  "createdAt": "2026-08-15T02:38:15.425Z"
+}

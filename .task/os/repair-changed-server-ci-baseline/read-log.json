@@ -1,0 +1,8 @@
+{
+  "files": [
+    ".task/os/repair-changed-server-ci-baseline/workpad.md",
+    "packages/workspace/scripts/ci/run-changed-server-task.mjs",
+    "packages/workspace/tests/run-changed-server-task.test.mjs"
+  ],
+  "updatedAt": "2026-08-14T00:15:10.981Z"
+}

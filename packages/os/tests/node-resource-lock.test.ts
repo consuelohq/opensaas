@@ -42,7 +42,7 @@ describe('node resource lock', () => {
       return release;
     });
 
-    await Bun.sleep(40);
+    await new Promise((resolve) => setTimeout(resolve, 40));
     expect(acquiredSecond).toBe(false);
     await first();
 

@@ -1,0 +1,20 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-internal-launcher-secrets-and-nodes-production-regressions",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2190,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2190",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2190",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2190/fix-internal-launcher-secrets-and-nodes-production-regressions",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2190",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2190/fix-internal-launcher-secrets-and-nodes-production-regressions",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-internal-launcher-secrets-and-nodes-production-regressions",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_00ee2f761145",
+  "tmuxSession": "opensaas-os-fix-internal-launcher-secrets-and-nodes-producti-00ee2f76",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-internal-launcher-secrets-and-nodes-production-regressions/.task/os/fix-internal-launcher-secrets-and-nodes-production-regressions/session.json",
+  "createdAt": "2026-08-26T03:52:43.894Z"
+}

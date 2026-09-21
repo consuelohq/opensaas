@@ -1,13 +1,82 @@
 import {
-  type ApiConfig,
   type AuthProviders,
-  type Billing,
-  type Captcha,
-  type ClientAiModelConfig,
-  type PublicFeatureFlag,
-  type Sentry,
-  type Support,
+  type FeatureFlagKey,
 } from '~/generated-metadata/graphql';
+
+export type ApiConfig = {
+  mutationMaximumAffectedRecords: number;
+};
+
+export type BillingTrialPeriod = {
+  duration: number;
+  isCreditCardRequired: boolean;
+};
+
+export type Billing = {
+  billingUrl?: string | null;
+  isBillingEnabled: boolean;
+  trialPeriods: BillingTrialPeriod[];
+};
+
+export enum CaptchaDriverType {
+  GOOGLE_RECAPTCHA = 'GOOGLE_RECAPTCHA',
+  TURNSTILE = 'TURNSTILE',
+}
+
+export type Captcha = {
+  provider?: CaptchaDriverType | null;
+  siteKey?: string | null;
+};
+
+export type NativeModelCapabilities = {
+  twitterSearch?: boolean | null;
+  webSearch?: boolean | null;
+};
+
+export type ClientAiModelProvider =
+  | 'none'
+  | 'openai'
+  | 'anthropic'
+  | 'open_ai_compatible'
+  | 'xai'
+  | 'groq';
+
+export type ClientAiModelConfig = {
+  deprecated?: boolean | null;
+  inputCostPer1kTokensInCredits: number;
+  label: string;
+  modelId: string;
+  nativeCapabilities?: NativeModelCapabilities | null;
+  outputCostPer1kTokensInCredits: number;
+  provider: ClientAiModelProvider;
+};
+
+export type PublicFeatureFlagMetadata = {
+  description: string;
+  imagePath?: string | null;
+  label: string;
+};
+
+export type PublicFeatureFlag = {
+  key: FeatureFlagKey;
+  metadata: PublicFeatureFlagMetadata;
+};
+
+export type Sentry = {
+  dsn?: string | null;
+  environment?: string | null;
+  release?: string | null;
+};
+
+export enum SupportDriver {
+  FRONT = 'FRONT',
+  NONE = 'NONE',
+}
+
+export type Support = {
+  supportDriver: SupportDriver;
+  supportFrontChatId?: string | null;
+};
 
 export type ClientConfig = {
   appVersion?: string;

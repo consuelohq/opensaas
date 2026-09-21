@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 
 import * as Sentry from '@sentry/node';
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import {
   DialerConflictError,
   DialerInfrastructureError,
@@ -16,12 +17,13 @@ import {
   type ParallelCompatibilityRuntimeService,
   type ParallelTelemetryRecord,
 } from '@consuelo/dialer';
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import { isValidPhone, normalizePhone } from '@consuelo/contacts';
 import { Effect, Layer } from 'effect';
 
-import { LegacyDialerService } from 'src/engine/core-modules/consuelo-api/services/legacy-dialer.service';
-import { ParallelPosteriorStore } from 'src/engine/core-modules/consuelo-api/services/parallel-posterior.store';
-import { ParallelStrategyResolverService } from 'src/engine/core-modules/consuelo-api/services/parallel-strategy-resolver.service';
+import { type LegacyDialerService } from 'src/engine/core-modules/consuelo-api/services/legacy-dialer.service';
+import { type ParallelPosteriorStore } from 'src/engine/core-modules/consuelo-api/services/parallel-posterior.store';
+import { type ParallelStrategyResolverService } from 'src/engine/core-modules/consuelo-api/services/parallel-strategy-resolver.service';
 
 type ActiveCallerIdLockService = {
   refreshLock(phoneNumber: string, expectedCallSid: string): Promise<boolean>;
@@ -42,9 +44,11 @@ export class TwentyParallelInfrastructure {
         Effect.try({
           try: () => {
             const normalized = normalizePhone(String(value));
+
             if (!isValidPhone(normalized)) {
               throw new BadRequestException('Invalid customer phone number');
             }
+
             return normalized;
           },
           catch: (cause) => this.mapError('normalize-customer-number', cause),
@@ -86,12 +90,14 @@ export class TwentyParallelInfrastructure {
                 const queueId = input.callSid
                   .replace(/^parallel-/, '')
                   .replace(/-\d+$/, '');
+
                 this.logger.warn('parallel dial blocked by caller id lock', {
                   queueId,
                   userId: input.userId,
                   lockedFromNumberSuffix: input.phoneNumber.slice(-4),
                 });
               }
+
               return locked;
             }),
         ),
@@ -111,6 +117,7 @@ export class TwentyParallelInfrastructure {
             | (ReturnType<LegacyDialerService['getCallerIdLockService']> &
                 ActiveCallerIdLockService)
             | ActiveCallerIdLockService;
+
         return this.tryEffect('refresh-caller-id-lock', () =>
           lockService
             .refreshLock(call.fromNumber, call.callSid)
@@ -146,6 +153,7 @@ export class TwentyParallelInfrastructure {
         const result = this.legacyDialerService
           .getDialer()
           .parallel.validateRequirements(current, required);
+
         return {
           ...result,
           missing: Math.max(0, result.required - result.current),
@@ -166,6 +174,15 @@ export class TwentyParallelInfrastructure {
           this.legacyDialerService
             .getDialer()
             .parallel.getGroupIdForCall(callSid),
+        ),
+      startCallRecording: () =>
+        Effect.fail(
+          new DialerInfrastructureError({
+            operation: 'start-call-recording',
+            message:
+              'Call recording is not supported by the Twenty compatibility adapter',
+            retryable: false,
+          }),
         ),
       getGroup: (groupId) =>
         this.tryEffect('get-group', () =>
@@ -192,6 +209,12 @@ export class TwentyParallelInfrastructure {
           this.legacyDialerService
             .getDialer()
             .parallel.terminateGroupForWorkspace(groupId, workspaceId),
+        ),
+      retryPendingCleanup: (groupId) =>
+        this.tryEffect('retry-pending-cleanup', () =>
+          this.legacyDialerService
+            .getDialer()
+            .parallel.retryPendingCleanup(groupId),
         ),
       claimTelemetryEmission: (groupId) =>
         this.tryEffect('claim-telemetry-emission', () =>
@@ -261,6 +284,7 @@ export class TwentyParallelInfrastructure {
     }
     if (cause instanceof ConflictException) {
       const response = cause.getResponse();
+
       return new DialerConflictError({
         code:
           typeof response === 'object' &&
@@ -285,6 +309,7 @@ export class TwentyParallelInfrastructure {
         retryable: false,
       });
     }
+
     return new DialerInfrastructureError({
       operation,
       message: cause instanceof Error ? cause.message : String(cause),

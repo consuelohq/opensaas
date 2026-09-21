@@ -4,6 +4,8 @@ import path from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
+import { readFullToolManifest } from '../scripts/lib/manifest';
+import { patchManifestOverlay } from '../scripts/lib/manifest-overlay';
 import { buildSettingsSnapshot } from '../scripts/lib/settings-snapshot';
 import { buildConfigurationSite, renderConfigurationSite, renderSettingsSite } from '../scripts/lib/settings-site';
 
@@ -34,23 +36,121 @@ describe('configuration site', () => {
 
     expect(snapshot.skills).toEqual([]);
     expect(snapshot.runBooks.length).toBeGreaterThan(0);
-    expect(html).toContain('<title>Configuration - Consuelo OS</title>');
-    expect(html).toContain('aria-label="Configuration navigation"');
-    expect(html).toContain('href="/configuration" class="is-active"');
+    expect(html).toContain('<title>Home - Consuelo OS</title>');
+    expect(html).toContain('<link rel="icon" href="https://consuelohq.com/favicon.svg" type="image/svg+xml" />');
+    expect(html).toContain('<link rel="icon" href="https://consuelohq.com/favicon-32x32.png" sizes="32x32" type="image/png" />');
+    expect(html).toContain('<link rel="apple-touch-icon" href="https://consuelohq.com/apple-touch-icon.png" />');
+    expect(html).toContain('data-workspace-shell');
+    expect(html).toContain('data-workspace-route-trigger');
+    expect(html).toContain('aria-label="Workspace routes"');
+    expect(html).toContain('class="workspace-route-option workspace-route-primary"');
+    expect(html).toContain('aria-current="page" href="/configuration"');
+    expect(html).toContain('href="/tracing"');
+    expect(html).toContain('href="/artifacts"');
+    expect(html).toContain('href="/diffs"');
     expect(html).toContain('href="/tools"');
     expect(html).toContain('href="/nodes"');
-    expect(html).not.toContain('href="/environments"');
     expect(html).toContain('href="/secrets"');
+    expect(html).toContain('>Home</span>');
+    expect(html).toContain('<h1>Home</h1>');
+    expect(html).toContain('Home shows live activity and operating posture first.');
+    expect(html).not.toContain('Overview shows live activity and operating posture first.');
+    expect(html).not.toContain('Workspace health and context.');
+    expect(html).toContain('href="https://docs.consuelohq.com/"');
+    expect(html).toContain('target="_blank" rel="noopener noreferrer" href="https://docs.consuelohq.com/"');
+    expect(html).toContain('>Artifacts</span>');
+    expect(html).toContain('>Code</span>');
+    expect(html).toContain('data-route-group="Connect"');
+    expect(html).toContain('>ChatGPT<');
+    expect(html).toContain('href="https://chatgpt.com/plugins#settings/Connectors?create-connector=true&amp;redirectAfter=%2Fplugins"');
+    expect(html).toContain('>Claude<');
+    expect(html).toContain('href="https://claude.ai/customize/connectors"');
+    expect(html.indexOf('workspace-route-primary')).toBeLessThan(html.indexOf('>Observe</p>'));
+    expect(html.indexOf('>Observe</p>')).toBeLessThan(html.indexOf('>Configure</p>'));
+    expect(html.indexOf('>Configure</p>')).toBeLessThan(html.indexOf('>Connect</p>'));
+    expect(html.indexOf('>Connect</p>')).toBeLessThan(html.indexOf('>Guides</p>'));
+    expect(html).toContain("warmRoute('/configuration')");
+    expect(html).toContain('data-workspace-prefetch');
+    expect(html).toContain('includeRawPayload=false');
+    expect(html).toContain("const TRACE_PREFETCH_KEY = 'consuelo:tracing-prefetch:v1'");
+    expect(html).toContain('sessionStorage.setItem(TRACE_PREFETCH_KEY');
+    expect(html).toContain('const TRACE_PREFETCH_TTL_MS = 20000');
+    expect(html).not.toContain('.workspace-route-trigger:focus-visible { outline: 1px solid');
+    expect(html).toContain('box-shadow: inset 0 -2px 0 var(--workspace-menu-accent)');
+    expect(html).toContain('--workspace-chrome-bg:');
+    expect(html).toContain('--workspace-menu-bg:');
+    expect(html).toContain('@media (prefers-color-scheme: dark)');
+    expect(html).toContain('font: 600 12px/1 ui-monospace, SFMono-Regular, Menlo, monospace;');
+    expect(html).toContain('.workspace-route-trigger > span:first-child');
+    expect(html).toContain('text-overflow: ellipsis;');
+    expect(html).toContain('min-width: 0;');
+    expect(html).toContain('left: 50vw;');
+    expect(html).toContain('transform: translateX(-50%);');
+    expect(html).not.toContain('aria-label="Configuration sidebar"');
     expect(html).toContain('/gateway/configuration/snapshot');
     expect(html).toContain('Loading workspace configuration');
-    expect(html).toContain('Configuration unavailable');
+    expect(html).toContain('id="configuration-error-title"');
+    expect(html).toContain('id="configuration-error-copy"');
+    expect(html).toContain('configurationError.dataset.connectionState = state');
+    expect(html).toContain('Workspace connected; live node unavailable');
+    expect(html).toContain('You’re signed in. Configuration will reconnect automatically');
+    expect(html).toContain('Workspace session reconnecting');
+    expect(html).toContain('CONFIGURATION_RETRY_MAX_MS = 30000');
     expect(html).toContain('/gateway/configuration/overlay');
     expect(html).toContain('Source control');
-    expect(html).toContain('id="source-control-form"');
+    expect(html).toContain('id="overview-readiness-title"');
+    expect(html).toContain('id="overview-readiness-plot"');
+    expect(html).toContain('aria-label="Workspace readiness by operating area"');
+    expect(html).toContain('renderOverviewReadiness');
+    expect(html).toContain('data-overview-heatmap');
+    expect(html).toContain('role="grid"');
+    expect(html).toContain('id="overview-heatmap-tooltip"');
+    expect(html).toContain('id="overview-heatmap-status"');
+    expect(html).toContain("const OVERVIEW_HEATMAP_CACHE_PREFIX = 'consuelo:overview-heatmap:v3:'");
+    expect(html).toContain('const OVERVIEW_HEATMAP_CACHE_MAX_AGE_MS = 86400000');
+    expect(html).toContain('const OVERVIEW_HEATMAP_REFRESH_MS = 30000');
+    expect(html).toContain('/gateway/traces/aggregates?window=8d&bucket=15m');
+    expect(html).toContain('scopeOnly=true');
+    expect(html).toContain('includeRawPayload=false');
+    expect(html).not.toContain('OVERVIEW_HEATMAP_MAX_PAGES');
+    expect(html).not.toContain('data.nextCursor');
+    expect(html).toContain("credentials: 'same-origin'");
+    expect(html).toContain("cache: 'no-store'");
+    expect(html).toContain('overviewHeatmapStorageKey(scope)');
+    expect(html).toContain('scope.workspaceId');
+    expect(html).toContain("scope.nodeId || 'node-default'");
+    expect(html).toContain('localStorage.getItem(overviewHeatmapStorageKey(scope))');
+    expect(html).toContain('localStorage.setItem(overviewHeatmapStorageKey(result.scope)');
+    expect(html).not.toContain('localStorage.getItem(OVERVIEW_HEATMAP_CACHE_PREFIX)');
+    expect(html).not.toContain('renderOverviewHeatmap(cached || aggregateOverviewHeatmap([]));');
+    expect(html).toContain('renderOverviewHeatmap(aggregateOverviewHeatmap(cached.rows), true);');
+    expect(html).toContain('renderOverviewHeatmap(aggregate, !overviewHeatmapRendered);');
+    expect(html).toContain('const scope = await readOverviewHeatmapScope();');
+    expect(html).toContain('const cached = readOverviewHeatmapCache(scope);');
+    expect(html).toContain('Historical activity shown · live updates unavailable');
+    expect(html).toContain('Trace history temporarily unavailable · retrying automatically');
+    expect(html).toContain('tabindex="0"');
+    expect(html).toContain("matchMedia('(prefers-reduced-motion: reduce)')");
+    expect(html).toContain('globalThis.gsap');
+    expect(html).toContain('--heat-cell-5:');
+    expect(html).toContain('--heat-tooltip-bg:');
+    expect(html).toContain('Calls');
+    expect(html).toContain('Tokens');
+    expect(html).toContain('Cost');
+    expect(html).toContain('id="source-control-connect-github"');
     expect(html).toContain('id="source-control-repository-list"');
     expect(html).toContain('/gateway/configuration/source-control');
-    expect(html).toContain('connection binding');
-    expect(html).toContain('href="/secrets"');
+    expect(html).toContain('/gateway/configuration/source-control/github/connect');
+    expect(html).toContain('mode=manage');
+    expect(html).toContain(
+      'const hasReadyRepositories = currentSourceControl.repositories.some((repository) => repository.ready === true);',
+    );
+    expect(html).not.toContain('const hasRepositories = currentSourceControl.repositories.length > 0;');
+    expect(html).toContain('/gateway/configuration/source-control/github/complete');
+    expect(html).toContain('Connect GitHub');
+    expect(html).not.toContain('id="source-control-form"');
+    expect(html).not.toContain('id="source-control-connection"');
+    expect(html).not.toContain('Connection binding');
     expect(html).not.toContain('credentialValue');
     expect(html).not.toContain('githubToken');
     expect(html).not.toContain('/gateway/settings/');
@@ -67,6 +167,37 @@ describe('configuration site', () => {
   });
 
 
+  it('keeps disabled tools in the private snapshot so the Tools inventory can re-enable them', () => {
+    const home = fs.mkdtempSync(path.join(os.tmpdir(), 'consuelo-settings-disabled-tool-'));
+    fs.writeFileSync(path.join(home, 'config.json'), JSON.stringify({
+      version: 1,
+      mode: 'local',
+      home,
+      port: 8787,
+      artifactStorage: 'local',
+      workspace: { id: 'ws_tools', slug: 'tools', host: 'tools.consuelohq.com' },
+      agents: [],
+      createdAt: '2026-08-15T00:00:00.000Z',
+      updatedAt: '2026-08-15T00:00:00.000Z',
+    }));
+    const tool = readFullToolManifest().tools.find((entry) => entry.kind === 'facade-tool');
+    expect(tool).toBeTruthy();
+    patchManifestOverlay(home, { kind: 'tool', name: tool!.name, enabled: false });
+
+    const snapshot = buildSettingsSnapshot(home);
+    expect(snapshot.overlay.disabledTools).toContain(tool!.name);
+    expect(snapshot.tools.find((item) => item.name === tool!.name)).toMatchObject({
+      name: tool!.name,
+      enabled: false,
+      configurable: true,
+    });
+
+    const html = renderConfigurationSite('tools');
+    expect(html).toContain("const action = item.enabled ? 'Disable' : 'Re-enable'");
+    expect(html).toContain("const state = item.enabled ? 'Enabled' : 'Available to re-enable'");
+    expect(html).toContain('toolInventoryItems = inventoryItems(snapshot)');
+  });
+
   it('renders route-aware Tools, Nodes, and Secrets shells without private embedded data', () => {
     const toolsHtml = renderConfigurationSite('tools');
     const nodesHtml = renderConfigurationSite('nodes' as never);
@@ -74,21 +205,32 @@ describe('configuration site', () => {
 
     expect(toolsHtml).toContain('<title>Tools - Consuelo OS</title>');
     expect(toolsHtml).toContain('<h1>Tools</h1>');
-    expect(toolsHtml).toContain('href="/tools" class="is-active"');
+    expect(toolsHtml).toContain('data-workspace-route-trigger');
+    expect(toolsHtml).toContain('aria-current="page" href="/tools"');
     expect(toolsHtml).toContain('/gateway/configuration/snapshot');
     expect(toolsHtml).toContain('/gateway/configuration/overlay');
-    expect(toolsHtml).toContain('id="tools"');
-    expect(toolsHtml).toContain('id="skills"');
-    expect(toolsHtml).toContain('id="run-books"');
+    expect(toolsHtml).toContain('id="tool-search"');
+    expect(toolsHtml).toContain('data-tool-kind-filter');
+    expect(toolsHtml).toContain('data-tool-state-filter');
+    expect(toolsHtml).toContain('id="tool-availability-plot"');
+    expect(toolsHtml).toContain('id="tool-inventory"');
+    expect(toolsHtml).toContain('Re-enable');
+    expect(toolsHtml).toContain('Available to re-enable');
+    expect(toolsHtml).toContain('aria-label="Tool availability by surface"');
     expect(toolsHtml).not.toContain('id="connections"');
     expect(toolsHtml).not.toContain('window.__CONSUELO_SETTINGS__');
 
     expect(nodesHtml).toContain('<title>Nodes - Consuelo OS</title>');
     expect(nodesHtml).toContain('<h1>Nodes</h1>');
-    expect(nodesHtml).toContain('href="/nodes" class="is-active"');
+    expect(nodesHtml).toContain('aria-current="page" href="/nodes"');
     expect(nodesHtml).toContain('id="node-list"');
+    expect(nodesHtml).toContain('id="node-search"');
+    expect(nodesHtml).toContain('class="node-inventory"');
+    expect(nodesHtml).toContain('class="node-list-header"');
+    expect(nodesHtml).not.toContain('class="node-card"');
     expect(nodesHtml).toContain('id="add-node-dialog"');
     expect(nodesHtml).toContain('Create cloud node');
+    expect(nodesHtml).toContain('Continue to checkout');
     expect(nodesHtml).toContain('Always available');
     expect(nodesHtml).toContain('Starter');
     expect(nodesHtml).toContain('Standard');
@@ -99,8 +241,24 @@ describe('configuration site', () => {
     expect(nodesHtml).toContain('/gateway/nodes/snapshot');
     expect(nodesHtml).toContain('/gateway/nodes/default');
     expect(nodesHtml).toContain('/gateway/nodes/pricing');
+    expect(nodesHtml).not.toContain('Price available soon');
+    expect(nodesHtml).toContain('Unavailable');
+    expect(nodesHtml).toContain('Live pricing is unavailable');
     expect(nodesHtml).toContain('Make default');
-    expect(nodesHtml).toContain('Provisioning coming soon');
+    expect(nodesHtml).toContain('node.readiness');
+    expect(nodesHtml).toContain('node.osVersion');
+    expect(nodesHtml).toContain("node.compatibility === 'compatible'");
+    expect(nodesHtml).toContain("node.readiness === 'ready'");
+    expect(nodesHtml).not.toContain('Provisioning coming soon');
+    expect(nodesHtml).toContain('/gateway/nodes/provision');
+    expect(nodesHtml).toContain('/gateway/nodes/provisioning');
+    expect(nodesHtml).toContain('Create cloud node');
+    expect(nodesHtml).toContain('aria-live');
+    expect(nodesHtml).not.toContain('e2-standard-');
+    expect(nodesHtml).not.toContain('e2-medium');
+    expect(nodesHtml).toContain('window.location.assign(checkout.url)');
+    expect(nodesHtml).toContain('Checkout cancelled. No cloud node was created.');
+    expect(nodesHtml).toContain('Checkout complete. Payment confirmation and provisioning will continue automatically.');
     expect(nodesHtml).not.toMatch(/e2-(?:medium|standard)/);
     expect(nodesHtml).not.toContain('machineType');
     expect(nodesHtml).not.toContain('providerCost');
@@ -116,10 +274,10 @@ describe('configuration site', () => {
 
     expect(secretsHtml).toContain('<title>Secrets - Consuelo OS</title>');
     expect(secretsHtml).toContain('<h1>Secrets</h1>');
-    expect(secretsHtml).toContain('href="/secrets" class="is-active"');
-    expect(secretsHtml).toContain('Connected credentials');
+    expect(secretsHtml).toContain('aria-current="page" href="/secrets"');
+    expect(secretsHtml).toContain('+ New secret');
     expect(secretsHtml).toContain('/gateway/secrets/bindings');
-    expect(secretsHtml).toContain('Values are never returned to this page or to an agent');
+    expect(secretsHtml).toContain('Encrypted in this browser before it is sent.');
     expect(secretsHtml).not.toContain('/gateway/configuration/snapshot');
     expect(secretsHtml).not.toContain('window.__CONSUELO_SETTINGS__');
   });

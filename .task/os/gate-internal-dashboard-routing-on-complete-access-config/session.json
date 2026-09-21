@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_be4cc7cc41f5",
+  "tmuxSession": "opensaas-os-gate-internal-dashboard-routing-on-complete-acce-be4cc7cc",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/gate-internal-dashboard-routing-on-complete-access-config",
+  "branch": "task/os/gate-internal-dashboard-routing-on-complete-access-config",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-gate-internal-dashboard-routing-on-complete-access-config",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-gate-internal-dashboard-routing-on-complete-access-config",
+  "prNumber": 2149,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2149",
+  "createdAt": "2026-08-16T22:29:43.194Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-gate-internal-dashboard-routing-on-complete-access-config/.task/os/gate-internal-dashboard-routing-on-complete-access-config/session.json"
+}

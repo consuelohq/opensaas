@@ -8,6 +8,7 @@ import {
   createDefaultGlobalYamlConfig,
   createDefaultNodeYamlConfig,
   createDefaultWorkspaceYamlConfig,
+  loadGlobalYamlConfig,
   loadWorkspaceYamlConfig,
   resolveConsueloHomeLayout,
   resolveProjectRepository,
@@ -73,6 +74,95 @@ describe('Consuelo home config boundaries', () => {
     expect(Object.keys(workspaceConfig)).toEqual(
       expect.not.arrayContaining(['security', 'tunnels', 'caddy', 'db']),
     );
+  });
+
+  it('loads safe local launcher sections without changing the default config', () => {
+    const layout = resolveConsueloHomeLayout(tempHome);
+    writeFileSync(
+      layout.globalConfigPath,
+      [
+        'version: 1',
+        'updates:',
+        '  channel: canary',
+        '  notifications:',
+        '    mode: on',
+        'launcher:',
+        '  extraSections:',
+        '    - id: internal',
+        '      label: Internal',
+        '      links:',
+        '        - label: Users & installs',
+        '          href: https://internal.consuelohq.com/users',
+        '        - label: Local tools',
+        '          href: /tools',
+        '',
+      ].join('\n'),
+      { mode: 0o600 },
+    );
+
+    expect(loadGlobalYamlConfig(layout.globalConfigPath).launcher).toEqual({
+      extraSections: [{
+        id: 'internal',
+        label: 'Internal',
+        links: [
+          { label: 'Users & installs', href: 'https://internal.consuelohq.com/users' },
+          { label: 'Local tools', href: '/tools' },
+        ],
+      }],
+    });
+    expect(createDefaultGlobalYamlConfig({ workspaceId: 'ws_test', nodeId: 'node_test' }))
+      .not.toHaveProperty('launcher');
+  });
+
+  it.each([
+    'javascript:alert(1)',
+    '//evil.example/path',
+    'http://internal.consuelohq.com/users',
+  ])('rejects unsafe launcher href %s', (href) => {
+    const layout = resolveConsueloHomeLayout(tempHome);
+    writeFileSync(
+      layout.globalConfigPath,
+      [
+        'version: 1',
+        'launcher:',
+        '  extraSections:',
+        '    - id: internal',
+        '      label: Internal',
+        '      links:',
+        '        - label: Unsafe',
+        `          href: ${href}`,
+        '',
+      ].join('\n'),
+      { mode: 0o600 },
+    );
+
+    expect(() => loadGlobalYamlConfig(layout.globalConfigPath)).toThrow(/HTTPS URL|root-relative/i);
+  });
+
+  it('rejects duplicate launcher section ids', () => {
+    const layout = resolveConsueloHomeLayout(tempHome);
+    writeFileSync(
+      layout.globalConfigPath,
+      [
+        'version: 1',
+        'launcher:',
+        '  extraSections:',
+        '    - id: internal',
+        '      label: Internal',
+        '      links:',
+        '        - label: Users',
+        '          href: /users',
+        '    - id: internal',
+        '      label: Internal again',
+        '      links:',
+        '        - label: Installs',
+        '          href: /installs',
+        '',
+      ].join('\n'),
+      { mode: 0o600 },
+    );
+
+    expect(() => loadGlobalYamlConfig(layout.globalConfigPath)).toThrow(/duplicate launcher section id/i);
   });
 
   it('loads sync-safe workspace YAML and resolves project repositories from it', () => {

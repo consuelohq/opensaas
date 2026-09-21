@@ -3,12 +3,8 @@
 
   var config = window.ConsueloLeadConnectorConfig || {};
   var appId = '690cbca9af44827eb89887b1';
-  var approvedOrigins = [
-    'https://calls.consuelohq.com',
-    'https://consuelo-lead-connector-embed.kokayi-90b.workers.dev',
-  ];
-  var defaultOrigin =
-    'https://consuelo-lead-connector-embed.kokayi-90b.workers.dev';
+  var approvedOrigins = ['https://calls.consuelohq.com'];
+  var defaultOrigin = 'https://calls.consuelohq.com';
   var origin = String(config.embedOrigin || defaultOrigin).replace(/\/$/, '');
   if (approvedOrigins.indexOf(origin) === -1) origin = defaultOrigin;
   var overlayPath = '/overlay';

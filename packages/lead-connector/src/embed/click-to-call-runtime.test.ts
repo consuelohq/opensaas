@@ -7,8 +7,7 @@ const asset = readFileSync(
   join(import.meta.dir, 'public', 'consuelo-lead-connector-click-to-call.js'),
   'utf8',
 );
-const embedOrigin =
-  'https://consuelo-lead-connector-embed.kokayi-90b.workers.dev';
+const embedOrigin = 'https://calls.consuelohq.com';
 const appId = '690cbca9af44827eb89887b1';
 const activeDoms: JSDOM[] = [];
 
@@ -82,7 +81,6 @@ describe('LeadConnector click-to-call runtime', () => {
       embedOrigin,
     );
   });
-
 
   it('remounts and reauthenticates after GHL replaces route DOM', async () => {
     const { dom, exposeSessionDetails } = boot({
@@ -161,7 +159,6 @@ describe('LeadConnector click-to-call runtime', () => {
     ).toHaveLength(1);
   });
 
-
   it('refreshes signed context on a route change without replacing a connected iframe', async () => {
     const { dom, exposeSessionDetails } = boot({
       path: '/v2/location/location-1/contacts',
@@ -202,7 +199,9 @@ describe('LeadConnector click-to-call runtime', () => {
     await new Promise((resolve) => dom.window.setTimeout(resolve, 0));
 
     expect(
-      document.querySelector<HTMLIFrameElement>('iframe[name="consuelo-dialer"]'),
+      document.querySelector<HTMLIFrameElement>(
+        'iframe[name="consuelo-dialer"]',
+      ),
     ).toBe(frame);
     expect(exposeSessionDetails).toHaveBeenCalledTimes(2);
     expect(postMessage).toHaveBeenCalledWith(

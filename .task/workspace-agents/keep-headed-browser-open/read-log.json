@@ -1,0 +1,9 @@
+{
+  "files": [
+    ".task/workspace-agents/keep-headed-browser-open/verify.json",
+    "packages/os/cloudflare/os-device-authority/wrangler.toml",
+    "packages/workspace/tests/github-workflow-policy.test.js",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "updatedAt": "2026-08-26T04:17:23.626Z"
+}

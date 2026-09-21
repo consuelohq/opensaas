@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/reconcile-universal-lifecycle-handoff-onto-current-stream",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1914,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1914",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1914",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1914/reconcile-universal-lifecycle-handoff-onto-current-stream",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1914",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1914/reconcile-universal-lifecycle-handoff-onto-current-stream",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-reconcile-universal-lifecycle-handoff-onto-current-stream",
+  "taskSession": "tsk_030685c5827c",
+  "tmuxSession": "opensaas-os-reconcile-universal-lifecycle-handoff-onto-curre-030685c5",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-reconcile-universal-lifecycle-handoff-onto-current-stream/.task/os/reconcile-universal-lifecycle-handoff-onto-current-stream/session.json",
+  "createdAt": "2026-08-13T19:57:00.575Z"
+}

@@ -1,11 +1,19 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
 import {
-  buildNxArguments,
+  buildEslintArguments,
+  buildTypecheckArguments,
+  compareEslintDiagnostics,
+  compareTypeScriptDiagnostics,
+  eslintConfigForFile,
   filterGraphqlGenerationFiles,
   filterServerTaskFiles,
+  parseEslintDiagnosticKeys,
+  parseTypeScriptDiagnosticKeys,
   parseCliArguments,
+  runChangedFileLint,
   runGraphqlGenerationCheck,
   runMigrationGenerationCheck,
   runChangedServerTask,
@@ -73,24 +81,184 @@ test('filterGraphqlGenerationFiles keeps only server schema and generated files'
   );
 });
 
-test('buildNxArguments scopes lint and typecheck through changed files', () => {
+test('buildEslintArguments selects the owning project config and stdin filename', () => {
   assert.deepEqual(
-    buildNxArguments({
-      files: ['packages/twenty-server/src/main.ts'],
-    }),
+    buildEslintArguments('packages/twenty-server/src/main.ts'),
     [
       '--no-install',
-      'nx',
-      'affected',
-      '--nxBail',
-      '--configuration=ci',
-      '-t=lint,typecheck',
-      '--parallel=3',
-      '--exclude=*,!tag:scope:backend',
-      '--skip-nx-cache',
-      '--files',
+      'eslint',
+      '--format',
+      'json',
+      '--config',
+      'packages/twenty-server/eslint.config.mjs',
+      '--stdin',
+      '--stdin-filename',
       'packages/twenty-server/src/main.ts',
     ],
+  );
+  assert.equal(
+    eslintConfigForFile('packages/twenty-shared/src/utils/phone.ts'),
+    'packages/twenty-shared/eslint.config.mjs',
+  );
+  assert.equal(
+    eslintConfigForFile('packages/twenty-front/src/generated/graphql.ts'),
+    'packages/twenty-front/eslint.config.mjs',
+  );
+});
+
+test('ESLint diagnostic comparison tracks new error multiplicity without line numbers', () => {
+  const current = parseEslintDiagnosticKeys(
+    'warning No cached ProjectGraph is available.\n' +
+      JSON.stringify([
+      {
+        source: 'const first = 1;\nconst second = 2;\nconst third = 3;',
+        messages: [
+          { severity: 2, ruleId: 'import/order', messageId: 'order', message: 'order', line: 1 },
+          { severity: 2, ruleId: 'import/order', messageId: 'order', message: 'order', line: 2 },
+          { severity: 1, ruleId: 'example/warning', messageId: 'warning', message: 'warning', line: 3 },
+        ],
+      },
+    ]),
+  );
+  const baseline = ['import/order:order:order:const first = 1;'];
+
+  assert.deepEqual(current, [
+    'import/order:order:order:const first = 1;',
+    'import/order:order:order:const second = 2;',
+  ]);
+  assert.deepEqual(compareEslintDiagnostics(current, baseline), {
+    unexpected: ['import/order:order:order:const second = 2;'],
+    resolved: [],
+  });
+});
+
+test('runChangedFileLint accepts base-existing errors and rejects a new changed-file error', () => {
+  const file = 'packages/twenty-server/src/main.ts';
+  const existing = JSON.stringify([
+    {
+      messages: [
+        { severity: 2, ruleId: 'import/order', messageId: 'order', message: 'order' },
+      ],
+    },
+  ]);
+  let index = 0;
+
+  runChangedFileLint([file], {
+    base: 'base-sha',
+    readBaseFile: () => 'base source',
+    readCurrentFile: () => 'current source',
+    runCommand: () => ({ status: 1, stdout: [existing, existing][index++], stderr: '' }),
+  });
+
+  assert.throws(
+    () =>
+      runChangedFileLint([file], {
+        base: 'base-sha',
+        readBaseFile: () => 'base source',
+        readCurrentFile: () => 'current source',
+        runCommand: (_command, _args, options) => ({
+          status: 1,
+          stdout: JSON.stringify([
+            {
+              messages:
+                options.input === 'base source'
+                  ? []
+                  : [
+                      { severity: 2, ruleId: 'prettier/prettier', messageId: 'replace', message: 'replace' },
+                    ],
+            },
+          ]),
+          stderr: '',
+        }),
+      }),
+    /new ESLint diagnostics.*prettier\/prettier:replace/s,
+  );
+});
+
+test('runChangedFileLint allows explicit lint baseline debt but rejects diagnostics beyond it', () => {
+  const file = 'packages/twenty-server/src/main.ts';
+  const baselineKey = 'prettier/prettier:replace:replace:const value = 1;';
+  const extraKey = 'import/order:order:order:const other = 2;';
+  const outputFor = (messages) =>
+    JSON.stringify([{ source: 'const value = 1;\nconst other = 2;', messages }]);
+  const baselineMessage = {
+    severity: 2,
+    ruleId: 'prettier/prettier',
+    messageId: 'replace',
+    message: 'replace',
+    line: 1,
+  };
+  const extraMessage = {
+    severity: 2,
+    ruleId: 'import/order',
+    messageId: 'order',
+    message: 'order',
+    line: 2,
+  };
+
+  let allowedCall = 0;
+  runChangedFileLint([file], {
+    base: 'base-sha',
+    lintBaseline: { [file]: [baselineKey] },
+    readBaseFile: () => 'base source',
+    readCurrentFile: () => 'current source',
+    runCommand: () => ({
+      status: allowedCall++ === 0 ? 0 : 1,
+      stdout: allowedCall === 1 ? '[]' : outputFor([baselineMessage]),
+      stderr: '',
+    }),
+  });
+
+  let call = 0;
+  assert.throws(
+    () =>
+      runChangedFileLint([file], {
+        base: 'base-sha',
+        lintBaseline: { [file]: [baselineKey] },
+        readBaseFile: () => 'base',
+        readCurrentFile: () => 'current',
+        runCommand: () => ({
+          status: call++ === 0 ? 0 : 1,
+          stdout: call === 1 ? '[]' : outputFor([baselineMessage, extraMessage]),
+          stderr: '',
+        }),
+      }),
+    new RegExp(`new ESLint diagnostics.*${extraKey.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 's'),
+  );
+});
+
+test('buildTypecheckArguments uses standard TypeScript without emitting', () => {
+  assert.deepEqual(buildTypecheckArguments(), [
+    '--no-install',
+    'tsc',
+    '--pretty',
+    'false',
+    '--noEmit',
+    '-p',
+    'packages/twenty-server/tsconfig.json',
+  ]);
+});
+
+test('TypeScript diagnostic baseline comparison rejects only new diagnostic keys', () => {
+  const diagnostics = parseTypeScriptDiagnosticKeys(`
+packages/twenty-server/src/a.ts(10,2): error TS2322: existing error
+packages/twenty-server/src/b.ts(20,4): error TS2345: new error
+  details from the compiler
+`);
+
+  assert.deepEqual(diagnostics, [
+    'packages/twenty-server/src/a.ts:10:2:TS2322',
+    'packages/twenty-server/src/b.ts:20:4:TS2345',
+  ]);
+  assert.deepEqual(
+    compareTypeScriptDiagnostics(diagnostics, [
+      'packages/twenty-server/src/a.ts:10:2:TS2322',
+      'packages/twenty-server/src/old.ts:1:1:TS7006',
+    ]),
+    {
+      unexpected: ['packages/twenty-server/src/b.ts:20:4:TS2345'],
+      resolved: ['packages/twenty-server/src/old.ts:1:1:TS7006'],
+    },
   );
 });
 
@@ -105,22 +273,63 @@ test('runChangedServerTask skips Nx for config-only changes', () => {
   assert.equal(called, false);
 });
 
-test('runChangedServerTask executes Nx for server runtime changes', () => {
+test('runChangedServerTask executes lint and baseline-aware typecheck for server runtime changes', () => {
   const calls = [];
+  const lintCalls = [];
 
   runChangedServerTask(
     ['packages/twenty-server/src/main.ts'],
     (command, args, options) => {
       calls.push({ command, args, options });
-      return { status: 0 };
+      return {
+        status: 2,
+        stdout:
+          'packages/twenty-server/src/existing.ts(1,2): error TS2322: existing',
+        stderr: '',
+      };
+    },
+    {
+      base: 'base-sha',
+      lintRunner: (files, options) => lintCalls.push({ files, options }),
+      typecheckBaseline: [
+        'packages/twenty-server/src/existing.ts:1:2:TS2322',
+      ],
     },
   );
 
+  assert.equal(lintCalls.length, 1);
+  assert.equal(lintCalls[0].options.base, 'base-sha');
   assert.equal(calls.length, 1);
   assert.equal(calls[0].command, 'npx');
-  assert.ok(calls[0].args.includes('-t=lint,typecheck'));
-  assert.ok(calls[0].args.includes('--files'));
-  assert.equal(calls[0].options.env.NX_DAEMON, 'false');
+  assert.deepEqual(calls[0].args, buildTypecheckArguments());
+});
+
+test('runChangedServerTask rejects a new TypeScript diagnostic outside the baseline', () => {
+  assert.throws(
+    () =>
+      runChangedServerTask(
+        ['packages/twenty-server/src/main.ts'],
+        () => ({
+          status: 2,
+          stdout:
+            'packages/twenty-server/src/new.ts(3,4): error TS2345: regression',
+          stderr: '',
+        }),
+        { base: 'base-sha', lintRunner: () => {}, typecheckBaseline: [] },
+      ),
+    /new TypeScript diagnostics.*new\.ts:3:4:TS2345/s,
+  );
+});
+
+test('server lint configuration resolves the existing workspace rules project', () => {
+  const serverEslintConfig = readFileSync(
+    new URL('../../twenty-server/eslint.config.mjs', import.meta.url),
+    'utf8',
+  );
+  assert.match(
+    serverEslintConfig,
+    /loadWorkspaceRules\(\s*'packages\/eslint-rules'/,
+  );
 });
 
 test('runGraphqlGenerationCheck skips generation without schema changes', () => {
@@ -211,6 +420,61 @@ test('runMigrationGenerationCheck accepts a no-change TypeORM exit', () => {
   );
 });
 
+test('runMigrationGenerationCheck accepts and removes exact known migration drift', () => {
+  const removed = [];
+  const generatedFile = 'packages/twenty-server/123-core-migration-check.ts';
+  const migrationSource = `
+    export class CoreMigrationCheck123 {
+      public async up(queryRunner) {
+        await queryRunner.query(\`ALTER TABLE \"core\".\"agentMessage\" ALTER COLUMN \"content\" DROP NOT NULL\`);
+        await queryRunner.query(\`ALTER TABLE \"core\".\"workspace\" ADD \"known\" boolean\`);
+      }
+
+      public async down() {}
+    }
+  `;
+
+  runMigrationGenerationCheck(['packages/twenty-server/src/main.ts'], {
+    runCommand: () => ({ status: 0, stdout: 'generated', stderr: '' }),
+    listGeneratedFiles: () => [generatedFile],
+    readGeneratedFile: () => migrationSource,
+    migrationBaselineQueries: [
+      'ALTER TABLE \"core\".\"workspace\" ADD \"known\" boolean',
+      'ALTER TABLE \"core\".\"agentMessage\" ALTER COLUMN \"content\" DROP NOT NULL',
+    ],
+    removeGeneratedFile: (file) => removed.push(file),
+  });
+
+  assert.deepEqual(removed, [generatedFile]);
+});
+
+test('runMigrationGenerationCheck rejects changed drift beyond the baseline', () => {
+  const generatedFile = 'packages/twenty-server/123-core-migration-check.ts';
+  const migrationSource = `
+    export class CoreMigrationCheck123 {
+      public async up(queryRunner) {
+        await queryRunner.query(\`ALTER TABLE \"core\".\"agentMessage\" ALTER COLUMN \"content\" SET NOT NULL\`);
+      }
+
+      public async down() {}
+    }
+  `;
+
+  assert.throws(
+    () =>
+      runMigrationGenerationCheck(['packages/twenty-server/src/main.ts'], {
+        runCommand: () => ({ status: 0, stdout: 'generated', stderr: '' }),
+        listGeneratedFiles: () => [generatedFile],
+        readGeneratedFile: () => migrationSource,
+        migrationBaselineQueries: [
+          'ALTER TABLE \"core\".\"agentMessage\" ALTER COLUMN \"content\" DROP NOT NULL',
+        ],
+        removeGeneratedFile: () => {},
+      }),
+    /Unexpected migration files were generated/,
+  );
+});
+
 test('runMigrationGenerationCheck rejects and removes generated drift', () => {
   const removed = [];
 
@@ -221,6 +485,16 @@ test('runMigrationGenerationCheck rejects and removes generated drift', () => {
         listGeneratedFiles: () => [
           'packages/twenty-server/123-core-migration-check.ts',
         ],
+        readGeneratedFile: () => `
+          export class CoreMigrationCheck123 {
+            public async up(queryRunner) {
+              await queryRunner.query(\`ALTER TABLE \"core\".\"workspace\" ADD \"unexpected\" boolean\`);
+            }
+
+            public async down() {}
+          }
+        `,
+        migrationBaselineQueries: [],
         removeGeneratedFile: (file) => removed.push(file),
       }),
     /Unexpected migration files were generated/,

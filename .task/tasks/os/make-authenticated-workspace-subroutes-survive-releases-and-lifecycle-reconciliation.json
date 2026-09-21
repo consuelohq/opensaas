@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/make-authenticated-workspace-subroutes-survive-releases-and-lifecycle-reconciliation",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2018,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2018",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2018",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2018/make-authenticated-workspace-subroutes-survive-releases-and-lifecycle-reconciliation",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2018",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2018/make-authenticated-workspace-subroutes-survive-releases-and-lifecycle-reconciliation",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-make-authenticated-workspace-subroutes-survive-releases-and-lifecycle-reconciliation",
+  "taskSession": "tsk_95cff221cfb8",
+  "tmuxSession": "opensaas-os-make-authenticated-workspace-subroutes-survive-r-95cff221",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-make-authenticated-workspace-subroutes-survive-releases-and-lifecycle-reconciliation/.task/os/make-authenticated-workspace-subroutes-survive-releases-and-lifecycle-reconciliation/session.json",
+  "createdAt": "2026-08-15T04:25:02.498Z"
+}

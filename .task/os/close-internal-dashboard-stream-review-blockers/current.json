@@ -1,0 +1,20 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/close-internal-dashboard-stream-review-blockers",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2399,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2399",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2399",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2399/close-internal-dashboard-stream-review-blockers",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2399",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2399/close-internal-dashboard-stream-review-blockers",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-close-internal-dashboard-stream-review-blockers",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_b152e2ee5ca0",
+  "tmuxSession": "opensaas-os-close-internal-dashboard-stream-review-blockers-b152e2ee",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-close-internal-dashboard-stream-review-blockers/.task/os/close-internal-dashboard-stream-review-blockers/session.json",
+  "createdAt": "2026-09-05T03:47:26.362Z"
+}

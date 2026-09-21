@@ -198,6 +198,39 @@ export async function exchangeAuthorizationCode(input: {
     resource: input.resource,
   });
 
+  return exchangeOperatorToken({
+    authorityOrigin: input.authorityOrigin,
+    body,
+    fetchImpl: input.fetchImpl,
+  });
+}
+
+export async function exchangeRefreshToken(input: {
+  authorityOrigin: string;
+  refreshToken: string;
+  resource: string;
+  fetchImpl?: typeof fetch;
+}): Promise<OperatorLoginResult> {
+  const body = new URLSearchParams({
+    grant_type: 'refresh_token',
+    client_id: OPERATOR_CLIENT_ID,
+    refresh_token: input.refreshToken,
+    resource: input.resource,
+  });
+
+  return exchangeOperatorToken({
+    authorityOrigin: input.authorityOrigin,
+    body,
+    fetchImpl: input.fetchImpl,
+  });
+}
+
+async function exchangeOperatorToken(input: {
+  authorityOrigin: string;
+  body: URLSearchParams;
+  fetchImpl?: typeof fetch;
+}): Promise<OperatorLoginResult> {
+
   let response: Response;
   try {
     response = await (input.fetchImpl ?? globalThis.fetch)(
@@ -208,7 +241,7 @@ export async function exchangeAuthorizationCode(input: {
           'content-type': 'application/x-www-form-urlencoded',
           accept: 'application/json',
         },
-        body,
+        body: input.body,
       },
     );
   } catch (error: unknown) {

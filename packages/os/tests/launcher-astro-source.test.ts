@@ -16,6 +16,17 @@ describe('launcher Astro source', () => {
     expect(source).toContain('var(--site-color-muted)');
     expect(source).toContain('Welcome to Consuelo OS');
     expect(source).toContain('Here is the URL to connect');
+    expect(source).toContain('class="os-launcher__url-copy"');
+    expect(source).toContain('data-copy-mcp');
+    expect(source).toContain('<span data-copy-label aria-live="polite">COPY</span>');
+    expect(source).toContain('if (!navigator.clipboard)');
+    expect(source).toContain("copyLabel.textContent = 'COPIED'");
+    expect(source).toContain("copyLabel.textContent = 'COPY'");
+    expect(source).toContain('}, 1500);');
+    expect(source).toContain('.os-launcher__url-copy:hover,');
+    expect(source).toContain('.os-launcher__url-copy:focus-visible');
+    expect(source).not.toContain('data-copy-target="mcp-url"');
+    expect(source).not.toContain('class="os-launcher__url-row"');
     expect(source).toContain('Connect to your cloud agents');
     expect(source).toContain("{ label: 'Observability', href: workspaceUrl('/observability') }");
     expect(source).toContain("{ label: 'Artifacts', href: workspaceUrl('/artifacts') }");

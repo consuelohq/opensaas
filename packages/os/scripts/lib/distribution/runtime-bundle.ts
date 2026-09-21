@@ -181,6 +181,7 @@ const REQUIRED_RUNTIME_INPUTS = [
   'bun.lock',
   'scripts/os.ts',
   'scripts/native-lifecycle-operation.ts',
+  'scripts/retire-legacy-system-daemons.sh',
   'scripts/server/main.ts',
   'scripts/server/supervisor.ts',
   'scripts/lib/install-state.ts',
@@ -191,7 +192,6 @@ const REQUIRED_RUNTIME_INPUTS = [
   'manifests/generated/tool.manifest.json',
   'manifests/generated/core.manifest.json',
   'hooks/dispatcher.js',
-  'steering/system_prompt.md',
   'streams/tools/AGENTS.md',
   'streams/dialer/AGENTS.md',
   'skills/task/SKILL.md',
@@ -241,6 +241,7 @@ const PLATFORM_ADAPTER_FILES = new Set([
   'scripts/bootstrap.sh',
   'scripts/generate-system-daemons.sh',
   'scripts/install-system-daemons.sh',
+  'scripts/retire-legacy-system-daemons.sh',
   'scripts/install.ts',
   'scripts/windows-platform.ts',
   'scripts/lib/windows-platform.ts',
@@ -381,7 +382,7 @@ export function classifyRuntimeBundlePath(
     return 'test-only';
   }
   if (CUSTOMER_PROVIDER_FILES.has(filePath)) return 'customer-provider';
-  if (filePath === 'steering/decision.md') return 'source-only';
+  if (filePath.startsWith('steering/')) return 'source-only';
   if (filePath === 'scripts/lib/distribution/runtime-bundle.ts') {
     return 'runtime';
   }
@@ -412,7 +413,7 @@ export function classifyRuntimeBundlePath(
   ) {
     return 'managed-tool';
   }
-  if (filePath.startsWith('steering/') || filePath.startsWith('streams/'))
+  if (filePath.startsWith('streams/'))
     return 'runtime';
   if (filePath.startsWith('hooks/')) return 'runtime';
   if (filePath.startsWith('native/macos/.build/')) return 'source-only';

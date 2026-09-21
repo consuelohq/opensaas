@@ -1,0 +1,19 @@
+{
+  "files": [
+    "packages/os/cloudflare/workspace-edge/src/index.ts",
+    "packages/os/scripts/lib/observability-traces-site.ts",
+    "packages/os/scripts/lib/settings-control-plane.ts",
+    "packages/os/scripts/lib/settings-materialization.ts",
+    "packages/os/scripts/lib/settings-site.ts",
+    "packages/os/scripts/lib/workspace-chrome-config.ts",
+    "packages/os/scripts/lib/workspace-chrome.ts",
+    "packages/os/tests/internal-launcher-regressions.test.ts",
+    "packages/os/tests/launcher-local-customization.test.ts",
+    "packages/os/tests/os-universal-login.test.ts",
+    "packages/os/tests/settings-control-plane.test.ts",
+    "packages/workspace/scripts/test-selection.js",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "updatedAt": "2026-09-08T14:37:00.529Z"
+}

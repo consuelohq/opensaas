@@ -1,0 +1,15 @@
+{
+  "files": [
+    ".github/workflows/consuelo-ci.yaml",
+    "packages/consuelo-website/package.json",
+    "packages/os/scripts/lib/subagent/lifecycle.ts",
+    "packages/os/scripts/lib/subagent/runner.ts",
+    "packages/os/scripts/lib/subagent/runtime.ts",
+    "packages/os/tests/local-os-server-review-findings.test.ts",
+    "packages/os/tests/subagent-executable-discovery.test.ts",
+    "packages/os/tools/subagent/schema.ts",
+    "packages/workspace/scripts/test-selection.js",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "updatedAt": "2026-09-11T05:20:49.702Z"
+}

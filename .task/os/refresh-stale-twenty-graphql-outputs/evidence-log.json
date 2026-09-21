@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/refresh-stale-twenty-graphql-outputs",
+  "events": [
+    {
+      "id": "f4a0ee75-97fd-4ea0-b45a-84e1a5c7f1f3",
+      "occurred_at": "2026-08-14T03:31:17.752Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".github/workflows/ci-server.yaml",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refresh-stale-twenty-graphql-outputs",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refresh-stale-twenty-graphql-outputs"
+      }
+    },
+    {
+      "id": "5c52e067-cab0-4434-8dc7-f94f203e0cc7",
+      "occurred_at": "2026-08-14T03:31:24.340Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".github/workflows/ci-server.yaml",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refresh-stale-twenty-graphql-outputs",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refresh-stale-twenty-graphql-outputs"
+      }
+    },
+    {
+      "id": "6ebef597-a88d-45b1-a0c8-d2d31d1abf92",
+      "occurred_at": "2026-08-14T03:43:05.790Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/twenty-front/src/modules/client-config/types/ClientConfig.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refresh-stale-twenty-graphql-outputs",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refresh-stale-twenty-graphql-outputs"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-14T03:43:05.845Z"
+}

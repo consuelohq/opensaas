@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_074a8bb79b82",
+  "tmuxSession": "opensaas-os-reuse-landing-copy-interaction-in-launcher-074a8bb7",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/reuse-landing-copy-interaction-in-launcher",
+  "branch": "task/os/reuse-landing-copy-interaction-in-launcher",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-reuse-landing-copy-interaction-in-launcher",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-reuse-landing-copy-interaction-in-launcher",
+  "prNumber": 1927,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1927",
+  "createdAt": "2026-08-13T23:54:33.489Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-reuse-landing-copy-interaction-in-launcher/.task/os/reuse-landing-copy-interaction-in-launcher/session.json"
+}

@@ -69,6 +69,7 @@ YES=0
 NO_INSTALL_BUN=0
 INSTALL_DAEMONS=0
 SKIP_DAEMONS=0
+RUNTIME_DEPENDENCIES_ONLY=0
 JSON=0
 DEBUG="${CONSUELO_OS_DEBUG:-0}"
 DEV_DIAGNOSTICS="${CONSUELO_OS_DEV_DIAGNOSTICS:-0}"
@@ -76,6 +77,7 @@ DEV_REPORT_ROOT="${CONSUELO_OS_DEV_REPORTS_DIR:-$HOME/.consuelo-dev-reports}"
 DEV_REPORT_DIR="${CONSUELO_OS_DEV_REPORT_DIR:-}"
 CHILD_INSTALL_RAW_TRANSCRIPT=""
 CHILD_INSTALL_TRANSCRIPT=""
+CONSUELO_INSTALL_ID="${CONSUELO_INSTALL_ID:-}"
 
 BUN_BIN=""
 PORTLESS_BIN="${PORTLESS_BIN:-}"
@@ -99,6 +101,21 @@ ONBOARDING_JSON=""
 DEPENDENCY_STATUS="pending"
 CONTACT_URL="https://consuelohq.com/contact/"
 OS_MODE=""
+
+ensure_install_id() {
+  if printf '%s' "$CONSUELO_INSTALL_ID" | grep -Eq '^ins_[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$'; then
+    export CONSUELO_INSTALL_ID
+    return 0
+  fi
+  [ -n "$BUN_BIN" ] || fail "Consuelo OS could not create install telemetry correlation before Bun was ready"
+  local install_uuid
+  install_uuid="$("$BUN_BIN" --print 'crypto.randomUUID().toLowerCase()')" || fail "Consuelo OS could not create install telemetry correlation"
+  if ! printf '%s' "$install_uuid" | grep -Eq '^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$'; then
+    fail "Consuelo OS generated an invalid install telemetry correlation id"
+  fi
+  CONSUELO_INSTALL_ID="ins_$install_uuid"
+  export CONSUELO_INSTALL_ID
+}
 
 cleanup_runtime_stage() {
   if [ -n "$RUNTIME_STAGE_DIR" ] && [ -d "$RUNTIME_STAGE_DIR" ]; then
@@ -131,6 +148,7 @@ Options:
   --no-install-bun  fail with manual instructions if Bun is missing
   --install-daemons install user LaunchAgents after onboarding
   --skip-daemons    skip user LaunchAgent setup after onboarding
+  --runtime-dependencies-only  reconcile pinned Caddy/Cloudflared binaries without onboarding or service restarts
   --refresh-source  accepted and ignored; hosted installs always resolve the current signed channel
   --use-existing-source accepted and ignored; kept for older install commands
   --mode <mode>      local or cloud
@@ -313,6 +331,7 @@ parse_args() {
       --no-install-bun) NO_INSTALL_BUN=1 ;;
       --install-daemons) INSTALL_DAEMONS=1 ;;
       --skip-daemons) SKIP_DAEMONS=1 ;;
+      --runtime-dependencies-only) RUNTIME_DEPENDENCIES_ONLY=1 ;;
       --refresh-source|--use-existing-source) ;;
       --mode)
         shift
@@ -389,70 +408,37 @@ run_with_loading_dots() {
   return "$status"
 }
 
-prompt_select() {
-  local message="$1"
-  local default_choice="$2"
-  local first_choice="$3"
-  local second_choice="$4"
-  local rerun_hint="$5"
-  local selected=0
-  local prompt_lines=4
-  local rendered=0
-  local key=""
-  local rest=""
+run_quiet_with_loading_dots() {
+  local loading_message="$1"
+  shift
 
-  if [ "$YES" -eq 1 ] || [ "$DRY_RUN" -eq 1 ]; then
-    printf '%s\n' "$default_choice"
-    return 0
+  if [ "$DEBUG" = "1" ] || [ "$JSON" -eq 1 ] || [ "$DRY_RUN" -eq 1 ]; then
+    "$@"
+    return $?
   fi
 
-  if ! has_tty; then
-    fail "$message
+  local output_file
+  local status=0
+  output_file="$(mktemp "${TMPDIR:-/tmp}/consuelo-bootstrap.XXXXXX")" ||
+    fail "Consuelo OS could not create a temporary setup log"
 
-This shell is non-interactive. Re-run with:
-  $rerun_hint"
+  # Keep setup in the current shell: it intentionally mutates globals such as
+  # BUN_BIN, RUNTIME_DIR, and INSTALL_ID that onboarding consumes afterward.
+  # Running it in the background for an animated spinner would fork those
+  # assignments into a subshell and silently lose them.
+  log "${loading_message}..."
+  "$@" >"$output_file" 2>&1 || status=$?
+  if [ "$status" -eq 0 ]; then
+    log "${loading_message}... done"
+  else
+    log "${loading_message}... failed"
   fi
 
-  if [ "$default_choice" = "$second_choice" ]; then
-    selected=1
+  if [ "$status" -ne 0 ]; then
+    cat "$output_file" >&2
   fi
-
-  while true; do
-    if [ "$rendered" -eq 1 ]; then
-      printf '\033[%sA' "$prompt_lines" > /dev/tty
-    fi
-    printf '\033[2K%s\n' "$message" > /dev/tty
-    if [ "$selected" -eq 0 ]; then
-      printf '\033[2K◆ %s\n' "$first_choice" > /dev/tty
-      printf '\033[2K○ %s\n' "$second_choice" > /dev/tty
-    else
-      printf '\033[2K○ %s\n' "$first_choice" > /dev/tty
-      printf '\033[2K◆ %s\n' "$second_choice" > /dev/tty
-    fi
-    printf '\033[2K%s\n' "Use arrow keys and Enter." > /dev/tty
-    rendered=1
-
-    IFS= read -rsn1 key < /dev/tty || key=""
-    case "$key" in
-      "")
-        if [ "$selected" -eq 0 ]; then
-          printf '%s\n' "$first_choice"
-        else
-          printf '%s\n' "$second_choice"
-        fi
-        return 0
-        ;;
-      $'\033')
-        IFS= read -rsn2 rest < /dev/tty || rest=""
-        case "$rest" in
-          "[A"|"[D") selected=0 ;;
-          "[B"|"[C") selected=1 ;;
-        esac
-        ;;
-      [YyLl]) selected=0 ;;
-      [NnCc]) selected=1 ;;
-    esac
-  done
+  rm -f "$output_file"
+  return "$status"
 }
 
 open_url() {
@@ -474,83 +460,8 @@ open_contact_url() {
   open_url "$CONTACT_URL"
 }
 
-render_os_mode_select() {
-  local selected="$1"
-
-  printf '\033[2KChoose Consuelo OS mode:\n' > /dev/tty
-  if [ "$selected" -eq 0 ]; then
-    printf '\033[2K> local\n' > /dev/tty
-    printf '\033[2K  cloud\n' > /dev/tty
-  else
-    printf '\033[2K  local\n' > /dev/tty
-    printf '\033[2K> cloud\n' > /dev/tty
-  fi
-}
-
 choose_os_mode() {
-  if [ -n "$OS_MODE" ]; then
-    return 0
-  fi
-
-  if [ "$YES" -eq 1 ] || [ "$JSON" -eq 1 ] || [ "$DRY_RUN" -eq 1 ]; then
-    OS_MODE="local"
-    return 0
-  fi
-
-  if ! has_tty; then
-    fail "Choose local or cloud before setup.
-
-This shell is non-interactive. Re-run with:
-  $HOSTED_INSTALL_COMMAND_WITH_ARGS --mode local
-or:
-  $HOSTED_INSTALL_COMMAND_WITH_ARGS --mode cloud"
-  fi
-
-  local selected=0
-  local key=""
-  local sequence=""
-  local rendered=0
-  local old_tty
-  old_tty="$(stty -g < /dev/tty)"
-
-  stty -echo -icanon min 1 time 0 < /dev/tty
-  printf '\033[?25l' > /dev/tty
-  trap 'stty "$old_tty" < /dev/tty; printf "\033[?25h" > /dev/tty; exit 130' INT TERM
-
-  while true; do
-    if [ "$rendered" -eq 1 ]; then
-      printf '\033[3A' > /dev/tty
-    fi
-    render_os_mode_select "$selected"
-    rendered=1
-
-    IFS= read -r -s -n 1 key < /dev/tty || key=""
-    case "$key" in
-      $'\033')
-        IFS= read -r -s -n 2 -t 1 sequence < /dev/tty || sequence=""
-        case "$sequence" in
-          "[A"|"[B")
-            if [ "$selected" -eq 0 ]; then
-              selected=1
-            else
-              selected=0
-            fi
-            ;;
-        esac
-        ;;
-      ""|$'\n'|$'\r')
-        if [ "$selected" -eq 0 ]; then
-          OS_MODE="local"
-        else
-          OS_MODE="cloud"
-        fi
-        stty "$old_tty" < /dev/tty
-        printf '\033[?25h\n' > /dev/tty
-        trap - INT TERM
-        return 0
-        ;;
-    esac
-  done
+  [ -n "$OS_MODE" ] || OS_MODE="local"
 }
 
 handle_cloud_mode() {
@@ -567,21 +478,6 @@ handle_cloud_mode() {
   exit 0
 }
 
-render_dependency_progress() {
-  [ "$JSON" -eq 0 ] || return 0
-
-  log "CONSUELO OS  ● dependencies  ○ workspace  ○ security  ○ skills  ○ agents  ○ service  ○ health"
-  log ""
-}
-
-prompt_dependency_setup() {
-  local dependency_choice
-  dependency_choice="$(prompt_select "Consuelo OS needs its dependencies to continue." "yes" "yes" "no" "$HOSTED_INSTALL_COMMAND_WITH_ARGS --yes")"
-  if [ "$dependency_choice" = "no" ]; then
-    DEPENDENCY_STATUS="cancelled"
-    fail "Consuelo OS setup cancelled."
-  fi
-}
 require_command() {
   local tool="$1"
   local explanation="$2"
@@ -663,6 +559,39 @@ ensure_bun() {
 
   BUN_STATUS="installed"
   log "Bun installed: $BUN_BIN"
+}
+
+ensure_named_bun_runtime() {
+  local source="$BUN_BIN"
+  local target="$RUNTIME_BIN_DIR/consuelo-os"
+  local temporary="$target.$$.tmp"
+
+  if [ "$DRY_RUN" -eq 1 ]; then
+    log "dry-run: would install the named Consuelo service executable at $target"
+    return 0
+  fi
+  [ -x "$source" ] || fail "Consuelo OS cannot create its named service executable because Bun is unavailable: ${source:-unset}"
+  if [ "$source" = "$target" ]; then
+    return 0
+  fi
+
+  mkdir -p "$RUNTIME_BIN_DIR"
+  if [ -x "$target" ] && /usr/bin/cmp -s "$source" "$target"; then
+    BUN_BIN="$target"
+    return 0
+  fi
+
+  /bin/rm -f -- "$temporary"
+  if ! /bin/cp -c "$source" "$temporary" 2>/dev/null; then
+    /bin/cp -p "$source" "$temporary" || fail "Consuelo OS could not copy Bun to its named service executable."
+  fi
+  /bin/chmod 0755 "$temporary"
+  if ! /usr/bin/cmp -s "$source" "$temporary"; then
+    /bin/rm -f -- "$temporary"
+    fail "The Consuelo Bun service clone failed integrity verification."
+  fi
+  /bin/mv -f "$temporary" "$target"
+  BUN_BIN="$target"
 }
 
 runtime_arch() {
@@ -947,14 +876,26 @@ ensure_portless() {
   log "portless is not installed; Consuelo will use http://127.0.0.1:46321"
 }
 
+cloudflared_version_matches() {
+  local candidate="$1"
+  [ -x "$candidate" ] || return 1
+  case "$("$candidate" --version 2>/dev/null || true)" in
+    "cloudflared version ${CLOUDFLARED_VERSION}"|"cloudflared version ${CLOUDFLARED_VERSION} "*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
 ensure_cloudflared() {
   local managed_path="$RUNTIME_BIN_DIR/cloudflared"
+  local candidate=""
   if [ "$CLOUDFLARED_REQUIRED" != "1" ]; then
     CLOUDFLARED_STATUS="skipped_not_needed"
     return 0
   fi
 
-  if CLOUDFLARED_BIN="$(find_runtime_binary "${CLOUDFLARED_BIN:-}" cloudflared "$managed_path")"; then
+  candidate="$(find_runtime_binary "${CLOUDFLARED_BIN:-}" cloudflared "$managed_path" || true)"
+  if [ -n "$candidate" ] && cloudflared_version_matches "$candidate"; then
+    CLOUDFLARED_BIN="$candidate"
     CLOUDFLARED_STATUS="present"
     log "cloudflared found: $CLOUDFLARED_BIN"
     return 0
@@ -1050,6 +991,54 @@ remove_env_value() {
   mv "$tmp_file" "$file"
   chmod 600 "$file"
 }
+read_persisted_runtime_path() {
+  local key="$1"
+  local env_file="$OS_HOME/.env"
+  [ -f "$env_file" ] || return 1
+  local line current_key value
+  while IFS= read -r line || [ -n "$line" ]; do
+    current_key="${line%%=*}"
+    [ "$current_key" = "$key" ] || continue
+    value="${line#*=}"
+    value="${value%$'\r'}"
+    value="${value%\"}"
+    value="${value#\"}"
+    value="${value%\'}"
+    value="${value#\'}"
+    printf '%s\n' "$value"
+    return 0
+  done < "$env_file"
+  return 1
+}
+
+load_persisted_ingress_runtime_paths() {
+  if [ -z "${CADDY_BIN:-}" ]; then
+    CADDY_BIN="$(read_persisted_runtime_path CADDY_BIN || true)"
+  fi
+  if [ -z "${CLOUDFLARED_BIN:-}" ]; then
+    CLOUDFLARED_BIN="$(read_persisted_runtime_path CLOUDFLARED_BIN || true)"
+  fi
+}
+
+persist_ingress_runtime_paths() {
+  local env_file="$OS_HOME/.env"
+  if [ "$DRY_RUN" -eq 1 ]; then
+    log "dry-run: would persist ingress runtime binary paths to $env_file"
+    return 0
+  fi
+  persist_env_value "$env_file" CLOUDFLARED_BIN "$CLOUDFLARED_BIN"
+  persist_env_value "$env_file" CADDY_BIN "$CADDY_BIN"
+  export CADDY_BIN CLOUDFLARED_BIN
+}
+
+reconcile_runtime_dependencies_only() {
+  check_mac_prerequisites
+  load_persisted_ingress_runtime_paths
+  ensure_caddy
+  ensure_cloudflared
+  persist_ingress_runtime_paths
+}
+
 persist_runtime_paths() {
   local env_file="$OS_HOME/.env"
   if [ "$DRY_RUN" -eq 1 ]; then
@@ -1505,7 +1494,7 @@ check_install_tty() {
 run_install_with_script_pty() {
   local os_dir="$1"
   local os_home="$2"
-  local install_args=(./scripts/install.ts --home "$os_home" --mode "${OS_MODE:-local}")
+  local install_args=(./scripts/install.ts --home "$os_home" --recovery-package-root "$os_dir" --mode "${OS_MODE:-local}")
   local script_output="/dev/null"
   local status=0
   if [ "$INSTALL_DAEMONS" -eq 1 ]; then
@@ -1566,6 +1555,51 @@ validate_onboarding_json() {
   fi
 }
 
+prepare_recovery_cli() {
+  local os_dir
+  os_dir="$(os_package_dir)" || {
+    if [ "$DRY_RUN" -eq 1 ]; then
+      log "dry-run: would materialize the Consuelo recovery CLI from the verified runtime"
+      return 0
+    fi
+    fail "Consuelo OS runtime package root is missing"
+  }
+
+  if [ "$DRY_RUN" -eq 1 ]; then
+    log "dry-run: would install $OS_HOME/bin/consuelo before onboarding"
+    return 0
+  fi
+
+  [ -f "$os_dir/scripts/install.ts" ] ||
+    fail "verified Consuelo OS runtime is missing the installer entrypoint"
+  CONSUELO_HOME="$OS_HOME" "$BUN_BIN" --cwd "$os_dir" ./scripts/install.ts --materialize-lifecycle-command --home "$OS_HOME" --recovery-package-root "$os_dir"
+}
+
+finalize_recovery_cli() {
+  if [ "$SOURCE_STATUS" != "verified" ]; then
+    return 0
+  fi
+  if [ "$DRY_RUN" -eq 1 ]; then
+    log "dry-run: would rematerialize the Consuelo lifecycle CLI from runtime/current after activation"
+    return 0
+  fi
+  [ -f "$RUNTIME_HOME/scripts/install.ts" ] ||
+    fail "activated Consuelo OS runtime is missing the installer entrypoint"
+  CONSUELO_HOME="$OS_HOME" "$BUN_BIN" --cwd "$RUNTIME_HOME" ./scripts/install.ts --materialize-lifecycle-command --home "$OS_HOME"
+}
+
+recovery_cli_hint() {
+  [ -x "$OS_HOME/bin/consuelo" ] || return 0
+  printf '
+Recovery CLI is ready at %s.
+Open a new terminal, then run:
+  consuelo status
+  consuelo uninstall --dry-run --json
+To retry setup:
+  %s
+' "$OS_HOME/bin/consuelo" "$HOSTED_INSTALL_COMMAND"
+}
+
 run_onboarding() { # run_onboarding_json
   local os_dir
   os_dir="$(os_package_dir)" || {
@@ -1590,14 +1624,18 @@ run_onboarding() { # run_onboarding_json
   fi
 
   if [ "$YES" -eq 1 ] || [ "$JSON" -eq 1 ]; then
-    local install_args=(./scripts/install.ts --yes --json --home "$os_home" --mode "${OS_MODE:-local}")
+    local install_args=(./scripts/install.ts --yes --json --home "$os_home" --recovery-package-root "$os_dir" --mode "${OS_MODE:-local}")
     if [ "$INSTALL_DAEMONS" -eq 1 ]; then
       install_args+=(--install-daemons)
     fi
     if [ "$SKIP_DAEMONS" -eq 1 ]; then
       install_args+=(--skip-daemons)
     fi
-    ONBOARDING_JSON="$("$BUN_BIN" --cwd "$os_dir" "${install_args[@]}")"
+    local install_status=0
+    ONBOARDING_JSON="$("$BUN_BIN" --cwd "$os_dir" "${install_args[@]}")" || install_status=$?
+    if [ "$install_status" -ne 0 ]; then
+      fail "Consuelo OS installer exited before onboarding completed (exit $install_status).$(recovery_cli_hint)"
+    fi
     if [ "$JSON" -eq 1 ]; then
       printf '%s\n' "$ONBOARDING_JSON"
     fi
@@ -1617,7 +1655,7 @@ run_onboarding() { # run_onboarding_json
     ONBOARDING_JSON="$(cat "$ONBOARDING_RESULT_FILE" 2>/dev/null || true)"
     rm -f "$ONBOARDING_RESULT_FILE"
     if [ "$install_status" -ne 0 ]; then
-      fail "Consuelo OS installer exited before onboarding completed (exit $install_status)."
+      fail "Consuelo OS installer exited before onboarding completed (exit $install_status).$(recovery_cli_hint)"
     fi
     validate_onboarding_json "$ONBOARDING_JSON"
     if printf '%s' "$ONBOARDING_JSON" | grep -q '"installDaemons"[[:space:]]*:[[:space:]]*true'; then
@@ -1699,28 +1737,16 @@ maybe_install_daemons() {
 
   if [ "$DRY_RUN" -eq 1 ]; then
     if [ -n "$PORTLESS_BIN" ]; then
-      log "dry-run: would offer user LaunchAgent setup for com.consuelo.system, com.consuelo.portless.system, and com.consuelo.watchdog."
+      log "dry-run: would install user LaunchAgents for com.consuelo.system, com.consuelo.portless.system, and com.consuelo.watchdog."
     else
-      log "dry-run: would offer user LaunchAgent setup for com.consuelo.system and com.consuelo.watchdog; portless is optional and not configured."
+      log "dry-run: would install user LaunchAgents for com.consuelo.system and com.consuelo.watchdog; portless is optional and not configured."
     fi
     run_daemon_dry_run
     return 0
   fi
 
-  if [ "$INSTALL_DAEMONS" -eq 0 ] && [ "$YES" -eq 1 ]; then
-    DAEMON_STATUS="skipped"
-    log "Skipping LaunchAgent setup because --install-daemons was not passed. To install later, run: bash packages/os/scripts/bootstrap.sh --yes --install-daemons"
-    return 0
-  fi
-
   if [ "$INSTALL_DAEMONS" -eq 0 ]; then
-    local daemon_choice
-    daemon_choice="$(prompt_select "Install Consuelo OS user LaunchAgents?" "yes" "yes" "no" "$HOSTED_INSTALL_COMMAND_WITH_ARGS --yes --install-daemons")"
-    if [ "$daemon_choice" = "no" ]; then
-      DAEMON_STATUS="skipped"
-      log "Skipping Consuelo OS user LaunchAgent setup."
-      return 0
-    fi
+    INSTALL_DAEMONS=1
   fi
 
   if [ "$DEBUG" = "1" ]; then
@@ -1745,6 +1771,11 @@ maybe_install_daemons() {
 ensure_command_on_path() {
   local bin_dir="$OS_HOME/bin"
   local rc_file=""
+
+  if [ "$DRY_RUN" -eq 1 ]; then
+    PATH_HINT="dry-run: would add $bin_dir to the supported shell profile"
+    return 0
+  fi
 
   case "$(basename "${SHELL:-}")" in
     zsh) rc_file="$HOME/.zshrc" ;;
@@ -1799,25 +1830,35 @@ print_success_summary() {
   log "Try:  consuelo status"
 }
 
-main() {
-  parse_args "$@"
-  init_dev_diagnostics
-  choose_os_mode
-  handle_cloud_mode
+setup_local_runtime() {
   check_mac_prerequisites
-  render_dependency_progress
-  prompt_dependency_setup
   ensure_bun
+  install_verified_runtime
+  ensure_dependencies
+  prepare_recovery_cli
+  ensure_command_on_path
+  ensure_named_bun_runtime
+  ensure_install_id
   ensure_portless
   ensure_caddy
   ensure_cloudflared
-  install_verified_runtime
   persist_runtime_paths
-  ensure_dependencies
+}
+
+main() {
+  parse_args "$@"
+  if [ "$RUNTIME_DEPENDENCIES_ONLY" -eq 1 ]; then
+    reconcile_runtime_dependencies_only
+    return 0
+  fi
+  init_dev_diagnostics
+  choose_os_mode
+  handle_cloud_mode
+  run_quiet_with_loading_dots "Installing Consuelo OS" setup_local_runtime
   run_onboarding
   activate_verified_runtime
+  finalize_recovery_cli
   maybe_install_daemons
-  ensure_command_on_path
   print_success_summary
   open_workspace_launcher
   emit_json_summary

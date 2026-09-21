@@ -1,0 +1,19 @@
+{
+  "area": "documentation",
+  "stream": "stream/documentation",
+  "taskBranch": "task/documentation/yoink-vercel-responsive-docs-patterns-for-mobile-and-ipad",
+  "baseBranch": "stream/documentation",
+  "sourceBranch": "stream/documentation",
+  "startFrom": "stream",
+  "prNumber": 2008,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2008",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2008",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2008/yoink-vercel-responsive-docs-patterns-for-mobile-and-ipad",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2008",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2008/yoink-vercel-responsive-docs-patterns-for-mobile-and-ipad",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-yoink-vercel-responsive-docs-patterns-for-mobile-and-ipad",
+  "taskSession": "tsk_c654a5f7b2dd",
+  "tmuxSession": "opensaas-documentation-yoink-vercel-responsive-docs-patterns-for-mobile-c654a5f7",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-yoink-vercel-responsive-docs-patterns-for-mobile-and-ipad/.task/documentation/yoink-vercel-responsive-docs-patterns-for-mobile-and-ipad/session.json",
+  "createdAt": "2026-08-15T03:57:20.629Z"
+}

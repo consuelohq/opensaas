@@ -1,0 +1,11 @@
+{
+  "files": [
+    ".task/workspace-agent/session-observability/verify.json",
+    ".task/workspace-agent/session-observability/workpad.md",
+    "packages/os/tests/trace-persistence.test.ts",
+    "packages/workspace/scripts/lib/git.js",
+    "packages/workspace/scripts/test-selection.js",
+    "packages/workspace/test-selection.rules.json"
+  ],
+  "updatedAt": "2026-08-15T03:29:33.406Z"
+}

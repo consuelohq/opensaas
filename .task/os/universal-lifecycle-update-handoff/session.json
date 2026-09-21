@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_670b789e26df",
+  "tmuxSession": "opensaas-os-universal-lifecycle-update-handoff-670b789e",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/universal-lifecycle-update-handoff",
+  "branch": "task/os/universal-lifecycle-update-handoff",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-universal-lifecycle-update-handoff",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-universal-lifecycle-update-handoff",
+  "prNumber": 1909,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1909",
+  "createdAt": "2026-08-13T19:53:40.464Z",
+  "tmuxCreated": false,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-universal-lifecycle-update-handoff/.task/os/universal-lifecycle-update-handoff/session.json"
+}

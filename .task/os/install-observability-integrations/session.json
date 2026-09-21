@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_a689b641af72",
+  "tmuxSession": "opensaas-os-install-observability-integrations-a689b641",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/install-observability-integrations",
+  "branch": "task/os/install-observability-integrations",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-install-observability-integrations",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-install-observability-integrations",
+  "prNumber": 1916,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1916",
+  "createdAt": "2026-08-13T20:09:45.697Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-install-observability-integrations/.task/os/install-observability-integrations/session.json"
+}

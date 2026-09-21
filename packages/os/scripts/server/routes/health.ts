@@ -25,7 +25,9 @@ const defaultDependencies: Required<Pick<HealthRouteDependencies, 'assertReady' 
   },
   runtimeIdentity: () => {
     try {
-      const manifestPath = `${resolveConsueloHomeLayout().runtimeCurrentDir}/runtime-bundle.manifest.json`;
+      const releasePath = process.env.CONSUELO_OS_WORKER_RELEASE_PATH
+        ?? resolveConsueloHomeLayout().runtimeCurrentDir;
+      const manifestPath = `${releasePath}/runtime-bundle.manifest.json`;
       const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8')) as RuntimeBundleManifest;
       return { bundleId: manifest.bundleId, version: manifest.version };
     } catch {

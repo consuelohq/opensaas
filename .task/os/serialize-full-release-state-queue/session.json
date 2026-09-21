@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_43ebe89955df",
+  "tmuxSession": "opensaas-os-serialize-full-release-state-queue-43ebe899",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/serialize-full-release-state-queue",
+  "branch": "task/os/serialize-full-release-state-queue",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-serialize-full-release-state-queue",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-serialize-full-release-state-queue",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2228,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2228",
+  "createdAt": "2026-08-26T18:34:54.740Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-serialize-full-release-state-queue/.task/os/serialize-full-release-state-queue/session.json"
+}

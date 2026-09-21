@@ -1,0 +1,22 @@
+{
+  "area": "explore",
+  "stream": "stream/explore",
+  "taskBranch": "task/explore/explorebench-baseline-and-trace-report",
+  "baseBranch": "stream/explore",
+  "sourceBranch": "stream/explore",
+  "startFrom": "stream",
+  "prNumber": 2049,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2049",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2049",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2049/explorebench-baseline-and-trace-report",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2049",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2049/explorebench-baseline-and-trace-report",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-explore-explorebench-baseline-and-trace-report",
+  "taskSession": "tsk_940d00b86641",
+  "tmuxSession": "opensaas-explore-explorebench-baseline-and-trace-report-940d00b8",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-explore-explorebench-baseline-and-trace-report/.task/explore/explorebench-baseline-and-trace-report/session.json",
+  "createdAt": "2026-08-15T08:25:01.489Z",
+  "branch": "task/explore/explorebench-baseline-and-trace-report",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-explore-explorebench-baseline-and-trace-report",
+  "tmuxCreated": true
+}

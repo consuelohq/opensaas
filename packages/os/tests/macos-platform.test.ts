@@ -18,19 +18,30 @@ describe('macOS menu-bar platform', () => {
 
     expect(source).toContain('MenuBarExtra');
     expect(source).toContain('LifecycleClient');
+    expect(source).toContain('model.showsUpdateBadge');
+    expect(source).toContain('accessibilityLabel("Update available")');
+    expect(source).toContain('pendingUpdate');
+    expect(source).toContain('Menu("Troubleshooting")');
+    expect(source).toContain('Label(');
+    expect(source).toContain('model.operationSummary');
+    expect(source).not.toContain('Text(DiagnosticsRedactor.redactText(message))');
+    expect(source).not.toContain('Text("Operation:');
+    expect(source).toContain('WorkspaceNodePresentation');
+    expect(source).not.toContain('node.capabilities');
+    expect(source).not.toContain('node.agents');
     expect(source).toContain('ReleaseChannel.userSelectableCases');
     expect(source).not.toContain('ForEach(ReleaseChannel.allCases');
     expect(source).not.toContain('Button("Destructive repair…")');
-    expect(source).toContain('DiagnosticsRedactor.redactText(message)');
-    expect(source).toContain('Operation:');
     expect(source).toContain('Remove node registration');
     expect(source).toContain('Remove user content');
     expect(source).not.toContain('launchctl');
     expect(source).not.toContain('Process(');
     expect(source).not.toContain('/bin/');
+    expect(source).toContain('MenuBarInstanceLock.acquire');
+    expect(source).toContain('isMenuContentEquivalent');
   });
 
-  it('packages an unsigned development app without installation or production signing', async () => {
+  it('packages an unsigned development app with an opt-in user-local install path', async () => {
     const scriptPath = resolve(
       packageRoot,
       'scripts/testing/macos-alpha-package.sh',
@@ -41,7 +52,14 @@ describe('macOS menu-bar platform', () => {
     expect(script).toContain('swift build');
     expect(script).toContain('Consuelo.app.tar.gz');
     expect(script).toContain('tar -czf');
-    expect(script).not.toContain('/Applications');
+    expect(script).toContain('--install');
+    expect(script).toContain('--launch');
+    expect(script).toContain('CONSUELO_MAC_APP_INSTALL_DIR');
+    expect(script).toContain('$HOME/Applications');
+    expect(script).toContain('ditto');
+    expect(script).toContain('open "$INSTALLED_APP"');
+    expect(script).not.toContain(['su', 'do'].join(''));
+    expect(script).not.toContain('INSTALL_ROOT="/Applications"');
     expect(script).not.toContain('Developer ID Application');
     expect(script).not.toContain('notarytool');
     expect(script).not.toContain('launchctl');
@@ -57,6 +75,8 @@ describe('macOS menu-bar platform', () => {
     expect(docs).toContain('Closing the app');
     expect(docs).toContain('Human checkpoint');
     expect(docs).toContain('macos-26');
+    expect(docs).toContain('macos-alpha-package.sh --install --launch');
+    expect(docs).toContain('~/Applications/Consuelo.app');
   });
 
   it('starts the owner-local lifecycle endpoint from the installed Bun daemon', async () => {

@@ -16,7 +16,9 @@ describe('dialer production release safety', () => {
         { id: 'previous-deployment', status: 'SUCCESS' },
       ]),
     );
-    expect(selectNewRailwayDeployment(deployments, 'previous-deployment')).toEqual({
+    expect(
+      selectNewRailwayDeployment(deployments, 'previous-deployment'),
+    ).toEqual({
       id: 'new-deployment',
       status: 'DEPLOYING',
     });
@@ -27,7 +29,11 @@ describe('dialer production release safety', () => {
   });
 
   it('smokes only non-mutating health/auth/signature boundaries', async () => {
-    const requests: Array<{ path: string; method: string; authorization: string | null }> = [];
+    const requests: Array<{
+      path: string;
+      method: string;
+      authorization: string | null;
+    }> = [];
     const fetcher = async (input: RequestInfo | URL, init?: RequestInit) => {
       const url = new URL(String(input));
       const method = init?.method ?? 'GET';
@@ -44,7 +50,9 @@ describe('dialer production release safety', () => {
         ['POST /v1/webhooks/stripe', 401],
         ['POST /v1/webhooks/leadconnector', 401],
       ]);
-      return new Response('{}', { status: expected.get(`${method} ${url.pathname}`) ?? 599 });
+      return new Response('{}', {
+        status: expected.get(`${method} ${url.pathname}`) ?? 599,
+      });
     };
 
     const result = await runDialerProductionSmoke(
@@ -54,7 +62,9 @@ describe('dialer production release safety', () => {
 
     expect(result.ok).toBe(true);
     expect(result.checks).toHaveLength(6);
-    expect(requests.every(({ authorization }) => authorization === null)).toBe(true);
+    expect(requests.every(({ authorization }) => authorization === null)).toBe(
+      true,
+    );
     expect(requests.map(({ path }) => path)).not.toContain(
       '/v1/commercial/billing/checkout',
     );
@@ -69,12 +79,17 @@ describe('dialer production release safety', () => {
       railway: { deploymentId: 'railway-1', status: 'SUCCESS' },
       cloudflare: { versionId: 'worker-v1', buildMarker: 'build-v1' },
       assets: { javascriptSha256: 'js-hash', cssSha256: 'css-hash' },
-      customMenu: { customMenuId: 'menu-1', readBackVerified: true },
+      launcherBootstrap: {
+        sha256: 'a'.repeat(64),
+        installationMode: 'one-time',
+      },
       smoke: { ok: true, checks: [] },
     });
 
     expect(manifest.gitSha).toBe('abc123');
-    expect(JSON.stringify(manifest)).not.toMatch(/token|secret|password|authorization/i);
+    expect(JSON.stringify(manifest)).not.toMatch(
+      /token|secret|password|authorization/i,
+    );
   });
 
   it('refuses to serialize a release manifest from non-green evidence', () => {
@@ -84,24 +99,47 @@ describe('dialer production release safety', () => {
         railway: { deploymentId: 'railway-1', status: 'FAILED' },
         cloudflare: { versionId: 'worker-v1', buildMarker: 'build-v1' },
         assets: { javascriptSha256: 'js-hash', cssSha256: 'css-hash' },
-        customMenu: { customMenuId: 'menu-1', readBackVerified: true },
+        launcherBootstrap: {
+          sha256: 'a'.repeat(64),
+          installationMode: 'one-time',
+        },
         smoke: { ok: true, checks: [] },
       }),
     ).toThrow('successful Railway deployment');
   });
 
+  it('requires immutable one-time Marketplace bootstrap evidence', () => {
+    expect(() =>
+      buildDialerReleaseManifest({
+        gitSha: 'abc123',
+        railway: { deploymentId: 'railway-1', status: 'SUCCESS' },
+        cloudflare: { versionId: 'worker-v1', buildMarker: 'build-v1' },
+        assets: { javascriptSha256: 'js-hash', cssSha256: 'css-hash' },
+        launcherBootstrap: {
+          sha256: 'not-a-sha256',
+          installationMode: 'one-time',
+        },
+        smoke: { ok: true, checks: [] },
+      }),
+    ).toThrow('launcher bootstrap SHA-256');
+  });
+
   it('rolls Railway back to one explicit deployment id through the public API', async () => {
-    const calls: Array<{ url: string; body: unknown; auth: string | null }> = [];
+    const calls: Array<{ url: string; body: unknown; auth: string | null }> =
+      [];
     const fetcher = async (input: RequestInfo | URL, init?: RequestInit) => {
       calls.push({
         url: String(input),
         body: JSON.parse(String(init?.body)),
         auth: new Headers(init?.headers).get('project-access-token'),
       });
-      return new Response(JSON.stringify({ data: { deploymentRollback: { id: 'new-deploy' } } }), {
-        status: 200,
-        headers: { 'content-type': 'application/json' },
-      });
+      return new Response(
+        JSON.stringify({ data: { deploymentRollback: { id: 'new-deploy' } } }),
+        {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+        },
+      );
     };
 
     const result = await rollbackRailwayDeployment(

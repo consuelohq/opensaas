@@ -1,0 +1,10 @@
+{
+  "files": [
+    "packages/os/cloudflare/os-device-authority/src/services/checkout-observability.ts",
+    "packages/os/tests/managed-cloud-checkout-observability.test.ts",
+    "packages/os/tests/os-device-authority-architecture.test.ts",
+    "packages/os/tests/os-universal-login.test.ts",
+    "packages/workspace/test-selection.rules.json"
+  ],
+  "updatedAt": "2026-08-15T05:02:04.990Z"
+}

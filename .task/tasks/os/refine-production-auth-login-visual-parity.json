@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/refine-production-auth-login-visual-parity",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1958,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1958",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1958",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1958/refine-production-auth-login-visual-parity",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1958",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1958/refine-production-auth-login-visual-parity",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-refine-production-auth-login-visual-parity",
+  "taskSession": "tsk_772ffe0e785c",
+  "tmuxSession": "opensaas-os-refine-production-auth-login-visual-parity-772ffe0e",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-refine-production-auth-login-visual-parity/.task/os/refine-production-auth-login-visual-parity/session.json",
+  "createdAt": "2026-08-14T10:00:44.575Z"
+}

@@ -45,6 +45,7 @@ function createRuntimeSource(root: string): string {
     'scripts/os.ts': 'export const osFixture = true;\n',
     'scripts/native-lifecycle-operation.ts':
       'export const nativeLifecycleOperationFixture = true;\n',
+    'scripts/retire-legacy-system-daemons.sh': '#!/bin/bash\nexit 0\n',
     'scripts/server/main.ts': 'export const serverFixture = true;\n',
     'scripts/server/supervisor.ts': 'export const supervisorFixture = true;\n',
     'scripts/lib/install-state.ts': 'export const installFixture = true;\n',
@@ -78,6 +79,7 @@ describe('release publication preparer', () => {
     mkdirSync(archiveDirectory, { recursive: true });
     const targets = [
       { architecture: 'arm64', platform: 'darwin' },
+      { architecture: 'x64', platform: 'darwin' },
       { architecture: 'x64', platform: 'linux' },
       { architecture: 'x64', platform: 'windows' },
     ] as const;
@@ -103,6 +105,7 @@ describe('release publication preparer', () => {
     const result = spawnSync('bun', [
       scriptPath,
       '--archive', `darwin-arm64=${join(archiveDirectory, 'darwin-arm64.tar.gz')}`,
+      '--archive', `darwin-x64=${join(archiveDirectory, 'darwin-x64.tar.gz')}`,
       '--archive', `linux-x64=${join(archiveDirectory, 'linux-x64.tar.gz')}`,
       '--archive', `windows-x64=${join(archiveDirectory, 'windows-x64.tar.gz')}`,
       '--version', '1.2.3',
@@ -128,6 +131,7 @@ describe('release publication preparer', () => {
     expect(publication.releaseFingerprint).toBe(releaseFingerprint);
     expect(publication.bundles.map((bundle) => `${bundle.platform}-${bundle.architecture}`)).toEqual([
       'darwin-arm64',
+      'darwin-x64',
       'linux-x64',
       'windows-x64',
     ]);

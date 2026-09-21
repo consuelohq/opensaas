@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_379229b090af",
+  "tmuxSession": "opensaas-os-retry-transient-macos-gateway-kickstart-during-l-379229b0",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/retry-transient-macos-gateway-kickstart-during-lifecycle-updates",
+  "branch": "task/os/retry-transient-macos-gateway-kickstart-during-lifecycle-updates",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-retry-transient-macos-gateway-kickstart-during-lifecycle-updates",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-retry-transient-macos-gateway-kickstart-during-lifecycle-updates",
+  "prNumber": 2090,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2090",
+  "createdAt": "2026-08-15T20:08:10.053Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-retry-transient-macos-gateway-kickstart-during-lifecycle-updates/.task/os/retry-transient-macos-gateway-kickstart-during-lifecycle-updates/session.json"
+}

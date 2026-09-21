@@ -1,0 +1,18 @@
+{
+  "files": [
+    ".task/documentation/refine-mobile-docs-shell-vercel-style-navigation-and-editorial-theme/workpad.md",
+    "packages/consuelo-website/src/data/site-navigation.ts",
+    "packages/consuelo-website/src/styles/tokens.css",
+    "packages/documentation/README.md",
+    "packages/documentation/node_modules/@astrojs/starlight/components/MobileMenuToggle.astro",
+    "packages/documentation/scripts/test-foundation-browser.mjs",
+    "packages/documentation/src/components/PageTitle.astro",
+    "packages/documentation/src/components/Sidebar.astro",
+    "packages/documentation/src/components/SiteTitle.astro",
+    "packages/documentation/src/styles/docs.css",
+    "packages/documentation/tests/foundation.test.ts",
+    "packages/documentation/tests/navigation-memory.test.ts",
+    "packages/os/scripts/lib/launcher-onboarding.ts"
+  ],
+  "updatedAt": "2026-08-14T08:09:55.387Z"
+}

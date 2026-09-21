@@ -1,0 +1,152 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/sync-os-sentry-dependency-lockfile",
+  "events": [
+    {
+      "id": "d1514b52-ea85-458a-af4f-b5587d1fca3f",
+      "occurred_at": "2026-08-13T21:42:00.930Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "yarn.lock",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/sync-os-sentry-dependency-lockfile",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/sync-os-sentry-dependency-lockfile"
+      }
+    },
+    {
+      "id": "c15166f1-1b64-49e0-9792-158473acf0ee",
+      "occurred_at": "2026-08-13T21:42:01.911Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/sync-os-sentry-dependency-lockfile",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/sync-os-sentry-dependency-lockfile"
+      }
+    },
+    {
+      "id": "9f98d51a-fb0b-4690-b023-4e07372ff321",
+      "occurred_at": "2026-08-13T21:42:21.392Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "yarn.lock",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/sync-os-sentry-dependency-lockfile",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/sync-os-sentry-dependency-lockfile"
+      }
+    },
+    {
+      "id": "a8ec25b4-88b3-4055-bfa0-0a45a1eb78d7",
+      "occurred_at": "2026-08-13T21:44:28.733Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/sync-os-sentry-dependency-lockfile",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/sync-os-sentry-dependency-lockfile"
+      }
+    },
+    {
+      "id": "7dbbdab5-b60a-4d87-81bc-9f213fc747d5",
+      "occurred_at": "2026-08-13T21:44:31.358Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/sync-os-sentry-dependency-lockfile",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/sync-os-sentry-dependency-lockfile"
+      }
+    },
+    {
+      "id": "eb3e0dd5-d205-462b-80c2-b316ce57a08c",
+      "occurred_at": "2026-08-13T21:45:27.229Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".github/workflows/consuelo-os-distribution-environments.yaml",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/sync-os-sentry-dependency-lockfile",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/sync-os-sentry-dependency-lockfile"
+      }
+    },
+    {
+      "id": "20b999ef-46f6-4e25-abd3-48504028e4b9",
+      "occurred_at": "2026-08-13T21:46:09.723Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/distribution/release-channel-workflows.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/sync-os-sentry-dependency-lockfile",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/sync-os-sentry-dependency-lockfile"
+      }
+    },
+    {
+      "id": "3c2f18d3-b0ca-4d30-aa9f-6f4e9840e442",
+      "occurred_at": "2026-08-13T21:47:47.778Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/test-selection.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/sync-os-sentry-dependency-lockfile",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/sync-os-sentry-dependency-lockfile"
+      }
+    },
+    {
+      "id": "d1d363a7-8d01-4435-aa19-784dad0d383d",
+      "occurred_at": "2026-08-13T21:48:18.041Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/test-selection.rules.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/sync-os-sentry-dependency-lockfile",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/sync-os-sentry-dependency-lockfile"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-13T21:48:18.104Z"
+}

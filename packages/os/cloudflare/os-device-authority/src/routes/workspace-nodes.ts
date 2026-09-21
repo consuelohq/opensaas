@@ -15,6 +15,7 @@ import {
   workspaceDefaultNodeId,
   workspaceNodeId,
   workspaceNodeListPayload,
+  workspaceNodeReadiness,
 } from '../services/nodes';
 import type {
   AccountWorkspace,
@@ -26,6 +27,11 @@ import { b64Decode, hasGrantedScope, hash } from '../utils';
 import { bearerToken } from '../services/mcp-proxy';
 import { authenticateInternalWorkspaceSession } from './web-auth';
 import { buildManagedCloudPublicCatalog } from '../services/managed-cloud-pricing';
+import {
+  ManagedCloudBillingError,
+  startManagedCloudNodeCheckout,
+} from '../services/managed-cloud-billing';
+import { publicManagedCloudProvisioningJob } from '../../../../scripts/lib/managed-cloud-provisioning';
 
 const jsonHeaders = { 'cache-control': 'no-store' } as const;
 
@@ -235,6 +241,14 @@ async function handleSelectDefault(
     ) {
       return errorResponse(404, 'WORKSPACE_NODE_NOT_FOUND', 'The requested active node was not found.');
     }
+    const safeNode = safeWorkspaceNode(node, runtime.now());
+    if (safeNode.readiness !== 'ready' || safeNode.compatibility !== 'compatible') {
+      return errorResponse(
+        409,
+        'WORKSPACE_NODE_NOT_READY',
+        'The requested node is not ready for OS execution.',
+      );
+    }
     await persistDefaultNode({ runtime, workspace: auth.workspace, nodeId });
     return json({ defaultNodeId: nodeId }, { headers: jsonHeaders });
   } catch {
@@ -345,6 +359,22 @@ async function handleHeartbeat(
     body.connectorStatus === 'disconnected'
       ? body.connectorStatus
       : undefined;
+  const normalizedPlatformField = (value: unknown): string | undefined => {
+    if (typeof value !== 'string') return undefined;
+    const normalized = value.trim().toLowerCase();
+    return /^[a-z0-9._-]{1,32}$/.test(normalized) ? normalized : undefined;
+  };
+  const hasPlatform = Object.hasOwn(body, 'platform');
+  const platform = normalizedPlatformField(body.platform);
+  const hasArchitecture = Object.hasOwn(body, 'architecture');
+  const architecture = normalizedPlatformField(body.architecture);
+  if ((hasPlatform && !platform) || (hasArchitecture && !architecture)) {
+    return errorResponse(
+      400,
+      'INVALID_HEARTBEAT_PLATFORM',
+      'Heartbeat platform and architecture must use safe platform identifiers.',
+    );
+  }
   const capabilities = Array.isArray(body.capabilities)
     ? [
         ...new Set(
@@ -371,6 +401,36 @@ async function handleHeartbeat(
       400,
       'INVALID_HEARTBEAT_AGENTS',
       'Heartbeat agents must contain only known agent identifiers.',
+    );
+  }
+  const normalizedRuntimeField = (
+    value: unknown,
+    maximumLength: number,
+  ): string | undefined => {
+    if (typeof value !== 'string') return undefined;
+    const normalized = value.trim();
+    return normalized.length > 0 && normalized.length <= maximumLength
+      ? normalized
+      : undefined;
+  };
+  const hasOsVersion = Object.hasOwn(body, 'osVersion');
+  const osVersion = normalizedRuntimeField(body.osVersion, 80);
+  const hasBundleId = Object.hasOwn(body, 'bundleId');
+  const bundleId = normalizedRuntimeField(body.bundleId, 160);
+  const hasMcpProtocolVersion = Object.hasOwn(body, 'mcpProtocolVersion');
+  const mcpProtocolVersion = normalizedRuntimeField(body.mcpProtocolVersion, 80);
+  const hasMcpReady = Object.hasOwn(body, 'mcpReady');
+  const mcpReady = typeof body.mcpReady === 'boolean' ? body.mcpReady : undefined;
+  if (
+    (hasOsVersion && !osVersion)
+    || (hasBundleId && !bundleId)
+    || (hasMcpProtocolVersion && !mcpProtocolVersion)
+    || (hasMcpReady && mcpReady === undefined)
+  ) {
+    return errorResponse(
+      400,
+      'INVALID_HEARTBEAT_RUNTIME',
+      'Heartbeat runtime identity or readiness is invalid.',
     );
   }
   const nowMs = runtime.now();
@@ -409,6 +469,12 @@ async function handleHeartbeat(
     ...node,
     capabilities,
     ...(hasAgents ? { agents } : {}),
+    ...(platform ? { platform } : {}),
+    ...(architecture ? { architecture } : {}),
+    osVersion: hasOsVersion ? osVersion : undefined,
+    bundleId: hasBundleId ? bundleId : undefined,
+    mcpProtocolVersion: hasMcpProtocolVersion ? mcpProtocolVersion : undefined,
+    mcpReady: hasMcpReady ? mcpReady : undefined,
     connectorStatus,
     lastSeenAt: nowMs,
     updatedAt: nowMs,
@@ -424,7 +490,7 @@ async function handleHeartbeat(
       candidate.nodeId === nodeId ? updated : candidate,
     );
     try {
-      routeReady = await reconcileWorkspaceRouteState({
+      const reconciliation = await reconcileWorkspaceRouteState({
         routeRegistry: runtime.workspaceRouteRegistry,
         workspace,
         nodes: desiredNodes,
@@ -432,7 +498,25 @@ async function handleHeartbeat(
         nowMs,
         defaultSiteSnapshot: runtime.defaultSiteSnapshot,
       });
-    } catch {
+      routeReady = reconciliation.routeReady;
+      if (reconciliation.defaultNodeChanged) {
+        await runtime.store.putAccountWorkspace({
+          ...workspace,
+          defaultNodeId: reconciliation.defaultNodeId,
+          updatedAt: nowMs,
+        });
+      }
+    } catch (error: unknown) {
+      if (
+        error instanceof Error &&
+        /exceeded D1's free tier daily row (read|write) limit/i.test(error.message)
+      ) {
+        return errorResponse(
+          503,
+          'WORKSPACE_ROUTE_QUOTA_EXCEEDED',
+          'Workspace routing database daily quota is exhausted. Operator action or the next quota reset is required.',
+        );
+      }
       return errorResponse(
         503,
         'WORKSPACE_ROUTE_RECONCILIATION_FAILED',
@@ -462,12 +546,31 @@ async function handleHeartbeat(
     }
     throw error;
   }
+  if (
+    connectorStatus === 'connected'
+    && (!runtime.workspaceRouteRegistry || routeReady)
+    && workspaceNodeReadiness(updated, nowMs) === 'ready'
+  ) {
+    await runtime.store.markManagedCloudProvisioningReadyByNode({ nodeId, nowMs });
+  }
   const safeNode = safeWorkspaceNode(updated, nowMs);
   const connectorId = updated.connectorId?.trim();
+  const workspace = await runtime.store.byAccountWorkspace(updated.accountId);
+  const workspaceSnapshot = workspace && workspace.workspaceHost === updated.workspaceHost
+    ? launcherWorkspaceNodeListPayload({
+        workspace,
+        nodes: (await runtime.store.listWorkspaceNodes(updated.accountId)).map((candidate) =>
+          candidate.nodeId === updated.nodeId ? updated : candidate,
+        ),
+        nowMs,
+        currentNodeId: nodeId,
+      })
+    : undefined;
   return json(
     {
       ...safeNode,
       routeReady,
+      ...(workspaceSnapshot ? { workspace: workspaceSnapshot } : {}),
       ...(runtime.workspaceEdgeInternalSigningSecret?.trim() && connectorId
         ? {
             edgeRequestSigningSecret: deriveWorkspaceEdgeNodeSecret({
@@ -487,6 +590,7 @@ function launcherWorkspaceNodeListPayload(input: {
   workspace: AccountWorkspace;
   nodes: WorkspaceNode[];
   nowMs: number;
+  currentNodeId?: string;
 }) {
   const payload = workspaceNodeListPayload(input);
   const sanitize = (node: typeof payload.nodes[number]) => {
@@ -544,6 +648,145 @@ async function handleInternalNodePricing(
   }
 }
 
+async function canonicalAccountEmail(
+  runtime: DeviceAuthorityRuntime,
+  accountId: string,
+): Promise<string | undefined> {
+  const repository = runtime.installControlPlaneRepository;
+  if (!repository) return undefined;
+  try {
+    let cursor: string | undefined;
+    do {
+      const page = await repository.listUsers({
+        nowMs: runtime.now(),
+        limit: 100,
+        ...(cursor ? { cursor } : {}),
+      });
+      const match = page.items.find((user) => user.userId === accountId);
+      if (match?.email?.trim()) return match.email.trim();
+      cursor = page.nextCursor;
+    } while (cursor);
+  } catch {
+    return undefined;
+  }
+  return undefined;
+}
+
+async function handleInternalCreateProvisioning(
+  request: Request,
+  runtime: DeviceAuthorityRuntime,
+): Promise<Response> {
+  try {
+    const auth = await authenticateInternalWorkspaceSession(request, runtime, { requireCsrf: true, requireWorkspaceId: false });
+    if (!auth.ok) return auth.response;
+    const workspace = await runtime.store.byAccountWorkspace(auth.session.accountId);
+    if (!workspace || workspace.workspaceHost !== auth.session.workspaceHost) {
+      return errorResponse(403, 'WORKSPACE_ACCESS_DENIED', 'The workspace is not available to this session.');
+    }
+
+    const body = await readJsonObject(request);
+    if (body?.action === 'cancel') {
+      const jobId = typeof body.jobId === 'string' ? body.jobId.trim() : '';
+      const job = jobId ? await runtime.store.byManagedCloudProvisioningJob(jobId) : undefined;
+      if (
+        !job ||
+        job.accountId !== auth.session.accountId ||
+        job.workspaceHost !== workspace.workspaceHost
+      ) {
+        return errorResponse(404, 'MANAGED_CLOUD_PROVISIONING_NOT_FOUND', 'The provisioning request was not found.');
+      }
+      if (job.status !== 'requested') {
+        return errorResponse(
+          409,
+          'MANAGED_CLOUD_PROVISIONING_ALREADY_STARTED',
+          'This cloud node can no longer be cancelled from the workspace because provisioning already started.',
+        );
+      }
+      const cancelled = await runtime.store.updateManagedCloudProvisioningJob({
+        jobId: job.jobId,
+        status: 'failed',
+        nowMs: runtime.now(),
+        errorCode: 'MANAGED_CLOUD_PROVISIONING_CANCELLED',
+        errorMessage: 'Cloud node request was cancelled before provisioning started.',
+      });
+      if (!cancelled) {
+        return errorResponse(409, 'MANAGED_CLOUD_PROVISIONING_CANCEL_FAILED', 'The cloud node request could not be cancelled.');
+      }
+      return json({ job: publicManagedCloudProvisioningJob(cancelled) }, { headers: jsonHeaders });
+    }
+
+    const workspaceId = workspace.workspaceId?.trim();
+    if (!workspaceId) {
+      return errorResponse(409, 'WORKSPACE_ID_UNAVAILABLE', 'This workspace is not ready for managed cloud checkout yet.');
+    }
+    const email = await canonicalAccountEmail(runtime, auth.session.accountId);
+    if (!email) {
+      return errorResponse(503, 'MANAGED_CLOUD_IDENTITY_UNAVAILABLE', 'Your verified account email is temporarily unavailable for cloud checkout.');
+    }
+    const planId = typeof body?.planId === 'string' ? body.planId.trim() : '';
+    const region = typeof body?.region === 'string' ? body.region.trim() : '';
+    const pricingVersion = typeof body?.pricingVersion === 'string' ? body.pricingVersion.trim() : '';
+    const idempotencyKey = typeof body?.idempotencyKey === 'string' ? body.idempotencyKey.trim() : '';
+    try {
+      const checkout = await startManagedCloudNodeCheckout({
+        runtime,
+        accountId: auth.session.accountId,
+        email,
+        workspaceId,
+        workspaceSlug: workspace.workspaceSlug,
+        workspaceHost: workspace.workspaceHost,
+        workspaceName: workspace.displayName,
+        planId,
+        region,
+        pricingVersion,
+        idempotencyKey,
+      });
+      const sessionId = checkout.stripeCheckoutSessionId?.trim();
+      const url = checkout.stripeCheckoutUrl?.trim();
+      if (!sessionId || !url) {
+        return errorResponse(503, 'MANAGED_CLOUD_BILLING_UNAVAILABLE', 'Cloud checkout is temporarily unavailable.');
+      }
+      return json({
+        checkout: {
+          sessionId,
+          url,
+          planId: checkout.planId,
+          region: checkout.region,
+          pricingVersion: checkout.pricingVersion,
+          monthlyPriceCents: checkout.monthlyPriceCents,
+          currency: checkout.currency,
+        },
+      }, { headers: jsonHeaders });
+    } catch (error: unknown) {
+      if (error instanceof ManagedCloudBillingError) {
+        return errorResponse(error.status, `MANAGED_CLOUD_${error.code}`, error.message);
+      }
+      throw error;
+    }
+  } catch {
+    return serviceUnavailableResponse();
+  }
+}
+
+async function handleInternalProvisioningStatus(
+  request: Request,
+  runtime: DeviceAuthorityRuntime,
+): Promise<Response> {
+  try {
+    const auth = await authenticateInternalWorkspaceSession(request, runtime, { requireWorkspaceId: false });
+    if (!auth.ok) return auth.response;
+    const workspace = await runtime.store.byAccountWorkspace(auth.session.accountId);
+    const jobId = new URL(request.url).searchParams.get('job_id')?.trim() ?? '';
+    const job = jobId ? await runtime.store.byManagedCloudProvisioningJob(jobId) : undefined;
+    if (!workspace || workspace.workspaceHost !== auth.session.workspaceHost || !job || job.accountId !== auth.session.accountId || job.workspaceHost !== workspace.workspaceHost) {
+      return errorResponse(404, 'MANAGED_CLOUD_PROVISIONING_NOT_FOUND', 'The provisioning request was not found.');
+    }
+    return json({ job: publicManagedCloudProvisioningJob(job) }, { headers: jsonHeaders });
+  } catch {
+    return serviceUnavailableResponse();
+  }
+}
+
 async function handleInternalSelectDefault(
   request: Request,
   runtime: DeviceAuthorityRuntime,
@@ -557,15 +800,23 @@ async function handleInternalSelectDefault(
     const node = workspace && nodeId
       ? await runtime.store.byWorkspaceNode(auth.session.accountId, nodeId)
       : undefined;
+    const safeNode = node ? safeWorkspaceNode(node, runtime.now()) : undefined;
     if (
       !workspace ||
       workspace.workspaceHost !== auth.session.workspaceHost ||
       !node ||
       node.workspaceHost !== workspace.workspaceHost ||
       (node.state ?? 'active') !== 'active' ||
-      safeWorkspaceNode(node, runtime.now()).presence !== 'online'
+      safeNode?.presence !== 'online'
     ) {
       return errorResponse(404, 'WORKSPACE_NODE_NOT_AVAILABLE', 'The requested online node was not found.');
+    }
+    if (safeNode.readiness !== 'ready' || safeNode.compatibility !== 'compatible') {
+      return errorResponse(
+        409,
+        'WORKSPACE_NODE_NOT_READY',
+        'The requested node is not ready for OS execution.',
+      );
     }
     await persistDefaultNode({ runtime, workspace, nodeId });
     return json({ defaultNodeId: nodeId }, { headers: jsonHeaders });
@@ -581,6 +832,8 @@ export function registerWorkspaceNodeRoutes(
   app.get('/workspace/nodes', (context) => handleList(context.req.raw, runtime));
   app.get('/internal/workspace/nodes', (context) => handleInternalNodeList(context.req.raw, runtime));
   app.get('/internal/workspace/nodes/pricing', (context) => handleInternalNodePricing(context.req.raw, runtime));
+  app.post('/internal/workspace/nodes/provision', (context) => handleInternalCreateProvisioning(context.req.raw, runtime));
+  app.get('/internal/workspace/nodes/provisioning', (context) => handleInternalProvisioningStatus(context.req.raw, runtime));
   app.post('/internal/workspace/nodes/default', (context) => handleInternalSelectDefault(context.req.raw, runtime));
   app.post('/workspace/nodes/default', (context) =>
     handleSelectDefault(context.req.raw, runtime),

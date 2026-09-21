@@ -166,6 +166,11 @@ jobs:
         if: needs.consuelo-changes.outputs.verify == 'true'
         uses: ./.github/actions/yarn-install
 
+      - name: Install OS dependencies for verify
+        if: needs.consuelo-changes.outputs.verify == 'true' && needs.consuelo-changes.outputs.os_contracts == 'true'
+        working-directory: packages/os
+        run: bun install --frozen-lockfile
+
       - name: Run workspace verify
         if: needs.consuelo-changes.outputs.verify == 'true'
         run: bun run verify -- --base "${{ needs.consuelo-changes.outputs.base_ref }}" --committed-only-tests --no-stamp --review-arg --no-tests

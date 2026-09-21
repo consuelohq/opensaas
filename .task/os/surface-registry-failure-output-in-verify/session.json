@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_d6bfe5aa47a8",
+  "tmuxSession": "opensaas-os-surface-registry-failure-output-in-verify-d6bfe5aa",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/surface-registry-failure-output-in-verify",
+  "branch": "task/os/surface-registry-failure-output-in-verify",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-surface-registry-failure-output-in-verify",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-surface-registry-failure-output-in-verify",
+  "prNumber": 1968,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1968",
+  "createdAt": "2026-08-14T20:48:20.582Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-surface-registry-failure-output-in-verify/.task/os/surface-registry-failure-output-in-verify/session.json"
+}

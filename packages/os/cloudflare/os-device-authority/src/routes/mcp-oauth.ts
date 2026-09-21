@@ -40,7 +40,6 @@ async function handleMcpOAuthRequest(
         store: input.store,
         origin,
         googleClientId: google.clientId,
-        fetchImpl,
         nowMs: now(),
       });
     }
@@ -58,6 +57,7 @@ async function handleMcpOAuthRequest(
         );
       return await finishMcpOAuthGoogleCallback({
         request,
+        runtime,
         store: input.store,
         origin,
         googleClientId: google.clientId,

@@ -66,11 +66,11 @@ describe('dialer GitHub release workflow contract', () => {
       release.indexOf('bun run --cwd packages/dialer typecheck'),
     );
     const steps = [
+      'Verify approved Marketplace bootstrap source',
       'Deploy dialer server to Railway',
       'Run safe dialer production smoke',
       'Deploy LeadConnector worker',
       'Verify LeadConnector worker',
-      'Reconcile GoHighLevel Custom Menu',
       'Write dialer release manifest',
     ];
     let cursor = -1;
@@ -82,8 +82,18 @@ describe('dialer GitHub release workflow contract', () => {
     expect(release).toContain('RAILWAY_DIALER_PROJECT_TOKEN');
     expect(release).toContain('CLOUDFLARE_DIALER_WORKER_API_TOKEN');
     expect(release).toContain(
+      'consuelo-lead-connector-click-to-call.marketplace-loader.html',
+    );
+    expect(release).toContain('verify-marketplace-bootstrap.ts');
+    expect(release).toContain('LEADCONNECTOR_MARKETPLACE_BOOTSTRAP_SHA256');
+    expect(release).toContain('--launcher-bootstrap');
+    expect(release).not.toContain('Reconcile GoHighLevel Custom Menu');
+    expect(release).not.toContain('configure-production-menu.ts');
+    expect(release).not.toContain(
       'LEADCONNECTOR_PRODUCTION_PRIVATE_INTEGRATION_TOKEN',
     );
+    expect(release).not.toContain('LEADCONNECTOR_PRODUCTION_CUSTOM_MENU_ID');
+    expect(release).not.toContain('LEADCONNECTOR_PRODUCTION_LOCATION_ID');
     expect(release).not.toMatch(
       /STRIPE_SECRET_KEY|TWILIO_AUTH_TOKEN|GROQ_API_KEY|DATABASE_URL|REDIS_URL/,
     );

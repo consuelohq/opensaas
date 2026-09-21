@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/sync-os-sentry-dependency-lockfile",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1920,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1920",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1920",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1920/sync-os-sentry-dependency-lockfile",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1920",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1920/sync-os-sentry-dependency-lockfile",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-sync-os-sentry-dependency-lockfile",
+  "taskSession": "tsk_ef9e83d97c59",
+  "tmuxSession": "opensaas-os-sync-os-sentry-dependency-lockfile-ef9e83d9",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-sync-os-sentry-dependency-lockfile/.task/os/sync-os-sentry-dependency-lockfile/session.json",
+  "createdAt": "2026-08-13T21:40:17.555Z"
+}

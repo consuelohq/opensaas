@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "files": {
+    "packages/twenty-server/src/engine/core-modules/auth/services/auth.service.ts": [
+      "@stylistic/padding-line-between-statements:expectedBlankLine:Expected blank line before this statement.:if (",
+      "@stylistic/padding-line-between-statements:expectedBlankLine:Expected blank line before this statement.:if (!response.ok) return;",
+      "@stylistic/padding-line-between-statements:expectedBlankLine:Expected blank line before this statement.:return new Date().toISOString();",
+      "prettier/prettier:replace:Replace `\u23ce\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7'/internal/install-control-plane/users',\u23ce\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7origin,\u23ce\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7` with `'/internal/install-control-plane/users',\u00b7origin`:const syncUrl = new URL(",
+      "prettier/prettier:replace:Replace `\u23ce\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7?\u00b7{\u00b7workspace_id:\u00b7input.workspace.id\u00b7}\u23ce\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7\u00b7` with `\u00b7?\u00b7{\u00b7workspace_id:\u00b7input.workspace.id\u00b7}`:...(input.workspace?.id"
+    ],
+    "packages/twenty-server/src/engine/core-modules/auth/services/auth.service.spec.ts": [
+      "@stylistic/padding-line-between-statements:expectedBlankLine:Expected blank line before this statement.:expect(String(requestUrl)).toBe(",
+      "@stylistic/padding-line-between-statements:expectedBlankLine:Expected blank line before this statement.:expect(assertion).toBeTruthy();",
+      "@stylistic/padding-line-between-statements:expectedBlankLine:Expected blank line before this statement.:expect(encodedSignature).toBe(",
+      "@stylistic/padding-line-between-statements:expectedBlankLine:Expected blank line before this statement.:expect(payload).toMatchObject({",
+      "@stylistic/padding-line-between-statements:expectedBlankLine:Expected blank line before this statement.:return false;",
+      "@stylistic/padding-line-between-statements:expectedBlankLine:Expected blank line before this statement.:return false;"
+    ]
+  }
+}

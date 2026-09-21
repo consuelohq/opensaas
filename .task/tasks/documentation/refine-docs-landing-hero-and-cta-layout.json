@@ -1,0 +1,19 @@
+{
+  "area": "documentation",
+  "stream": "stream/documentation",
+  "taskBranch": "task/documentation/refine-docs-landing-hero-and-cta-layout",
+  "baseBranch": "stream/documentation",
+  "sourceBranch": "stream/documentation",
+  "startFrom": "stream",
+  "prNumber": 1952,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1952",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1952",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1952/refine-docs-landing-hero-and-cta-layout",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1952",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1952/refine-docs-landing-hero-and-cta-layout",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-refine-docs-landing-hero-and-cta-layout",
+  "taskSession": "tsk_871352f382c0",
+  "tmuxSession": "opensaas-documentation-refine-docs-landing-hero-and-cta-layout-871352f3",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-refine-docs-landing-hero-and-cta-layout/.task/documentation/refine-docs-landing-hero-and-cta-layout/session.json",
+  "createdAt": "2026-08-14T09:11:20.498Z"
+}

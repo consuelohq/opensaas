@@ -1,0 +1,18 @@
+{
+  "files": [
+    ".task/os/google-workspace-integration/workpad.md",
+    "packages/os/cloudflare/os-device-authority/src/http.ts",
+    "packages/os/cloudflare/os-device-authority/src/routes/github-source-control.ts",
+    "packages/os/cloudflare/os-device-authority/src/services/grants.ts",
+    "packages/os/scripts/install.ts",
+    "packages/os/scripts/lib/consuelo-home.ts",
+    "packages/os/scripts/lib/github-source-control-client.ts",
+    "packages/os/scripts/lib/install-state.ts",
+    "packages/os/skills/sites/skill.json",
+    "packages/os/tests/managed-gog.test.ts",
+    "packages/os/tests/tool-manifest.test.ts",
+    "packages/workspace/scripts/test-selection.js",
+    "packages/workspace/scripts/verify.js"
+  ],
+  "updatedAt": "2026-08-26T05:34:20.859Z"
+}

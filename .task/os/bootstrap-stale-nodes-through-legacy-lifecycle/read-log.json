@@ -1,0 +1,10 @@
+{
+  "files": [
+    ".task/os/bootstrap-stale-nodes-through-legacy-lifecycle/workpad.md",
+    "packages/os/cloudflare/os-device-authority/src/services/mcp-proxy.ts",
+    "packages/os/cloudflare/os-device-authority/wrangler.toml",
+    "packages/os/tests/test-source-safety.test.ts",
+    "packages/os/tests/workspace-node-registry-routing.test.ts"
+  ],
+  "updatedAt": "2026-09-08T02:49:43.401Z"
+}

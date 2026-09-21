@@ -10,6 +10,7 @@ import type {
   ParallelCall,
   ParallelDialOptions,
   ParallelGroup,
+  PredictiveDecisionContext,
 } from '../types';
 import { processProviderCallback } from './process-provider-callback';
 import { retryPendingCleanup } from './retry-pending-cleanup';
@@ -223,6 +224,56 @@ describe('parallel Effect application programs', () => {
         ['CA_2', 'pg_test'],
       ]),
     );
+  });
+
+  it('carries immutable predictive decision context into the stored provider calls', async () => {
+    const state = createState();
+    const context: PredictiveDecisionContext = {
+      schemaVersion: 2,
+      capturedAt: '2026-07-23T11:59:00.000Z',
+      timezone: 'UTC',
+      timezoneSource: 'workspace_fallback',
+      localHour: 11,
+      localDayOfWeek: 4,
+      attemptsUsed: 1,
+      attemptsToday: 1,
+      attemptsThisWeek: 2,
+      minutesSinceLastAttempt: 120,
+      localPresenceRequested: true,
+      source: {
+        opportunityId: 'opportunity-1',
+        opportunityValue: 1_000,
+      },
+      d3: {
+        nextAttemptNumber: 2,
+        answerProbability: 0.4,
+        answerProbabilityUpperBound: 0.6,
+        score: 59,
+        hazardSource: 'exact_local_slot',
+        suppressed: false,
+      },
+    };
+
+    await Effect.runPromise(
+      startParallelSession({
+        ...baseOptions,
+        contactIds: ['contact-1', 'contact-2'],
+        predictiveDecisionIds: ['decision-1', null],
+        decisionContexts: [context, null],
+      }).pipe(Effect.provide(createLayer(state))),
+    );
+
+    expect(state.groups.get('pg_test')?.calls[0]).toEqual(
+      expect.objectContaining({
+        contactId: 'contact-1',
+        predictiveDecisionId: 'decision-1',
+        decisionContext: context,
+      }),
+    );
+    expect(state.groups.get('pg_test')?.calls[1]).toEqual(
+      expect.objectContaining({ contactId: 'contact-2' }),
+    );
+    expect(state.groups.get('pg_test')?.calls[1]?.decisionContext).toBeUndefined();
   });
 
   it('preserves a typed retryable provider failure', async () => {

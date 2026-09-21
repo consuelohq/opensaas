@@ -1,0 +1,23 @@
+{
+  "files": [
+    ".task/os/repair-task-lifecycle-session-recovery/session.json",
+    ".task/os/repair-task-lifecycle-session-recovery/verify.json",
+    ".task/os/repair-task-lifecycle-session-recovery/workpad.md",
+    "packages/os/scripts/lib/facade/branch-resolver.ts",
+    "packages/os/scripts/lib/facade/executor.ts",
+    "packages/os/scripts/lib/task-selection.js",
+    "packages/os/scripts/task-init.js",
+    "packages/os/tests/facade/facade.test.ts",
+    "packages/workspace/scripts/lib/task-selection.js",
+    "packages/workspace/scripts/task-init.js",
+    "packages/workspace/scripts/task-push.js",
+    "packages/workspace/scripts/test-selection.js",
+    "packages/workspace/scripts/verify.js",
+    "packages/workspace/senior-engineer.md",
+    "packages/workspace/tests/task-init.test.js",
+    "packages/workspace/tests/task-meta.test.ts",
+    "packages/workspace/tests/task-selection.test.js",
+    "packages/workspace/tests/task-session.test.js"
+  ],
+  "updatedAt": "2026-08-14T02:43:10.810Z"
+}

@@ -2,6 +2,11 @@ import type { Hono } from 'hono';
 
 import { CONSUELO_DEVICE_VERIFICATION_URL } from '../../../../scripts/lib/workspace-device-authorization';
 import {
+  INSTALL_ID_HEADER,
+  createInstallEventId,
+  isInstallId,
+} from '../../../../scripts/lib/install-telemetry-contract';
+import {
   ALLOWED_AUTH_METHODS,
   DEVICE_PROOF_KEY,
   DEVICE_PROOF_PAYLOAD_KEY,
@@ -16,6 +21,8 @@ import {
   verifyDevicePublicKeyProof,
 } from '../security/device-auth';
 import { registerApprovedWorkspaceRoute } from '../services/connectors';
+import { verifyCanonicalWorkspaceMembership } from '../services/canonical-user';
+import { recordCanonicalInstallIdentity } from '../services/install-identity';
 import {
   approvedJson,
   assignGrantWorkspace,
@@ -23,7 +30,7 @@ import {
   failGrantWorkspaceRouteSetup,
   prepareGrantApproval,
 } from '../services/grants';
-import type { DeviceAuthorityRuntime, Grant } from '../types';
+import type { DeviceAuthorityRuntime } from '../types';
 import {
   devicePublicKeyThumbprint,
   hash,
@@ -35,6 +42,11 @@ import {
   userCode,
   verifyUrl,
 } from '../utils';
+
+function correlatedInstallId(request: Request) {
+  const value = request.headers.get(INSTALL_ID_HEADER)?.trim() ?? '';
+  return value && isInstallId(value) ? value : undefined;
+}
 
 async function handleDeviceRequest(
   request: Request,
@@ -80,9 +92,16 @@ async function handleDeviceRequest(
         .slice(0, 32);
       const deviceCode = rand('dev', 24);
       const code = userCode();
+      const installId = correlatedInstallId(request);
       const g: Grant = {
         hash: await hash(deviceCode),
         userCode: code,
+        ...(installId
+          ? {
+              installId,
+              installIdentityEventId: createInstallEventId(),
+            }
+          : {}),
         ...(workspaceSlug && workspaceHost
           ? { workspaceSlug, workspaceHost }
           : {}),
@@ -155,6 +174,9 @@ async function handleDeviceRequest(
         p.get('workspace_host')?.trim() || `${workspaceSlug}.consuelohq.com`,
       );
       assignGrantWorkspace({ grant: g, workspaceSlug, workspaceHost });
+      if (g.canonicalUserId && g.workspaceId) {
+        g.canonicalWorkspaceId = g.workspaceId;
+      }
       try {
         await prepareGrantApproval({
           store: input.store,
@@ -168,6 +190,12 @@ async function handleDeviceRequest(
           workspaceConnectorProvisioner: input.workspaceConnectorProvisioner,
           grant: g,
           defaultSiteSnapshot: input.defaultSiteSnapshot,
+        });
+        await commitGrantApproval({
+          store: input.store,
+          grant: g,
+          accountId: g.accountId,
+          nowMs: now(),
         });
       } catch (error: unknown) {
         const failureMessage = await failGrantWorkspaceRouteSetup({
@@ -183,12 +211,16 @@ async function handleDeviceRequest(
           { status: 502 },
         );
       }
-      await commitGrantApproval({
-        store: input.store,
-        grant: g,
-        accountId: g.accountId,
-        nowMs: now(),
-      });
+      if (g.canonicalUserId && g.workspaceId) {
+        await verifyCanonicalWorkspaceMembership({
+          repository: runtime.installControlPlaneRepository,
+          userId: g.canonicalUserId,
+          email: g.accountEmail,
+          workspaceId: g.workspaceId,
+          nowMs: now(),
+        });
+      }
+      await recordCanonicalInstallIdentity(runtime, g);
       await input.store.del(g.hash);
       return json(approvedJson(g, runtime.workspaceEdgeInternalSigningSecret));
     }
@@ -221,10 +253,18 @@ async function handleDeviceRequest(
       const existingWorkspace = await input.store.byAccountWorkspace(
         auth.accountId,
       );
+      if (
+        auth.workspaceId &&
+        !auth.accountId.startsWith('google:')
+      ) {
+        g.canonicalUserId = auth.accountId;
+        g.canonicalWorkspaceId = auth.workspaceId;
+        g.workspaceId = auth.workspaceId;
+      }
       if (existingWorkspace) {
         assignGrantWorkspace({
           grant: g,
-          workspaceId: existingWorkspace.workspaceId,
+          workspaceId: g.canonicalWorkspaceId ?? existingWorkspace.workspaceId,
           workspaceSlug: existingWorkspace.workspaceSlug,
           workspaceHost: existingWorkspace.workspaceHost,
         });
@@ -255,6 +295,12 @@ async function handleDeviceRequest(
           grant: g,
           defaultSiteSnapshot: input.defaultSiteSnapshot,
         });
+        await commitGrantApproval({
+          store: input.store,
+          grant: g,
+          accountId: auth.accountId,
+          nowMs: now(),
+        });
       } catch (error: unknown) {
         const failureMessage = await failGrantWorkspaceRouteSetup({
           store: input.store,
@@ -269,12 +315,16 @@ async function handleDeviceRequest(
           { status: 502 },
         );
       }
-      await commitGrantApproval({
-        store: input.store,
-        grant: g,
-        accountId: auth.accountId,
-        nowMs: now(),
-      });
+      if (g.canonicalUserId && g.workspaceId) {
+        await verifyCanonicalWorkspaceMembership({
+          repository: runtime.installControlPlaneRepository,
+          userId: g.canonicalUserId,
+          email: g.accountEmail,
+          workspaceId: g.workspaceId,
+          nowMs: now(),
+        });
+      }
+      await recordCanonicalInstallIdentity(runtime, g);
       return json({
         status: 'approved',
         account_id: auth.accountId,
@@ -316,6 +366,16 @@ async function handleDeviceRequest(
             error: g.failureCode ?? WORKSPACE_ROUTE_SETUP_FAILURE_CODE,
             error_description:
               g.failureMessage ?? 'workspace connector provisioning failed',
+          },
+          { status: 400 },
+        );
+      }
+      if (g.status === 'denied') {
+        return json(
+          {
+            error: 'access_denied',
+            message:
+              g.failureMessage ?? 'This account could not be verified for device setup.',
           },
           { status: 400 },
         );

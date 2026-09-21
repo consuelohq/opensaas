@@ -10,8 +10,10 @@ import {
   readManifestOverlay,
 } from './manifest-overlay';
 import {
+  readCoreToolManifest,
   readEffectiveCoreManifest,
   readEffectiveFullManifest,
+  readFullToolManifest,
   getPackageRoot,
 } from './manifest';
 import { listBundledSkills } from './skills';
@@ -281,8 +283,11 @@ function buildManifestItems(
   tools: SettingsManifestItem[];
   skills: SettingsManifestItem[];
 } {
-  const fullManifest = readEffectiveFullManifest(home);
-  const coreNames = new Set(readEffectiveCoreManifest(home).tools.map((entry) => entry.name));
+  // Management is an inventory surface, not an execution surface. Read the
+  // complete manifests here and apply overlay state per row so disabled tools
+  // remain discoverable and can be re-enabled.
+  const fullManifest = readFullToolManifest();
+  const coreNames = new Set(readCoreToolManifest().tools.map((entry) => entry.name));
 
   const tools: SettingsManifestItem[] = [];
   const skills: SettingsManifestItem[] = [];

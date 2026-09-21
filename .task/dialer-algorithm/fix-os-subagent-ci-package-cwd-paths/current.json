@@ -1,0 +1,19 @@
+{
+  "area": "dialer-algorithm",
+  "stream": "stream/dialer-algorithm",
+  "taskBranch": "task/dialer-algorithm/fix-os-subagent-ci-package-cwd-paths",
+  "baseBranch": "stream/dialer-algorithm",
+  "sourceBranch": "stream/dialer-algorithm",
+  "startFrom": "stream",
+  "prNumber": 2089,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2089",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2089",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2089/fix-os-subagent-ci-package-cwd-paths",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2089",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2089/fix-os-subagent-ci-package-cwd-paths",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-fix-os-subagent-ci-package-cwd-paths",
+  "taskSession": "tsk_23bd479894f1",
+  "tmuxSession": "opensaas-dialer-algorithm-fix-os-subagent-ci-package-cwd-paths-23bd4798",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-fix-os-subagent-ci-package-cwd-paths/.task/dialer-algorithm/fix-os-subagent-ci-package-cwd-paths/session.json",
+  "createdAt": "2026-08-15T19:51:33.873Z"
+}

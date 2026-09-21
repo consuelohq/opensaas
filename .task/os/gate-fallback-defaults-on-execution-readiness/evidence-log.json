@@ -1,0 +1,104 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/gate-fallback-defaults-on-execution-readiness",
+  "events": [
+    {
+      "id": "a0af62cb-02de-4bb0-9407-80efc9ec61d0",
+      "occurred_at": "2026-08-29T06:43:38.847Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/cloudflare/os-device-authority/src/services/connectors.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/gate-fallback-defaults-on-execution-readiness",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/gate-fallback-defaults-on-execution-readiness"
+      }
+    },
+    {
+      "id": "fe240f25-fe37-4c01-83c5-3a438aed3522",
+      "occurred_at": "2026-08-29T06:43:42.265Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/cloudflare/os-device-authority/src/services/connectors.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/gate-fallback-defaults-on-execution-readiness",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/gate-fallback-defaults-on-execution-readiness"
+      }
+    },
+    {
+      "id": "cc44ad2b-7cf3-4264-99b6-c810280b70ce",
+      "occurred_at": "2026-08-29T06:43:45.869Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/cloudflare/os-device-authority/src/services/nodes.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/gate-fallback-defaults-on-execution-readiness",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/gate-fallback-defaults-on-execution-readiness"
+      }
+    },
+    {
+      "id": "5a21ff87-9adc-4757-885b-78ce55b4fe80",
+      "occurred_at": "2026-08-29T06:44:53.874Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/workspace-node-registry-routing.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/gate-fallback-defaults-on-execution-readiness",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/gate-fallback-defaults-on-execution-readiness"
+      }
+    },
+    {
+      "id": "1c9a23df-145a-4d62-ab9e-5afc193fb3e4",
+      "occurred_at": "2026-08-29T06:47:00.222Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-cleanup.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/gate-fallback-defaults-on-execution-readiness",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/gate-fallback-defaults-on-execution-readiness"
+      }
+    },
+    {
+      "id": "614c4b2d-e9d9-424e-8235-3cb016066eba",
+      "occurred_at": "2026-08-29T06:47:05.150Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-cleanup.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/gate-fallback-defaults-on-execution-readiness",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/gate-fallback-defaults-on-execution-readiness"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-29T06:47:05.234Z"
+}

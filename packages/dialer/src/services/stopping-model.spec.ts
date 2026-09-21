@@ -1,6 +1,9 @@
 import type { StoppingModelStore } from '../types';
 
-import { StoppingModelService } from './stopping-model';
+import {
+  evaluateStoppingThreshold,
+  StoppingModelService,
+} from './stopping-model';
 
 describe('StoppingModelService', () => {
   it('should stop when expected value becomes lower than attempt cost after attempt 2', async () => {
@@ -31,7 +34,7 @@ describe('StoppingModelService', () => {
     });
   });
 
-  it('should include zero probability for attempts without historical data', async () => {
+  it('should return no stopping threshold when an attempt has no historical data', async () => {
     const store: StoppingModelStore = {
       getAnswerProbabilities: jest
         .fn()
@@ -50,11 +53,29 @@ describe('StoppingModelService', () => {
       maxAttempts: 3,
     });
 
-    expect(threshold).toMatchObject({
-      attemptNumber: 2,
-      answerProbability: 0,
-      expectedValue: 0,
-      shouldStop: false,
+    expect(threshold).toBeNull();
+  });
+
+  it('stops conservatively only when the upper confidence bound is economically unprofitable', () => {
+    const uncertain = evaluateStoppingThreshold({
+      segmentId: 'segment-1',
+      attemptNumber: 3,
+      answerProbability: 0.01,
+      answerProbabilityUpperBound: 0.08,
+      valuePerConnection: 1,
+      costPerAttempt: 0.05,
     });
+    const confidentlyUnprofitable = evaluateStoppingThreshold({
+      segmentId: 'segment-1',
+      attemptNumber: 3,
+      answerProbability: 0.01,
+      answerProbabilityUpperBound: 0.04,
+      valuePerConnection: 1,
+      costPerAttempt: 0.05,
+    });
+
+    expect(uncertain?.expectedValue).toBeCloseTo(0.01, 12);
+    expect(uncertain?.shouldStop).toBe(false);
+    expect(confidentlyUnprofitable?.shouldStop).toBe(true);
   });
 });

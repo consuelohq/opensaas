@@ -1,3 +1,6 @@
+import { existsSync, readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+
 import { describe, expect, test } from 'bun:test';
 
 import {
@@ -18,6 +21,12 @@ import {
   renderReviewPage,
   scorePullRequestSearch,
 } from '../src/index';
+
+const repositoryRoot = resolve(import.meta.dirname, '../../..');
+
+function readRepoFile(path: string): string {
+  return readFileSync(resolve(repositoryRoot, path), 'utf8');
+}
 
 describe('parsePullRequestLocator', () => {
   test('accepts a bare PR number with a default repo', () => {
@@ -41,13 +50,49 @@ describe('parsePullRequestLocator', () => {
       parsePullRequestLocator('/consuelohq/opensaas/pull/708'),
     ).toEqual({ owner: 'consuelohq', repo: 'opensaas', number: 708 });
   });
+
+  test('accepts the canonical internal Diffs URL it emits', () => {
+    expect(
+      parsePullRequestLocator('https://internal.consuelohq.com/diffs/other/project/pull/42'),
+    ).toEqual({ owner: 'other', repo: 'project', number: 42 });
+  });
 });
 
 describe('buildDiffCockpitUrl', () => {
-  test('builds the canonical diffs.consuelohq.com URL', () => {
+  test('builds the canonical internal Diffs URL', () => {
     expect(buildDiffCockpitUrl({ owner: 'consuelohq', repo: 'opensaas', number: 708 })).toBe(
-      'https://diffs.consuelohq.com/consuelohq/opensaas/pull/708',
+      'https://internal.consuelohq.com/diffs/consuelohq/opensaas/pull/708',
     );
+  });
+});
+
+describe('standalone Diffs retirement', () => {
+  test('removes the standalone Worker and automatic KV cache warmers while preserving hostname safety', () => {
+    expect(existsSync(resolve(repositoryRoot, 'packages/diff-cockpit/wrangler.toml'))).toBe(false);
+    expect(existsSync(resolve(repositoryRoot, 'packages/diff-cockpit/src/worker.ts'))).toBe(false);
+    expect(existsSync(resolve(repositoryRoot, 'cron_jobs/diff_cockpit/cron.json'))).toBe(false);
+    expect(existsSync(resolve(repositoryRoot, 'packages/workspace/hooks/diff-cockpit/cache-refresh.ts'))).toBe(false);
+
+    const packageJson = JSON.parse(readRepoFile('packages/diff-cockpit/package.json')) as {
+      scripts?: Record<string, string>;
+    };
+    expect(packageJson.scripts).not.toHaveProperty('deploy');
+    expect(packageJson.scripts).not.toHaveProperty('dev');
+
+    const opener = readRepoFile('packages/workspace/scripts/diff_cockpit.ts');
+    expect(opener).not.toContain('refreshDiffCockpitCache');
+    expect(opener).not.toContain('DIFF_COCKPIT_REFRESH_TOKEN');
+
+    const taskPush = readRepoFile('packages/workspace/scripts/task-push.js');
+    expect(taskPush).not.toContain('diff-cockpit/cache-refresh');
+    expect(taskPush).not.toContain('DIFF_COCKPIT_REFRESH_TOKEN');
+
+    const cronRuntime = readRepoFile('cron_jobs/index.ts');
+    expect(cronRuntime).not.toContain("'diff-cockpit'");
+    expect(cronRuntime).not.toContain('refreshDiffCockpitCache');
+
+    const router = readRepoFile('packages/os/scripts/lib/workspace-cloudflare-edge-router.ts');
+    expect(router).toContain("'diffs.consuelohq.com'");
   });
 });
 
@@ -632,6 +677,12 @@ describe('renderIndexPage', () => {
     expect(html).toContain('mergeIndexWithCache');
     expect(html).toContain('localStorage.setItem(cacheKey');
     expect(html).toContain("cache: 'no-cache'");
+    expect(html).toContain('const indexAuthRetryDelaysMs = [250, 1000, 2500]');
+    expect(html).toContain('function fetchIndexWithAuthRetry(headers, attempt = 0)');
+    expect(html).toContain("if (response.status !== 401 || attempt >= indexAuthRetryDelaysMs.length) return response;");
+    expect(html).toContain('window.setTimeout(resolve, indexAuthRetryDelaysMs[attempt])');
+    expect(html).toContain('fetchIndexWithAuthRetry(headers)');
+    expect(html).not.toContain("indexLoadInFlight = fetch(apiPath, { headers, cache: 'no-cache' })");
     expect(html).toContain('refreshIndexIfStale');
     expect(html).toContain('readInitialIndexData');
     expect(html).toContain('diff-cockpit-index-initial-data');
@@ -652,10 +703,24 @@ describe('renderIndexPage', () => {
     expect(html).not.toContain('class="pagination"');
     expect(html).not.toContain('pageSize');
   });
+
+  test('keeps mounted PR navigation inside the configured Diffs path', () => {
+    const mountedHtml = renderIndexPage(
+      { owner: 'consuelohq', repo: 'opensaas' },
+      null,
+      '',
+      { mountPath: '/diffs' },
+    );
+    const standaloneHtml = renderIndexPage({ owner: 'consuelohq', repo: 'opensaas' });
+
+    expect(mountedHtml).toContain('const routePrefix = "/diffs/consuelohq/opensaas/pull/";');
+    expect(mountedHtml).not.toContain('const routePrefix = "/consuelohq/opensaas/pull/";');
+    expect(standaloneHtml).toContain('const routePrefix = "/consuelohq/opensaas/pull/";');
+  });
 });
 
 describe('renderReviewPage', () => {
-  test('keeps the existing PR route and the right review panel closed by default', () => {
+  test('renders one responsive review surface with readable comments and native page controls', () => {
     const html = renderReviewPage({
       owner: 'consuelohq',
       repo: 'opensaas',
@@ -663,14 +728,11 @@ describe('renderReviewPage', () => {
     });
 
     expect(html).toContain('data-review-drawer="closed"');
-    expect(html).toContain('data-ai-sidebar="closed"');
-    expect(html).not.toContain('<body class="review-page" data-review-drawer="closed" data-ai-sidebar="open"');
-    expect(html).toContain('id="ai-comments-sidebar"');
+    expect(html).not.toContain('data-ai-sidebar=');
+    expect(html).not.toContain('id="ai-comments-sidebar"');
     expect(html).toContain('id="ai-comments-toggle"');
-    expect(html).toContain('aria-label="Comments"');
-    expect(html).toContain('<div><strong>Comments</strong>');
-    expect(html).not.toContain('AI comments</button>');
-    expect(html).not.toContain('<strong>AI comments</strong>');
+    expect(html).toContain('id="review-panel-backdrop"');
+    expect(html).toContain('aria-label="Close review panel"');
     expect(html).toContain('@pierre/diffs');
     expect(html).toContain('@pierre/trees');
     expect(html).toContain('/api/consuelohq/opensaas/pull/708');
@@ -695,12 +757,14 @@ describe('renderReviewPage', () => {
     expect(script).toContain('sortCommitsNewestFirst');
     expect(script).toContain('new Date(right.committedAt || 0).getTime()');
     expect(script).toContain("els.aiCommentsToggle.textContent = formatCountLabel(aiCommentCount, 'comment')");
+    expect(script).toContain("openReviewDrawerSection('comments')");
+    expect(script).not.toContain('setAiSidebar');
     expect(html).toContain('data-review-drawer="closed"');
     expect(html).toContain('data-file-pane-collapsed="false"');
     expect(html).toContain('data-comments-visible="true"');
     expect(html).toContain('data-current-view="diff"');
     expect(html).toContain('>Panel</button>');
-    expect(html).toContain('<strong>panel</strong>');
+    expect(html).toContain('<strong>Review</strong>');
     expect(html).toContain('id="mergeability-button"');
     expect(html).toContain('id="merge-pr-button"');
     expect(html).toContain('id="mergeability-popover"');
@@ -712,9 +776,13 @@ describe('renderReviewPage', () => {
     expect(html).toContain('id="drawer-status"');
     expect(html).toContain('id="drawer-checks"');
     expect(html).toContain('id="mobile-files-toggle"');
-    expect(html).toContain('aria-label="Close files"');
+    expect(html).toContain('aria-label="Open files"');
+    expect(html).toContain('class="mobile-files-icon mobile-files-icon-tree"');
+    expect(html).toContain('<svg');
     expect(html).toContain('class="mobile-file-backdrop"');
     expect(html).toContain('body[data-file-pane-drawer="open"] .file-pane');
+    expect(html).toContain('@media (min-width: 761px) and (max-width: 1180px)');
+    expect(html).toContain('.review-page .file-pane { position:fixed;');
     expect(html).toContain('@media (max-width: 760px)');
     expect(html).toContain('.layout { height:calc(100dvh - 132px); grid-template-columns:minmax(0, 1fr); }');
     expect(html).toContain('.diff-line { grid-template-columns:34px 34px minmax(0, 1fr); padding:0 6px 0 0; }');
@@ -758,7 +826,6 @@ describe('renderReviewPage', () => {
     expect(script).not.toContain("behavior: 'smooth'");
     expect(script).toContain('preserveDiffViewport');
     expect(script).toContain('preserveDiffViewport(() => setDrawer');
-    expect(script).toContain('preserveDiffViewport(() => setAiSidebar');
     expect(script).toContain('preserveDiffViewport(() => setFilePaneDrawer');
     expect(script).toContain('captureDiffViewport');
     expect(script).toContain('restoreDiffViewport');
@@ -772,14 +839,20 @@ describe('renderReviewPage', () => {
     expect(html).toContain('tree-depth-');
     expect(html).toContain('directory-toggle');
     expect(script).toContain('collapsedFolders');
+    expect(script).toContain("new Set(['.github', '.task'])");
+    expect(script).toContain('initializeDefaultCollapsedFolders');
     expect(script).toContain('toggleFolder');
+    expect(html).toContain('file-status-dot');
+    expect(script).toContain('statusLabel');
+    expect(script).not.toContain("<span class=\\\"status\\\">' + escapeHtml(statusToken(node.file.status))");
     expect(script).toContain('data-open-commits');
     expect(script).toContain('renderCommitPopover');
     expect(script).toContain('closeCommitPopover');
     expect(script).toContain('renderMergeabilityPopover');
     expect(script).toContain('closeMergeabilityPopover');
     expect(script).toContain('data-open-mergeability');
-    expect(script).toContain('mergePullRequest');
+    expect(script).toContain('renderMergeConfirmation');
+    expect(script).toContain('confirmMergePullRequest');
     expect(script).toContain("apiPath + '/merge'");
     expect(script).toContain('event.metaKey || event.ctrlKey');
     expect(script).toContain("mergeabilityLabel");
@@ -800,11 +873,18 @@ describe('renderReviewPage', () => {
     expect(script).toContain('copyReviewLink');
     expect(script).toContain('copyCurrentCommitLink');
     expect(script).toContain('renderMarkdownBlocks');
-    expect(script).toContain('renderAiCommentsSidebar');
-    expect(script).toContain('data-ai-review-toggle');
+    expect(script).toContain('renderUnifiedReviewComment');
+    expect(script).not.toContain('data-ai-review-toggle');
     expect(script).toContain('copyReviewItemField');
     expect(script).toContain('resolveReviewItem');
     expect(script).toContain("apiPath + '/review-threads/'");
+    expect(script).toContain('restoreSafeMarkdownTags');
+    expect(script).toContain("'&lt;sub&gt;': '<sub>'");
+    expect(html).toContain('.comment-body sub');
+    expect(script).not.toContain('window.confirm');
+    expect(script).toContain('renderMergeConfirmation');
+    expect(script).toContain('confirmMergePullRequest');
+    expect(script).toContain("document.addEventListener('pointerdown', handleOutsidePointerDown)");
     expect(() => new Function(script || '')).not.toThrow();
   });
 });

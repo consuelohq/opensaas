@@ -50,10 +50,7 @@ describe('LeadConnector browser architecture and branding', () => {
       );
     expect(files.length).toBeGreaterThan(0);
     for (const relativePath of files) {
-      const text = readFileSync(
-        join(embedRoot, relativePath),
-        'utf8',
-      );
+      const text = readFileSync(join(embedRoot, relativePath), 'utf8');
       const scanned = stripAllowedProviderWireOrigins(text);
       expect(scanned).not.toMatch(forbiddenArchitecture);
       expect(scanned).not.toMatch(forbiddenBranding);
@@ -100,9 +97,9 @@ describe('LeadConnector browser architecture and branding', () => {
         expect(scanned).toContain('SessionId');
       }
     }
-    expect(
-      readFileSync(join(embedRoot, 'index.html'), 'utf8'),
-    ).toContain('href="./main.css"');
+    expect(readFileSync(join(embedRoot, 'index.html'), 'utf8')).toContain(
+      'href="./main.css"',
+    );
   });
 
   it('targets the actual approved live or sandbox custom-page origin for click-to-call messages', () => {
@@ -111,7 +108,7 @@ describe('LeadConnector browser architecture and branding', () => {
       'utf8',
     );
     expect(asset).toContain('https://calls.consuelohq.com');
-    expect(asset).toContain(
+    expect(asset).not.toContain(
       'https://consuelo-lead-connector-embed.kokayi-90b.workers.dev',
     );
     expect(asset).toContain('approvedOrigins');
@@ -259,10 +256,7 @@ describe('LeadConnector browser architecture and branding', () => {
   });
 
   it('restarts the trusted parent bootstrap exchange when authentication is retried', () => {
-    const source = readFileSync(
-      join(embedRoot, 'main.ts'),
-      'utf8',
-    );
+    const source = readFileSync(join(embedRoot, 'main.ts'), 'utf8');
     expect(source).toContain("if (action === 'retry') {");
     expect(source).toContain('bridge.requestUserContext();');
   });
