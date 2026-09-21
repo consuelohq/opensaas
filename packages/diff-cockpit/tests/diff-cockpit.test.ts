@@ -781,7 +781,7 @@ describe('renderReviewPage', () => {
     expect(html).toContain('<svg');
     expect(html).toContain('class="mobile-file-backdrop"');
     expect(html).toContain('body[data-file-pane-drawer="open"] .file-pane');
-    expect(html).toContain('@media (max-width: 1180px)');
+    expect(html).toContain('@media (min-width: 761px) and (max-width: 1180px)');
     expect(html).toContain('.review-page .file-pane { position:fixed;');
     expect(html).toContain('@media (max-width: 760px)');
     expect(html).toContain('.layout { height:calc(100dvh - 132px); grid-template-columns:minmax(0, 1fr); }');
