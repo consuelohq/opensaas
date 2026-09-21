@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-task-skill-migration-release-gate",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2503,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2503",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-task-skill-migration-release-gate",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_20499e60539e",
+  "tmuxSession": "opensaas-os-fix-task-skill-migration-release-gate-20499e60",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-task-skill-migration-release-gate/.task/session.json",
+  "createdAt": "2026-09-21T04:26:12.857Z"
+}
