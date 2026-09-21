@@ -982,8 +982,8 @@
       "reason": "scripts/lib/operator-token-store.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
     },
     "scripts/lib/paths.js": {
-      "status": "same",
-      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
+      "status": "changed-needs-review",
+      "reason": "The OS copy now lazy-loads yaml so scripts-only audit fixtures do not require index/config dependencies; keep the intentional runtime-specific divergence explicit."
     },
     "scripts/lib/platform-cloudflare-provisioning.ts": {
       "status": "os-only-intentional",

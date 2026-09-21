@@ -2,7 +2,6 @@ const os = require('os');
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
-const { parse: parseYaml } = require('yaml');
 
 const FALLBACK_REPO = 'consuelohq/opensaas';
 const DEFAULT_MAIN_BRANCH = 'main';
@@ -27,6 +26,7 @@ function getConsueloHome(env = process.env) {
 
 function readYamlObject(filePath) {
   if (!fs.existsSync(filePath)) return null;
+  const { parse: parseYaml } = require('yaml');
   const parsed = parseYaml(fs.readFileSync(filePath, 'utf8'));
   return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : null;
 }

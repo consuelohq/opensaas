@@ -1,0 +1,434 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/fix-os-linux-package-test-regressions",
+  "base": "origin/stream/os",
+  "headSha": "d890692009a522174b9d4617bf3443353eca265b",
+  "changeHash": "76ab332e7da155cc9a9ef04d1b1fed172143fe2f41666af26a242467176fe26b",
+  "changedFiles": [
+    "packages/os/scripts/lib/paths.js",
+    "packages/os/tests/artifacts-skill.test.ts",
+    "packages/os/tests/audit/fixtures/script-parity-classifications.json",
+    "packages/os/tests/doctor-redaction.test.ts",
+    "packages/os/tests/helpers/bun-sqlite-vitest.ts",
+    "packages/os/tests/installer-local-agent-connectivity.test.ts",
+    "packages/os/tests/memory.test.ts",
+    "packages/os/tests/os-replica-correctness.test.ts",
+    "packages/os/tests/trace-request-budget.test.ts",
+    "packages/os/vitest.config.ts"
+  ],
+  "verifiedAt": "2026-09-21T16:35:49.655Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/fix-os-linux-package-test-regressions/evidence-log.json",
+        ".task/os/fix-os-linux-package-test-regressions/read-log.json",
+        ".task/os/fix-os-linux-package-test-regressions/verify.json",
+        ".task/os/fix-os-linux-package-test-regressions/workpad.md",
+        ".task/tasks/os/fix-os-linux-package-test-regressions.json",
+        "packages/os/scripts/lib/paths.js",
+        "packages/os/tests/artifacts-skill.test.ts",
+        "packages/os/tests/audit/fixtures/script-parity-classifications.json",
+        "packages/os/tests/doctor-redaction.test.ts",
+        "packages/os/tests/helpers/bun-sqlite-vitest.ts",
+        "packages/os/tests/installer-local-agent-connectivity.test.ts",
+        "packages/os/tests/memory.test.ts",
+        "packages/os/tests/os-replica-correctness.test.ts",
+        "packages/os/tests/trace-request-budget.test.ts",
+        "packages/os/vitest.config.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "trace-site-pagination",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Current OS Trace gateway and Trace Burn changes must prove authenticated history paging, canonical TraceStore resolution, safe redaction, and OS-owned virtual-list/browser behavior.",
+          "matchedFiles": [
+            "packages/os/tests/trace-request-budget.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-task-worktree-eviction",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Durable task eviction, recovery archives, inactivity GC, supervisor scheduling, and facade recovery must prove reversible cleanup without selecting the unrelated package-wide OS baseline.",
+          "matchedFiles": [
+            "packages/os/scripts/lib/paths.js"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-test-environment-isolation",
+          "critical": true,
+          "exclusive": true,
+          "reason": "OS test-runner configuration must redirect inherited operator trace persistence to a test-owned database without selecting the unrelated package-wide OS baseline.",
+          "matchedFiles": [
+            "packages/os/vitest.config.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-script-parity-audit",
+          "critical": true,
+          "exclusive": true,
+          "reason": "OS/workspace script inventory and classification changes must prove the focused parity audit without selecting the unrelated whole-OS package suite.",
+          "matchedFiles": [
+            "packages/os/tests/audit/fixtures/script-parity-classifications.json"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "auto:@consuelo/os:package-test",
+          "critical": false,
+          "reason": "Auto-discovered package test script for packages/os.",
+          "matchedFiles": [
+            "packages/os/tests/artifacts-skill.test.ts",
+            "packages/os/tests/doctor-redaction.test.ts",
+            "packages/os/tests/helpers/bun-sqlite-vitest.ts",
+            "packages/os/tests/installer-local-agent-connectivity.test.ts",
+            "packages/os/tests/memory.test.ts",
+            "packages/os/tests/os-replica-correctness.test.ts"
+          ],
+          "origin": "auto"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "OS trace gateway and Trace Burn contracts",
+          "command": [
+            "bun",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "--root",
+            "packages/os",
+            "tests/trace-sites-history-endpoint-contract.test.ts",
+            "tests/trace-sites-gateway-read-layer.test.ts",
+            "tests/trace-history-redaction.test.ts",
+            "tests/trace-site-inspector-os-owned.test.ts",
+            "tests/observability-traces-site.test.ts",
+            "tests/redaction.test.ts",
+            "tests/runtime-bundle-managed-site-assets.test.ts",
+            "tests/trace-sites-gateway-live-endpoints.test.ts"
+          ],
+          "ruleId": "trace-site-pagination",
+          "critical": true
+        },
+        {
+          "name": "OS canonical TraceStore runtime boundary",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/trace-sites-runtime-boundary.test.ts"
+          ],
+          "ruleId": "trace-site-pagination",
+          "critical": true
+        },
+        {
+          "name": "OS trace persistence and session search contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "--root",
+            "packages/os",
+            "tests/trace-persistence.test.ts",
+            "tests/trace-search-query.test.ts"
+          ],
+          "ruleId": "trace-site-pagination",
+          "critical": true
+        },
+        {
+          "name": "OS trace browser request budget and persistent stream",
+          "command": [
+            "bun",
+            "test",
+            "packages/os/tests/trace-request-budget.test.ts",
+            "--timeout",
+            "15000"
+          ],
+          "ruleId": "trace-site-pagination",
+          "critical": true
+        },
+        {
+          "name": "task worktree eviction and recovery contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/task-worktree-eviction.test.ts",
+            "packages/workspace/tests/durable-task-worktrees.test.ts",
+            "packages/workspace/tests/task-session.test.js",
+            "packages/os/tests/task-worktree-gc-scheduler.test.ts"
+          ],
+          "ruleId": "os-task-worktree-eviction",
+          "critical": true
+        },
+        {
+          "name": "task worktree eviction syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "ruleId": "os-task-worktree-eviction",
+          "critical": true
+        },
+        {
+          "name": "OS test-environment isolation contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "--root",
+            "packages/os",
+            "--config",
+            "vitest.config.ts",
+            "tests/test-environment-contract.test.ts"
+          ],
+          "ruleId": "os-test-environment-isolation",
+          "critical": true
+        },
+        {
+          "name": "OS script parity audit contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/audit/script-parity-audit.test.ts"
+          ],
+          "ruleId": "os-script-parity-audit",
+          "critical": true
+        },
+        {
+          "name": "@consuelo/os package test",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/os",
+            "test"
+          ],
+          "ruleId": "auto:@consuelo/os:package-test",
+          "critical": false
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "OS trace gateway and Trace Burn contracts",
+          "command": [
+            "bun",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "--root",
+            "packages/os",
+            "tests/trace-sites-history-endpoint-contract.test.ts",
+            "tests/trace-sites-gateway-read-layer.test.ts",
+            "tests/trace-history-redaction.test.ts",
+            "tests/trace-site-inspector-os-owned.test.ts",
+            "tests/observability-traces-site.test.ts",
+            "tests/redaction.test.ts",
+            "tests/runtime-bundle-managed-site-assets.test.ts",
+            "tests/trace-sites-gateway-live-endpoints.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "trace-site-pagination",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1474,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-os-linux-package-test-regressions/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/redaction.test.ts \u001b[2m(\u001b[22m\u001b[2m6 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 11\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/trace-sites-gateway-read-layer.test.ts \u001b[2m(\u001b[22m\u001b[2m10 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 16\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/trace-sites-history-endpoint-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 14\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/trace-history-redaction.test.ts \u001b[2m(\u001b[22m\u001b[2m7 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 10\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/runtime-bundle-managed-site-assets.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 172\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/observability-traces-site.test.ts \u001b[2m(\u001b[22m\u001b[2m14 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 66\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/trace-site-inspector-os-owned.test.ts \u001b[2m(\u001b[22m\u001b[2m21 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 24\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/trace-sites-gateway-live-endpoints.test.ts \u001b[2m(\u001b[22m\u001b[2m18 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 162\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m8 passed\u001b[39m\u001b[22m\u001b[90m (8)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m83 passed\u001b[39m\u001b[22m\u001b[90m (83)\u001b[39m\n\u001b[2m   Start at \u001b[22m 12:34:20\n\u001b[2m   Duration \u001b[22m 749ms\u001b[2m (transform 1.85s, setup 930ms, import 1.67s, tests 475ms, environment 2ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS canonical TraceStore runtime boundary",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/trace-sites-runtime-boundary.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "trace-site-pagination",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1017,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-os-linux-package-test-regressions/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/trace-sites-runtime-boundary.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 14\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m3 passed\u001b[39m\u001b[22m\u001b[90m (3)\u001b[39m\n\u001b[2m   Start at \u001b[22m 12:34:21\n\u001b[2m   Duration \u001b[22m 381ms\u001b[2m (transform 98ms, setup 72ms, import 63ms, tests 14ms, environment 0ms)\u001b[22m\n\n$ vitest run tests/trace-sites-runtime-boundary.test.ts\n"
+        },
+        {
+          "name": "OS trace persistence and session search contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "--root",
+            "packages/os",
+            "tests/trace-persistence.test.ts",
+            "tests/trace-search-query.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "trace-site-pagination",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 7847,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-os-linux-package-test-regressions/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/trace-search-query.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 34\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/trace-persistence.test.ts \u001b[2m(\u001b[22m\u001b[2m12 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 6636\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m persists a silent facade success with redacted input and serves it through the Hono read backend \u001b[33m 864\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m migrates an existing tool_traces table and preserves correlation and token fields \u001b[33m 384\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should persist work-session identity when recording canonical work-path trace metadata \u001b[33m 493\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m persists code.call and batch parent envelopes alongside nested child traces \u001b[33m 1428\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m fails open when the trace path is unavailable \u001b[33m 959\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m persists parsed subagent child events with parent correlation and exact turn usage \u001b[33m 412\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m persists durable Codex child events once under the originating trace across later attachments \u001b[33m 883\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m records MISSING_SCOPE without persisting the bearer token \u001b[33m 420\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should batch authentication traces after the request path returns \u001b[33m 404\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should record a safe principal correlation key when authentication succeeds without raw identity material \u001b[33m 387\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m16 passed\u001b[39m\u001b[22m\u001b[90m (16)\u001b[39m\n\u001b[2m   Start at \u001b[22m 12:34:23\n\u001b[2m   Duration \u001b[22m 7.14s\u001b[2m (transform 194ms, setup 105ms, import 237ms, tests 6.67s, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS trace browser request budget and persistent stream",
+          "command": [
+            "bun",
+            "test",
+            "packages/os/tests/trace-request-budget.test.ts",
+            "--timeout",
+            "15000"
+          ],
+          "cwd": ".",
+          "ruleId": "trace-site-pagination",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 18227,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/os/tests/trace-request-budget.test.ts:\n(pass) filtering a sparse result and rendering it does not fetch history without scroll intent [1415.49ms]\n(pass) cursor SSE sends real frames and remains open for subsequent local reads until cancellation [2108.42ms]\n(pass) an underfilled page advances once per downward scroll gesture without a button [1882.33ms]\n(pass) an obsolete A to B to A search response cannot overwrite the current results [3820.79ms]\n(pass) live fallback respects Retry-After, stays quiet when hidden, and retries the snapshot after failure [359.16ms]\n(pass) one live owner uses SSE without polling and backs off when a stream closes immediately [475.92ms]\n(pass) the shipped page shows throttling and does not issue requests when its bundle is evaluated twice [2487.07ms]\n(pass) scrolling near the end loads one page and a live prepend preserves the scroll position without fetching history [1104.96ms]\n(pass) cursor streams enforce scope and redact payloads with the same rules as history [1.41ms]\n(pass) the shipped page hydrates and receives native EventSource deltas over one HTTP connection [409.33ms]\n(pass) the shipped page shows persisted history after an idle day with its header and rows inside the viewport [604.28ms]\n(pass) an unhandled history search clears its loading state [751.95ms]\n\n 12 pass\n 0 fail\n 61 expect() calls\nRan 12 tests across 1 file. [18.21s]\n"
+        },
+        {
+          "name": "task worktree eviction and recovery contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/task-worktree-eviction.test.ts",
+            "packages/workspace/tests/durable-task-worktrees.test.ts",
+            "packages/workspace/tests/task-session.test.js",
+            "packages/os/tests/task-worktree-gc-scheduler.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-task-worktree-eviction",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 6555,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-os-linux-package-test-regressions\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/task-worktree-gc-scheduler.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/workspace/tests/durable-task-worktrees.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 5\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/workspace/tests/task-session.test.js \u001b[2m(\u001b[22m\u001b[2m13 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 1460\u001b[2mms\u001b[22m\u001b[39m\n   \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m recoverDurableTaskSession restores an evicted worktree before recreating tmux \u001b[33m 1254\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/workspace/tests/task-worktree-eviction.test.ts \u001b[2m(\u001b[22m\u001b[2m15 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 5923\u001b[2mms\u001b[22m\u001b[39m\n   \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m durable activity lease updates lastActiveAt without rewriting task creation time \u001b[33m 683\u001b[2mms\u001b[22m\u001b[39m\n   \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m recovery archive captures dirty, untracked, and locally-ahead state without changing the real branch or index \u001b[33m 888\u001b[2mms\u001b[22m\u001b[39m\n   \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m dirty task eviction archives unique state, removes the worktree, and restores the exact file contents \u001b[33m 593\u001b[2mms\u001b[22m\u001b[39m\n   \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m clean remote-backed task eviction needs no recovery bundle and keeps the branch recoverable \u001b[33m 381\u001b[2mms\u001b[22m\u001b[39m\n   \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m archive failure is fail-closed and never removes the worktree \u001b[33m 303\u001b[2mms\u001b[22m\u001b[39m\n   \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m tampered recovery bundle is rejected before restore and the archive remains available \u001b[33m 469\u001b[2mms\u001b[22m\u001b[39m\n   \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m stale evicting task with a removed worktree is finalized as evicted and restored \u001b[33m 311\u001b[2mms\u001b[22m\u001b[39m\n   \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m corrupt recovery manifest reports the manifest path \u001b[33m 468\u001b[2mms\u001b[22m\u001b[39m\n   \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m final recovery cleanup deletes only task-owned archive and registry state \u001b[33m 473\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m4 passed\u001b[39m\u001b[22m\u001b[90m (4)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m32 passed\u001b[39m\u001b[22m\u001b[90m (32)\u001b[39m\n\u001b[2m   Start at \u001b[22m 12:34:48\n\u001b[2m   Duration \u001b[22m 6.21s\u001b[2m (transform 305ms, setup 0ms, import 541ms, tests 7.39s, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "task worktree eviction syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "cwd": ".",
+          "ruleId": "os-task-worktree-eviction",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1998,
+          "outputTail": "workspace script syntax checks passed\n"
+        },
+        {
+          "name": "OS test-environment isolation contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "--root",
+            "packages/os",
+            "--config",
+            "vitest.config.ts",
+            "tests/test-environment-contract.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-test-environment-isolation",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 323,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-os-linux-package-test-regressions/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/test-environment-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 1\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m4 passed\u001b[39m\u001b[22m\u001b[90m (4)\u001b[39m\n\u001b[2m   Start at \u001b[22m 12:34:57\n\u001b[2m   Duration \u001b[22m 77ms\u001b[2m (transform 13ms, setup 14ms, import 4ms, tests 1ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS script parity audit contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/audit/script-parity-audit.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-script-parity-audit",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 291,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-os-linux-package-test-regressions\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/audit/script-parity-audit.test.ts \u001b[2m(\u001b[22m\u001b[2m1 test\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 25\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m   Start at \u001b[22m 12:34:57\n\u001b[2m   Duration \u001b[22m 106ms\u001b[2m (transform 18ms, setup 0ms, import 24ms, tests 25ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "@consuelo/os package test",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/os",
+            "test"
+          ],
+          "cwd": ".",
+          "ruleId": "auto:@consuelo/os:package-test",
+          "critical": false,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 51942,
+          "outputTail": "ue,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-21T16:35:43.802Z\"}\n(node:38097) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n(node:38116) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n(node:38137) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n{\"level\":\"info\",\"tool\":\"lifecycle.status\",\"branch\":\"\",\"command\":\"workspace lifecycle.status\",\"implementationCommand\":\"bun run lifecycle -- status --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-21T16:35:44.632Z\"}\n{\"level\":\"info\",\"tool\":\"lifecycle.update\",\"branch\":\"\",\"command\":\"workspace lifecycle.update '{\\\"channel\\\":\\\"canary\\\"}'\",\"implementationCommand\":\"bun run lifecycle -- update --channel canary --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-21T16:35:44.666Z\"}\n{\"level\":\"info\",\"tool\":\"lifecycle.update\",\"branch\":\"\",\"command\":\"workspace lifecycle.update '{\\\"channel\\\":\\\"canary\\\",\\\"version\\\":\\\"1.2.3\\\"}'\",\"implementationCommand\":\"bun run lifecycle -- update --channel canary --version 1.2.3 --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-21T16:35:44.671Z\"}\n{\"level\":\"error\",\"tool\":\"lifecycle.update\",\"command\":\"workspace lifecycle.update\",\"implementationCommand\":\"workspace lifecycle.update\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-21T16:35:44.677Z\"}\n{\"level\":\"info\",\"tool\":\"lifecycle.update\",\"command\":\"workspace lifecycle.update\",\"implementationCommand\":\"workspace lifecycle.update\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"DRY_RUN\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-21T16:35:44.728Z\"}\n(node:38236) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n{\"level\":\"info\",\"tool\":\"artifacts.check\",\"branch\":\"\",\"command\":\"workspace artifacts.check\",\"implementationCommand\":\"bun run artifacts -- check --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-21T16:35:46.190Z\"}\n{\"level\":\"info\",\"tool\":\"artifacts.refresh\",\"branch\":\"\",\"command\":\"workspace artifacts.refresh\",\"implementationCommand\":\"bun run artifacts -- refresh --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-21T16:35:46.204Z\"}\n(node:38410) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n(node:38542) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n(node:38632) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
