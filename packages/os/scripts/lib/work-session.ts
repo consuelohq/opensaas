@@ -88,11 +88,13 @@ export function createWorkSession(input: {
     managedRepoRoot: input.managedRepoRoot,
   });
   if (protectedRoot?.kind === 'consuelo-home') {
-    throw new Error('Work sessions cannot edit Consuelo-managed state. Use the typed Consuelo lifecycle/configuration tools instead.');
+    throw new Error(
+      'Work sessions cannot edit Consuelo-managed state. Choose a narrower ordinary directory, or omit path when starting the work session to create an isolated work directory automatically.',
+    );
   }
   if (protectedRoot?.kind === 'managed-repository') {
     throw new Error(
-      `Work sessions cannot edit the managed repository or its task worktrees (${protectedRoot.path}). Use a taskSession for repository edits.`,
+      `Work sessions cannot edit the managed repository or its task worktrees (${protectedRoot.path}). Use a taskSession for repository edits, choose a narrower ordinary directory, or omit path to create an isolated work directory automatically.`,
     );
   }
 
