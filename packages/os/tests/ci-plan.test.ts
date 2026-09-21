@@ -55,7 +55,7 @@ describe('Consuelo CI plan', () => {
     });
   });
 
-  it.each(['package.json', 'yarn.lock', '.yarnrc.yml', 'bun.lock', 'bunfig.toml', '.bun-version'])(
+  it.each(['package.json', 'bun.lock', 'bunfig.toml', '.bun-version'])(
     'treats root package-manager control file %s as cross-cutting',
     (file) => {
       expect(classifyConsueloChanges([file])).toMatchObject({

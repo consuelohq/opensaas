@@ -69,6 +69,6 @@ describe('commercial deployment artifacts', () => {
     }
     expect(existsSync(fromRepo('packages', 'metering', 'package.json'))).toBe(false);
     expect(existsSync(fromRepo('scripts', 'run-dev-1024.sh'))).toBe(false);
-    expect(read(fromRepo('yarn.lock'))).not.toContain('@consuelo/metering');
+    expect(read(fromRepo('bun.lock'))).not.toContain('@consuelo/metering');
   });
 });

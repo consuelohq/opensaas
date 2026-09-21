@@ -1,5 +1,5 @@
 name: Consuelo CI Setup
-description: Set up the Consuelo CI toolchain while the root dependency graph remains Yarn-owned.
+description: Set up the Bun-owned Consuelo CI toolchain.
 
 inputs:
   bun-version:
@@ -7,11 +7,11 @@ inputs:
     required: false
     default: '1.3.14'
   node-version:
-    description: Node version used by Consuelo CI jobs that need Node but not the root Yarn install.
+    description: Node version used by Consuelo CI jobs that still need Node.
     required: false
     default: '24'
   setup-node:
-    description: Set up Node when the root Yarn installer is not providing it.
+    description: Set up Node for jobs that still execute Node-based tooling.
     required: false
     default: 'true'
   install-root:
@@ -32,16 +32,14 @@ runs:
         bun-version: ${{ inputs.bun-version }}
 
     - name: Setup Node
-      if: ${{ inputs.setup-node == 'true' && inputs.install-root != 'true' }}
+      if: ${{ inputs.setup-node == 'true' }}
       uses: actions/setup-node@v4
       with:
         node-version: ${{ inputs.node-version }}
 
     - name: Install repository dependencies
       if: ${{ inputs.install-root == 'true' }}
-      uses: ./.github/actions/yarn-install
-      with:
-        node-version: ${{ inputs.node-version }}
+      uses: ./.github/actions/bun-install
 
     - name: Install OS dependencies
       if: ${{ inputs.install-os == 'true' }}

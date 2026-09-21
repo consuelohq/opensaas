@@ -7,7 +7,6 @@
 **/**/node_modules/
 .cache
 
-# yarn is the recommended package manager across the project
 **/**/.package-lock.json
 
 .nx/installation
@@ -15,13 +14,6 @@
 .nx/workspace-data
 .nx/nxw.js
 
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/sdks
-!.yarn/versions
 .vercel
 .swc
 

@@ -17,8 +17,6 @@ type CliArgs = {
 
 const ROOT_CROSS_CUTTING_FILES = new Set([
   'package.json',
-  'yarn.lock',
-  '.yarnrc.yml',
   'bun.lock',
   'bunfig.toml',
   '.bun-version',
@@ -50,8 +48,7 @@ function isRootTypeScriptConfig(file: string): boolean {
 
 function isRootCrossCuttingFile(file: string): boolean {
   return ROOT_CROSS_CUTTING_FILES.has(file)
-    || isRootTypeScriptConfig(file)
-    || file.startsWith('.yarn/');
+    || isRootTypeScriptConfig(file);
 }
 
 function isSitesGatewayChange(file: string): boolean {

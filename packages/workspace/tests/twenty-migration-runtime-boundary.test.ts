@@ -93,7 +93,7 @@ const retiredTwentyOperationalSurfaces = [
 
 type PackageManifest = {
   packageManager?: string;
-  workspaces?: { packages?: string[] };
+  workspaces?: string[] | { packages?: string[] };
   resolutions?: Record<string, string>;
   dependencies?: Record<string, string>;
   devDependencies?: Record<string, string>;
@@ -116,12 +116,14 @@ describe('M4 Twenty physical deletion boundary', () => {
     }
   });
 
-  it('removes legacy Twenty workspace and patch ownership while keeping Yarn 4 authoritative', () => {
+  it('removes legacy Twenty workspace ownership while keeping Bun authoritative', () => {
     const rootPackage = JSON.parse(readRepoFile('package.json')) as PackageManifest;
-    const workspacePackages = rootPackage.workspaces?.packages ?? [];
+    const workspacePackages = Array.isArray(rootPackage.workspaces)
+      ? rootPackage.workspaces
+      : rootPackage.workspaces?.packages ?? [];
     const resolutionValues = Object.values(rootPackage.resolutions ?? {});
 
-    expect(rootPackage.packageManager).toBe('yarn@4.9.2');
+    expect(rootPackage.packageManager).toBe('bun@1.3.14');
     expect(
       workspacePackages.filter(
         (workspace) =>

@@ -11,14 +11,13 @@ ad-hoc worktrees or force-pushing shared branches.
 
 ## Local setup
 
-Until the Bun package-manager cutover is complete, install the root workspace with:
+Install the root workspace with the Bun version pinned by `package.json`:
 
 ```bash
-corepack enable
-yarn install
+bun install --frozen-lockfile
 ```
 
-Repository scripts already use Bun where specified by `package.json`.
+Root dependency installation and repository scripts use Bun.
 
 ## Pull requests
 

@@ -32,10 +32,9 @@ describe('dialer GitHub release workflow contract', () => {
   it('builds clean Railway workspace dependencies in package order', () => {
     const dockerfile = read('packages', 'dialer-server', 'Dockerfile');
     const railway = read('packages', 'dialer-server', 'railway.json');
-    expect(dockerfile).toContain('FROM node:24-bookworm-slim AS dependencies');
-    expect(dockerfile).not.toContain(
-      'FROM node:22-bookworm-slim AS dependencies',
-    );
+    expect(dockerfile).toContain('FROM oven/bun:1.3.14 AS dependencies');
+    expect(dockerfile).toContain('RUN bun install --frozen-lockfile');
+    expect(dockerfile).not.toContain('yarn install');
     const builds = [
       'bun run --cwd packages/logger build',
       'bun run --cwd packages/dialer build',
