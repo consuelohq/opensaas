@@ -503,6 +503,19 @@ const buildProxyRequest = (input: {
   return new Request(input.upstreamUrl, init);
 };
 
+const artifactShareCookieHeader = (value: string | null): string | null => {
+  if (!value) return null;
+  const cookies = value
+    .split(';')
+    .map((part) => part.trim())
+    .filter((part) => {
+      const separator = part.indexOf('=');
+      if (separator <= 0) return false;
+      return part.slice(0, separator).startsWith('consuelo_artifact_share_');
+    });
+  return cookies.length > 0 ? cookies.join('; ') : null;
+};
+
 const buildGatewayNodeProxyRequest = async (input: {
   request: Request;
   resolution: Extract<WorkspaceCloudflareEdgeRouteResolution, { allowed: true }> & {
@@ -523,6 +536,17 @@ const buildGatewayNodeProxyRequest = async (input: {
     for (const name of ['accept', 'content-type', 'last-event-id']) {
       const value = input.request.headers.get(name);
       if (value) headers.set(name, value);
+    }
+    if (
+      input.resolution.auth === 'public'
+      && input.resolution.route === '/share/artifacts'
+      && input.resolution.target.kind === 'consuelo-gateway-service'
+      && input.resolution.target.serviceName === 'artifacts-sites-share-layer'
+    ) {
+      const shareCookie = artifactShareCookieHeader(
+        input.request.headers.get('cookie'),
+      );
+      if (shareCookie) headers.set('cookie', shareCookie);
     }
     headers.set('cache-control', 'no-store');
     headers.set('x-consuelo-hostname', input.resolution.hostname);
