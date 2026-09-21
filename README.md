@@ -123,8 +123,7 @@ Local tracing uses SQLite. Hosted surfaces can send selected events to cloud obs
 Install repo dependencies from the monorepo root:
 
 ```bash
-corepack enable
-yarn install
+bun install --frozen-lockfile
 ```
 
 Run OS checks through `packages/os`:
@@ -137,4 +136,4 @@ bun --cwd packages/os test
 
 ## license
 
-Consuelo OS is MIT licensed.
+Consuelo-owned packages use Apache-2.0 where declared in their package metadata. This repository also contains MIT-licensed and inherited AGPL-3.0 material. See [LICENSE](LICENSE) and [NOTICE](NOTICE) for the exact boundary and attributions.

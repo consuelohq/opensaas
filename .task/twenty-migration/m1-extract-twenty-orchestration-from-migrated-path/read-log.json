@@ -1,0 +1,18 @@
+{
+  "files": [
+    ".task/twenty-migration/m1-extract-twenty-orchestration-from-migrated-path/workpad.md",
+    "packages/dialer-server/src/compatibility-cutover.contract.test.ts",
+    "packages/dialer-server/src/contracts.ts",
+    "packages/dialer-server/src/index.ts",
+    "packages/dialer-server/src/runtime/environment.ts",
+    "packages/dialer-server/src/runtime/railway.ts",
+    "packages/dialer/src/index.ts",
+    "packages/dialer/src/infrastructure/memory/runtime.ts",
+    "packages/twenty-server/src/engine/core-modules/consuelo-api/infrastructure/twenty-dialer-call-start.infrastructure.ts",
+    "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-adapter-boundary.contract.spec.ts",
+    "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.ts",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "updatedAt": "2026-08-15T04:14:13.392Z"
+}

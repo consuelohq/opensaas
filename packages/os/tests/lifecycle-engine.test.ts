@@ -154,7 +154,7 @@ beforeAll(async () => {
     version: '1.10.0',
   });
   legacyRecoveryBundle = await buildRuntimeBundle({
-    architecture: 'arm64',
+    architecture: process.arch,
     includePaths: requiredRuntimePaths.filter(
       (runtimePath) =>
         runtimePath !== 'scripts/lib/lifecycle/connector-readiness.ts' &&
