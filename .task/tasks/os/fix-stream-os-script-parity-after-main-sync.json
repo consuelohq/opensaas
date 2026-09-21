@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-stream-os-script-parity-after-main-sync",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2518,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2518",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-stream-os-script-parity-after-main-sync",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_44bd42d20f3c",
+  "tmuxSession": "opensaas-os-fix-stream-os-script-parity-after-main-sync-44bd42d2",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-stream-os-script-parity-after-main-sync/.task/session.json",
+  "createdAt": "2026-09-21T15:39:17.751Z"
+}
