@@ -33,10 +33,16 @@ describe('CodeRabbit Diffs review contracts', () => {
     expect(routes).not.toContain("context.req.param('*')");
   });
 
-  it('bounds the Diffs read cache and times out GitHub mutation requests', () => {
+  it('bounds the node-local Diffs cache, hydrates first paint, and times out GitHub mutations', () => {
     const service = source('scripts/server/services/diffs-gateway.ts');
+    const cache = source('scripts/server/services/diffs-local-cache.ts');
     expect(service).toContain('PRODUCT_READ_CACHE_MAX_ENTRIES');
-    expect(service).toMatch(/productReadCache\.size\s*>=\s*PRODUCT_READ_CACHE_MAX_ENTRIES/);
+    expect(service).toContain('cachedIndex?.value ?? null');
+    expect(service).toContain('cachedIndex?.etag ??');
+    expect(service).toContain('cachedReview?.value ?? null');
+    expect(service).toContain('cachedReview?.etag ??');
+    expect(cache).toContain('maxEntries');
+    expect(cache).toContain('0o600');
     expect(service).toContain('GITHUB_MUTATION_TIMEOUT_MS');
     expect(service.match(/signal:\s*AbortSignal\.timeout\(GITHUB_MUTATION_TIMEOUT_MS\)/g)?.length ?? 0).toBeGreaterThanOrEqual(2);
   });

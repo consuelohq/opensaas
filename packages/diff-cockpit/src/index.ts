@@ -3438,9 +3438,10 @@ function renderIndexClientScript(
 const apiPath = ${JSON.stringify(apiPath)};
 const routePrefix = ${JSON.stringify(routePrefix)};
 const repoLabel = ${JSON.stringify(repoLabel)};
-const cacheSchemaVersion = 'v4-mergeability-live';
+const cacheSchemaVersion = 'v5-server-snapshot-progressive';
 const cacheKey = 'diff-cockpit:index:' + cacheSchemaVersion + ':' + apiPath;
 const staleCachePrefix = 'diff-cockpit:index:';
+const clientCacheTtlMs = 2 * 60 * 1000;
 const sectionPageSize = 10;
 let pulls = [];
 let activeFilter = 'all';
@@ -3576,7 +3577,7 @@ function openCommandPalette() { commandPalette.hidden = false; commandBackdrop.h
 function closeCommandPalette() { commandPalette.hidden = true; commandBackdrop.hidden = true; document.body.dataset.commandPaletteState = 'closed'; commandTriggers.forEach((trigger) => trigger.setAttribute('aria-expanded', 'false')); }
 function updateActiveFilterButtons(filter) { document.querySelectorAll('[data-filter]').forEach((item) => item.classList.toggle('active', item.dataset.filter === filter)); }
 function runPageCommand(button) { const filter = button.getAttribute('data-command-filter'); const url = button.getAttribute('data-command-url') || '#pull-requests'; if (filter) { activeFilter = filter; updateActiveFilterButtons(filter); resetSectionLimits(); renderSections(); } closeCommandPalette(); if (url.startsWith('#')) { const sectionId = url.slice(1); const target = document.querySelector('[data-section-id="' + sectionId + '"]') || document.querySelector(url); if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' }); } else window.location.href = url; }
-function readCachedIndex() { try { const cached = localStorage.getItem(cacheKey); return cached ? JSON.parse(cached) : null; } catch { localStorage.removeItem(cacheKey); return null; } }
+function readCachedIndex() { try { const cached = localStorage.getItem(cacheKey); if (!cached) return null; const parsed = JSON.parse(cached); const cachedAt = Number(parsed && parsed._cachedAt || 0); if (!cachedAt || Date.now() - cachedAt > clientCacheTtlMs) { localStorage.removeItem(cacheKey); return null; } return parsed; } catch { localStorage.removeItem(cacheKey); return null; } }
 function mergePullWithCache(pull, cachedPull) { if (!cachedPull) return pull; return { ...cachedPull, ...pull, additions: Number(pull.additions || 0) || Number(cachedPull.additions || 0), deletions: Number(pull.deletions || 0) || Number(cachedPull.deletions || 0), changedFiles: Number(pull.changedFiles || 0) || Number(cachedPull.changedFiles || 0), checkStatus: pull.checkStatus === 'unknown' ? cachedPull.checkStatus : pull.checkStatus, reviewStatus: pull.reviewStatus === 'unknown' || pull.reviewStatus === 'none' ? cachedPull.reviewStatus : pull.reviewStatus, mergeability: pull.mergeability === 'unknown' ? cachedPull.mergeability : pull.mergeability }; }
 function mergeIndexWithCache(data, cached) { if (!cached || !Array.isArray(cached.pulls) || !Array.isArray(data.pulls)) return data; const cachedByNumber = new Map(cached.pulls.map((pull) => [pull.number, pull])); return { ...data, pulls: data.pulls.map((pull) => mergePullWithCache(pull, cachedByNumber.get(pull.number))) }; }
 function applyIndexData(data) { pulls = Array.isArray(data.pulls) ? data.pulls : []; resetSectionLimits(); renderSections(); }
@@ -3620,7 +3621,7 @@ function loadIndex(options = {}) {
       if (!result) return cached;
       if (result.etag) currentIndexEtag = result.etag;
       const merged = mergeIndexWithCache(result.data, cached);
-      localStorage.setItem(cacheKey, JSON.stringify(merged));
+      localStorage.setItem(cacheKey, JSON.stringify({ ...merged, _cachedAt: Date.now() }));
       applyIndexData(merged);
       return merged;
     }, (error) => { if (!pulls.length) sectionsRoot.innerHTML = '<section class="section error"><h2>Could not load pull requests</h2><p>' + escapeText(error.message || error) + '</p></section>'; })
@@ -3650,7 +3651,9 @@ function renderReviewClientScript(apiPath: string, writeApiPath = apiPath): stri
   return `
 const apiPath = ${JSON.stringify(apiPath)};
 const writeApiPath = ${JSON.stringify(writeApiPath)};
-const state = { data: null, selected: null, diffModule: null, treeModule: null, activeFile: null, inlineCommentsVisible: true, currentView: false, observer: null, collapsedFolders: new Set(), expandedReviewItems: new Set(), drawerSections: { status: true, summary: true, prompt: false, checks: false, comments: false, commits: false } };
+const state = { data: null, selected: null, diffModule: null, treeModule: null, activeFile: null, inlineCommentsVisible: true, currentView: false, observer: null, scrollHandler: null, diffRenderVersion: 0, renderedFileCount: 0, collapsedFolders: new Set(), expandedReviewItems: new Set(), drawerSections: { status: true, summary: true, prompt: false, checks: false, comments: false, commits: false } };
+const reviewAuthRetryDelaysMs = [250, 1000, 2500];
+const diffRenderBatchSize = 8;
 const els = {
   title: document.getElementById('pr-title'),
   meta: document.getElementById('pr-meta'),
@@ -3742,6 +3745,7 @@ document.addEventListener('keydown', (event) => {
 });
 
 let currentReviewEtag = readInitialReviewEtag();
+let reviewLoadInFlight = null;
 const initialData = readInitialReviewData();
 if (initialData) applyReviewData(initialData);
 loadLiveData();
@@ -3845,7 +3849,6 @@ function applyReviewData(data) {
   renderTree();
   renderSelectedFile();
   renderLongDiffs();
-  setupActiveFileObserver();
   renderDrawer();
   renderAiCommentsSidebar();
 }
@@ -3859,10 +3862,19 @@ function startReviewRevalidation() {
   });
 }
 
+function fetchReviewWithAuthRetry(headers, attempt = 0) {
+  return fetch(apiPath, { headers, cache: 'no-cache' }).then((response) => {
+    if (response.status !== 401 || attempt >= reviewAuthRetryDelaysMs.length) return response;
+    return new Promise((resolve) => window.setTimeout(resolve, reviewAuthRetryDelaysMs[attempt]))
+      .then(() => fetchReviewWithAuthRetry(headers, attempt + 1));
+  });
+}
+
 function loadLiveData() {
+  if (reviewLoadInFlight) return reviewLoadInFlight;
   const headers = { accept: 'application/json' };
   if (currentReviewEtag) headers['If-None-Match'] = currentReviewEtag;
-  fetch(apiPath, { headers, cache: 'no-cache' })
+  reviewLoadInFlight = fetchReviewWithAuthRetry(headers)
     .then((response) => {
       if (response.status === 304) return null;
       if (!response.ok) throw new Error('Live PR fetch failed: ' + response.status);
@@ -3878,7 +3890,9 @@ function loadLiveData() {
       (error) => {
         if (!state.data) els.tree.textContent = error.message || String(error);
       },
-    );
+    )
+    .finally(() => { reviewLoadInFlight = null; });
+  return reviewLoadInFlight;
 }
 
 async function mergePullRequest() {
@@ -3966,10 +3980,54 @@ function renderSelectedFile() {
 
 function renderLongDiffs() {
   if (!state.data || !Array.isArray(state.data.files) || state.data.files.length === 0) {
+    state.diffRenderVersion += 1;
+    state.renderedFileCount = 0;
     els.diff.innerHTML = '<div class="error">No changed files found.</div>';
     return;
   }
-  els.diff.innerHTML = state.data.files.map(renderDiffFile).join('');
+  const files = state.data.files;
+  const renderVersion = state.diffRenderVersion + 1;
+  state.diffRenderVersion = renderVersion;
+  state.renderedFileCount = Math.min(diffRenderBatchSize, files.length);
+  els.diff.innerHTML = files.slice(0, state.renderedFileCount).map(renderDiffFile).join('');
+  setupActiveFileObserver();
+  if (state.renderedFileCount >= files.length) return;
+
+  const renderNextBatch = () => {
+    if (state.diffRenderVersion !== renderVersion || !state.data) return;
+    const start = state.renderedFileCount;
+    const end = Math.min(start + diffRenderBatchSize, files.length);
+    if (end <= start) return;
+    els.diff.insertAdjacentHTML('beforeend', files.slice(start, end).map(renderDiffFile).join(''));
+    state.renderedFileCount = end;
+    setupActiveFileObserver();
+    if (end < files.length) scheduleDiffRender(renderNextBatch);
+  };
+  scheduleDiffRender(renderNextBatch);
+}
+
+function scheduleDiffRender(callback) {
+  if (typeof window.requestIdleCallback === 'function') {
+    window.requestIdleCallback(callback, { timeout: 150 });
+    return;
+  }
+  window.setTimeout(callback, 16);
+}
+
+function ensureFileRendered(file) {
+  if (!file || !state.data || !Array.isArray(state.data.files)) return;
+  const index = state.data.files.findIndex((candidate) => candidate.filename === file.filename);
+  if (index < 0 || index < state.renderedFileCount) return;
+  const end = Math.min(
+    state.data.files.length,
+    Math.ceil((index + 1) / diffRenderBatchSize) * diffRenderBatchSize,
+  );
+  els.diff.insertAdjacentHTML(
+    'beforeend',
+    state.data.files.slice(state.renderedFileCount, end).map(renderDiffFile).join(''),
+  );
+  state.renderedFileCount = end;
+  setupActiveFileObserver();
 }
 
 function renderDiffFile(file) {
@@ -3981,6 +4039,7 @@ function renderDiffFile(file) {
 
 function scrollToFile(file) {
   if (!file) return;
+  ensureFileRendered(file);
   const target = document.getElementById(fileDomId(file.filename));
   if (target) target.scrollIntoView({ block: 'start' });
 }
@@ -4452,6 +4511,10 @@ function renderMarkdownLinks(value) {
 }
 
 function navigateToComment(file, line) {
+  const changedFile = state.data && Array.isArray(state.data.files)
+    ? state.data.files.find((candidate) => candidate.filename === file)
+    : null;
+  if (changedFile) ensureFileRendered(changedFile);
   const target = document.getElementById(fileDomId(file));
   if (target) target.scrollIntoView({ block: 'start' });
   const comment = document.querySelector('[data-comment-file="' + CSS.escape(file) + '"][data-comment-line="' + CSS.escape(String(line || '')) + '"]');
