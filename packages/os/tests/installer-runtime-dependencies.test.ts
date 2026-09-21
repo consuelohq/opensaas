@@ -590,6 +590,52 @@ describe('public installer runtime dependencies', () => {
     expect(result.stderr).not.toContain('reused Consuelo OS source');
   });
 
+  it('should allow bootstrap dry-runs on unsupported platforms without allowing a real install', () => {
+    const home = createTempHome('consuelo-os-installer-runtime-linux-plan-');
+    const binDir = join(home, 'bin');
+    mkdirSync(binDir, { recursive: true });
+    writeExecutable(
+      join(binDir, 'uname'),
+      '#!/bin/sh\nif [ "$1" = "-s" ]; then echo Linux; else echo x86_64; fi\n',
+    );
+    writeExecutable(join(binDir, 'bun'), '#!/bin/sh\nexit 0\n');
+
+    const dryRun = runBootstrapDryRun(home, {
+      PATH: [binDir, SYSTEM_PATH].join(delimiter),
+    });
+    expect(dryRun.status, dryRun.stderr).toBe(0);
+    expect(dryRun.stderr).not.toContain(
+      'Consuelo OS local bootstrap currently supports macOS',
+    );
+
+    const realInstall = spawnSync(
+      '/bin/bash',
+      [
+        join(PACKAGE_ROOT, 'scripts', 'bootstrap.sh'),
+        '--yes',
+        '--json',
+        '--mode',
+        'local',
+      ],
+      {
+        cwd: PACKAGE_ROOT,
+        encoding: 'utf8',
+        env: {
+          ...process.env,
+          HOME: home,
+          CONSUELO_HOME: join(home, '.consuelo', 'os'),
+          CONSUELO_INSTALL_ID: TEST_INSTALL_ID,
+          CONSUELO_OS_ALLOW_GLOBAL_RUNTIME_LOOKUP: '0',
+          PATH: [binDir, SYSTEM_PATH].join(delimiter),
+        },
+      },
+    );
+    expect(realInstall.status).not.toBe(0);
+    expect(realInstall.stderr).toContain(
+      'Consuelo OS local bootstrap currently supports macOS. Detected: Linux.',
+    );
+  });
+
   it('should reject an incomplete local source when the daemon installer is missing', () => {
     const home = createTempHome(
       'consuelo-os-installer-runtime-incomplete-local-source-',
