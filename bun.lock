@@ -330,6 +330,7 @@
       "version": "0.0.1",
       "dependencies": {
         "@consuelo/logger": "workspace:*",
+        "@sentry/node": "^10.38.0",
         "effect": "^3.21.3",
       },
       "devDependencies": {

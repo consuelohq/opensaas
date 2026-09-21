@@ -1,0 +1,16 @@
+{
+  "area": "twenty-migration",
+  "stream": "stream/twenty-migration",
+  "taskBranch": "task/twenty-migration/repair-bun-clean-runner-ci-dependencies",
+  "baseBranch": "stream/twenty-migration",
+  "sourceBranch": "stream/twenty-migration",
+  "startFrom": "stream",
+  "prNumber": 2489,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2489",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-twenty-migration-repair-bun-clean-runner-ci-dependencies",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_2f175d97c730",
+  "tmuxSession": "opensaas-twenty-migration-repair-bun-clean-runner-ci-dependencies-2f175d97",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-twenty-migration-repair-bun-clean-runner-ci-dependencies/.task/session.json",
+  "createdAt": "2026-09-21T01:32:47.732Z"
+}

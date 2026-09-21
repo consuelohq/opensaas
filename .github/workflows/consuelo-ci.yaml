@@ -90,6 +90,7 @@ jobs:
         uses: ./.github/actions/consuelo-ci-setup
         with:
           install-root: 'true'
+          install-workspace: 'true'
           install-os: ${{ needs.consuelo-changes.outputs.os_contracts }}
 
       - name: Run workspace verify
