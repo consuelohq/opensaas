@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/benchmark-jev-for-tool-search",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2527,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2527",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-benchmark-jev-for-tool-search",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_1ab4ae72c553",
+  "tmuxSession": "opensaas-os-benchmark-jev-for-tool-search-1ab4ae72",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-benchmark-jev-for-tool-search/.task/session.json",
+  "createdAt": "2026-09-21T20:22:32.764Z"
+}

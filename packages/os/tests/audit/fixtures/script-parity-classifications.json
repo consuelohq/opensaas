@@ -1973,6 +1973,10 @@
       "status": "os-only-needs-review",
       "reason": "scripts/tools-search-benchmark.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
     },
+    "scripts/tools-search-jev-benchmark.ts": {
+      "status": "os-only-needs-review",
+      "reason": "scripts/tools-search-jev-benchmark.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+    },
     "scripts/tools-search.ts": {
       "status": "os-only-needs-review",
       "reason": "scripts/tools-search.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
