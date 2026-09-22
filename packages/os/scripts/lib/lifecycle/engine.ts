@@ -72,6 +72,9 @@ export type LifecycleEngineDependencies = {
     | Record<string, string>
     | (() => Record<string, string>);
   service: LifecycleServiceController;
+  nodeRegistration?: {
+    revokeCurrentNode: () => Promise<'revoked' | 'not-enrolled'>;
+  };
   health: LifecycleHealthAcceptance;
   connectorReadiness?: LifecycleConnectorReadiness;
   connectivity?: LifecycleHealthAcceptance;
@@ -1207,6 +1210,14 @@ export function createLifecycleEngine(
               try {
                 const state = await inspectLifecycleInstallState(home);
                 emit('inspect', { installState: state.kind });
+                if (
+                  input.removeNode === true &&
+                  !(input.dryRun ?? false) &&
+                  dependencies.nodeRegistration
+                ) {
+                  emit('node-revoke', {});
+                  await dependencies.nodeRegistration.revokeCurrentNode();
+                }
                 if (!dependencies.service.uninstall) {
                   throw lifecycleError(
                     'UNINSTALL_FAILED',
