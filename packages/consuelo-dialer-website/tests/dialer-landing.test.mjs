@@ -17,21 +17,31 @@ describe("Consuelo Dialer landing page", () => {
     expect(pkg.scripts.build).toContain("astro");
   });
 
-  test("uses proper casing instead of forced all-caps presentation", () => {
+  test("uses conventional title/sentence casing for visible marketing copy", () => {
     const content = read("src/data/home-content.ts");
     const navigation = read("src/data/site-navigation.ts");
     const hero = read("src/components/home/HomeHero.astro");
     const feature = read("src/components/home/HomeFeaturePreview.astro");
     const faq = read("src/components/home/HomeFaq.astro");
-    const founder = read("src/components/home/HomeFounderSection.astro");
     const placeholder = read("src/components/home/DialerFeaturePlaceholder.astro");
     const pricing = read("src/pages/pricing.astro");
     const primitives = read("src/styles/primitives.css");
-    const renderedStyles = [hero, feature, faq, founder, placeholder, pricing, primitives].join("\n");
+    const renderedStyles = [hero, feature, faq, placeholder, pricing, primitives].join("\n");
 
-    expect(content).toContain("Stop paying sales reps to listen to phones ring.");
-    expect(content).toContain("Get early access");
-    expect(content).toContain("See how it works");
+    expect(content).toContain("Stop Paying Sales Reps to Listen to Phones Ring.");
+    expect(content).toContain("Get Early Access");
+    expect(content).toContain("See How It Works");
+    expect(content).toContain("in Your CRM");
+    expect(content).toContain("Stop Listening");
+    expect(content).toContain("to Ringing");
+    expect(content).toContain("Inbound +");
+    expect(content).toContain("Callbacks");
+    expect(content).toContain("Know What");
+    expect(content).toContain("Happened");
+    expect(content).toContain("Work the");
+    expect(content).toContain("Next Step");
+    expect(content).toContain("One Agency.");
+    expect(content).toContain("More Sales Floors.");
     expect(navigation).toContain("label: 'Consuelo'");
     expect(navigation).toContain("label: 'Docs'");
     expect(navigation).toContain("label: 'Pricing'");
@@ -46,7 +56,8 @@ describe("Consuelo Dialer landing page", () => {
     const feature = read("src/components/home/HomeFeaturePreview.astro");
 
     expect(index).toContain("HomeFeaturePreview");
-    expect(index).toContain("HomeFounderSection");
+    expect(index).not.toContain("HomeFounderSection");
+    expect(existsSync(join(packageRoot, "src/components/home/HomeFounderSection.astro"))).toBe(false);
     expect(index).not.toContain("HomeDialerStats");
     expect(index).not.toContain("HomeAgencySection");
 
@@ -65,6 +76,14 @@ describe("Consuelo Dialer landing page", () => {
     expect(content).not.toContain("shield insurance");
     expect(content).not.toContain("apex financial");
     expect(content).not.toContain("summit benefits");
+  });
+
+  test("does not render the redundant founding-agency announcement above the hero", () => {
+    const content = read("src/data/home-content.ts");
+    const hero = read("src/components/home/HomeHero.astro");
+
+    expect(content).not.toContain("Founding agency program · Early access");
+    expect(hero).not.toContain("dialer-hero__announcement");
   });
 
   test("uses the requested header structure and Consuelo mark", () => {
@@ -90,7 +109,7 @@ describe("Consuelo Dialer landing page", () => {
     expect(pricingContent).not.toContain("/previews/coaching.webp");
     expect(pricingContent).not.toContain("imageSrc");
     expect(pricing).toContain("pricing-plan__placeholder");
-    expect(pricing).toContain("Product preview");
+    expect(pricing).toContain("Product Preview");
   });
 
   test("preserves the inherited feature scroll layout while preventing long headings from overflowing", () => {

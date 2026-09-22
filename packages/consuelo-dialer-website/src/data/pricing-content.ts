@@ -24,24 +24,24 @@ const foundingAgencyHref =
   'mailto:support@consuelohq.com?subject=Consuelo%20Dialer%20Founding%20Agency';
 
 export const pricingHero: PricingHeroContent = {
-  title: 'Dialer plans',
+  title: 'Dialer Plans',
   subtitle:
     'Public launch prices are being finalized during the founding-agency pilot. The commercial model is built around seats, phone numbers, and measured calling usage.',
 };
 
 export const pricingAccountLink: PricingAccountLink = {
   prompt: 'Want founding-agency pricing?',
-  label: 'Get early access',
+  label: 'Get Early Access',
   href: foundingAgencyHref,
 };
 
 export const pricingPlans: PricingPlan[] = [
   {
     name: 'Single',
-    price: '1 line',
-    subtitle: 'Straightforward calling',
+    price: '1 Line',
+    subtitle: 'Straightforward Calling',
     href: foundingAgencyHref,
-    placeholderTitle: 'Single-line calling',
+    placeholderTitle: 'Single-Line Calling',
     placeholderMeta: 'Current product UI placeholder',
     bullets: [
       'CRM-embedded calling',
@@ -52,11 +52,11 @@ export const pricingPlans: PricingPlan[] = [
   },
   {
     name: 'Standard',
-    price: '3 lines',
+    price: '3 Lines',
     subtitle: 'Predictive',
     href: foundingAgencyHref,
-    badge: 'Early access',
-    placeholderTitle: 'Predictive calling',
+    badge: 'Early Access',
+    placeholderTitle: 'Predictive Calling',
     placeholderMeta: 'Current product UI placeholder',
     bullets: [
       '1 / 2 / 3 line predictive dialing',
@@ -67,11 +67,11 @@ export const pricingPlans: PricingPlan[] = [
   },
   {
     name: 'Power',
-    price: '3 lines',
-    subtitle: 'Predictive + team growth',
+    price: '3 Lines',
+    subtitle: 'Predictive + Team Growth',
     href: foundingAgencyHref,
     badge: 'Agency',
-    placeholderTitle: 'Team + location calling',
+    placeholderTitle: 'Team + Location Calling',
     placeholderMeta: 'Current product UI placeholder',
     bullets: [
       'Predictive dialing',

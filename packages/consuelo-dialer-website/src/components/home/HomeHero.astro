@@ -11,11 +11,6 @@ import { dialerHero } from '../../data/home-content';
   </div>
 
   <div class="dialer-hero__content">
-    <a class="dialer-hero__announcement" href={dialerHero.primaryHref}>
-      <span>{dialerHero.eyebrow}</span>
-      <span aria-hidden="true">→</span>
-    </a>
-
     <h1>{dialerHero.title}</h1>
     <p class="dialer-hero__subtitle">{dialerHero.subtitle}</p>
 
@@ -54,24 +49,6 @@ import { dialerHero } from '../../data/home-content';
     width: min(100%, 88rem);
     justify-items: center;
     gap: clamp(1rem, 1.6vw, 1.45rem);
-  }
-
-  .dialer-hero__announcement {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.7rem;
-    border: 1px solid rgba(255, 255, 255, 0.7);
-    padding: 0.55rem 0.7rem;
-    font: 650 clamp(0.58rem, 0.75vw, 0.68rem)/1 var(--site-font-mono);
-    letter-spacing: 0.1em;
-    text-decoration: none;
-    transition: background var(--site-motion-fast), color var(--site-motion-fast);
-  }
-
-  .dialer-hero__announcement:hover,
-  .dialer-hero__announcement:focus-visible {
-    background: white;
-    color: var(--site-color-brand);
   }
 
   .dialer-hero h1 {
@@ -230,7 +207,6 @@ import { dialerHero } from '../../data/home-content';
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .dialer-hero__announcement,
     .dialer-hero__button {
       transition: none;
     }
