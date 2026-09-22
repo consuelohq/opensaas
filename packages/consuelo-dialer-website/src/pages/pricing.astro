@@ -34,16 +34,10 @@ const description = pricingHero.subtitle
 								<p class="pricing-plan__subtitle">{plan.subtitle}</p>
 							</header>
 
-							<figure class="pricing-plan__image">
-								<img
-									class="pricing-plan__art"
-									src={plan.imageSrc}
-									alt={plan.imageLabel}
-									width="1200"
-									height="900"
-									loading="lazy"
-									decoding="async"
-								/>
+							<figure class="pricing-plan__placeholder" aria-label={`${plan.name} product preview placeholder`}>
+								<span>Product preview</span>
+								<strong>{plan.placeholderTitle}</strong>
+								<p>{plan.placeholderMeta}</p>
 							</figure>
 
 							<ul class="pricing-plan__bullets">
@@ -53,8 +47,8 @@ const description = pricingHero.subtitle
 							</ul>
 
 							<span class="pricing-plan__cta" aria-hidden="true">
-								<span class="pricing-plan__cta-default">EARLY ACCESS</span>
-								<span class="pricing-plan__cta-active">TALK TO US</span>
+								<span class="pricing-plan__cta-default">Early access</span>
+								<span class="pricing-plan__cta-active">Talk to us</span>
 							</span>
 						</a>
 					))
@@ -88,7 +82,6 @@ const description = pricingHero.subtitle
 		font-weight: 400;
 		line-height: 0.88;
 		letter-spacing: -0.055em;
-		text-transform: uppercase;
 	}
 
 	.pricing-page__subtitle {
@@ -135,7 +128,6 @@ const description = pricingHero.subtitle
 		letter-spacing: 0.16em;
 		line-height: 1;
 		text-decoration: none;
-		text-transform: uppercase;
 	}
 
 	.pricing-page__cards {
@@ -186,7 +178,6 @@ const description = pricingHero.subtitle
 	.pricing-plan__subtitle,
 	.pricing-plan__bullets {
 		font-family: var(--site-font-mono);
-		text-transform: uppercase;
 	}
 
 	.pricing-plan__label,
@@ -231,18 +222,50 @@ const description = pricingHero.subtitle
 		letter-spacing: 0.13em;
 	}
 
-	.pricing-plan__image {
+	.pricing-plan__placeholder {
+		display: grid;
+		align-content: space-between;
 		aspect-ratio: 16 / 10;
 		margin: 0;
 		overflow: hidden;
-		background: var(--site-color-surface);
+		border: 1px dashed currentColor;
+		background:
+			linear-gradient(135deg, transparent 0 49.7%, currentColor 49.9% 50.1%, transparent 50.3%),
+			color-mix(in srgb, currentColor 4%, white);
+		padding: clamp(0.85rem, 1.8vw, 1.35rem);
 	}
 
-	.pricing-plan__art {
-		display: block;
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
+	.pricing-plan__placeholder > span,
+	.pricing-plan__placeholder > p {
+		margin: 0;
+		font-family: var(--site-font-mono);
+		font-size: 0.62rem;
+		letter-spacing: 0.07em;
+	}
+
+	.pricing-plan__placeholder > span {
+		justify-self: start;
+		border: 1px solid currentColor;
+		background: white;
+		padding: 0.24rem 0.38rem;
+	}
+
+	.pricing-plan__placeholder > strong {
+		align-self: center;
+		justify-self: center;
+		background: white;
+		padding: 0.3rem 0.5rem;
+		font-family: var(--site-font-display);
+		font-size: clamp(1.65rem, 2.5vw, 2.6rem);
+		font-weight: 430;
+		line-height: 0.96;
+		text-align: center;
+	}
+
+	.pricing-plan__placeholder > p {
+		justify-self: end;
+		background: white;
+		padding: 0.24rem 0.38rem;
 	}
 
 	.pricing-plan__bullets {
@@ -267,7 +290,6 @@ const description = pricingHero.subtitle
 		padding: 0.42rem 0.72rem;
 		font: 650 0.68rem/1 var(--site-font-mono);
 		letter-spacing: 0.13em;
-		text-transform: uppercase;
 	}
 
 	.pricing-plan__cta-active {

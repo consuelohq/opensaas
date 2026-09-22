@@ -100,7 +100,6 @@
   padding: 0.35rem 0.7rem;
   font: 700 var(--site-text-xs) / 1 var(--site-font-mono);
   letter-spacing: 0.08em;
-  text-transform: uppercase;
 }
 
 .site-eyebrow {
@@ -108,7 +107,6 @@
   color: var(--site-color-secondary);
   font: 700 var(--site-text-xs) / 1.4 var(--site-font-mono);
   letter-spacing: 0.12em;
-  text-transform: uppercase;
 }
 
 .site-title {

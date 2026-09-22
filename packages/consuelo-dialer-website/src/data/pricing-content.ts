@@ -15,8 +15,8 @@ export type PricingPlan = {
   subtitle: string;
   href: string;
   badge?: string;
-  imageLabel: string;
-  imageSrc: string;
+  placeholderTitle: string;
+  placeholderMeta: string;
   bullets: string[];
 };
 
@@ -24,60 +24,60 @@ const foundingAgencyHref =
   'mailto:support@consuelohq.com?subject=Consuelo%20Dialer%20Founding%20Agency';
 
 export const pricingHero: PricingHeroContent = {
-  title: 'DIALER PLANS',
+  title: 'Dialer plans',
   subtitle:
     'Public launch prices are being finalized during the founding-agency pilot. The commercial model is built around seats, phone numbers, and measured calling usage.',
 };
 
 export const pricingAccountLink: PricingAccountLink = {
   prompt: 'Want founding-agency pricing?',
-  label: 'GET EARLY ACCESS',
+  label: 'Get early access',
   href: foundingAgencyHref,
 };
 
 export const pricingPlans: PricingPlan[] = [
   {
     name: 'Single',
-    price: '1 LINE',
-    subtitle: 'STRAIGHTFORWARD CALLING',
+    price: '1 line',
+    subtitle: 'Straightforward calling',
     href: foundingAgencyHref,
-    imageLabel: 'Single-line CRM-embedded calling',
-    imageSrc: '/previews/power-dialer.webp',
+    placeholderTitle: 'Single-line calling',
+    placeholderMeta: 'Current product UI placeholder',
     bullets: [
-      'CRM-EMBEDDED CALLING',
-      'SINGLE-LINE MODE',
-      'INCLUDED NUMBER CAPACITY',
-      'MEASURED CALLING USAGE',
+      'CRM-embedded calling',
+      'Single-line mode',
+      'Included number capacity',
+      'Measured calling usage',
     ],
   },
   {
     name: 'Standard',
-    price: '3 LINES',
-    subtitle: 'PREDICTIVE',
+    price: '3 lines',
+    subtitle: 'Predictive',
     href: foundingAgencyHref,
-    badge: 'EARLY ACCESS',
-    imageLabel: 'Predictive multi-line calling',
-    imageSrc: '/previews/analytics.webp',
+    badge: 'Early access',
+    placeholderTitle: 'Predictive calling',
+    placeholderMeta: 'Current product UI placeholder',
     bullets: [
-      '1 / 2 / 3 LINE PREDICTIVE DIALING',
-      'RECORDINGS',
-      'TRANSCRIPTS',
-      'ADDITIONAL NUMBERS AVAILABLE',
+      '1 / 2 / 3 line predictive dialing',
+      'Recordings',
+      'Transcripts',
+      'Additional numbers available',
     ],
   },
   {
     name: 'Power',
-    price: '3 LINES',
-    subtitle: 'PREDICTIVE + TEAM GROWTH',
+    price: '3 lines',
+    subtitle: 'Predictive + team growth',
     href: foundingAgencyHref,
-    badge: 'AGENCY',
-    imageLabel: 'Predictive calling for teams and locations',
-    imageSrc: '/previews/coaching.webp',
+    badge: 'Agency',
+    placeholderTitle: 'Team + location calling',
+    placeholderMeta: 'Current product UI placeholder',
     bullets: [
-      'PREDICTIVE DIALING',
-      'RECORDINGS + TRANSCRIPTS',
-      'TEAM / LOCATION GROWTH',
-      'ADDITIONAL NUMBERS BILLED SEPARATELY',
+      'Predictive dialing',
+      'Recordings + transcripts',
+      'Team / location growth',
+      'Additional numbers billed separately',
     ],
   },
 ];

@@ -1,4 +1,5 @@
 export const siteLinks = {
+  consuelo: 'https://consuelohq.com/',
   app: 'https://app.consuelohq.com',
   github: 'https://github.com/consuelohq/opensaas',
   discord: 'https://discord.gg/87YtkVUBvc',

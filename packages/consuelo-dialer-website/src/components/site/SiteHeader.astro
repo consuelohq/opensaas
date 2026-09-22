@@ -1,35 +1,37 @@
 ---
-import { siteLinks } from '../../data/site-links';
 import { dialerSiteHeaderLinks } from '../../data/site-navigation';
 
-const [demoLink, featuresLink, pricingLink, agenciesLink] = dialerSiteHeaderLinks.desktop;
-const [mobileDemoLink, mobileAgenciesLink] = dialerSiteHeaderLinks.mobile;
+const [consueloLink, docsLink, pricingLink, featuresLink] = dialerSiteHeaderLinks.desktop;
+const [mobileDocsLink, mobilePricingLink] = dialerSiteHeaderLinks.mobile;
 ---
 
 <header class="dialer-header" data-dialer-header>
   <nav class="dialer-header__desktop" aria-label={dialerSiteHeaderLinks.primaryAriaLabel}>
-    <a class="dialer-header__desktop-link" href={demoLink.href}>{demoLink.label}</a>
-    <a class="dialer-header__desktop-link" href={featuresLink.href}>{featuresLink.label}</a>
+    <a class="dialer-header__desktop-link" href={consueloLink.href}>{consueloLink.label}</a>
+    <a class="dialer-header__desktop-link" href={docsLink.href}>{docsLink.label}</a>
 
     <div class="dialer-header__identity">
       <a class="dialer-header__wordmark" href="/" aria-label={dialerSiteHeaderLinks.wordmarkAriaLabel}>
-        <span>CONSUELO</span>
-        <span>DIALER</span>
+        <span>Consuelo</span>
+        <span>Dialer</span>
       </a>
-      <a class="dialer-header__docs" href={siteLinks.dialerDocs}>DOCS ↗</a>
+      <img class="dialer-header__mark" src="/favicon.svg" alt="" width="24" height="24" />
     </div>
 
     <a class="dialer-header__desktop-link" href={pricingLink.href}>{pricingLink.label}</a>
-    <a class="dialer-header__desktop-link" href={agenciesLink.href}>{agenciesLink.label}</a>
+    <a class="dialer-header__desktop-link" href={featuresLink.href}>{featuresLink.label}</a>
   </nav>
 
   <nav class="dialer-header__mobile" aria-label={dialerSiteHeaderLinks.mobilePrimaryAriaLabel}>
-    <a class="dialer-header__side-link" href={mobileDemoLink.href}>{mobileDemoLink.label}</a>
-    <a class="dialer-header__mobile-wordmark" href="/" aria-label={dialerSiteHeaderLinks.wordmarkAriaLabel}>
-      <span>CONSUELO</span>
-      <span>DIALER</span>
-    </a>
-    <a class="dialer-header__side-link" href={mobileAgenciesLink.href}>{mobileAgenciesLink.label}</a>
+    <a class="dialer-header__side-link" href={mobileDocsLink.href}>{mobileDocsLink.label}</a>
+    <div class="dialer-header__mobile-identity">
+      <a class="dialer-header__mobile-wordmark" href="/" aria-label={dialerSiteHeaderLinks.wordmarkAriaLabel}>
+        <span>Consuelo</span>
+        <span>Dialer</span>
+      </a>
+      <img class="dialer-header__mark" src="/favicon.svg" alt="" width="24" height="24" />
+    </div>
+    <a class="dialer-header__side-link" href={mobilePricingLink.href}>{mobilePricingLink.label}</a>
   </nav>
 </header>
 
@@ -69,7 +71,7 @@ const [mobileDemoLink, mobileAgenciesLink] = dialerSiteHeaderLinks.mobile;
   .dialer-header__identity {
     display: grid;
     justify-items: center;
-    gap: 0.7rem;
+    gap: 0.62rem;
     margin-top: -0.15rem;
   }
 
@@ -95,21 +97,19 @@ const [mobileDemoLink, mobileAgenciesLink] = dialerSiteHeaderLinks.mobile;
     text-align: center;
   }
 
-  .dialer-header__docs {
-    font: 650 0.58rem/1 var(--site-font-mono);
-    letter-spacing: 0.1em;
-    opacity: 0.72;
+  .dialer-header__mark {
+    width: 1.45rem;
+    height: 1.45rem;
+    border-radius: 0.28rem;
+    object-fit: cover;
   }
 
-  .dialer-header__desktop-link,
-  .dialer-header__docs {
+  .dialer-header__desktop-link {
     transition: opacity var(--site-motion-fast);
   }
 
   .dialer-header__desktop-link:hover,
-  .dialer-header__desktop-link:focus-visible,
-  .dialer-header__docs:hover,
-  .dialer-header__docs:focus-visible {
+  .dialer-header__desktop-link:focus-visible {
     opacity: 0.68;
   }
 
@@ -146,6 +146,13 @@ const [mobileDemoLink, mobileAgenciesLink] = dialerSiteHeaderLinks.mobile;
       row-gap: 0.12rem;
       font-size: clamp(1.7rem, 7.4vw, 2rem);
       line-height: 0.76;
+    }
+
+    .dialer-header__mobile-identity {
+      display: grid;
+      justify-items: center;
+      gap: 0.5rem;
+      margin-top: -0.1rem;
     }
   }
 </style>
