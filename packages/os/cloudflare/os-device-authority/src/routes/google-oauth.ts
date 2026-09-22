@@ -33,6 +33,7 @@ import { finishMcpOAuthGoogleCallback } from '../services/mcp-oauth';
 import {
   accountNotFoundPage,
   completeWebGoogleLogin,
+  createAuthoritySessionCookie,
   PRIVATE_INTERNAL_SITE_HOST,
 } from './web-auth';
 
@@ -46,6 +47,39 @@ function deviceAuthorizationCorrelationId(request: Request): string {
     return cloudflareRayId;
   }
   return rand('device_auth', 12);
+}
+
+async function approvedDeviceBrowserResponse(input: {
+  runtime: DeviceAuthorityRuntime;
+  accountId: string;
+  email: string;
+  code: string;
+  origin: string;
+  message: string;
+}): Promise<Response> {
+  try {
+    const sessionCookie = await createAuthoritySessionCookie({
+      runtime: input.runtime,
+      accountId: input.accountId,
+      email: input.email,
+      cloudOnboardingEligible: false,
+    });
+    return text(
+      page({
+        code: input.code,
+        origin: input.origin,
+        message: input.message,
+      }),
+      {
+        headers: {
+          'set-cookie': sessionCookie,
+          'cache-control': 'no-store',
+        },
+      },
+    );
+  } catch {
+    return json({ error: 'login_unavailable' }, { status: 503 });
+  }
 }
 
 async function handleGoogleOAuthRequest(
@@ -318,13 +352,14 @@ async function handleGoogleOAuthRequest(
         grant.accountAuthMethod = 'google';
         await input.store.put(grant);
         await input.store.delOAuthState(stateValue);
-        return text(
-          page({
-            code: oauthState.userCode,
-            origin,
-            message: `Approved for ${identity.email}. Return to your terminal to name this workspace.`,
-          }),
-        );
+        return approvedDeviceBrowserResponse({
+          runtime,
+          accountId: canonicalIdentity.operatingAccountId,
+          email: identity.email,
+          code: oauthState.userCode,
+          origin,
+          message: `Approved for ${identity.email}. Return to your terminal to name this workspace.`,
+        });
       }
       const accountId = canonicalIdentity.operatingAccountId;
       grant.canonicalUserId = canonicalIdentity.canonicalUserId;
@@ -379,23 +414,25 @@ async function handleGoogleOAuthRequest(
           );
         }
         await recordCanonicalInstallIdentity(runtime, grant);
-        return text(
-          page({
-            code: oauthState.userCode,
-            origin,
-            message: `Approved for ${identity.email}. Return to your terminal.`,
-          }),
-        );
+        return approvedDeviceBrowserResponse({
+          runtime,
+          accountId,
+          email: identity.email,
+          code: oauthState.userCode,
+          origin,
+          message: `Approved for ${identity.email}. Return to your terminal.`,
+        });
       }
       await input.store.put(grant);
       await input.store.delOAuthState(stateValue);
-      return text(
-        page({
-          code: oauthState.userCode,
-          origin,
-          message: `Approved for ${identity.email}. Return to your terminal to name this workspace.`,
-        }),
-      );
+      return approvedDeviceBrowserResponse({
+        runtime,
+        accountId,
+        email: identity.email,
+        code: oauthState.userCode,
+        origin,
+        message: `Approved for ${identity.email}. Return to your terminal to name this workspace.`,
+      });
     }
     return new Response('Not found\n', { status: 404 });
   } catch (error: unknown) {

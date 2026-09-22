@@ -14,7 +14,7 @@ describe('Consuelo OS compact hosted daemon output', () => {
     expect(bootstrap).toContain('bash ./scripts/install-system-daemons.sh --quiet');
     expect(bootstrap).toContain('bash ./scripts/install-system-daemons.sh --dry-run --quiet');
     expect(bootstrap).toContain('setting up background service');
-    expect(bootstrap).toContain('background service ready');
+    expect(bootstrap).not.toContain('background service ready');
     expect(bootstrap).not.toContain('"$BUN_BIN" run --cwd "$os_dir" install:system-daemons:quiet');
     expect(bootstrap).not.toContain('"$BUN_BIN" run --cwd "$os_dir" install:system-daemons:dry-run -- --quiet');
   });
@@ -24,7 +24,7 @@ describe('Consuelo OS compact hosted daemon output', () => {
     expect(bootstrap).toContain('loading_message="$1"');
     expect(bootstrap).toContain('verify_runtime_release()');
     expect(bootstrap).toContain('install_verified_runtime()');
-    expect(bootstrap).toContain('run_with_loading_dots "setting up background service" install_daemons_quiet');
+    expect(bootstrap).toContain('run_quiet_with_loading_dots "setting up background service" install_daemons_quiet');
   });
 
   test('normal hosted setup collapses dependency chatter behind one installer status while debug stays detailed', () => {
