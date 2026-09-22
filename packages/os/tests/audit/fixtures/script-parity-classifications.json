@@ -1046,6 +1046,14 @@
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
     },
+    "scripts/lib/runtime-tool-providers/swamp.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned Swamp runtime-provider adapter for optional local tool discovery and execution; it has no workspace-script counterpart."
+    },
+    "scripts/lib/runtime-tool-registry.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned effective runtime tool registry that merges optional provider tools without mutating the generated manifest; it has no workspace-script counterpart."
+    },
     "scripts/lib/search/explore-output.js": {
       "status": "os-only-needs-review",
       "reason": "scripts/lib/search/explore-output.js exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."

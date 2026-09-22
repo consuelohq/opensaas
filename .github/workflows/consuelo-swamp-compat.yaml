@@ -1,0 +1,78 @@
+name: Consuelo Swamp compatibility
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Optional Swamp release tag (defaults to latest)
+        required: false
+        default: ''
+  schedule:
+    - cron: '23 7 * * *'
+  push:
+    branches:
+      - main
+    paths:
+      - 'packages/os/scripts/lib/runtime-tool-providers/swamp.ts'
+      - 'packages/os/scripts/lib/runtime-tool-registry.ts'
+      - 'packages/os/scripts/lib/manifest.ts'
+      - 'packages/os/scripts/lib/security-gateway.ts'
+      - 'packages/os/scripts/lib/facade/executor.ts'
+      - 'packages/os/scripts/tools-search.ts'
+      - '.github/scripts/consuelo-swamp-compat.ts'
+      - 'packages/os/tests/runtime-tool-providers-swamp.test.ts'
+      - '.github/workflows/consuelo-swamp-compat.yaml'
+      - 'bun.lock'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: consuelo-swamp-compat-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  swamp-compatibility:
+    name: Consuelo / real Swamp compatibility
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Setup OS compatibility test
+        uses: ./.github/actions/consuelo-ci-setup
+        with:
+          setup-node: 'false'
+          install-root: 'false'
+          install-workspace: 'false'
+          install-os: 'true'
+
+      - name: Download and verify Swamp release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SWAMP_RELEASE_TAG: ${{ inputs.release_tag || '' }}
+        run: |
+          set -euo pipefail
+          install_dir="${RUNNER_TEMP}/swamp"
+          mkdir -p "${install_dir}"
+
+          release_args=()
+          if [[ -n "${SWAMP_RELEASE_TAG}" ]]; then
+            release_args+=("${SWAMP_RELEASE_TAG}")
+          fi
+
+          gh release download "${release_args[@]}"             --repo swamp-club/swamp             --pattern swamp-linux-x86_64             --pattern checksums.txt             --dir "${install_dir}"
+
+          cd "${install_dir}"
+          sha256sum --check --ignore-missing checksums.txt
+          chmod +x swamp-linux-x86_64
+          ./swamp-linux-x86_64 --version
+
+      - name: Run Consuelo real-provider smoke
+        shell: bash
+        run: |
+          set -euo pipefail
+          bun .github/scripts/consuelo-swamp-compat.ts --swamp-bin "${RUNNER_TEMP}/swamp/swamp-linux-x86_64"
