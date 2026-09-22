@@ -5,6 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Effect } from 'effect';
+import { z } from 'zod';
 
 import manifestJson from '../../../manifests/generated/tool.manifest.json';
 import {
@@ -21,7 +22,12 @@ import { PROCESS_TERMINATION_GRACE_MS, registerProcessTreeCleanup, shouldUseDeta
 import { getInputSchema } from './schemas';
 import { resolveBrowserConfig } from '../browser/config';
 import { executeCodeCall } from '../code-call/runtime';
+import { readEffectiveFullManifest } from '../manifest';
 import { nodeResourceLockPath, withNodeResourceLock } from '../node-resource-lock';
+import {
+  executeSwampRuntimeTool,
+  runtimeProviderPayload,
+} from '../runtime-tool-providers/swamp';
 import { resolveActiveWorkspaceProjectCwd } from '../workspace-project-cwd';
 import {
   resolveWorkSessionFsScope,
@@ -112,11 +118,20 @@ function supportsWorkSessionAuthority(toolName: string): boolean {
   return WORK_SESSION_AUTHORITY_TOOLS.has(toolName);
 }
 
-export function getToolManifestEntry(toolName: string): ToolManifestEntry | null {
-  const directMatch = manifestEntries.find((entry) => entry.name === toolName);
+export function getToolManifestEntry(
+  toolName: string,
+  options: Pick<ExecuteToolOptions, 'cwd' | 'env'> = {},
+): ToolManifestEntry | null {
+  const entries = readEffectiveFullManifest(undefined, {
+    cwd: options.cwd,
+    env: options.env,
+  }).tools
+    .filter((entry) => entry.kind === 'facade-tool')
+    .map((entry) => entry.definition as unknown as ToolManifestEntry);
+  const directMatch = entries.find((entry) => entry.name === toolName);
   if (directMatch) return directMatch;
 
-  const scriptMatches = manifestEntries.filter((entry) => entry.command.script === toolName);
+  const scriptMatches = entries.filter((entry) => entry.command.script === toolName);
   return scriptMatches.length === 1 ? scriptMatches[0] : null;
 }
 
@@ -211,7 +226,7 @@ export async function executeTool<TData = unknown>(
   const env = options.env || process.env;
   const runner = options.runner || defaultRunner;
   const requestId = typeof input.requestId === 'string' ? input.requestId : undefined;
-  let entry = getToolManifestEntry(toolName);
+  let entry = getToolManifestEntry(toolName, { cwd, env });
 
   try {
     if (!entry) {
@@ -230,23 +245,44 @@ export async function executeTool<TData = unknown>(
       return result as ToolResult<TData>;
     }
 
-    const schema = getInputSchema(entry.inputSchema);
-    if (!schema) {
-      const result = createToolResult({
-        ok: false,
-        code: 'VALIDATION_ERROR',
-        message: `missing input schema: ${entry.inputSchema}`,
-        data: null,
-        durationMs: elapsedMs(startedAt, options.now),
-        traceId,
-        requestId,
-        now: options.now,
-      });
-      logResult(entry, toolName, result, entry.underlying, undefined, undefined, options.logMode, { input, env });
-      return result as ToolResult<TData>;
+    let parsed: ReturnType<z.ZodType<unknown>['safeParse']>;
+    if (entry.runtimeProvider) {
+      try {
+        const schema = z.fromJSONSchema(entry.runtimeProvider.inputSchema);
+        parsed = schema.safeParse(runtimeProviderPayload(input));
+      } catch (error: unknown) {
+        const result = createToolResult({
+          ok: false,
+          code: 'VALIDATION_ERROR',
+          message: `invalid runtime provider input schema: ${getErrorMessage(error)}`,
+          data: null,
+          durationMs: elapsedMs(startedAt, options.now),
+          traceId,
+          requestId,
+          now: options.now,
+        });
+        logResult(entry, toolName, result, entry.underlying, undefined, undefined, options.logMode, { input, env });
+        return result as ToolResult<TData>;
+      }
+    } else {
+      const schema = getInputSchema(entry.inputSchema);
+      if (!schema) {
+        const result = createToolResult({
+          ok: false,
+          code: 'VALIDATION_ERROR',
+          message: `missing input schema: ${entry.inputSchema}`,
+          data: null,
+          durationMs: elapsedMs(startedAt, options.now),
+          traceId,
+          requestId,
+          now: options.now,
+        });
+        logResult(entry, toolName, result, entry.underlying, undefined, undefined, options.logMode, { input, env });
+        return result as ToolResult<TData>;
+      }
+      parsed = schema.safeParse(input);
     }
 
-    const parsed = schema.safeParse(input);
     if (!parsed.success) {
       const result = createToolResult({
         ok: false,
@@ -262,7 +298,10 @@ export async function executeTool<TData = unknown>(
       return result as ToolResult<TData>;
     }
 
-    const normalizedInput = normalizeInput(toolName, parsed.data as ToolInput);
+    const parsedInput = entry.runtimeProvider
+      ? { ...input, ...(parsed.data as ToolInput) }
+      : parsed.data as ToolInput;
+    const normalizedInput = normalizeInput(toolName, parsedInput);
     const taskHandle = typeof normalizedInput.taskSession === 'string' ? normalizedInput.taskSession.trim() : '';
     const workHandle = typeof normalizedInput.workSession === 'string' ? normalizedInput.workSession.trim() : '';
     if (taskHandle && workHandle) {
@@ -882,6 +921,55 @@ async function executeInternalTool<TData>(
   if (!internal) return null;
 
   try {
+
+  if (internal === 'runtime-provider') {
+    const metadata = entry.runtimeProvider;
+    if (!metadata || metadata.provider !== 'swamp') {
+      const result = createToolResult({
+        ok: false,
+        code: 'VALIDATION_ERROR',
+        message: `runtime provider metadata is missing or unsupported for ${entry.name}`,
+        data: null,
+        durationMs: elapsedMs(context.startedAt, context.options.now),
+        traceId: context.traceId,
+        requestId: context.requestId,
+        now: context.options.now,
+      });
+      logResult(entry, entry.name, result, entry.underlying, undefined, undefined, context.options.logMode, {
+        input: context.rawInput,
+        resolvedInput: input,
+        env: context.env,
+      });
+      return result as ToolResult<TData>;
+    }
+
+    const outcome = await executeSwampRuntimeTool(metadata, input, {
+      runner: context.runner,
+      timeoutMs: getTimeoutMs(entry, input, context.options),
+      env: context.env,
+    });
+    const ok = outcome.runResult.exitCode === 0 && !outcome.parseError;
+    const result = createToolResult({
+      ok,
+      code: ok ? 'OK' : outcome.parseError ? 'PARSE_ERROR' : 'COMMAND_FAILED',
+      message: ok
+        ? `${entry.name} completed`
+        : outcome.parseError ?? `${entry.name} failed`,
+      data: outcome.data,
+      stderr: stripCommandEcho(outcome.runResult.stderr),
+      exitCode: outcome.runResult.exitCode,
+      durationMs: elapsedMs(context.startedAt, context.options.now),
+      traceId: context.traceId,
+      requestId: context.requestId,
+      now: context.options.now,
+    });
+    logResult(entry, entry.name, result, entry.underlying, undefined, `workspace ${entry.name}`, context.options.logMode, {
+      input: context.rawInput,
+      resolvedInput: input,
+      env: context.env,
+    });
+    return result as ToolResult<TData>;
+  }
 
   if (internal === 'batch') {
     const steps = Array.isArray(input.steps) ? input.steps : [];
