@@ -11,7 +11,9 @@ import path from 'node:path';
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
-import { executeTool } from '../scripts/lib/facade/executor';
+import { executeTool, getToolManifestEntry } from '../scripts/lib/facade/executor';
+import { readRuntimeToolManifestEntries } from '../scripts/lib/runtime-tool-registry';
+import { discoverSwampRuntimeTools } from '../scripts/lib/runtime-tool-providers/swamp';
 import { resolveToolScope } from '../scripts/lib/security-gateway';
 import { runToolSearch } from '../scripts/tools-search';
 
@@ -69,7 +71,7 @@ function inputFile() {
 }
 
 function emit(value) {
-  process.stdout.write((typeof value === 'string' ? value : JSON.stringify(value)) + '\n');
+  fs.writeSync(1, (typeof value === 'string' ? value : JSON.stringify(value)) + '\n');
 }
 
 if (args[0] === '--version') {
@@ -78,32 +80,55 @@ if (args[0] === '--version') {
 }
 
 if (args[0] === 'model' && args[1] === 'search') {
+  if (process.env.SWAMP_FAKE_DISCOVERY_DELAY_MS) {
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, Number(process.env.SWAMP_FAKE_DISCOVERY_DELAY_MS));
+  }
+  if (process.env.SWAMP_FAKE_MODEL_SEARCH_FAIL === '1') process.exit(3);
   emit({
     query: '',
     results: [{
       id: 'model-cache-warmer',
       name: 'cache-warmer',
       type: 'command/shell',
-      methods: [{
-        name: 'run',
-        description: 'Warm a named cache target',
-        arguments: {
-          $schema: 'https://json-schema.org/draft/2020-12/schema',
-          type: 'object',
-          properties: {
-            target: { type: 'string', minLength: 1, description: 'Cache target' },
-            retries: { type: 'integer', minimum: 0 },
+      methods: [
+        {
+          name: 'run',
+          description: process.env.SWAMP_FAKE_LARGE_OUTPUT === '1' ? 'x'.repeat(1_200_000) : 'Warm a named cache target',
+          arguments: {
+            $schema: 'https://json-schema.org/draft/2020-12/schema',
+            type: 'object',
+            properties: {
+              target: { type: 'string', minLength: 1, description: 'Cache target' },
+              retries: { type: 'integer', minimum: 0 },
+            },
+            required: ['target'],
+            additionalProperties: false,
           },
-          required: ['target'],
-          additionalProperties: false,
         },
-      }],
+        {
+          name: 'collide',
+          description: 'Exercise provider fields that overlap Consuelo control names',
+          arguments: {
+            type: 'object',
+            properties: {
+              target: { type: 'string' },
+              timeout: { type: 'integer' },
+              branch: { type: 'string' },
+              dryRun: { type: 'boolean' },
+              requestId: { type: 'string' },
+            },
+            required: ['target', 'timeout', 'branch', 'dryRun', 'requestId'],
+            additionalProperties: false,
+          },
+        },
+      ],
     }],
   });
   process.exit(0);
 }
 
 if (args[0] === 'workflow' && args[1] === 'search') {
+  if (process.env.SWAMP_FAKE_WORKFLOW_SEARCH_FAIL === '1') process.exit(4);
   emit({
     query: '',
     results: [{
@@ -118,6 +143,7 @@ if (args[0] === 'workflow' && args[1] === 'search') {
 }
 
 if (args[0] === 'workflow' && args[1] === 'get') {
+  if (process.env.SWAMP_FAKE_WORKFLOW_GET_FAIL === '1') process.exit(5);
   emit({
     id: 'workflow-deploy-pipeline',
     name: 'deploy-pipeline',
@@ -299,5 +325,118 @@ describe('Swamp runtime tool provider', () => {
     expect(result.matches.some((match) => match.name === 'swamp.model.cache-warmer.run')).toBe(false);
 
     setSwampEnvironment({ home, bin: fakeBin });
+  });
+
+  it('bounds discovery subprocesses and allows catalogs larger than Node spawnSync defaults', () => {
+    const timed = discoverSwampRuntimeTools({
+      cliPath: fakeBin,
+      repoDir: repo,
+      env: { ...process.env, SWAMP_FAKE_DISCOVERY_DELAY_MS: '100' },
+      discoveredAt: new Date().toISOString(),
+      timeoutMs: 20,
+    });
+    expect(timed).toMatchObject({ ok: false, failure: 'provider-unavailable' });
+
+    const large = discoverSwampRuntimeTools({
+      cliPath: fakeBin,
+      repoDir: repo,
+      env: { ...process.env, SWAMP_FAKE_LARGE_OUTPUT: '1' },
+      discoveredAt: new Date().toISOString(),
+      timeoutMs: 10_000,
+    });
+    expect(large.ok).toBe(true);
+    if (large.ok) expect(large.tools.some((tool) => tool.name === 'swamp.model.cache-warmer.run')).toBe(true);
+  });
+
+  it('negative-caches provider-unavailable discovery failures but does not cache incomplete workflow discovery', () => {
+    const failureHome = path.join(root, 'failure-cache-home');
+    const failureLog = path.join(root, 'failure-cache.log');
+    const failureEnv = {
+      ...process.env,
+      CONSUELO_HOME: failureHome,
+      CONSUELO_OS_HOME: failureHome,
+      CONSUELO_SWAMP_BIN: fakeBin,
+      SWAMP_REPO_DIR: repo,
+      SWAMP_FAKE_LOG: failureLog,
+      SWAMP_FAKE_MODEL_SEARCH_FAIL: '1',
+    };
+    expect(readRuntimeToolManifestEntries({ home: failureHome, cwd: repo, env: failureEnv })).toEqual([]);
+    expect(readRuntimeToolManifestEntries({ home: failureHome, cwd: repo, env: failureEnv })).toEqual([]);
+    expect(readFileSync(failureLog, 'utf8').trim().split('\n')).toHaveLength(1);
+
+    const partialHome = path.join(root, 'partial-cache-home');
+    const partialLog = path.join(root, 'partial-cache.log');
+    const partialEnv = {
+      ...process.env,
+      CONSUELO_HOME: partialHome,
+      CONSUELO_OS_HOME: partialHome,
+      CONSUELO_SWAMP_BIN: fakeBin,
+      SWAMP_REPO_DIR: repo,
+      SWAMP_FAKE_LOG: partialLog,
+      SWAMP_FAKE_WORKFLOW_SEARCH_FAIL: '1',
+    };
+    expect(readRuntimeToolManifestEntries({ home: partialHome, cwd: repo, env: partialEnv })).toEqual([]);
+    delete partialEnv.SWAMP_FAKE_WORKFLOW_SEARCH_FAIL;
+    const recovered = readRuntimeToolManifestEntries({ home: partialHome, cwd: repo, env: partialEnv });
+    expect(recovered.some((entry) => entry.name === 'swamp.workflow.deploy-pipeline.run')).toBe(true);
+  });
+
+  it('preserves provider fields that collide with facade controls and preserves provider timeout results', async () => {
+    const collision = await executeTool('swamp.model.cache-warmer.collide', {
+      target: 'users',
+      timeout: 1,
+      branch: 'provider-branch',
+      dryRun: true,
+      requestId: 'provider-request',
+    }, {
+      cwd: repo,
+      env: { ...process.env },
+      logMode: 'silent',
+      timeoutMs: 5_000,
+    });
+    expect(collision).toMatchObject({
+      ok: true,
+      code: 'OK',
+      data: {
+        input: {
+          target: 'users',
+          timeout: 1,
+          branch: 'provider-branch',
+          dryRun: true,
+          requestId: 'provider-request',
+        },
+      },
+    });
+
+    const timeout = await executeTool('swamp.model.cache-warmer.run', { target: 'users' }, {
+      cwd: repo,
+      env: { ...process.env },
+      logMode: 'silent',
+      timeoutMs: 25,
+      runner: async () => {
+        const error = new Error('simulated provider timeout') as Error & { timedOut: boolean };
+        error.timedOut = true;
+        throw error;
+      },
+    });
+    expect(timeout).toMatchObject({ ok: false, code: 'TIMEOUT' });
+  });
+
+  it('does not invoke runtime discovery when resolving a bundled static tool', () => {
+    const staticHome = path.join(root, 'static-fast-path-home');
+    const staticLog = path.join(root, 'static-fast-path.log');
+    const entry = getToolManifestEntry('fs.read', {
+      cwd: repo,
+      env: {
+        ...process.env,
+        CONSUELO_HOME: staticHome,
+        CONSUELO_OS_HOME: staticHome,
+        CONSUELO_SWAMP_BIN: fakeBin,
+        SWAMP_REPO_DIR: repo,
+        SWAMP_FAKE_LOG: staticLog,
+      },
+    });
+    expect(entry?.name).toBe('fs.read');
+    expect(() => readFileSync(staticLog, 'utf8')).toThrow();
   });
 });

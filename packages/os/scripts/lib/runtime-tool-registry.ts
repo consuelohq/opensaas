@@ -21,11 +21,12 @@ export type RuntimeCanonicalManifestEntry = {
 };
 
 type RuntimeToolCache = {
-  version: 1;
+  version: 2;
   provider: 'swamp';
   cliPath: string;
   repoDir: string;
   discoveredAt: string;
+  status: 'success' | 'failure';
   tools: RuntimeCanonicalManifestEntry[];
 };
 
@@ -37,6 +38,7 @@ export type RuntimeToolRegistryOptions = {
 };
 
 const CACHE_TTL_MS = 15 * 60 * 1000;
+const FAILURE_CACHE_TTL_MS = 15 * 1000;
 
 function isObject(value: unknown): value is JsonObject {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -82,28 +84,31 @@ function cachePath(home: string, cliPath: string, repoDir: string): string {
 function readCache(filePath: string, cliPath: string, repoDir: string): RuntimeToolCache | null {
   try {
     const stat = fs.statSync(filePath);
-    if (Date.now() - stat.mtimeMs > CACHE_TTL_MS) return null;
     const parsed = JSON.parse(fs.readFileSync(filePath, 'utf8')) as unknown;
     if (!isObject(parsed)
-      || parsed.version !== 1
+      || parsed.version !== 2
       || parsed.provider !== 'swamp'
       || parsed.cliPath !== cliPath
       || parsed.repoDir !== repoDir
       || typeof parsed.discoveredAt !== 'string'
+      || (parsed.status !== 'success' && parsed.status !== 'failure')
       || !Array.isArray(parsed.tools)) {
       return null;
     }
+    const ttlMs = parsed.status === 'failure' ? FAILURE_CACHE_TTL_MS : CACHE_TTL_MS;
+    if (Date.now() - stat.mtimeMs > ttlMs) return null;
     const tools = parsed.tools.filter((entry): entry is RuntimeCanonicalManifestEntry => {
       if (!isObject(entry) || entry.kind !== 'facade-tool' || entry.source !== 'runtime-provider') return false;
       if (!isObject(entry.definition) || !isObject(entry.definition.runtimeProvider)) return false;
       return entry.definition.runtimeProvider.provider === 'swamp';
     });
     return {
-      version: 1,
+      version: 2,
       provider: 'swamp',
       cliPath,
       repoDir,
       discoveredAt: parsed.discoveredAt,
+      status: parsed.status,
       tools,
     };
   } catch {
@@ -160,15 +165,29 @@ export function readRuntimeToolManifestEntries(
     env,
     discoveredAt,
   });
-  if (!discovered) return [];
+  if (!discovered.ok) {
+    if (discovered.failure === 'provider-unavailable') {
+      writeCache(filePath, {
+        version: 2,
+        provider: 'swamp',
+        cliPath,
+        repoDir,
+        discoveredAt,
+        status: 'failure',
+        tools: [],
+      });
+    }
+    return [];
+  }
 
-  const tools = discovered.map(canonicalize);
+  const tools = discovered.tools.map(canonicalize);
   writeCache(filePath, {
-    version: 1,
+    version: 2,
     provider: 'swamp',
     cliPath,
     repoDir,
     discoveredAt,
+    status: 'success',
     tools,
   });
   return tools;
