@@ -31,11 +31,11 @@ function git(repoRoot, args) {
 }
 
 function createRepo() {
-  const repoRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'os-verify-run-state-'));
+  const repoRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'workspace-verify-run-state-'));
   repoRoots.push(repoRoot);
   git(repoRoot, ['init', '-b', 'main']);
   git(repoRoot, ['config', 'user.email', 'test@example.com']);
-  git(repoRoot, ['config', 'user.name', 'OS Test']);
+  git(repoRoot, ['config', 'user.name', 'Workspace Test']);
   fs.writeFileSync(path.join(repoRoot, 'file.txt'), 'hello\n');
   git(repoRoot, ['add', 'file.txt']);
   git(repoRoot, ['commit', '-m', 'init']);
