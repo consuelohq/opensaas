@@ -1,0 +1,16 @@
+{
+  "area": "swamp-tools",
+  "stream": "stream/swamp-tools",
+  "taskBranch": "task/swamp-tools/fix-swamp-discovery-failure-classification",
+  "baseBranch": "stream/swamp-tools",
+  "sourceBranch": "stream/swamp-tools",
+  "startFrom": "stream",
+  "prNumber": 2540,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2540",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-swamp-tools-fix-swamp-discovery-failure-classification",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_79c19ec23552",
+  "tmuxSession": "opensaas-swamp-tools-fix-swamp-discovery-failure-classification-79c19ec2",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-swamp-tools-fix-swamp-discovery-failure-classification/.task/session.json",
+  "createdAt": "2026-09-22T21:04:32.657Z"
+}
