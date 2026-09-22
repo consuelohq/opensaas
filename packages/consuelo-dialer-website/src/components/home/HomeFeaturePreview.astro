@@ -1,0 +1,346 @@
+---
+import { dialerFeatureItems } from '../../data/home-content';
+import DialerFeaturePlaceholder from './DialerFeaturePlaceholder.astro';
+import HomeFaq from './HomeFaq.astro';
+---
+
+<section class="dialer-product" id="demo" data-section="demo">
+  <div class="dialer-product__frame">
+    <div class="dialer-product__preview-bar">
+      <span>EARLY PRODUCT PREVIEW</span>
+      <span>CONSUELO DIALER · 2026</span>
+    </div>
+
+    <header class="dialer-product__header">
+      <div class="dialer-product__identity">
+        <span>CONSUELO</span>
+        <strong>DIALER</strong>
+      </div>
+      <p>THE SALES PHONE SYSTEM EMBEDDED IN YOUR CRM.</p>
+      <a href="#founding-agency">GET EARLY ACCESS →</a>
+    </header>
+
+    <div class="dialer-product__features" id="features">
+      <div class="dialer-product__feature-heading">
+        <p>THE PRODUCT</p>
+        <h2>FEATURES</h2>
+        <span>Keep the CRM. Make the phone layer faster.</span>
+      </div>
+
+      <div class="dialer-product__stories">
+        {dialerFeatureItems.map((item) => (
+          <article class="product-story" data-feature-story>
+            <div class="product-story__visual">
+              <DialerFeaturePlaceholder
+                title={item.visualTitle}
+                meta={item.visualMeta}
+                rows={item.visualRows}
+                index={item.number}
+              />
+            </div>
+
+            <div class="product-story__copy">
+              <p class="product-story__label">
+                <span>{String(item.number).padStart(2, '0')}</span>
+                <span>{item.label}</span>
+              </p>
+              <h3>
+                {item.title.split('\n').map((line) => <span>{line}</span>)}
+              </h3>
+              <p class="product-story__body">{item.body}</p>
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+
+    <HomeFaq />
+  </div>
+</section>
+
+<script>
+  const stories = Array.from(document.querySelectorAll<HTMLElement>('[data-feature-story]'));
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+  if (stories.length && !reduceMotion.matches && typeof IntersectionObserver !== 'undefined') {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!(entry.target instanceof HTMLElement)) return;
+          entry.target.dataset.active = entry.isIntersecting ? 'true' : 'false';
+        });
+      },
+      { threshold: 0.28, rootMargin: '-12% 0px -12% 0px' },
+    );
+
+    stories.forEach((story) => observer.observe(story));
+  } else {
+    stories.forEach((story) => {
+      story.dataset.active = 'true';
+    });
+  }
+</script>
+
+<style>
+  .dialer-product {
+    position: relative;
+    z-index: 3;
+    background: var(--site-color-brand);
+    padding: clamp(0.75rem, 3vw, 2.4rem) clamp(0.75rem, 3.2vw, 3.2rem) 0;
+  }
+
+  .dialer-product__frame {
+    overflow: clip;
+    background: white;
+    color: var(--site-color-ink);
+    border: clamp(0.55rem, 1vw, 0.9rem) solid white;
+  }
+
+  .dialer-product__preview-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    min-height: 2.1rem;
+    background: var(--site-color-brand);
+    color: white;
+    padding: 0.5rem 0.75rem;
+    font: 650 0.55rem/1 var(--site-font-mono);
+    letter-spacing: 0.11em;
+  }
+
+  .dialer-product__header {
+    display: grid;
+    grid-template-columns: minmax(9rem, 0.5fr) minmax(0, 1fr) auto;
+    align-items: center;
+    gap: clamp(1rem, 3vw, 3rem);
+    border-bottom: 1px solid var(--site-color-brand);
+    padding: clamp(1rem, 2.3vw, 1.8rem) clamp(1rem, 3vw, 2.5rem);
+    color: var(--site-color-brand);
+  }
+
+  .dialer-product__identity {
+    display: grid;
+    width: fit-content;
+    font-family: var(--site-font-display);
+    font-size: clamp(1.65rem, 2.7vw, 2.5rem);
+    line-height: 0.78;
+  }
+
+  .dialer-product__identity strong {
+    justify-self: center;
+    font-size: 0.7em;
+    font-weight: 600;
+  }
+
+  .dialer-product__header > p {
+    min-width: 0;
+    margin: 0;
+    font: 650 clamp(0.55rem, 0.72vw, 0.68rem)/1.45 var(--site-font-mono);
+    letter-spacing: 0.09em;
+    text-align: center;
+  }
+
+  .dialer-product__header > a {
+    border: 1px solid var(--site-color-brand);
+    padding: 0.65rem 0.85rem;
+    color: var(--site-color-brand);
+    font: 680 0.58rem/1 var(--site-font-mono);
+    letter-spacing: 0.1em;
+    white-space: nowrap;
+  }
+
+  .dialer-product__features {
+    padding: clamp(4rem, 8vw, 7.5rem) clamp(1rem, 4vw, 4.5rem);
+  }
+
+  .dialer-product__feature-heading {
+    display: grid;
+    justify-items: center;
+    gap: 0.7rem;
+    margin-bottom: clamp(4rem, 8vw, 7rem);
+    color: var(--site-color-brand);
+    text-align: center;
+  }
+
+  .dialer-product__feature-heading > p,
+  .dialer-product__feature-heading > span {
+    margin: 0;
+    font-family: var(--site-font-mono);
+    text-transform: uppercase;
+  }
+
+  .dialer-product__feature-heading > p {
+    font-size: 0.6rem;
+    font-weight: 680;
+    letter-spacing: 0.14em;
+  }
+
+  .dialer-product__feature-heading h2 {
+    margin: 0;
+    font-family: var(--site-font-display);
+    font-size: clamp(5.5rem, 12.5vw, 12.5rem);
+    font-weight: 430;
+    letter-spacing: -0.055em;
+    line-height: 0.7;
+  }
+
+  .dialer-product__feature-heading > span {
+    max-width: 34rem;
+    color: var(--site-color-muted);
+    font-size: 0.6rem;
+    line-height: 1.5;
+    letter-spacing: 0.08em;
+  }
+
+  .dialer-product__stories {
+    display: grid;
+  }
+
+  .product-story {
+    display: grid;
+    grid-template-columns: minmax(0, 1.58fr) minmax(0, 0.42fr);
+    gap: clamp(2rem, 5vw, 6rem);
+    min-height: 86svh;
+    border-top: 1px dashed var(--site-color-line-strong);
+    padding: clamp(4rem, 7vw, 7rem) 0;
+  }
+
+  .product-story__visual {
+    position: sticky;
+    top: clamp(1.5rem, 8vh, 5rem);
+    align-self: start;
+    min-width: 0;
+    opacity: 0.52;
+    transform: translateY(12px);
+    transition: opacity var(--site-motion-slow), transform var(--site-motion-slow);
+  }
+
+  .product-story[data-active='true'] .product-story__visual {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .product-story__copy {
+    align-self: center;
+    min-width: 0;
+    color: var(--site-color-brand);
+  }
+
+  .product-story__label {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin: 0 0 1rem;
+    font: 680 0.6rem/1 var(--site-font-mono);
+    letter-spacing: 0.12em;
+  }
+
+  .product-story__label span:first-child {
+    display: grid;
+    width: 1.65rem;
+    height: 1.65rem;
+    place-items: center;
+    border: 1px solid currentColor;
+  }
+
+  .product-story__copy h3 {
+    max-width: 100%;
+    min-width: 0;
+    margin: 0;
+    font-family: var(--site-font-display);
+    font-size: clamp(2.45rem, 4vw, 4.45rem);
+    font-weight: 430;
+    letter-spacing: -0.04em;
+    line-height: 0.84;
+    overflow-wrap: anywhere;
+    text-wrap: balance;
+  }
+
+  .product-story__copy h3 span {
+    display: block;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  .product-story__body {
+    max-width: 25rem;
+    margin: 1.6rem 0 0;
+    color: var(--site-color-muted);
+    font-size: clamp(0.88rem, 1.06vw, 1rem);
+    line-height: 1.64;
+    text-wrap: pretty;
+  }
+
+  @media (max-width: 960px) {
+    .product-story {
+      grid-template-columns: minmax(0, 1.35fr) minmax(13rem, 0.65fr);
+      gap: 2.5rem;
+    }
+
+    .product-story__copy h3 {
+      font-size: clamp(2.25rem, 4.4vw, 3.5rem);
+    }
+  }
+
+  @media (max-width: 760px) {
+    .dialer-product {
+      padding-inline: 0.55rem;
+    }
+
+    .dialer-product__preview-bar span:last-child {
+      display: none;
+    }
+
+    .dialer-product__header {
+      grid-template-columns: 1fr auto;
+    }
+
+    .dialer-product__header > p {
+      display: none;
+    }
+
+    .dialer-product__features {
+      padding-inline: 0.85rem;
+    }
+
+    .dialer-product__feature-heading h2 {
+      font-size: clamp(4.5rem, 22vw, 7rem);
+    }
+
+    .product-story {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+      min-height: auto;
+      padding: 4rem 0 5rem;
+    }
+
+    .product-story__visual {
+      position: relative;
+      top: auto;
+      opacity: 1;
+      transform: none;
+    }
+
+    .product-story__copy {
+      max-width: 30rem;
+    }
+
+    .product-story__copy h3 {
+      font-size: clamp(3rem, 15vw, 5rem);
+      line-height: 0.82;
+    }
+
+    .product-story__body {
+      font-size: 0.94rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .product-story__visual {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+  }
+</style>

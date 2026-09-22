@@ -1,0 +1,143 @@
+---
+import { dialerFounder } from '../../data/home-content';
+---
+
+<section class="founder-section" data-section="founder">
+  <div class="founder-section__photo" role="img" aria-label="Founder photo placeholder">
+    <span>FOUNDER PHOTO</span>
+    <strong>REPLACE BEFORE PUBLIC LAUNCH</strong>
+  </div>
+
+  <div class="founder-section__copy">
+    <p>{dialerFounder.eyebrow}</p>
+    <h2>{dialerFounder.title}</h2>
+    <div class="founder-section__body">
+      <p>{dialerFounder.body}</p>
+      <span>{dialerFounder.note}</span>
+    </div>
+  </div>
+</section>
+
+<style>
+  .founder-section {
+    display: grid;
+    grid-template-columns: minmax(18rem, 0.72fr) minmax(0, 1.28fr);
+    min-height: 70svh;
+    background: white;
+    color: var(--site-color-brand);
+  }
+
+  .founder-section__photo {
+    position: relative;
+    display: grid;
+    align-content: end;
+    min-height: 44rem;
+    overflow: hidden;
+    border-right: 1px solid var(--site-color-brand);
+    background:
+      linear-gradient(135deg, transparent 0 49.8%, var(--site-color-brand) 50% 50.2%, transparent 50.4%),
+      linear-gradient(45deg, transparent 0 49.8%, var(--site-color-brand) 50% 50.2%, transparent 50.4%),
+      color-mix(in srgb, var(--site-color-brand) 5%, white);
+    padding: 1.3rem;
+  }
+
+  .founder-section__photo::before {
+    position: absolute;
+    inset: 1.2rem;
+    border: 1px dashed var(--site-color-brand);
+    content: '';
+  }
+
+  .founder-section__photo span,
+  .founder-section__photo strong {
+    position: relative;
+    z-index: 1;
+    width: fit-content;
+    background: white;
+    padding: 0.25rem 0.4rem;
+    font-family: var(--site-font-mono);
+  }
+
+  .founder-section__photo span {
+    font-size: 0.62rem;
+    letter-spacing: 0.12em;
+  }
+
+  .founder-section__photo strong {
+    margin-top: 0.35rem;
+    font-size: 0.5rem;
+    letter-spacing: 0.08em;
+  }
+
+  .founder-section__copy {
+    align-self: center;
+    padding: clamp(4rem, 8vw, 8rem) clamp(1.5rem, 6vw, 6rem);
+  }
+
+  .founder-section__copy > p {
+    margin: 0 0 1.1rem;
+    font: 680 0.62rem/1 var(--site-font-mono);
+    letter-spacing: 0.14em;
+  }
+
+  .founder-section h2 {
+    max-width: 52rem;
+    margin: 0;
+    font-family: var(--site-font-display);
+    font-size: clamp(3.5rem, 6vw, 6.5rem);
+    font-weight: 430;
+    letter-spacing: -0.04em;
+    line-height: 0.85;
+    text-wrap: balance;
+  }
+
+  .founder-section__body {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(12rem, 0.8fr);
+    gap: clamp(1.5rem, 4vw, 4rem);
+    margin-top: clamp(2rem, 4vw, 3.5rem);
+  }
+
+  .founder-section__body p,
+  .founder-section__body span {
+    margin: 0;
+    color: var(--site-color-muted);
+  }
+
+  .founder-section__body p {
+    font-size: clamp(0.98rem, 1.15vw, 1.08rem);
+    line-height: 1.65;
+  }
+
+  .founder-section__body span {
+    border-left: 1px solid var(--site-color-brand);
+    padding-left: 1rem;
+    font: 580 0.62rem/1.65 var(--site-font-mono);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  @media (max-width: 760px) {
+    .founder-section {
+      grid-template-columns: 1fr;
+    }
+
+    .founder-section__photo {
+      min-height: 26rem;
+      border-right: 0;
+      border-bottom: 1px solid var(--site-color-brand);
+    }
+
+    .founder-section__copy {
+      padding: 4.5rem 1.25rem;
+    }
+
+    .founder-section h2 {
+      font-size: clamp(3.4rem, 15vw, 5.5rem);
+    }
+
+    .founder-section__body {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
