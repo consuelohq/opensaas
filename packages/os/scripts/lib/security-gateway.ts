@@ -15,7 +15,7 @@ import {
   readEffectiveFullManifest as readEffectiveFullToolManifest,
   readFullToolManifest,
 } from './manifest';
-import { resolveOverlayHome } from './manifest-overlay';
+import { readManifestOverlay, resolveOverlayHome } from './manifest-overlay';
 import {
   claimGatewayReplayNonce,
   readGatewayCredentialLastUsedAt,
@@ -662,22 +662,32 @@ const DANGEROUS_TOOL_NAMES = new Set([
 ]);
 
 const ELEVATED_OS_PERMISSIONS = new Set(['execute', 'external', 'admin']);
+const BUNDLED_TOOL_SCOPE_ENTRIES = new Map(
+  readFullToolManifest().tools.map((entry) => [entry.name, entry] as const),
+);
 
-function activeToolManifestForScope(): ReturnType<typeof readFullToolManifest> {
+function activeToolEntryForScope(toolName: string) {
   const home = resolveOverlayHome();
+  const bundledEntry = BUNDLED_TOOL_SCOPE_ENTRIES.get(toolName);
+  if (bundledEntry) {
+    const overlay = readManifestOverlay(home);
+    const disabled = bundledEntry.kind === 'os-skill'
+      ? overlay.disabledSkills
+      : overlay.disabledTools;
+    return disabled.includes(toolName) ? null : bundledEntry;
+  }
+
   return readEffectiveFullToolManifest(home, {
     cwd: process.env.CONSUELO_TOOL_CALLER_CWD ?? process.cwd(),
     env: process.env,
-  });
+  }).tools.find((candidate) => candidate.name === toolName) ?? null;
 }
 
 export function resolveToolScope(
   toolName: string,
   toolInput: unknown = {},
 ): ToolScopeResolution {
-  const entry = activeToolManifestForScope().tools.find(
-    (candidate) => candidate.name === toolName,
-  );
+  const entry = activeToolEntryForScope(toolName);
   if (!entry) {
     return {
       ok: false,

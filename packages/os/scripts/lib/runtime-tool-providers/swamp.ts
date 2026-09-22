@@ -103,6 +103,30 @@ function objectSchema(value: unknown): JsonObject {
     : { type: 'object', properties: {}, additionalProperties: true };
 }
 
+function workflowInputSchema(value: unknown): JsonObject {
+  if (!isObject(value)) {
+    return { type: 'object', properties: {}, additionalProperties: false };
+  }
+
+  if (value.type === 'object' && isObject(value.properties)) {
+    return value;
+  }
+
+  const properties = Object.fromEntries(
+    Object.entries(value).filter((entry): entry is [string, JsonObject] => isObject(entry[1])),
+  );
+  const required = Object.entries(properties)
+    .filter(([, schema]) => !Object.prototype.hasOwnProperty.call(schema, 'default'))
+    .map(([name]) => name);
+
+  return {
+    type: 'object',
+    properties,
+    ...(required.length > 0 ? { required } : {}),
+    additionalProperties: false,
+  };
+}
+
 function exampleFromSchema(schema: JsonObject): Record<string, unknown> {
   const properties = isObject(schema.properties) ? schema.properties : {};
   const required = new Set(
@@ -248,7 +272,7 @@ export function discoverSwampRuntimeTools(
       const baseName = 'swamp.workflow.' + safeSlug(workflowName) + '.run';
       if (seenNames.has(baseName)) continue;
       seenNames.add(baseName);
-      const inputSchema = objectSchema(fullWorkflow.inputs);
+      const inputSchema = workflowInputSchema(fullWorkflow.inputs);
       tools.push(runtimeEntry({
         name: baseName,
         description: nonEmptyString(fullWorkflow.description)

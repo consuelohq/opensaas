@@ -104,12 +104,16 @@ if (args[0] === 'model' && args[1] === 'search') {
 }
 
 if (args[0] === 'workflow' && args[1] === 'search') {
-  emit([{
-    id: 'workflow-deploy-pipeline',
-    name: 'deploy-pipeline',
-    description: 'Deploy the selected environment',
-    version: 1,
-  }]);
+  emit({
+    query: '',
+    results: [{
+      id: 'workflow-deploy-pipeline',
+      name: 'deploy-pipeline',
+      description: 'Deploy the selected environment',
+      jobCount: 1,
+      hasInputs: true,
+    }],
+  });
   process.exit(0);
 }
 
@@ -119,12 +123,7 @@ if (args[0] === 'workflow' && args[1] === 'get') {
     name: 'deploy-pipeline',
     description: 'Deploy the selected environment',
     inputs: {
-      type: 'object',
-      properties: {
-        environment: { type: 'string', enum: ['staging', 'production'] },
-      },
-      required: ['environment'],
-      additionalProperties: false,
+      environment: { type: 'string', enum: ['staging', 'production'] },
     },
     jobs: [],
     version: 1,
@@ -244,6 +243,28 @@ describe('Swamp runtime tool provider', () => {
         method: 'run',
         input: { target: 'users', retries: 2 },
       },
+    });
+
+    const missingWorkflowInput = await executeTool('swamp.workflow.deploy-pipeline.run', {}, {
+      cwd: repo,
+      env: { ...process.env },
+      logMode: 'silent',
+    });
+    expect(missingWorkflowInput).toMatchObject({
+      ok: false,
+      code: 'VALIDATION_ERROR',
+    });
+
+    const invalidWorkflowInput = await executeTool('swamp.workflow.deploy-pipeline.run', {
+      environment: 'qa',
+    }, {
+      cwd: repo,
+      env: { ...process.env },
+      logMode: 'silent',
+    });
+    expect(invalidWorkflowInput).toMatchObject({
+      ok: false,
+      code: 'VALIDATION_ERROR',
     });
 
     const workflow = await executeTool('swamp.workflow.deploy-pipeline.run', {

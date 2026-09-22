@@ -8,6 +8,7 @@ import manifestJson from '../manifests/generated/tool.manifest.json';
 import { MCP_OAUTH_SCOPES } from '../cloudflare/os-device-authority/src/constants';
 import { normalizeScopes } from '../cloudflare/os-device-authority/src/utils';
 import { resolveToolScope } from '../scripts/lib/security-gateway';
+import { emptyManifestOverlay, writeManifestOverlay } from '../scripts/lib/manifest-overlay';
 import {
   STANDARD_OS_MCP_SCOPES,
   grantsRequiredScope,
@@ -82,6 +83,21 @@ describe('central OS tool-scope authorization', () => {
       status: 403,
       error: { code: 'UNKNOWN_TOOL_SCOPE' },
     });
+  });
+
+  it('keeps disabled bundled tools fail-closed', () => {
+    writeManifestOverlay(isolatedConsueloHome, {
+      ...emptyManifestOverlay(),
+      disabledTools: ['status'],
+    });
+
+    expect(resolveToolScope('status')).toMatchObject({
+      ok: false,
+      status: 403,
+      error: { code: 'UNKNOWN_TOOL_SCOPE' },
+    });
+
+    writeManifestOverlay(isolatedConsueloHome, emptyManifestOverlay());
   });
 
   it('advertises and issues the canonical umbrella scope for new OAuth grants', () => {
