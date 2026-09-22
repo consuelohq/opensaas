@@ -313,6 +313,7 @@ export function discoverSwampRuntimeTools(
 
 const RUNTIME_CONTROL_FIELDS = new Set([
   'requestId',
+  'parentTraceId',
   'taskSession',
   'workSession',
   'branch',
@@ -365,6 +366,9 @@ export async function executeSwampRuntimeTool(
   input: ToolInput,
   options: SwampExecutionOptions,
 ): Promise<SwampExecutionResult> {
+  const executionRepoDir = nonEmptyString(input.taskWorktree)
+    ?? nonEmptyString(input.workSessionRoot)
+    ?? metadata.repoDir;
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'consuelo-swamp-input-'));
   const inputFile = path.join(tempDir, 'input.json');
   fs.writeFileSync(inputFile, JSON.stringify(runtimeProviderPayloadForSchema(input, metadata.inputSchema), null, 2) + '\n', {
@@ -379,7 +383,7 @@ export async function executeSwampRuntimeTool(
       '--input-file',
       inputFile,
       '--repo-dir',
-      metadata.repoDir,
+      executionRepoDir,
       '--json',
     ]
     : [
@@ -391,14 +395,14 @@ export async function executeSwampRuntimeTool(
       '--input-file',
       inputFile,
       '--repo-dir',
-      metadata.repoDir,
+      executionRepoDir,
       '--json',
     ].filter((value) => value.length > 0);
 
   const plan: CommandPlan = {
     command: metadata.cliPath,
     args,
-    cwd: metadata.repoDir,
+    cwd: executionRepoDir,
     env: { ...options.env },
   };
 
