@@ -665,9 +665,10 @@ const ELEVATED_OS_PERMISSIONS = new Set(['execute', 'external', 'admin']);
 
 function activeToolManifestForScope(): ReturnType<typeof readFullToolManifest> {
   const home = resolveOverlayHome();
-  return fs.existsSync(path.join(home, 'config.json'))
-    ? readEffectiveFullToolManifest(home)
-    : readFullToolManifest();
+  return readEffectiveFullToolManifest(home, {
+    cwd: process.env.CONSUELO_TOOL_CALLER_CWD ?? process.cwd(),
+    env: process.env,
+  });
 }
 
 export function resolveToolScope(

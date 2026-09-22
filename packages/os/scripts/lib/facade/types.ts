@@ -79,6 +79,18 @@ export type ToolCommand = {
   arguments: CommandArgument[];
 };
 
+export type RuntimeProviderMetadata = {
+  provider: 'swamp';
+  kind: 'model-method' | 'workflow';
+  cliPath: string;
+  repoDir: string;
+  externalId?: string;
+  externalName: string;
+  operation?: string;
+  inputSchema: Record<string, unknown>;
+  discoveredAt: string;
+};
+
 export type ToolManifestEntry = {
   name: string;
   methodPath: string[];
@@ -92,6 +104,7 @@ export type ToolManifestEntry = {
   command: ToolCommand;
   exampleInput: Record<string, unknown>;
   sessionRequired?: boolean;
+  runtimeProvider?: RuntimeProviderMetadata;
 };
 
 export type ToolInput = Record<string, unknown>;

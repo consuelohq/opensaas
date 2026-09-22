@@ -3,6 +3,10 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { applyManifestOverlay, readManifestOverlay } from './manifest-overlay';
+import {
+  readRuntimeToolManifestEntries,
+  type RuntimeToolRegistryOptions,
+} from './runtime-tool-registry';
 import type { OsManifestEntry } from './types';
 
 type JsonObject = Record<string, unknown>;
@@ -62,8 +66,24 @@ export function readCoreToolManifest(): CanonicalToolManifest {
   return readToolManifest(coreManifestPath);
 }
 
-export function readEffectiveFullManifest(home?: string): CanonicalToolManifest {
-  return applyManifestOverlay(readFullToolManifest(), readManifestOverlay(home));
+export function readEffectiveFullManifest(
+  home?: string,
+  runtimeOptions: Omit<RuntimeToolRegistryOptions, 'home'> = {},
+): CanonicalToolManifest {
+  const bundled = readFullToolManifest();
+  const bundledNames = new Set(bundled.tools.map((entry) => entry.name));
+  const runtimeTools = readRuntimeToolManifestEntries({
+    ...runtimeOptions,
+    home,
+  }).filter((entry) => !bundledNames.has(entry.name));
+  const merged: CanonicalToolManifest = {
+    ...bundled,
+    tools: [
+      ...bundled.tools,
+      ...(runtimeTools as unknown as CanonicalManifestEntry[]),
+    ],
+  };
+  return applyManifestOverlay(merged, readManifestOverlay(home));
 }
 
 export function readEffectiveCoreManifest(home?: string): CanonicalToolManifest {
