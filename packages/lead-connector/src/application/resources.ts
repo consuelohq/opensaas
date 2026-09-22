@@ -90,6 +90,37 @@ const mapPipeline = (value: unknown): LeadConnectorPipeline => {
   };
 };
 
+export const lookupLeadConnectorContactOwner = (input: {
+  workspaceId: string;
+  phoneNumber: string;
+}) =>
+  Effect.gen(function* () {
+    const { installation, accessToken } = yield* getProviderContext(input.workspaceId);
+    const url = new URL(yield* providerUrl('/contacts/lookup'));
+    url.searchParams.set('locationId', installation.locationId);
+    url.searchParams.set('phone', input.phoneNumber);
+    url.searchParams.set('limit', '2');
+    const response = yield* requestLeadConnector({
+      method: 'GET',
+      url: url.toString(),
+      headers: { ...providerHeaders(accessToken), Version: 'v3' },
+    }, 'lookup-contact-owner');
+    const body = asRecord(response.body);
+    const absent = (ownerStatus: 'missing' | 'ambiguous' | 'unavailable') =>
+      ({ ownerRepId: null, ownerStatus });
+    if (!Array.isArray(body.contacts)) return absent('unavailable');
+    if (body.contacts.length > 1 || readString(body, 'nextCursor'))
+      return absent('ambiguous');
+    if (body.contacts.length === 0) return absent('missing');
+    const contact = asRecord(body.contacts[0]);
+    if (readString(contact, 'locationId') !== installation.locationId)
+      return absent('unavailable');
+    const ownerRepId = readString(contact, 'assignedTo')?.trim();
+    return ownerRepId
+      ? { ownerRepId, ownerStatus: 'known' as const }
+      : absent('missing');
+  });
+
 export const listLeadConnectorContacts = (input: {
   workspaceId: string;
   query?: string;

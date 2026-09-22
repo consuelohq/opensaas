@@ -4,12 +4,107 @@ import type { LeadConnectorEmbedApi } from './api-client';
 import { EmbedSessionExpiredError } from './api-client';
 import { createLeadConnectorEmbedController } from './controller';
 import { normalizeClickToCallTarget } from './protocol';
+import type {
+  InboundOperatorApi,
+  InboundOperatorSnapshot,
+} from './inbound-operator';
 
 const createVoice = () => ({
   prepare: mock(async () => undefined),
   connect: mock(async (_sessionId: string) => undefined),
+  acceptIncoming: mock(async () => undefined),
+  rejectIncoming: mock(() => undefined),
   disconnect: mock(() => undefined),
 });
+
+
+const createInboundSnapshot = (
+  phase: InboundOperatorSnapshot['rep']['capacityPhase'] = 'offering',
+): InboundOperatorSnapshot => ({
+  serverTime: '2026-09-13T20:00:00.000Z',
+  rep: {
+    repId: 'user-1',
+    ready: true,
+    presence: 'online',
+    endpoints: [
+      { endpointId: 'browser', kind: 'browser', healthy: true, label: 'Browser' },
+      { endpointId: 'phone', kind: 'phone', healthy: true, label: 'Phone' },
+    ],
+    capacityPhase: phase,
+    assignment:
+      phase === null
+        ? null
+        : {
+            assignmentId: 'assignment-1',
+            requestId: 'request-1',
+            generation: 7,
+            phase,
+            offerExpiresAt: '2026-09-13T20:00:12.000Z',
+            endpointId: phase === 'offering' ? null : 'browser',
+            externalStarted: phase !== 'offering',
+            connectedAt:
+              phase === 'connected' ? '2026-09-13T20:00:05.000Z' : null,
+            unknownSince: null,
+            wrapUpUntil: null,
+          },
+  },
+  offers:
+    phase === 'offering'
+      ? [
+          {
+            assignmentId: 'assignment-1',
+            requestId: 'request-1',
+            generation: 7,
+            queueId: 'queue-1',
+            queueName: 'Inbound',
+            callerLabel: 'Caller',
+            waitingSeconds: 3,
+            offerExpiresAt: '2026-09-13T20:00:12.000Z',
+            ownerRepId: 'user-1',
+            eligibleEndpoints: ['browser', 'phone'],
+          },
+        ]
+      : [],
+  queue: {
+    queueId: 'queue-1',
+    queueName: 'Inbound',
+    waitingCount: phase === 'offering' ? 1 : 0,
+    oldestWaitSeconds: phase === 'offering' ? 3 : 0,
+    serviceableCount: 1,
+    businessHours: 'open',
+    overflow: 'standby',
+  },
+  configuration: {
+    numberLabel: 'Main line',
+    maskedNumber: '••• ••• 0100',
+    teamName: 'Sales',
+    hoursLabel: 'Business hours',
+    overflowLabel: 'Voicemail',
+  },
+});
+
+const createInboundApi = (): InboundOperatorApi => {
+  const offering = createInboundSnapshot('offering');
+  return {
+    setSessionToken: mock(() => undefined),
+    getSnapshot: mock(async () => offering),
+    setReadiness: mock(async () => offering),
+    acceptOffer: mock(async () => ({
+      accepted: true,
+      status: 'accepted' as const,
+      snapshot: createInboundSnapshot('connecting'),
+    })),
+    declineOffer: mock(async () => ({
+      accepted: true,
+      status: 'declined' as const,
+      snapshot: createInboundSnapshot(null),
+    })),
+    reconnect: mock(async () => createInboundSnapshot('connecting')),
+    finishWrapUp: mock(async () => createInboundSnapshot(null)),
+    getConfiguration: mock(async () => offering.configuration),
+    updateConfiguration: mock(async (configuration) => configuration),
+  };
+};
 
 const createApi = () =>
   ({
@@ -229,6 +324,251 @@ const createApi = () =>
   }) satisfies LeadConnectorEmbedApi;
 
 describe('LeadConnector embed controller', () => {
+  it('prepares browser media before advertising browser readiness and fails closed when preparation is denied', async () => {
+    const api = createApi();
+    const inboundOperatorApi = createInboundApi();
+    const voice = createVoice();
+    let prepared = false;
+    voice.prepare = mock(async () => {
+      prepared = true;
+    });
+    inboundOperatorApi.setReadiness = mock(async () => {
+      expect(prepared).toBe(true);
+      return createInboundSnapshot('offering');
+    });
+    const controller = createLeadConnectorEmbedController({
+      api,
+      voice,
+      inboundOperatorApi,
+    });
+    await controller.authenticate('opaque-parent-ciphertext');
+
+    await controller.setInboundReadiness({
+      ready: true,
+      endpoints: [{ endpointId: 'browser', kind: 'browser' }],
+    });
+    expect(voice.prepare).toHaveBeenCalledTimes(1);
+    expect(inboundOperatorApi.setReadiness).toHaveBeenCalledTimes(1);
+
+    voice.prepare = mock(async () => {
+      throw new Error('Microphone permission denied');
+    });
+    inboundOperatorApi.setReadiness = mock(async () =>
+      createInboundSnapshot('offering'),
+    );
+    await controller.setInboundReadiness({
+      ready: true,
+      endpoints: [{ endpointId: 'browser', kind: 'browser' }],
+    });
+    expect(inboundOperatorApi.setReadiness).not.toHaveBeenCalled();
+    expect(controller.getState().inboundOperator.error).toMatchObject({
+      code: 'INBOUND_READINESS_FAILED',
+      recoverable: true,
+    });
+  });
+
+  it('accepts the ringing browser leg only after RD5 wins the fenced offer and keeps connected truth server-owned', async () => {
+    const inboundOperatorApi = createInboundApi();
+    let authorityAccepted = false;
+    inboundOperatorApi.acceptOffer = mock(async () => {
+      authorityAccepted = true;
+      return {
+        accepted: true,
+        status: 'accepted' as const,
+        snapshot: createInboundSnapshot('connecting'),
+      };
+    });
+    const voice = createVoice();
+    voice.acceptIncoming = mock(async () => {
+      expect(authorityAccepted).toBe(true);
+    });
+    const controller = createLeadConnectorEmbedController({
+      api: createApi(),
+      voice,
+      inboundOperatorApi,
+    });
+    await controller.authenticate('opaque-parent-ciphertext');
+
+    await controller.acceptInboundOffer({
+      assignmentId: 'assignment-1',
+      generation: 7,
+      endpointId: 'browser',
+    });
+
+    expect(voice.acceptIncoming).toHaveBeenCalledTimes(1);
+    expect(controller.getState().inboundOperator.rep.assignment?.phase).toBe(
+      'connecting',
+    );
+    expect(controller.getState().inboundOperator.rep.assignment?.phase).not.toBe(
+      'connected',
+    );
+  });
+
+  it('reuses one acceptance attempt id when the first response is lost', async () => {
+    const inboundOperatorApi = createInboundApi();
+    const attempts: string[] = [];
+    let calls = 0;
+    inboundOperatorApi.acceptOffer = mock(async (input) => {
+      attempts.push(input.attemptId);
+      calls++;
+      if (calls === 1) throw new Error('response lost after accept commit');
+      return {
+        accepted: true,
+        status: 'accepted' as const,
+        snapshot: createInboundSnapshot('connecting'),
+      };
+    });
+    const controller = createLeadConnectorEmbedController({
+      api: createApi(),
+      voice: createVoice(),
+      inboundOperatorApi,
+    });
+    await controller.authenticate('opaque-parent-ciphertext');
+    const input = {
+      assignmentId: 'assignment-1',
+      generation: 7,
+      endpointId: 'browser',
+    };
+    await controller.acceptInboundOffer(input);
+    await controller.acceptInboundOffer(input);
+    expect(attempts).toHaveLength(2);
+    expect(attempts[1]).toBe(attempts[0]);
+  });
+
+  it('rejects the local ringing browser leg when RD5 rejects a stale offer', async () => {
+    const inboundOperatorApi = createInboundApi();
+    inboundOperatorApi.acceptOffer = mock(async () => ({
+      accepted: false,
+      status: 'stale' as const,
+      message: 'Offer expired',
+    }));
+    const voice = createVoice();
+    const controller = createLeadConnectorEmbedController({
+      api: createApi(),
+      voice,
+      inboundOperatorApi,
+    });
+    await controller.authenticate('opaque-parent-ciphertext');
+
+    await controller.acceptInboundOffer({
+      assignmentId: 'assignment-1',
+      generation: 7,
+      endpointId: 'browser',
+    });
+
+    expect(voice.acceptIncoming).not.toHaveBeenCalled();
+    expect(voice.rejectIncoming).toHaveBeenCalledTimes(1);
+    expect(controller.getState().inboundOperator.error?.code).toBe(
+      'STALE_ASSIGNMENT',
+    );
+  });
+
+  it('does not touch browser media when the winning inbound endpoint is a phone', async () => {
+    const inboundOperatorApi = createInboundApi();
+    const voice = createVoice();
+    const controller = createLeadConnectorEmbedController({
+      api: createApi(),
+      voice,
+      inboundOperatorApi,
+    });
+    await controller.authenticate('opaque-parent-ciphertext');
+
+    await controller.acceptInboundOffer({
+      assignmentId: 'assignment-1',
+      generation: 7,
+      endpointId: 'phone',
+    });
+
+    expect(voice.acceptIncoming).not.toHaveBeenCalled();
+    expect(voice.rejectIncoming).not.toHaveBeenCalled();
+  });
+
+  it('keeps RD5 connecting truth and enters recovery when browser media acceptance fails', async () => {
+    const inboundOperatorApi = createInboundApi();
+    const voice = createVoice();
+    voice.acceptIncoming = mock(async () => {
+      throw new Error('Browser device failed');
+    });
+    const controller = createLeadConnectorEmbedController({
+      api: createApi(),
+      voice,
+      inboundOperatorApi,
+    });
+    await controller.authenticate('opaque-parent-ciphertext');
+
+    await controller.acceptInboundOffer({
+      assignmentId: 'assignment-1',
+      generation: 7,
+      endpointId: 'browser',
+    });
+
+    expect(controller.getState().inboundOperator).toMatchObject({
+      phase: 'reconnecting',
+      rep: { assignment: { phase: 'connecting' } },
+      error: { code: 'INBOUND_BROWSER_MEDIA_FAILED', recoverable: true },
+    });
+  });
+
+  it('keeps a pending browser invite alive while an RD5 poll reports the same browser assignment connecting', async () => {
+    const inboundOperatorApi = createInboundApi();
+    const voice = createVoice();
+    const controller = createLeadConnectorEmbedController({
+      api: createApi(),
+      voice,
+      inboundOperatorApi,
+    });
+    await controller.authenticate('opaque-parent-ciphertext');
+    voice.rejectIncoming.mockClear();
+    inboundOperatorApi.getSnapshot = mock(async () =>
+      createInboundSnapshot('connecting'),
+    );
+
+    await controller.loadInboundOperator();
+
+    expect(voice.rejectIncoming).not.toHaveBeenCalled();
+    expect(controller.getState().inboundOperator.rep.assignment?.phase).toBe(
+      'connecting',
+    );
+  });
+
+  it('rejects a ringing browser invite when a refreshed RD5 snapshot shows the offer expired', async () => {
+    const inboundOperatorApi = createInboundApi();
+    const voice = createVoice();
+    const controller = createLeadConnectorEmbedController({
+      api: createApi(),
+      voice,
+      inboundOperatorApi,
+    });
+    await controller.authenticate('opaque-parent-ciphertext');
+    voice.rejectIncoming.mockClear();
+    inboundOperatorApi.getSnapshot = mock(async () => createInboundSnapshot(null));
+
+    await controller.loadInboundOperator();
+
+    expect(voice.rejectIncoming).toHaveBeenCalledTimes(1);
+    expect(controller.getState().inboundOperator.offers).toHaveLength(0);
+  });
+
+  it('takes connected state only from the RD5 reconnect snapshot', async () => {
+    const inboundOperatorApi = createInboundApi();
+    inboundOperatorApi.reconnect = mock(async () =>
+      createInboundSnapshot('connected'),
+    );
+    const voice = createVoice();
+    const controller = createLeadConnectorEmbedController({
+      api: createApi(),
+      voice,
+      inboundOperatorApi,
+    });
+    await controller.authenticate('opaque-parent-ciphertext');
+
+    await controller.reconnectInbound();
+
+    expect(controller.getState().inboundOperator.rep.assignment?.phase).toBe(
+      'connected',
+    );
+  });
+
   it('projects a recoverable parent authentication failure instead of remaining in booting', () => {
     const controller = createLeadConnectorEmbedController({
       api: createApi(),

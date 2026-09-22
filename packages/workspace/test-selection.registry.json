@@ -2,34 +2,37 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 661,
-    "mappedTestCount": 577,
-    "unmappedTestCount": 84,
-    "ruleCount": 76,
-    "explicitRuleCount": 63,
+    "testFileCount": 691,
+    "mappedTestCount": 609,
+    "unmappedTestCount": 82,
+    "ruleCount": 77,
+    "explicitRuleCount": 64,
     "autoRuleCount": 13,
     "projectCount": 9,
     "packageTestScriptCount": 20,
     "byGroup": {
-      "packages/os/tests": 313,
+      "packages/os/tests": 314,
       "packages/workspace/tests": 63,
       "packages/os/tests/media": 34,
       "packages/consuelo-design/upstream/open-design/apps/daemon": 21,
       "packages/dialer-server/src": 19,
       "packages/dialer/src/services": 18,
+      "packages/lead-connector/src/embed": 15,
       "packages/consuelo-design/upstream/open-design": 14,
       "packages/consuelo-website/tests": 13,
-      "packages/lead-connector/src/embed": 13,
       "packages/os/tests/distribution": 13,
+      "packages/dialer-server/src/inbound": 12,
       "packages/documentation/tests": 11,
       "packages/api/src/routes": 10,
+      "packages/dialer-server/src/runtime": 10,
       "packages/lead-connector/src": 7,
-      "packages/dialer-server/src/runtime": 6,
       "packages/lead-connector/src/deployment": 6,
       "packages/consuelo-design/upstream/open-design/apps/web/src/components": 5,
+      "packages/dialer-server/src/lab": 5,
       "packages/consuelo-design/upstream/open-design/apps/web/src/i18n": 4,
       "packages/consuelo-design/upstream/open-design/apps/web/src/runtime": 4,
       "packages/dialer-server/src/learning": 4,
+      "packages/dialer/src/inbound": 4,
       "packages/os/tools/deployment-provider": 4,
       "packages/consuelo-design/upstream/open-design/apps/web/src/providers": 3,
       "packages/dialer-server/src/call-operations": 3,
@@ -42,7 +45,6 @@
       "packages/consuelo-design/upstream/open-design/apps/web/src/state": 2,
       "packages/consuelo-design/upstream/open-design/apps/web/src/utils": 2,
       "packages/contacts/src": 2,
-      "packages/dialer-server/src/lab": 2,
       "packages/diff-cockpit/tests": 2,
       "packages/os/tests/audit": 2,
       "packages/os/tests/facade": 2,
@@ -59,8 +61,12 @@
       "packages/consuelo-design/upstream/open-design/tools/pack/src": 1,
       "packages/dialer-server/src/database": 1,
       "packages/dialer-server/src/release": 1,
+      "packages/dialer-server/src/routes": 1,
       "packages/dialer/src": 1,
       "packages/dialer/src/infrastructure/redis": 1,
+      "packages/dialer/src/infrastructure/twilio": 1,
+      "packages/dialer/tests": 1,
+      "packages/os/tests/helpers": 1,
       "packages/os/tools/artifacts": 1,
       "packages/os/tools/codemode": 1,
       "packages/os/tools/composed": 1,
@@ -91,12 +97,12 @@
       "tests": 1
     },
     "byKind": {
-      "test": 605,
+      "test": 627,
       "spec": 29,
       "__tests__": 11,
+      "integration": 9,
       "other": 7,
-      "tests-dir": 6,
-      "integration": 2,
+      "tests-dir": 7,
       "e2e": 1
     }
   },
@@ -311,6 +317,36 @@
       "critical": true,
       "exclusive": true,
       "reason": "Steering ownership, seeding, caching, operator context, and release-boundary changes must prove that visible user steering is authoritative and no private repository prompt is shipped.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-stream-guidance-ownership",
+      "source": [
+        "packages/os/scripts/lib/managed-component-install.ts",
+        "packages/os/scripts/lib/streams/creation.ts",
+        "packages/os/streams/**/AGENTS.md",
+        "packages/os/tests/dialer-stream-instructions.test.ts",
+        "packages/os/tests/managed-components.test.ts",
+        "packages/os/tests/stream-service.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS stream guidance ownership contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/dialer-stream-instructions.test.ts",
+            "tests/managed-components.test.ts",
+            "tests/stream-service.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Managed stream guidance creation, installation, cleanup, and Dialer source-only ownership must prove their focused lifecycle contracts without selecting the unrelated historically red package-wide OS suite.",
       "origin": "explicit"
     },
     {
@@ -2034,6 +2070,7 @@
       "id": "os-bundled-skill-contract",
       "source": [
         "packages/os/skills/**",
+        "packages/os/tests/fixtures/skills/**",
         "packages/os/tests/branch-skill.test.ts",
         "packages/os/tests/cli-skill-routing.test.ts",
         "packages/os/tests/onboarding-skills.test.ts",
@@ -2055,6 +2092,7 @@
             "tests/branch-skill.test.ts",
             "tests/cli-skill-routing.test.ts",
             "tests/onboarding-skills.test.ts",
+            "tests/skill-migration.test.ts",
             "tests/skill-selection-cli.test.ts",
             "tests/skills-registry.test.ts"
           ]
@@ -2252,9 +2290,19 @@
     {
       "id": "dialer-server-package",
       "source": [
-        "packages/dialer-server/**"
+        "packages/dialer-server/**",
+        "packages/contacts/**"
       ],
       "tests": [
+        {
+          "name": "dialer-server contacts prerequisite",
+          "command": [
+            "yarn",
+            "nx",
+            "run",
+            "@consuelo/contacts:build"
+          ]
+        },
         {
           "name": "dialer-server Hono contracts",
           "command": [
@@ -2265,7 +2313,7 @@
         }
       ],
       "critical": true,
-      "reason": "Dialer server changes must prove Hono transport, Twilio boundary, and standalone lifecycle contracts.",
+      "reason": "Dialer server and shared phone-normalization changes must build contacts runtime exports before proving Hono transport, Twilio boundary, and standalone lifecycle contracts.",
       "origin": "explicit"
     },
     {
@@ -3538,6 +3586,81 @@
       "kind": "test"
     },
     {
+      "path": "packages/dialer-server/src/inbound/callback-booking.test.ts",
+      "group": "packages/dialer-server/src/inbound",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/inbound/callback-recipient-cipher.test.ts",
+      "group": "packages/dialer-server/src/inbound",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/inbound/callback-telephony.integration.test.ts",
+      "group": "packages/dialer-server/src/inbound",
+      "kind": "integration"
+    },
+    {
+      "path": "packages/dialer-server/src/inbound/callbacks.integration.test.ts",
+      "group": "packages/dialer-server/src/inbound",
+      "kind": "integration"
+    },
+    {
+      "path": "packages/dialer-server/src/inbound/customer-entry.integration.test.ts",
+      "group": "packages/dialer-server/src/inbound",
+      "kind": "integration"
+    },
+    {
+      "path": "packages/dialer-server/src/inbound/enrichment.test.ts",
+      "group": "packages/dialer-server/src/inbound",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/inbound/operator.test.ts",
+      "group": "packages/dialer-server/src/inbound",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/inbound/rep-capacity.integration.test.ts",
+      "group": "packages/dialer-server/src/inbound",
+      "kind": "integration"
+    },
+    {
+      "path": "packages/dialer-server/src/inbound/routing.integration.test.ts",
+      "group": "packages/dialer-server/src/inbound",
+      "kind": "integration"
+    },
+    {
+      "path": "packages/dialer-server/src/inbound/telephony-config.test.ts",
+      "group": "packages/dialer-server/src/inbound",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/inbound/telephony.integration.test.ts",
+      "group": "packages/dialer-server/src/inbound",
+      "kind": "integration"
+    },
+    {
+      "path": "packages/dialer-server/src/inbound/telephony.test.ts",
+      "group": "packages/dialer-server/src/inbound",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/lab/inbound-lab-cleanup.test.ts",
+      "group": "packages/dialer-server/src/lab",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/lab/inbound-simulator.test.ts",
+      "group": "packages/dialer-server/src/lab",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/lab/inbound-worker-protocol.test.ts",
+      "group": "packages/dialer-server/src/lab",
+      "kind": "test"
+    },
+    {
       "path": "packages/dialer-server/src/lab/local-dialer-lab.integration.test.ts",
       "group": "packages/dialer-server/src/lab",
       "kind": "integration"
@@ -3583,9 +3706,34 @@
       "kind": "test"
     },
     {
+      "path": "packages/dialer-server/src/routes/inbound-customer.test.ts",
+      "group": "packages/dialer-server/src/routes",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/runtime/edge-client-identity.test.ts",
+      "group": "packages/dialer-server/src/runtime",
+      "kind": "test"
+    },
+    {
       "path": "packages/dialer-server/src/runtime/embed-session.test.ts",
       "group": "packages/dialer-server/src/runtime",
       "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/runtime/inbound-customer-entry-activation.test.ts",
+      "group": "packages/dialer-server/src/runtime",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/runtime/inbound-enrichment.test.ts",
+      "group": "packages/dialer-server/src/runtime",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/runtime/inbound-registration.integration.test.ts",
+      "group": "packages/dialer-server/src/runtime",
+      "kind": "integration"
     },
     {
       "path": "packages/dialer-server/src/runtime/lead-connector-learning.test.ts",
@@ -3673,8 +3821,33 @@
       "kind": "spec"
     },
     {
+      "path": "packages/dialer/src/inbound/callback-scheduler.test.ts",
+      "group": "packages/dialer/src/inbound",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer/src/inbound/lifecycle.test.ts",
+      "group": "packages/dialer/src/inbound",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer/src/inbound/rep-capacity.test.ts",
+      "group": "packages/dialer/src/inbound",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer/src/inbound/routing-policy.test.ts",
+      "group": "packages/dialer/src/inbound",
+      "kind": "test"
+    },
+    {
       "path": "packages/dialer/src/infrastructure/redis/redis-parallel-store.test.ts",
       "group": "packages/dialer/src/infrastructure/redis",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer/src/infrastructure/twilio/create-outcome.test.ts",
+      "group": "packages/dialer/src/infrastructure/twilio",
       "kind": "test"
     },
     {
@@ -3766,6 +3939,11 @@
       "path": "packages/dialer/src/services/whittle-index.spec.ts",
       "group": "packages/dialer/src/services",
       "kind": "spec"
+    },
+    {
+      "path": "packages/dialer/tests/inbound-build.test.mjs",
+      "group": "packages/dialer/tests",
+      "kind": "test"
     },
     {
       "path": "packages/diff-cockpit/tests/bun-test.d.ts",
@@ -3923,12 +4101,22 @@
       "kind": "test"
     },
     {
+      "path": "packages/lead-connector/src/embed/customer.test.ts",
+      "group": "packages/lead-connector/src/embed",
+      "kind": "test"
+    },
+    {
       "path": "packages/lead-connector/src/embed/embed-build.contract.test.ts",
       "group": "packages/lead-connector/src/embed",
       "kind": "test"
     },
     {
       "path": "packages/lead-connector/src/embed/idle-refresh.test.ts",
+      "group": "packages/lead-connector/src/embed",
+      "kind": "test"
+    },
+    {
+      "path": "packages/lead-connector/src/embed/inbound-operator.test.ts",
       "group": "packages/lead-connector/src/embed",
       "kind": "test"
     },
@@ -4253,6 +4441,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/diffs-local-cache.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/distribution/environment-probe.test.ts",
       "group": "packages/os/tests/distribution",
       "kind": "test"
@@ -4516,6 +4709,11 @@
       "path": "packages/os/tests/health-readiness.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/helpers/bun-sqlite-vitest.ts",
+      "group": "packages/os/tests/helpers",
+      "kind": "tests-dir"
     },
     {
       "path": "packages/os/tests/hosted-release-worker-contract.test.ts",
@@ -6298,8 +6496,6 @@
     "packages/consuelo-website/tests/site-header.test.mjs",
     "packages/consuelo-website/tests/social-card.test.mjs",
     "packages/consuelo-website/tests/website-structure.test.js",
-    "packages/contacts/src/queues.spec.ts",
-    "packages/contacts/src/utils.spec.ts",
     "packages/documentation/tests/build.test.ts",
     "packages/documentation/tests/connect.test.ts",
     "packages/documentation/tests/foundation.test.ts",

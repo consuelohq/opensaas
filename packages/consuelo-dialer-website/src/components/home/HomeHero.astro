@@ -1,0 +1,244 @@
+---
+import { dialerHero } from '../../data/home-content';
+---
+
+<section class="dialer-hero" id="intro" data-section="hero">
+  <div class="dialer-hero__atmosphere" aria-hidden="true">
+    <img class="dialer-hero__cloud dialer-hero__cloud--1" src="/images/home/dither/cloud-1.png" alt="" width="900" height="450" loading="eager" />
+    <img class="dialer-hero__cloud dialer-hero__cloud--2" src="/images/home/dither/cloud-2.png" alt="" width="1020" height="390" loading="eager" />
+    <img class="dialer-hero__cloud dialer-hero__cloud--3" src="/images/home/dither/cloud-3.png" alt="" width="800" height="450" loading="eager" />
+    <img class="dialer-hero__cloud dialer-hero__cloud--4" src="/images/home/dither/cloud-4.png" alt="" width="950" height="400" loading="eager" />
+  </div>
+
+  <div class="dialer-hero__content">
+    <a class="dialer-hero__announcement" href={dialerHero.primaryHref}>
+      <span>{dialerHero.eyebrow}</span>
+      <span aria-hidden="true">→</span>
+    </a>
+
+    <h1>{dialerHero.title}</h1>
+    <p class="dialer-hero__subtitle">{dialerHero.subtitle}</p>
+
+    <div class="dialer-hero__actions">
+      <a class="dialer-hero__button dialer-hero__button--primary" href={dialerHero.primaryHref}>
+        {dialerHero.primaryLabel}
+        <span aria-hidden="true">→</span>
+      </a>
+      <a class="dialer-hero__button dialer-hero__button--secondary" href={dialerHero.secondaryHref}>
+        {dialerHero.secondaryLabel}
+        <span aria-hidden="true">↘</span>
+      </a>
+    </div>
+
+    <p class="dialer-hero__proof">{dialerHero.proofLine}</p>
+  </div>
+</section>
+
+<style>
+  .dialer-hero {
+    position: relative;
+    display: grid;
+    min-height: 94svh;
+    place-items: center;
+    overflow: hidden;
+    background: var(--site-color-brand);
+    color: white;
+    padding: clamp(8rem, 11vw, 10rem) clamp(1.25rem, 4vw, 4rem) clamp(4rem, 6vw, 5rem);
+    text-align: center;
+  }
+
+  .dialer-hero__content {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    width: min(100%, 88rem);
+    justify-items: center;
+    gap: clamp(1rem, 1.6vw, 1.45rem);
+  }
+
+  .dialer-hero__announcement {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.7rem;
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    padding: 0.55rem 0.7rem;
+    font: 650 clamp(0.58rem, 0.75vw, 0.68rem)/1 var(--site-font-mono);
+    letter-spacing: 0.1em;
+    text-decoration: none;
+    transition: background var(--site-motion-fast), color var(--site-motion-fast);
+  }
+
+  .dialer-hero__announcement:hover,
+  .dialer-hero__announcement:focus-visible {
+    background: white;
+    color: var(--site-color-brand);
+  }
+
+  .dialer-hero h1 {
+    width: min(100%, 82rem);
+    margin: 0;
+    color: white;
+    font-family: var(--site-font-display);
+    font-size: clamp(4rem, 7.3vw, 7.4rem);
+    font-optical-sizing: auto;
+    font-weight: 430;
+    letter-spacing: -0.035em;
+    line-height: 0.88;
+    text-wrap: balance;
+  }
+
+  .dialer-hero__subtitle {
+    width: min(100%, 58rem);
+    margin: 0;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: clamp(1rem, 1.4vw, 1.25rem);
+    line-height: 1.45;
+    text-wrap: balance;
+  }
+
+  .dialer-hero__actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: min(100%, 42rem);
+    gap: 0.65rem;
+    margin-top: 0.5rem;
+  }
+
+  .dialer-hero__button {
+    display: flex;
+    min-height: 3.25rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.7rem;
+    border: 1px solid white;
+    font: 650 clamp(0.7rem, 0.9vw, 0.8rem)/1 var(--site-font-mono);
+    letter-spacing: 0.09em;
+    text-decoration: none;
+    transition: background var(--site-motion-fast), color var(--site-motion-fast), transform var(--site-motion-fast);
+  }
+
+  .dialer-hero__button--primary {
+    background: white;
+    color: var(--site-color-brand);
+  }
+
+  .dialer-hero__button--secondary {
+    background: transparent;
+    color: white;
+  }
+
+  .dialer-hero__button:hover,
+  .dialer-hero__button:focus-visible {
+    transform: translateY(-2px);
+  }
+
+  .dialer-hero__button--secondary:hover,
+  .dialer-hero__button--secondary:focus-visible {
+    background: white;
+    color: var(--site-color-brand);
+  }
+
+  .dialer-hero__proof {
+    max-width: 44rem;
+    margin: 0.25rem 0 0;
+    color: rgba(255, 255, 255, 0.72);
+    font: 560 0.68rem/1.5 var(--site-font-mono);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-wrap: balance;
+  }
+
+  .dialer-hero__atmosphere {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    overflow: hidden;
+    pointer-events: none;
+    mask-image: linear-gradient(to bottom, black 78%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black 78%, transparent 100%);
+  }
+
+  .dialer-hero__cloud {
+    position: absolute;
+    max-width: none;
+    image-rendering: pixelated;
+  }
+
+  .dialer-hero__cloud--1 { top: 5%; left: -10%; opacity: 0.42; }
+  .dialer-hero__cloud--2 { bottom: 22%; left: -12%; opacity: 0.45; }
+  .dialer-hero__cloud--3 { top: 2%; right: -16%; opacity: 0.34; }
+  .dialer-hero__cloud--4 { bottom: 8%; right: -14%; opacity: 0.4; }
+
+  .dialer-hero::after {
+    position: absolute;
+    z-index: 1;
+    inset: 18% 0 7%;
+    background: radial-gradient(circle at 50% 48%, rgba(0, 0, 242, 0.64), transparent 54%);
+    content: '';
+    pointer-events: none;
+  }
+
+  @media (max-width: 720px) {
+    .dialer-hero {
+      min-height: 92svh;
+      padding: 7rem 0.9rem 3rem;
+    }
+
+    .dialer-hero__content {
+      gap: 0.95rem;
+      transform: translateY(-1.5svh);
+    }
+
+    .dialer-hero h1 {
+      font-size: clamp(3.15rem, 15vw, 5rem);
+      line-height: 0.88;
+    }
+
+    .dialer-hero__subtitle {
+      width: min(100%, 25rem);
+      font-size: 0.94rem;
+      line-height: 1.5;
+    }
+
+    .dialer-hero__actions {
+      grid-template-columns: 1fr;
+      width: min(100%, 30rem);
+    }
+
+    .dialer-hero__proof {
+      max-width: 24rem;
+      font-size: 0.58rem;
+    }
+
+    .dialer-hero__cloud--1 {
+      top: 3%;
+      left: -30%;
+      width: 480px;
+      height: 240px;
+    }
+
+    .dialer-hero__cloud--3 {
+      top: 8%;
+      right: -34%;
+      width: 400px;
+      height: 225px;
+    }
+
+    .dialer-hero__cloud--2,
+    .dialer-hero__cloud--4 {
+      display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dialer-hero__announcement,
+    .dialer-hero__button {
+      transition: none;
+    }
+
+    .dialer-hero__button:hover,
+    .dialer-hero__button:focus-visible {
+      transform: none;
+    }
+  }
+</style>

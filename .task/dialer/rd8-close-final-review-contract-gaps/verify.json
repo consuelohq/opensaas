@@ -1,0 +1,309 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/dialer/rd8-close-final-review-contract-gaps",
+  "base": "origin/task/dialer/rd8-close-final-review-contract-gaps",
+  "headSha": "deb54847c82b833fab081bacbf3900cd1be48a5c",
+  "changeHash": "40ca31cfc14d448f376656907594d74caec0347018ef3826db78a4d5fb2dca1b",
+  "changedFiles": [
+    ".github/workflows/consuelo-ci.yaml",
+    ".github/workflows/consuelo-production-release.yaml",
+    "areas/dialer/rd/receipts/RD8.md",
+    "packages/dialer-server/Dockerfile",
+    "packages/dialer-server/INBOUND-TESTING.md",
+    "packages/dialer-server/README.md",
+    "packages/dialer-server/package.json",
+    "packages/dialer-server/railway.json",
+    "packages/dialer-server/src/architecture.test.ts",
+    "packages/dialer-server/src/inbound/callbacks.integration.test.ts",
+    "packages/dialer-server/src/inbound/callbacks.ts",
+    "packages/dialer-server/src/inbound/customer-entry.integration.test.ts",
+    "packages/dialer-server/src/inbound/customer-entry.ts",
+    "packages/dialer-server/src/inbound/enrichment.test.ts",
+    "packages/dialer-server/src/inbound/enrichment.ts",
+    "packages/dialer-server/src/inbound/outbound-capacity.ts",
+    "packages/dialer-server/src/inbound/telephony-admission.ts",
+    "packages/dialer-server/src/inbound/telephony.integration.test.ts",
+    "packages/dialer-server/src/routes/inbound-customer.test.ts",
+    "packages/dialer-server/src/routes/inbound-customer.ts",
+    "packages/dialer-server/src/runtime/inbound-customer-entry-activation.test.ts",
+    "packages/dialer-server/src/runtime/inbound-enrichment.test.ts",
+    "packages/dialer-server/src/runtime/inbound-enrichment.ts",
+    "packages/dialer-server/src/runtime/inbound.ts",
+    "packages/dialer-server/src/runtime/railway.test.ts",
+    "packages/dialer-server/src/runtime/railway.ts",
+    "packages/dialer/src/application/parallel-application.spec.ts",
+    "packages/dialer/src/application/start-parallel-session.ts",
+    "packages/dialer/src/errors/dialer-errors.ts",
+    "packages/dialer/src/infrastructure/twilio/call-provider.ts",
+    "packages/dialer/src/infrastructure/twilio/create-outcome.test.ts",
+    "packages/dialer/src/infrastructure/twilio/create-outcome.ts",
+    "packages/lead-connector/src/application.contract.test.ts",
+    "packages/lead-connector/src/application/resources.ts",
+    "packages/lead-connector/src/deployment/release-workflow.contract.test.ts",
+    "packages/lead-connector/src/embed/customer.test.ts",
+    "packages/lead-connector/src/embed/customer.ts",
+    "packages/lead-connector/src/index.ts",
+    "yarn.lock"
+  ],
+  "verifiedAt": "2026-09-21T01:06:45.430Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".github/workflows/consuelo-ci.yaml",
+        ".github/workflows/consuelo-production-release.yaml",
+        ".task/dialer/rd8-close-final-review-contract-gaps/current.json",
+        ".task/dialer/rd8-close-final-review-contract-gaps/session.json",
+        ".task/dialer/rd8-close-final-review-contract-gaps/verify.json",
+        ".task/dialer/rd8-close-final-review-contract-gaps/workpad.md",
+        ".task/tasks/dialer/rd8-close-final-review-contract-gaps.json",
+        "areas/dialer/rd/receipts/RD8.md",
+        "packages/dialer-server/Dockerfile",
+        "packages/dialer-server/INBOUND-TESTING.md",
+        "packages/dialer-server/README.md",
+        "packages/dialer-server/package.json",
+        "packages/dialer-server/railway.json",
+        "packages/dialer-server/src/architecture.test.ts",
+        "packages/dialer-server/src/inbound/callbacks.integration.test.ts",
+        "packages/dialer-server/src/inbound/callbacks.ts",
+        "packages/dialer-server/src/inbound/customer-entry.integration.test.ts",
+        "packages/dialer-server/src/inbound/customer-entry.ts",
+        "packages/dialer-server/src/inbound/enrichment.test.ts",
+        "packages/dialer-server/src/inbound/enrichment.ts",
+        "packages/dialer-server/src/inbound/outbound-capacity.ts",
+        "packages/dialer-server/src/inbound/telephony-admission.ts",
+        "packages/dialer-server/src/inbound/telephony.integration.test.ts",
+        "packages/dialer-server/src/routes/inbound-customer.test.ts",
+        "packages/dialer-server/src/routes/inbound-customer.ts",
+        "packages/dialer-server/src/runtime/inbound-customer-entry-activation.test.ts",
+        "packages/dialer-server/src/runtime/inbound-enrichment.test.ts",
+        "packages/dialer-server/src/runtime/inbound-enrichment.ts",
+        "packages/dialer-server/src/runtime/inbound.ts",
+        "packages/dialer-server/src/runtime/railway.test.ts",
+        "packages/dialer-server/src/runtime/railway.ts",
+        "packages/dialer/src/application/parallel-application.spec.ts",
+        "packages/dialer/src/application/start-parallel-session.ts",
+        "packages/dialer/src/errors/dialer-errors.ts",
+        "packages/dialer/src/infrastructure/twilio/call-provider.ts",
+        "packages/dialer/src/infrastructure/twilio/create-outcome.test.ts",
+        "packages/dialer/src/infrastructure/twilio/create-outcome.ts",
+        "packages/lead-connector/src/application.contract.test.ts",
+        "packages/lead-connector/src/application/resources.ts",
+        "packages/lead-connector/src/deployment/release-workflow.contract.test.ts",
+        "packages/lead-connector/src/embed/customer.test.ts",
+        "packages/lead-connector/src/embed/customer.ts",
+        "packages/lead-connector/src/index.ts",
+        "yarn.lock"
+      ],
+      "matchedRules": [
+        {
+          "id": "consuelo-ci-immutable-base",
+          "critical": true,
+          "reason": "Consuelo pull-request verification must use an immutable base commit and preserve the focused local OS server review contracts without selecting the broad OS package suite.",
+          "matchedFiles": [
+            ".github/workflows/consuelo-ci.yaml"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "dialer-package",
+          "critical": true,
+          "reason": "Dialer changes are call-path critical and must run package specs.",
+          "matchedFiles": [
+            "packages/dialer/src/application/parallel-application.spec.ts",
+            "packages/dialer/src/application/start-parallel-session.ts",
+            "packages/dialer/src/errors/dialer-errors.ts",
+            "packages/dialer/src/infrastructure/twilio/call-provider.ts",
+            "packages/dialer/src/infrastructure/twilio/create-outcome.test.ts",
+            "packages/dialer/src/infrastructure/twilio/create-outcome.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "dialer-server-package",
+          "critical": true,
+          "reason": "Dialer server changes must prove Hono transport, Twilio boundary, and standalone lifecycle contracts.",
+          "matchedFiles": [
+            "packages/dialer-server/Dockerfile",
+            "packages/dialer-server/INBOUND-TESTING.md",
+            "packages/dialer-server/README.md",
+            "packages/dialer-server/package.json",
+            "packages/dialer-server/railway.json",
+            "packages/dialer-server/src/architecture.test.ts",
+            "packages/dialer-server/src/inbound/callbacks.integration.test.ts",
+            "packages/dialer-server/src/inbound/callbacks.ts",
+            "packages/dialer-server/src/inbound/customer-entry.integration.test.ts",
+            "packages/dialer-server/src/inbound/customer-entry.ts",
+            "packages/dialer-server/src/inbound/enrichment.test.ts",
+            "packages/dialer-server/src/inbound/enrichment.ts",
+            "packages/dialer-server/src/inbound/outbound-capacity.ts",
+            "packages/dialer-server/src/inbound/telephony-admission.ts",
+            "packages/dialer-server/src/inbound/telephony.integration.test.ts",
+            "packages/dialer-server/src/routes/inbound-customer.test.ts",
+            "packages/dialer-server/src/routes/inbound-customer.ts",
+            "packages/dialer-server/src/runtime/inbound-customer-entry-activation.test.ts",
+            "packages/dialer-server/src/runtime/inbound-enrichment.test.ts",
+            "packages/dialer-server/src/runtime/inbound-enrichment.ts",
+            "packages/dialer-server/src/runtime/inbound.ts",
+            "packages/dialer-server/src/runtime/railway.test.ts",
+            "packages/dialer-server/src/runtime/railway.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "lead-connector-package",
+          "critical": true,
+          "reason": "LeadConnector provider changes must prove OAuth, token, resource, webhook, architecture, and branding contracts.",
+          "matchedFiles": [
+            "packages/lead-connector/src/application.contract.test.ts",
+            "packages/lead-connector/src/application/resources.ts",
+            "packages/lead-connector/src/deployment/release-workflow.contract.test.ts",
+            "packages/lead-connector/src/embed/customer.test.ts",
+            "packages/lead-connector/src/embed/customer.ts",
+            "packages/lead-connector/src/index.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "Consuelo CI immutable base and local server review contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/local-os-server-review-findings.test.ts"
+          ],
+          "ruleId": "consuelo-ci-immutable-base",
+          "critical": true
+        },
+        {
+          "name": "dialer specs",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer/src"
+          ],
+          "ruleId": "dialer-package",
+          "critical": true
+        },
+        {
+          "name": "dialer-server Hono contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-server/src"
+          ],
+          "ruleId": "dialer-server-package",
+          "critical": true
+        },
+        {
+          "name": "LeadConnector provider contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/lead-connector/src"
+          ],
+          "ruleId": "lead-connector-package",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "Consuelo CI immutable base and local server review contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/local-os-server-review-findings.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "consuelo-ci-immutable-base",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 453,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-rd8-close-final-review-contract-gaps/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/local-os-server-review-findings.test.ts \u001b[2m(\u001b[22m\u001b[2m20 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 33\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m20 passed\u001b[39m\u001b[22m\u001b[90m (20)\u001b[39m\n\u001b[2m   Start at \u001b[22m 21:06:40\n\u001b[2m   Duration \u001b[22m 208ms\u001b[2m (transform 59ms, setup 14ms, import 90ms, tests 33ms, environment 0ms)\u001b[22m\n\n$ vitest run tests/local-os-server-review-findings.test.ts\n(node:8570) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+        },
+        {
+          "name": "dialer specs",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer/src"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 2402,
+          "outputTail": "und evidence over a lucky tiny raw rate [0.03ms]\n(pass) CallTimingModel > breaks exact timing-evidence ties by stable calendar coordinates [0.02ms]\n\npackages/dialer/src/services/retry-decision-model.contract.spec.ts:\n(pass) mature retry decision contract > separates whether to retry from the learned preferred timing window [0.20ms]\n(pass) mature retry decision contract > keeps retrying within the cap when stopping evidence is missing [0.04ms]\n(pass) mature retry decision contract > stops on answered calls, the attempt cap, or observed negative expected value [0.06ms]\n\npackages/dialer/src/services/contextual-response-model.spec.ts:\n(pass) ContextualResponseModel > learns a regularized contextual response signal without changing the D3 policy contract [24.69ms]\n(pass) ContextualResponseModel > keeps candidate-specific opportunity economics separate from response probability [0.06ms]\n(pass) ContextualResponseModel > matches the penalized Bernoulli objective gradient by finite differences [0.24ms]\n(pass) ContextualResponseModel > keeps regularization strength stable when the empirical sample is replicated [84.74ms]\n(pass) ContextualResponseModel > does not regularize the intercept and keeps extreme encoded values finite [0.14ms]\n(pass) ContextualResponseModel > encodes missing spacing differently from a real zero-minute spacing [0.02ms]\n\npackages/dialer/src/services/predictive-selection-science.spec.ts:\n(pass) scientific predictive selection contract > uses calibrated upper probability evidence for exploration rather than an arbitrary sample-size bonus [0.76ms]\n(pass) scientific predictive selection contract > does not change an otherwise identical priority because a contact is older than 48 hours [0.12ms]\n(pass) scientific predictive selection contract > preserves FIFO for a decision set when any candidate lacks comparable hazard evidence [0.10ms]\n(pass) uses aggregate attempt evidence rather than a peak slot for an unobserved calling time [0.09ms]\n\npackages/dialer/src/services/parallel-lifecycle.contract.spec.ts:\n(pass) parallel dial lifecycle contract > keeps customer legs muted without provider hold music until the agent starts the conference [0.90ms]\n(pass) parallel dial lifecycle contract > retains a callback that arrives while later legs are still being created [2.02ms]\n(pass) parallel dial lifecycle contract > keeps exactly one durable winner under simultaneous human callbacks [3.56ms]\n(pass) parallel dial lifecycle contract > claims telemetry emission exactly once under concurrent callbacks [3.10ms]\n(pass) parallel dial lifecycle contract > records failed loser cleanup and clears it after reconciliation succeeds [2.87ms]\n(pass) parallel dial lifecycle contract > does not persist a false winner-unmute failure before the participant enters [1.01ms]\n(pass) parallel dial lifecycle contract > records failed winner unmute and clears it after reconciliation succeeds [1.04ms]\n(pass) parallel dial lifecycle contract > completes the group when the selected winner hangs up [2.34ms]\n(pass) parallel dial lifecycle contract > persists workspace ownership and rejects cross-workspace access [3.55ms]\n(pass) parallel dial lifecycle contract > ignores an answered callback after the same leg is terminal [3.36ms]\n\npackages/dialer/src/infrastructure/redis/redis-parallel-store.test.ts:\n(pass) RedisParallelStore > registers calls and reverse mappings atomically and cleans the full group [0.44ms]\n(pass) RedisParallelStore > claims one winner and one telemetry emission and serializes group operations [7.79ms]\n(pass) RedisParallelStore > renews an owned group lock while a long operation is running [180.54ms]\n(pass) RedisParallelStore > deletes known group keys when the persisted group JSON is malformed [0.18ms]\n\npackages/dialer/src/infrastructure/twilio/create-outcome.test.ts:\n(pass) recognizes rejected requests while keeping timeouts and server failures unknown [0.08ms]\n\n 263 pass\n 0 fail\n 622 expect() calls\nRan 263 tests across 30 files. [2.39s]\n"
+        },
+        {
+          "name": "dialer-server Hono contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-server/src"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-server-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1302,
+          "outputTail": "(skip) inbound runtime with real Postgres and simulated carrier > accepts late voicemail completion and deletes it on its retention deadline\n(skip) inbound runtime with real Postgres and simulated carrier > rolls an empty telephony schema down and up while protecting immutable facts\n(skip) inbound runtime with real Postgres and simulated carrier > releases a definitively rejected partial group only after all known legs end, including restart\n(skip) inbound runtime with real Postgres and simulated carrier > shares capacity with outbound and retains partial creation uncertainty\n(skip) inbound runtime with real Postgres and simulated carrier > admits a duplicate incoming call once and never redials the caller\n(skip) inbound runtime with real Postgres and simulated carrier > connects only after acceptance and both unmuted participants, then wraps up\n(skip) inbound runtime with real Postgres and simulated carrier > protects unknown create outcomes across restart and never creates another offer\n(skip) inbound runtime with real Postgres and simulated carrier > rejects stale and cross-rep acceptance and cleans an abandoned caller\n(skip) inbound runtime with real Postgres and simulated carrier > persists explicit voicemail selection without recording an ordinary call\n(skip) inbound runtime with real Postgres and simulated carrier > refuses rollback while a live caller or uncertain effect exists\n(skip) inbound runtime with real Postgres and simulated carrier > (unnamed)\n(skip) RD7B customer entry with real Postgres > persists CRM owner enrichment for public callbacks without exposing it publicly\n(skip) RD7B customer entry with real Postgres > deduplicates public requests, persists explicit permission, and survives restart\n(skip) RD7B customer entry with real Postgres > projects append-only booking cancellation into customer responses after restart\n(skip) RD7B customer entry with real Postgres > reports uncertain booking cancellation without repeating provider effects on read or retry\n(skip) RD7B customer entry with real Postgres > uses server-authored service windows for reschedule and cancels the RD6 obligation\n(skip) RD6 callbacks with real Postgres > retains the encrypted recipient through a later rescheduled window and purges afterward\n(skip) RD6 callbacks with real Postgres > does not reserve early and creates one attempt only after rep acceptance\n(skip) RD6 callbacks with real Postgres > releases no-answer capacity, retries on policy backoff, and preserves original entry\n(skip) RD6 callbacks with real Postgres > blocks rollback until callback obligations are terminal and retained recipients are purged\n(skip) RD6 callbacks with real Postgres > records calendar unavailability truthfully and purges recipients after retention\n(skip) RD6 callbacks with real Postgres > does not repeat a provider cancellation after an uncertain dispatched effect\n(skip) transactional inbound routing > commits one reservation for duplicate ticks and replays immutable decision evidence\n(skip) transactional inbound routing > does not split a reservation from its evidence when persistence fails\n(skip) transactional inbound routing > expires safe offers, moves to another rep and bounds attempts across recreation\n(skip) transactional inbound routing > protects dispatched offers through expiry and escalation without reoffering\n(skip) transactional inbound routing > does not resurrect abandoned callers and records unserviceable predecessors\n(skip) transactional inbound routing > keeps callback not-before, config versions, fallback and replay after restart\n(skip) transactional inbound routing > preserves one owner under independent routing worker processes\n(skip) transactional inbound routing > rejects future request evidence without reserving capacity\n(skip) transactional inbound routing > rejects rollback with active routing and preserves older journal after safe down/up\n\n 222 pass\n 63 skip\n 0 fail\n 1181 expect() calls\nRan 285 tests across 57 files. [1285.00ms]\n"
+        },
+        {
+          "name": "LeadConnector provider contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/lead-connector/src"
+          ],
+          "cwd": ".",
+          "ruleId": "lead-connector-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1144,
+          "outputTail": " before acceptance and disconnects the partial leg [0.17ms]\n(pass) LeadConnector browser agent voice > waits for the inbound browser leg and accepts it only after explicit authority approval [0.26ms]\n(pass) LeadConnector browser agent voice > rejects a pending inbound browser leg without treating it as connected [0.11ms]\n\npackages/lead-connector/src/embed/idle-refresh.test.ts:\n(pass) LeadConnector idle refresh scheduling > uses focus and visible transitions without polling and fully cleans up across remounts [0.19ms]\n\npackages/lead-connector/src/embed/inbound-operator.test.ts:\n(pass) inbound operator state > projects an authoritative snapshot without inventing capacity [0.04ms]\n(pass) inbound operator state > stale acceptance keeps the offer actionable and reports the server reason [0.03ms]\n(pass) inbound operator state > renders endpoint readiness, truthful connecting state, queue visibility, and recovery controls [0.15ms]\n(pass) inbound operator state > allows an offline unowned rep to go ready [0.03ms]\n(pass) inbound operator state > prefers a healthy browser endpoint over an eligible phone endpoint for offer acceptance [0.03ms]\n(pass) inbound operator adapter > sends fenced actions through authenticated UI routes [0.24ms]\n\npackages/lead-connector/src/deployment/custom-menu.test.ts:\n(pass) LeadConnector custom menu deployment contract > targets one sandbox location in iframe mode with microphone permission [0.10ms]\n(pass) LeadConnector custom menu deployment contract > updates an existing sandbox menu instead of creating duplicates [0.33ms]\n\npackages/lead-connector/src/deployment/worker-release.test.ts:\n(pass) LeadConnector production worker release > extracts one deploy version from Wrangler structured output [0.10ms]\n(pass) LeadConnector production worker release > verifies shells, proxy health, CSP, and exact launcher asset hashes [0.37ms]\n\npackages/lead-connector/src/deployment/marketplace-bootstrap.test.ts:\n(pass) stable HighLevel Marketplace bootstrap > loads the launcher assets from one stable HTTPS origin without credentials [0.14ms]\n(pass) stable HighLevel Marketplace bootstrap > rejects non-HTTPS asset origins [0.04ms]\n(pass) stable HighLevel Marketplace bootstrap > verifies the built loader against the approved one-time source SHA-256 [0.08ms]\n(pass) stable HighLevel Marketplace bootstrap > is emitted as a dedicated one-time Marketplace installation artifact [0.49ms]\n\npackages/lead-connector/src/deployment/release-workflow.contract.test.ts:\n(pass) dialer GitHub release workflow contract > classifies the complete deployed dialer surface and validates all three packages [0.10ms]\n(pass) dialer GitHub release workflow contract > builds clean Railway workspace dependencies in package order [0.10ms]\n(pass) dialer GitHub release workflow contract > releases dialer changes from main in fail-closed provider order with deployment-only secrets [0.14ms]\n(pass) dialer GitHub release workflow contract > provides explicit-id manual rollback and never guesses a previous release [2.44ms]\n\npackages/lead-connector/src/deployment/production-menu.test.ts:\n(pass) LeadConnector production custom menu deployment > updates one configured menu id and verifies exact persisted read-back [0.44ms]\n(pass) LeadConnector production custom menu deployment > fails closed when the configured id belongs to a different menu [0.11ms]\n\npackages/lead-connector/src/deployment/commercial-artifacts.test.ts:\n(pass) commercial deployment artifacts > installs an admin-only GHL menu at /admin with microphone permission [0.02ms]\n(pass) commercial deployment artifacts > builds independently versioned marketplace JavaScript and CSS artifacts [0.06ms]\n(pass) commercial deployment artifacts > centers a responsive modal backdrop while preserving a stable native launcher [0.07ms]\n(pass) commercial deployment artifacts > removes obsolete metering workspace and build references [5.24ms]\n\n 156 pass\n 0 fail\n 1282 expect() calls\nRan 156 tests across 28 files. [1132.00ms]\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -48,6 +48,7 @@ Required infrastructure:
 - `REDIS_URL`
 - `DIALER_SERVER_PUBLIC_URL`
 - `DIALER_SERVER_EMBED_SESSION_SECRET`
+- `DIALER_EDGE_PROXY_SECRET` (shared only with the Cloudflare dialer Worker for signed client attribution)
 - `TWILIO_ACCOUNT_SID`
 - `TWILIO_AUTH_TOKEN`
 - `LEADCONNECTOR_CLIENT_ID`
@@ -158,3 +159,9 @@ DIALER_RUN_GROQ_TRANSCRIPTION_INTEGRATION=1 \
 ```
 
 Live calls require Ko's explicit authorization for the exact scope.
+
+## Inbound routing acceptance
+
+See [INBOUND-TESTING.md](./INBOUND-TESTING.md) for the delivered SDK/server/UI
+boundaries, GoHighLevel owner enrichment, provider-free checks, deployment
+preflight and the separately authorized live-call ladder.

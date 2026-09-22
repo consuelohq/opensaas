@@ -1,0 +1,372 @@
+import { describe, expect, it } from 'bun:test';
+
+import { createInboundCustomerRoutes } from './inbound-customer';
+
+const snapshot = {
+  publicId: 'sales',
+  phoneNumber: '+15550100123',
+  timezone: 'America/New_York',
+  staffAvailableNow: false,
+  callback: {
+    available: true,
+    disclosure: 'We can call you back during a staffed service window.',
+    serviceWindows: [
+      {
+        id: 'window-one',
+        label: 'Monday, 9:00 AM–10:00 AM EDT',
+        startsAt: '2026-09-14T13:00:00.000Z',
+        endsAt: '2026-09-14T14:00:00.000Z',
+      },
+    ],
+  },
+};
+
+const createApplication = () => {
+  const calls: Array<{ operation: string; args: unknown[] }> = [];
+  return {
+    calls,
+    application: {
+      snapshot: async (...args: unknown[]) => {
+        calls.push({ operation: 'snapshot', args });
+        return snapshot;
+      },
+      requestCallback: async (...args: unknown[]) => {
+        calls.push({ operation: 'requestCallback', args });
+        return {
+          callback: {
+            status: 'scheduled',
+            notBefore: '2026-09-14T13:00:00.000Z',
+            deadline: '2026-09-14T14:00:00.000Z',
+          },
+          booking: { status: 'unavailable' },
+          managementToken: 'opaque-management-token-123456',
+        };
+      },
+      readCallback: async (...args: unknown[]) => {
+        calls.push({ operation: 'readCallback', args });
+        return { callback: { status: 'scheduled' }, booking: { status: 'unavailable' } };
+      },
+      rescheduleCallback: async (...args: unknown[]) => {
+        calls.push({ operation: 'rescheduleCallback', args });
+        return { callback: { status: 'scheduled' }, booking: { status: 'unavailable' } };
+      },
+      cancelCallback: async (...args: unknown[]) => {
+        calls.push({ operation: 'cancelCallback', args });
+        return { callback: { status: 'cancelled' }, booking: { status: 'cancelled' } };
+      },
+    },
+  };
+};
+
+describe('public inbound customer routes', () => {
+  it('returns the standard error envelope before admitting an oversized body', async () => {
+    const fixture = createApplication();
+    const response = await createInboundCustomerRoutes(fixture.application).request(
+      '/v1/inbound/customer/sales/callbacks', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ padding: 'x'.repeat(8192) }),
+      },
+    );
+    expect(response.status).toBe(413);
+    expect(response.headers.get('content-type')).toContain('application/json');
+    expect(await response.json()).toEqual({ error: {
+      code: 'CALLBACK_REQUEST_TOO_LARGE', message: 'Callback request is too large', retryable: false,
+    } });
+    expect(fixture.calls).toHaveLength(0);
+  });
+
+  it('rejects structurally plausible numbers that shared contact validation rejects', async () => {
+    const fixture = createApplication();
+    const response = await createInboundCustomerRoutes(fixture.application).request(
+      '/v1/inbound/customer/sales/callbacks', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ phoneNumber: '+10000000000', permissionAccepted: true,
+          idempotencyKey: 'invalid-number-1234', mode: 'immediate' }),
+      },
+    );
+    expect(response.status).toBe(400);
+    expect(fixture.calls).toHaveLength(0);
+  });
+
+  it('serves a public snapshot without accepting internal authority from the browser', async () => {
+    const fixture = createApplication();
+    const routes = createInboundCustomerRoutes(fixture.application);
+    const response = await routes.request('/v1/inbound/customer/sales');
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body).toEqual(snapshot);
+    expect(JSON.stringify(body)).not.toContain('workspace');
+    expect(JSON.stringify(body)).not.toContain('numberId');
+    expect(fixture.calls).toEqual([
+      { operation: 'snapshot', args: ['sales'] },
+    ]);
+  });
+
+  it('rejects forged authority and uses only the server-observed client address', async () => {
+    const fixture = createApplication();
+    const routes = createInboundCustomerRoutes(fixture.application);
+    const validDomesticPhone = ['(828)', '555', '0123'].join(' ');
+
+    const forged = await routes.request('/v1/inbound/customer/sales/callbacks', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'cf-connecting-ip': '203.0.113.10' },
+      body: JSON.stringify({
+        phoneNumber: validDomesticPhone,
+        permissionAccepted: true,
+        idempotencyKey: 'request-12345678',
+        mode: 'immediate',
+        workspaceId: 'forged-workspace',
+      }),
+    });
+    expect(forged.status).toBe(400);
+    expect(fixture.calls).toHaveLength(0);
+
+    const untrusted = await routes.request(
+      '/v1/inbound/customer/sales/callbacks',
+      {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          phoneNumber: validDomesticPhone,
+          permissionAccepted: true,
+          idempotencyKey: 'request-untrusted-1234',
+          mode: 'immediate',
+        }),
+      },
+      { clientAddress: 'unknown', trustedClientIdentity: false },
+    );
+    expect(untrusted.status).toBe(503);
+    expect(await untrusted.json()).toEqual({
+      error: {
+        code: 'EDGE_PROXY_UNAVAILABLE',
+        message: 'Customer callback service is temporarily unavailable',
+        retryable: true,
+      },
+    });
+    expect(fixture.calls).toHaveLength(0);
+
+    const accepted = await routes.request(
+      '/v1/inbound/customer/sales/callbacks',
+      {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'cf-connecting-ip': '198.51.100.10',
+          'x-forwarded-for': '198.51.100.11',
+          'x-real-ip': '198.51.100.12',
+        },
+        body: JSON.stringify({
+          phoneNumber: validDomesticPhone,
+          permissionAccepted: true,
+          idempotencyKey: 'request-12345678',
+          mode: 'immediate',
+        }),
+      },
+      { clientAddress: 'server-observed-client', trustedClientIdentity: true },
+    );
+    expect(accepted.status).toBe(201);
+    expect(fixture.calls).toHaveLength(1);
+    expect(fixture.calls[0]?.operation).toBe('requestCallback');
+    expect(fixture.calls[0]?.args[0]).toBe('sales');
+    expect(fixture.calls[0]?.args[1]).toBe('server-observed-client');
+  });
+
+  it('normalizes a domestic formatted phone number before callback admission', async () => {
+    const fixture = createApplication();
+    const routes = createInboundCustomerRoutes(fixture.application);
+    const response = await routes.request('/v1/inbound/customer/sales/callbacks', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        phoneNumber: '(828) 555-0123',
+        permissionAccepted: true,
+        idempotencyKey: 'request-12345678',
+        mode: 'immediate',
+      }),
+    });
+    expect(response.status).toBe(201);
+    expect(fixture.calls[0]?.args[2]).toMatchObject({
+      phoneNumber: '+18285550123',
+    });
+  });
+
+  it('normalizes international E.164 formatting and rejects implausible lengths', async () => {
+    const fixture = createApplication();
+    const routes = createInboundCustomerRoutes(fixture.application);
+    const international = ['+44', '20', '7946', '0958'].join(' ');
+    const normalizedInternational = ['+44', '20', '7946', '0958'].join('');
+
+    const accepted = await routes.request('/v1/inbound/customer/sales/callbacks', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        phoneNumber: international,
+        permissionAccepted: true,
+        idempotencyKey: 'international-12345678',
+        mode: 'immediate',
+      }),
+    });
+    expect(accepted.status).toBe(201);
+    expect(fixture.calls[0]?.args[2]).toMatchObject({
+      phoneNumber: normalizedInternational,
+    });
+
+    const rejected = await routes.request('/v1/inbound/customer/sales/callbacks', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        phoneNumber: '+12',
+        permissionAccepted: true,
+        idempotencyKey: 'invalid-phone-12345678',
+        mode: 'immediate',
+      }),
+    });
+    expect(rejected.status).toBe(400);
+    expect(fixture.calls).toHaveLength(1);
+  });
+
+  it('requires an opaque capability header for status, reschedule, and cancellation', async () => {
+    const fixture = createApplication();
+    const routes = createInboundCustomerRoutes(fixture.application);
+    expect(
+      (await routes.request('/v1/inbound/customer/sales/callbacks/status')).status,
+    ).toBe(401);
+
+    const status = await routes.request(
+      '/v1/inbound/customer/sales/callbacks/status',
+      { headers: { authorization: 'Callback opaque-management-token-123456' } },
+    );
+    expect(status.status).toBe(200);
+
+    const reschedule = await routes.request(
+      '/v1/inbound/customer/sales/callbacks/reschedule',
+      {
+        method: 'POST',
+        headers: {
+          authorization: 'Callback opaque-management-token-123456',
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({ serviceWindowId: 'window-one' }),
+      },
+    );
+    expect(reschedule.status).toBe(200);
+
+    const cancel = await routes.request(
+      '/v1/inbound/customer/sales/callbacks/cancel',
+      {
+        method: 'POST',
+        headers: {
+          authorization: 'Callback opaque-management-token-123456',
+          'content-type': 'application/json',
+        },
+        body: '{}',
+      },
+    );
+    expect(cancel.status).toBe(200);
+    expect(fixture.calls.map((call) => call.operation)).toEqual([
+      'readCallback',
+      'rescheduleCallback',
+      'cancelCallback',
+    ]);
+  });
+
+  it('returns the standard nested error envelope for every public customer failure class', async () => {
+    const fixture = createApplication();
+    const routes = createInboundCustomerRoutes(fixture.application);
+
+    const invalidEntry = await routes.request('/v1/inbound/customer/!');
+    expect(await invalidEntry.json()).toEqual({
+      error: {
+        code: 'INVALID_CUSTOMER_ENTRY',
+        message: 'Invalid customer entry',
+        retryable: false,
+      },
+    });
+
+    const invalidCallback = await routes.request(
+      '/v1/inbound/customer/sales/callbacks',
+      { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' },
+    );
+    expect(await invalidCallback.json()).toEqual({
+      error: {
+        code: 'INVALID_CALLBACK_REQUEST',
+        message: 'Invalid callback request',
+        retryable: false,
+      },
+    });
+
+    fixture.application.requestCallback = async () => {
+      throw new Error('CUSTOMER_CALLBACK_RATE_LIMITED');
+    };
+    const rateLimited = await routes.request(
+      '/v1/inbound/customer/sales/callbacks',
+      {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          phoneNumber: '+18285550123',
+          permissionAccepted: true,
+          idempotencyKey: 'request-12345678',
+          mode: 'immediate',
+        }),
+      },
+    );
+    expect(rateLimited.status).toBe(429);
+    expect(await rateLimited.json()).toEqual({
+      error: {
+        code: 'CUSTOMER_CALLBACK_RATE_LIMITED',
+        message: 'Too many callback requests',
+        retryable: true,
+      },
+    });
+
+    const capability = await routes.request(
+      '/v1/inbound/customer/sales/callbacks/status',
+    );
+    expect(await capability.json()).toEqual({
+      error: {
+        code: 'CALLBACK_CAPABILITY_REQUIRED',
+        message: 'Callback capability required',
+        retryable: false,
+      },
+    });
+
+    const reschedule = await routes.request(
+      '/v1/inbound/customer/sales/callbacks/reschedule',
+      {
+        method: 'POST',
+        headers: {
+          authorization: 'Callback opaque-management-token-123456',
+          'content-type': 'application/json',
+        },
+        body: '{}',
+      },
+    );
+    expect(await reschedule.json()).toEqual({
+      error: {
+        code: 'INVALID_CALLBACK_RESCHEDULE',
+        message: 'Invalid reschedule request',
+        retryable: false,
+      },
+    });
+
+    const cancellation = await routes.request(
+      '/v1/inbound/customer/sales/callbacks/cancel',
+      {
+        method: 'POST',
+        headers: {
+          authorization: 'Callback opaque-management-token-123456',
+          'content-type': 'application/json',
+        },
+        body: '{',
+      },
+    );
+    expect(await cancellation.json()).toEqual({
+      error: {
+        code: 'INVALID_CALLBACK_CANCELLATION',
+        message: 'Invalid cancellation request',
+        retryable: false,
+      },
+    });
+  });
+});

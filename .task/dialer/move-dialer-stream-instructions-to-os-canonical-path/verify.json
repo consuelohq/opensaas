@@ -1,0 +1,236 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/dialer/move-dialer-stream-instructions-to-os-canonical-path",
+  "base": "origin/stream/dialer",
+  "headSha": "2d15c32c3a996ac554a82e7df76faf751235a6c1",
+  "changeHash": "a9f37708366aeec204b8e8b302231bf53491c1d816065cd5007d9e9c7f86822f",
+  "changedFiles": [
+    "packages/os/tests/dialer-stream-instructions.test.ts",
+    "packages/workspace/scripts/lib/stream-instructions.js",
+    "packages/workspace/scripts/lib/stream-instructions.test.ts",
+    "packages/workspace/streams/dialer/AGENTS.md",
+    "packages/workspace/test-selection.registry.json",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "verifiedAt": "2026-09-10T01:43:19.816Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/dialer/move-dialer-stream-instructions-to-os-canonical-path/workpad.md",
+        ".task/tasks/dialer/move-dialer-stream-instructions-to-os-canonical-path.json",
+        "packages/os/tests/dialer-stream-instructions.test.ts",
+        "packages/workspace/scripts/lib/stream-instructions.js",
+        "packages/workspace/scripts/lib/stream-instructions.test.ts",
+        "packages/workspace/streams/dialer/AGENTS.md",
+        "packages/workspace/test-selection.registry.json",
+        "packages/workspace/test-selection.rules.json",
+        "packages/workspace/tests/test-selection.test.js"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-test-selection",
+          "critical": true,
+          "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy.",
+          "matchedFiles": [
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-stream-instructions",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Stream instruction storage and resolver changes must prove the OS-owned canonical path without selecting the unrelated package-wide OS suite.",
+          "matchedFiles": [
+            "packages/os/tests/dialer-stream-instructions.test.ts",
+            "packages/workspace/scripts/lib/stream-instructions.js",
+            "packages/workspace/scripts/lib/stream-instructions.test.ts",
+            "packages/workspace/streams/dialer/AGENTS.md"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "server-ci-task-contract",
+          "critical": true,
+          "reason": "Server CI changes must scope lint and typecheck to directly changed Twenty server runtime files while retaining dependency propagation.",
+          "matchedFiles": [
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true
+        },
+        {
+          "name": "OS stream instruction contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/scripts/lib/stream-instructions.test.ts",
+            "packages/os/tests/dialer-stream-instructions.test.ts"
+          ],
+          "ruleId": "os-stream-instructions",
+          "critical": true
+        },
+        {
+          "name": "changed server task selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "TypeORM CLI compatibility contract",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 14357,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-move-dialer-stream-instructions-to-os-canonical-path\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/test-selection.test.js \u001b[2m(\u001b[22m\u001b[2m57 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 13020\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m discovers and seeds the existing test inventory \u001b[33m 6928\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m can restrict selection to the committed diff so CI ignores install-time workspace noise \u001b[33m 355\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m57 passed\u001b[39m\u001b[22m\u001b[90m (57)\u001b[39m\n\u001b[2m   Start at \u001b[22m 21:43:00\n\u001b[2m   Duration \u001b[22m 13.45s\u001b[2m (transform 61ms, setup 0ms, import 104ms, tests 13.02s, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS stream instruction contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/scripts/lib/stream-instructions.test.ts",
+            "packages/os/tests/dialer-stream-instructions.test.ts"
+          ],
+          "ruleId": "os-stream-instructions",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1792,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-move-dialer-stream-instructions-to-os-canonical-path\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/scripts/lib/stream-instructions.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/dialer-stream-instructions.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m4 passed\u001b[39m\u001b[22m\u001b[90m (4)\u001b[39m\n\u001b[2m   Start at \u001b[22m 21:43:14\n\u001b[2m   Duration \u001b[22m 891ms\u001b[2m (transform 328ms, setup 0ms, import 828ms, tests 5ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "changed server task selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 168,
+          "outputTail": "No changed Twenty server runtime files require lint or typecheck.\nRunning server lint and baseline-aware typecheck for 1 directly changed file(s).\nTwenty server typecheck matched 1 known baseline diagnostic(s).\nRunning server lint and baseline-aware typecheck for 1 directly changed file(s).\nNo changed Twenty server schema files require GraphQL generation.\nNo changed Twenty server runtime files require migration generation.\nNo changesgeneratedTwenty server migration drift matched 2 known baseline operation(s).\ngeneratedgenerated✔ parseCliArguments resolves comparison SHAs (0.770917ms)\n✔ parseCliArguments selects GraphQL generation mode (0.065667ms)\n✔ parseCliArguments selects migration generation mode (0.061167ms)\n✔ filterServerTaskFiles excludes root and config-only triggers (0.256625ms)\n✔ filterGraphqlGenerationFiles keeps only server schema and generated files (0.245125ms)\n✔ buildEslintArguments selects the owning project config and stdin filename (1.446375ms)\n✔ ESLint diagnostic comparison tracks new error multiplicity without line numbers (0.297417ms)\n✔ runChangedFileLint accepts base-existing errors and rejects a new changed-file error (1.446667ms)\n✔ runChangedFileLint allows explicit lint baseline debt but rejects diagnostics beyond it (2.171292ms)\n✔ buildTypecheckArguments uses standard TypeScript without emitting (0.26425ms)\n✔ TypeScript diagnostic baseline comparison rejects only new diagnostic keys (0.652083ms)\n✔ runChangedServerTask skips Nx for config-only changes (0.858667ms)\n✔ runChangedServerTask executes lint and baseline-aware typecheck for server runtime changes (0.264125ms)\n✔ runChangedServerTask rejects a new TypeScript diagnostic outside the baseline (0.174ms)\n✔ server lint configuration resolves the existing workspace rules project (0.619792ms)\n✔ runGraphqlGenerationCheck skips generation without schema changes (0.224916ms)\n✔ runGraphqlGenerationCheck generates and verifies committed outputs (0.390667ms)\n✔ runMigrationGenerationCheck skips generation without server runtime changes (0.183417ms)\n✔ runMigrationGenerationCheck accepts a no-change TypeORM exit (0.23625ms)\n✔ runMigrationGenerationCheck accepts and removes exact known migration drift (0.456917ms)\n✔ runMigrationGenerationCheck rejects changed drift beyond the baseline (0.228292ms)\n✔ runMigrationGenerationCheck rejects and removes generated drift (0.183542ms)\nℹ tests 22\nℹ suites 0\nℹ pass 22\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 103.295125\n"
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 391,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/workspace/tests/github-workflow-policy.test.js:\n(pass) GitHub workflow policy > does not include retired automation workflows [0.11ms]\n(pass) GitHub workflow policy > does not reference retired CI credentials or the disabled Chromatic job [3.59ms]\n(pass) GitHub workflow policy > does not retain privileged allowlist entries for deleted workflows [0.56ms]\n(pass) GitHub workflow policy > runs typecheck and test from the filtered frontend file set [0.23ms]\n(pass) GitHub workflow policy > installs Bun and scopes shared tasks to changed frontend files [0.15ms]\n(pass) GitHub workflow policy > scopes native OS distribution tests to relevant changed files [0.25ms]\n(pass) GitHub workflow policy > runs Docker Compose CI with the pgvector PostgreSQL image required by migrations [0.21ms]\n(pass) GitHub workflow policy > uses available hosted runners for the Server and Front build pipelines [0.16ms]\n(pass) GitHub workflow policy > builds Consuelo backend workspace dependencies before server typecheck [0.25ms]\n(pass) GitHub workflow policy > installs Bun before the Server unit-test job runs Bun package tests [0.18ms]\n(pass) GitHub workflow policy > allows enough time for Danger dependency installation and execution [0.12ms]\n(pass) GitHub workflow policy > explicitly allowlists the API breaking-changes workflow write permissions [0.10ms]\n\n 12 pass\n 0 fail\n 53 expect() calls\nRan 12 tests across 1 file. [368.00ms]\n"
+        },
+        {
+          "name": "TypeORM CLI compatibility contract",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 3169,
+          "outputTail": "✔ Twenty server uses the Node 24-compatible TypeORM ts-node wrapper (0.67875ms)\n✔ the configured TypeORM wrapper resolves from the installed package (3046.828792ms)\nℹ tests 2\nℹ suites 0\nℹ pass 2\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 3112.359041\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

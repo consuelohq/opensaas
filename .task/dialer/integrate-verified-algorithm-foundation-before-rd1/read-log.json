@@ -1,0 +1,9 @@
+{
+  "files": [
+    "packages/dialer-server/scripts/local-dialer-lab.ts",
+    "packages/dialer-server/src/database/migrations.test.ts",
+    "packages/dialer-server/src/lab/local-dialer-lab.integration.test.ts",
+    "packages/dialer-server/src/lab/local-dialer-lab.ts"
+  ],
+  "updatedAt": "2026-09-10T03:07:23.292Z"
+}

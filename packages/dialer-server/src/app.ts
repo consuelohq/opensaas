@@ -1,3 +1,9 @@
+import { createInboundOperatorRoutes } from './routes/inbound-operator';
+import {
+  createInboundCustomerRoutes,
+  type InboundCustomerBindings,
+} from './routes/inbound-customer';
+import { createInboundRoutes } from './routes/inbound';
 import { Hono } from 'hono';
 
 import type { DialerServerDependencies } from './contracts';
@@ -22,14 +28,23 @@ import { createTwilioMediaRoutes } from './routes/twilio-media';
 import { createVoiceRoutes } from './routes/voice';
 
 export function createDialerServer(dependencies: DialerServerDependencies) {
-  const app = new Hono<{ Variables: DialerVariables }>();
+  const app = new Hono<{
+    Variables: DialerVariables;
+    Bindings: InboundCustomerBindings;
+  }>();
   app.route('/', createHealthRoutes());
+  if (dependencies.inbound)
+    app.route('/', createInboundRoutes(dependencies.inbound));
+  if (dependencies.inbound?.customer)
+    app.route('/', createInboundCustomerRoutes(dependencies.inbound.customer));
   app.route('/', createLeadConnectorPublicRoutes(dependencies));
   if (dependencies.commercial) {
     app.route('/', createCommercialPublicRoutes(dependencies.commercial));
   }
   app.route('/', createEmbedRoutes(dependencies));
   app.use('/v1/*', createAuthenticationMiddleware(dependencies));
+  if (dependencies.inbound)
+    app.route('/', createInboundOperatorRoutes(dependencies.inbound.operator));
   if (dependencies.commercial) {
     app.route('/', createCommercialRoutes(dependencies.commercial));
   }

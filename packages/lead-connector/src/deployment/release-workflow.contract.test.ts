@@ -12,6 +12,7 @@ describe('dialer GitHub release workflow contract', () => {
     const planner = read('packages', 'os', 'scripts', 'ci-plan.ts');
     expect(planner).toContain("file.startsWith('packages/dialer-server/')");
     expect(planner).toContain("file.startsWith('packages/lead-connector/')");
+    expect(planner).toContain("file.startsWith('packages/contacts/')");
     expect(planner).toContain("file.startsWith('packages/logger/')");
     expect(ci).toContain('bun test packages/dialer/src');
     expect(ci).toContain('bun test packages/dialer-server/src');
@@ -39,6 +40,7 @@ describe('dialer GitHub release workflow contract', () => {
     expect(dockerfile).not.toContain('yarn install');
     const builds = [
       'bun run --cwd packages/logger build',
+      'bun run --cwd packages/contacts build',
       'bun run --cwd packages/dialer build',
       'bun run --cwd packages/lead-connector build',
       'bun run --cwd packages/dialer-server build',
@@ -50,6 +52,7 @@ describe('dialer GitHub release workflow contract', () => {
       cursor = next;
     }
     expect(railway).toContain('packages/logger/**');
+    expect(railway).toContain('packages/contacts/**');
   });
 
   it('releases dialer changes from main in fail-closed provider order with deployment-only secrets', () => {
@@ -61,7 +64,7 @@ describe('dialer GitHub release workflow contract', () => {
     expect(release).toContain('- dialer');
     expect(release).toContain('environment: consuelo dialer / production');
     expect(release).toContain(
-      'packages/(dialer|dialer-server|lead-connector|logger)/',
+      'packages/(dialer|dialer-server|lead-connector|logger|contacts)/',
     );
     expect(release).toContain('bun run --cwd packages/logger build');
     expect(release.indexOf('bun run --cwd packages/logger build')).toBeLessThan(
@@ -84,6 +87,8 @@ describe('dialer GitHub release workflow contract', () => {
     expect(release).toContain('RAILWAY_DIALER_PROJECT_TOKEN');
     expect(release).not.toContain('Link Railway release target');
     expect(release).not.toContain('@railway/cli@5.27.2 link');
+    expect(release).toContain('Configure dialer edge identity secret');
+    expect(release).toContain('DIALER_EDGE_PROXY_SECRET');
     expect(release).toContain('CLOUDFLARE_DIALER_WORKER_API_TOKEN');
     expect(release).toContain(
       'consuelo-lead-connector-click-to-call.marketplace-loader.html',
