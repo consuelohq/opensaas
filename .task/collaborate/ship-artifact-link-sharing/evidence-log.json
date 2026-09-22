@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "worktree_id": "task/collaborate/ship-artifact-link-sharing",
+  "events": [
+    {
+      "id": "be1038dc-58f7-4e53-844c-656617c107b0",
+      "occurred_at": "2026-09-21T04:35:45.005Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/test-selection.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/collaborate/ship-artifact-link-sharing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/collaborate/ship-artifact-link-sharing"
+      }
+    },
+    {
+      "id": "387700fe-f392-49b2-8439-705b32b89f7a",
+      "occurred_at": "2026-09-21T04:39:07.910Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/collaborate/ship-artifact-link-sharing/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/collaborate/ship-artifact-link-sharing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/collaborate/ship-artifact-link-sharing"
+      }
+    },
+    {
+      "id": "3518bf45-0da2-4a3c-a206-450c153d664b",
+      "occurred_at": "2026-09-21T04:39:41.242Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/test-selection.rules.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/collaborate/ship-artifact-link-sharing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/collaborate/ship-artifact-link-sharing"
+      }
+    },
+    {
+      "id": "403ac6c7-a4ba-4a44-88cd-34fdc22f70cb",
+      "occurred_at": "2026-09-21T04:39:48.825Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/typeorm-cli-contract.test.mjs",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/collaborate/ship-artifact-link-sharing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/collaborate/ship-artifact-link-sharing"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-09-21T04:39:48.937Z"
+}

@@ -14,5 +14,5 @@
     "artifact:validate": "bun ./scripts/validate-consuelo-reader.ts",
     "test:reader": "bun test ./scripts/render-consuelo-reader.test.ts"
   },
-  "license": "AGPL-3.0"
+  "license": "Apache-2.0"
 }

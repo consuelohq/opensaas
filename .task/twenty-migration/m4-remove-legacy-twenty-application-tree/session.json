@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_6893b20e16bc",
+  "tmuxSession": "opensaas-twenty-migration-m4-remove-legacy-twenty-application-tree-6893b20e",
+  "area": "twenty-migration",
+  "stream": "stream/twenty-migration",
+  "taskBranch": "task/twenty-migration/m4-remove-legacy-twenty-application-tree",
+  "branch": "task/twenty-migration/m4-remove-legacy-twenty-application-tree",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-twenty-migration-m4-remove-legacy-twenty-application-tree",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-twenty-migration-m4-remove-legacy-twenty-application-tree",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2053,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2053",
+  "createdAt": "2026-09-20T23:45:43.332Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-twenty-migration-m4-remove-legacy-twenty-application-tree/.task/twenty-migration/m4-remove-legacy-twenty-application-tree/session.json"
+}

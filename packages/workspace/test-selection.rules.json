@@ -1405,6 +1405,7 @@
         "packages/os/cloudflare/os-device-authority/src/routes/google-oauth.ts",
         "packages/os/cloudflare/os-device-authority/src/routes/install-control-plane.ts",
         "packages/os/cloudflare/os-device-authority/src/services/canonical-device-identity.ts",
+        "packages/os/cloudflare/os-device-authority/src/services/canonical-user.ts",
         "packages/os/cloudflare/os-device-authority/src/services/install-identity.ts",
         "packages/os/cloudflare/workspace-edge/migrations/0005_install_user_workspace_verification.sql",
         "packages/os/scripts/lib/install-control-plane-d1.ts",
@@ -1443,6 +1444,56 @@
         }
       ],
       "reason": "Native OS device-approval and canonical-identity changes must prove the exact auth, tenant, and control-plane contracts without selecting unsafe unrelated package-wide OS tests."
+    },
+    {
+      "id": "os-installer-device-onboarding",
+      "critical": true,
+      "source": [
+        "packages/os/scripts/install.ts",
+        "packages/os/scripts/lib/workspace-device-authorization.ts",
+        "packages/os/scripts/lib/workspace-device-login-client.ts",
+        "packages/os/scripts/compact-daemon-output.test.ts",
+        "packages/os/scripts/install-tty.test.ts",
+        "packages/os/scripts/onboarding-flow.test.ts",
+        "packages/os/tests/bootstrap-source.test.ts",
+        "packages/os/tests/install-workspace-bootstrap-contract.test.ts",
+        "packages/os/tests/installer-onboarding-ui.test.ts",
+        "packages/os/tests/installer-runtime-dependencies.test.ts",
+        "packages/os/tests/installer-telemetry-onboarding-wiring.test.ts",
+        "packages/os/tests/windows-bootstrap-source.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS installer device onboarding contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "scripts/compact-daemon-output.test.ts",
+            "scripts/install-tty.test.ts",
+            "scripts/onboarding-flow.test.ts",
+            "tests/bootstrap-source.test.ts",
+            "tests/install-workspace-bootstrap-contract.test.ts",
+            "tests/installer-onboarding-ui.test.ts",
+            "tests/installer-telemetry-onboarding-wiring.test.ts",
+            "tests/windows-bootstrap-source.test.ts"
+          ]
+        },
+        {
+          "name": "OS installer runtime structure contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/installer-runtime-dependencies.test.ts",
+            "-t",
+            "should persist portless only when available before public daemon installation|should install a named Consuelo service executable before daemon generation|should verify the signed runtime and prepare recovery before persisting managed install state"
+          ]
+        }
+      ],
+      "reason": "Default-local installer, browser device authorization, and onboarding UX changes must prove focused CLI, telemetry, platform, and runtime-ordering contracts without selecting the historically noisy unrelated OS package suite."
     },
     {
       "id": "os-secrets-management",
@@ -1536,7 +1587,12 @@
         "packages/os/tests/launcher-local-customization.test.ts",
         "packages/os/tests/install-state.test.ts",
         "packages/os/tests/local-agent-connectivity.test.ts",
-        "packages/os/tests/internal-launcher-regressions.test.ts"
+        "packages/os/tests/internal-launcher-regressions.test.ts",
+        "packages/os/scripts/server/routes/artifacts.ts",
+        "packages/os/scripts/server/services/artifact-sharing.ts",
+        "packages/os/tests/artifact-sharing-links.test.ts",
+        "packages/os/tests/artifacts-hono-routes.test.ts",
+        "packages/os/tests/artifacts-edge-routing.test.ts"
       ],
       "tests": [
         {
@@ -1548,6 +1604,9 @@
             "test",
             "--no-file-parallelism",
             "tests/artifacts.test.ts",
+            "tests/artifacts-edge-routing.test.ts",
+            "tests/artifacts-hono-routes.test.ts",
+            "tests/artifact-sharing-links.test.ts",
             "tests/settings-site.test.ts",
             "tests/settings-control-plane.test.ts",
             "tests/launcher-nodes-materialization.test.ts",
@@ -1834,58 +1893,6 @@
         }
       ],
       "reason": "Native menu lifecycle/auth/heartbeat changes must prove read-only enrolled-node discovery, privileged operator mutations, refresh-token persistence, heartbeat snapshot safety, and lifecycle presentation without selecting the historically red unrelated OS package suite."
-    },
-    {
-      "id": "frontend-lint-config-contract",
-      "critical": true,
-      "exclusive": true,
-      "source": [
-        ".github/workflows/ci-front.yaml",
-        "eslint.config.mjs",
-        "packages/eslint-rules/eslint.config.react.mjs",
-        "packages/twenty-front/eslint.config.mjs",
-        "packages/twenty-shared/eslint.config.mjs",
-        "packages/twenty-ui/eslint.config.mjs",
-        "packages/workspace/scripts/ci/lint-changed-frontend-files.mjs",
-        "packages/workspace/tests/lint-changed-frontend-files.test.mjs",
-        "packages/workspace/scripts/ci/run-changed-frontend-task.mjs",
-        "packages/workspace/tests/run-changed-frontend-task.test.mjs",
-        ".github/workflows/ci-shared.yaml"
-      ],
-      "tests": [
-        {
-          "name": "changed frontend lint helper tests",
-          "command": [
-            "node",
-            "--test",
-            "packages/workspace/tests/lint-changed-frontend-files.test.mjs",
-            "packages/workspace/tests/run-changed-frontend-task.test.mjs"
-          ]
-        },
-        {
-          "name": "GitHub workflow policy tests",
-          "command": [
-            "bun",
-            "test",
-            "packages/workspace/tests/github-workflow-policy.test.js"
-          ]
-        },
-        {
-          "name": "changed GitHub workflow security checks",
-          "command": [
-            "node",
-            "packages/workspace/scripts/ci/check-github-workflows.cjs"
-          ]
-        },
-        {
-          "name": "changed frontend files lint",
-          "command": [
-            "node",
-            "packages/workspace/scripts/ci/lint-changed-frontend-files.mjs"
-          ]
-        }
-      ],
-      "reason": "Frontend lint configuration and workflow-only changes must validate their exact configs, workflow policy, and changed-file lint lane without selecting unrelated full application test targets."
     },
     {
       "id": "obsolete-metering-artifact-contract",
@@ -2189,47 +2196,6 @@
       "reason": "Coaching package changes must emit the declaration artifact advertised by package.json so clean consumers can typecheck."
     },
     {
-      "id": "server-ci-task-contract",
-      "critical": true,
-      "source": [
-        ".github/workflows/ci-server.yaml",
-        "packages/workspace/scripts/ci/run-changed-server-task.mjs",
-        "packages/workspace/tests/run-changed-server-task.test.mjs",
-        "packages/workspace/tests/typeorm-cli-contract.test.mjs",
-        "packages/workspace/tests/github-workflow-policy.test.js",
-        "packages/twenty-server/project.json",
-        "packages/workspace/test-selection.rules.json",
-        "packages/workspace/test-selection.registry.json"
-      ],
-      "tests": [
-        {
-          "name": "changed server task selector tests",
-          "command": [
-            "node",
-            "--test",
-            "packages/workspace/tests/run-changed-server-task.test.mjs"
-          ]
-        },
-        {
-          "name": "GitHub workflow policy tests",
-          "command": [
-            "bun",
-            "test",
-            "packages/workspace/tests/github-workflow-policy.test.js"
-          ]
-        },
-        {
-          "name": "TypeORM CLI compatibility contract",
-          "command": [
-            "node",
-            "--test",
-            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
-          ]
-        }
-      ],
-      "reason": "Server CI changes must scope lint and typecheck to directly changed Twenty server runtime files while retaining dependency propagation."
-    },
-    {
       "id": "api-package",
       "critical": true,
       "source": [
@@ -2248,47 +2214,6 @@
         }
       ],
       "reason": "API changes must run API route and service specs."
-    },
-    {
-      "id": "twenty-server-project",
-      "critical": true,
-      "source": [
-        "packages/twenty-server/**",
-        "packages/twenty-server/src/engine/**/*.resolver.ts",
-        "packages/twenty-server/src/**/migrations/**"
-      ],
-      "tests": [
-        {
-          "name": "twenty-server affected test target",
-          "command": [
-            "npx",
-            "nx",
-            "test",
-            "twenty-server"
-          ]
-        }
-      ],
-      "reason": "Server changes have the broadest backend impact and should run the project test target."
-    },
-    {
-      "id": "twenty-front-project",
-      "critical": false,
-      "source": [
-        "packages/twenty-front/**"
-      ],
-      "tests": [
-        {
-          "name": "twenty-front test target",
-          "command": [
-            "npx",
-            "nx",
-            "test",
-            "twenty-front",
-            "--coverage=false"
-          ]
-        }
-      ],
-      "reason": "Frontend package changes should run the project test target."
     },
     {
       "id": "workspace-session-integration",
@@ -2599,6 +2524,61 @@
         }
       ],
       "reason": "Media schema, transcription, and SVG conversion changes must run the package-native focused media contracts without selecting the unrelated whole-OS package suite."
+    },
+    {
+      "id": "consuelo-ci-planner",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/scripts/ci-plan.ts",
+        "packages/os/tests/ci-plan.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "Consuelo CI planner contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/ci-plan.test.ts"
+          ]
+        }
+      ],
+      "reason": "Consuelo CI planner changes have a focused routing contract and must not select the broad OS package suite."
+    },
+    {
+      "id": "twenty-migration-os-reference-cleanup",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/operator/prompts/review.md",
+        "packages/os/scripts/lib/code-call/snapshot.ts"
+      ],
+      "tests": [
+        {
+          "name": "M4 Twenty physical deletion boundary",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/twenty-migration-runtime-boundary.test.ts"
+          ]
+        },
+        {
+          "name": "OS code.call snapshot contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/code-call-snapshot.test.ts",
+            "packages/os/tests/code-call-service-architecture.test.ts"
+          ]
+        }
+      ],
+      "reason": "M4 OS reference and snapshot cleanup must prove deleted Twenty topology stays absent and large-diff code.call snapshots remain safe without selecting the broad OS package suite."
     }
   ]
 }

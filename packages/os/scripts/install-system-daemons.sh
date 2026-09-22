@@ -593,6 +593,7 @@ run_generate_daemons() {
 run_plutil_lint() {
   local plists=("$workspace_generated_plist" "$caddy_generated_plist" "$watchdog_generated_plist")
   local plist
+  local plutil_bin=""
   if [ "$availability_enabled" = "1" ]; then
     plists+=("$availability_generated_plist")
   fi
@@ -605,11 +606,39 @@ run_plutil_lint() {
   for plist in "${heartbeat_generated_plists[@]+"${heartbeat_generated_plists[@]}"}"; do
     plists+=("$plist")
   done
-  if [ "$debug" = "1" ]; then
-    plutil -lint "${plists[@]}"
-  else
-    plutil -lint "${plists[@]}" >/dev/null
+
+  # Production installs run on macOS, where /usr/bin/plutil is canonical.
+  # GitHub's Linux verification runner does not provide plutil, so keep the
+  # same plist validity check there with Python's standard plist parser.
+  if [ -x /usr/bin/plutil ]; then
+    plutil_bin="/usr/bin/plutil"
+  elif command -v plutil >/dev/null 2>&1; then
+    plutil_bin="$(command -v plutil)"
   fi
+
+  if [ -n "$plutil_bin" ]; then
+    if [ "$debug" = "1" ]; then
+      "$plutil_bin" -lint "${plists[@]}"
+    else
+      "$plutil_bin" -lint "${plists[@]}" >/dev/null
+    fi
+    return 0
+  fi
+
+  if command -v python3 >/dev/null 2>&1; then
+    python3 - "${plists[@]}" <<'PY'
+import plistlib
+import sys
+
+for plist_path in sys.argv[1:]:
+    with open(plist_path, "rb") as plist_file:
+        plistlib.load(plist_file)
+PY
+    return 0
+  fi
+
+  echo "plist validation unavailable: install plutil or python3" >&2
+  return 127
 }
 
 install_launch_agent_definitions() {
@@ -635,6 +664,14 @@ if [ "$dry_run" -eq 0 ]; then
 fi
 
 run_generate_daemons
+# The generator writes into the mutable OS security directory. Resolve the
+# generated paths again after generation so a first dry-run/install does not
+# keep pointing at the retired in-release fallback paths selected above.
+workspace_generated_plist="$(resolve_generated_plist "$workspace_label")"
+caddy_generated_plist="$(resolve_generated_plist "$caddy_label")"
+portless_generated_plist="$(resolve_generated_plist "$portless_label")"
+watchdog_generated_plist="$(resolve_generated_plist "$watchdog_label")"
+availability_generated_plist="$(resolve_generated_plist "$availability_label")"
 if [ -f "$portless_generated_plist" ]; then
   portless_enabled=1
 fi

@@ -6,8 +6,8 @@ import {
   DiffsGatewayError,
   loadDiffsCode,
   loadDiffsHistory,
-  loadDiffsPullRequest,
-  loadDiffsPullRequestIndex,
+  loadDiffsPullRequestIndexSnapshot,
+  loadDiffsPullRequestSnapshot,
   mergeDiffsPullRequest,
   mutateDiffsReviewThread,
   readDiffsRepository,
@@ -30,6 +30,23 @@ function htmlResponse(html: string, status = 200): Response {
       'cache-control': 'private, no-store',
     },
   });
+}
+
+function cachedJsonResponse(
+  snapshot: { value: unknown; etag: string; source: string },
+  request: Request,
+): Response {
+  const headers = new Headers({
+    etag: snapshot.etag,
+    'cache-control': 'private, max-age=0, must-revalidate',
+    vary: 'Accept',
+    'x-consuelo-diffs-cache': snapshot.source,
+  });
+  if (request.headers.get('if-none-match') === snapshot.etag) {
+    return new Response(null, { status: 304, headers });
+  }
+  headers.set('content-type', 'application/json; charset=utf-8');
+  return new Response(JSON.stringify(snapshot.value, null, 2), { status: 200, headers });
 }
 
 function gatewayError(error: unknown): Response {
@@ -125,11 +142,11 @@ export function createDiffsRoutes(): Hono {
     const principal = await authenticate(request, READ_SCOPE);
     if (principal instanceof Response) return principal;
     try {
-      return jsonResponse(await loadDiffsPullRequestIndex({
+      return cachedJsonResponse(await loadDiffsPullRequestIndexSnapshot({
         principal,
         owner: context.req.param('owner'),
         repo: context.req.param('repo'),
-      }));
+      }), request);
     } catch (error: unknown) {
       return gatewayError(error);
     }
@@ -144,12 +161,12 @@ export function createDiffsRoutes(): Hono {
       return jsonResponse({ ok: false, error: { code: 'INVALID_PULL_REQUEST', message: 'Pull request number must be a positive integer.' } }, 400);
     }
     try {
-      return jsonResponse(await loadDiffsPullRequest({
+      return cachedJsonResponse(await loadDiffsPullRequestSnapshot({
         principal,
         owner: context.req.param('owner'),
         repo: context.req.param('repo'),
         number,
-      }));
+      }), request);
     } catch (error: unknown) {
       return gatewayError(error);
     }

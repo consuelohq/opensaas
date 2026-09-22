@@ -10,9 +10,9 @@
       "packages/logger/**",
       "packages/contacts/**",
       "package.json",
-      "yarn.lock",
-      ".yarnrc.yml",
-      ".yarn/**"
+      "bun.lock",
+      "bunfig.toml",
+      ".bun-version"
     ]
   },
   "deploy": {

@@ -1,0 +1,14 @@
+{
+  "files": [
+    "packages/cli/src/auth.ts",
+    "packages/cli/src/commands/analytics.ts",
+    "packages/cli/src/commands/init.ts",
+    "packages/cli/src/index.ts",
+    "packages/cli/src/sentry.ts",
+    "packages/coaching/package.json",
+    "packages/contacts/package.json",
+    "packages/lead-connector/package.json",
+    "packages/workspace/tests/github-workflow-policy.test.js"
+  ],
+  "updatedAt": "2026-09-21T05:01:02.737Z"
+}

@@ -33,7 +33,7 @@ const EXCLUDE_DIRS = new Set([
   '__pycache__',
   '.task',
 ]);
-const EXCLUDE_FILE_NAMES = new Set(['package-lock.json', 'yarn.lock']);
+const EXCLUDE_FILE_NAMES = new Set(['package-lock.json', 'bun.lock']);
 const MAX_QUERY_HYDRATION_CHUNKS = 64;
 const MAX_CHANGED_HYDRATION_CHUNKS = 32;
 const MAX_GATEWAY_EMBEDDING_BATCH_SIZE = 32;

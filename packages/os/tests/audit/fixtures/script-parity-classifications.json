@@ -54,37 +54,17 @@
       "status": "same",
       "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
     },
+    "scripts/ci-plan.ts": {
+      "status": "os-only-intentional",
+      "reason": "Canonical Consuelo CI planning helper is OS-owned after the Bun/CI cutover and intentionally has no workspace-script counterpart."
+    },
     "scripts/ci/check-github-workflows.cjs": {
       "status": "workspace-only-needs-port",
       "reason": "Present only in packages/workspace; review whether it should be ported into packages/os or explicitly documented as workspace-only."
     },
-    "scripts/ci/lint-changed-frontend-files.mjs": {
-      "status": "workspace-only-needs-port",
-      "reason": "scripts/ci/lint-changed-frontend-files.mjs exists only in the workspace script inventory; keep it flagged for an OS port or an explicit intentional-retirement decision."
-    },
-    "scripts/ci/run-changed-frontend-task.mjs": {
-      "status": "workspace-only-needs-port",
-      "reason": "scripts/ci/run-changed-frontend-task.mjs exists only in the workspace script inventory; keep it flagged for an OS port or an explicit intentional-retirement decision."
-    },
     "scripts/ci/run-changed-os-native-tests.mjs": {
       "status": "workspace-only-needs-port",
       "reason": "scripts/ci/run-changed-os-native-tests.mjs exists only in the workspace script inventory; keep it flagged for an OS port or an explicit intentional-retirement decision."
-    },
-    "scripts/ci/run-changed-server-task.mjs": {
-      "status": "workspace-only-needs-port",
-      "reason": "scripts/ci/run-changed-server-task.mjs exists only in the workspace script inventory; keep it flagged for an OS port or an explicit intentional-retirement decision."
-    },
-    "scripts/ci/twenty-server-eslint-baseline.json": {
-      "status": "workspace-only-needs-port",
-      "reason": "scripts/ci/twenty-server-eslint-baseline.json exists only in the workspace script inventory; keep it flagged for an OS port or an explicit intentional-retirement decision."
-    },
-    "scripts/ci/twenty-server-migration-baseline.json": {
-      "status": "workspace-only-needs-port",
-      "reason": "scripts/ci/twenty-server-migration-baseline.json exists only in the workspace script inventory; keep it flagged for an OS port or an explicit intentional-retirement decision."
-    },
-    "scripts/ci/twenty-server-typecheck-baseline.json": {
-      "status": "workspace-only-needs-port",
-      "reason": "scripts/ci/twenty-server-typecheck-baseline.json exists only in the workspace script inventory; keep it flagged for an OS port or an explicit intentional-retirement decision."
     },
     "scripts/code-call.ts": {
       "status": "same",
@@ -542,8 +522,8 @@
       "reason": "scripts/lib/gcloud-managed-cloud-node.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
     },
     "scripts/lib/git.js": {
-      "status": "same",
-      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
+      "status": "changed-needs-review",
+      "reason": "Workspace and OS Git helpers now differ after the main/stream integration; retain both implementations and keep the divergence explicit until their branch and worktree responsibilities are reconciled."
     },
     "scripts/lib/github-cli.ts": {
       "status": "os-only-needs-review",
@@ -1002,8 +982,8 @@
       "reason": "scripts/lib/operator-token-store.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
     },
     "scripts/lib/paths.js": {
-      "status": "same",
-      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
+      "status": "changed-needs-review",
+      "reason": "The OS copy now lazy-loads yaml so scripts-only audit fixtures do not require index/config dependencies; keep the intentional runtime-specific divergence explicit."
     },
     "scripts/lib/platform-cloudflare-provisioning.ts": {
       "status": "os-only-intentional",
@@ -1320,8 +1300,8 @@
       "reason": "OS-owned observability cost estimator derives non-zero trace cost estimates from runtime model/token metadata; no workspace-script counterpart is intended."
     },
     "scripts/lib/trace-cursor-stream.ts": {
-      "status": "os-only-needs-review",
-      "reason": "scripts/lib/trace-cursor-stream.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "status": "os-only-intentional",
+      "reason": "OS-owned trace cursor streaming helper powers authenticated live observability updates; no workspace-script counterpart is intended."
     },
     "scripts/lib/trace-database-schema.ts": {
       "status": "os-only-needs-review",
@@ -1356,8 +1336,8 @@
       "reason": "scripts/lib/trace-site-inspector/interactions.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
     },
     "scripts/lib/trace-site-inspector/live-browser.ts": {
-      "status": "os-only-needs-review",
-      "reason": "scripts/lib/trace-site-inspector/live-browser.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+      "status": "os-only-intentional",
+      "reason": "OS-owned trace inspector browser helper manages live trace updates on the authenticated observability surface; no workspace-script counterpart is intended."
     },
     "scripts/lib/trace-site-inspector/model.ts": {
       "status": "os-only-needs-review",
@@ -1785,6 +1765,10 @@
       "status": "os-only-needs-review",
       "reason": "scripts/server/security/mcp-origin.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
     },
+    "scripts/server/services/artifact-sharing.ts": {
+      "status": "os-only-intentional",
+      "reason": "Artifact share token and session lifecycle is an OS server responsibility introduced by the collaboration flow and intentionally has no workspace-script counterpart."
+    },
     "scripts/server/services/artifacts-gateway.ts": {
       "status": "os-only-intentional",
       "reason": "scripts/server/services/artifacts-gateway.ts is an intentional OS-owned runtime, build, support, or test asset with no workspace counterpart."
@@ -1796,6 +1780,10 @@
     "scripts/server/services/diffs-gateway.ts": {
       "status": "os-only-needs-review",
       "reason": "scripts/server/services/diffs-gateway.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+    },
+    "scripts/server/services/diffs-local-cache.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned node-local Diffs cache persists authenticated source-control snapshots for fast first paint without moving refresh compute to the edge; no workspace-script counterpart is intended."
     },
     "scripts/server/services/mcp-session.ts": {
       "status": "os-only-intentional",

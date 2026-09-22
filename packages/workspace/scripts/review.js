@@ -123,7 +123,7 @@ function parseArgs(argv) {
 
 function run(cmd, args, opts = {}) {
   try {
-    return execFileSync(cmd, args, { encoding: 'utf8', maxBuffer: 10 * 1024 * 1024, ...opts }).trim();
+    return execFileSync(cmd, args, { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, ...opts }).trim();
   } catch {
     return '';
   }
@@ -185,6 +185,7 @@ function getChangedRepoFiles(base) {
 
   try {
     for (const change of getTrackedChanges(gitRoot())) {
+      if (change.deleted) continue;
       files.add(change.path);
     }
   } catch {
@@ -579,7 +580,7 @@ function runTests(files) {
       return m ? m[1] : null;
     }).filter(Boolean))];
   } else {
-    packages = ['api', 'dialer', 'twenty-server'];
+    packages = ['api', 'dialer'];
   }
 
   // map to packages that have jest configs

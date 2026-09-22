@@ -1,0 +1,19 @@
+{
+  "area": "twenty-migration",
+  "stream": "stream/twenty-migration",
+  "taskBranch": "task/twenty-migration/m2-remove-twenty-sdk-legacy-cli-surface",
+  "baseBranch": "stream/twenty-migration",
+  "sourceBranch": "stream/twenty-migration",
+  "startFrom": "stream",
+  "prNumber": 2040,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2040",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2040",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2040/m2-remove-twenty-sdk-legacy-cli-surface",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2040",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2040/m2-remove-twenty-sdk-legacy-cli-surface",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-twenty-migration-m2-remove-twenty-sdk-legacy-cli-surface",
+  "taskSession": "tsk_ab5e5b64d145",
+  "tmuxSession": "opensaas-twenty-migration-m2-remove-twenty-sdk-legacy-cli-surface-ab5e5b64",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-twenty-migration-m2-remove-twenty-sdk-legacy-cli-surface/.task/twenty-migration/m2-remove-twenty-sdk-legacy-cli-surface/session.json",
+  "createdAt": "2026-08-15T07:03:38.539Z"
+}

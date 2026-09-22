@@ -8,10 +8,9 @@ Railway-deployed packages should not import or depend on `consuelo-design`.
 
 The production Railway Dockerfile uses explicit package COPY lines. Keep `packages/consuelo-design` absent from those COPY lists unless Ko approves a deployment boundary change.
 
-Relevant deployment files:
+Relevant deployment file:
 
 - `Dockerfile`
-- `packages/twenty-docker/twenty/Dockerfile`
 
 ## verification
 

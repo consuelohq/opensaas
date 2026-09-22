@@ -1,8 +1,7 @@
-FROM node:24-bookworm-slim AS dependencies
+FROM oven/bun:1.3.14 AS dependencies
 WORKDIR /app
-RUN corepack enable
 COPY . .
-RUN yarn install --immutable
+RUN bun install --frozen-lockfile --ignore-scripts
 
 FROM oven/bun:1.3.14 AS build
 COPY --from=dependencies /usr/local/bin/node /usr/local/bin/node
