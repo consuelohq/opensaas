@@ -88,7 +88,7 @@ function parseJsonOutput(stdout: string): { data: unknown; error?: string } {
 function runDiscoveryCommand(
   options: SwampDiscoveryOptions,
   args: string[],
-): { ok: true; data: unknown } | { ok: false } {
+): { ok: true; data: unknown } | { ok: false; failure: 'provider-unavailable' | 'incomplete' } {
   const result = spawnSync(options.cliPath, args, {
     cwd: options.repoDir,
     env: { ...options.env },
@@ -98,9 +98,19 @@ function runDiscoveryCommand(
     maxBuffer: options.maxBufferBytes ?? DISCOVERY_MAX_BUFFER_BYTES,
     killSignal: 'SIGKILL',
   });
-  if (result.error || result.status !== 0) return { ok: false };
+  if (result.error) {
+    return {
+      ok: false,
+      failure: isObject(result.error) && result.error.code === 'ENOENT'
+        ? 'provider-unavailable'
+        : 'incomplete',
+    };
+  }
+  if (result.status !== 0) return { ok: false, failure: 'incomplete' };
   const parsed = parseJsonOutput(result.stdout || '');
-  return parsed.error ? { ok: false } : { ok: true, data: parsed.data };
+  return parsed.error
+    ? { ok: false, failure: 'incomplete' }
+    : { ok: true, data: parsed.data };
 }
 
 function resultArray(value: unknown, keys: string[]): unknown[] {
@@ -226,7 +236,7 @@ export function discoverSwampRuntimeTools(
     options.repoDir,
     '--json',
   ]);
-  if (!modelSearch.ok) return { ok: false, failure: 'provider-unavailable' };
+  if (!modelSearch.ok) return { ok: false, failure: modelSearch.failure };
 
   const tools: ToolManifestEntry[] = [];
   const seenNames = new Set<string>();

@@ -1,5 +1,6 @@
 import {
   chmodSync,
+  copyFileSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
@@ -335,7 +336,7 @@ describe('Swamp runtime tool provider', () => {
     setSwampEnvironment({ home, bin: fakeBin });
   });
 
-  it('bounds discovery subprocesses and allows catalogs larger than Node spawnSync defaults', () => {
+  it('should bound discovery and parse large catalogs when discovery times out or output exceeds spawnSync defaults', () => {
     const timed = discoverSwampRuntimeTools({
       cliPath: fakeBin,
       repoDir: repo,
@@ -343,7 +344,7 @@ describe('Swamp runtime tool provider', () => {
       discoveredAt: new Date().toISOString(),
       timeoutMs: 20,
     });
-    expect(timed).toMatchObject({ ok: false, failure: 'provider-unavailable' });
+    expect(timed).toMatchObject({ ok: false, failure: 'incomplete' });
 
     const large = discoverSwampRuntimeTools({
       cliPath: fakeBin,
@@ -356,7 +357,7 @@ describe('Swamp runtime tool provider', () => {
     if (large.ok) expect(large.tools.some((tool) => tool.name === 'swamp.model.cache-warmer.run')).toBe(true);
   });
 
-  it('negative-caches provider-unavailable discovery failures but does not cache incomplete workflow discovery', () => {
+  it('should cache missing-provider failures and retry transient discovery when discovery is unavailable or incomplete', () => {
     const failureHome = path.join(root, 'failure-cache-home');
     const failureLog = path.join(root, 'failure-cache.log');
     const failureEnv = {
@@ -370,7 +371,28 @@ describe('Swamp runtime tool provider', () => {
     };
     expect(readRuntimeToolManifestEntries({ home: failureHome, cwd: repo, env: failureEnv })).toEqual([]);
     expect(readRuntimeToolManifestEntries({ home: failureHome, cwd: repo, env: failureEnv })).toEqual([]);
-    expect(readFileSync(failureLog, 'utf8').trim().split('\n')).toHaveLength(1);
+    expect(readFileSync(failureLog, 'utf8').trim().split('\n')).toHaveLength(2);
+
+    const missingHome = path.join(root, 'missing-provider-cache-home');
+    const missingBin = path.join(root, 'missing-provider-swamp');
+    const missingEnv = {
+      ...process.env,
+      CONSUELO_HOME: missingHome,
+      CONSUELO_OS_HOME: missingHome,
+      CONSUELO_SWAMP_BIN: missingBin,
+      SWAMP_REPO_DIR: repo,
+    };
+    expect(readRuntimeToolManifestEntries({ home: missingHome, cwd: repo, env: missingEnv })).toEqual([]);
+    copyFileSync(fakeBin, missingBin);
+    chmodSync(missingBin, 0o755);
+    expect(readRuntimeToolManifestEntries({ home: missingHome, cwd: repo, env: missingEnv })).toEqual([]);
+    const refreshed = readRuntimeToolManifestEntries({
+      home: missingHome,
+      cwd: repo,
+      env: missingEnv,
+      forceRefresh: true,
+    });
+    expect(refreshed.some((entry) => entry.name === 'swamp.model.cache-warmer.run')).toBe(true);
 
     const partialHome = path.join(root, 'partial-cache-home');
     const partialLog = path.join(root, 'partial-cache.log');
@@ -389,7 +411,7 @@ describe('Swamp runtime tool provider', () => {
     expect(recovered.some((entry) => entry.name === 'swamp.workflow.deploy-pipeline.run')).toBe(true);
   });
 
-  it('preserves provider fields that collide with facade controls and preserves provider timeout results', async () => {
+  it('should preserve provider fields and return TIMEOUT when input collides with facade controls or the provider times out', async () => {
     const collision = await executeTool('swamp.model.cache-warmer.collide', {
       target: 'users',
       timeout: 1,
@@ -430,7 +452,7 @@ describe('Swamp runtime tool provider', () => {
     expect(timeout).toMatchObject({ ok: false, code: 'TIMEOUT' });
   });
 
-  it('does not invoke runtime discovery when resolving a bundled static tool', () => {
+  it('should skip runtime discovery when resolving a bundled static tool', () => {
     const staticHome = path.join(root, 'static-fast-path-home');
     const staticLog = path.join(root, 'static-fast-path.log');
     const entry = getToolManifestEntry('fs.read', {
@@ -448,7 +470,7 @@ describe('Swamp runtime tool provider', () => {
     expect(() => readFileSync(staticLog, 'utf8')).toThrow();
   });
 
-  it('keeps batch tracing metadata out of strict provider payloads', async () => {
+  it('should keep batch tracing metadata out of provider payloads when strict runtime tools run in a batch', async () => {
     const batch = await runBatch([
       {
         tool: 'swamp.model.cache-warmer.run',
@@ -474,7 +496,7 @@ describe('Swamp runtime tool provider', () => {
     });
   });
 
-  it('executes scoped runtime providers in the resolved task or work-session directory', async () => {
+  it('should execute scoped runtime providers in the resolved directory when task or work-session scope is provided', async () => {
     const taskRepo = path.join(root, 'task-repo');
     const workSessionRepo = path.join(root, 'work-session-repo');
     for (const scopedRepo of [taskRepo, workSessionRepo]) {
