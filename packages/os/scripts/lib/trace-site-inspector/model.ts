@@ -17,6 +17,7 @@ export type BranchSummary = {
   inputTokens: number;
   outputTokens: number;
   totalTokens: number;
+  totalTokensEstimated: boolean;
   peers: TraceRecord[];
 };
 
@@ -158,6 +159,7 @@ export function branchSummary(
     inputTokens: peers.reduce((sum, row) => sum + number(row.inputTokens), 0),
     outputTokens: peers.reduce((sum, row) => sum + number(row.outputTokens), 0),
     totalTokens: peers.reduce((sum, row) => sum + totalTokens(row), 0),
+    totalTokensEstimated: peers.some((row) => tokenUsage(row).estimated),
     peers,
   };
 }
@@ -425,27 +427,35 @@ export function childTraceRecords(parent: TraceRecord): TraceChildRecord[] {
   return result;
 }
 
-export function totalTokens(row: TraceRecord): number {
+export type TokenUsage = { total: number; estimated: boolean };
+
+export function tokenUsage(row: TraceRecord): TokenUsage {
   const explicit = optionalNumber(
     row.tokens ?? row.totalTokens ?? row.total_tokens,
   );
-  if (explicit !== null && explicit > 0) return explicit;
+  if (explicit !== null && explicit > 0) return { total: explicit, estimated: false };
   const input = optionalNumber(row.inputTokens ?? row.input_tokens);
   const output = optionalNumber(row.outputTokens ?? row.output_tokens);
   const recorded = (input ?? 0) + (output ?? 0);
-  if (recorded > 0) return recorded;
+  if (recorded > 0) return { total: recorded, estimated: false };
 
   // Older facade traces did not persist token estimates consistently. Rebuild the
-  // same chars/4 payload estimate used by batch/codemode so historical rows are
-  // useful without mutating the trace database.
-  return (
-    estimatePayloadTokens(
-      row.rawResolvedInputJson ?? row.rawInputJson ?? row.resolvedInputObj ?? row.inputObj ?? row.input,
-    ) +
-    estimatePayloadTokens(
-      row.rawResultJson ?? row.outputObj ?? row.output ?? row.summary ?? row.rawStderr,
-    )
-  );
+  // same chars/4 payload estimate used by batch/codemode so historical rows stay
+  // useful, but keep the estimate explicitly distinguishable from recorded usage.
+  return {
+    total:
+      estimatePayloadTokens(
+        row.rawResolvedInputJson ?? row.rawInputJson ?? row.resolvedInputObj ?? row.inputObj ?? row.input,
+      ) +
+      estimatePayloadTokens(
+        row.rawResultJson ?? row.outputObj ?? row.output ?? row.summary ?? row.rawStderr,
+      ),
+    estimated: true,
+  };
+}
+
+export function totalTokens(row: TraceRecord): number {
+  return tokenUsage(row).total;
 }
 
 function estimatePayloadTokens(value: unknown): number {

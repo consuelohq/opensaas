@@ -1645,14 +1645,18 @@ function logResult(
   implementationCommand: string,
   branch?: string,
   facadeCommand?: string,
-  logMode: ExecuteToolOptions["logMode"] = "all",
+  logMode: ExecuteToolOptions["logMode"],
   traceContext: {
     input?: unknown;
     resolvedInput?: unknown;
     env?: NodeJS.ProcessEnv;
   } = {},
 ): void {
-  const emit = logMode !== "silent" && !(logMode === "errors" && result.ok);
+  const envLogMode = traceContext.env?.CONSUELO_FACADE_LOG_MODE?.trim().toLowerCase();
+  const effectiveLogMode = envLogMode === 'silent'
+    ? 'silent'
+    : logMode ?? (envLogMode === 'errors' || envLogMode === 'all' ? envLogMode : 'all');
+  const emit = effectiveLogMode !== 'silent' && !(effectiveLogMode === 'errors' && result.ok);
   const resolvedInput = isRecord(traceContext.resolvedInput) ? traceContext.resolvedInput : {};
   const rawInput = isRecord(traceContext.input) ? traceContext.input : {};
   const taskSession = typeof resolvedInput.taskSession === 'string'
