@@ -1,0 +1,20 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/rd6-callback-obligations-and-scheduler",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 2474,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2474",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2474",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2474/rd6-callback-obligations-and-scheduler",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2474",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2474/rd6-callback-obligations-and-scheduler",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-rd6-callback-obligations-and-scheduler",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_8e4497306e3c",
+  "tmuxSession": "opensaas-dialer-rd6-callback-obligations-and-scheduler-8e449730",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-rd6-callback-obligations-and-scheduler/.task/dialer/rd6-callback-obligations-and-scheduler/session.json",
+  "createdAt": "2026-09-13T20:11:49.279Z"
+}

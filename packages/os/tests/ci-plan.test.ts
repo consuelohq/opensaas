@@ -55,6 +55,16 @@ describe('Consuelo CI plan', () => {
     });
   });
 
+  it('routes shared contacts changes through the dialer lane', () => {
+    expect(classifyConsueloChanges(['packages/contacts/src/index.ts'])).toEqual({
+      verify: true,
+      workflowSecurity: false,
+      osContracts: false,
+      dialer: true,
+      sitesGatewayCloudflare: false,
+    });
+  });
+
   it.each(['package.json', 'bun.lock', 'bunfig.toml', '.bun-version'])(
     'treats root package-manager control file %s as cross-cutting',
     (file) => {

@@ -116,6 +116,51 @@ describe('dialer-server HTTP contracts', () => {
     expect(dependencies.authenticate).not.toHaveBeenCalled();
   });
 
+  it('keeps explicit customer-entry routes public while ordinary v1 routes remain authenticated', async () => {
+    const snapshot = mock(async () => ({
+      publicId: 'sales',
+      phoneNumber: '+15550100123',
+      timezone: 'America/New_York',
+      staffAvailableNow: false,
+      callback: { available: false, disclosure: null, serviceWindows: [] },
+    }));
+    const dependencies = createDependencies({
+      authenticate: mock(async () => null),
+      inbound: {
+        publicUrl: 'https://dialer.test',
+        authToken: 'fixture-provider-auth',
+        handle: async () => '<Response />',
+        operator: {
+          snapshot: async () => ({}),
+          readiness: async () => ({}),
+          accept: async () => ({}),
+          decline: async () => ({}),
+          wrapUp: async () => ({}),
+        },
+        customer: {
+          snapshot,
+          requestCallback: async () => ({}),
+          readCallback: async () => ({}),
+          rescheduleCallback: async () => ({}),
+          cancelCallback: async () => ({}),
+        },
+      } as unknown as NonNullable<DialerServerDependencies['inbound']>,
+    });
+    const app = createDialerServer(dependencies);
+
+    const publicResponse = await app.request('/v1/inbound/customer/sales');
+    expect(publicResponse.status).toBe(200);
+    expect(await publicResponse.json()).toMatchObject({ publicId: 'sales' });
+    expect(snapshot).toHaveBeenCalledWith('sales');
+    expect(dependencies.authenticate).not.toHaveBeenCalled();
+
+    const protectedResponse = await app.fetch(
+      authenticatedRequest('/v1/call-sessions/group-1'),
+    );
+    expect(protectedResponse.status).toBe(401);
+    expect(dependencies.authenticate).toHaveBeenCalledTimes(1);
+  });
+
   it('starts one call session and propagates workspace and user identity exactly once', async () => {
     const dependencies = createDependencies();
     const body = {
