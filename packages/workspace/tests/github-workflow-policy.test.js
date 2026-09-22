@@ -104,6 +104,31 @@ describe('GitHub workflow policy', () => {
     }
   });
 
+  test('runs real Swamp compatibility outside blocking pull-request CI', () => {
+    const source = readFileSync(
+      join(workflowDir, 'consuelo-swamp-compat.yaml'),
+      'utf8',
+    );
+    const workflow = parse(source);
+    const job = workflow.jobs['swamp-compatibility'];
+    const setup = job.steps.find(
+      (step) => step.uses === './.github/actions/consuelo-ci-setup',
+    );
+
+    expect(source).toContain('schedule:');
+    expect(source).toContain('workflow_dispatch:');
+    expect(source).toContain('push:');
+    expect(source).not.toContain('pull_request:');
+    expect(workflow.permissions.contents).toBe('read');
+    expect(setup).toBeTruthy();
+    expect(setup.with['install-root']).toBe('false');
+    expect(setup.with['install-os']).toBe('true');
+    expect(source).toContain('swamp-linux-x86_64');
+    expect(source).toContain('checksums.txt');
+    expect(source).toContain('sha256sum --check --ignore-missing checksums.txt');
+    expect(source).toContain('bun .github/scripts/consuelo-swamp-compat.ts');
+  });
+
   test('does not include retired automation or legacy Twenty workflows', () => {
     for (const path of obsoleteWorkflowPaths) {
       expect(existsSync(join(repoRoot, path)), path).toBe(false);
