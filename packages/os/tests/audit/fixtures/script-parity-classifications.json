@@ -1511,6 +1511,10 @@
       "status": "os-only-needs-review",
       "reason": "scripts/lib/workspace-node-heartbeat-scheduler.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
     },
+    "scripts/lib/workspace-node-registration-client.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned lifecycle client uses the enrolled node signing key to revoke standalone node registration before destructive local uninstall; it intentionally has no workspace script counterpart."
+    },
     "scripts/lib/workspace-node-snapshot-cache.ts": {
       "status": "os-only-needs-review",
       "reason": "scripts/lib/workspace-node-snapshot-cache.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
