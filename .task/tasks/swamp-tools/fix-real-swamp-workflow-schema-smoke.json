@@ -1,0 +1,16 @@
+{
+  "area": "swamp-tools",
+  "stream": "stream/swamp-tools",
+  "taskBranch": "task/swamp-tools/fix-real-swamp-workflow-schema-smoke",
+  "baseBranch": "stream/swamp-tools",
+  "sourceBranch": "stream/swamp-tools",
+  "startFrom": "stream",
+  "prNumber": 2533,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2533",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-swamp-tools-fix-real-swamp-workflow-schema-smoke",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_191c9598828e",
+  "tmuxSession": "opensaas-swamp-tools-fix-real-swamp-workflow-schema-smoke-191c9598",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-swamp-tools-fix-real-swamp-workflow-schema-smoke/.task/session.json",
+  "createdAt": "2026-09-22T02:14:14.485Z"
+}
