@@ -114,12 +114,14 @@ describe('GitHub workflow policy', () => {
     const setup = job.steps.find(
       (step) => step.uses === './.github/actions/consuelo-ci-setup',
     );
+    const checkout = job.steps.find((step) => step.uses === 'actions/checkout@v4');
 
     expect(source).toContain('schedule:');
     expect(source).toContain('workflow_dispatch:');
     expect(source).toContain('push:');
     expect(source).not.toContain('pull_request:');
     expect(workflow.permissions.contents).toBe('read');
+    expect(checkout.with['persist-credentials']).toBe(false);
     expect(setup).toBeTruthy();
     expect(setup.with['install-root']).toBe('false');
     expect(setup.with['install-os']).toBe('true');

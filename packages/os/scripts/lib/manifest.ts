@@ -66,6 +66,10 @@ export function readCoreToolManifest(): CanonicalToolManifest {
   return readToolManifest(coreManifestPath);
 }
 
+export function readEffectiveBundledFullManifest(home?: string): CanonicalToolManifest {
+  return applyManifestOverlay(readFullToolManifest(), readManifestOverlay(home));
+}
+
 export function readEffectiveFullManifest(
   home?: string,
   runtimeOptions: Omit<RuntimeToolRegistryOptions, 'home'> = {},

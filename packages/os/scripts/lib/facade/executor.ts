@@ -22,11 +22,13 @@ import { PROCESS_TERMINATION_GRACE_MS, registerProcessTreeCleanup, shouldUseDeta
 import { getInputSchema } from './schemas';
 import { resolveBrowserConfig } from '../browser/config';
 import { executeCodeCall } from '../code-call/runtime';
-import { readEffectiveFullManifest } from '../manifest';
+import { readEffectiveBundledFullManifest, readEffectiveFullManifest } from '../manifest';
 import { nodeResourceLockPath, withNodeResourceLock } from '../node-resource-lock';
 import {
   executeSwampRuntimeTool,
-  runtimeProviderPayload,
+  runtimeProviderExecutionInput,
+  runtimeProviderFacadeControls,
+  runtimeProviderPayloadForSchema,
 } from '../runtime-tool-providers/swamp';
 import { resolveActiveWorkspaceProjectCwd } from '../workspace-project-cwd';
 import {
@@ -122,7 +124,16 @@ export function getToolManifestEntry(
   toolName: string,
   options: Pick<ExecuteToolOptions, 'cwd' | 'env'> = {},
 ): ToolManifestEntry | null {
-  const entries = readEffectiveFullManifest(undefined, {
+  const home = options.env?.CONSUELO_HOME || options.env?.CONSUELO_OS_HOME;
+  const bundledEntries = readEffectiveBundledFullManifest(home).tools
+    .filter((entry) => entry.kind === 'facade-tool')
+    .map((entry) => entry.definition as unknown as ToolManifestEntry);
+  const bundledDirectMatch = bundledEntries.find((entry) => entry.name === toolName);
+  if (bundledDirectMatch) return bundledDirectMatch;
+  const bundledScriptMatches = bundledEntries.filter((entry) => entry.command.script === toolName);
+  if (bundledScriptMatches.length === 1) return bundledScriptMatches[0];
+
+  const entries = readEffectiveFullManifest(home, {
     cwd: options.cwd,
     env: options.env,
   }).tools
@@ -225,8 +236,11 @@ export async function executeTool<TData = unknown>(
   );
   const env = options.env || process.env;
   const runner = options.runner || defaultRunner;
-  const requestId = typeof input.requestId === 'string' ? input.requestId : undefined;
   let entry = getToolManifestEntry(toolName, { cwd, env });
+  const facadeInput = entry?.runtimeProvider
+    ? runtimeProviderFacadeControls(input, entry.runtimeProvider.inputSchema)
+    : input;
+  const requestId = typeof facadeInput.requestId === 'string' ? facadeInput.requestId : undefined;
 
   try {
     if (!entry) {
@@ -249,7 +263,7 @@ export async function executeTool<TData = unknown>(
     if (entry.runtimeProvider) {
       try {
         const schema = z.fromJSONSchema(entry.runtimeProvider.inputSchema);
-        parsed = schema.safeParse(runtimeProviderPayload(input));
+        parsed = schema.safeParse(runtimeProviderPayloadForSchema(input, entry.runtimeProvider.inputSchema));
       } catch (error: unknown) {
         const result = createToolResult({
           ok: false,
@@ -299,7 +313,11 @@ export async function executeTool<TData = unknown>(
     }
 
     const parsedInput = entry.runtimeProvider
-      ? { ...input, ...(parsed.data as ToolInput) }
+      ? runtimeProviderExecutionInput(
+        input,
+        entry.runtimeProvider.inputSchema,
+        parsed.data as ToolInput,
+      )
       : parsed.data as ToolInput;
     const normalizedInput = normalizeInput(toolName, parsedInput);
     const taskHandle = typeof normalizedInput.taskSession === 'string' ? normalizedInput.taskSession.trim() : '';
@@ -948,13 +966,21 @@ async function executeInternalTool<TData>(
       timeoutMs: getTimeoutMs(entry, input, context.options),
       env: context.env,
     });
-    const ok = outcome.runResult.exitCode === 0 && !outcome.parseError;
+    const ok = !outcome.timedOut && outcome.runResult.exitCode === 0 && !outcome.parseError;
     const result = createToolResult({
       ok,
-      code: ok ? 'OK' : outcome.parseError ? 'PARSE_ERROR' : 'COMMAND_FAILED',
+      code: ok
+        ? 'OK'
+        : outcome.timedOut
+          ? 'TIMEOUT'
+          : outcome.parseError
+            ? 'PARSE_ERROR'
+            : 'COMMAND_FAILED',
       message: ok
         ? `${entry.name} completed`
-        : outcome.parseError ?? `${entry.name} failed`,
+        : outcome.timedOut
+          ? `command timed out after ${getTimeoutMs(entry, input, context.options)}ms`
+          : outcome.parseError ?? `${entry.name} failed`,
       data: outcome.data,
       stderr: stripCommandEcho(outcome.runResult.stderr),
       exitCode: outcome.runResult.exitCode,
