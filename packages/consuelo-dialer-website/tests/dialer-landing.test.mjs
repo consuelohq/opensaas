@@ -17,42 +17,80 @@ describe("Consuelo Dialer landing page", () => {
     expect(pkg.scripts.build).toContain("astro");
   });
 
-  test("uses the approved direct-response positioning without locking the product to one CRM", () => {
+  test("uses proper casing instead of forced all-caps presentation", () => {
     const content = read("src/data/home-content.ts");
+    const navigation = read("src/data/site-navigation.ts");
     const hero = read("src/components/home/HomeHero.astro");
-    const header = read("src/components/site/SiteHeader.astro");
+    const feature = read("src/components/home/HomeFeaturePreview.astro");
+    const faq = read("src/components/home/HomeFaq.astro");
+    const founder = read("src/components/home/HomeFounderSection.astro");
+    const placeholder = read("src/components/home/DialerFeaturePlaceholder.astro");
+    const pricing = read("src/pages/pricing.astro");
+    const primitives = read("src/styles/primitives.css");
+    const renderedStyles = [hero, feature, faq, founder, placeholder, pricing, primitives].join("\n");
 
-    expect(content).toContain("STOP PAYING SALES REPS TO LISTEN TO PHONES RING.");
-    expect(content).toContain("embedded in the CRM");
-    expect(content).toContain("GET EARLY ACCESS");
-    expect(content).toContain("WATCH THE DEMO");
-    expect(header).toContain("CONSUELO");
-    expect(header).toContain("DIALER");
-    expect(hero).not.toContain("installCommandForPlatform");
-    expect(hero).not.toContain("ChatGPT");
-    expect(hero).not.toContain("Claude");
+    expect(content).toContain("Stop paying sales reps to listen to phones ring.");
+    expect(content).toContain("Get early access");
+    expect(content).toContain("See how it works");
+    expect(navigation).toContain("label: 'Consuelo'");
+    expect(navigation).toContain("label: 'Docs'");
+    expect(navigation).toContain("label: 'Pricing'");
+    expect(navigation).toContain("label: 'Features'");
+    expect(navigation).not.toMatch(/label: ['"]Demo['"]/i);
+    expect(renderedStyles).not.toMatch(/text-transform:\s*(?:uppercase|lowercase)/);
   });
 
-  test("uses only defensible technical proof instead of invented customer outcomes", () => {
+  test("keeps product proof inside the main feature story instead of standalone homepage sections", () => {
+    const index = read("src/pages/index.astro");
     const content = read("src/data/home-content.ts");
-    const stats = read("src/components/home/HomeDialerStats.astro");
-    const allMarketing = content + "\n" + stats;
+    const feature = read("src/components/home/HomeFeaturePreview.astro");
 
-    expect(allMarketing).toContain("3×");
-    expect(allMarketing).toContain("500ms");
-    expect(allMarketing).toContain("0");
-    expect(allMarketing).toContain("100%");
-    expect(allMarketing).toContain("maximum current predictive fanout");
-    expect(allMarketing).toContain("balanced launch stagger");
-    expect(allMarketing).toContain("CSV");
-    expect(allMarketing).toContain("candidate selection and call lifecycle decisions");
+    expect(index).toContain("HomeFeaturePreview");
+    expect(index).toContain("HomeFounderSection");
+    expect(index).not.toContain("HomeDialerStats");
+    expect(index).not.toContain("HomeAgencySection");
 
-    expect(allMarketing).not.toContain("340%");
-    expect(allMarketing).not.toContain("47%");
-    expect(allMarketing).not.toContain("12,000");
-    expect(allMarketing).not.toContain("shield insurance");
-    expect(allMarketing).not.toContain("apex financial");
-    expect(allMarketing).not.toContain("summit benefits");
+    expect(content).toContain("3×");
+    expect(content).toContain("500ms");
+    expect(content).toContain("CSV");
+    expect(content).toContain("server");
+    expect(content).toContain("HighLevel");
+    expect(feature).toContain("data-feature-story");
+    expect(feature).toContain("<HomeFaq />");
+    expect(feature.indexOf("dialer-product__stories")).toBeLessThan(feature.indexOf("<HomeFaq />"));
+
+    expect(content).not.toContain("340%");
+    expect(content).not.toContain("47%");
+    expect(content).not.toContain("12,000");
+    expect(content).not.toContain("shield insurance");
+    expect(content).not.toContain("apex financial");
+    expect(content).not.toContain("summit benefits");
+  });
+
+  test("uses the requested header structure and Consuelo mark", () => {
+    const header = read("src/components/site/SiteHeader.astro");
+    const navigation = read("src/data/site-navigation.ts");
+
+    expect(navigation).toContain("{ label: 'Consuelo'");
+    expect(navigation).toContain("{ label: 'Docs'");
+    expect(navigation).toContain("{ label: 'Pricing'");
+    expect(navigation).toContain("{ label: 'Features'");
+    expect(header).toContain("/favicon.svg");
+    expect(header).toContain("<span>Consuelo</span>");
+    expect(header).toContain("<span>Dialer</span>");
+    expect(header).not.toContain("DOCS ↗");
+  });
+
+  test("uses placeholders on pricing instead of stale product screenshots", () => {
+    const pricingContent = read("src/data/pricing-content.ts");
+    const pricing = read("src/pages/pricing.astro");
+
+    expect(pricingContent).not.toContain("/previews/power-dialer.webp");
+    expect(pricingContent).not.toContain("/previews/analytics.webp");
+    expect(pricingContent).not.toContain("/previews/coaching.webp");
+    expect(pricingContent).not.toContain("imageSrc");
+    expect(pricing).toContain("pricing-plan__placeholder");
+    expect(pricing).toContain("Product preview");
   });
 
   test("preserves the inherited feature scroll layout while preventing long headings from overflowing", () => {
@@ -63,19 +101,5 @@ describe("Consuelo Dialer landing page", () => {
     expect(panel).toContain("overflow-wrap: anywhere");
     expect(panel).toContain("minmax(0");
     expect(panel).toContain("@media (max-width: 760px)");
-  });
-
-  test("contains demo, agency, founder, FAQ, and repeated conversion surfaces without public deployment config changes", () => {
-    const index = read("src/pages/index.astro");
-    const content = read("src/data/home-content.ts");
-
-    expect(index).toContain("HomeDialerStats");
-    expect(index).toContain("HomeAgencySection");
-    expect(index).toContain("HomeFounderSection");
-    expect(index).toContain("HomeFeaturePreview");
-    expect(content.match(/GET EARLY ACCESS/g)?.length ?? 0).toBeGreaterThanOrEqual(2);
-    expect(content).toContain("FOUNDING AGENCY");
-    expect(content).toContain("Does Consuelo replace my CRM?");
-    expect(content).toContain("Which CRMs does Consuelo support?");
   });
 });
