@@ -1,0 +1,16 @@
+{
+  "area": "swamp-tools",
+  "stream": "stream/swamp-tools",
+  "taskBranch": "task/swamp-tools/address-swamp-review-feedback-and-canary-release",
+  "baseBranch": "stream/swamp-tools",
+  "sourceBranch": "stream/swamp-tools",
+  "startFrom": "stream",
+  "prNumber": 2538,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2538",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-swamp-tools-address-swamp-review-feedback-and-canary-release",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_92df75b9b47c",
+  "tmuxSession": "opensaas-swamp-tools-address-swamp-review-feedback-and-canary-release-92df75b9",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-swamp-tools-address-swamp-review-feedback-and-canary-release/.task/session.json",
+  "createdAt": "2026-09-22T20:40:13.204Z"
+}

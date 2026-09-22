@@ -28,6 +28,7 @@ import {
   type LifecycleServiceController,
 } from './lib/lifecycle';
 import { resolveVisibleUserRoot } from './lib/managed-user-content-release';
+import { revokeCurrentWorkspaceNode } from './lib/workspace-node-registration-client';
 import {
   createDetachedNativeLifecycleOperationLauncher,
   type NativeLifecycleOperationLauncher,
@@ -649,6 +650,11 @@ export const createDefaultLifecycleEngine = (input: {
       home: input.home,
       osRoot,
     }),
+    nodeRegistration: {
+      revokeCurrentNode: () => revokeCurrentWorkspaceNode({
+        home: resolveLifecyclePaths(input.home).home,
+      }),
+    },
     runtime: createBunRuntimeMaterializer(),
     health: createHttpHealthAcceptance({
       url: `http://127.0.0.1:${port}/health`,
