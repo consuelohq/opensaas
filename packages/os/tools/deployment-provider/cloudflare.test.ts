@@ -278,6 +278,43 @@ describe('Cloudflare deployment provider adapter', () => {
     ]);
   });
 
+  it('accepts customer Worker config paths under the canonical Consuelo workspace', async () => {
+    const { fake, service } = createService([
+      providerProcessResult({
+        stdout: 'Uploaded workout\nCurrent Version ID: version_workout_1\nhttps://workout.customer.workers.dev\n',
+      }),
+    ]);
+
+    await expect(Effect.runPromise(service.deploy({
+      target: 'worker:workout',
+      source: '/Users/kokayi/Consuelo/Workout/wrangler.jsonc',
+      approval: { approved: true, reason: 'Customer approved Workout deploy' },
+    }))).resolves.toEqual({
+      deploymentId: 'version_workout_1',
+      status: 'deployed',
+      url: 'https://workout.customer.workers.dev',
+    });
+    expect(fake.requests[0].args).toEqual([
+      'deploy', '--config', '/Users/kokayi/Consuelo/Workout/wrangler.jsonc',
+      '--name', 'workout', '--strict',
+    ]);
+
+    const raw = createService([
+      providerProcessResult({ stdout: 'raw-ok\n' }),
+    ]);
+    await expect(Effect.runPromise(raw.service.raw({
+      args: ['deploy', '--config', '/Users/kokayi/Consuelo/Workout/wrangler.jsonc'],
+      approval: { approved: true, reason: 'Customer approved raw Workout deploy' },
+    }))).resolves.toEqual({
+      stdout: 'raw-ok\n',
+      stderr: '',
+      exitCode: 0,
+    });
+    expect(raw.fake.requests[0].args).toEqual([
+      'deploy', '--config', '/Users/kokayi/Consuelo/Workout/wrangler.jsonc',
+    ]);
+  });
+
   it('redeploys an explicit Worker version through Wrangler rollback', async () => {
     const { fake, service } = createService([
       providerProcessResult({
@@ -421,6 +458,7 @@ describe('Cloudflare deployment provider adapter', () => {
   it('rejects operator-owned references before invoking Wrangler', async () => {
     for (const args of [
       ['deploy', '--config', 'packages/os/cloudflare/workspace-edge/wrangler.toml'],
+      ['deploy', '--config', '/Users/kokayi/Consuelo/packages/os/cloudflare/workspace-edge/wrangler.toml'],
       ['d1', 'execute', 'consuelo-workspace-edge'],
       ['whoami', '--account', 'consuelohq.com'],
       ['secret', 'put', 'CLOUDFLARE_OS_TEST_API_TOKEN'],

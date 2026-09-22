@@ -1,0 +1,16 @@
+{
+  "area": "self-healing",
+  "stream": "stream/self-healing",
+  "taskBranch": "task/self-healing/2026-09-21-fix-cloudflare-deployment-customer-path-guard",
+  "baseBranch": "stream/self-healing",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2530,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2530",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-self-healing-2026-09-21-fix-cloudflare-deployment-customer-path-guard",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_861f4722ca47",
+  "tmuxSession": "opensaas-self-healing-2026-09-21-fix-cloudflare-deployment-customer-pa-861f4722",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-self-healing-2026-09-21-fix-cloudflare-deployment-customer-path-guard/.task/session.json",
+  "createdAt": "2026-09-22T01:20:21.755Z"
+}

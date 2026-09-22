@@ -30,11 +30,18 @@ type CloudflareReference = {
 const FORBIDDEN_REFERENCE = /(?:consuelo|workspace[-_]edge|device[-_]authority|platform[-_]cloudflare|packages[\\/]os[\\/]cloudflare|cloudflare[_-].*test.*token)/i;
 const SAFE_RESOURCE_NAME = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
 
+const valueForOperatorReferenceCheck = (value: string): string => {
+  return value.replace(
+    /^((?:[A-Za-z]:)?[\\/](?:Users|home)[\\/][^\\/]+[\\/])Consuelo(?=[\\/])/i,
+    '$1',
+  );
+};
+
 const assertCustomerValue = (value: string, label: string): string => {
   const trimmed = value.trim();
   if (!trimmed) throw new Error(`${label} is required`);
   if (trimmed.includes('\0')) throw new Error(`${label} contains an invalid null byte`);
-  if (FORBIDDEN_REFERENCE.test(trimmed)) {
+  if (FORBIDDEN_REFERENCE.test(valueForOperatorReferenceCheck(trimmed))) {
     throw new Error(`${label} references operator-owned Cloudflare resources`);
   }
   return trimmed;
