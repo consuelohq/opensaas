@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/fix-dialer-casing-and-simplify-homepage",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2536,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2536",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-fix-dialer-casing-and-simplify-homepage",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_37af7e2f4af9",
+  "tmuxSession": "opensaas-dialer-fix-dialer-casing-and-simplify-homepage-37af7e2f",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-fix-dialer-casing-and-simplify-homepage/.task/session.json",
+  "createdAt": "2026-09-22T03:06:31.701Z"
+}
