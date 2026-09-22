@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://dialer.consuelohq.com/sitemap-index.xml

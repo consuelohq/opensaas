@@ -1,0 +1,69 @@
+---
+import HomeAgencySection from '../components/home/HomeAgencySection.astro';
+import HomeCloudCta from '../components/home/HomeCloudCta.astro';
+import HomeDialerStats from '../components/home/HomeDialerStats.astro';
+import HomeFeaturePreview from '../components/home/HomeFeaturePreview.astro';
+import HomeFounderSection from '../components/home/HomeFounderSection.astro';
+import HomeHero from '../components/home/HomeHero.astro';
+import SiteHeader from '../components/site/SiteHeader.astro';
+import { dialerFaqItems } from '../data/home-content';
+import MarketingLayout from '../layouts/MarketingLayout.astro';
+import { homepageSeo } from '../lib/homepage-seo';
+import {
+  getFaqSchema,
+  getOrganizationSchema,
+  getSoftwareApplicationSchema,
+  getWebsiteSchema,
+} from '../lib/site-seo';
+
+const schemaEntries = [
+  getOrganizationSchema(),
+  getWebsiteSchema(),
+  getSoftwareApplicationSchema({
+    name: 'Consuelo Dialer',
+    applicationCategory: 'BusinessApplication',
+    operatingSystem: 'Web',
+    description: homepageSeo.description,
+    offers: undefined,
+  }),
+  getFaqSchema(dialerFaqItems.map(({ question, answer }) => ({ question, answer }))),
+];
+---
+
+<MarketingLayout
+  title={homepageSeo.title}
+  description={homepageSeo.description}
+  canonicalPath="/"
+  image={homepageSeo.image}
+  imageAlt={homepageSeo.imageAlt}
+  schemaEntries={schemaEntries}
+>
+  <div class="dialer-home">
+    <SiteHeader />
+    <main>
+      <HomeHero />
+      <HomeDialerStats />
+      <HomeFeaturePreview />
+      <HomeAgencySection />
+      <HomeFounderSection />
+    </main>
+  </div>
+
+  <HomeCloudCta />
+</MarketingLayout>
+
+<style>
+  .dialer-home {
+    position: relative;
+    z-index: 2;
+    min-height: 100vh;
+    margin-bottom: 100dvh;
+    background: var(--site-color-brand);
+  }
+
+  .dialer-home main {
+    position: relative;
+    z-index: 1;
+    background: var(--site-color-brand);
+  }
+</style>

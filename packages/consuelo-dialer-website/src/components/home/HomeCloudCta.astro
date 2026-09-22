@@ -1,0 +1,254 @@
+---
+import { dialerFinalCta } from '../../data/home-content';
+---
+
+<section
+  class="dialer-final"
+  aria-labelledby="dialer-final-title"
+  data-section="final"
+  data-final-reveal
+  inert
+>
+  <div class="dialer-final__copy">
+    <p class="dialer-final__eyebrow">{dialerFinalCta.eyebrow}</p>
+    <h2 id="dialer-final-title">
+      <span>{dialerFinalCta.title}</span>
+      <span>{dialerFinalCta.secondLine}</span>
+    </h2>
+    <p class="dialer-final__description">{dialerFinalCta.description}</p>
+    <a href={dialerFinalCta.href}>{dialerFinalCta.label} →</a>
+  </div>
+
+  <p class="dialer-final__wordmark" aria-hidden="true">
+    <span>CONSUELO</span>
+    <span>DIALER</span>
+  </p>
+
+  <img
+    class="dialer-final__art"
+    src="/images/home/holding-world.svg"
+    alt=""
+    width="864"
+    height="972"
+    loading="eager"
+    decoding="async"
+  />
+
+  <p class="dialer-final__version">EARLY ACCESS <span>2026</span></p>
+  <p class="dialer-final__signature">
+    <span>CONSUELO DIALER</span>
+    <span>BUILT FOR LIVE CONVERSATIONS</span>
+  </p>
+</section>
+
+<script>
+  const footer = document.querySelector<HTMLElement>('[data-final-reveal]');
+
+  if (footer) {
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    let animationFrame = 0;
+
+    const updateReveal = () => {
+      animationFrame = 0;
+      const scrollLimit = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+      const remaining = Math.max(0, scrollLimit - window.scrollY);
+      const revealDistance = Math.max(720, Math.min(1400, window.innerHeight * 1.4));
+      const progress = reducedMotion.matches
+        ? 1
+        : Math.max(0, Math.min(1, 1 - remaining / revealDistance));
+      const opacity = reducedMotion.matches ? 1 : Math.pow(progress, 1.15);
+      const interactive = progress >= 0.98;
+
+      footer.style.setProperty('--final-reveal-opacity', opacity.toFixed(3));
+      footer.style.setProperty('--final-reveal-pointer-events', interactive ? 'auto' : 'none');
+      footer.toggleAttribute('inert', !interactive);
+    };
+
+    const scheduleReveal = () => {
+      if (animationFrame !== 0) return;
+      animationFrame = window.requestAnimationFrame(updateReveal);
+    };
+
+    window.addEventListener('scroll', scheduleReveal, { passive: true });
+    window.addEventListener('resize', scheduleReveal);
+    reducedMotion.addEventListener('change', scheduleReveal);
+    scheduleReveal();
+  }
+</script>
+
+<style>
+  .dialer-final {
+    --final-gutter: clamp(2rem, 7vw, 7rem);
+    --final-reveal-opacity: 0;
+    --final-reveal-pointer-events: none;
+    position: fixed;
+    z-index: 1;
+    inset: 0;
+    display: grid;
+    width: 100%;
+    height: 100dvh;
+    place-items: start center;
+    overflow: hidden;
+    background: var(--site-color-brand);
+    color: white;
+    opacity: var(--final-reveal-opacity);
+    padding: clamp(4rem, 7dvh, 6rem) var(--final-gutter) 0;
+    pointer-events: var(--final-reveal-pointer-events);
+    text-align: center;
+    transition: opacity 120ms linear;
+  }
+
+  .dialer-final__copy {
+    position: relative;
+    z-index: 4;
+    display: grid;
+    width: min(76vw, 60rem);
+    justify-items: center;
+    gap: clamp(0.65rem, 1.4vh, 1rem);
+  }
+
+  .dialer-final__eyebrow,
+  .dialer-final__version,
+  .dialer-final__signature {
+    font-family: var(--site-font-mono);
+    font-size: 0.6rem;
+    line-height: 1.45;
+    letter-spacing: 0.14em;
+  }
+
+  .dialer-final__eyebrow {
+    margin: 0;
+    font-weight: 680;
+  }
+
+  .dialer-final h2 {
+    display: grid;
+    margin: 0;
+    font-family: var(--site-font-display);
+    font-size: clamp(3.3rem, 6vw, 6.5rem);
+    font-weight: 430;
+    letter-spacing: -0.035em;
+    line-height: 0.82;
+    text-wrap: balance;
+  }
+
+  .dialer-final__description {
+    max-width: 32rem;
+    margin: 0;
+    color: rgba(255, 255, 255, 0.84);
+    font-size: clamp(0.92rem, 1.2vw, 1.08rem);
+    line-height: 1.5;
+  }
+
+  .dialer-final__copy > a {
+    display: grid;
+    width: min(100%, 22rem);
+    min-height: 3rem;
+    place-items: center;
+    border: 1px solid white;
+    background: white;
+    color: var(--site-color-brand);
+    font: 680 0.68rem/1 var(--site-font-mono);
+    letter-spacing: 0.11em;
+  }
+
+  .dialer-final__wordmark {
+    position: absolute;
+    z-index: 1;
+    top: 42dvh;
+    left: 50%;
+    display: grid;
+    margin: 0;
+    color: rgba(255, 255, 255, 0.14);
+    font-family: var(--site-font-display);
+    font-size: clamp(7rem, 11vw, 11rem);
+    line-height: 0.7;
+    transform: translateX(-50%);
+    white-space: nowrap;
+  }
+
+  .dialer-final__wordmark span:last-child {
+    justify-self: center;
+    font-size: 0.62em;
+  }
+
+  .dialer-final__art {
+    position: absolute;
+    z-index: 2;
+    bottom: 0;
+    left: 50%;
+    width: auto;
+    height: min(61dvh, 38rem);
+    max-width: 65vw;
+    object-fit: contain;
+    object-position: center bottom;
+    transform: translateX(-50%);
+  }
+
+  .dialer-final__version,
+  .dialer-final__signature {
+    position: absolute;
+    z-index: 5;
+    bottom: clamp(1.5rem, 5dvh, 3.5rem);
+    margin: 0;
+    font-weight: 560;
+  }
+
+  .dialer-final__version {
+    left: var(--final-gutter);
+    display: flex;
+    gap: 0.65em;
+  }
+
+  .dialer-final__signature {
+    right: var(--final-gutter);
+    display: grid;
+    justify-items: end;
+    gap: 0.16rem;
+    text-align: right;
+  }
+
+  @media (max-width: 600px) {
+    .dialer-final {
+      --final-gutter: 0.8rem;
+      padding-top: 4rem;
+    }
+
+    .dialer-final__copy {
+      width: min(100%, 24rem);
+    }
+
+    .dialer-final h2 {
+      font-size: clamp(3.1rem, 14.5vw, 4.6rem);
+    }
+
+    .dialer-final__wordmark {
+      display: none;
+    }
+
+    .dialer-final__art {
+      height: min(45dvh, 24rem);
+      max-width: 115vw;
+    }
+
+    .dialer-final__version,
+    .dialer-final__signature {
+      font-size: 0.46rem;
+    }
+
+    .dialer-final__signature {
+      bottom: 2.6rem;
+      left: var(--final-gutter);
+      right: auto;
+      justify-items: start;
+      text-align: left;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dialer-final {
+      --final-reveal-opacity: 1;
+      transition: none;
+    }
+  }
+</style>
