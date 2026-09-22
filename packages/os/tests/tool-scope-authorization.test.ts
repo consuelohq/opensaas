@@ -1,4 +1,5 @@
-import { mkdtempSync, rmSync } from 'node:fs';
+import { chmodSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -25,6 +26,10 @@ type ToolManifest = {
 
 const manifest = manifestJson as ToolManifest;
 const previousConsueloHome = process.env.CONSUELO_HOME;
+const previousConsueloOsHome = process.env.CONSUELO_OS_HOME;
+const previousSwampBin = process.env.CONSUELO_SWAMP_BIN;
+const previousSwampRepoDir = process.env.SWAMP_REPO_DIR;
+const previousCallerCwd = process.env.CONSUELO_TOOL_CALLER_CWD;
 const isolatedConsueloHome = mkdtempSync(join(tmpdir(), 'consuelo-tool-scope-'));
 
 beforeAll(() => {
@@ -34,6 +39,14 @@ beforeAll(() => {
 afterAll(() => {
   if (previousConsueloHome === undefined) delete process.env.CONSUELO_HOME;
   else process.env.CONSUELO_HOME = previousConsueloHome;
+  if (previousConsueloOsHome === undefined) delete process.env.CONSUELO_OS_HOME;
+  else process.env.CONSUELO_OS_HOME = previousConsueloOsHome;
+  if (previousSwampBin === undefined) delete process.env.CONSUELO_SWAMP_BIN;
+  else process.env.CONSUELO_SWAMP_BIN = previousSwampBin;
+  if (previousSwampRepoDir === undefined) delete process.env.SWAMP_REPO_DIR;
+  else process.env.SWAMP_REPO_DIR = previousSwampRepoDir;
+  if (previousCallerCwd === undefined) delete process.env.CONSUELO_TOOL_CALLER_CWD;
+  else process.env.CONSUELO_TOOL_CALLER_CWD = previousCallerCwd;
   rmSync(isolatedConsueloHome, { recursive: true, force: true });
 });
 
@@ -108,5 +121,66 @@ describe('central OS tool-scope authorization', () => {
       'os:tools',
       'route:/mcp:read',
     ]));
+  });
+
+  it('resolves runtime-provider scopes from the configured active workspace project', () => {
+    const project = join(isolatedConsueloHome, 'active-project');
+    const fakeSwamp = join(isolatedConsueloHome, 'fake-swamp');
+    mkdirSync(project, { recursive: true });
+    writeFileSync(join(project, '.swamp.yaml'), 'version: 1\n');
+    expect(spawnSync('git', ['init'], { cwd: project }).status).toBe(0);
+
+    writeFileSync(fakeSwamp, `#!/usr/bin/env node\nconst args = process.argv.slice(2);\nif (args[0] === 'model' && args[1] === 'search') {\n  process.stdout.write(JSON.stringify({results:[{id:'scope-model',name:'scope-model',methods:[{name:'run',arguments:{type:'object',properties:{},additionalProperties:false}}]}]}) + '\\n');\n  process.exit(0);\n}\nif (args[0] === 'workflow' && args[1] === 'search') {\n  process.stdout.write(JSON.stringify({results:[]}) + '\\n');\n  process.exit(0);\n}\nprocess.exit(2);\n`);
+    chmodSync(fakeSwamp, 0o755);
+
+    writeFileSync(join(isolatedConsueloHome, 'consuelo.yaml'), [
+      'version: 1',
+      'activeWorkspace: workspace-scope',
+      'activeNode: node-scope',
+      'runtime: {}',
+      'updates:',
+      '  channel: stable',
+      '  notifications:',
+      '    mode: on',
+      '',
+    ].join('\n'));
+    const workspaceConfig = join(
+      isolatedConsueloHome,
+      'workspaces',
+      'workspace-scope',
+      'shared',
+      'workspace.yaml',
+    );
+    mkdirSync(join(isolatedConsueloHome, 'workspaces', 'workspace-scope', 'shared'), { recursive: true });
+    writeFileSync(workspaceConfig, [
+      'version: 1',
+      'workspace:',
+      '  id: workspace-scope',
+      '  name: scope',
+      '  slug: scope',
+      'defaults:',
+      '  project: opensaas',
+      'projects:',
+      '  - id: opensaas',
+      '    repo: consuelohq/opensaas',
+      '    localPaths:',
+      `      node-scope: ${project}`,
+      'routing: {}',
+      'policy: {}',
+      'sites: {}',
+      '',
+    ].join('\n'));
+
+    process.env.CONSUELO_HOME = isolatedConsueloHome;
+    process.env.CONSUELO_OS_HOME = isolatedConsueloHome;
+    process.env.CONSUELO_SWAMP_BIN = fakeSwamp;
+    delete process.env.SWAMP_REPO_DIR;
+    delete process.env.CONSUELO_TOOL_CALLER_CWD;
+
+    expect(resolveToolScope('swamp.model.scope-model.run')).toMatchObject({
+      ok: true,
+      category: 'write',
+      requiredScope: 'tool:swamp.model.scope-model.run:write',
+    });
   });
 });

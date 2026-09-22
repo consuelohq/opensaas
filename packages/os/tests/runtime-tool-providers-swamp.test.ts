@@ -11,6 +11,7 @@ import path from 'node:path';
 
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
+import { runBatch } from '../scripts/lib/facade/batch';
 import { executeTool, getToolManifestEntry } from '../scripts/lib/facade/executor';
 import { readRuntimeToolManifestEntries } from '../scripts/lib/runtime-tool-registry';
 import { discoverSwampRuntimeTools } from '../scripts/lib/runtime-tool-providers/swamp';
@@ -68,6 +69,11 @@ function inputFile() {
   const index = args.indexOf('--input-file');
   if (index === -1) return {};
   return JSON.parse(fs.readFileSync(args[index + 1], 'utf8'));
+}
+
+function argValue(flag) {
+  const index = args.indexOf(flag);
+  return index === -1 ? undefined : args[index + 1];
 }
 
 function emit(value) {
@@ -162,6 +168,7 @@ if (args[0] === 'model' && args[1] === 'method' && args[2] === 'run') {
     kind: 'model-run',
     model: args[3],
     method: args[4],
+    repoDir: argValue('--repo-dir'),
     input: inputFile(),
   });
   process.exit(0);
@@ -171,6 +178,7 @@ if (args[0] === 'workflow' && args[1] === 'run') {
   emit({
     kind: 'workflow-run',
     workflow: args[2],
+    repoDir: argValue('--repo-dir'),
     input: inputFile(),
   });
   process.exit(0);
@@ -438,5 +446,60 @@ describe('Swamp runtime tool provider', () => {
     });
     expect(entry?.name).toBe('fs.read');
     expect(() => readFileSync(staticLog, 'utf8')).toThrow();
+  });
+
+  it('keeps batch tracing metadata out of strict provider payloads', async () => {
+    const batch = await runBatch([
+      {
+        tool: 'swamp.model.cache-warmer.run',
+        input: { target: 'users' },
+      },
+    ], {
+      cwd: repo,
+      env: { ...process.env },
+      logMode: 'silent',
+    });
+
+    expect(batch).toMatchObject({
+      ok: true,
+      data: {
+        completed: 1,
+        results: [{
+          ok: true,
+          data: {
+            input: { target: 'users' },
+          },
+        }],
+      },
+    });
+  });
+
+  it('executes scoped runtime providers in the resolved task or work-session directory', async () => {
+    const taskRepo = path.join(root, 'task-repo');
+    const workSessionRepo = path.join(root, 'work-session-repo');
+    for (const scopedRepo of [taskRepo, workSessionRepo]) {
+      mkdirSync(scopedRepo, { recursive: true });
+      writeFileSync(path.join(scopedRepo, '.swamp.yaml'), 'version: 1\n');
+    }
+
+    const taskResult = await executeTool('swamp.model.cache-warmer.run', {
+      target: 'users',
+      taskWorktree: taskRepo,
+    }, {
+      cwd: repo,
+      env: { ...process.env },
+      logMode: 'silent',
+    });
+    expect(taskResult).toMatchObject({ ok: true, data: { repoDir: taskRepo } });
+
+    const workSessionResult = await executeTool('swamp.workflow.deploy-pipeline.run', {
+      environment: 'staging',
+      workSessionRoot: workSessionRepo,
+    }, {
+      cwd: repo,
+      env: { ...process.env },
+      logMode: 'silent',
+    });
+    expect(workSessionResult).toMatchObject({ ok: true, data: { repoDir: workSessionRepo } });
   });
 });
