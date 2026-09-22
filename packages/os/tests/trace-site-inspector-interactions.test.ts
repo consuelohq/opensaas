@@ -11,6 +11,7 @@ import {
   branchName,
   childTraceRecords,
   sessionDisplayName,
+  tokenUsage,
   totalTokens,
 } from '../scripts/lib/trace-site-inspector/model';
 import {
@@ -85,6 +86,11 @@ describe('Trace Burn keyboard and row interaction contracts', () => {
   it('uses persisted token counts first and estimates historical payload burn when counts are absent', () => {
     expect(totalTokens({ inputTokens: 12, outputTokens: 8, rawInputJson: 'x'.repeat(400) })).toBe(20);
     expect(totalTokens({ rawInputJson: 'x'.repeat(40), rawResultJson: 'y'.repeat(40) })).toBe(20);
+    expect(tokenUsage({ inputTokens: 12, outputTokens: 8 })).toEqual({ total: 20, estimated: false });
+    expect(tokenUsage({ rawInputJson: 'x'.repeat(40), rawResultJson: 'y'.repeat(40) })).toEqual({
+      total: 20,
+      estimated: true,
+    });
   });
 
   it('materializes stored batch children with their tool names and token counts', () => {

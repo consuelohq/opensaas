@@ -100,6 +100,18 @@ test('verify human output identifies failed registry suites', () => {
 });
 
 
+test('verify single-flights identical full-gate executions', () => {
+  const verifySource = fs.readFileSync(
+    path.resolve('packages/workspace/scripts/verify.js'),
+    'utf8',
+  );
+  expect(verifySource).toContain("require('./lib/verify-run-state')");
+  expect(verifySource).toContain('makeVerifyRunIdentity({');
+  expect(verifySource).toContain("verifyRun.mode === 'replay'");
+  expect(verifySource).toContain('finishVerifyRun(verifyRun');
+  expect(verifySource).toContain('abortVerifyRun(');
+});
+
 test('verify keeps review semantic-only because selected suites own test execution', () => {
   const verifySource = fs.readFileSync(
     path.resolve('packages/workspace/scripts/verify.js'),
