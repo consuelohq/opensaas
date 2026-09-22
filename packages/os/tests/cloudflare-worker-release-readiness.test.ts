@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 import {
   assertRequiredCloudflareWorkerSecrets,
@@ -58,9 +60,29 @@ describe('Cloudflare Worker release readiness', () => {
     expect(commands[1]).toEqual([
       'wrangler',
       'deploy',
+      '--keep-vars',
       '--config',
       'cloudflare/os-device-authority/wrangler.toml',
     ]);
+  });
+
+  it('keeps release-managed launcher snapshot vars out of the static Device Authority config', () => {
+    const config = readFileSync(
+      join(
+        process.cwd(),
+        'cloudflare',
+        'os-device-authority',
+        'wrangler.toml',
+      ),
+      'utf8',
+    );
+
+    expect(config).not.toContain(
+      'OS_DEVICE_AUTH_DEFAULT_SITE_SNAPSHOT_KEY =',
+    );
+    expect(config).not.toContain(
+      'OS_DEVICE_AUTH_DEFAULT_SITE_SNAPSHOT_VERSION_ID =',
+    );
   });
 
   it('rejects Device Authority deployment when GitHub OAuth client credentials are missing', () => {

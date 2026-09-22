@@ -165,6 +165,19 @@ describe('bootstrap source refresh controls', () => {
     expect(bootstrap).toContain('ensure_dependencies');
   });
 
+  it('opens the installed workspace through the authority handoff instead of forcing a second Google login', () => {
+    const bootstrap = readBootstrap();
+    const openLauncher = extractShellFunction(
+      bootstrap,
+      'open_workspace_launcher',
+    );
+
+    expect(openLauncher).toContain(
+      'https://os.consuelohq.com/auth/workspaces?workspace_host=$workspace_host&return_to=%2F',
+    );
+    expect(openLauncher).not.toContain('open_url "https://$workspace_host"');
+  });
+
   it('resolves existing legacy nested installs before creating a fresh flattened home', () => {
     const bootstrap = readBootstrap();
 
@@ -354,18 +367,22 @@ describe('bootstrap source refresh controls', () => {
     );
 
     expect(runner).toContain('local install_args=');
+    expect(runner).toContain('install_args+=(--quiet)');
     expect(runner).toContain('install_args+=(--install-daemons)');
     expect(runner).toContain('install_args+=(--skip-daemons)');
     expect(runner).toContain('"${install_args[@]}"');
   });
 
-  it('keeps the human success summary minimal and opens the launcher last', () => {
+  it('keeps the hosted happy path quiet after browser approval and opens the launcher last', () => {
     const bootstrap = readBootstrap();
     const summary = extractShellFunction(bootstrap, 'print_success_summary');
     const main = extractShellFunction(bootstrap, 'main');
+    const daemons = extractShellFunction(bootstrap, 'maybe_install_daemons');
 
-    expect(summary).toContain('Consuelo OS setup complete');
-    expect(summary).toContain('Home: $os_home');
+    expect(summary).toContain('Consuelo OS installed');
+    expect(summary).not.toContain('Home:');
+    expect(summary).not.toContain('Already on PATH');
+    expect(summary).not.toContain('Try:');
     expect(summary).not.toContain('Package:');
     expect(summary).not.toContain('Config:');
     expect(summary).not.toContain('Database:');
@@ -373,6 +390,10 @@ describe('bootstrap source refresh controls', () => {
     expect(summary).not.toContain('Services:');
     expect(summary).not.toContain('Doctor:');
     expect(summary).not.toContain('Tokens and secrets');
+    expect(daemons).toContain(
+      'run_quiet_with_loading_dots "setting up background service" install_daemons_quiet',
+    );
+    expect(daemons).not.toContain('log "background service ready"');
 
     expect(bootstrap).toContain('open_workspace_launcher');
     expect(bootstrap).toContain('[ "$YES" -eq 0 ] || return 0');

@@ -1500,6 +1500,9 @@ run_install_with_script_pty() {
   local install_args=(./scripts/install.ts --home "$os_home" --recovery-package-root "$os_dir" --mode "${OS_MODE:-local}")
   local script_output="/dev/null"
   local status=0
+  if [ "$DEBUG" != "1" ]; then
+    install_args+=(--quiet)
+  fi
   if [ "$INSTALL_DAEMONS" -eq 1 ]; then
     install_args+=(--install-daemons)
   fi
@@ -1691,7 +1694,7 @@ open_workspace_launcher() {
   workspace_host="$(onboarding_workspace_host || true)"
   [ -n "$workspace_host" ] || return 0
 
-  open_url "https://$workspace_host"
+  open_url "https://os.consuelohq.com/auth/workspaces?workspace_host=$workspace_host&return_to=%2F"
 }
 
 run_daemon_dry_run() {
@@ -1762,8 +1765,7 @@ maybe_install_daemons() {
       CONSUELO_DAEMON_LOG_DIR="$OS_HOME/node/logs" \
       "$BUN_BIN" run --cwd "$os_dir" install:system-daemons
   else
-    run_with_loading_dots "setting up background service" install_daemons_quiet
-    log "background service ready"
+    run_quiet_with_loading_dots "setting up background service" install_daemons_quiet
   fi
   DAEMON_STATUS="installed"
 }
@@ -1821,16 +1823,8 @@ ensure_command_on_path() {
 print_success_summary() {
   [ "$JSON" -eq 0 ] || return 0
 
-  local os_home="$OS_HOME"
-
   log ""
-  log "Consuelo OS setup complete"
-  log "Home: $os_home"
-  if [ -n "${PATH_HINT:-}" ]; then
-    log "$PATH_HINT"
-  fi
-  log ""
-  log "Try:  consuelo status"
+  log "Consuelo OS installed"
 }
 
 setup_local_runtime() {
