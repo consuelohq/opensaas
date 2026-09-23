@@ -1,0 +1,16 @@
+{
+  "area": "os-trace-hotfix",
+  "stream": "stream/os-trace-hotfix",
+  "taskBranch": "task/os-trace-hotfix/bust-cached-trace-inspector-asset-and-ship-canary",
+  "baseBranch": "stream/os-trace-hotfix",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2571,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2571",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-trace-hotfix-bust-cached-trace-inspector-asset-and-ship-canary",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_d1905f8730ed",
+  "tmuxSession": "opensaas-os-trace-hotfix-bust-cached-trace-inspector-asset-and-ship-canar-d1905f87",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-trace-hotfix-bust-cached-trace-inspector-asset-and-ship-canary/.task/session.json",
+  "createdAt": "2026-09-23T22:48:35.939Z"
+}
