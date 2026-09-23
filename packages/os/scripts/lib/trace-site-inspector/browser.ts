@@ -11,7 +11,6 @@ import {
   stableTraceKey,
   traceNodeLabel,
   traceRouteLabel,
-  tokenUsage,
   totalTokens,
   type TraceRecord,
 } from './model';
@@ -90,11 +89,6 @@ function escapeHtml(value: unknown): string {
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#039;');
-}
-
-function formatRowTokens(row: TraceRecord): string {
-  const usage = tokenUsage(row);
-  return `${usage.estimated ? '≈' : ''}${formatCompact(usage.total)}`;
 }
 
 function formatCompact(value: unknown): string {
@@ -385,7 +379,7 @@ function summaryMarkup(
       ${fact('Status', statusLabel(row))}
       ${fact('Code', clean(row.code) || 'OK')}
       ${fact('Latency', clean(row.latency) || formatDuration(row.durationMs))}
-      ${fact('Tokens', formatRowTokens(row))}
+      ${fact('Tokens', formatCompact(totalTokens(row)))}
       ${fact('Node', traceNodeLabel(row) || '—')}
       ${fact('Route', traceRouteLabel(row) || '—')}
       ${fact('Branch calls', branch.calls)}
@@ -445,7 +439,7 @@ function branchPeers(
       return `<button class="tiPeer ${child ? 'tiPeerChild' : ''} ${key === selectedId ? 'active' : ''}" type="button" data-trace-key="${escapeHtml(key)}">
         <span class="tiPeerStatus ${status === 'error' ? 'error' : 'success'}" aria-label="${escapeHtml(status)}"></span>
         <span class="tiPeerMain"><b>${escapeHtml(formatted.toolLabel)}</b><small>${escapeHtml(peerTime(peer))}</small></span>
-        <span class="tiPeerTokens">${escapeHtml(formatRowTokens(peer))} tok</span>
+        <span class="tiPeerTokens">${escapeHtml(formatCompact(totalTokens(peer)))} tok</span>
         <span class="tiPeerDuration">${escapeHtml(clean(peer.latency) || formatDuration(peer.durationMs))}</span>
       </button>`;
     })
@@ -483,7 +477,7 @@ function headerMetricsMarkup(branch: ReturnType<typeof branchSummary>): string {
     `<span class="tiHeaderMetric"><small>${escapeHtml(label)}</small><b>${escapeHtml(value)}</b></span>`;
   return [
     metric('Branch', breadcrumb.label),
-    metric('Total', `${branch.totalTokensEstimated ? '≈' : ''}${formatCompact(branch.totalTokens)} tok`),
+    metric('Total', `${formatCompact(branch.totalTokens)} tok`),
     metric('Input', formatCompact(branch.inputTokens)),
     metric('Output', formatCompact(branch.outputTokens)),
     metric('Failures', String(branch.failures)),
@@ -536,7 +530,7 @@ function inspectorMarkup(row: TraceRecord): string {
     <header class="tiToolbar">
       <div class="tiToolbarIdentity">
         <div class="tiHeaderMetrics" aria-label="Branch metrics" data-ti-metrics-signature="${escapeHtml(headerMetricsSignature(branch))}">${headerMetricsMarkup(branch)}</div>
-        <div class="tiSelectedMeta"><strong>${escapeHtml(row.name ?? row.traceName ?? row.tool ?? 'trace')}</strong><span class="tiStatusDot ${statusLabel(row)}"></span><span>${escapeHtml(statusLabel(row))}</span><span>${escapeHtml(clean(row.latency) || formatDuration(row.durationMs))}</span><span>${escapeHtml(formatRowTokens(row))} tok</span></div>
+        <div class="tiSelectedMeta"><strong>${escapeHtml(row.name ?? row.traceName ?? row.tool ?? 'trace')}</strong><span class="tiStatusDot ${statusLabel(row)}"></span><span>${escapeHtml(statusLabel(row))}</span><span>${escapeHtml(clean(row.latency) || formatDuration(row.durationMs))}</span><span>${escapeHtml(formatCompact(totalTokens(row)))} tok</span></div>
       </div>
       <div class="tiToolbarActions">
         <div class="tiModeSwitch" role="group" aria-label="Trace display mode">
