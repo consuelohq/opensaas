@@ -2,17 +2,17 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 661,
-    "mappedTestCount": 577,
-    "unmappedTestCount": 84,
+    "testFileCount": 672,
+    "mappedTestCount": 587,
+    "unmappedTestCount": 85,
     "ruleCount": 76,
     "explicitRuleCount": 63,
     "autoRuleCount": 13,
     "projectCount": 9,
     "packageTestScriptCount": 20,
     "byGroup": {
-      "packages/os/tests": 313,
-      "packages/workspace/tests": 63,
+      "packages/os/tests": 322,
+      "packages/workspace/tests": 64,
       "packages/os/tests/media": 34,
       "packages/consuelo-design/upstream/open-design/apps/daemon": 21,
       "packages/dialer-server/src": 19,
@@ -61,6 +61,7 @@
       "packages/dialer-server/src/release": 1,
       "packages/dialer/src": 1,
       "packages/dialer/src/infrastructure/redis": 1,
+      "packages/os/tests/helpers": 1,
       "packages/os/tools/artifacts": 1,
       "packages/os/tools/codemode": 1,
       "packages/os/tools/composed": 1,
@@ -91,11 +92,11 @@
       "tests": 1
     },
     "byKind": {
-      "test": 605,
+      "test": 615,
       "spec": 29,
       "__tests__": 11,
       "other": 7,
-      "tests-dir": 6,
+      "tests-dir": 7,
       "integration": 2,
       "e2e": 1
     }
@@ -663,6 +664,8 @@
         "packages/os/scripts/lib/distribution/release-channels.ts",
         "packages/os/scripts/lib/github-cli.ts",
         "packages/os/scripts/lib/release-platform-bundle.ts",
+        "packages/os/scripts/lib/release-immutable.ts",
+        "packages/os/scripts/lib/release-operation.ts",
         "packages/os/scripts/lib/release-promotion-dispatch-lock.ts",
         "packages/os/scripts/lib/release-promotion-correlation.ts",
         "packages/os/scripts/lib/release-orchestrator.ts",
@@ -675,6 +678,8 @@
         "packages/os/tests/os-device-authority-release-contract.test.ts",
         "packages/os/tests/production-release-mcp-security.test.ts",
         "packages/os/tests/release-orchestrator.test.ts",
+        "packages/os/tests/release-immutable.test.ts",
+        "packages/os/tests/release-operation.test.ts",
         "packages/os/tests/release-local-platform-bundle.test.ts",
         "packages/os/tests/release-script-promotion-correlation.test.ts",
         "packages/os/tests/release-promotion-dispatch-lock.test.ts",
@@ -700,6 +705,8 @@
             "tests/distribution/release-channels.test.ts",
             "tests/github-cli-resolution.test.ts",
             "tests/release-orchestrator.test.ts",
+            "tests/release-immutable.test.ts",
+            "tests/release-operation.test.ts",
             "tests/release-local-platform-bundle.test.ts",
             "tests/release-script-promotion-correlation.test.ts",
             "tests/release-promotion-dispatch-lock.test.ts",
@@ -4253,6 +4260,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/diffs-local-cache.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/distribution/environment-probe.test.ts",
       "group": "packages/os/tests/distribution",
       "kind": "test"
@@ -4518,6 +4530,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/helpers/bun-sqlite-vitest.ts",
+      "group": "packages/os/tests/helpers",
+      "kind": "tests-dir"
+    },
+    {
       "path": "packages/os/tests/hosted-release-worker-contract.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -4698,6 +4715,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/lifecycle-node-revocation.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/lifecycle-restart-contract.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -4754,6 +4776,11 @@
     },
     {
       "path": "packages/os/tests/macos-platform.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/macos-supervised-sidecars.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -5233,7 +5260,17 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/release-immutable.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/release-local-platform-bundle.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/release-operation.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -5279,6 +5316,11 @@
     },
     {
       "path": "packages/os/tests/runtime-state.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/runtime-tool-providers-swamp.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -5553,6 +5595,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/tools-search-jev-benchmark.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/tools-search-v2.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -5783,7 +5830,17 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/workspace-node-registration-client.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/workspace-node-registry-routing.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/workspace-node-self-revoke.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -6263,6 +6320,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/workspace/tests/verify-run-state.test.js",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/workspace/tests/wait.test.js",
       "group": "packages/workspace/tests",
       "kind": "test"
@@ -6366,6 +6428,7 @@
     "packages/workspace/tests/twenty-migration-identity-license.test.ts",
     "packages/workspace/tests/twenty-migration-runtime-boundary.test.ts",
     "packages/workspace/tests/verification.test.js",
+    "packages/workspace/tests/verify-run-state.test.js",
     "packages/workspace/tests/wait.test.js",
     "tests/operator.test.ts"
   ],
