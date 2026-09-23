@@ -44,6 +44,19 @@ describe("Consuelo Dialer landing page", () => {
     expect(renderedStyles).not.toMatch(/text-transform:\s*lowercase/);
   });
 
+  test("keeps source-authored casing and typography when client-side styles try to override the page", () => {
+    const layout = read("src/layouts/MarketingLayout.astro");
+    const hero = read("src/components/home/HomeHero.astro");
+    const header = read("src/components/site/SiteHeader.astro");
+
+    expect(layout).toContain('id="dialer-site-root"');
+    expect(layout).toContain("#dialer-site-root :where(");
+    expect(layout).toContain("text-transform: none !important;");
+    expect(hero).toContain("font-family: var(--site-font-display) !important;");
+    expect(header).toContain("font-family: var(--site-font-mono) !important;");
+    expect(header).toContain("font-family: var(--site-font-display) !important;");
+  });
+
   test("keeps product proof inside the main feature story instead of standalone homepage sections", () => {
     const index = read("src/pages/index.astro");
     const content = read("src/data/home-content.ts");

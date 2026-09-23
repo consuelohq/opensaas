@@ -145,7 +145,7 @@ const landingFontFaces = `
   </head>
   <body>
     <SiteSmoothScroll />
-    <div class="launch-shell">
+    <div class="launch-shell" id="dialer-site-root">
       <slot />
     </div>
   </body>
@@ -261,6 +261,10 @@ const landingFontFaces = `
     min-height: 100vh;
     background: var(--site-color-paper);
     overflow-x: clip;
+  }
+
+  #dialer-site-root :where(h1, h2, h3, h4, h5, h6, p, a, span, strong, em, li, dt, dd, summary, button, label) {
+    text-transform: none !important;
   }
 
   .launch-section {
