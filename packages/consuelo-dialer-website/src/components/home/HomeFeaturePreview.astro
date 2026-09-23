@@ -1,6 +1,7 @@
 ---
 import { dialerFeatureItems } from '../../data/home-content';
 import { siteLinks } from '../../data/site-links';
+import CloudField from '../visuals/CloudField.astro';
 import DialerFeaturePlaceholder from './DialerFeaturePlaceholder.astro';
 import HomeFaq from './HomeFaq.astro';
 import PreviewNotice from './PreviewNotice.astro';
@@ -9,15 +10,7 @@ import PreviewNotice from './PreviewNotice.astro';
 <section class="product-panel" id="features" data-section="features">
   <div class="product-panel__paper">
     <div class="product-panel__preview">
-      <img
-        class="product-panel__preview-art"
-        src="/images/home/dither/cloud-2.png"
-        alt=""
-        width="1020"
-        height="390"
-        loading="lazy"
-        aria-hidden="true"
-      />
+      <CloudField variant="preview" />
       <PreviewNotice />
     </div>
 
@@ -96,20 +89,9 @@ import PreviewNotice from './PreviewNotice.astro';
     pointer-events: none;
   }
 
-  .product-panel__preview-art {
-    position: absolute;
-    z-index: 0;
-    right: -6%;
-    bottom: -18%;
-    max-width: none;
-    image-rendering: pixelated;
-    opacity: 0.35;
-    pointer-events: none;
-  }
-
   .product-panel__preview :global(.preview-notice) {
     position: relative;
-    z-index: 2;
+    z-index: 3;
   }
 
   .product-panel__identity {
