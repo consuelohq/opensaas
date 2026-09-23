@@ -687,6 +687,10 @@ describe('test selection registry', () => {
     const result = run([
       'check',
       '--changed-file',
+      'packages/os/scripts/lib/release-operation.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/release-immutable.ts',
+      '--changed-file',
       '.github/workflows/consuelo-os-runtime-publish.yaml',
       '--changed-file',
       'packages/os/package.json',
@@ -698,6 +702,10 @@ describe('test selection registry', () => {
       'packages/workspace/scripts/os-release-device-auth.ts',
       '--changed-file',
       'packages/os/tests/production-release-mcp-security.test.ts',
+      '--changed-file',
+      'packages/os/tests/release-operation.test.ts',
+      '--changed-file',
+      'packages/os/tests/release-immutable.test.ts',
       '--json',
     ]);
     const data = json(result);
@@ -719,6 +727,8 @@ describe('test selection registry', () => {
     expect(releaseSuite?.command).toContain(
       'tests/production-release-mcp-security.test.ts',
     );
+    expect(releaseSuite?.command).toContain('tests/release-operation.test.ts');
+    expect(releaseSuite?.command).toContain('tests/release-immutable.test.ts');
   });
 
   it('uses focused OS Explore retrieval contracts instead of the broad OS package suite', () => {
