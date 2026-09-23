@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/move-preview-clouds-15-percent-closer",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 2559,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2559",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-move-preview-clouds-15-percent-closer",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_f99806b3b448",
+  "tmuxSession": "opensaas-dialer-move-preview-clouds-15-percent-closer-f99806b3",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-move-preview-clouds-15-percent-closer/.task/session.json",
+  "createdAt": "2026-09-23T01:58:01.334Z"
+}

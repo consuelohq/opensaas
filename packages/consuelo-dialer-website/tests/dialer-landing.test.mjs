@@ -218,6 +218,8 @@ describe("Consuelo Dialer landing page", () => {
 
     expect(cloudField).toContain("--preview-right-width: min(67vw, 54rem)");
     expect(cloudField).toContain("--preview-left-width: min(55vw, 46rem)");
+    expect(cloudField).toContain("--preview-right-offset: -5%");
+    expect(cloudField).toContain("--preview-left-offset: -3%");
     expect(cloudField).toContain("right: var(--preview-right-offset)");
     expect(cloudField).toContain("left: var(--preview-left-offset)");
     expect(cloudField).toContain("cloud-field--preview::before");

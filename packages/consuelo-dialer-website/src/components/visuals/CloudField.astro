@@ -204,8 +204,8 @@ const visibleClouds = variant === 'preview'
   .cloud-field--preview {
     --preview-right-width: min(67vw, 54rem);
     --preview-left-width: min(55vw, 46rem);
-    --preview-right-offset: -20%;
-    --preview-left-offset: -18%;
+    --preview-right-offset: -5%;
+    --preview-left-offset: -3%;
   }
 
   .cloud-field--preview::before {
@@ -334,7 +334,7 @@ const visibleClouds = variant === 'preview'
       display: block;
       width: 44rem;
       top: -52%;
-      right: -34rem;
+      right: calc(-34rem + 15vw);
     }
 
     .cloud-field--preview .cloud-field__cloud--far-right {
@@ -342,7 +342,7 @@ const visibleClouds = variant === 'preview'
       width: 38rem;
       right: auto;
       bottom: -52%;
-      left: -30rem;
+      left: calc(-30rem + 15vw);
     }
 
     .cloud-field--preview::before {
