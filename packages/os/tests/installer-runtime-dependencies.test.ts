@@ -874,7 +874,7 @@ describe('public installer runtime dependencies', () => {
     expect(result.stderr).toContain('Set PORTLESS_BIN');
   });
 
-  it('should include generated connector and heartbeat services in daemon dry-run output only when their plists exist', () => {
+  it('should ignore a legacy heartbeat plist as an active daemon while retaining connector discovery', () => {
     const home = createTempHome('consuelo-os-installer-runtime-daemons-');
     const generatedDir = join(home, 'security', 'generated');
     const cloudflaredBin = join(home, 'cloudflared');
@@ -953,7 +953,10 @@ describe('public installer runtime dependencies', () => {
     expect(presentResult.stdout).toContain(
       'com.consuelo.os.cloudflared.connector-123',
     );
-    expect(presentResult.stdout).toContain(
+    const serviceSummary = presentResult.stdout
+      .split('\n')
+      .find((line) => line.includes('Services:')) ?? '';
+    expect(serviceSummary).not.toContain(
       'com.consuelo.os.node-heartbeat.node-member',
     );
   });

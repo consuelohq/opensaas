@@ -184,6 +184,7 @@ const REQUIRED_RUNTIME_INPUTS = [
   'scripts/retire-legacy-system-daemons.sh',
   'scripts/server/main.ts',
   'scripts/server/supervisor.ts',
+  'scripts/lib/macos-supervised-heartbeat.ts',
   'scripts/lib/install-state.ts',
   'scripts/managed-components.ts',
   'scripts/lib/managed-components.ts',

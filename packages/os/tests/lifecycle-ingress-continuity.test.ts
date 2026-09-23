@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 
@@ -37,13 +37,13 @@ describe('lifecycle ingress continuity', () => {
       'com.consuelo.caddy',
       'com.consuelo.os.cloudflared.connector-test',
     ];
+    const legacyHeartbeatLabel = 'com.consuelo.os.node-heartbeat.node-test';
     const sidecarLabels = [
       'com.consuelo.availability',
-      'com.consuelo.os.node-heartbeat.node-test',
       'com.consuelo.portless.system',
       'com.consuelo.watchdog',
     ];
-    for (const label of [...ingressLabels, ...sidecarLabels]) {
+    for (const label of [...ingressLabels, legacyHeartbeatLabel, ...sidecarLabels]) {
       writeFileSync(join(launchAgents, `${label}.plist`), '<plist/>\n');
     }
     const calls: Array<{ command: string; args: string[] }> = [];
@@ -81,6 +81,19 @@ describe('lifecycle ingress continuity', () => {
       for (const label of ingressLabels) {
         expect(JSON.stringify(launchctlCalls)).not.toContain(label);
       }
+      expect(launchctlCalls).toContainEqual({
+        command: 'launchctl',
+        args: ['print', 'gui/501/' + legacyHeartbeatLabel],
+      });
+      expect(launchctlCalls).toContainEqual({
+        command: 'launchctl',
+        args: ['bootout', 'gui/501/' + legacyHeartbeatLabel],
+      });
+      expect(launchctlCalls).not.toContainEqual({
+        command: 'launchctl',
+        args: ['kickstart', '-k', 'gui/501/' + legacyHeartbeatLabel],
+      });
+      expect(existsSync(join(launchAgents, `${legacyHeartbeatLabel}.plist`))).toBe(false);
       for (const label of sidecarLabels) {
         expect(JSON.stringify(launchctlCalls)).toContain(label);
       }

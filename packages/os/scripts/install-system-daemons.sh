@@ -101,9 +101,6 @@ portless_backup_dir="$consuelo_data_home/node/portless-backup"
 cloudflared_labels=()
 cloudflared_generated_plists=()
 cloudflared_agent_plists=()
-heartbeat_labels=()
-heartbeat_generated_plists=()
-heartbeat_agent_plists=()
 portless_enabled=0
 availability_enabled=0
 stage_port="${WORKSPACE_STAGE_PORT:-}"
@@ -282,37 +279,6 @@ collect_cloudflared_plists() {
   done
 }
 
-append_heartbeat_plist() {
-  local plist="$1"
-  local label existing_label
-  label="$(extract_plist_label "$plist")"
-  if [ -z "$label" ]; then
-    echo "unable to read Label from heartbeat plist: $plist" >&2
-    exit 1
-  fi
-
-  for existing_label in "${heartbeat_labels[@]+"${heartbeat_labels[@]}"}"; do
-    if [ "$existing_label" = "$label" ]; then
-      return 0
-    fi
-  done
-
-  heartbeat_labels+=("$label")
-  heartbeat_generated_plists+=("$plist")
-  heartbeat_agent_plists+=("$launch_agent_dir/${label}.plist")
-}
-
-collect_heartbeat_plists() {
-  local plist
-  if [ ! -d "$cloudflared_generated_dir" ]; then
-    return 0
-  fi
-  for plist in "$cloudflared_generated_dir"/com.consuelo.os.node-heartbeat*.plist; do
-    [ -e "$plist" ] || continue
-    append_heartbeat_plist "$plist"
-  done
-}
-
 service_labels_csv() {
   local labels="$workspace_label, $caddy_label"
   local label
@@ -324,9 +290,6 @@ service_labels_csv() {
     labels="$labels, $availability_label"
   fi
   for label in "${cloudflared_labels[@]+"${cloudflared_labels[@]}"}"; do
-    labels="$labels, $label"
-  done
-  for label in "${heartbeat_labels[@]+"${heartbeat_labels[@]}"}"; do
     labels="$labels, $label"
   done
   printf '%s\n' "$labels"
@@ -523,9 +486,6 @@ rollback_agents() {
   for label in "${cloudflared_labels[@]+"${cloudflared_labels[@]}"}"; do
     bootout_agent "$label"
   done
-  for label in "${heartbeat_labels[@]+"${heartbeat_labels[@]}"}"; do
-    bootout_agent "$label"
-  done
   bootout_agent "$watchdog_label"
   if [ "$availability_enabled" = "1" ]; then
     bootout_agent "$availability_label"
@@ -577,9 +537,6 @@ print_debug_state() {
   for label in "${cloudflared_labels[@]+"${cloudflared_labels[@]}"}"; do
     launchctl print "$launch_domain/$label" | sed -n '1,80p'
   done
-  for label in "${heartbeat_labels[@]+"${heartbeat_labels[@]}"}"; do
-    launchctl print "$launch_domain/$label" | sed -n '1,80p'
-  done
 }
 
 run_generate_daemons() {
@@ -601,9 +558,6 @@ run_plutil_lint() {
     plists+=("$portless_generated_plist")
   fi
   for plist in "${cloudflared_generated_plists[@]+"${cloudflared_generated_plists[@]}"}"; do
-    plists+=("$plist")
-  done
-  for plist in "${heartbeat_generated_plists[@]+"${heartbeat_generated_plists[@]}"}"; do
     plists+=("$plist")
   done
 
@@ -654,8 +608,16 @@ install_launch_agent_definitions() {
   for index in "${!cloudflared_generated_plists[@]}"; do
     install -m 644 "${cloudflared_generated_plists[$index]}" "${cloudflared_agent_plists[$index]}"
   done
-  for index in "${!heartbeat_generated_plists[@]}"; do
-    install -m 600 "${heartbeat_generated_plists[$index]}" "${heartbeat_agent_plists[$index]}"
+}
+
+retire_legacy_heartbeat_agents() {
+  local plist label
+  for plist in "$launch_agent_dir"/com.consuelo.os.node-heartbeat*.plist; do
+    [ -e "$plist" ] || continue
+    label="$(basename "$plist" .plist)"
+    bootout_agent "$label"
+    rm -f "$plist"
+    log "retired legacy heartbeat LaunchAgent: $label"
   done
 }
 
@@ -681,7 +643,6 @@ fi
 CLOUDFLARED_BIN="$(resolve_cloudflared_bin)"
 export CLOUDFLARED_BIN
 collect_cloudflared_plists
-collect_heartbeat_plists
 
 bash -n "$script_dir/start-consuelo-daemon.sh"
 bash -n "$script_dir/start-caddy-daemon.sh"
@@ -744,9 +705,6 @@ fi
 for label in "${cloudflared_labels[@]+"${cloudflared_labels[@]}"}"; do
   bootout_agent "$label"
 done
-for label in "${heartbeat_labels[@]+"${heartbeat_labels[@]}"}"; do
-  bootout_agent "$label"
-done
 bootout_agent "$watchdog_label"
 if [ "$availability_enabled" = "1" ]; then
   bootout_agent "$availability_label"
@@ -768,9 +726,6 @@ if [ "$portless_enabled" = "1" ]; then
 fi
 for index in "${!cloudflared_labels[@]}"; do
   bootstrap_agent "${cloudflared_labels[$index]}" "${cloudflared_agent_plists[$index]}"
-done
-for index in "${!heartbeat_labels[@]}"; do
-  bootstrap_agent "${heartbeat_labels[$index]}" "${heartbeat_agent_plists[$index]}"
 done
 bootstrap_agent "$watchdog_label" "$watchdog_agent_plist"
 
@@ -819,6 +774,8 @@ if [ "${#cloudflared_labels[@]}" -gt 0 ]; then
     exit 1
   fi
 fi
+
+retire_legacy_heartbeat_agents
 
 print_success_summary
 print_debug_state
