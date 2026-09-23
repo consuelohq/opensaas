@@ -99,6 +99,8 @@ PENDING_CHANNEL_STATE_PATH=""
 RUNTIME_STAGE_DIR=""
 ONBOARDING_JSON=""
 DEPENDENCY_STATUS="pending"
+PATH_HINT=""
+PATH_IMMEDIATE=0
 CONTACT_URL="https://consuelohq.com/contact/"
 OS_MODE=""
 
@@ -426,12 +428,12 @@ run_quiet_with_loading_dots() {
   # BUN_BIN, RUNTIME_DIR, and INSTALL_ID that onboarding consumes afterward.
   # Running it in the background for an animated spinner would fork those
   # assignments into a subshell and silently lose them.
-  log "${loading_message}..."
+  printf '%s...' "$loading_message"
   "$@" >"$output_file" 2>&1 || status=$?
   if [ "$status" -eq 0 ]; then
-    log "${loading_message}... done"
+    printf '\r%s... done\n' "$loading_message"
   else
-    log "${loading_message}... failed"
+    printf '\r%s... failed\n' "$loading_message"
   fi
 
   if [ "$status" -ne 0 ]; then
@@ -1598,12 +1600,13 @@ recovery_cli_hint() {
   [ -x "$OS_HOME/bin/consuelo" ] || return 0
   printf '
 Recovery CLI is ready at %s.
-Open a new terminal, then run:
-  consuelo status
-  consuelo uninstall --dry-run --json
+Use it in this shell with:
+  %s status
+  %s uninstall --dry-run --json
+A new shell can use the bare consuelo command after PATH setup.
 To retry setup:
   %s
-' "$OS_HOME/bin/consuelo" "$HOSTED_INSTALL_COMMAND"
+' "$OS_HOME/bin/consuelo" "$OS_HOME/bin/consuelo" "$OS_HOME/bin/consuelo" "$HOSTED_INSTALL_COMMAND"
 }
 
 run_onboarding() { # run_onboarding_json
@@ -1737,15 +1740,15 @@ install_daemons_quiet() {
 maybe_install_daemons() {
   if [ "$SKIP_DAEMONS" -eq 1 ]; then
     DAEMON_STATUS="skipped"
-    log "Skipping Consuelo OS user LaunchAgent setup."
+    log "Skipping Consuelo OS background-service setup."
     return 0
   fi
 
   if [ "$DRY_RUN" -eq 1 ]; then
     if [ -n "$PORTLESS_BIN" ]; then
-      log "dry-run: would install user LaunchAgents for com.consuelo.system, com.consuelo.portless.system, and com.consuelo.watchdog."
+      log "dry-run: would install the Consuelo OS background service and the optional Portless compatibility LaunchAgent."
     else
-      log "dry-run: would install user LaunchAgents for com.consuelo.system and com.consuelo.watchdog; portless is optional and not configured."
+      log "dry-run: would install the Consuelo OS background service; Portless compatibility is optional and not configured."
     fi
     run_daemon_dry_run
     return 0
@@ -1770,16 +1773,78 @@ maybe_install_daemons() {
   DAEMON_STATUS="installed"
 }
 
-# The installer writes $OS_HOME/bin/consuelo but has never put that directory on PATH, so a fresh
-# install left the documented `consuelo` command unavailable. Appended idempotently to the shell rc,
-# and only there: the running installer cannot change the parent shell.
+# A curl-pipe-bash child cannot mutate its parent shell's PATH. Prefer a safe
+# link in an already-visible writable directory; otherwise configure future
+# shells and keep the canonical absolute CLI path available immediately.
+find_immediate_cli_link_dir() {
+  local bin_dir="$OS_HOME/bin"
+  local existing=""
+  local path_entry=""
+  local path_entries=()
+
+  existing="$(command -v consuelo 2>/dev/null || true)"
+  if [ -n "$existing" ]; then
+    if [ "$existing" = "$bin_dir/consuelo" ]; then
+      printf '%s\n' "$bin_dir"
+      return 0
+    fi
+    if [ -L "$existing" ] && [ "$(readlink "$existing" 2>/dev/null || true)" = "$bin_dir/consuelo" ]; then
+      dirname "$existing"
+      return 0
+    fi
+    return 2
+  fi
+
+  IFS=':' read -r -a path_entries <<< "${PATH:-}"
+  for path_entry in "${path_entries[@]}"; do
+    [ -n "$path_entry" ] || continue
+    [ -d "$path_entry" ] || continue
+    [ -w "$path_entry" ] || continue
+    [ ! -e "$path_entry/consuelo" ] && [ ! -L "$path_entry/consuelo" ] || continue
+    printf '%s\n' "$path_entry"
+    return 0
+  done
+  return 1
+}
+
 ensure_command_on_path() {
   local bin_dir="$OS_HOME/bin"
   local rc_file=""
+  local existing=""
+  local immediate_dir=""
+  local immediate_status=0
+
+  PATH_IMMEDIATE=0
 
   if [ "$DRY_RUN" -eq 1 ]; then
-    PATH_HINT="dry-run: would add $bin_dir to the supported shell profile"
+    PATH_HINT="dry-run: would expose $bin_dir through the current PATH when safe, otherwise update the supported shell profile"
     return 0
+  fi
+
+  existing="$(command -v consuelo 2>/dev/null || true)"
+  if [ -n "$existing" ] && [ "$existing" != "$bin_dir/consuelo" ]; then
+    if [ ! -L "$existing" ] || [ "$(readlink "$existing" 2>/dev/null || true)" != "$bin_dir/consuelo" ]; then
+      log ""
+      log "Warning: another 'consuelo' is already on PATH at $existing"
+      log "Consuelo OS will not overwrite it. Use $bin_dir/consuelo until you resolve the command collision."
+      PATH_HINT="Another 'consuelo' already owns PATH; Consuelo OS left it unchanged."
+      return 0
+    fi
+  fi
+
+  if immediate_dir="$(find_immediate_cli_link_dir)"; then
+    if [ "$immediate_dir" != "$bin_dir" ] && [ ! -e "$immediate_dir/consuelo" ] && [ ! -L "$immediate_dir/consuelo" ]; then
+      ln -s "$bin_dir/consuelo" "$immediate_dir/consuelo"
+    fi
+    PATH_IMMEDIATE=1
+    PATH_HINT="consuelo is ready in this shell via $immediate_dir"
+    return 0
+  else
+    immediate_status=$?
+    if [ "$immediate_status" -eq 2 ]; then
+      PATH_HINT="Another 'consuelo' already owns PATH; use $bin_dir/consuelo directly."
+      return 0
+    fi
   fi
 
   case "$(basename "${SHELL:-}")" in
@@ -1789,16 +1854,6 @@ ensure_command_on_path() {
       ;;
     *) rc_file="" ;;
   esac
-
-  # An unrelated binary of the same name silently shadows ours, which reads as OS being broken
-  # rather than as a name collision.
-  local existing
-  existing="$(command -v consuelo 2>/dev/null || true)"
-  if [ -n "$existing" ] && [ "$existing" != "$bin_dir/consuelo" ]; then
-    log ""
-    log "Warning: another 'consuelo' is already on PATH at $existing"
-    log "It will shadow Consuelo OS. Remove it, or put $bin_dir earlier on PATH."
-  fi
 
   if [ -z "$rc_file" ]; then
     PATH_HINT="Add this to your shell profile:  export PATH=\"$bin_dir:\$PATH\""
@@ -1817,7 +1872,7 @@ ensure_command_on_path() {
     PATH_HINT="Add this to your shell profile:  export PATH=\"$bin_dir:\$PATH\""
     return 0
   }
-  PATH_HINT="Added $bin_dir to PATH in $rc_file — open a new terminal to use it"
+  PATH_HINT="Added $bin_dir to PATH in $rc_file — new shells can use the bare consuelo command"
 }
 
 print_success_summary() {
@@ -1825,6 +1880,10 @@ print_success_summary() {
 
   log ""
   log "Consuelo OS installed"
+  if [ "$PATH_IMMEDIATE" -ne 1 ]; then
+    [ -z "$PATH_HINT" ] || log "$PATH_HINT"
+    log "Use now: $OS_HOME/bin/consuelo status"
+  fi
 }
 
 setup_local_runtime() {

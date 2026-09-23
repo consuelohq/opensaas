@@ -3,6 +3,7 @@ import {
   lstatSync,
   mkdirSync,
   mkdtempSync,
+  readlinkSync,
   readFileSync,
   symlinkSync,
   writeFileSync,
@@ -80,6 +81,35 @@ function extractShellFunction(source: string, name: string): string {
     }
   }
   throw new Error(`unterminated shell function: ${name}`);
+}
+
+function runPathSetup(
+  bootstrap: string,
+  options: { home: string; path: string },
+) {
+  const script = [
+    'set -euo pipefail',
+    extractShellFunction(bootstrap, 'find_immediate_cli_link_dir'),
+    extractShellFunction(bootstrap, 'ensure_command_on_path'),
+    'log() { :; }',
+    'DRY_RUN=0',
+    'PATH_HINT=""',
+    'PATH_IMMEDIATE=0',
+    'ensure_command_on_path',
+    'printf "PATH_IMMEDIATE=%s\\nPATH_HINT=%s\\n" "$PATH_IMMEDIATE" "$PATH_HINT"',
+  ].join('\n');
+  return spawnSync('/bin/bash', ['-c', script], {
+    encoding: 'utf8',
+    env: {
+      ...process.env,
+      BASH_ENV: '/dev/null',
+      ENV: '/dev/null',
+      HOME: options.home,
+      OS_HOME: join(options.home, '.consuelo'),
+      PATH: options.path,
+      SHELL: '/bin/zsh',
+    },
+  });
 }
 
 describe('bootstrap source refresh controls', () => {
@@ -380,6 +410,7 @@ describe('bootstrap source refresh controls', () => {
     const daemons = extractShellFunction(bootstrap, 'maybe_install_daemons');
 
     expect(summary).toContain('Consuelo OS installed');
+    expect(summary).toContain('Use now: $OS_HOME/bin/consuelo status');
     expect(summary).not.toContain('Home:');
     expect(summary).not.toContain('Already on PATH');
     expect(summary).not.toContain('Try:');
@@ -406,6 +437,62 @@ describe('bootstrap source refresh controls', () => {
     expect(main.indexOf('emit_json_summary')).toBeGreaterThan(
       main.indexOf('open_workspace_launcher'),
     );
+  });
+
+  it('renders quiet setup stages as one stable in-place progress line', () => {
+    const bootstrap = readBootstrap();
+    const progress = extractShellFunction(bootstrap, 'run_quiet_with_loading_dots');
+
+    expect(progress).toContain('printf \'%s...\' "$loading_message"');
+    expect(progress).toContain('printf \'\\r%s... done\\n\' "$loading_message"');
+    expect(progress).toContain('printf \'\\r%s... failed\\n\' "$loading_message"');
+    expect(progress).not.toContain('log "${loading_message}..."');
+  });
+
+  it('makes consuelo immediately discoverable through an existing writable PATH directory', () => {
+    const bootstrap = readBootstrap();
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-bootstrap-path-'));
+    const pathDir = join(home, 'bin');
+    const canonicalBin = join(home, '.consuelo', 'bin');
+    const canonicalCli = join(canonicalBin, 'consuelo');
+    mkdirSync(pathDir, { recursive: true });
+    mkdirSync(canonicalBin, { recursive: true });
+    writeFileSync(canonicalCli, '#!/bin/sh\nexit 0\n', { mode: 0o755 });
+
+    const result = runPathSetup(bootstrap, {
+      home,
+      path: `${pathDir}:/usr/bin:/bin`,
+    });
+
+    expect(result.status, result.stderr).toBe(0);
+    const immediateCli = join(pathDir, 'consuelo');
+    expect(lstatSync(immediateCli).isSymbolicLink()).toBe(true);
+    expect(readlinkSync(immediateCli)).toBe(canonicalCli);
+    expect(result.stdout).toContain('PATH_IMMEDIATE=1');
+  });
+
+  it('never overwrites an unrelated consuelo command already on PATH', () => {
+    const bootstrap = readBootstrap();
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-bootstrap-collision-'));
+    const pathDir = join(home, 'bin');
+    const canonicalBin = join(home, '.consuelo', 'bin');
+    mkdirSync(pathDir, { recursive: true });
+    mkdirSync(canonicalBin, { recursive: true });
+    const existingCli = join(pathDir, 'consuelo');
+    writeFileSync(existingCli, '#!/bin/sh\necho unrelated\n', { mode: 0o755 });
+    writeFileSync(join(canonicalBin, 'consuelo'), '#!/bin/sh\nexit 0\n', {
+      mode: 0o755,
+    });
+
+    const result = runPathSetup(bootstrap, {
+      home,
+      path: `${pathDir}:/usr/bin:/bin`,
+    });
+
+    expect(result.status, result.stderr).toBe(0);
+    expect(readFileSync(existingCli, 'utf8')).toContain('echo unrelated');
+    expect(result.stdout).toContain('PATH_IMMEDIATE=0');
+    expect(result.stdout).toContain("Another 'consuelo' already owns PATH");
   });
 
   it('should pin darwin cloudflared checksums when bootstrap.sh is read', () => {

@@ -1,0 +1,168 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/polish-macos-installer-cli-discovery-and-auth-fallback",
+  "events": [
+    {
+      "id": "7147f8ed-5c98-4476-bab1-f22ac46fd448",
+      "occurred_at": "2026-09-23T02:10:59.936Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/bootstrap.sh",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/polish-macos-installer-cli-discovery-and-auth-fallback",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/polish-macos-installer-cli-discovery-and-auth-fallback"
+      }
+    },
+    {
+      "id": "077bc8e0-f34f-4307-9327-c4c467defb6d",
+      "occurred_at": "2026-09-23T02:11:07.692Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/install.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/polish-macos-installer-cli-discovery-and-auth-fallback",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/polish-macos-installer-cli-discovery-and-auth-fallback"
+      }
+    },
+    {
+      "id": "ff7f3beb-b96f-4096-b48d-35f1c475bb48",
+      "occurred_at": "2026-09-23T02:11:50.563Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/bootstrap-source.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/polish-macos-installer-cli-discovery-and-auth-fallback",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/polish-macos-installer-cli-discovery-and-auth-fallback"
+      }
+    },
+    {
+      "id": "26ac9b70-7e86-4766-976e-cdd48c748824",
+      "occurred_at": "2026-09-23T02:12:51.091Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/bootstrap.sh",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/polish-macos-installer-cli-discovery-and-auth-fallback",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/polish-macos-installer-cli-discovery-and-auth-fallback"
+      }
+    },
+    {
+      "id": "8e9fcb60-aff0-4f51-a81a-ca58bbccf99f",
+      "occurred_at": "2026-09-23T02:13:31.554Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/bootstrap.sh",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/polish-macos-installer-cli-discovery-and-auth-fallback",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/polish-macos-installer-cli-discovery-and-auth-fallback"
+      }
+    },
+    {
+      "id": "9976d040-ce9d-4150-a4c4-1db98775c925",
+      "occurred_at": "2026-09-23T02:13:57.283Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/bootstrap.sh",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/polish-macos-installer-cli-discovery-and-auth-fallback",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/polish-macos-installer-cli-discovery-and-auth-fallback"
+      }
+    },
+    {
+      "id": "78b212b4-e2cf-44f6-b992-a58b5d5ac34f",
+      "occurred_at": "2026-09-23T02:14:01.873Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/bootstrap.sh",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/polish-macos-installer-cli-discovery-and-auth-fallback",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/polish-macos-installer-cli-discovery-and-auth-fallback"
+      }
+    },
+    {
+      "id": "08bf8f51-9492-4e15-9611-16fd010e3012",
+      "occurred_at": "2026-09-23T02:14:20.700Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/bootstrap.sh",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/polish-macos-installer-cli-discovery-and-auth-fallback",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/polish-macos-installer-cli-discovery-and-auth-fallback"
+      }
+    },
+    {
+      "id": "eea010b1-038d-49c7-be89-e8675151256e",
+      "occurred_at": "2026-09-23T02:14:24.963Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/bootstrap.sh",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/polish-macos-installer-cli-discovery-and-auth-fallback",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/polish-macos-installer-cli-discovery-and-auth-fallback"
+      }
+    },
+    {
+      "id": "7dc48afa-0777-4d26-a7c3-e2d05d29beb5",
+      "occurred_at": "2026-09-23T02:15:42.070Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/bootstrap.sh",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/polish-macos-installer-cli-discovery-and-auth-fallback",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/polish-macos-installer-cli-discovery-and-auth-fallback"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-09-23T02:15:42.196Z"
+}
