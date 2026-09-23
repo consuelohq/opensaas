@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/finish-macos-installer-cli-discovery-and-polish",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2570,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2570",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-finish-macos-installer-cli-discovery-and-polish",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_a3952d859e88",
+  "tmuxSession": "opensaas-os-finish-macos-installer-cli-discovery-and-polish-a3952d85",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-finish-macos-installer-cli-discovery-and-polish/.task/session.json",
+  "createdAt": "2026-09-23T22:07:54.324Z"
+}
