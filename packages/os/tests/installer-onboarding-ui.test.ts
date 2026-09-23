@@ -63,7 +63,7 @@ describe('installer onboarding UI', () => {
     ]);
   });
 
-  it('keeps successful browser authorization focused on the verification code', () => {
+  it('keeps successful browser authorization focused while always showing a fallback', () => {
     const output = deviceLoginPromptLines({
       userCode: 'SXCW-REHY',
       verificationUrl: 'https://os.consuelohq.com/login/device?user_code=SXCWREHY',
@@ -74,10 +74,10 @@ describe('installer onboarding UI', () => {
     expect(output).toContain('Approve Consuelo OS in your browser.');
     expect(output).toContain('SXCW-REHY');
     expect(output).toContain('Confirm this code in the browser.');
-    expect(output).not.toContain('https://');
+    expect(output).toContain('If the browser did not open or switched away:');
+    expect(output).toContain('https://os.consuelohq.com/login/device?user_code=SXCWREHY');
+    expect(output).toContain('Enter code SXCW-REHY.');
     expect(output).not.toContain('copied');
-    expect(output).not.toContain('Open link');
-    expect(output).not.toContain('Full URL');
   });
 
   it('shows the authorization URL only when the browser could not be opened', () => {
@@ -91,6 +91,7 @@ describe('installer onboarding UI', () => {
     expect(output).toContain('SXCW-REHY');
     expect(output).toContain('Open this link to continue:');
     expect(output).toContain('https://os.consuelohq.com/login/device?user_code=SXCWREHY');
+    expect(output).toContain('Enter code SXCW-REHY.');
     expect(output).toContain('Authorization URL copied to clipboard.');
   });
 });

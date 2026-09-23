@@ -705,8 +705,20 @@ export function deviceLoginPromptLines(input: {
     '',
     'Confirm this code in the browser.',
   ];
-  if (!input.browserOpened) {
-    lines.push('', 'Open this link to continue:', input.verificationUrl);
+  if (input.browserOpened) {
+    lines.push(
+      '',
+      'If the browser did not open or switched away:',
+      input.verificationUrl,
+      `Enter code ${formattedCode}.`,
+    );
+  } else {
+    lines.push(
+      '',
+      'Open this link to continue:',
+      input.verificationUrl,
+      `Enter code ${formattedCode}.`,
+    );
     if (input.copied) lines.push('Authorization URL copied to clipboard.');
   }
   return lines;

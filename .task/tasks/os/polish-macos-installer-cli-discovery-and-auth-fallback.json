@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/polish-macos-installer-cli-discovery-and-auth-fallback",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2562,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2562",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-polish-macos-installer-cli-discovery-and-auth-fallback",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_e81148c62b31",
+  "tmuxSession": "opensaas-os-polish-macos-installer-cli-discovery-and-auth-fa-e81148c6",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-polish-macos-installer-cli-discovery-and-auth-fallback/.task/session.json",
+  "createdAt": "2026-09-23T02:10:31.617Z"
+}
