@@ -270,6 +270,7 @@ if (import.meta.main) {
           CONSUELO_OS_WORKER_ID: spec.workerId,
           CONSUELO_OS_WORKER_INSTANCE_ID: spec.workerInstanceId,
           CONSUELO_OS_SUPERVISOR_PID: String(process.pid),
+          CONSUELO_OS_HEARTBEAT_OWNER: spec.slot === 0 ? '1' : '0',
           CONSUELO_OS_WORKER_RELEASE_PATH: runtime.root,
           CONSUELO_OS_WORKER_BASE_PORT: String(configuration.basePort),
           CONSUELO_OS_PORT: String(spec.port),

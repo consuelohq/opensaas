@@ -98,4 +98,31 @@ describe('macOS menu-bar platform', () => {
     expect(endpoint).toContain('0o600');
     expect(endpoint).toContain('NATIVE_LIFECYCLE_MAX_PAYLOAD_BYTES');
   });
+
+  it('keeps node heartbeat inside the macOS supervisor instead of registering Bun with launchd', async () => {
+    const supervisor = await readFile(
+      resolve(packageRoot, 'scripts/server/supervisor.ts'),
+      'utf8',
+    );
+    const serverMain = await readFile(
+      resolve(packageRoot, 'scripts/server/main.ts'),
+      'utf8',
+    );
+    const supervisedHeartbeat = await readFile(
+      resolve(packageRoot, 'scripts/lib/macos-supervised-heartbeat.ts'),
+      'utf8',
+    );
+    const installState = await readFile(
+      resolve(packageRoot, 'scripts/lib/install-state.ts'),
+      'utf8',
+    );
+
+    expect(supervisor).toContain("CONSUELO_OS_HEARTBEAT_OWNER: spec.slot === 0 ? '1' : '0'");
+    expect(serverMain).toContain("process.platform === 'darwin'");
+    expect(serverMain).toContain('shouldRunMacosSupervisedHeartbeat');
+    expect(supervisedHeartbeat).toContain("input.heartbeatOwner === '1'");
+    expect(serverMain).toContain('startWorkspaceNodeHeartbeatScheduler');
+    expect(installState).not.toContain("message: 'workspace node heartbeat launchd service configured'");
+    expect(installState).not.toContain('renderCloudflaredLaunchdPlist({\n            label: heartbeatLabel');
+  });
 });

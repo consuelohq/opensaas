@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 
@@ -225,9 +225,23 @@ describe('lifecycle restart parity', () => {
       const launchctl = calls.filter((call) => call.command === 'launchctl');
       expect(JSON.stringify(launchctl)).not.toContain('com.consuelo.caddy');
       expect(JSON.stringify(launchctl)).not.toContain('com.consuelo.os.cloudflared.connector-test');
+      expect(launchctl).toContainEqual({
+        command: 'launchctl',
+        args: ['print', 'gui/501/com.consuelo.os.node-heartbeat.node-test'],
+      });
+      expect(launchctl).toContainEqual({
+        command: 'launchctl',
+        args: ['bootout', 'gui/501/com.consuelo.os.node-heartbeat.node-test'],
+      });
+      expect(launchctl).not.toContainEqual({
+        command: 'launchctl',
+        args: ['kickstart', '-k', 'gui/501/com.consuelo.os.node-heartbeat.node-test'],
+      });
+      expect(existsSync(
+        join(launchAgents, 'com.consuelo.os.node-heartbeat.node-test.plist'),
+      )).toBe(false);
       for (const label of [
         'com.consuelo.availability',
-        'com.consuelo.os.node-heartbeat.node-test',
         'com.consuelo.portless.system',
         'com.consuelo.watchdog',
       ]) {
@@ -350,6 +364,7 @@ describe('lifecycle restart parity', () => {
 
   it('retries a transient macOS gateway bootstrap while a missing job settles', async () => {
     const home = mkdtempSync(join(tmpdir(), 'consuelo-restart-gateway-retry-'));
+    const legacyRuntimeRoot = mkdtempSync(join(tmpdir(), 'consuelo-legacy-runtime-'));
     const launchAgents = join(home, 'Library', 'LaunchAgents');
     mkdirSync(launchAgents, { recursive: true });
     const label = 'com.consuelo.os.node-heartbeat.node-test';
@@ -383,7 +398,10 @@ describe('lifecycle restart parity', () => {
         },
       });
 
-      await expect(controller.restart({ waitForCompletion: true })).resolves.toBeUndefined();
+      await expect(controller.restart({
+        waitForCompletion: true,
+        runtimeRoot: legacyRuntimeRoot,
+      })).resolves.toBeUndefined();
       expect(bootstrapAttempts).toBe(2);
       expect(calls).toContainEqual({
         command: 'launchctl',
@@ -395,11 +413,13 @@ describe('lifecycle restart parity', () => {
       });
     } finally {
       rmSync(home, { recursive: true, force: true });
+      rmSync(legacyRuntimeRoot, { recursive: true, force: true });
     }
   });
 
   it('keeps node-heartbeat bootstrap failure fatal after retries are exhausted', async () => {
     const home = mkdtempSync(join(tmpdir(), 'consuelo-restart-heartbeat-failure-'));
+    const legacyRuntimeRoot = mkdtempSync(join(tmpdir(), 'consuelo-legacy-runtime-'));
     const launchAgents = join(home, 'Library', 'LaunchAgents');
     mkdirSync(launchAgents, { recursive: true });
     const label = 'com.consuelo.os.node-heartbeat.node-test';
@@ -428,17 +448,22 @@ describe('lifecycle restart parity', () => {
         },
       });
 
-      await expect(controller.restart({ waitForCompletion: true })).rejects.toThrow(
+      await expect(controller.restart({
+        waitForCompletion: true,
+        runtimeRoot: legacyRuntimeRoot,
+      })).rejects.toThrow(
         'gateway bootstrap failed for ' + label,
       );
       expect(bootstrapAttempts).toBe(4);
     } finally {
       rmSync(home, { recursive: true, force: true });
+      rmSync(legacyRuntimeRoot, { recursive: true, force: true });
     }
   });
 
   it('retries a transient macOS sidecar kickstart after bootstrap succeeds', async () => {
     const home = mkdtempSync(join(tmpdir(), 'consuelo-restart-gateway-kickstart-retry-'));
+    const legacyRuntimeRoot = mkdtempSync(join(tmpdir(), 'consuelo-legacy-runtime-'));
     const launchAgents = join(home, 'Library', 'LaunchAgents');
     mkdirSync(launchAgents, { recursive: true });
     const label = 'com.consuelo.os.node-heartbeat.node-test';
@@ -469,11 +494,15 @@ describe('lifecycle restart parity', () => {
         },
       });
 
-      await expect(controller.restart({ waitForCompletion: true })).resolves.toBeUndefined();
+      await expect(controller.restart({
+        waitForCompletion: true,
+        runtimeRoot: legacyRuntimeRoot,
+      })).resolves.toBeUndefined();
       expect(kickstartAttempts).toBe(2);
       expect(sleepCalls).toEqual([200]);
     } finally {
       rmSync(home, { recursive: true, force: true });
+      rmSync(legacyRuntimeRoot, { recursive: true, force: true });
     }
   });
 

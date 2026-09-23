@@ -1031,18 +1031,6 @@ function materializeWorkspaceConnectorBootstrap(input: {
       'generated',
       'workspace-node-heartbeat.json',
     );
-    const safeNodeId = input.workspaceBootstrap.nodeId.replace(
-      /[^a-zA-Z0-9.-]+/g,
-      '-',
-    );
-    const heartbeatLabel = `com.consuelo.os.node-heartbeat.${safeNodeId}`;
-    const heartbeatScriptPath = path.join(
-      input.runtimeHome,
-      'runtime',
-      'current',
-      'scripts',
-      'workspace-node-heartbeat.ts',
-    );
     const connectorHealthUrl = new URL(
       '/health',
       `https://${createConnectorOriginHostname({
@@ -1052,11 +1040,6 @@ function materializeWorkspaceConnectorBootstrap(input: {
           'consuelohq.com',
       })}`,
     ).toString();
-    const heartbeatLogPath = path.join(
-      input.nodeHome,
-      'logs',
-      'workspace-node-heartbeat.log',
-    );
     // Mint the node's credential-encryption key before the heartbeat config is written, so the
     // first heartbeat already carries the public half and a setup surface can seal to this node
     // without waiting for a second cycle. Idempotent: an existing key is reused, never rotated,
@@ -1110,6 +1093,13 @@ function materializeWorkspaceConnectorBootstrap(input: {
       message: 'workspace node heartbeat config configured',
     });
     if (input.platform === 'linux') {
+      const heartbeatScriptPath = path.join(
+        input.runtimeHome,
+        'runtime',
+        'current',
+        'scripts',
+        'workspace-node-heartbeat.ts',
+      );
       const units = renderWorkspaceNodeHeartbeatSystemdUnits({
         runtimeHome: input.runtimeHome,
         userHome: input.userHome,
@@ -1136,40 +1126,6 @@ function materializeWorkspaceConnectorBootstrap(input: {
           message: 'workspace node heartbeat systemd timer configured',
         },
       );
-    } else if (input.platform === 'darwin') {
-      const heartbeatPlistPath = path.join(
-        input.nodeHome,
-        'security',
-        'generated',
-        `${heartbeatLabel}.plist`,
-      );
-      if (!input.dryRun) {
-        fs.mkdirSync(path.dirname(heartbeatPlistPath), { recursive: true });
-        fs.writeFileSync(
-          heartbeatPlistPath,
-          renderCloudflaredLaunchdPlist({
-            label: heartbeatLabel,
-            programArguments: [
-              process.execPath,
-              heartbeatScriptPath,
-              '--config',
-              heartbeatConfigPath,
-            ],
-            keepAlive: false,
-            runAtLoad: true,
-            startIntervalSeconds: 30,
-            standardOutPath: heartbeatLogPath,
-            standardErrorPath: heartbeatLogPath,
-          }),
-          { mode: 0o600 },
-        );
-      }
-      actions.push({
-        type: 'create_file',
-        path: heartbeatPlistPath,
-        status: input.dryRun ? 'planned' : 'created',
-        message: 'workspace node heartbeat launchd service configured',
-      });
     }
   }
 
