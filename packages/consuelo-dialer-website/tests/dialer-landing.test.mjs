@@ -218,11 +218,15 @@ describe("Consuelo Dialer landing page", () => {
 
     expect(cloudField).toContain("--preview-right-width: min(67vw, 54rem)");
     expect(cloudField).toContain("--preview-left-width: min(55vw, 46rem)");
-    expect(cloudField).toContain("--preview-right-offset: -5%");
+    expect(cloudField).toContain("--preview-right-offset: 0%");
     expect(cloudField).toContain("--preview-left-offset: -3%");
     expect(cloudField).toContain("right: var(--preview-right-offset)");
     expect(cloudField).toContain("left: var(--preview-left-offset)");
     expect(cloudField).toContain("cloud-field--preview::before");
+    expect(cloudField).toMatch(/cloud-field--preview \.cloud-field__cloud--hero-right[\s\S]*--cloud-opacity:\s*0\.8/);
+    expect(cloudField).toMatch(/cloud-field--preview \.cloud-field__cloud--hero-right[\s\S]*z-index:\s*5/);
+    const bodyRule = cloudField.match(/\.cloud-field__body\s*\{([\s\S]*?)\}/)?.[1] ?? "";
+    expect(bodyRule).not.toContain("filter:");
   });
 
   test("does not ship the retired dither-only cloud assets", () => {
