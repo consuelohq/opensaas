@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/optimize-cloud-loading-and-reuse-clouds-in-preview-band",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 2554,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2554",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-optimize-cloud-loading-and-reuse-clouds-in-preview-band",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_952a7b52f81e",
+  "tmuxSession": "opensaas-dialer-optimize-cloud-loading-and-reuse-clouds-in-previ-952a7b52",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-optimize-cloud-loading-and-reuse-clouds-in-preview-band/.task/session.json",
+  "createdAt": "2026-09-23T01:31:39.569Z"
+}

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 
 const repoRoot = process.cwd();
@@ -142,37 +142,48 @@ describe("Consuelo Dialer landing page", () => {
     expect(pricing).toContain("Product Preview");
   });
 
-  test("renders generated atmospheric clouds through a reusable CloudField", () => {
+  test("renders optimized generated clouds in the hero and preview band", () => {
     const hero = read("src/components/home/HomeHero.astro");
+    const feature = read("src/components/home/HomeFeaturePreview.astro");
     const cloudFieldPath = join(packageRoot, "src/components/visuals/CloudField.astro");
 
     expect(existsSync(cloudFieldPath)).toBe(true);
     expect(hero).toContain("CloudField");
     expect(hero).not.toContain("/images/home/dither/cloud-");
+    expect(feature).toContain('CloudField variant="preview"');
+    expect(feature).not.toContain("/images/home/dither/cloud-");
 
     const cloudField = read("src/components/visuals/CloudField.astro");
     for (const name of [
-      "dialer-cloud-01.png",
-      "dialer-cloud-02.png",
-      "dialer-cloud-03.png",
-      "dialer-cloud-04.png",
+      "dialer-cloud-01.webp",
+      "dialer-cloud-02.webp",
+      "dialer-cloud-03.webp",
+      "dialer-cloud-04.webp",
     ]) {
       expect(cloudField).toContain(`/images/clouds/${name}`);
-      const bytes = readFileSync(join(packageRoot, "public/images/clouds", name));
-      expect(bytes.subarray(0, 8).toString("hex")).toBe("89504e470d0a1a0a");
+      const assetPath = join(packageRoot, "public/images/clouds", name);
+      const bytes = readFileSync(assetPath);
+      expect(bytes.subarray(0, 4).toString("ascii")).toBe("RIFF");
+      expect(bytes.subarray(8, 12).toString("ascii")).toBe("WEBP");
+      expect(statSync(assetPath).size).toBeLessThan(500_000);
     }
 
     expect(cloudField).toContain("cloud-field__body");
+    expect(cloudField).not.toContain("cloud-field__haze");
     expect(cloudField).toContain("cloud-field__glow");
+    expect(cloudField).toContain("variant");
+    expect(cloudField).toContain("loading=");
+    expect(cloudField).not.toContain("loading: 'lazy'");
+    expect(cloudField).not.toContain("mask-image:");
+    expect(cloudField).not.toContain("-webkit-mask-image:");
     expect(cloudField).toContain("@media (prefers-reduced-motion: reduce)");
     expect(cloudField).toContain("@media (max-width: 720px)");
     expect(cloudField).toMatch(/cloud-field__cloud--(?:far-left|far-right)[\s\S]*display:\s*none/);
   });
 
-  test("ships real PNG dither clouds instead of corrupt placeholder bytes", () => {
+  test("does not ship the retired dither-only cloud assets", () => {
     for (const name of ["cloud-1.png", "cloud-2.png", "cloud-3.png", "cloud-4.png"]) {
-      const bytes = readFileSync(join(packageRoot, "public/images/home/dither", name));
-      expect(bytes.subarray(0, 8).toString("hex")).toBe("89504e470d0a1a0a");
+      expect(existsSync(join(packageRoot, "public/images/home/dither", name))).toBe(false);
     }
   });
 
