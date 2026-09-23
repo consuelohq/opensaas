@@ -14,7 +14,7 @@ const foundingAgencyHref =
   'mailto:support@consuelohq.com?subject=Consuelo%20Dialer%20Founding%20Agency';
 
 export const dialerHero = {
-  title: 'Stop Paying Sales Reps to Listen to Phones Ring.',
+  title: 'STOP PAYING SALES REPS TO LISTEN TO PHONES RING.',
   subtitle:
     'Predictive dialing, inbound routing, callbacks, and call intelligence — embedded in the CRM your sales team already uses.',
   primaryLabel: 'GET EARLY ACCESS',

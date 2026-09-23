@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/fix-dialer-uppercase-casing",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 2548,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2548",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-fix-dialer-uppercase-casing",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_7e748e47b245",
+  "tmuxSession": "opensaas-dialer-fix-dialer-uppercase-casing-7e748e47",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-fix-dialer-uppercase-casing/.task/session.json",
+  "createdAt": "2026-09-23T00:50:16.095Z"
+}
