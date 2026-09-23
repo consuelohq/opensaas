@@ -1,0 +1,61 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/dialer/remove-cloud-asset-box-seam-and-fix-preview-cloud-composition",
+  "base": "origin/stream/dialer",
+  "headSha": "5e60c3ae7b3dc236506a02e461d8bbce3621e7c8",
+  "changeHash": "73b2df74795d3cd62d5020ac9396ef2792ef294250ed9aebe0c66708e2fba64f",
+  "changedFiles": [
+    "packages/consuelo-dialer-website/public/images/clouds/dialer-cloud-01.webp",
+    "packages/consuelo-dialer-website/public/images/clouds/dialer-cloud-02.webp",
+    "packages/consuelo-dialer-website/public/images/clouds/dialer-cloud-03.webp",
+    "packages/consuelo-dialer-website/public/images/clouds/dialer-cloud-04.webp",
+    "packages/consuelo-dialer-website/src/components/visuals/CloudField.astro",
+    "packages/consuelo-dialer-website/tests/dialer-landing.test.mjs",
+    "packages/consuelo-dialer-website/tests/fixtures/cloud-alpha-report.json"
+  ],
+  "verifiedAt": "2026-09-23T01:47:33.043Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/dialer/remove-cloud-asset-box-seam-and-fix-preview-cloud-composition/evidence-log.json",
+        ".task/dialer/remove-cloud-asset-box-seam-and-fix-preview-cloud-composition/read-log.json",
+        ".task/dialer/remove-cloud-asset-box-seam-and-fix-preview-cloud-composition/workpad.md",
+        ".task/tasks/dialer/remove-cloud-asset-box-seam-and-fix-preview-cloud-composition.json",
+        "packages/consuelo-dialer-website/public/images/clouds/dialer-cloud-01.webp",
+        "packages/consuelo-dialer-website/public/images/clouds/dialer-cloud-02.webp",
+        "packages/consuelo-dialer-website/public/images/clouds/dialer-cloud-03.webp",
+        "packages/consuelo-dialer-website/public/images/clouds/dialer-cloud-04.webp",
+        "packages/consuelo-dialer-website/src/components/visuals/CloudField.astro",
+        "packages/consuelo-dialer-website/tests/dialer-landing.test.mjs",
+        "packages/consuelo-dialer-website/tests/fixtures/cloud-alpha-report.json"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
