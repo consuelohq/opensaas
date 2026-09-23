@@ -35,15 +35,22 @@ no-test waiver: not applicable.
 
 ## files changed
 
+- `packages/consuelo-dialer-website/public/images/clouds/dialer-cloud-01.png` (deleted)
+- `packages/consuelo-dialer-website/public/images/clouds/dialer-cloud-02.png` (deleted)
+- `packages/consuelo-dialer-website/public/images/clouds/dialer-cloud-03.png` (deleted)
+- `packages/consuelo-dialer-website/public/images/clouds/dialer-cloud-04.png` (deleted)
+- `packages/consuelo-dialer-website/public/images/home/dither/cloud-1.png` (deleted)
+- `packages/consuelo-dialer-website/public/images/home/dither/cloud-2.png` (deleted)
+- `packages/consuelo-dialer-website/public/images/home/dither/cloud-3.png` (deleted)
+- `packages/consuelo-dialer-website/public/images/home/dither/cloud-4.png` (deleted)
+- `packages/consuelo-dialer-website/src/components/home/HomeFeaturePreview.astro`
+- `packages/consuelo-dialer-website/src/components/visuals/CloudField.astro`
+- `packages/consuelo-dialer-website/tests/dialer-landing.test.mjs`
 - `packages/consuelo-dialer-website/public/images/clouds/dialer-cloud-01.webp`
 - `packages/consuelo-dialer-website/public/images/clouds/dialer-cloud-02.webp`
 - `packages/consuelo-dialer-website/public/images/clouds/dialer-cloud-03.webp`
 - `packages/consuelo-dialer-website/public/images/clouds/dialer-cloud-04.webp`
-- removed the four generated PNG delivery files
-- removed the four retired `public/images/home/dither/cloud-*.png` files
-- `packages/consuelo-dialer-website/src/components/visuals/CloudField.astro`
-- `packages/consuelo-dialer-website/src/components/home/HomeFeaturePreview.astro`
-- `packages/consuelo-dialer-website/tests/dialer-landing.test.mjs`
+
 
 ## key decisions
 
