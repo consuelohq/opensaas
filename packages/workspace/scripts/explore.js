@@ -368,7 +368,7 @@ async function main() {
       })),
       index_stats: payload.index_stats,
     },
-  }, { requireMirror: true });
+  }, { requireMirror: true, store: indexResult.store });
 
   if (args.json) {
     writeStdout(JSON.stringify(payload, null, 2));

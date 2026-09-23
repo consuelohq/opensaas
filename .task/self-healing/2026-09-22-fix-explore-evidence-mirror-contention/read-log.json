@@ -1,0 +1,15 @@
+{
+  "files": [
+    ".task/self-healing/2026-09-22-fix-explore-evidence-mirror-contention/verify.json",
+    "packages/os/definitely-missing.json",
+    "packages/os/scripts/lib/daily-schedules.ts",
+    "packages/os/scripts/lib/index/store.js",
+    "packages/os/scripts/lib/state/explore-state.js",
+    "packages/os/tests/explore-evidence-mirror.test.ts",
+    "packages/os/tests/explore-runtime-routing.test.ts",
+    "packages/workspace/scripts/lib/index/store.js",
+    "packages/workspace/scripts/lib/state/evidence-log.js",
+    "packages/workspace/scripts/verify.js"
+  ],
+  "updatedAt": "2026-09-23T02:27:47.229Z"
+}
