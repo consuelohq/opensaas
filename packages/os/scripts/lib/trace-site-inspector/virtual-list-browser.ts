@@ -17,7 +17,6 @@ import {
   sessionDisplayName,
   stableTraceKey,
   traceParentKey,
-  tokenUsage,
   totalTokens,
   type TraceChildRecord,
   type TraceRecord,
@@ -918,7 +917,7 @@ function appendRootCells(button: HTMLElement, row: TraceRecord): void {
     cell.append(icon, name);
   });
   appendCell(button, 'trxLatency', formatDuration(row.durationMs, row.latency));
-  appendCell(button, 'trxTokens', formatRowTokens(row));
+  appendCell(button, 'trxTokens', formatCompact(totalTokens(row)));
   appendCell(
     button,
     'trxBranch',
@@ -978,7 +977,7 @@ function appendChildCells(
     'trxLatency',
     formatDuration(child.durationMs, child.latency),
   );
-  appendCell(button, 'trxTokens', formatRowTokens(child));
+  appendCell(button, 'trxTokens', formatCompact(totalTokens(child)));
   appendCell(
     button,
     'trxBranch',
@@ -1202,11 +1201,6 @@ function showOnlyFilterValue(
 
 function matchesCurrentFilters(row: TraceRecord): boolean {
   return matchesTraceTableFilters(row, filters);
-}
-
-function formatRowTokens(row: TraceRecord): string {
-  const usage = tokenUsage(row);
-  return `${usage.estimated ? '≈' : ''}${formatCompact(usage.total)}`;
 }
 
 function formatCompact(value: unknown): string {

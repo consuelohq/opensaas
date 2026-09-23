@@ -1,0 +1,16 @@
+{
+  "area": "os-trace-hotfix",
+  "stream": "stream/os-trace-hotfix",
+  "taskBranch": "task/os-trace-hotfix/ship-trace-token-marker-hotfix",
+  "baseBranch": "stream/os-trace-hotfix",
+  "sourceBranch": "stream/os-trace-hotfix",
+  "startFrom": "stream",
+  "prNumber": 2567,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2567",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-trace-hotfix-ship-trace-token-marker-hotfix",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_619a7e9d5b5c",
+  "tmuxSession": "opensaas-os-trace-hotfix-ship-trace-token-marker-hotfix-619a7e9d",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-trace-hotfix-ship-trace-token-marker-hotfix/.task/session.json",
+  "createdAt": "2026-09-23T02:45:35.979Z"
+}
