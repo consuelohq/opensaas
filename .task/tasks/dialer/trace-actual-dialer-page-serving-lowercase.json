@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/trace-actual-dialer-page-serving-lowercase",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 2553,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2553",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-trace-actual-dialer-page-serving-lowercase",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_10d534040eca",
+  "tmuxSession": "opensaas-dialer-trace-actual-dialer-page-serving-lowercase-10d53404",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-trace-actual-dialer-page-serving-lowercase/.task/session.json",
+  "createdAt": "2026-09-23T01:21:12.061Z"
+}
