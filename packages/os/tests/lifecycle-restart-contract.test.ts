@@ -243,7 +243,6 @@ describe('lifecycle restart parity', () => {
       for (const label of [
         'com.consuelo.availability',
         'com.consuelo.portless.system',
-        'com.consuelo.watchdog',
       ]) {
         expect(launchctl).toContainEqual({
           command: 'launchctl',
@@ -254,6 +253,7 @@ describe('lifecycle restart parity', () => {
           args: ['kickstart', '-k', 'gui/501/' + label],
         });
       }
+      expect(JSON.stringify(launchctl)).not.toContain('com.consuelo.watchdog');
     } finally {
       rmSync(home, { recursive: true, force: true });
     }
@@ -322,7 +322,7 @@ describe('lifecycle restart parity', () => {
     const home = mkdtempSync(join(tmpdir(), 'consuelo-restart-loaded-sidecar-visible-'));
     const launchAgents = join(home, 'Library', 'LaunchAgents');
     mkdirSync(launchAgents, { recursive: true });
-    const label = 'com.consuelo.watchdog';
+    const label = 'com.consuelo.availability';
     writeFileSync(join(launchAgents, label + '.plist'), '<plist/>\n');
     let bootstrapAttempts = 0;
     let bootoutAttempts = 0;
@@ -506,11 +506,11 @@ describe('lifecycle restart parity', () => {
     }
   });
 
-  it('retries launchd operation-in-progress while restarting the watchdog', async () => {
+  it('retries launchd operation-in-progress while restarting a retained launchd sidecar', async () => {
     const home = mkdtempSync(join(tmpdir(), 'consuelo-restart-watchdog-kickstart-retry-'));
     const launchAgents = join(home, 'Library', 'LaunchAgents');
     mkdirSync(launchAgents, { recursive: true });
-    const label = 'com.consuelo.watchdog';
+    const label = 'com.consuelo.availability';
     writeFileSync(join(launchAgents, label + '.plist'), '<plist/>\n');
     let kickstartAttempts = 0;
     const sleepCalls: number[] = [];

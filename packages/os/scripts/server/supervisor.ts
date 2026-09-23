@@ -5,6 +5,10 @@ import { createServer } from 'node:net';
 import path from 'node:path';
 
 import { resolveConsueloHomeLayout } from '../lib/consuelo-home';
+import {
+  startMacosSupervisedSidecars,
+  type MacosSupervisedSidecars,
+} from '../lib/macos-supervised-sidecars';
 import { startDefaultNativeLifecycleEndpoint } from '../lib/native-lifecycle-endpoint';
 import {
   createWorkerPoolSupervisor,
@@ -258,6 +262,7 @@ if (import.meta.main) {
     configuration,
     supervisorPid: process.pid,
     supportsRuntimeCurrentRollingReload: true,
+    supportsMacSidecarSupervision: process.platform === 'darwin',
     probeReady: probeWorkerReady,
     writeSnapshot,
     spawnWorker(spec): WorkerProcessHandle {
@@ -311,8 +316,19 @@ if (import.meta.main) {
     : undefined;
 
   let taskWorktreeGcScheduler: TaskWorktreeGcScheduler | undefined;
+  let macosSidecars: MacosSupervisedSidecars | undefined;
   try {
     await pool.start();
+    if (process.platform === 'darwin') {
+      macosSidecars = await startMacosSupervisedSidecars({
+        consueloHome: layout.home,
+        runtimeRoot: () => workerRuntime().root,
+        onError(error: unknown) {
+          const message = error instanceof Error ? error.message : String(error);
+          process.stderr.write(`[Consuelo OS] ${message}\n`);
+        },
+      });
+    }
     taskWorktreeGcScheduler = startTaskWorktreeGcScheduler({
       intervalMs: taskWorktreeGcIntervalMs,
       async run() {
@@ -342,6 +358,7 @@ if (import.meta.main) {
     });
   } catch (error: unknown) {
     taskWorktreeGcScheduler?.stop();
+    await macosSidecars?.stop();
     await pool.stop();
     heartbeatScheduler?.stop();
     await lifecycleEndpoint?.close();
@@ -353,7 +370,10 @@ if (import.meta.main) {
   const requestRollingReload = (): void => {
     if (closing || rollingReload) return;
     process.stderr.write('[Consuelo OS] rolling worker reload requested\n');
-    rollingReload = pool.replaceAllRolling()
+    rollingReload = (async () => {
+      await macosSidecars?.reconcile();
+      await pool.replaceAllRolling();
+    })()
       .then(() => {
         process.stderr.write('[Consuelo OS] rolling worker reload complete\n');
       })
@@ -376,6 +396,11 @@ if (import.meta.main) {
       taskWorktreeGcScheduler?.stop();
     } catch (error: unknown) {
       failure = error;
+    }
+    try {
+      await macosSidecars?.stop();
+    } catch (error: unknown) {
+      failure ??= error;
     }
     try {
       await pool.stop();

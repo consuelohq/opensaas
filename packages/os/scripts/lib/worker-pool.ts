@@ -46,6 +46,7 @@ export type WorkerPoolSnapshot = {
   basePort: number;
   supervisorPid?: number;
   supportsRuntimeCurrentRollingReload?: true;
+  supportsMacSidecarSupervision?: true;
   generatedAt: string;
   workers: WorkerPoolWorkerSnapshot[];
 };
@@ -154,6 +155,7 @@ export function createWorkerPoolSupervisor(input: {
   now?: () => Date;
   supervisorPid?: number;
   supportsRuntimeCurrentRollingReload?: boolean;
+  supportsMacSidecarSupervision?: boolean;
 }): WorkerPoolSupervisor {
   const slots = new Map<number, WorkerSlot>();
   const instanceId = input.instanceId ?? (() => crypto.randomUUID());
@@ -170,6 +172,9 @@ export function createWorkerPoolSupervisor(input: {
     ...(input.supervisorPid ? { supervisorPid: input.supervisorPid } : {}),
     ...(input.supportsRuntimeCurrentRollingReload
       ? { supportsRuntimeCurrentRollingReload: true as const }
+      : {}),
+    ...(input.supportsMacSidecarSupervision
+      ? { supportsMacSidecarSupervision: true as const }
       : {}),
     generatedAt: now().toISOString(),
     workers: [...slots.values()]

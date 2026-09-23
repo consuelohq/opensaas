@@ -39,6 +39,8 @@ const requiredFixtureFiles: Record<string, string> = {
   'scripts/server/supervisor.ts': 'export const supervisorFixture = true;\n',
   'scripts/lib/macos-supervised-heartbeat.ts':
     'export const macosSupervisedHeartbeatFixture = true;\n',
+  'scripts/lib/macos-supervised-sidecars.ts':
+    'export const macosSupervisedSidecarsFixture = true;\n',
   'scripts/native-lifecycle-operation.ts':
     'export const nativeLifecycleOperationFixture = true;\n',
   'scripts/retire-legacy-system-daemons.sh': '#!/bin/bash\nexit 0\n',

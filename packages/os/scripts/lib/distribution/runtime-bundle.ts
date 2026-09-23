@@ -185,6 +185,7 @@ const REQUIRED_RUNTIME_INPUTS = [
   'scripts/server/main.ts',
   'scripts/server/supervisor.ts',
   'scripts/lib/macos-supervised-heartbeat.ts',
+  'scripts/lib/macos-supervised-sidecars.ts',
   'scripts/lib/install-state.ts',
   'scripts/managed-components.ts',
   'scripts/lib/managed-components.ts',

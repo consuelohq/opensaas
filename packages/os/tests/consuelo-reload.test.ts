@@ -105,6 +105,8 @@ describe('Consuelo OS reload lifecycle', () => {
     expect(source).toContain('CONSUELO_OS_DRAIN_TIMEOUT_MS');
     expect(source).toContain('Math.max(60_000, drainTimeoutMs + 20_000)');
     expect(source).toContain('/ RELOAD_POLL_MS');
+    expect(source).toContain('supportsMacSidecarSupervision === true');
+    expect(source).toContain('retireLegacyMacSidecarLaunchAgents');
   });
 
   it('should bootstrap an installed LaunchAgent when it is currently unloaded', () => {
@@ -222,6 +224,7 @@ describe('Consuelo OS reload lifecycle', () => {
       basePort: 46321,
       supervisorPid: 900,
       supportsRuntimeCurrentRollingReload: true,
+      supportsMacSidecarSupervision: true,
       generatedAt: '2026-08-11T00:00:00.000Z',
       workers: [
         { workerId: 'worker-0', workerInstanceId: 'old-0', state: 'ready', port: 46321, pid: 101, restartCount: 0 },

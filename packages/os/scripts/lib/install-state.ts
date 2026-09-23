@@ -912,6 +912,20 @@ function materializeWorkspaceConnectorBootstrap(input: {
   workspaceBootstrap: WorkspaceBootstrap;
 }): ProvisionAction[] {
   const actions: ProvisionAction[] = [];
+  const macosSupervisedSidecarsPath = path.join(
+    input.nodeHome,
+    'security',
+    'generated',
+    'macos-supervised-sidecars.json',
+  );
+
+  if (
+    input.platform === 'darwin'
+    && input.workspaceBootstrap.connectorTransport !== 'cloudflare-tunnel'
+    && !input.dryRun
+  ) {
+    fs.rmSync(macosSupervisedSidecarsPath, { force: true });
+  }
 
   if (input.workspaceBootstrap.connectorTransport === 'cloudflare-tunnel') {
     const plan = planWorkspaceConnectorTransport({
@@ -965,7 +979,7 @@ function materializeWorkspaceConnectorBootstrap(input: {
         fs.mkdirSync(unit.systemdUserDir, { recursive: true, mode: 0o700 });
         fs.writeFileSync(unit.unitPath, unit.service, { mode: 0o600 });
       }
-    } else if (plan.launchd) {
+    } else if (plan.launchd && input.platform === 'darwin') {
       const legacyPlistPath = path.join(
         input.nodeHome,
         'security',
@@ -980,15 +994,57 @@ function materializeWorkspaceConnectorBootstrap(input: {
       );
       actions.push({
         type: 'create_file',
+        path: macosSupervisedSidecarsPath,
+        status: input.dryRun ? 'planned' : 'created',
+        message: 'macOS supervised sidecar connector configured',
+      });
+      if (!input.dryRun) {
+        fs.mkdirSync(path.dirname(macosSupervisedSidecarsPath), {
+          recursive: true,
+          mode: 0o700,
+        });
+        fs.writeFileSync(
+          macosSupervisedSidecarsPath,
+          `${JSON.stringify({
+            schemaVersion: 1,
+            connector: {
+              id: input.workspaceBootstrap.connectorId,
+              programArguments: plan.launchd.programArguments,
+            },
+          }, null, 2)}\n`,
+          { mode: 0o600 },
+        );
+      }
+      actions.push({
+        type: 'create_file',
         path: plistPath,
         status: input.dryRun ? 'planned' : 'created',
-        message: 'cloudflared launchd service configured',
+        message: 'cloudflared rollback launchd definition configured',
       });
       if (!input.dryRun) {
         fs.mkdirSync(path.dirname(plistPath), { recursive: true });
         if (fs.existsSync(legacyPlistPath) && legacyPlistPath !== plistPath) {
           fs.rmSync(legacyPlistPath, { force: true });
         }
+        fs.writeFileSync(plistPath, renderCloudflaredLaunchdPlist(plan.launchd), {
+          mode: 0o600,
+        });
+      }
+    } else if (plan.launchd) {
+      const plistPath = path.join(
+        input.nodeHome,
+        'security',
+        'generated',
+        `${plan.launchd.label}.plist`,
+      );
+      actions.push({
+        type: 'create_file',
+        path: plistPath,
+        status: input.dryRun ? 'planned' : 'created',
+        message: 'cloudflared launchd service configured',
+      });
+      if (!input.dryRun) {
+        fs.mkdirSync(path.dirname(plistPath), { recursive: true });
         fs.writeFileSync(plistPath, renderCloudflaredLaunchdPlist(plan.launchd), {
           mode: 0o600,
         });
