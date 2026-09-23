@@ -103,6 +103,10 @@ cloudflared_generated_plists=()
 cloudflared_agent_plists=()
 portless_enabled=0
 availability_enabled=0
+supervised_sidecars=0
+if [ -f "$root_dir/scripts/lib/macos-supervised-sidecars.ts" ]; then
+  supervised_sidecars=1
+fi
 stage_port="${WORKSPACE_STAGE_PORT:-}"
 if [ -z "$stage_port" ]; then
   for candidate_port in 8961 8962 8963 9851 10851; do
@@ -280,18 +284,25 @@ collect_cloudflared_plists() {
 }
 
 service_labels_csv() {
-  local labels="$workspace_label, $caddy_label"
+  local labels="$workspace_label"
   local label
+  if [ "$supervised_sidecars" != "1" ]; then
+    labels="$labels, $caddy_label"
+  fi
   if [ "$portless_enabled" = "1" ]; then
     labels="$labels, $portless_label"
   fi
-  labels="$labels, $watchdog_label"
+  if [ "$supervised_sidecars" != "1" ]; then
+    labels="$labels, $watchdog_label"
+  fi
   if [ "$availability_enabled" = "1" ]; then
     labels="$labels, $availability_label"
   fi
-  for label in "${cloudflared_labels[@]+"${cloudflared_labels[@]}"}"; do
-    labels="$labels, $label"
-  done
+  if [ "$supervised_sidecars" != "1" ]; then
+    for label in "${cloudflared_labels[@]+"${cloudflared_labels[@]}"}"; do
+      labels="$labels, $label"
+    done
+  fi
   printf '%s\n' "$labels"
 }
 
@@ -495,6 +506,26 @@ rollback_agents() {
   fi
   bootout_agent "$caddy_label"
   bootout_agent "$workspace_label"
+  restore_legacy_supervised_sidecar_agents
+}
+
+restore_legacy_supervised_sidecar_agents() {
+  [ "$supervised_sidecars" = "1" ] || return 0
+  local index
+  if [ -f "$caddy_agent_plist" ]; then
+    bootout_agent "$caddy_label"
+    bootstrap_agent "$caddy_label" "$caddy_agent_plist" || true
+  fi
+  for index in "${!cloudflared_labels[@]}"; do
+    if [ -f "${cloudflared_agent_plists[$index]}" ]; then
+      bootout_agent "${cloudflared_labels[$index]}"
+      bootstrap_agent "${cloudflared_labels[$index]}" "${cloudflared_agent_plists[$index]}" || true
+    fi
+  done
+  if [ -f "$watchdog_agent_plist" ]; then
+    bootout_agent "$watchdog_label"
+    bootstrap_agent "$watchdog_label" "$watchdog_agent_plist" || true
+  fi
 }
 
 print_repair_hint() {
@@ -526,17 +557,23 @@ print_debug_state() {
   [ "$debug" = "1" ] || return 0
   local label
   launchctl print "$launch_domain/$workspace_label" | sed -n '1,80p'
-  launchctl print "$launch_domain/$caddy_label" | sed -n '1,80p'
+  if [ "$supervised_sidecars" != "1" ]; then
+    launchctl print "$launch_domain/$caddy_label" | sed -n '1,80p'
+  fi
   if [ "$portless_enabled" = "1" ]; then
     launchctl print "$launch_domain/$portless_label" | sed -n '1,80p'
   fi
-  launchctl print "$launch_domain/$watchdog_label" | sed -n '1,80p'
+  if [ "$supervised_sidecars" != "1" ]; then
+    launchctl print "$launch_domain/$watchdog_label" | sed -n '1,80p'
+  fi
   if [ "$availability_enabled" = "1" ]; then
     launchctl print "$launch_domain/$availability_label" | sed -n '1,80p'
   fi
-  for label in "${cloudflared_labels[@]+"${cloudflared_labels[@]}"}"; do
-    launchctl print "$launch_domain/$label" | sed -n '1,80p'
-  done
+  if [ "$supervised_sidecars" != "1" ]; then
+    for label in "${cloudflared_labels[@]+"${cloudflared_labels[@]}"}"; do
+      launchctl print "$launch_domain/$label" | sed -n '1,80p'
+    done
+  fi
 }
 
 run_generate_daemons() {
@@ -597,17 +634,23 @@ PY
 
 install_launch_agent_definitions() {
   install -m 644 "$workspace_generated_plist" "$workspace_agent_plist"
-  install -m 644 "$caddy_generated_plist" "$caddy_agent_plist"
+  if [ "$supervised_sidecars" != "1" ]; then
+    install -m 644 "$caddy_generated_plist" "$caddy_agent_plist"
+  fi
   if [ "$portless_enabled" = "1" ]; then
     install -m 644 "$portless_generated_plist" "$portless_agent_plist"
   fi
-  install -m 644 "$watchdog_generated_plist" "$watchdog_agent_plist"
+  if [ "$supervised_sidecars" != "1" ]; then
+    install -m 644 "$watchdog_generated_plist" "$watchdog_agent_plist"
+  fi
   if [ "$availability_enabled" = "1" ]; then
     install -m 644 "$availability_generated_plist" "$availability_agent_plist"
   fi
-  for index in "${!cloudflared_generated_plists[@]}"; do
-    install -m 644 "${cloudflared_generated_plists[$index]}" "${cloudflared_agent_plists[$index]}"
-  done
+  if [ "$supervised_sidecars" != "1" ]; then
+    for index in "${!cloudflared_generated_plists[@]}"; do
+      install -m 644 "${cloudflared_generated_plists[$index]}" "${cloudflared_agent_plists[$index]}"
+    done
+  fi
 }
 
 retire_legacy_heartbeat_agents() {
@@ -619,6 +662,22 @@ retire_legacy_heartbeat_agents() {
     rm -f "$plist"
     log "retired legacy heartbeat LaunchAgent: $label"
   done
+}
+
+retire_legacy_supervised_sidecar_agents() {
+  [ "$supervised_sidecars" = "1" ] || return 0
+  local plist label
+  bootout_agent "$caddy_label"
+  rm -f "$caddy_agent_plist"
+  bootout_agent "$watchdog_label"
+  rm -f "$watchdog_agent_plist"
+  for plist in "$launch_agent_dir"/com.consuelo.os.cloudflared*.plist; do
+    [ -e "$plist" ] || continue
+    label="$(basename "$plist" .plist)"
+    bootout_agent "$label"
+    rm -f "$plist"
+  done
+  log "retired legacy Caddy, Cloudflared, and watchdog LaunchAgents"
 }
 
 if [ "$dry_run" -eq 0 ]; then
@@ -720,14 +779,18 @@ if [ "$availability_enabled" = "1" ]; then
   bootstrap_agent "$availability_label" "$availability_agent_plist"
 fi
 bootstrap_agent "$workspace_label" "$workspace_agent_plist"
-bootstrap_agent "$caddy_label" "$caddy_agent_plist"
+if [ "$supervised_sidecars" != "1" ]; then
+  bootstrap_agent "$caddy_label" "$caddy_agent_plist"
+fi
 if [ "$portless_enabled" = "1" ]; then
   bootstrap_agent "$portless_label" "$portless_agent_plist"
 fi
-for index in "${!cloudflared_labels[@]}"; do
-  bootstrap_agent "${cloudflared_labels[$index]}" "${cloudflared_agent_plists[$index]}"
-done
-bootstrap_agent "$watchdog_label" "$watchdog_agent_plist"
+if [ "$supervised_sidecars" != "1" ]; then
+  for index in "${!cloudflared_labels[@]}"; do
+    bootstrap_agent "${cloudflared_labels[$index]}" "${cloudflared_agent_plists[$index]}"
+  done
+  bootstrap_agent "$watchdog_label" "$watchdog_agent_plist"
+fi
 
 background_service_failure_code="BACKGROUND_SERVICE_HEALTHCHECK_FAILED"
 if ! wait_for_workspace_health; then
@@ -776,6 +839,7 @@ if [ "${#cloudflared_labels[@]}" -gt 0 ]; then
 fi
 
 retire_legacy_heartbeat_agents
+retire_legacy_supervised_sidecar_agents
 
 print_success_summary
 print_debug_state

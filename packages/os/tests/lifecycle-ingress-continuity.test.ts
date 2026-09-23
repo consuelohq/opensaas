@@ -22,9 +22,12 @@ describe('lifecycle ingress continuity', () => {
     expect(supervisor).toContain('realpathSync(layout.runtimeCurrentDir)');
     expect(supervisor).toContain('CONSUELO_OS_WORKER_RELEASE_PATH: runtime.root');
     expect(supervisor).toContain('supportsRuntimeCurrentRollingReload: true');
+    expect(supervisor).toContain('supportsMacSidecarSupervision: process.platform === \'darwin\'');
     expect(health).toContain('process.env.CONSUELO_OS_WORKER_RELEASE_PATH');
     expect(reload).toContain('supportsRuntimeCurrentRollingReload === true');
     expect(reload).toContain('handoffLegacySupervisor');
+    expect(reload).toContain('supportsMacSidecarSupervision === true');
+    expect(reload).toContain('retireLegacyMacSidecarLaunchAgents');
     expect(daemon).toContain(') &');
     expect(daemon.indexOf(') &')).toBeLessThan(daemon.indexOf('exec "$bun_bin" "$root_dir/scripts/server/supervisor.ts"'));
   });
@@ -41,7 +44,6 @@ describe('lifecycle ingress continuity', () => {
     const sidecarLabels = [
       'com.consuelo.availability',
       'com.consuelo.portless.system',
-      'com.consuelo.watchdog',
     ];
     for (const label of [...ingressLabels, legacyHeartbeatLabel, ...sidecarLabels]) {
       writeFileSync(join(launchAgents, `${label}.plist`), '<plist/>\n');
@@ -97,6 +99,7 @@ describe('lifecycle ingress continuity', () => {
       for (const label of sidecarLabels) {
         expect(JSON.stringify(launchctlCalls)).toContain(label);
       }
+      expect(JSON.stringify(launchctlCalls)).not.toContain('com.consuelo.watchdog');
 
       calls.length = 0;
       await controller.restart({ waitForCompletion: true, allowDestructiveFallback: true });

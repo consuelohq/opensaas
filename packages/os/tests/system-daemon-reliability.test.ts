@@ -131,6 +131,9 @@ describe('macOS runtime service reliability', () => {
     expect(installer).toContain('install_launch_agent_definitions');
     expect(installer).toContain('if [ "$definitions_only" -eq 1 ]; then');
     expect(installer).toContain('LaunchAgent definitions refreshed without restarting services');
+    expect(installer).toContain('supervised_sidecars=1');
+    expect(installer).toContain('retire_legacy_supervised_sidecar_agents');
+    expect(installer).not.toContain('bootstrap_agent "$caddy_label" "$caddy_agent_plist"\nif [ "$portless_enabled"');
   });
 
   it('should wire opt-in availability and OS-owned watchdog state when installing and uninstalling daemons', () => {

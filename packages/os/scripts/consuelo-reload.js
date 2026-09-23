@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 const { execFileSync, spawn } = require('child_process');
-const { existsSync, readFileSync, writeFileSync } = require('fs');
+const { existsSync, readFileSync, readdirSync, rmSync, writeFileSync } = require('fs');
 const os = require('os');
 const path = require('path');
 
@@ -28,6 +28,10 @@ const CONFLICTING_LABELS = ['com.consuelo.workspace'];
 const CONSUELO_HOME = process.env.CONSUELO_HOME || path.join(HOME, '.consuelo');
 const WORKER_POOL_STATE = path.join(CONSUELO_HOME, 'node', 'runs', 'os-worker-pool.json');
 const CADDYFILE = path.join(CONSUELO_HOME, 'node', 'caddy', 'Caddyfile');
+const MAC_SUPERVISED_SIDECARS_MARKER = path.join(OS_DIR, 'scripts', 'lib', 'macos-supervised-sidecars.ts');
+const SUPERVISED_CADDY_PID = path.join(CONSUELO_HOME, 'node', 'runs', 'supervised-sidecars', 'caddy.pid');
+const CADDY_LABEL = process.env.CADDY_DAEMON_LABEL || 'com.consuelo.caddy';
+const WATCHDOG_LABEL = process.env.WORKSPACE_WATCHDOG_LABEL || 'com.consuelo.watchdog';
 const RETIRED_LAUNCHD_ENV_KEYS = ['MCP_BEARER_TOKEN'];
 
 function writeStdout(message = '') { process.stdout.write(`${message}\n`); }
@@ -240,6 +244,49 @@ function bootoutLaunchLabel(label) {
   runBestEffort('launchctl', ['bootout', `${LAUNCH_DOMAIN}/${label}`]);
 }
 
+function legacyMacSidecarLaunchAgents() {
+  const launchAgentDir = path.join(HOME, 'Library', 'LaunchAgents');
+  if (!existsSync(launchAgentDir)) return [];
+  return readdirSync(launchAgentDir)
+    .filter((name) => (
+      name === `${CADDY_LABEL}.plist`
+      || name === `${WATCHDOG_LABEL}.plist`
+      || (name.startsWith('com.consuelo.os.cloudflared.') && name.endsWith('.plist'))
+    ))
+    .sort()
+    .map((name) => ({
+      label: name.slice(0, -'.plist'.length),
+      plist: path.join(launchAgentDir, name),
+    }));
+}
+
+function bootstrapLegacyMacSidecarLaunchAgents(agents) {
+  for (const agent of agents) {
+    if (!existsSync(agent.plist)) continue;
+    bootoutLaunchLabel(agent.label);
+    runBestEffort('launchctl', ['bootstrap', LAUNCH_DOMAIN, agent.plist]);
+    runBestEffort('launchctl', ['kickstart', '-k', `${LAUNCH_DOMAIN}/${agent.label}`]);
+  }
+}
+
+function retireLegacyMacSidecarLaunchAgents(agents) {
+  for (const agent of agents) {
+    bootoutLaunchLabel(agent.label);
+    rmSync(agent.plist, { force: true });
+  }
+}
+
+function isSupervisedCaddyRunning() {
+  try {
+    const pid = Number(readFileSync(SUPERVISED_CADDY_PID, 'utf8').trim());
+    if (!Number.isInteger(pid) || pid < 1) return false;
+    process.kill(pid, 0);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function stopConflictingLaunchAgents() {
   const portPids = new Set(findPortPids());
   for (const label of CONFLICTING_LABELS) {
@@ -407,7 +454,7 @@ function waitForRollingReload(before, attempts = rollingReloadWaitAttempts(befor
   return false;
 }
 
-function waitForSupervisorHandoff(before, attempts = RELOAD_WAIT_ATTEMPTS) {
+function waitForSupervisorHandoff(before, options = {}, attempts = RELOAD_WAIT_ATTEMPTS) {
   for (let index = 0; index < attempts; index += 1) {
     const current = workerPoolState();
     if (
@@ -415,26 +462,55 @@ function waitForSupervisorHandoff(before, attempts = RELOAD_WAIT_ATTEMPTS) {
       && current.supportsRuntimeCurrentRollingReload === true
       && current.supervisorPid !== before.supervisorPid
       && caddyMatchesReadyPool(current)
+      && (
+        options.targetSupportsMacSidecars !== true
+        || (
+          current.supportsMacSidecarSupervision === true
+          && isSupervisedCaddyRunning()
+        )
+      )
+      && (
+        options.targetSupportsMacSidecars !== false
+        || current.supportsMacSidecarSupervision !== true
+      )
     ) return true;
     sleep(RELOAD_POLL_MS / 1000);
   }
   return false;
 }
 
-function handoffLegacySupervisor(before) {
+function handoffLegacySupervisor(before, options = {}) {
   if (process.platform !== 'darwin' || !existsSync(PLIST) || !isLaunchdLoaded()) return false;
   if (!isHighAvailabilityReady(before)) {
     throw new Error('Consuelo OS cannot hand off the legacy supervisor without a healthy HA pool.');
   }
-  bootoutLaunchAgent();
-  bootstrapLaunchAgent({ kickstart: false });
-  if (!waitForSupervisorHandoff(before)) {
-    throw new Error('Consuelo OS replacement supervisor did not establish the runtime-current HA pool.');
+  const legacySidecars = legacyMacSidecarLaunchAgents();
+  const targetSupportsMacSidecars = options.targetSupportsMacSidecars;
+  try {
+    if (targetSupportsMacSidecars === true) {
+      for (const sidecar of legacySidecars) bootoutLaunchLabel(sidecar.label);
+    }
+    bootoutLaunchAgent();
+    bootstrapLaunchAgent({ kickstart: false });
+    if (targetSupportsMacSidecars === false) {
+      bootstrapLegacyMacSidecarLaunchAgents(legacySidecars);
+    }
+    if (!waitForSupervisorHandoff(before, { targetSupportsMacSidecars })) {
+      throw new Error('Consuelo OS replacement supervisor did not establish the runtime-current HA pool.');
+    }
+    if (!waitForHealth('reloaded', 1)) {
+      throw new Error('Consuelo OS did not become healthy after supervisor handoff.');
+    }
+    if (targetSupportsMacSidecars === true) {
+      retireLegacyMacSidecarLaunchAgents(legacySidecars);
+    }
+    return true;
+  } catch (error) {
+    if (targetSupportsMacSidecars === true) {
+      bootstrapLegacyMacSidecarLaunchAgents(legacySidecars);
+    }
+    throw error;
   }
-  if (!waitForHealth('reloaded', 1)) {
-    throw new Error('Consuelo OS did not become healthy after supervisor handoff.');
-  }
-  return true;
 }
 
 function tryRollingReload() {
@@ -444,8 +520,12 @@ function tryRollingReload() {
   if (!caddyMatchesReadyPool(pool)) {
     throw new Error('Caddy worker upstreams do not match the ready worker pool.');
   }
-  if (pool.supportsRuntimeCurrentRollingReload !== true) {
-    return handoffLegacySupervisor(pool);
+  const targetSupportsMacSidecars = process.platform === 'darwin'
+    && existsSync(MAC_SUPERVISED_SIDECARS_MARKER);
+  const macSidecarCapabilityChanged = process.platform === 'darwin'
+    && (pool.supportsMacSidecarSupervision === true) !== targetSupportsMacSidecars;
+  if (pool.supportsRuntimeCurrentRollingReload !== true || macSidecarCapabilityChanged) {
+    return handoffLegacySupervisor(pool, { targetSupportsMacSidecars });
   }
   const supervisorPid = String(pool.supervisorPid);
   if (!findServerPids().includes(supervisorPid)) return false;

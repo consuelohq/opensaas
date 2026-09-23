@@ -20,6 +20,11 @@ const MAC_SUPERVISED_HEARTBEAT_MARKER = join(
   'lib',
   'macos-supervised-heartbeat.ts',
 );
+const MAC_SUPERVISED_SIDECARS_MARKER = join(
+  'scripts',
+  'lib',
+  'macos-supervised-sidecars.ts',
+);
 const MAC_BEST_EFFORT_SIDECAR_SERVICE_LABELS = new Set([
   'com.consuelo.watchdog',
 ]);
@@ -115,6 +120,10 @@ function installedMacLegacyHeartbeatLaunchAgents(environment?: NodeJS.ProcessEnv
 
 function runtimeUsesSupervisedMacHeartbeat(runtimeRoot: string): boolean {
   return existsSync(resolve(runtimeRoot, MAC_SUPERVISED_HEARTBEAT_MARKER));
+}
+
+function runtimeUsesSupervisedMacSidecars(runtimeRoot: string): boolean {
+  return existsSync(resolve(runtimeRoot, MAC_SUPERVISED_SIDECARS_MARKER));
 }
 
 function isBestEffortMacSidecar(label: string): boolean {
@@ -268,8 +277,11 @@ export function createReloadServiceController(input: {
               rmSync(heartbeat.plistPath, { force: true });
             }
           }
+          const supervisedSidecars = runtimeUsesSupervisedMacSidecars(runtimeRoot);
           const restartableAgents = [
-            ...installedMacRestartableSidecarLaunchAgents(input.environment),
+            ...installedMacRestartableSidecarLaunchAgents(input.environment).filter(
+              (agent) => !supervisedSidecars || agent.label !== 'com.consuelo.watchdog',
+            ),
             ...(supervisedHeartbeat ? [] : legacyHeartbeatAgents),
           ];
           for (const gateway of restartableAgents) {

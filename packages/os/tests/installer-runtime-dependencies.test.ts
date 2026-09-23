@@ -812,7 +812,7 @@ describe('public installer runtime dependencies', () => {
 
     expect(result.status).toBe(0);
     expect(result.stdout).toContain(
-      'Services: com.consuelo.system, com.consuelo.caddy, com.consuelo.watchdog',
+      'Services: com.consuelo.system',
     );
   });
   it('should use PATH portless only when direct daemon repair mode allows lookup', () => {
@@ -905,7 +905,7 @@ describe('public installer runtime dependencies', () => {
     );
     expect(absentResult.status).toBe(0);
     expect(absentResult.stdout).toContain(
-      'Services: com.consuelo.system, com.consuelo.caddy, com.consuelo.watchdog',
+      'Services: com.consuelo.system',
     );
     expect(absentResult.stdout).not.toContain(
       'com.consuelo.os.cloudflared.connector-123',
@@ -947,15 +947,13 @@ describe('public installer runtime dependencies', () => {
     );
 
     expect(presentResult.status).toBe(0);
-    expect(presentResult.stdout).toContain(
-      'Services: com.consuelo.system, com.consuelo.caddy, com.consuelo.watchdog, com.consuelo.os.cloudflared.connector-123',
-    );
-    expect(presentResult.stdout).toContain(
-      'com.consuelo.os.cloudflared.connector-123',
-    );
+    expect(presentResult.stdout).toContain('Services: com.consuelo.system');
     const serviceSummary = presentResult.stdout
       .split('\n')
       .find((line) => line.includes('Services:')) ?? '';
+    expect(serviceSummary).not.toContain(
+      'com.consuelo.os.cloudflared.connector-123',
+    );
     expect(serviceSummary).not.toContain(
       'com.consuelo.os.node-heartbeat.node-member',
     );
@@ -1005,7 +1003,7 @@ describe('public installer runtime dependencies', () => {
     ).toBeLessThan(installer.lastIndexOf('print_success_summary'));
   });
 
-  it('should discover connector LaunchAgents from the flattened Consuelo home by default', () => {
+  it('should preserve flattened connector rollback definitions without advertising them as active services', () => {
     const home = createTempHome('consuelo-os-installer-runtime-flat-home-');
     const osHome = join(home, '.consuelo');
     const generatedDir = join(osHome, 'node', 'security', 'generated');
@@ -1041,7 +1039,8 @@ describe('public installer runtime dependencies', () => {
     );
 
     expect(result.status, result.stderr).toBe(0);
-    expect(result.stdout).toContain(connectorLabel);
+    expect(result.stdout).not.toContain(connectorLabel);
+    expect(result.stdout).toContain('Services: com.consuelo.system');
     // Generated plists live under the OS home rather than in the runtime release, so writing them
     // cannot make the immutable bundle fail its own fingerprint check.
     const systemPlist = readFileSync(

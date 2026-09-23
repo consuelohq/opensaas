@@ -206,7 +206,7 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
     }
   });
 
-  it('should keep macOS heartbeat inside the OS supervisor while planning cloudflared launchd', async () => {
+  it('should keep macOS heartbeat and connector behind the OS supervisor while preserving rollback definitions', async () => {
     const { provisionLocalOs } = await loadInstallStateContract();
     const home = fs.mkdtempSync(
       path.join(os.tmpdir(), 'consuelo-os-workspace-bootstrap-launchd-&-'),
@@ -248,6 +248,16 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
       'com.consuelo.os.cloudflared.connector-123.plist',
     );
     const plist = fs.readFileSync(plistPath, 'utf8');
+    const supervisedSidecarsPath = join(
+      home,
+      'node',
+      'security',
+      'generated',
+      'macos-supervised-sidecars.json',
+    );
+    const supervisedSidecars = readJson<Record<string, unknown>>(
+      supervisedSidecarsPath,
+    );
     const heartbeatConfigPath = join(
       home,
       'node',
@@ -260,6 +270,22 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
 
     expect(plist).toContain('consuelo-os-workspace-bootstrap-launchd-&amp;-');
     expect(plist).not.toContain('consuelo-os-workspace-bootstrap-launchd-&-');
+    expect(supervisedSidecars).toMatchObject({
+      schemaVersion: 1,
+      connector: {
+        id: 'connector_123',
+        programArguments: expect.arrayContaining([
+          'tunnel',
+          'run',
+          '--token-file',
+          '--url',
+          'http://127.0.0.1:46320',
+        ]),
+      },
+    });
+    expect(JSON.stringify(supervisedSidecars)).not.toContain(
+      'cloudflared_tunnel_token_fixture',
+    );
     expect(heartbeatConfig).toMatchObject({
       authorityOrigin: 'https://os.consuelohq.com',
       osHome: home,
@@ -283,10 +309,8 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
       expect.arrayContaining([
         expect.objectContaining({
           type: 'create_file',
-          path: expect.stringContaining(
-            'com.consuelo.os.cloudflared.connector-123.plist',
-          ),
-          message: expect.stringMatching(/cloudflared/i),
+          path: supervisedSidecarsPath,
+          message: expect.stringMatching(/supervised sidecar/i),
         }),
         expect.objectContaining({
           type: 'create_file',
