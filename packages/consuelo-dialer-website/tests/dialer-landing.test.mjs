@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import { createHash } from "node:crypto";
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 
@@ -192,6 +193,34 @@ describe("Consuelo Dialer landing page", () => {
     expect(cloudField).toContain("@media (prefers-reduced-motion: reduce)");
     expect(cloudField).toContain("@media (max-width: 720px)");
     expect(cloudField).toMatch(/cloud-field__cloud--(?:far-left|far-right)[\s\S]*display:\s*none/);
+  });
+
+  test("ships alpha-cleaned clouds without faint rectangular canvas edges", () => {
+    const reportPath = join(packageRoot, "tests/fixtures/cloud-alpha-report.json");
+    expect(existsSync(reportPath)).toBe(true);
+
+    const report = JSON.parse(readFileSync(reportPath, "utf8"));
+    expect(report.alphaCutoff).toBeGreaterThanOrEqual(8);
+
+    for (const item of report.assets) {
+      const assetPath = join(packageRoot, "public/images/clouds", item.name);
+      const bytes = readFileSync(assetPath);
+      const sha256 = createHash("sha256").update(bytes).digest("hex");
+
+      expect(sha256).toBe(item.sha256);
+      expect(item.cornerMaxAlpha).toBe(0);
+      expect(item.borderMaxAlpha).toBe(0);
+    }
+  });
+
+  test("keeps preview clouds separated at opposite edges", () => {
+    const cloudField = read("src/components/visuals/CloudField.astro");
+
+    expect(cloudField).toContain("--preview-right-width");
+    expect(cloudField).toContain("--preview-left-width");
+    expect(cloudField).toContain("right: var(--preview-right-offset)");
+    expect(cloudField).toContain("left: var(--preview-left-offset)");
+    expect(cloudField).toContain("cloud-field--preview::before");
   });
 
   test("does not ship the retired dither-only cloud assets", () => {

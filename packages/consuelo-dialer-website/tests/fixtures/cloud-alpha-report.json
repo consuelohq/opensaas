@@ -1,0 +1,41 @@
+{
+  "alphaCutoff": 12,
+  "assets": [
+    {
+      "name": "dialer-cloud-01.webp",
+      "sha256": "0a10b555f0c2b061a942ec8c257735c704bc66755c149b2db44559b436d15ec4",
+      "bytes": 218808,
+      "width": 1254,
+      "height": 1254,
+      "cornerMaxAlpha": 0,
+      "borderMaxAlpha": 0
+    },
+    {
+      "name": "dialer-cloud-02.webp",
+      "sha256": "ebbcd7337ef3f1313bc9a4dcab57a070a7bddb174a52b1a8072c80a52e423b86",
+      "bytes": 246942,
+      "width": 1774,
+      "height": 887,
+      "cornerMaxAlpha": 0,
+      "borderMaxAlpha": 0
+    },
+    {
+      "name": "dialer-cloud-03.webp",
+      "sha256": "c0e046f9605702c7c16fdfc487c8859abe17edcad6079b3670343a7b9a3ceca8",
+      "bytes": 190830,
+      "width": 1774,
+      "height": 887,
+      "cornerMaxAlpha": 0,
+      "borderMaxAlpha": 0
+    },
+    {
+      "name": "dialer-cloud-04.webp",
+      "sha256": "ec30ad0d9d466a62ff0d1ab14c3034b888ec62b3779bff9301e891b0104d8352",
+      "bytes": 214734,
+      "width": 1774,
+      "height": 887,
+      "cornerMaxAlpha": 0,
+      "borderMaxAlpha": 0
+    }
+  ]
+}
