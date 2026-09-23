@@ -1,0 +1,291 @@
+---
+const clouds = [
+  {
+    id: 'near-left',
+    src: '/images/clouds/dialer-cloud-01.png',
+    width: 1254,
+    height: 1254,
+    loading: 'eager' as const,
+    fetchpriority: 'auto' as const,
+  },
+  {
+    id: 'hero-right',
+    src: '/images/clouds/dialer-cloud-02.png',
+    width: 1774,
+    height: 887,
+    loading: 'eager' as const,
+    fetchpriority: 'high' as const,
+  },
+  {
+    id: 'far-left',
+    src: '/images/clouds/dialer-cloud-03.png',
+    width: 1774,
+    height: 887,
+    loading: 'lazy' as const,
+    fetchpriority: 'low' as const,
+  },
+  {
+    id: 'far-right',
+    src: '/images/clouds/dialer-cloud-04.png',
+    width: 1774,
+    height: 887,
+    loading: 'lazy' as const,
+    fetchpriority: 'low' as const,
+  },
+] as const;
+---
+
+<div class="cloud-field" aria-hidden="true">
+  {
+    clouds.map((cloud) => (
+      <div class={`cloud-field__cloud cloud-field__cloud--${cloud.id}`}>
+        <div class="cloud-field__glow"></div>
+        <img
+          class="cloud-field__haze"
+          src={cloud.src}
+          alt=""
+          width={cloud.width}
+          height={cloud.height}
+          loading={cloud.loading}
+          fetchpriority={cloud.fetchpriority}
+          decoding="async"
+        />
+        <img
+          class="cloud-field__body"
+          src={cloud.src}
+          alt=""
+          width={cloud.width}
+          height={cloud.height}
+          loading={cloud.loading}
+          fetchpriority={cloud.fetchpriority}
+          decoding="async"
+        />
+      </div>
+    ))
+  }
+
+  <div class="cloud-field__quiet-zone"></div>
+</div>
+
+<style>
+  .cloud-field {
+    position: absolute;
+    z-index: 1;
+    inset: 0;
+    isolation: isolate;
+    overflow: hidden;
+    pointer-events: none;
+    mask-image: linear-gradient(to bottom, black 82%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black 82%, transparent 100%);
+  }
+
+  .cloud-field__cloud {
+    --cloud-scale: 1;
+    --cloud-opacity: 0.7;
+    --cloud-drift-x: 10px;
+    --cloud-drift-y: -6px;
+    position: absolute;
+    opacity: var(--cloud-opacity);
+    transform: translate3d(0, 0, 0) scale(var(--cloud-scale));
+    transform-origin: center;
+    animation: cloud-field-drift 26s ease-in-out infinite alternate;
+    will-change: transform;
+  }
+
+  .cloud-field__glow {
+    position: absolute;
+    z-index: 0;
+    inset: 15% 10%;
+    border-radius: 50%;
+    background:
+      radial-gradient(
+        ellipse at 50% 50%,
+        rgba(232, 230, 255, 0.5) 0%,
+        rgba(208, 204, 255, 0.28) 38%,
+        rgba(194, 190, 255, 0) 76%
+      );
+    filter: blur(42px);
+    transform: scale(0.95);
+  }
+
+  .cloud-field__haze,
+  .cloud-field__body {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-width: none;
+  }
+
+  .cloud-field__haze {
+    position: absolute;
+    z-index: 1;
+    inset: 0;
+    opacity: 0.34;
+    filter: blur(18px) brightness(1.12) saturate(0.82);
+    mix-blend-mode: screen;
+    transform: scale(1.035);
+  }
+
+  .cloud-field__body {
+    position: relative;
+    z-index: 2;
+    opacity: 0.76;
+    filter: brightness(1.07) contrast(1.04) saturate(0.88);
+    mix-blend-mode: screen;
+  }
+
+  .cloud-field__cloud--near-left {
+    --cloud-scale: 1.03;
+    --cloud-opacity: 0.7;
+    --cloud-drift-x: 12px;
+    --cloud-drift-y: -8px;
+    width: clamp(34rem, 50vw, 60rem);
+    left: -16vw;
+    bottom: -22%;
+    animation-duration: 29s;
+  }
+
+  .cloud-field__cloud--hero-right {
+    --cloud-scale: 1;
+    --cloud-opacity: 0.82;
+    --cloud-drift-x: -10px;
+    --cloud-drift-y: 7px;
+    width: clamp(38rem, 58vw, 72rem);
+    top: 10%;
+    right: -22vw;
+    animation-duration: 24s;
+    animation-direction: alternate-reverse;
+  }
+
+  .cloud-field__cloud--far-left {
+    --cloud-scale: 0.9;
+    --cloud-opacity: 0.42;
+    --cloud-drift-x: 8px;
+    --cloud-drift-y: 5px;
+    width: clamp(24rem, 36vw, 44rem);
+    top: -7%;
+    left: -14vw;
+    filter: blur(1.5px);
+    animation-duration: 34s;
+  }
+
+  .cloud-field__cloud--far-right {
+    --cloud-scale: 0.88;
+    --cloud-opacity: 0.38;
+    --cloud-drift-x: -8px;
+    --cloud-drift-y: -5px;
+    width: clamp(28rem, 41vw, 50rem);
+    right: -18vw;
+    bottom: 7%;
+    filter: blur(2px);
+    animation-duration: 31s;
+    animation-direction: alternate-reverse;
+  }
+
+  .cloud-field__quiet-zone {
+    position: absolute;
+    z-index: 3;
+    top: 22%;
+    left: 50%;
+    width: min(78vw, 72rem);
+    height: 32rem;
+    background:
+      radial-gradient(
+        ellipse at center,
+        rgba(0, 0, 242, 0.9) 0%,
+        rgba(0, 0, 242, 0.76) 34%,
+        rgba(0, 0, 242, 0.44) 56%,
+        rgba(0, 0, 242, 0) 78%
+      );
+    transform: translateX(-50%);
+  }
+
+  @keyframes cloud-field-drift {
+    from {
+      transform: translate3d(0, 0, 0) scale(var(--cloud-scale));
+    }
+
+    to {
+      transform:
+        translate3d(var(--cloud-drift-x), var(--cloud-drift-y), 0)
+        scale(var(--cloud-scale));
+    }
+  }
+
+  @media (max-width: 980px) {
+    .cloud-field__cloud--near-left {
+      width: 64rem;
+      left: -34rem;
+      bottom: -17%;
+    }
+
+    .cloud-field__cloud--hero-right {
+      width: 68rem;
+      top: 12%;
+      right: -37rem;
+    }
+
+    .cloud-field__cloud--far-left {
+      width: 38rem;
+      left: -23rem;
+    }
+
+    .cloud-field__cloud--far-right {
+      width: 42rem;
+      right: -26rem;
+      bottom: 12%;
+    }
+
+    .cloud-field__quiet-zone {
+      width: 86vw;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .cloud-field {
+      mask-image: linear-gradient(to bottom, black 88%, transparent 100%);
+      -webkit-mask-image: linear-gradient(to bottom, black 88%, transparent 100%);
+    }
+
+    .cloud-field__cloud--near-left {
+      --cloud-opacity: 0.62;
+      width: 122vw;
+      left: -57vw;
+      bottom: -4%;
+    }
+
+    .cloud-field__cloud--hero-right {
+      --cloud-opacity: 0.72;
+      width: 132vw;
+      top: 14%;
+      right: -66vw;
+    }
+
+    .cloud-field__cloud--far-left,
+    .cloud-field__cloud--far-right {
+      display: none;
+    }
+
+    .cloud-field__quiet-zone {
+      top: 24%;
+      width: 108vw;
+      height: 26rem;
+      background:
+        radial-gradient(
+          ellipse at center,
+          rgba(0, 0, 242, 0.92) 0%,
+          rgba(0, 0, 242, 0.78) 38%,
+          rgba(0, 0, 242, 0.36) 68%,
+          rgba(0, 0, 242, 0) 88%
+        );
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cloud-field__cloud {
+      animation: none;
+      transform: scale(var(--cloud-scale));
+      will-change: auto;
+    }
+  }
+</style>

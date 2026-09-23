@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/integrate-generated-cloud-assets-into-dialer-landing",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 2552,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2552",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-integrate-generated-cloud-assets-into-dialer-landing",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_62d6bbc084aa",
+  "tmuxSession": "opensaas-dialer-integrate-generated-cloud-assets-into-dialer-lan-62d6bbc0",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-integrate-generated-cloud-assets-into-dialer-landing/.task/session.json",
+  "createdAt": "2026-09-23T01:20:02.625Z"
+}

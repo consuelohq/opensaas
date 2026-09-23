@@ -1,14 +1,10 @@
 ---
 import { dialerHero } from '../../data/home-content';
+import CloudField from '../visuals/CloudField.astro';
 ---
 
 <section class="dialer-hero" id="intro" data-section="hero">
-  <div class="dialer-hero__atmosphere" aria-hidden="true">
-    <img class="dialer-hero__cloud dialer-hero__cloud--1" src="/images/home/dither/cloud-1.png" alt="" width="900" height="450" loading="eager" />
-    <img class="dialer-hero__cloud dialer-hero__cloud--2" src="/images/home/dither/cloud-2.png" alt="" width="1020" height="390" loading="eager" />
-    <img class="dialer-hero__cloud dialer-hero__cloud--3" src="/images/home/dither/cloud-3.png" alt="" width="800" height="450" loading="eager" />
-    <img class="dialer-hero__cloud dialer-hero__cloud--4" src="/images/home/dither/cloud-4.png" alt="" width="950" height="400" loading="eager" />
-  </div>
+  <CloudField />
 
   <div class="dialer-hero__content">
     <h1>{dialerHero.title}</h1>
@@ -109,36 +105,6 @@ import { dialerHero } from '../../data/home-content';
     transform: translate(0, 0);
   }
 
-  .dialer-hero__atmosphere {
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    overflow: hidden;
-    pointer-events: none;
-    mask-image: linear-gradient(to bottom, black 78%, transparent 100%);
-    -webkit-mask-image: linear-gradient(to bottom, black 78%, transparent 100%);
-  }
-
-  .dialer-hero__cloud {
-    position: absolute;
-    max-width: none;
-    image-rendering: pixelated;
-  }
-
-  .dialer-hero__cloud--1 { top: 5%; left: -10%; opacity: 0.42; }
-  .dialer-hero__cloud--2 { bottom: 22%; left: -12%; opacity: 0.45; }
-  .dialer-hero__cloud--3 { top: 2%; right: -16%; opacity: 0.34; }
-  .dialer-hero__cloud--4 { bottom: 8%; right: -14%; opacity: 0.4; }
-
-  .dialer-hero::after {
-    position: absolute;
-    z-index: 1;
-    inset: 18% 0 7%;
-    background: radial-gradient(circle at 50% 48%, rgba(0, 0, 242, 0.64), transparent 54%);
-    content: '';
-    pointer-events: none;
-  }
-
   @media (max-width: 720px) {
     .dialer-hero {
       min-height: 90svh;
@@ -172,24 +138,6 @@ import { dialerHero } from '../../data/home-content';
       min-height: 3rem;
     }
 
-    .dialer-hero__cloud--1 {
-      top: 3%;
-      left: -30%;
-      width: 480px;
-      height: 240px;
-    }
-
-    .dialer-hero__cloud--3 {
-      top: 8%;
-      right: -34%;
-      width: 400px;
-      height: 225px;
-    }
-
-    .dialer-hero__cloud--2,
-    .dialer-hero__cloud--4 {
-      display: none;
-    }
   }
 
   @media (prefers-reduced-motion: reduce) {

@@ -142,6 +142,33 @@ describe("Consuelo Dialer landing page", () => {
     expect(pricing).toContain("Product Preview");
   });
 
+  test("renders generated atmospheric clouds through a reusable CloudField", () => {
+    const hero = read("src/components/home/HomeHero.astro");
+    const cloudFieldPath = join(packageRoot, "src/components/visuals/CloudField.astro");
+
+    expect(existsSync(cloudFieldPath)).toBe(true);
+    expect(hero).toContain("CloudField");
+    expect(hero).not.toContain("/images/home/dither/cloud-");
+
+    const cloudField = read("src/components/visuals/CloudField.astro");
+    for (const name of [
+      "dialer-cloud-01.png",
+      "dialer-cloud-02.png",
+      "dialer-cloud-03.png",
+      "dialer-cloud-04.png",
+    ]) {
+      expect(cloudField).toContain(`/images/clouds/${name}`);
+      const bytes = readFileSync(join(packageRoot, "public/images/clouds", name));
+      expect(bytes.subarray(0, 8).toString("hex")).toBe("89504e470d0a1a0a");
+    }
+
+    expect(cloudField).toContain("cloud-field__body");
+    expect(cloudField).toContain("cloud-field__glow");
+    expect(cloudField).toContain("@media (prefers-reduced-motion: reduce)");
+    expect(cloudField).toContain("@media (max-width: 720px)");
+    expect(cloudField).toMatch(/cloud-field__cloud--(?:far-left|far-right)[\s\S]*display:\s*none/);
+  });
+
   test("ships real PNG dither clouds instead of corrupt placeholder bytes", () => {
     for (const name of ["cloud-1.png", "cloud-2.png", "cloud-3.png", "cloud-4.png"]) {
       const bytes = readFileSync(join(packageRoot, "public/images/home/dither", name));
