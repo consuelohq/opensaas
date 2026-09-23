@@ -216,8 +216,8 @@ describe("Consuelo Dialer landing page", () => {
   test("keeps preview clouds separated at opposite edges", () => {
     const cloudField = read("src/components/visuals/CloudField.astro");
 
-    expect(cloudField).toContain("--preview-right-width");
-    expect(cloudField).toContain("--preview-left-width");
+    expect(cloudField).toContain("--preview-right-width: min(67vw, 54rem)");
+    expect(cloudField).toContain("--preview-left-width: min(55vw, 46rem)");
     expect(cloudField).toContain("right: var(--preview-right-offset)");
     expect(cloudField).toContain("left: var(--preview-left-offset)");
     expect(cloudField).toContain("cloud-field--preview::before");

@@ -202,10 +202,10 @@ const visibleClouds = variant === 'preview'
   }
 
   .cloud-field--preview {
-    --preview-right-width: clamp(18rem, 32vw, 30rem);
-    --preview-left-width: clamp(16rem, 27vw, 25rem);
-    --preview-right-offset: -3%;
-    --preview-left-offset: -2%;
+    --preview-right-width: min(67vw, 54rem);
+    --preview-left-width: min(55vw, 46rem);
+    --preview-right-offset: -20%;
+    --preview-left-offset: -18%;
   }
 
   .cloud-field--preview::before {
@@ -228,17 +228,17 @@ const visibleClouds = variant === 'preview'
   }
 
   .cloud-field--preview .cloud-field__cloud--hero-right {
-    --cloud-opacity: 0.56;
+    --cloud-opacity: 0.68;
     width: var(--preview-right-width);
-    top: -18%;
+    top: -34%;
     right: var(--preview-right-offset);
   }
 
   .cloud-field--preview .cloud-field__cloud--far-right {
-    --cloud-opacity: 0.44;
+    --cloud-opacity: 0.54;
     width: var(--preview-left-width);
     right: auto;
-    bottom: -34%;
+    bottom: -31%;
     left: var(--preview-left-offset);
   }
 
@@ -284,14 +284,14 @@ const visibleClouds = variant === 'preview'
 
     .cloud-field--preview .cloud-field__cloud--hero-right {
       width: var(--preview-right-width);
-      top: -14%;
+      top: -30%;
       right: var(--preview-right-offset);
     }
 
     .cloud-field--preview .cloud-field__cloud--far-right {
       width: var(--preview-left-width);
       right: auto;
-      bottom: -30%;
+      bottom: -34%;
       left: var(--preview-left-offset);
     }
   }
@@ -332,17 +332,17 @@ const visibleClouds = variant === 'preview'
 
     .cloud-field--preview .cloud-field__cloud--hero-right {
       display: block;
-      width: 24rem;
-      top: -14%;
-      right: -12rem;
+      width: 44rem;
+      top: -52%;
+      right: -34rem;
     }
 
     .cloud-field--preview .cloud-field__cloud--far-right {
       display: block;
-      width: 21rem;
+      width: 38rem;
       right: auto;
-      bottom: -38%;
-      left: -11rem;
+      bottom: -52%;
+      left: -30rem;
     }
 
     .cloud-field--preview::before {
