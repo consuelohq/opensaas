@@ -15,17 +15,10 @@ import { dialerHero } from '../../data/home-content';
     <p class="dialer-hero__subtitle">{dialerHero.subtitle}</p>
 
     <div class="dialer-hero__actions">
-      <a class="dialer-hero__button dialer-hero__button--primary" href={dialerHero.primaryHref}>
+      <a class="dialer-hero__button" href={dialerHero.primaryHref}>
         {dialerHero.primaryLabel}
-        <span aria-hidden="true">→</span>
-      </a>
-      <a class="dialer-hero__button dialer-hero__button--secondary" href={dialerHero.secondaryHref}>
-        {dialerHero.secondaryLabel}
-        <span aria-hidden="true">↘</span>
       </a>
     </div>
-
-    <p class="dialer-hero__proof">{dialerHero.proofLine}</p>
   </div>
 </section>
 
@@ -33,12 +26,13 @@ import { dialerHero } from '../../data/home-content';
   .dialer-hero {
     position: relative;
     display: grid;
-    min-height: 94svh;
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 90svh;
     place-items: center;
     overflow: hidden;
     background: var(--site-color-brand);
     color: white;
-    padding: clamp(8rem, 11vw, 10rem) clamp(1.25rem, 4vw, 4rem) clamp(4rem, 6vw, 5rem);
+    padding: clamp(7rem, 10vw, 9rem) clamp(1.25rem, 4vw, 4rem) clamp(3rem, 5vw, 4.5rem);
     text-align: center;
   }
 
@@ -46,26 +40,31 @@ import { dialerHero } from '../../data/home-content';
     position: relative;
     z-index: 2;
     display: grid;
-    width: min(100%, 88rem);
+    width: min(100%, 80rem);
+    min-width: 0;
+    max-width: 100%;
     justify-items: center;
-    gap: clamp(1rem, 1.6vw, 1.45rem);
+    gap: clamp(1rem, 1.55vw, 1.4rem);
   }
 
   .dialer-hero h1 {
-    width: min(100%, 82rem);
+    width: 100%;
+    min-width: 0;
+    max-width: none;
     margin: 0;
     color: white;
     font-family: var(--site-font-display);
-    font-size: clamp(4rem, 7.3vw, 7.4rem);
+    font-size: clamp(3.75rem, 7vw, 6.75rem);
     font-optical-sizing: auto;
-    font-weight: 430;
-    letter-spacing: -0.035em;
-    line-height: 0.88;
+    font-weight: 400;
+    letter-spacing: 0.01em;
+    line-height: 0.96;
     text-wrap: balance;
   }
 
   .dialer-hero__subtitle {
-    width: min(100%, 58rem);
+    width: min(100%, 56rem);
+    min-width: 0;
     margin: 0;
     color: rgba(255, 255, 255, 0.9);
     font-size: clamp(1rem, 1.4vw, 1.25rem);
@@ -75,53 +74,39 @@ import { dialerHero } from '../../data/home-content';
 
   .dialer-hero__actions {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    width: min(100%, 42rem);
-    gap: 0.65rem;
-    margin-top: 0.5rem;
+    width: min(100%, 34rem);
+    min-width: 0;
+    gap: 0.55rem;
+    margin-top: 0.45rem;
   }
 
   .dialer-hero__button {
     display: flex;
-    min-height: 3.25rem;
+    min-height: 3.15rem;
     align-items: center;
     justify-content: center;
-    gap: 0.7rem;
     border: 1px solid white;
-    font: 650 clamp(0.7rem, 0.9vw, 0.8rem)/1 var(--site-font-mono);
+    border-radius: 0;
+    background: white;
+    box-shadow: 0.22rem 0.22rem 0 rgba(0, 0, 92, 0.28);
+    color: var(--site-color-brand);
+    font: 650 clamp(0.72rem, 0.9vw, 0.8rem)/1 var(--site-font-mono);
     letter-spacing: 0.09em;
     text-decoration: none;
-    transition: background var(--site-motion-fast), color var(--site-motion-fast), transform var(--site-motion-fast);
-  }
-
-  .dialer-hero__button--primary {
-    background: white;
-    color: var(--site-color-brand);
-  }
-
-  .dialer-hero__button--secondary {
-    background: transparent;
-    color: white;
+    transform: translate(-0.08rem, -0.08rem);
+    transition:
+      background var(--site-motion-fast),
+      color var(--site-motion-fast),
+      box-shadow var(--site-motion-fast),
+      transform var(--site-motion-fast);
   }
 
   .dialer-hero__button:hover,
   .dialer-hero__button:focus-visible {
-    transform: translateY(-2px);
-  }
-
-  .dialer-hero__button--secondary:hover,
-  .dialer-hero__button--secondary:focus-visible {
     background: white;
+    box-shadow: 0.1rem 0.1rem 0 rgba(0, 0, 92, 0.2);
     color: var(--site-color-brand);
-  }
-
-  .dialer-hero__proof {
-    max-width: 44rem;
-    margin: 0.25rem 0 0;
-    color: rgba(255, 255, 255, 0.72);
-    font: 560 0.68rem/1.5 var(--site-font-mono);
-    letter-spacing: 0.08em;
-    text-wrap: balance;
+    transform: translate(0, 0);
   }
 
   .dialer-hero__atmosphere {
@@ -156,34 +141,35 @@ import { dialerHero } from '../../data/home-content';
 
   @media (max-width: 720px) {
     .dialer-hero {
-      min-height: 92svh;
-      padding: 7rem 0.9rem 3rem;
+      min-height: 90svh;
+      padding: 6.1rem 0.9rem 2.5rem;
     }
 
     .dialer-hero__content {
+      width: 100%;
       gap: 0.95rem;
-      transform: translateY(-1.5svh);
+      transform: translateY(-3.5svh);
     }
 
     .dialer-hero h1 {
-      font-size: clamp(3.15rem, 15vw, 5rem);
-      line-height: 0.88;
+      font-size: clamp(2rem, 10vw, 3.2rem);
+      letter-spacing: 0.005em;
+      line-height: 0.98;
     }
 
     .dialer-hero__subtitle {
-      width: min(100%, 25rem);
+      width: min(100%, 23rem);
+      max-width: 100%;
       font-size: 0.94rem;
-      line-height: 1.5;
+      line-height: 1.48;
     }
 
     .dialer-hero__actions {
-      grid-template-columns: 1fr;
-      width: min(100%, 30rem);
+      width: min(100%, 32rem);
     }
 
-    .dialer-hero__proof {
-      max-width: 24rem;
-      font-size: 0.58rem;
+    .dialer-hero__button {
+      min-height: 3rem;
     }
 
     .dialer-hero__cloud--1 {

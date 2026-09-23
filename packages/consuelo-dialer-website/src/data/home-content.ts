@@ -17,19 +17,15 @@ export const dialerHero = {
   title: 'Stop Paying Sales Reps to Listen to Phones Ring.',
   subtitle:
     'Predictive dialing, inbound routing, callbacks, and call intelligence — embedded in the CRM your sales team already uses.',
-  primaryLabel: 'Get Early Access',
+  primaryLabel: 'GET EARLY ACCESS',
   primaryHref: foundingAgencyHref,
-  secondaryLabel: 'See How It Works',
-  secondaryHref: '#features',
-  proofLine:
-    'Your CRM stays the system of record. Consuelo makes the phone work inside it.',
 } as const;
 
 export const dialerFeatureItems = [
   {
     number: 1,
-    label: 'Embedded',
-    title: 'Stay\nin Your CRM',
+    label: 'EMBEDDED',
+    title: 'STAY\nIN YOUR CRM',
     body:
       'Open the dialer where your reps already work. Pipeline stages become callable queues, contact context stays attached to the record, and no CSV handoff is required when the connected CRM is the queue source.',
     visualTitle: 'CRM Embedded',
@@ -43,8 +39,8 @@ export const dialerFeatureItems = [
   },
   {
     number: 2,
-    label: 'Predictive',
-    title: 'Stop Listening\nto Ringing',
+    label: 'PREDICTIVE',
+    title: 'STOP LISTENING\nTO RINGING',
     body:
       'The current dialer can run one, two, or three lines per rep session. The server owns candidate selection and call lifecycle, launches parallel attempts with a 500ms balanced stagger, connects one live winner, and cleans up the rest.',
     visualTitle: 'Predictive Dialing',
@@ -58,8 +54,8 @@ export const dialerFeatureItems = [
   },
   {
     number: 3,
-    label: 'Routing',
-    title: 'Inbound +\nCallbacks',
+    label: 'ROUTING',
+    title: 'INBOUND +\nCALLBACKS',
     body:
       'Outbound is only half the phone system. Inbound requests, rep availability, shared capacity, offers, bridges, and callback obligations belong in the same durable call workflow instead of a second disconnected product.',
     visualTitle: 'Inbound Routing',
@@ -73,8 +69,8 @@ export const dialerFeatureItems = [
   },
   {
     number: 4,
-    label: 'Intelligence',
-    title: 'Know What\nHappened',
+    label: 'INTELLIGENCE',
+    title: 'KNOW WHAT\nHAPPENED',
     body:
       'Recordings and transcripts are plan-controlled capabilities. Call intelligence can turn the conversation into useful context for the next action without pushing provider credentials or raw media into the browser.',
     visualTitle: 'Call Intelligence',
@@ -83,8 +79,8 @@ export const dialerFeatureItems = [
   },
   {
     number: 5,
-    label: 'Follow-up',
-    title: 'Work the\nNext Step',
+    label: 'FOLLOW-UP',
+    title: 'WORK THE\nNEXT STEP',
     body:
       'The call is part of the workflow, not the end of it. Keep dispositions, CRM updates, callbacks, and next steps connected to the same sales record so reps do not have to reconstruct the work after every conversation.',
     visualTitle: 'Follow-Up',
@@ -93,8 +89,8 @@ export const dialerFeatureItems = [
   },
   {
     number: 6,
-    label: 'Agencies',
-    title: 'One Agency.\nMore Sales Floors.',
+    label: 'AGENCIES',
+    title: 'ONE AGENCY.\nMORE SALES FLOORS.',
     body:
       'Start with one location, then expand the same phone system across client accounts. Commercial controls are built around seats, phone numbers, calling usage, and workspace isolation. HighLevel is the first connector; the Dialer core is not locked to one CRM.',
     visualTitle: 'Agency Scale',
@@ -143,12 +139,3 @@ export const dialerFaqItems: HomeFaqItem[] = [
   },
 ];
 
-export const dialerFinalCta = {
-  eyebrow: 'Consuelo Dialer',
-  title: 'Your Leads Are Already in Your CRM.',
-  secondLine: 'Start Calling Them.',
-  description:
-    'Less ringing. Less tab switching. More time in live conversations.',
-  label: 'Get Early Access',
-  href: foundingAgencyHref,
-} as const;

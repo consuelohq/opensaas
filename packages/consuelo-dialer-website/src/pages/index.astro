@@ -35,29 +35,21 @@ const schemaEntries = [
   imageAlt={homepageSeo.imageAlt}
   schemaEntries={schemaEntries}
 >
-  <div class="dialer-home">
-    <SiteHeader />
-    <main>
+  <SiteHeader />
+  <main>
+    <div class="home-scroll-layer" data-home-scroll-layer>
       <HomeHero />
       <HomeFeaturePreview />
-    </main>
-  </div>
-
-  <HomeCloudCta />
+    </div>
+    <HomeCloudCta />
+  </main>
 </MarketingLayout>
 
 <style>
-  .dialer-home {
+  .home-scroll-layer {
     position: relative;
     z-index: 2;
-    min-height: 100vh;
     margin-bottom: 100dvh;
-    background: var(--site-color-brand);
-  }
-
-  .dialer-home main {
-    position: relative;
-    z-index: 1;
     background: var(--site-color-brand);
   }
 </style>
