@@ -77,11 +77,13 @@ no-test waiver: not applicable.
 ## improvements noticed
 
 - The previous task's committed PNGs are corrupted on the stream branch (PNG 0x89 became UTF-8 replacement bytes `ef bf bd`). The current Tailnet preview remained correct because it was copied from the pre-push build. This task converts directly from Ko's original Downloads files and will verify the remote WebP blobs after publish.
+- The normal `task.push` path also corrupted 3 of the 4 WebP blobs in its commit. This is a workspace binary-serialization bug, not a WebP issue. Recovered with a scoped direct-git commit that staged only the four already-validated local WebPs, preserving Ko as author and `suelo-kiro[bot]` as committer. A fresh remote fetch confirms all four task-branch blobs are valid RIFF Web/P images with intact headers.
 
 ## errors i ran into
 
 - First build attempt failed with `astro: command not found`; recovered with `bun install --cwd packages/consuelo-dialer-website --frozen-lockfile` and no tracked dependency changes.
 - First WebP conversion attempt used the corrupted PNG files from the stream checkout and failed. Recovered by converting directly from Ko's four original Downloads files.
+- `task.push` reproduced binary corruption on the optimized WebPs. Direct-git fallback was required because the workspace facade cannot currently preserve arbitrary binary blobs across its publish path.
 
 ---
 
@@ -122,3 +124,5 @@ bun run task:finish
 - 2026-09-23 01:36:26 `verify`: passed — OK
 
 - 2026-09-23 01:36:30 apply-patch: `.task/dialer/optimize-cloud-loading-and-reuse-clouds-in-preview-band/workpad.md`
+
+- 2026-09-23 01:38:01 apply-patch: `.task/dialer/optimize-cloud-loading-and-reuse-clouds-in-preview-band/workpad.md`
