@@ -1776,6 +1776,25 @@ maybe_install_daemons() {
 # A curl-pipe-bash child cannot mutate its parent shell's PATH. Prefer a safe
 # link in an already-visible writable directory; otherwise configure future
 # shells and keep the canonical absolute CLI path available immediately.
+is_safe_immediate_cli_link_dir() {
+  local candidate="$1"
+
+  case "$candidate" in
+    /*) ;;
+    *) return 1 ;;
+  esac
+  [ -d "$candidate" ] || return 1
+  [ ! -L "$candidate" ] || return 1
+  [ -w "$candidate" ] || return 1
+  [ -O "$candidate" ] || return 1
+
+  # Do not place a trusted command into a directory another local user/group can write.
+  if /usr/bin/find "$candidate" -prune -perm -022 -print 2>/dev/null | /usr/bin/grep -q .; then
+    return 1
+  fi
+  return 0
+}
+
 find_immediate_cli_link_dir() {
   local bin_dir="$OS_HOME/bin"
   local existing=""
@@ -1798,8 +1817,7 @@ find_immediate_cli_link_dir() {
   IFS=':' read -r -a path_entries <<< "${PATH:-}"
   for path_entry in "${path_entries[@]}"; do
     [ -n "$path_entry" ] || continue
-    [ -d "$path_entry" ] || continue
-    [ -w "$path_entry" ] || continue
+    is_safe_immediate_cli_link_dir "$path_entry" || continue
     [ ! -e "$path_entry/consuelo" ] && [ ! -L "$path_entry/consuelo" ] || continue
     printf '%s\n' "$path_entry"
     return 0

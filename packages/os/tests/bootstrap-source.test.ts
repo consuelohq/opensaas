@@ -1,4 +1,5 @@
 import {
+  chmodSync,
   existsSync,
   lstatSync,
   mkdirSync,
@@ -89,6 +90,7 @@ function runPathSetup(
 ) {
   const script = [
     'set -euo pipefail',
+    extractShellFunction(bootstrap, 'is_safe_immediate_cli_link_dir'),
     extractShellFunction(bootstrap, 'find_immediate_cli_link_dir'),
     extractShellFunction(bootstrap, 'ensure_command_on_path'),
     'log() { :; }',
@@ -468,6 +470,31 @@ describe('bootstrap source refresh controls', () => {
     const immediateCli = join(pathDir, 'consuelo');
     expect(lstatSync(immediateCli).isSymbolicLink()).toBe(true);
     expect(readlinkSync(immediateCli)).toBe(canonicalCli);
+    expect(result.stdout).toContain('PATH_IMMEDIATE=1');
+  });
+
+  it('skips unsafe writable PATH directories before installing the immediate consuelo shim', () => {
+    const bootstrap = readBootstrap();
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-bootstrap-path-safety-'));
+    const unsafeDir = join(home, 'unsafe-bin');
+    const safeDir = join(home, 'safe-bin');
+    const canonicalBin = join(home, '.consuelo', 'bin');
+    const canonicalCli = join(canonicalBin, 'consuelo');
+    mkdirSync(unsafeDir, { recursive: true, mode: 0o777 });
+    mkdirSync(safeDir, { recursive: true, mode: 0o700 });
+    chmodSync(unsafeDir, 0o777);
+    mkdirSync(canonicalBin, { recursive: true });
+    writeFileSync(canonicalCli, '#!/bin/sh\nexit 0\n', { mode: 0o755 });
+
+    const result = runPathSetup(bootstrap, {
+      home,
+      path: `${unsafeDir}:${safeDir}:/usr/bin:/bin`,
+    });
+
+    expect(result.status, result.stderr).toBe(0);
+    expect(existsSync(join(unsafeDir, 'consuelo'))).toBe(false);
+    expect(lstatSync(join(safeDir, 'consuelo')).isSymbolicLink()).toBe(true);
+    expect(readlinkSync(join(safeDir, 'consuelo'))).toBe(canonicalCli);
     expect(result.stdout).toContain('PATH_IMMEDIATE=1');
   });
 
