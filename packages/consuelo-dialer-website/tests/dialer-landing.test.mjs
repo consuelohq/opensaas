@@ -28,7 +28,7 @@ describe("Consuelo Dialer landing page", () => {
     const primitives = read("src/styles/primitives.css");
     const renderedStyles = [hero, feature, faq, placeholder, pricing, primitives].join("\n");
 
-    expect(content).toContain("Stop Paying Sales Reps to Listen to Phones Ring.");
+    expect(content).toContain("STOP PAYING SALES REPS TO LISTEN TO PHONES RING.");
     expect(content).toContain("GET EARLY ACCESS");
     expect(content).toContain("STAY\\nIN YOUR CRM");
     expect(content).toContain("STOP LISTENING\\nTO RINGING");
@@ -36,10 +36,10 @@ describe("Consuelo Dialer landing page", () => {
     expect(content).toContain("KNOW WHAT\\nHAPPENED");
     expect(content).toContain("WORK THE\\nNEXT STEP");
     expect(content).toContain("ONE AGENCY.\\nMORE SALES FLOORS.");
-    expect(navigation).toContain("label: 'Consuelo'");
-    expect(navigation).toContain("label: 'Docs'");
-    expect(navigation).toContain("label: 'Pricing'");
-    expect(navigation).toContain("label: 'Features'");
+    expect(navigation).toContain("label: 'CONSUELO'");
+    expect(navigation).toContain("label: 'DOCS'");
+    expect(navigation).toContain("label: 'PRICING'");
+    expect(navigation).toContain("label: 'FEATURES'");
     expect(navigation).not.toMatch(/label: ['"]Demo['"]/i);
     expect(renderedStyles).not.toMatch(/text-transform:\s*lowercase/);
   });
@@ -120,13 +120,13 @@ describe("Consuelo Dialer landing page", () => {
     const header = read("src/components/site/SiteHeader.astro");
     const navigation = read("src/data/site-navigation.ts");
 
-    expect(navigation).toContain("{ label: 'Consuelo'");
-    expect(navigation).toContain("{ label: 'Docs'");
-    expect(navigation).toContain("{ label: 'Pricing'");
-    expect(navigation).toContain("{ label: 'Features'");
+    expect(navigation).toContain("{ label: 'CONSUELO'");
+    expect(navigation).toContain("{ label: 'DOCS'");
+    expect(navigation).toContain("{ label: 'PRICING'");
+    expect(navigation).toContain("{ label: 'FEATURES'");
     expect(header).toContain("/favicon.svg");
-    expect(header).toContain("<span>Consuelo</span>");
-    expect(header).toContain("<span>Dialer</span>");
+    expect(header).toContain("<span>CONSUELO</span>");
+    expect(header).toContain("<span>DIALER</span>");
     expect(header).not.toContain("DOCS ↗");
   });
 

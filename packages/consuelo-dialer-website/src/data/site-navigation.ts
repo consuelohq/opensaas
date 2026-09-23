@@ -7,14 +7,14 @@ export type SiteNavLink = {
 
 export const dialerSiteHeaderLinks = {
   desktop: [
-    { label: 'Consuelo', href: siteLinks.consuelo },
-    { label: 'Docs', href: siteLinks.dialerDocs },
-    { label: 'Pricing', href: '/pricing' },
-    { label: 'Features', href: '/#features' },
+    { label: 'CONSUELO', href: siteLinks.consuelo },
+    { label: 'DOCS', href: siteLinks.dialerDocs },
+    { label: 'PRICING', href: '/pricing' },
+    { label: 'FEATURES', href: '/#features' },
   ] as const satisfies readonly SiteNavLink[],
   mobile: [
-    { label: 'Docs', href: siteLinks.dialerDocs },
-    { label: 'Pricing', href: '/pricing' },
+    { label: 'DOCS', href: siteLinks.dialerDocs },
+    { label: 'PRICING', href: '/pricing' },
   ] as const satisfies readonly SiteNavLink[],
   wordmarkAriaLabel: 'Consuelo Dialer home',
   primaryAriaLabel: 'Primary',
