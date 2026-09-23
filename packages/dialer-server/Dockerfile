@@ -4,9 +4,11 @@ COPY . .
 RUN bun install --frozen-lockfile --ignore-scripts
 
 FROM oven/bun:1.3.14 AS build
+COPY --from=dependencies /usr/local/bin/node /usr/local/bin/node
 WORKDIR /app
 COPY --from=dependencies /app /app
 RUN bun run --cwd packages/logger build
+RUN bun run --cwd packages/contacts build
 RUN bun run --cwd packages/dialer build
 RUN bun run --cwd packages/lead-connector build
 RUN bun run --cwd packages/dialer-server build

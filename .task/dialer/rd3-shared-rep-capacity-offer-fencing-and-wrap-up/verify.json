@@ -1,0 +1,226 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/dialer/rd3-shared-rep-capacity-offer-fencing-and-wrap-up",
+  "base": "13134a0fc959ca03acecaf55044a83be70064947",
+  "headSha": "231a0504a6c988bc1462b04e186132dbc394ff48",
+  "changeHash": "2478824fc175b256986eb61ca0cf35930384301ad968a25314fd99353618ed32",
+  "changedFiles": [
+    "areas/dialer/rd/receipts/RD3.md",
+    "packages/dialer-server/scripts/local-dialer-lab.ts",
+    "packages/dialer-server/src/database/migrations.test.ts",
+    "packages/dialer-server/src/database/migrations.ts",
+    "packages/dialer-server/src/inbound/REP-CAPACITY.md",
+    "packages/dialer-server/src/inbound/postgres-journal.ts",
+    "packages/dialer-server/src/inbound/rep-capacity-commands.ts",
+    "packages/dialer-server/src/inbound/rep-capacity-migration.ts",
+    "packages/dialer-server/src/inbound/rep-capacity-projection.ts",
+    "packages/dialer-server/src/inbound/rep-capacity.integration.test.ts",
+    "packages/dialer-server/src/inbound/rep-capacity.ts",
+    "packages/dialer-server/src/lab/learning-rollback-scenario.ts",
+    "packages/dialer/src/inbound/index.ts",
+    "packages/dialer/src/inbound/rep-capacity-contracts.ts",
+    "packages/dialer/src/inbound/rep-capacity-ports.ts",
+    "packages/dialer/src/inbound/rep-capacity.test.ts",
+    "packages/dialer/src/inbound/rep-capacity.ts"
+  ],
+  "verifiedAt": "2026-09-10T16:37:57.561Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/dialer/rd3-shared-rep-capacity-offer-fencing-and-wrap-up/evidence-log.json",
+        ".task/dialer/rd3-shared-rep-capacity-offer-fencing-and-wrap-up/read-log.json",
+        ".task/dialer/rd3-shared-rep-capacity-offer-fencing-and-wrap-up/verify.json",
+        ".task/dialer/rd3-shared-rep-capacity-offer-fencing-and-wrap-up/workpad.md",
+        ".task/tasks/dialer/rd3-shared-rep-capacity-offer-fencing-and-wrap-up.json",
+        "areas/dialer/rd/receipts/RD3.md",
+        "packages/dialer-server/scripts/local-dialer-lab.ts",
+        "packages/dialer-server/src/database/migrations.test.ts",
+        "packages/dialer-server/src/database/migrations.ts",
+        "packages/dialer-server/src/inbound/REP-CAPACITY.md",
+        "packages/dialer-server/src/inbound/postgres-journal.ts",
+        "packages/dialer-server/src/inbound/rep-capacity-commands.ts",
+        "packages/dialer-server/src/inbound/rep-capacity-migration.ts",
+        "packages/dialer-server/src/inbound/rep-capacity-projection.ts",
+        "packages/dialer-server/src/inbound/rep-capacity.integration.test.ts",
+        "packages/dialer-server/src/inbound/rep-capacity.ts",
+        "packages/dialer-server/src/lab/learning-rollback-scenario.ts",
+        "packages/dialer/src/inbound/index.ts",
+        "packages/dialer/src/inbound/rep-capacity-contracts.ts",
+        "packages/dialer/src/inbound/rep-capacity-ports.ts",
+        "packages/dialer/src/inbound/rep-capacity.test.ts",
+        "packages/dialer/src/inbound/rep-capacity.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "os-stream-instructions",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Stream instruction storage and resolver changes must prove repository area guidance is preferred when present, OS stream fallback remains available for product-owned streams, and Dialer project context never ships as customer runtime content.",
+          "matchedFiles": [
+            "areas/dialer/rd/receipts/RD3.md"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "dialer-package",
+          "critical": true,
+          "reason": "Dialer changes are call-path critical and must run package specs.",
+          "matchedFiles": [
+            "packages/dialer/src/inbound/index.ts",
+            "packages/dialer/src/inbound/rep-capacity-contracts.ts",
+            "packages/dialer/src/inbound/rep-capacity-ports.ts",
+            "packages/dialer/src/inbound/rep-capacity.test.ts",
+            "packages/dialer/src/inbound/rep-capacity.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "dialer-server-package",
+          "critical": true,
+          "reason": "Dialer server changes must prove Hono transport, Twilio boundary, and standalone lifecycle contracts.",
+          "matchedFiles": [
+            "packages/dialer-server/scripts/local-dialer-lab.ts",
+            "packages/dialer-server/src/database/migrations.test.ts",
+            "packages/dialer-server/src/database/migrations.ts",
+            "packages/dialer-server/src/inbound/REP-CAPACITY.md",
+            "packages/dialer-server/src/inbound/postgres-journal.ts",
+            "packages/dialer-server/src/inbound/rep-capacity-commands.ts",
+            "packages/dialer-server/src/inbound/rep-capacity-migration.ts",
+            "packages/dialer-server/src/inbound/rep-capacity-projection.ts",
+            "packages/dialer-server/src/inbound/rep-capacity.integration.test.ts",
+            "packages/dialer-server/src/inbound/rep-capacity.ts",
+            "packages/dialer-server/src/lab/learning-rollback-scenario.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "OS stream instruction contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/scripts/lib/stream-instructions.test.ts",
+            "packages/os/tests/dialer-stream-instructions.test.ts",
+            "packages/workspace/tests/dialer-validation-runbook.test.ts"
+          ],
+          "ruleId": "os-stream-instructions",
+          "critical": true
+        },
+        {
+          "name": "dialer specs",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer/src"
+          ],
+          "ruleId": "dialer-package",
+          "critical": true
+        },
+        {
+          "name": "dialer-server Hono contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-server/src"
+          ],
+          "ruleId": "dialer-server-package",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "OS stream instruction contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/scripts/lib/stream-instructions.test.ts",
+            "packages/os/tests/dialer-stream-instructions.test.ts",
+            "packages/workspace/tests/dialer-validation-runbook.test.ts"
+          ],
+          "ruleId": "os-stream-instructions",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 399,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-rd3-shared-rep-capacity-offer-fencing-and-wrap-up\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/dialer-stream-instructions.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 1\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/workspace/scripts/lib/stream-instructions.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/workspace/tests/dialer-validation-runbook.test.ts \u001b[2m(\u001b[22m\u001b[2m6 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m3 passed\u001b[39m\u001b[22m\u001b[90m (3)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m11 passed\u001b[39m\u001b[22m\u001b[90m (11)\u001b[39m\n\u001b[2m   Start at \u001b[22m 12:37:54\n\u001b[2m   Duration \u001b[22m 131ms\u001b[2m (transform 151ms, setup 0ms, import 171ms, tests 5ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "dialer specs",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer/src"
+          ],
+          "ruleId": "dialer-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1905,
+          "outputTail": "ss) CallTimingModel > should return optimal retry time when enough observations exist [0.04ms]\n(pass) CallTimingModel > prefers a timing bin with stronger lower-bound evidence over a lucky tiny raw rate [0.03ms]\n(pass) CallTimingModel > breaks exact timing-evidence ties by stable calendar coordinates [0.03ms]\n\npackages/dialer/src/services/retry-decision-model.contract.spec.ts:\n(pass) mature retry decision contract > separates whether to retry from the learned preferred timing window [0.22ms]\n(pass) mature retry decision contract > keeps retrying within the cap when stopping evidence is missing [0.06ms]\n(pass) mature retry decision contract > stops on answered calls, the attempt cap, or observed negative expected value [0.07ms]\n\npackages/dialer/src/services/contextual-response-model.spec.ts:\n(pass) ContextualResponseModel > learns a regularized contextual response signal without changing the D3 policy contract [24.18ms]\n(pass) ContextualResponseModel > keeps candidate-specific opportunity economics separate from response probability [0.05ms]\n(pass) ContextualResponseModel > matches the penalized Bernoulli objective gradient by finite differences [0.21ms]\n(pass) ContextualResponseModel > keeps regularization strength stable when the empirical sample is replicated [64.84ms]\n(pass) ContextualResponseModel > does not regularize the intercept and keeps extreme encoded values finite [0.15ms]\n(pass) ContextualResponseModel > encodes missing spacing differently from a real zero-minute spacing [0.02ms]\n\npackages/dialer/src/services/predictive-selection-science.spec.ts:\n(pass) scientific predictive selection contract > uses calibrated upper probability evidence for exploration rather than an arbitrary sample-size bonus [0.64ms]\n(pass) scientific predictive selection contract > does not change an otherwise identical priority because a contact is older than 48 hours [0.12ms]\n(pass) scientific predictive selection contract > preserves FIFO for a decision set when any candidate lacks comparable hazard evidence [0.09ms]\n(pass) uses aggregate attempt evidence rather than a peak slot for an unobserved calling time [0.10ms]\n\npackages/dialer/src/services/parallel-lifecycle.contract.spec.ts:\n(pass) parallel dial lifecycle contract > keeps customer legs muted without provider hold music until the agent starts the conference [0.84ms]\n(pass) parallel dial lifecycle contract > retains a callback that arrives while later legs are still being created [1.98ms]\n(pass) parallel dial lifecycle contract > keeps exactly one durable winner under simultaneous human callbacks [3.37ms]\n(pass) parallel dial lifecycle contract > claims telemetry emission exactly once under concurrent callbacks [3.11ms]\n(pass) parallel dial lifecycle contract > records failed loser cleanup and clears it after reconciliation succeeds [2.32ms]\n(pass) parallel dial lifecycle contract > does not persist a false winner-unmute failure before the participant enters [0.76ms]\n(pass) parallel dial lifecycle contract > records failed winner unmute and clears it after reconciliation succeeds [0.90ms]\n(pass) parallel dial lifecycle contract > completes the group when the selected winner hangs up [2.16ms]\n(pass) parallel dial lifecycle contract > persists workspace ownership and rejects cross-workspace access [3.47ms]\n(pass) parallel dial lifecycle contract > ignores an answered callback after the same leg is terminal [3.16ms]\n\npackages/dialer/src/infrastructure/redis/redis-parallel-store.test.ts:\n(pass) RedisParallelStore > registers calls and reverse mappings atomically and cleans the full group [0.36ms]\n(pass) RedisParallelStore > claims one winner and one telemetry emission and serializes group operations [4.70ms]\n(pass) RedisParallelStore > renews an owned group lock while a long operation is running [180.47ms]\n(pass) RedisParallelStore > deletes known group keys when the persisted group JSON is malformed [0.33ms]\n\n 239 pass\n 0 fail\n 539 expect() calls\nRan 239 tests across 27 files. [1.89s]\n"
+        },
+        {
+          "name": "dialer-server Hono contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-server/src"
+          ],
+          "ruleId": "dialer-server-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 545,
+          "outputTail": "cit deployment id through the public API [0.12ms]\n\npackages/dialer-server/src/call-operations/application.test.ts:\n(pass) Effect call-operations transcription application > keeps inbound and outbound buffers separate and persists provider metadata only [1.68ms]\n(pass) Effect call-operations transcription application > processes duplicate frames once and flushes a terminal remainder once [0.18ms]\n(pass) Effect call-operations transcription application > keeps transcript rows idempotent when a provider stream reconnects [0.27ms]\n(pass) Effect call-operations transcription application > marks transcription failed on provider timeout without failing the call boundary [21.44ms]\n(pass) Effect call-operations transcription application > does not begin provider work when workspace transcription is disabled [0.08ms]\n\npackages/dialer-server/src/call-operations/persistence.test.ts:\n(pass) call-operations persistence > initializes canonical workspace settings, sessions, legs, segments, and transfer-compatible events [0.11ms]\n(pass) call-operations persistence > uses a workspace-scoped idempotent insert for transcript metadata [0.16ms]\n(pass) call-operations persistence > atomically upserts the canonical session and all provider legs [0.13ms]\n(pass) call-operations persistence > persists recording provider metadata without retaining a raw recording URL [0.06ms]\n\npackages/dialer-server/src/call-operations/groq.test.ts:\n(pass) Groq speech-to-text adapter > uses the OpenAI-compatible audio endpoint and returns provider-grounded metadata [0.72ms]\n(pass) Groq speech-to-text adapter > fails closed when credentials are absent [0.07ms]\n\npackages/dialer-server/src/inbound/rep-capacity.integration.test.ts:\n(skip) Postgres shared rep capacity > (unnamed)\n(skip) Postgres shared rep capacity > commits one winner across competing inbound and outbound connections\n(skip) Postgres shared rep capacity > accepts one endpoint transactionally and keeps the exact idempotent result\n(skip) Postgres shared rep capacity > protects escaped offers through expiry, process recreation, and reconciliation\n(skip) Postgres shared rep capacity > rolls back commands, projections and capacity together on invalid request or tenant\n(skip) Postgres shared rep capacity > rejects acceptance after caller abandonment without losing the reservation\n(skip) Postgres shared rep capacity > authorizes the bridge generation and keeps wrap-up occupied after an uncertain connection\n(skip) Postgres shared rep capacity > discovers durable owners after restart with bounded tenant-scoped pages\n(skip) Postgres shared rep capacity > preserves identity uniqueness, history immutability and populated migration rollback\n(skip) Postgres shared rep capacity > (unnamed)\n\n11 tests skipped:\n(skip) local dialer lab service integration > migrates an empty isolated Postgres, exercises Redis, and tears both down\n(skip) Postgres shared rep capacity > (unnamed)\n(skip) Postgres shared rep capacity > commits one winner across competing inbound and outbound connections\n(skip) Postgres shared rep capacity > accepts one endpoint transactionally and keeps the exact idempotent result\n(skip) Postgres shared rep capacity > protects escaped offers through expiry, process recreation, and reconciliation\n(skip) Postgres shared rep capacity > rolls back commands, projections and capacity together on invalid request or tenant\n(skip) Postgres shared rep capacity > rejects acceptance after caller abandonment without losing the reservation\n(skip) Postgres shared rep capacity > authorizes the bridge generation and keeps wrap-up occupied after an uncertain connection\n(skip) Postgres shared rep capacity > discovers durable owners after restart with bounded tenant-scoped pages\n(skip) Postgres shared rep capacity > preserves identity uniqueness, history immutability and populated migration rollback\n(skip) Postgres shared rep capacity > (unnamed)\n\n 183 pass\n 11 skip\n 0 fail\n 980 expect() calls\nRan 194 tests across 41 files. [534.00ms]\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [
+      {
+        "category": "database-script",
+        "file": "packages/dialer-server/src/database/migrations.test.ts",
+        "severity": "warning",
+        "message": "database reset/migration/sync script changed"
+      },
+      {
+        "category": "database-script",
+        "file": "packages/dialer-server/src/database/migrations.ts",
+        "severity": "warning",
+        "message": "database reset/migration/sync script changed"
+      }
+    ],
+    "findings": []
+  },
+  "commandVersion": 2
+}

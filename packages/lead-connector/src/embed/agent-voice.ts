@@ -3,16 +3,19 @@ import { Device, type Call } from '@twilio/voice-sdk';
 export type LeadConnectorAgentVoice = {
   prepare: () => Promise<void>;
   connect: (sessionId: string) => Promise<void>;
+  acceptIncoming: () => Promise<void>;
+  rejectIncoming: () => void;
   disconnect: () => void;
 };
 
-type AgentCall = Pick<Call, 'on' | 'disconnect'>;
+type AgentCall = Pick<Call, 'on' | 'disconnect' | 'accept' | 'reject'>;
 type AgentDevice = {
   state: unknown;
   register: () => Promise<void>;
   connect: (options: { params: { SessionId: string } }) => Promise<AgentCall>;
   disconnectAll: () => void;
   destroy: () => void;
+  on: (event: 'incoming', handler: (call: AgentCall) => void) => unknown;
   audio?: {
     incoming: (enabled: boolean) => void;
     outgoing: (enabled: boolean) => void;
@@ -26,6 +29,7 @@ type AgentVoiceOptions = {
   createDevice?: (token: string) => AgentDevice;
   registeredState?: unknown;
   connectTimeoutMs?: number;
+  incomingTimeoutMs?: number;
 };
 
 const errorMessage = (value: unknown, fallback: string): string =>
@@ -43,8 +47,68 @@ export const createLeadConnectorAgentVoice = (
     ((token: string) => new Device(token, { closeProtection: true }));
   const registeredState = options.registeredState ?? Device.State.Registered;
   const connectTimeoutMs = options.connectTimeoutMs ?? 12_000;
+  const incomingTimeoutMs = options.incomingTimeoutMs ?? connectTimeoutMs;
   let device: AgentDevice | null = null;
   let activeCall: AgentCall | null = null;
+  let pendingIncomingCall: AgentCall | null = null;
+  let incomingWaiter: {
+    resolve: (call: AgentCall) => void;
+    reject: (error: Error) => void;
+    timer: ReturnType<typeof setTimeout>;
+  } | null = null;
+
+  const clearIncomingWaiter = (): void => {
+    if (!incomingWaiter) return;
+    clearTimeout(incomingWaiter.timer);
+    incomingWaiter = null;
+  };
+
+  const rejectIncoming = (): void => {
+    pendingIncomingCall?.reject();
+    pendingIncomingCall = null;
+    if (incomingWaiter) {
+      const waiter = incomingWaiter;
+      clearIncomingWaiter();
+      waiter.reject(new Error('Inbound browser call was rejected'));
+    }
+  };
+
+  const handleIncoming = (call: AgentCall): void => {
+    if (pendingIncomingCall || activeCall) {
+      call.reject();
+      return;
+    }
+    pendingIncomingCall = call;
+    const clearPending = (): void => {
+      if (pendingIncomingCall === call) pendingIncomingCall = null;
+    };
+    call.on('cancel', clearPending);
+    call.on('disconnect', clearPending);
+    call.on('error', clearPending);
+    if (incomingWaiter) {
+      const waiter = incomingWaiter;
+      clearIncomingWaiter();
+      waiter.resolve(call);
+    }
+  };
+
+  const waitForIncoming = (): Promise<AgentCall> => {
+    if (pendingIncomingCall) return Promise.resolve(pendingIncomingCall);
+    if (incomingWaiter) {
+      incomingWaiter.reject(
+        new Error('Inbound browser call acceptance is already pending'),
+      );
+      clearIncomingWaiter();
+    }
+    return new Promise<AgentCall>((resolve, reject) => {
+      const timer = setTimeout(() => {
+        if (incomingWaiter?.timer !== timer) return;
+        incomingWaiter = null;
+        reject(new Error('Inbound browser call did not arrive in time'));
+      }, incomingTimeoutMs);
+      incomingWaiter = { resolve, reject, timer };
+    });
+  };
 
   const prepare = async (): Promise<void> => {
     try {
@@ -56,6 +120,7 @@ export const createLeadConnectorAgentVoice = (
       device = null;
       const { token } = await options.getToken();
       const nextDevice = createDevice(token);
+      nextDevice.on('incoming', handleIncoming);
       nextDevice.audio?.incoming(false);
       nextDevice.audio?.outgoing(false);
       nextDevice.audio?.disconnect(false);
@@ -130,11 +195,66 @@ export const createLeadConnectorAgentVoice = (
     }
   };
 
+  const acceptIncoming = async (): Promise<void> => {
+    const call = await waitForIncoming();
+    if (pendingIncomingCall === call) pendingIncomingCall = null;
+    activeCall = call;
+    try {
+      await new Promise<void>((resolve, reject) => {
+        let settled = false;
+        const finish = (operation: () => void): void => {
+          if (settled) return;
+          settled = true;
+          clearTimeout(timer);
+          operation();
+        };
+        const fail = (error: unknown, fallback: string): void =>
+          finish(() => {
+            call.disconnect();
+            if (activeCall === call) activeCall = null;
+            reject(new Error(errorMessage(error, fallback)));
+          });
+        const timer = setTimeout(
+          () =>
+            fail(
+              new Error('Inbound browser media connection timed out'),
+              'Inbound browser media connection timed out',
+            ),
+          connectTimeoutMs,
+        );
+        call.on('accept', () => finish(resolve));
+        call.on('error', (error: unknown) =>
+          fail(error, 'Inbound browser media connection failed'),
+        );
+        call.on('cancel', () =>
+          fail(null, 'Inbound browser media connection was canceled'),
+        );
+        call.on('reject', () =>
+          fail(null, 'Inbound browser media connection was rejected'),
+        );
+        call.on('disconnect', () => {
+          if (!settled) {
+            fail(null, 'Inbound browser media ended before bridging');
+          } else if (activeCall === call) {
+            activeCall = null;
+          }
+        });
+        call.accept();
+      });
+    } catch (error: unknown) {
+      if (activeCall === call) activeCall = null;
+      throw error instanceof Error
+        ? error
+        : new Error('Inbound browser media connection failed');
+    }
+  };
+
   const disconnect = (): void => {
+    rejectIncoming();
     activeCall?.disconnect();
     activeCall = null;
     device?.disconnectAll();
   };
 
-  return { prepare, connect, disconnect };
+  return { prepare, connect, acceptIncoming, rejectIncoming, disconnect };
 };

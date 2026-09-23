@@ -282,7 +282,7 @@ describe('runtime bundle contract', () => {
     expect(build.status).toBe(0);
     expect(existsSync(archivePath)).toBe(true);
     expect(JSON.parse(build.stdout)).toMatchObject({
-      fileCount: Object.keys(requiredFixtureFiles).length - 1,
+      fileCount: Object.keys(requiredFixtureFiles).length - 2,
       outputPath: archivePath,
       version: '2.3.4',
     });
@@ -295,7 +295,7 @@ describe('runtime bundle contract', () => {
     expect(verify.status).toBe(0);
     expect(JSON.parse(verify.stdout)).toMatchObject({
       archivePath,
-      fileCount: Object.keys(requiredFixtureFiles).length - 1,
+      fileCount: Object.keys(requiredFixtureFiles).length - 2,
       valid: true,
       version: '2.3.4',
     });
@@ -358,6 +358,13 @@ describe('runtime bundle contract', () => {
     expect(classifyRuntimeBundlePath('steering/system_prompt.md')).toBe(
       'source-only',
     );
+    expect(classifyRuntimeBundlePath('streams/dialer/AGENTS.md')).toBe(
+      'source-only',
+    );
+    expect(classifyRuntimeBundlePath('streams/dialer/rd/README.md')).toBe(
+      'source-only',
+    );
+    expect(classifyRuntimeBundlePath('streams/tools/AGENTS.md')).toBe('runtime');
     expect(
       classifyRuntimeBundlePath('scripts/lib/distribution/runtime-bundle.ts'),
     ).toBe('runtime');

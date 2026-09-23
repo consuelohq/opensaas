@@ -1,0 +1,9 @@
+{
+  "files": [
+    "packages/consuelo-dialer-website/package.json",
+    "packages/consuelo-dialer-website/src/data/site-navigation.ts",
+    "packages/consuelo-dialer-website/tests/dialer-landing.test.mjs",
+    "packages/workspace/senior-engineer.md"
+  ],
+  "updatedAt": "2026-09-23T01:36:09.331Z"
+}

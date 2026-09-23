@@ -1,0 +1,51 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/dialer/brighten-and-reveal-right-preview-cloud",
+  "base": "origin/stream/dialer",
+  "headSha": "e4b8d8d316b59d799f81a4ee75eae0f37db2f6b2",
+  "changeHash": "2547301570dc1805df8f26b535135555cebb0b58b1d837457d75696064fd3630",
+  "changedFiles": [
+    "packages/consuelo-dialer-website/src/components/visuals/CloudField.astro",
+    "packages/consuelo-dialer-website/tests/dialer-landing.test.mjs"
+  ],
+  "verifiedAt": "2026-09-23T02:12:41.285Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/dialer/brighten-and-reveal-right-preview-cloud/evidence-log.json",
+        ".task/dialer/brighten-and-reveal-right-preview-cloud/read-log.json",
+        ".task/dialer/brighten-and-reveal-right-preview-cloud/workpad.md",
+        ".task/tasks/dialer/brighten-and-reveal-right-preview-cloud.json",
+        "packages/consuelo-dialer-website/src/components/visuals/CloudField.astro",
+        "packages/consuelo-dialer-website/tests/dialer-landing.test.mjs"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

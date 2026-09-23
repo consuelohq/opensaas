@@ -1,0 +1,20 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/port-consuelo-os-landing-ux-to-dialer-stream-based",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 2546,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2546",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2546",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2546/port-consuelo-os-landing-ux-to-dialer-stream-based",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2546",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2546/port-consuelo-os-landing-ux-to-dialer-stream-based",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-port-consuelo-os-landing-ux-to-dialer-stream-based",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_ae6d760b0b98",
+  "tmuxSession": "opensaas-dialer-port-consuelo-os-landing-ux-to-dialer-stream-bas-ae6d760b",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-port-consuelo-os-landing-ux-to-dialer-stream-based/.task/dialer/port-consuelo-os-landing-ux-to-dialer-stream-based/session.json",
+  "createdAt": "2026-09-23T00:39:45.675Z"
+}

@@ -9,6 +9,7 @@ export class DialerProviderError extends Data.TaggedError(
   'DialerProviderError',
 )<{
   operation: DialerProviderOperation;
+  creationOutcome?: 'not_created' | 'unknown';
   message: string;
   retryable: boolean;
   cause?: unknown;

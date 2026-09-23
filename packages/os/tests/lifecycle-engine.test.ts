@@ -81,7 +81,6 @@ const requiredRuntimePaths = [
   'manifests/generated/core.manifest.json',
   'hooks/dispatcher.js',
   'streams/tools/AGENTS.md',
-  'streams/dialer/AGENTS.md',
   'skills/task/SKILL.md',
   'skills/task/skill.json',
 ];

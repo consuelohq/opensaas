@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/remove-cloud-asset-box-seam-and-fix-preview-cloud-composition",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 2556,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2556",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-remove-cloud-asset-box-seam-and-fix-preview-cloud-composition",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_1ce7b2aabad0",
+  "tmuxSession": "opensaas-dialer-remove-cloud-asset-box-seam-and-fix-preview-clou-1ce7b2aa",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-remove-cloud-asset-box-seam-and-fix-preview-cloud-composition/.task/session.json",
+  "createdAt": "2026-09-23T01:42:30.146Z"
+}

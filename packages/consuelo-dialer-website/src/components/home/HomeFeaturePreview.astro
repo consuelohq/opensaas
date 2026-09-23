@@ -1,0 +1,264 @@
+---
+import { dialerFeatureItems } from '../../data/home-content';
+import { siteLinks } from '../../data/site-links';
+import CloudField from '../visuals/CloudField.astro';
+import DialerFeaturePlaceholder from './DialerFeaturePlaceholder.astro';
+import HomeFaq from './HomeFaq.astro';
+import PreviewNotice from './PreviewNotice.astro';
+---
+
+<section class="product-panel" id="features" data-section="features">
+  <div class="product-panel__paper">
+    <div class="product-panel__preview">
+      <CloudField variant="preview" />
+      <PreviewNotice />
+    </div>
+
+    <div class="product-panel__identity">
+      <img src="/favicon.svg" alt="" width="58" height="58" />
+      <p>CONSUELO DIALER</p>
+      <a href={siteLinks.app}>MEMBER? SIGN IN</a>
+    </div>
+
+    <div class="product-panel__features">
+      <h2>FEATURES</h2>
+
+      <div class="product-story" data-feature-story>
+        {
+          dialerFeatureItems.map((item) => (
+            <article class="product-story__chapter" data-feature-chapter={item.label.toLowerCase()}>
+              <div class="product-story__visual">
+                <DialerFeaturePlaceholder
+                  title={item.visualTitle}
+                  meta={item.visualMeta}
+                  rows={item.visualRows}
+                  index={item.number}
+                />
+              </div>
+
+              <div class="product-story__copy">
+                <p class="product-panel__index">
+                  <span class="product-panel__index-number">#{String(item.number).padStart(2, '0')}</span>{' '}
+                  <span class="product-panel__index-label">{item.label}</span>
+                </p>
+                <h3>
+                  {item.title.split('\n').map((line) => <span>{line}</span>)}
+                </h3>
+                <p class="product-panel__description">{item.body}</p>
+              </div>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+
+    <HomeFaq />
+  </div>
+</section>
+
+<style>
+  .product-panel {
+    position: relative;
+    z-index: 3;
+    background: var(--site-color-brand);
+    margin-top: var(--site-sticky-sliver);
+    padding: var(--site-sticky-sliver) var(--site-frame-inset) var(--site-frame-inset);
+  }
+
+  .product-panel__paper {
+    background: white;
+    color: var(--site-color-brand);
+  }
+
+  .product-panel__preview {
+    position: relative;
+    isolation: isolate;
+    height: clamp(11rem, 24vw, 22rem);
+    overflow: hidden;
+    background: var(--site-color-brand);
+    border: clamp(0.45rem, 1.1vw, 0.85rem) solid white;
+    border-bottom-width: 0;
+  }
+
+  .product-panel__preview::after {
+    position: absolute;
+    z-index: 0;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(0, 0, 242, 0.06), rgba(0, 0, 242, 0.32));
+    content: '';
+    pointer-events: none;
+  }
+
+  .product-panel__preview :global(.preview-notice) {
+    position: relative;
+    z-index: 3;
+  }
+
+  .product-panel__identity {
+    display: grid;
+    justify-items: center;
+    gap: 0.7rem;
+    padding: clamp(2.75rem, 6vw, 5rem) 1rem clamp(2.5rem, 5vw, 4.5rem);
+    text-align: center;
+  }
+
+  .product-panel__identity img {
+    width: 3.6rem;
+    height: 3.6rem;
+    border: 1px solid var(--site-color-brand);
+    object-fit: contain;
+  }
+
+  .product-panel__identity p {
+    margin: 0;
+    font-family: var(--site-font-display);
+    font-size: clamp(1.45rem, 2.4vw, 2rem);
+    line-height: 1;
+  }
+
+  .product-panel__identity a {
+    border: 1px solid var(--site-color-brand);
+    padding: 0.28rem 0.55rem;
+    font: 650 0.62rem/1 var(--site-font-mono);
+    letter-spacing: 0.08em;
+    text-decoration: none;
+  }
+
+  .product-panel__features {
+    padding: 0 clamp(1rem, 4.7vw, 5rem);
+  }
+
+  .product-panel__features > h2 {
+    margin: clamp(2.5rem, 5vw, 4rem) 0 clamp(3rem, 6vw, 5.5rem);
+    color: var(--site-color-brand);
+    font-family: var(--site-font-display);
+    font-size: clamp(6rem, 15vw, 14rem);
+    font-weight: 430;
+    letter-spacing: 0;
+    line-height: 0.72;
+    text-align: center;
+  }
+
+  .product-story {
+    display: grid;
+    border-top: 1px solid var(--site-color-brand);
+  }
+
+  .product-story__chapter {
+    display: grid;
+    grid-template-columns: minmax(0, 1.58fr) minmax(16rem, 0.42fr);
+    gap: clamp(2rem, 4.5vw, 5rem);
+    min-width: 0;
+    min-height: min(88vh, 58rem);
+    padding-block: clamp(3rem, 7vw, 6rem);
+    border-bottom: 1px solid var(--site-color-brand);
+  }
+
+  .product-story__visual {
+    position: sticky;
+    top: clamp(1rem, 8vh, 5rem);
+    align-self: start;
+    min-width: 0;
+  }
+
+  .product-story__copy {
+    align-self: center;
+    min-width: 0;
+    padding-block: 1rem;
+  }
+
+  .product-panel__index {
+    margin: 0 0 1rem;
+    font: 620 0.63rem/1 var(--site-font-mono);
+    letter-spacing: 0.15em;
+  }
+
+  .product-panel__index-label {
+    color: var(--site-color-art-muted);
+  }
+
+  .product-story__copy h3 {
+    max-width: 100%;
+    min-width: 0;
+    margin: 0 0 clamp(1.25rem, 2.4vw, 2rem);
+    color: var(--site-color-brand);
+    font-family: var(--site-font-display);
+    font-size: clamp(2.75rem, 4.7vw, 5.1rem);
+    font-weight: 440;
+    letter-spacing: 0;
+    line-height: 0.82;
+    overflow-wrap: anywhere;
+  }
+
+  .product-story__copy h3 span {
+    display: block;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  .product-story .product-panel__description {
+    max-width: 29rem;
+    margin: 0;
+    color: var(--site-color-brand);
+    font: 590 clamp(0.65rem, 0.85vw, 0.8rem)/1.65 var(--site-font-mono);
+    letter-spacing: 0.075em;
+    text-transform: uppercase !important;
+  }
+
+  @media (max-width: 980px) {
+    .product-story__chapter {
+      grid-template-columns: minmax(0, 1.35fr) minmax(14rem, 0.65fr);
+      gap: 2rem;
+      min-height: 46rem;
+    }
+
+    .product-story__copy h3 {
+      font-size: clamp(2.5rem, 5vw, 3.8rem);
+    }
+  }
+
+  @media (max-width: 760px) {
+    .product-panel__preview {
+      height: 10.5rem;
+    }
+
+    .product-panel__identity {
+      padding: 2.4rem 1rem 3rem;
+    }
+
+    .product-panel__features {
+      padding-inline: 1.25rem;
+    }
+
+    .product-panel__features > h2 {
+      margin: 2rem 0 3rem;
+      font-size: clamp(3.25rem, 15vw, 4rem);
+      line-height: 0.8;
+    }
+
+    .product-story__chapter {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+      min-height: 0;
+      padding-block: 3rem 4.25rem;
+    }
+
+    .product-story__visual {
+      position: static;
+      order: 2;
+    }
+
+    .product-story__copy {
+      order: 1;
+      padding: 0;
+    }
+
+    .product-story__copy h3 {
+      font-size: clamp(2.8rem, 13vw, 4rem);
+    }
+
+    .product-panel__description {
+      font-size: 0.6rem;
+    }
+  }
+</style>
