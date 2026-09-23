@@ -7,6 +7,26 @@ import { describe, expect, it } from 'vitest';
 const packageRoot = resolve(fileURLToPath(new URL('.', import.meta.url)), '..');
 
 describe('macOS menu-bar platform', () => {
+  it('defines a first-party native service host without making the menu app the supervisor', async () => {
+    const packageManifest = await readFile(
+      resolve(packageRoot, 'native/macos/Package.swift'),
+      'utf8',
+    );
+    const serviceHost = await readFile(
+      resolve(packageRoot, 'native/macos/Sources/ConsueloServiceHost/main.swift'),
+      'utf8',
+    );
+
+    expect(packageManifest).toContain('.executable(name: "ConsueloServiceHost"');
+    expect(packageManifest).toContain('.executableTarget(name: "ConsueloServiceHost"');
+    expect(serviceHost).toContain('Process()');
+    expect(serviceHost).toContain('start-consuelo-daemon.sh');
+    expect(serviceHost).toContain('DispatchSource.makeSignalSource');
+    expect(serviceHost).toContain('process.terminate()');
+    expect(serviceHost).not.toContain('cloudflared');
+    expect(serviceHost).not.toContain('caddy');
+  });
+
   it('uses SwiftUI MenuBarExtra as a thin lifecycle client', async () => {
     const source = await readFile(
       resolve(
@@ -50,6 +70,9 @@ describe('macOS menu-bar platform', () => {
     expect(script).toContain('Consuelo.app/Contents/MacOS');
     expect(script).toContain('Info.plist');
     expect(script).toContain('swift build');
+    expect(script).toContain('--product ConsueloServiceHost');
+    expect(script).toContain('Contents/Library/LaunchServices');
+    expect(script).toContain('ConsueloServiceHost');
     expect(script).toContain('Consuelo.app.tar.gz');
     expect(script).toContain('tar -czf');
     expect(script).toContain('--install');

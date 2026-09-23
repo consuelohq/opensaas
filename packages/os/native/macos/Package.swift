@@ -7,6 +7,7 @@ let package = Package(
     products: [
         .library(name: "ConsueloMacCore", targets: ["ConsueloMacCore"]),
         .executable(name: "ConsueloMenuBarApp", targets: ["ConsueloMenuBarApp"]),
+        .executable(name: "ConsueloServiceHost", targets: ["ConsueloServiceHost"]),
         .executable(name: "ConsueloMacContractTests", targets: ["ConsueloMacContractTests"]),
     ],
     targets: [
@@ -15,6 +16,7 @@ let package = Package(
             name: "ConsueloMenuBarApp",
             dependencies: ["ConsueloMacCore"]
         ),
+        .executableTarget(name: "ConsueloServiceHost"),
         .executableTarget(
             name: "ConsueloMacContractTests",
             dependencies: ["ConsueloMacCore"]

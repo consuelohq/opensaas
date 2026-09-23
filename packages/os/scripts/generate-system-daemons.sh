@@ -146,6 +146,27 @@ case "$availability_enabled" in
 esac
 portless_allow_path_lookup="$(xml_escape "$portless_allow_path_lookup")"
 
+runtime_arch=""
+case "$(uname -m 2>/dev/null || true)" in
+  arm64|aarch64) runtime_arch="arm64" ;;
+  x86_64|amd64) runtime_arch="x64" ;;
+esac
+service_host_path=""
+if [ -n "$runtime_arch" ]; then
+  service_host_candidate="$managed_runtime_root/native/macos/bin/$runtime_arch/ConsueloServiceHost"
+  if [ -x "$service_host_candidate" ]; then
+    service_host_path="$(xml_escape "$service_host_candidate")"
+  fi
+fi
+if [ -n "$service_host_path" ]; then
+  workspace_program_arguments="    <string>${service_host_path}</string>
+    <string>--runtime-root</string>
+    <string>$(xml_escape "$managed_runtime_root")</string>"
+else
+  workspace_program_arguments="    <string>/bin/bash</string>
+    <string>$(xml_escape "$managed_runtime_root")/scripts/start-consuelo-daemon.sh</string>"
+fi
+
 cat > "$generated_dir/${workspace_label}.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -155,8 +176,7 @@ cat > "$generated_dir/${workspace_label}.plist" <<PLIST
   <string>${workspace_label}</string>
   <key>ProgramArguments</key>
   <array>
-    <string>/bin/bash</string>
-    <string>${managed_runtime_root}/scripts/start-consuelo-daemon.sh</string>
+${workspace_program_arguments}
   </array>
   <key>RunAtLoad</key>
   <true/>

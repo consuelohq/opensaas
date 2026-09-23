@@ -60,11 +60,17 @@ describe('Consuelo OS release-channel workflows', () => {
     expect(parsed.jobs?.['windows-service-host']?.needs).toBe(
       'distribution-gate',
     );
+    expect(parsed.jobs?.['macos-service-host']?.needs).toBe('distribution-gate');
     expect(parsed.jobs?.plan?.needs).toEqual([
       'distribution-gate',
       'windows-service-host',
+      'macos-service-host',
     ]);
-    expect(parsed.jobs?.build?.needs).toEqual(['plan', 'windows-service-host']);
+    expect(parsed.jobs?.build?.needs).toEqual([
+      'plan',
+      'windows-service-host',
+      'macos-service-host',
+    ]);
     expect(parsed.jobs?.publish?.needs).toEqual([
       'distribution-gate',
       'plan',
@@ -87,6 +93,20 @@ describe('Consuelo OS release-channel workflows', () => {
     expect(workflow).toContain('linux-x64');
     expect(workflow).toContain('windows-x64');
     expect(workflow).toContain('Build deterministic Windows service host');
+    expect(workflow).toContain('Build macOS service host');
+    expect(workflow).toContain('name: macos-service-host-${{ matrix.architecture }}');
+    expect(workflow).toContain('native/macos/bin/${{ matrix.architecture }}/ConsueloServiceHost');
+    expect(workflow).toContain('name: macos-service-host-arm64');
+    expect(workflow).toContain('name: macos-service-host-x64');
+    expect(workflow).toContain('CONSUELO_MACOS_DEVELOPER_ID_P12_BASE64');
+    expect(workflow).toContain('CONSUELO_MACOS_DEVELOPER_ID_P12_PASSWORD');
+    expect(workflow).toContain('CONSUELO_MACOS_NOTARY_KEY_P8_BASE64');
+    expect(workflow).toContain('CONSUELO_MACOS_NOTARY_KEY_ID');
+    expect(workflow).toContain('CONSUELO_MACOS_NOTARY_ISSUER_ID');
+    expect(workflow).toContain('codesign \\');
+    expect(workflow).toContain('xcrun notarytool submit');
+    expect(workflow).toContain('spctl --assess --type execute');
+    expect(workflow).toContain('Missing required macOS release credential');
     expect(workflow).toContain('name: windows-service-host');
     expect(workflow).toContain(
       'native/windows-service/bin/Release/Consuelo.Windows.Service.exe',

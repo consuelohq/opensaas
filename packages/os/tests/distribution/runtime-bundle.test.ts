@@ -37,6 +37,8 @@ const requiredFixtureFiles: Record<string, string> = {
   'scripts/os.ts': 'export const osFixture = true;\n',
   'scripts/server/main.ts': 'export const serverFixture = true;\n',
   'scripts/server/supervisor.ts': 'export const supervisorFixture = true;\n',
+  'scripts/lib/macos-supervised-heartbeat.ts':
+    'export const macosSupervisedHeartbeatFixture = true;\n',
   'scripts/native-lifecycle-operation.ts':
     'export const nativeLifecycleOperationFixture = true;\n',
   'scripts/retire-legacy-system-daemons.sh': '#!/bin/bash\nexit 0\n',
@@ -411,6 +413,19 @@ describe('runtime bundle contract', () => {
         'native/macos/.build/arm64-apple-macosx/release/ConsueloMenuBarApp',
       ),
     ).toBe('source-only');
+    expect(
+      classifyRuntimeBundlePath(
+        'native/macos/bin/arm64/ConsueloServiceHost',
+      ),
+    ).toBe('platform-adapter');
+    expect(
+      classifyRuntimeBundlePath(
+        'native/macos/bin/x64/ConsueloServiceHost',
+      ),
+    ).toBe('platform-adapter');
+    expect(classifyRuntimeBundlePath('native/macos/bin/arm64/debug-symbols')).toBe(
+      'source-only',
+    );
     await expect(
       buildRuntimeBundle(
         buildOptions(root, {

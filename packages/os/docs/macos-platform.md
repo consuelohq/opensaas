@@ -16,9 +16,17 @@ Workspace decoding accepts only the control plane's safe node projection. The na
 
 Diagnostics export is lifecycle-engine owned. The native redactor removes representative tokens, authorization values, tunnel origins, key material, credential fields, and user-specific home paths before support artifacts are presented.
 
-## Build and release boundary
+## Service host and build boundary
 
-The `macos-26` arm64 CI lane runs the Swift contract executable, builds the menu target, creates `Consuelo.app`, applies only an ad-hoc development signature when `codesign` is available, archives the bundle as `Consuelo.app.tar.gz` so Unix executable modes survive artifact transport, and uploads that alpha archive. Developer ID signing, hardened-runtime entitlements, notarization, stapling, update feeds, and promotion are downstream release gates and are intentionally absent here.
+The primary `com.consuelo.system` LaunchAgent prefers the architecture-matched first-party `ConsueloServiceHost` from the active verified runtime. The host is intentionally thin: launchd owns the native host process, the host starts `scripts/start-consuelo-daemon.sh`, forwards termination/interruption to that child, and mirrors its exit status. Bun remains the runtime supervisor and lifecycle authority. If an older runtime does not contain the host, daemon generation falls back to the legacy shell-backed launch contract so rollback remains possible.
+
+The runtime publisher builds both arm64 and x64 service-host artifacts before release planning and includes the same pair in every platform bundle so release fingerprints stay version-neutral and cross-platform consistent. Production publication fails closed unless the protected `consuelo / production` environment supplies the Developer ID certificate and App Store Connect notary credentials; the workflow applies a hardened-runtime Developer ID signature, submits the host to Apple's notary service, and requires `spctl` acceptance before the artifact can enter a runtime bundle.
+
+The required protected secret names are `CONSUELO_MACOS_DEVELOPER_ID_P12_BASE64`, `CONSUELO_MACOS_DEVELOPER_ID_P12_PASSWORD`, `CONSUELO_MACOS_NOTARY_KEY_P8_BASE64`, `CONSUELO_MACOS_NOTARY_KEY_ID`, and `CONSUELO_MACOS_NOTARY_ISSUER_ID`. Secret values must never be committed to the repository.
+
+## Menu app build boundary
+
+The `macos-26` arm64 CI lane runs the Swift contract executable, builds the menu target plus `ConsueloServiceHost`, embeds the service host under `Contents/Library/LaunchServices`, creates `Consuelo.app`, applies only an ad-hoc development signature when `codesign` is available, archives the bundle as `Consuelo.app.tar.gz` so Unix executable modes survive artifact transport, and uploads that alpha archive. Developer ID signing and notarization for the public runtime service host happen in the protected runtime publication workflow; the menu app itself remains a separate alpha artifact until its own production distribution path is approved.
 
 ## Human checkpoint
 

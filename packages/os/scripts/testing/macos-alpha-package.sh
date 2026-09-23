@@ -58,17 +58,23 @@ APP_DIR="$OUTPUT_DIR/Consuelo.app"
 ARCHIVE_PATH="$OUTPUT_DIR/Consuelo.app.tar.gz"
 CONTENTS_DIR="$APP_DIR/Contents"
 MACOS_DIR="$OUTPUT_DIR/Consuelo.app/Contents/MacOS"
+LAUNCH_SERVICES_DIR="$OUTPUT_DIR/Consuelo.app/Contents/Library/LaunchServices"
 
 rm -rf "$APP_DIR"
 rm -f "$ARCHIVE_PATH"
-mkdir -p "$MACOS_DIR"
+mkdir -p "$MACOS_DIR" "$LAUNCH_SERVICES_DIR"
 
 swift build \
   --package-path "$SWIFT_PACKAGE" \
   --configuration release \
   --product ConsueloMenuBarApp
+swift build \
+  --package-path "$SWIFT_PACKAGE" \
+  --configuration release \
+  --product ConsueloServiceHost
 BIN_DIR="$(swift build --package-path "$SWIFT_PACKAGE" --configuration release --show-bin-path)"
 cp "$BIN_DIR/ConsueloMenuBarApp" "$MACOS_DIR/ConsueloMenuBarApp"
+cp "$BIN_DIR/ConsueloServiceHost" "$LAUNCH_SERVICES_DIR/ConsueloServiceHost"
 
 cat > "$CONTENTS_DIR/Info.plist" <<'PLIST'
 <?xml version="1.0" encoding="UTF-8"?>
