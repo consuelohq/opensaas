@@ -23,6 +23,10 @@ describe('macOS menu-bar platform', () => {
     expect(serviceHost).toContain('start-consuelo-daemon.sh');
     expect(serviceHost).toContain('DispatchSource.makeSignalSource');
     expect(serviceHost).toContain('process.terminate()');
+    expect(serviceHost).toContain('#if canImport(Darwin)\nimport Darwin');
+    expect(serviceHost).toContain('#elseif canImport(Glibc)\nimport Glibc');
+    expect(serviceHost.startsWith('import Darwin')).toBe(false);
+    expect(serviceHost).not.toContain('Darwin.exit(');
     expect(serviceHost).not.toContain('cloudflared');
     expect(serviceHost).not.toContain('caddy');
   });

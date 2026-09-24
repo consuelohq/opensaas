@@ -1,4 +1,8 @@
+#if canImport(Darwin)
 import Darwin
+#elseif canImport(Glibc)
+import Glibc
+#endif
 import Dispatch
 import Foundation
 
@@ -64,8 +68,8 @@ private func run() throws -> Int32 {
 }
 
 do {
-    Darwin.exit(try run())
+    exit(try run())
 } catch {
     FileHandle.standardError.write(Data(("ConsueloServiceHost: \(error)\n").utf8))
-    Darwin.exit(1)
+    exit(1)
 }
