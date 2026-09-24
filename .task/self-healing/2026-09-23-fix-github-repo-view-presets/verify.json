@@ -1,0 +1,221 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/self-healing/2026-09-23-fix-github-repo-view-presets",
+  "base": "origin/main",
+  "headSha": "4c01cc5a4e89fc80f39ca5264d7079b005a5b735",
+  "changeHash": "aaa73ae31b1b435854da117e2c4545102e9dd99e825b6f1e59644818908085db",
+  "changedFiles": [
+    "packages/os/scripts/github.js",
+    "packages/os/tests/github.test.ts",
+    "packages/workspace/scripts/github.js",
+    "packages/workspace/tests/github.test.ts"
+  ],
+  "verifiedAt": "2026-09-24T02:05:46.295Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/self-healing/2026-09-23-fix-github-repo-view-presets/evidence-log.json",
+        ".task/self-healing/2026-09-23-fix-github-repo-view-presets/read-log.json",
+        ".task/self-healing/2026-09-23-fix-github-repo-view-presets/workpad.md",
+        ".task/tasks/self-healing/2026-09-23-fix-github-repo-view-presets.json",
+        "packages/os/scripts/github.js",
+        "packages/os/tests/github.test.ts",
+        "packages/workspace/scripts/github.js",
+        "packages/workspace/tests/github.test.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "os-release-surface-freshness",
+          "critical": true,
+          "exclusive": true,
+          "reason": "OS release orchestration, GitHub CLI resolution, signed runtime publication/promotion, exact local update handoff, default workspace-shell snapshots, and Workspace Edge migrations must prove the focused freshness path without selecting unrelated package-wide OS tests.",
+          "matchedFiles": [
+            "packages/os/scripts/github.js"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "auto:@consuelo/os:package-test",
+          "critical": false,
+          "reason": "Auto-discovered package test script for packages/os.",
+          "matchedFiles": [
+            "packages/os/tests/github.test.ts"
+          ],
+          "origin": "auto"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "OS release freshness contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/os-device-authority-release-contract.test.ts",
+            "tests/distribution/release-channel-workflows.test.ts",
+            "tests/production-release-mcp-security.test.ts",
+            "tests/distribution/release-channels.test.ts",
+            "tests/github-cli-resolution.test.ts",
+            "tests/release-orchestrator.test.ts",
+            "tests/release-local-platform-bundle.test.ts",
+            "tests/release-script-promotion-correlation.test.ts",
+            "tests/release-promotion-dispatch-lock.test.ts",
+            "tests/release-script-security.test.ts",
+            "tests/release-tool-surface.test.ts"
+          ],
+          "ruleId": "os-release-surface-freshness",
+          "critical": true
+        },
+        {
+          "name": "Workspace production release contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/website-deploy.test.js"
+          ],
+          "ruleId": "os-release-surface-freshness",
+          "critical": true
+        },
+        {
+          "name": "Workspace Edge release dry run",
+          "command": [
+            "bun",
+            "run",
+            "os:release-workspace-edge",
+            "--",
+            "--dry-run"
+          ],
+          "ruleId": "os-release-surface-freshness",
+          "critical": true
+        },
+        {
+          "name": "@consuelo/os package test",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/os",
+            "test"
+          ],
+          "ruleId": "auto:@consuelo/os:package-test",
+          "critical": false
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "OS release freshness contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/os-device-authority-release-contract.test.ts",
+            "tests/distribution/release-channel-workflows.test.ts",
+            "tests/production-release-mcp-security.test.ts",
+            "tests/distribution/release-channels.test.ts",
+            "tests/github-cli-resolution.test.ts",
+            "tests/release-orchestrator.test.ts",
+            "tests/release-local-platform-bundle.test.ts",
+            "tests/release-script-promotion-correlation.test.ts",
+            "tests/release-promotion-dispatch-lock.test.ts",
+            "tests/release-script-security.test.ts",
+            "tests/release-tool-surface.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-release-surface-freshness",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 3228,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-self-healing-2026-09-23-fix-github-repo-view-presets/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/production-release-mcp-security.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 4\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/release-script-security.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/distribution/release-channel-workflows.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 73\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/release-script-promotion-correlation.test.ts \u001b[2m(\u001b[22m\u001b[2m7 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 6\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/release-orchestrator.test.ts \u001b[2m(\u001b[22m\u001b[2m13 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 7\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/release-promotion-dispatch-lock.test.ts \u001b[2m(\u001b[22m\u001b[2m7 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 233\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/github-cli-resolution.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/distribution/release-channels.test.ts \u001b[2m(\u001b[22m\u001b[2m25 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 70\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/release-local-platform-bundle.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/release-tool-surface.test.ts \u001b[2m(\u001b[22m\u001b[2m6 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 90\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-release-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m18 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 728\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should stop release before remote mutation when readiness fails \u001b[33m 370\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m11 passed\u001b[39m\u001b[22m\u001b[90m (11)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m95 passed\u001b[39m\u001b[22m\u001b[90m (95)\u001b[39m\n\u001b[2m   Start at \u001b[22m 22:04:49\n\u001b[2m   Duration \u001b[22m 2.50s\u001b[2m (transform 3.79s, setup 449ms, import 4.47s, tests 1.22s, environment 11ms)\u001b[22m\n\n$ vitest run tests/os-device-authority-release-contract.test.ts tests/distribution/release-channel-workflows.test.ts tests/production-release-mcp-security.test.ts tests/distribution/release-channels.test.ts tests/github-cli-resolution.test.ts tests/release-orchestrator.test.ts tests/release-local-platform-bundle.test.ts tests/release-script-promotion-correlation.test.ts tests/release-promotion-dispatch-lock.test.ts tests/release-script-security.test.ts tests/release-tool-surface.test.ts\n"
+        },
+        {
+          "name": "Workspace production release contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/website-deploy.test.js"
+          ],
+          "cwd": ".",
+          "ruleId": "os-release-surface-freshness",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 543,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-self-healing-2026-09-23-fix-github-repo-view-presets\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/website-deploy.test.js \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 234\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m3 passed\u001b[39m\u001b[22m\u001b[90m (3)\u001b[39m\n\u001b[2m   Start at \u001b[22m 22:04:52\n\u001b[2m   Duration \u001b[22m 323ms\u001b[2m (transform 12ms, setup 0ms, import 17ms, tests 234ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "Workspace Edge release dry run",
+          "command": [
+            "bun",
+            "run",
+            "os:release-workspace-edge",
+            "--",
+            "--dry-run"
+          ],
+          "cwd": ".",
+          "ruleId": "os-release-surface-freshness",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 732,
+          "outputTail": "release=consuelo-workspace-edge\n$ bun run --cwd packages/os cloudflare:workspace-edge:deploy:dry-run\n\n ⛅️ wrangler 4.114.0 (update available 4.137.0)\n───────────────────────────────────────────────\nTotal Upload: 235.90 KiB / gzip: 51.39 KiB\nYour Worker has access to the following bindings:\nBinding                                                                                                              Resource            \nenv.OS_DEVICE_AUTHORITY (OsDeviceGrantDurableObject, defined in consuelo-os-device-authority)                        Durable Object      \nenv.WORKSPACE_ROUTE_REGISTRY (consuelo-workspace-route-registry)                                                     D1 Database         \nenv.SITES_SNAPSHOTS (consuelo-sites-snapshots)                                                                       R2 Bucket           \nenv.OS_SEMANTIC_EMBEDDING_RATE_LIMITER (600 requests/60s)                                                            Rate Limit          \nenv.OS_SEMANTIC_EMBEDDING_IP_RATE_LIMITER (1200 requests/60s)                                                        Rate Limit          \n\n--dry-run: exiting now.\nConsuelo Workspace Edge dry run complete\n$ bun packages/workspace/scripts/os-release-workspace-edge.ts --dry-run\n$ wrangler deploy --config cloudflare/workspace-edge/wrangler.toml --dry-run\n"
+        },
+        {
+          "name": "@consuelo/os package test",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/os",
+            "test"
+          ],
+          "cwd": ".",
+          "ruleId": "auto:@consuelo/os:package-test",
+          "critical": false,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 52741,
+          "outputTail": "ecuted\",\"ts\":\"2026-09-24T02:05:39.610Z\"}\n{\"level\":\"info\",\"tool\":\"lifecycle.update\",\"branch\":\"\",\"command\":\"workspace lifecycle.update '{\\\"channel\\\":\\\"canary\\\",\\\"version\\\":\\\"1.2.3\\\"}'\",\"implementationCommand\":\"bun run lifecycle -- update --channel canary --version 1.2.3 --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-24T02:05:39.616Z\"}\n{\"level\":\"info\",\"tool\":\"confidenceScore\",\"branch\":\"\",\"command\":\"workspace confidenceScore\",\"implementationCommand\":\"bun run confidence-score -- --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-24T02:05:39.637Z\"}\n{\"level\":\"error\",\"tool\":\"lifecycle.update\",\"command\":\"workspace lifecycle.update\",\"implementationCommand\":\"workspace lifecycle.update\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-24T02:05:39.643Z\"}\n{\"level\":\"info\",\"tool\":\"lifecycle.update\",\"command\":\"workspace lifecycle.update\",\"implementationCommand\":\"workspace lifecycle.update\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"DRY_RUN\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-24T02:05:39.648Z\"}\n(node:81101) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n{\"level\":\"info\",\"tool\":\"decideNext\",\"branch\":\"\",\"command\":\"workspace decideNext\",\"implementationCommand\":\"bun run decide-next -- --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-24T02:05:39.653Z\"}\n{\"level\":\"info\",\"tool\":\"exploit\",\"branch\":\"\",\"command\":\"workspace exploit\",\"implementationCommand\":\"bun run exploit -- --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-24T02:05:39.659Z\"}\n(node:81102) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n{\"level\":\"info\",\"tool\":\"artifacts.check\",\"branch\":\"\",\"command\":\"workspace artifacts.check\",\"implementationCommand\":\"bun run artifacts -- check --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-24T02:05:40.420Z\"}\n{\"level\":\"info\",\"tool\":\"artifacts.refresh\",\"branch\":\"\",\"command\":\"workspace artifacts.refresh\",\"implementationCommand\":\"bun run artifacts -- refresh --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-24T02:05:40.456Z\"}\n(node:81267) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n(node:81665) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n(node:81664) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n(node:81845) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

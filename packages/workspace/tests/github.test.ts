@@ -49,6 +49,23 @@ describe('github typed facade script', () => {
     expect(result.fields).toContain('statusCheckRollup');
   });
 
+  it('uses repository-safe fields for repo.view full preset', () => {
+    const result = runGithub(['repo.view', '--preset', 'full', '--dry-run']);
+    expect(result.ok).toBe(true);
+    expect(result.operation).toBe('repo.view');
+    expect(result.command).toEqual([
+      'gh',
+      'repo',
+      'view',
+      'consuelohq/opensaas',
+      '--json',
+      'name,nameWithOwner,url,description,homepageUrl,visibility,isPrivate,isArchived,isFork,defaultBranchRef,primaryLanguage,licenseInfo,createdAt,updatedAt,pushedAt,diskUsage,forkCount,stargazerCount',
+    ]);
+    expect(result.fields).not.toContain('number');
+    expect(result.fields).not.toContain('headRefName');
+    expect(result.fields).not.toContain('mergeStateStatus');
+  });
+
   it('builds bounded packets for large pr.view review payloads', () => {
     const { createGithubOutput } = require('../scripts/github.js') as {
       createGithubOutput: (

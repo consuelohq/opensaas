@@ -12,6 +12,11 @@ const PRESET_FIELDS = {
   full: ['number', 'title', 'url', 'headRefName', 'baseRefName', 'state', 'mergeStateStatus', 'reviewDecision', 'latestReviews', 'statusCheckRollup', 'headRefOid', 'isDraft', 'author', 'files'],
 };
 
+const REPO_PRESET_FIELDS = {
+  summary: ['nameWithOwner', 'url', 'description', 'visibility', 'defaultBranchRef'],
+  full: ['name', 'nameWithOwner', 'url', 'description', 'homepageUrl', 'visibility', 'isPrivate', 'isArchived', 'isFork', 'defaultBranchRef', 'primaryLanguage', 'licenseInfo', 'createdAt', 'updatedAt', 'pushedAt', 'diskUsage', 'forkCount', 'stargazerCount'],
+};
+
 const CHECK_FIELDS = ['bucket', 'completedAt', 'description', 'event', 'link', 'name', 'startedAt', 'state', 'workflow'];
 const SAMPLE_LIMIT = 12;
 const TEXT_PREVIEW_LIMIT = 4000;
@@ -431,6 +436,14 @@ function fieldsFor(args, fallbackPreset = 'summary') {
   return Array.from(new Set(fields));
 }
 
+function repoFieldsFor(args, fallbackPreset = 'summary') {
+  if (args.fields.length > 0) return Array.from(new Set(args.fields));
+  const preset = args.preset || fallbackPreset;
+  const presetFields = REPO_PRESET_FIELDS[preset];
+  if (!presetFields) throw new Error(`github repo.view supports presets: summary, full; received ${preset}`);
+  return presetFields;
+}
+
 function prView(args) {
   const fields = fieldsFor(args, 'review');
   const result = gh(['pr', 'view', requirePr(args), '--repo', args.repo, '--json', fields.join(',')], { dryRun: args.dryRun });
@@ -503,8 +516,9 @@ function branchCompare(args) {
 }
 
 function repoView(args) {
-  const result = gh(['repo', 'view', args.repo, '--json', fieldsFor(args, 'summary').join(',')], { dryRun: args.dryRun });
-  output(args.operation, args, result);
+  const fields = repoFieldsFor(args, 'summary');
+  const result = gh(['repo', 'view', args.repo, '--json', fields.join(',')], { dryRun: args.dryRun });
+  output(args.operation, args, result, { fields });
 }
 
 function raw(args) {
