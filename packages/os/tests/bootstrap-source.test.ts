@@ -90,6 +90,8 @@ function runPathSetup(
 ) {
   const script = [
     'set -euo pipefail',
+    extractShellFunction(bootstrap, 'has_unsafe_shared_write'),
+    extractShellFunction(bootstrap, 'resolve_cli_symlink_target'),
     extractShellFunction(bootstrap, 'is_safe_immediate_cli_link_dir'),
     extractShellFunction(bootstrap, 'find_immediate_cli_link_dir'),
     extractShellFunction(bootstrap, 'ensure_command_on_path'),
@@ -473,16 +475,18 @@ describe('bootstrap source refresh controls', () => {
     expect(result.stdout).toContain('PATH_IMMEDIATE=1');
   });
 
-  it('skips unsafe writable PATH directories before installing the immediate consuelo shim', () => {
+  it.each([0o775, 0o757])(
+    'should skip PATH directories with either shared write bit when mode is %s',
+    (unsafeMode) => {
     const bootstrap = readBootstrap();
     const home = mkdtempSync(join(tmpdir(), 'consuelo-bootstrap-path-safety-'));
     const unsafeDir = join(home, 'unsafe-bin');
     const safeDir = join(home, 'safe-bin');
     const canonicalBin = join(home, '.consuelo', 'bin');
     const canonicalCli = join(canonicalBin, 'consuelo');
-    mkdirSync(unsafeDir, { recursive: true, mode: 0o777 });
+    mkdirSync(unsafeDir, { recursive: true, mode: unsafeMode });
     mkdirSync(safeDir, { recursive: true, mode: 0o700 });
-    chmodSync(unsafeDir, 0o777);
+    chmodSync(unsafeDir, unsafeMode);
     mkdirSync(canonicalBin, { recursive: true });
     writeFileSync(canonicalCli, '#!/bin/sh\nexit 0\n', { mode: 0o755 });
 
@@ -496,6 +500,53 @@ describe('bootstrap source refresh controls', () => {
     expect(lstatSync(join(safeDir, 'consuelo')).isSymbolicLink()).toBe(true);
     expect(readlinkSync(join(safeDir, 'consuelo'))).toBe(canonicalCli);
     expect(result.stdout).toContain('PATH_IMMEDIATE=1');
+    },
+  );
+
+  it('should skip a user-owned PATH directory when a non-sticky parent is shared-writable', () => {
+    const bootstrap = readBootstrap();
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-bootstrap-parent-safety-'));
+    const replaceableParent = join(home, 'replaceable');
+    const unsafeChild = join(replaceableParent, 'bin');
+    const safeDir = join(home, 'safe-bin');
+    const canonicalBin = join(home, '.consuelo', 'bin');
+    const canonicalCli = join(canonicalBin, 'consuelo');
+    mkdirSync(unsafeChild, { recursive: true, mode: 0o700 });
+    mkdirSync(safeDir, { recursive: true, mode: 0o700 });
+    chmodSync(replaceableParent, 0o777);
+    chmodSync(unsafeChild, 0o700);
+    mkdirSync(canonicalBin, { recursive: true });
+    writeFileSync(canonicalCli, '#!/bin/sh\nexit 0\n', { mode: 0o755 });
+
+    const result = runPathSetup(bootstrap, {
+      home,
+      path: `${unsafeChild}:${safeDir}:/usr/bin:/bin`,
+    });
+
+    expect(result.status, result.stderr).toBe(0);
+    expect(existsSync(join(unsafeChild, 'consuelo'))).toBe(false);
+    expect(lstatSync(join(safeDir, 'consuelo')).isSymbolicLink()).toBe(true);
+  });
+
+  it('should recognize a relative symlink that already resolves to the canonical Consuelo CLI', () => {
+    const bootstrap = readBootstrap();
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-bootstrap-relative-link-'));
+    const pathDir = join(home, 'bin');
+    const canonicalBin = join(home, '.consuelo', 'bin');
+    const canonicalCli = join(canonicalBin, 'consuelo');
+    mkdirSync(pathDir, { recursive: true });
+    mkdirSync(canonicalBin, { recursive: true });
+    writeFileSync(canonicalCli, '#!/bin/sh\nexit 0\n', { mode: 0o755 });
+    symlinkSync('../.consuelo/bin/consuelo', join(pathDir, 'consuelo'));
+
+    const result = runPathSetup(bootstrap, {
+      home,
+      path: `${pathDir}:/usr/bin:/bin`,
+    });
+
+    expect(result.status, result.stderr).toBe(0);
+    expect(result.stdout).toContain('PATH_IMMEDIATE=1');
+    expect(result.stdout).not.toContain("Another 'consuelo' already owns PATH");
   });
 
   it('never overwrites an unrelated consuelo command already on PATH', () => {

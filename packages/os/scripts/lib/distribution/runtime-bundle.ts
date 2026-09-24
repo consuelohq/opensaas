@@ -538,7 +538,8 @@ function isTextFile(filePath: string, bytes: Buffer): boolean {
   return filePath === 'package.json' || filePath === 'bun.lock';
 }
 
-function portableFileMode(bytes: Buffer): number {
+function portableFileMode(filePath: string, bytes: Buffer): number {
+  if (MACOS_SERVICE_HOST_PATHS.has(filePath)) return 0o755;
   return bytes.subarray(0, 2).equals(Buffer.from('#!')) ? 0o755 : 0o644;
 }
 
@@ -699,7 +700,7 @@ function collectRuntimeFiles(
     files.push({
       bytes,
       digest: sha256(bytes),
-      mode: portableFileMode(bytes),
+      mode: portableFileMode(filePath, bytes),
       path: filePath,
       role: role as RuntimeBundleIncludedRole,
       size: bytes.byteLength,

@@ -108,6 +108,7 @@ if (import.meta.main) {
     || shouldRunMacosSupervisedHeartbeat({
       supervisedWorker,
       heartbeatOwner: process.env.CONSUELO_OS_HEARTBEAT_OWNER,
+      workerId: process.env.CONSUELO_OS_WORKER_ID,
     });
   const heartbeatScheduler = ownsWorkspaceHeartbeat
     ? startWorkspaceNodeHeartbeatScheduler({

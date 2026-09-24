@@ -1,0 +1,104 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/resolve-stream-os-review-blockers-before-stable",
+  "events": [
+    {
+      "id": "68222e2d-594c-4563-86b3-6ea5cfcc4aa0",
+      "occurred_at": "2026-09-24T00:21:42.023Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/audit/fixtures/script-parity-classifications.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/resolve-stream-os-review-blockers-before-stable",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/resolve-stream-os-review-blockers-before-stable"
+      }
+    },
+    {
+      "id": "2000a380-3d36-4814-be3f-5c9f27851f3e",
+      "occurred_at": "2026-09-24T00:21:47.509Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/audit/fixtures/script-parity-classifications.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/resolve-stream-os-review-blockers-before-stable",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/resolve-stream-os-review-blockers-before-stable"
+      }
+    },
+    {
+      "id": "8d34a239-0635-404b-a02e-8a5bc1c16085",
+      "occurred_at": "2026-09-24T00:21:47.826Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/audit/fixtures/script-parity-classifications.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/resolve-stream-os-review-blockers-before-stable",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/resolve-stream-os-review-blockers-before-stable"
+      }
+    },
+    {
+      "id": "add3fd2e-de73-4858-991f-1c471a7edc99",
+      "occurred_at": "2026-09-24T00:24:07.722Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/definitely-missing.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/resolve-stream-os-review-blockers-before-stable",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/resolve-stream-os-review-blockers-before-stable"
+      }
+    },
+    {
+      "id": "bd03ef66-a985-4309-a1b9-3dd42831b4a2",
+      "occurred_at": "2026-09-24T00:25:48.641Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/definitely-missing.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/resolve-stream-os-review-blockers-before-stable",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/resolve-stream-os-review-blockers-before-stable"
+      }
+    },
+    {
+      "id": "9409effa-7e05-4c08-b9da-dd97b793d75c",
+      "occurred_at": "2026-09-24T00:26:12.074Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/definitely-missing.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/resolve-stream-os-review-blockers-before-stable",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/resolve-stream-os-review-blockers-before-stable"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-09-24T00:26:12.277Z"
+}

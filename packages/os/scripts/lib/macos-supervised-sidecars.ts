@@ -179,8 +179,18 @@ export async function startMacosSupervisedSidecars(input: {
   const launch = (spec: MacosSupervisedSidecarSpec): void => {
     const signature = JSON.stringify(spec.command);
     const handle = spawnProcess(spec);
-    writeFileSync(spec.pidFile, `${handle.pid}\n`, { mode: 0o600 });
-    active.set(spec.id, { handle, signature, spec });
+    try {
+      writeFileSync(spec.pidFile, `${handle.pid}\n`, { mode: 0o600 });
+      active.set(spec.id, { handle, signature, spec });
+    } catch (error: unknown) {
+      try {
+        handle.kill('SIGTERM');
+      } catch (terminationError: unknown) {
+        report(terminationError);
+      }
+      rmSync(spec.pidFile, { force: true });
+      throw error;
+    }
     void handle.exited.then(async (exitCode) => {
       const current = active.get(spec.id);
       if (!current || current.handle !== handle) return;
@@ -195,7 +205,7 @@ export async function startMacosSupervisedSidecars(input: {
         runtimeRoot: input.runtimeRoot(),
         environment,
       }).find((candidate) => candidate.id === spec.id);
-      if (desired) launch(desired);
+      if (desired && !active.has(spec.id)) launch(desired);
     }).catch((error: unknown) => report(error));
   };
 

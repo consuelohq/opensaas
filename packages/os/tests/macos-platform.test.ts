@@ -88,7 +88,7 @@ describe('macOS menu-bar platform', () => {
     expect(script).not.toContain('launchctl');
   });
 
-  it('documents the service boundary and human-only install checkpoint', async () => {
+  it('should document the service boundary when a human performs the install checkpoint', async () => {
     const docs = await readFile(
       resolve(packageRoot, 'docs/macos-platform.md'),
       'utf8',
@@ -102,7 +102,7 @@ describe('macOS menu-bar platform', () => {
     expect(docs).toContain('~/Applications/Consuelo.app');
   });
 
-  it('starts the owner-local lifecycle endpoint from the installed Bun daemon', async () => {
+  it('should start the owner-local lifecycle endpoint when the installed Bun daemon launches', async () => {
     const main = await readFile(
       resolve(packageRoot, 'scripts/server/main.ts'),
       'utf8',
@@ -122,7 +122,7 @@ describe('macOS menu-bar platform', () => {
     expect(endpoint).toContain('NATIVE_LIFECYCLE_MAX_PAYLOAD_BYTES');
   });
 
-  it('keeps node heartbeat inside the macOS supervisor instead of registering Bun with launchd', async () => {
+  it('should keep node heartbeat inside the macOS supervisor when launchd owns only the OS daemon', async () => {
     const supervisor = await readFile(
       resolve(packageRoot, 'scripts/server/supervisor.ts'),
       'utf8',
@@ -145,6 +145,8 @@ describe('macOS menu-bar platform', () => {
     expect(serverMain).toContain('shouldRunMacosSupervisedHeartbeat');
     expect(supervisedHeartbeat).toContain("input.heartbeatOwner === '1'");
     expect(serverMain).toContain('startWorkspaceNodeHeartbeatScheduler');
+    expect(serverMain).toContain('workerId: process.env.CONSUELO_OS_WORKER_ID');
+    expect(installState).toContain('writeMacosSupervisedSidecarsConfigAtomically');
     expect(installState).not.toContain("message: 'workspace node heartbeat launchd service configured'");
     expect(installState).not.toContain('renderCloudflaredLaunchdPlist({\n            label: heartbeatLabel');
   });
