@@ -1,4 +1,4 @@
-import { chmodSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -125,7 +125,7 @@ describe('macOS supervised sidecars', () => {
       runtimeRoot: () => runtimeRoot,
       environment: { CADDY_BIN: caddy, CLOUDFLARED_BIN: cloudflared },
       spawnProcess() {
-        chmodSync(runtimeDir, 0o500);
+        rmSync(runtimeDir, { recursive: true, force: true });
         return {
           pid: 777,
           exited: new Promise<number>(() => undefined),
@@ -138,7 +138,6 @@ describe('macOS supervised sidecars', () => {
     });
 
     await expect(start).rejects.toThrow();
-    chmodSync(runtimeDir, 0o700);
     expect(signals).toContain('SIGTERM');
   });
 

@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 import {
   closeSync,
   existsSync,
+  fsyncSync,
   mkdirSync,
   openSync,
   readFileSync,
@@ -103,21 +104,65 @@ export function createReleaseOperationManager(options: ReleaseOperationManagerOp
     mkdirSync(dir, { recursive: true, mode: 0o700 });
     const target = statePath(state.operationId);
     const temp = `${target}.${process.pid}.${Date.now()}.tmp`;
-    writeFileSync(temp, `${JSON.stringify(state, null, 2)}\n`, { mode: 0o600 });
-    renameSync(temp, target);
+    try {
+      const tempDescriptor = openSync(temp, 'wx', 0o600);
+      try {
+        writeFileSync(tempDescriptor, `${JSON.stringify(state, null, 2)}\n`, 'utf8');
+        fsyncSync(tempDescriptor);
+      } finally {
+        closeSync(tempDescriptor);
+      }
+      renameSync(temp, target);
+      try {
+        const directoryDescriptor = openSync(dir, 'r');
+        try {
+          fsyncSync(directoryDescriptor);
+        } finally {
+          closeSync(directoryDescriptor);
+        }
+      } catch (error: unknown) {
+        if (process.platform !== 'win32') throw error;
+      }
+    } finally {
+      rmSync(temp, { force: true });
+    }
   };
 
   const withStartLock = async <T>(operationId: string, fn: () => Promise<T>): Promise<T> => {
-    mkdirSync(operationDir(operationId), { recursive: true, mode: 0o700 });
+    const dir = operationDir(operationId);
+    const targetLockPath = lockPath(operationId);
+    mkdirSync(dir, { recursive: true, mode: 0o700 });
+    const reclaimStaleLock = (): boolean => {
+      let rawOwner = '';
+      try {
+        rawOwner = readFileSync(targetLockPath, 'utf8').trim();
+      } catch {
+        return false;
+      }
+      const ownerPid = Number(rawOwner);
+      if (!Number.isSafeInteger(ownerPid) || ownerPid <= 0 || processAlive(ownerPid)) return false;
+      try {
+        if (readFileSync(targetLockPath, 'utf8').trim() !== rawOwner) return false;
+      } catch {
+        return false;
+      }
+      rmSync(targetLockPath, { force: true });
+      return true;
+    };
     let fd: number | undefined;
     try {
-      fd = openSync(lockPath(operationId), 'wx', 0o600);
+      fd = openSync(targetLockPath, 'wx', 0o600);
+      writeFileSync(fd, `${process.pid}\n`, 'utf8');
+      fsyncSync(fd);
     } catch (error: unknown) {
       const code = (error as NodeJS.ErrnoException).code;
       if (code !== 'EEXIST') throw error;
+      if (reclaimStaleLock()) return withStartLock(operationId, fn);
       for (let attempt = 0; attempt < 50; attempt += 1) {
         await new Promise((resolve) => setTimeout(resolve, 20));
-        if (!existsSync(lockPath(operationId))) return withStartLock(operationId, fn);
+        if (!existsSync(targetLockPath) || reclaimStaleLock()) {
+          return withStartLock(operationId, fn);
+        }
       }
       throw new Error(`release operation ${operationId} is busy`);
     }
@@ -125,7 +170,7 @@ export function createReleaseOperationManager(options: ReleaseOperationManagerOp
       return await fn();
     } finally {
       if (fd !== undefined) closeSync(fd);
-      rmSync(lockPath(operationId), { force: true });
+      rmSync(targetLockPath, { force: true });
     }
   };
 

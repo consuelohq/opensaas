@@ -1,10 +1,14 @@
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { createReleaseOperationManager } from '../scripts/lib/release-operation';
+import {
+  createReleaseOperationManager,
+  releaseOperationId,
+} from '../scripts/lib/release-operation';
 
 const roots: string[] = [];
 
@@ -13,6 +17,44 @@ afterEach(() => {
 });
 
 describe('durable release operations', () => {
+  it('flushes state replacements and their directory before reporting success', () => {
+    const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+    const source = readFileSync(resolve(root, 'scripts/lib/release-operation.ts'), 'utf8');
+    expect(source).toContain('fsyncSync(tempDescriptor)');
+    expect(source).toContain('fsyncSync(directoryDescriptor)');
+  });
+
+  it('recovers a stale start lock owned by a dead process', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-release-operation-lock-'));
+    roots.push(home);
+    const request = {
+      repo: 'consuelohq/opensaas',
+      pr: 2550,
+      channel: 'stable' as const,
+      mergeMethod: 'merge' as const,
+      releaseOnly: true,
+    };
+    const operationId = releaseOperationId(request);
+    const operationDir = join(home, 'node', 'runs', 'releases', operationId);
+    mkdirSync(operationDir, { recursive: true });
+    writeFileSync(join(operationDir, '.start.lock'), '999999\n', { mode: 0o600 });
+    let spawns = 0;
+    const manager = createReleaseOperationManager({
+      home,
+      executable: '/usr/local/bin/bun',
+      scriptPath: '/runtime/scripts/release.ts',
+      processAlive: () => false,
+      spawnProcess() {
+        spawns += 1;
+        return { pid: 4321, unref() {}, once() { return undefined; } };
+      },
+    });
+
+    const started = await manager.start(request);
+    expect(started.operationId).toBe(operationId);
+    expect(spawns).toBe(1);
+  });
+
   it('deduplicates identical starts and returns before the detached worker completes', async () => {
     const home = mkdtempSync(join(tmpdir(), 'consuelo-release-operation-'));
     roots.push(home);

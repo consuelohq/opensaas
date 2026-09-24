@@ -151,6 +151,8 @@ describe('macOS menu-bar platform', () => {
     expect(serverMain).toContain('startWorkspaceNodeHeartbeatScheduler');
     expect(serverMain).toContain('workerId: process.env.CONSUELO_OS_WORKER_ID');
     expect(installState).toContain('writeMacosSupervisedSidecarsConfigAtomically');
+    expect(installState).toContain('fs.fsyncSync(temporaryDescriptor)');
+    expect(installState).toContain('fs.fsyncSync(directoryDescriptor)');
     expect(installState).not.toContain("message: 'workspace node heartbeat launchd service configured'");
     expect(installState).not.toContain('renderCloudflaredLaunchdPlist({\n            label: heartbeatLabel');
   });

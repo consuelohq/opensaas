@@ -1,7 +1,11 @@
 #!/usr/bin/env bun
 
 import { spawnSync } from 'node:child_process';
-import { randomUUID } from 'node:crypto';
+import {
+  createPublicKey,
+  randomUUID,
+  verify as verifyBytes,
+} from 'node:crypto';
 import { mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path, { dirname } from 'node:path';
@@ -32,7 +36,11 @@ import {
   createReleaseOperationManager,
   type ReleaseOperationRequest,
 } from './lib/release-operation';
-import type { BundleSignaturePayload } from './lib/distribution/release-channels';
+import {
+  canonicalBundleSignatureJson,
+  type BundleSignaturePayload,
+  type DetachedReleaseSignature,
+} from './lib/distribution/release-channels';
 import {
   RELEASE_PROMOTION_LOCK_BRANCH,
   RELEASE_PROMOTION_LOCK_PATH,
@@ -61,6 +69,42 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function clean(value: unknown): string {
   return String(value ?? '').trim();
+}
+
+function trustedReleasePublicKeys(env: NodeJS.ProcessEnv = process.env): Record<string, string> {
+  const keys: Record<string, string> = {};
+  const raw = clean(env.CONSUELO_OS_RELEASE_TRUSTED_PUBLIC_KEYS);
+  if (raw) {
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      throw new Error('CONSUELO_OS_RELEASE_TRUSTED_PUBLIC_KEYS is not valid JSON');
+    }
+    if (!parsed || Array.isArray(parsed) || typeof parsed !== 'object') {
+      throw new Error('CONSUELO_OS_RELEASE_TRUSTED_PUBLIC_KEYS must be a JSON object');
+    }
+    for (const [keyId, publicKey] of Object.entries(parsed as Record<string, unknown>)) {
+      if (!keyId.trim() || typeof publicKey !== 'string' || !publicKey.trim()) {
+        throw new Error('CONSUELO_OS_RELEASE_TRUSTED_PUBLIC_KEYS contains an invalid key');
+      }
+      keys[keyId] = publicKey;
+    }
+  }
+  const keyId = clean(env.CONSUELO_OS_RELEASE_SIGNING_KEY_ID);
+  const publicKey = clean(env.CONSUELO_OS_RELEASE_SIGNING_PUBLIC_KEY);
+  if (keyId || publicKey) {
+    if (!keyId || !publicKey) {
+      throw new Error(
+        'CONSUELO_OS_RELEASE_SIGNING_KEY_ID and CONSUELO_OS_RELEASE_SIGNING_PUBLIC_KEY must be configured together',
+      );
+    }
+    keys[keyId] = publicKey;
+  }
+  if (Object.keys(keys).length === 0) {
+    throw new Error('trusted Consuelo OS release public keys are required');
+  }
+  return keys;
 }
 
 function safeErrorText(value: unknown): string {
@@ -596,18 +640,75 @@ function createAdapter(repo: string, ghPath: string): ReleaseAdapter {
         ],
         120_000,
       );
+      const expectedVersion = exactTags[0]!.name.slice('consuelo-os-v'.length);
+      const trustedKeys = trustedReleasePublicKeys();
+      let expectedReleaseFingerprint = '';
+      const observedPlatforms = new Set<string>();
       const signaturePayloads = readdirSync(tempDirectory)
         .filter((name) => name.endsWith('.sig'))
         .sort()
         .map((name) => {
-          const signature = parseJson<{ payload?: BundleSignaturePayload }>(
+          const signature = parseJson<
+            Partial<DetachedReleaseSignature> & { payload?: BundleSignaturePayload }
+          >(
             readFileSync(path.join(tempDirectory, name), 'utf8'),
             `immutable release signature ${name}`,
           );
-          if (!signature.payload) {
-            throw new Error(`immutable release signature ${name} is missing payload`);
+          if (
+            signature.algorithm !== 'ed25519'
+            || !signature.keyId?.trim()
+            || !signature.signature?.trim()
+            || !signature.payload
+          ) {
+            throw new Error(`immutable release signature ${name} is incomplete`);
           }
-          return signature.payload;
+          const publicKeyPem = trustedKeys[signature.keyId];
+          if (!publicKeyPem) {
+            throw new Error(`immutable release signature key is not trusted: ${signature.keyId}`);
+          }
+          let publicKey;
+          try {
+            publicKey = createPublicKey(publicKeyPem);
+          } catch {
+            throw new Error(`immutable release signing key is not usable: ${signature.keyId}`);
+          }
+          if (
+            publicKey.asymmetricKeyType !== 'ed25519'
+            || !verifyBytes(
+              null,
+              Buffer.from(canonicalBundleSignatureJson(signature.payload)),
+              publicKey,
+              Buffer.from(signature.signature, 'base64url'),
+            )
+          ) {
+            throw new Error(`immutable release signature verification failed for ${name}`);
+          }
+          const payload = signature.payload;
+          const platformKey = `${payload.platform}-${payload.architecture}`;
+          if (observedPlatforms.has(platformKey)) {
+            throw new Error(`duplicate immutable release signature platform: ${platformKey}`);
+          }
+          observedPlatforms.add(platformKey);
+          if (payload.sourceCommit.toLowerCase() !== mergeSha.toLowerCase()) {
+            throw new Error(`immutable release signature source commit mismatch for ${platformKey}`);
+          }
+          if (payload.version !== expectedVersion) {
+            throw new Error(`immutable release signature version mismatch for ${platformKey}`);
+          }
+          if (!/^sha256:[a-f0-9]{64}$/.test(payload.bundleId)) {
+            throw new Error(`immutable release platform bundle ID is invalid for ${platformKey}`);
+          }
+          if (!/^sha256:[a-f0-9]{64}$/.test(payload.releaseFingerprint)) {
+            throw new Error(`immutable release fingerprint is invalid for ${platformKey}`);
+          }
+          if (
+            expectedReleaseFingerprint
+            && payload.releaseFingerprint !== expectedReleaseFingerprint
+          ) {
+            throw new Error('immutable release signatures disagree on the release fingerprint');
+          }
+          expectedReleaseFingerprint = payload.releaseFingerprint;
+          return payload;
         });
       return resolveImmutableReleaseIdentityFromEvidence({
         mergeSha,
