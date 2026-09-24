@@ -58,8 +58,24 @@ function writeMacosSupervisedSidecarsConfigAtomically(
 ): void {
   const temporaryPath = `${targetPath}.${process.pid}.${randomUUID()}.tmp`;
   try {
-    fs.writeFileSync(temporaryPath, content, { mode: 0o600 });
+    const temporaryDescriptor = fs.openSync(temporaryPath, 'wx', 0o600);
+    try {
+      fs.writeFileSync(temporaryDescriptor, content, 'utf8');
+      fs.fsyncSync(temporaryDescriptor);
+    } finally {
+      fs.closeSync(temporaryDescriptor);
+    }
     fs.renameSync(temporaryPath, targetPath);
+    try {
+      const directoryDescriptor = fs.openSync(path.dirname(targetPath), 'r');
+      try {
+        fs.fsyncSync(directoryDescriptor);
+      } finally {
+        fs.closeSync(directoryDescriptor);
+      }
+    } catch {
+      // Directory fsync is not available on every supported filesystem.
+    }
   } finally {
     fs.rmSync(temporaryPath, { force: true });
   }

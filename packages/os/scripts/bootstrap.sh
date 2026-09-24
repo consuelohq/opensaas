@@ -1793,7 +1793,12 @@ resolve_cli_symlink_target() {
   [ -n "$target" ] || return 1
   case "$target" in
     /*)
-      printf '%s\n' "$target"
+      target_dir="$(dirname "$target")"
+      target_name="$(basename "$target")"
+      (
+        cd "$target_dir" 2>/dev/null || exit 1
+        printf '%s/%s\n' "$(pwd -P)" "$target_name"
+      )
       ;;
     *)
       target_dir="$(dirname "$target")"
@@ -1807,10 +1812,39 @@ resolve_cli_symlink_target() {
   esac
 }
 
+path_owner_uid() {
+  local candidate="$1"
+  if /usr/bin/stat -f '%u' "$candidate" >/dev/null 2>&1; then
+    /usr/bin/stat -f '%u' "$candidate"
+  else
+    /usr/bin/stat -c '%u' "$candidate" 2>/dev/null
+  fi
+}
+
+trusted_sticky_owner() {
+  local candidate="$1"
+  local owner_uid=""
+  local current_uid=""
+
+  owner_uid="$(path_owner_uid "$candidate")" || return 1
+  current_uid="$(id -u 2>/dev/null)" || return 1
+  [ "$owner_uid" = "$current_uid" ] || [ "$owner_uid" = "0" ]
+}
+
+is_safe_shared_path_parent() {
+  local candidate="$1"
+  if has_unsafe_shared_write "$candidate"; then
+    /usr/bin/find "$candidate" -prune -perm -1000 -print 2>/dev/null | /usr/bin/grep -q . || return 1
+    trusted_sticky_owner "$candidate" || return 1
+  fi
+  return 0
+}
+
 is_safe_immediate_cli_link_dir() {
   local candidate="$1"
   local cursor=""
   local resolved_cursor=""
+  local physical_cursor=""
 
   case "$candidate" in
     /*) ;;
@@ -1826,10 +1860,16 @@ is_safe_immediate_cli_link_dir() {
   while [ -n "$cursor" ] && [ "$cursor" != "/" ]; do
     [ -d "$cursor" ] || return 1
     resolved_cursor="$(cd "$cursor" 2>/dev/null && pwd -P)" || return 1
-    if has_unsafe_shared_write "$resolved_cursor"; then
-      /usr/bin/find "$resolved_cursor" -prune -perm -1000 -print 2>/dev/null | /usr/bin/grep -q . || return 1
-    fi
+    is_safe_shared_path_parent "$resolved_cursor" || return 1
     cursor="$(dirname "$cursor")"
+  done
+
+  resolved_cursor="$(cd "$candidate" 2>/dev/null && pwd -P)" || return 1
+  physical_cursor="$(dirname "$resolved_cursor")"
+  while [ -n "$physical_cursor" ] && [ "$physical_cursor" != "/" ]; do
+    [ -d "$physical_cursor" ] || return 1
+    is_safe_shared_path_parent "$physical_cursor" || return 1
+    physical_cursor="$(dirname "$physical_cursor")"
   done
   return 0
 }
