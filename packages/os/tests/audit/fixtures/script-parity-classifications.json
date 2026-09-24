@@ -725,6 +725,14 @@
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
     },
+    "scripts/lib/macos-supervised-heartbeat.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned macOS heartbeat ownership boundary keeps the signed workspace heartbeat inside the supervised runtime and intentionally has no workspace counterpart."
+    },
+    "scripts/lib/macos-supervised-sidecars.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned macOS sidecar supervisor manages Caddy and Cloudflared child lifecycle for installed runtimes and intentionally has no workspace counterpart."
+    },
     "scripts/lib/managed-cloud-node-enrollment.ts": {
       "status": "os-only-needs-review",
       "reason": "scripts/lib/managed-cloud-node-enrollment.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
@@ -1017,6 +1025,14 @@
     "scripts/lib/redaction.ts": {
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
+    },
+    "scripts/lib/release-immutable.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned immutable release-evidence resolver pins release operations to exact merged source and publication state; no workspace counterpart is intended."
+    },
+    "scripts/lib/release-operation.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned durable release-operation state persists bounded resumable release progress and intentionally has no workspace counterpart."
     },
     "scripts/lib/release-orchestrator.ts": {
       "status": "os-only-needs-review",

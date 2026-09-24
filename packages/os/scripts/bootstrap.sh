@@ -1598,15 +1598,17 @@ finalize_recovery_cli() {
 
 recovery_cli_hint() {
   [ -x "$OS_HOME/bin/consuelo" ] || return 0
+  local path_guidance="$PATH_HINT"
+  [ -n "$path_guidance" ] || path_guidance="Use the absolute recovery CLI path shown above."
   printf '
 Recovery CLI is ready at %s.
 Use it in this shell with:
   %s status
   %s uninstall --dry-run --json
-A new shell can use the bare consuelo command after PATH setup.
+%s
 To retry setup:
   %s
-' "$OS_HOME/bin/consuelo" "$OS_HOME/bin/consuelo" "$OS_HOME/bin/consuelo" "$HOSTED_INSTALL_COMMAND"
+' "$OS_HOME/bin/consuelo" "$OS_HOME/bin/consuelo" "$OS_HOME/bin/consuelo" "$path_guidance" "$HOSTED_INSTALL_COMMAND"
 }
 
 run_onboarding() { # run_onboarding_json
@@ -1776,8 +1778,39 @@ maybe_install_daemons() {
 # A curl-pipe-bash child cannot mutate its parent shell's PATH. Prefer a safe
 # link in an already-visible writable directory; otherwise configure future
 # shells and keep the canonical absolute CLI path available immediately.
+has_unsafe_shared_write() {
+  local candidate="$1"
+  /usr/bin/find "$candidate" -prune \( -perm -020 -o -perm -002 \) -print 2>/dev/null | /usr/bin/grep -q .
+}
+
+resolve_cli_symlink_target() {
+  local link_path="$1"
+  local target=""
+  local target_dir=""
+  local target_name=""
+
+  target="$(readlink "$link_path" 2>/dev/null || true)"
+  [ -n "$target" ] || return 1
+  case "$target" in
+    /*)
+      printf '%s\n' "$target"
+      ;;
+    *)
+      target_dir="$(dirname "$target")"
+      target_name="$(basename "$target")"
+      (
+        cd "$(dirname "$link_path")" 2>/dev/null || exit 1
+        cd "$target_dir" 2>/dev/null || exit 1
+        printf '%s/%s\n' "$(pwd -P)" "$target_name"
+      )
+      ;;
+  esac
+}
+
 is_safe_immediate_cli_link_dir() {
   local candidate="$1"
+  local cursor=""
+  local resolved_cursor=""
 
   case "$candidate" in
     /*) ;;
@@ -1788,26 +1821,34 @@ is_safe_immediate_cli_link_dir() {
   [ -w "$candidate" ] || return 1
   [ -O "$candidate" ] || return 1
 
-  # Do not place a trusted command into a directory another local user/group can write.
-  if /usr/bin/find "$candidate" -prune -perm -022 -print 2>/dev/null | /usr/bin/grep -q .; then
-    return 1
-  fi
+  has_unsafe_shared_write "$candidate" && return 1
+  cursor="$(dirname "$candidate")"
+  while [ -n "$cursor" ] && [ "$cursor" != "/" ]; do
+    [ -d "$cursor" ] || return 1
+    resolved_cursor="$(cd "$cursor" 2>/dev/null && pwd -P)" || return 1
+    if has_unsafe_shared_write "$resolved_cursor"; then
+      /usr/bin/find "$resolved_cursor" -prune -perm -1000 -print 2>/dev/null | /usr/bin/grep -q . || return 1
+    fi
+    cursor="$(dirname "$cursor")"
+  done
   return 0
 }
 
 find_immediate_cli_link_dir() {
   local bin_dir="$OS_HOME/bin"
   local existing=""
+  local expected_cli=""
   local path_entry=""
   local path_entries=()
 
+  expected_cli="$(cd "$bin_dir" 2>/dev/null && printf '%s/consuelo\n' "$(pwd -P)")" || expected_cli="$bin_dir/consuelo"
   existing="$(command -v consuelo 2>/dev/null || true)"
   if [ -n "$existing" ]; then
     if [ "$existing" = "$bin_dir/consuelo" ]; then
       printf '%s\n' "$bin_dir"
       return 0
     fi
-    if [ -L "$existing" ] && [ "$(readlink "$existing" 2>/dev/null || true)" = "$bin_dir/consuelo" ]; then
+    if [ -L "$existing" ] && [ "$(resolve_cli_symlink_target "$existing" 2>/dev/null || true)" = "$expected_cli" ]; then
       dirname "$existing"
       return 0
     fi
@@ -1829,6 +1870,7 @@ ensure_command_on_path() {
   local bin_dir="$OS_HOME/bin"
   local rc_file=""
   local existing=""
+  local expected_cli=""
   local immediate_dir=""
   local immediate_status=0
 
@@ -1839,9 +1881,10 @@ ensure_command_on_path() {
     return 0
   fi
 
+  expected_cli="$(cd "$bin_dir" 2>/dev/null && printf '%s/consuelo\n' "$(pwd -P)")" || expected_cli="$bin_dir/consuelo"
   existing="$(command -v consuelo 2>/dev/null || true)"
   if [ -n "$existing" ] && [ "$existing" != "$bin_dir/consuelo" ]; then
-    if [ ! -L "$existing" ] || [ "$(readlink "$existing" 2>/dev/null || true)" != "$bin_dir/consuelo" ]; then
+    if [ ! -L "$existing" ] || [ "$(resolve_cli_symlink_target "$existing" 2>/dev/null || true)" != "$expected_cli" ]; then
       log ""
       log "Warning: another 'consuelo' is already on PATH at $existing"
       log "Consuelo OS will not overwrite it. Use $bin_dir/consuelo until you resolve the command collision."

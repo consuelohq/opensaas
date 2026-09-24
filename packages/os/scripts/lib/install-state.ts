@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -51,6 +51,19 @@ import { STANDARD_OS_MCP_SCOPES } from './tool-scope-authorization';
 import { planWorkspaceConnectorTransport } from './workspace-connector-transport';
 import { PLACEHOLDER_NODE_ID } from './unenrolled-placeholder-identity';
 import { resolveWorkerPoolConfiguration } from './worker-pool';
+
+function writeMacosSupervisedSidecarsConfigAtomically(
+  targetPath: string,
+  content: string,
+): void {
+  const temporaryPath = `${targetPath}.${process.pid}.${randomUUID()}.tmp`;
+  try {
+    fs.writeFileSync(temporaryPath, content, { mode: 0o600 });
+    fs.renameSync(temporaryPath, targetPath);
+  } finally {
+    fs.rmSync(temporaryPath, { force: true });
+  }
+}
 
 export type OsMode = 'local' | 'cloud';
 export type { AgentName, AgentConnectionStatus } from './local-agent-connectivity';
@@ -1003,7 +1016,7 @@ function materializeWorkspaceConnectorBootstrap(input: {
           recursive: true,
           mode: 0o700,
         });
-        fs.writeFileSync(
+        writeMacosSupervisedSidecarsConfigAtomically(
           macosSupervisedSidecarsPath,
           `${JSON.stringify({
             schemaVersion: 1,
@@ -1012,7 +1025,6 @@ function materializeWorkspaceConnectorBootstrap(input: {
               programArguments: plan.launchd.programArguments,
             },
           }, null, 2)}\n`,
-          { mode: 0o600 },
         );
       }
       actions.push({

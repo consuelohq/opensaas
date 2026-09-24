@@ -874,7 +874,7 @@ describe('public installer runtime dependencies', () => {
     expect(result.stderr).toContain('Set PORTLESS_BIN');
   });
 
-  it('should ignore a legacy heartbeat plist as an active daemon while retaining connector discovery', () => {
+  it('should ignore a legacy heartbeat plist when discovering active daemons and connectors', () => {
     const home = createTempHome('consuelo-os-installer-runtime-daemons-');
     const generatedDir = join(home, 'security', 'generated');
     const cloudflaredBin = join(home, 'cloudflared');

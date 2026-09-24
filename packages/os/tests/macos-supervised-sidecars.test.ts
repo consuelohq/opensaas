@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { chmodSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -113,5 +113,70 @@ describe('macOS supervised sidecars', () => {
     await manager.stop();
     expect(spawned[0]!.signals).toContain('SIGTERM');
     expect(spawned.at(-1)!.signals).toContain('SIGTERM');
+  });
+
+  it('should terminate a spawned child when PID publication fails', async () => {
+    const { home, runtimeRoot, caddy, cloudflared } = createFixture();
+    const runtimeDir = join(home, 'node', 'runs', 'supervised-sidecars');
+    const signals: NodeJS.Signals[] = [];
+
+    const start = startMacosSupervisedSidecars({
+      consueloHome: home,
+      runtimeRoot: () => runtimeRoot,
+      environment: { CADDY_BIN: caddy, CLOUDFLARED_BIN: cloudflared },
+      spawnProcess() {
+        chmodSync(runtimeDir, 0o500);
+        return {
+          pid: 777,
+          exited: new Promise<number>(() => undefined),
+          kill(signal = 'SIGTERM') {
+            signals.push(signal);
+            return true;
+          },
+        };
+      },
+    });
+
+    await expect(start).rejects.toThrow();
+    chmodSync(runtimeDir, 0o700);
+    expect(signals).toContain('SIGTERM');
+  });
+
+  it('should avoid a duplicate delayed restart when reconcile already replaced the sidecar', async () => {
+    const { home, runtimeRoot, caddy, cloudflared } = createFixture();
+    const spawned: Array<{
+      id: string;
+      exit: (code: number) => void;
+    }> = [];
+
+    const manager = await startMacosSupervisedSidecars({
+      consueloHome: home,
+      runtimeRoot: () => runtimeRoot,
+      environment: { CADDY_BIN: caddy, CLOUDFLARED_BIN: cloudflared },
+      restartDelayMs: 30,
+      spawnProcess(spec) {
+        let exit!: (code: number) => void;
+        const exited = new Promise<number>((resolve) => {
+          exit = resolve;
+        });
+        spawned.push({ id: spec.id, exit });
+        return {
+          pid: 200 + spawned.length,
+          exited,
+          kill() {
+            exit(0);
+            return true;
+          },
+        };
+      },
+    });
+
+    spawned.find((entry) => entry.id === 'cloudflared')!.exit(9);
+    await new Promise((resolve) => setTimeout(resolve, 5));
+    await manager.reconcile();
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    expect(spawned.filter((entry) => entry.id === 'cloudflared')).toHaveLength(2);
+    await manager.stop();
   });
 });

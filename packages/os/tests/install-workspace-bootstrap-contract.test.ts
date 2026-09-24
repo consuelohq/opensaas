@@ -206,7 +206,7 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
     }
   });
 
-  it('should keep macOS heartbeat and connector behind the OS supervisor while preserving rollback definitions', async () => {
+  it('should keep macOS heartbeat and connector behind the OS supervisor when preserving rollback definitions', async () => {
     const { provisionLocalOs } = await loadInstallStateContract();
     const home = fs.mkdtempSync(
       path.join(os.tmpdir(), 'consuelo-os-workspace-bootstrap-launchd-&-'),

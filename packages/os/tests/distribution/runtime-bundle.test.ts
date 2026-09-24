@@ -460,6 +460,20 @@ describe('runtime bundle contract', () => {
     ).toBe(false);
   });
 
+  it('should preserve executable mode when macOS service hosts enter a runtime bundle', async () => {
+    const arm64Host = 'native/macos/bin/arm64/ConsueloServiceHost';
+    const x64Host = 'native/macos/bin/x64/ConsueloServiceHost';
+    const root = createFixture({
+      [arm64Host]: 'fixture-mach-o-arm64',
+      [x64Host]: 'fixture-mach-o-x64',
+    });
+
+    const result = await computeReleaseFingerprint({ sourceRoot: root });
+
+    expect(result.files.find((file) => file.path === arm64Host)?.mode).toBe(0o755);
+    expect(result.files.find((file) => file.path === x64Host)?.mode).toBe(0o755);
+  });
+
   it('should preserve policy v1 when Windows builds the host', async () => {
     const root = createFixture({
       'native/windows-service/Program.cs': 'public static class Program {}\n',

@@ -107,6 +107,8 @@ describe('Consuelo OS reload lifecycle', () => {
     expect(source).toContain('/ RELOAD_POLL_MS');
     expect(source).toContain('supportsMacSidecarSupervision === true');
     expect(source).toContain('retireLegacyMacSidecarLaunchAgents');
+    expect(source).toContain('bootoutLaunchLabelRequired');
+    expect(source).toContain('legacy macOS sidecar rollback failed');
   });
 
   it('should bootstrap an installed LaunchAgent when it is currently unloaded', () => {

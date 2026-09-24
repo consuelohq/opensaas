@@ -244,6 +244,35 @@ function bootoutLaunchLabel(label) {
   runBestEffort('launchctl', ['bootout', `${LAUNCH_DOMAIN}/${label}`]);
 }
 
+function launchLabelIsLoaded(label) {
+  try {
+    execFileSync('launchctl', ['print', `${LAUNCH_DOMAIN}/${label}`], {
+      encoding: 'utf8',
+      timeout: 10000,
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    return true;
+  } catch (error) {
+    const detail = error.stderr?.toString().trim()
+      || error.stdout?.toString().trim()
+      || '';
+    if (error.status === 113 || /could not find service|service not found|no such process/i.test(detail)) {
+      return false;
+    }
+    throw new Error(`launchctl print ${label} failed${detail ? `: ${detail}` : ''}`);
+  }
+}
+
+function bootoutLaunchLabelRequired(label) {
+  if (!launchLabelIsLoaded(label)) return false;
+  runRequired(
+    'launchctl',
+    ['bootout', `${LAUNCH_DOMAIN}/${label}`],
+    `launchctl bootout ${label}`,
+  );
+  return true;
+}
+
 function legacyMacSidecarLaunchAgents() {
   const launchAgentDir = path.join(HOME, 'Library', 'LaunchAgents');
   if (!existsSync(launchAgentDir)) return [];
@@ -263,15 +292,23 @@ function legacyMacSidecarLaunchAgents() {
 function bootstrapLegacyMacSidecarLaunchAgents(agents) {
   for (const agent of agents) {
     if (!existsSync(agent.plist)) continue;
-    bootoutLaunchLabel(agent.label);
-    runBestEffort('launchctl', ['bootstrap', LAUNCH_DOMAIN, agent.plist]);
-    runBestEffort('launchctl', ['kickstart', '-k', `${LAUNCH_DOMAIN}/${agent.label}`]);
+    bootoutLaunchLabelRequired(agent.label);
+    runRequired(
+      'launchctl',
+      ['bootstrap', LAUNCH_DOMAIN, agent.plist],
+      `launchctl bootstrap ${agent.label}`,
+    );
+    runRequired(
+      'launchctl',
+      ['kickstart', '-k', `${LAUNCH_DOMAIN}/${agent.label}`],
+      `launchctl kickstart ${agent.label}`,
+    );
   }
 }
 
 function retireLegacyMacSidecarLaunchAgents(agents) {
   for (const agent of agents) {
-    bootoutLaunchLabel(agent.label);
+    bootoutLaunchLabelRequired(agent.label);
     rmSync(agent.plist, { force: true });
   }
 }
@@ -488,7 +525,7 @@ function handoffLegacySupervisor(before, options = {}) {
   const targetSupportsMacSidecars = options.targetSupportsMacSidecars;
   try {
     if (targetSupportsMacSidecars === true) {
-      for (const sidecar of legacySidecars) bootoutLaunchLabel(sidecar.label);
+      for (const sidecar of legacySidecars) bootoutLaunchLabelRequired(sidecar.label);
     }
     bootoutLaunchAgent();
     bootstrapLaunchAgent({ kickstart: false });
@@ -507,7 +544,18 @@ function handoffLegacySupervisor(before, options = {}) {
     return true;
   } catch (error) {
     if (targetSupportsMacSidecars === true) {
-      bootstrapLegacyMacSidecarLaunchAgents(legacySidecars);
+      try {
+        bootstrapLegacyMacSidecarLaunchAgents(legacySidecars);
+      } catch (rollbackError) {
+        const handoffDetail = error instanceof Error ? error.message : String(error);
+        const rollbackDetail = rollbackError instanceof Error
+          ? rollbackError.message
+          : String(rollbackError);
+        throw new Error(
+          `${handoffDetail}; legacy macOS sidecar rollback failed: ${rollbackDetail}`,
+          { cause: error },
+        );
+      }
     }
     throw error;
   }
