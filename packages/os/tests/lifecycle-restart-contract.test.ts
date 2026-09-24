@@ -99,6 +99,7 @@ describe('lifecycle restart parity', () => {
     const calls: Array<{ command: string; args: string[] }> = [];
     const controller = createReloadServiceController({
       osRoot,
+      environment: { HOME: '' },
       run: async (command, args) => {
         calls.push({ command, args });
         return { exitCode: 0, stdout: 'Consuelo OS reload scheduled\n', stderr: '' };
@@ -411,6 +412,93 @@ describe('lifecycle restart parity', () => {
         command: 'launchctl',
         args: ['kickstart', '-k', 'gui/501/' + label],
       });
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+      rmSync(legacyRuntimeRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('should discover macOS sidecars from process environment when controller environment is omitted', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-restart-process-environment-'));
+    const legacyRuntimeRoot = mkdtempSync(join(tmpdir(), 'consuelo-legacy-runtime-'));
+    const launchAgents = join(home, 'Library', 'LaunchAgents');
+    mkdirSync(launchAgents, { recursive: true });
+    const label = 'com.consuelo.os.node-heartbeat.node-test';
+    writeFileSync(join(launchAgents, label + '.plist'), '<plist/>\n');
+    const calls: Array<{ command: string; args: string[] }> = [];
+    const previousHome = process.env.HOME;
+    process.env.HOME = home;
+    try {
+      const controller = createReloadServiceController({
+        osRoot,
+        platform: 'darwin',
+        userId: 501,
+        sleep: async () => {},
+        run: async (command, args) => {
+          calls.push({ command, args });
+          if (command === 'launchctl' && args[0] === 'print') {
+            return { exitCode: 113, stdout: '', stderr: 'Could not find service' };
+          }
+          return { exitCode: 0, stdout: '', stderr: '' };
+        },
+      });
+
+      await expect(controller.restart({
+        waitForCompletion: true,
+        runtimeRoot: legacyRuntimeRoot,
+      })).resolves.toBeUndefined();
+      expect(calls).toContainEqual({
+        command: 'launchctl',
+        args: ['print', 'gui/501/' + label],
+      });
+      expect(calls).toContainEqual({
+        command: 'launchctl',
+        args: ['bootstrap', 'gui/501', join(launchAgents, label + '.plist')],
+      });
+      expect(calls).toContainEqual({
+        command: 'launchctl',
+        args: ['kickstart', '-k', 'gui/501/' + label],
+      });
+    } finally {
+      if (previousHome === undefined) delete process.env.HOME;
+      else process.env.HOME = previousHome;
+      rmSync(home, { recursive: true, force: true });
+      rmSync(legacyRuntimeRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('should fail closed when launchctl cannot determine a macOS sidecar load state', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-restart-sidecar-print-failure-'));
+    const legacyRuntimeRoot = mkdtempSync(join(tmpdir(), 'consuelo-legacy-runtime-'));
+    const launchAgents = join(home, 'Library', 'LaunchAgents');
+    mkdirSync(launchAgents, { recursive: true });
+    const label = 'com.consuelo.os.node-heartbeat.node-test';
+    const plistPath = join(launchAgents, label + '.plist');
+    writeFileSync(plistPath, '<plist/>\n');
+    mkdirSync(join(legacyRuntimeRoot, 'scripts', 'lib'), { recursive: true });
+    writeFileSync(
+      join(legacyRuntimeRoot, 'scripts', 'lib', 'macos-supervised-heartbeat.ts'),
+      'export const fixture = true;\n',
+    );
+    try {
+      const controller = createReloadServiceController({
+        osRoot,
+        platform: 'darwin',
+        environment: { HOME: home },
+        userId: 501,
+        run: async (command, args) => {
+          if (command === 'launchctl' && args[0] === 'print') {
+            return { exitCode: 5, stdout: '', stderr: 'Input/output error' };
+          }
+          return { exitCode: 0, stdout: '', stderr: '' };
+        },
+      });
+
+      await expect(controller.restart({
+        waitForCompletion: true,
+        runtimeRoot: legacyRuntimeRoot,
+      })).rejects.toThrow('legacy heartbeat inspection failed for ' + label);
+      expect(existsSync(plistPath)).toBe(true);
     } finally {
       rmSync(home, { recursive: true, force: true });
       rmSync(legacyRuntimeRoot, { recursive: true, force: true });

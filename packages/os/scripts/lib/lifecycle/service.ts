@@ -105,7 +105,8 @@ function installedMacLegacyHeartbeatLaunchAgents(environment?: NodeJS.ProcessEnv
   label: string;
   plistPath: string;
 }> {
-  const userHome = environment?.HOME?.trim();
+  const effectiveEnvironment = environment ?? process.env;
+  const userHome = effectiveEnvironment.HOME?.trim();
   if (!userHome) return [];
   const launchAgentDir = join(userHome, 'Library', 'LaunchAgents');
   if (!existsSync(launchAgentDir)) return [];
@@ -261,6 +262,16 @@ export function createReloadServiceController(input: {
             for (const heartbeat of legacyHeartbeatAgents) {
               const service = domain + '/' + heartbeat.label;
               const loaded = await run('launchctl', ['print', service]);
+              const loadedDetail = loaded.stdout + '\n' + loaded.stderr;
+              const knownUnloaded = loaded.exitCode === 113
+                || /No such process|Could not find service|not loaded/i.test(loadedDetail);
+              if (loaded.exitCode !== 0 && !knownUnloaded) {
+                throw new Error(
+                  'legacy heartbeat inspection failed for ' + heartbeat.label + ': '
+                  + (loaded.stderr.trim() || loaded.stdout.trim()
+                    || 'launchctl print exited ' + String(loaded.exitCode)),
+                );
+              }
               if (loaded.exitCode === 0) {
                 const bootout = await run('launchctl', ['bootout', service]);
                 const detail = bootout.stdout + '\n' + bootout.stderr;
@@ -287,6 +298,16 @@ export function createReloadServiceController(input: {
           for (const gateway of restartableAgents) {
             const service = domain + '/' + gateway.label;
             const loaded = await run('launchctl', ['print', service]);
+            const loadedDetail = loaded.stdout + '\n' + loaded.stderr;
+            const knownUnloaded = loaded.exitCode === 113
+              || /No such process|Could not find service|not loaded/i.test(loadedDetail);
+            if (loaded.exitCode !== 0 && !knownUnloaded) {
+              throw new Error(
+                'gateway definition inspection failed for ' + gateway.label + ': '
+                + (loaded.stderr.trim() || loaded.stdout.trim()
+                  || 'launchctl print exited ' + String(loaded.exitCode)),
+              );
+            }
             const definitionReloadRequired = loaded.exitCode === 0;
             let available = false;
             let lastBootstrap: LifecycleProcessResult | undefined;
