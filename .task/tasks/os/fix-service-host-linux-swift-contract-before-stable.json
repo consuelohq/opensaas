@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-service-host-linux-swift-contract-before-stable",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2578,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2578",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-service-host-linux-swift-contract-before-stable",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_ec8d1fb1b286",
+  "tmuxSession": "opensaas-os-fix-service-host-linux-swift-contract-before-sta-ec8d1fb1",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-service-host-linux-swift-contract-before-stable/.task/session.json",
+  "createdAt": "2026-09-24T16:51:23.163Z"
+}
