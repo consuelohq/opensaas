@@ -12,11 +12,19 @@ every script supports `--help` and `--json`.
 
 ## first-time OS bootstrap
 
-`bootstrap` is the pre-Bun Mac installer entrypoint. It is also served by the production app route at `/os` so a first-time user can run:
+`bootstrap.sh` is the pre-Bun macOS/Linux installer entrypoint. The hosted installer Worker serves it at `/os`.
 
 ```bash
 curl -fsSL https://install.consuelohq.com/os | bash
 ```
+
+On native Windows x64, paste this into PowerShell:
+
+```powershell
+irm https://install.consuelohq.com/os.ps1 | iex
+```
+
+`/os.ps1` resolves the current signed stable release, verifies its Ed25519 channel signature inside the hosted installer Worker, selects the `windows-x64` bundle, and binds that immutable bundle URL and SHA-256 digest into the maintained `bootstrap.ps1` before PowerShell executes it. If service registration needs elevation, the installer re-launches itself through the normal Windows UAC prompt.
 
 Repo-local checks:
 
@@ -52,7 +60,7 @@ Background services stay user-level only. Baseline labels are `com.consuelo.syst
 
 After LaunchAgent cutover, the installer probes the same local port the daemon resolves from `WORKSPACE_DAEMON_PORT`, the OS `.env` values, and the `46321` default. `WORKSPACE_CUTOVER_LOCAL_HEALTH_URL` remains an explicit repair/testing override.
 
-The hosted endpoint is implemented in the app server Consuelo API module as `GET /os`. Production DNS/Railway must map `install.consuelohq.com` to that service and preserve the `/os` path. Use `CONSUELO_OS_BOOTSTRAP_SCRIPT_PATH` only if the deployed process does not run from the repo root.
+The hosted installer is the dedicated Cloudflare Worker `consuelo-os-install`. It serves `/os`, `/os.ps1`, signed release channel pointers, and immutable release bundles from the `CONSUELO_OS_RELEASES` R2 binding.
 
 Runtime artifact note: portless is optional. Baseline public install must work on `http://127.0.0.1:46321` without portless. Optional hosted portless install uses `https://install.consuelohq.com/os/bin/portless/darwin-<arch>/portless` plus the sibling `.sha256` file only when explicitly enabled. See `docs/installer-runtime-release-checklist.md` for the exact URL set, SHA format, fallback behavior, and clean-machine smoke checklist.
 
@@ -388,8 +396,8 @@ bun run code-call -- --area dialer git diff
 bun run code-call -- --branch task/dialer/fix-thing git status --short
 bun run code-call -- --pr 210 yarn jest --runInBand packages/dialer/src/queue.test.ts
 bun run code-call -- --github "https://app.graphite.com/github/pr/consuelohq/opensaas/686/some-slug" git status --short
-bun run code-call -- --branch task/dialer/fix-thing yarn prettier --write packages/twenty-front/src/foo.ts
-bun run code-call -- --branch task/dialer/fix-thing npx nx typecheck twenty-front
+bun run code-call -- --branch task/dialer/fix-thing yarn prettier --write packages/dialer-server/src/app.ts
+bun run code-call -- --branch task/dialer/fix-thing bun run --cwd packages/dialer-server typecheck
 bun run code-call -- --branch task/dialer/fix-thing bun run review
 bun run code-call -- --branch task/dialer/fix-thing git diff --check
 ```
@@ -835,7 +843,7 @@ bad: bun run stream:sync
 
 shows the selected stream's durable `AGENTS.md` instructions first, followed by decisions, worktrees, task PRs, workpads, commits, and divergence. JSON includes an explicit `instructions` object; a missing file is a valid optional empty state.
 
-OS reads `packages/os/streams/<area>/AGENTS.md`; Workspace reads the byte-identical mirror under `packages/workspace/streams/<area>/AGENTS.md`. Dialer instructions are also synchronized during install/update to visible `~/Consuelo/Steering/dialer-AGENTS.md`, never hidden `~/.consuelo`.
+Stream context may load stream-scoped instruction documents, but those documents are never synchronized into global `~/Consuelo/Steering`. The visible Steering directory is user-owned steering only.
 
 ```bash
 bun run stream:context -- --area dialer
@@ -1472,6 +1480,8 @@ cat /tmp/input.txt | bun run agent -- "clean this transcript"
 - pass the model as `--provider/model` only when you need to override the default
 - use `bun run agent --` from `/Users/kokayi/Dev/opensaas`; do not call the pi proxy directly from random scripts unless the script owns that integration
 - treat sub-agent output as a draft until verified against files, tests, or logs
+- durable Grok runs require both a successful process exit and a provider-success payload; cancelled/failed stop reasons or missing final messages are recorded as failed runs even when the CLI exits `0`
+- `completion_unknown` is observable through status/log attachments, but an active bounded `wait` keeps polling for a late owned exit marker until its wait budget expires; if ambiguity remains, the wait returns `WAIT_TIMEOUT` rather than freezing the recoverable state as a completed failure
 - never send secrets, api keys, auth tokens, customer pii, full phone numbers, or private credentials
 - do not let sub-agents mutate repo files directly; write changes through workspace scripts (`fs`, `task:fs`, `code-call`) and verify after writes
 

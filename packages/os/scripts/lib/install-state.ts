@@ -500,7 +500,7 @@ function materializeVisibleUserRoot(input: {
   if (input.dryRun) {
     return [
       ...actions,
-      ...['Steering/system.md', 'Steering/example-steering.md', 'Tools/TOOLS.md', 'Skills/skills.json'].map(
+      ...['Steering/system.md', 'Steering/example-system.md', 'Tools/TOOLS.md', 'Skills/skills.json'].map(
         (relative) => ({
           type: 'create_file' as const,
           path: path.join(input.userRoot, ...relative.split('/')),
@@ -511,22 +511,13 @@ function materializeVisibleUserRoot(input: {
     ];
   }
 
-  // Shared with the update path so an existing user who never reinstalls still receives this.
-  // The steering body must be passed here too: without it a fresh install writes the "could not be
-  // read" fallback as the example, even though the bundled steering is sitting right there.
-  const steeringSource = path.join(
-    PACKAGE_ROOT,
-    'steering',
-    'system_prompt.md',
-  );
+  // Shared with the update path so an existing user who never reinstalls still receives managed
+  // catalogs and the excluded example while preserving user-owned steering.
   const reconciled = reconcileManagedUserContent({
     userRoot: input.userRoot,
     tools: toolManifest.tools,
     skillsIndex: fs.existsSync(skillsIndexSource)
       ? fs.readFileSync(skillsIndexSource, 'utf8')
-      : undefined,
-    steeringBody: fs.existsSync(steeringSource)
-      ? fs.readFileSync(steeringSource, 'utf8')
       : undefined,
   });
   for (const action of reconciled) {

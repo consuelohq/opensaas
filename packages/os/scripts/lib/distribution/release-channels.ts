@@ -17,6 +17,7 @@ export const RELEASE_TAG_PREFIX = 'consuelo-os-v' as const;
 export const RELEASE_CHANNELS = ['dev', 'canary', 'beta', 'stable'] as const;
 export const DEFAULT_REQUIRED_RELEASE_PLATFORMS = [
   'darwin-arm64',
+  'darwin-x64',
   'linux-x64',
   'windows-x64',
 ] as const;

@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "worktree_id": "task/dialer-algorithm/focus-os-stream-test-selection-for-dialer-release",
+  "events": [
+    {
+      "id": "123f9152-8e40-4cf8-857d-b4b87822421a",
+      "occurred_at": "2026-08-16T02:15:43.767Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/test-selection.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer-algorithm/focus-os-stream-test-selection-for-dialer-release",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer-algorithm/focus-os-stream-test-selection-for-dialer-release"
+      }
+    },
+    {
+      "id": "60499fc1-6893-4ddb-91f1-84d6f77b8aea",
+      "occurred_at": "2026-08-16T02:16:16.658Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/test-selection.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer-algorithm/focus-os-stream-test-selection-for-dialer-release",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer-algorithm/focus-os-stream-test-selection-for-dialer-release"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-16T02:16:16.761Z"
+}

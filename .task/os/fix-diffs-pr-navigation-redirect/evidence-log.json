@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/fix-diffs-pr-navigation-redirect",
+  "events": [
+    {
+      "id": "d1995acd-6f06-4996-8273-271703e32a88",
+      "occurred_at": "2026-09-10T00:10:29.128Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-diffs-pr-navigation-redirect",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-diffs-pr-navigation-redirect"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-09-10T00:10:29.213Z"
+}

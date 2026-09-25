@@ -1,0 +1,264 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/fix-os-linux-package-test-regressions",
+  "events": [
+    {
+      "id": "537f1381-c866-432c-86a2-234212d5c5c3",
+      "occurred_at": "2026-09-21T16:13:04.231Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/installer-local-agent-connectivity.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-os-linux-package-test-regressions",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-os-linux-package-test-regressions"
+      }
+    },
+    {
+      "id": "d4388c5d-91b0-49ab-9115-321491c98306",
+      "occurred_at": "2026-09-21T16:13:22.800Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/skills/artifacts/skill.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-os-linux-package-test-regressions",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-os-linux-package-test-regressions"
+      }
+    },
+    {
+      "id": "6180fecc-9a45-4998-8d38-d70b41718fb4",
+      "occurred_at": "2026-09-21T16:15:29.511Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-os-linux-package-test-regressions",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-os-linux-package-test-regressions"
+      }
+    },
+    {
+      "id": "3463aff4-72d4-4872-bdbf-2ec643d49d72",
+      "occurred_at": "2026-09-21T16:16:39.708Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/stream-context-memory.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-os-linux-package-test-regressions",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-os-linux-package-test-regressions"
+      }
+    },
+    {
+      "id": "30d6719d-1ce9-4d5d-8e7d-cba2cbfb97a1",
+      "occurred_at": "2026-09-21T16:17:08.040Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/workspace-edge-route-seed-contract.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-os-linux-package-test-regressions",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-os-linux-package-test-regressions"
+      }
+    },
+    {
+      "id": "e40edbbe-9e5e-45db-929f-9e7b979d168f",
+      "occurred_at": "2026-09-21T16:17:59.207Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/fixtures/os-replica-correctness-worker.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-os-linux-package-test-regressions",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-os-linux-package-test-regressions"
+      }
+    },
+    {
+      "id": "4507333f-c89c-40c6-83b4-5b2de0de588c",
+      "occurred_at": "2026-09-21T16:21:05.392Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/workspace-route-heartbeat-write-budget.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-os-linux-package-test-regressions",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-os-linux-package-test-regressions"
+      }
+    },
+    {
+      "id": "92ff3b36-7506-482a-b947-86332be4fd38",
+      "occurred_at": "2026-09-21T16:24:36.968Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/test-environment.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-os-linux-package-test-regressions",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-os-linux-package-test-regressions"
+      }
+    },
+    {
+      "id": "b5c4159c-2b03-45cf-8b6c-9687ec24fc4b",
+      "occurred_at": "2026-09-21T16:24:41.558Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/runtime-state.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-os-linux-package-test-regressions",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-os-linux-package-test-regressions"
+      }
+    },
+    {
+      "id": "7e05d03e-6d3d-40c3-a378-4a8691d2eb22",
+      "occurred_at": "2026-09-21T16:24:49.120Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/runtime-state.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-os-linux-package-test-regressions",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-os-linux-package-test-regressions"
+      }
+    },
+    {
+      "id": "5359c39a-479c-4856-ae92-9fc7674735ea",
+      "occurred_at": "2026-09-21T16:24:57.647Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/audit.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-os-linux-package-test-regressions",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-os-linux-package-test-regressions"
+      }
+    },
+    {
+      "id": "cce0ad1f-3fd3-450d-9c15-6830a92450f7",
+      "occurred_at": "2026-09-21T16:25:42.779Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/memory.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-os-linux-package-test-regressions",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-os-linux-package-test-regressions"
+      }
+    },
+    {
+      "id": "83d845b6-9475-4081-9331-d6b9ba3251cf",
+      "occurred_at": "2026-09-21T16:26:21.940Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/trace-request-budget.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-os-linux-package-test-regressions",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-os-linux-package-test-regressions"
+      }
+    },
+    {
+      "id": "8675ecd1-2e83-457d-9865-78fd9693de69",
+      "occurred_at": "2026-09-21T16:26:25.939Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/trace-request-budget.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-os-linux-package-test-regressions",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-os-linux-package-test-regressions"
+      }
+    },
+    {
+      "id": "069897bd-7a7b-4f8c-ae4c-0111947322b2",
+      "occurred_at": "2026-09-21T16:29:44.211Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/audit/fixtures/script-parity-classifications.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-os-linux-package-test-regressions",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-os-linux-package-test-regressions"
+      }
+    },
+    {
+      "id": "a298ef74-93e0-41a9-ae2a-28549c36e4d2",
+      "occurred_at": "2026-09-21T16:31:08.481Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/trace-request-budget.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-os-linux-package-test-regressions",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-os-linux-package-test-regressions"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-09-21T16:31:08.593Z"
+}

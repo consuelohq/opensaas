@@ -1,0 +1,8 @@
+{
+  "files": [
+    "packages/os/scripts/lib/facade/executor.ts",
+    "packages/os/scripts/lib/runtime-tool-registry.ts",
+    "packages/workspace/tests/github-workflow-policy.test.js"
+  ],
+  "updatedAt": "2026-09-22T20:46:00.156Z"
+}

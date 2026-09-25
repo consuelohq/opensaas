@@ -5,7 +5,7 @@ import {
 } from '../scripts/lib/cli-ui';
 import {
   createInstallerProgressSteps,
-  formatLocalAgentsPromptMessage,
+  deviceLoginPromptLines,
 } from '../scripts/install';
 
 describe('installer onboarding UI', () => {
@@ -63,12 +63,34 @@ describe('installer onboarding UI', () => {
     ]);
   });
 
-  it('keeps the local agent multiselect prompt clear', () => {
-    expect(formatLocalAgentsPromptMessage(1)).toBe(
-      '1 agents found — press Space to not connect to this workspace, Enter to continue',
-    );
-    expect(formatLocalAgentsPromptMessage(3)).toBe(
-      '3 agents found — press Space to not connect to this workspace, Enter to continue',
-    );
+  it('keeps successful browser authorization focused on the verification code', () => {
+    const output = deviceLoginPromptLines({
+      userCode: 'SXCW-REHY',
+      verificationUrl: 'https://os.consuelohq.com/login/device?user_code=SXCWREHY',
+      browserOpened: true,
+      copied: false,
+    }).join('\n');
+
+    expect(output).toContain('Approve Consuelo OS in your browser.');
+    expect(output).toContain('SXCW-REHY');
+    expect(output).toContain('Confirm this code in the browser.');
+    expect(output).not.toContain('https://');
+    expect(output).not.toContain('copied');
+    expect(output).not.toContain('Open link');
+    expect(output).not.toContain('Full URL');
+  });
+
+  it('shows the authorization URL only when the browser could not be opened', () => {
+    const output = deviceLoginPromptLines({
+      userCode: 'SXCW-REHY',
+      verificationUrl: 'https://os.consuelohq.com/login/device?user_code=SXCWREHY',
+      browserOpened: false,
+      copied: true,
+    }).join('\n');
+
+    expect(output).toContain('SXCW-REHY');
+    expect(output).toContain('Open this link to continue:');
+    expect(output).toContain('https://os.consuelohq.com/login/device?user_code=SXCWREHY');
+    expect(output).toContain('Authorization URL copied to clipboard.');
   });
 });

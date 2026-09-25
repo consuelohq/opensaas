@@ -1,0 +1,7 @@
+{
+  "files": [
+    ".task/twenty-migration/m2-remove-twenty-sdk-legacy-cli-surface/workpad.md",
+    "packages/cli/tests/auth.test.ts"
+  ],
+  "updatedAt": "2026-08-15T07:07:36.411Z"
+}

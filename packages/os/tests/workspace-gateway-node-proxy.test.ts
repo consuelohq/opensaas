@@ -74,6 +74,18 @@ function workspaceRecord(input: {
           publicSiteRouteFamily: '/environments/*',
         },
       },
+      {
+        surface: 'sites',
+        pathPrefix: '/gateway/diffs',
+        auth: 'workspace-session',
+        status: 'active',
+        target: {
+          kind: 'consuelo-gateway-service',
+          serviceName: 'diffs-sites-read-endpoints',
+          gatewayRouteFamily: '/gateway/diffs/*',
+          publicSiteRouteFamily: '/diffs/*',
+        },
+      },
     ],
   };
 }
@@ -135,6 +147,45 @@ describe('workspace gateway node proxy', () => {
     expect(upstream[0].headers.get('x-consuelo-edge-signature')).toMatch(
       /^sha256=[0-9a-f]{64}$/,
     );
+  });
+
+  it('preserves conditional ETags for authenticated gateway reads', async () => {
+    const upstream: Request[] = [];
+    const etag = 'W/"diffs-v1"';
+    const router = await createRouter({
+      fetchUpstream: async (request) => {
+        upstream.push(request);
+        if (request.headers.get('if-none-match') === etag) {
+          return new Response(null, {
+            status: 304,
+            headers: { etag },
+          });
+        }
+        return Response.json(
+          { ok: true },
+          {
+            headers: { etag },
+          },
+        );
+      },
+    });
+
+    const response = await router.fetch(
+      new Request(
+        'https://acme.consuelohq.com/gateway/diffs/repositories/acme/app/pulls',
+        {
+          headers: {
+            cookie: 'consuelo_workspace_session=session-acme',
+            'if-none-match': etag,
+          },
+        },
+      ),
+    );
+
+    expect(upstream).toHaveLength(1);
+    expect(upstream[0].headers.get('if-none-match')).toBe(etag);
+    expect(response.status).toBe(304);
+    expect(response.headers.get('etag')).toBe(etag);
   });
 
   it('preserves POST bodies for environment writes', async () => {
@@ -201,12 +252,28 @@ describe('workspace gateway node proxy', () => {
     expect(upstream).toHaveLength(0);
   });
 
-  it.each([
-    {
-      name: 'stale node',
+  it('probes a connected stale node so a recovered gateway can refresh its heartbeat', async () => {
+    const upstream: Request[] = [];
+    const router = await createRouter({
       record: workspaceRecord({ lastSeenAt: now - 180_001 }),
-      code: 'WORKSPACE_NODE_OFFLINE',
-    },
+      fetchUpstream: async (request) => {
+        upstream.push(request);
+        return Response.json({ ok: true });
+      },
+    });
+
+    const response = await router.fetch(
+      new Request('https://acme.consuelohq.com/gateway/traces/recent', {
+        headers: { cookie: 'consuelo_workspace_session=session-acme' },
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ ok: true });
+    expect(upstream).toHaveLength(1);
+  });
+
+  it.each([
     {
       name: 'disconnected connector',
       record: workspaceRecord({ connectorStatus: 'disconnected' }),

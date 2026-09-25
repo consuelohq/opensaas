@@ -125,6 +125,43 @@ async function waitForProviderPid(run: DurableSubagentRun): Promise<number> {
 }
 
 describe('durable subagent lifecycle regressions', () => {
+  it.skipIf(process.platform === 'win32')('uses the configured Bun runtime for the detached runner', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'os-lifecycle-runner-runtime-'));
+    const instructionPath = join(home, 'instructions.md');
+    const runtimeMarkerPath = join(home, 'runner-runtime.txt');
+    try {
+      const provider = writeExecutable(home, 'configured-runtime-provider', [
+        '#!/bin/sh',
+        "echo '{\"finalMessage\":\"configured runtime complete\"}'",
+      ].join(String.fromCharCode(10)));
+      const configuredBun = writeExecutable(home, 'configured-bun', [
+        '#!/bin/sh',
+        'printf configured > "$RUNNER_RUNTIME_MARKER"',
+        'exec bun "$@"',
+      ].join(String.fromCharCode(10)));
+      writeFileSync(instructionPath, 'instruction');
+      const environment = {
+        ...makeEnvironment(home),
+        BUN_BIN: configuredBun,
+        RUNNER_RUNTIME_MARKER: runtimeMarkerPath,
+      };
+      const started = startDurableSubagentRun({
+        ...startInput(provider, home, instructionPath, 'req-configured-runner-runtime'),
+        env: environment,
+      });
+      if (!started.ok) throw new Error(started.message);
+      const waited = await waitForDurableSubagentRun(started.run, environment, 5_000, (stdout) => ({
+        completed: stdout.includes('configured runtime complete'),
+        finalMessage: stdout.includes('configured runtime complete') ? 'configured runtime complete' : undefined,
+      }));
+
+      expect(waited.run.status).toBe('completed');
+      expect(readFileSync(runtimeMarkerPath, 'utf8')).toBe('configured');
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+    }
+  });
+
   it('does not parse growing output on every live wait poll', async () => {
     const home = mkdtempSync(join(tmpdir(), 'subagent-live-poll-'));
     const environment = makeEnvironment(home);

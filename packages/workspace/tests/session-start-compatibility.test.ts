@@ -81,6 +81,40 @@ describe('workspace session.start compatibility', () => {
     });
   });
 
+  it('creates an isolated titled work root when path is omitted', () => {
+    const root = mkdtempSync(join(tmpdir(), 'consuelo-workspace-session-default-'));
+    roots.push(root);
+    const home = join(root, '.consuelo');
+    const layout = resolveConsueloHomeLayout(home);
+    mkdirSync(layout.nodeDir, { recursive: true });
+    writeYamlConfig(
+      layout.nodeConfigPath,
+      createDefaultNodeYamlConfig({
+        nodeId: 'node_workspace_session_test',
+        nodeName: 'Workspace Session Test',
+        workspaceId: 'workspace_session_test',
+      }),
+      false,
+    );
+
+    const result = spawnSync(
+      'bun',
+      ['packages/workspace/scripts/session-start.ts', '--kind', 'work', '--title', 'Voice Shortcut', '--json'],
+      {
+        cwd: process.cwd(),
+        encoding: 'utf8',
+        env: { ...process.env, CONSUELO_HOME: home, HOME: root },
+      },
+    );
+
+    expect(result.status, result.stderr).toBe(0);
+    const output = JSON.parse(result.stdout) as { path: string; workSession: string };
+    expect(output.path).toContain(join('Library', 'Application Support', 'Consuelo Work Sessions', 'voice-shortcut-'));
+    expect(output.path.startsWith(realpathSync(root))).toBe(true);
+    expect(existsSync(output.path)).toBe(true);
+    expect(output.workSession).toMatch(/^wrk_[A-Za-z0-9_-]{8,80}$/u);
+  });
+
 
   it('rejects a work session rooted in the managed repository', () => {
     const root = mkdtempSync(join(tmpdir(), 'consuelo-workspace-session-protected-'));

@@ -173,21 +173,22 @@ describe('Observability Traces canonical Trace Burn surface', () => {
     expect(html).toContain('consuelo-trace-inspector-bootstrap');
     expect(html).toContain('consuelo-trace-history-transport');
     expect(html).toContain('/gateway/traces/recent');
-    expect(html).toContain("credentials:'same-origin'");
+    expect(html).toContain("credentials: 'same-origin'");
     expect(html).toContain('includeRawPayload');
     const browserSource = [
       'browser.ts',
+      'live-browser.ts',
       'pagination-browser.ts',
       'virtual-list-browser.ts',
     ]
       .map((name) => readFileSync(resolve(osTraceInspectorDir, name), 'utf8'))
       .join('\n');
     expect(browserSource).toContain('installTracePaginationTransport');
-    expect(browserSource).toContain('installLivePolling');
+    expect(browserSource).toContain('installTraceLiveUpdates');
     expect(browserSource).toContain('traceLiveUrl');
     expect([
       ...browserSource.matchAll(
-        /trxOutputCell[\s\S]{0,260}appendNodeCell\(button,[\s\S]{0,180}trxTraceCell/g,
+        /trxOutputCell[\s\S]{0,260}appendNodeCell\(\s*button,[\s\S]{0,180}trxTraceCell/g,
       ),
     ]).toHaveLength(2);
 

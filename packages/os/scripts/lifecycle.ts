@@ -2,6 +2,7 @@
 
 import { lstatSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { isCancel, multiselect } from '@clack/prompts';
 import chalk from 'chalk';
 
@@ -28,6 +29,7 @@ import {
   type LifecycleServiceController,
 } from './lib/lifecycle';
 import { resolveVisibleUserRoot } from './lib/managed-user-content-release';
+import { revokeCurrentWorkspaceNode } from './lib/workspace-node-registration-client';
 import {
   createDetachedNativeLifecycleOperationLauncher,
   type NativeLifecycleOperationLauncher,
@@ -57,6 +59,34 @@ export type LifecycleCliDependencies = Partial<LifecycleCliIo> & {
     candidates: string[];
   }) => Promise<string[] | null>;
 };
+
+export async function refreshManagedSitesFromAcceptedRelease(input: {
+  home: string;
+  releasePath: string;
+}): Promise<void> {
+  try {
+    const sitesModulePath = resolve(input.releasePath, 'scripts', 'lib', 'sites.ts');
+    const sitesModule = await import(pathToFileURL(sitesModulePath).href) as {
+      materializeSites(options: {
+        home: string;
+        dbPath: string;
+        dryRun: boolean;
+        workspaceHost?: string | null;
+      }): unknown;
+    };
+    sitesModule.materializeSites({
+      home: input.home,
+      dbPath: resolve(input.home, 'node', 'db', 'traces.db'),
+      dryRun: false,
+      workspaceHost: null,
+    });
+  } catch (error: unknown) {
+    throw new Error(
+      `failed to refresh managed Sites from accepted release ${input.releasePath}`,
+      { cause: error },
+    );
+  }
+}
 
 const publicLifecycleOperationState = (
   state: NativeLifecycleOperationState,
@@ -649,7 +679,15 @@ export const createDefaultLifecycleEngine = (input: {
       home: input.home,
       osRoot,
     }),
+    nodeRegistration: {
+      revokeCurrentNode: () => revokeCurrentWorkspaceNode({
+        home: resolveLifecyclePaths(input.home).home,
+      }),
+    },
     runtime: createBunRuntimeMaterializer(),
+    managedSites: {
+      refresh: refreshManagedSitesFromAcceptedRelease,
+    },
     health: createHttpHealthAcceptance({
       url: `http://127.0.0.1:${port}/health`,
       expectedName: 'consuelo-os',

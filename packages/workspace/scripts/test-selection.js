@@ -6,6 +6,8 @@ const { spawnSync } = require('child_process');
 const DEFAULT_RULES = 'packages/workspace/test-selection.rules.json';
 const DEFAULT_REGISTRY = 'packages/workspace/test-selection.registry.json';
 const REPORT_DIR = '/tmp/opensaas-test-reports';
+const GIT_OUTPUT_MAX_BUFFER = 64 * 1024 * 1024;
+const TEST_SUITE_OUTPUT_MAX_BUFFER = 64 * 1024 * 1024;
 const SKIP_DIRS = new Set(['.git', 'node_modules', '.next', 'dist', 'build', 'coverage', '.turbo', '.cache', '.task', 'tmp', 'node-jiti', '.astro']);
 const TEST_FILE_RE = /(^|\/)(__tests__|tests|test|spec|e2e|integration|unit)(\/|$)|\.(test|spec|e2e|integration)\.[cm]?[jt]sx?$/i;
 const JS_TS_RE = /\.[cm]?[jt]sx?$/i;
@@ -261,14 +263,18 @@ function changedFiles(root, args) {
   const explicit = valuesFor(args, 'changed-file');
   if (explicit.length) return explicit;
   const base = valueFor(args, 'base') || 'origin/main';
-  const committed = spawnSync('git', ['diff', '--name-only', `${base}...HEAD`], { cwd: root, encoding: 'utf8' });
+  const committed = spawnSync('git', ['diff', '--name-only', `${base}...HEAD`], {
+    cwd: root,
+    encoding: 'utf8',
+    maxBuffer: GIT_OUTPUT_MAX_BUFFER,
+  });
   const files = new Set();
   const results = [committed];
   if (!args['committed-only']) {
     results.push(
-      spawnSync('git', ['diff', '--name-only'], { cwd: root, encoding: 'utf8' }),
-      spawnSync('git', ['diff', '--name-only', '--cached'], { cwd: root, encoding: 'utf8' }),
-      spawnSync('git', ['ls-files', '--others', '--exclude-standard'], { cwd: root, encoding: 'utf8' }),
+      spawnSync('git', ['diff', '--name-only'], { cwd: root, encoding: 'utf8', maxBuffer: GIT_OUTPUT_MAX_BUFFER }),
+      spawnSync('git', ['diff', '--name-only', '--cached'], { cwd: root, encoding: 'utf8', maxBuffer: GIT_OUTPUT_MAX_BUFFER }),
+      spawnSync('git', ['ls-files', '--others', '--exclude-standard'], { cwd: root, encoding: 'utf8', maxBuffer: GIT_OUTPUT_MAX_BUFFER }),
     );
   }
   for (const result of results) {
@@ -445,9 +451,63 @@ function prepareOsDependencies(root, suites) {
   };
 }
 
+function suiteNeedsWebsiteDependencies(suite) {
+  const packagePath = 'packages/consuelo-website';
+  const command = Array.isArray(suite?.command) ? suite.command : [];
+  return suite?.cwd === packagePath
+    || command.some((argument) => argument === packagePath || String(argument).startsWith(`${packagePath}/`));
+}
+
+function websiteDependenciesAreReady(root) {
+  const websiteRoot = path.join(root, 'packages', 'consuelo-website');
+  const packageJsonPath = path.join(websiteRoot, 'package.json');
+  const nodeModulesPath = path.join(websiteRoot, 'node_modules');
+  if (!fs.existsSync(packageJsonPath) || !fs.existsSync(nodeModulesPath)) return false;
+
+  const packageJson = readJson(packageJsonPath, {});
+  const requiresAstro = Boolean(
+    packageJson?.dependencies?.astro || packageJson?.devDependencies?.astro,
+  );
+  return !requiresAstro || fs.existsSync(path.join(nodeModulesPath, 'astro', 'package.json'));
+}
+
+function prepareWebsiteDependencies(root, suites) {
+  if (!suites.some(suiteNeedsWebsiteDependencies) || websiteDependenciesAreReady(root)) return null;
+
+  const websiteRoot = path.join(root, 'packages', 'consuelo-website');
+  const command = ['bun', 'install', '--frozen-lockfile'];
+  const started = Date.now();
+  const result = spawnSync(command[0], command.slice(1), {
+    cwd: websiteRoot,
+    encoding: 'utf8',
+    maxBuffer: 1024 * 1024 * 8,
+    timeout: testSuiteTimeoutMs(),
+    env: process.env,
+  });
+  const timedOut = result.error && result.error.code === 'ETIMEDOUT';
+  const signaled = Boolean(result.signal);
+  if (result.status === 0 && !timedOut && !signaled) return null;
+
+  const output = `${result.stdout || ''}${result.stderr || ''}${timedOut ? '\n[test-selection] website dependency install timed out\n' : ''}${signaled ? `\n[test-selection] website dependency install terminated by signal ${result.signal}\n` : ''}`;
+  return {
+    name: 'Website test dependency preparation',
+    command,
+    ruleId: 'website-dependency-preflight',
+    critical: true,
+    status: 'failed',
+    exitCode: result.status,
+    signal: result.signal || null,
+    error: result.error ? { code: result.error.code, message: result.error.message } : null,
+    durationMs: Date.now() - started,
+    outputTail: output.slice(-4000),
+  };
+}
+
 function runSuites(root, suites, base) {
-  const dependencyFailure = prepareOsDependencies(root, suites);
-  if (dependencyFailure) return [dependencyFailure];
+  for (const prepareDependencies of [prepareOsDependencies, prepareWebsiteDependencies]) {
+    const dependencyFailure = prepareDependencies(root, suites);
+    if (dependencyFailure) return [dependencyFailure];
+  }
 
   const results = [];
   for (const suite of suites) {
@@ -477,7 +537,7 @@ function runSuites(root, suites, base) {
     const result = spawnSync(suite.command[0], suite.command.slice(1), {
       cwd,
       encoding: 'utf8',
-      maxBuffer: 1024 * 1024 * 8,
+      maxBuffer: TEST_SUITE_OUTPUT_MAX_BUFFER,
       timeout: testSuiteTimeoutMs(),
       env: { ...process.env, NX_BASE: base, BASE_REF: base },
     });
@@ -616,6 +676,8 @@ function main() {
   const failedSuites = runResults.filter((result) => result.status !== 'passed');
   const passed = selected.level !== 'fail' && failedSuites.length === 0;
   const result = { kind: 'selection', passed, ...selected, run, runResults, failedSuites };
+  const out = valueFor(args, 'out');
+  if (out) writeJson(path.resolve(root, out), result);
   print(result, args.json);
   if (!passed) process.exit(1);
 }

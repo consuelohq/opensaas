@@ -8,6 +8,34 @@ import { createMemoryDeviceGrantStore } from '../cloudflare/os-device-authority/
 import { createMemoryInstallControlPlaneRepository } from '../scripts/lib/install-control-plane';
 
 describe('canonical device identity resolution', () => {
+  it('creates a canonical user for a new verified Google identity and requests the first workspace', async () => {
+    const repository = createMemoryInstallControlPlaneRepository();
+    const nowMs = Date.parse('2026-08-13T12:05:00.000Z');
+
+    const result = await resolveCanonicalDeviceIdentity({
+      repository,
+      store: createMemoryDeviceGrantStore(),
+      email: ' New.User@Example.com ',
+      googleSubject: 'google-sub-new',
+      nowMs,
+    });
+
+    expect(result).toMatchObject({
+      status: 'workspace_required',
+      operatingAccountId: expect.stringMatching(/^user_/),
+      canonicalUserId: expect.stringMatching(/^user_/),
+    });
+    if (result.status !== 'workspace_required') throw new Error('workspace should be required');
+    expect(result.operatingAccountId).toBe(result.canonicalUserId);
+    await expect(repository.findCanonicalUsersByEmail('new.user@example.com')).resolves.toEqual([
+      {
+        userId: result.canonicalUserId,
+        email: 'new.user@example.com',
+        workspaceMemberships: [],
+      },
+    ]);
+  });
+
   it('resolves a verified email to the most recently synchronized canonical workspace', async () => {
     const repository = createMemoryInstallControlPlaneRepository();
     await repository.upsertUser({
@@ -178,6 +206,63 @@ describe('canonical device identity resolution', () => {
     });
   });
 
+  it('reconciles an active legacy Google workspace into a newly canonicalized user', async () => {
+    const repository = createMemoryInstallControlPlaneRepository();
+    const store = createMemoryDeviceGrantStore();
+    const nowMs = Date.parse('2026-08-13T12:05:00.000Z');
+    const legacyAccountId = 'google:google-sub-legacy';
+    await store.putAccountWorkspace({
+      accountId: legacyAccountId,
+      workspaceId: 'workspace_legacy',
+      workspaceSlug: 'legacy-route',
+      workspaceHost: 'legacy-route.consuelohq.com',
+      homeNodeId: 'node-existing',
+      updatedAt: nowMs - 60_000,
+    });
+    await store.putWorkspaceMembership({
+      accountId: legacyAccountId,
+      workspaceId: 'workspace_legacy',
+      workspaceSlug: 'legacy-route',
+      workspaceHost: 'legacy-route.consuelohq.com',
+      status: 'active',
+      createdAt: nowMs - 60_000,
+      updatedAt: nowMs - 60_000,
+    });
+
+    const result = await resolveCanonicalDeviceIdentity({
+      repository,
+      store,
+      email: 'legacy@example.com',
+      googleSubject: 'google-sub-legacy',
+      nowMs,
+    });
+
+    expect(result).toMatchObject({
+      status: 'resolved',
+      canonicalUserId: expect.stringMatching(/^user_/),
+      canonicalWorkspaceId: 'workspace_legacy',
+      operatingAccountId: legacyAccountId,
+      workspaceRoute: {
+        workspaceId: 'workspace_legacy',
+        workspaceSlug: 'legacy-route',
+        workspaceHost: 'legacy-route.consuelohq.com',
+      },
+    });
+    if (result.status !== 'resolved') throw new Error('legacy workspace should resolve');
+    await expect(repository.findCanonicalUsersByEmail('legacy@example.com')).resolves.toEqual([
+      {
+        userId: result.canonicalUserId,
+        email: 'legacy@example.com',
+        workspaceMemberships: [
+          {
+            workspaceId: 'workspace_legacy',
+            verifiedAt: new Date(nowMs).toISOString(),
+          },
+        ],
+      },
+    ]);
+  });
+
   it('should deny an established workspace when its signed membership verification is no longer current', async () => {
     const repository = createMemoryInstallControlPlaneRepository();
     await repository.upsertUser({
@@ -219,11 +304,6 @@ describe('canonical device identity resolution', () => {
       reason: 'directory_unavailable',
     },
     {
-      name: 'the Google email has not been synchronized',
-      seed: async () => undefined,
-      reason: 'user_not_found',
-    },
-    {
       name: 'two canonical users share the same normalized email',
       seed: async (repository: ReturnType<typeof createMemoryInstallControlPlaneRepository>) => {
         for (const userId of ['user_1', 'user_2']) {
@@ -238,19 +318,6 @@ describe('canonical device identity resolution', () => {
         }
       },
       reason: 'ambiguous_user',
-    },
-    {
-      name: 'the canonical user has no recently verified workspace membership',
-      seed: async (repository: ReturnType<typeof createMemoryInstallControlPlaneRepository>) => {
-        await repository.upsertUser({
-          userId: 'user_123',
-          email: 'ko@example.com',
-          workspaceIds: ['workspace_unverified'],
-          createdAt: '2026-08-10T12:00:00.000Z',
-          updatedAt: '2026-08-13T12:00:00.000Z',
-        });
-      },
-      reason: 'workspace_verification_required',
     },
     {
       name: 'the last signed workspace verification is stale',

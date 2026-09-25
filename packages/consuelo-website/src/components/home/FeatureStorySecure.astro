@@ -1,0 +1,391 @@
+---
+import { homeSecurityResources } from '../../data/home-content';
+---
+
+<section class="secure-story" data-secure-story data-story-animate aria-label="Workspace security boundary showing scoped tools, nodes, and sealed secret values">
+  <header class="secure-story__header">
+    <div>
+      <p>WORKSPACE BOUNDARY / LIVE POLICY</p>
+      <strong>POWERFUL DOES NOT MEAN WIDE OPEN</strong>
+    </div>
+    <span>03 RESOURCE CLASSES</span>
+  </header>
+
+  <div class="secure-story__canvas">
+    <div class="secure-story__request">
+      <span>AGENT REQUEST</span>
+      <strong>Release canary</strong>
+      <p>Resolve only the resources this workspace exposes.</p>
+      <div class="secure-story__request-route" aria-hidden="true"><span></span></div>
+    </div>
+
+    <div class="secure-story__boundary" aria-label="Workspace resource boundary">
+      <div class="secure-story__boundary-head">
+        <span>CONSUELO WORKSPACE</span>
+        <strong>resolve → scope → execute</strong>
+      </div>
+      <div class="secure-story__resources">
+        {homeSecurityResources.map((resource, index) => (
+          <article data-security-resource style={`--resource-index:${index}`}>
+            <span class="secure-story__resource-kind">{resource.kind}</span>
+            <div>
+              <strong>{resource.name}</strong>
+              <p>{resource.detail}</p>
+            </div>
+            <span class="secure-story__resource-state">{resource.state}</span>
+            {resource.kind === 'secret' && (
+              <span class="secure-story__hidden-value" aria-label="Secret value hidden">••••••••</span>
+            )}
+          </article>
+        ))}
+      </div>
+    </div>
+
+    <aside class="secure-story__seal" aria-label="Browser-side secret sealing">
+      <span>SECRET ENVELOPE</span>
+      <strong>Browser seals before transit</strong>
+      <ol>
+        <li><span>01</span><code>X25519</code><small>derive shared secret</small></li>
+        <li><span>02</span><code>HKDF / SHA-256</code><small>derive envelope key</small></li>
+        <li><span>03</span><code>AES-GCM</code><small>encrypt + authenticate</small></li>
+      </ol>
+      <div class="secure-story__seal-result">
+        <span>PLAINTEXT</span>
+        <strong>NEVER RENDERED BACK</strong>
+      </div>
+    </aside>
+  </div>
+
+  <footer class="secure-story__footer">
+    <span>TOOLS CAN BE DISABLED</span>
+    <strong>SECRETS STAY HIDDEN</strong>
+    <span>EXECUTION STAYS NODE-SCOPED</span>
+  </footer>
+</section>
+
+<style>
+  .secure-story {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    width: 100%;
+    aspect-ratio: 2032 / 1192;
+    overflow: hidden;
+    border: 1px solid var(--site-color-brand);
+    background: var(--site-color-on-brand);
+    color: var(--site-color-brand);
+  }
+
+  .secure-story__header,
+  .secure-story__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: clamp(0.65rem, 1.2vw, 0.95rem) clamp(0.75rem, 1.6vw, 1.25rem);
+    font: 650 clamp(0.45rem, 0.64vw, 0.56rem)/1.15 var(--site-font-mono);
+    letter-spacing: 0.075em;
+    text-transform: uppercase;
+  }
+
+  .secure-story__header {
+    border-bottom: 1px solid currentColor;
+  }
+
+  .secure-story__header > div {
+    display: grid;
+    gap: 0.3rem;
+  }
+
+  .secure-story__header p,
+  .secure-story__footer span,
+  .secure-story__footer strong,
+  .secure-story__request p,
+  .secure-story__resources p {
+    margin: 0;
+  }
+
+  .secure-story__header p,
+  .secure-story__header > span,
+  .secure-story__footer span {
+    color: var(--site-color-art-muted);
+  }
+
+  .secure-story__header strong {
+    font-family: var(--site-font-display);
+    font-size: clamp(0.95rem, 1.55vw, 1.35rem);
+    font-weight: 480;
+    line-height: 0.95;
+  }
+
+  .secure-story__canvas {
+    display: grid;
+    grid-template-columns: minmax(9rem, 0.52fr) minmax(18rem, 1.05fr) minmax(12rem, 0.72fr);
+    min-height: 0;
+  }
+
+  .secure-story__request,
+  .secure-story__seal {
+    display: grid;
+    align-content: center;
+    gap: 0.7rem;
+    padding: clamp(0.8rem, 1.7vw, 1.4rem);
+  }
+
+  .secure-story__request {
+    position: relative;
+    border-right: 1px solid currentColor;
+  }
+
+  .secure-story__request > span,
+  .secure-story__seal > span,
+  .secure-story__boundary-head span,
+  .secure-story__resource-kind {
+    color: var(--site-color-art-muted);
+    font: 650 clamp(0.4rem, 0.56vw, 0.5rem)/1 var(--site-font-mono);
+    letter-spacing: 0.075em;
+    text-transform: uppercase;
+  }
+
+  .secure-story__request > strong,
+  .secure-story__seal > strong {
+    font-family: var(--site-font-display);
+    font-size: clamp(1rem, 1.75vw, 1.55rem);
+    font-weight: 490;
+    line-height: 0.95;
+  }
+
+  .secure-story__request p {
+    max-width: 14rem;
+    font: 600 clamp(0.42rem, 0.58vw, 0.52rem)/1.5 var(--site-font-mono);
+    text-transform: uppercase;
+  }
+
+  .secure-story__request-route {
+    position: absolute;
+    top: 50%;
+    right: -1px;
+    width: clamp(2rem, 3.5vw, 3rem);
+    height: 1px;
+    background: currentColor;
+    transform: translateX(100%);
+  }
+
+  .secure-story__request-route span {
+    position: absolute;
+    top: 50%;
+    right: 0;
+    width: 0.42rem;
+    aspect-ratio: 1;
+    border: 1px solid currentColor;
+    border-radius: 50%;
+    background: var(--site-color-on-brand);
+    transform: translate(50%, -50%);
+  }
+
+  .secure-story__boundary {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    min-width: 0;
+    padding-inline: clamp(0.75rem, 1.7vw, 1.3rem);
+    border-right: 1px solid currentColor;
+    background: color-mix(in srgb, var(--site-color-brand) 3%, var(--site-color-on-brand));
+  }
+
+  .secure-story__boundary-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.8rem;
+    padding-block: clamp(0.6rem, 1.1vw, 0.85rem);
+    border-bottom: 1px solid color-mix(in srgb, var(--site-color-brand) 22%, transparent);
+    font: 620 clamp(0.4rem, 0.56vw, 0.5rem)/1 var(--site-font-mono);
+  }
+
+  .secure-story__resources {
+    display: grid;
+    grid-template-rows: repeat(3, minmax(0, 1fr));
+  }
+
+  .secure-story__resources article {
+    display: grid;
+    grid-template-columns: 3rem minmax(0, 1fr) auto;
+    align-items: center;
+    gap: clamp(0.5rem, 1vw, 0.85rem);
+    border-bottom: 1px solid color-mix(in srgb, var(--site-color-brand) 15%, transparent);
+  }
+
+  .secure-story__resources article:last-child {
+    border-bottom: 0;
+  }
+
+  .secure-story__resources article > div {
+    display: grid;
+    gap: 0.2rem;
+    min-width: 0;
+  }
+
+  .secure-story__resources strong {
+    overflow: hidden;
+    font-family: var(--site-font-display);
+    font-size: clamp(0.8rem, 1.2vw, 1.05rem);
+    font-weight: 500;
+    line-height: 1;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .secure-story__resources p,
+  .secure-story__resource-state,
+  .secure-story__hidden-value {
+    font: 620 clamp(0.38rem, 0.52vw, 0.47rem)/1.25 var(--site-font-mono);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .secure-story__resources p {
+    color: var(--site-color-art-muted);
+  }
+
+  .secure-story__resource-state {
+    border: 1px solid currentColor;
+    padding: 0.28rem 0.36rem;
+  }
+
+  .secure-story__hidden-value {
+    grid-column: 2 / -1;
+    justify-self: start;
+    margin-top: -0.65rem;
+    color: var(--site-color-art-muted);
+    letter-spacing: 0.16em;
+  }
+
+  .secure-story__seal {
+    background: var(--site-color-brand);
+    color: var(--site-color-on-brand);
+  }
+
+  .secure-story__seal > span {
+    color: color-mix(in srgb, var(--site-color-on-brand) 68%, transparent);
+  }
+
+  .secure-story__seal ol {
+    display: grid;
+    gap: 0;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid color-mix(in srgb, var(--site-color-on-brand) 28%, transparent);
+    list-style: none;
+  }
+
+  .secure-story__seal li {
+    display: grid;
+    grid-template-columns: 1.5rem minmax(0, 1fr);
+    gap: 0.15rem 0.5rem;
+    padding-block: 0.62rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--site-color-on-brand) 28%, transparent);
+  }
+
+  .secure-story__seal li span,
+  .secure-story__seal li code,
+  .secure-story__seal li small,
+  .secure-story__seal-result {
+    font-family: var(--site-font-mono);
+  }
+
+  .secure-story__seal li span {
+    grid-row: 1 / span 2;
+    color: color-mix(in srgb, var(--site-color-on-brand) 58%, transparent);
+    font-size: 0.44rem;
+  }
+
+  .secure-story__seal li code {
+    font-size: clamp(0.48rem, 0.65vw, 0.58rem);
+    font-weight: 700;
+  }
+
+  .secure-story__seal li small {
+    color: color-mix(in srgb, var(--site-color-on-brand) 68%, transparent);
+    font-size: clamp(0.38rem, 0.48vw, 0.44rem);
+    text-transform: uppercase;
+  }
+
+  .secure-story__seal-result {
+    display: grid;
+    gap: 0.2rem;
+    margin-top: 0.2rem;
+    font-size: clamp(0.4rem, 0.55vw, 0.5rem);
+    letter-spacing: 0.05em;
+  }
+
+  .secure-story__seal-result span {
+    color: color-mix(in srgb, var(--site-color-on-brand) 58%, transparent);
+  }
+
+  .secure-story__footer {
+    border-top: 1px solid currentColor;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .secure-story[data-story-ready='true'] [data-security-resource] {
+      opacity: 0.2;
+      transform: translateX(-8px);
+      transition:
+        opacity var(--site-motion-medium) var(--site-ease-standard),
+        transform var(--site-motion-medium) var(--site-ease-emphasized);
+    }
+
+    .secure-story[data-story-active='true'] [data-security-resource] {
+      opacity: 1;
+      transform: translateX(0);
+      transition-delay: calc(var(--resource-index) * 120ms);
+    }
+
+    .secure-story[data-story-ready='true'] .secure-story__request-route span {
+      transform: translate(50%, -50%) scale(0.55);
+      transition: transform var(--site-motion-slow) var(--site-ease-emphasized);
+    }
+
+    .secure-story[data-story-active='true'] .secure-story__request-route span {
+      transform: translate(50%, -50%) scale(1);
+    }
+  }
+
+  @media (max-width: 760px) {
+    .secure-story {
+      aspect-ratio: auto;
+      min-height: 34rem;
+    }
+
+    .secure-story__canvas {
+      grid-template-columns: 1fr;
+    }
+
+    .secure-story__request,
+    .secure-story__boundary {
+      border-right: 0;
+      border-bottom: 1px solid currentColor;
+    }
+
+    .secure-story__request-route {
+      display: none;
+    }
+
+    .secure-story__request,
+    .secure-story__seal {
+      align-content: start;
+    }
+
+    .secure-story__header,
+    .secure-story__footer {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .secure-story,
+    .secure-story * {
+      transition: none !important;
+    }
+  }
+</style>

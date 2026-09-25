@@ -1,0 +1,184 @@
+{
+  "version": 1,
+  "worktree_id": "task/twenty-migration/close-bun-hoisting-dependency-gaps",
+  "events": [
+    {
+      "id": "536bb8d6-86f0-4350-ab4f-08ce06d37c2d",
+      "occurred_at": "2026-09-21T04:54:18.382Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/dialer-server/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/twenty-migration/close-bun-hoisting-dependency-gaps",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/twenty-migration/close-bun-hoisting-dependency-gaps"
+      }
+    },
+    {
+      "id": "a489d3ec-39c9-4e45-9768-954b9e405832",
+      "occurred_at": "2026-09-21T04:54:47.326Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/contacts/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/twenty-migration/close-bun-hoisting-dependency-gaps",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/twenty-migration/close-bun-hoisting-dependency-gaps"
+      }
+    },
+    {
+      "id": "de7f6802-929a-488c-89be-c684e4c4b530",
+      "occurred_at": "2026-09-21T04:54:47.425Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/coaching/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/twenty-migration/close-bun-hoisting-dependency-gaps",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/twenty-migration/close-bun-hoisting-dependency-gaps"
+      }
+    },
+    {
+      "id": "1b789796-7c1f-4b58-8cdd-d7b355d0f713",
+      "occurred_at": "2026-09-21T04:55:08.029Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/cli/src/commands/analytics.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/twenty-migration/close-bun-hoisting-dependency-gaps",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/twenty-migration/close-bun-hoisting-dependency-gaps"
+      }
+    },
+    {
+      "id": "164b1afd-04f2-4e16-bcfc-18b819cab81c",
+      "occurred_at": "2026-09-21T04:55:26.574Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/github-workflow-policy.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/twenty-migration/close-bun-hoisting-dependency-gaps",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/twenty-migration/close-bun-hoisting-dependency-gaps"
+      }
+    },
+    {
+      "id": "a185f150-d5bc-4d8b-932d-6327453231b7",
+      "occurred_at": "2026-09-21T04:55:27.887Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/cli/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/twenty-migration/close-bun-hoisting-dependency-gaps",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/twenty-migration/close-bun-hoisting-dependency-gaps"
+      }
+    },
+    {
+      "id": "fc0a00f7-711e-4640-9fae-8c9fd0f1073f",
+      "occurred_at": "2026-09-21T04:55:38.085Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/cli/src/auth.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/twenty-migration/close-bun-hoisting-dependency-gaps",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/twenty-migration/close-bun-hoisting-dependency-gaps"
+      }
+    },
+    {
+      "id": "241fcf76-4bb6-42e1-b50f-26c46b44bc41",
+      "occurred_at": "2026-09-21T04:55:44.510Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/cli/src/sentry.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/twenty-migration/close-bun-hoisting-dependency-gaps",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/twenty-migration/close-bun-hoisting-dependency-gaps"
+      }
+    },
+    {
+      "id": "3de234fa-4f1a-4df7-89b0-42ca0f146e49",
+      "occurred_at": "2026-09-21T04:56:01.262Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/cli/src/commands/init.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/twenty-migration/close-bun-hoisting-dependency-gaps",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/twenty-migration/close-bun-hoisting-dependency-gaps"
+      }
+    },
+    {
+      "id": "5b04b28f-5ffb-4e08-9ad9-95ba2686e81a",
+      "occurred_at": "2026-09-21T04:57:45.234Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/cli/src/auth.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/twenty-migration/close-bun-hoisting-dependency-gaps",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/twenty-migration/close-bun-hoisting-dependency-gaps"
+      }
+    },
+    {
+      "id": "7c8ba9d9-181e-4860-8d02-e2a468502250",
+      "occurred_at": "2026-09-21T05:01:02.851Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/cli/src/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/twenty-migration/close-bun-hoisting-dependency-gaps",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/twenty-migration/close-bun-hoisting-dependency-gaps"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-09-21T05:01:02.971Z"
+}

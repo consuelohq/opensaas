@@ -28,10 +28,10 @@ import { bearerToken } from '../services/mcp-proxy';
 import { authenticateInternalWorkspaceSession } from './web-auth';
 import { buildManagedCloudPublicCatalog } from '../services/managed-cloud-pricing';
 import {
-  publicManagedCloudProvisioningJob,
-  type ManagedCloudProvisioningJob,
-} from '../../../../scripts/lib/managed-cloud-provisioning';
-import type { ManagedCloudPlanId, ManagedCloudRegionId } from '../../../../scripts/lib/managed-cloud-pricing';
+  ManagedCloudBillingError,
+  startManagedCloudNodeCheckout,
+} from '../services/managed-cloud-billing';
+import { publicManagedCloudProvisioningJob } from '../../../../scripts/lib/managed-cloud-provisioning';
 
 const jsonHeaders = { 'cache-control': 'no-store' } as const;
 
@@ -273,36 +273,106 @@ async function handleRevoke(
       return errorResponse(404, 'WORKSPACE_NODE_NOT_FOUND', 'The requested node was not found.');
     }
     const nowMs = runtime.now();
-    const revoked: WorkspaceNode = {
-      ...node,
+    const revoked = await revokeWorkspaceNode(runtime, node, nowMs);
+
+    return json({ node: safeWorkspaceNode(revoked, nowMs) }, { headers: jsonHeaders });
+  } catch {
+    return serviceUnavailableResponse();
+  }
+}
+
+async function revokeWorkspaceNode(
+  runtime: DeviceAuthorityRuntime,
+  node: WorkspaceNode,
+  nowMs: number,
+): Promise<WorkspaceNode> {
+  if ((node.state ?? 'active') === 'revoked') return node;
+  const revoked: WorkspaceNode = {
+    ...node,
+    state: 'revoked',
+    connectorStatus: 'disconnected',
+    revokedAt: nowMs,
+    updatedAt: nowMs,
+  };
+  if (runtime.workspaceRouteRegistry) {
+    await updateWorkspaceNodeTargetInD1(runtime.workspaceRouteRegistry, {
+      hostname: node.workspaceHost,
+      nodeId: node.nodeId,
       state: 'revoked',
       connectorStatus: 'disconnected',
-      revokedAt: nowMs,
-      updatedAt: nowMs,
-    };
+    });
+  }
+  try {
+    await runtime.store.putWorkspaceNode(revoked);
+  } catch (error: unknown) {
     if (runtime.workspaceRouteRegistry) {
       await updateWorkspaceNodeTargetInD1(runtime.workspaceRouteRegistry, {
-        hostname: auth.workspace.workspaceHost,
-        nodeId,
-        state: 'revoked',
-        connectorStatus: 'disconnected',
+        hostname: node.workspaceHost,
+        nodeId: node.nodeId,
+        state: node.state ?? 'active',
+        connectorStatus: node.connectorStatus,
+        lastSeenAt: node.lastSeenAt,
       });
     }
-    try {
-      await runtime.store.putWorkspaceNode(revoked);
-    } catch (error: unknown) {
-      if (runtime.workspaceRouteRegistry) {
-        await updateWorkspaceNodeTargetInD1(runtime.workspaceRouteRegistry, {
-          hostname: auth.workspace.workspaceHost,
-          nodeId,
-          state: node.state ?? 'active',
-          connectorStatus: node.connectorStatus,
-          lastSeenAt: node.lastSeenAt,
-        });
-      }
-      throw error;
-    }
+    throw error;
+  }
+  return revoked;
+}
 
+async function handleSelfRevoke(
+  request: Request,
+  runtime: DeviceAuthorityRuntime,
+): Promise<Response> {
+  if (!(request.headers.get('content-type') ?? '').toLowerCase().includes('application/json')) {
+    return errorResponse(400, 'INVALID_NODE_REVOCATION', 'A signed JSON node revocation is required.');
+  }
+  const payload = await request.text();
+  let body: Record<string, unknown>;
+  try {
+    const parsed = JSON.parse(payload);
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('invalid');
+    body = parsed as Record<string, unknown>;
+  } catch {
+    return errorResponse(400, 'INVALID_NODE_REVOCATION', 'A signed JSON node revocation is required.');
+  }
+  const workspaceId = typeof body.workspaceId === 'string' ? body.workspaceId.trim() : '';
+  const nodeId = typeof body.nodeId === 'string' ? body.nodeId.trim() : '';
+  const timestamp = typeof body.timestamp === 'number' ? body.timestamp : Number.NaN;
+  const nonce = typeof body.nonce === 'string' ? body.nonce.trim() : '';
+  const nowMs = runtime.now();
+  if (
+    !workspaceId ||
+    !nodeId ||
+    !Number.isFinite(timestamp) ||
+    nonce.length < 8 ||
+    nonce.length > 128 ||
+    Math.abs(nowMs - timestamp) > WORKSPACE_NODE_SIGNATURE_MAX_AGE_MS
+  ) {
+    return errorResponse(
+      400,
+      'INVALID_NODE_REVOCATION',
+      'Node revocation identity, timestamp, or nonce is invalid.',
+    );
+  }
+  const node = await runtime.store.byWorkspaceNodeId(nodeId);
+  if (!node || workspaceNodeId(node) !== workspaceId) {
+    return errorResponse(404, 'WORKSPACE_NODE_NOT_FOUND', 'The requested node was not found.');
+  }
+  const signature = request.headers.get('x-consuelo-node-signature')?.trim() ?? '';
+  if (!(await verifyNodeSignature(node, payload, signature))) {
+    return errorResponse(401, 'INVALID_NODE_SIGNATURE', 'The node revocation signature is invalid.');
+  }
+  const claimed = await runtime.store.claimWorkspaceNodeNonce(
+    nodeId,
+    nonce,
+    nowMs + WORKSPACE_NODE_SIGNATURE_MAX_AGE_MS,
+    nowMs,
+  );
+  if (!claimed) {
+    return errorResponse(409, 'NODE_REVOCATION_REPLAYED', 'The node revocation nonce was already used.');
+  }
+  try {
+    const revoked = await revokeWorkspaceNode(runtime, node, nowMs);
     return json({ node: safeWorkspaceNode(revoked, nowMs) }, { headers: jsonHeaders });
   } catch {
     return serviceUnavailableResponse();
@@ -506,7 +576,17 @@ async function handleHeartbeat(
           updatedAt: nowMs,
         });
       }
-    } catch {
+    } catch (error: unknown) {
+      if (
+        error instanceof Error &&
+        /exceeded D1's free tier daily row (read|write) limit/i.test(error.message)
+      ) {
+        return errorResponse(
+          503,
+          'WORKSPACE_ROUTE_QUOTA_EXCEEDED',
+          'Workspace routing database daily quota is exhausted. Operator action or the next quota reset is required.',
+        );
+      }
       return errorResponse(
         503,
         'WORKSPACE_ROUTE_RECONCILIATION_FAILED',
@@ -638,8 +718,29 @@ async function handleInternalNodePricing(
   }
 }
 
-const managedCloudId = (prefix: 'mcpj' | 'node'): string =>
-  `${prefix}_${crypto.randomUUID().replaceAll('-', '').slice(0, 20)}`;
+async function canonicalAccountEmail(
+  runtime: DeviceAuthorityRuntime,
+  accountId: string,
+): Promise<string | undefined> {
+  const repository = runtime.installControlPlaneRepository;
+  if (!repository) return undefined;
+  try {
+    let cursor: string | undefined;
+    do {
+      const page = await repository.listUsers({
+        nowMs: runtime.now(),
+        limit: 100,
+        ...(cursor ? { cursor } : {}),
+      });
+      const match = page.items.find((user) => user.userId === accountId);
+      if (match?.email?.trim()) return match.email.trim();
+      cursor = page.nextCursor;
+    } while (cursor);
+  } catch {
+    return undefined;
+  }
+  return undefined;
+}
 
 async function handleInternalCreateProvisioning(
   request: Request,
@@ -652,41 +753,86 @@ async function handleInternalCreateProvisioning(
     if (!workspace || workspace.workspaceHost !== auth.session.workspaceHost) {
       return errorResponse(403, 'WORKSPACE_ACCESS_DENIED', 'The workspace is not available to this session.');
     }
+
     const body = await readJsonObject(request);
-    const planId = typeof body?.planId === 'string' ? body.planId.trim() as ManagedCloudPlanId : '' as ManagedCloudPlanId;
-    const region = typeof body?.region === 'string' ? body.region.trim() as ManagedCloudRegionId : '' as ManagedCloudRegionId;
-    const pricingVersion = typeof body?.pricingVersion === 'string' ? body.pricingVersion.trim() : '';
-    const idempotencyKey = typeof body?.idempotencyKey === 'string' ? body.idempotencyKey.trim() : '';
-    if (!runtime.managedCloudPricing) {
-      return errorResponse(503, 'MANAGED_CLOUD_PRICING_UNAVAILABLE', 'Managed cloud pricing is temporarily unavailable.');
+    if (body?.action === 'cancel') {
+      const jobId = typeof body.jobId === 'string' ? body.jobId.trim() : '';
+      const job = jobId ? await runtime.store.byManagedCloudProvisioningJob(jobId) : undefined;
+      if (
+        !job ||
+        job.accountId !== auth.session.accountId ||
+        job.workspaceHost !== workspace.workspaceHost
+      ) {
+        return errorResponse(404, 'MANAGED_CLOUD_PROVISIONING_NOT_FOUND', 'The provisioning request was not found.');
+      }
+      if (job.status !== 'requested') {
+        return errorResponse(
+          409,
+          'MANAGED_CLOUD_PROVISIONING_ALREADY_STARTED',
+          'This cloud node can no longer be cancelled from the workspace because provisioning already started.',
+        );
+      }
+      const cancelled = await runtime.store.updateManagedCloudProvisioningJob({
+        jobId: job.jobId,
+        status: 'failed',
+        nowMs: runtime.now(),
+        errorCode: 'MANAGED_CLOUD_PROVISIONING_CANCELLED',
+        errorMessage: 'Cloud node request was cancelled before provisioning started.',
+      });
+      if (!cancelled) {
+        return errorResponse(409, 'MANAGED_CLOUD_PROVISIONING_CANCEL_FAILED', 'The cloud node request could not be cancelled.');
+      }
+      return json({ job: publicManagedCloudProvisioningJob(cancelled) }, { headers: jsonHeaders });
     }
-    const catalog = buildManagedCloudPublicCatalog(runtime.managedCloudPricing, region);
-    const quote = catalog.quotes.find((candidate) => candidate.plan.id === planId && candidate.region.id === region);
-    if (!catalog.regions.some((candidate) => candidate.id === region) || !catalog.plans.some((candidate) => candidate.id === planId) || !quote) {
-      return errorResponse(400, 'MANAGED_CLOUD_PLAN_INVALID', 'Choose an available cloud plan and region.');
-    }
-    if (!pricingVersion || pricingVersion !== quote.pricingVersion) {
-      return errorResponse(409, 'MANAGED_CLOUD_PRICING_CHANGED', 'Cloud pricing changed. Refresh the current monthly price before creating this node.');
-    }
-    if (idempotencyKey.length < 8 || idempotencyKey.length > 128) {
-      return errorResponse(400, 'MANAGED_CLOUD_IDEMPOTENCY_INVALID', 'A valid provisioning request identifier is required.');
-    }
+
     const workspaceId = workspace.workspaceId?.trim();
     if (!workspaceId) {
-      return errorResponse(409, 'WORKSPACE_ID_UNAVAILABLE', 'This workspace is not ready for managed cloud provisioning yet.');
+      return errorResponse(409, 'WORKSPACE_ID_UNAVAILABLE', 'This workspace is not ready for managed cloud checkout yet.');
     }
-    const nowMs = runtime.now();
-    const job: ManagedCloudProvisioningJob = {
-      jobId: managedCloudId('mcpj'), accountId: auth.session.accountId,
-      workspaceId, workspaceSlug: workspace.workspaceSlug, workspaceHost: workspace.workspaceHost,
-      nodeId: managedCloudId('node'), nodeName: 'Cloud', planId, region, pricingVersion: quote.pricingVersion,
-      monthlyPriceCents: quote.monthlyPriceCents, currency: quote.currency, idempotencyKey, status: 'requested', createdAt: nowMs, updatedAt: nowMs,
-    };
-    const created = await runtime.store.createManagedCloudProvisioningJob(job);
-    if (created.status === 'active-conflict') {
-      return json({ error: { code: 'MANAGED_CLOUD_PROVISIONING_ACTIVE', message: 'A cloud node is already being created for this workspace.' }, job: publicManagedCloudProvisioningJob(created.job) }, { status: 409, headers: jsonHeaders });
+    const email = await canonicalAccountEmail(runtime, auth.session.accountId);
+    if (!email) {
+      return errorResponse(503, 'MANAGED_CLOUD_IDENTITY_UNAVAILABLE', 'Your verified account email is temporarily unavailable for cloud checkout.');
     }
-    return json({ job: publicManagedCloudProvisioningJob(created.job) }, { status: created.status === 'created' ? 202 : 200, headers: jsonHeaders });
+    const planId = typeof body?.planId === 'string' ? body.planId.trim() : '';
+    const region = typeof body?.region === 'string' ? body.region.trim() : '';
+    const pricingVersion = typeof body?.pricingVersion === 'string' ? body.pricingVersion.trim() : '';
+    const idempotencyKey = typeof body?.idempotencyKey === 'string' ? body.idempotencyKey.trim() : '';
+    try {
+      const checkout = await startManagedCloudNodeCheckout({
+        runtime,
+        accountId: auth.session.accountId,
+        email,
+        workspaceId,
+        workspaceSlug: workspace.workspaceSlug,
+        workspaceHost: workspace.workspaceHost,
+        workspaceName: workspace.displayName,
+        planId,
+        region,
+        pricingVersion,
+        idempotencyKey,
+      });
+      const sessionId = checkout.stripeCheckoutSessionId?.trim();
+      const url = checkout.stripeCheckoutUrl?.trim();
+      if (!sessionId || !url) {
+        return errorResponse(503, 'MANAGED_CLOUD_BILLING_UNAVAILABLE', 'Cloud checkout is temporarily unavailable.');
+      }
+      return json({
+        checkout: {
+          sessionId,
+          url,
+          planId: checkout.planId,
+          region: checkout.region,
+          pricingVersion: checkout.pricingVersion,
+          monthlyPriceCents: checkout.monthlyPriceCents,
+          currency: checkout.currency,
+        },
+      }, { headers: jsonHeaders });
+    } catch (error: unknown) {
+      if (error instanceof ManagedCloudBillingError) {
+        return errorResponse(error.status, `MANAGED_CLOUD_${error.code}`, error.message);
+      }
+      throw error;
+    }
   } catch {
     return serviceUnavailableResponse();
   }
@@ -764,6 +910,9 @@ export function registerWorkspaceNodeRoutes(
   );
   app.post('/workspace/nodes/heartbeat', (context) =>
     handleHeartbeat(context.req.raw, runtime),
+  );
+  app.post('/workspace/nodes/self/revoke', (context) =>
+    handleSelfRevoke(context.req.raw, runtime),
   );
   app.patch('/workspace/nodes/:nodeId', (context) =>
     handleRename(context.req.raw, runtime, context.req.param('nodeId')),

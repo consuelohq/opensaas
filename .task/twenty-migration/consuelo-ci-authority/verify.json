@@ -1,0 +1,353 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/twenty-migration/consuelo-ci-authority",
+  "base": "origin/stream/twenty-migration",
+  "headSha": "562f056a8dab2529fcb5b87f06e16934fdf2e0bc",
+  "changeHash": "6fa2420257e824993d4a48788832bbfa218f142b8a5e85ae7530b93103c3e660",
+  "changedFiles": [
+    ".github/workflows/ci-breaking-changes.yaml",
+    ".github/workflows/ci-create-app.yaml",
+    ".github/workflows/ci-front.yaml",
+    ".github/workflows/ci-sdk.yaml",
+    ".github/workflows/ci-server.yaml",
+    ".github/workflows/ci-shared.yaml",
+    ".github/workflows/ci-test-docker-compose.yaml",
+    ".github/workflows/ci-utils.yaml",
+    ".github/workflows/consuelo-ci.yaml",
+    "packages/workspace/tests/github-workflow-policy.test.js"
+  ],
+  "verifiedAt": "2026-08-15T02:32:00.809Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".github/workflows/ci-breaking-changes.yaml",
+        ".github/workflows/ci-create-app.yaml",
+        ".github/workflows/ci-front.yaml",
+        ".github/workflows/ci-sdk.yaml",
+        ".github/workflows/ci-server.yaml",
+        ".github/workflows/ci-shared.yaml",
+        ".github/workflows/ci-test-docker-compose.yaml",
+        ".github/workflows/ci-utils.yaml",
+        ".github/workflows/consuelo-ci.yaml",
+        ".task/tasks/twenty-migration/consuelo-ci-authority.json",
+        ".task/twenty-migration/consuelo-ci-authority/current.json",
+        ".task/twenty-migration/consuelo-ci-authority/evidence-log.json",
+        ".task/twenty-migration/consuelo-ci-authority/read-log.json",
+        ".task/twenty-migration/consuelo-ci-authority/session.json",
+        ".task/twenty-migration/consuelo-ci-authority/workpad.md",
+        "packages/workspace/tests/github-workflow-policy.test.js"
+      ],
+      "matchedRules": [
+        {
+          "id": "consuelo-ci-immutable-base",
+          "critical": true,
+          "reason": "Consuelo pull-request verification must use an immutable base commit and preserve the focused local OS server review contracts without selecting the broad OS package suite.",
+          "matchedFiles": [
+            ".github/workflows/consuelo-ci.yaml"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "frontend-lint-config-contract",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Frontend lint configuration and workflow-only changes must validate their exact configs, workflow policy, and changed-file lint lane without selecting unrelated full application test targets.",
+          "matchedFiles": [
+            ".github/workflows/ci-front.yaml",
+            ".github/workflows/ci-shared.yaml"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "native-os-workflow-contract",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Native OS distribution workflow and selector changes must run their exact cross-platform contracts without selecting unrelated full OS package tests.",
+          "matchedFiles": [
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "server-ci-task-contract",
+          "critical": true,
+          "reason": "Server CI changes must scope lint and typecheck to directly changed Twenty server runtime files while retaining dependency propagation.",
+          "matchedFiles": [
+            ".github/workflows/ci-server.yaml"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "Consuelo CI immutable base and local server review contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/local-os-server-review-findings.test.ts"
+          ],
+          "ruleId": "consuelo-ci-immutable-base",
+          "critical": true
+        },
+        {
+          "name": "changed frontend lint helper tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/lint-changed-frontend-files.test.mjs",
+            "packages/workspace/tests/run-changed-frontend-task.test.mjs"
+          ],
+          "ruleId": "frontend-lint-config-contract",
+          "critical": true
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "ruleId": "frontend-lint-config-contract",
+          "critical": true
+        },
+        {
+          "name": "changed GitHub workflow security checks",
+          "command": [
+            "node",
+            "packages/workspace/scripts/ci/check-github-workflows.cjs"
+          ],
+          "ruleId": "frontend-lint-config-contract",
+          "critical": true
+        },
+        {
+          "name": "changed frontend files lint",
+          "command": [
+            "node",
+            "packages/workspace/scripts/ci/lint-changed-frontend-files.mjs"
+          ],
+          "ruleId": "frontend-lint-config-contract",
+          "critical": true
+        },
+        {
+          "name": "native OS selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-os-native-tests.test.mjs"
+          ],
+          "ruleId": "native-os-workflow-contract",
+          "critical": true
+        },
+        {
+          "name": "native Windows workflow contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/windows-platform.test.ts",
+            "packages/os/tests/windows-bootstrap-source.test.ts"
+          ],
+          "ruleId": "native-os-workflow-contract",
+          "critical": true
+        },
+        {
+          "name": "changed server task selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "TypeORM CLI compatibility contract",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "Consuelo CI immutable base and local server review contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/local-os-server-review-findings.test.ts"
+          ],
+          "ruleId": "consuelo-ci-immutable-base",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 577,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-twenty-migration-consuelo-ci-authority/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/local-os-server-review-findings.test.ts \u001b[2m(\u001b[22m\u001b[2m20 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 25\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m20 passed\u001b[39m\u001b[22m\u001b[90m (20)\u001b[39m\n\u001b[2m   Start at \u001b[22m 22:31:56\n\u001b[2m   Duration \u001b[22m 240ms\u001b[2m (transform 58ms, setup 0ms, import 127ms, tests 25ms, environment 0ms)\u001b[22m\n\n$ vitest run tests/local-os-server-review-findings.test.ts\n{\"level\":\"warn\",\"event\":\"trace.persistence_failed\",\"code\":\"TRACE_PERSISTENCE_FAILED\",\"message\":\"Cannot find module 'bun:sqlite'\\nRequire stack:\\n- /[REDACTED_SECRET].ts\",\"ts\":\"2026-08-15T02:31:56.717Z\"}\n"
+        },
+        {
+          "name": "changed frontend lint helper tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/lint-changed-frontend-files.test.mjs",
+            "packages/workspace/tests/run-changed-frontend-task.test.mjs"
+          ],
+          "ruleId": "frontend-lint-config-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 70,
+          "outputTail": "✔ parseCliArguments prefers explicit SHAs (0.883292ms)\n✔ parseCliArguments uses Nx SHAs supplied by nx-set-shas (0.053666ms)\n✔ groupChangedFrontendFiles keeps only existing lintable files (0.124875ms)\n✔ frontend lint projects have unique roots and configs (0.0675ms)\n✔ validateFrontendLintConfigs reports the config that failed to import (0.404125ms)\nNo changed frontend runtime files require typecheck.\nRunning frontend typecheck for 1 directly changed file(s).\n✔ parseCliArguments resolves the task and comparison SHAs (0.877417ms)\n✔ parseCliArguments rejects unsupported tasks (0.164666ms)\n✔ filterFrontendTaskFiles excludes only ESLint config contract files (0.084667ms)\n✔ buildNxArguments preserves Nx dependency propagation through --files (0.054208ms)\n✔ runChangedFrontendTask skips Nx when only config files changed (0.274ms)\n✔ runChangedFrontendTask executes Nx for real frontend source changes (0.146625ms)\nℹ tests 11\nℹ suites 0\nℹ pass 11\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 41.230875\n"
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "ruleId": "frontend-lint-config-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 195,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/workspace/tests/github-workflow-policy.test.js:\n(pass) GitHub workflow policy > makes Consuelo verify authoritative for every non-Twenty package [0.09ms]\n(pass) GitHub workflow policy > scopes legacy Twenty pull-request CI to Twenty-owned paths [21.52ms]\n(pass) GitHub workflow policy > does not include retired automation workflows [0.13ms]\n(pass) GitHub workflow policy > does not reference retired CI credentials or the disabled Chromatic job [2.34ms]\n(pass) GitHub workflow policy > does not retain privileged allowlist entries for deleted workflows [0.22ms]\n(pass) GitHub workflow policy > runs typecheck and test from the filtered frontend file set [0.05ms]\n(pass) GitHub workflow policy > installs Bun and scopes shared tasks to changed frontend files [0.04ms]\n(pass) GitHub workflow policy > scopes native OS distribution tests to relevant changed files [0.05ms]\n(pass) GitHub workflow policy > runs Docker Compose CI with the pgvector PostgreSQL image required by migrations [0.03ms]\n(pass) GitHub workflow policy > uses available hosted runners for the Server and Front build pipelines [0.06ms]\n(pass) GitHub workflow policy > builds Consuelo backend workspace dependencies before server typecheck [0.04ms]\n(pass) GitHub workflow policy > installs Bun before the Server unit-test job runs Bun package tests [0.34ms]\n(pass) GitHub workflow policy > allows enough time for Danger dependency installation and execution [0.05ms]\n(pass) GitHub workflow policy > explicitly allowlists the API breaking-changes workflow write permissions [0.05ms]\n\n 14 pass\n 0 fail\n 113 expect() calls\nRan 14 tests across 1 file. [188.00ms]\n"
+        },
+        {
+          "name": "changed GitHub workflow security checks",
+          "command": [
+            "node",
+            "packages/workspace/scripts/ci/check-github-workflows.cjs"
+          ],
+          "ruleId": "frontend-lint-config-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 39,
+          "outputTail": "{\n  \"ok\": true,\n  \"baseRef\": \"origin/stream/twenty-migration\",\n  \"changedWorkflowFiles\": [],\n  \"findings\": []\n}\n"
+        },
+        {
+          "name": "changed frontend files lint",
+          "command": [
+            "node",
+            "packages/workspace/scripts/ci/lint-changed-frontend-files.mjs"
+          ],
+          "ruleId": "frontend-lint-config-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1659,
+          "outputTail": "No changed frontend files require linting.\n(node:76513) [DEP0180] DeprecationWarning: fs.Stats constructor is deprecated.\n(Use `node --trace-deprecation ...` to show where the warning was created)\n"
+        },
+        {
+          "name": "native OS selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-os-native-tests.test.mjs"
+          ],
+          "ruleId": "native-os-workflow-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 70,
+          "outputTail": "Running focused-artifact native OS test plan.\n✔ parseCliArguments resolves comparison SHAs (1.006542ms)\n✔ parseCliArguments uses event SHAs when nx-set-shas leaves the base empty (0.070333ms)\n✔ parseCliArguments ignores zero SHAs and falls back to fetched Git history (0.05425ms)\n✔ filterRelevantNativeFiles keeps only OS native-test ownership paths (0.076042ms)\n✔ selectNativeTestPlan uses the focused artifact contract for the exact metering cleanup (0.076708ms)\n✔ selectNativeTestPlan retains the full distribution suite for every broader change (0.043208ms)\n✔ runSelectedNativeTests executes the selected Bun test command (0.381458ms)\nℹ tests 7\nℹ suites 0\nℹ pass 7\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 38.902125\n"
+        },
+        {
+          "name": "native Windows workflow contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/windows-platform.test.ts",
+            "packages/os/tests/windows-bootstrap-source.test.ts"
+          ],
+          "ruleId": "native-os-workflow-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 463,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-twenty-migration-consuelo-ci-authority\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/windows-bootstrap-source.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/windows-platform.test.ts \u001b[2m(\u001b[22m\u001b[2m18 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 12\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m27 passed\u001b[39m\u001b[22m\u001b[90m (27)\u001b[39m\n\u001b[2m   Start at \u001b[22m 22:31:59\n\u001b[2m   Duration \u001b[22m 161ms\u001b[2m (transform 119ms, setup 0ms, import 138ms, tests 15ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "changed server task selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 72,
+          "outputTail": "No changed Twenty server runtime files require lint or typecheck.\nRunning server lint and baseline-aware typecheck for 1 directly changed file(s).\nTwenty server typecheck matched 1 known baseline diagnostic(s).\nRunning server lint and baseline-aware typecheck for 1 directly changed file(s).\nNo changed Twenty server schema files require GraphQL generation.\nNo changed Twenty server runtime files require migration generation.\nNo changesgeneratedTwenty server migration drift matched 2 known baseline operation(s).\ngeneratedgenerated✔ parseCliArguments resolves comparison SHAs (0.721333ms)\n✔ parseCliArguments selects GraphQL generation mode (0.067667ms)\n✔ parseCliArguments selects migration generation mode (0.053625ms)\n✔ filterServerTaskFiles excludes root and config-only triggers (0.096208ms)\n✔ filterGraphqlGenerationFiles keeps only server schema and generated files (0.072ms)\n✔ buildEslintArguments selects the owning project config and stdin filename (0.060292ms)\n✔ ESLint diagnostic comparison tracks new error multiplicity without line numbers (0.190542ms)\n✔ runChangedFileLint accepts base-existing errors and rejects a new changed-file error (0.855417ms)\n✔ runChangedFileLint allows explicit lint baseline debt but rejects diagnostics beyond it (0.902041ms)\n✔ buildTypecheckArguments uses standard TypeScript without emitting (0.089875ms)\n✔ TypeScript diagnostic baseline comparison rejects only new diagnostic keys (0.18425ms)\n✔ runChangedServerTask skips Nx for config-only changes (0.333584ms)\n✔ runChangedServerTask executes lint and baseline-aware typecheck for server runtime changes (0.097042ms)\n✔ runChangedServerTask rejects a new TypeScript diagnostic outside the baseline (0.086833ms)\n✔ server lint configuration resolves the existing workspace rules project (0.359917ms)\n✔ runGraphqlGenerationCheck skips generation without schema changes (0.071334ms)\n✔ runGraphqlGenerationCheck generates and verifies committed outputs (0.142625ms)\n✔ runMigrationGenerationCheck skips generation without server runtime changes (0.077ms)\n✔ runMigrationGenerationCheck accepts a no-change TypeORM exit (0.083458ms)\n✔ runMigrationGenerationCheck accepts and removes exact known migration drift (0.171208ms)\n✔ runMigrationGenerationCheck rejects changed drift beyond the baseline (0.111042ms)\n✔ runMigrationGenerationCheck rejects and removes generated drift (0.105375ms)\nℹ tests 22\nℹ suites 0\nℹ pass 22\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 45.752875\n"
+        },
+        {
+          "name": "TypeORM CLI compatibility contract",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1227,
+          "outputTail": "✔ Twenty server uses the Node 24-compatible TypeORM ts-node wrapper (0.321167ms)\n✔ the configured TypeORM wrapper resolves from the installed package (1156.738791ms)\nℹ tests 2\nℹ suites 0\nℹ pass 2\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 1199.184667\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -107,6 +107,14 @@ test('should orphan stale running verify lock when acquiring a new run', () => {
   finishVerifyRun(run, { stdout: '{}\n', stderr: '', exitCode: 0 });
 });
 
+test('should change verify identity when committed-only test selection changes', () => {
+  const repoRoot = createRepo();
+  const first = identity(repoRoot, { args: { committedOnlyTests: false } });
+  const second = identity(repoRoot, { args: { committedOnlyTests: true } });
+
+  expect(first.key).not.toBe(second.key);
+});
+
 test('should change verify identity when review argument order changes', () => {
   const repoRoot = createRepo();
   const first = identity(repoRoot, { args: { reviewArgs: ['--flag-a', '--flag-b'] } });
@@ -115,7 +123,7 @@ test('should change verify identity when review argument order changes', () => {
   expect(first.key).not.toBe(second.key);
 });
 
-test('should acquire a fresh verify run when previous completed result failed', () => {
+test('should replay completed failed verify result when identity matches', () => {
   const repoRoot = createRepo();
   const verifyIdentity = identity(repoRoot);
 
@@ -127,9 +135,26 @@ test('should acquire a fresh verify run when previous completed result failed', 
     exitCode: 1,
   });
 
-  const retryRun = beginVerifyRun(repoRoot, verifyIdentity, { waitMs: 50 });
-  expect(retryRun.mode).toBe('run');
-  finishVerifyRun(retryRun, { stdout: '{"passed":true}\n', stderr: '', exitCode: 0 });
+  const replay = beginVerifyRun(repoRoot, verifyIdentity, { waitMs: 50 });
+  expect(replay.mode).toBe('replay');
+  expect(replay.result.stdout).toBe('{"passed":false}\n');
+  expect(replay.result.stderr).toBe('failed once\n');
+  expect(replay.result.exitCode).toBe(1);
+});
+
+test('should allow a fresh retry after the failed-result replay window expires', () => {
+  const repoRoot = createRepo();
+  const verifyIdentity = identity(repoRoot);
+  const failedRun = beginVerifyRun(repoRoot, verifyIdentity, { waitMs: 50 });
+  finishVerifyRun(failedRun, { stdout: '{}\n', stderr: 'failed\n', exitCode: 1 });
+
+  const paths = pathsForIdentity(repoRoot, verifyIdentity);
+  const record = JSON.parse(fs.readFileSync(paths.recordPath, 'utf8'));
+  fs.writeFileSync(paths.recordPath, JSON.stringify({ ...record, completedAt: new Date(0).toISOString() }, null, 2));
+
+  const retry = beginVerifyRun(repoRoot, verifyIdentity, { waitMs: 50 });
+  expect(retry.mode).toBe('run');
+  finishVerifyRun(retry, { stdout: '{}\n', stderr: '', exitCode: 0 });
 });
 
 test('should remove verify lock when writing the running record fails', () => {

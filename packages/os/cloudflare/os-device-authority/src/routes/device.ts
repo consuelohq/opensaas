@@ -21,6 +21,7 @@ import {
   verifyDevicePublicKeyProof,
 } from '../security/device-auth';
 import { registerApprovedWorkspaceRoute } from '../services/connectors';
+import { verifyCanonicalWorkspaceMembership } from '../services/canonical-user';
 import { recordCanonicalInstallIdentity } from '../services/install-identity';
 import {
   approvedJson,
@@ -173,6 +174,9 @@ async function handleDeviceRequest(
         p.get('workspace_host')?.trim() || `${workspaceSlug}.consuelohq.com`,
       );
       assignGrantWorkspace({ grant: g, workspaceSlug, workspaceHost });
+      if (g.canonicalUserId && g.workspaceId) {
+        g.canonicalWorkspaceId = g.workspaceId;
+      }
       try {
         await prepareGrantApproval({
           store: input.store,
@@ -186,6 +190,12 @@ async function handleDeviceRequest(
           workspaceConnectorProvisioner: input.workspaceConnectorProvisioner,
           grant: g,
           defaultSiteSnapshot: input.defaultSiteSnapshot,
+        });
+        await commitGrantApproval({
+          store: input.store,
+          grant: g,
+          accountId: g.accountId,
+          nowMs: now(),
         });
       } catch (error: unknown) {
         const failureMessage = await failGrantWorkspaceRouteSetup({
@@ -201,12 +211,15 @@ async function handleDeviceRequest(
           { status: 502 },
         );
       }
-      await commitGrantApproval({
-        store: input.store,
-        grant: g,
-        accountId: g.accountId,
-        nowMs: now(),
-      });
+      if (g.canonicalUserId && g.workspaceId) {
+        await verifyCanonicalWorkspaceMembership({
+          repository: runtime.installControlPlaneRepository,
+          userId: g.canonicalUserId,
+          email: g.accountEmail,
+          workspaceId: g.workspaceId,
+          nowMs: now(),
+        });
+      }
       await recordCanonicalInstallIdentity(runtime, g);
       await input.store.del(g.hash);
       return json(approvedJson(g, runtime.workspaceEdgeInternalSigningSecret));
@@ -282,6 +295,12 @@ async function handleDeviceRequest(
           grant: g,
           defaultSiteSnapshot: input.defaultSiteSnapshot,
         });
+        await commitGrantApproval({
+          store: input.store,
+          grant: g,
+          accountId: auth.accountId,
+          nowMs: now(),
+        });
       } catch (error: unknown) {
         const failureMessage = await failGrantWorkspaceRouteSetup({
           store: input.store,
@@ -296,12 +315,15 @@ async function handleDeviceRequest(
           { status: 502 },
         );
       }
-      await commitGrantApproval({
-        store: input.store,
-        grant: g,
-        accountId: auth.accountId,
-        nowMs: now(),
-      });
+      if (g.canonicalUserId && g.workspaceId) {
+        await verifyCanonicalWorkspaceMembership({
+          repository: runtime.installControlPlaneRepository,
+          userId: g.canonicalUserId,
+          email: g.accountEmail,
+          workspaceId: g.workspaceId,
+          nowMs: now(),
+        });
+      }
       await recordCanonicalInstallIdentity(runtime, g);
       return json({
         status: 'approved',
@@ -344,6 +366,16 @@ async function handleDeviceRequest(
             error: g.failureCode ?? WORKSPACE_ROUTE_SETUP_FAILURE_CODE,
             error_description:
               g.failureMessage ?? 'workspace connector provisioning failed',
+          },
+          { status: 400 },
+        );
+      }
+      if (g.status === 'denied') {
+        return json(
+          {
+            error: 'access_denied',
+            message:
+              g.failureMessage ?? 'This account could not be verified for device setup.',
           },
           { status: 400 },
         );

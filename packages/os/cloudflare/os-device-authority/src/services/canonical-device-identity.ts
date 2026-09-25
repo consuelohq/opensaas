@@ -1,6 +1,10 @@
 import type { InstallControlPlaneRepository } from '../../../../scripts/lib/install-control-plane';
 
 import type { AccountWorkspace, Store } from '../types';
+import {
+  resolveCanonicalUser,
+  verifyCanonicalWorkspaceMembership,
+} from './canonical-user';
 
 export type CanonicalDeviceIdentityDeniedReason =
   | 'directory_unavailable'
@@ -36,7 +40,7 @@ export function describeCanonicalDeviceIdentityDenial(
       return {
         status: 403,
         code: 'CANONICAL_USER_NOT_FOUND',
-        message: 'This Google account is not registered with Consuelo. Sign in to Consuelo or ask an administrator to verify the account.',
+        message: 'We could not verify this Google account for device setup. Try another Google account or contact support.',
       };
     case 'ambiguous_user':
       return {
@@ -48,7 +52,7 @@ export function describeCanonicalDeviceIdentityDenial(
       return {
         status: 403,
         code: 'WORKSPACE_VERIFICATION_REQUIRED',
-        message: 'This account does not have a verified workspace membership for device approval. Sign in to Consuelo or ask an administrator to verify the workspace.',
+        message: 'We could not verify a current workspace for this account. Contact support before retrying device setup.',
       };
   }
 }
@@ -63,6 +67,11 @@ export type CanonicalDeviceIdentityResult =
         AccountWorkspace,
         'workspaceId' | 'workspaceSlug' | 'workspaceHost'
       >;
+    }
+  | {
+      status: 'workspace_required';
+      canonicalUserId: string;
+      operatingAccountId: string;
     }
   | { status: 'denied'; reason: CanonicalDeviceIdentityDeniedReason };
 
@@ -81,29 +90,62 @@ export async function resolveCanonicalDeviceIdentity(input: {
   googleSubject: string;
   nowMs: number;
 }): Promise<CanonicalDeviceIdentityResult> {
-  if (!input.repository) {
-    return { status: 'denied', reason: 'directory_unavailable' };
-  }
-
-  let users;
   try {
-    users = await input.repository.findCanonicalUsersByEmail(input.email);
-  } catch {
-    return { status: 'denied', reason: 'directory_unavailable' };
-  }
-  if (users.length === 0) {
-    return { status: 'denied', reason: 'user_not_found' };
-  }
-  if (users.length !== 1) {
-    return { status: 'denied', reason: 'ambiguous_user' };
+    const canonicalUser = await resolveCanonicalUser({
+      repository: input.repository,
+      email: input.email,
+      createIfMissing: true,
+      nowMs: input.nowMs,
+    });
+  if (canonicalUser.status === 'denied') {
+    return { status: 'denied', reason: canonicalUser.reason };
   }
 
-  const user = users[0]!;
+  const user = canonicalUser.user;
   const memberships = user.workspaceMemberships.filter(({ workspaceId }) =>
     Boolean(workspaceId.trim()),
   );
   if (memberships.length === 0) {
-    return { status: 'denied', reason: 'workspace_verification_required' };
+    const accountCandidates = [
+      { accountId: user.userId },
+      { accountId: `google:${input.googleSubject}` },
+    ];
+    for (const candidate of accountCandidates) {
+      const workspace = await input.store.byAccountWorkspace(candidate.accountId);
+      if (!workspace) continue;
+      const activeMembership = (await input.store.listWorkspaceMemberships(candidate.accountId)).find(
+        (membership) =>
+          membership.status === 'active' && membership.workspaceId === workspace.workspaceId,
+      );
+      if (!activeMembership) continue;
+      try {
+        await verifyCanonicalWorkspaceMembership({
+          repository: input.repository,
+          userId: user.userId,
+          email: input.email,
+          workspaceId: workspace.workspaceId,
+          nowMs: input.nowMs,
+        });
+      } catch {
+        return { status: 'denied', reason: 'directory_unavailable' };
+      }
+      return {
+        status: 'resolved',
+        canonicalUserId: user.userId,
+        canonicalWorkspaceId: workspace.workspaceId,
+        operatingAccountId: candidate.accountId,
+        workspaceRoute: {
+          workspaceId: workspace.workspaceId,
+          workspaceSlug: workspace.workspaceSlug,
+          workspaceHost: workspace.workspaceHost,
+        },
+      };
+    }
+    return {
+      status: 'workspace_required',
+      canonicalUserId: user.userId,
+      operatingAccountId: user.userId,
+    };
   }
   const verifiedMemberships = memberships.filter((membership) => {
     const verifiedAtMs = Date.parse(membership.verifiedAt);
@@ -182,10 +224,13 @@ export async function resolveCanonicalDeviceIdentity(input: {
     return { status: 'denied', reason: 'workspace_verification_required' };
   }
 
-  return {
-    status: 'resolved',
-    canonicalUserId: user.userId,
-    canonicalWorkspaceId: newestWorkspace.workspaceId,
-    operatingAccountId: user.userId,
-  };
+    return {
+      status: 'resolved',
+      canonicalUserId: user.userId,
+      canonicalWorkspaceId: newestWorkspace.workspaceId,
+      operatingAccountId: user.userId,
+    };
+  } catch {
+    return { status: 'denied', reason: 'directory_unavailable' };
+  }
 }

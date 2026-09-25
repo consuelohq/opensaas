@@ -30,7 +30,12 @@ import {
 import { registerApprovedWorkspaceRoute } from '../services/connectors';
 import { recordCanonicalInstallIdentity } from '../services/install-identity';
 import { finishMcpOAuthGoogleCallback } from '../services/mcp-oauth';
-import { accountNotFoundPage, completeWebGoogleLogin } from './web-auth';
+import {
+  accountNotFoundPage,
+  completeWebGoogleLogin,
+  createAuthoritySessionCookie,
+  PRIVATE_INTERNAL_SITE_HOST,
+} from './web-auth';
 
 function deviceAuthorizationCorrelationId(request: Request): string {
   const cloudflareRayId = request.headers.get('cf-ray')?.trim();
@@ -42,6 +47,39 @@ function deviceAuthorizationCorrelationId(request: Request): string {
     return cloudflareRayId;
   }
   return rand('device_auth', 12);
+}
+
+async function approvedDeviceBrowserResponse(input: {
+  runtime: DeviceAuthorityRuntime;
+  accountId: string;
+  email: string;
+  code: string;
+  origin: string;
+  message: string;
+}): Promise<Response> {
+  try {
+    const sessionCookie = await createAuthoritySessionCookie({
+      runtime: input.runtime,
+      accountId: input.accountId,
+      email: input.email,
+      cloudOnboardingEligible: false,
+    });
+    return text(
+      page({
+        code: input.code,
+        origin: input.origin,
+        message: input.message,
+      }),
+      {
+        headers: {
+          'set-cookie': sessionCookie,
+          'cache-control': 'no-store',
+        },
+      },
+    );
+  } catch {
+    return json({ error: 'login_unavailable' }, { status: 503 });
+  }
 }
 
 async function handleGoogleOAuthRequest(
@@ -75,6 +113,10 @@ async function handleGoogleOAuthRequest(
         const state = rand('web_state', 24);
         const nonce = rand('web_nonce', 24);
         const intent = url.searchParams.get('intent') === 'signup' ? 'signup' : 'login';
+        const requestedTargetHost = url.searchParams.get('target_host')?.trim().toLowerCase() ?? '';
+        if (requestedTargetHost && requestedTargetHost !== PRIVATE_INTERNAL_SITE_HOST) {
+          return json({ error: 'handoff_target_denied' }, { status: 403 });
+        }
         await input.store.putWebOAuthState({
           state,
           nonce,
@@ -82,6 +124,7 @@ async function handleGoogleOAuthRequest(
           returnPath: normalizeAuthReturnPath(
             url.searchParams.get('return_to'),
           ),
+          ...(requestedTargetHost ? { targetHost: requestedTargetHost } : {}),
           expiresAt: now() + TTL_MS,
         });
         return Response.redirect(
@@ -188,6 +231,7 @@ async function handleGoogleOAuthRequest(
             accountId,
             email: identity.email,
             returnPath: webOAuthState.returnPath,
+            targetHost: webOAuthState.targetHost,
             cloudOnboardingEligible: resolved.created,
           });
         } catch (error: unknown) {
@@ -282,6 +326,9 @@ async function handleGoogleOAuthRequest(
         const denial = describeCanonicalDeviceIdentityDenial(
           canonicalIdentity.reason,
         );
+        grant.status = 'denied';
+        grant.failureMessage = denial.message;
+        await input.store.put(grant);
         const correlationId = deviceAuthorizationCorrelationId(request);
         return text(
           page({
@@ -297,6 +344,22 @@ async function handleGoogleOAuthRequest(
             },
           },
         );
+      }
+      if (canonicalIdentity.status === 'workspace_required') {
+        grant.canonicalUserId = canonicalIdentity.canonicalUserId;
+        grant.accountId = canonicalIdentity.operatingAccountId;
+        grant.accountEmail = identity.email;
+        grant.accountAuthMethod = 'google';
+        await input.store.put(grant);
+        await input.store.delOAuthState(stateValue);
+        return approvedDeviceBrowserResponse({
+          runtime,
+          accountId: canonicalIdentity.operatingAccountId,
+          email: identity.email,
+          code: oauthState.userCode,
+          origin,
+          message: `Approved for ${identity.email}. Return to your terminal to name this workspace.`,
+        });
       }
       const accountId = canonicalIdentity.operatingAccountId;
       grant.canonicalUserId = canonicalIdentity.canonicalUserId;
@@ -328,6 +391,13 @@ async function handleGoogleOAuthRequest(
             grant,
             defaultSiteSnapshot: input.defaultSiteSnapshot,
           });
+          await input.store.delOAuthState(stateValue);
+          await commitGrantApproval({
+            store: input.store,
+            grant,
+            accountId,
+            nowMs: now(),
+          });
         } catch (error: unknown) {
           const failureMessage = await failGrantWorkspaceRouteSetup({
             store: input.store,
@@ -343,31 +413,26 @@ async function handleGoogleOAuthRequest(
             { status: 502 },
           );
         }
-        await input.store.delOAuthState(stateValue);
-        await commitGrantApproval({
-          store: input.store,
-          grant,
-          accountId,
-          nowMs: now(),
-        });
         await recordCanonicalInstallIdentity(runtime, grant);
-        return text(
-          page({
-            code: oauthState.userCode,
-            origin,
-            message: `Approved for ${identity.email}. Return to your terminal.`,
-          }),
-        );
+        return approvedDeviceBrowserResponse({
+          runtime,
+          accountId,
+          email: identity.email,
+          code: oauthState.userCode,
+          origin,
+          message: `Approved for ${identity.email}. Return to your terminal.`,
+        });
       }
       await input.store.put(grant);
       await input.store.delOAuthState(stateValue);
-      return text(
-        page({
-          code: oauthState.userCode,
-          origin,
-          message: `Approved for ${identity.email}. Return to your terminal to name this workspace.`,
-        }),
-      );
+      return approvedDeviceBrowserResponse({
+        runtime,
+        accountId,
+        email: identity.email,
+        code: oauthState.userCode,
+        origin,
+        message: `Approved for ${identity.email}. Return to your terminal to name this workspace.`,
+      });
     }
     return new Response('Not found\n', { status: 404 });
   } catch (error: unknown) {

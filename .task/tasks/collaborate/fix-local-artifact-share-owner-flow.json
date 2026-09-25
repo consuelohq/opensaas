@@ -1,0 +1,16 @@
+{
+  "area": "collaborate",
+  "stream": "stream/collaborate",
+  "taskBranch": "task/collaborate/fix-local-artifact-share-owner-flow",
+  "baseBranch": "stream/collaborate",
+  "sourceBranch": "stream/collaborate",
+  "startFrom": "stream",
+  "prNumber": 2508,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2508",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-collaborate-fix-local-artifact-share-owner-flow",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_a6df6fda8851",
+  "tmuxSession": "opensaas-collaborate-fix-local-artifact-share-owner-flow-a6df6fda",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-collaborate-fix-local-artifact-share-owner-flow/.task/session.json",
+  "createdAt": "2026-09-21T05:05:13.574Z"
+}

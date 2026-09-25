@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/require-enrolled-cloud-recovery-identity",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2408,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2408",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-require-enrolled-cloud-recovery-identity",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_93b9161fb8dc",
+  "tmuxSession": "opensaas-os-require-enrolled-cloud-recovery-identity-93b9161f",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-require-enrolled-cloud-recovery-identity/.task/session.json",
+  "createdAt": "2026-09-08T03:48:06.371Z"
+}

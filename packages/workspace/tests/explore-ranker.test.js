@@ -44,7 +44,7 @@ describe('explore ranker relevance signals', () => {
 
   it('caps issue queries when candidates miss the issue anchor', () => {
     const scored = scoreCandidate(candidate({
-      path: 'tests/postman/consuelo.postman_collection.json',
+      path: 'fixtures/irrelevant/postman-collection.json',
       bestChunkName: 'item part 8',
       preview: 'pm.test("Response time is acceptable")',
     }), baseContext('DEV-1508 dialer Groq transcript'));
@@ -65,7 +65,7 @@ describe('explore ranker relevance signals', () => {
       preview: 'selects suites for changed files and explicit rules',
     }), baseContext(query));
     const generic = scoreCandidate(candidate({
-      path: 'packages/twenty-ui/src/testing/ComponentStorybookLayout.tsx',
+      path: 'packages/example-ui/src/testing/ComponentStorybookLayout.tsx',
       bestChunkName: 'imports',
       bestChunkType: 'import',
       preview: 'import styled from emotion',

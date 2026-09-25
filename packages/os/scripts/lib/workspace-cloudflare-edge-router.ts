@@ -503,6 +503,19 @@ const buildProxyRequest = (input: {
   return new Request(input.upstreamUrl, init);
 };
 
+const artifactShareCookieHeader = (value: string | null): string | null => {
+  if (!value) return null;
+  const cookies = value
+    .split(';')
+    .map((part) => part.trim())
+    .filter((part) => {
+      const separator = part.indexOf('=');
+      if (separator <= 0) return false;
+      return part.slice(0, separator).startsWith('consuelo_artifact_share_');
+    });
+  return cookies.length > 0 ? cookies.join('; ') : null;
+};
+
 const buildGatewayNodeProxyRequest = async (input: {
   request: Request;
   resolution: Extract<WorkspaceCloudflareEdgeRouteResolution, { allowed: true }> & {
@@ -520,9 +533,25 @@ const buildGatewayNodeProxyRequest = async (input: {
         ? new Uint8Array()
         : new Uint8Array(await input.request.clone().arrayBuffer());
     const headers = new Headers();
-    for (const name of ['accept', 'content-type', 'last-event-id']) {
+    for (const name of [
+      'accept',
+      'content-type',
+      'if-none-match',
+      'last-event-id',
+    ]) {
       const value = input.request.headers.get(name);
       if (value) headers.set(name, value);
+    }
+    if (
+      input.resolution.auth === 'public'
+      && input.resolution.route === '/share/artifacts'
+      && input.resolution.target.kind === 'consuelo-gateway-service'
+      && input.resolution.target.serviceName === 'artifacts-sites-share-layer'
+    ) {
+      const shareCookie = artifactShareCookieHeader(
+        input.request.headers.get('cookie'),
+      );
+      if (shareCookie) headers.set('cookie', shareCookie);
     }
     headers.set('cache-control', 'no-store');
     headers.set('x-consuelo-hostname', input.resolution.hostname);
@@ -795,6 +824,11 @@ const MCP_OAUTH_SCOPES = [
   'route:/mcp:read',
   'tool:*:read',
 ];
+// Public discovery is consumed by end-user MCP clients. Keep operator-only
+// node-management out of advertised scopes so reconnects receive a full grant.
+const PUBLIC_MCP_OAUTH_SCOPES = MCP_OAUTH_SCOPES.filter(
+  (scope) => scope !== 'workspace:nodes:manage',
+);
 
 const isOAuthProtectedResourceMetadataRequest = (pathname: string): boolean =>
   pathname === '/.well-known/oauth-protected-resource' ||
@@ -810,7 +844,7 @@ const createOAuthProtectedResourceMetadataResponse = (input: {
     {
       resource: `https://${input.hostname}/mcp`,
       authorization_servers: [OAUTH_AUTHORIZATION_SERVER],
-      scopes_supported: MCP_OAUTH_SCOPES,
+      scopes_supported: PUBLIC_MCP_OAUTH_SCOPES,
       bearer_methods_supported: ['header'],
     },
     {
@@ -834,7 +868,7 @@ const createOAuthAuthorizationServerMetadataResponse = (): Response =>
       code_challenge_methods_supported: ['S256'],
       token_endpoint_auth_methods_supported: ['none'],
       client_id_metadata_document_supported: true,
-      scopes_supported: MCP_OAUTH_SCOPES,
+      scopes_supported: PUBLIC_MCP_OAUTH_SCOPES,
     },
     {
       status: 200,
@@ -844,6 +878,12 @@ const createOAuthAuthorizationServerMetadataResponse = (): Response =>
       },
     },
   );
+
+const canProbeConnectedNodeWithoutFreshHeartbeat = (path: string): boolean =>
+  path === '/mcp' ||
+  path.startsWith('/mcp/') ||
+  path === '/gateway' ||
+  path.startsWith('/gateway/');
 
 export const createWorkspaceCloudflareEdgeRouter = (
   input: WorkspaceCloudflareEdgeRouterInput,
@@ -929,6 +969,9 @@ export const createWorkspaceCloudflareEdgeRouter = (
           host: inboundUrl.hostname,
           path: inboundUrl.pathname,
           method: request.method,
+          ...(canProbeConnectedNodeWithoutFreshHeartbeat(inboundUrl.pathname)
+            ? { requireOnlineNode: false }
+            : {}),
           ...(request.headers.get('x-consuelo-node-id')?.trim()
             ? { nodeId: request.headers.get('x-consuelo-node-id')!.trim() }
             : {}),

@@ -73,12 +73,12 @@ bun run os:release -- --device-auth-only
 
 Default release order:
 
-1. `install.consuelohq.com/os` via `os:release-install`
+1. `install.consuelohq.com/os` and `install.consuelohq.com/os.ps1` via `os:release-install`
 2. `os.consuelohq.com` device approval authority via `os:release-device-auth`
 
-### os:release-install — release the hosted Consuelo OS curl installer
+### os:release-install — release the hosted Consuelo OS installers
 
-Operator-only release script for publishing `packages/os/scripts/bootstrap.sh` to Cloudflare Workers. Run from the repo root like other workspace operators; the root script delegates to `packages/workspace/scripts/os-release-install.ts`. This intentionally lives in `packages/workspace`, not `packages/os`, because it uses Ko/operator Cloudflare permissions and should not become user-installable OS tooling.
+Operator-only release script for publishing `packages/os/scripts/bootstrap.sh` and `packages/os/scripts/bootstrap.ps1` through one Cloudflare Worker. The Windows route resolves and verifies the signed stable channel before materializing the `windows-x64` bundle URL and digest. The operator verifies both public installer URLs after deploy.
 
 ```bash
 bun run os:release-install -- --dry-run
@@ -90,8 +90,8 @@ Defaults:
 
 - Worker name: `consuelo-os-install`
 - Custom domain: `install.consuelohq.com`
-- Installer path: `/os`
-- Bootstrap source: `packages/os/scripts/bootstrap.sh`
+- Installer paths: `/os` and `/os.ps1`
+- Bootstrap sources: `packages/os/scripts/bootstrap.sh` and `packages/os/scripts/bootstrap.ps1`
 
 ### os:release-device-auth — release the OS device approval authority
 

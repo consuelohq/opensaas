@@ -28,7 +28,45 @@ function json(result) {
   return JSON.parse(result.stdout);
 }
 
+describe('test selection runtime safety', () => {
+  it('reserves enough suite output for repository-scale CI runs', () => {
+    const source = fs.readFileSync(script, 'utf8');
+    const runSuitesSource = source.slice(
+      source.indexOf('function runSuites'),
+      source.indexOf('function testFileExtension'),
+    );
+
+    expect(source).toContain(
+      'const TEST_SUITE_OUTPUT_MAX_BUFFER = 64 * 1024 * 1024;',
+    );
+    expect(runSuitesSource).toContain(
+      'maxBuffer: TEST_SUITE_OUTPUT_MAX_BUFFER',
+    );
+  });
+});
+
 describe('test selection registry', () => {
+  it('writes check results to --out independently of stdout', () => {
+    const out = path.join(
+      os.tmpdir(),
+      `test-selection-check-927-1789948825939.json`,
+    );
+    const result = run([
+      'check',
+      '--changed-file',
+      'README.md',
+      '--out',
+      out,
+      '--json',
+    ]);
+
+    expect(result.status).toBe(0);
+    const data = JSON.parse(fs.readFileSync(out, 'utf8'));
+    expect(data.kind).toBe('selection');
+    expect(data.changedFiles).toContain('README.md');
+    fs.rmSync(out, { force: true });
+  });
+
   it('discovers and seeds the existing test inventory', () => {
     const out = path.join(os.tmpdir(), `test-selection-${Date.now()}.json`);
     const result = run(['generate', '--out', out, '--json']);
@@ -58,10 +96,6 @@ describe('test selection registry', () => {
       registry.rules.some((rule) => rule.id === 'workspace-publish-gate'),
     ).toBe(true);
     expect(
-      registry.rules.find((rule) => rule.id === 'frontend-lint-config-contract')
-        ?.exclusive,
-    ).toBe(true);
-    expect(
       registry.rules.find(
         (rule) => rule.id === 'auto:@consuelo/dialer-server:package-test',
       ),
@@ -76,27 +110,6 @@ describe('test selection registry', () => {
         (rule) => rule.id === 'auto:@consuelo/os:package-test',
       )?.tests[0]?.command,
     ).toEqual(['bun', 'run', '--cwd', 'packages/os', 'test']);
-    const explicitTwentyFront = registry.rules.find(
-      (rule) => rule.id === 'twenty-front-project',
-    );
-    expect(explicitTwentyFront?.tests[0]?.command).toEqual([
-      'npx',
-      'nx',
-      'test',
-      'twenty-front',
-      '--coverage=false',
-    ]);
-
-    const autoTwentyShared = registry.rules.find(
-      (rule) => rule.id === 'auto:twenty-shared:test',
-    );
-    expect(autoTwentyShared?.tests[0]?.command).toEqual([
-      'npx',
-      'nx',
-      'test',
-      'twenty-shared',
-      '--coverage=false',
-    ]);
   }, 15_000);
 
   it('routes current OS Trace inspector changes only to existing OS-owned suites', () => {
@@ -138,6 +151,87 @@ describe('test selection registry', () => {
       expect(JSON.stringify(suite.command)).toContain('packages/os');
       expect(JSON.stringify(suite.command)).not.toContain('packages/workspace');
     }
+  });
+
+  it('uses focused durable subagent contracts instead of the broad OS package suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/lib/subagent/lifecycle.ts',
+      '--changed-file',
+      'packages/os/tests/subagent-lifecycle-regressions.test.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const runtimeSuite = data.selectedSuites.find(
+      (suite) => suite.ruleId === 'os-subagent-runtime'
+        && suite.name === 'OS durable subagent runtime contracts',
+    );
+
+    expect(matchedRuleIds).toContain('os-subagent-runtime');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(runtimeSuite?.command).toEqual(expect.arrayContaining([
+      '--no-file-parallelism',
+      'packages/os/tests/subagent-orchestration-contract.test.ts',
+      'packages/os/tests/subagent-lifecycle-regressions.test.ts',
+      'packages/os/tests/subagent-executable-discovery.test.ts',
+      'packages/os/tests/subagent-runner-termination.test.ts',
+    ]));
+  });
+
+  it('keeps Dialer integration regressions on current focused OS rules', () => {
+    const rulesPath = path.resolve(
+      path.dirname(fileURLToPath(import.meta.url)),
+      '../test-selection.rules.json',
+    );
+    const rules = JSON.parse(fs.readFileSync(rulesPath, 'utf8')).rules;
+    const codeCall = rules.find((rule) => rule.id === 'os-work-session-code-call');
+    const subagent = rules.find((rule) => rule.id === 'os-subagent-runtime');
+
+    expect(codeCall?.tests[0]?.command).toContain(
+      'packages/os/tests/code-call-process-regressions.test.ts',
+    );
+    expect(subagent?.tests[0]?.command).toContain(
+      'packages/os/tests/subagent-runner-termination.test.ts',
+    );
+  });
+
+  it('selects an explicit Node SQLite trace compatibility contract', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/lib/trace-database-schema.ts',
+      '--json',
+    ]));
+    const nodeSuite = data.selectedSuites.find(
+      (suite) => suite.ruleId === 'os-trace-sqlite-runtime',
+    );
+
+    expect(data.matchedRules.map((rule) => rule.id)).toContain(
+      'os-trace-sqlite-runtime',
+    );
+    expect(nodeSuite?.command?.[0]).toBe('node');
+    expect(nodeSuite?.cwd).toBe('packages/os');
+    expect(nodeSuite?.command).toContain(
+      'tests/trace-sites-gateway-live-endpoints.test.ts',
+    );
+  });
+
+  it('routes stream-sync changes through the focused merge contract', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/workspace/scripts/stream-sync.js',
+      '--json',
+    ]));
+
+    expect(data.matchedRules.map((rule) => rule.id)).toContain(
+      'workspace-stream-sync-runtime',
+    );
+    expect(data.selectedSuites.map((suite) => suite.name)).toContain(
+      'workspace stream sync runtime contracts',
+    );
   });
 
   it('suppresses a broad auto package suite when explicit critical coverage fully owns the changed code', () => {
@@ -197,84 +291,6 @@ describe('test selection registry', () => {
     );
   });
 
-  it('keeps GitHub contract tests inside the focused GitHub verification boundary', () => {
-    for (const changedFile of [
-      'packages/os/tests/github.test.ts',
-      'packages/os/tests/github-pr-reviews.test.ts',
-      'packages/os/tests/pr-review-collector.test.js',
-      'packages/workspace/tests/github.test.ts',
-      'packages/workspace/tests/github-pr-reviews.test.ts',
-      'packages/workspace/tests/pr-review.test.js',
-      'packages/workspace/tests/wait.test.js',
-    ]) {
-      const data = json(run(['check', '--changed-file', changedFile, '--json']));
-      const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
-      const suiteRuleIds = data.selectedSuites.map((suite) => suite.ruleId);
-
-      expect(matchedRuleIds, changedFile).toContain('os-github-cli-runtime');
-      expect(suiteRuleIds, changedFile).not.toContain('auto:@consuelo/os:package-test');
-      expect(suiteRuleIds, changedFile).toContain('os-github-cli-runtime');
-    }
-  });
-
-  it('uses exclusive frontend config contracts instead of unrelated package suites', () => {
-    const result = run([
-      'check',
-      '--changed-file',
-      'packages/twenty-front/eslint.config.mjs',
-      '--changed-file',
-      'packages/twenty-ui/eslint.config.mjs',
-      '--changed-file',
-      'packages/eslint-rules/eslint.config.react.mjs',
-      '--json',
-    ]);
-    const data = json(result);
-    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
-    const suiteNames = data.selectedSuites.map((suite) => suite.name);
-
-    expect(matchedRuleIds).toContain('frontend-lint-config-contract');
-    expect(matchedRuleIds).not.toContain('twenty-front-project');
-    expect(matchedRuleIds).not.toContain('auto:twenty-front:test');
-    expect(matchedRuleIds).not.toContain('auto:twenty-ui:test');
-    expect(matchedRuleIds).not.toContain('auto:twenty-eslint-rules:test');
-    expect(suiteNames).toEqual(
-      expect.arrayContaining([
-        'changed frontend lint helper tests',
-        'GitHub workflow policy tests',
-        'changed GitHub workflow security checks',
-        'changed frontend files lint',
-      ]),
-    );
-  });
-
-  it('keeps runtime source on the broader project suite alongside an exclusive config contract', () => {
-    const result = run([
-      'check',
-      '--changed-file',
-      'packages/twenty-front/eslint.config.mjs',
-      '--changed-file',
-      'packages/twenty-front/src/modules/dialer/hooks/useDialer.ts',
-      '--json',
-    ]);
-    const data = json(result);
-    const configRule = data.matchedRules.find(
-      (rule) => rule.id === 'frontend-lint-config-contract',
-    );
-    const projectRule = data.matchedRules.find(
-      (rule) => rule.id === 'twenty-front-project',
-    );
-
-    expect(configRule?.matchedFiles).toEqual([
-      'packages/twenty-front/eslint.config.mjs',
-    ]);
-    expect(projectRule?.matchedFiles).toEqual([
-      'packages/twenty-front/src/modules/dialer/hooks/useDialer.ts',
-    ]);
-    expect(data.selectedSuites.map((suite) => suite.name)).toContain(
-      'twenty-front test target',
-    );
-  });
-
   it('uses the focused OS artifact contract for the metering manifest removal', () => {
     const result = run([
       'check',
@@ -289,69 +305,6 @@ describe('test selection registry', () => {
     expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
     expect(data.selectedSuites.map((suite) => suite.name)).toEqual([
       'OS artifact manifest contract',
-    ]);
-  });
-
-  it('uses focused deployment-provider contracts instead of the broad OS package suite', () => {
-    const result = run([
-      'check',
-      '--changed-file',
-      'packages/os/tools/deployment-provider/cloudflare.ts',
-      '--json',
-    ]);
-    const data = json(result);
-    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
-
-    expect(matchedRuleIds).toContain('os-deployment-provider-adapters');
-    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
-    expect(data.selectedSuites.map((suite) => suite.name)).toEqual([
-      'OS deployment-provider adapter contracts',
-    ]);
-  });
-
-  it('uses focused stream-sync contracts instead of the broad OS package suite', () => {
-    const result = run([
-      'check',
-      '--changed-file',
-      'packages/os/scripts/lib/stream-sync-cleanup.js',
-      '--changed-file',
-      'packages/os/scripts/stream-sync.js',
-      '--changed-file',
-      'packages/workspace/scripts/lib/stream-sync-cleanup.js',
-      '--changed-file',
-      'packages/workspace/scripts/stream-sync.js',
-      '--changed-file',
-      'packages/workspace/tests/stream-sync-conflict-cleanup.test.ts',
-      '--json',
-    ]);
-    const data = json(result);
-    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
-
-    expect(matchedRuleIds).toContain('workspace-stream-sync');
-    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
-    expect(data.selectedSuites.map((suite) => suite.name)).toEqual([
-      'Workspace stream sync contracts',
-    ]);
-  });
-
-  it('keeps shared Git helper changes on focused synchronization contracts', () => {
-    const result = run([
-      'check',
-      '--changed-file',
-      'packages/os/scripts/lib/git.js',
-      '--changed-file',
-      'packages/workspace/scripts/lib/git.js',
-      '--changed-file',
-      'packages/os/tests/git-fetch-origin-concurrency.test.ts',
-      '--json',
-    ]);
-    const data = json(result);
-    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
-
-    expect(matchedRuleIds).toContain('workspace-stream-sync');
-    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
-    expect(data.selectedSuites.map((suite) => suite.name)).toEqual([
-      'Workspace stream sync contracts',
     ]);
   });
 
@@ -505,6 +458,25 @@ describe('test selection registry', () => {
     expect(suiteNames).toEqual([
       'OS canonical device approval contracts',
       'OS canonical device approval syntax contracts',
+    ]);
+  });
+
+  it('uses focused installer device onboarding contracts instead of the broad OS package suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/onboarding-flow.test.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-installer-device-onboarding');
+    expect(suiteNames).not.toContain('@consuelo/os package test');
+    expect(suiteNames).toEqual([
+      'OS installer device onboarding contracts',
+      'OS installer runtime structure contracts',
     ]);
   });
 
@@ -687,6 +659,30 @@ describe('test selection registry', () => {
     ]);
   });
 
+  it('uses focused public Windows installer and landing-command contracts', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/workspace/scripts/os-release-install.ts',
+      '--changed-file',
+      'packages/consuelo-website/src/components/home/HomeHero.astro',
+      '--changed-file',
+      'packages/consuelo-website/src/lib/install-command.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-public-windows-installer-and-landing-command');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(suiteNames).toEqual([
+      'Hosted shell and PowerShell installer Worker contracts',
+      'Platform-aware landing install command contracts',
+      'Consuelo website Astro check',
+    ]);
+  });
+
   it('uses focused OS release freshness contracts instead of the broad OS package suite', () => {
     const result = run([
       'check',
@@ -760,6 +756,8 @@ describe('test selection registry', () => {
       'packages/os/cloudflare/workspace-edge/src/semantic-embedding-gateway.ts',
       '--changed-file',
       'packages/os/cloudflare/workspace-edge/wrangler.toml',
+      '--changed-file',
+      'packages/os/scripts/lib/index/embedder.js',
       '--changed-file',
       'packages/os/scripts/lib/index/embedding-gateway.js',
       '--changed-file',
@@ -893,6 +891,8 @@ describe('test selection registry', () => {
       'packages/os/tests/lifecycle-engine.test.ts',
       '--changed-file',
       'packages/os/tests/workspace-node-registry-routing.test.ts',
+      '--changed-file',
+      'packages/os/tests/workspace-route-heartbeat-write-budget.test.ts',
       '--json',
     ]);
     const data = json(result);
@@ -909,6 +909,8 @@ describe('test selection registry', () => {
         'OS hosted-site lifecycle and node routing contracts',
       ]),
     );
+    expect(data.selectedSuites.flatMap((suite) => suite.command))
+      .toContain('packages/os/tests/workspace-route-heartbeat-write-budget.test.ts');
   });
 
   it('uses the frozen OS Bun lock contract instead of the broad OS package suite', () => {
@@ -965,6 +967,24 @@ describe('test selection registry', () => {
     ]);
   });
 
+  it('uses the focused Consuelo CI planner contract instead of the broad OS package suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/ci-plan.ts',
+      '--changed-file',
+      'packages/os/tests/ci-plan.test.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('consuelo-ci-planner');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(suiteNames).toEqual(['Consuelo CI planner contracts']);
+  });
+
   it('uses the focused OS runtime-bundle distribution contract instead of the broad OS package suite', () => {
     const result = run([
       'check',
@@ -1009,64 +1029,6 @@ describe('test selection registry', () => {
     expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
     expect(data.selectedSuites.map((suite) => suite.name)).toContain(
       'OS Vitest runtime regression contracts',
-    );
-  });
-
-  it('uses exclusive frontend config contracts instead of unrelated package suites', () => {
-    const result = run([
-      'check',
-      '--changed-file',
-      'packages/twenty-front/eslint.config.mjs',
-      '--changed-file',
-      'packages/twenty-ui/eslint.config.mjs',
-      '--changed-file',
-      'packages/eslint-rules/eslint.config.react.mjs',
-      '--json',
-    ]);
-    const data = json(result);
-    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
-    const suiteNames = data.selectedSuites.map((suite) => suite.name);
-
-    expect(matchedRuleIds).toContain('frontend-lint-config-contract');
-    expect(matchedRuleIds).not.toContain('twenty-front-project');
-    expect(matchedRuleIds).not.toContain('auto:twenty-front:test');
-    expect(matchedRuleIds).not.toContain('auto:twenty-ui:test');
-    expect(matchedRuleIds).not.toContain('auto:twenty-eslint-rules:test');
-    expect(suiteNames).toEqual(
-      expect.arrayContaining([
-        'changed frontend lint helper tests',
-        'GitHub workflow policy tests',
-        'changed GitHub workflow security checks',
-        'changed frontend files lint',
-      ]),
-    );
-  });
-
-  it('keeps runtime source on the broader project suite alongside an exclusive config contract', () => {
-    const result = run([
-      'check',
-      '--changed-file',
-      'packages/twenty-front/eslint.config.mjs',
-      '--changed-file',
-      'packages/twenty-front/src/modules/dialer/hooks/useDialer.ts',
-      '--json',
-    ]);
-    const data = json(result);
-    const configRule = data.matchedRules.find(
-      (rule) => rule.id === 'frontend-lint-config-contract',
-    );
-    const projectRule = data.matchedRules.find(
-      (rule) => rule.id === 'twenty-front-project',
-    );
-
-    expect(configRule?.matchedFiles).toEqual([
-      'packages/twenty-front/eslint.config.mjs',
-    ]);
-    expect(projectRule?.matchedFiles).toEqual([
-      'packages/twenty-front/src/modules/dialer/hooks/useDialer.ts',
-    ]);
-    expect(data.selectedSuites.map((suite) => suite.name)).toContain(
-      'twenty-front test target',
     );
   });
 
@@ -1516,6 +1478,96 @@ describe('test selection registry', () => {
     }
   });
 
+  it('should provision website package dependencies when an Astro suite runs on a clean checkout', () => {
+    const repo = fs.mkdtempSync(path.join(os.tmpdir(), 'test-selection-website-deps-'));
+    const websiteRoot = path.join(repo, 'packages', 'consuelo-website');
+    const fakeBin = path.join(repo, 'fake-bin');
+    const registryPath = path.join(repo, 'registry.json');
+    const logPath = path.join(repo, 'bun-calls.jsonl');
+
+    try {
+      fs.mkdirSync(websiteRoot, { recursive: true });
+      fs.mkdirSync(fakeBin, { recursive: true });
+      fs.writeFileSync(
+        path.join(websiteRoot, 'package.json'),
+        JSON.stringify({ dependencies: { astro: '6.0.2' } }),
+      );
+      fs.writeFileSync(
+        registryPath,
+        JSON.stringify({
+          version: 1,
+          rules: [
+            {
+              id: 'website-clean-checkout',
+              source: ['packages/consuelo-website/src/**'],
+              critical: true,
+              origin: 'test',
+              tests: [
+                {
+                  name: 'clean website Astro suite',
+                  command: [
+                    'bun',
+                    'run',
+                    '--cwd',
+                    'packages/consuelo-website',
+                    'astro',
+                    '--',
+                    'check',
+                  ],
+                },
+              ],
+            },
+          ],
+        }),
+      );
+      const fakeBun = path.join(fakeBin, 'bun');
+      fs.writeFileSync(
+        fakeBun,
+        `#!/usr/bin/env node\nconst fs = require('node:fs');\nfs.appendFileSync(process.env.TEST_SELECTION_FAKE_BUN_LOG, JSON.stringify({ cwd: process.cwd(), args: process.argv.slice(2) }) + '\\n');\n`,
+      );
+      fs.chmodSync(fakeBun, 0o755);
+
+      const result = run(
+        [
+          'check',
+          '--registry',
+          registryPath,
+          '--changed-file',
+          'packages/consuelo-website/src/pages/index.astro',
+          '--run',
+          '--json',
+        ],
+        {
+          cwd: repo,
+          env: {
+            PATH: `${fakeBin}:${process.env.PATH || ''}`,
+            TEST_SELECTION_FAKE_BUN_LOG: logPath,
+          },
+        },
+      );
+      const data = json(result);
+      const calls = fs.readFileSync(logPath, 'utf8')
+        .trim()
+        .split('\n')
+        .map((line) => JSON.parse(line));
+
+      expect(data.failedSuites).toHaveLength(0);
+      expect(fs.realpathSync(calls[0].cwd)).toBe(fs.realpathSync(websiteRoot));
+      expect(calls[0].args).toEqual(['install', '--frozen-lockfile']);
+      expect(fs.realpathSync(calls[1].cwd)).toBe(fs.realpathSync(repo));
+      expect(calls[1].args).toEqual([
+        'run',
+        '--cwd',
+        'packages/consuelo-website',
+        'astro',
+        '--',
+        'check',
+      ]);
+    } finally {
+      fs.rmSync(repo, { recursive: true, force: true });
+    }
+  });
+
   it('fails timed out suite commands', () => {
     const registryPath = path.join(
       os.tmpdir(),
@@ -1572,7 +1624,7 @@ describe('test selection registry', () => {
         rules: [
           {
             id: 'noise-suite',
-            source: ['packages/twenty-sdk/**'],
+            source: ['packages/example-sdk/**'],
             tests: [{ name: 'noise suite', command: [process.execPath, '-e', ''] }],
             critical: false,
             reason: 'fixture',
@@ -1587,8 +1639,8 @@ describe('test selection registry', () => {
     fs.writeFileSync(path.join(repo, 'README.md'), 'base\n');
     spawnSync('git', ['add', '.'], { cwd: repo });
     spawnSync('git', ['commit', '-m', 'base'], { cwd: repo });
-    fs.mkdirSync(path.join(repo, 'packages/twenty-sdk'), { recursive: true });
-    fs.writeFileSync(path.join(repo, 'packages/twenty-sdk/install-noise.ts'), 'export {};\n');
+    fs.mkdirSync(path.join(repo, 'packages/example-sdk'), { recursive: true });
+    fs.writeFileSync(path.join(repo, 'packages/example-sdk/install-noise.ts'), 'export {};\n');
 
     const result = spawnSync(
       'node',
@@ -1785,6 +1837,10 @@ describe('test selection registry', () => {
       '--changed-file',
       'packages/os/scripts/lib/workspace-chrome.ts',
       '--changed-file',
+      'packages/os/tests/workspace-chrome.test.ts',
+      '--changed-file',
+      'packages/os/tests/settings-control-plane.test.ts',
+      '--changed-file',
       'packages/os/scripts/lib/observability-traces-site.ts',
       '--changed-file',
       'packages/os/tests/launcher-nodes-materialization.test.ts',
@@ -1804,8 +1860,10 @@ describe('test selection registry', () => {
     expect(suite?.critical).toBe(true);
     expect(suite?.command).toEqual(expect.arrayContaining([
       'tests/settings-site.test.ts',
+      'tests/settings-control-plane.test.ts',
       'tests/launcher-nodes-materialization.test.ts',
       'tests/observability-traces-site.test.ts',
+      'tests/workspace-chrome.test.ts',
       'tests/sites-cli.test.ts',
       'tests/launcher-local-customization.test.ts',
       'tests/internal-launcher-regressions.test.ts',
@@ -1819,6 +1877,16 @@ describe('test selection registry', () => {
       'packages/os/scripts/lib/artifacts.ts',
       '--changed-file',
       'packages/os/tests/artifacts.test.ts',
+      '--changed-file',
+      'packages/os/scripts/server/routes/artifacts.ts',
+      '--changed-file',
+      'packages/os/scripts/server/services/artifact-sharing.ts',
+      '--changed-file',
+      'packages/os/tests/artifact-sharing-links.test.ts',
+      '--changed-file',
+      'packages/os/tests/artifacts-hono-routes.test.ts',
+      '--changed-file',
+      'packages/os/tests/artifacts-edge-routing.test.ts',
       '--changed-file',
       'packages/os/tests/distribution/release-channels-cli.test.ts',
       '--changed-file',
@@ -2240,4 +2308,112 @@ describe('test selection registry', () => {
     expect(suiteNames).not.toContain('@consuelo/os package test');
   });
 
+  it('uses focused local-authoritative steering contracts instead of the broad OS package suite', () => {
+    const changedFiles = [
+      'packages/os/scripts/lib/steering-snapshot-cache.ts',
+      'packages/os/scripts/lib/managed-user-content.ts',
+      'packages/os/scripts/lib/managed-user-content-release.ts',
+      'packages/os/scripts/os.ts',
+      'packages/os/steering/system_prompt.md',
+      'packages/workspace/STEERING.md',
+      'packages/workspace/server.py',
+    ];
+    const args = ['check'];
+    for (const changedFile of changedFiles) args.push('--changed-file', changedFile);
+    args.push('--json');
+    const data = json(run(args));
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-local-steering-authority');
+    expect(suiteNames).toContain('OS local-authoritative steering ownership contract');
+    expect(suiteNames).toContain('OS managed user steering contracts');
+    expect(suiteNames).toContain('Workspace steering guard contracts');
+    expect(suiteNames).not.toContain('@consuelo/os package test');
+  });
+
+
+  it('keeps GitHub contract tests inside the focused GitHub verification boundary', () => {
+    for (const changedFile of [
+      'packages/os/tests/github.test.ts',
+      'packages/os/tests/github-pr-reviews.test.ts',
+      'packages/os/tests/pr-review-collector.test.js',
+      'packages/workspace/tests/github.test.ts',
+      'packages/workspace/tests/github-pr-reviews.test.ts',
+      'packages/workspace/tests/pr-review.test.js',
+      'packages/workspace/tests/wait.test.js',
+    ]) {
+      const data = json(run(['check', '--changed-file', changedFile, '--json']));
+      const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+      const suiteRuleIds = data.selectedSuites.map((suite) => suite.ruleId);
+
+      expect(matchedRuleIds, changedFile).toContain('os-github-cli-runtime');
+      expect(suiteRuleIds, changedFile).not.toContain('auto:@consuelo/os:package-test');
+      expect(suiteRuleIds, changedFile).toContain('os-github-cli-runtime');
+    }
+  });
+
+  it('uses focused deployment-provider contracts instead of the broad OS package suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/tools/deployment-provider/cloudflare.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+
+    expect(matchedRuleIds).toContain('os-deployment-provider-adapters');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(data.selectedSuites.map((suite) => suite.name)).toEqual([
+      'OS deployment-provider adapter contracts',
+    ]);
+  });
+
+  it('uses focused stream-sync contracts instead of the broad OS package suite', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/lib/stream-sync-cleanup.js',
+      '--changed-file',
+      'packages/os/scripts/stream-sync.js',
+      '--changed-file',
+      'packages/workspace/scripts/lib/stream-sync-cleanup.js',
+      '--changed-file',
+      'packages/workspace/scripts/stream-sync.js',
+      '--changed-file',
+      'packages/workspace/tests/stream-sync-conflict-cleanup.test.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+
+    expect(matchedRuleIds).toContain('workspace-stream-sync');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(data.selectedSuites.map((suite) => suite.name)).toEqual([
+      'workspace stream sync runtime contracts',
+      'Workspace stream sync contracts',
+    ]);
+  });
+
+  it('keeps shared Git helper changes on focused synchronization contracts', () => {
+    const result = run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/lib/git.js',
+      '--changed-file',
+      'packages/workspace/scripts/lib/git.js',
+      '--changed-file',
+      'packages/os/tests/git-fetch-origin-concurrency.test.ts',
+      '--json',
+    ]);
+    const data = json(result);
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+
+    expect(matchedRuleIds).toContain('workspace-stream-sync');
+    expect(matchedRuleIds).not.toContain('auto:@consuelo/os:package-test');
+    expect(data.selectedSuites.map((suite) => suite.name)).toEqual([
+      'Workspace stream sync contracts',
+    ]);
+  });
 });

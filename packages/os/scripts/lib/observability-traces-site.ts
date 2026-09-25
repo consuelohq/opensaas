@@ -39,7 +39,45 @@ export function resolveObservabilitySessionValue(row: Record<string, unknown>): 
 }
 
 const productionHistoryTransport = `<script id="consuelo-trace-history-transport">
-(()=>{const historyRoute='/gateway/traces/recent';const snapshotRoute='/trace-burn-intelligence/live-traces.json';const snapshotUrl=historyRoute+'?direction=older&cursor=latest&limit=100&site=trace-burn-intelligence&sourceMode=local-networked&includeRawPayload=true';const allowed=(url)=>url===snapshotRoute||url===historyRoute||url.startsWith(historyRoute+'?');window.__consueloTraceHistoryTransport={fetchJson(url){if(!allowed(url))return Promise.reject(new Error('Trace history route is not allowed.'));const requestUrl=url===snapshotRoute?snapshotUrl:url;return fetch(requestUrl,{cache:'no-store',credentials:'same-origin',headers:{accept:'application/json'}}).then(response=>response.json().then(payload=>{if(!response.ok||payload?.ok===false)throw new Error(payload?.error?.message||'Trace history request failed.');return url===snapshotRoute?(payload?.data??{rows:[],failures:[]}):payload;}));}};})();
+(() => {
+  const historyRoute = '/gateway/traces/recent';
+  const eventsRoute = '/gateway/traces/events';
+  const snapshotRoute = '/trace-burn-intelligence/live-traces.json';
+  const snapshotUrl = historyRoute + '?direction=older&cursor=latest&limit=100&site=trace-burn-intelligence&sourceMode=local-networked&includeRawPayload=true';
+  const allowed = (url, route) => url === route || url.startsWith(route + '?');
+  window.__consueloTraceHistoryTransport = {
+    openEvents(url) {
+      if (!allowed(url, eventsRoute)) throw new Error('Trace stream route is not allowed.');
+      return new EventSource(url, { withCredentials: true });
+    },
+    async fetchJson(url, signal) {
+      if (url !== snapshotRoute && !allowed(url, historyRoute)) throw new Error('Trace history route is not allowed.');
+      const controller = new AbortController();
+      const cancel = () => controller.abort();
+      signal?.addEventListener('abort', cancel, { once: true });
+      if (signal?.aborted) controller.abort();
+      const timeout = setTimeout(cancel, 20000);
+      try {
+        const response = await fetch(url === snapshotRoute ? snapshotUrl : url, {
+          cache: 'no-store', credentials: 'same-origin', signal: controller.signal, headers: { accept: 'application/json' },
+        });
+        if (!response.ok) {
+          const error = new Error('Trace request failed.');
+          error.status = response.status;
+          const retry = response.headers.get('retry-after');
+          error.retryAfterMs = retry ? Math.max(0, /^\\d+$/.test(retry) ? Number(retry) * 1000 : Date.parse(retry) - Date.now()) : 0;
+          throw error;
+        }
+        const payload = await response.json();
+        if (payload?.ok === false) throw new Error('Trace history request failed.');
+        return url === snapshotRoute ? payload?.data : payload;
+      } finally {
+        clearTimeout(timeout);
+        signal?.removeEventListener('abort', cancel);
+      }
+    },
+  };
+})();
 </script>`;
 
 const workspaceNavigation = `<script id="consuelo-trace-workspace-navigation">

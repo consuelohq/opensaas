@@ -121,6 +121,141 @@ describe('Explore semantic index hydration availability', () => {
     }
   }, 20_000);
 
+  it('should avoid a second query-time wait when semantic hydration hangs', async () => {
+    const root = mkdtempSync(path.join(os.tmpdir(), 'consuelo-explore-hydration-timeout-'));
+    const repo = path.join(root, 'repo');
+    const home = path.join(root, 'home');
+    mkdirSync(repo, { recursive: true });
+    mkdirSync(home, { recursive: true });
+
+    run('git', ['init', '-q'], repo);
+    run('git', ['config', 'user.email', 'explore-test@consuelohq.com'], repo);
+    run('git', ['config', 'user.name', 'Explore Test'], repo);
+    for (let index = 0; index < 16; index += 1) {
+      writeFileSync(
+        path.join(repo, 'service-' + index + '.ts'),
+        index === 7
+          ? 'export function targetServiceBootstrapRouting() { return "target service bootstrap routing"; }\n'
+          : 'export function helper' + index + '() { return "unrelated helper ' + index + '"; }\n',
+      );
+    }
+    run('git', ['add', '.'], repo);
+    run('git', ['commit', '-qm', 'fixture'], repo);
+
+    let requests = 0;
+    const server = createServer((_request, response) => {
+      requests += 1;
+      const timer = setTimeout(() => {
+        if (response.destroyed) return;
+        response.writeHead(503, { 'content-type': 'application/json' });
+        response.end(JSON.stringify({ error: { code: 'embedding_provider_timeout' } }));
+      }, 30_000);
+      response.on('close', () => clearTimeout(timer));
+    });
+    await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+    const address = server.address();
+    if (!address || typeof address === 'string') throw new Error('gateway fixture did not bind');
+
+    try {
+      const result = await runExplore({
+        repo,
+        home,
+        gatewayUrl: 'http://127.0.0.1:' + address.port + '/v1/os/semantic-embeddings',
+      });
+      expect(result.code, 'requests=' + requests + '\n' + (result.stderr || result.stdout)).toBe(0);
+      const payload = JSON.parse(result.stdout) as {
+        results?: Array<{ path?: string }>;
+        index_stats?: { chunks_deferred?: number; embedding_status?: string };
+      };
+      expect(payload.results?.some((item) => item.path === 'service-7.ts')).toBe(true);
+      expect(payload.index_stats?.embedding_status).toBe('degraded');
+      expect(payload.index_stats?.chunks_deferred).toBeGreaterThan(0);
+      expect(requests).toBe(1);
+    } finally {
+      await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
+    }
+  }, 20_000);
+
+  it('should bound total hydration latency when a later semantic batch hangs', async () => {
+    const root = mkdtempSync(path.join(os.tmpdir(), 'consuelo-explore-hydration-phase-timeout-'));
+    const repo = path.join(root, 'repo');
+    const home = path.join(root, 'home');
+    mkdirSync(repo, { recursive: true });
+    mkdirSync(home, { recursive: true });
+
+    run('git', ['init', '-q'], repo);
+    run('git', ['config', 'user.email', 'explore-test@consuelohq.com'], repo);
+    run('git', ['config', 'user.name', 'Explore Test'], repo);
+    for (let index = 0; index < 96; index += 1) {
+      writeFileSync(
+        path.join(repo, 'service-' + index + '.ts'),
+        index === 47
+          ? 'export function targetServiceBootstrapRouting() { return "target service bootstrap routing"; }\n'
+          : 'export function helper' + index + '() { return "unrelated helper ' + index + '"; }\n',
+      );
+    }
+    run('git', ['add', '.'], repo);
+    run('git', ['commit', '-qm', 'fixture'], repo);
+
+    let documentRequests = 0;
+    const server = createServer(async (request, response) => {
+      let body = '';
+      for await (const chunk of request) body += String(chunk);
+      const parsed = JSON.parse(body) as { items?: Array<{ kind?: string }> };
+      const items = parsed.items || [];
+      if (items[0]?.kind === 'query') {
+        response.writeHead(503, { 'content-type': 'application/json' });
+        response.end(JSON.stringify({ error: { code: 'unexpected_query_embedding' } }));
+        return;
+      }
+
+      documentRequests += 1;
+      if (documentRequests === 1) {
+        const timer = setTimeout(() => {
+          if (response.destroyed) return;
+          const vector = new Array(2560).fill(0);
+          vector[0] = 1;
+          response.writeHead(200, { 'content-type': 'application/json' });
+          response.end(JSON.stringify({
+            data: items.map(() => ({ embedding: vector })),
+          }));
+        }, 7_000);
+        response.on('close', () => clearTimeout(timer));
+        return;
+      }
+
+      const timer = setTimeout(() => {
+        if (response.destroyed) return;
+        response.writeHead(503, { 'content-type': 'application/json' });
+        response.end(JSON.stringify({ error: { code: 'embedding_provider_timeout' } }));
+      }, 30_000);
+      response.on('close', () => clearTimeout(timer));
+    });
+    await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+    const address = server.address();
+    if (!address || typeof address === 'string') throw new Error('gateway fixture did not bind');
+
+    try {
+      const result = await runExplore({
+        repo,
+        home,
+        gatewayUrl: 'http://127.0.0.1:' + address.port + '/v1/os/semantic-embeddings',
+      });
+      expect(result.code, 'documentRequests=' + documentRequests + '\n' + (result.stderr || result.stdout)).toBe(0);
+      const payload = JSON.parse(result.stdout) as {
+        results?: Array<{ path?: string }>;
+        index_stats?: { chunks_deferred?: number; embedding_status?: string };
+      };
+      expect(payload.results?.some((item) => item.path === 'service-47.ts')).toBe(true);
+      expect(payload.index_stats?.embedding_status).toBe('degraded');
+      expect(payload.index_stats?.chunks_deferred).toBeGreaterThan(0);
+      expect(documentRequests).toBeGreaterThanOrEqual(1);
+      expect(documentRequests).toBeLessThanOrEqual(2);
+    } finally {
+      await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
+    }
+  }, 20_000);
+
   it('should bound successful semantic hydration instead of rebuilding the whole index synchronously', async () => {
     const root = mkdtempSync(path.join(os.tmpdir(), 'consuelo-explore-hydration-success-'));
     const repo = path.join(root, 'repo');
@@ -169,6 +304,71 @@ describe('Explore semantic index hydration availability', () => {
       const payload = JSON.parse(result.stdout) as { results?: Array<{ path?: string }> };
       expect(payload.results?.some((item) => item.path === 'service-47.ts')).toBe(true);
       expect(requests).toBeLessThanOrEqual(3);
+    } finally {
+      await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
+    }
+  }, 20_000);
+
+  it('should preserve query semantic retrieval when changed-document hydration fails local validation', async () => {
+    const root = mkdtempSync(path.join(os.tmpdir(), 'consuelo-explore-local-hydration-failure-'));
+    const repo = path.join(root, 'repo');
+    const home = path.join(root, 'home');
+    mkdirSync(repo, { recursive: true });
+    mkdirSync(home, { recursive: true });
+
+    run('git', ['init', '-q'], repo);
+    run('git', ['config', 'user.email', 'explore-test@consuelohq.com'], repo);
+    run('git', ['config', 'user.name', 'Explore Test'], repo);
+    writeFileSync(
+      path.join(repo, 'service.ts'),
+      'export function targetServiceBootstrapRouting() { return "target service bootstrap routing"; }\n',
+    );
+    run('git', ['add', '.'], repo);
+    run('git', ['commit', '-qm', 'fixture'], repo);
+
+    let documentRequests = 0;
+    let queryRequests = 0;
+    const server = createServer(async (request, response) => {
+      let body = '';
+      for await (const chunk of request) body += String(chunk);
+      const parsed = JSON.parse(body) as { items?: Array<{ kind?: string }> };
+      const items = parsed.items || [];
+      if (items[0]?.kind === 'query') {
+        queryRequests += 1;
+      } else {
+        documentRequests += 1;
+      }
+      const vector = new Array(2560).fill(0);
+      vector[0] = 1;
+      response.writeHead(200, { 'content-type': 'application/json' });
+      response.end(JSON.stringify({
+        data: items.map(() => ({ embedding: vector })),
+      }));
+    });
+    await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
+    const address = server.address();
+    if (!address || typeof address === 'string') throw new Error('gateway fixture did not bind');
+
+    try {
+      const gatewayUrl = 'http://127.0.0.1:' + address.port + '/v1/os/semantic-embeddings';
+      const initial = await runExplore({ repo, home, gatewayUrl });
+      expect(initial.code, initial.stderr || initial.stdout).toBe(0);
+      expect(queryRequests).toBe(1);
+      expect(documentRequests).toBeGreaterThan(0);
+
+      writeFileSync(path.join(repo, 'oversized-notes.md'), 'x'.repeat(4_500));
+      run('git', ['add', 'oversized-notes.md'], repo);
+      const afterLocalFailure = await runExplore({ repo, home, gatewayUrl });
+      expect(afterLocalFailure.code, afterLocalFailure.stderr || afterLocalFailure.stdout).toBe(0);
+      const payload = JSON.parse(afterLocalFailure.stdout) as {
+        results?: Array<{ path?: string }>;
+        index_stats?: { chunks_deferred?: number; embedding_status?: string };
+      };
+      expect(payload.results?.some((item) => item.path === 'service.ts')).toBe(true);
+      expect(payload.index_stats?.embedding_status).toBe('degraded');
+      expect(payload.index_stats?.chunks_deferred).toBeGreaterThan(0);
+      expect(queryRequests).toBe(2);
+      expect(documentRequests).toBeGreaterThan(0);
     } finally {
       await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
     }

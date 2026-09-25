@@ -9,9 +9,9 @@
       "packages/lead-connector/**",
       "packages/logger/**",
       "package.json",
-      "yarn.lock",
-      ".yarnrc.yml",
-      ".yarn/**"
+      "bun.lock",
+      "bunfig.toml",
+      ".bun-version"
     ]
   },
   "deploy": {

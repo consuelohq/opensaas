@@ -131,7 +131,7 @@ describe('install.ts Clack prompt preflight', () => {
     expect(install).toContain('getClackIo');
     expect(install).toContain('input: process.stdin');
     expect(install).toContain('output: process.stdout');
-    expect(install).toContain('...clackIo');
+    expect(install).toContain('...input.clackIo');
   });
 
   test('Clack prompts fail before rendering if stdio is not a usable TTY', () => {

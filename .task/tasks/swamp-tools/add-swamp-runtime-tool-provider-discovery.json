@@ -1,0 +1,16 @@
+{
+  "area": "swamp-tools",
+  "stream": "stream/swamp-tools",
+  "taskBranch": "task/swamp-tools/add-swamp-runtime-tool-provider-discovery",
+  "baseBranch": "stream/swamp-tools",
+  "sourceBranch": "stream/swamp-tools",
+  "startFrom": "stream",
+  "prNumber": 2531,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2531",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-swamp-tools-add-swamp-runtime-tool-provider-discovery",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_0dc700aadc04",
+  "tmuxSession": "opensaas-swamp-tools-add-swamp-runtime-tool-provider-discovery-0dc700aa",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-swamp-tools-add-swamp-runtime-tool-provider-discovery/.task/session.json",
+  "createdAt": "2026-09-22T01:41:26.832Z"
+}

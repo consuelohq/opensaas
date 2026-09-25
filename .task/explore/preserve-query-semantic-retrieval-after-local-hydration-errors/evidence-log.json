@@ -1,0 +1,120 @@
+{
+  "version": 1,
+  "worktree_id": "task/explore/preserve-query-semantic-retrieval-after-local-hydration-errors",
+  "events": [
+    {
+      "id": "e1807c14-1db6-421b-9e4b-ff58b1d67182",
+      "occurred_at": "2026-09-08T14:51:33.793Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/explore.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/explore/preserve-query-semantic-retrieval-after-local-hydration-errors",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/explore/preserve-query-semantic-retrieval-after-local-hydration-errors"
+      }
+    },
+    {
+      "id": "f2b109fb-291d-42fc-9606-e3cfb7eeb162",
+      "occurred_at": "2026-09-08T14:51:39.625Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/index/indexer.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/explore/preserve-query-semantic-retrieval-after-local-hydration-errors",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/explore/preserve-query-semantic-retrieval-after-local-hydration-errors"
+      }
+    },
+    {
+      "id": "f9aeea35-0eae-417e-96c6-af5b698a47e6",
+      "occurred_at": "2026-09-08T14:54:44.083Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/index/embedder.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/explore/preserve-query-semantic-retrieval-after-local-hydration-errors",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/explore/preserve-query-semantic-retrieval-after-local-hydration-errors"
+      }
+    },
+    {
+      "id": "1624b9fb-49c4-413a-83f3-79390f5ceac5",
+      "occurred_at": "2026-09-08T14:59:17.220Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/explore/preserve-query-semantic-retrieval-after-local-hydration-errors/verify.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/explore/preserve-query-semantic-retrieval-after-local-hydration-errors",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/explore/preserve-query-semantic-retrieval-after-local-hydration-errors"
+      }
+    },
+    {
+      "id": "17252be8-1847-48ce-b3c4-4b015d52077e",
+      "occurred_at": "2026-09-08T14:59:24.958Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/verify.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/explore/preserve-query-semantic-retrieval-after-local-hydration-errors",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/explore/preserve-query-semantic-retrieval-after-local-hydration-errors"
+      }
+    },
+    {
+      "id": "9a61c170-6d0e-46ce-afb0-76987192a858",
+      "occurred_at": "2026-09-08T15:01:18.191Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/test-selection.rules.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/explore/preserve-query-semantic-retrieval-after-local-hydration-errors",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/explore/preserve-query-semantic-retrieval-after-local-hydration-errors"
+      }
+    },
+    {
+      "id": "bce6b4e0-23d8-4c3f-9fe0-8b5f66bb63c6",
+      "occurred_at": "2026-09-08T15:01:32.200Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/test-selection.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/explore/preserve-query-semantic-retrieval-after-local-hydration-errors",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/explore/preserve-query-semantic-retrieval-after-local-hydration-errors"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-09-08T15:01:32.291Z"
+}

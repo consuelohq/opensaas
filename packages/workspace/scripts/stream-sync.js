@@ -29,6 +29,8 @@ const { assertStreamBranchName, getDefaultStreamBranch, normalizeArea } = requir
 const { isOnlyTaskMetadataConflict, resolveTaskMetadataConflicts } = require('./lib/task-meta');
 const { linkTaskWorktreeNodeModules } = require('./lib/task-node-modules');
 
+const GENERATED_TEST_SELECTION_REGISTRY = 'packages/workspace/test-selection.registry.json';
+
 function writeStdout(value = '') {
   process.stdout.write(`${value}\n`);
 }
@@ -106,6 +108,39 @@ function createTemporaryStreamWorktree(repoRoot, streamBranch) {
   return worktreePath;
 }
 
+function isManagedTemporaryStreamWorktree(worktreePath, streamBranch) {
+  const worktreeRoot = fs.realpathSync.native(path.resolve(getWorktreeRoot()));
+  const resolvedWorktreePath = fs.realpathSync.native(path.resolve(worktreePath));
+  const relativePath = path.relative(worktreeRoot, resolvedWorktreePath);
+  const expectedPrefix = `${toWorktreeDirectoryName(streamBranch)}-sync-`;
+
+  return (
+    relativePath.length > 0 &&
+    !relativePath.startsWith('..') &&
+    !path.isAbsolute(relativePath) &&
+    path.basename(resolvedWorktreePath).startsWith(expectedPrefix)
+  );
+}
+
+function recoverStaleConflictedStreamWorktree(repoRoot, existingWorktree, streamBranch) {
+  if (!existingWorktree || !isManagedTemporaryStreamWorktree(existingWorktree.path, streamBranch)) {
+    return null;
+  }
+
+  const conflictFiles = getConflictFiles(repoRoot, existingWorktree.path);
+  if (conflictFiles.length === 0) {
+    restoreWorktreeAfterFailedMerge(repoRoot, worktreePath, streamBranch, createdTemporaryWorktree);
+    return null;
+  }
+
+  removeWorktree(repoRoot, existingWorktree.path, true);
+  pruneWorktrees(repoRoot);
+  return {
+    path: existingWorktree.path,
+    conflictFiles,
+  };
+}
+
 function resolveMainWorktreeRoot(repoRoot) {
   const output = runGit(['worktree', 'list', '--porcelain'], { cwd: repoRoot });
   const blocks = output.split(/\n\n+/).filter(Boolean);
@@ -126,6 +161,50 @@ function runMerge(worktreePath, mainBranch) {
 function getConflictFiles(repoRoot, worktreePath) {
   const output = runGit(['-C', worktreePath, 'diff', '--name-only', '--diff-filter=U'], { cwd: repoRoot });
   return output ? output.split('\n').filter(Boolean) : [];
+}
+
+function mergeCandidateEnv(worktreePath) {
+  const env = { ...process.env, PWD: worktreePath };
+  delete env.TASK_BRANCH;
+  delete env.TASK_WORKTREE;
+  return env;
+}
+
+function resolveGeneratedTestSelectionRegistryConflict(repoRoot, worktreePath, conflictFiles) {
+  if (conflictFiles.length !== 1 || conflictFiles[0] !== GENERATED_TEST_SELECTION_REGISTRY) {
+    return { resolved: false, files: [] };
+  }
+
+  const generator = spawnSync('node', [
+    'packages/workspace/scripts/test-selection.js',
+    'generate',
+    '--out',
+    GENERATED_TEST_SELECTION_REGISTRY,
+    '--json',
+  ], {
+    cwd: worktreePath,
+    env: mergeCandidateEnv(worktreePath),
+    encoding: 'utf8',
+    maxBuffer: 10 * 1024 * 1024,
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+
+  if (generator.status !== 0) {
+    return {
+      resolved: false,
+      files: [],
+      error: [generator.stdout, generator.stderr].filter(Boolean).join('\n').trim(),
+    };
+  }
+
+  runGit(['-C', worktreePath, 'add', '--', GENERATED_TEST_SELECTION_REGISTRY], { cwd: repoRoot });
+  const remainingConflicts = getConflictFiles(repoRoot, worktreePath);
+
+  return {
+    resolved: remainingConflicts.length === 0,
+    files: remainingConflicts.length === 0 ? [GENERATED_TEST_SELECTION_REGISTRY] : [],
+    remainingConflicts,
+  };
 }
 
 function parseJsonOutput(output) {
@@ -164,6 +243,7 @@ function runStreamChecks(worktreePath) {
     '--json',
   ], {
     cwd: worktreePath,
+    env: mergeCandidateEnv(worktreePath),
     encoding: 'utf8',
     maxBuffer: 10 * 1024 * 1024,
     stdio: ['ignore', 'pipe', 'pipe'],
@@ -241,6 +321,14 @@ async function main() {
   pruneWorktrees(repoRoot);
 
   let existingWorktree = getWorktreeForBranch(repoRoot, streamBranch);
+  const recoveredStaleWorktree = recoverStaleConflictedStreamWorktree(
+    repoRoot,
+    existingWorktree,
+    streamBranch,
+  );
+  if (recoveredStaleWorktree) {
+    existingWorktree = null;
+  }
 
   if (
     existingWorktree &&
@@ -293,6 +381,7 @@ async function main() {
         temporaryWorktree: createdTemporaryWorktree,
         mergeOutput,
         conflictFiles: [],
+        recoveredStaleWorktree: recoveredStaleWorktree?.path || null,
         checks,
         pushed,
       },
@@ -304,8 +393,44 @@ async function main() {
   const conflictFiles = getConflictFiles(repoRoot, worktreePath);
 
   if (conflictFiles.length === 0) {
-    restoreWorktreeAfterFailedMerge(repoRoot, worktreePath, streamBranch, createdTemporaryWorktree);
     throw new Error(mergeOutput || `merge failed for ${streamBranch}`);
+  }
+
+  const generatedResolution = resolveGeneratedTestSelectionRegistryConflict(
+    repoRoot,
+    worktreePath,
+    conflictFiles,
+  );
+
+  if (generatedResolution.resolved) {
+    let checks;
+    let pushed = false;
+    try {
+      runGit(['-C', worktreePath, 'commit', '--no-edit'], { cwd: repoRoot });
+      checks = runStreamChecks(worktreePath);
+      pushed = pushStreamBranch(repoRoot, worktreePath, streamBranch, checks);
+    } finally {
+      if (createdTemporaryWorktree) {
+        removeWorktree(repoRoot, worktreePath, true);
+      }
+    }
+
+    printResult(
+      {
+        stream: streamBranch,
+        status: 'success',
+        worktreePath,
+        temporaryWorktree: createdTemporaryWorktree,
+        mergeOutput,
+        conflictFiles: [],
+        recoveredStaleWorktree: recoveredStaleWorktree?.path || null,
+        autoResolvedGeneratedFiles: generatedResolution.files,
+        checks,
+        pushed,
+      },
+      args.json,
+    );
+    return;
   }
 
   if (isOnlyTaskMetadataConflict(conflictFiles)) {
@@ -334,6 +459,7 @@ async function main() {
           temporaryWorktree: createdTemporaryWorktree,
           mergeOutput,
           conflictFiles: [],
+          recoveredStaleWorktree: recoveredStaleWorktree?.path || null,
           autoResolvedMetadata: resolution,
           checks,
           pushed,
@@ -344,13 +470,13 @@ async function main() {
     }
   }
 
-  restoreWorktreeAfterFailedMerge(repoRoot, worktreePath, streamBranch, createdTemporaryWorktree);
-
   const checks = {
     skipped: true,
     status: 'skipped',
     reason: 'merge failed before stream checks could run',
   };
+
+  restoreWorktreeAfterFailedMerge(repoRoot, worktreePath, streamBranch, createdTemporaryWorktree);
 
   printResult(
     {
@@ -360,6 +486,7 @@ async function main() {
       temporaryWorktree: createdTemporaryWorktree,
       mergeOutput,
       conflictFiles,
+      recoveredStaleWorktree: recoveredStaleWorktree?.path || null,
       checks,
     },
     args.json,

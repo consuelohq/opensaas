@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/fix-website-ci-for-windows-installer-test",
+  "events": [
+    {
+      "id": "056f7ee8-b131-4b0b-a105-3c64ce90601c",
+      "occurred_at": "2026-09-10T02:26:57.102Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/consuelo-website/tests/install-command.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-website-ci-for-windows-installer-test",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-website-ci-for-windows-installer-test"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-09-10T02:26:57.207Z"
+}

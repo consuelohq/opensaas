@@ -82,6 +82,8 @@ describe('Consuelo OS release-channel workflows', () => {
     expect(workflow).toContain('--plan-only');
     expect(workflow).toContain("if: steps.plan.outputs.changed == 'true'");
     expect(workflow).toContain('darwin-arm64');
+    expect(workflow).toContain('darwin-x64');
+    expect(workflow).toContain('macos-15-intel');
     expect(workflow).toContain('linux-x64');
     expect(workflow).toContain('windows-x64');
     expect(workflow).toContain('Build deterministic Windows service host');

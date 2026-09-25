@@ -317,13 +317,15 @@ async function retrieve(store, repoRoot, query, options = {}) {
   const hasPathScope = explicitScope.pathPrefixes.length > 0 || explicitScope.exactPaths.length > 0;
 
   let semanticRows = [];
-  let semanticAvailable = true;
-  try {
-    const queryVector = await embedText(query, { kind: 'query' });
-    semanticRows = store.searchChunks(queryVector, budget * (hasPathScope ? 12 : 4))
-      .map((row) => ({ ...row, retrievalType: 'semantic' }));
-  } catch {
-    semanticAvailable = false;
+  let semanticAvailable = options.skipSemantic !== true;
+  if (semanticAvailable) {
+    try {
+      const queryVector = await embedText(query, { kind: 'query' });
+      semanticRows = store.searchChunks(queryVector, budget * (hasPathScope ? 12 : 4))
+        .map((row) => ({ ...row, retrievalType: 'semantic' }));
+    } catch {
+      semanticAvailable = false;
+    }
   }
 
   let lexicalRows = [];

@@ -61,6 +61,7 @@ function signedRequest(input: {
   body?: string;
   token?: AgentAppToken;
   nonce?: string;
+  headers?: HeadersInit;
 }): Request {
   const body = input.body ?? '';
   const activeToken = input.token ?? token;
@@ -73,9 +74,11 @@ function signedRequest(input: {
     timestamp: new Date().toISOString(),
     nonce: input.nonce ?? crypto.randomUUID(),
   });
+  const headers = new Headers(signed.headers);
+  for (const [key, value] of new Headers(input.headers).entries()) headers.set(key, value);
   return new Request(`http://127.0.0.1:46321${input.path}`, {
     method: input.method,
-    headers: signed.headers,
+    headers,
     body: input.method === 'POST' ? body : undefined,
   });
 }
@@ -173,12 +176,37 @@ describe('Hono Diffs routes', () => {
     }));
 
     expect(response.status).toBe(200);
+    expect(response.headers.get('etag')).toMatch(/^W\//);
+    expect(response.headers.get('x-consuelo-diffs-cache')).toBe('fresh');
     const text = await response.text();
     expect(text).not.toContain('managed-installation-token');
     expect(JSON.parse(text)).toMatchObject({
       repo: { owner: 'acme', repo: 'app' },
       pulls: [],
     });
+    expect(calls.map((request) => request.url)).toEqual([
+      'https://os.consuelohq.com/workspace/source-control/github/token',
+      'https://api.github.com/graphql',
+    ]);
+
+    const etag = response.headers.get('etag')!;
+    const page = await handleRequest(signedRequest({
+      method: 'GET',
+      path: '/diffs',
+      nonce: 'managed-github-diffs-page-nonce',
+    }));
+    const html = await page.text();
+    expect(html).toContain('id="diff-cockpit-index-initial-data"');
+    expect(html).toContain('id="diff-cockpit-index-initial-etag"');
+
+    const unchanged = await handleRequest(signedRequest({
+      method: 'GET',
+      path,
+      nonce: 'managed-github-diffs-304-nonce',
+      headers: { 'if-none-match': etag },
+    }));
+    expect(unchanged.status).toBe(304);
+    expect(unchanged.headers.get('etag')).toBe(etag);
     expect(calls.map((request) => request.url)).toEqual([
       'https://os.consuelohq.com/workspace/source-control/github/token',
       'https://api.github.com/graphql',
@@ -257,6 +285,8 @@ describe('Hono Diffs routes', () => {
     expect(html).toContain('>Users &amp; installs</span>');
     expect(html).toContain('.workspace-route-menu[hidden]');
     expect(html).toContain('/gateway/diffs/repositories/acme/app/pulls');
+    expect(html).toContain('const routePrefix = "/diffs/acme/app/pull/";');
+    expect(html).not.toContain('const routePrefix = "/acme/app/pull/";');
     expect(html).not.toContain('consuelohq/opensaas');
     expect(html).not.toContain('diffs.consuelohq.com');
   });

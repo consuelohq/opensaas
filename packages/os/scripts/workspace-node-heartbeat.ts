@@ -11,6 +11,7 @@ import {
 } from './lib/local-agent-connectivity';
 import {
   createWorkspaceNodeHeartbeatClient,
+  isTransientWorkspaceNodeHeartbeatRequestError,
   type WorkspaceNodeHeartbeatConfig,
   type WorkspaceNodeHeartbeatResult,
   type WorkspaceNodeHeartbeatRuntimeStatus,
@@ -379,13 +380,22 @@ export async function sendWorkspaceNodeHeartbeatFromConfig(
         readinessResult = await client.send({ ...runtimeStatus, mcpReady });
         reconcileHeartbeatEdgeProxyAuth({ configPath, config, result: readinessResult });
       } catch (error: unknown) {
-        if (mcpReady !== true) throw error;
+        if (
+          mcpReady !== true
+          || !isTransientWorkspaceNodeHeartbeatRequestError(error)
+        ) {
+          throw error;
+        }
         return {
           nodeId: config.nodeId,
           presence: 'online' as const,
           routeReady: true,
           mcpReady: true,
           authorityReady: false,
+          authorityError: {
+            ...(error.status === undefined ? {} : { status: error.status }),
+            ...(error.code === undefined ? {} : { code: error.code }),
+          },
         };
       }
     }
@@ -426,6 +436,9 @@ async function main(): Promise<void> {
       ...('mcpReady' in result ? { mcpReady: result.mcpReady } : {}),
       ...('authorityReady' in result
         ? { authorityReady: result.authorityReady }
+        : {}),
+      ...('authorityError' in result
+        ? { authorityError: result.authorityError }
         : {}),
       ...('skipped' in result && result.skipped
         ? { skipped: true, reason: result.reason }

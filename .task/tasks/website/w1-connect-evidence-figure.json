@@ -1,0 +1,16 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/w1-connect-evidence-figure",
+  "baseBranch": "stream/website",
+  "sourceBranch": "stream/website",
+  "startFrom": "stream",
+  "prNumber": 2335,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2335",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-w1-connect-evidence-figure",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_3f275bb15248",
+  "tmuxSession": "opensaas-website-w1-connect-evidence-figure-3f275bb1",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-w1-connect-evidence-figure/.task/session.json",
+  "createdAt": "2026-08-31T21:04:41.295Z"
+}

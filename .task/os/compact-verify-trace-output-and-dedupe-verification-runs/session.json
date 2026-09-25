@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_f994c2908d8a",
+  "tmuxSession": "opensaas-os-compact-verify-trace-output-and-dedupe-verificat-f994c290",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/compact-verify-trace-output-and-dedupe-verification-runs",
+  "branch": "task/os/compact-verify-trace-output-and-dedupe-verification-runs",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-compact-verify-trace-output-and-dedupe-verification-runs",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-compact-verify-trace-output-and-dedupe-verification-runs",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2543,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2543",
+  "createdAt": "2026-09-22T23:20:34.266Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-compact-verify-trace-output-and-dedupe-verification-runs/.task/os/compact-verify-trace-output-and-dedupe-verification-runs/session.json"
+}

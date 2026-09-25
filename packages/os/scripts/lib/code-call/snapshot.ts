@@ -8,6 +8,7 @@ import { Effect } from 'effect';
 import { findGitRootEffect } from './location';
 
 const DIR_SNAPSHOT_FILE_LIMIT = 1000;
+const GIT_OUTPUT_MAX_BUFFER = 64 * 1024 * 1024;
 
 export type Snapshot =
   | { kind: 'git'; root: string; files: Map<string, string> }
@@ -31,6 +32,7 @@ function parsePorcelain(root: string, stdout: string): Map<string, string> {
     if (!line.trim()) continue;
     const rawPath = line.slice(3).replace(/^"|"$/g, '');
     const normalizedPath = rawPath.includes(' -> ') ? rawPath.split(' -> ').at(-1) || rawPath : rawPath;
+    if (normalizedPath === '.task' || normalizedPath.startsWith('.task/')) continue;
     files.set(normalizedPath, gitContentMarker(root, normalizedPath, line.slice(0, 2)));
   }
   return files;
@@ -46,6 +48,7 @@ const captureGitSnapshotEffect = (cwd: string) => Effect.gen(function* () {
         cwd: root,
         encoding: 'utf8',
         stdio: ['ignore', 'pipe', 'ignore'],
+        maxBuffer: GIT_OUTPUT_MAX_BUFFER,
       });
       return { kind: 'git', root, files: parsePorcelain(root, stdout) } satisfies Snapshot;
     },
@@ -58,7 +61,7 @@ function captureDirectorySnapshotUnsafe(root: string): Snapshot {
   let count = 0;
   const walk = (directory: string): void => {
     for (const entry of readdirSync(directory, { withFileTypes: true })) {
-      if (entry.name === '.git' || entry.name === 'node_modules') continue;
+      if (entry.name === '.git' || entry.name === 'node_modules' || entry.name === '.task') continue;
       const absolute = path.join(directory, entry.name);
       const relative = path.relative(root, absolute);
       count += 1;

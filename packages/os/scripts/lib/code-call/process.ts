@@ -56,11 +56,12 @@ const DARWIN_READ_CONTAINMENT_PROFILE = [
 ].join('');
 
 function canonicalPath(value: string): string {
-  try {
-    return realpathSync(value);
-  } catch {
-    return value;
-  }
+  return Effect.runSync(
+    Effect.try({
+      try: () => realpathSync(value),
+      catch: () => value,
+    }).pipe(Effect.catchAll((fallback) => Effect.succeed(fallback))),
+  );
 }
 
 function errorMessage(error: NodeJS.ErrnoException): string {
@@ -138,6 +139,7 @@ export const runRuntimeEffect = (command: string, args: string[], options: RunRu
   let stderr = '';
   let settled = false;
   let timedOut = false;
+  let stdinFailure: string | null = null;
   let killTimer: NodeJS.Timeout | null = null;
   const cleanupProcessTree = registerProcessTreeCleanup(child);
 
@@ -161,8 +163,17 @@ export const runRuntimeEffect = (command: string, args: string[], options: RunRu
   child.stdout.setEncoding('utf8');
   child.stderr.setEncoding('utf8');
   child.stdin.on('error', (error: NodeJS.ErrnoException) => {
-    if (error.code === 'EPIPE' || error.code === 'ERR_STREAM_DESTROYED') return;
-    if (!settled) stderr += `${stderr ? '\n' : ''}${errorMessage(error)}`;
+    if (error.code === 'EPIPE' || error.code === 'ERR_STREAM_DESTROYED' || settled) return;
+    stdinFailure = errorMessage(error);
+    stderr += `${stderr ? '\n' : ''}${stdinFailure}`;
+    clearTimeout(timer);
+    terminateProcessTree(child, 'SIGTERM');
+    if (!killTimer) {
+      killTimer = setTimeout(() => {
+        terminateProcessTree(child, 'SIGKILL');
+      }, PROCESS_TERMINATION_GRACE_MS);
+      killTimer.unref?.();
+    }
   });
   child.stdout.on('data', (chunk) => { stdout += chunk; });
   child.stderr.on('data', (chunk) => { stderr += chunk; });
@@ -177,12 +188,26 @@ export const runRuntimeEffect = (command: string, args: string[], options: RunRu
     });
   });
   child.on('close', (code) => {
-    finish({ stdout, stderr, exitCode: code ?? 0, timedOut, runtimeMissing: false, containmentUnavailable: false });
+    finish({
+      stdout,
+      stderr,
+      exitCode: timedOut || stdinFailure ? 1 : code ?? 0,
+      timedOut,
+      runtimeMissing: false,
+      containmentUnavailable: false,
+    });
   });
-  try {
-    child.stdin.end(options.stdin || '');
-  } catch (error: unknown) {
-    const code = (error as NodeJS.ErrnoException)?.code;
-    if (code !== 'EPIPE' && code !== 'ERR_STREAM_DESTROYED') throw error;
+  const stdinEndError = Effect.runSync(
+    Effect.try({
+      try: () => {
+        child.stdin.end(options.stdin || '');
+        return null;
+      },
+      catch: (error) => error as NodeJS.ErrnoException,
+    }).pipe(Effect.catchAll((error) => Effect.succeed(error))),
+  );
+  if (stdinEndError) {
+    const code = stdinEndError.code;
+    if (code !== 'EPIPE' && code !== 'ERR_STREAM_DESTROYED') throw stdinEndError;
   }
 }));

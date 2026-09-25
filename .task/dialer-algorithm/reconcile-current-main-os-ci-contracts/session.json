@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_f69537e8511a",
+  "tmuxSession": "opensaas-dialer-algorithm-reconcile-current-main-os-ci-contracts-f69537e8",
+  "area": "dialer-algorithm",
+  "stream": "stream/dialer-algorithm",
+  "taskBranch": "task/dialer-algorithm/reconcile-current-main-os-ci-contracts",
+  "branch": "task/dialer-algorithm/reconcile-current-main-os-ci-contracts",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-reconcile-current-main-os-ci-contracts",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-reconcile-current-main-os-ci-contracts",
+  "prNumber": 2071,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2071",
+  "createdAt": "2026-08-15T11:29:41.678Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-reconcile-current-main-os-ci-contracts/.task/dialer-algorithm/reconcile-current-main-os-ci-contracts/session.json"
+}
