@@ -1,0 +1,16 @@
+{
+  "area": "self-healing",
+  "stream": "stream/self-healing",
+  "taskBranch": "task/self-healing/2026-09-23-fix-github-repo-view-presets",
+  "baseBranch": "stream/self-healing",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2577,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2577",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-self-healing-2026-09-23-fix-github-repo-view-presets",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_37292af4936f",
+  "tmuxSession": "opensaas-self-healing-2026-09-23-fix-github-repo-view-presets-37292af4",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-self-healing-2026-09-23-fix-github-repo-view-presets/.task/session.json",
+  "createdAt": "2026-09-24T02:00:42.205Z"
+}
