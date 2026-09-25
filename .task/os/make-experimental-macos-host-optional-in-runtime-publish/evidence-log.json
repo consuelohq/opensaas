@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/make-experimental-macos-host-optional-in-runtime-publish",
+  "events": [
+    {
+      "id": "857837c2-f303-4106-b398-03c9d82afe9d",
+      "occurred_at": "2026-09-25T17:29:15.703Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/distribution/runtime-bundle.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/make-experimental-macos-host-optional-in-runtime-publish",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/make-experimental-macos-host-optional-in-runtime-publish"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-09-25T17:29:15.822Z"
+}
