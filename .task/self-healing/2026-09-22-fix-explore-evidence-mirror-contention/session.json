@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_dcef2f71f9d3",
+  "tmuxSession": "opensaas-self-healing-2026-09-22-fix-explore-evidence-mirror-contentio-dcef2f71",
+  "area": "self-healing",
+  "stream": "stream/self-healing",
+  "taskBranch": "task/self-healing/2026-09-22-fix-explore-evidence-mirror-contention",
+  "branch": "task/self-healing/2026-09-22-fix-explore-evidence-mirror-contention",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-self-healing-2026-09-22-fix-explore-evidence-mirror-contention",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-self-healing-2026-09-22-fix-explore-evidence-mirror-contention",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2563,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2563",
+  "createdAt": "2026-09-23T02:14:13.594Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-self-healing-2026-09-22-fix-explore-evidence-mirror-contention/.task/self-healing/2026-09-22-fix-explore-evidence-mirror-contention/session.json"
+}

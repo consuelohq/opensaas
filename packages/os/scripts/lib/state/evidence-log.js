@@ -90,16 +90,20 @@ function writeEvidenceLog(repoRoot, log) {
   return paths.evidenceLogPath;
 }
 
-function mirrorEventToStore(repoRoot, event) {
-  let store = null;
+function mirrorEventToStore(repoRoot, event, existingStore = null) {
+  let store = existingStore;
+  let ownsStore = false;
   try {
-    store = createStore(repoRoot, getRemoteUrl(repoRoot));
+    if (!store) {
+      store = createStore(repoRoot, getRemoteUrl(repoRoot));
+      ownsStore = true;
+    }
     store.insertEvidenceEvent(event);
     return store.dbPath;
   } catch (error /* unknown */) {
     throw new Error(`mirrorEventToStore failed: ${getErrorMessage(error)}`);
   } finally {
-    if (store?.db) {
+    if (ownsStore && store?.db) {
       store.db.close();
     }
   }
@@ -124,7 +128,7 @@ function appendEvidenceEvent(repoRoot, event, options = {}) {
 
   if (options.mirror !== false) {
     try {
-      mirroredTo = mirrorEventToStore(repoRoot, normalized);
+      mirroredTo = mirrorEventToStore(repoRoot, normalized, options.store || null);
     } catch (error /* unknown */) {
       mirrorError = getErrorMessage(error);
       if (options.requireMirror) {

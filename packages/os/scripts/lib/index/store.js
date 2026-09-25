@@ -83,6 +83,7 @@ function registerSemanticIndex(dbPath, cacheRoot, repoRoot, remoteUrl) {
   const now = new Date().toISOString();
 
   try {
+    registryDb.exec('PRAGMA busy_timeout = 10000;');
     registryDb.exec(`
       CREATE TABLE IF NOT EXISTS runtime_assets (
         name TEXT PRIMARY KEY,

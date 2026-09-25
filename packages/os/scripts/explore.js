@@ -331,7 +331,7 @@ async function main() {
       })),
       index_stats: payload.index_stats,
     },
-  }, { requireMirror: true });
+  }, { requireMirror: true, store: indexResult.store });
 
   const events = getEvidenceEvents(indexResult.repoRoot);
   const state = updateHypothesesWithEvents(nextState, events);
@@ -390,7 +390,7 @@ async function main() {
         agreement: voiChallenger.agreement,
         net_voi: voiChallenger.net_voi,
       },
-    }, { requireMirror: true });
+    }, { requireMirror: true, store: indexResult.store });
   } catch (error /* unknown */) {
     writeStderr(`explore: VOI shadow logging failed: ${error instanceof Error ? error.message : String(error)}`);
   }
@@ -468,7 +468,7 @@ async function main() {
           authority_violation_count: promotionGate.local_shadow.authority_violation_count,
         } : null,
       },
-    }, { requireMirror: true });
+    }, { requireMirror: true, store: indexResult.store });
   } catch (error /* unknown */) {
     writeStderr('explore: promotion gate logging failed: ' + (error instanceof Error ? error.message : String(error)));
   }

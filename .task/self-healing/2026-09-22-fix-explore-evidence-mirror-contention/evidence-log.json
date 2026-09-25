@@ -1,0 +1,200 @@
+{
+  "version": 1,
+  "worktree_id": "task/self-healing/2026-09-22-fix-explore-evidence-mirror-contention",
+  "events": [
+    {
+      "id": "1a34e3ca-8320-4d6d-9f79-f60b180d28a9",
+      "occurred_at": "2026-09-23T02:14:31.419Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/explore-runtime-routing.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/2026-09-22-fix-explore-evidence-mirror-contention",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/2026-09-22-fix-explore-evidence-mirror-contention"
+      }
+    },
+    {
+      "id": "b1430326-a542-4153-8b67-33aaa41e9346",
+      "occurred_at": "2026-09-23T02:14:37.788Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/state/evidence-log.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/2026-09-22-fix-explore-evidence-mirror-contention",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/2026-09-22-fix-explore-evidence-mirror-contention"
+      }
+    },
+    {
+      "id": "9ec066bc-2945-4747-85d5-6dc52e2612c6",
+      "occurred_at": "2026-09-23T02:15:33.849Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/state/explore-state.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/2026-09-22-fix-explore-evidence-mirror-contention",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/2026-09-22-fix-explore-evidence-mirror-contention"
+      }
+    },
+    {
+      "id": "bd35f195-6108-47a7-bf05-f500a7512874",
+      "occurred_at": "2026-09-23T02:15:39.733Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/index/store.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/2026-09-22-fix-explore-evidence-mirror-contention",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/2026-09-22-fix-explore-evidence-mirror-contention"
+      }
+    },
+    {
+      "id": "3b3dd75a-de92-42f0-ab6b-c491a77a93f6",
+      "occurred_at": "2026-09-23T02:18:22.341Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/index/store.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/2026-09-22-fix-explore-evidence-mirror-contention",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/2026-09-22-fix-explore-evidence-mirror-contention"
+      }
+    },
+    {
+      "id": "22d8909a-26cd-4752-ba42-73b3b8df3e69",
+      "occurred_at": "2026-09-23T02:21:32.531Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/definitely-missing.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/2026-09-22-fix-explore-evidence-mirror-contention",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/2026-09-22-fix-explore-evidence-mirror-contention"
+      }
+    },
+    {
+      "id": "512d65f9-600f-4e2f-bdf4-c951935a1961",
+      "occurred_at": "2026-09-23T02:22:13.316Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/self-healing/2026-09-22-fix-explore-evidence-mirror-contention/verify.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/2026-09-22-fix-explore-evidence-mirror-contention",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/2026-09-22-fix-explore-evidence-mirror-contention"
+      }
+    },
+    {
+      "id": "c4d9c56a-4e29-4e8d-b778-e088d6fd54ef",
+      "occurred_at": "2026-09-23T02:22:30.196Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/verify.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/2026-09-22-fix-explore-evidence-mirror-contention",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/2026-09-22-fix-explore-evidence-mirror-contention"
+      }
+    },
+    {
+      "id": "41c0d438-1c68-41ce-8e12-0d38fe2cceb1",
+      "occurred_at": "2026-09-23T02:23:26.263Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/definitely-missing.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/2026-09-22-fix-explore-evidence-mirror-contention",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/2026-09-22-fix-explore-evidence-mirror-contention"
+      }
+    },
+    {
+      "id": "787155a3-b5e7-42be-8be9-682fa3f75f80",
+      "occurred_at": "2026-09-23T02:24:23.832Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/explore-evidence-mirror.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/2026-09-22-fix-explore-evidence-mirror-contention",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/2026-09-22-fix-explore-evidence-mirror-contention"
+      }
+    },
+    {
+      "id": "1135e5c1-3f0a-49a5-b9cf-65d8d462f0b3",
+      "occurred_at": "2026-09-23T02:26:52.456Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/definitely-missing.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/2026-09-22-fix-explore-evidence-mirror-contention",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/2026-09-22-fix-explore-evidence-mirror-contention"
+      }
+    },
+    {
+      "id": "931a1766-b6ba-4885-ace4-7cbd8559fa52",
+      "occurred_at": "2026-09-23T02:27:47.297Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/daily-schedules.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/2026-09-22-fix-explore-evidence-mirror-contention",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/2026-09-22-fix-explore-evidence-mirror-contention"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-09-23T02:27:47.364Z"
+}
