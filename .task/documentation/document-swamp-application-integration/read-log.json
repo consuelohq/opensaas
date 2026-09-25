@@ -1,0 +1,9 @@
+{
+  "files": [
+    "packages/documentation/src/content/docs/connect/apps-and-services/swamp.mdx",
+    "packages/os/package.json",
+    "packages/os/scripts/lib/runtime-tool-registry.ts",
+    "packages/os/tests/runtime-tool-providers-swamp.test.ts"
+  ],
+  "updatedAt": "2026-09-23T01:46:56.437Z"
+}

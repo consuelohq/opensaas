@@ -82,6 +82,9 @@ export type LifecycleEngineDependencies = {
   runtime?: LifecycleRuntimeMaterializer;
   hooks?: LifecycleHooks;
   onboarding?: () => Promise<void>;
+  managedSites?: {
+    refresh(input: { home: string; releasePath: string }): Promise<void>;
+  };
   progress?: (event: LifecycleProgressEvent) => void;
   now?: () => Date;
   operationId?: () => string;
@@ -348,6 +351,26 @@ export function createLifecycleEngine(
     }
   };
 
+  const reconcileAcceptedReleaseSites = async (releasePath: string): Promise<void> => {
+    if (!dependencies.managedSites) return;
+    try {
+      await dependencies.managedSites.refresh({ home, releasePath });
+    } catch (_error: unknown) {
+      // Generated Sites can be repaired independently; never roll back an already
+      // health-accepted runtime because a local HTML refresh failed.
+    }
+  };
+
+  const reconcileAcceptedReleaseState = async (releasePath: string): Promise<void> => {
+    try {
+      reconcileAcceptedReleaseUserState(releasePath);
+      await reconcileAcceptedReleaseSites(releasePath);
+    } catch (_error: unknown) {
+      // Both reconcilers are repairable post-accept state. Keep activation durable
+      // even if a future reconciler implementation unexpectedly throws.
+    }
+  };
+
   const activateAndAccept = async (input: {
     emit: ReturnType<typeof emitter>;
     operationId: string;
@@ -430,7 +453,7 @@ export function createLifecycleEngine(
       // behind the optional afterActivate hook, because nothing supplies that hook and it would
       // silently never run. Failures here must not fail the release: the runtime is already live
       // and usable without this content.
-      reconcileAcceptedReleaseUserState(input.nextReleasePath);
+      await reconcileAcceptedReleaseState(input.nextReleasePath);
       clearLifecycleActivationJournal(home);
     } catch (error: unknown) {
       if (dependencies.hooks?.onActivationFailure) {
@@ -578,9 +601,7 @@ export function createLifecycleEngine(
         });
         const currentReleasePath = current.currentReleasePath;
         if (currentReleasePath) {
-          yield* Effect.sync(() =>
-            reconcileAcceptedReleaseUserState(currentReleasePath),
-          );
+          yield* Effect.promise(() => reconcileAcceptedReleaseState(currentReleasePath));
         }
         input.emit('complete', {
           changed: false,

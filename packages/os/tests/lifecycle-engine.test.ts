@@ -46,6 +46,7 @@ import {
   type SignedReleaseManifest,
 } from '../scripts/lib/lifecycle';
 import {
+  refreshManagedSitesFromAcceptedRelease,
   runLifecycleCli,
   trustedReleaseKeysFromEnvironment,
   waitForAdvisoryProcessExit,
@@ -279,6 +280,9 @@ function createEngine(input: {
   onboarding?: () => Promise<void>;
   runtime?: LifecycleRuntimeMaterializer;
   visibleUserRoot?: string;
+  managedSites?: {
+    refresh(input: { home: string; releasePath: string }): Promise<void>;
+  };
 } = {}): LifecycleEngine & { serviceOperations: string[]; onboardingCalls: number } {
   const events = input.events ?? [];
   const serviceOperations: string[] = [];
@@ -338,6 +342,7 @@ function createEngine(input: {
     },
     runtime: input.runtime,
     visibleUserRoot: input.visibleUserRoot,
+    managedSites: input.managedSites,
     onboarding: input.onboarding ?? (async () => {
       onboardingCalls += 1;
       writeInstalledIdentity();
@@ -401,6 +406,56 @@ describe('unified lifecycle engine', () => {
     expect(currentTarget()).toBe(runtimeReleaseTargetFor(bundle110));
     expect(readlinkSync(join(tempHome, 'runtime', 'previous')))
       .toBe(runtimeReleaseTargetFor(bundle100));
+  });
+
+  it('refreshes managed Sites from the accepted release without failing an otherwise healthy update', async () => {
+    await createEngine({ bundle: bundle100 }).install({ channel: 'dev' });
+    const refreshes: Array<{ home: string; releasePath: string }> = [];
+    const update = createEngine({
+      bundle: bundle110,
+      managedSites: {
+        async refresh(input) {
+          refreshes.push(input);
+          throw new Error('synthetic Sites refresh failure');
+        },
+      },
+    });
+
+    await expect(update.update({ channel: 'dev', yes: true })).resolves.toMatchObject({
+      changed: true,
+      version: '1.1.0',
+    });
+    expect(refreshes).toEqual([{
+      home: tempHome,
+      releasePath: runtimeReleasePathFor(bundle110),
+    }]);
+  });
+
+  it('loads the Sites materializer from the accepted immutable release path', async () => {
+    const releasePath = join(tempHome, 'accepted-release');
+    const moduleDir = join(releasePath, 'scripts', 'lib');
+    const markerPath = join(tempHome, 'sites-refresh-input.json');
+    mkdirSync(moduleDir, { recursive: true });
+    writeFileSync(
+      join(moduleDir, 'sites.ts'),
+      [
+        "import { writeFileSync } from 'node:fs';",
+        `const markerPath = ${JSON.stringify(markerPath)};`,
+        'export function materializeSites(options: unknown): void {',
+        '  writeFileSync(markerPath, JSON.stringify(options));',
+        '}',
+        '',
+      ].join('\n'),
+    );
+
+    await refreshManagedSitesFromAcceptedRelease({ home: tempHome, releasePath });
+
+    expect(JSON.parse(readFileSync(markerPath, 'utf8'))).toEqual({
+      home: tempHome,
+      dbPath: join(tempHome, 'node', 'db', 'traces.db'),
+      dryRun: false,
+      workspaceHost: null,
+    });
   });
 
   it('updates from a verified legacy POSIX colon-named release without changing bundle identity', async () => {
@@ -562,6 +617,30 @@ describe('unified lifecycle engine', () => {
     });
 
     expect(readFileSync(managedExample, 'utf8')).toBe(expected);
+  });
+
+  it('refreshes managed Sites even when update is already current', async () => {
+    await createEngine({ bundle: bundle100 }).install({ channel: 'dev' });
+    const refreshes: Array<{ home: string; releasePath: string }> = [];
+    const current = createEngine({
+      bundle: bundle100,
+      publicReadiness: true,
+      managedSites: {
+        async refresh(input) {
+          refreshes.push(input);
+        },
+      },
+    });
+
+    await expect(current.update({ channel: 'dev', yes: true })).resolves.toMatchObject({
+      changed: false,
+      updateAvailable: false,
+      version: '1.0.0',
+    });
+    expect(refreshes).toEqual([{
+      home: tempHome,
+      releasePath: runtimeReleasePathFor(bundle100),
+    }]);
   });
 
   it('keeps current-version check-only updates free of hosted reconciliation side effects', async () => {
