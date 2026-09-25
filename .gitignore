@@ -65,6 +65,7 @@ tsx-*/
 
 # Native module build artifacts
 *.dylib
+packages/os/native/macos/.build/
 
 # Nx native file cache
 nx-native-file-cache-*/
