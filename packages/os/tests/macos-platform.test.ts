@@ -39,9 +39,22 @@ describe('macOS menu-bar platform', () => {
       ),
       'utf8',
     );
+    const safety = await readFile(
+      resolve(
+        packageRoot,
+        'native/macos/Sources/ConsueloMacCore/Safety.swift',
+      ),
+      'utf8',
+    );
 
     expect(source).toContain('MenuBarExtra');
     expect(source).toContain('LifecycleClient');
+    expect(source).toContain('import ServiceManagement');
+    expect(source).toContain('SMAppService.mainApp');
+    expect(source).toContain('LoginItemRegistrationPolicy');
+    expect(source).toContain('try service.register()');
+    expect(source).toContain('Bundle.main.bundleURL.pathExtension == "app"');
+    expect(source).not.toContain('service.unregister');
     expect(source).toContain('model.showsUpdateBadge');
     expect(source).toContain('accessibilityLabel("Update available")');
     expect(source).toContain('pendingUpdate');
@@ -63,6 +76,8 @@ describe('macOS menu-bar platform', () => {
     expect(source).not.toContain('/bin/');
     expect(source).toContain('MenuBarInstanceLock.acquire');
     expect(source).toContain('isMenuContentEquivalent');
+    expect(safety).toContain('com.consuelohq.os.menubar');
+    expect(safety).not.toContain('com.consuelohq.os.menubar.alpha');
   });
 
   it('packages an unsigned development app with an opt-in user-local install path', async () => {
@@ -78,6 +93,13 @@ describe('macOS menu-bar platform', () => {
     expect(script).toContain('Contents/Library/LaunchServices');
     expect(script).toContain('ConsueloServiceHost');
     expect(script).toContain('Consuelo.app.tar.gz');
+    expect(script).toContain('CONSUELO_MAC_APP_VERSION');
+    expect(script).toContain('CONSUELO_MAC_APP_BUILD_VERSION');
+    expect(script).toContain('CONSUELO_MAC_APP_SERVICE_HOST');
+    expect(script).toContain('CONSUELO_MAC_APP_ADHOC_SIGN');
+    expect(script).toContain('<string>com.consuelohq.os.menubar</string>');
+    expect(script).toContain('<string>Consuelo OS</string>');
+    expect(script).not.toContain('com.consuelohq.os.menubar.alpha');
     expect(script).toContain('tar -czf');
     expect(script).toContain('--install');
     expect(script).toContain('--launch');
@@ -100,6 +122,9 @@ describe('macOS menu-bar platform', () => {
 
     expect(docs).toContain('does not supervise');
     expect(docs).toContain('Closing the app');
+    expect(docs).toContain('ServiceManagement');
+    expect(docs).toContain('com.consuelohq.os.menubar');
+    expect(docs).toContain('requires approval');
     expect(docs).toContain('Human checkpoint');
     expect(docs).toContain('macos-26');
     expect(docs).toContain('macos-alpha-package.sh --install --launch');
