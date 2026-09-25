@@ -11,14 +11,17 @@ function read(path: string): string {
 }
 
 type WorkflowStep = {
+  if?: string;
   name?: string;
   run?: string;
   uses?: string;
+  with?: Record<string, unknown>;
   'working-directory'?: string;
 };
 
 type WorkflowJob = {
   environment?: string;
+  if?: string;
   needs?: string | string[];
   permissions?: Record<string, string>;
   steps?: WorkflowStep[];
@@ -61,16 +64,46 @@ describe('Consuelo OS release-channel workflows', () => {
       'distribution-gate',
     );
     expect(parsed.jobs?.['macos-service-host']?.needs).toBe('distribution-gate');
+    expect(parsed.jobs?.['macos-service-host']?.if).toBe(
+      "vars.CONSUELO_MACOS_SERVICE_HOST_RELEASE_ENABLED == 'true'",
+    );
     expect(parsed.jobs?.plan?.needs).toEqual([
       'distribution-gate',
       'windows-service-host',
       'macos-service-host',
     ]);
+    expect(parsed.jobs?.plan?.if).toContain('always()');
+    expect(parsed.jobs?.plan?.if).toContain(
+      "needs.macos-service-host.result == 'skipped'",
+    );
     expect(parsed.jobs?.build?.needs).toEqual([
       'plan',
       'windows-service-host',
       'macos-service-host',
     ]);
+    expect(parsed.jobs?.build?.if).toContain('always()');
+    expect(parsed.jobs?.build?.if).toContain(
+      "needs.plan.outputs.changed == 'true'",
+    );
+    expect(parsed.jobs?.build?.if).toContain(
+      "needs.macos-service-host.result == 'skipped'",
+    );
+    for (const jobName of ['plan', 'build'] as const) {
+      const macosArtifactDownloads = (parsed.jobs?.[jobName]?.steps ?? []).filter(
+        (step) =>
+          step.uses === 'actions/download-artifact@v4' &&
+          String(step.with?.name ?? '').startsWith('macos-service-host-'),
+      );
+      expect(
+        macosArtifactDownloads,
+        `${jobName} optional macOS artifacts`,
+      ).toHaveLength(2);
+      for (const step of macosArtifactDownloads) {
+        expect(step.if).toBe(
+          "vars.CONSUELO_MACOS_SERVICE_HOST_RELEASE_ENABLED == 'true'",
+        );
+      }
+    }
     expect(parsed.jobs?.publish?.needs).toEqual([
       'distribution-gate',
       'plan',
