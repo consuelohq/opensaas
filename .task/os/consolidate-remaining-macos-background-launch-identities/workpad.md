@@ -105,5 +105,7 @@ no-test waiver: none.
 
 - 2026-09-25 20:52:11 `review.run`: passed — OK
 - 2026-09-25 20:52:27 `verify`: passed — OK
-
 - 2026-09-25 20:53:12 apply-patch: `.task/os/consolidate-remaining-macos-background-launch-identities/workpad.md`
+- 2026-09-25 20:56:05 apply-patch: `packages/os/tests/distribution/release-channel-workflows.test.ts`
+- 2026-09-25 20:57:37 `review.run`: passed — OK
+- 2026-09-25 20:58:07 `verify`: passed — OK
