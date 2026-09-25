@@ -44,4 +44,13 @@ describe('release script security boundary', () => {
     expect(release).toContain('evaluatePromotionCorrelation({');
     expect(release).toContain('const rows = listPromotionRuns();');
   });
+
+  it('verifies immutable release signature payloads before trusting their identity fields', () => {
+    const release = readFileSync(resolve(root, 'scripts/release.ts'), 'utf8');
+    expect(release).toContain('canonicalBundleSignatureJson');
+    expect(release).toContain('verifyBytes(');
+    expect(release).toContain('createPublicKey(');
+    expect(release).toContain('CONSUELO_OS_RELEASE_TRUSTED_PUBLIC_KEYS');
+    expect(release).toContain('immutable release signature verification failed');
+  });
 });

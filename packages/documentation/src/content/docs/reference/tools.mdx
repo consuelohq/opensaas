@@ -38,7 +38,7 @@ evidence:
       - packages/os/tests/release-tool-surface.test.ts
       - packages/os/tests/release-orchestrator.test.ts
       - packages/os/tests/release-script-security.test.ts
-    runtime: The operator release workflow was validated against the signed runtime publication/promotion contracts, main-targeting review-PR guard, and exact-version lifecycle update path on 2026-08-26.
+    runtime: The operator release workflow was validated against durable release-operation state, signed immutable runtime evidence, promotion correlation, the main-targeting review-PR guard, and exact-version lifecycle update path on 2026-09-22.
 ---
 
 A facade tool is a typed operation exposed through the workspace tool facade. The generated full manifest marks these entries with `kind: "facade-tool"`.
@@ -139,7 +139,9 @@ The call envelope also supports a top-level `workSession` for work-session node 
 
 ## Operator releases
 
-`release` is the canonical Consuelo OS operator release tool. Pass the stream review PR whose base is `main`, not a task PR whose base is a stream. The tool rejects a non-`main` PR before waiting on its checks; for the correct review PR it verifies readiness, merges it, waits for the runtime publication associated with that exact merge SHA, promotes the exact immutable bundle through the requested release channel, and by default updates the current operator node to the exact released version and verifies the installed bundle. Use `releaseOnly: true` when the release should stop after channel promotion.
+`release` is the canonical Consuelo OS operator release tool. Pass the stream review PR whose base is `main`, not a task PR whose base is a stream. A start call returns a deterministic operation ID immediately instead of keeping one tool call open for checks, merge, publication, promotion, and local update. Use `status`, `logs`, or `attach` with that ID from any later tool session; use `resume` if the detached worker stopped. Repeating the same start request reuses the same operation instead of dispatching duplicate release work.
+
+The worker rejects a non-`main` PR before release mutation. For the correct review PR it waits only on required pending checks, still fails closed on failed checks or requested changes, merges the PR, and follows the exact merged SHA. If the mutable `dev` pointer has already advanced, the worker reconstructs the historical release set from the immutable `consuelo-os-v<version>` GitHub tag and signed release assets, then promotes that exact bundle through the requested release channel. By default it updates the current operator node to the exact released version and verifies the installed bundle. Use `releaseOnly: true` when the release should stop after channel promotion.
 
 ```json
 {
@@ -147,6 +149,19 @@ The call envelope also supports a top-level `workSession` for work-session node 
   "input": {
     "pr": 2185,
     "channel": "canary"
+  }
+}
+```
+
+The start response contains an `operationId` such as `release-4b9d…`. Check it later with:
+
+```json
+{
+  "tool": "release",
+  "input": {
+    "action": "attach",
+    "operationId": "release-4b9d1234abcd5678ef901234",
+    "tailLines": 80
   }
 }
 ```

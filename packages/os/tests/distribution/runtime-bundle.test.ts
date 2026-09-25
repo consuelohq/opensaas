@@ -37,6 +37,10 @@ const requiredFixtureFiles: Record<string, string> = {
   'scripts/os.ts': 'export const osFixture = true;\n',
   'scripts/server/main.ts': 'export const serverFixture = true;\n',
   'scripts/server/supervisor.ts': 'export const supervisorFixture = true;\n',
+  'scripts/lib/macos-supervised-heartbeat.ts':
+    'export const macosSupervisedHeartbeatFixture = true;\n',
+  'scripts/lib/macos-supervised-sidecars.ts':
+    'export const macosSupervisedSidecarsFixture = true;\n',
   'scripts/native-lifecycle-operation.ts':
     'export const nativeLifecycleOperationFixture = true;\n',
   'scripts/retire-legacy-system-daemons.sh': '#!/bin/bash\nexit 0\n',
@@ -411,6 +415,19 @@ describe('runtime bundle contract', () => {
         'native/macos/.build/arm64-apple-macosx/release/ConsueloMenuBarApp',
       ),
     ).toBe('source-only');
+    expect(
+      classifyRuntimeBundlePath(
+        'native/macos/bin/arm64/ConsueloServiceHost',
+      ),
+    ).toBe('platform-adapter');
+    expect(
+      classifyRuntimeBundlePath(
+        'native/macos/bin/x64/ConsueloServiceHost',
+      ),
+    ).toBe('platform-adapter');
+    expect(classifyRuntimeBundlePath('native/macos/bin/arm64/debug-symbols')).toBe(
+      'source-only',
+    );
     await expect(
       buildRuntimeBundle(
         buildOptions(root, {
@@ -441,6 +458,20 @@ describe('runtime bundle contract', () => {
     expect(
       paths.some((filePath) => filePath.startsWith('native/macos/.build/')),
     ).toBe(false);
+  });
+
+  it('should preserve executable mode when macOS service hosts enter a runtime bundle', async () => {
+    const arm64Host = 'native/macos/bin/arm64/ConsueloServiceHost';
+    const x64Host = 'native/macos/bin/x64/ConsueloServiceHost';
+    const root = createFixture({
+      [arm64Host]: 'fixture-mach-o-arm64',
+      [x64Host]: 'fixture-mach-o-x64',
+    });
+
+    const result = await computeReleaseFingerprint({ sourceRoot: root });
+
+    expect(result.files.find((file) => file.path === arm64Host)?.mode).toBe(0o755);
+    expect(result.files.find((file) => file.path === x64Host)?.mode).toBe(0o755);
   });
 
   it('should preserve policy v1 when Windows builds the host', async () => {

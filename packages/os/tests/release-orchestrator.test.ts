@@ -316,6 +316,36 @@ describe('release orchestrator', () => {
     expect(events).toEqual(['inspect-pr']);
   });
 
+  it('does not wait on optional pending review bots once required checks are ready', async () => {
+    const events: string[] = [];
+    const pr = {
+      ...readyPr({
+        mergeStateStatus: 'UNSTABLE',
+        checks: [
+          { name: 'required-tests', bucket: 'pass' },
+          { name: 'CodeRabbit', bucket: 'pending' },
+        ],
+      }),
+      mergeable: 'MERGEABLE',
+      requiredChecks: [{ name: 'required-tests', bucket: 'pass' }],
+    } as ReleasePr;
+    const adapter = fakeAdapter(events, {
+      inspectPr: async () => {
+        events.push('inspect-pr');
+        return pr;
+      },
+      waitForPrChecks: async () => {
+        throw new Error('optional pending checks must not gate the release');
+      },
+    });
+
+    await expect(
+      orchestrateRelease({ pr: 2185, channel: 'dev', releaseOnly: true }, adapter),
+    ).resolves.toMatchObject({ mergeSha: 'sha_main', version: '1.2.3' });
+    expect(events).not.toContain('wait-pr-checks');
+    expect(events).toContain('merge-pr');
+  });
+
   it('keeps task PRs fail-closed and tells callers to use the main-targeting stream review PR', async () => {
     const events: string[] = [];
     const adapter = fakeAdapter(events, {

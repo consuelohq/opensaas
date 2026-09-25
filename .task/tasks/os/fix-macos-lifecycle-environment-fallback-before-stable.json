@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-macos-lifecycle-environment-fallback-before-stable",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2576,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2576",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-macos-lifecycle-environment-fallback-before-stable",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_c10f9eadda7b",
+  "tmuxSession": "opensaas-os-fix-macos-lifecycle-environment-fallback-before--c10f9ead",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-macos-lifecycle-environment-fallback-before-stable/.task/session.json",
+  "createdAt": "2026-09-24T00:29:28.691Z"
+}

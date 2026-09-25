@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -51,6 +51,35 @@ import { STANDARD_OS_MCP_SCOPES } from './tool-scope-authorization';
 import { planWorkspaceConnectorTransport } from './workspace-connector-transport';
 import { PLACEHOLDER_NODE_ID } from './unenrolled-placeholder-identity';
 import { resolveWorkerPoolConfiguration } from './worker-pool';
+
+function writeMacosSupervisedSidecarsConfigAtomically(
+  targetPath: string,
+  content: string,
+): void {
+  const temporaryPath = `${targetPath}.${process.pid}.${randomUUID()}.tmp`;
+  try {
+    const temporaryDescriptor = fs.openSync(temporaryPath, 'wx', 0o600);
+    try {
+      fs.writeFileSync(temporaryDescriptor, content, 'utf8');
+      fs.fsyncSync(temporaryDescriptor);
+    } finally {
+      fs.closeSync(temporaryDescriptor);
+    }
+    fs.renameSync(temporaryPath, targetPath);
+    try {
+      const directoryDescriptor = fs.openSync(path.dirname(targetPath), 'r');
+      try {
+        fs.fsyncSync(directoryDescriptor);
+      } finally {
+        fs.closeSync(directoryDescriptor);
+      }
+    } catch {
+      // Directory fsync is not available on every supported filesystem.
+    }
+  } finally {
+    fs.rmSync(temporaryPath, { force: true });
+  }
+}
 
 export type OsMode = 'local' | 'cloud';
 export type { AgentName, AgentConnectionStatus } from './local-agent-connectivity';
@@ -912,6 +941,20 @@ function materializeWorkspaceConnectorBootstrap(input: {
   workspaceBootstrap: WorkspaceBootstrap;
 }): ProvisionAction[] {
   const actions: ProvisionAction[] = [];
+  const macosSupervisedSidecarsPath = path.join(
+    input.nodeHome,
+    'security',
+    'generated',
+    'macos-supervised-sidecars.json',
+  );
+
+  if (
+    input.platform === 'darwin'
+    && input.workspaceBootstrap.connectorTransport !== 'cloudflare-tunnel'
+    && !input.dryRun
+  ) {
+    fs.rmSync(macosSupervisedSidecarsPath, { force: true });
+  }
 
   if (input.workspaceBootstrap.connectorTransport === 'cloudflare-tunnel') {
     const plan = planWorkspaceConnectorTransport({
@@ -965,7 +1008,7 @@ function materializeWorkspaceConnectorBootstrap(input: {
         fs.mkdirSync(unit.systemdUserDir, { recursive: true, mode: 0o700 });
         fs.writeFileSync(unit.unitPath, unit.service, { mode: 0o600 });
       }
-    } else if (plan.launchd) {
+    } else if (plan.launchd && input.platform === 'darwin') {
       const legacyPlistPath = path.join(
         input.nodeHome,
         'security',
@@ -980,15 +1023,56 @@ function materializeWorkspaceConnectorBootstrap(input: {
       );
       actions.push({
         type: 'create_file',
+        path: macosSupervisedSidecarsPath,
+        status: input.dryRun ? 'planned' : 'created',
+        message: 'macOS supervised sidecar connector configured',
+      });
+      if (!input.dryRun) {
+        fs.mkdirSync(path.dirname(macosSupervisedSidecarsPath), {
+          recursive: true,
+          mode: 0o700,
+        });
+        writeMacosSupervisedSidecarsConfigAtomically(
+          macosSupervisedSidecarsPath,
+          `${JSON.stringify({
+            schemaVersion: 1,
+            connector: {
+              id: input.workspaceBootstrap.connectorId,
+              programArguments: plan.launchd.programArguments,
+            },
+          }, null, 2)}\n`,
+        );
+      }
+      actions.push({
+        type: 'create_file',
         path: plistPath,
         status: input.dryRun ? 'planned' : 'created',
-        message: 'cloudflared launchd service configured',
+        message: 'cloudflared rollback launchd definition configured',
       });
       if (!input.dryRun) {
         fs.mkdirSync(path.dirname(plistPath), { recursive: true });
         if (fs.existsSync(legacyPlistPath) && legacyPlistPath !== plistPath) {
           fs.rmSync(legacyPlistPath, { force: true });
         }
+        fs.writeFileSync(plistPath, renderCloudflaredLaunchdPlist(plan.launchd), {
+          mode: 0o600,
+        });
+      }
+    } else if (plan.launchd) {
+      const plistPath = path.join(
+        input.nodeHome,
+        'security',
+        'generated',
+        `${plan.launchd.label}.plist`,
+      );
+      actions.push({
+        type: 'create_file',
+        path: plistPath,
+        status: input.dryRun ? 'planned' : 'created',
+        message: 'cloudflared launchd service configured',
+      });
+      if (!input.dryRun) {
+        fs.mkdirSync(path.dirname(plistPath), { recursive: true });
         fs.writeFileSync(plistPath, renderCloudflaredLaunchdPlist(plan.launchd), {
           mode: 0o600,
         });
@@ -1031,18 +1115,6 @@ function materializeWorkspaceConnectorBootstrap(input: {
       'generated',
       'workspace-node-heartbeat.json',
     );
-    const safeNodeId = input.workspaceBootstrap.nodeId.replace(
-      /[^a-zA-Z0-9.-]+/g,
-      '-',
-    );
-    const heartbeatLabel = `com.consuelo.os.node-heartbeat.${safeNodeId}`;
-    const heartbeatScriptPath = path.join(
-      input.runtimeHome,
-      'runtime',
-      'current',
-      'scripts',
-      'workspace-node-heartbeat.ts',
-    );
     const connectorHealthUrl = new URL(
       '/health',
       `https://${createConnectorOriginHostname({
@@ -1052,11 +1124,6 @@ function materializeWorkspaceConnectorBootstrap(input: {
           'consuelohq.com',
       })}`,
     ).toString();
-    const heartbeatLogPath = path.join(
-      input.nodeHome,
-      'logs',
-      'workspace-node-heartbeat.log',
-    );
     // Mint the node's credential-encryption key before the heartbeat config is written, so the
     // first heartbeat already carries the public half and a setup surface can seal to this node
     // without waiting for a second cycle. Idempotent: an existing key is reused, never rotated,
@@ -1110,6 +1177,13 @@ function materializeWorkspaceConnectorBootstrap(input: {
       message: 'workspace node heartbeat config configured',
     });
     if (input.platform === 'linux') {
+      const heartbeatScriptPath = path.join(
+        input.runtimeHome,
+        'runtime',
+        'current',
+        'scripts',
+        'workspace-node-heartbeat.ts',
+      );
       const units = renderWorkspaceNodeHeartbeatSystemdUnits({
         runtimeHome: input.runtimeHome,
         userHome: input.userHome,
@@ -1136,40 +1210,6 @@ function materializeWorkspaceConnectorBootstrap(input: {
           message: 'workspace node heartbeat systemd timer configured',
         },
       );
-    } else if (input.platform === 'darwin') {
-      const heartbeatPlistPath = path.join(
-        input.nodeHome,
-        'security',
-        'generated',
-        `${heartbeatLabel}.plist`,
-      );
-      if (!input.dryRun) {
-        fs.mkdirSync(path.dirname(heartbeatPlistPath), { recursive: true });
-        fs.writeFileSync(
-          heartbeatPlistPath,
-          renderCloudflaredLaunchdPlist({
-            label: heartbeatLabel,
-            programArguments: [
-              process.execPath,
-              heartbeatScriptPath,
-              '--config',
-              heartbeatConfigPath,
-            ],
-            keepAlive: false,
-            runAtLoad: true,
-            startIntervalSeconds: 30,
-            standardOutPath: heartbeatLogPath,
-            standardErrorPath: heartbeatLogPath,
-          }),
-          { mode: 0o600 },
-        );
-      }
-      actions.push({
-        type: 'create_file',
-        path: heartbeatPlistPath,
-        status: input.dryRun ? 'planned' : 'created',
-        message: 'workspace node heartbeat launchd service configured',
-      });
     }
   }
 

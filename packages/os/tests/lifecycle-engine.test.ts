@@ -61,6 +61,8 @@ const requiredRuntimePaths = [
   'scripts/retire-legacy-system-daemons.sh',
   'scripts/server/main.ts',
   'scripts/server/supervisor.ts',
+  'scripts/lib/macos-supervised-heartbeat.ts',
+  'scripts/lib/macos-supervised-sidecars.ts',
   'scripts/server/routes/mcp.ts',
   'scripts/lib/mcp-protocol.ts',
   'scripts/lib/mcp-gateway.ts',

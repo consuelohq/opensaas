@@ -53,6 +53,48 @@ afterEach(() => {
 });
 
 describe('macOS runtime service reliability', () => {
+  it('should launch the primary service through the first-party native host when the active runtime provides it', () => {
+    const fixtureRoot = temporaryDirectory('consuelo-daemon-native-host-');
+    const scriptsDirectory = join(fixtureRoot, 'scripts');
+    const home = join(fixtureRoot, 'home');
+    const consueloHome = join(home, '.consuelo');
+    const activeRuntime = join(consueloHome, 'runtime', 'current');
+    const architecture = process.arch === 'arm64' ? 'arm64' : 'x64';
+    const serviceHost = join(
+      activeRuntime,
+      'native',
+      'macos',
+      'bin',
+      architecture,
+      'ConsueloServiceHost',
+    );
+    mkdirSync(scriptsDirectory, { recursive: true });
+    mkdirSync(join(activeRuntime, 'scripts'), { recursive: true });
+    mkdirSync(join(activeRuntime, 'native', 'macos', 'bin', architecture), {
+      recursive: true,
+    });
+    writeExecutable(serviceHost, '#!/bin/sh\nexit 0\n');
+    copyFileSync(resolve(osRoot, 'scripts/generate-system-daemons.sh'), join(scriptsDirectory, 'generate-system-daemons.sh'));
+
+    const result = run('bash', [join(scriptsDirectory, 'generate-system-daemons.sh')], {
+      ...process.env,
+      HOME: home,
+      USER: process.env.USER ?? 'nobody',
+      CONSUELO_HOME: consueloHome,
+      PORTLESS_ENABLED: '0',
+    });
+
+    expect(result.status, result.stderr).toBe(0);
+    const workspace = readFileSync(
+      join(consueloHome, 'node', 'security', 'generated', 'com.consuelo.system.plist'),
+      'utf8',
+    );
+    expect(workspace).toContain(`<string>${serviceHost}</string>`);
+    expect(workspace).toContain('<string>--runtime-root</string>');
+    expect(workspace).toContain(`<string>${activeRuntime}</string>`);
+    expect(workspace).not.toContain('<string>/bin/bash</string>');
+  });
+
   it('should point runtime-owned LaunchAgents at the mutable active runtime instead of an immutable release path', () => {
     const fixtureRoot = temporaryDirectory('consuelo-daemon-generator-current-');
     const scriptsDirectory = join(fixtureRoot, 'scripts');
@@ -89,6 +131,9 @@ describe('macOS runtime service reliability', () => {
     expect(installer).toContain('install_launch_agent_definitions');
     expect(installer).toContain('if [ "$definitions_only" -eq 1 ]; then');
     expect(installer).toContain('LaunchAgent definitions refreshed without restarting services');
+    expect(installer).toContain('supervised_sidecars=1');
+    expect(installer).toContain('retire_legacy_supervised_sidecar_agents');
+    expect(installer).not.toContain('bootstrap_agent "$caddy_label" "$caddy_agent_plist"\nif [ "$portless_enabled"');
   });
 
   it('should wire opt-in availability and OS-owned watchdog state when installing and uninstalling daemons', () => {

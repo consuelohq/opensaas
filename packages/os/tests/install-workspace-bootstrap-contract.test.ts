@@ -206,15 +206,25 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
     }
   });
 
-  it('should plan a cloudflared launchd service and gateway auth smoke command when connector bootstrap is present', async () => {
+  it('should keep macOS heartbeat and connector behind the OS supervisor when preserving rollback definitions', async () => {
     const { provisionLocalOs } = await loadInstallStateContract();
     const home = fs.mkdtempSync(
       path.join(os.tmpdir(), 'consuelo-os-workspace-bootstrap-launchd-&-'),
     );
+    const heartbeatPlistPath = join(
+      home,
+      'node',
+      'security',
+      'generated',
+      'com.consuelo.os.node-heartbeat.node-member.plist',
+    );
+    fs.mkdirSync(path.dirname(heartbeatPlistPath), { recursive: true });
+    fs.writeFileSync(heartbeatPlistPath, '<plist>legacy heartbeat</plist>\n');
 
     const result = provisionLocalOs({
       home,
       mode: 'local',
+      platform: 'darwin',
       workspaceBootstrap: {
         workspaceId: 'workspace_123',
         workspaceSlug: 'kokayi',
@@ -238,6 +248,16 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
       'com.consuelo.os.cloudflared.connector-123.plist',
     );
     const plist = fs.readFileSync(plistPath, 'utf8');
+    const supervisedSidecarsPath = join(
+      home,
+      'node',
+      'security',
+      'generated',
+      'macos-supervised-sidecars.json',
+    );
+    const supervisedSidecars = readJson<Record<string, unknown>>(
+      supervisedSidecarsPath,
+    );
     const heartbeatConfigPath = join(
       home,
       'node',
@@ -245,19 +265,27 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
       'generated',
       'workspace-node-heartbeat.json',
     );
-    const heartbeatPlistPath = join(
-      home,
-      'node',
-      'security',
-      'generated',
-      'com.consuelo.os.node-heartbeat.node-member.plist',
-    );
     const heartbeatConfig =
       readJson<Record<string, unknown>>(heartbeatConfigPath);
-    const heartbeatPlist = fs.readFileSync(heartbeatPlistPath, 'utf8');
 
     expect(plist).toContain('consuelo-os-workspace-bootstrap-launchd-&amp;-');
     expect(plist).not.toContain('consuelo-os-workspace-bootstrap-launchd-&-');
+    expect(supervisedSidecars).toMatchObject({
+      schemaVersion: 1,
+      connector: {
+        id: 'connector_123',
+        programArguments: expect.arrayContaining([
+          'tunnel',
+          'run',
+          '--token-file',
+          '--url',
+          'http://127.0.0.1:46320',
+        ]),
+      },
+    });
+    expect(JSON.stringify(supervisedSidecars)).not.toContain(
+      'cloudflared_tunnel_token_fixture',
+    );
     expect(heartbeatConfig).toMatchObject({
       authorityOrigin: 'https://os.consuelohq.com',
       osHome: home,
@@ -272,37 +300,17 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
     expect(heartbeatConfig).toHaveProperty('publicKeyJwk');
     expect(heartbeatConfig).toHaveProperty('signingKeyJwk');
     expect(fs.statSync(heartbeatConfigPath).mode & 0o777).toBe(0o600);
-    expect(heartbeatPlist).toContain('<key>StartInterval</key>');
-    expect(heartbeatPlist).toContain('<integer>30</integer>');
-    expect(heartbeatPlist).toContain(
-      join(
-        home,
-        'runtime',
-        'current',
-        'scripts',
-        'workspace-node-heartbeat.ts',
-      ).replaceAll('&', '&amp;'),
+    expect(fs.readFileSync(heartbeatPlistPath, 'utf8')).toBe(
+      '<plist>legacy heartbeat</plist>\n',
     );
-    expect(heartbeatPlist).not.toContain(
-      join(home, 'scripts', 'workspace-node-heartbeat.ts').replaceAll(
-        '&',
-        '&amp;',
-      ),
-    );
-    expect(heartbeatPlist).toContain(
-      heartbeatConfigPath.replaceAll('&', '&amp;'),
-    );
-    expect(heartbeatPlist).not.toContain('private-fixture');
     expect(JSON.stringify(heartbeatConfig)).toContain(home);
     expect(JSON.stringify(heartbeatConfig)).not.toContain('configPath');
     expect(result.actions).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           type: 'create_file',
-          path: expect.stringContaining(
-            'com.consuelo.os.cloudflared.connector-123.plist',
-          ),
-          message: expect.stringMatching(/cloudflared/i),
+          path: supervisedSidecarsPath,
+          message: expect.stringMatching(/supervised sidecar/i),
         }),
         expect.objectContaining({
           type: 'create_file',
@@ -314,11 +322,11 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
           path: heartbeatConfigPath,
           message: expect.stringMatching(/heartbeat config/i),
         }),
-        expect.objectContaining({
-          type: 'create_file',
-          path: heartbeatPlistPath,
-          message: expect.stringMatching(/heartbeat launchd/i),
-        }),
+      ]),
+    );
+    expect(result.actions).not.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ path: heartbeatPlistPath }),
       ]),
     );
     expect(

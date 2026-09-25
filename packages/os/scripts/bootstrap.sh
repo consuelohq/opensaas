@@ -99,6 +99,8 @@ PENDING_CHANNEL_STATE_PATH=""
 RUNTIME_STAGE_DIR=""
 ONBOARDING_JSON=""
 DEPENDENCY_STATUS="pending"
+PATH_HINT=""
+PATH_IMMEDIATE=0
 CONTACT_URL="https://consuelohq.com/contact/"
 OS_MODE=""
 
@@ -426,12 +428,12 @@ run_quiet_with_loading_dots() {
   # BUN_BIN, RUNTIME_DIR, and INSTALL_ID that onboarding consumes afterward.
   # Running it in the background for an animated spinner would fork those
   # assignments into a subshell and silently lose them.
-  log "${loading_message}..."
+  printf '%s...' "$loading_message"
   "$@" >"$output_file" 2>&1 || status=$?
   if [ "$status" -eq 0 ]; then
-    log "${loading_message}... done"
+    printf '\r%s... done\n' "$loading_message"
   else
-    log "${loading_message}... failed"
+    printf '\r%s... failed\n' "$loading_message"
   fi
 
   if [ "$status" -ne 0 ]; then
@@ -1596,14 +1598,17 @@ finalize_recovery_cli() {
 
 recovery_cli_hint() {
   [ -x "$OS_HOME/bin/consuelo" ] || return 0
+  local path_guidance="$PATH_HINT"
+  [ -n "$path_guidance" ] || path_guidance="Use the absolute recovery CLI path shown above."
   printf '
 Recovery CLI is ready at %s.
-Open a new terminal, then run:
-  consuelo status
-  consuelo uninstall --dry-run --json
+Use it in this shell with:
+  %s status
+  %s uninstall --dry-run --json
+%s
 To retry setup:
   %s
-' "$OS_HOME/bin/consuelo" "$HOSTED_INSTALL_COMMAND"
+' "$OS_HOME/bin/consuelo" "$OS_HOME/bin/consuelo" "$OS_HOME/bin/consuelo" "$path_guidance" "$HOSTED_INSTALL_COMMAND"
 }
 
 run_onboarding() { # run_onboarding_json
@@ -1737,15 +1742,15 @@ install_daemons_quiet() {
 maybe_install_daemons() {
   if [ "$SKIP_DAEMONS" -eq 1 ]; then
     DAEMON_STATUS="skipped"
-    log "Skipping Consuelo OS user LaunchAgent setup."
+    log "Skipping Consuelo OS background-service setup."
     return 0
   fi
 
   if [ "$DRY_RUN" -eq 1 ]; then
     if [ -n "$PORTLESS_BIN" ]; then
-      log "dry-run: would install user LaunchAgents for com.consuelo.system, com.consuelo.portless.system, and com.consuelo.watchdog."
+      log "dry-run: would install the Consuelo OS background service and the optional Portless compatibility LaunchAgent."
     else
-      log "dry-run: would install user LaunchAgents for com.consuelo.system and com.consuelo.watchdog; portless is optional and not configured."
+      log "dry-run: would install the Consuelo OS background service; Portless compatibility is optional and not configured."
     fi
     run_daemon_dry_run
     return 0
@@ -1770,16 +1775,177 @@ maybe_install_daemons() {
   DAEMON_STATUS="installed"
 }
 
-# The installer writes $OS_HOME/bin/consuelo but has never put that directory on PATH, so a fresh
-# install left the documented `consuelo` command unavailable. Appended idempotently to the shell rc,
-# and only there: the running installer cannot change the parent shell.
+# A curl-pipe-bash child cannot mutate its parent shell's PATH. Prefer a safe
+# link in an already-visible writable directory; otherwise configure future
+# shells and keep the canonical absolute CLI path available immediately.
+has_unsafe_shared_write() {
+  local candidate="$1"
+  /usr/bin/find "$candidate" -prune \( -perm -020 -o -perm -002 \) -print 2>/dev/null | /usr/bin/grep -q .
+}
+
+resolve_cli_symlink_target() {
+  local link_path="$1"
+  local target=""
+  local target_dir=""
+  local target_name=""
+
+  target="$(readlink "$link_path" 2>/dev/null || true)"
+  [ -n "$target" ] || return 1
+  case "$target" in
+    /*)
+      target_dir="$(dirname "$target")"
+      target_name="$(basename "$target")"
+      (
+        cd "$target_dir" 2>/dev/null || exit 1
+        printf '%s/%s\n' "$(pwd -P)" "$target_name"
+      )
+      ;;
+    *)
+      target_dir="$(dirname "$target")"
+      target_name="$(basename "$target")"
+      (
+        cd "$(dirname "$link_path")" 2>/dev/null || exit 1
+        cd "$target_dir" 2>/dev/null || exit 1
+        printf '%s/%s\n' "$(pwd -P)" "$target_name"
+      )
+      ;;
+  esac
+}
+
+path_owner_uid() {
+  local candidate="$1"
+  if /usr/bin/stat -f '%u' "$candidate" >/dev/null 2>&1; then
+    /usr/bin/stat -f '%u' "$candidate"
+  else
+    /usr/bin/stat -c '%u' "$candidate" 2>/dev/null
+  fi
+}
+
+trusted_sticky_owner() {
+  local candidate="$1"
+  local owner_uid=""
+  local current_uid=""
+
+  owner_uid="$(path_owner_uid "$candidate")" || return 1
+  current_uid="$(id -u 2>/dev/null)" || return 1
+  [ "$owner_uid" = "$current_uid" ] || [ "$owner_uid" = "0" ]
+}
+
+is_safe_shared_path_parent() {
+  local candidate="$1"
+  if has_unsafe_shared_write "$candidate"; then
+    /usr/bin/find "$candidate" -prune -perm -1000 -print 2>/dev/null | /usr/bin/grep -q . || return 1
+    trusted_sticky_owner "$candidate" || return 1
+  fi
+  return 0
+}
+
+is_safe_immediate_cli_link_dir() {
+  local candidate="$1"
+  local cursor=""
+  local resolved_cursor=""
+  local physical_cursor=""
+
+  case "$candidate" in
+    /*) ;;
+    *) return 1 ;;
+  esac
+  [ -d "$candidate" ] || return 1
+  [ ! -L "$candidate" ] || return 1
+  [ -w "$candidate" ] || return 1
+  [ -O "$candidate" ] || return 1
+
+  has_unsafe_shared_write "$candidate" && return 1
+  cursor="$(dirname "$candidate")"
+  while [ -n "$cursor" ] && [ "$cursor" != "/" ]; do
+    [ -d "$cursor" ] || return 1
+    resolved_cursor="$(cd "$cursor" 2>/dev/null && pwd -P)" || return 1
+    is_safe_shared_path_parent "$resolved_cursor" || return 1
+    cursor="$(dirname "$cursor")"
+  done
+
+  resolved_cursor="$(cd "$candidate" 2>/dev/null && pwd -P)" || return 1
+  physical_cursor="$(dirname "$resolved_cursor")"
+  while [ -n "$physical_cursor" ] && [ "$physical_cursor" != "/" ]; do
+    [ -d "$physical_cursor" ] || return 1
+    is_safe_shared_path_parent "$physical_cursor" || return 1
+    physical_cursor="$(dirname "$physical_cursor")"
+  done
+  return 0
+}
+
+find_immediate_cli_link_dir() {
+  local bin_dir="$OS_HOME/bin"
+  local existing=""
+  local expected_cli=""
+  local path_entry=""
+  local path_entries=()
+
+  expected_cli="$(cd "$bin_dir" 2>/dev/null && printf '%s/consuelo\n' "$(pwd -P)")" || expected_cli="$bin_dir/consuelo"
+  existing="$(command -v consuelo 2>/dev/null || true)"
+  if [ -n "$existing" ]; then
+    if [ "$existing" = "$bin_dir/consuelo" ]; then
+      printf '%s\n' "$bin_dir"
+      return 0
+    fi
+    if [ -L "$existing" ] && [ "$(resolve_cli_symlink_target "$existing" 2>/dev/null || true)" = "$expected_cli" ]; then
+      dirname "$existing"
+      return 0
+    fi
+    return 2
+  fi
+
+  IFS=':' read -r -a path_entries <<< "${PATH:-}"
+  for path_entry in "${path_entries[@]}"; do
+    [ -n "$path_entry" ] || continue
+    is_safe_immediate_cli_link_dir "$path_entry" || continue
+    [ ! -e "$path_entry/consuelo" ] && [ ! -L "$path_entry/consuelo" ] || continue
+    printf '%s\n' "$path_entry"
+    return 0
+  done
+  return 1
+}
+
 ensure_command_on_path() {
   local bin_dir="$OS_HOME/bin"
   local rc_file=""
+  local existing=""
+  local expected_cli=""
+  local immediate_dir=""
+  local immediate_status=0
+
+  PATH_IMMEDIATE=0
 
   if [ "$DRY_RUN" -eq 1 ]; then
-    PATH_HINT="dry-run: would add $bin_dir to the supported shell profile"
+    PATH_HINT="dry-run: would expose $bin_dir through the current PATH when safe, otherwise update the supported shell profile"
     return 0
+  fi
+
+  expected_cli="$(cd "$bin_dir" 2>/dev/null && printf '%s/consuelo\n' "$(pwd -P)")" || expected_cli="$bin_dir/consuelo"
+  existing="$(command -v consuelo 2>/dev/null || true)"
+  if [ -n "$existing" ] && [ "$existing" != "$bin_dir/consuelo" ]; then
+    if [ ! -L "$existing" ] || [ "$(resolve_cli_symlink_target "$existing" 2>/dev/null || true)" != "$expected_cli" ]; then
+      log ""
+      log "Warning: another 'consuelo' is already on PATH at $existing"
+      log "Consuelo OS will not overwrite it. Use $bin_dir/consuelo until you resolve the command collision."
+      PATH_HINT="Another 'consuelo' already owns PATH; Consuelo OS left it unchanged."
+      return 0
+    fi
+  fi
+
+  if immediate_dir="$(find_immediate_cli_link_dir)"; then
+    if [ "$immediate_dir" != "$bin_dir" ] && [ ! -e "$immediate_dir/consuelo" ] && [ ! -L "$immediate_dir/consuelo" ]; then
+      ln -s "$bin_dir/consuelo" "$immediate_dir/consuelo"
+    fi
+    PATH_IMMEDIATE=1
+    PATH_HINT="consuelo is ready in this shell via $immediate_dir"
+    return 0
+  else
+    immediate_status=$?
+    if [ "$immediate_status" -eq 2 ]; then
+      PATH_HINT="Another 'consuelo' already owns PATH; use $bin_dir/consuelo directly."
+      return 0
+    fi
   fi
 
   case "$(basename "${SHELL:-}")" in
@@ -1789,16 +1955,6 @@ ensure_command_on_path() {
       ;;
     *) rc_file="" ;;
   esac
-
-  # An unrelated binary of the same name silently shadows ours, which reads as OS being broken
-  # rather than as a name collision.
-  local existing
-  existing="$(command -v consuelo 2>/dev/null || true)"
-  if [ -n "$existing" ] && [ "$existing" != "$bin_dir/consuelo" ]; then
-    log ""
-    log "Warning: another 'consuelo' is already on PATH at $existing"
-    log "It will shadow Consuelo OS. Remove it, or put $bin_dir earlier on PATH."
-  fi
 
   if [ -z "$rc_file" ]; then
     PATH_HINT="Add this to your shell profile:  export PATH=\"$bin_dir:\$PATH\""
@@ -1817,7 +1973,7 @@ ensure_command_on_path() {
     PATH_HINT="Add this to your shell profile:  export PATH=\"$bin_dir:\$PATH\""
     return 0
   }
-  PATH_HINT="Added $bin_dir to PATH in $rc_file — open a new terminal to use it"
+  PATH_HINT="Added $bin_dir to PATH in $rc_file — new shells can use the bare consuelo command"
 }
 
 print_success_summary() {
@@ -1825,6 +1981,10 @@ print_success_summary() {
 
   log ""
   log "Consuelo OS installed"
+  if [ "$PATH_IMMEDIATE" -ne 1 ]; then
+    [ -z "$PATH_HINT" ] || log "$PATH_HINT"
+    log "Use now: $OS_HOME/bin/consuelo status"
+  fi
 }
 
 setup_local_runtime() {
