@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 
 const packageFile = (path: string) => new URL(`../${path}`, import.meta.url);
 const repoFile = (path: string) => new URL(`../../../${path}`, import.meta.url);
@@ -69,6 +69,7 @@ describe('Connect documentation contract', () => {
       "label: 'Slack'",
       "label: 'Snowflake'",
       "label: 'Stripe'",
+      "label: 'Swamp'",
       "label: 'Supabase'",
       "label: 'Twilio'",
       "label: 'Vercel'",
@@ -97,6 +98,18 @@ describe('Connect documentation contract', () => {
       expect(navigation).not.toContain(`label: '${removedGroup}'`);
     }
     expect(navigation).not.toContain("label: 'Overview', slug: 'connect/apps-and-services'");
+  });
+
+  test('keeps every application page discoverable from the Applications sidebar', () => {
+    const navigation = read('src/lib/docs-navigation.ts');
+    const applicationDirectory = packageFile('src/content/docs/connect/apps-and-services/');
+    const applicationSlugs = readdirSync(applicationDirectory)
+      .filter((file) => file.endsWith('.mdx') && file !== 'index.mdx')
+      .map((file) => `connect/apps-and-services/${file.replace(/\.mdx$/, '')}`);
+
+    for (const slug of applicationSlugs) {
+      expect(navigation).toContain(`slug: '${slug}'`);
+    }
   });
 
   test('marks every Connect page as preview and records current evidence', () => {
