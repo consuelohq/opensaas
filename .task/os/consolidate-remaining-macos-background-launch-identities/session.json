@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_0096c1503f29",
+  "tmuxSession": "opensaas-os-consolidate-remaining-macos-background-launch-id-0096c150",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/consolidate-remaining-macos-background-launch-identities",
+  "branch": "task/os/consolidate-remaining-macos-background-launch-identities",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-consolidate-remaining-macos-background-launch-identities",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-consolidate-remaining-macos-background-launch-identities",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2589,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2589",
+  "createdAt": "2026-09-25T20:36:17.708Z",
+  "tmuxCreated": false,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-consolidate-remaining-macos-background-launch-identities/.task/os/consolidate-remaining-macos-background-launch-identities/session.json"
+}

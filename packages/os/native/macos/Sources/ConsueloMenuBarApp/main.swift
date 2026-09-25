@@ -1,6 +1,7 @@
 import AppKit
 import Combine
 import ConsueloMacCore
+import ServiceManagement
 import SwiftUI
 
 @main
@@ -15,6 +16,7 @@ struct ConsueloMenuBarApplication: App {
             }
             return
         }
+        ConsueloLoginItemPersistence.ensureRegistered()
     }
 
     var body: some Scene {
@@ -31,6 +33,43 @@ struct ConsueloMenuBarApplication: App {
             }
         }
         .menuBarExtraStyle(.menu)
+    }
+}
+
+private enum ConsueloLoginItemPersistence {
+    static func ensureRegistered() {
+        let isApplicationBundle = Bundle.main.bundleURL.pathExtension == "app"
+        guard isApplicationBundle else { return }
+
+        let service = SMAppService.mainApp
+        let state: LoginItemRegistrationState
+        switch service.status {
+        case .enabled:
+            state = .enabled
+        case .notRegistered:
+            state = .notRegistered
+        case .requiresApproval:
+            state = .requiresApproval
+        case .notFound:
+            state = .unavailable
+        @unknown default:
+            state = .unavailable
+        }
+
+        guard LoginItemRegistrationPolicy.decision(
+            for: state,
+            isApplicationBundle: isApplicationBundle
+        ) == .register else {
+            return
+        }
+
+        do {
+            try service.register()
+        } catch {
+            NSLog(
+                "Consuelo OS could not register launch at login; macOS may require approval in Login Items settings."
+            )
+        }
     }
 }
 

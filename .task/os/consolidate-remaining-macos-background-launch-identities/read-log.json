@@ -1,0 +1,11 @@
+{
+  "files": [
+    ".github/workflows/consuelo-os-runtime-publish.yaml",
+    ".gitignore",
+    ".task/os/consolidate-remaining-macos-background-launch-identities/workpad.md",
+    "packages/os/docs/macos-platform.md",
+    "packages/os/scripts/testing/macos-alpha-package.sh",
+    "packages/os/tests/distribution/release-channel-workflows.test.ts"
+  ],
+  "updatedAt": "2026-09-25T20:52:33.255Z"
+}

@@ -265,6 +265,124 @@ jobs:
         if: steps.plan.outputs.changed != 'true'
         run: echo "Runtime closure is unchanged. No version, build, tag, release, deployment, or channel mutation will occur."
 
+  macos-menu-app:
+    name: Package signed Consuelo.app (${{ matrix.architecture }})
+    needs:
+      - plan
+      - macos-service-host
+    environment: consuelo / production
+    if: >-
+      always() &&
+      needs.plan.result == 'success' &&
+      needs.plan.outputs.changed == 'true' &&
+      needs.macos-service-host.result == 'success' &&
+      vars.CONSUELO_MACOS_SERVICE_HOST_RELEASE_ENABLED == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-14
+            architecture: arm64
+          - runner: macos-15-intel
+            architecture: x64
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: macos-service-host-${{ matrix.architecture }}
+          path: packages/os/native/macos/bin/${{ matrix.architecture }}
+      - name: Build, sign, notarize, and staple Consuelo.app
+        shell: bash
+        env:
+          CONSUELO_MACOS_DEVELOPER_ID_P12_BASE64: ${{ secrets.CONSUELO_MACOS_DEVELOPER_ID_P12_BASE64 }}
+          CONSUELO_MACOS_DEVELOPER_ID_P12_PASSWORD: ${{ secrets.CONSUELO_MACOS_DEVELOPER_ID_P12_PASSWORD }}
+          CONSUELO_MACOS_NOTARY_KEY_P8_BASE64: ${{ secrets.CONSUELO_MACOS_NOTARY_KEY_P8_BASE64 }}
+          CONSUELO_MACOS_NOTARY_KEY_ID: ${{ secrets.CONSUELO_MACOS_NOTARY_KEY_ID }}
+          CONSUELO_MACOS_NOTARY_ISSUER_ID: ${{ secrets.CONSUELO_MACOS_NOTARY_ISSUER_ID }}
+          CONSUELO_MAC_APP_VERSION: ${{ needs.plan.outputs.version }}
+          CONSUELO_MAC_APP_BUILD_VERSION: ${{ needs.plan.outputs.version }}
+          CONSUELO_MAC_APP_SERVICE_HOST: packages/os/native/macos/bin/${{ matrix.architecture }}/ConsueloServiceHost
+          CONSUELO_MAC_APP_ADHOC_SIGN: '0'
+        run: |
+          set -euo pipefail
+          for required in \
+            CONSUELO_MACOS_DEVELOPER_ID_P12_BASE64 \
+            CONSUELO_MACOS_DEVELOPER_ID_P12_PASSWORD \
+            CONSUELO_MACOS_NOTARY_KEY_P8_BASE64 \
+            CONSUELO_MACOS_NOTARY_KEY_ID \
+            CONSUELO_MACOS_NOTARY_ISSUER_ID; do
+            if [[ -z "${!required:-}" ]]; then
+              echo "Missing required macOS release credential: ${required}" >&2
+              exit 1
+            fi
+          done
+
+          package_dir="$RUNNER_TEMP/consuelo-macos-app-${{ matrix.architecture }}"
+          bash packages/os/scripts/testing/macos-alpha-package.sh "$package_dir"
+          app="$package_dir/Consuelo.app"
+          helper="$app/Contents/Library/LaunchServices/ConsueloServiceHost"
+          test -x "$app/Contents/MacOS/ConsueloMenuBarApp"
+          test -x "$helper"
+
+          signing_dir="$RUNNER_TEMP/consuelo-macos-app-signing"
+          keychain="$signing_dir/consuelo-signing.keychain-db"
+          keychain_password="$(uuidgen)"
+          mkdir -p "$signing_dir"
+          trap 'security delete-keychain "$keychain" >/dev/null 2>&1 || true; rm -rf "$signing_dir"' EXIT
+          printf '%s' "$CONSUELO_MACOS_DEVELOPER_ID_P12_BASE64" | /usr/bin/base64 -D > "$signing_dir/developer-id.p12"
+          printf '%s' "$CONSUELO_MACOS_NOTARY_KEY_P8_BASE64" | /usr/bin/base64 -D > "$signing_dir/notary-key.p8"
+          security create-keychain -p "$keychain_password" "$keychain"
+          security set-keychain-settings -lut 21600 "$keychain"
+          security unlock-keychain -p "$keychain_password" "$keychain"
+          security import "$signing_dir/developer-id.p12" \
+            -k "$keychain" \
+            -P "$CONSUELO_MACOS_DEVELOPER_ID_P12_PASSWORD" \
+            -T /usr/bin/codesign
+          security set-key-partition-list \
+            -S apple-tool:,apple: \
+            -s \
+            -k "$keychain_password" \
+            "$keychain"
+          identity="$(security find-identity -v -p codesigning "$keychain" | sed -n 's/.*"\(Developer ID Application:.*\)"/\1/p' | head -1)"
+          if [[ -z "$identity" ]]; then
+            echo "Imported certificate did not expose a Developer ID Application identity." >&2
+            exit 1
+          fi
+
+          codesign --verify --strict --verbose=2 "$helper"
+          codesign \
+            --force \
+            --options runtime \
+            --timestamp \
+            --keychain "$keychain" \
+            --sign "$identity" \
+            "$app"
+          codesign --verify --deep --strict --verbose=2 "$app"
+
+          notary_zip="$signing_dir/Consuelo.app-${{ matrix.architecture }}.zip"
+          ditto -c -k --keepParent "$app" "$notary_zip"
+          xcrun notarytool submit "$notary_zip" \
+            --key "$signing_dir/notary-key.p8" \
+            --key-id "$CONSUELO_MACOS_NOTARY_KEY_ID" \
+            --issuer "$CONSUELO_MACOS_NOTARY_ISSUER_ID" \
+            --wait
+          xcrun stapler staple "$app"
+          xcrun stapler validate "$app"
+          spctl --assess --type execute --verbose=4 "$app"
+
+          release_dir=".release/macos-menu-app"
+          mkdir -p "$release_dir"
+          archive="$release_dir/Consuelo.app-${{ matrix.architecture }}.tar.gz"
+          tar -czf "$archive" -C "$package_dir" Consuelo.app
+          shasum -a 256 "$archive" > "$archive.sha256"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-menu-app-${{ matrix.architecture }}
+          path: .release/macos-menu-app/
+          if-no-files-found: error
+          retention-days: 7
+
   build:
     name: Build ${{ matrix.platform }}-${{ matrix.architecture }}
     needs:
@@ -348,7 +466,14 @@ jobs:
       - distribution-gate
       - plan
       - build
-    if: needs.plan.outputs.changed == 'true'
+      - macos-menu-app
+    if: >-
+      always() &&
+      needs.distribution-gate.result == 'success' &&
+      needs.plan.result == 'success' &&
+      needs.plan.outputs.changed == 'true' &&
+      needs.build.result == 'success' &&
+      (needs.macos-menu-app.result == 'success' || needs.macos-menu-app.result == 'skipped')
     runs-on: ubuntu-latest
     environment: consuelo / production
     permissions:
@@ -368,6 +493,12 @@ jobs:
         with:
           pattern: runtime-*
           path: .release/archives
+          merge-multiple: true
+      - uses: actions/download-artifact@v4
+        if: vars.CONSUELO_MACOS_SERVICE_HOST_RELEASE_ENABLED == 'true'
+        with:
+          pattern: macos-menu-app-*
+          path: .release/macos-apps
           merge-multiple: true
       - name: Restore authoritative release state
         env:
@@ -413,6 +544,43 @@ jobs:
             --output .release/publication.json)"
           echo "$result" | jq .
           echo "bundle=$(echo "$result" | jq -r '.bundleId')" >> "$GITHUB_OUTPUT"
+      - name: Publish immutable signed macOS app artifacts
+        if: vars.CONSUELO_MACOS_SERVICE_HOST_RELEASE_ENABLED == 'true'
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_OS_RELEASE_API_TOKEN }}
+          CONSUELO_OS_RELEASE_R2_BUCKET: ${{ vars.CONSUELO_OS_RELEASE_R2_BUCKET }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for architecture in arm64 x64; do
+            source=".release/macos-apps/Consuelo.app-${architecture}.tar.gz"
+            test -f "$source"
+            key="apps/macos/${{ needs.plan.outputs.version }}/${architecture}/Consuelo.app.tar.gz"
+            existing="$RUNNER_TEMP/consuelo-existing-${architecture}.tar.gz"
+            lookup_log="$RUNNER_TEMP/consuelo-existing-${architecture}.log"
+
+            set +e
+            bunx wrangler r2 object get "${CONSUELO_OS_RELEASE_R2_BUCKET}/${key}" \
+              --remote \
+              --file "$existing" >"$lookup_log" 2>&1
+            lookup_status=$?
+            set -e
+
+            if [[ "$lookup_status" -eq 0 ]]; then
+              echo "Immutable macOS app artifact already exists at ${key}; preserving existing bytes."
+              rm -f "$existing" "$lookup_log"
+              continue
+            fi
+            if ! grep -Eqi 'not found|does not exist|10007' "$lookup_log"; then
+              cat "$lookup_log" >&2
+              exit "$lookup_status"
+            fi
+            rm -f "$existing" "$lookup_log"
+            bunx wrangler r2 object put "${CONSUELO_OS_RELEASE_R2_BUCKET}/${key}" \
+              --remote \
+              --file "$source"
+          done
       - name: Publish immutable bytes and signed dev manifest
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}

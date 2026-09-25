@@ -7,6 +7,30 @@ OUTPUT_DIR="$PACKAGE_ROOT/.tmp-macos-alpha"
 OUTPUT_DIR_SET=0
 INSTALL_APP=0
 LAUNCH_APP=0
+APP_VERSION="${CONSUELO_MAC_APP_VERSION:-0.1.0-alpha}"
+APP_BUILD_VERSION="${CONSUELO_MAC_APP_BUILD_VERSION:-1}"
+SERVICE_HOST_OVERRIDE="${CONSUELO_MAC_APP_SERVICE_HOST:-}"
+ADHOC_SIGN="${CONSUELO_MAC_APP_ADHOC_SIGN:-1}"
+
+case "$APP_VERSION" in
+  *[!0-9A-Za-z.-]*|'')
+    printf 'CONSUELO_MAC_APP_VERSION must contain only letters, numbers, dots, and hyphens.\n' >&2
+    exit 2
+    ;;
+esac
+case "$APP_BUILD_VERSION" in
+  *[!0-9.]*|'')
+    printf 'CONSUELO_MAC_APP_BUILD_VERSION must contain only numbers and dots.\n' >&2
+    exit 2
+    ;;
+esac
+case "$ADHOC_SIGN" in
+  0|1) ;;
+  *)
+    printf 'CONSUELO_MAC_APP_ADHOC_SIGN must be 0 or 1.\n' >&2
+    exit 2
+    ;;
+esac
 
 usage() {
   cat <<'EOF'
@@ -68,15 +92,24 @@ swift build \
   --package-path "$SWIFT_PACKAGE" \
   --configuration release \
   --product ConsueloMenuBarApp
-swift build \
-  --package-path "$SWIFT_PACKAGE" \
-  --configuration release \
-  --product ConsueloServiceHost
 BIN_DIR="$(swift build --package-path "$SWIFT_PACKAGE" --configuration release --show-bin-path)"
 cp "$BIN_DIR/ConsueloMenuBarApp" "$MACOS_DIR/ConsueloMenuBarApp"
-cp "$BIN_DIR/ConsueloServiceHost" "$LAUNCH_SERVICES_DIR/ConsueloServiceHost"
+if [ -n "$SERVICE_HOST_OVERRIDE" ]; then
+  if [ ! -f "$SERVICE_HOST_OVERRIDE" ]; then
+    printf 'CONSUELO_MAC_APP_SERVICE_HOST does not exist: %s\n' "$SERVICE_HOST_OVERRIDE" >&2
+    exit 2
+  fi
+  cp "$SERVICE_HOST_OVERRIDE" "$LAUNCH_SERVICES_DIR/ConsueloServiceHost"
+else
+  swift build \
+    --package-path "$SWIFT_PACKAGE" \
+    --configuration release \
+    --product ConsueloServiceHost
+  cp "$BIN_DIR/ConsueloServiceHost" "$LAUNCH_SERVICES_DIR/ConsueloServiceHost"
+fi
+chmod 755 "$MACOS_DIR/ConsueloMenuBarApp" "$LAUNCH_SERVICES_DIR/ConsueloServiceHost"
 
-cat > "$CONTENTS_DIR/Info.plist" <<'PLIST'
+cat > "$CONTENTS_DIR/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -84,21 +117,21 @@ cat > "$CONTENTS_DIR/Info.plist" <<'PLIST'
   <key>CFBundleDevelopmentRegion</key>
   <string>en</string>
   <key>CFBundleDisplayName</key>
-  <string>Consuelo</string>
+  <string>Consuelo OS</string>
   <key>CFBundleExecutable</key>
   <string>ConsueloMenuBarApp</string>
   <key>CFBundleIdentifier</key>
-  <string>com.consuelohq.os.menubar.alpha</string>
+  <string>com.consuelohq.os.menubar</string>
   <key>CFBundleInfoDictionaryVersion</key>
   <string>6.0</string>
   <key>CFBundleName</key>
-  <string>Consuelo</string>
+  <string>Consuelo OS</string>
   <key>CFBundlePackageType</key>
   <string>APPL</string>
   <key>CFBundleShortVersionString</key>
-  <string>0.1.0-alpha</string>
+  <string>$APP_VERSION</string>
   <key>CFBundleVersion</key>
-  <string>1</string>
+  <string>$APP_BUILD_VERSION</string>
   <key>LSMinimumSystemVersion</key>
   <string>13.0</string>
   <key>LSUIElement</key>
@@ -109,7 +142,7 @@ cat > "$CONTENTS_DIR/Info.plist" <<'PLIST'
 </plist>
 PLIST
 
-if command -v codesign >/dev/null 2>&1; then
+if [ "$ADHOC_SIGN" -eq 1 ] && command -v codesign >/dev/null 2>&1; then
   codesign --force --sign - --timestamp=none "$APP_DIR"
 fi
 
