@@ -98,21 +98,40 @@ function listFiles(rootPath, depth) {
   const root = rootPath || process.cwd();
   const maxDepth = depth || 1;
   const entries = [];
+  const skipped = [];
 
-  function walk(currentPath, currentDepth) {
+  function walk(currentPath, currentDepth, isRoot = false) {
     if (currentDepth > maxDepth) return;
-    for (const entry of fs.readdirSync(currentPath, { withFileTypes: true })) {
+    let children;
+    try {
+      children = fs.readdirSync(currentPath, { withFileTypes: true });
+    } catch (error /*: unknown */) {
+      const code = error && typeof error === 'object' && 'code' in error
+        ? String(error.code)
+        : '';
+      if (!isRoot && (code === 'EPERM' || code === 'EACCES')) {
+        skipped.push({
+          path: currentPath,
+          code,
+          message: error instanceof Error ? error.message : String(error),
+        });
+        return;
+      }
+      throw error;
+    }
+
+    for (const entry of children) {
       const fullPath = path.join(currentPath, entry.name);
       entries.push({
         path: fullPath,
         type: entry.isDirectory() ? 'directory' : 'file',
       });
-      if (entry.isDirectory()) walk(fullPath, currentDepth + 1);
+      if (entry.isDirectory()) walk(fullPath, currentDepth + 1, false);
     }
   }
 
-  walk(root, 1);
-  return { path: root, entries };
+  walk(root, 1, true);
+  return { path: root, entries, skipped };
 }
 
 function processAction(action, args) {

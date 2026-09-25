@@ -1,0 +1,120 @@
+{
+  "version": 1,
+  "worktree_id": "task/self-healing/2026-09-24-make-mac-list-tolerate-protected-descendants",
+  "events": [
+    {
+      "id": "daa78365-6da6-4c07-b55a-2ab63000e1ca",
+      "occurred_at": "2026-09-25T01:29:54.861Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/definitely-missing.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/2026-09-24-make-mac-list-tolerate-protected-descendants",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/2026-09-24-make-mac-list-tolerate-protected-descendants"
+      }
+    },
+    {
+      "id": "848e1f5f-1c4c-4420-af6a-9dee90d65998",
+      "occurred_at": "2026-09-25T01:30:55.755Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/definitely-missing.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/2026-09-24-make-mac-list-tolerate-protected-descendants",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/2026-09-24-make-mac-list-tolerate-protected-descendants"
+      }
+    },
+    {
+      "id": "0c1dea82-2bea-4441-abb7-6320a6e382b5",
+      "occurred_at": "2026-09-25T01:31:57.057Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/definitely-missing.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/2026-09-24-make-mac-list-tolerate-protected-descendants",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/2026-09-24-make-mac-list-tolerate-protected-descendants"
+      }
+    },
+    {
+      "id": "fe07dd67-a0e7-4178-85ee-6081ab6ea295",
+      "occurred_at": "2026-09-25T01:33:25.090Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/definitely-missing.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/2026-09-24-make-mac-list-tolerate-protected-descendants",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/2026-09-24-make-mac-list-tolerate-protected-descendants"
+      }
+    },
+    {
+      "id": "07927cf3-f53b-435a-b9d8-98a6f8c34270",
+      "occurred_at": "2026-09-25T01:34:40.159Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/definitely-missing.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/2026-09-24-make-mac-list-tolerate-protected-descendants",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/2026-09-24-make-mac-list-tolerate-protected-descendants"
+      }
+    },
+    {
+      "id": "6a0ac05c-1200-4357-8475-c106506bbeb7",
+      "occurred_at": "2026-09-25T01:37:04.670Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/definitely-missing.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/2026-09-24-make-mac-list-tolerate-protected-descendants",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/2026-09-24-make-mac-list-tolerate-protected-descendants"
+      }
+    },
+    {
+      "id": "7e4b52dd-3241-4673-9e7d-4e756793b623",
+      "occurred_at": "2026-09-25T01:37:52.320Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/definitely-missing.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/self-healing/2026-09-24-make-mac-list-tolerate-protected-descendants",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/self-healing/2026-09-24-make-mac-list-tolerate-protected-descendants"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-09-25T01:37:52.457Z"
+}

@@ -1,0 +1,20 @@
+{
+  "area": "self-healing",
+  "stream": "stream/self-healing",
+  "taskBranch": "task/self-healing/2026-09-24-make-mac-list-tolerate-protected-descendants",
+  "baseBranch": "stream/self-healing",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2581,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2581",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2581",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2581/2026-09-24-make-mac-list-tolerate-protected-descendants",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2581",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2581/2026-09-24-make-mac-list-tolerate-protected-descendants",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-self-healing-2026-09-24-make-mac-list-tolerate-protected-descendants",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_1be9654dac20",
+  "tmuxSession": "opensaas-self-healing-2026-09-24-make-mac-list-tolerate-protected-desc-1be9654d",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-self-healing-2026-09-24-make-mac-list-tolerate-protected-descendants/.task/self-healing/2026-09-24-make-mac-list-tolerate-protected-descendants/session.json",
+  "createdAt": "2026-09-25T01:26:34.744Z"
+}
