@@ -1891,6 +1891,9 @@
       "tests": [
         {
           "name": "macOS menu Swift contracts",
+          "platforms": [
+            "darwin"
+          ],
           "command": [
             "swift",
             "run",

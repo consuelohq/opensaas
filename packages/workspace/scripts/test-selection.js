@@ -301,7 +301,12 @@ function sourceCodeFiles(files) {
   return files.filter((file) => /\.(ts|tsx|js|jsx|mjs|cjs|json|yml|yaml|sh|bash|zsh)$/i.test(file) && !file.startsWith('.task/'));
 }
 
-function select(registry, files) {
+function suiteSupportsPlatform(suite, platform) {
+  if (suite.platforms === undefined) return true;
+  return Array.isArray(suite.platforms) && suite.platforms.includes(platform);
+}
+
+function select(registry, files, platform = process.platform) {
   const matches = registry.rules
     .map((rule) => ({
       rule,
@@ -349,6 +354,7 @@ function select(registry, files) {
       autoPackageCodeFiles.every((file) => explicitCriticalFiles.has(file));
     if (fullyCoveredByExplicitCriticalRule) continue;
     for (const test of rule.tests) {
+      if (!suiteSupportsPlatform(test, platform)) continue;
       const key = commandKey(test);
       if (seen.has(key)) continue;
       seen.add(key);
@@ -372,7 +378,7 @@ function select(registry, files) {
       zeroSuiteReason = 'no testable source files changed';
     }
   }
-  return { changedFiles: files, matchedRules, selectedSuites: suites, level, zeroSuiteReason };
+  return { changedFiles: files, matchedRules, selectedSuites: suites, level, zeroSuiteReason, platform };
 }
 function testSuiteTimeoutMs() {
   const value = Number.parseInt(process.env.TEST_SUITE_TIMEOUT_MS || '', 10);
@@ -644,6 +650,7 @@ function markdownReport(registry, check) {
 function main() {
   const root = process.cwd();
   const args = parseArgs(process.argv.slice(2));
+  const platform = valueFor(args, 'platform') || process.platform;
   const registryPath = path.resolve(root, valueFor(args, 'registry') || DEFAULT_REGISTRY);
   if (args.command === 'generate') {
     const registry = buildRegistry(root);
@@ -656,7 +663,7 @@ function main() {
   if (args.command === 'nightly') {
     const outDir = valueFor(args, 'out-dir') || REPORT_DIR;
     fs.mkdirSync(outDir, { recursive: true });
-    const check = { ...select(registry, changedFiles(root, args)), runResults: [] };
+    const check = { ...select(registry, changedFiles(root, args), platform), runResults: [] };
     const date = new Date().toISOString().slice(0, 10);
     const jsonPath = path.join(outDir, `nightly-${date}.json`);
     const markdownPath = path.join(outDir, `nightly-${date}.md`);
@@ -670,7 +677,7 @@ function main() {
   }
   const base = valueFor(args, 'base') || 'origin/main';
   const files = changedFiles(root, args);
-  const selected = select(registry, files);
+  const selected = select(registry, files, platform);
   const run = args.run && !args['no-run'];
   const runResults = run ? runSuites(root, selected.selectedSuites, base) : [];
   const failedSuites = runResults.filter((result) => result.status !== 'passed');

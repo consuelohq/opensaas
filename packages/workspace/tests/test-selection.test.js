@@ -1992,6 +1992,8 @@ describe('test selection registry', () => {
   it('routes native macOS menu changes through focused Mac contracts', () => {
     const data = json(run([
       'check',
+      '--platform',
+      'darwin',
       '--changed-file',
       'packages/os/native/macos/Sources/ConsueloMacCore/Presentation.swift',
       '--changed-file',
@@ -2009,6 +2011,29 @@ describe('test selection registry', () => {
     );
     expect(data.selectedSuites.map((suite) => suite.name)).toEqual([
       'macOS menu Swift contracts',
+      'macOS menu platform contracts',
+      'macOS alpha package syntax',
+    ]);
+  });
+
+  it('does not run macOS Swift menu contracts on Linux verify', () => {
+    const data = json(run([
+      'check',
+      '--platform',
+      'linux',
+      '--changed-file',
+      'packages/os/native/macos/Sources/ConsueloMacCore/Presentation.swift',
+      '--changed-file',
+      'packages/os/scripts/testing/macos-alpha-package.sh',
+      '--changed-file',
+      'packages/os/tests/macos-platform.test.ts',
+      '--json',
+    ]));
+
+    expect(data.matchedRules.map((rule) => rule.id)).toContain(
+      'os-macos-menu-app',
+    );
+    expect(data.selectedSuites.map((suite) => suite.name)).toEqual([
       'macOS menu platform contracts',
       'macOS alpha package syntax',
     ]);
