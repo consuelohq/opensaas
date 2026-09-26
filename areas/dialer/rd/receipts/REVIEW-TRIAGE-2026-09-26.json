@@ -1,0 +1,503 @@
+{
+  "sourceSha": "d768f6cc7fd7b472b619e20c441dffd329f80c2a",
+  "checkedAt": "2026-09-26",
+  "method": "Source inspection and history; not live-call reproduction. GitHub threads were not resolved.",
+  "comments": [
+    {
+      "commentId": 3974755147,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r3974755147",
+      "path": "packages/os/tests/managed-components.test.ts",
+      "disposition": "source_addressed_or_superseded",
+      "issue": null,
+      "evidence": "Legacy managed global Dialer steering is archived during install; regression coverage exists."
+    },
+    {
+      "commentId": 3974755154,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r3974755154",
+      "path": "packages/workspace/scripts/lib/stream-instructions.js",
+      "disposition": "source_addressed_or_superseded",
+      "issue": null,
+      "evidence": "Stream creation now writes canonical OS guidance, without the deprecated workspace mirror."
+    },
+    {
+      "commentId": 3974755160,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r3974755160",
+      "path": ".task/dialer/implement-complete-gohighlevel-commercial-dialer/workpad.md",
+      "disposition": "source_addressed_or_superseded",
+      "issue": null,
+      "evidence": "No literal E.164 phone numbers remain in the cited workpad (count checked)."
+    },
+    {
+      "commentId": 3974825032,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r3974825032",
+      "path": "packages/os/scripts/lib/managed-component-install.ts",
+      "disposition": "source_addressed_or_superseded",
+      "issue": null,
+      "evidence": "Parity baseline was revised with the stream-guidance removal in 1ed20fbf63."
+    },
+    {
+      "commentId": 3975023360,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r3975023360",
+      "path": "packages/workspace/scripts/lib/stream-instructions.js",
+      "disposition": "source_addressed_or_superseded",
+      "issue": null,
+      "evidence": "Stream documentation was revised with the guidance migration in 1ed20fbf63."
+    },
+    {
+      "commentId": 3975130655,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r3975130655",
+      "path": "packages/dialer-server/src/database/migrations.ts",
+      "disposition": "source_addressed_or_superseded",
+      "issue": null,
+      "evidence": "Down migration implementations were added; the later migration-013 lab ordering defect is tracked separately in DEV-1617."
+    },
+    {
+      "commentId": 3975271110,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r3975271110",
+      "path": "packages/dialer/src/services/predictive-selection-model.ts",
+      "disposition": "source_addressed_or_superseded",
+      "issue": null,
+      "evidence": "Predictive model uses attemptProbability fallback when slot evidence is absent."
+    },
+    {
+      "commentId": 3975271114,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r3975271114",
+      "path": "packages/dialer-server/src/learning/response-time-shadow-evaluation.ts",
+      "disposition": "source_addressed_or_superseded",
+      "issue": null,
+      "evidence": "Shadow evaluation expands periods and rejects insufficient usable training periods."
+    },
+    {
+      "commentId": 3980965865,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r3980965865",
+      "path": "packages/dialer-server/src/runtime/railway.ts",
+      "disposition": "source_addressed_or_superseded",
+      "issue": null,
+      "evidence": "Partial-created-call progress is observed and selection finalization uses actual created targets."
+    },
+    {
+      "commentId": 3981314996,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r3981314996",
+      "path": "packages/dialer-server/src/commercial-target-authorization.test.ts",
+      "disposition": "source_addressed_or_superseded",
+      "issue": null,
+      "evidence": "No literal E.164 phone numbers remain in the cited test (count checked)."
+    },
+    {
+      "commentId": 3981456698,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r3981456698",
+      "path": "packages/dialer-server/src/learning/postgres-predictive-model-store.ts",
+      "disposition": "source_addressed_or_superseded",
+      "issue": null,
+      "evidence": "segment_contacts CTE bounds the contacts joined into historical model queries."
+    },
+    {
+      "commentId": 4000145696,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r4000145696",
+      "path": "packages/dialer-server/src/runtime/predictive-runtime-cutover.test.ts",
+      "disposition": "source_addressed_or_superseded",
+      "issue": null,
+      "evidence": "No literal E.164 phone numbers remain in the cited test (count checked)."
+    },
+    {
+      "commentId": 4000200814,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r4000200814",
+      "path": "packages/lead-connector/src/embed/controller.ts",
+      "disposition": "source_addressed_or_superseded",
+      "issue": null,
+      "evidence": "RD5 now supplies operator route composition; disabled inbound remains a configuration gate."
+    },
+    {
+      "commentId": 4000200818,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r4000200818",
+      "path": "packages/dialer-server/src/inbound/rep-capacity-projection.ts",
+      "disposition": "source_addressed_or_superseded",
+      "issue": null,
+      "evidence": "Projection chooses available/unavailable using readiness."
+    },
+    {
+      "commentId": 4000200821,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r4000200821",
+      "path": "packages/dialer/src/inbound/rep-capacity-contracts.ts",
+      "disposition": "partly_remaining",
+      "issue": "DEV-1614",
+      "evidence": "Server decline adapter now handles assignment-wide decline, but UI still disables Decline without a healthy endpoint."
+    },
+    {
+      "commentId": 4000444047,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r4000444047",
+      "path": "packages/dialer-server/src/runtime/inbound.ts",
+      "disposition": "source_addressed_or_superseded",
+      "issue": null,
+      "evidence": "Runtime registers configured rep capacity before exposing inbound."
+    },
+    {
+      "commentId": 4000444051,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r4000444051",
+      "path": "packages/dialer-server/src/inbound/operator.ts",
+      "disposition": "source_addressed_or_superseded",
+      "issue": null,
+      "evidence": "Operator snapshots project provisioned endpoints as well as selected endpoints, allowing omitted devices to be selected again."
+    },
+    {
+      "commentId": 4000444053,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r4000444053",
+      "path": "packages/dialer-server/src/inbound/operator.ts",
+      "disposition": "source_addressed_or_superseded",
+      "issue": null,
+      "evidence": "Active assignment/request is used to resolve operator queue context."
+    },
+    {
+      "commentId": 4000817002,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r4000817002",
+      "path": "packages/lead-connector/src/embed/inbound-operator-view.ts",
+      "disposition": "source_addressed_or_superseded",
+      "issue": null,
+      "evidence": "Operator UI allows offline reps to update readiness; integration coverage exists."
+    },
+    {
+      "commentId": 4000817006,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r4000817006",
+      "path": "packages/lead-connector/src/embed/inbound-operator-view.ts",
+      "disposition": "source_addressed_or_superseded",
+      "issue": null,
+      "evidence": "Browser acceptance prefers the eligible browser endpoint; integration coverage exists."
+    },
+    {
+      "commentId": 4000817007,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r4000817007",
+      "path": "packages/lead-connector/src/embed/inbound-operator-view.ts",
+      "disposition": "source_addressed_or_superseded",
+      "issue": null,
+      "evidence": "Configuration UI is read-only; PATCH remains explicitly unimplemented."
+    },
+    {
+      "commentId": 4000894018,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r4000894018",
+      "path": "packages/dialer-server/src/inbound/callback-telephony.ts",
+      "disposition": "source_addressed_or_superseded",
+      "issue": null,
+      "evidence": "Known effects are reconciled before the unresolved check; failed pre-customer bridge case remains in DEV-1615."
+    },
+    {
+      "commentId": 4000894023,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r4000894023",
+      "path": "packages/dialer-server/src/inbound/callback-telephony.ts",
+      "disposition": "source_addressed_or_superseded",
+      "issue": null,
+      "evidence": "Both carrier legs are re-read and verified terminal before capacity release."
+    },
+    {
+      "commentId": 4000894029,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r4000894029",
+      "path": "packages/lead-connector/src/embed/controller.ts",
+      "disposition": "source_addressed_or_superseded",
+      "issue": null,
+      "evidence": "pendingInboundAcceptance retains one attempt ID for the same assignment/generation/endpoint after uncertain responses."
+    },
+    {
+      "commentId": 4000894031,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r4000894031",
+      "path": "packages/dialer-server/src/inbound/callback-telephony.ts",
+      "disposition": "source_addressed_or_superseded",
+      "issue": null,
+      "evidence": "Callback connection predicate checks audible participant state; integration coverage exists."
+    },
+    {
+      "commentId": 4000971388,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r4000971388",
+      "path": "packages/lead-connector/src/embed/customer.ts",
+      "disposition": "source_addressed_or_superseded",
+      "issue": null,
+      "evidence": "Customer callback request retains its operation identity across uncertain retry; coverage exists."
+    },
+    {
+      "commentId": 4000971392,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r4000971392",
+      "path": "packages/dialer-server/src/routes/inbound-customer.ts",
+      "disposition": "source_addressed_or_superseded",
+      "issue": null,
+      "evidence": "Customer route imports shared normalizePhone; lockfile drift is separately tracked in DEV-1617."
+    },
+    {
+      "commentId": 4000971394,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r4000971394",
+      "path": "packages/lead-connector/src/embed/customer.ts",
+      "disposition": "source_addressed_or_superseded",
+      "issue": null,
+      "evidence": "Callback-management errors are represented in customer UI state; coverage exists."
+    },
+    {
+      "commentId": 4006510702,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r4006510702",
+      "path": "packages/dialer-server/src/inbound/callbacks.ts",
+      "disposition": "source_addressed_or_superseded",
+      "issue": null,
+      "evidence": "Reschedule extends recipient retention; integration coverage exists."
+    },
+    {
+      "commentId": 4006510718,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r4006510718",
+      "path": "packages/dialer-server/src/runtime/inbound.ts",
+      "disposition": "source_addressed_or_superseded",
+      "issue": null,
+      "evidence": "Fresh callback dependency activation filters enabled numbers; durable draining remains in DEV-1616."
+    },
+    {
+      "commentId": 4006510724,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r4006510724",
+      "path": "packages/lead-connector/src/embed/customer.ts",
+      "disposition": "source_addressed_or_superseded",
+      "issue": null,
+      "evidence": "Customer UI maps terminal outcomes explicitly; coverage exists."
+    },
+    {
+      "commentId": 4006714926,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r4006714926",
+      "path": "packages/dialer-server/src/runtime/railway.ts",
+      "disposition": "source_addressed_or_superseded",
+      "issue": null,
+      "evidence": "Provider rejection evidence and partial-create recovery path now exist. The later double-hash allegation is contradicted by recordTelephonyFact."
+    },
+    {
+      "commentId": 4006714937,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r4006714937",
+      "path": "packages/dialer-server/src/runtime/railway.ts",
+      "disposition": "source_addressed_or_superseded",
+      "issue": null,
+      "evidence": "Created calls are mapped by target position through selectSuccessfullyCreatedTargets."
+    },
+    {
+      "commentId": 4053460270,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r4053460270",
+      "path": "packages/dialer-server/src/runtime/inbound.ts",
+      "disposition": "source_addressed_or_superseded",
+      "issue": null,
+      "evidence": "Customer-entry secret requirement filters enabled numbers."
+    },
+    {
+      "commentId": 4053460274,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r4053460274",
+      "path": "packages/dialer-server/src/inbound/callbacks.ts",
+      "disposition": "source_addressed_or_superseded",
+      "issue": null,
+      "evidence": "cancelConfirmedBookingForRevision exists; concurrent rescheduling remains in DEV-1616."
+    },
+    {
+      "commentId": 4053460284,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r4053460284",
+      "path": "packages/dialer-server/src/routes/inbound-customer.ts",
+      "disposition": "source_addressed_or_superseded",
+      "issue": null,
+      "evidence": "Public customer identity uses signed edge headers; missing deployed secret is a separate activation gate."
+    },
+    {
+      "commentId": 4053533585,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r4053533585",
+      "path": "packages/dialer-server/src/main.ts",
+      "disposition": "source_addressed_or_superseded",
+      "issue": null,
+      "evidence": "Edge forwards a signed client identity; deployment pairing still needs verification."
+    },
+    {
+      "commentId": 4053533590,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r4053533590",
+      "path": "packages/dialer-server/src/inbound/callbacks.ts",
+      "disposition": "source_addressed_or_superseded",
+      "issue": null,
+      "evidence": "Migration 012 and booking events preserve immutable cancellation history."
+    },
+    {
+      "commentId": 4053533593,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r4053533593",
+      "path": "packages/dialer-server/src/routes/inbound-customer.ts",
+      "disposition": "source_addressed_or_superseded",
+      "issue": null,
+      "evidence": "Customer routes produce nested structured API errors; coverage exists."
+    },
+    {
+      "commentId": 4058687492,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r4058687492",
+      "path": "packages/dialer-server/src/runtime/inbound.ts",
+      "disposition": "source_addressed_or_superseded",
+      "issue": null,
+      "evidence": "Queue validation loops only over enabled numbers; draining ownership is handled separately."
+    },
+    {
+      "commentId": 4058687494,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r4058687494",
+      "path": "packages/dialer-server/src/inbound/callbacks.ts",
+      "disposition": "source_addressed_or_superseded",
+      "issue": null,
+      "evidence": "Calendar reconciliation handles dispatched cancellation outcomes."
+    },
+    {
+      "commentId": 4058687495,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r4058687495",
+      "path": "packages/dialer-server/src/inbound/telephony-admission.ts",
+      "disposition": "source_addressed_or_superseded",
+      "issue": null,
+      "evidence": "Admission count includes the inbound number identity."
+    },
+    {
+      "commentId": 4058807936,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r4058807936",
+      "path": "packages/dialer-server/src/runtime/inbound.ts",
+      "disposition": "source_addressed_or_superseded",
+      "issue": null,
+      "evidence": "Runtime reconciles existing idle rep readiness/endpoints after registration checks."
+    },
+    {
+      "commentId": 4058807942,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r4058807942",
+      "path": "packages/dialer-server/src/inbound/customer-entry.ts",
+      "disposition": "source_addressed_or_superseded",
+      "issue": null,
+      "evidence": "Customer reschedule reuses the operation for an unchanged window."
+    },
+    {
+      "commentId": 4058807948,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r4058807948",
+      "path": "packages/dialer-server/src/inbound/callbacks.ts",
+      "disposition": "source_addressed_or_superseded",
+      "issue": null,
+      "evidence": "Booking creation persists an attempt claim before provider work and reconciles uncertain outcomes."
+    },
+    {
+      "commentId": 4058893021,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r4058893021",
+      "path": "packages/lead-connector/src/embed/controller.ts",
+      "disposition": "remaining",
+      "issue": "DEV-1614",
+      "evidence": "Current source retains the reported path; see linked issue for bounded fix and acceptance. No live reproduction performed."
+    },
+    {
+      "commentId": 4058893024,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r4058893024",
+      "path": "packages/dialer-server/src/inbound/callback-telephony.ts",
+      "disposition": "remaining",
+      "issue": "DEV-1615",
+      "evidence": "Current source retains the reported path; see linked issue for bounded fix and acceptance. No live reproduction performed."
+    },
+    {
+      "commentId": 4058893028,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r4058893028",
+      "path": "packages/dialer-server/src/inbound/outbound-capacity.ts",
+      "disposition": "false_positive",
+      "issue": null,
+      "evidence": "False positive: recordTelephonyFact hashes its key at telephony-store.ts:159, so the nested lookup hash matches the persisted fact."
+    },
+    {
+      "commentId": 4067603133,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r4067603133",
+      "path": "packages/dialer-server/src/runtime/inbound.ts",
+      "disposition": "remaining",
+      "issue": "DEV-1616",
+      "evidence": "Current source retains the reported path; see linked issue for bounded fix and acceptance. No live reproduction performed."
+    },
+    {
+      "commentId": 4067603143,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r4067603143",
+      "path": "packages/dialer-server/src/inbound/operator.ts",
+      "disposition": "remaining",
+      "issue": "DEV-1614",
+      "evidence": "Current source retains the reported path; see linked issue for bounded fix and acceptance. No live reproduction performed."
+    },
+    {
+      "commentId": 4068087139,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r4068087139",
+      "path": "packages/dialer-server/src/inbound/callbacks.ts",
+      "disposition": "remaining",
+      "issue": "DEV-1616",
+      "evidence": "Current source retains the reported path; see linked issue for bounded fix and acceptance. No live reproduction performed."
+    },
+    {
+      "commentId": 4068087150,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r4068087150",
+      "path": "packages/dialer-server/src/inbound/callbacks.ts",
+      "disposition": "remaining",
+      "issue": "DEV-1616",
+      "evidence": "Current source retains the reported path; see linked issue for bounded fix and acceptance. No live reproduction performed."
+    },
+    {
+      "commentId": 4068087154,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r4068087154",
+      "path": "packages/dialer-server/scripts/local-dialer-lab.ts",
+      "disposition": "remaining",
+      "issue": "DEV-1617",
+      "evidence": "Current source retains the reported path; see linked issue for bounded fix and acceptance. No live reproduction performed."
+    },
+    {
+      "commentId": 4068215759,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r4068215759",
+      "path": "packages/dialer-server/package.json",
+      "disposition": "remaining",
+      "issue": "DEV-1617",
+      "evidence": "Current source retains the reported path; see linked issue for bounded fix and acceptance. No live reproduction performed."
+    },
+    {
+      "commentId": 4068215768,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r4068215768",
+      "path": "packages/dialer-server/src/inbound/callback-telephony.ts",
+      "disposition": "remaining",
+      "issue": "DEV-1615",
+      "evidence": "Current source retains the reported path; see linked issue for bounded fix and acceptance. No live reproduction performed."
+    },
+    {
+      "commentId": 4078052404,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r4078052404",
+      "path": "packages/dialer-server/src/inbound/telephony-admission.ts",
+      "disposition": "remaining",
+      "issue": "DEV-1616",
+      "evidence": "Current source retains the reported path; see linked issue for bounded fix and acceptance. No live reproduction performed."
+    },
+    {
+      "commentId": 4078052409,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r4078052409",
+      "path": "packages/dialer-server/src/inbound/telephony-commands.ts",
+      "disposition": "remaining",
+      "issue": "DEV-1615",
+      "evidence": "Current source retains the reported path; see linked issue for bounded fix and acceptance. No live reproduction performed."
+    },
+    {
+      "commentId": 4078094360,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r4078094360",
+      "path": "packages/lead-connector/src/embed/internal-main.ts",
+      "disposition": "remaining",
+      "issue": "DEV-1614",
+      "evidence": "Current source retains the reported path; see linked issue for bounded fix and acceptance. No live reproduction performed."
+    },
+    {
+      "commentId": 4078094366,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r4078094366",
+      "path": ".github/workflows/consuelo-production-release.yaml",
+      "disposition": "remaining",
+      "issue": "DEV-1617",
+      "evidence": "Current source retains the reported path; see linked issue for bounded fix and acceptance. No live reproduction performed."
+    },
+    {
+      "commentId": 4078094370,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r4078094370",
+      "path": "packages/consuelo-dialer-website/src/layouts/MarketingLayout.astro",
+      "disposition": "remaining",
+      "issue": "DEV-1618",
+      "evidence": "Current source retains the reported path; see linked issue for bounded fix and acceptance. No live reproduction performed."
+    },
+    {
+      "commentId": 4078229090,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r4078229090",
+      "path": "packages/dialer-server/src/runtime/railway.ts",
+      "disposition": "remaining",
+      "issue": "DEV-1614",
+      "evidence": "Current source retains the reported path; see linked issue for bounded fix and acceptance. No live reproduction performed."
+    },
+    {
+      "commentId": 4078229095,
+      "url": "https://github.com/consuelohq/opensaas/pull/2436#discussion_r4078229095",
+      "path": "packages/dialer-server/src/inbound/callback-telephony.ts",
+      "disposition": "remaining",
+      "issue": "DEV-1615",
+      "evidence": "Current source retains the reported path; see linked issue for bounded fix and acceptance. No live reproduction performed."
+    }
+  ]
+}
