@@ -1709,6 +1709,7 @@ function resolveGitRoot(cwd: string): string {
 
 function resolveWorkspaceCommandCwd(cwd: string, script: string, input?: ToolInput): string {
   if ((script === 'code-run' || script === 'code-call') && typeof input?.taskWorktree === 'string') return input.taskWorktree;
+  if (script === 'verify' && typeof input?.taskWorktree === 'string') return input.taskWorktree;
   if (!script.startsWith('task:') && !script.startsWith('stream:')) return cwd;
   if (typeof input?.taskWorktree === 'string') return input.taskWorktree;
   return resolveControllerRoot(cwd) || cwd;

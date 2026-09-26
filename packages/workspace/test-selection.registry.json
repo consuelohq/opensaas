@@ -155,7 +155,9 @@
         "packages/os/tests/verify-run-state.test.js",
         "packages/workspace/scripts/review.js",
         "packages/workspace/scripts/task-push.js",
-        "packages/workspace/scripts/lib/verification.js"
+        "packages/workspace/scripts/lib/verification.js",
+        "packages/workspace/scripts/confirm.js",
+        "packages/os/scripts/confirm.js"
       ],
       "tests": [
         {
