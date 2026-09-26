@@ -112,6 +112,43 @@ describe('test selection registry', () => {
     ).toEqual(['bun', 'run', '--cwd', 'packages/os', 'test']);
   }, 15_000);
 
+  it('preserves explicit selector ownership after registry regeneration', () => {
+    const out = path.join(os.tmpdir(), `test-selection-regenerated-${Date.now()}.json`);
+    const generated = json(run(['generate', '--out', out, '--json']));
+    expect(generated.summary.testFileCount).toBeGreaterThan(0);
+
+    const regeneratedRegistry = JSON.parse(fs.readFileSync(out, 'utf8'));
+    const committedRegistry = JSON.parse(fs.readFileSync(
+      path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../test-selection.registry.json'),
+      'utf8',
+    ));
+    const normalizeExplicit = (registry) => registry.rules
+      .filter((rule) => rule.origin === 'explicit')
+      .map(({ origin, ...rule }) => rule);
+
+    expect(normalizeExplicit(regeneratedRegistry)).toEqual(
+      normalizeExplicit(committedRegistry),
+    );
+
+    const selection = json(run([
+      'check',
+      '--registry',
+      out,
+      '--changed-file',
+      'packages/workspace/scripts/confirm.js',
+      '--changed-file',
+      'packages/os/scripts/confirm.js',
+      '--json',
+    ]));
+    const matchedRuleIds = selection.matchedRules.map((rule) => rule.id);
+    const suiteNames = selection.selectedSuites.map((suite) => suite.name);
+    expect(matchedRuleIds).toContain('workspace-publish-gate');
+    expect(suiteNames).toContain('workspace verification stamp tests');
+    expect(suiteNames).not.toContain('@consuelo/os package test');
+
+    fs.rmSync(out, { force: true });
+  }, 15_000);
+
   it('routes current OS Trace inspector changes only to existing OS-owned suites', () => {
     const rulesPath = path.resolve(
       path.dirname(fileURLToPath(import.meta.url)),
@@ -261,6 +298,23 @@ describe('test selection registry', () => {
     expect(data.selectedSuites.map((suite) => suite.name)).not.toContain(
       '@consuelo/os package test',
     );
+  });
+
+  it('routes synchronous confirm verification changes through the focused publish gate', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/workspace/scripts/confirm.js',
+      '--changed-file',
+      'packages/os/scripts/confirm.js',
+      '--json',
+    ]));
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('workspace-publish-gate');
+    expect(suiteNames).toContain('workspace verification stamp tests');
+    expect(suiteNames).not.toContain('@consuelo/os package test');
   });
 
   it('suppresses a broad auto package suite when explicit critical coverage fully owns the changed code', () => {
@@ -664,6 +718,43 @@ describe('test selection registry', () => {
       || name === 'OS ChatGPT node-routing syntax contracts'
     )).toBe(true);
     expect(suiteNames).not.toContain('@consuelo/os package test');
+  });
+
+  it('routes verify self-hosting regression through a focused facade suite', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/lib/facade/executor.ts',
+      '--changed-file',
+      'packages/os/tests/facade/facade.test.ts',
+      '--json',
+    ]));
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+    const commands = data.selectedSuites.map((suite) => suite.command);
+
+    expect(suiteNames).not.toContain('@consuelo/os package test');
+    expect(commands.some((command) =>
+      command.includes('packages/os/tests/facade/facade.test.ts')
+      && command.includes('runs task-scoped verify from the resolved task worktree instead of controller cwd')
+    )).toBe(true);
+  });
+
+  it('runs the owned NOT_FOUND recovery test from the exclusive MCP selector', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/tests/facade/not-found-recovery.test.ts',
+      '--json',
+    ]));
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const commands = data.selectedSuites.map((suite) => suite.command);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-mcp-call-timeout-envelope');
+    expect(suiteNames).not.toContain('@consuelo/os package test');
+    expect(commands.some((command) =>
+      command.includes('packages/os/tests/facade/not-found-recovery.test.ts')
+    )).toBe(true);
   });
 
   it('uses focused launcher copy interaction contracts instead of the broad OS package suite', () => {

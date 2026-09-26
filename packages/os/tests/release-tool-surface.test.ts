@@ -17,6 +17,7 @@ describe('release tool surface', () => {
       inputSchema: 'ReleaseInput',
       command: {
         script: 'release',
+        executionScope: 'runtime',
         branchMode: 'none',
         jsonFlag: '--json',
       },

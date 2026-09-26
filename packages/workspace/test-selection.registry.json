@@ -2,17 +2,17 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 672,
-    "mappedTestCount": 587,
-    "unmappedTestCount": 85,
-    "ruleCount": 76,
-    "explicitRuleCount": 63,
+    "testFileCount": 675,
+    "mappedTestCount": 592,
+    "unmappedTestCount": 83,
+    "ruleCount": 78,
+    "explicitRuleCount": 65,
     "autoRuleCount": 13,
     "projectCount": 9,
     "packageTestScriptCount": 20,
     "byGroup": {
-      "packages/os/tests": 322,
-      "packages/workspace/tests": 64,
+      "packages/os/tests": 323,
+      "packages/workspace/tests": 65,
       "packages/os/tests/media": 34,
       "packages/consuelo-design/upstream/open-design/apps/daemon": 21,
       "packages/dialer-server/src": 19,
@@ -36,6 +36,7 @@
       "packages/dialer/src/application": 3,
       "packages/dialer/src/domain": 3,
       "packages/os/scripts": 3,
+      "packages/os/tests/facade": 3,
       "packages/api/src/services": 2,
       "packages/cli/tests": 2,
       "packages/consuelo-design/upstream/open-design/apps/web/src": 2,
@@ -45,7 +46,6 @@
       "packages/dialer-server/src/lab": 2,
       "packages/diff-cockpit/tests": 2,
       "packages/os/tests/audit": 2,
-      "packages/os/tests/facade": 2,
       "packages/os/tests/fixtures": 2,
       "cron_jobs": 1,
       "packages/agent/src/pi-extensions": 1,
@@ -92,7 +92,7 @@
       "tests": 1
     },
     "byKind": {
-      "test": 615,
+      "test": 618,
       "spec": 29,
       "__tests__": 11,
       "other": 7,
@@ -155,7 +155,9 @@
         "packages/os/tests/verify-run-state.test.js",
         "packages/workspace/scripts/review.js",
         "packages/workspace/scripts/task-push.js",
-        "packages/workspace/scripts/lib/verification.js"
+        "packages/workspace/scripts/lib/verification.js",
+        "packages/workspace/scripts/confirm.js",
+        "packages/os/scripts/confirm.js"
       ],
       "tests": [
         {
@@ -1514,7 +1516,8 @@
             "x",
             "vitest",
             "run",
-            "packages/os/tests/mcp-gateway.test.ts"
+            "packages/os/tests/mcp-gateway.test.ts",
+            "packages/os/tests/facade/not-found-recovery.test.ts"
           ]
         },
         {
@@ -1540,6 +1543,31 @@
       "critical": true,
       "exclusive": true,
       "reason": "Public MCP call timeout is envelope execution metadata, not selected tool input; changes must prove transport separation, local facade deadline propagation, and syntax without selecting the historically red package-wide OS suite.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-verify-task-worktree-routing",
+      "source": [
+        "packages/os/scripts/lib/facade/executor.ts",
+        "packages/os/tests/facade/facade.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS verify task-worktree routing contract",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/facade/facade.test.ts",
+            "-t",
+            "runs task-scoped verify from the resolved task worktree instead of controller cwd"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Task-scoped verify self-hosting depends on facade cwd routing; changes to the executor or its facade regression must run the exact focused routing contract without falling back to the package-wide OS suite.",
       "origin": "explicit"
     },
     {
@@ -4454,6 +4482,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/facade/not-found-recovery.test.ts",
+      "group": "packages/os/tests/facade",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/facade/process-tree.test.ts",
       "group": "packages/os/tests/facade",
       "kind": "test"
@@ -4815,6 +4848,11 @@
     },
     {
       "path": "packages/os/tests/macos-platform.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/macos-supervised-heartbeat.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -6264,6 +6302,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/workspace/tests/task-merge-readiness.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/workspace/tests/task-meta.test.ts",
       "group": "packages/workspace/tests",
       "kind": "test"
@@ -6466,8 +6509,6 @@
     "packages/workspace/tests/twenty-migration-bun-cutover.test.ts",
     "packages/workspace/tests/twenty-migration-identity-license.test.ts",
     "packages/workspace/tests/twenty-migration-runtime-boundary.test.ts",
-    "packages/workspace/tests/verification.test.js",
-    "packages/workspace/tests/verify-run-state.test.js",
     "packages/workspace/tests/wait.test.js",
     "tests/operator.test.ts"
   ],

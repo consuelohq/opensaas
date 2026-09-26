@@ -1,0 +1,637 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/tooling-reliability/make-detached-verify-safe-for-internal-callers-and-self-hosting",
+  "base": "origin/task/tooling-reliability/make-detached-verify-safe-for-internal-callers-and-self-hosting",
+  "headSha": "3ef48fc88ba28297a727f0df6ce202d3ceb53b36",
+  "changeHash": "6ba8b6f52b923f9c4846077a565b3c29a4aea2b43252401aa4c8469a172b93af",
+  "changedFiles": [
+    "packages/os/scripts/confirm.js",
+    "packages/os/scripts/lib/facade/executor.ts",
+    "packages/os/scripts/stream-sync.js",
+    "packages/os/tests/facade/facade.test.ts",
+    "packages/os/tests/release-tool-surface.test.ts",
+    "packages/workspace/scripts/confirm.js",
+    "packages/workspace/scripts/stream-sync.js",
+    "packages/workspace/test-selection.registry.json",
+    "packages/workspace/tests/test-selection.test.js",
+    "packages/workspace/tests/verification.test.js"
+  ],
+  "verifiedAt": "2026-09-26T18:12:03.348Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/tooling-reliability/make-detached-verify-safe-for-internal-callers-and-self-hosting.json",
+        ".task/tooling-reliability/make-detached-verify-safe-for-internal-callers-and-self-hosting/current.json",
+        ".task/tooling-reliability/make-detached-verify-safe-for-internal-callers-and-self-hosting/evidence-log.json",
+        ".task/tooling-reliability/make-detached-verify-safe-for-internal-callers-and-self-hosting/read-log.json",
+        ".task/tooling-reliability/make-detached-verify-safe-for-internal-callers-and-self-hosting/session.json",
+        ".task/tooling-reliability/make-detached-verify-safe-for-internal-callers-and-self-hosting/workpad.md",
+        "packages/os/scripts/confirm.js",
+        "packages/os/scripts/lib/facade/executor.ts",
+        "packages/os/scripts/stream-sync.js",
+        "packages/os/tests/facade/facade.test.ts",
+        "packages/os/tests/release-tool-surface.test.ts",
+        "packages/workspace/scripts/confirm.js",
+        "packages/workspace/scripts/stream-sync.js",
+        "packages/workspace/test-selection.registry.json",
+        "packages/workspace/tests/test-selection.test.js",
+        "packages/workspace/tests/verification.test.js"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-publish-gate",
+          "critical": true,
+          "reason": "Review, verify, and task push changes must prove publish-gate behavior.",
+          "matchedFiles": [
+            "packages/os/scripts/confirm.js",
+            "packages/workspace/scripts/confirm.js",
+            "packages/workspace/tests/verification.test.js"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "workspace-test-selection",
+          "critical": true,
+          "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy.",
+          "matchedFiles": [
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "workspace-stream-sync-runtime",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Stream synchronization changes must prove temporary-worktree dependency linking, stale-conflict recovery, generated-registry regeneration, and fail-closed behavior before a stream is pushed.",
+          "matchedFiles": [
+            "packages/os/scripts/stream-sync.js",
+            "packages/workspace/scripts/stream-sync.js"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-explore-retrieval-science",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Agent-facing OS Explore retrieval, unified investigation-policy, shadow VOI, and E6 controlled-trial promotion-gate changes must prove hard scope, missing-semantic fallback, honest hypothesis/readiness state, neutral reads, explicit relevance evidence, one shared E4 next-action/edit-readiness control, shadow-only empirical E5 VOI abstention/cost math, fixed-sample paired E6 evidence with exact sign-test and required-node safety gates, hosted embeddings, runtime routing, benchmark metrics, and compact/full output without selecting the historically red package-wide OS suite.",
+          "matchedFiles": [
+            "packages/os/scripts/lib/facade/executor.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-release-surface-freshness",
+          "critical": true,
+          "exclusive": true,
+          "reason": "OS release orchestration, GitHub CLI resolution, signed runtime publication/promotion, exact local update handoff, default workspace-shell snapshots, and Workspace Edge migrations must prove the focused freshness path without selecting unrelated package-wide OS tests.",
+          "matchedFiles": [
+            "packages/os/tests/release-tool-surface.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-mcp-call-timeout-envelope",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Public MCP call timeout is envelope execution metadata, not selected tool input; changes must prove transport separation, local facade deadline propagation, and syntax without selecting the historically red package-wide OS suite.",
+          "matchedFiles": [
+            "packages/os/scripts/lib/facade/executor.ts",
+            "packages/os/tests/facade/facade.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-task-worktree-eviction",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Durable task eviction, recovery archives, inactivity GC, supervisor scheduling, and facade recovery must prove reversible cleanup without selecting the unrelated package-wide OS baseline.",
+          "matchedFiles": [
+            "packages/os/scripts/lib/facade/executor.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-work-session-fs",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Work-session filesystem authority must prove trusted session-root routing, escape resistance, generated tool contracts, and unchanged task-session filesystem behavior without selecting unrelated package-wide OS tests.",
+          "matchedFiles": [
+            "packages/os/scripts/lib/facade/executor.ts",
+            "packages/os/tests/facade/facade.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "auto:@consuelo/os:package-test",
+          "critical": false,
+          "reason": "Auto-discovered package test script for packages/os.",
+          "matchedFiles": [
+            "packages/os/scripts/confirm.js"
+          ],
+          "origin": "auto"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace verification stamp tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/verification.test.js",
+            "packages/workspace/tests/verify-run-state.test.js",
+            "packages/os/tests/verify-run-state.test.js"
+          ],
+          "ruleId": "workspace-publish-gate",
+          "critical": true
+        },
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true
+        },
+        {
+          "name": "workspace stream sync runtime contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/stream-sync-node-modules.test.js",
+            "packages/workspace/tests/stream-sync-generated-registry-conflict.test.js"
+          ],
+          "ruleId": "workspace-stream-sync-runtime",
+          "critical": true
+        },
+        {
+          "name": "OS Explore retrieval science contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/explore-retrieval-policy.test.ts",
+            "tests/explore-retriever-fallback.test.ts",
+            "tests/explore-index-hydration-fallback.test.ts",
+            "tests/explore-bench.test.ts",
+            "tests/explore-output-contract.test.ts",
+            "tests/explore-hypothesis-model.test.ts",
+            "tests/explore-voi-policy.test.ts",
+            "tests/explore-promotion-gate.test.ts",
+            "tests/explore-runtime-routing.test.ts",
+            "tests/semantic-embedding-edge-gateway.test.ts",
+            "tests/semantic-embedding-gateway.test.ts",
+            "tests/semantic-embedding-identity.test.ts",
+            "tools/decision-engine/handler.test.ts"
+          ],
+          "ruleId": "os-explore-retrieval-science",
+          "critical": true
+        },
+        {
+          "name": "OS release freshness contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/os-device-authority-release-contract.test.ts",
+            "tests/distribution/release-channel-workflows.test.ts",
+            "tests/production-release-mcp-security.test.ts",
+            "tests/distribution/release-channels.test.ts",
+            "tests/github-cli-resolution.test.ts",
+            "tests/release-orchestrator.test.ts",
+            "tests/release-immutable.test.ts",
+            "tests/release-operation.test.ts",
+            "tests/release-local-platform-bundle.test.ts",
+            "tests/release-script-promotion-correlation.test.ts",
+            "tests/release-promotion-dispatch-lock.test.ts",
+            "tests/release-script-security.test.ts",
+            "tests/release-tool-surface.test.ts"
+          ],
+          "ruleId": "os-release-surface-freshness",
+          "critical": true
+        },
+        {
+          "name": "Workspace production release contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/website-deploy.test.js"
+          ],
+          "ruleId": "os-release-surface-freshness",
+          "critical": true
+        },
+        {
+          "name": "Workspace Edge release dry run",
+          "command": [
+            "bun",
+            "run",
+            "os:release-workspace-edge",
+            "--",
+            "--dry-run"
+          ],
+          "ruleId": "os-release-surface-freshness",
+          "critical": true
+        },
+        {
+          "name": "OS MCP call-timeout envelope contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/mcp-gateway.test.ts"
+          ],
+          "ruleId": "os-mcp-call-timeout-envelope",
+          "critical": true
+        },
+        {
+          "name": "OS MCP call-timeout facade contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/facade/facade.test.ts",
+            "-t",
+            "call execution timeout"
+          ],
+          "ruleId": "os-mcp-call-timeout-envelope",
+          "critical": true
+        },
+        {
+          "name": "OS MCP call-timeout syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "ruleId": "os-mcp-call-timeout-envelope",
+          "critical": true
+        },
+        {
+          "name": "task worktree eviction and recovery contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/task-worktree-eviction.test.ts",
+            "packages/workspace/tests/durable-task-worktrees.test.ts",
+            "packages/workspace/tests/task-session.test.js",
+            "packages/os/tests/task-worktree-gc-scheduler.test.ts"
+          ],
+          "ruleId": "os-task-worktree-eviction",
+          "critical": true
+        },
+        {
+          "name": "OS work-session filesystem authority contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/work-session-fs.test.ts",
+            "packages/os/tests/fs-list-portability.test.ts",
+            "packages/os/tests/fs-search.test.ts",
+            "packages/os/tests/fs-write.test.ts",
+            "packages/os/tests/session-start-foundation.test.ts",
+            "packages/os/tests/tool-manifest.test.ts"
+          ],
+          "ruleId": "os-work-session-fs",
+          "critical": true
+        },
+        {
+          "name": "OS task-session filesystem compatibility contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/facade/facade.test.ts",
+            "-t",
+            "fs\\.(apply_patch|write|read)"
+          ],
+          "ruleId": "os-work-session-fs",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "platform": "darwin",
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace verification stamp tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/verification.test.js",
+            "packages/workspace/tests/verify-run-state.test.js",
+            "packages/os/tests/verify-run-state.test.js"
+          ],
+          "cwd": ".",
+          "ruleId": "workspace-publish-gate",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1092,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-tooling-reliability-make-detached-verify-safe-for-internal-callers-and-self-hosting\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/verification.test.js \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 293\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/workspace/tests/verify-run-state.test.js \u001b[2m(\u001b[22m\u001b[2m10 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 820\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/verify-run-state.test.js \u001b[2m(\u001b[22m\u001b[2m11 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 820\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m3 passed\u001b[39m\u001b[22m\u001b[90m (3)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m29 passed\u001b[39m\u001b[22m\u001b[90m (29)\u001b[39m\n\u001b[2m   Start at \u001b[22m 14:11:15\n\u001b[2m   Duration \u001b[22m 912ms\u001b[2m (transform 42ms, setup 0ms, import 67ms, tests 1.93s, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "cwd": ".",
+          "ruleId": "workspace-test-selection",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 3951,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-tooling-reliability-make-detached-verify-safe-for-internal-callers-and-self-hosting\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/test-selection.test.js \u001b[2m(\u001b[22m\u001b[2m83 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 3711\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m discovers and seeds the existing test inventory \u001b[33m 456\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m83 passed\u001b[39m\u001b[22m\u001b[90m (83)\u001b[39m\n\u001b[2m   Start at \u001b[22m 14:11:16\n\u001b[2m   Duration \u001b[22m 3.79s\u001b[2m (transform 17ms, setup 0ms, import 25ms, tests 3.71s, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "workspace stream sync runtime contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/stream-sync-node-modules.test.js",
+            "packages/workspace/tests/stream-sync-generated-registry-conflict.test.js"
+          ],
+          "cwd": ".",
+          "ruleId": "workspace-stream-sync-runtime",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1667,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/workspace/tests/stream-sync-node-modules.test.js:\n(pass) stream sync links main-worktree node_modules before running verify [0.49ms]\n\npackages/workspace/tests/stream-sync-generated-registry-conflict.test.js:\nhint: Using 'master' as the name for the initial branch. This default branch name\nhint: is subject to change. To configure the initial branch name to use in all\nhint: of your new repositories, which will suppress this warning, call:\nhint:\nhint: \tgit config --global init.defaultBranch <name>\nhint:\nhint: Names commonly chosen instead of 'master' are 'main', 'trunk' and\nhint: 'development'. The just-created branch can be renamed via this command:\nhint:\nhint: \tgit branch -m <name>\nhint:\nhint: Disable this message with \"git config set advice.defaultBranchName false\"\nTo /var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/consuelo-stream-sync-registry-O5kGqA/origin.git\n * [new branch]      main -> main\nSwitched to a new branch 'stream/fixture'\nTo /var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/consuelo-stream-sync-registry-O5kGqA/origin.git\n * [new branch]      stream/fixture -> stream/fixture\nSwitched to branch 'main'\nTo /var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/consuelo-stream-sync-registry-O5kGqA/origin.git\n   d0e90f3..8afa672  main -> main\n(pass) stream sync generated registry conflict recovery > regenerates the generated test-selection registry when it is the only conflict [660.69ms]\nhint: Using 'master' as the name for the initial branch. This default branch name\nhint: is subject to change. To configure the initial branch name to use in all\nhint: of your new repositories, which will suppress this warning, call:\nhint:\nhint: \tgit config --global init.defaultBranch <name>\nhint:\nhint: Names commonly chosen instead of 'master' are 'main', 'trunk' and\nhint: 'development'. The just-created branch can be renamed via this command:\nhint:\nhint: \tgit branch -m <name>\nhint:\nhint: Disable this message with \"git config set advice.defaultBranchName false\"\nTo /var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/consuelo-stream-sync-registry-akKwSn/origin.git\n * [new branch]      main -> main\nSwitched to a new branch 'stream/fixture'\nTo /var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/consuelo-stream-sync-registry-akKwSn/origin.git\n * [new branch]      stream/fixture -> stream/fixture\nSwitched to branch 'main'\nTo /var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/consuelo-stream-sync-registry-akKwSn/origin.git\n   8fe6d64..c53cc81  main -> main\n(pass) stream sync generated registry conflict recovery > fails closed when a non-generated source conflict is also present [475.99ms]\nhint: Using 'master' as the name for the initial branch. This default branch name\nhint: is subject to change. To configure the initial branch name to use in all\nhint: of your new repositories, which will suppress this warning, call:\nhint:\nhint: \tgit config --global init.defaultBranch <name>\nhint:\nhint: Names commonly chosen instead of 'master' are 'main', 'trunk' and\nhint: 'development'. The just-created branch can be renamed via this command:\nhint:\nhint: \tgit branch -m <name>\nhint:\nhint: Disable this message with \"git config set advice.defaultBranchName false\"\nTo /var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/consuelo-stream-sync-registry-OkSUG4/origin.git\n * [new branch]      main -> main\nSwitched to a new branch 'stream/fixture'\nTo /var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/consuelo-stream-sync-registry-OkSUG4/origin.git\n * [new branch]      stream/fixture -> stream/fixture\nSwitched to branch 'main'\nTo /var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/consuelo-stream-sync-registry-OkSUG4/origin.git\n   8fe6d64..c53cc81  main -> main\nPreparing worktree (checking out 'stream/fixture')\n(pass) stream sync generated registry conflict recovery > recovers a stale conflicted temporary stream worktree before syncing [492.91ms]\n\n 4 pass\n 0 fail\n 21 expect() calls\nRan 4 tests across 2 files. [1.66s]\n"
+        },
+        {
+          "name": "OS Explore retrieval science contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/explore-retrieval-policy.test.ts",
+            "tests/explore-retriever-fallback.test.ts",
+            "tests/explore-index-hydration-fallback.test.ts",
+            "tests/explore-bench.test.ts",
+            "tests/explore-output-contract.test.ts",
+            "tests/explore-hypothesis-model.test.ts",
+            "tests/explore-voi-policy.test.ts",
+            "tests/explore-promotion-gate.test.ts",
+            "tests/explore-runtime-routing.test.ts",
+            "tests/semantic-embedding-edge-gateway.test.ts",
+            "tests/semantic-embedding-gateway.test.ts",
+            "tests/semantic-embedding-identity.test.ts",
+            "tools/decision-engine/handler.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-explore-retrieval-science",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 24627,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-tooling-reliability-make-detached-verify-safe-for-internal-callers-and-self-hosting/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/explore-voi-policy.test.ts \u001b[2m(\u001b[22m\u001b[2m7 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 11\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/explore-retrieval-policy.test.ts \u001b[2m(\u001b[22m\u001b[2m11 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 15\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/semantic-embedding-identity.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 8\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/semantic-embedding-gateway.test.ts \u001b[2m(\u001b[22m\u001b[2m15 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 34\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/explore-promotion-gate.test.ts \u001b[2m(\u001b[22m\u001b[2m13 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 12\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/explore-hypothesis-model.test.ts \u001b[2m(\u001b[22m\u001b[2m14 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 15\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tools/decision-engine/handler.test.ts \u001b[2m(\u001b[22m\u001b[2m1 test\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/semantic-embedding-edge-gateway.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 30\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/explore-output-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m6 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 8\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/explore-retriever-fallback.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 418\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/explore-runtime-routing.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 22\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/explore-bench.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 680\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should reject missing values when a value-taking benchmark CLI flag is last \u001b[33m 513\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/explore-index-hydration-fallback.test.ts \u001b[2m(\u001b[22m\u001b[2m7 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 24181\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should stop after the first failed hydration batch and continue with lexical retrieval \u001b[33m 1331\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should avoid a second query-time wait when semantic hydration hangs \u001b[33m 9142\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should bound total hydration latency when a later semantic batch hangs \u001b[33m 9217\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should bound successful semantic hydration instead of rebuilding the whole index synchronously \u001b[33m 1186\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should preserve query semantic retrieval when changed-document hydration fails local validation \u001b[33m 2176\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should mark query-time semantic fallback degraded after successful document hydration \u001b[33m 1126\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m13 passed\u001b[39m\u001b[22m\u001b[90m (13)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m102 passed\u001b[39m\u001b[22m\u001b[90m (102)\u001b[39m\n\u001b[2m   Start at \u001b[22m 14:11:22\n\u001b[2m   Duration \u001b[22m 24.37s\u001b[2m (transform 736ms, setup 180ms, import 1.22s, tests 25.44s, environment 1ms)\u001b[22m\n\n$ vitest run tests/explore-retrieval-policy.test.ts tests/explore-retriever-fallback.test.ts tests/explore-index-hydration-fallback.test.ts tests/explore-bench.test.ts tests/explore-output-contract.test.ts tests/explore-hypothesis-model.test.ts tests/explore-voi-policy.test.ts tests/explore-promotion-gate.test.ts tests/explore-runtime-routing.test.ts tests/semantic-embedding-edge-gateway.test.ts tests/semantic-embedding-gateway.test.ts tests/semantic-embedding-identity.test.ts tools/decision-engine/handler.test.ts\n(node:8543) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+        },
+        {
+          "name": "OS release freshness contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/os-device-authority-release-contract.test.ts",
+            "tests/distribution/release-channel-workflows.test.ts",
+            "tests/production-release-mcp-security.test.ts",
+            "tests/distribution/release-channels.test.ts",
+            "tests/github-cli-resolution.test.ts",
+            "tests/release-orchestrator.test.ts",
+            "tests/release-immutable.test.ts",
+            "tests/release-operation.test.ts",
+            "tests/release-local-platform-bundle.test.ts",
+            "tests/release-script-promotion-correlation.test.ts",
+            "tests/release-promotion-dispatch-lock.test.ts",
+            "tests/release-script-security.test.ts",
+            "tests/release-tool-surface.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-release-surface-freshness",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1243,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-tooling-reliability-make-detached-verify-safe-for-internal-callers-and-self-hosting/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/github-cli-resolution.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 4\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/release-local-platform-bundle.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/distribution/release-channel-workflows.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 39\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/release-immutable.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 14\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/distribution/release-channels.test.ts \u001b[2m(\u001b[22m\u001b[2m25 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 46\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/release-script-security.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 7\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/release-operation.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 108\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/release-orchestrator.test.ts \u001b[2m(\u001b[22m\u001b[2m14 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 5\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/release-script-promotion-correlation.test.ts \u001b[2m(\u001b[22m\u001b[2m7 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/production-release-mcp-security.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/release-promotion-dispatch-lock.test.ts \u001b[2m(\u001b[22m\u001b[2m7 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 230\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/release-tool-surface.test.ts \u001b[2m(\u001b[22m\u001b[2m6 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 78\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-release-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m18 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 595\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m13 passed\u001b[39m\u001b[22m\u001b[90m (13)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m103 passed\u001b[39m\u001b[22m\u001b[90m (103)\u001b[39m\n\u001b[2m   Start at \u001b[22m 14:11:46\n\u001b[2m   Duration \u001b[22m 1.08s\u001b[2m (transform 1.16s, setup 164ms, import 1.27s, tests 1.13s, environment 1ms)\u001b[22m\n\n$ vitest run tests/os-device-authority-release-contract.test.ts tests/distribution/release-channel-workflows.test.ts tests/production-release-mcp-security.test.ts tests/distribution/release-channels.test.ts tests/github-cli-resolution.test.ts tests/release-orchestrator.test.ts tests/release-immutable.test.ts tests/release-operation.test.ts tests/release-local-platform-bundle.test.ts tests/release-script-promotion-correlation.test.ts tests/release-promotion-dispatch-lock.test.ts tests/release-script-security.test.ts tests/release-tool-surface.test.ts\n"
+        },
+        {
+          "name": "Workspace production release contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/website-deploy.test.js"
+          ],
+          "cwd": ".",
+          "ruleId": "os-release-surface-freshness",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 642,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-tooling-reliability-make-detached-verify-safe-for-internal-callers-and-self-hosting\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/website-deploy.test.js \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 411\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m allows local deploys to use existing Wrangler auth when CLOUDFLARE_API_TOKEN is absent \u001b[33m 381\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m3 passed\u001b[39m\u001b[22m\u001b[90m (3)\u001b[39m\n\u001b[2m   Start at \u001b[22m 14:11:48\n\u001b[2m   Duration \u001b[22m 479ms\u001b[2m (transform 8ms, setup 0ms, import 13ms, tests 411ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "Workspace Edge release dry run",
+          "command": [
+            "bun",
+            "run",
+            "os:release-workspace-edge",
+            "--",
+            "--dry-run"
+          ],
+          "cwd": ".",
+          "ruleId": "os-release-surface-freshness",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1381,
+          "outputTail": "release=consuelo-workspace-edge\n$ bun run --cwd packages/os cloudflare:workspace-edge:deploy:dry-run\n\n ⛅️ wrangler 4.114.0\n────────────────────\nTotal Upload: 235.90 KiB / gzip: 51.39 KiB\nYour Worker has access to the following bindings:\nBinding                                                                                                              Resource            \nenv.OS_DEVICE_AUTHORITY (OsDeviceGrantDurableObject, defined in consuelo-os-device-authority)                        Durable Object      \nenv.WORKSPACE_ROUTE_REGISTRY (consuelo-workspace-route-registry)                                                     D1 Database         \nenv.SITES_SNAPSHOTS (consuelo-sites-snapshots)                                                                       R2 Bucket           \nenv.OS_SEMANTIC_EMBEDDING_RATE_LIMITER (600 requests/60s)                                                            Rate Limit          \nenv.OS_SEMANTIC_EMBEDDING_IP_RATE_LIMITER (1200 requests/60s)                                                        Rate Limit          \n\n--dry-run: exiting now.\nConsuelo Workspace Edge dry run complete\n$ bun packages/workspace/scripts/os-release-workspace-edge.ts --dry-run\n$ wrangler deploy --config cloudflare/workspace-edge/wrangler.toml --dry-run\n"
+        },
+        {
+          "name": "OS MCP call-timeout envelope contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/mcp-gateway.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-mcp-call-timeout-envelope",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1301,
+          "outputTail": "age\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"5024bfa7-b46f-4c79-a0a1-93c264aea8b7\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-26T18:11:50.893Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"b30ccda8-0193-4b4b-8903-45dfb25cd1ed\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-26T18:11:50.896Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"1169a7ee-295f-4ea7-8839-91428b169bc3\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-26T18:11:50.901Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"98970311-11f5-40e3-9a2f-24e4e8caf77d\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-26T18:11:50.907Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"c4ae912f-35aa-4b98-981c-798d4578472d\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-26T18:11:50.913Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"e3d5d264-eb4c-46ac-bc38-bfa6bb29adfd\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-26T18:11:50.918Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"32c44766-d4ee-40ab-82fa-18a76c33c00a\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-26T18:11:50.924Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"33f90d79-b389-4b3d-b107-ab6650091cb6\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-26T18:11:50.928Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"097ea477-8145-47bd-b255-d617462a9047\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-26T18:11:50.929Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"24b9c358-4eeb-4ab0-9d82-d0845c3aed16\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-26T18:11:50.931Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"bdb8a6af-a185-48db-a796-9c8f1236ec52\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-26T18:11:50.932Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"10e46e0c-5542-4d31-8b85-54364b0592a2\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-26T18:11:50.936Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"d84d5eec-f797-4124-873c-2d63c3fcf7fd\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-26T18:11:50.942Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"0a6f55a7-39e1-4219-aec1-8cbbb6916e82\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-26T18:11:50.947Z\"}\n(node:9969) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"8714447f-138e-490b-884c-cd726e2e9c19\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-09-26T18:11:51.201Z\"}\n"
+        },
+        {
+          "name": "OS MCP call-timeout facade contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/facade/facade.test.ts",
+            "-t",
+            "call execution timeout"
+          ],
+          "cwd": ".",
+          "ruleId": "os-mcp-call-timeout-envelope",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 744,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-tooling-reliability-make-detached-verify-safe-for-internal-callers-and-self-hosting\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/facade/facade.test.ts \u001b[2m(\u001b[22m\u001b[2m719 tests\u001b[22m\u001b[2m | \u001b[22m\u001b[33m716 skipped\u001b[39m\u001b[2m)\u001b[22m\u001b[32m 104\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m3 passed\u001b[39m\u001b[22m\u001b[2m | \u001b[22m\u001b[33m716 skipped\u001b[39m\u001b[90m (719)\u001b[39m\n\u001b[2m   Start at \u001b[22m 14:11:51\n\u001b[2m   Duration \u001b[22m 576ms\u001b[2m (transform 208ms, setup 0ms, import 409ms, tests 104ms, environment 0ms)\u001b[22m\n\n(node:10044) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+        },
+        {
+          "name": "OS MCP call-timeout syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "cwd": ".",
+          "ruleId": "os-mcp-call-timeout-envelope",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1781,
+          "outputTail": "workspace script syntax checks passed\n"
+        },
+        {
+          "name": "task worktree eviction and recovery contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/task-worktree-eviction.test.ts",
+            "packages/workspace/tests/durable-task-worktrees.test.ts",
+            "packages/workspace/tests/task-session.test.js",
+            "packages/os/tests/task-worktree-gc-scheduler.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-task-worktree-eviction",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 5712,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-tooling-reliability-make-detached-verify-safe-for-internal-callers-and-self-hosting\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/task-worktree-gc-scheduler.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/workspace/tests/durable-task-worktrees.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 4\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/workspace/tests/task-session.test.js \u001b[2m(\u001b[22m\u001b[2m13 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 584\u001b[2mms\u001b[22m\u001b[39m\n   \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m recoverDurableTaskSession restores an evicted worktree before recreating tmux \u001b[33m 506\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/workspace/tests/task-worktree-eviction.test.ts \u001b[2m(\u001b[22m\u001b[2m15 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 5419\u001b[2mms\u001b[22m\u001b[39m\n   \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m recovery archive captures dirty, untracked, and locally-ahead state without changing the real branch or index \u001b[33m 445\u001b[2mms\u001b[22m\u001b[39m\n   \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m dirty task eviction archives unique state, removes the worktree, and restores the exact file contents \u001b[33m 499\u001b[2mms\u001b[22m\u001b[39m\n   \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m clean remote-backed task eviction needs no recovery bundle and keeps the branch recoverable \u001b[33m 340\u001b[2mms\u001b[22m\u001b[39m\n   \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m archive failure is fail-closed and never removes the worktree \u001b[33m 611\u001b[2mms\u001b[22m\u001b[39m\n   \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m tampered recovery bundle is rejected before restore and the archive remains available \u001b[33m 890\u001b[2mms\u001b[22m\u001b[39m\n   \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m stale evicting task with a removed worktree is finalized as evicted and restored \u001b[33m 361\u001b[2mms\u001b[22m\u001b[39m\n   \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m corrupt recovery manifest reports the manifest path \u001b[33m 402\u001b[2mms\u001b[22m\u001b[39m\n   \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m final recovery cleanup deletes only task-owned archive and registry state \u001b[33m 379\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m4 passed\u001b[39m\u001b[22m\u001b[90m (4)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m32 passed\u001b[39m\u001b[22m\u001b[90m (32)\u001b[39m\n\u001b[2m   Start at \u001b[22m 14:11:53\n\u001b[2m   Duration \u001b[22m 5.54s\u001b[2m (transform 118ms, setup 0ms, import 207ms, tests 6.01s, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS work-session filesystem authority contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/work-session-fs.test.ts",
+            "packages/os/tests/fs-list-portability.test.ts",
+            "packages/os/tests/fs-search.test.ts",
+            "packages/os/tests/fs-write.test.ts",
+            "packages/os/tests/session-start-foundation.test.ts",
+            "packages/os/tests/tool-manifest.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-work-session-fs",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 3043,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-tooling-reliability-make-detached-verify-safe-for-internal-callers-and-self-hosting\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/fs-list-portability.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 109\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/fs-write.test.ts \u001b[2m(\u001b[22m\u001b[2m13 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 537\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/session-start-foundation.test.ts \u001b[2m(\u001b[22m\u001b[2m16 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 134\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/tool-manifest.test.ts \u001b[2m(\u001b[22m\u001b[2m17 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 164\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/fs-search.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 1115\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/work-session-fs.test.ts \u001b[2m(\u001b[22m\u001b[2m10 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 2012\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m uses the work-session path as the relative context for read, list, and search \u001b[33m 480\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m applies patches and trashes files inside the trusted work-session root \u001b[33m 648\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m6 passed\u001b[39m\u001b[22m\u001b[90m (6)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m66 passed\u001b[39m\u001b[22m\u001b[90m (66)\u001b[39m\n\u001b[2m   Start at \u001b[22m 14:11:59\n\u001b[2m   Duration \u001b[22m 2.81s\u001b[2m (transform 1.47s, setup 0ms, import 2.61s, tests 4.07s, environment 1ms)\u001b[22m\n\n(node:15464) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n(node:15460) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+        },
+        {
+          "name": "OS task-session filesystem compatibility contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/facade/facade.test.ts",
+            "-t",
+            "fs\\.(apply_patch|write|read)"
+          ],
+          "cwd": ".",
+          "ruleId": "os-work-session-fs",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 844,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-tooling-reliability-make-detached-verify-safe-for-internal-callers-and-self-hosting\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/facade/facade.test.ts \u001b[2m(\u001b[22m\u001b[2m719 tests\u001b[22m\u001b[2m | \u001b[22m\u001b[33m709 skipped\u001b[39m\u001b[2m)\u001b[22m\u001b[32m 187\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m10 passed\u001b[39m\u001b[22m\u001b[2m | \u001b[22m\u001b[33m709 skipped\u001b[39m\u001b[90m (719)\u001b[39m\n\u001b[2m   Start at \u001b[22m 14:12:02\n\u001b[2m   Duration \u001b[22m 670ms\u001b[2m (transform 212ms, setup 0ms, import 416ms, tests 187ms, environment 0ms)\u001b[22m\n\n(node:16153) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
