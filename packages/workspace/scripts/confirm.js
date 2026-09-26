@@ -102,7 +102,7 @@ function runVerify(repoRoot) {
   const data = parseJson(result.stdout);
 
   return {
-    passed: result.passed && data !== null && data.passed !== false,
+    passed: result.passed && data !== null && data.pending !== true && data.status !== 'VERIFY_PENDING' && data.passed === true,
     status: result.status,
     failed_checks: data
       ? [

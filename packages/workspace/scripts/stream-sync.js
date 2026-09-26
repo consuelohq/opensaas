@@ -246,12 +246,19 @@ function runStreamChecks(worktreePath) {
     stdio: ['ignore', 'pipe', 'pipe'],
   });
 
+  const data = parseJsonOutput(result.stdout || '');
+  const verifyCompleted =
+    result.status === 0 &&
+    data?.pending !== true &&
+    data?.status !== 'VERIFY_PENDING' &&
+    data?.passed === true;
+
   return {
     skipped: false,
     command,
-    status: result.status === 0 ? 'pass' : 'fail',
+    status: verifyCompleted ? 'pass' : 'fail',
     exitCode: result.status,
-    data: parseJsonOutput(result.stdout || ''),
+    data,
     stderr: result.stderr || '',
   };
 }
@@ -369,7 +376,7 @@ async function main() {
     printResult(
       {
         stream: streamBranch,
-        status: 'success',
+        status: pushed ? 'success' : 'checks_failed',
         worktreePath,
         temporaryWorktree: createdTemporaryWorktree,
         mergeOutput,
@@ -380,6 +387,7 @@ async function main() {
       },
       args.json,
     );
+    if (!pushed) process.exitCode = 1;
     return;
   }
 
@@ -411,7 +419,7 @@ async function main() {
     printResult(
       {
         stream: streamBranch,
-        status: 'success',
+        status: pushed ? 'success' : 'checks_failed',
         worktreePath,
         temporaryWorktree: createdTemporaryWorktree,
         mergeOutput,
@@ -423,6 +431,7 @@ async function main() {
       },
       args.json,
     );
+    if (!pushed) process.exitCode = 1;
     return;
   }
 
@@ -447,7 +456,7 @@ async function main() {
       printResult(
         {
           stream: streamBranch,
-          status: 'success',
+          status: pushed ? 'success' : 'checks_failed',
           worktreePath,
           temporaryWorktree: createdTemporaryWorktree,
           mergeOutput,
@@ -459,6 +468,7 @@ async function main() {
         },
         args.json,
       );
+      if (!pushed) process.exitCode = 1;
       return;
     }
   }
