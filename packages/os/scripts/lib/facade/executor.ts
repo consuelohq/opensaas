@@ -8,6 +8,7 @@ import { Effect } from 'effect';
 import { z } from 'zod';
 
 import manifestJson from '../../../manifests/generated/tool.manifest.json';
+import { runToolSearch } from '../../tools-search';
 import {
   executeDeploymentFacade,
   type DeploymentFacadeInput,
@@ -146,34 +147,123 @@ export function getToolManifestEntry(
   return scriptMatches.length === 1 ? scriptMatches[0] : null;
 }
 
-function buildUnknownToolGuidance(toolName: string): { message: string; data: unknown | null } {
-  if (toolName !== 'fs.patch') {
-    return { message: `unknown tool: ${toolName}`, data: null };
+function unknownToolSearchQuery(toolName: string): string {
+  return toolName.replace(/[._-]+/g, ' ').replace(/\s+/g, ' ').trim() || toolName;
+}
+
+function toolSearchMatches(search: Record<string, unknown>): string[] {
+  if (!Array.isArray(search.matches)) return [];
+  return search.matches
+    .map((match) => {
+      if (!match || typeof match !== 'object' || !('name' in match)) return null;
+      const name = (match as { name?: unknown }).name;
+      return typeof name === 'string' ? name : null;
+    })
+    .filter((name): name is string => Boolean(name));
+}
+
+function browserAuthRecovery(toolName: string, candidates: string[]): string | undefined {
+  const normalized = unknownToolSearchQuery(toolName).toLowerCase();
+  if (
+    normalized.startsWith('browser ') &&
+    /\b(login|auth|profile|mfa|captcha|passkey|consent)\b/.test(normalized) &&
+    candidates.includes('browser.headed')
+  ) {
+    return 'browser.headed';
+  }
+  return undefined;
+}
+
+async function buildUnknownToolGuidance(
+  toolName: string,
+): Promise<{ message: string; data: unknown | null }> {
+  if (toolName === 'fs.patch') {
+    const manifestEntry = getToolManifestEntry('fs.apply_patch');
+    return {
+      message: [
+        'unknown tool: fs.patch.',
+        'fs.patch is not an OS tool; use fs.apply_patch instead.',
+        'Call it with exactly one of patchText or patchFile.',
+        'The fs.apply_patch manifest entry is included at data.manifestEntry.',
+      ].join(' '),
+      data: {
+        requestedTool: 'fs.patch',
+        replacementTool: 'fs.apply_patch',
+        recommendedTool: 'fs.apply_patch',
+        autoRetry: false,
+        action: 'Call fs.apply_patch with exactly one of patchText or patchFile.',
+        toolsSearchCall: {
+          tool: 'tools.search',
+          input: { query: 'fs apply patch', limit: 5, noDocs: true },
+        },
+        exampleCall: {
+          tool: 'fs.apply_patch',
+          input: {
+            taskSession: '<taskSession>',
+            patchFile: '/tmp/change.patch',
+            dryRun: true,
+          },
+        },
+        manifestEntry,
+      },
+    };
   }
 
-  const manifestEntry = getToolManifestEntry('fs.apply_patch');
-  return {
-    message: [
-      'unknown tool: fs.patch.',
-      'fs.patch is not an OS tool; use fs.apply_patch instead.',
-      'Call it with exactly one of patchText or patchFile.',
-      'The fs.apply_patch manifest entry is included at data.manifestEntry.',
-    ].join(' '),
-    data: {
-      requestedTool: 'fs.patch',
-      replacementTool: 'fs.apply_patch',
-      action: 'Call fs.apply_patch with exactly one of patchText or patchFile.',
-      exampleCall: {
-        tool: 'fs.apply_patch',
-        input: {
-          taskSession: '<taskSession>',
-          patchFile: '/tmp/change.patch',
-          dryRun: true,
+  const query = unknownToolSearchQuery(toolName);
+  try {
+    const search = await runToolSearch({
+      query,
+      limit: 5,
+      includeDocs: false,
+      includeEmbeddings: false,
+    });
+    const candidates = toolSearchMatches(search);
+    const searchedRecommendation = typeof search.recommended === 'string'
+      ? search.recommended
+      : undefined;
+    const recommendedTool = browserAuthRecovery(toolName, candidates)
+      ?? searchedRecommendation;
+    const confidence = search.confidence === 'high' || search.confidence === 'medium'
+      ? search.confidence
+      : 'low';
+    const guidance = recommendedTool
+      ? `use ${recommendedTool}`
+      : candidates.length > 0
+        ? `run tools.search to choose between ${candidates.join(', ')}`
+        : `run tools.search for ${JSON.stringify(query)}`;
+
+    return {
+      message: `unknown tool: ${toolName}; ${guidance}. This is a tool-manifest mismatch, not an authorization denial.`,
+      data: {
+        requestedTool: toolName,
+        ...(recommendedTool ? { recommendedTool } : {}),
+        ...(candidates.length > 0 ? { candidates } : {}),
+        confidence,
+        source: 'tools.search',
+        autoRetry: false,
+        action: 'Use a manifest-backed tool suggestion; do not retry guessed tool names.',
+        toolsSearchCall: {
+          tool: 'tools.search',
+          input: { query, limit: 5, noDocs: true },
         },
       },
-      manifestEntry,
-    },
-  };
+    };
+  } catch {
+    return {
+      message: `unknown tool: ${toolName}; run tools.search for ${JSON.stringify(query)}. This is a tool-manifest mismatch, not an authorization denial.`,
+      data: {
+        requestedTool: toolName,
+        confidence: 'low',
+        source: 'fallback',
+        autoRetry: false,
+        action: 'Run tools.search before choosing a replacement tool.',
+        toolsSearchCall: {
+          tool: 'tools.search',
+          input: { query, limit: 5, noDocs: true },
+        },
+      },
+    };
+  }
 }
 
 
@@ -244,7 +334,7 @@ export async function executeTool<TData = unknown>(
 
   try {
     if (!entry) {
-      const guidance = buildUnknownToolGuidance(toolName);
+      const guidance = await buildUnknownToolGuidance(toolName);
       const result = createToolResult({
         ok: false,
         code: 'NOT_FOUND',

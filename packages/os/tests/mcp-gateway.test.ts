@@ -307,9 +307,9 @@ describe('MCP gateway adapter', () => {
       requiredScope: 'tool:explore:read',
     });
     expect(unknownScope).toMatchObject({
-      ok: false,
-      status: 403,
-      error: { code: 'UNKNOWN_TOOL_SCOPE' },
+      ok: true,
+      toolName: 'missing_tool',
+      requiredScope: 'mcp:call',
     });
     expect(missingNestedTool).toMatchObject({
       ok: false,
@@ -1381,6 +1381,48 @@ describe('MCP gateway server route', () => {
     expect(JSON.stringify(json)).toContain('get_steering');
     expect(JSON.stringify(json)).toContain('call');
     expect(JSON.stringify(json)).not.toContain(token.secret);
+  });
+
+  it('should return recoverable NOT_FOUND guidance for a stale nested tool instead of FORBIDDEN', async () => {
+    const config = createConfig();
+    const token = issueMcpToken(config, ['mcp:call']);
+    const body = JSON.stringify({
+      jsonrpc: '2.0',
+      id: 'unknown-browser-tool',
+      method: 'tools/call',
+      params: {
+        name: 'call',
+        arguments: {
+          tool: 'browser.login.profile',
+          input: {},
+        },
+      },
+    });
+    const signed = signMachineRequest({
+      config,
+      token,
+      method: 'POST',
+      path: '/mcp',
+      body,
+      timestamp: new Date().toISOString(),
+      nonce: 'nonce-server-unknown-browser-tool',
+    });
+    const response = await handleRequest(new Request('http://127.0.0.1:46321/mcp', {
+      method: 'POST',
+      headers: signed.headers,
+      body,
+    }));
+    const json = await readJsonResponse(response);
+    const serialized = JSON.stringify(json);
+
+    expect(response.status).toBe(200);
+    expect(serialized).toContain('NOT_FOUND');
+    expect(serialized).toContain('browser.login.profile');
+    expect(serialized).toContain('browser.headed');
+    expect(serialized).toContain('tools.search');
+    expect(serialized).not.toContain('UNKNOWN_TOOL_SCOPE');
+    expect(serialized).not.toContain('FORBIDDEN');
+    expect(serialized).not.toContain(token.secret);
   });
 
   it('should deny nested facade calls when the signed credential lacks the tool scope', async () => {
