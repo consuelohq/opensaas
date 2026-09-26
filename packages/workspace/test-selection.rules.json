@@ -1382,7 +1382,8 @@
             "x",
             "vitest",
             "run",
-            "packages/os/tests/mcp-gateway.test.ts"
+            "packages/os/tests/mcp-gateway.test.ts",
+            "packages/os/tests/facade/not-found-recovery.test.ts"
           ]
         },
         {
