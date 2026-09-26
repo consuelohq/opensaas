@@ -112,6 +112,43 @@ describe('test selection registry', () => {
     ).toEqual(['bun', 'run', '--cwd', 'packages/os', 'test']);
   }, 15_000);
 
+  it('preserves explicit selector ownership after registry regeneration', () => {
+    const out = path.join(os.tmpdir(), `test-selection-regenerated-${Date.now()}.json`);
+    const generated = json(run(['generate', '--out', out, '--json']));
+    expect(generated.summary.testFileCount).toBeGreaterThan(0);
+
+    const regeneratedRegistry = JSON.parse(fs.readFileSync(out, 'utf8'));
+    const committedRegistry = JSON.parse(fs.readFileSync(
+      path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../test-selection.registry.json'),
+      'utf8',
+    ));
+    const normalizeExplicit = (registry) => registry.rules
+      .filter((rule) => rule.origin === 'explicit')
+      .map(({ origin, ...rule }) => rule);
+
+    expect(normalizeExplicit(regeneratedRegistry)).toEqual(
+      normalizeExplicit(committedRegistry),
+    );
+
+    const selection = json(run([
+      'check',
+      '--registry',
+      out,
+      '--changed-file',
+      'packages/workspace/scripts/confirm.js',
+      '--changed-file',
+      'packages/os/scripts/confirm.js',
+      '--json',
+    ]));
+    const matchedRuleIds = selection.matchedRules.map((rule) => rule.id);
+    const suiteNames = selection.selectedSuites.map((suite) => suite.name);
+    expect(matchedRuleIds).toContain('workspace-publish-gate');
+    expect(suiteNames).toContain('workspace verification stamp tests');
+    expect(suiteNames).not.toContain('@consuelo/os package test');
+
+    fs.rmSync(out, { force: true });
+  }, 15_000);
+
   it('routes current OS Trace inspector changes only to existing OS-owned suites', () => {
     const rulesPath = path.resolve(
       path.dirname(fileURLToPath(import.meta.url)),
