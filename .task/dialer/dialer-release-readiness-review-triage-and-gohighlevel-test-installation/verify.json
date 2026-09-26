@@ -1,0 +1,50 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/dialer/dialer-release-readiness-review-triage-and-gohighlevel-test-installation",
+  "base": "origin/stream/dialer",
+  "headSha": "fe43fb6ce4fcd06f8bd2eaef6db76bf368c24642",
+  "changeHash": "4c222f561a0dc897e3ee925a55267cb9ec8601a1c054099494a112267bdada35",
+  "changedFiles": [
+    "areas/dialer/rd/receipts/RELEASE-READINESS-2026-09-26.md",
+    "areas/dialer/rd/receipts/REVIEW-TRIAGE-2026-09-26.json"
+  ],
+  "verifiedAt": "2026-09-26T17:33:19.003Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/dialer/dialer-release-readiness-review-triage-and-gohighlevel-test-installation/verify.json",
+        ".task/dialer/dialer-release-readiness-review-triage-and-gohighlevel-test-installation/workpad.md",
+        ".task/tasks/dialer/dialer-release-readiness-review-triage-and-gohighlevel-test-installation.json",
+        "areas/dialer/rd/receipts/RELEASE-READINESS-2026-09-26.md",
+        "areas/dialer/rd/receipts/REVIEW-TRIAGE-2026-09-26.json"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
