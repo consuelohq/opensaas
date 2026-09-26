@@ -1411,6 +1411,30 @@
       "reason": "Public MCP call timeout is envelope execution metadata, not selected tool input; changes must prove transport separation, local facade deadline propagation, and syntax without selecting the historically red package-wide OS suite."
     },
     {
+      "id": "os-verify-task-worktree-routing",
+      "source": [
+        "packages/os/scripts/lib/facade/executor.ts",
+        "packages/os/tests/facade/facade.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS verify task-worktree routing contract",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/facade/facade.test.ts",
+            "-t",
+            "runs task-scoped verify from the resolved task worktree instead of controller cwd"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Task-scoped verify self-hosting depends on facade cwd routing; changes to the executor or its facade regression must run the exact focused routing contract without falling back to the package-wide OS suite."
+    },
+    {
       "id": "os-device-approval-canonical-identity",
       "critical": true,
       "exclusive": true,
