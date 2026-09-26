@@ -234,6 +234,35 @@ describe('test selection registry', () => {
     );
   });
 
+  it('keeps agent-boundary tooling changes on focused suites instead of the broad OS package test', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/task-merge.js',
+      '--changed-file',
+      'packages/os/scripts/lib/task-merge-readiness.js',
+      '--changed-file',
+      'packages/os/scripts/stream-sync.js',
+      '--changed-file',
+      'packages/os/tests/facade/not-found-recovery.test.ts',
+      '--json',
+    ]));
+
+    expect(data.matchedRules.map((rule) => rule.id)).toEqual(
+      expect.arrayContaining([
+        'workspace-task-merge-agent-boundary',
+        'workspace-stream-sync-runtime',
+        'os-mcp-call-timeout-envelope',
+      ]),
+    );
+    expect(data.selectedSuites.map((suite) => suite.name)).toContain(
+      'workspace task merge agent-boundary contracts',
+    );
+    expect(data.selectedSuites.map((suite) => suite.name)).not.toContain(
+      '@consuelo/os package test',
+    );
+  });
+
   it('suppresses a broad auto package suite when explicit critical coverage fully owns the changed code', () => {
     const registryPath = path.join(
       os.tmpdir(),
