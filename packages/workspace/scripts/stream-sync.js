@@ -226,11 +226,12 @@ function parseJsonOutput(output) {
 
 function runStreamChecks(worktreePath) {
   const verifyBase = `origin/${DEFAULT_MAIN_BRANCH}`;
-  const command = `bun run verify -- --base ${verifyBase} --debug-skip-review --no-stamp --db-warn-only --json`;
+  const command = `bun run verify -- --foreground --base ${verifyBase} --debug-skip-review --no-stamp --db-warn-only --json`;
   const result = spawnSync('bun', [
     'run',
     'verify',
     '--',
+    '--foreground',
     '--base',
     verifyBase,
     '--debug-skip-review',

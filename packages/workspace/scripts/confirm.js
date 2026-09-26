@@ -98,7 +98,7 @@ function runCommand(repoRoot, command, commandArgs) {
 }
 
 function runVerify(repoRoot) {
-  const result = runCommand(repoRoot, 'bun', ['run', 'verify', '--', '--json', '--quiet']);
+  const result = runCommand(repoRoot, 'bun', ['run', 'verify', '--', '--foreground', '--json', '--quiet']);
   const data = parseJson(result.stdout);
 
   return {

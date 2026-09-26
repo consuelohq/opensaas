@@ -126,6 +126,18 @@ test('agent JSON verify uses a detached resumable boundary instead of owning the
   expect(verifySource).toContain('VERIFY_PENDING');
 });
 
+test('synchronous verify consumers opt into foreground completion', () => {
+  for (const relativePath of [
+    'packages/workspace/scripts/stream-sync.js',
+    'packages/os/scripts/stream-sync.js',
+    'packages/workspace/scripts/confirm.js',
+    'packages/os/scripts/confirm.js',
+  ]) {
+    const source = fs.readFileSync(path.resolve(relativePath), 'utf8');
+    expect(source, relativePath).toContain("'--foreground'");
+  }
+});
+
 test('verify keeps review semantic-only because selected suites own test execution', () => {
   const verifySource = fs.readFileSync(
     path.resolve('packages/workspace/scripts/verify.js'),
