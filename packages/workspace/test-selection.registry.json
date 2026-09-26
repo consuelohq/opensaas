@@ -147,6 +147,12 @@
       "id": "workspace-publish-gate",
       "source": [
         "packages/workspace/scripts/verify.js",
+        "packages/workspace/scripts/lib/verify-run-state.js",
+        "packages/workspace/tests/verification.test.js",
+        "packages/workspace/tests/verify-run-state.test.js",
+        "packages/os/scripts/verify.js",
+        "packages/os/scripts/lib/verify-run-state.js",
+        "packages/os/tests/verify-run-state.test.js",
         "packages/workspace/scripts/review.js",
         "packages/workspace/scripts/task-push.js",
         "packages/workspace/scripts/lib/verification.js"
@@ -159,7 +165,9 @@
             "x",
             "vitest",
             "run",
-            "packages/workspace/tests/verification.test.js"
+            "packages/workspace/tests/verification.test.js",
+            "packages/workspace/tests/verify-run-state.test.js",
+            "packages/os/tests/verify-run-state.test.js"
           ]
         }
       ],
@@ -318,6 +326,7 @@
       "id": "workspace-stream-sync-runtime",
       "source": [
         "packages/workspace/scripts/stream-sync.js",
+        "packages/os/scripts/stream-sync.js",
         "packages/workspace/tests/stream-sync-node-modules.test.js",
         "packages/workspace/tests/stream-sync-generated-registry-conflict.test.js"
       ],
@@ -335,6 +344,32 @@
       "critical": true,
       "exclusive": true,
       "reason": "Stream synchronization changes must prove temporary-worktree dependency linking, stale-conflict recovery, generated-registry regeneration, and fail-closed behavior before a stream is pushed.",
+      "origin": "explicit"
+    },
+    {
+      "id": "workspace-task-merge-agent-boundary",
+      "source": [
+        "packages/workspace/scripts/task-merge.js",
+        "packages/workspace/scripts/lib/task-merge-readiness.js",
+        "packages/os/scripts/task-merge.js",
+        "packages/os/scripts/lib/task-merge-readiness.js",
+        "packages/workspace/tests/task-merge-readiness.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "workspace task merge agent-boundary contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/task-merge-readiness.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Agent-facing PR merge readiness must stay bounded, fail closed on unreadable or failed GitHub checks, and keep deployment polling behind an explicit operator path.",
       "origin": "explicit"
     },
     {
@@ -1468,7 +1503,8 @@
         "packages/os/scripts/lib/facade/executor.ts",
         "packages/os/scripts/lib/facade/types.ts",
         "packages/os/tests/mcp-gateway.test.ts",
-        "packages/os/tests/facade/facade.test.ts"
+        "packages/os/tests/facade/facade.test.ts",
+        "packages/os/tests/facade/not-found-recovery.test.ts"
       ],
       "tests": [
         {
