@@ -5,16 +5,16 @@
   "baseBranch": "stream/os",
   "sourceBranch": "stream/os",
   "startFrom": "stream",
-  "prNumber": 2589,
-  "prUrl": "https://github.com/consuelohq/opensaas/pull/2589",
-  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2589",
-  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2589/consolidate-remaining-macos-background-launch-identities",
-  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2589",
-  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2589/consolidate-remaining-macos-background-launch-identities",
+  "prNumber": 2591,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2591",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2591",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2591/consolidate-remaining-macos-background-launch-identities",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2591",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2591/consolidate-remaining-macos-background-launch-identities",
   "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-consolidate-remaining-macos-background-launch-identities",
   "repoRoot": "/Users/kokayi/Dev/opensaas",
   "taskSession": "tsk_0096c1503f29",
   "tmuxSession": "opensaas-os-consolidate-remaining-macos-background-launch-id-0096c150",
   "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-consolidate-remaining-macos-background-launch-identities/.task/os/consolidate-remaining-macos-background-launch-identities/session.json",
-  "createdAt": "2026-09-25T20:36:17.711Z"
+  "createdAt": "2026-09-26T13:05:01.413Z"
 }

@@ -421,6 +421,8 @@ run_quiet_with_loading_dots() {
 
   local output_file
   local status=0
+  local interactive_output=0
+  [ -t 1 ] && interactive_output=1
   output_file="$(mktemp "${TMPDIR:-/tmp}/consuelo-bootstrap.XXXXXX")" ||
     fail "Consuelo OS could not create a temporary setup log"
 
@@ -428,12 +430,22 @@ run_quiet_with_loading_dots() {
   # BUN_BIN, RUNTIME_DIR, and INSTALL_ID that onboarding consumes afterward.
   # Running it in the background for an animated spinner would fork those
   # assignments into a subshell and silently lose them.
-  printf '%s...' "$loading_message"
+  if [ "$interactive_output" -eq 1 ]; then
+    printf '%s...' "$loading_message"
+  fi
   "$@" >"$output_file" 2>&1 || status=$?
   if [ "$status" -eq 0 ]; then
-    printf '\r%s... done\n' "$loading_message"
+    if [ "$interactive_output" -eq 1 ]; then
+      printf '\r%s... done\n' "$loading_message"
+    else
+      printf '%s... done\n' "$loading_message"
+    fi
   else
-    printf '\r%s... failed\n' "$loading_message"
+    if [ "$interactive_output" -eq 1 ]; then
+      printf '\r%s... failed\n' "$loading_message"
+    else
+      printf '%s... failed\n' "$loading_message"
+    fi
   fi
 
   if [ "$status" -ne 0 ]; then
