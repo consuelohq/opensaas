@@ -720,6 +720,25 @@ describe('test selection registry', () => {
     expect(suiteNames).not.toContain('@consuelo/os package test');
   });
 
+  it('routes verify self-hosting regression through a focused facade suite', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/lib/facade/executor.ts',
+      '--changed-file',
+      'packages/os/tests/facade/facade.test.ts',
+      '--json',
+    ]));
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+    const commands = data.selectedSuites.map((suite) => suite.command);
+
+    expect(suiteNames).not.toContain('@consuelo/os package test');
+    expect(commands.some((command) =>
+      command.includes('packages/os/tests/facade/facade.test.ts')
+      && command.includes('runs task-scoped verify from the resolved task worktree instead of controller cwd')
+    )).toBe(true);
+  });
+
   it('runs the owned NOT_FOUND recovery test from the exclusive MCP selector', () => {
     const data = json(run([
       'check',
