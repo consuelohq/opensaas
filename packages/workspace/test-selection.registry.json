@@ -2,8 +2,8 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 677,
-    "mappedTestCount": 594,
+    "testFileCount": 678,
+    "mappedTestCount": 595,
     "unmappedTestCount": 83,
     "ruleCount": 80,
     "explicitRuleCount": 67,
@@ -11,7 +11,7 @@
     "projectCount": 9,
     "packageTestScriptCount": 20,
     "byGroup": {
-      "packages/os/tests": 325,
+      "packages/os/tests": 326,
       "packages/workspace/tests": 65,
       "packages/os/tests/media": 34,
       "packages/consuelo-design/upstream/open-design/apps/daemon": 21,
@@ -92,7 +92,7 @@
       "tests": 1
     },
     "byKind": {
-      "test": 620,
+      "test": 621,
       "spec": 29,
       "__tests__": 11,
       "other": 7,
@@ -1427,7 +1427,9 @@
         "packages/os/tests/mcp-gateway.test.ts",
         "packages/os/tests/mcp-openai-session-receipt.test.ts",
         "packages/os/tests/mcp-response-diagnostics.test.ts",
-        "packages/os/tests/workspace-node-registry-routing.test.ts"
+        "packages/os/tests/workspace-node-registry-routing.test.ts",
+        "packages/os/scripts/server/mcp-request-recovery.ts",
+        "packages/os/tests/mcp-request-recovery.test.ts"
       ],
       "tests": [
         {
@@ -1439,7 +1441,8 @@
             "run",
             "packages/os/tests/mcp-gateway.test.ts",
             "packages/os/tests/mcp-openai-session-receipt.test.ts",
-            "packages/os/tests/mcp-response-diagnostics.test.ts"
+            "packages/os/tests/mcp-response-diagnostics.test.ts",
+            "packages/os/tests/mcp-request-recovery.test.ts"
           ]
         },
         {
@@ -1455,7 +1458,7 @@
       ],
       "critical": true,
       "exclusive": true,
-      "reason": "Public MCP completion changes must prove that completed upstream responses are not blocked by post-execution bookkeeping, that local received/response-ready receipts remain metadata-only and durable, and that server diagnostics run from the installed runtime without selecting the broad OS package suite.",
+      "reason": "Public MCP completion changes must prove that completed upstream responses are not blocked by non-critical post-execution bookkeeping, creation-time session affinity is established before handoff, explicit mutating requestId retries execute at most once with durable replay, local receipts remain metadata-only, and diagnostics stay focused instead of selecting the broad OS package suite.",
       "origin": "explicit"
     },
     {
@@ -5058,6 +5061,11 @@
     },
     {
       "path": "packages/os/tests/mcp-origin.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/mcp-request-recovery.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },

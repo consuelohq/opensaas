@@ -1,0 +1,20 @@
+{
+  "area": "tooling-reliability",
+  "stream": "stream/tooling-reliability",
+  "taskBranch": "task/tooling-reliability/fix-mcp-recovery-review-blockers",
+  "baseBranch": "stream/tooling-reliability",
+  "sourceBranch": "stream/tooling-reliability",
+  "startFrom": "stream",
+  "prNumber": 2604,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2604",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2604",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2604/fix-mcp-recovery-review-blockers",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2604",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2604/fix-mcp-recovery-review-blockers",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-tooling-reliability-fix-mcp-recovery-review-blockers",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_5baa133a9469",
+  "tmuxSession": "opensaas-tooling-reliability-fix-mcp-recovery-review-blockers-5baa133a",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-tooling-reliability-fix-mcp-recovery-review-blockers/.task/tooling-reliability/fix-mcp-recovery-review-blockers/session.json",
+  "createdAt": "2026-09-27T16:42:54.594Z"
+}
