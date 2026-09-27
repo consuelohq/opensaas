@@ -44,10 +44,43 @@ import { readGuardedLocalOsSteering } from '../services/steering-service';
 
 const MCP_PATH = '/mcp';
 const MCP_REQUEST_ID_PATTERN = /^[a-zA-Z0-9._:-]{8,128}$/;
+const MAX_MCP_HTTP_BODY_BYTES = 4 * 1024 * 1024;
 
 type McpRouteVariables = {
   requestId: string;
 };
+
+async function readBoundedMcpBody(request: Request): Promise<{ ok: true; body: string } | { ok: false }> {
+  const declaredLength = Number(request.headers.get('content-length'));
+  if (Number.isFinite(declaredLength) && declaredLength > MAX_MCP_HTTP_BODY_BYTES) return { ok: false };
+  if (!request.body) return { ok: true, body: '' };
+
+  const reader = request.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      if (!value) continue;
+      total += value.byteLength;
+      if (total > MAX_MCP_HTTP_BODY_BYTES) {
+        void reader.cancel().catch(() => undefined);
+        return { ok: false };
+      }
+      chunks.push(value);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+  const bytes = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return { ok: true, body: new TextDecoder().decode(bytes) };
+}
 
 function resolveMcpRequestId(request: Request): string {
   const provided = request.headers.get('x-consuelo-request-id')?.trim();
@@ -172,9 +205,28 @@ export function createMcpRoutes(
     const startedAt = Date.now();
     const requestId = resolveMcpRequestId(context.req.raw);
     const connectorKey = resolveOpenAiSessionReceiptKey(context.req.raw);
-    const receiptMetadata = context.req.method === 'POST'
-      ? inspectMcpRequestReceiptBody(await context.req.raw.clone().text())
-      : {};
+    let receiptMetadata = {};
+    if (context.req.method === 'POST') {
+      try {
+        const boundedBody = await readBoundedMcpBody(context.req.raw.clone());
+        if (!boundedBody.ok) {
+          return jsonResponse({
+            error: {
+              code: 'MCP_BODY_TOO_LARGE',
+              message: `MCP request body exceeds ${MAX_MCP_HTTP_BODY_BYTES} bytes.`,
+            },
+          }, 413);
+        }
+        receiptMetadata = inspectMcpRequestReceiptBody(boundedBody.body);
+      } catch {
+        return jsonResponse({
+          error: {
+            code: 'MCP_BODY_READ_FAILED',
+            message: 'MCP request body could not be read safely.',
+          },
+        }, 400);
+      }
+    }
     context.set('requestId', requestId);
     logLocalOsServerEvent('local_os.mcp_request_received', {
       requestId,
@@ -198,27 +250,29 @@ export function createMcpRoutes(
       throw error;
     } finally {
       const finishedAt = Date.now();
+      const status = failed ? 500 : context.res.status;
+      const responseFailed = failed || status >= 500;
       appendMcpRequestReceipt({
-        phase: failed ? 'failed' : 'response_ready',
+        phase: responseFailed ? 'failed' : 'response_ready',
         requestId,
         ...(connectorKey ? { connectorKey } : {}),
         ...receiptMetadata,
-        status: failed ? 500 : context.res.status,
+        status,
         durationMs: Math.max(0, finishedAt - startedAt),
         ts: new Date(finishedAt).toISOString(),
       });
       logLocalOsServerEvent(
-        failed ? 'local_os.mcp_request_failed' : 'local_os.mcp_response_ready',
+        responseFailed ? 'local_os.mcp_request_failed' : 'local_os.mcp_response_ready',
         {
           requestId,
           route: MCP_PATH,
           method: context.req.method,
-          status: failed ? 500 : context.res.status,
+          status,
           durationMs: Math.max(0, finishedAt - startedAt),
           ...(connectorKey ? { connectorKey } : {}),
           ...receiptMetadata,
         },
-        failed ? 'warn' : 'info',
+        responseFailed ? 'warn' : 'info',
       );
       context.header('x-consuelo-request-id', requestId);
     }

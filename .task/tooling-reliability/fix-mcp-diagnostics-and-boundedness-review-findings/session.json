@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_6e0102ab4591",
+  "tmuxSession": "opensaas-tooling-reliability-fix-mcp-diagnostics-and-boundedness-review-findi-6e0102ab",
+  "area": "tooling-reliability",
+  "stream": "stream/tooling-reliability",
+  "taskBranch": "task/tooling-reliability/fix-mcp-diagnostics-and-boundedness-review-findings",
+  "branch": "task/tooling-reliability/fix-mcp-diagnostics-and-boundedness-review-findings",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-tooling-reliability-fix-mcp-diagnostics-and-boundedness-review-findings",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-tooling-reliability-fix-mcp-diagnostics-and-boundedness-review-findings",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2605,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2605",
+  "createdAt": "2026-09-27T16:55:32.930Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-tooling-reliability-fix-mcp-diagnostics-and-boundedness-review-findings/.task/tooling-reliability/fix-mcp-diagnostics-and-boundedness-review-findings/session.json"
+}

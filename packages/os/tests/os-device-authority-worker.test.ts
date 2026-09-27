@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { createOsDeviceAuthorityHandler } from '../cloudflare/os-device-authority/src/app';
@@ -3044,5 +3046,14 @@ describe('os device authority worker', () => {
     await expect(store.byAccountWorkspace(accountId)).resolves.toMatchObject({
       workspaceId,
     });
+  });
+});
+
+
+describe('device authority deferred bookkeeping contract', () => {
+  it('only exposes defer when Durable Object waitUntil is available', () => {
+    const worker = readFileSync(resolve(import.meta.dirname, '../cloudflare/os-device-authority/src/worker.ts'), 'utf8');
+    expect(worker).toContain('defer: state.waitUntil');
+    expect(worker).not.toContain('else void promise.catch');
   });
 });
