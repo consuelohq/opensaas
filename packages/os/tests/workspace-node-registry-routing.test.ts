@@ -4622,6 +4622,93 @@ describe('multi-node connector routing', () => {
     }
   });
 
+  it('returns a completed MCP response before post-upstream affinity bookkeeping settles', async () => {
+    const backingStore = createMemoryDeviceGrantStore();
+    await seedWorkspace(backingStore);
+    await authorizeWorkspace(backingStore, 'central-post-upstream-detached-token', {
+      scopes: ['route:/mcp:read', 'mcp:call'],
+    });
+    const taskSession = 'tsk_post_upstream_detached';
+    const affinity = {
+      accountId,
+      workspaceId,
+      workspaceHost,
+      taskSession,
+      ownerNodeId: 'node-home',
+      createdAt: baseNow,
+      updatedAt: baseNow,
+      expiresAt: baseNow + 60_000,
+    };
+    await backingStore.claimWorkspaceTaskAffinity(affinity);
+
+    let releaseBookkeeping = () => {};
+    const bookkeepingGate = new Promise<void>((resolve) => {
+      releaseBookkeeping = resolve;
+    });
+    const store = {
+      ...backingStore,
+      async claimWorkspaceTaskAffinity() {
+        await bookkeepingGate;
+        return { status: 'existing' as const, affinity };
+      },
+    };
+    const db = createInMemoryWorkspaceRouteD1();
+    await seedRoutes(db);
+    const deferred: Promise<unknown>[] = [];
+    let forwardedRequestId: string | null = null;
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      origin,
+      now: () => baseNow,
+      workspaceRouteRegistry: db,
+      defer: (promise) => deferred.push(promise),
+      fetchImpl: async (request) => {
+        forwardedRequestId = request.headers.get('x-consuelo-request-id');
+        return Response.json({
+          jsonrpc: '2.0',
+          id: 49,
+          result: {
+            content: [{
+              type: 'text',
+              text: JSON.stringify({ ok: true, code: 'OK', data: {} }),
+            }],
+            isError: false,
+          },
+        });
+      },
+    });
+
+    const responsePromise = handler(new Request(`${origin}/mcp`, {
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer central-post-upstream-detached-token',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0', id: 49, method: 'tools/call',
+        params: {
+          name: 'call',
+          arguments: {
+            tool: 'fs.read',
+            input: { path: 'README.md' },
+            taskSession,
+          },
+        },
+      }),
+    }));
+
+    const completion = await Promise.race([
+      responsePromise.then(() => 'response'),
+      new Promise<'timeout'>((resolve) => setTimeout(() => resolve('timeout'), 40)),
+    ]);
+    expect(completion).toBe('response');
+    expect(forwardedRequestId).toMatch(/^[a-zA-Z0-9._:-]{8,128}$/);
+    expect(deferred).toHaveLength(1);
+
+    releaseBookkeeping();
+    await Promise.all(deferred);
+  });
+
   it('keeps OAuth discovery and direct MCP probing available when the connected default node is stale', async () => {
     const db = createInMemoryWorkspaceRouteD1();
     await seedRoutes(db, baseNow - heartbeatTtlMs * 4);

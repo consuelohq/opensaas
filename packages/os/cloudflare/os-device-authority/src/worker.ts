@@ -76,6 +76,10 @@ export class OsDeviceGrantDurableObject {
         env.WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET,
       operatorEnrollmentResetSecret: env.OS_ENROLLMENT_RESET_SECRET,
       operationalLogger: env.OS_DEVICE_AUTH_LOGGER,
+      defer: (promise) => {
+        if (state.waitUntil) state.waitUntil(promise);
+        else void promise.catch(() => undefined);
+      },
       managedCloudProvisionerSecret: env.OS_MANAGED_CLOUD_PROVISIONER_SECRET,
       managedCloudEnrollmentSecret: env.OS_MANAGED_CLOUD_ENROLLMENT_SECRET,
       stripeSecretKey: env.OS_STRIPE_SECRET_KEY,

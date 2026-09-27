@@ -868,9 +868,11 @@ describe('MCP gateway server route', () => {
     }));
 
     expect(response.status).toBe(200);
+    const requestId = response.headers.get('x-consuelo-request-id');
+    expect(requestId).toMatch(/^[a-zA-Z0-9._:-]{8,128}$/);
     expect(executeFacadeTool).toHaveBeenCalledWith(
       'explore',
-      { query: 'status' },
+      { query: 'status', requestId },
       {
         requestedNodeId: 'node_cloud_test',
         resolvedNodeId: 'node_cloud_test',
@@ -879,6 +881,51 @@ describe('MCP gateway server route', () => {
         routeSource: 'explicit',
       },
       { timeoutMs: 12_000 },
+    );
+  });
+
+  it('preserves an explicit facade requestId instead of replacing it with the transport receipt id', async () => {
+    const config = createConfig();
+    const token = issueMcpToken(config, ['route:/mcp:read', 'mcp:call']);
+    const executeFacadeTool = vi.fn(async () => ({ ok: true, code: 'OK' }));
+    const app = createMcpRoutes({
+      getSteering: async () => '# OS steering',
+      executeFacadeTool,
+    });
+    const body = JSON.stringify({
+      jsonrpc: '2.0',
+      id: 'explicit-request-id-call',
+      method: 'tools/call',
+      params: {
+        name: 'call',
+        arguments: {
+          tool: 'explore',
+          input: { query: 'status', requestId: 'caller-request-1234' },
+        },
+      },
+    });
+    const signed = signMachineRequest({
+      config,
+      token,
+      method: 'POST',
+      path: '/mcp',
+      body,
+      timestamp: new Date().toISOString(),
+      nonce: 'nonce-explicit-request-id-call',
+    });
+
+    const response = await app.request(new Request('http://127.0.0.1:46321/mcp', {
+      method: 'POST',
+      headers: signed.headers,
+      body,
+    }));
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get('x-consuelo-request-id')).not.toBe('caller-request-1234');
+    expect(executeFacadeTool).toHaveBeenCalledWith(
+      'explore',
+      { query: 'status', requestId: 'caller-request-1234' },
+      undefined,
     );
   });
 

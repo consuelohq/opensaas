@@ -1,0 +1,20 @@
+{
+  "area": "tooling-reliability",
+  "stream": "stream/tooling-reliability",
+  "taskBranch": "task/tooling-reliability/make-completed-mcp-tool-calls-recoverable-across-lost-responses",
+  "baseBranch": "stream/tooling-reliability",
+  "sourceBranch": "stream/tooling-reliability",
+  "startFrom": "stream",
+  "prNumber": 2602,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2602",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2602",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2602/make-completed-mcp-tool-calls-recoverable-across-lost-responses",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2602",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2602/make-completed-mcp-tool-calls-recoverable-across-lost-responses",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-tooling-reliability-make-completed-mcp-tool-calls-recoverable-across-lost-responses",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_234f58ed6cc2",
+  "tmuxSession": "opensaas-tooling-reliability-make-completed-mcp-tool-calls-recoverable-across-234f58ed",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-tooling-reliability-make-completed-mcp-tool-calls-recoverable-across-lost-responses/.task/tooling-reliability/make-completed-mcp-tool-calls-recoverable-across-lost-responses/session.json",
+  "createdAt": "2026-09-26T19:30:17.267Z"
+}

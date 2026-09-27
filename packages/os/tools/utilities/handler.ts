@@ -722,6 +722,7 @@ export const toolHandlers = [
     "name": "server",
     "command": {
       "script": "consuelo-reload",
+      "executionScope": "runtime",
       "branchMode": "none",
       "arguments": [
         {

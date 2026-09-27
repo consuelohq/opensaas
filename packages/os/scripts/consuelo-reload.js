@@ -27,6 +27,7 @@ const EXPECTED_SERVER_NAME = 'consuelo-os';
 const CONFLICTING_LABELS = ['com.consuelo.workspace'];
 const CONSUELO_HOME = process.env.CONSUELO_HOME || path.join(HOME, '.consuelo');
 const WORKER_POOL_STATE = path.join(CONSUELO_HOME, 'node', 'runs', 'os-worker-pool.json');
+const MCP_RECEIPT_LOG = path.join(CONSUELO_HOME, 'node', 'logs', 'mcp-requests.jsonl');
 const CADDYFILE = path.join(CONSUELO_HOME, 'node', 'caddy', 'Caddyfile');
 const MAC_SUPERVISED_SIDECARS_MARKER = path.join(OS_DIR, 'scripts', 'lib', 'macos-supervised-sidecars.ts');
 const SUPERVISED_CADDY_PID = path.join(CONSUELO_HOME, 'node', 'runs', 'supervised-sidecars', 'caddy.pid');
@@ -724,10 +725,24 @@ switch (command) {
     refreshManagedSitesBestEffort();
     break;
 
-  case 'logs':
-    if (existsSync(LOG_FILE)) spawn('tail', ['-50', LOG_FILE], { stdio: 'inherit' });
-    else writeStdout(`no logs at ${LOG_FILE}`);
+  case 'logs': {
+    let found = false;
+    if (existsSync(LOG_FILE)) {
+      found = true;
+      writeStdout(`system log: ${LOG_FILE}`);
+      writeStdout(readFileSync(LOG_FILE, 'utf8').trim().split('\n').slice(-50).join('\n'));
+    }
+    if (existsSync(MCP_RECEIPT_LOG)) {
+      found = true;
+      writeStdout(`recent MCP request receipts: ${MCP_RECEIPT_LOG}`);
+      writeStdout(readFileSync(MCP_RECEIPT_LOG, 'utf8').trim().split('\n').slice(-50).join('\n'));
+    }
+    if (!found) {
+      writeStdout(`no logs at ${LOG_FILE}`);
+      writeStdout(`no MCP request receipts at ${MCP_RECEIPT_LOG}`);
+    }
     break;
+  }
 
   default:
     writeStderr(`unknown command: ${command}`);

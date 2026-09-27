@@ -31,6 +31,10 @@ import { internalError, jsonResponse } from '../middleware/errors';
 import { queueGatewayAuthenticationTraceSafely } from '../../lib/trace-persistence';
 import type { TraceRoutingContext } from '../../lib/trace-routing-context';
 import { logLocalOsServerError, logLocalOsServerEvent } from '../logger';
+import {
+  appendMcpRequestReceipt,
+  inspectMcpRequestReceiptBody,
+} from '../mcp-request-receipts';
 import { validateMcpRequestOrigin } from '../security/mcp-origin';
 import { executeLocalOsFacadeTool } from '../services/call-service';
 import { resolveMcpRequestSession } from '../services/mcp-session';
@@ -162,17 +166,59 @@ export function createMcpRoutes(
   const app = new Hono<{ Variables: McpRouteVariables }>();
 
   app.use(MCP_PATH, async (context, next) => {
+    const startedAt = Date.now();
     const requestId = resolveMcpRequestId(context.req.raw);
     const connectorKey = resolveOpenAiSessionReceiptKey(context.req.raw);
+    const receiptMetadata = context.req.method === 'POST'
+      ? inspectMcpRequestReceiptBody(await context.req.raw.clone().text())
+      : {};
     context.set('requestId', requestId);
     logLocalOsServerEvent('local_os.mcp_request_received', {
       requestId,
       route: MCP_PATH,
       method: context.req.method,
       ...(connectorKey ? { connectorKey } : {}),
+      ...receiptMetadata,
     });
-    await next();
-    context.header('x-consuelo-request-id', requestId);
+    appendMcpRequestReceipt({
+      phase: 'received',
+      requestId,
+      ...(connectorKey ? { connectorKey } : {}),
+      ...receiptMetadata,
+      ts: new Date(startedAt).toISOString(),
+    });
+    let failed = false;
+    try {
+      await next();
+    } catch (error: unknown) {
+      failed = true;
+      throw error;
+    } finally {
+      const finishedAt = Date.now();
+      appendMcpRequestReceipt({
+        phase: failed ? 'failed' : 'response_ready',
+        requestId,
+        ...(connectorKey ? { connectorKey } : {}),
+        ...receiptMetadata,
+        status: failed ? 500 : context.res.status,
+        durationMs: Math.max(0, finishedAt - startedAt),
+        ts: new Date(finishedAt).toISOString(),
+      });
+      logLocalOsServerEvent(
+        failed ? 'local_os.mcp_request_failed' : 'local_os.mcp_response_ready',
+        {
+          requestId,
+          route: MCP_PATH,
+          method: context.req.method,
+          status: failed ? 500 : context.res.status,
+          durationMs: Math.max(0, finishedAt - startedAt),
+          ...(connectorKey ? { connectorKey } : {}),
+          ...receiptMetadata,
+        },
+        failed ? 'warn' : 'info',
+      );
+      context.header('x-consuelo-request-id', requestId);
+    }
   });
 
   app.all(MCP_PATH, async (context) => {
@@ -298,10 +344,14 @@ export function createMcpRoutes(
       });
       const result = await handleMcpGatewayJsonRpc(body, {
         getSteering: () => dependencies.getSteering(steeringCallerKey, nodeRouting),
-        executeFacadeTool: (toolName, toolInput, execution) =>
-          execution
-            ? dependencies.executeFacadeTool(toolName, toolInput, traceRouting, execution)
-            : dependencies.executeFacadeTool(toolName, toolInput, traceRouting),
+        executeFacadeTool: (toolName, toolInput, execution) => {
+          const correlatedToolInput = typeof toolInput.requestId === 'string'
+            ? toolInput
+            : { ...toolInput, requestId };
+          return execution
+            ? dependencies.executeFacadeTool(toolName, correlatedToolInput, traceRouting, execution)
+            : dependencies.executeFacadeTool(toolName, correlatedToolInput, traceRouting);
+        },
       });
       const response = jsonResponse(result);
       if (session?.responseSessionId) {
