@@ -1038,7 +1038,10 @@ export async function proxyCentralMcpRequest(input: {
         }
       };
       const bookkeepingPromise = bookkeeping();
-      if (input.defer) input.defer(bookkeepingPromise);
+      const createsSessionAffinity = routingInspection.facadeTool === 'task.start'
+        || routingInspection.facadeTool === 'session.start';
+      if (createsSessionAffinity) await bookkeepingPromise;
+      else if (input.defer) input.defer(bookkeepingPromise);
       else await bookkeepingPromise;
     }
 

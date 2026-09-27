@@ -809,6 +809,10 @@ describe('test selection registry', () => {
       '--changed-file',
       'packages/os/scripts/server/mcp-request-receipts.ts',
       '--changed-file',
+      'packages/os/scripts/server/mcp-request-recovery.ts',
+      '--changed-file',
+      'packages/os/tests/mcp-request-recovery.test.ts',
+      '--changed-file',
       'packages/os/scripts/server/routes/mcp.ts',
       '--json',
     ]));

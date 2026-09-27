@@ -29,12 +29,14 @@ import {
 } from '../middleware/dangerous-material';
 import { internalError, jsonResponse } from '../middleware/errors';
 import { queueGatewayAuthenticationTraceSafely } from '../../lib/trace-persistence';
+import { getToolManifestEntry } from '../../lib/facade/executor';
 import type { TraceRoutingContext } from '../../lib/trace-routing-context';
 import { logLocalOsServerError, logLocalOsServerEvent } from '../logger';
 import {
   appendMcpRequestReceipt,
   inspectMcpRequestReceiptBody,
 } from '../mcp-request-receipts';
+import { createMcpRequestRecoveryStore } from '../mcp-request-recovery';
 import { validateMcpRequestOrigin } from '../security/mcp-origin';
 import { executeLocalOsFacadeTool } from '../services/call-service';
 import { resolveMcpRequestSession } from '../services/mcp-session';
@@ -164,6 +166,7 @@ export function createMcpRoutes(
   dependencies: McpRouteDependencies = defaultDependencies,
 ) {
   const app = new Hono<{ Variables: McpRouteVariables }>();
+  const requestRecovery = createMcpRequestRecoveryStore();
 
   app.use(MCP_PATH, async (context, next) => {
     const startedAt = Date.now();
@@ -344,13 +347,41 @@ export function createMcpRoutes(
       });
       const result = await handleMcpGatewayJsonRpc(body, {
         getSteering: () => dependencies.getSteering(steeringCallerKey, nodeRouting),
-        executeFacadeTool: (toolName, toolInput, execution) => {
-          const correlatedToolInput = typeof toolInput.requestId === 'string'
-            ? toolInput
+        executeFacadeTool: async (toolName, toolInput, execution) => {
+          const explicitRequestId = typeof toolInput.requestId === 'string'
+            && MCP_REQUEST_ID_PATTERN.test(toolInput.requestId.trim())
+            ? toolInput.requestId.trim()
+            : undefined;
+          const correlatedToolInput = explicitRequestId
+            ? { ...toolInput, requestId: explicitRequestId }
             : { ...toolInput, requestId };
-          return execution
+          const execute = () => execution
             ? dependencies.executeFacadeTool(toolName, correlatedToolInput, traceRouting, execution)
             : dependencies.executeFacadeTool(toolName, correlatedToolInput, traceRouting);
+
+          if (!explicitRequestId) return execute();
+
+          let mutating = false;
+          try {
+            mutating = getToolManifestEntry(toolName)?.capabilities.mutating === true;
+          } catch {
+            return {
+              ok: false,
+              code: 'REQUEST_RECOVERY_UNAVAILABLE',
+              message: 'Mutating request recovery could not resolve the tool contract. Execution was not started.',
+              data: { requestId: explicitRequestId },
+              autoRetry: false,
+            };
+          }
+          if (!mutating) return execute();
+
+          return requestRecovery.execute({
+            requestId: explicitRequestId,
+            toolName,
+            toolInput: correlatedToolInput,
+            scope: steeringCallerKey,
+            execute,
+          });
         },
       });
       const response = jsonResponse(result);
