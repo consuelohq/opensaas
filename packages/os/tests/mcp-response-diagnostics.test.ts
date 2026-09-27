@@ -32,6 +32,13 @@ describe('MCP response diagnostics surface', () => {
       const reload = source(relativePath);
       expect(reload, relativePath).toContain('mcp-requests.jsonl');
       expect(reload, relativePath).toContain('recent MCP request receipts');
+      expect(reload, relativePath).toContain('function readTailLines');
+      expect(reload, relativePath).not.toContain("readFileSync(LOG_FILE, 'utf8').trim().split('\\n').slice(-50)");
+      expect(reload, relativePath).not.toContain("readFileSync(MCP_RECEIPT_LOG, 'utf8').trim().split('\\n').slice(-50)");
+      expect(reload, relativePath).toContain('process.env.CONSUELO_OS_HOME');
+      expect(reload, relativePath).toContain("configured.startsWith('~/')");
+      expect(reload, relativePath).toContain("path.basename(resolved) === 'os'");
+      expect(reload, relativePath).toContain('maxBytes = 256 * 1024');
     }
   });
 });

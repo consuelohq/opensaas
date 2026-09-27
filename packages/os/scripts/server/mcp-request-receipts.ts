@@ -25,9 +25,15 @@ export type McpRequestReceipt = McpRequestReceiptMetadata & {
 
 const MAX_RECEIPT_LOG_BYTES = 2 * 1024 * 1024;
 const RETAIN_RECEIPT_LOG_BYTES = 512 * 1024;
+const MAX_RECEIPT_METADATA_CHARS = 256;
 
 function isObject(value: unknown): value is JsonObject {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function boundedMetadataString(value: unknown): string | undefined {
+  if (typeof value !== 'string') return undefined;
+  return value.slice(0, MAX_RECEIPT_METADATA_CHARS);
 }
 
 export function inspectMcpRequestReceiptBody(body: string): McpRequestReceiptMetadata {
@@ -35,17 +41,21 @@ export function inspectMcpRequestReceiptBody(body: string): McpRequestReceiptMet
     const parsed = JSON.parse(body) as unknown;
     if (!isObject(parsed)) return {};
     const metadata: McpRequestReceiptMetadata = {};
-    if (typeof parsed.id === 'string' || typeof parsed.id === 'number' || parsed.id === null) {
-      metadata.jsonRpcId = parsed.id;
-    }
-    if (typeof parsed.method === 'string') metadata.method = parsed.method;
+    if (typeof parsed.id === 'string') metadata.jsonRpcId = boundedMetadataString(parsed.id);
+    else if (typeof parsed.id === 'number' || parsed.id === null) metadata.jsonRpcId = parsed.id;
+    const method = boundedMetadataString(parsed.method);
+    if (method !== undefined) metadata.method = method;
     if (!isObject(parsed.params)) return metadata;
-    if (typeof parsed.params.name === 'string') metadata.publicTool = parsed.params.name;
+    const publicTool = boundedMetadataString(parsed.params.name);
+    if (publicTool !== undefined) metadata.publicTool = publicTool;
     if (!isObject(parsed.params.arguments)) return metadata;
     const args = parsed.params.arguments;
-    if (typeof args.tool === 'string') metadata.facadeTool = args.tool;
-    if (typeof args.taskSession === 'string') metadata.taskSession = args.taskSession;
-    if (typeof args.workSession === 'string') metadata.workSession = args.workSession;
+    const facadeTool = boundedMetadataString(args.tool);
+    const taskSession = boundedMetadataString(args.taskSession);
+    const workSession = boundedMetadataString(args.workSession);
+    if (facadeTool !== undefined) metadata.facadeTool = facadeTool;
+    if (taskSession !== undefined) metadata.taskSession = taskSession;
+    if (workSession !== undefined) metadata.workSession = workSession;
     return metadata;
   } catch {
     return {};

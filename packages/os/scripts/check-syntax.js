@@ -8,7 +8,12 @@ const { spawnSync } = require('child_process');
 const scriptsDir = path.resolve(__dirname);
 const failures = [];
 const NODE_EXECUTABLE = process.env.NODE_BIN || (process.versions.bun ? 'node' : process.execPath);
-const SYNTAX_CHECK_TIMEOUT_MS = Math.max(1000, Number(process.env.CONSUELO_SYNTAX_CHECK_TIMEOUT_MS || 10000));
+const SYNTAX_CHECK_TIMEOUT_MS = (() => {
+  const configured = Number(process.env.CONSUELO_SYNTAX_CHECK_TIMEOUT_MS || 10000);
+  return Number.isSafeInteger(configured) && configured >= 1000 && configured <= 60000
+    ? configured
+    : 10000;
+})();
 
 function walk(dir) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {

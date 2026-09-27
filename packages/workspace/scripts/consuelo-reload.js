@@ -2,7 +2,7 @@
 // consuelo-reload.js — manage the workspace MCP server reload path
 // supports both launchd and direct process modes
 const { execFileSync, spawn } = require('child_process');
-const { existsSync, readFileSync } = require('fs');
+const { closeSync, existsSync, fstatSync, openSync, readFileSync, readSync } = require('fs');
 const os = require('os');
 const path = require('path');
 
@@ -15,13 +15,19 @@ const WORKSPACE_DIR = path.resolve(__dirname, '..');
 const START_SCRIPT = path.join(WORKSPACE_DIR, 'scripts', 'start-brain.sh');
 const SERVER_PY = path.join(WORKSPACE_DIR, 'server.py');
 const LOG_FILE = '/tmp/workspace.log';
-const RAW_CONSUELO_HOME = path.resolve(
-  process.env.CONSUELO_HOME || process.env.CONSUELO_OS_HOME || path.join(HOME, '.consuelo'),
-);
-const CONSUELO_HOME =
-  path.basename(RAW_CONSUELO_HOME) === 'os' && path.basename(path.dirname(RAW_CONSUELO_HOME)) === '.consuelo'
-    ? path.dirname(RAW_CONSUELO_HOME)
-    : RAW_CONSUELO_HOME;
+function resolveConsueloHome() {
+  const configured = process.env.CONSUELO_HOME || process.env.CONSUELO_OS_HOME || path.join(HOME, '.consuelo');
+  const expanded = configured === '~'
+    ? HOME
+    : configured.startsWith('~/')
+      ? path.join(HOME, configured.slice(2))
+      : configured;
+  const resolved = path.resolve(expanded);
+  return path.basename(resolved) === 'os' && path.basename(path.dirname(resolved)) === '.consuelo'
+    ? path.dirname(resolved)
+    : resolved;
+}
+const CONSUELO_HOME = resolveConsueloHome();
 const MCP_RECEIPT_LOG = path.join(CONSUELO_HOME, 'node', 'logs', 'mcp-requests.jsonl');
 const LAUNCH_DOMAIN = `gui/${process.getuid()}`;
 const RELOAD_WAIT_ATTEMPTS = Number(process.env.CONSUELO_RELOAD_WAIT_ATTEMPTS || 40);
@@ -30,6 +36,24 @@ const CONFLICTING_LABELS = ['com.consuelo.system'];
 
 function writeStdout(message = '') { process.stdout.write(`${message}\n`); }
 function writeStderr(message = '') { process.stderr.write(`${message}\n`); }
+
+function readTailLines(filePath, lineCount = 50, maxBytes = 256 * 1024) {
+  const fd = openSync(filePath, 'r');
+  try {
+    const size = fstatSync(fd).size;
+    const bytesToRead = Math.min(size, maxBytes);
+    const buffer = Buffer.alloc(bytesToRead);
+    if (bytesToRead > 0) readSync(fd, buffer, 0, bytesToRead, Math.max(0, size - bytesToRead));
+    let text = buffer.toString('utf8');
+    if (size > bytesToRead) {
+      const firstNewline = text.indexOf('\n');
+      if (firstNewline >= 0) text = text.slice(firstNewline + 1);
+    }
+    return text.trim().split('\n').slice(-lineCount).join('\n');
+  } finally {
+    closeSync(fd);
+  }
+}
 
 function run(command, args = []) {
   try {
@@ -292,12 +316,12 @@ switch (cmd) {
     if (existsSync(LOG_FILE)) {
       found = true;
       writeStdout(`legacy server log: ${LOG_FILE}`);
-      writeStdout(readFileSync(LOG_FILE, 'utf8').trim().split('\n').slice(-50).join('\n'));
+      writeStdout(readTailLines(LOG_FILE));
     }
     if (existsSync(MCP_RECEIPT_LOG)) {
       found = true;
       writeStdout(`recent MCP request receipts: ${MCP_RECEIPT_LOG}`);
-      writeStdout(readFileSync(MCP_RECEIPT_LOG, 'utf8').trim().split('\n').slice(-50).join('\n'));
+      writeStdout(readTailLines(MCP_RECEIPT_LOG));
     }
     if (!found) {
       writeStdout(`no logs at ${LOG_FILE}`);
