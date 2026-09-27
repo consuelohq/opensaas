@@ -1283,6 +1283,79 @@
       "reason": "MCP request admission and dangerous-material boundary changes must prove JSON-RPC transport/error behavior, fail-closed safety, authentication/gateway compatibility, and syntax without selecting the historically broad OS package suite."
     },
     {
+      "id": "os-mcp-response-completion-boundary",
+      "source": [
+        "packages/os/cloudflare/os-device-authority/src/routes/mcp-proxy.ts",
+        "packages/os/cloudflare/os-device-authority/src/services/mcp-proxy.ts",
+        "packages/os/scripts/server/mcp-request-receipts.ts",
+        "packages/os/scripts/server/routes/mcp.ts",
+        "packages/os/scripts/consuelo-reload.js",
+        "packages/workspace/scripts/consuelo-reload.js",
+        "packages/os/tools/utilities/handler.ts",
+        "packages/os/tests/mcp-gateway.test.ts",
+        "packages/os/tests/mcp-openai-session-receipt.test.ts",
+        "packages/os/tests/mcp-response-diagnostics.test.ts",
+        "packages/os/tests/workspace-node-registry-routing.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS MCP response receipt contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/mcp-gateway.test.ts",
+            "packages/os/tests/mcp-openai-session-receipt.test.ts",
+            "packages/os/tests/mcp-response-diagnostics.test.ts"
+          ]
+        },
+        {
+          "name": "OS MCP post-upstream completion contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/workspace-node-registry-routing.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Public MCP completion changes must prove that completed upstream responses are not blocked by post-execution bookkeeping, that local received/response-ready receipts remain metadata-only and durable, and that server diagnostics run from the installed runtime without selecting the broad OS package suite."
+    },
+    {
+      "id": "os-bounded-js-syntax-runner",
+      "source": [
+        "packages/os/scripts/check-syntax.js",
+        "packages/workspace/scripts/check-syntax.js",
+        "packages/os/tests/check-syntax-runner.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS bounded JavaScript syntax runner contract",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/check-syntax-runner.test.ts"
+          ]
+        },
+        {
+          "name": "OS JavaScript syntax sweep",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "The JavaScript syntax gate is itself part of verify. Changes must prove Bun-launched runners delegate to Node with a per-file timeout and that the full syntax sweep remains bounded without selecting the broad OS package suite."
+    },
+    {
       "id": "os-chatgpt-mcp-oauth",
       "critical": true,
       "exclusive": true,

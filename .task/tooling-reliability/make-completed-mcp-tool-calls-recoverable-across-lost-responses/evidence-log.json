@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "worktree_id": "task/tooling-reliability/make-completed-mcp-tool-calls-recoverable-across-lost-responses",
+  "events": [
+    {
+      "id": "b60df4b5-b039-459e-b7f4-d2ad0f9ff3cf",
+      "occurred_at": "2026-09-27T16:32:07.845Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/definitely-missing.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/tooling-reliability/make-completed-mcp-tool-calls-recoverable-across-lost-responses",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/tooling-reliability/make-completed-mcp-tool-calls-recoverable-across-lost-responses"
+      }
+    },
+    {
+      "id": "157b8068-b737-4f16-9578-2807534b9bdb",
+      "occurred_at": "2026-09-27T16:33:32.984Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/definitely-missing.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/tooling-reliability/make-completed-mcp-tool-calls-recoverable-across-lost-responses",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/tooling-reliability/make-completed-mcp-tool-calls-recoverable-across-lost-responses"
+      }
+    },
+    {
+      "id": "8b0b093f-836e-442b-9fa9-c3fc63c07782",
+      "occurred_at": "2026-09-27T16:35:13.985Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/definitely-missing.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/tooling-reliability/make-completed-mcp-tool-calls-recoverable-across-lost-responses",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/tooling-reliability/make-completed-mcp-tool-calls-recoverable-across-lost-responses"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-09-27T16:35:14.050Z"
+}

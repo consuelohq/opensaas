@@ -757,6 +757,72 @@ describe('test selection registry', () => {
     )).toBe(true);
   });
 
+  it('routes the bounded OS syntax runner through its focused contract', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/check-syntax.js',
+      '--changed-file',
+      'packages/os/tests/check-syntax-runner.test.ts',
+      '--json',
+    ]));
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-bounded-js-syntax-runner');
+    expect(suiteNames).toEqual(expect.arrayContaining([
+      'OS bounded JavaScript syntax runner contract',
+      'OS JavaScript syntax sweep',
+    ]));
+    expect(suiteNames).not.toContain('@consuelo/os package test');
+  });
+
+  it('keeps syntax-runner changes on a bounded focused contract', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/check-syntax.js',
+      '--changed-file',
+      'packages/workspace/scripts/check-syntax.js',
+      '--changed-file',
+      'packages/os/tests/check-syntax-runner.test.ts',
+      '--json',
+    ]));
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-bounded-js-syntax-runner');
+    expect(suiteNames).toEqual(expect.arrayContaining([
+      'OS bounded JavaScript syntax runner contract',
+      'OS JavaScript syntax sweep',
+    ]));
+    expect(suiteNames).not.toContain('@consuelo/os package test');
+  });
+
+  it('routes MCP response-completion boundary changes through focused contracts', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/cloudflare/os-device-authority/src/routes/mcp-proxy.ts',
+      '--changed-file',
+      'packages/os/cloudflare/os-device-authority/src/services/mcp-proxy.ts',
+      '--changed-file',
+      'packages/os/scripts/server/mcp-request-receipts.ts',
+      '--changed-file',
+      'packages/os/scripts/server/routes/mcp.ts',
+      '--json',
+    ]));
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-mcp-response-completion-boundary');
+    expect(suiteNames).toEqual(expect.arrayContaining([
+      'OS MCP response receipt contracts',
+      'OS MCP post-upstream completion contracts',
+    ]));
+    expect(suiteNames).not.toContain('@consuelo/os package test');
+  });
+
   it('uses focused launcher copy interaction contracts instead of the broad OS package suite', () => {
     const result = run([
       'check',

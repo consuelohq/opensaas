@@ -595,7 +595,10 @@ export type StorageLike = StorageTransactionLike & {
     closure: (transaction: StorageTransactionLike) => Promise<T>,
   ): Promise<T>;
 };
-export type StateLike = { storage: StorageLike };
+export type StateLike = {
+  storage: StorageLike;
+  waitUntil?: (promise: Promise<unknown>) => void;
+};
 export type StubLike = { fetch(request: Request): Promise<Response> };
 export type NamespaceLike = {
   idFromName(name: string): unknown;
@@ -726,6 +729,7 @@ export type DeviceAuthorityRuntime = {
   stripeSyntheticWorkspaceIds?: string;
   checkoutObservability?: CheckoutObservability;
   operationalLogger?: DeviceAuthorityLogger;
+  defer?: (promise: Promise<unknown>) => void;
   installControlPlaneRepository?: InstallControlPlaneRepository;
   installDiagnosticBundleStore?: InstallDiagnosticBundleStore;
   installTelemetryObserver?: InstallTelemetryObserver;

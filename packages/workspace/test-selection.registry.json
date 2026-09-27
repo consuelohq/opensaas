@@ -2,16 +2,16 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 675,
-    "mappedTestCount": 592,
+    "testFileCount": 677,
+    "mappedTestCount": 594,
     "unmappedTestCount": 83,
-    "ruleCount": 78,
-    "explicitRuleCount": 65,
+    "ruleCount": 80,
+    "explicitRuleCount": 67,
     "autoRuleCount": 13,
     "projectCount": 9,
     "packageTestScriptCount": 20,
     "byGroup": {
-      "packages/os/tests": 323,
+      "packages/os/tests": 325,
       "packages/workspace/tests": 65,
       "packages/os/tests/media": 34,
       "packages/consuelo-design/upstream/open-design/apps/daemon": 21,
@@ -92,7 +92,7 @@
       "tests": 1
     },
     "byKind": {
-      "test": 618,
+      "test": 620,
       "spec": 29,
       "__tests__": 11,
       "other": 7,
@@ -1412,6 +1412,81 @@
       "critical": true,
       "exclusive": true,
       "reason": "MCP request admission and dangerous-material boundary changes must prove JSON-RPC transport/error behavior, fail-closed safety, authentication/gateway compatibility, and syntax without selecting the historically broad OS package suite.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-mcp-response-completion-boundary",
+      "source": [
+        "packages/os/cloudflare/os-device-authority/src/routes/mcp-proxy.ts",
+        "packages/os/cloudflare/os-device-authority/src/services/mcp-proxy.ts",
+        "packages/os/scripts/server/mcp-request-receipts.ts",
+        "packages/os/scripts/server/routes/mcp.ts",
+        "packages/os/scripts/consuelo-reload.js",
+        "packages/workspace/scripts/consuelo-reload.js",
+        "packages/os/tools/utilities/handler.ts",
+        "packages/os/tests/mcp-gateway.test.ts",
+        "packages/os/tests/mcp-openai-session-receipt.test.ts",
+        "packages/os/tests/mcp-response-diagnostics.test.ts",
+        "packages/os/tests/workspace-node-registry-routing.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS MCP response receipt contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/mcp-gateway.test.ts",
+            "packages/os/tests/mcp-openai-session-receipt.test.ts",
+            "packages/os/tests/mcp-response-diagnostics.test.ts"
+          ]
+        },
+        {
+          "name": "OS MCP post-upstream completion contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/workspace-node-registry-routing.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Public MCP completion changes must prove that completed upstream responses are not blocked by post-execution bookkeeping, that local received/response-ready receipts remain metadata-only and durable, and that server diagnostics run from the installed runtime without selecting the broad OS package suite.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-bounded-js-syntax-runner",
+      "source": [
+        "packages/os/scripts/check-syntax.js",
+        "packages/workspace/scripts/check-syntax.js",
+        "packages/os/tests/check-syntax-runner.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS bounded JavaScript syntax runner contract",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/check-syntax-runner.test.ts"
+          ]
+        },
+        {
+          "name": "OS JavaScript syntax sweep",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "The JavaScript syntax gate is itself part of verify. Changes must prove Bun-launched runners delegate to Node with a per-file timeout and that the full syntax sweep remains bounded without selecting the broad OS package suite.",
       "origin": "explicit"
     },
     {
@@ -4157,6 +4232,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/check-syntax-runner.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/ci-plan.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -4978,6 +5058,11 @@
     },
     {
       "path": "packages/os/tests/mcp-origin.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/mcp-response-diagnostics.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },

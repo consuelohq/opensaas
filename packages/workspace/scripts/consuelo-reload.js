@@ -2,7 +2,7 @@
 // consuelo-reload.js — manage the workspace MCP server reload path
 // supports both launchd and direct process modes
 const { execFileSync, spawn } = require('child_process');
-const { existsSync } = require('fs');
+const { existsSync, readFileSync } = require('fs');
 const os = require('os');
 const path = require('path');
 
@@ -15,6 +15,14 @@ const WORKSPACE_DIR = path.resolve(__dirname, '..');
 const START_SCRIPT = path.join(WORKSPACE_DIR, 'scripts', 'start-brain.sh');
 const SERVER_PY = path.join(WORKSPACE_DIR, 'server.py');
 const LOG_FILE = '/tmp/workspace.log';
+const RAW_CONSUELO_HOME = path.resolve(
+  process.env.CONSUELO_HOME || process.env.CONSUELO_OS_HOME || path.join(HOME, '.consuelo'),
+);
+const CONSUELO_HOME =
+  path.basename(RAW_CONSUELO_HOME) === 'os' && path.basename(path.dirname(RAW_CONSUELO_HOME)) === '.consuelo'
+    ? path.dirname(RAW_CONSUELO_HOME)
+    : RAW_CONSUELO_HOME;
+const MCP_RECEIPT_LOG = path.join(CONSUELO_HOME, 'node', 'logs', 'mcp-requests.jsonl');
 const LAUNCH_DOMAIN = `gui/${process.getuid()}`;
 const RELOAD_WAIT_ATTEMPTS = Number(process.env.CONSUELO_RELOAD_WAIT_ATTEMPTS || 40);
 const EXPECTED_SERVER_NAME = 'consuelo-os';
@@ -279,10 +287,24 @@ switch (cmd) {
     runReload({ useLaunchd: process.env.WORKSPACE_SERVER_RELOAD_LAUNCHD === '1' || useLaunchd });
     break;
 
-  case 'logs':
-    if (existsSync(LOG_FILE)) spawn('tail', ['-50', LOG_FILE], { stdio: 'inherit' });
-    else writeStdout(`no logs at ${LOG_FILE}`);
+  case 'logs': {
+    let found = false;
+    if (existsSync(LOG_FILE)) {
+      found = true;
+      writeStdout(`legacy server log: ${LOG_FILE}`);
+      writeStdout(readFileSync(LOG_FILE, 'utf8').trim().split('\n').slice(-50).join('\n'));
+    }
+    if (existsSync(MCP_RECEIPT_LOG)) {
+      found = true;
+      writeStdout(`recent MCP request receipts: ${MCP_RECEIPT_LOG}`);
+      writeStdout(readFileSync(MCP_RECEIPT_LOG, 'utf8').trim().split('\n').slice(-50).join('\n'));
+    }
+    if (!found) {
+      writeStdout(`no logs at ${LOG_FILE}`);
+      writeStdout(`no MCP request receipts at ${MCP_RECEIPT_LOG}`);
+    }
     break;
+  }
 
   default:
     writeStderr(`unknown command: ${cmd}`);
