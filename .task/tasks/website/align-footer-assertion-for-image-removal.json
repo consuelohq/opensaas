@@ -1,0 +1,16 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/align-footer-assertion-for-image-removal",
+  "baseBranch": "stream/website",
+  "sourceBranch": "stream/website",
+  "startFrom": "stream",
+  "prNumber": 2608,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2608",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-align-footer-assertion-for-image-removal",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_e1c3a838d55c",
+  "tmuxSession": "opensaas-website-align-footer-assertion-for-image-removal-e1c3a838",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-align-footer-assertion-for-image-removal/.task/session.json",
+  "createdAt": "2026-09-29T18:00:31.650Z"
+}

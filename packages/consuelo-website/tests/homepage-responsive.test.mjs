@@ -74,7 +74,7 @@ describe('Consuelo OS homepage presentation', () => {
     expect(footer).toContain('data-cloud-title-line');
     expect(footer).toContain('CONSUELO OS <span>V0.10.3</span>');
     expect(footer).toContain('MIT LICENSE');
-    expect(footer).toContain('bottom: 0;');
+    expect(footer).toContain('bottom: clamp(2rem, 7dvh, 4rem);');
     expect(footer).toContain('window.innerHeight * 1.4');
     expect(footer).toContain('Math.pow(progress, 1.15)');
   });
