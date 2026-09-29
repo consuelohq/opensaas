@@ -98,6 +98,13 @@ no-test waiver: this reversible static copy/layout change uses existing tests, A
 - 2026-09-29 20:35:38 `verify`: passed — OK
 - 2026-09-29 20:37:09 `verify`: passed — OK
 - 2026-09-29 20:37:33 `verify`: passed — OK
+- 2026-09-29 20:38:44 `review.run`: passed — OK
+- 2026-09-29 20:38:45 `verify`: passed — OK
+- 2026-09-29 20:39:21 `verify`: passed — OK
+- 2026-09-29 20:51:45 `review.run`: passed — OK
+- 2026-09-29 20:51:45 `verify`: passed — OK
+- 2026-09-29 20:53:27 `verify`: passed — OK
+- 2026-09-29 20:54:17 `verify`: passed — OK
 
 ## Implemented preview
 
@@ -129,3 +136,24 @@ no-test waiver: this reversible static copy/layout change uses existing tests, A
 - Full verification completed: passed, publishValid=true; DB guard found zero risks. Strict review found zero changed-code issues and zero blockers.
 - Task commit ee68794f was pushed to the existing preview branch. The task push helper recursively included runtime files despite local ignore rules; those task-owned files were moved out of the repository to the temporary path above for cleanup in the follow-up commit. The running server keeps the same log file handle and port.
 - The task stays separate from stream/website by Ko's explicit preview-only instruction. Current live page is served from this worktree and can be edited in place.
+
+## Shipping scope authorized by Ko
+
+Ko approved the live preview and explicitly requested: fix alignment of the two follow-on text sections; update SEO and share previews; verify phone, iPad and resizing layouts; ship to the main Cloudflare website. This supersedes the earlier task-only preview boundary. Promote the completed task through the website stream, merge the reviewed exact head to main, and verify the website production deployment. Preserve other agents' changes.
+
+## Alignment regression contract
+
+Behavior: at two-column widths, headings, paragraph starts and CTA starts share row positions regardless of title wrapping; single-column widths retain readable ordering and no overflow.
+Existing pattern: homepage-mobile-layout.test.mjs real-browser contract.
+Focused red: node --test tests/homepage-mobile-layout.test.mjs from the website package. New aligned-row assertions must fail against the independently flowing preview columns before the CSS fix.
+SEO validation: rendered title, descriptions, OG/Twitter image paths and application schema must match the new positioning; new share PNG must decode at 1200 by 630 and fit the existing size budget.
+
+## Shipping verification
+
+- Alignment regression failed before the CSS change: paragraph starts differed by 114px at 768px. It now passes across 768, 834, 1024, 1180, 1440 and 1920px.
+- Chromium and WebKit matrix: 28 viewport cases passed from 320 by 568 through 1920 by 1080, including iPad widths and portrait/landscape. Six resize transitions retained FAQ state without horizontal overflow. This is browser emulation, not a physical iPhone Duo device test. Apple resizability reference: https://developer.apple.com/iphone-duo/.
+- New landscape footer density fixed the clipped close at 844 by 390.
+- Homepage responsive and social asset tests: 10 passed. Share PNG: 1200 by 630, 165455 bytes; versioned files card supplied as base64 source and materialized during build.
+- Last website build: 24 routes, no Astro errors or warnings (existing hints only). Rebuild after final compact-footer CSS before release.
+- Local Cloudflare OAuth is authenticated for account 90b2b9dfeefcad97b9e2325b2b2e7a96 and has Pages write access. Existing production release workflow deploys consuelo-website on main; use its website deployment receipt and check the live custom domain after main integration.
+- Current remote main was verified at a099930e; only this task's website change should appear in the final stream-to-main diff.

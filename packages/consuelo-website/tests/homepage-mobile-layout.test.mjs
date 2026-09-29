@@ -370,6 +370,22 @@ test('homepage mobile layout and content follow the launch contract', { timeout:
     assert.equal(desktopFeatureStory.horizontalOverflow, 0);
     await featureDesktopPage.close();
 
+    for (const width of [768, 834, 1024, 1180, 1440, 1920]) {
+      const alignedPage = await browser.newPage({ viewport: { width, height: 1000 } });
+      await alignedPage.goto(server.baseUrl, { waitUntil: 'domcontentloaded' });
+      const rows = await alignedPage.locator('.product-story__chapter:not(.product-story__chapter--demo)').evaluateAll((chapters) =>
+        chapters.map((chapter) => ['.product-panel__index', 'h3', '.product-panel__description', '.product-story__actions'].map((selector) =>
+          chapter.querySelector(selector).getBoundingClientRect().top)),
+      );
+      assert.equal(rows.length, 2);
+      for (let row = 0; row < 4; row += 1) {
+        assert.ok(Math.abs(rows[0][row] - rows[1][row]) <= 1,
+          `Expected aligned feature row ${row} at ${width}px: ${rows[0][row]} vs ${rows[1][row]}`);
+      }
+      await alignedPage.close();
+    }
+
+
     assert.equal(
       (await page.locator('.cloud-cta__copy > p').first().innerText()).trim(),
       'ONE WORKSPACE FOR PEOPLE AND AGENTS',

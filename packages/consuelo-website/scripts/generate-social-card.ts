@@ -8,7 +8,7 @@ const packageRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 const tokensPath = join(packageRoot, 'src/styles/tokens.css');
 
 export const socialCards = {
-  home: { fileName: 'consuelo-os-og-20260929-clouds.png', label: 'CONSUELO OS', headline: ['YOUR WORKSPACE,', 'CONNECTED TO', 'EVERY AGENT.'], kicker: 'ONE WORKSPACE · EVERY AGENT', domain: 'consuelohq.com' },
+  home: { fileName: 'consuelo-os-og-20260929-files.png', label: 'CONSUELO OS', headline: ['GIVE YOUR AI', 'ACCESS TO', 'YOUR FILES.'], kicker: 'FILES · TERMINAL · TOOLS', domain: 'consuelohq.com' },
   pricing: { fileName: 'consuelo-pricing-og-20260929-clouds.png', label: 'PRICING', headline: ['THE RIGHT PLAN,', 'FOR EVERY', 'WORKSPACE.'], kicker: 'FREE · PLUS · SUPER · ULTRA', domain: 'consuelohq.com/pricing' },
   changelog: { fileName: 'consuelo-changelog-og-20260929-clouds.png', label: 'CHANGELOG', headline: ["WHAT'S NEW", 'IN YOUR', 'WORKSPACE.'], kicker: 'THE LATEST FROM CONSUELO OS', domain: 'consuelohq.com/changelog' },
   docs: { fileName: 'consuelo-docs-og-20260929-clouds.png', label: 'DOCS', headline: ['BUILD YOUR', 'WORKSPACE,', 'CONNECT AGENTS.'], kicker: 'GET STARTED WITH CONSUELO OS', domain: 'docs.consuelohq.com' },

@@ -69,6 +69,7 @@
   --site-tracking-tight: 0;
   --site-tracking-control: 0.09em;
   --site-footer-title-size: clamp(3rem, 6.5vw, 6rem);
+  --site-footer-title-size-compact: clamp(2rem, 5vw, 3rem);
   --site-footer-title-size-mobile: clamp(2.2rem, 9vw, 3.4rem);
 
   --site-space-1: 0.25rem;

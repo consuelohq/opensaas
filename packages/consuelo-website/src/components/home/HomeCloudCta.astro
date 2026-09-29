@@ -213,6 +213,21 @@ import { homeWorkspaceClose } from '../../data/home-content';
     }
   }
 
+  @media (max-height: 600px) and (min-width: 601px) {
+    .cloud-cta h2 {
+      font-size: var(--site-footer-title-size-compact);
+    }
+
+    .cloud-cta__copy {
+      gap: var(--site-space-3);
+    }
+
+    .cloud-cta__actions {
+      gap: var(--site-space-3);
+      margin-top: var(--site-space-3);
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .cloud-cta {
       --cloud-reveal-opacity: 1;

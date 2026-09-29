@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 
 const packageRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 const assets = [
+  { name: 'consuelo-os-og-20260929-files.png', output: 'public/consuelo-os-og-20260929-files.png', format: 'png' },
   { name: 'consuelo-os-og-20260929.png', output: 'public/consuelo-os-og-20260929.png', format: 'png' },
   { name: 'consuelo-os-og-20260929.png', output: 'public/consuelo-os-og-20260714.png', format: 'png' },
   ...['os', 'pricing', 'changelog', 'docs'].map((page) => ({

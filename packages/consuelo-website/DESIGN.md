@@ -17,7 +17,7 @@ The page should feel precise, sparse, and product-focused. Blue establishes the 
 1. Full-bleed blue hero with compact navigation, direct positioning, sign-in, and local install.
 2. A visible hint of the next white panel in the first viewport.
 3. White editorial product panel with the existing preview strip and feature wordmark. Three pillars explain file access, commands on the user's computer, and reusable agent tools.
-4. The recorded demo and its copy share a vertical center on desktop. Commands and tools use two compact text columns; mobile stacks naturally. Readable body copy uses sentence-case Inter.
+4. The recorded demo and its copy share a vertical center on desktop. Commands and tools share label, heading, paragraph and CTA rows through CSS subgrid, so different heading wraps retain aligned baselines; mobile stacks naturally. Readable body copy uses sentence-case Inter.
 5. Keep the real recording in its `2032 / 1192` stage. Avoid invented memory databases and workflow diagrams in the public funnel; supporting explanations belong in the FAQ and docs.
 6. Large FAQ typography and an accessible disclosure list.
 7. Full-bleed closing section centered within the existing scroll reveal: Work solo. Bring your team. Preserve the illustration removal, existing rectangular button treatment, and license signature.
@@ -57,3 +57,9 @@ Motion should clarify hierarchy:
 Tokens live in `src/styles/tokens.css`. Shared primitives live in `src/styles/primitives.css`. Homepage copy remains typed in `src/data/home-content.ts`.
 
 The homepage is composed from small Astro components. Keep responsive dimensions stable, avoid nested cards, and verify desktop, tablet, mobile, and reduced-motion states in the workspace browser.
+
+## Search and sharing
+
+Homepage search and social copy follows the same promise as the hero: Give your AI access to your files. Metadata names files, terminal and tools and introduces solo/team work. The new versioned 1200 by 630 share card preserves the existing blue, clouds and typography; the changed filename gives crawlers a fresh asset URL. Organization and application descriptions inherit that same typed copy.
+
+Short landscape viewports use the compact footer title token and existing smaller spacing tokens, keeping the closing CTA above the license signature.

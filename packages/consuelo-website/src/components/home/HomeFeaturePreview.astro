@@ -32,7 +32,7 @@ const { sectionId = 'features' } = Astro.props as Props;
         {
           homeFeaturePreviewItems.map((item) => (
             <article
-              class:list={['product-story__chapter', { 'product-story__chapter--demo': Boolean(item.evidence) }]}
+              class:list={['product-story__chapter', { 'product-story__chapter--demo': Boolean(item.evidence), 'product-story__chapter--summary': !item.evidence }]}
               data-feature-chapter={item.label.toLowerCase()}
             >
               {
@@ -179,6 +179,16 @@ const { sectionId = 'features' } = Astro.props as Props;
     grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.9fr);
     align-items: center;
     gap: var(--site-space-7);
+  }
+
+  .product-story__chapter--summary {
+    display: grid;
+    grid-template-rows: subgrid;
+    grid-row: span 4;
+  }
+
+  .product-story__chapter--summary .product-story__copy {
+    display: contents;
   }
 
   .product-story__visual {
