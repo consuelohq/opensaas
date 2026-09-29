@@ -7,31 +7,37 @@ started: 2026-09-29
 
 ## acceptance criteria
 
-- [ ] Define explicit task acceptance criteria before coding.
+- [x] Remove decorative feature/evidence dividers while preserving FAQ boundaries.
+- [x] Preserve the feature content and interactive demo.
+- [x] Record the inherited change scope and subsequent combined-release validation.
 
 ## plan
 
-1. Read the relevant code and update this plan before editing.
+1. Remove decorative borders from the feature chapter and evidence-caption selectors.
+2. Preserve FAQ rules and content.
+3. Include the change in the final validated website release.
 
 ## files changed
 
-- none yet
+- HomeFeaturePreview.astro and FeatureEvidenceFigure.astro.
 
 ## key decisions
 
-- none yet
+- Remove visual dividers from the feature story while keeping functional FAQ boundaries.
+- The final shorter files/terminal/tools page supersedes the earlier six-chapter composition and preserves the divider removal.
 
 ## notes for ko
 
-- none yet
+- The original task recorded a CSS-only no-test waiver. No earlier build/test run is claimed here.
+- The combined release passed the website build (24 routes), complete browser regression including 568x320 and 667x375, strict review and full verification before stream promotion.
 
 ## improvements noticed
 
-- none yet
+- Keep task-local acceptance and handoff sections current before publication.
 
 ## errors i ran into
 
-- none yet
+- The inherited workpad was scaffold-only; this correction records source-supported facts and later release validation.
 
 ---
 
