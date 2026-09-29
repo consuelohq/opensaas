@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_f989e841998f",
+  "tmuxSession": "opensaas-website-use-the-shared-mask-token-in-social-previews-f989e841",
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/use-the-shared-mask-token-in-social-previews",
+  "branch": "task/website/use-the-shared-mask-token-in-social-previews",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-use-the-shared-mask-token-in-social-previews",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-use-the-shared-mask-token-in-social-previews",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2620,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2620",
+  "createdAt": "2026-09-29T21:21:20.524Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-use-the-shared-mask-token-in-social-previews/.task/website/use-the-shared-mask-token-in-social-previews/session.json"
+}

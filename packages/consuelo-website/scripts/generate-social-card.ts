@@ -48,7 +48,8 @@ export const renderSocialCard = async (key: CardKey) => {
       readFile(join(packageRoot, 'assets/encoded/dialer-cloud-02.webp.base64'), 'utf8'),
     ]);
     const onBrand = readToken(tokens, '--site-color-on-brand');
-    const cardBackground = '#0000F2';
+    const cardBackground = readToken(tokens, '--site-color-brand');
+    const opaqueMask = readToken(tokens, '--site-mask-opaque');
     const bodoniData = bodoniFont.toString('base64');
     const interData = interFont.toString('base64');
     const browser = await chromium.launch();
@@ -98,8 +99,8 @@ export const renderSocialCard = async (key: CardKey) => {
                 z-index: 0;
                 max-width: none;
                 pointer-events: none;
-                -webkit-mask-image: linear-gradient(to right, #000 0%, #000 52%, transparent 88%);
-                mask-image: linear-gradient(to right, #000 0%, #000 52%, transparent 88%);
+                -webkit-mask-image: linear-gradient(to right, ${opaqueMask} 0%, ${opaqueMask} 52%, transparent 88%);
+                mask-image: linear-gradient(to right, ${opaqueMask} 0%, ${opaqueMask} 52%, transparent 88%);
               }
               .cloud--left { width: 760px; left: -220px; bottom: -245px; opacity: 0.56; }
               .cloud--right { width: 820px; right: -300px; top: -120px; opacity: 0.5; }
