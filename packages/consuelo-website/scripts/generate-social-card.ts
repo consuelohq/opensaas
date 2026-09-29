@@ -140,9 +140,9 @@ export const renderSocialCard = async (key: CardKey) => {
         </html>
       `);
       await page.evaluate(() => document.fonts.ready);
-      await page.locator('.cloud').evaluateAll(async (images) => {
-        await Promise.all(images.map((image) => (image as HTMLImageElement).decode()));
-      });
+      await page.locator('.cloud').evaluateAll((images) =>
+        Promise.all(images.map((image) => (image as HTMLImageElement).decode())),
+      );
       await page.evaluate(() => new Promise<void>((resolve) => {
         requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
       }));
@@ -160,19 +160,23 @@ export const renderSocialCard = async (key: CardKey) => {
 };
 
 export const writeSocialCards = async () => {
-  const outputPaths: string[] = [];
-  for (const key of Object.keys(socialCards) as CardKey[]) {
-    const card = socialCards[key];
-    const image = await renderSocialCard(key);
-    const outputPath = join(packageRoot, 'public', card.fileName);
-    const encodedPath = join(packageRoot, 'assets/encoded', `${card.fileName}.base64`);
-    await mkdir(dirname(outputPath), { recursive: true });
-    await mkdir(dirname(encodedPath), { recursive: true });
-    await writeFile(outputPath, image);
-    await writeFile(encodedPath, image.toString('base64') + '\n');
-    outputPaths.push(outputPath);
+  try {
+    const outputPaths: string[] = [];
+    for (const key of Object.keys(socialCards) as CardKey[]) {
+      const card = socialCards[key];
+      const image = await renderSocialCard(key);
+      const outputPath = join(packageRoot, 'public', card.fileName);
+      const encodedPath = join(packageRoot, 'assets/encoded', `${card.fileName}.base64`);
+      await mkdir(dirname(outputPath), { recursive: true });
+      await mkdir(dirname(encodedPath), { recursive: true });
+      await writeFile(outputPath, image);
+      await writeFile(encodedPath, image.toString('base64') + '\n');
+      outputPaths.push(outputPath);
+    }
+    return outputPaths;
+  } catch (err: unknown) {
+    throw new Error(`Failed to write social cards: ${getErrorMessage(err)}`, { cause: err });
   }
-  return outputPaths;
 };
 
 if (import.meta.main) {
