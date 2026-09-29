@@ -6,6 +6,11 @@ const packageRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 const assets = [
   { name: 'consuelo-os-og-20260929.png', output: 'public/consuelo-os-og-20260929.png', format: 'png' },
   { name: 'consuelo-os-og-20260929.png', output: 'public/consuelo-os-og-20260714.png', format: 'png' },
+  ...['os', 'pricing', 'changelog', 'docs'].map((page) => ({
+    name: `consuelo-${page}-og-20260929-clouds.png`,
+    output: `public/consuelo-${page}-og-20260929-clouds.png`,
+    format: 'png',
+  })),
   ...[1, 2, 3, 4].map((index) => ({
     name: `dialer-cloud-0${index}.webp`,
     output: `public/images/clouds/dialer-cloud-0${index}.webp`,
