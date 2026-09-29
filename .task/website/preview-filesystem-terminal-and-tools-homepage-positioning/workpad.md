@@ -37,9 +37,16 @@ no-test waiver: this reversible static copy/layout change uses existing tests, A
 
 ## files changed
 
+- `packages/consuelo-website/DESIGN.md`
 - `packages/consuelo-website/src/components/home/HomeCloudCta.astro`
 - `packages/consuelo-website/src/components/home/HomeFeaturePreview.astro`
+- `packages/consuelo-website/src/data/home-content.ts`
+- `packages/consuelo-website/src/styles/primitives.css`
+- `packages/consuelo-website/src/styles/tokens.css`
 - `packages/consuelo-website/tests/homepage-mobile-layout.test.mjs`
+- `packages/consuelo-website/tests/homepage-responsive.test.mjs`
+- `packages/consuelo-website/tests/website-structure.test.js`
+
 
 ## key decisions
 
@@ -89,6 +96,8 @@ no-test waiver: this reversible static copy/layout change uses existing tests, A
 - 2026-09-29 20:33:18 `verify`: passed — OK
 - 2026-09-29 20:35:22 `verify`: passed — OK
 - 2026-09-29 20:35:38 `verify`: passed — OK
+- 2026-09-29 20:37:09 `verify`: passed — OK
+- 2026-09-29 20:37:33 `verify`: passed — OK
 
 ## Implemented preview
 
@@ -110,7 +119,13 @@ no-test waiver: this reversible static copy/layout change uses existing tests, A
 
 - Tailnet URL: https://picassos-mac-mini.tail38ed59.ts.net:8448/
 - Astro dev origin: http://127.0.0.1:55737
-- Task-owned server parent PID at launch: 79701. Local runtime state/logs are excluded in preview/.gitignore.
+- Task-owned server parent PID at launch: 79701. Local runtime state/logs are outside the repository in /private/tmp/consuelo-website-preview-tsk_ddbcdb7353da/.
 - Tailscale Serve uses an otherwise unused HTTPS 8448 port. Existing Serve routes and Funnel configuration were preserved.
 - To stop this preview proxy: tailscale serve --https=8448 off. Stop only the task-owned server after verifying its process identity.
 - PR #2616 is the preview task; leave it unmerged and retain this worktree/server so Ko can iterate on the actual page. Do not call default task.pr promotion or task.finish.
+
+## Final gate and publication state
+
+- Full verification completed: passed, publishValid=true; DB guard found zero risks. Strict review found zero changed-code issues and zero blockers.
+- Task commit ee68794f was pushed to the existing preview branch. The task push helper recursively included runtime files despite local ignore rules; those task-owned files were moved out of the repository to the temporary path above for cleanup in the follow-up commit. The running server keeps the same log file handle and port.
+- The task stays separate from stream/website by Ko's explicit preview-only instruction. Current live page is served from this worktree and can be edited in place.
