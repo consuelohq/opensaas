@@ -65,3 +65,5 @@ Homepage search and social copy follows the same promise as the hero: Give your 
 Short landscape viewports use the compact footer title token and existing smaller spacing tokens, keeping the closing CTA above the license signature.
 
 Cloud alpha masks use `--site-mask-opaque`, a fully opaque mask token independent of the visible brand palette.
+
+Short-height viewports use the compact footer title, smaller paragraph and spacing tokens, and wrapping inline actions at every width, including narrow landscape phones.
