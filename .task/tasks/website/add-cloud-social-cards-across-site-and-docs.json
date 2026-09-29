@@ -1,0 +1,16 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/add-cloud-social-cards-across-site-and-docs",
+  "baseBranch": "stream/website",
+  "sourceBranch": "stream/website",
+  "startFrom": "stream",
+  "prNumber": 2611,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2611",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-add-cloud-social-cards-across-site-and-docs",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_3b09f1e809d1",
+  "tmuxSession": "opensaas-website-add-cloud-social-cards-across-site-and-docs-3b09f1e8",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-add-cloud-social-cards-across-site-and-docs/.task/session.json",
+  "createdAt": "2026-09-29T18:23:52.430Z"
+}
