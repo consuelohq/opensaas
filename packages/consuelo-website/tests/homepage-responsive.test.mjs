@@ -19,11 +19,11 @@ describe('Consuelo OS homepage presentation', () => {
     expect(hero).toContain('data-assistant-name={primaryAssistant}');
     expect(hero).toContain('data-assistant-name={secondaryAssistant}');
     expect(hero).toContain('data-active-assistant={primaryAssistant}');
-    expect(homeContent).toContain("prefix: 'Make'");
-    expect(homeContent).toContain("suffix: 'your digital worker'");
+    expect(homeContent).toContain("prefix: 'Give'");
+    expect(homeContent).toContain("suffix: 'access to your files'");
     expect(homeContent).toContain("assistants: ['ChatGPT', 'Claude']");
     expect(homeContent).toContain(
-      'AI is coming to the workspace, with smarter search, faster drafting and summarization and intelligent organization',
+      'Connect your AI to the files, terminal and tools on your computer.',
     );
     expect(hero).not.toContain('OPEN SOURCE');
     expect(hero).not.toContain('MIT LICENSE');
@@ -48,7 +48,7 @@ describe('Consuelo OS homepage presentation', () => {
 
     expect(layout).toContain("bodoni-moda-latin-wght-normal.woff2?url");
     expect(layout).toContain("inter-latin-wght-normal.woff2?url");
-    expect(layout.match(/rel="preload"/g)).toHaveLength(2);
+    expect(layout.match(/as="font"/g)).toHaveLength(2);
     expect(layout.match(/as="font"/g)).toHaveLength(2);
     expect(layout.match(/type="font\/woff2"/g)).toHaveLength(2);
     expect(layout.match(/font-display: block/g)).toHaveLength(2);
@@ -79,22 +79,25 @@ describe('Consuelo OS homepage presentation', () => {
     expect(footer).toContain('Math.pow(progress, 1.15)');
   });
 
-  test('should compose the cloud footer without the removed illustration', async () => {
-    const footer = await readSource('src/components/home/HomeCloudCta.astro');
+  test('should center the team invitation without the removed illustration', async () => {
+    const [footer, content, tokens] = await Promise.all([
+      readSource('src/components/home/HomeCloudCta.astro'),
+      readSource('src/data/home-content.ts'),
+      readSource('src/styles/tokens.css'),
+    ]);
 
-    expect(footer).not.toContain('@chenglou/pretext');
-    expect(footer).not.toContain("heading.style.setProperty('--cloud-title-size'");
-    expect(footer).toContain('font-size: clamp(2.8rem, 4.4vw, 4rem);');
-    expect(footer).toContain('font-size: clamp(3.05rem, 7.1vw, 3.85rem);');
-    expect(footer).toContain('font-size: clamp(3.1rem, 14.7vw, 3.8rem);');
-    expect(footer).toContain('data-cloud-word-line>CONSUELO</span>');
-    expect(footer).toContain('data-cloud-word-line>CLOUD</span>');
+    expect(footer).toContain('homeWorkspaceClose');
+    expect(footer).toContain('place-items: center;');
+    expect(footer).toContain('var(--site-footer-title-size)');
+    expect(footer).toContain('var(--site-footer-title-size-mobile)');
+    expect(tokens).toContain('--site-footer-title-size:');
+    expect(tokens).toContain('--site-footer-title-size-mobile:');
+    expect(content).toContain('Work solo.');
+    expect(content).toContain('Bring your team.');
     expect(footer).not.toContain('class="cloud-cta__art"');
-    expect(footer).not.toContain('filter: brightness(0) invert(1)');
-    expect(footer).toContain('KEEP THE SAME WORKSPACE AND LET CONSUELO');
-    expect(footer).toContain('RUN THE HOME NODE FOR YOU');
-    expect(footer).toContain('--cloud-gutter: clamp(4.75rem, 8.5vw, 8rem);');
     expect(footer).not.toContain('class="cloud-cta__badge"');
+    expect(footer).toContain('homeWorkspaceClose.primaryHref');
+    expect(footer).toContain('homeWorkspaceClose.secondaryHref');
     expect(footer).toContain('justify-items: end;');
     expect(footer).toContain('text-align: right;');
   });
@@ -106,10 +109,10 @@ describe('Consuelo OS homepage presentation', () => {
       readSource('scripts/generate-footer-art.ts'),
     ]);
 
-    expect(packageJson).toContain('"dev": "bun run generate:footer-art && astro dev"');
-    expect(packageJson).toContain('"start": "bun run generate:footer-art && astro dev"');
+    expect(packageJson).toContain('"dev": "bun run materialize:assets && bun run generate:footer-art && astro dev"');
+    expect(packageJson).toContain('"start": "bun run materialize:assets && bun run generate:footer-art && astro dev"');
     expect(packageJson).toContain(
-      '"build": "bun run generate:footer-art && astro check && astro build"',
+      '"build": "bun run materialize:assets && bun run generate:footer-art && astro check && astro build"',
     );
     expect(gitignore).toContain('public/generated/');
     expect(generator).toContain("public/generated/holding-world-editorial.png");
@@ -137,14 +140,16 @@ describe('Consuelo OS homepage presentation', () => {
   });
 
   test('should use editable local artwork and the compact inline sign-in arrow', async () => {
-    const [hero, features] = await Promise.all([
+    const [hero, features, clouds] = await Promise.all([
       readSource('src/components/home/HomeHero.astro'),
       readSource('src/components/home/HomeFeaturePreview.astro'),
+      readSource('src/components/visuals/CloudField.astro'),
     ]);
 
-    expect(hero).toContain('/images/home/dither/cloud-1.png');
-    expect(hero).toContain('/images/home/dither/cloud-4.png');
-    expect(features).toContain('/images/home/dither/cloud-2.png');
+    expect(hero).toContain('<CloudField />');
+    expect(features).toContain('<CloudField variant="preview" />');
+    expect(clouds).toContain('/images/clouds/dialer-cloud-01.webp');
+    expect(clouds).toContain('/images/clouds/dialer-cloud-04.webp');
     expect(hero).toContain('class="os-hero__button-arrow"');
     expect(hero).toContain('viewBox="0 0 6 9"');
     expect(hero).toContain('<rect x="4" y="4" width="1" height="1" />');

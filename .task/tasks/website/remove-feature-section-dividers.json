@@ -1,0 +1,16 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/remove-feature-section-dividers",
+  "baseBranch": "stream/website",
+  "sourceBranch": "stream/website",
+  "startFrom": "stream",
+  "prNumber": 2615,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2615",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-remove-feature-section-dividers",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_6d0bbbcb7ee7",
+  "tmuxSession": "opensaas-website-remove-feature-section-dividers-6d0bbbcb",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-remove-feature-section-dividers/.task/session.json",
+  "createdAt": "2026-09-29T19:01:19.967Z"
+}

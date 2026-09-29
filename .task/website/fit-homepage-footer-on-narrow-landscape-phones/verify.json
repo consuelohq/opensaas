@@ -1,0 +1,219 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/website/fit-homepage-footer-on-narrow-landscape-phones",
+  "base": "origin/main",
+  "headSha": "b35fb1ecd8fa2e8bbe8bb658c2aa8de3695db9bd",
+  "changeHash": "1e76f6ddb58b92545491dafa3e0e1d435982d0680630615cdb39d4c31e45bae0",
+  "changedFiles": [
+    "packages/consuelo-website/.gitignore",
+    "packages/consuelo-website/DESIGN.md",
+    "packages/consuelo-website/assets/encoded/consuelo-changelog-og-20260929-clouds-v2.png.base64",
+    "packages/consuelo-website/assets/encoded/consuelo-docs-og-20260929-clouds-v2.png.base64",
+    "packages/consuelo-website/assets/encoded/consuelo-os-og-20260929-clouds-v2.png.base64",
+    "packages/consuelo-website/assets/encoded/consuelo-os-og-20260929-files.png.base64",
+    "packages/consuelo-website/assets/encoded/consuelo-pricing-og-20260929-clouds-v2.png.base64",
+    "packages/consuelo-website/scripts/generate-social-card.ts",
+    "packages/consuelo-website/scripts/materialize-public-assets.ts",
+    "packages/consuelo-website/src/components/home/FeatureEvidenceFigure.astro",
+    "packages/consuelo-website/src/components/home/HomeCloudCta.astro",
+    "packages/consuelo-website/src/components/home/HomeFeaturePreview.astro",
+    "packages/consuelo-website/src/components/visuals/CloudField.astro",
+    "packages/consuelo-website/src/data/home-content.ts",
+    "packages/consuelo-website/src/lib/homepage-seo.ts",
+    "packages/consuelo-website/src/lib/site-seo.ts",
+    "packages/consuelo-website/src/pages/changelog.astro",
+    "packages/consuelo-website/src/pages/pricing.astro",
+    "packages/consuelo-website/src/styles/primitives.css",
+    "packages/consuelo-website/src/styles/tokens.css",
+    "packages/consuelo-website/tests/homepage-mobile-layout.test.mjs",
+    "packages/consuelo-website/tests/homepage-responsive.test.mjs",
+    "packages/consuelo-website/tests/social-card.test.mjs",
+    "packages/consuelo-website/tests/website-structure.test.js",
+    "packages/documentation/src/components/Head.astro"
+  ],
+  "verifiedAt": "2026-09-29T21:13:38.739Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/website/finalize-homepage-release-review-fixes.json",
+        ".task/tasks/website/fit-homepage-footer-on-narrow-landscape-phones.json",
+        ".task/tasks/website/fix-clipped-workflow-section.json",
+        ".task/tasks/website/preview-filesystem-terminal-and-tools-homepage-positioning.json",
+        ".task/tasks/website/remove-feature-section-dividers.json",
+        ".task/website/finalize-homepage-release-review-fixes/current.json",
+        ".task/website/finalize-homepage-release-review-fixes/session.json",
+        ".task/website/finalize-homepage-release-review-fixes/verify.json",
+        ".task/website/finalize-homepage-release-review-fixes/workpad.md",
+        ".task/website/fit-homepage-footer-on-narrow-landscape-phones/current.json",
+        ".task/website/fit-homepage-footer-on-narrow-landscape-phones/session.json",
+        ".task/website/fit-homepage-footer-on-narrow-landscape-phones/workpad.md",
+        ".task/website/fix-clipped-workflow-section/workpad.md",
+        ".task/website/preview-filesystem-terminal-and-tools-homepage-positioning/current.json",
+        ".task/website/preview-filesystem-terminal-and-tools-homepage-positioning/verify.json",
+        ".task/website/preview-filesystem-terminal-and-tools-homepage-positioning/workpad.md",
+        ".task/website/remove-feature-section-dividers/workpad.md",
+        "packages/consuelo-website/.gitignore",
+        "packages/consuelo-website/DESIGN.md",
+        "packages/consuelo-website/assets/encoded/consuelo-changelog-og-20260929-clouds-v2.png.base64",
+        "packages/consuelo-website/assets/encoded/consuelo-docs-og-20260929-clouds-v2.png.base64",
+        "packages/consuelo-website/assets/encoded/consuelo-os-og-20260929-clouds-v2.png.base64",
+        "packages/consuelo-website/assets/encoded/consuelo-os-og-20260929-files.png.base64",
+        "packages/consuelo-website/assets/encoded/consuelo-pricing-og-20260929-clouds-v2.png.base64",
+        "packages/consuelo-website/scripts/generate-social-card.ts",
+        "packages/consuelo-website/scripts/materialize-public-assets.ts",
+        "packages/consuelo-website/src/components/home/FeatureEvidenceFigure.astro",
+        "packages/consuelo-website/src/components/home/HomeCloudCta.astro",
+        "packages/consuelo-website/src/components/home/HomeFeaturePreview.astro",
+        "packages/consuelo-website/src/components/visuals/CloudField.astro",
+        "packages/consuelo-website/src/data/home-content.ts",
+        "packages/consuelo-website/src/lib/homepage-seo.ts",
+        "packages/consuelo-website/src/lib/site-seo.ts",
+        "packages/consuelo-website/src/pages/changelog.astro",
+        "packages/consuelo-website/src/pages/pricing.astro",
+        "packages/consuelo-website/src/styles/primitives.css",
+        "packages/consuelo-website/src/styles/tokens.css",
+        "packages/consuelo-website/tests/homepage-mobile-layout.test.mjs",
+        "packages/consuelo-website/tests/homepage-responsive.test.mjs",
+        "packages/consuelo-website/tests/social-card.test.mjs",
+        "packages/consuelo-website/tests/website-structure.test.js",
+        "packages/documentation/src/components/Head.astro"
+      ],
+      "matchedRules": [
+        {
+          "id": "os-public-windows-installer-and-landing-command",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Hosted Windows installer and landing-command changes must prove signed stable bundle binding, Windows/macOS/Linux command selection, copy behavior, and Astro source validity without selecting unrelated package-wide OS tests.",
+          "matchedFiles": [
+            "packages/consuelo-website/src/data/home-content.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "Hosted shell and PowerShell installer Worker contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/hosted-release-worker-contract.test.ts"
+          ],
+          "ruleId": "os-public-windows-installer-and-landing-command",
+          "critical": true
+        },
+        {
+          "name": "Platform-aware landing install command contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/consuelo-website/tests/install-command.test.ts",
+            "packages/consuelo-website/tests/install-command-source.test.js"
+          ],
+          "ruleId": "os-public-windows-installer-and-landing-command",
+          "critical": true
+        },
+        {
+          "name": "Consuelo website Astro check",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/consuelo-website",
+            "astro",
+            "--",
+            "check"
+          ],
+          "ruleId": "os-public-windows-installer-and-landing-command",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "platform": "darwin",
+      "run": true,
+      "runResults": [
+        {
+          "name": "Hosted shell and PowerShell installer Worker contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/hosted-release-worker-contract.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-public-windows-installer-and-landing-command",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 420,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-fit-homepage-footer-on-narrow-landscape-phones\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/hosted-release-worker-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 21\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m4 passed\u001b[39m\u001b[22m\u001b[90m (4)\u001b[39m\n\u001b[2m   Start at \u001b[22m 17:13:29\n\u001b[2m   Duration \u001b[22m 185ms\u001b[2m (transform 91ms, setup 0ms, import 98ms, tests 21ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "Platform-aware landing install command contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/consuelo-website/tests/install-command.test.ts",
+            "packages/consuelo-website/tests/install-command-source.test.js"
+          ],
+          "cwd": ".",
+          "ruleId": "os-public-windows-installer-and-landing-command",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 35,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/consuelo-website/tests/install-command-source.test.js:\n(pass) homepage platform-aware installer source > selects the client platform and copies the displayed command [0.43ms]\n\npackages/consuelo-website/tests/install-command.test.ts:\n(pass) homepage install command selection > uses PowerShell on Win32 [0.05ms]\n(pass) homepage install command selection > uses PowerShell on Win64\n(pass) homepage install command selection > uses PowerShell on Windows\n(pass) homepage install command selection > uses curl on MacIntel [0.06ms]\n(pass) homepage install command selection > uses curl on MacARM64\n(pass) homepage install command selection > uses curl on Linux x86_64\n(pass) homepage install command selection > uses curl on unknown platform\n\n 8 pass\n 0 fail\n 6 expect() calls\nRan 8 tests across 2 files. [30.00ms]\n"
+        },
+        {
+          "name": "Consuelo website Astro check",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/consuelo-website",
+            "astro",
+            "--",
+            "check"
+          ],
+          "cwd": ".",
+          "ruleId": "os-public-windows-installer-and-landing-command",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 8593,
+          "outputTail": "rning\u001b[0m\u001b[90m ts(6385): \u001b[0m'z' is deprecated.\n\n\u001b[7m1\u001b[0m import { defineCollection, z } from \"astro:content\";\n\u001b[7m \u001b[0m \u001b[93m                           ~\u001b[0m\n\n\u001b[96msrc/components/Navbar.tsx\u001b[0m:\u001b[93m147\u001b[0m:\u001b[93m9\u001b[0m - \u001b[93mwarning\u001b[0m\u001b[90m ts(6133): \u001b[0m'stay' is declared but its value is never read.\n\n\u001b[7m147\u001b[0m   const stay = () => {\n\u001b[7m   \u001b[0m \u001b[93m        ~~~~\u001b[0m\n\n\u001b[96msrc/components/SeoHead.astro\u001b[0m:\u001b[93m100\u001b[0m:\u001b[93m9\u001b[0m - \u001b[93mwarning\u001b[0m\u001b[90m astro(4000): \u001b[0mThis script will be treated as if it has the `is:inline` directive because it contains an attribute. Therefore, features that require processing (e.g. using TypeScript or npm packages in the script) are unavailable.\n\nSee docs for more details: https://docs.astro.build/en/guides/client-side-scripts/#script-processing.\n\nAdd the `is:inline` directive explicitly to silence this hint.\n\n\u001b[7m100\u001b[0m <script type=\"application/ld+json\" set:html={JSON.stringify(structuredData)} />\n\u001b[7m   \u001b[0m \u001b[93m        ~~~~\u001b[0m\n\n\u001b[96msrc/components/blocks/CTA/BasicDark.astro\u001b[0m:\u001b[93m20\u001b[0m:\u001b[93m1\u001b[0m - \u001b[93mwarning\u001b[0m\u001b[90m ts(6133): \u001b[0m'badge' is declared but its value is never read.\n\n\u001b[7m20\u001b[0m import badge from '../../../assets/badge.svg'\n\u001b[7m  \u001b[0m \u001b[93m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\u001b[0m\n\u001b[96msrc/components/blocks/CTA/BasicDark.astro\u001b[0m:\u001b[93m15\u001b[0m:\u001b[93m1\u001b[0m - \u001b[93mwarning\u001b[0m\u001b[90m ts(6133): \u001b[0m'Image' is declared but its value is never read.\n\n\u001b[7m15\u001b[0m import { Image } from 'astro:assets'\n\u001b[7m  \u001b[0m \u001b[93m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\u001b[0m\n\n\u001b[96msrc/components/blocks/head/Header.astro\u001b[0m:\u001b[93m64\u001b[0m:\u001b[93m11\u001b[0m - \u001b[93mwarning\u001b[0m\u001b[90m astro(4000): \u001b[0mThis script will be treated as if it has the `is:inline` directive because it contains an attribute. Therefore, features that require processing (e.g. using TypeScript or npm packages in the script) are unavailable.\n\nSee docs for more details: https://docs.astro.build/en/guides/client-side-scripts/#script-processing.\n\nAdd the `is:inline` directive explicitly to silence this hint.\n\n\u001b[7m64\u001b[0m   <script define:vars={{ sentryDsn }}>\n\u001b[7m  \u001b[0m \u001b[93m          ~~~~~~~~~~~\u001b[0m\n\u001b[96msrc/components/blocks/head/Header.astro\u001b[0m:\u001b[93m45\u001b[0m:\u001b[93m11\u001b[0m - \u001b[93mwarning\u001b[0m\u001b[90m astro(4000): \u001b[0mThis script will be treated as if it has the `is:inline` directive because it contains an attribute. Therefore, features that require processing (e.g. using TypeScript or npm packages in the script) are unavailable.\n\nSee docs for more details: https://docs.astro.build/en/guides/client-side-scripts/#script-processing.\n\nAdd the `is:inline` directive explicitly to silence this hint.\n\n\u001b[7m45\u001b[0m   <script define:vars={{ posthogKey, posthogHost }}>\n\u001b[7m  \u001b[0m \u001b[93m          ~~~~~~~~~~~\u001b[0m\n\n\u001b[96msrc/components/site/SiteFooter.astro\u001b[0m:\u001b[93m47\u001b[0m:\u001b[93m9\u001b[0m - \u001b[93mwarning\u001b[0m\u001b[90m astro(4000): \u001b[0mThis script will be treated as if it has the `is:inline` directive because it contains an attribute. Therefore, features that require processing (e.g. using TypeScript or npm packages in the script) are unavailable.\n\nSee docs for more details: https://docs.astro.build/en/guides/client-side-scripts/#script-processing.\n\nAdd the `is:inline` directive explicitly to silence this hint.\n\n\u001b[7m47\u001b[0m <script define:vars={{ siteLinks }}>\n\u001b[7m  \u001b[0m \u001b[93m        ~~~~~~~~~~~\u001b[0m\n\n\u001b[96msrc/layouts/MarketingLayout.astro\u001b[0m:\u001b[93m91\u001b[0m:\u001b[93m15\u001b[0m - \u001b[93mwarning\u001b[0m\u001b[90m astro(4000): \u001b[0mThis script will be treated as if it has the `is:inline` directive because it contains an attribute. Therefore, features that require processing (e.g. using TypeScript or npm packages in the script) are unavailable.\n\nSee docs for more details: https://docs.astro.build/en/guides/client-side-scripts/#script-processing.\n\nAdd the `is:inline` directive explicitly to silence this hint.\n\n\u001b[7m91\u001b[0m       <script define:vars={{ posthogKey, posthogHost }}>\n\u001b[7m  \u001b[0m \u001b[93m              ~~~~~~~~~~~\u001b[0m\n\nResult (210 files): \n- 0 errors\n- 0 warnings\n- 23 hints\n\n$ astro check\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

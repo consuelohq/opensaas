@@ -130,6 +130,8 @@ const visibleClouds = variant === 'preview'
     height: auto;
     max-width: none;
     opacity: 0.88;
+    -webkit-mask-image: linear-gradient(to right, var(--site-mask-opaque) 0%, var(--site-mask-opaque) 52%, transparent 88%);
+    mask-image: linear-gradient(to right, var(--site-mask-opaque) 0%, var(--site-mask-opaque) 52%, transparent 88%);
   }
 
   .cloud-field__cloud--near-left {
@@ -141,6 +143,10 @@ const visibleClouds = variant === 'preview'
     left: -16vw;
     bottom: -22%;
     animation-duration: 29s;
+  }
+
+  .cloud-field__cloud--near-left .cloud-field__body {
+    transform: scaleX(-1);
   }
 
   .cloud-field__cloud--hero-right {
@@ -181,19 +187,15 @@ const visibleClouds = variant === 'preview'
   .cloud-field__quiet-zone {
     position: absolute;
     z-index: 3;
-    top: 22%;
-    left: 50%;
-    width: min(78vw, 72rem);
-    height: 32rem;
+    inset: 0;
     background:
       radial-gradient(
-        ellipse at center,
+        ellipse 32% 30% at 50% 45%,
         rgba(0, 0, 242, 0.9) 0%,
         rgba(0, 0, 242, 0.76) 34%,
         rgba(0, 0, 242, 0.44) 56%,
-        rgba(0, 0, 242, 0) 78%
+        rgba(0, 0, 242, 0) 100%
       );
-    transform: translateX(-50%);
   }
 
   .cloud-field--preview::after {
@@ -279,10 +281,6 @@ const visibleClouds = variant === 'preview'
       bottom: 12%;
     }
 
-    .cloud-field__quiet-zone {
-      width: 86vw;
-    }
-
     .cloud-field--preview .cloud-field__cloud--hero-right {
       width: var(--preview-right-width);
       top: -30%;
@@ -299,9 +297,9 @@ const visibleClouds = variant === 'preview'
 
   @media (max-width: 720px) {
     .cloud-field__cloud--near-left {
-      --cloud-opacity: 0.62;
-      width: 122vw;
-      left: -57vw;
+      --cloud-opacity: 0.72;
+      width: 136vw;
+      left: -52vw;
       bottom: -4%;
     }
 
@@ -318,16 +316,13 @@ const visibleClouds = variant === 'preview'
     }
 
     .cloud-field__quiet-zone {
-      top: 24%;
-      width: 108vw;
-      height: 26rem;
       background:
         radial-gradient(
-          ellipse at center,
+          ellipse 60% 29% at 50% 44%,
           rgba(0, 0, 242, 0.92) 0%,
           rgba(0, 0, 242, 0.78) 38%,
           rgba(0, 0, 242, 0.36) 68%,
-          rgba(0, 0, 242, 0) 88%
+          rgba(0, 0, 242, 0) 100%
         );
     }
 

@@ -262,7 +262,7 @@ describe('Consuelo website structure', () => {
     expect(tokens).not.toContain('#5379AE');
   });
 
-  test('should cook each feature proof object while keeping one editorial story stage', () => {
+  test('should present three access pillars with the recorded demo and reusable proof components', () => {
     const panel = readSource('src/components/home/HomeFeaturePreview.astro');
     const evidence = readSource('src/components/home/FeatureEvidenceFigure.astro');
     const memory = readSource('src/components/home/FeatureStoryMemory.astro');
@@ -277,16 +277,18 @@ describe('Consuelo website structure', () => {
     expect(panel).toContain('class="product-story"');
     expect(panel).toContain('data-feature-story');
     expect(panel).toContain('data-feature-chapter');
-    expect(panel).toContain('position: sticky');
+    expect(panel).toContain('position: static');
+    expect(panel).toContain('align-items: center;');
+    expect(panel).toContain('item.ctaHref');
     expect(panel).toContain('@media (max-width: 760px)');
     expect(panel).not.toContain('product-panel__grid');
     expect(panel).not.toContain('grid-template-columns: repeat(3, minmax(0, 1fr))');
     expect(panel).toContain('<FeatureEvidenceFigure');
-    expect(panel).toContain('<FeatureStoryMemory');
-    expect(panel).toContain('<FeatureStoryControl');
-    expect(panel).toContain('<FeatureStoryObserve');
-    expect(panel).toContain('<FeatureStorySecure');
-    expect(panel).toContain('<FeatureStorySwitch');
+    expect(panel).not.toContain('<FeatureStoryMemory');
+    expect(panel).not.toContain('<FeatureStoryControl');
+    expect(panel).not.toContain('<FeatureStoryObserve');
+    expect(panel).not.toContain('<FeatureStorySecure');
+    expect(panel).not.toContain('<FeatureStorySwitch');
     expect(panel).toContain('evidence={item.evidence}');
     expect(panel).not.toContain('<FeatureMedia');
     expect(panel).not.toContain("item.assetSrc ?? ''");
@@ -373,9 +375,9 @@ describe('Consuelo website structure', () => {
     expect(content).not.toContain('/Users/');
     expect(content).not.toContain('node_F3Wsfd-vJrKkYlfi');
     expect(content).not.toContain('sk-');
-    expect(content).toContain("label: 'CONTROL'");
-    expect(content).toContain("label: 'OBSERVE'");
-    expect(content).toContain("label: 'SWITCH'");
+    expect(content).toContain("label: 'FILES'");
+    expect(content).toContain("label: 'YOUR COMPUTER'");
+    expect(content).toContain("label: 'TOOLS'");
     expectFile('public/media/home/connect-live-session.mp4');
     expectFile('public/media/home/connect-live-session-poster.webp');
     expectFile('motion/connect/index.html');

@@ -1,0 +1,20 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/complete-inherited-website-release-handoff",
+  "baseBranch": "stream/website",
+  "sourceBranch": "stream/website",
+  "startFrom": "stream",
+  "prNumber": 2619,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2619",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2619",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2619/complete-inherited-website-release-handoff",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2619",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2619/complete-inherited-website-release-handoff",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-complete-inherited-website-release-handoff",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_5e13344af286",
+  "tmuxSession": "opensaas-website-complete-inherited-website-release-handoff-5e13344a",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-complete-inherited-website-release-handoff/.task/website/complete-inherited-website-release-handoff/session.json",
+  "createdAt": "2026-09-29T21:15:35.573Z"
+}
