@@ -54,7 +54,6 @@ export const rule: Rule.RuleModule = {
     docs: {
       description:
         'Disallow angle bracket placeholders in MDX files to prevent Crowdin translation errors. Use curly braces {placeholder} instead.',
-      recommended: true,
     },
     messages: {
       noAngleBracketPlaceholder:
@@ -143,7 +142,7 @@ export const rule: Rule.RuleModule = {
           }
 
           context.report({
-            node: node as any,
+            node,
             loc: {
               start: sourceCode.getLocFromIndex(startPos),
               end: sourceCode.getLocFromIndex(endPos),
@@ -183,7 +182,7 @@ export const rule: Rule.RuleModule = {
           }
 
           context.report({
-            node: node as any,
+            node,
             loc: {
               start: sourceCode.getLocFromIndex(startPos),
               end: sourceCode.getLocFromIndex(endPos),

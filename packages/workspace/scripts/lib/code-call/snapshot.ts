@@ -7,6 +7,7 @@ import { Effect } from 'effect';
 import { findGitRootEffect } from './location';
 
 const DIR_SNAPSHOT_FILE_LIMIT = 1000;
+const GIT_OUTPUT_MAX_BUFFER = 64 * 1024 * 1024;
 
 export type Snapshot =
   | { kind: 'git'; root: string; files: Map<string, string> }
@@ -34,6 +35,7 @@ const captureGitSnapshotEffect = (cwd: string) => Effect.gen(function* () {
         cwd: root,
         encoding: 'utf8',
         stdio: ['ignore', 'pipe', 'ignore'],
+        maxBuffer: GIT_OUTPUT_MAX_BUFFER,
       });
       return { kind: 'git', root, files: parsePorcelain(stdout) } satisfies Snapshot;
     },

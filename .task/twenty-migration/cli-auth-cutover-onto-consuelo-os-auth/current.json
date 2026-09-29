@@ -1,0 +1,22 @@
+{
+  "area": "twenty-migration",
+  "stream": "stream/twenty-migration",
+  "taskBranch": "task/twenty-migration/cli-auth-cutover-onto-consuelo-os-auth",
+  "baseBranch": "stream/twenty-migration",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2019,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2019",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2019",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2019/cli-auth-cutover-onto-consuelo-os-auth",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2019",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2019/cli-auth-cutover-onto-consuelo-os-auth",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-twenty-migration-cli-auth-cutover-onto-consuelo-os-auth",
+  "taskSession": "tsk_04bc9df4dcbd",
+  "tmuxSession": "opensaas-twenty-migration-cli-auth-cutover-onto-consuelo-os-auth-04bc9df4",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-twenty-migration-cli-auth-cutover-onto-consuelo-os-auth/.task/twenty-migration/cli-auth-cutover-onto-consuelo-os-auth/session.json",
+  "createdAt": "2026-08-15T04:32:25.862Z",
+  "branch": "task/twenty-migration/cli-auth-cutover-onto-consuelo-os-auth",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-twenty-migration-cli-auth-cutover-onto-consuelo-os-auth",
+  "tmuxCreated": false
+}

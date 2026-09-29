@@ -95,13 +95,45 @@ test('verify human output identifies failed registry suites', () => {
   expect(source).toContain('selection.failedSuites');
   expect(source).toContain('failure.outputTail');
   expect(source).toContain('compactRegistryFailureOutput');
+  expect(source).toContain('registry runner failure:');
+  expect(source).toContain('result.testSelection.error');
 });
 
+
+test('verify single-flights identical full-gate executions', () => {
+  const verifySource = fs.readFileSync(
+    path.resolve('packages/workspace/scripts/verify.js'),
+    'utf8',
+  );
+  expect(verifySource).toContain("require('./lib/verify-run-state')");
+  expect(verifySource).toContain('makeVerifyRunIdentity({');
+  expect(verifySource).toContain("verifyRun.mode === 'replay'");
+  expect(verifySource).toContain('finishVerifyRun(verifyRun');
+  expect(verifySource).toContain('abortVerifyRun(');
+});
+
+test('agent JSON verify uses a detached resumable boundary instead of owning the long gate', () => {
+  const verifySource = fs.readFileSync(
+    path.resolve('packages/workspace/scripts/verify.js'),
+    'utf8',
+  );
+
+  expect(verifySource).toContain("verifyRun.mode === 'launch'");
+  expect(verifySource).toContain("verifyRun.mode === 'pending'");
+  expect(verifySource).toContain("'--foreground'");
+  expect(verifySource).toContain('detached: true');
+  expect(verifySource).toContain('child.unref()');
+  expect(verifySource).toContain('VERIFY_PENDING');
+});
 
 test('verify keeps review semantic-only because selected suites own test execution', () => {
   const verifySource = fs.readFileSync(
     path.resolve('packages/workspace/scripts/verify.js'),
     'utf8',
+  );
+  const runTestSelectionSource = verifySource.slice(
+    verifySource.indexOf('function runTestSelection'),
+    verifySource.indexOf('function createDbResult'),
   );
 
   expect(verifySource).toContain(
@@ -110,5 +142,14 @@ test('verify keeps review semantic-only because selected suites own test executi
   expect(verifySource).toContain(
     "const selectionArgs = ['packages/workspace/scripts/test-selection.js', 'check', '--base', base];",
   );
-  expect(verifySource).toContain("selectionArgs.push('--run', '--json');");
+  expect(runTestSelectionSource).toContain('selectionResultPath');
+  expect(runTestSelectionSource).toContain(
+    "selectionArgs.push('--run', '--json', '--out', selectionResultPath);",
+  );
+  expect(runTestSelectionSource).toContain(
+    "JSON.parse(fs.readFileSync(selectionResultPath, 'utf8'))",
+  );
+  expect(runTestSelectionSource).toContain(
+    'maxBuffer: TEST_SELECTION_OUTPUT_MAX_BUFFER',
+  );
 });

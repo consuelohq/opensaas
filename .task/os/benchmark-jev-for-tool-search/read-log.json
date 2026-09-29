@@ -1,0 +1,15 @@
+{
+  "files": [
+    ".task/os/benchmark-jev-for-tool-search/workpad.md",
+    "package.json",
+    "packages/os/scripts/tools-search-benchmark.ts",
+    "packages/os/scripts/tools-search-jev-benchmark.ts",
+    "packages/os/scripts/tools-search.ts",
+    "packages/os/skills/task/SKILL.md",
+    "packages/os/tests/audit/fixtures/script-parity-classifications.json",
+    "packages/os/tests/tools-search-benchmark.test.ts",
+    "packages/workspace/scripts/git-diff.js",
+    "packages/workspace/scripts/verify.js"
+  ],
+  "updatedAt": "2026-09-21T20:43:00.860Z"
+}

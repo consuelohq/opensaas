@@ -1,0 +1,9 @@
+{
+  "files": [
+    "packages/cli/src/auth.ts",
+    "packages/cli/src/config.ts",
+    "packages/workspace/scripts/task-pr.js",
+    "packages/workspace/scripts/task-push.js"
+  ],
+  "updatedAt": "2026-08-15T05:53:30.712Z"
+}

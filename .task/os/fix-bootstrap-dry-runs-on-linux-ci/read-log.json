@@ -1,0 +1,7 @@
+{
+  "files": [
+    "packages/os/scripts/bootstrap.sh",
+    "packages/os/tests/installer-runtime-dependencies.test.ts"
+  ],
+  "updatedAt": "2026-09-21T16:03:59.647Z"
+}

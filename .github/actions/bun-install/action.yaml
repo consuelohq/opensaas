@@ -1,0 +1,9 @@
+name: Bun Install
+description: Install the root Consuelo workspace from the committed Bun lockfile.
+
+runs:
+  using: composite
+  steps:
+    - name: Install dependencies
+      shell: bash
+      run: bun install --frozen-lockfile

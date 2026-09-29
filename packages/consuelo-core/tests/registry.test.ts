@@ -193,6 +193,26 @@ describe('Consuelo core registry', () => {
     ]);
   });
 
+  it('resolves extensionless TypeScript imports whose basename contains a dot', () => {
+    const fixtureRoot = makeFixtureRoot();
+    mkdirSync(join(fixtureRoot, 'packages/workspace/scripts'), { recursive: true });
+    writeFileSync(
+      join(fixtureRoot, 'packages/workspace/scripts/manifest.config.ts'),
+      'export const manifestConfig = {};\n',
+    );
+    writeFileSync(
+      join(fixtureRoot, 'packages/workspace/scripts/generate.ts'),
+      "import { manifestConfig } from './manifest.config';\nvoid manifestConfig;\n",
+    );
+
+    expect(
+      auditLocalScriptImports({
+        repoRoot: fixtureRoot,
+        scriptRoots: ['packages/workspace/scripts'],
+      }),
+    ).toEqual([]);
+  });
+
   it('flags the recent break pattern when a workspace-owned script has only an OS copy', () => {
     const fixtureRoot = makeFixtureRoot();
     mkdirSync(join(fixtureRoot, 'packages/os/scripts'), { recursive: true });

@@ -114,6 +114,13 @@ const EXIT_MARKER_HANDOFF_GRACE_MS = 2_000;
 const FALLBACK_EXIT_MARKER_ERROR = 'runner process exited without writing a durable exit marker';
 const RUNNER_PATH = fileURLToPath(new URL('./runner.ts', import.meta.url));
 
+function resolveRunnerRuntime(env: NodeJS.ProcessEnv): string {
+  const configured = env.BUN_BIN?.trim();
+  if (configured) return configured;
+  const versions = process.versions as NodeJS.ProcessVersions & { bun?: string };
+  return versions.bun ? process.execPath : 'bun';
+}
+
 export function deriveSubagentRunId(requestId: string | undefined, fallback: string): string {
   const basis = requestId ? `request:${requestId}` : `trace:${fallback}`;
   return `run_${createHash('sha256').update(basis).digest('hex').slice(0, 24)}`;
@@ -230,7 +237,7 @@ export function startDurableSubagentRun(
       timeoutMs: input.timeoutMs,
       deadlineAt: starting.deadlineAt,
     });
-    child = spawn(process.execPath, [RUNNER_PATH, runDir], {
+    child = spawn(resolveRunnerRuntime(input.env), [RUNNER_PATH, runDir], {
       cwd: input.cwd,
       env: input.env,
       detached: true,

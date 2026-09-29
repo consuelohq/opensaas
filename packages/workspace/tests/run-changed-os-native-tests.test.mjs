@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import test from 'node:test';
 
 import {
@@ -8,6 +9,16 @@ import {
   runSelectedNativeTests,
   selectNativeTestPlan,
 } from '../scripts/ci/run-changed-os-native-tests.mjs';
+
+test('native selector reserves enough Git output for repository-scale deletion diffs', () => {
+  const source = readFileSync(
+    new URL('../scripts/ci/run-changed-os-native-tests.mjs', import.meta.url),
+    'utf8',
+  );
+
+  assert.match(source, /const GIT_OUTPUT_MAX_BUFFER = 64 \* 1024 \* 1024;/);
+  assert.match(source, /maxBuffer: GIT_OUTPUT_MAX_BUFFER/);
+});
 
 test('parseCliArguments resolves comparison SHAs', () => {
   assert.deepEqual(

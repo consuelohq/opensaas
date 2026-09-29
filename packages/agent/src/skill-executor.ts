@@ -1,5 +1,5 @@
 // skill executor — non-interactive skill invocation (no session, no tools, no streaming)
-// uses the ai SDK provider passed by the caller (twenty-server owns provider config)
+// uses the AI SDK provider passed by the caller; provider configuration is owned by the caller
 
 import { Logger } from '@consuelo/logger';
 

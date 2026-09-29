@@ -1,0 +1,146 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/twenty-migration/m3-detach-twenty-runtime-infrastructure",
+  "base": "origin/task/twenty-migration/m3-detach-twenty-runtime-infrastructure",
+  "headSha": "5db303b5b73a23d1bca6e4396e5155ecc852dea1",
+  "changeHash": "a923c8ba1753a6eb5a9527f9cbe1f90df5ddcc7a751e5dbc56595c12ddeb0858",
+  "changedFiles": [
+    ".cursor/environment.docker-compose.json",
+    ".cursor/environment.json",
+    ".github/workflows/ci-docker-build.yaml",
+    ".github/workflows/ci-test-docker-compose.yaml",
+    ".vscode/launch.json",
+    ".vscode/tasks.json",
+    ".vscode/twenty.code-workspace",
+    "docker-compose.yml",
+    "package.json",
+    "packages/cli/src/commands/deploy.ts",
+    "packages/cli/src/commands/dev.ts",
+    "packages/cli/src/commands/init.ts",
+    "packages/cli/src/generators/docker.ts",
+    "packages/cli/src/generators/env.ts",
+    "packages/cli/src/index.ts",
+    "packages/cli/src/templates/deploy/aws.ts",
+    "packages/cli/src/templates/deploy/docker.ts",
+    "packages/cli/src/templates/deploy/index.ts",
+    "packages/cli/src/templates/deploy/railway.ts",
+    "packages/cli/src/templates/deploy/types.ts",
+    "packages/cli/src/templates/deploy/vercel.ts",
+    "packages/workspace/tests/twenty-migration-runtime-boundary.test.ts"
+  ],
+  "verifiedAt": "2026-08-15T07:56:54.085Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".cursor/environment.docker-compose.json",
+        ".cursor/environment.json",
+        ".github/workflows/ci-docker-build.yaml",
+        ".github/workflows/ci-test-docker-compose.yaml",
+        ".task/tasks/twenty-migration/m3-detach-twenty-runtime-infrastructure.json",
+        ".task/twenty-migration/m3-detach-twenty-runtime-infrastructure/current.json",
+        ".task/twenty-migration/m3-detach-twenty-runtime-infrastructure/evidence-log.json",
+        ".task/twenty-migration/m3-detach-twenty-runtime-infrastructure/read-log.json",
+        ".task/twenty-migration/m3-detach-twenty-runtime-infrastructure/session.json",
+        ".task/twenty-migration/m3-detach-twenty-runtime-infrastructure/workpad.md",
+        ".vscode/launch.json",
+        ".vscode/tasks.json",
+        ".vscode/twenty.code-workspace",
+        "docker-compose.yml",
+        "package.json",
+        "packages/cli/src/commands/deploy.ts",
+        "packages/cli/src/commands/dev.ts",
+        "packages/cli/src/commands/init.ts",
+        "packages/cli/src/generators/docker.ts",
+        "packages/cli/src/generators/env.ts",
+        "packages/cli/src/index.ts",
+        "packages/cli/src/templates/deploy/aws.ts",
+        "packages/cli/src/templates/deploy/docker.ts",
+        "packages/cli/src/templates/deploy/index.ts",
+        "packages/cli/src/templates/deploy/railway.ts",
+        "packages/cli/src/templates/deploy/types.ts",
+        "packages/cli/src/templates/deploy/vercel.ts",
+        "packages/workspace/tests/twenty-migration-runtime-boundary.test.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "auto:@consuelo/cli:package-test",
+          "critical": false,
+          "reason": "Auto-discovered package test script for packages/cli.",
+          "matchedFiles": [
+            "packages/cli/src/commands/deploy.ts",
+            "packages/cli/src/commands/dev.ts",
+            "packages/cli/src/commands/init.ts",
+            "packages/cli/src/generators/docker.ts",
+            "packages/cli/src/generators/env.ts",
+            "packages/cli/src/index.ts",
+            "packages/cli/src/templates/deploy/aws.ts",
+            "packages/cli/src/templates/deploy/docker.ts",
+            "packages/cli/src/templates/deploy/index.ts",
+            "packages/cli/src/templates/deploy/railway.ts",
+            "packages/cli/src/templates/deploy/types.ts",
+            "packages/cli/src/templates/deploy/vercel.ts"
+          ],
+          "origin": "auto"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "@consuelo/cli package test",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/cli",
+            "test"
+          ],
+          "ruleId": "auto:@consuelo/cli:package-test",
+          "critical": false
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "@consuelo/cli package test",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/cli",
+            "test"
+          ],
+          "ruleId": "auto:@consuelo/cli:package-test",
+          "critical": false,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 646,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-twenty-migration-m3-detach-twenty-runtime-infrastructure/packages/cli\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/legacy-platform-removal.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 98\u001b[2mms\u001b[22m\u001b[39m\n\u001b[90mstdout\u001b[2m | tests/auth.test.ts\u001b[2m > \u001b[22m\u001b[2mConsuelo CLI OS authentication\u001b[2m > \u001b[22m\u001b[2mcompletes the browser callback, token exchange, and workspace handoff end to end\n\u001b[22m\u001b[39m2026-08-15T07:56:53.720Z INFO  [CLI:Auth] Opening browser for Consuelo OS authentication...\n2026-08-15T07:56:53.721Z INFO  [CLI:Auth] If the browser does not open, visit: https://os.consuelohq.com/oauth/authorize?response_type=code&client_id=consuelo-os-operator-cli&redirect_uri=http%3A%2F%2F127.0.0.1%3A50241%2Fcallback&code_challenge=8ZGiPsencX8mHu9p17X3GB0_bFmHQS0otTNSlEfs7tA&code_challenge_method=S256&state=1iKwOIfX9ElQTigepG8sttSZE4332jPd&resource=https%3A%2F%2Fos.consuelohq.com%2Fmcp&scope=workspace%3Aread+workspace%3Anodes%3Amanage\n\n \u001b[32m✓\u001b[39m tests/auth.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 49\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m10 passed\u001b[39m\u001b[22m\u001b[90m (10)\u001b[39m\n\u001b[2m   Start at \u001b[22m 03:56:53\n\u001b[2m   Duration \u001b[22m 341ms\u001b[2m (transform 103ms, setup 0ms, import 203ms, tests 147ms, environment 0ms)\u001b[22m\n\n$ bun x vitest run tests\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

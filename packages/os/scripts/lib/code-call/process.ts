@@ -56,11 +56,12 @@ const DARWIN_READ_CONTAINMENT_PROFILE = [
 ].join('');
 
 function canonicalPath(value: string): string {
-  try {
-    return realpathSync(value);
-  } catch {
-    return value;
-  }
+  return Effect.runSync(
+    Effect.try({
+      try: () => realpathSync(value),
+      catch: () => value,
+    }).pipe(Effect.catchAll((fallback) => Effect.succeed(fallback))),
+  );
 }
 
 function errorMessage(error: NodeJS.ErrnoException): string {
@@ -196,10 +197,17 @@ export const runRuntimeEffect = (command: string, args: string[], options: RunRu
       containmentUnavailable: false,
     });
   });
-  try {
-    child.stdin.end(options.stdin || '');
-  } catch (error: unknown) {
-    const code = (error as NodeJS.ErrnoException)?.code;
-    if (code !== 'EPIPE' && code !== 'ERR_STREAM_DESTROYED') throw error;
+  const stdinEndError = Effect.runSync(
+    Effect.try({
+      try: () => {
+        child.stdin.end(options.stdin || '');
+        return null;
+      },
+      catch: (error) => error as NodeJS.ErrnoException,
+    }).pipe(Effect.catchAll((error) => Effect.succeed(error))),
+  );
+  if (stdinEndError) {
+    const code = stdinEndError.code;
+    if (code !== 'EPIPE' && code !== 'ERR_STREAM_DESTROYED') throw stdinEndError;
   }
 }));

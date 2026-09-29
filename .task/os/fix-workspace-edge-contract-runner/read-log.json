@@ -1,0 +1,11 @@
+{
+  "files": [
+    ".task/os/fix-workspace-edge-contract-runner/verify.json",
+    "packages/os/package.json",
+    "packages/os/tests/helpers/bun-sqlite-vitest.ts",
+    "packages/os/tests/test-environment-contract.test.ts",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "updatedAt": "2026-09-21T20:00:55.830Z"
+}

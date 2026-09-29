@@ -23,7 +23,7 @@ function tempHome(prefix: string): string {
 
 function runWorker(args: string[]): Promise<WorkerResult> {
   return new Promise((resolve, reject) => {
-    const child = spawn(process.execPath, [workerScript, ...args], {
+    const child = spawn('bun', [workerScript, ...args], {
       cwd: path.join(import.meta.dirname, '..'),
       env: process.env,
       stdio: ['ignore', 'pipe', 'pipe'],

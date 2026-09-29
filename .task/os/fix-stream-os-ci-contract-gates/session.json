@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_5c770a0ad3c7",
+  "tmuxSession": "opensaas-os-fix-stream-os-ci-contract-gates-5c770a0a",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-stream-os-ci-contract-gates",
+  "branch": "task/os/fix-stream-os-ci-contract-gates",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-stream-os-ci-contract-gates",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-stream-os-ci-contract-gates",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2458,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2458",
+  "createdAt": "2026-09-11T05:09:15.749Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-stream-os-ci-contract-gates/.task/os/fix-stream-os-ci-contract-gates/session.json"
+}

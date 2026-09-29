@@ -1,0 +1,46 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/consolidate-remaining-macos-background-launch-identities",
+  "base": "origin/task/os/consolidate-remaining-macos-background-launch-identities",
+  "headSha": "8d383bc2cc542c90d5d7741f5748937c1c4f9a96",
+  "changeHash": "422485feeb4e0484ea08890078c2619d01ed23e453d3b746a44e385fe70ead8f",
+  "changedFiles": [],
+  "verifiedAt": "2026-09-25T20:58:07.827Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/consolidate-remaining-macos-background-launch-identities/evidence-log.json",
+        ".task/os/consolidate-remaining-macos-background-launch-identities/read-log.json",
+        ".task/os/consolidate-remaining-macos-background-launch-identities/workpad.md"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "pass",
+      "zeroSuiteReason": "changed files are docs or task metadata",
+      "platform": "darwin",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

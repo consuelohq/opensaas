@@ -1,0 +1,16 @@
+{
+  "area": "twenty-migration",
+  "stream": "stream/twenty-migration",
+  "taskBranch": "task/twenty-migration/m6-yarn-to-bun-cutover",
+  "baseBranch": "stream/twenty-migration",
+  "sourceBranch": "stream/twenty-migration",
+  "startFrom": "stream",
+  "prNumber": 2487,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2487",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-twenty-migration-m6-yarn-to-bun-cutover",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_4799b1afcc55",
+  "tmuxSession": "opensaas-twenty-migration-m6-yarn-to-bun-cutover-4799b1af",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-twenty-migration-m6-yarn-to-bun-cutover/.task/session.json",
+  "createdAt": "2026-09-21T01:13:12.371Z"
+}

@@ -400,7 +400,7 @@ export const toolSchemas = [
         "session",
         "start"
       ],
-      "description": "Canonical session constructor. Use kind=task for managed repo work that needs a branch/worktree/PR, or kind=work for scoped ordinary filesystem work on the owning node.",
+      "description": "Canonical session constructor. Use kind=task for managed repo work that needs a branch/worktree/PR, or kind=work for scoped ordinary filesystem work on the owning node. For work sessions, omit path to create an isolated local work directory automatically.",
       "category": "session lifecycle",
       "underlying": "os session.start",
       "capabilities": {

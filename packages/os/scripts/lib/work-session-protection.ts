@@ -16,6 +16,24 @@ function containsPath(root: string, candidate: string): boolean {
   return relative === '' || (!relative.startsWith('..') && !path.isAbsolute(relative));
 }
 
+function prospectiveCanonicalPath(candidate: string): string {
+  const resolved = path.resolve(candidate);
+  if (fs.existsSync(resolved)) return canonicalExistingPath(resolved);
+
+  const suffix: string[] = [];
+  let cursor = resolved;
+  while (!fs.existsSync(cursor)) {
+    const parent = path.dirname(cursor);
+    if (parent === cursor) break;
+    suffix.unshift(path.basename(cursor));
+    cursor = parent;
+  }
+  const canonicalBase = fs.existsSync(cursor)
+    ? canonicalExistingPath(cursor)
+    : path.resolve(cursor);
+  return path.join(canonicalBase, ...suffix);
+}
+
 export function pathsOverlap(first: string, second: string): boolean {
   return containsPath(first, second) || containsPath(second, first);
 }
@@ -64,6 +82,26 @@ export function findProtectedWorkSessionRoot(input: {
   const consueloHome = fs.existsSync(input.consueloHome)
     ? canonicalExistingPath(input.consueloHome)
     : path.resolve(input.consueloHome);
+  if (pathsOverlap(root, consueloHome)) {
+    return { kind: 'consuelo-home', path: consueloHome };
+  }
+
+  const managedRepoRoot = input.managedRepoRoot?.trim();
+  if (!managedRepoRoot) return null;
+  const protectedRoot = managedWorktreeRoots(managedRepoRoot)
+    .find((candidate) => pathsOverlap(root, candidate));
+  return protectedRoot
+    ? { kind: 'managed-repository', path: protectedRoot }
+    : null;
+}
+
+export function findProtectedProspectiveWorkSessionRoot(input: {
+  root: string;
+  consueloHome: string;
+  managedRepoRoot?: string;
+}): WorkSessionProtectedRoot | null {
+  const root = prospectiveCanonicalPath(input.root);
+  const consueloHome = prospectiveCanonicalPath(input.consueloHome);
   if (pathsOverlap(root, consueloHome)) {
     return { kind: 'consuelo-home', path: consueloHome };
   }

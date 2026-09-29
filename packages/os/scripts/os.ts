@@ -728,8 +728,8 @@ You already received full OS steering very recently in this pre-task bootstrap c
 Do not call get_steering again unless you are intentionally refreshing bootstrap context.
 
 Read only the specific file you need:
-- the immutable runtime steering/system_prompt.md
-- ~/Consuelo/Steering/*.md
+- ~/Consuelo/Steering/system.md
+- other user-authored ~/Consuelo/Steering/*.md files
 - the active installed skill index in <CONSUELO_HOME>/components/installed-skills.json
 - packages/os/manifests/generated/core.manifest.json
 
@@ -908,7 +908,7 @@ export function executeRefreshSteering(
 }
 
 export function getRawSteering(): string {
-  ensureRuntimePaths();
+  const runtimePaths = ensureRuntimePaths();
   const packageRoot = getPackageRoot();
   const sections = [
     '# Consuelo OS raw/operator steering',
@@ -918,9 +918,11 @@ export function getRawSteering(): string {
     'Use this context for landing pages, Artifacts, GitHub, auth, deployment, file workflows, and operator/debug tasks.',
     '',
   ];
-  const devSteering = readIfExists(path.join(packageRoot, 'steering', 'system_prompt.md'));
-  if (devSteering)
-    sections.push('# bundled OS system_prompt.md', '', devSteering);
+  sections.push(readSteeringSnapshot({
+    home: runtimePaths.home,
+    packageRoot,
+    visibleSteeringDir: visibleSteeringDir(),
+  }));
   const manifest = readIfExists(
     path.join(packageRoot, 'manifests', 'generated', 'tool.manifest.json'),
   );

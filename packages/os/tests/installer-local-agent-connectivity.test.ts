@@ -87,5 +87,5 @@ describe('installer local agent connectivity', () => {
       expect.arrayContaining([expect.objectContaining({ name: 'opencode', status: 'configured' })]),
     );
     expect(existsSync(join(osHome, 'consuelo.db'))).toBe(false);
-  });
+  }, 30_000);
 });

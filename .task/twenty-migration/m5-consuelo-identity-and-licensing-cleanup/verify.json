@@ -1,0 +1,842 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/twenty-migration/m5-consuelo-identity-and-licensing-cleanup",
+  "base": "origin/stream/twenty-migration",
+  "headSha": "b7c43606cedc1c3cce269960da206eed4e1a4ef4",
+  "changeHash": "46342edd09eb558698bfe3a8b71c742b74c1172f3ae8bd86054a84c645b3598b",
+  "changedFiles": [
+    ".agent/init.sh",
+    ".claude/skills/worktree-batch/SKILL.md",
+    ".claude/skills/worktree-batch/cleanup.sh",
+    ".claude/skills/worktree-batch/models.md",
+    ".claude/skills/worktree-batch/setup.sh",
+    ".claude/skills/worktree-batch/spec-template.md",
+    ".claude/skills/worktree-batch/status.sh",
+    ".cursor/rules/README.mdc",
+    ".cursor/rules/architecture.mdc",
+    ".cursor/rules/changelog-process.mdc",
+    ".cursor/rules/code-style.mdc",
+    ".cursor/rules/creating-syncable-entity.mdc",
+    ".cursor/rules/feedback-incorporation.mdc",
+    ".cursor/rules/file-structure.mdc",
+    ".cursor/rules/react-general-guidelines.mdc",
+    ".cursor/rules/react-state-management.mdc",
+    ".cursor/rules/server-migrations.mdc",
+    ".cursor/rules/testing-guidelines.mdc",
+    ".cursor/rules/translations.mdc",
+    ".cursor/rules/typescript-guidelines.mdc",
+    ".cursor/skills/syncable-entity-builder-and-validation/SKILL.md",
+    ".cursor/skills/syncable-entity-cache-and-transform/SKILL.md",
+    ".cursor/skills/syncable-entity-integration/SKILL.md",
+    ".cursor/skills/syncable-entity-runner-and-actions/SKILL.md",
+    ".cursor/skills/syncable-entity-testing/SKILL.md",
+    ".cursor/skills/syncable-entity-types-and-constants/SKILL.md",
+    ".cursor/worktrees.json",
+    ".dockerignore",
+    ".github/CLA.md",
+    ".github/CODE_OF_CONDUCT.md",
+    ".github/CONTRIBUTING.md",
+    ".github/SECURITY.md",
+    ".github/crowdin-app.yml",
+    ".gitignore",
+    ".husky/pre-commit",
+    "AGENTS.md",
+    "LICENSE",
+    "LICENSES/AGPL-3.0.txt",
+    "LICENSES/Apache-2.0.txt",
+    "LICENSES/MIT.txt",
+    "NOTICE",
+    "README.md",
+    "eslint.config.mjs",
+    "nx.json",
+    "package.json",
+    "packages/agent/package.json",
+    "packages/agent/src/skill-executor.ts",
+    "packages/consuelo-core/package.json",
+    "packages/consuelo-core/src/registry/index.ts",
+    "packages/consuelo-core/tests/registry.test.ts",
+    "packages/consuelo-design/RAILWAY.md",
+    "packages/consuelo-design/package.json",
+    "packages/consuelo-website/package.json",
+    "packages/dialer-server/package.json",
+    "packages/diff-cockpit/package.json",
+    "packages/eslint-rules/eslint.config.react.mjs",
+    "packages/eslint-rules/index.ts",
+    "packages/eslint-rules/jest.config.mjs",
+    "packages/eslint-rules/project.json",
+    "packages/eslint-rules/rules/component-props-naming.spec.ts",
+    "packages/eslint-rules/rules/component-props-naming.ts",
+    "packages/eslint-rules/rules/effect-components.spec.ts",
+    "packages/eslint-rules/rules/effect-components.ts",
+    "packages/eslint-rules/rules/explicit-boolean-predicates-in-if.ts",
+    "packages/eslint-rules/rules/graphql-resolvers-should-be-guarded.spec.ts",
+    "packages/eslint-rules/rules/graphql-resolvers-should-be-guarded.ts",
+    "packages/eslint-rules/rules/inject-workspace-repository.spec.ts",
+    "packages/eslint-rules/rules/inject-workspace-repository.ts",
+    "packages/eslint-rules/rules/matching-state-variable.spec.ts",
+    "packages/eslint-rules/rules/matching-state-variable.ts",
+    "packages/eslint-rules/rules/max-consts-per-file.spec.ts",
+    "packages/eslint-rules/rules/max-consts-per-file.ts",
+    "packages/eslint-rules/rules/mdx-component-newlines.ts",
+    "packages/eslint-rules/rules/no-angle-bracket-placeholders.ts",
+    "packages/eslint-rules/rules/no-hardcoded-colors.spec.ts",
+    "packages/eslint-rules/rules/no-hardcoded-colors.ts",
+    "packages/eslint-rules/rules/no-navigate-prefer-link.spec.ts",
+    "packages/eslint-rules/rules/no-navigate-prefer-link.ts",
+    "packages/eslint-rules/rules/no-state-useref.spec.ts",
+    "packages/eslint-rules/rules/no-state-useref.ts",
+    "packages/eslint-rules/rules/rest-api-methods-should-be-guarded.spec.ts",
+    "packages/eslint-rules/rules/rest-api-methods-should-be-guarded.ts",
+    "packages/eslint-rules/rules/sort-css-properties-alphabetically.spec.ts",
+    "packages/eslint-rules/rules/sort-css-properties-alphabetically.ts",
+    "packages/eslint-rules/rules/styled-components-prefixed-with-styled.spec.ts",
+    "packages/eslint-rules/rules/styled-components-prefixed-with-styled.ts",
+    "packages/eslint-rules/rules/use-getLoadable-and-getValue-to-get-atoms.spec.ts",
+    "packages/eslint-rules/rules/use-getLoadable-and-getValue-to-get-atoms.ts",
+    "packages/eslint-rules/rules/useRecoilCallback-has-dependency-array.spec.ts",
+    "packages/eslint-rules/rules/useRecoilCallback-has-dependency-array.ts",
+    "packages/eslint-rules/tsconfig.json",
+    "packages/eslint-rules/utils/createRule.ts",
+    "packages/eslint-rules/utils/typedTokenHelpers.ts",
+    "packages/lead-connector/package.json",
+    "packages/os/package.json",
+    "packages/os/scripts/review.js",
+    "packages/workspace/package.json",
+    "packages/workspace/scripts/review.js",
+    "packages/workspace/test-selection.registry.json",
+    "packages/workspace/tests/explore-ranker.test.js",
+    "packages/workspace/tests/twenty-migration-identity-license.test.ts",
+    "packages/workspace/tests/twenty-migration-runtime-boundary.test.ts",
+    "tests/postman/README.md",
+    "tests/postman/consuelo.local.postman_environment.json",
+    "tests/postman/consuelo.postman_collection.json",
+    "tests/postman/consuelo.postman_environment.json",
+    "tests/postman/consuelo.railway.postman_environment.json"
+  ],
+  "verifiedAt": "2026-09-21T01:09:46.005Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".agent/init.sh",
+        ".claude/skills/worktree-batch/SKILL.md",
+        ".claude/skills/worktree-batch/cleanup.sh",
+        ".claude/skills/worktree-batch/models.md",
+        ".claude/skills/worktree-batch/setup.sh",
+        ".claude/skills/worktree-batch/spec-template.md",
+        ".claude/skills/worktree-batch/status.sh",
+        ".cursor/rules/README.mdc",
+        ".cursor/rules/architecture.mdc",
+        ".cursor/rules/changelog-process.mdc",
+        ".cursor/rules/code-style.mdc",
+        ".cursor/rules/creating-syncable-entity.mdc",
+        ".cursor/rules/feedback-incorporation.mdc",
+        ".cursor/rules/file-structure.mdc",
+        ".cursor/rules/react-general-guidelines.mdc",
+        ".cursor/rules/react-state-management.mdc",
+        ".cursor/rules/server-migrations.mdc",
+        ".cursor/rules/testing-guidelines.mdc",
+        ".cursor/rules/translations.mdc",
+        ".cursor/rules/typescript-guidelines.mdc",
+        ".cursor/skills/syncable-entity-builder-and-validation/SKILL.md",
+        ".cursor/skills/syncable-entity-cache-and-transform/SKILL.md",
+        ".cursor/skills/syncable-entity-integration/SKILL.md",
+        ".cursor/skills/syncable-entity-runner-and-actions/SKILL.md",
+        ".cursor/skills/syncable-entity-testing/SKILL.md",
+        ".cursor/skills/syncable-entity-types-and-constants/SKILL.md",
+        ".cursor/worktrees.json",
+        ".dockerignore",
+        ".github/CLA.md",
+        ".github/CODE_OF_CONDUCT.md",
+        ".github/CONTRIBUTING.md",
+        ".github/SECURITY.md",
+        ".github/crowdin-app.yml",
+        ".gitignore",
+        ".husky/pre-commit",
+        ".task/tasks/twenty-migration/m5-consuelo-identity-and-licensing-cleanup.json",
+        ".task/twenty-migration/m5-consuelo-identity-and-licensing-cleanup/evidence-log.json",
+        ".task/twenty-migration/m5-consuelo-identity-and-licensing-cleanup/read-log.json",
+        ".task/twenty-migration/m5-consuelo-identity-and-licensing-cleanup/workpad.md",
+        "AGENTS.md",
+        "LICENSE",
+        "LICENSES/AGPL-3.0.txt",
+        "LICENSES/Apache-2.0.txt",
+        "LICENSES/MIT.txt",
+        "NOTICE",
+        "README.md",
+        "eslint.config.mjs",
+        "nx.json",
+        "package.json",
+        "packages/agent/package.json",
+        "packages/agent/src/skill-executor.ts",
+        "packages/consuelo-core/package.json",
+        "packages/consuelo-core/src/registry/index.ts",
+        "packages/consuelo-core/tests/registry.test.ts",
+        "packages/consuelo-design/RAILWAY.md",
+        "packages/consuelo-design/package.json",
+        "packages/consuelo-website/package.json",
+        "packages/dialer-server/package.json",
+        "packages/diff-cockpit/package.json",
+        "packages/eslint-rules/eslint.config.react.mjs",
+        "packages/eslint-rules/index.ts",
+        "packages/eslint-rules/jest.config.mjs",
+        "packages/eslint-rules/project.json",
+        "packages/eslint-rules/rules/component-props-naming.spec.ts",
+        "packages/eslint-rules/rules/component-props-naming.ts",
+        "packages/eslint-rules/rules/effect-components.spec.ts",
+        "packages/eslint-rules/rules/effect-components.ts",
+        "packages/eslint-rules/rules/explicit-boolean-predicates-in-if.ts",
+        "packages/eslint-rules/rules/graphql-resolvers-should-be-guarded.spec.ts",
+        "packages/eslint-rules/rules/graphql-resolvers-should-be-guarded.ts",
+        "packages/eslint-rules/rules/inject-workspace-repository.spec.ts",
+        "packages/eslint-rules/rules/inject-workspace-repository.ts",
+        "packages/eslint-rules/rules/matching-state-variable.spec.ts",
+        "packages/eslint-rules/rules/matching-state-variable.ts",
+        "packages/eslint-rules/rules/max-consts-per-file.spec.ts",
+        "packages/eslint-rules/rules/max-consts-per-file.ts",
+        "packages/eslint-rules/rules/mdx-component-newlines.ts",
+        "packages/eslint-rules/rules/no-angle-bracket-placeholders.ts",
+        "packages/eslint-rules/rules/no-hardcoded-colors.spec.ts",
+        "packages/eslint-rules/rules/no-hardcoded-colors.ts",
+        "packages/eslint-rules/rules/no-navigate-prefer-link.spec.ts",
+        "packages/eslint-rules/rules/no-navigate-prefer-link.ts",
+        "packages/eslint-rules/rules/no-state-useref.spec.ts",
+        "packages/eslint-rules/rules/no-state-useref.ts",
+        "packages/eslint-rules/rules/rest-api-methods-should-be-guarded.spec.ts",
+        "packages/eslint-rules/rules/rest-api-methods-should-be-guarded.ts",
+        "packages/eslint-rules/rules/sort-css-properties-alphabetically.spec.ts",
+        "packages/eslint-rules/rules/sort-css-properties-alphabetically.ts",
+        "packages/eslint-rules/rules/styled-components-prefixed-with-styled.spec.ts",
+        "packages/eslint-rules/rules/styled-components-prefixed-with-styled.ts",
+        "packages/eslint-rules/rules/use-getLoadable-and-getValue-to-get-atoms.spec.ts",
+        "packages/eslint-rules/rules/use-getLoadable-and-getValue-to-get-atoms.ts",
+        "packages/eslint-rules/rules/useRecoilCallback-has-dependency-array.spec.ts",
+        "packages/eslint-rules/rules/useRecoilCallback-has-dependency-array.ts",
+        "packages/eslint-rules/tsconfig.json",
+        "packages/eslint-rules/utils/createRule.ts",
+        "packages/eslint-rules/utils/typedTokenHelpers.ts",
+        "packages/lead-connector/package.json",
+        "packages/os/package.json",
+        "packages/os/scripts/review.js",
+        "packages/workspace/package.json",
+        "packages/workspace/scripts/review.js",
+        "packages/workspace/test-selection.registry.json",
+        "packages/workspace/tests/explore-ranker.test.js",
+        "packages/workspace/tests/twenty-migration-identity-license.test.ts",
+        "packages/workspace/tests/twenty-migration-runtime-boundary.test.ts",
+        "tests/postman/README.md",
+        "tests/postman/consuelo.local.postman_environment.json",
+        "tests/postman/consuelo.postman_collection.json",
+        "tests/postman/consuelo.postman_environment.json",
+        "tests/postman/consuelo.railway.postman_environment.json"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-publish-gate",
+          "critical": true,
+          "reason": "Review, verify, and task push changes must prove publish-gate behavior.",
+          "matchedFiles": [
+            "packages/workspace/scripts/review.js"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "workspace-test-selection",
+          "critical": true,
+          "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy.",
+          "matchedFiles": [
+            "packages/workspace/test-selection.registry.json"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "trace-site-pagination",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Current OS Trace gateway and Trace Burn changes must prove authenticated history paging, canonical TraceStore resolution, safe redaction, and OS-owned virtual-list/browser behavior.",
+          "matchedFiles": [
+            "packages/os/package.json"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-explore-retrieval-science",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Agent-facing OS Explore retrieval, unified investigation-policy, shadow VOI, and E6 controlled-trial promotion-gate changes must prove hard scope, missing-semantic fallback, honest hypothesis/readiness state, neutral reads, explicit relevance evidence, one shared E4 next-action/edit-readiness control, shadow-only empirical E5 VOI abstention/cost math, fixed-sample paired E6 evidence with exact sign-test and required-node safety gates, hosted embeddings, runtime routing, benchmark metrics, and compact/full output without selecting the historically red package-wide OS suite.",
+          "matchedFiles": [
+            "packages/os/scripts/review.js"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-release-surface-freshness",
+          "critical": true,
+          "exclusive": true,
+          "reason": "OS release orchestration, GitHub CLI resolution, signed runtime publication/promotion, exact local update handoff, default workspace-shell snapshots, and Workspace Edge migrations must prove the focused freshness path without selecting unrelated package-wide OS tests.",
+          "matchedFiles": [
+            "packages/os/package.json"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "dialer-server-package",
+          "critical": true,
+          "reason": "Dialer server changes must prove Hono transport, Twilio boundary, and standalone lifecycle contracts.",
+          "matchedFiles": [
+            "packages/dialer-server/package.json"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "lead-connector-package",
+          "critical": true,
+          "reason": "LeadConnector provider changes must prove OAuth, token, resource, webhook, architecture, and branding contracts.",
+          "matchedFiles": [
+            "packages/lead-connector/package.json"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "auto:@consuelo/core:package-test",
+          "critical": false,
+          "reason": "Auto-discovered package test script for packages/consuelo-core.",
+          "matchedFiles": [
+            "packages/consuelo-core/package.json",
+            "packages/consuelo-core/src/registry/index.ts",
+            "packages/consuelo-core/tests/registry.test.ts"
+          ],
+          "origin": "auto"
+        },
+        {
+          "id": "auto:@consuelo/diff-cockpit:package-test",
+          "critical": false,
+          "reason": "Auto-discovered package test script for packages/diff-cockpit.",
+          "matchedFiles": [
+            "packages/diff-cockpit/package.json"
+          ],
+          "origin": "auto"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace verification stamp tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/verification.test.js"
+          ],
+          "ruleId": "workspace-publish-gate",
+          "critical": true
+        },
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true
+        },
+        {
+          "name": "OS trace gateway and Trace Burn contracts",
+          "command": [
+            "bun",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "--root",
+            "packages/os",
+            "tests/trace-sites-history-endpoint-contract.test.ts",
+            "tests/trace-sites-gateway-read-layer.test.ts",
+            "tests/trace-history-redaction.test.ts",
+            "tests/trace-site-inspector-os-owned.test.ts",
+            "tests/observability-traces-site.test.ts",
+            "tests/redaction.test.ts",
+            "tests/runtime-bundle-managed-site-assets.test.ts",
+            "tests/trace-sites-gateway-live-endpoints.test.ts"
+          ],
+          "ruleId": "trace-site-pagination",
+          "critical": true
+        },
+        {
+          "name": "OS canonical TraceStore runtime boundary",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/trace-sites-runtime-boundary.test.ts"
+          ],
+          "ruleId": "trace-site-pagination",
+          "critical": true
+        },
+        {
+          "name": "OS trace persistence and session search contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "--root",
+            "packages/os",
+            "tests/trace-persistence.test.ts",
+            "tests/trace-search-query.test.ts"
+          ],
+          "ruleId": "trace-site-pagination",
+          "critical": true
+        },
+        {
+          "name": "OS trace browser request budget and persistent stream",
+          "command": [
+            "bun",
+            "test",
+            "packages/os/tests/trace-request-budget.test.ts",
+            "--timeout",
+            "15000"
+          ],
+          "ruleId": "trace-site-pagination",
+          "critical": true
+        },
+        {
+          "name": "OS Explore retrieval science contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/explore-retrieval-policy.test.ts",
+            "tests/explore-retriever-fallback.test.ts",
+            "tests/explore-index-hydration-fallback.test.ts",
+            "tests/explore-bench.test.ts",
+            "tests/explore-output-contract.test.ts",
+            "tests/explore-hypothesis-model.test.ts",
+            "tests/explore-voi-policy.test.ts",
+            "tests/explore-promotion-gate.test.ts",
+            "tests/explore-runtime-routing.test.ts",
+            "tests/semantic-embedding-edge-gateway.test.ts",
+            "tests/semantic-embedding-gateway.test.ts",
+            "tests/semantic-embedding-identity.test.ts",
+            "tools/decision-engine/handler.test.ts"
+          ],
+          "ruleId": "os-explore-retrieval-science",
+          "critical": true
+        },
+        {
+          "name": "OS release freshness contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/os-device-authority-release-contract.test.ts",
+            "tests/distribution/release-channel-workflows.test.ts",
+            "tests/production-release-mcp-security.test.ts",
+            "tests/distribution/release-channels.test.ts",
+            "tests/github-cli-resolution.test.ts",
+            "tests/release-orchestrator.test.ts",
+            "tests/release-local-platform-bundle.test.ts",
+            "tests/release-script-promotion-correlation.test.ts",
+            "tests/release-promotion-dispatch-lock.test.ts",
+            "tests/release-script-security.test.ts",
+            "tests/release-tool-surface.test.ts"
+          ],
+          "ruleId": "os-release-surface-freshness",
+          "critical": true
+        },
+        {
+          "name": "Workspace production release contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/website-deploy.test.js"
+          ],
+          "ruleId": "os-release-surface-freshness",
+          "critical": true
+        },
+        {
+          "name": "Workspace Edge release dry run",
+          "command": [
+            "bun",
+            "run",
+            "os:release-workspace-edge",
+            "--",
+            "--dry-run"
+          ],
+          "ruleId": "os-release-surface-freshness",
+          "critical": true
+        },
+        {
+          "name": "dialer-server Hono contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-server/src"
+          ],
+          "ruleId": "dialer-server-package",
+          "critical": true
+        },
+        {
+          "name": "LeadConnector provider contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/lead-connector/src"
+          ],
+          "ruleId": "lead-connector-package",
+          "critical": true
+        },
+        {
+          "name": "@consuelo/core package test",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/consuelo-core",
+            "test"
+          ],
+          "ruleId": "auto:@consuelo/core:package-test",
+          "critical": false
+        },
+        {
+          "name": "@consuelo/diff-cockpit package test",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/diff-cockpit",
+            "test"
+          ],
+          "ruleId": "auto:@consuelo/diff-cockpit:package-test",
+          "critical": false
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace verification stamp tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/verification.test.js"
+          ],
+          "cwd": ".",
+          "ruleId": "workspace-publish-gate",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 543,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-twenty-migration-m5-consuelo-identity-and-licensing-cleanup\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/verification.test.js \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 267\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m5 passed\u001b[39m\u001b[22m\u001b[90m (5)\u001b[39m\n\u001b[2m   Start at \u001b[22m 21:08:52\n\u001b[2m   Duration \u001b[22m 348ms\u001b[2m (transform 10ms, setup 0ms, import 16ms, tests 267ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "cwd": ".",
+          "ruleId": "workspace-test-selection",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 4294,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-twenty-migration-m5-consuelo-identity-and-licensing-cleanup\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/test-selection.test.js \u001b[2m(\u001b[22m\u001b[2m79 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 4042\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m discovers and seeds the existing test inventory \u001b[33m 441\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m provisions OS package dependencies before selected OS suites on a clean checkout \u001b[33m 479\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m79 passed\u001b[39m\u001b[22m\u001b[90m (79)\u001b[39m\n\u001b[2m   Start at \u001b[22m 21:08:53\n\u001b[2m   Duration \u001b[22m 4.13s\u001b[2m (transform 17ms, setup 0ms, import 26ms, tests 4.04s, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS trace gateway and Trace Burn contracts",
+          "command": [
+            "bun",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "--root",
+            "packages/os",
+            "tests/trace-sites-history-endpoint-contract.test.ts",
+            "tests/trace-sites-gateway-read-layer.test.ts",
+            "tests/trace-history-redaction.test.ts",
+            "tests/trace-site-inspector-os-owned.test.ts",
+            "tests/observability-traces-site.test.ts",
+            "tests/redaction.test.ts",
+            "tests/runtime-bundle-managed-site-assets.test.ts",
+            "tests/trace-sites-gateway-live-endpoints.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "trace-site-pagination",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 570,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-twenty-migration-m5-consuelo-identity-and-licensing-cleanup/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/redaction.test.ts \u001b[2m(\u001b[22m\u001b[2m6 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 6\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/trace-sites-gateway-read-layer.test.ts \u001b[2m(\u001b[22m\u001b[2m10 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 7\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/trace-sites-history-endpoint-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 5\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/trace-history-redaction.test.ts \u001b[2m(\u001b[22m\u001b[2m7 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 7\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/trace-site-inspector-os-owned.test.ts \u001b[2m(\u001b[22m\u001b[2m21 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 10\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/observability-traces-site.test.ts \u001b[2m(\u001b[22m\u001b[2m14 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 41\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/trace-sites-gateway-live-endpoints.test.ts \u001b[2m(\u001b[22m\u001b[2m18 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 86\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/runtime-bundle-managed-site-assets.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 132\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m8 passed\u001b[39m\u001b[22m\u001b[90m (8)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m83 passed\u001b[39m\u001b[22m\u001b[90m (83)\u001b[39m\n\u001b[2m   Start at \u001b[22m 21:08:57\n\u001b[2m   Duration \u001b[22m 328ms\u001b[2m (transform 593ms, setup 121ms, import 633ms, tests 294ms, environment 2ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS canonical TraceStore runtime boundary",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/trace-sites-runtime-boundary.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "trace-site-pagination",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 338,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-twenty-migration-m5-consuelo-identity-and-licensing-cleanup/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/trace-sites-runtime-boundary.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 4\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m3 passed\u001b[39m\u001b[22m\u001b[90m (3)\u001b[39m\n\u001b[2m   Start at \u001b[22m 21:08:57\n\u001b[2m   Duration \u001b[22m 96ms\u001b[2m (transform 18ms, setup 16ms, import 10ms, tests 4ms, environment 0ms)\u001b[22m\n\n$ vitest run tests/trace-sites-runtime-boundary.test.ts\n"
+        },
+        {
+          "name": "OS trace persistence and session search contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "--root",
+            "packages/os",
+            "tests/trace-persistence.test.ts",
+            "tests/trace-search-query.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "trace-site-pagination",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 2903,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-twenty-migration-m5-consuelo-identity-and-licensing-cleanup/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/trace-search-query.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 16\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/trace-persistence.test.ts \u001b[2m(\u001b[22m\u001b[2m12 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 2527\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m persists a silent facade success with redacted input and serves it through the Hono read backend \u001b[33m 556\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m persists code.call and batch parent envelopes alongside nested child traces \u001b[33m 440\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m persists durable Codex child events once under the originating trace across later attachments \u001b[33m 471\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m16 passed\u001b[39m\u001b[22m\u001b[90m (16)\u001b[39m\n\u001b[2m   Start at \u001b[22m 21:08:58\n\u001b[2m   Duration \u001b[22m 2.70s\u001b[2m (transform 68ms, setup 32ms, import 103ms, tests 2.54s, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS trace browser request budget and persistent stream",
+          "command": [
+            "bun",
+            "test",
+            "packages/os/tests/trace-request-budget.test.ts",
+            "--timeout",
+            "15000"
+          ],
+          "cwd": ".",
+          "ruleId": "trace-site-pagination",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 12368,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/os/tests/trace-request-budget.test.ts:\n(pass) filtering a sparse result and rendering it does not fetch history without scroll intent [836.24ms]\n(pass) cursor SSE sends real frames and remains open for subsequent local reads until cancellation [2106.55ms]\n(pass) an underfilled page advances once per downward scroll gesture without a button [991.54ms]\n(pass) an obsolete A to B to A search response cannot overwrite the current results [3500.82ms]\n(pass) live fallback respects Retry-After, stays quiet when hidden, and retries the snapshot after failure [244.37ms]\n(pass) one live owner uses SSE without polling and backs off when a stream closes immediately [209.48ms]\n(pass) the shipped page shows throttling and does not issue requests when its bundle is evaluated twice [1503.33ms]\n(pass) scrolling near the end loads one page and a live prepend preserves the scroll position without fetching history [679.93ms]\n(pass) cursor streams enforce scope and redact payloads with the same rules as history [0.78ms]\n(pass) the shipped page hydrates and receives native EventSource deltas over one HTTP connection [234.34ms]\n(pass) the shipped page shows persisted history after an idle day with its header and rows inside the viewport [391.37ms]\n(pass) an unhandled history search clears its loading state [425.26ms]\n\n 12 pass\n 0 fail\n 61 expect() calls\nRan 12 tests across 1 file. [12.36s]\n"
+        },
+        {
+          "name": "OS Explore retrieval science contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/explore-retrieval-policy.test.ts",
+            "tests/explore-retriever-fallback.test.ts",
+            "tests/explore-index-hydration-fallback.test.ts",
+            "tests/explore-bench.test.ts",
+            "tests/explore-output-contract.test.ts",
+            "tests/explore-hypothesis-model.test.ts",
+            "tests/explore-voi-policy.test.ts",
+            "tests/explore-promotion-gate.test.ts",
+            "tests/explore-runtime-routing.test.ts",
+            "tests/semantic-embedding-edge-gateway.test.ts",
+            "tests/semantic-embedding-gateway.test.ts",
+            "tests/semantic-embedding-identity.test.ts",
+            "tools/decision-engine/handler.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-explore-retrieval-science",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 27057,
+          "outputTail": "8\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/explore-retriever-fallback.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 770\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should return lexical results when semantic embedding is unavailable \u001b[33m 519\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/explore-runtime-routing.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 25\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/explore-bench.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 907\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should reject missing values when a value-taking benchmark CLI flag is last \u001b[33m 667\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/explore-index-hydration-fallback.test.ts \u001b[2m(\u001b[22m\u001b[2m7 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 26439\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should stop after the first failed hydration batch and continue with lexical retrieval \u001b[33m 1718\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should avoid a second query-time wait when semantic hydration hangs \u001b[33m 9593\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should bound total hydration latency when a later semantic batch hangs \u001b[33m 9533\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should bound successful semantic hydration instead of rebuilding the whole index synchronously \u001b[33m 1690\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should preserve query semantic retrieval when changed-document hydration fails local validation \u001b[33m 2624\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should mark query-time semantic fallback degraded after successful document hydration \u001b[33m 1276\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m13 passed\u001b[39m\u001b[22m\u001b[90m (13)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m102 passed\u001b[39m\u001b[22m\u001b[90m (102)\u001b[39m\n\u001b[2m   Start at \u001b[22m 21:09:13\n\u001b[2m   Duration \u001b[22m 26.74s\u001b[2m (transform 1.09s, setup 230ms, import 1.75s, tests 28.31s, environment 1ms)\u001b[22m\n\n$ vitest run tests/explore-retrieval-policy.test.ts tests/explore-retriever-fallback.test.ts tests/explore-index-hydration-fallback.test.ts tests/explore-bench.test.ts tests/explore-output-contract.test.ts tests/explore-hypothesis-model.test.ts tests/explore-voi-policy.test.ts tests/explore-promotion-gate.test.ts tests/explore-runtime-routing.test.ts tests/semantic-embedding-edge-gateway.test.ts tests/semantic-embedding-gateway.test.ts tests/semantic-embedding-identity.test.ts tools/decision-engine/handler.test.ts\n{\"level\":\"info\",\"tool\":\"explore\",\"branch\":\"\",\"command\":\"workspace explore '{\\\"query\\\":\\\"where is Explore retrieval implemented\\\"}'\",\"implementationCommand\":\"bun run explore -- where is Explore retrieval implemented --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-21T01:09:14.734Z\"}\n{\"level\":\"info\",\"tool\":\"confidenceScore\",\"branch\":\"\",\"command\":\"workspace confidenceScore\",\"implementationCommand\":\"bun run confidence-score -- --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-21T01:09:14.744Z\"}\n{\"level\":\"info\",\"tool\":\"decideNext\",\"branch\":\"\",\"command\":\"workspace decideNext\",\"implementationCommand\":\"bun run decide-next -- --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-21T01:09:14.747Z\"}\n{\"level\":\"info\",\"tool\":\"exploit\",\"branch\":\"\",\"command\":\"workspace exploit\",\"implementationCommand\":\"bun run exploit -- --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-21T01:09:14.750Z\"}\n(node:15183) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+        },
+        {
+          "name": "OS release freshness contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/os-device-authority-release-contract.test.ts",
+            "tests/distribution/release-channel-workflows.test.ts",
+            "tests/production-release-mcp-security.test.ts",
+            "tests/distribution/release-channels.test.ts",
+            "tests/github-cli-resolution.test.ts",
+            "tests/release-orchestrator.test.ts",
+            "tests/release-local-platform-bundle.test.ts",
+            "tests/release-script-promotion-correlation.test.ts",
+            "tests/release-promotion-dispatch-lock.test.ts",
+            "tests/release-script-security.test.ts",
+            "tests/release-tool-surface.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-release-surface-freshness",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1488,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-twenty-migration-m5-consuelo-identity-and-licensing-cleanup/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/production-release-mcp-security.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/release-script-security.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 5\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/release-orchestrator.test.ts \u001b[2m(\u001b[22m\u001b[2m13 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 8\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/release-script-promotion-correlation.test.ts \u001b[2m(\u001b[22m\u001b[2m7 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 19\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/distribution/release-channel-workflows.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 66\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/distribution/release-channels.test.ts \u001b[2m(\u001b[22m\u001b[2m25 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 63\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/release-local-platform-bundle.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/github-cli-resolution.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/release-promotion-dispatch-lock.test.ts \u001b[2m(\u001b[22m\u001b[2m7 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 233\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/release-tool-surface.test.ts \u001b[2m(\u001b[22m\u001b[2m6 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 29\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-release-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m18 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 652\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should stop release before remote mutation when readiness fails \u001b[33m 464\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m11 passed\u001b[39m\u001b[22m\u001b[90m (11)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m95 passed\u001b[39m\u001b[22m\u001b[90m (95)\u001b[39m\n\u001b[2m   Start at \u001b[22m 21:09:40\n\u001b[2m   Duration \u001b[22m 1.28s\u001b[2m (transform 1.47s, setup 565ms, import 1.35s, tests 1.08s, environment 1ms)\u001b[22m\n\n$ vitest run tests/os-device-authority-release-contract.test.ts tests/distribution/release-channel-workflows.test.ts tests/production-release-mcp-security.test.ts tests/distribution/release-channels.test.ts tests/github-cli-resolution.test.ts tests/release-orchestrator.test.ts tests/release-local-platform-bundle.test.ts tests/release-script-promotion-correlation.test.ts tests/release-promotion-dispatch-lock.test.ts tests/release-script-security.test.ts tests/release-tool-surface.test.ts\n"
+        },
+        {
+          "name": "Workspace production release contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/website-deploy.test.js"
+          ],
+          "cwd": ".",
+          "ruleId": "os-release-surface-freshness",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 800,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-twenty-migration-m5-consuelo-identity-and-licensing-cleanup\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/website-deploy.test.js \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 525\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m allows local deploys to use existing Wrangler auth when CLOUDFLARE_API_TOKEN is absent \u001b[33m 496\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m3 passed\u001b[39m\u001b[22m\u001b[90m (3)\u001b[39m\n\u001b[2m   Start at \u001b[22m 21:09:42\n\u001b[2m   Duration \u001b[22m 605ms\u001b[2m (transform 11ms, setup 0ms, import 15ms, tests 525ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "Workspace Edge release dry run",
+          "command": [
+            "bun",
+            "run",
+            "os:release-workspace-edge",
+            "--",
+            "--dry-run"
+          ],
+          "cwd": ".",
+          "ruleId": "os-release-surface-freshness",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 726,
+          "outputTail": "release=consuelo-workspace-edge\n$ bun run --cwd packages/os cloudflare:workspace-edge:deploy:dry-run\n\n ⛅️ wrangler 4.114.0 (update available 4.135.0)\n───────────────────────────────────────────────\nTotal Upload: 235.04 KiB / gzip: 51.15 KiB\nYour Worker has access to the following bindings:\nBinding                                                                                                              Resource            \nenv.OS_DEVICE_AUTHORITY (OsDeviceGrantDurableObject, defined in consuelo-os-device-authority)                        Durable Object      \nenv.WORKSPACE_ROUTE_REGISTRY (consuelo-workspace-route-registry)                                                     D1 Database         \nenv.SITES_SNAPSHOTS (consuelo-sites-snapshots)                                                                       R2 Bucket           \nenv.OS_SEMANTIC_EMBEDDING_RATE_LIMITER (600 requests/60s)                                                            Rate Limit          \nenv.OS_SEMANTIC_EMBEDDING_IP_RATE_LIMITER (1200 requests/60s)                                                        Rate Limit          \n\n--dry-run: exiting now.\nConsuelo Workspace Edge dry run complete\n$ bun packages/workspace/scripts/os-release-workspace-edge.ts --dry-run\n$ wrangler deploy --config cloudflare/workspace-edge/wrangler.toml --dry-run\n"
+        },
+        {
+          "name": "dialer-server Hono contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-server/src"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-server-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 901,
+          "outputTail": "osition > selects the test dialer for follow-up operations on test-mode groups [0.12ms]\n(pass) Railway dialer-server runtime composition > keeps existing groups without a provider mode on the live dialer [0.04ms]\n(pass) Railway dialer-server runtime composition > fails closed when a test-mode group outlives its test credentials [0.04ms]\n(pass) Railway dialer-server runtime composition > composes durable LeadConnector configuration and encrypted installation storage [1.46ms]\n(pass) Railway dialer-server runtime composition > preserves input order when standalone learned data is not available [0.77ms]\n(pass) Railway dialer-server runtime composition > ranks predictive targets from canonical observations without Twenty model rows [0.71ms]\n(pass) Railway dialer-server runtime composition > starts a mock standalone call session without Twenty or the compatibility API [0.42ms]\n\npackages/dialer-server/src/runtime/lead-connector-learning.test.ts:\n(pass) LeadConnector learning initialization > creates the compatibility attempt ledger before the compatibility outcome tables [1.30ms]\n(pass) LeadConnector learning initialization > uses the canonical observation insert as the idempotency gate and persists immutable D4 decision context [0.50ms]\n(pass) LeadConnector learning initialization > uses the attempt start as the conservative observation horizon when no later lifecycle timestamp exists [0.13ms]\n\npackages/dialer-server/src/release/production-release.test.ts:\n(pass) dialer production release safety > selects the new Railway deployment instead of racing the previous latest [0.06ms]\n(pass) dialer production release safety > smokes only non-mutating health/auth/signature boundaries [0.24ms]\n(pass) dialer production release safety > builds a secret-free release manifest from immutable deployment evidence [0.08ms]\n(pass) dialer production release safety > refuses to serialize a release manifest from non-green evidence [0.03ms]\n(pass) dialer production release safety > requires immutable one-time Marketplace bootstrap evidence [0.02ms]\n(pass) dialer production release safety > rolls Railway back to one explicit deployment id through the public API [0.12ms]\n\npackages/dialer-server/src/call-operations/application.test.ts:\n(pass) Effect call-operations transcription application > keeps inbound and outbound buffers separate and persists provider metadata only [1.30ms]\n(pass) Effect call-operations transcription application > processes duplicate frames once and flushes a terminal remainder once [0.20ms]\n(pass) Effect call-operations transcription application > keeps transcript rows idempotent when a provider stream reconnects [0.29ms]\n(pass) Effect call-operations transcription application > marks transcription failed on provider timeout without failing the call boundary [21.40ms]\n(pass) Effect call-operations transcription application > does not begin provider work when workspace transcription is disabled [0.07ms]\n\npackages/dialer-server/src/call-operations/persistence.test.ts:\n(pass) call-operations persistence > initializes canonical workspace settings, sessions, legs, segments, and transfer-compatible events [0.12ms]\n(pass) call-operations persistence > uses a workspace-scoped idempotent insert for transcript metadata [0.16ms]\n(pass) call-operations persistence > atomically upserts the canonical session and all provider legs [0.13ms]\n(pass) call-operations persistence > persists recording provider metadata without retaining a raw recording URL [0.06ms]\n\npackages/dialer-server/src/call-operations/groq.test.ts:\n(pass) Groq speech-to-text adapter > uses the OpenAI-compatible audio endpoint and returns provider-grounded metadata [0.78ms]\n(pass) Groq speech-to-text adapter > fails closed when credentials are absent [0.08ms]\n\n1 tests skipped:\n(skip) local dialer lab service integration > migrates an empty isolated Postgres, exercises Redis, and tears both down\n\n 171 pass\n 1 skip\n 0 fail\n 911 expect() calls\nRan 172 tests across 36 files. [892.00ms]\n"
+        },
+        {
+          "name": "LeadConnector provider contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/lead-connector/src"
+          ],
+          "cwd": ".",
+          "ruleId": "lead-connector-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 747,
+          "outputTail": "ture and branding > publishes a separate wrapped Marketplace artifact while keeping the public script executable [0.21ms]\n(pass) LeadConnector browser architecture and branding > creates the iframe on demand and preserves a busy session across route changes [0.07ms]\n(pass) LeadConnector browser architecture and branding > keeps comma-separated selector literals safe for Marketplace editor persistence [0.21ms]\n(pass) LeadConnector browser architecture and branding > wires progressive commercial billing forms and confirmation actions to the controller [0.06ms]\n(pass) LeadConnector browser architecture and branding > restarts the trusted parent bootstrap exchange when authentication is retried [0.03ms]\n\npackages/lead-connector/src/embed/agent-voice.test.ts:\n(pass) LeadConnector browser agent voice > gets microphone permission, registers the device, and resolves after the agent call is accepted [0.43ms]\n(pass) LeadConnector browser agent voice > rejects if the media call fails before acceptance and disconnects the partial leg [0.19ms]\n\npackages/lead-connector/src/embed/idle-refresh.test.ts:\n(pass) LeadConnector idle refresh scheduling > uses focus and visible transitions without polling and fully cleans up across remounts [0.16ms]\n\npackages/lead-connector/src/deployment/custom-menu.test.ts:\n(pass) LeadConnector custom menu deployment contract > targets one sandbox location in iframe mode with microphone permission [0.08ms]\n(pass) LeadConnector custom menu deployment contract > updates an existing sandbox menu instead of creating duplicates [0.31ms]\n\npackages/lead-connector/src/deployment/worker-release.test.ts:\n(pass) LeadConnector production worker release > extracts one deploy version from Wrangler structured output [0.09ms]\n(pass) LeadConnector production worker release > verifies shells, proxy health, CSP, and exact launcher asset hashes [0.33ms]\n\npackages/lead-connector/src/deployment/marketplace-bootstrap.test.ts:\n(pass) stable HighLevel Marketplace bootstrap > loads the launcher assets from one stable HTTPS origin without credentials [0.08ms]\n(pass) stable HighLevel Marketplace bootstrap > rejects non-HTTPS asset origins [0.02ms]\n(pass) stable HighLevel Marketplace bootstrap > verifies the built loader against the approved one-time source SHA-256 [0.08ms]\n(pass) stable HighLevel Marketplace bootstrap > is emitted as a dedicated one-time Marketplace installation artifact [0.14ms]\n\npackages/lead-connector/src/deployment/release-workflow.contract.test.ts:\n(pass) dialer GitHub release workflow contract > classifies the complete deployed dialer surface and validates all three packages [2.10ms]\n(pass) dialer GitHub release workflow contract > builds clean Railway workspace dependencies in package order [2.72ms]\n(pass) dialer GitHub release workflow contract > releases dialer changes from main in fail-closed provider order with deployment-only secrets [0.18ms]\n(pass) dialer GitHub release workflow contract > provides explicit-id manual rollback and never guesses a previous release [0.27ms]\n\npackages/lead-connector/src/deployment/production-menu.test.ts:\n(pass) LeadConnector production custom menu deployment > updates one configured menu id and verifies exact persisted read-back [0.48ms]\n(pass) LeadConnector production custom menu deployment > fails closed when the configured id belongs to a different menu [0.11ms]\n\npackages/lead-connector/src/deployment/commercial-artifacts.test.ts:\n(pass) commercial deployment artifacts > installs an admin-only GHL menu at /admin with microphone permission [0.04ms]\n(pass) commercial deployment artifacts > builds independently versioned marketplace JavaScript and CSS artifacts [0.08ms]\n(pass) commercial deployment artifacts > centers a responsive modal backdrop while preserving a stable native launcher [0.08ms]\n(pass) commercial deployment artifacts > removes obsolete metering workspace and build references [0.90ms]\n\n 122 pass\n 0 fail\n 1051 expect() calls\nRan 122 tests across 26 files. [737.00ms]\n"
+        },
+        {
+          "name": "@consuelo/core package test",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/consuelo-core",
+            "test"
+          ],
+          "cwd": ".",
+          "ruleId": "auto:@consuelo/core:package-test",
+          "critical": false,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 678,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-twenty-migration-m5-consuelo-identity-and-licensing-cleanup/packages/consuelo-core\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/registry.test.ts \u001b[2m(\u001b[22m\u001b[2m12 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 366\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m12 passed\u001b[39m\u001b[22m\u001b[90m (12)\u001b[39m\n\u001b[2m   Start at \u001b[22m 21:09:45\n\u001b[2m   Duration \u001b[22m 523ms\u001b[2m (transform 62ms, setup 0ms, import 99ms, tests 366ms, environment 0ms)\u001b[22m\n\n$ vitest run\n"
+        },
+        {
+          "name": "@consuelo/diff-cockpit package test",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/diff-cockpit",
+            "test"
+          ],
+          "cwd": ".",
+          "ruleId": "auto:@consuelo/diff-cockpit:package-test",
+          "critical": false,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 67,
+          "outputTail": "ocator > accepts the canonical internal Diffs URL it emits\n(pass) buildDiffCockpitUrl > builds the canonical internal Diffs URL [0.02ms]\n(pass) standalone Diffs retirement > removes the standalone Worker and automatic KV cache warmers while preserving hostname safety [2.21ms]\n(pass) normalizeReviewItems > keeps GitHub review thread resolution as source of truth for AI comments [0.37ms]\n(pass) createGithubCodeBrowserLoader > loads the packages tree with latest commit metadata and commit count [0.77ms]\n(pass) createGithubCodeBrowserLoader > renders markdown file contents when the selected file is markdown [0.54ms]\n(pass) createGithubCodeHistoryLoader > loads path history and builds commit tree links [0.23ms]\n(pass) createGithubPullRequestIndexLoader > fetches all PR states and enriches homepage metadata [0.59ms]\n(pass) createGithubPullRequestLoader > fetches live GitHub PR metadata, files, review comments, and commits [0.85ms]\n(pass) createGithubPullRequestLoader > throws a clear error when GitHub PR metadata fails [0.14ms]\n(pass) createGithubPullRequestLoader > skips stream commits for non-stream branches [0.16ms]\n(pass) createGithubPullRequestLoader > handles empty file, comment, and review arrays [0.09ms]\n(pass) buildFileTree > groups files by path segment and preserves file metadata [0.08ms]\n(pass) createGithubPullRequestIndexLoader GraphQL mergeability > loads all PRs with mergeability in paginated GraphQL requests when token is available [0.39ms]\n(pass) pull request index grouping > derives stream ownership from stream and task branches [0.03ms]\n(pass) pull request index grouping > groups pull requests into collapsible sections and filters by stream [0.13ms]\n(pass) pull request index grouping > streams section shows open streams by default and all streams when toggled [0.04ms]\n(pass) pull request index grouping > scores dotted fuzzy PR search across PR fields [0.26ms]\n(pass) renderCodeBrowserPage > renders the main packages browser shell and history shell [0.58ms]\n(pass) renderIndexPage > renders a Graphite-like PR inbox with command search and load-more sections [1.25ms]\n(pass) renderIndexPage > keeps mounted PR navigation inside the configured Diffs path [0.13ms]\n(pass) renderReviewPage > keeps the existing PR route and the right review panel closed by default [2.69ms]\n(pass) createWorker > updates GitHub review threads through the review thread API endpoint [0.94ms]\n(pass) createWorker > invalidates PR cache for resolved GitHub review-thread webhooks [0.74ms]\n(pass) createWorker > does not silently default the standalone homepage to OpenSaaS [0.09ms]\n(pass) createWorker > routes the standalone homepage to the configured repository shell [0.25ms]\n(pass) createWorker > hydrates PR pages from shared API cache when available [0.43ms]\n(pass) createWorker > keeps the PR loading shell when shared API cache misses [0.12ms]\n(pass) createWorker > merges a pull request through the merge API endpoint [0.19ms]\n(pass) createWorker > routes code browser pages and APIs for main packages and history [0.55ms]\n(pass) createWorker > refresh endpoint uses waitUntil so cron does not block on slow cache warming [0.99ms]\n(pass) createWorker > server-renders warmed inbox and PR pages from shared API cache [0.56ms]\n(pass) createWorker > refresh stores homepage snapshots in durable shared storage for cross-device first paint [0.49ms]\n(pass) createWorker > refresh endpoint protects and prewarms homepage and PR API cache entries [0.54ms]\n(pass) createWorker > returns homepage API shared cache headers and 304 for unchanged ETags [0.20ms]\n(pass) createWorker > prewarms a bounded hot PR set from the homepage snapshot when no explicit pulls are provided [1.39ms]\n(pass) createWorker > uses strict shared cache headers for open PR details and long cache headers for inactive PR details [0.25ms]\n(pass) createWorker > returns PR API cache headers and 304 for unchanged ETags [0.24ms]\n\n 41 pass\n 0 fail\n 408 expect() calls\nRan 41 tests across 1 file. [47.00ms]\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

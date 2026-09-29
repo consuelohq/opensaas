@@ -1,3 +1,4 @@
+import { createTraceCursorStream } from './trace-cursor-stream';
 import {
   createTraceSitesGatewayReadLayer,
   type TraceSitesGatewayReadBackendAdapter,
@@ -118,6 +119,22 @@ export function createTraceSitesGatewayLiveEndpoints(
         );
       }
 
+      if (
+        url.pathname === '/gateway/traces/events' &&
+        url.searchParams.get('direction') === 'newer'
+      ) {
+        const initial = await cursorPageResponse(
+          url,
+          scope,
+          options.backend,
+          'newer',
+        );
+        return createTraceCursorStream(request, initial, (cursor) => {
+          const next = new URL(url);
+          next.searchParams.set('cursor', cursor);
+          return cursorPageResponse(next, scope, options.backend, 'newer');
+        });
+      }
       if (url.pathname === '/gateway/traces/events') {
         return sseLiveResponse(request, url, scope, readLayer);
       }
@@ -290,6 +307,7 @@ async function cursorPageResponse(
             ? page.rows
             : page.rows.map(redactTraceHistoryRow),
         nextCursor: page.nextCursor,
+        ...(page.liveCursor ? { liveCursor: page.liveCursor } : {}),
       },
     });
   } catch {
@@ -750,7 +768,10 @@ function statusForFailure(
 function jsonResponse(body: Record<string, unknown>, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { 'content-type': 'application/json; charset=utf-8' },
+    headers: {
+      'content-type': 'application/json; charset=utf-8',
+      'cache-control': 'private, no-store',
+    },
   });
 }
 

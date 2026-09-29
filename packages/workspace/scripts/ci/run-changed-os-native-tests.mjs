@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 const currentFile = fileURLToPath(import.meta.url);
 const repoRoot = path.resolve(path.dirname(currentFile), '../../../..');
 const osPackageRoot = path.join(repoRoot, 'packages/os');
+const GIT_OUTPUT_MAX_BUFFER = 64 * 1024 * 1024;
 
 const ARTIFACT_CLEANUP_FILE = 'packages/os/scripts/artifacts-design.ts';
 
@@ -77,6 +78,7 @@ const run = (command, args, options = {}) => {
     encoding: 'utf8',
     stdio: options.capture ? 'pipe' : 'inherit',
     env: options.env ?? process.env,
+    maxBuffer: GIT_OUTPUT_MAX_BUFFER,
   });
 
   if (result.error) {

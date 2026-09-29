@@ -13,7 +13,7 @@ describe('release tool surface', () => {
       name: 'release',
       methodPath: ['release'],
       category: 'release',
-      capabilities: { readOnly: false, mutating: true, safeToRetry: false },
+      capabilities: { readOnly: false, mutating: true, safeToRetry: true },
       inputSchema: 'ReleaseInput',
       command: {
         script: 'release',
@@ -24,14 +24,23 @@ describe('release tool surface', () => {
     expect(release?.definition.description).toContain('release to canary');
     expect(release?.definition.description).toContain('exact released version');
     expect(release?.definition.description).toContain('main-targeting review PR');
-    expect(Number(release?.definition.defaultTimeout)).toBeGreaterThanOrEqual(4 * 60 * 60_000);
+    expect(release?.definition.description).toContain('operation id');
+    expect(release?.definition.description).toContain('resume');
+    expect(Number(release?.definition.defaultTimeout)).toBeLessThanOrEqual(30_000);
   });
 
-  it('validates PR, target channel, release-only, and merge method inputs', () => {
+  it('validates durable start, status, logs, attach, and resume inputs', () => {
     const schema = getInputSchema('ReleaseInput');
     expect(schema).not.toBeNull();
     expect(schema?.safeParse({ pr: 2185, channel: 'canary' }).success).toBe(true);
+    expect(schema?.safeParse({ action: 'start', pr: 2185, channel: 'canary' }).success).toBe(true);
     expect(schema?.safeParse({ pr: 2185, channel: 'stable', releaseOnly: true, mergeMethod: 'squash' }).success).toBe(true);
+    expect(schema?.safeParse({ action: 'status', operationId: 'release-deadbeef' }).success).toBe(true);
+    expect(schema?.safeParse({ action: 'logs', operationId: 'release-deadbeef', tailLines: 50 }).success).toBe(true);
+    expect(schema?.safeParse({ action: 'attach', operationId: 'release-deadbeef' }).success).toBe(true);
+    expect(schema?.safeParse({ action: 'resume', operationId: 'release-deadbeef' }).success).toBe(true);
+    expect(schema?.safeParse({ action: 'status' }).success).toBe(false);
+    expect(schema?.safeParse({ action: 'start', operationId: 'release-deadbeef' }).success).toBe(false);
     expect(schema?.safeParse({ pr: 0, channel: 'canary' }).success).toBe(false);
     expect(schema?.safeParse({ pr: 2185, channel: 'nightly' }).success).toBe(false);
   });

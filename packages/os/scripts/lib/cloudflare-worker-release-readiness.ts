@@ -140,8 +140,13 @@ export const deployCloudflareWorker = async (input: {
 
     assertRequiredCloudflareWorkerSecrets(input.target, secretList.stdout);
 
+    const deployArgs = ['wrangler', 'deploy'];
+    if (input.target === 'os-device-authority') {
+      deployArgs.push('--keep-vars');
+    }
+    deployArgs.push('--config', config.configPath);
     const deploy = await runner({
-      argv: ['wrangler', 'deploy', '--config', config.configPath],
+      argv: deployArgs,
       cwd: input.cwd,
     });
     if (deploy.exitCode !== 0) {

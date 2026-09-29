@@ -121,6 +121,7 @@ contractDescribe('workspace edge route seed contract', () => {
       '/gateway/environments',
       '/gateway/secrets/install',
       '/gateway/secrets',
+      '/share/artifacts',
       '/artifacts',
       '/gateway/artifacts',
       '/gateway/diffs/write',

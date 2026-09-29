@@ -1,0 +1,16 @@
+{
+  "area": "twenty-migration",
+  "stream": "stream/twenty-migration",
+  "taskBranch": "task/twenty-migration/close-bun-hoisting-dependency-gaps",
+  "baseBranch": "stream/twenty-migration",
+  "sourceBranch": "stream/twenty-migration",
+  "startFrom": "stream",
+  "prNumber": 2507,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2507",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-twenty-migration-close-bun-hoisting-dependency-gaps",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_e9cbd2f6c497",
+  "tmuxSession": "opensaas-twenty-migration-close-bun-hoisting-dependency-gaps-e9cbd2f6",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-twenty-migration-close-bun-hoisting-dependency-gaps/.task/session.json",
+  "createdAt": "2026-09-21T04:53:33.917Z"
+}

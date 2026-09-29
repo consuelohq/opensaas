@@ -1,0 +1,16 @@
+{
+  "area": "documentation",
+  "stream": "stream/documentation",
+  "taskBranch": "task/documentation/keep-application-docs-in-sidebar",
+  "baseBranch": "stream/documentation",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2560,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2560",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-documentation-keep-application-docs-in-sidebar",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_a5554c6ad2d9",
+  "tmuxSession": "opensaas-documentation-keep-application-docs-in-sidebar-a5554c6a",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-documentation-keep-application-docs-in-sidebar/.task/session.json",
+  "createdAt": "2026-09-23T02:05:45.158Z"
+}

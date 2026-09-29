@@ -26,6 +26,8 @@ function cleanEnv(): NodeJS.ProcessEnv {
     SUPABASE_URL: _supabaseUrl,
     SUPABASE_KEY: _supabaseKey,
     SUPABASE_ANON_KEY: _supabaseAnonKey,
+    CONSUELO_TRACE_DB: _consueloTraceDb,
+    TRACE_DB: _traceDb,
     ...rest
   } = process.env;
   return { ...rest, CONSUELO_HOME: consueloHome };
@@ -43,14 +45,16 @@ function runMemory(args: string[], input?: string) {
 describe('OS memory runtime', () => {
   it('classifies memory.js as the canonical high-risk OS runtime', () => {
     const classifications = JSON.parse(readFileSync(
-      join(packageRoot, 'tooling', 'script-parity-classifications.json'),
+      join(packageRoot, 'tests', 'audit', 'fixtures', 'script-parity-classifications.json'),
       'utf8',
     ));
 
     expect(classifications.scripts['scripts/memory.js']).toMatchObject({
       status: 'os-only-intentional',
     });
-    expect(classifications.scripts).not.toHaveProperty('scripts/context.js');
+    expect(classifications.scripts['scripts/context.js']).toMatchObject({
+      status: 'workspace-only-needs-port',
+    });
     expect(classifications.highRiskScripts).toContain('scripts/memory.js');
     expect(classifications.highRiskScripts).not.toContain('scripts/context.js');
   });

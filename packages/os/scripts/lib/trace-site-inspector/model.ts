@@ -437,7 +437,7 @@ export function totalTokens(row: TraceRecord): number {
 
   // Older facade traces did not persist token estimates consistently. Rebuild the
   // same chars/4 payload estimate used by batch/codemode so historical rows are
-  // useful without mutating the trace database.
+  // still useful without changing how token totals are presented in the UI.
   return (
     estimatePayloadTokens(
       row.rawResolvedInputJson ?? row.rawInputJson ?? row.resolvedInputObj ?? row.inputObj ?? row.input,

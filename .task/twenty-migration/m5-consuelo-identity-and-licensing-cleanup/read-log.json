@@ -1,0 +1,10 @@
+{
+  "files": [
+    "packages/consuelo-core/src/registry/index.ts",
+    "packages/consuelo-core/tests/registry.test.ts",
+    "packages/eslint-rules/rules/mdx-component-newlines.ts",
+    "packages/os/manifests/manifest.config.ts",
+    "packages/os/scripts/generate-tool-manifest.ts"
+  ],
+  "updatedAt": "2026-09-21T01:07:56.176Z"
+}

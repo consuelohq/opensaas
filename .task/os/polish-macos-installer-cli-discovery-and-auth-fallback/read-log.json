@@ -1,0 +1,8 @@
+{
+  "files": [
+    "packages/os/scripts/bootstrap.sh",
+    "packages/os/scripts/install.ts",
+    "packages/os/tests/bootstrap-source.test.ts"
+  ],
+  "updatedAt": "2026-09-23T02:15:41.967Z"
+}

@@ -1,0 +1,51 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/documentation/keep-application-docs-in-sidebar",
+  "base": "origin/main",
+  "headSha": "f15785494a1590cfd843a91d22421b62de5c91a6",
+  "changeHash": "5d2620971e9a8f1df6ddd8ebd3e04d0d91aa8a424a5fd4ca866d176fb666982b",
+  "changedFiles": [
+    "packages/documentation/src/lib/docs-navigation.ts",
+    "packages/documentation/tests/connect.test.ts"
+  ],
+  "verifiedAt": "2026-09-23T02:08:08.617Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/documentation/keep-application-docs-in-sidebar/evidence-log.json",
+        ".task/documentation/keep-application-docs-in-sidebar/read-log.json",
+        ".task/documentation/keep-application-docs-in-sidebar/workpad.md",
+        ".task/tasks/documentation/keep-application-docs-in-sidebar.json",
+        "packages/documentation/src/lib/docs-navigation.ts",
+        "packages/documentation/tests/connect.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -188,13 +188,20 @@ describe('typed facade executor', () => {
     expect(data.manifestEntry?.command?.subcommand).toBe('apply-patch');
   });
 
-  it('keeps generic unknown tool messages compact', async () => {
+  it('keeps generic unknown tool failures compact but recoverable', async () => {
     const result = await executeTool('missing.tool', {}, stableOptions(successfulRunner()));
 
     expect(result.ok).toBe(false);
     expect(result.code).toBe('NOT_FOUND');
-    expect(result.message).toBe('unknown tool: missing.tool');
-    expect(result.data).toBeNull();
+    expect(result.message).toContain('unknown tool: missing.tool');
+    expect(result.message).toContain('tool-manifest mismatch');
+    expect(result.data).toMatchObject({
+      requestedTool: 'missing.tool',
+      autoRetry: false,
+      toolsSearchCall: {
+        tool: 'tools.search',
+      },
+    });
   });
 
   it('fails deployment mutations closed before generic command execution', async () => {

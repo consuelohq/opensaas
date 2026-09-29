@@ -14,7 +14,7 @@ describe('Consuelo OS compact hosted daemon output', () => {
     expect(bootstrap).toContain('bash ./scripts/install-system-daemons.sh --quiet');
     expect(bootstrap).toContain('bash ./scripts/install-system-daemons.sh --dry-run --quiet');
     expect(bootstrap).toContain('setting up background service');
-    expect(bootstrap).toContain('background service ready');
+    expect(bootstrap).not.toContain('background service ready');
     expect(bootstrap).not.toContain('"$BUN_BIN" run --cwd "$os_dir" install:system-daemons:quiet');
     expect(bootstrap).not.toContain('"$BUN_BIN" run --cwd "$os_dir" install:system-daemons:dry-run -- --quiet');
   });
@@ -24,13 +24,15 @@ describe('Consuelo OS compact hosted daemon output', () => {
     expect(bootstrap).toContain('loading_message="$1"');
     expect(bootstrap).toContain('verify_runtime_release()');
     expect(bootstrap).toContain('install_verified_runtime()');
-    expect(bootstrap).toContain('run_with_loading_dots "setting up background service" install_daemons_quiet');
+    expect(bootstrap).toContain('run_quiet_with_loading_dots "setting up background service" install_daemons_quiet');
   });
 
-  test('runtime dependency install keeps Bun output visible', () => {
-    expect(bootstrap).toContain('Installing Consuelo OS runtime dependencies...');
+  test('normal hosted setup collapses dependency chatter behind one installer status while debug stays detailed', () => {
+    expect(bootstrap).toContain('setup_local_runtime()');
+    expect(bootstrap).toContain('run_quiet_with_loading_dots "Installing Consuelo OS" setup_local_runtime');
+    expect(bootstrap).toContain('if [ "$DEBUG" = "1" ] || [ "$JSON" -eq 1 ] || [ "$DRY_RUN" -eq 1 ]; then');
+    expect(bootstrap).toContain('setup_local_runtime');
     expect(bootstrap).toContain('"$BUN_BIN" install --frozen-lockfile --production');
-    expect(bootstrap).not.toContain('run_with_loading_dots "Installing Consuelo OS runtime dependencies');
   });
 
   test('daemon quiet mode suppresses generated plist and repeated summary details', () => {

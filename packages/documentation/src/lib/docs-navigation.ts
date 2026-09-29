@@ -54,6 +54,7 @@ const connectItems: SidebarItem[] = [
       { label: 'Slack', slug: 'connect/apps-and-services/slack' },
       { label: 'Snowflake', slug: 'connect/apps-and-services/snowflake' },
       { label: 'Stripe', slug: 'connect/apps-and-services/stripe' },
+      { label: 'Swamp', slug: 'connect/apps-and-services/swamp' },
       { label: 'Supabase', slug: 'connect/apps-and-services/supabase' },
       { label: 'Twilio', slug: 'connect/apps-and-services/twilio' },
       { label: 'Vercel', slug: 'connect/apps-and-services/vercel' },

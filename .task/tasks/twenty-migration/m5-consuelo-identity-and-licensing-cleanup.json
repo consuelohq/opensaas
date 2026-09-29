@@ -1,0 +1,16 @@
+{
+  "area": "twenty-migration",
+  "stream": "stream/twenty-migration",
+  "taskBranch": "task/twenty-migration/m5-consuelo-identity-and-licensing-cleanup",
+  "baseBranch": "stream/twenty-migration",
+  "sourceBranch": "stream/twenty-migration",
+  "startFrom": "stream",
+  "prNumber": 2486,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2486",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-twenty-migration-m5-consuelo-identity-and-licensing-cleanup",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_190f56849423",
+  "tmuxSession": "opensaas-twenty-migration-m5-consuelo-identity-and-licensing-cleanup-190f5684",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-twenty-migration-m5-consuelo-identity-and-licensing-cleanup/.task/session.json",
+  "createdAt": "2026-09-21T00:17:02.388Z"
+}

@@ -1,0 +1,7 @@
+{
+  "files": [
+    "packages/os/scripts/server/routes/artifacts.ts",
+    "packages/os/tests/artifact-sharing-links.test.ts"
+  ],
+  "updatedAt": "2026-09-21T12:11:16.473Z"
+}

@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/make-release-facade-durable-and-exact-sha-resumable",
+  "events": [
+    {
+      "id": "cdd106b1-8f47-4610-9dc2-2ce0b8d1f556",
+      "occurred_at": "2026-09-23T23:12:06.368Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/make-release-facade-durable-and-exact-sha-resumable/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/make-release-facade-durable-and-exact-sha-resumable",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/make-release-facade-durable-and-exact-sha-resumable"
+      }
+    },
+    {
+      "id": "0fa8acaf-857e-403f-ace3-b870ffd91a68",
+      "occurred_at": "2026-09-23T23:16:30.618Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/make-release-facade-durable-and-exact-sha-resumable/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/make-release-facade-durable-and-exact-sha-resumable",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/make-release-facade-durable-and-exact-sha-resumable"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-09-23T23:16:30.682Z"
+}

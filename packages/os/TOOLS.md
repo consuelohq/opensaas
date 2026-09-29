@@ -6797,12 +6797,12 @@ await workspace.call({
 
 ### workspace.session.start
 
-Canonical session constructor. Use kind=task for managed repo work that needs a branch/worktree/PR, or kind=work for scoped ordinary filesystem work on the owning node.
+Canonical session constructor. Use kind=task for managed repo work that needs a branch/worktree/PR, or kind=work for scoped ordinary filesystem work on the owning node. For work sessions, omit path to create an isolated local work directory automatically.
 
 | Field | Value |
 | --- | --- |
 | Category | session lifecycle |
-| Signature | `workspace.session.start(({ kind: "task"; stream?: string; area?: string; title?: string; workflow?: "task" &#124; "artifacts" &#124; "media"; bodyFile?: string; startFrom?: "main" &#124; "stream"; dryRun?: boolean; requestId?: string; taskSession?: string } &#124; { kind: "work"; path: string; dryRun?: boolean; requestId?: string; taskSession?: string })) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.session.start(({ kind: "task"; stream?: string; area?: string; title?: string; workflow?: "task" &#124; "artifacts" &#124; "media"; bodyFile?: string; startFrom?: "main" &#124; "stream"; dryRun?: boolean; requestId?: string; taskSession?: string } &#124; { kind: "work"; path?: string; title?: string; dryRun?: boolean; requestId?: string; taskSession?: string })) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `os session.start` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 60000ms |

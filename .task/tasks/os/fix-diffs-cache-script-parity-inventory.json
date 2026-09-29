@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-diffs-cache-script-parity-inventory",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2501,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2501",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-diffs-cache-script-parity-inventory",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_7a1fcb6e7442",
+  "tmuxSession": "opensaas-os-fix-diffs-cache-script-parity-inventory-7a1fcb6e",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-diffs-cache-script-parity-inventory/.task/session.json",
+  "createdAt": "2026-09-21T04:08:28.814Z"
+}

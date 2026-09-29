@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/make-release-facade-durable-and-exact-sha-resumable",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2565,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2565",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-make-release-facade-durable-and-exact-sha-resumable",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_b5140d9026d8",
+  "tmuxSession": "opensaas-os-make-release-facade-durable-and-exact-sha-resuma-b5140d90",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-make-release-facade-durable-and-exact-sha-resumable/.task/session.json",
+  "createdAt": "2026-09-23T23:16:24.818Z"
+}

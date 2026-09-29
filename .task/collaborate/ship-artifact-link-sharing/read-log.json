@@ -1,0 +1,14 @@
+{
+  "files": [
+    ".task/collaborate/ship-artifact-link-sharing/workpad.md",
+    "packages/os/scripts/server/services/artifacts-gateway.ts",
+    "packages/os/tests/local-os-server-hono-architecture.test.ts",
+    "packages/os/tests/workspace-edge-route-seed-contract.test.ts",
+    "packages/workspace/scripts/test-selection.js",
+    "packages/workspace/scripts/verify.js",
+    "packages/workspace/test-selection.registry.json",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+  ],
+  "updatedAt": "2026-09-21T04:39:48.707Z"
+}

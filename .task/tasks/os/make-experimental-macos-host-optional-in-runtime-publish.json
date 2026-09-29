@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/make-experimental-macos-host-optional-in-runtime-publish",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2584,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2584",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-make-experimental-macos-host-optional-in-runtime-publish",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_d0c2c4321a4f",
+  "tmuxSession": "opensaas-os-make-experimental-macos-host-optional-in-runtime-d0c2c432",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-make-experimental-macos-host-optional-in-runtime-publish/.task/session.json",
+  "createdAt": "2026-09-25T17:28:37.720Z"
+}

@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
-import { chmodSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { accessSync, chmodSync, constants, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
+import { delimiter, dirname, join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
@@ -12,10 +12,33 @@ function successfulRunner(): ToolRunner {
   return async () => ({ stdout: '', stderr: '', exitCode: 0 });
 }
 
+function resolveTestBunExecutable(): string {
+  const configured = process.env.BUN_BIN?.trim();
+  if (configured) return configured;
+  const versions = process.versions as NodeJS.ProcessVersions & { bun?: string };
+  if (versions.bun) return process.execPath;
+
+  const names = process.platform === 'win32' ? ['bun.exe', 'bun.cmd', 'bun'] : ['bun'];
+  for (const directory of (process.env.PATH ?? '').split(delimiter).filter(Boolean)) {
+    for (const name of names) {
+      const candidate = join(directory, name);
+      try {
+        accessSync(candidate, constants.X_OK);
+        return candidate;
+      } catch {
+        // Keep searching the host PATH; provider PATH is intentionally cleared later.
+      }
+    }
+  }
+  throw new Error('Bun executable is unavailable for the durable subagent test fixture');
+}
+
+const TEST_BUN_EXECUTABLE = resolveTestBunExecutable();
+
 function stableOptions(cwd: string, env: NodeJS.ProcessEnv) {
   return {
     cwd,
-    env,
+    env: { ...env, BUN_BIN: env.BUN_BIN?.trim() || TEST_BUN_EXECUTABLE },
     runner: successfulRunner(),
     branchResolver: ({ explicitBranch }: { explicitBranch?: string }) => ({
       ok: true as const,

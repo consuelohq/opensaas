@@ -716,7 +716,7 @@ describe('Windows native service and workflow source contracts', () => {
       'utf8',
     );
 
-    expect(installState).toContain("else if (input.platform === 'darwin')");
+    expect(installState).not.toContain('workspace node heartbeat launchd service configured');
     expect(serverMain).toContain("process.platform === 'win32'");
     expect(serverMain).toContain('startWorkspaceNodeHeartbeatScheduler');
     expect(serverMain).toContain('workspace-node-heartbeat.json');

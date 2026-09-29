@@ -1,0 +1,16 @@
+{
+  "area": "twenty-migration",
+  "stream": "stream/twenty-migration",
+  "taskBranch": "task/twenty-migration/fix-bun-dialer-docker-install-scripts",
+  "baseBranch": "stream/twenty-migration",
+  "sourceBranch": "stream/twenty-migration",
+  "startFrom": "stream",
+  "prNumber": 2509,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2509",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-twenty-migration-fix-bun-dialer-docker-install-scripts",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_5af5c2fdd9fb",
+  "tmuxSession": "opensaas-twenty-migration-fix-bun-dialer-docker-install-scripts-5af5c2fd",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-twenty-migration-fix-bun-dialer-docker-install-scripts/.task/session.json",
+  "createdAt": "2026-09-21T05:09:50.019Z"
+}

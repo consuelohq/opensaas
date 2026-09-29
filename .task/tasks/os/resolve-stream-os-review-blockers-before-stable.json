@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/resolve-stream-os-review-blockers-before-stable",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2575,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2575",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-resolve-stream-os-review-blockers-before-stable",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_7774c7d92f87",
+  "tmuxSession": "opensaas-os-resolve-stream-os-review-blockers-before-stable-7774c7d9",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-resolve-stream-os-review-blockers-before-stable/.task/session.json",
+  "createdAt": "2026-09-23T23:24:21.722Z"
+}

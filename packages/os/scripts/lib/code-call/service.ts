@@ -4,7 +4,7 @@ import { createToolResult, createTraceId, getErrorMessage } from '../facade/erro
 import { resolveActiveWorkspaceProjectCwd } from '../workspace-project-cwd';
 import { codeCallServiceError, isCodeCallServiceError, type CodeCallServiceError } from './errors';
 import { resolveSafeCwdEffect, resolveSafeFileEffect } from './location';
-import { truncateOutputEffect } from './output';
+import { truncateForEnvelope, truncateOutputEffect } from './output';
 import { detectTransportMistakeEffect, validateEditDryRunEffect, validateEditScopeEffect, validateMutationPolicyEffect } from './policy';
 import { runRuntimeEffect } from './process';
 import { cleanupStagedSourceEffect, loadSourceEffect, stageSourceEffect, validateSourceInputsEffect } from './source';
@@ -12,12 +12,19 @@ import { elapsedMs, normalizeCodeCallInputEffect } from './schema';
 import { captureSnapshotEffect, changedFiles } from './snapshot';
 import type { CodeCallContext, CodeCallData, CodeCallInput, CodeCallLanguage, CodeCallMode, CodeCallMistakeClass, CodeCallResult } from './types';
 
+const TOP_LEVEL_STDERR_MAX_CHARS = 2_000;
+
 function runtimeEnv(input: CodeCallInput, baseEnv: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
   return {
     ...baseEnv,
+    ...(input.mode === 'verify' ? { CONSUELO_FACADE_LOG_MODE: 'silent' } : {}),
     ...(typeof input.branch === 'string' && input.branch ? { TASK_BRANCH: input.branch } : {}),
     ...(typeof input.taskWorktree === 'string' && input.taskWorktree ? { TASK_WORKTREE: input.taskWorktree } : {}),
   };
+}
+
+function compactTopLevelStderr(value: string | undefined): string {
+  return truncateForEnvelope(value || '', TOP_LEVEL_STDERR_MAX_CHARS);
 }
 
 function buildData(input: {
@@ -108,7 +115,7 @@ function failureResult(input: {
       stdoutLogPath: error.stdoutLogPath,
       stderrLogPath: error.stderrLogPath,
     }),
-    stderr,
+    stderr: compactTopLevelStderr(stderr),
     exitCode,
     durationMs,
     traceId: input.traceId,
@@ -262,7 +269,7 @@ export function executeCodeCallEffect(input: CodeCallInput, context: CodeCallCon
           stdoutLogPath: output.stdoutLogPath,
           stderrLogPath: output.stderrLogPath,
         }),
-        stderr: output.stderr,
+        stderr: compactTopLevelStderr(output.stderr),
         exitCode: run.exitCode,
         durationMs,
         traceId,

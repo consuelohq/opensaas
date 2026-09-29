@@ -1,0 +1,35 @@
+Consuelo repository notice
+==========================
+
+Copyright 2026 Consuelo Inc. and contributors for Consuelo-authored material.
+
+Consuelo-owned packages
+-----------------------
+Packages that declare Apache-2.0 in their package manifest are licensed under the
+Apache License, Version 2.0. See LICENSES/Apache-2.0.txt and any package-local
+LICENSE file.
+
+Open Design
+-----------
+The vendored Open Design source at
+packages/consuelo-design/upstream/open-design is licensed under Apache-2.0.
+Copyright 2026 Open Design contributors. Its upstream LICENSE and UPSTREAM.md are
+preserved in the repository.
+
+Consuelo website
+----------------
+packages/consuelo-website retains its MIT license and the attribution:
+Copyright (c) 2024 Oxygenna. See packages/consuelo-website/LICENSE.
+
+Other Consuelo package manifests that declare MIT use the MIT text in
+LICENSES/MIT.txt unless a more specific package-local notice applies.
+
+Legacy Twenty material
+----------------------
+This repository originated as a fork containing material from the Twenty project.
+The legacy Twenty application packages have been removed. Any remaining inherited
+material that is not covered by a more specific package, file, or directory license
+continues under GNU AGPL-3.0. See LICENSES/AGPL-3.0.txt.
+
+This notice is an attribution and license map. It does not relicense third-party or
+inherited material.

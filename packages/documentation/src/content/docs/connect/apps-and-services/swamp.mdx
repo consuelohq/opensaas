@@ -1,0 +1,75 @@
+---
+title: Swamp
+description: Discover existing Swamp models and workflows as Consuelo tools.
+status: preview
+verifiedAt: 2026-09-22
+evidence:
+  - source: packages/os/scripts/lib/runtime-tool-providers/swamp.ts
+    tests:
+      - packages/os/tests/runtime-tool-providers-swamp.test.ts
+    runtime: 'OS discovers Swamp model methods and workflows at runtime, validates their JSON Schema inputs, and executes them through the local Swamp CLI.'
+  - source: packages/os/scripts/lib/runtime-tool-registry.ts
+    tests:
+      - packages/os/tests/runtime-tool-providers-swamp.test.ts
+    runtime: 'The runtime registry detects Swamp workspaces, caches discovery, and adds discovered tools to the normal Consuelo tool catalog.'
+---
+
+> **Native Consuelo tool: Available**  
+> **Requires the Swamp CLI and a workspace with `.swamp.yaml`.**
+
+If a workspace already uses Swamp, Consuelo discovers its model methods and workflows and makes them available through the normal OS tool catalog. You do not need to recreate the automation in Consuelo.
+
+Swamp remains the source of truth and execution engine. Consuelo adds discovery, typed inputs, authorization, and the tool interface your agent uses.
+
+## Ask your agent
+
+```text
+Find the Swamp tools available in this workspace.
+Show me the exact tool and its required inputs before running it.
+Use the existing Swamp model or workflow rather than recreating it in Consuelo.
+```
+
+## How discovery works
+
+Consuelo finds the nearest Swamp workspace by looking for `.swamp.yaml`. It then reads Swamp's machine-readable model and workflow metadata and adds compatible operations to the runtime tool catalog.
+
+Model methods use names like:
+
+```text
+swamp.model.<model>.<method>
+```
+
+Workflows use names like:
+
+```text
+swamp.workflow.<workflow>.run
+```
+
+The input contract comes from Swamp's JSON Schema, so `tools.search` can show the parameters expected by each discovered tool.
+
+Discovery is cached locally. If Swamp is not installed or the current workspace is not a Swamp project, Consuelo does not add Swamp tools.
+
+## Run a Swamp tool
+
+Use the normal Consuelo flow. Search for the capability, inspect its typed inputs, then call the returned tool through `os.call`.
+
+Consuelo validates the input before execution and passes structured input to Swamp through a temporary input file. The underlying model method or workflow still runs through the installed Swamp CLI in the selected workspace.
+
+## Permissions
+
+Consuelo currently treats discovered Swamp operations conservatively as write-capable because OS cannot reliably infer side effects from a method or workflow name alone. Unknown runtime tools fail closed.
+
+Review the exact tool and target before approving operations that can change infrastructure, data, permissions, deployments, or external services.
+
+## Detection overrides
+
+Normally no configuration is required. If needed:
+
+- `CONSUELO_SWAMP_BIN` selects a specific Swamp executable.
+- `SWAMP_REPO_DIR` selects the Swamp repository Consuelo should discover from.
+
+## Official documentation
+
+[Swamp model definitions](https://swamp-club.com/manual/reference/model-definitions)
+
+[Swamp workflows](https://swamp-club.com/manual/reference/workflows)

@@ -87,11 +87,14 @@ describe('managed user content', () => {
       expect(catalog).toContain('show working tree status');
     });
 
-    it('points the user at the example and tells them to steal from it', () => {
+    it('describes system.md as authoritative local steering with hot reload', () => {
       reconcile();
       const prompt = read('Steering', USER_SYSTEM_PROMPT);
       expect(prompt).toContain(USER_SYSTEM_EXAMPLE);
-      expect(prompt).toContain('steal');
+      expect(prompt).toContain('primary steering');
+      expect(prompt).toContain('next steering read');
+      expect(prompt).not.toContain('appended to the steering');
+      expect(prompt).not.toContain('consuelo restart');
     });
 
     it('marks the example as not loaded and points at the real file', () => {
@@ -101,22 +104,19 @@ describe('managed user content', () => {
       expect(example).toContain(USER_SYSTEM_PROMPT);
     });
 
-    it('reproduces the bundled steering verbatim as the example', () => {
-      const steeringBody = '# System Prompt\n\n## Alignment First\n\nStop and resolve.\n';
-      reconcileManagedUserContent({ userRoot, tools, steeringBody });
+    it('writes a generic example without copying private steering', () => {
+      reconcileManagedUserContent({ userRoot, tools });
       const example = read('Steering', USER_SYSTEM_EXAMPLE);
 
-      expect(example).toContain('## Alignment First');
-      expect(example).toContain('Stop and resolve.');
-      // The header is an HTML comment so the document below it renders unchanged.
+      expect(example).toContain('# Example system prompt');
+      expect(example).toContain('NOT loaded');
+      expect(example).not.toContain('Alignment First');
       expect(example.startsWith('<!--')).toBe(true);
     });
 
-    it('degrades to a placeholder when the release carries no steering', () => {
+    it('does not depend on a bundled steering body', () => {
       reconcileManagedUserContent({ userRoot, tools });
-      expect(read('Steering', USER_SYSTEM_EXAMPLE)).toContain(
-        'could not be read',
-      );
+      expect(read('Steering', USER_SYSTEM_EXAMPLE)).toContain('# Example system prompt');
     });
   });
 
@@ -202,18 +202,19 @@ describe('managed user content', () => {
   });
 
   describe('reconciling against a release directory', () => {
-    it('reproduces the release steering as the example', () => {
+    it('ignores legacy release steering when generating the example', () => {
       writeRelease(['t'], ['task']);
       fs.mkdirSync(path.join(releasePath, 'steering'), { recursive: true });
       fs.writeFileSync(
         path.join(releasePath, 'steering', 'system_prompt.md'),
-        '# System Prompt\n\n## Reuse Before Invention\n',
+        '# Private legacy steering marker\n',
       );
 
       reconcileManagedUserContentForRelease({ releasePath, userRoot });
 
-      expect(read('Steering', USER_SYSTEM_EXAMPLE)).toContain(
-        '## Reuse Before Invention',
+      expect(read('Steering', USER_SYSTEM_EXAMPLE)).toContain('# Example system prompt');
+      expect(read('Steering', USER_SYSTEM_EXAMPLE)).not.toContain(
+        'Private legacy steering marker',
       );
     });
 

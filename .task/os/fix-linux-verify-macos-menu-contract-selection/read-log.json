@@ -1,0 +1,9 @@
+{
+  "files": [
+    ".task/os/fix-linux-verify-macos-menu-contract-selection/workpad.md",
+    "packages/workspace/scripts/test-selection.js",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "updatedAt": "2026-09-25T15:53:04.582Z"
+}

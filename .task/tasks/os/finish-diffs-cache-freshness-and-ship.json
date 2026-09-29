@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/finish-diffs-cache-freshness-and-ship",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2524,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2524",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-finish-diffs-cache-freshness-and-ship",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_f1daf8578d76",
+  "tmuxSession": "opensaas-os-finish-diffs-cache-freshness-and-ship-f1daf857",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-finish-diffs-cache-freshness-and-ship/.task/session.json",
+  "createdAt": "2026-09-21T19:22:59.758Z"
+}

@@ -1,0 +1,16 @@
+{
+  "area": "collaborate",
+  "stream": "stream/collaborate",
+  "taskBranch": "task/collaborate/harden-artifact-share-upgrade-path",
+  "baseBranch": "stream/collaborate",
+  "sourceBranch": "stream/collaborate",
+  "startFrom": "stream",
+  "prNumber": 2511,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2511",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-collaborate-harden-artifact-share-upgrade-path",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_aec75b50877b",
+  "tmuxSession": "opensaas-collaborate-harden-artifact-share-upgrade-path-aec75b50",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-collaborate-harden-artifact-share-upgrade-path/.task/session.json",
+  "createdAt": "2026-09-21T12:10:11.444Z"
+}

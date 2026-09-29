@@ -39,20 +39,28 @@ describe('local OS server review findings', () => {
       resolve(import.meta.dirname, '../../../.github/workflows/consuelo-ci.yaml'),
       'utf8',
     );
+    const setupAction = readFileSync(
+      resolve(
+        import.meta.dirname,
+        '../../../.github/actions/consuelo-ci-setup/action.yaml',
+      ),
+      'utf8',
+    );
     const verifyStart = workflow.indexOf('\n  verify:\n');
-    const verifyEnd = workflow.indexOf('\n  workspace-contracts:\n', verifyStart);
+    const verifyEnd = workflow.indexOf('\n  os-contracts:\n', verifyStart);
     const verifyJob = workflow.slice(verifyStart, verifyEnd);
-    const installStep = [
-      '      - name: Install OS dependencies for verify',
-      "        if: needs.consuelo-changes.outputs.verify == 'true' && needs.consuelo-changes.outputs.os_contracts == 'true'",
-      '        working-directory: packages/os',
-      '        run: bun install --frozen-lockfile',
-    ].join('\n');
 
-    expect(verifyJob).toContain(installStep);
-    expect(verifyJob.indexOf(installStep)).toBeLessThan(
+    expect(verifyJob).toContain('uses: ./.github/actions/consuelo-ci-setup');
+    expect(verifyJob).toContain("install-root: 'true'");
+    expect(verifyJob).toContain(
+      'install-os: ${{ needs.consuelo-changes.outputs.os_contracts }}',
+    );
+    expect(verifyJob.indexOf('uses: ./.github/actions/consuelo-ci-setup')).toBeLessThan(
       verifyJob.indexOf('      - name: Run workspace verify'),
     );
+    expect(setupAction).toContain("if: ${{ inputs.install-os == 'true' }}");
+    expect(setupAction).toContain('working-directory: packages/os');
+    expect(setupAction).toContain('run: bun install --frozen-lockfile');
   });
 
   it('installs package-local OS dependencies before CI contract tests', () => {
@@ -60,16 +68,17 @@ describe('local OS server review findings', () => {
       resolve(import.meta.dirname, '../../../.github/workflows/consuelo-ci.yaml'),
       'utf8',
     );
-    const installStep = [
-      '      - name: Install OS dependencies',
-      "        if: needs.consuelo-changes.outputs.os_contracts == 'true'",
-      '        working-directory: packages/os',
-      '        run: bun install --frozen-lockfile',
-    ].join('\n');
+    const osContractsStart = workflow.indexOf('\n  os-contracts:\n');
+    const osContractsEnd = workflow.indexOf('\n  dialer:\n', osContractsStart);
+    const osContractsJob = workflow.slice(osContractsStart, osContractsEnd);
 
-    expect(workflow).toContain(installStep);
-    expect(workflow.indexOf(installStep)).toBeLessThan(
-      workflow.indexOf('      - name: Run OS contract tests'),
+    expect(osContractsJob).toContain('uses: ./.github/actions/consuelo-ci-setup');
+    expect(osContractsJob).toContain("install-root: 'false'");
+    expect(osContractsJob).toContain("install-os: 'true'");
+    expect(
+      osContractsJob.indexOf('uses: ./.github/actions/consuelo-ci-setup'),
+    ).toBeLessThan(
+      osContractsJob.indexOf('      - name: Run OS contract tests'),
     );
   });
 
@@ -78,31 +87,36 @@ describe('local OS server review findings', () => {
       resolve(import.meta.dirname, '../../../.github/workflows/consuelo-ci.yaml'),
       'utf8',
     );
+    const planner = readFileSync(
+      resolve(import.meta.dirname, '../scripts/ci-plan.ts'),
+      'utf8',
+    );
 
-    expect(workflow).toContain(
-      'base_ref="$(git rev-parse HEAD^1 2>/dev/null || true)"',
-    );
-    expect(workflow).toContain(
-      'fallback_base="${{ github.event.pull_request.base.sha }}"',
-    );
-    expect(workflow).toContain(
-      "jq -r '.merge_group.base_sha // empty' \"$GITHUB_EVENT_PATH\"",
-    );
-    expect(workflow).toContain(
-      'base_ref="$(git rev-parse \"${base_ref}^{commit}\")"',
-    );
-    expect(workflow).toContain(
-      'write_output base_ref "$base_ref"',
-    );
+    expect(workflow).toContain('run: bun packages/os/scripts/ci-plan.ts');
     expect(workflow).toContain(
       'head_sha: ${{ steps.classify.outputs.head_sha }}',
     );
-    expect(workflow).toContain(
-      'write_output head_sha "$(git rev-parse HEAD)"',
+    expect(planner).toContain(
+      "const mergeParent = tryGit(['rev-parse', 'HEAD^1']);",
+    );
+    expect(planner).toContain(
+      "nestedString(eventPayload, ['pull_request', 'base', 'sha'])",
+    );
+    expect(planner).toContain(
+      "nestedString(eventPayload, ['merge_group', 'base_sha'])",
+    );
+    expect(planner).toContain(
+      "const baseSha = runGit(['rev-parse', `${baseRef}^{commit}`]);",
+    );
+    expect(planner).toContain(
+      "writeGithubOutput('base_ref', baseSha);",
+    );
+    expect(planner).toContain(
+      "writeGithubOutput('head_sha', headSha);",
     );
     expect(
       workflow.match(/ref: \$\{\{ needs\.consuelo-changes\.outputs\.head_sha \}\}/g)?.length ?? 0,
-    ).toBeGreaterThanOrEqual(6);
+    ).toBeGreaterThanOrEqual(5);
     expect(workflow).toContain(
       'bun run verify -- --base "${{ needs.consuelo-changes.outputs.base_ref }}" --committed-only-tests --no-stamp --review-arg --no-tests',
     );

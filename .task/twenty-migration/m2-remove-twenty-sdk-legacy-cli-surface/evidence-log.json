@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "worktree_id": "task/twenty-migration/m2-remove-twenty-sdk-legacy-cli-surface",
+  "events": [
+    {
+      "id": "5966c4d4-d32f-4e45-ba7b-b130c890ea19",
+      "occurred_at": "2026-08-15T07:04:10.182Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/cli/tests/auth.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/twenty-migration/m2-remove-twenty-sdk-legacy-cli-surface",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/twenty-migration/m2-remove-twenty-sdk-legacy-cli-surface"
+      }
+    },
+    {
+      "id": "05fdedfe-866c-4622-b21f-01ae0e6b1980",
+      "occurred_at": "2026-08-15T07:04:22.782Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/twenty-migration/m2-remove-twenty-sdk-legacy-cli-surface/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/twenty-migration/m2-remove-twenty-sdk-legacy-cli-surface",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/twenty-migration/m2-remove-twenty-sdk-legacy-cli-surface"
+      }
+    },
+    {
+      "id": "9ee21215-af61-492c-8d2c-1ce1fa0b9972",
+      "occurred_at": "2026-08-15T07:07:36.481Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/twenty-migration/m2-remove-twenty-sdk-legacy-cli-surface/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/twenty-migration/m2-remove-twenty-sdk-legacy-cli-surface",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/twenty-migration/m2-remove-twenty-sdk-legacy-cli-surface"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-15T07:07:36.557Z"
+}

@@ -265,6 +265,25 @@ reconcile_public_route() {
 
 restart_launchd_label() {
   local label="$1"
+  if [ "${WORKSPACE_WATCHDOG_SUPERVISED_SIDECARS:-0}" = "1" ] && [ "$label" = "$caddy_label" ]; then
+    local pid_file="${WORKSPACE_WATCHDOG_CADDY_PID_FILE:-}"
+    local sidecar_pid=""
+    if [ -n "$pid_file" ] && [ -f "$pid_file" ]; then
+      sidecar_pid="$(cat "$pid_file" 2>/dev/null || true)"
+    fi
+    case "$sidecar_pid" in
+      ''|*[!0-9]*)
+        log "restart command failed for $label; supervised Caddy pid is unavailable"
+        return 1
+        ;;
+    esac
+    if kill -TERM "$sidecar_pid" 2>/dev/null; then
+      log "requested supervised Caddy restart for pid $sidecar_pid"
+      return 0
+    fi
+    log "restart command failed for $label; supervised Caddy pid $sidecar_pid is not running"
+    return 1
+  fi
   if ! launchctl print "$launch_domain/$label" >/dev/null 2>&1; then
     local plist="${HOME:-/Users/$(id -un)}/Library/LaunchAgents/${label}.plist"
     if [ ! -f "$plist" ]; then

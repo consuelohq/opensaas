@@ -1,0 +1,16 @@
+{
+  "area": "twenty-migration",
+  "stream": "stream/twenty-migration",
+  "taskBranch": "task/twenty-migration/resolve-migration-stream-sync-conflicts",
+  "baseBranch": "stream/twenty-migration",
+  "sourceBranch": "stream/twenty-migration",
+  "startFrom": "stream",
+  "prNumber": 2485,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2485",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-twenty-migration-resolve-migration-stream-sync-conflicts",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_75f4086ea48b",
+  "tmuxSession": "opensaas-twenty-migration-resolve-migration-stream-sync-conflicts-75f4086e",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-twenty-migration-resolve-migration-stream-sync-conflicts/.task/session.json",
+  "createdAt": "2026-09-20T23:59:54.284Z"
+}

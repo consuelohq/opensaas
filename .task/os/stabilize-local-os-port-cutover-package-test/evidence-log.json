@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/stabilize-local-os-port-cutover-package-test",
+  "events": [
+    {
+      "id": "6f469410-af19-45e4-bfeb-ca2ec7e1c55a",
+      "occurred_at": "2026-09-21T04:38:03.158Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/local-os-port-cutover.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/stabilize-local-os-port-cutover-package-test",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/stabilize-local-os-port-cutover-package-test"
+      }
+    },
+    {
+      "id": "6f43a562-e285-49e3-b3a2-f9e1534e779a",
+      "occurred_at": "2026-09-21T04:38:16.451Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/install-state.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/stabilize-local-os-port-cutover-package-test",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/stabilize-local-os-port-cutover-package-test"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-09-21T04:38:16.584Z"
+}

@@ -48,6 +48,10 @@ function createRuntimeSource(root: string): string {
     'scripts/retire-legacy-system-daemons.sh': '#!/bin/bash\nexit 0\n',
     'scripts/server/main.ts': 'export const serverFixture = true;\n',
     'scripts/server/supervisor.ts': 'export const supervisorFixture = true;\n',
+    'scripts/lib/macos-supervised-heartbeat.ts':
+      'export const macosSupervisedHeartbeatFixture = true;\n',
+    'scripts/lib/macos-supervised-sidecars.ts':
+      'export const macosSupervisedSidecarsFixture = true;\n',
     'scripts/lib/install-state.ts': 'export const installFixture = true;\n',
     'scripts/managed-components.ts': 'export const managedComponentsCliFixture = true;\n',
     'scripts/lib/managed-components.ts': 'export const managedComponentsFixture = true;\n',

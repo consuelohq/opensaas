@@ -11,14 +11,17 @@ function read(path: string): string {
 }
 
 type WorkflowStep = {
+  if?: string;
   name?: string;
   run?: string;
   uses?: string;
+  with?: Record<string, unknown>;
   'working-directory'?: string;
 };
 
 type WorkflowJob = {
   environment?: string;
+  if?: string;
   needs?: string | string[];
   permissions?: Record<string, string>;
   steps?: WorkflowStep[];
@@ -60,16 +63,68 @@ describe('Consuelo OS release-channel workflows', () => {
     expect(parsed.jobs?.['windows-service-host']?.needs).toBe(
       'distribution-gate',
     );
+    expect(parsed.jobs?.['macos-service-host']?.needs).toBe('distribution-gate');
+    expect(parsed.jobs?.['macos-service-host']?.if).toBe(
+      "vars.CONSUELO_MACOS_SERVICE_HOST_RELEASE_ENABLED == 'true'",
+    );
     expect(parsed.jobs?.plan?.needs).toEqual([
       'distribution-gate',
       'windows-service-host',
+      'macos-service-host',
     ]);
-    expect(parsed.jobs?.build?.needs).toEqual(['plan', 'windows-service-host']);
+    expect(parsed.jobs?.plan?.if).toContain('always()');
+    expect(parsed.jobs?.plan?.if).toContain(
+      "needs.macos-service-host.result == 'skipped'",
+    );
+    expect(parsed.jobs?.build?.needs).toEqual([
+      'plan',
+      'windows-service-host',
+      'macos-service-host',
+    ]);
+    expect(parsed.jobs?.build?.if).toContain('always()');
+    expect(parsed.jobs?.build?.if).toContain(
+      "needs.plan.outputs.changed == 'true'",
+    );
+    expect(parsed.jobs?.build?.if).toContain(
+      "needs.macos-service-host.result == 'skipped'",
+    );
+    expect(parsed.jobs?.['macos-menu-app']?.needs).toEqual([
+      'plan',
+      'macos-service-host',
+    ]);
+    expect(parsed.jobs?.['macos-menu-app']?.if).toContain('always()');
+    expect(parsed.jobs?.['macos-menu-app']?.if).toContain(
+      "needs.plan.outputs.changed == 'true'",
+    );
+    expect(parsed.jobs?.['macos-menu-app']?.if).toContain(
+      "vars.CONSUELO_MACOS_SERVICE_HOST_RELEASE_ENABLED == 'true'",
+    );
+    for (const jobName of ['plan', 'build'] as const) {
+      const macosArtifactDownloads = (parsed.jobs?.[jobName]?.steps ?? []).filter(
+        (step) =>
+          step.uses === 'actions/download-artifact@v4' &&
+          String(step.with?.name ?? '').startsWith('macos-service-host-'),
+      );
+      expect(
+        macosArtifactDownloads,
+        `${jobName} optional macOS artifacts`,
+      ).toHaveLength(2);
+      for (const step of macosArtifactDownloads) {
+        expect(step.if).toBe(
+          "vars.CONSUELO_MACOS_SERVICE_HOST_RELEASE_ENABLED == 'true'",
+        );
+      }
+    }
     expect(parsed.jobs?.publish?.needs).toEqual([
       'distribution-gate',
       'plan',
       'build',
+      'macos-menu-app',
     ]);
+    expect(parsed.jobs?.publish?.if).toContain('always()');
+    expect(parsed.jobs?.publish?.if).toContain(
+      "needs.macos-menu-app.result == 'skipped'",
+    );
     expect(parsed.jobs?.plan?.permissions).toBeUndefined();
     expect(parsed.jobs?.build?.permissions).toBeUndefined();
     expect(parsed.jobs?.publish?.permissions).toEqual({
@@ -87,6 +142,30 @@ describe('Consuelo OS release-channel workflows', () => {
     expect(workflow).toContain('linux-x64');
     expect(workflow).toContain('windows-x64');
     expect(workflow).toContain('Build deterministic Windows service host');
+    expect(workflow).toContain('Build macOS service host');
+    expect(workflow).toContain('name: macos-service-host-${{ matrix.architecture }}');
+    expect(workflow).toContain('native/macos/bin/${{ matrix.architecture }}/ConsueloServiceHost');
+    expect(workflow).toContain('name: macos-service-host-arm64');
+    expect(workflow).toContain('name: macos-service-host-x64');
+    expect(workflow).toContain('CONSUELO_MACOS_DEVELOPER_ID_P12_BASE64');
+    expect(workflow).toContain('CONSUELO_MACOS_DEVELOPER_ID_P12_PASSWORD');
+    expect(workflow).toContain('CONSUELO_MACOS_NOTARY_KEY_P8_BASE64');
+    expect(workflow).toContain('CONSUELO_MACOS_NOTARY_KEY_ID');
+    expect(workflow).toContain('CONSUELO_MACOS_NOTARY_ISSUER_ID');
+    expect(workflow).toContain('codesign \\');
+    expect(workflow).toContain('xcrun notarytool submit');
+    expect(workflow).toContain('xcrun stapler staple "$app"');
+    expect(workflow).toContain('xcrun stapler validate "$app"');
+    expect(workflow).toContain('spctl --assess --type execute');
+    expect(workflow).toContain('Missing required macOS release credential');
+    expect(workflow).toContain('Build, sign, notarize, and staple Consuelo.app');
+    expect(workflow).toContain('CONSUELO_MAC_APP_VERSION');
+    expect(workflow).toContain('CONSUELO_MAC_APP_SERVICE_HOST');
+    expect(workflow).toContain('CONSUELO_MAC_APP_ADHOC_SIGN');
+    expect(workflow).toContain('name: macos-menu-app-${{ matrix.architecture }}');
+    expect(workflow).toContain(
+      'apps/macos/${{ needs.plan.outputs.version }}/${architecture}/Consuelo.app.tar.gz',
+    );
     expect(workflow).toContain('name: windows-service-host');
     expect(workflow).toContain(
       'native/windows-service/bin/Release/Consuelo.Windows.Service.exe',

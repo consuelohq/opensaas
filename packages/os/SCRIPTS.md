@@ -12,11 +12,19 @@ every script supports `--help` and `--json`.
 
 ## first-time OS bootstrap
 
-`bootstrap` is the pre-Bun Mac installer entrypoint. It is also served by the production app route at `/os` so a first-time user can run:
+`bootstrap.sh` is the pre-Bun macOS/Linux installer entrypoint. The hosted installer Worker serves it at `/os`.
 
 ```bash
 curl -fsSL https://install.consuelohq.com/os | bash
 ```
+
+On native Windows x64, paste this into PowerShell:
+
+```powershell
+irm https://install.consuelohq.com/os.ps1 | iex
+```
+
+`/os.ps1` resolves the current signed stable release, verifies its Ed25519 channel signature inside the hosted installer Worker, selects the `windows-x64` bundle, and binds that immutable bundle URL and SHA-256 digest into the maintained `bootstrap.ps1` before PowerShell executes it. If service registration needs elevation, the installer re-launches itself through the normal Windows UAC prompt.
 
 Repo-local checks:
 
@@ -52,7 +60,7 @@ Background services stay user-level only. Baseline labels are `com.consuelo.syst
 
 After LaunchAgent cutover, the installer probes the same local port the daemon resolves from `WORKSPACE_DAEMON_PORT`, the OS `.env` values, and the `46321` default. `WORKSPACE_CUTOVER_LOCAL_HEALTH_URL` remains an explicit repair/testing override.
 
-The hosted endpoint is implemented in the app server Consuelo API module as `GET /os`. Production DNS/Railway must map `install.consuelohq.com` to that service and preserve the `/os` path. Use `CONSUELO_OS_BOOTSTRAP_SCRIPT_PATH` only if the deployed process does not run from the repo root.
+The hosted installer is the dedicated Cloudflare Worker `consuelo-os-install`. It serves `/os`, `/os.ps1`, signed release channel pointers, and immutable release bundles from the `CONSUELO_OS_RELEASES` R2 binding.
 
 Runtime artifact note: portless is optional. Baseline public install must work on `http://127.0.0.1:46321` without portless. Optional hosted portless install uses `https://install.consuelohq.com/os/bin/portless/darwin-<arch>/portless` plus the sibling `.sha256` file only when explicitly enabled. See `docs/installer-runtime-release-checklist.md` for the exact URL set, SHA format, fallback behavior, and clean-machine smoke checklist.
 
@@ -388,8 +396,8 @@ bun run code-call -- --area dialer git diff
 bun run code-call -- --branch task/dialer/fix-thing git status --short
 bun run code-call -- --pr 210 yarn jest --runInBand packages/dialer/src/queue.test.ts
 bun run code-call -- --github "https://app.graphite.com/github/pr/consuelohq/opensaas/686/some-slug" git status --short
-bun run code-call -- --branch task/dialer/fix-thing yarn prettier --write packages/twenty-front/src/foo.ts
-bun run code-call -- --branch task/dialer/fix-thing npx nx typecheck twenty-front
+bun run code-call -- --branch task/dialer/fix-thing yarn prettier --write packages/dialer-server/src/app.ts
+bun run code-call -- --branch task/dialer/fix-thing bun run --cwd packages/dialer-server typecheck
 bun run code-call -- --branch task/dialer/fix-thing bun run review
 bun run code-call -- --branch task/dialer/fix-thing git diff --check
 ```
@@ -835,7 +843,7 @@ bad: bun run stream:sync
 
 shows the selected stream's durable `AGENTS.md` instructions first, followed by decisions, worktrees, task PRs, workpads, commits, and divergence. JSON includes an explicit `instructions` object; a missing file is a valid optional empty state.
 
-OS reads `packages/os/streams/<area>/AGENTS.md`; Workspace reads the byte-identical mirror under `packages/workspace/streams/<area>/AGENTS.md`. Dialer instructions are also synchronized during install/update to visible `~/Consuelo/Steering/dialer-AGENTS.md`, never hidden `~/.consuelo`.
+Stream context may load stream-scoped instruction documents, but those documents are never synchronized into global `~/Consuelo/Steering`. The visible Steering directory is user-owned steering only.
 
 ```bash
 bun run stream:context -- --area dialer
@@ -1230,7 +1238,7 @@ Routine `update` and `restart` treat public MCP ingress as an availability bound
 
 Native Windows release acceptance runs `scripts/testing/windows-platform-acceptance.ps1`. Its fixture must materialize `scripts/server/supervisor.ts`, matching the SCM service configuration and the managed process entrypoint; `scripts/server/main.ts` is the direct worker/smoke entrypoint and is not a valid service-host fixture.
 
-Native macOS alpha packaging runs `scripts/testing/macos-alpha-package.sh`. With no flags it builds, ad-hoc signs, and archives `Consuelo.app` for development/CI. `--install` copies the alpha app to `~/Applications/Consuelo.app`; `--launch` installs and opens it. `CONSUELO_MAC_APP_INSTALL_DIR` may override the destination only with a path inside the current user's home directory. This remains separate from the public OS installer until Developer ID signing and notarization are available.
+Native macOS alpha packaging runs `scripts/testing/macos-alpha-package.sh`. With no flags it builds the menu app plus the thin `ConsueloServiceHost`, embeds the host under `Contents/Library/LaunchServices`, ad-hoc signs, and archives `Consuelo.app` for development/CI. `--install` copies the alpha app to `~/Applications/Consuelo.app`; `--launch` installs and opens it. `CONSUELO_MAC_APP_INSTALL_DIR` may override the destination only with a path inside the current user's home directory. Public runtime publication separately builds arm64/x64 `ConsueloServiceHost` binaries, Developer ID signs and notarizes them using protected production credentials, and fails closed when those credentials are unavailable; the menu app remains a separate alpha artifact.
 
 `add skill` and `remove skill` are opposite views over the same selected-skill control plane. With no names, they open the Clack multiselect UI: add shows only bundled skills that are not selected; remove shows only selected bundled skills; labels are the skill names. With explicit names they are non-interactive and scriptable. Selection is persisted in `$CONSUELO_HOME/config.json.selectedSkills`, then the existing managed-component reconciler refreshes `$CONSUELO_HOME/components/installed-skills.json` and `~/Consuelo/Skills/<name>`. Clean removed skills are deleted; locally modified managed skills are deselected but preserved for explicit review. `~/Consuelo/Skills/skills.json` remains the full bundled catalog, not the selected-skill list.
 
@@ -1638,7 +1646,7 @@ bun run doctor -- --json
 bun run install:system-daemons
 ```
 
-Install the local Mac launchd services for the OS Bun server and periodic watchdog. The watchdog is a bounded one-shot check scheduled every 30 seconds; launchd remains responsible for process supervision. When repeated local OS probes cross the configured threshold, watchdog recovery delegates to the installed `$CONSUELO_HOME/bin/consuelo restart --quiet` lifecycle command so CLI, lifecycle, and watchdog share one restart implementation. External/portless health recovery remains scoped to its own launchd label. A workspace installation with registered node signing material also installs `com.consuelo.os.node-heartbeat.<node-id>`. That one-shot service re-inspects canonical local agent configuration on every 30-second run and includes only currently verified agent identifiers in the existing signed node heartbeat; paths, configuration contents, credentials, and signing material are never sent. Set `CONSUELO_AVAILABILITY_ENABLED=1` to opt into the AC-only availability assertion. If portless is configured or discoverable, the installer also adds the optional `com.consuelo.portless.system` LaunchAgent. The normal path installs user LaunchAgents in `~/Library/LaunchAgents`, stores watchdog state under `$CONSUELO_HOME/node/runtime/watchdog`, and does not require `sudo`.
+Install the local Mac launchd services for the OS Bun server and periodic watchdog. The watchdog is a bounded one-shot check scheduled every 30 seconds; launchd remains responsible for process supervision. When repeated local OS probes cross the configured threshold, watchdog recovery delegates to the installed `$CONSUELO_HOME/bin/consuelo restart --quiet` lifecycle command so CLI, lifecycle, and watchdog share one restart implementation. External/portless health recovery remains scoped to its own launchd label. For workspace installations with registered node signing material, heartbeat delivery is owned by the supervisor-managed primary OS worker rather than a separate heartbeat LaunchAgent. That worker re-inspects canonical local agent configuration on every 30-second run and includes only currently verified agent identifiers in the existing signed node heartbeat; paths, configuration contents, credentials, and signing material are never sent. Upgrades retire any legacy `com.consuelo.os.node-heartbeat.<node-id>` LaunchAgent after supervised ownership is established. Set `CONSUELO_AVAILABILITY_ENABLED=1` to opt into the AC-only availability assertion. If portless is configured or discoverable, the installer also adds the optional `com.consuelo.portless.system` LaunchAgent. The normal path installs user LaunchAgents in `~/Library/LaunchAgents`, stores watchdog state under `$CONSUELO_HOME/node/runtime/watchdog`, and does not require `sudo`.
 
 ### install:system-daemons:dry-run
 

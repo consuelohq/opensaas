@@ -506,7 +506,7 @@ function runTests(files) {
       return m ? m[1] : null;
     }).filter(Boolean))];
   } else {
-    packages = ['api', 'dialer', 'twenty-server'];
+    packages = ['api', 'dialer'];
   }
 
   // map to packages that have jest configs

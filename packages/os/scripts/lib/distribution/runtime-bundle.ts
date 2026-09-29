@@ -184,6 +184,8 @@ const REQUIRED_RUNTIME_INPUTS = [
   'scripts/retire-legacy-system-daemons.sh',
   'scripts/server/main.ts',
   'scripts/server/supervisor.ts',
+  'scripts/lib/macos-supervised-heartbeat.ts',
+  'scripts/lib/macos-supervised-sidecars.ts',
   'scripts/lib/install-state.ts',
   'scripts/managed-components.ts',
   'scripts/lib/managed-components.ts',
@@ -192,7 +194,6 @@ const REQUIRED_RUNTIME_INPUTS = [
   'manifests/generated/tool.manifest.json',
   'manifests/generated/core.manifest.json',
   'hooks/dispatcher.js',
-  'steering/system_prompt.md',
   'streams/tools/AGENTS.md',
   'streams/dialer/AGENTS.md',
   'skills/task/SKILL.md',
@@ -321,6 +322,10 @@ const EXCLUDED_ROLES = new Set<RuntimeBundleContentRole>([
 
 const WINDOWS_SERVICE_HOST_PATH =
   'native/windows-service/bin/Release/Consuelo.Windows.Service.exe';
+const MACOS_SERVICE_HOST_PATHS = new Set([
+  'native/macos/bin/arm64/ConsueloServiceHost',
+  'native/macos/bin/x64/ConsueloServiceHost',
+]);
 
 const TEXT_EXTENSIONS = new Set([
   '.cjs',
@@ -383,7 +388,7 @@ export function classifyRuntimeBundlePath(
     return 'test-only';
   }
   if (CUSTOMER_PROVIDER_FILES.has(filePath)) return 'customer-provider';
-  if (filePath === 'steering/decision.md') return 'source-only';
+  if (filePath.startsWith('steering/')) return 'source-only';
   if (filePath === 'scripts/lib/distribution/runtime-bundle.ts') {
     return 'runtime';
   }
@@ -414,10 +419,16 @@ export function classifyRuntimeBundlePath(
   ) {
     return 'managed-tool';
   }
-  if (filePath.startsWith('steering/') || filePath.startsWith('streams/'))
+  if (filePath.startsWith('streams/'))
     return 'runtime';
   if (filePath.startsWith('hooks/')) return 'runtime';
   if (filePath.startsWith('native/macos/.build/')) return 'source-only';
+  if (
+    filePath.startsWith('native/macos/bin/') &&
+    !MACOS_SERVICE_HOST_PATHS.has(filePath)
+  ) {
+    return 'source-only';
+  }
   if (filePath.startsWith('native/windows-service/obj/')) {
     return 'source-only';
   }
@@ -527,7 +538,8 @@ function isTextFile(filePath: string, bytes: Buffer): boolean {
   return filePath === 'package.json' || filePath === 'bun.lock';
 }
 
-function portableFileMode(bytes: Buffer): number {
+function portableFileMode(filePath: string, bytes: Buffer): number {
+  if (MACOS_SERVICE_HOST_PATHS.has(filePath)) return 0o755;
   return bytes.subarray(0, 2).equals(Buffer.from('#!')) ? 0o755 : 0o644;
 }
 
@@ -688,7 +700,7 @@ function collectRuntimeFiles(
     files.push({
       bytes,
       digest: sha256(bytes),
-      mode: portableFileMode(bytes),
+      mode: portableFileMode(filePath, bytes),
       path: filePath,
       role: role as RuntimeBundleIncludedRole,
       size: bytes.byteLength,

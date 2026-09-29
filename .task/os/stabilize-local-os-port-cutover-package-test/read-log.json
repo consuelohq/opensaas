@@ -1,0 +1,7 @@
+{
+  "files": [
+    "packages/os/scripts/lib/install-state.ts",
+    "packages/os/tests/local-os-port-cutover.test.ts"
+  ],
+  "updatedAt": "2026-09-21T04:38:16.329Z"
+}

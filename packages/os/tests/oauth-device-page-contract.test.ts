@@ -39,22 +39,23 @@ describe('device login page static-hosting contract', () => {
 
   it('installer only opens browser after the live device endpoint starts a session', () => {
     expect(installer).toContain("if (liveDeviceCode.status !== 'started')");
-    expect(installer).toContain("return { status: 'fallback' };");
+    expect(installer).toContain('throw new DeviceAuthorizationError(');
+    expect(installer).not.toContain("return { status: 'fallback' };");
     expect(installer).not.toContain('startWorkspaceDeviceAuthorization');
   });
 
-  it('sanitizes device approval URLs before printing terminal output', () => {
+  it('sanitizes device approval URLs and only exposes the fallback URL when browser opening fails', () => {
     expect(installer).toContain(
       'const sanitizedVerificationUrl = sanitizeTerminalOutput(',
     );
     expect(installer).toContain('input.verificationUrl,');
     expect(installer).toContain(
+      'if (!input.browserOpened)',
+    );
+    expect(installer).toContain(
       'copyDeviceVerificationUrl(sanitizedVerificationUrl)',
     );
-    expect(installer).toContain('Full URL: ${sanitizedVerificationUrl}');
-    expect(installer).toContain(
-      'authorize Consuelo OS in your browser: ${sanitizedVerificationUrl}',
-    );
+    expect(installer).not.toContain('Full URL: ${sanitizedVerificationUrl}');
   });
 
   it('prints a valid Bun doctor command after install', () => {

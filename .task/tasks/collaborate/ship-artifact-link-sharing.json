@@ -1,0 +1,16 @@
+{
+  "area": "collaborate",
+  "stream": "stream/collaborate",
+  "taskBranch": "task/collaborate/ship-artifact-link-sharing",
+  "baseBranch": "stream/collaborate",
+  "sourceBranch": "stream/collaborate",
+  "startFrom": "stream",
+  "prNumber": 2502,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2502",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-collaborate-ship-artifact-link-sharing",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_d66fe508784c",
+  "tmuxSession": "opensaas-collaborate-ship-artifact-link-sharing-d66fe508",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-collaborate-ship-artifact-link-sharing/.task/session.json",
+  "createdAt": "2026-09-21T04:16:26.981Z"
+}

@@ -20,5 +20,6 @@
       "types": "./src/registry/index.ts",
       "import": "./src/registry/index.ts"
     }
-  }
+  },
+  "license": "Apache-2.0"
 }

@@ -190,6 +190,15 @@ describe('Workspace workflow intent bundles', () => {
     expect(sessionStartSchema.parse({
       kind: 'work', path: '/tmp/example-work-root',
     })).toMatchObject({ kind: 'work' });
+    expect(sessionStartSchema.parse({
+      kind: 'work',
+    })).toMatchObject({ kind: 'work' });
+    expect(sessionStartSchema.parse({
+      kind: 'work', title: 'voice shortcut',
+    })).toMatchObject({ kind: 'work', title: 'voice shortcut' });
+    expect(sessionStartSchema.parse({
+      kind: 'work', path: '/tmp/example-work-root', title: 'voice shortcut',
+    })).toMatchObject({ kind: 'work', title: 'voice shortcut' });
     expect(() => sessionStartSchema.parse({
       kind: 'work', path: '/tmp/example-work-root', area: 'workspace-agents',
     })).toThrow();

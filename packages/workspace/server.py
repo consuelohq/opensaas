@@ -457,9 +457,8 @@ You already received full steering very recently in this pre-task bootstrap cont
 Do not call get_steering again unless you are intentionally refreshing bootstrap context.
 
 Use the steering already in context. If you need exact source context, read only the specific file you need:
-- packages/workspace/STEERING.md
+- ~/Consuelo/Steering/system.md
 - packages/workspace/manifests/core-manifest.json
-- packages/os/STEERING.md
 - packages/os/manifests/core.manifest.json
 
 Useful alternatives:

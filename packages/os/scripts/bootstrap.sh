@@ -99,6 +99,8 @@ PENDING_CHANNEL_STATE_PATH=""
 RUNTIME_STAGE_DIR=""
 ONBOARDING_JSON=""
 DEPENDENCY_STATUS="pending"
+PATH_HINT=""
+PATH_IMMEDIATE=0
 CONTACT_URL="https://consuelohq.com/contact/"
 OS_MODE=""
 
@@ -408,70 +410,37 @@ run_with_loading_dots() {
   return "$status"
 }
 
-prompt_select() {
-  local message="$1"
-  local default_choice="$2"
-  local first_choice="$3"
-  local second_choice="$4"
-  local rerun_hint="$5"
-  local selected=0
-  local prompt_lines=4
-  local rendered=0
-  local key=""
-  local rest=""
+run_quiet_with_loading_dots() {
+  local loading_message="$1"
+  shift
 
-  if [ "$YES" -eq 1 ] || [ "$DRY_RUN" -eq 1 ]; then
-    printf '%s\n' "$default_choice"
-    return 0
+  if [ "$DEBUG" = "1" ] || [ "$JSON" -eq 1 ] || [ "$DRY_RUN" -eq 1 ]; then
+    "$@"
+    return $?
   fi
 
-  if ! has_tty; then
-    fail "$message
+  local output_file
+  local status=0
+  output_file="$(mktemp "${TMPDIR:-/tmp}/consuelo-bootstrap.XXXXXX")" ||
+    fail "Consuelo OS could not create a temporary setup log"
 
-This shell is non-interactive. Re-run with:
-  $rerun_hint"
+  # Keep setup in the current shell: it intentionally mutates globals such as
+  # BUN_BIN, RUNTIME_DIR, and INSTALL_ID that onboarding consumes afterward.
+  # Running it in the background for an animated spinner would fork those
+  # assignments into a subshell and silently lose them.
+  printf '%s...' "$loading_message"
+  "$@" >"$output_file" 2>&1 || status=$?
+  if [ "$status" -eq 0 ]; then
+    printf '\r%s... done\n' "$loading_message"
+  else
+    printf '\r%s... failed\n' "$loading_message"
   fi
 
-  if [ "$default_choice" = "$second_choice" ]; then
-    selected=1
+  if [ "$status" -ne 0 ]; then
+    cat "$output_file" >&2
   fi
-
-  while true; do
-    if [ "$rendered" -eq 1 ]; then
-      printf '\033[%sA' "$prompt_lines" > /dev/tty
-    fi
-    printf '\033[2K%s\n' "$message" > /dev/tty
-    if [ "$selected" -eq 0 ]; then
-      printf '\033[2K◆ %s\n' "$first_choice" > /dev/tty
-      printf '\033[2K○ %s\n' "$second_choice" > /dev/tty
-    else
-      printf '\033[2K○ %s\n' "$first_choice" > /dev/tty
-      printf '\033[2K◆ %s\n' "$second_choice" > /dev/tty
-    fi
-    printf '\033[2K%s\n' "Use arrow keys and Enter." > /dev/tty
-    rendered=1
-
-    IFS= read -rsn1 key < /dev/tty || key=""
-    case "$key" in
-      "")
-        if [ "$selected" -eq 0 ]; then
-          printf '%s\n' "$first_choice"
-        else
-          printf '%s\n' "$second_choice"
-        fi
-        return 0
-        ;;
-      $'\033')
-        IFS= read -rsn2 rest < /dev/tty || rest=""
-        case "$rest" in
-          "[A"|"[D") selected=0 ;;
-          "[B"|"[C") selected=1 ;;
-        esac
-        ;;
-      [YyLl]) selected=0 ;;
-      [NnCc]) selected=1 ;;
-    esac
-  done
+  rm -f "$output_file"
+  return "$status"
 }
 
 open_url() {
@@ -493,83 +462,8 @@ open_contact_url() {
   open_url "$CONTACT_URL"
 }
 
-render_os_mode_select() {
-  local selected="$1"
-
-  printf '\033[2KChoose Consuelo OS mode:\n' > /dev/tty
-  if [ "$selected" -eq 0 ]; then
-    printf '\033[2K> local\n' > /dev/tty
-    printf '\033[2K  cloud\n' > /dev/tty
-  else
-    printf '\033[2K  local\n' > /dev/tty
-    printf '\033[2K> cloud\n' > /dev/tty
-  fi
-}
-
 choose_os_mode() {
-  if [ -n "$OS_MODE" ]; then
-    return 0
-  fi
-
-  if [ "$YES" -eq 1 ] || [ "$JSON" -eq 1 ] || [ "$DRY_RUN" -eq 1 ]; then
-    OS_MODE="local"
-    return 0
-  fi
-
-  if ! has_tty; then
-    fail "Choose local or cloud before setup.
-
-This shell is non-interactive. Re-run with:
-  $HOSTED_INSTALL_COMMAND_WITH_ARGS --mode local
-or:
-  $HOSTED_INSTALL_COMMAND_WITH_ARGS --mode cloud"
-  fi
-
-  local selected=0
-  local key=""
-  local sequence=""
-  local rendered=0
-  local old_tty
-  old_tty="$(stty -g < /dev/tty)"
-
-  stty -echo -icanon min 1 time 0 < /dev/tty
-  printf '\033[?25l' > /dev/tty
-  trap 'stty "$old_tty" < /dev/tty; printf "\033[?25h" > /dev/tty; exit 130' INT TERM
-
-  while true; do
-    if [ "$rendered" -eq 1 ]; then
-      printf '\033[3A' > /dev/tty
-    fi
-    render_os_mode_select "$selected"
-    rendered=1
-
-    IFS= read -r -s -n 1 key < /dev/tty || key=""
-    case "$key" in
-      $'\033')
-        IFS= read -r -s -n 2 -t 1 sequence < /dev/tty || sequence=""
-        case "$sequence" in
-          "[A"|"[B")
-            if [ "$selected" -eq 0 ]; then
-              selected=1
-            else
-              selected=0
-            fi
-            ;;
-        esac
-        ;;
-      ""|$'\n'|$'\r')
-        if [ "$selected" -eq 0 ]; then
-          OS_MODE="local"
-        else
-          OS_MODE="cloud"
-        fi
-        stty "$old_tty" < /dev/tty
-        printf '\033[?25h\n' > /dev/tty
-        trap - INT TERM
-        return 0
-        ;;
-    esac
-  done
+  [ -n "$OS_MODE" ] || OS_MODE="local"
 }
 
 handle_cloud_mode() {
@@ -586,21 +480,6 @@ handle_cloud_mode() {
   exit 0
 }
 
-render_dependency_progress() {
-  [ "$JSON" -eq 0 ] || return 0
-
-  log "CONSUELO OS  ● dependencies  ○ workspace  ○ security  ○ skills  ○ agents  ○ service  ○ health"
-  log ""
-}
-
-prompt_dependency_setup() {
-  local dependency_choice
-  dependency_choice="$(prompt_select "Consuelo OS needs its dependencies to continue." "yes" "yes" "no" "$HOSTED_INSTALL_COMMAND_WITH_ARGS --yes")"
-  if [ "$dependency_choice" = "no" ]; then
-    DEPENDENCY_STATUS="cancelled"
-    fail "Consuelo OS setup cancelled."
-  fi
-}
 require_command() {
   local tool="$1"
   local explanation="$2"
@@ -613,6 +492,9 @@ check_mac_prerequisites() {
   local os_name
   os_name="$(uname -s 2>/dev/null || true)"
   if [ "$os_name" != "Darwin" ]; then
+    if [ "$DRY_RUN" -eq 1 ]; then
+      return 0
+    fi
     fail "Consuelo OS local bootstrap currently supports macOS. Detected: ${os_name:-unknown}."
   fi
 
@@ -1620,6 +1502,9 @@ run_install_with_script_pty() {
   local install_args=(./scripts/install.ts --home "$os_home" --recovery-package-root "$os_dir" --mode "${OS_MODE:-local}")
   local script_output="/dev/null"
   local status=0
+  if [ "$DEBUG" != "1" ]; then
+    install_args+=(--quiet)
+  fi
   if [ "$INSTALL_DAEMONS" -eq 1 ]; then
     install_args+=(--install-daemons)
   fi
@@ -1713,14 +1598,17 @@ finalize_recovery_cli() {
 
 recovery_cli_hint() {
   [ -x "$OS_HOME/bin/consuelo" ] || return 0
+  local path_guidance="$PATH_HINT"
+  [ -n "$path_guidance" ] || path_guidance="Use the absolute recovery CLI path shown above."
   printf '
 Recovery CLI is ready at %s.
-Open a new terminal, then run:
-  consuelo status
-  consuelo uninstall --dry-run --json
+Use it in this shell with:
+  %s status
+  %s uninstall --dry-run --json
+%s
 To retry setup:
   %s
-' "$OS_HOME/bin/consuelo" "$HOSTED_INSTALL_COMMAND"
+' "$OS_HOME/bin/consuelo" "$OS_HOME/bin/consuelo" "$OS_HOME/bin/consuelo" "$path_guidance" "$HOSTED_INSTALL_COMMAND"
 }
 
 run_onboarding() { # run_onboarding_json
@@ -1811,7 +1699,7 @@ open_workspace_launcher() {
   workspace_host="$(onboarding_workspace_host || true)"
   [ -n "$workspace_host" ] || return 0
 
-  open_url "https://$workspace_host"
+  open_url "https://os.consuelohq.com/auth/workspaces?workspace_host=$workspace_host&return_to=%2F"
 }
 
 run_daemon_dry_run() {
@@ -1854,34 +1742,22 @@ install_daemons_quiet() {
 maybe_install_daemons() {
   if [ "$SKIP_DAEMONS" -eq 1 ]; then
     DAEMON_STATUS="skipped"
-    log "Skipping Consuelo OS user LaunchAgent setup."
+    log "Skipping Consuelo OS background-service setup."
     return 0
   fi
 
   if [ "$DRY_RUN" -eq 1 ]; then
     if [ -n "$PORTLESS_BIN" ]; then
-      log "dry-run: would offer user LaunchAgent setup for com.consuelo.system, com.consuelo.portless.system, and com.consuelo.watchdog."
+      log "dry-run: would install the Consuelo OS background service and the optional Portless compatibility LaunchAgent."
     else
-      log "dry-run: would offer user LaunchAgent setup for com.consuelo.system and com.consuelo.watchdog; portless is optional and not configured."
+      log "dry-run: would install the Consuelo OS background service; Portless compatibility is optional and not configured."
     fi
     run_daemon_dry_run
     return 0
   fi
 
-  if [ "$INSTALL_DAEMONS" -eq 0 ] && [ "$YES" -eq 1 ]; then
-    DAEMON_STATUS="skipped"
-    log "Skipping LaunchAgent setup because --install-daemons was not passed. To install later, run: bash packages/os/scripts/bootstrap.sh --yes --install-daemons"
-    return 0
-  fi
-
   if [ "$INSTALL_DAEMONS" -eq 0 ]; then
-    local daemon_choice
-    daemon_choice="$(prompt_select "Install Consuelo OS user LaunchAgents?" "yes" "yes" "no" "$HOSTED_INSTALL_COMMAND_WITH_ARGS --yes --install-daemons")"
-    if [ "$daemon_choice" = "no" ]; then
-      DAEMON_STATUS="skipped"
-      log "Skipping Consuelo OS user LaunchAgent setup."
-      return 0
-    fi
+    INSTALL_DAEMONS=1
   fi
 
   if [ "$DEBUG" = "1" ]; then
@@ -1894,22 +1770,182 @@ maybe_install_daemons() {
       CONSUELO_DAEMON_LOG_DIR="$OS_HOME/node/logs" \
       "$BUN_BIN" run --cwd "$os_dir" install:system-daemons
   else
-    run_with_loading_dots "setting up background service" install_daemons_quiet
-    log "background service ready"
+    run_quiet_with_loading_dots "setting up background service" install_daemons_quiet
   fi
   DAEMON_STATUS="installed"
 }
 
-# The installer writes $OS_HOME/bin/consuelo but has never put that directory on PATH, so a fresh
-# install left the documented `consuelo` command unavailable. Appended idempotently to the shell rc,
-# and only there: the running installer cannot change the parent shell.
+# A curl-pipe-bash child cannot mutate its parent shell's PATH. Prefer a safe
+# link in an already-visible writable directory; otherwise configure future
+# shells and keep the canonical absolute CLI path available immediately.
+has_unsafe_shared_write() {
+  local candidate="$1"
+  /usr/bin/find "$candidate" -prune \( -perm -020 -o -perm -002 \) -print 2>/dev/null | /usr/bin/grep -q .
+}
+
+resolve_cli_symlink_target() {
+  local link_path="$1"
+  local target=""
+  local target_dir=""
+  local target_name=""
+
+  target="$(readlink "$link_path" 2>/dev/null || true)"
+  [ -n "$target" ] || return 1
+  case "$target" in
+    /*)
+      target_dir="$(dirname "$target")"
+      target_name="$(basename "$target")"
+      (
+        cd "$target_dir" 2>/dev/null || exit 1
+        printf '%s/%s\n' "$(pwd -P)" "$target_name"
+      )
+      ;;
+    *)
+      target_dir="$(dirname "$target")"
+      target_name="$(basename "$target")"
+      (
+        cd "$(dirname "$link_path")" 2>/dev/null || exit 1
+        cd "$target_dir" 2>/dev/null || exit 1
+        printf '%s/%s\n' "$(pwd -P)" "$target_name"
+      )
+      ;;
+  esac
+}
+
+path_owner_uid() {
+  local candidate="$1"
+  if /usr/bin/stat -f '%u' "$candidate" >/dev/null 2>&1; then
+    /usr/bin/stat -f '%u' "$candidate"
+  else
+    /usr/bin/stat -c '%u' "$candidate" 2>/dev/null
+  fi
+}
+
+trusted_sticky_owner() {
+  local candidate="$1"
+  local owner_uid=""
+  local current_uid=""
+
+  owner_uid="$(path_owner_uid "$candidate")" || return 1
+  current_uid="$(id -u 2>/dev/null)" || return 1
+  [ "$owner_uid" = "$current_uid" ] || [ "$owner_uid" = "0" ]
+}
+
+is_safe_shared_path_parent() {
+  local candidate="$1"
+  if has_unsafe_shared_write "$candidate"; then
+    /usr/bin/find "$candidate" -prune -perm -1000 -print 2>/dev/null | /usr/bin/grep -q . || return 1
+    trusted_sticky_owner "$candidate" || return 1
+  fi
+  return 0
+}
+
+is_safe_immediate_cli_link_dir() {
+  local candidate="$1"
+  local cursor=""
+  local resolved_cursor=""
+  local physical_cursor=""
+
+  case "$candidate" in
+    /*) ;;
+    *) return 1 ;;
+  esac
+  [ -d "$candidate" ] || return 1
+  [ ! -L "$candidate" ] || return 1
+  [ -w "$candidate" ] || return 1
+  [ -O "$candidate" ] || return 1
+
+  has_unsafe_shared_write "$candidate" && return 1
+  cursor="$(dirname "$candidate")"
+  while [ -n "$cursor" ] && [ "$cursor" != "/" ]; do
+    [ -d "$cursor" ] || return 1
+    resolved_cursor="$(cd "$cursor" 2>/dev/null && pwd -P)" || return 1
+    is_safe_shared_path_parent "$resolved_cursor" || return 1
+    cursor="$(dirname "$cursor")"
+  done
+
+  resolved_cursor="$(cd "$candidate" 2>/dev/null && pwd -P)" || return 1
+  physical_cursor="$(dirname "$resolved_cursor")"
+  while [ -n "$physical_cursor" ] && [ "$physical_cursor" != "/" ]; do
+    [ -d "$physical_cursor" ] || return 1
+    is_safe_shared_path_parent "$physical_cursor" || return 1
+    physical_cursor="$(dirname "$physical_cursor")"
+  done
+  return 0
+}
+
+find_immediate_cli_link_dir() {
+  local bin_dir="$OS_HOME/bin"
+  local existing=""
+  local expected_cli=""
+  local path_entry=""
+  local path_entries=()
+
+  expected_cli="$(cd "$bin_dir" 2>/dev/null && printf '%s/consuelo\n' "$(pwd -P)")" || expected_cli="$bin_dir/consuelo"
+  existing="$(command -v consuelo 2>/dev/null || true)"
+  if [ -n "$existing" ]; then
+    if [ "$existing" = "$bin_dir/consuelo" ]; then
+      printf '%s\n' "$bin_dir"
+      return 0
+    fi
+    if [ -L "$existing" ] && [ "$(resolve_cli_symlink_target "$existing" 2>/dev/null || true)" = "$expected_cli" ]; then
+      dirname "$existing"
+      return 0
+    fi
+    return 2
+  fi
+
+  IFS=':' read -r -a path_entries <<< "${PATH:-}"
+  for path_entry in "${path_entries[@]}"; do
+    [ -n "$path_entry" ] || continue
+    is_safe_immediate_cli_link_dir "$path_entry" || continue
+    [ ! -e "$path_entry/consuelo" ] && [ ! -L "$path_entry/consuelo" ] || continue
+    printf '%s\n' "$path_entry"
+    return 0
+  done
+  return 1
+}
+
 ensure_command_on_path() {
   local bin_dir="$OS_HOME/bin"
   local rc_file=""
+  local existing=""
+  local expected_cli=""
+  local immediate_dir=""
+  local immediate_status=0
+
+  PATH_IMMEDIATE=0
 
   if [ "$DRY_RUN" -eq 1 ]; then
-    PATH_HINT="dry-run: would add $bin_dir to the supported shell profile"
+    PATH_HINT="dry-run: would expose $bin_dir through the current PATH when safe, otherwise update the supported shell profile"
     return 0
+  fi
+
+  expected_cli="$(cd "$bin_dir" 2>/dev/null && printf '%s/consuelo\n' "$(pwd -P)")" || expected_cli="$bin_dir/consuelo"
+  existing="$(command -v consuelo 2>/dev/null || true)"
+  if [ -n "$existing" ] && [ "$existing" != "$bin_dir/consuelo" ]; then
+    if [ ! -L "$existing" ] || [ "$(resolve_cli_symlink_target "$existing" 2>/dev/null || true)" != "$expected_cli" ]; then
+      log ""
+      log "Warning: another 'consuelo' is already on PATH at $existing"
+      log "Consuelo OS will not overwrite it. Use $bin_dir/consuelo until you resolve the command collision."
+      PATH_HINT="Another 'consuelo' already owns PATH; Consuelo OS left it unchanged."
+      return 0
+    fi
+  fi
+
+  if immediate_dir="$(find_immediate_cli_link_dir)"; then
+    if [ "$immediate_dir" != "$bin_dir" ] && [ ! -e "$immediate_dir/consuelo" ] && [ ! -L "$immediate_dir/consuelo" ]; then
+      ln -s "$bin_dir/consuelo" "$immediate_dir/consuelo"
+    fi
+    PATH_IMMEDIATE=1
+    PATH_HINT="consuelo is ready in this shell via $immediate_dir"
+    return 0
+  else
+    immediate_status=$?
+    if [ "$immediate_status" -eq 2 ]; then
+      PATH_HINT="Another 'consuelo' already owns PATH; use $bin_dir/consuelo directly."
+      return 0
+    fi
   fi
 
   case "$(basename "${SHELL:-}")" in
@@ -1919,16 +1955,6 @@ ensure_command_on_path() {
       ;;
     *) rc_file="" ;;
   esac
-
-  # An unrelated binary of the same name silently shadows ours, which reads as OS being broken
-  # rather than as a name collision.
-  local existing
-  existing="$(command -v consuelo 2>/dev/null || true)"
-  if [ -n "$existing" ] && [ "$existing" != "$bin_dir/consuelo" ]; then
-    log ""
-    log "Warning: another 'consuelo' is already on PATH at $existing"
-    log "It will shadow Consuelo OS. Remove it, or put $bin_dir earlier on PATH."
-  fi
 
   if [ -z "$rc_file" ]; then
     PATH_HINT="Add this to your shell profile:  export PATH=\"$bin_dir:\$PATH\""
@@ -1947,36 +1973,22 @@ ensure_command_on_path() {
     PATH_HINT="Add this to your shell profile:  export PATH=\"$bin_dir:\$PATH\""
     return 0
   }
-  PATH_HINT="Added $bin_dir to PATH in $rc_file — open a new terminal to use it"
+  PATH_HINT="Added $bin_dir to PATH in $rc_file — new shells can use the bare consuelo command"
 }
 
 print_success_summary() {
   [ "$JSON" -eq 0 ] || return 0
 
-  local os_home="$OS_HOME"
-
   log ""
-  log "Consuelo OS setup complete"
-  log "Home: $os_home"
-  if [ -n "${PATH_HINT:-}" ]; then
-    log "$PATH_HINT"
+  log "Consuelo OS installed"
+  if [ "$PATH_IMMEDIATE" -ne 1 ]; then
+    [ -z "$PATH_HINT" ] || log "$PATH_HINT"
+    log "Use now: $OS_HOME/bin/consuelo status"
   fi
-  log ""
-  log "Try:  consuelo status"
 }
 
-main() {
-  parse_args "$@"
-  if [ "$RUNTIME_DEPENDENCIES_ONLY" -eq 1 ]; then
-    reconcile_runtime_dependencies_only
-    return 0
-  fi
-  init_dev_diagnostics
-  choose_os_mode
-  handle_cloud_mode
+setup_local_runtime() {
   check_mac_prerequisites
-  render_dependency_progress
-  prompt_dependency_setup
   ensure_bun
   install_verified_runtime
   ensure_dependencies
@@ -1988,6 +2000,18 @@ main() {
   ensure_caddy
   ensure_cloudflared
   persist_runtime_paths
+}
+
+main() {
+  parse_args "$@"
+  if [ "$RUNTIME_DEPENDENCIES_ONLY" -eq 1 ]; then
+    reconcile_runtime_dependencies_only
+    return 0
+  fi
+  init_dev_diagnostics
+  choose_os_mode
+  handle_cloud_mode
+  run_quiet_with_loading_dots "Installing Consuelo OS" setup_local_runtime
   run_onboarding
   activate_verified_runtime
   finalize_recovery_cli

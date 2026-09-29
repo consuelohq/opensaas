@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/collaborate/forward-artifact-share-session-at-edge",
+  "events": [
+    {
+      "id": "e62e2251-1fff-485f-aaeb-03c3caa88bf7",
+      "occurred_at": "2026-09-21T12:51:27.434Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/workspace-edge-sites-gateway-integration.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/collaborate/forward-artifact-share-session-at-edge",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/collaborate/forward-artifact-share-session-at-edge"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-09-21T12:51:27.532Z"
+}

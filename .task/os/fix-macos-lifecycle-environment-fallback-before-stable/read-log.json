@@ -1,0 +1,8 @@
+{
+  "files": [
+    "packages/os/definitely-missing.json",
+    "packages/os/scripts/lib/lifecycle/service.ts",
+    "packages/os/tests/lifecycle-restart-contract.test.ts"
+  ],
+  "updatedAt": "2026-09-24T00:33:08.947Z"
+}

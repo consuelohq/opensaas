@@ -23,6 +23,18 @@ describe('Artifacts workspace routing', () => {
       ],
     });
 
+    expect(record.routes.find((route) => route.pathPrefix === '/share/artifacts')).toMatchObject({
+      surface: 'sites',
+      auth: 'public',
+      status: 'active',
+      target: {
+        kind: 'consuelo-gateway-service',
+        serviceName: 'artifacts-sites-share-layer',
+        gatewayRouteFamily: '/share/artifacts/*',
+        publicSiteRouteFamily: '/share/artifacts/*',
+      },
+    });
+
     expect(record.routes.find((route) => route.pathPrefix === '/artifacts')).toMatchObject({
       surface: 'sites',
       auth: 'workspace-session',

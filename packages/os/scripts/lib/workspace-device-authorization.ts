@@ -43,6 +43,7 @@ export type WorkspaceDeviceAuthorizationPollResult =
       status: 'denied' | 'expired';
       errorCode: string;
       telemetryErrorCode?: InstallErrorCode;
+      message?: string;
     };
 
 export type WorkspaceDeviceAuthorizationStartInput = {

@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import fs from 'node:fs';
+import path from 'node:path';
 
 import {
   createGithubCodeBrowserLoader,
@@ -47,10 +48,15 @@ import {
 } from '../../lib/workspace-chrome';
 import { loadWorkspaceChromeOptions } from '../../lib/workspace-chrome-config';
 import type { AuthenticatedMcpPrincipal } from '../security/authenticated-principal';
+import {
+  DiffsLocalCache,
+  type DiffsCacheSnapshot,
+} from './diffs-local-cache';
 
 const DIFFS_PROVIDER_SCRIPT_ID = 'diffs-github-provider';
 const READ_CACHE_TTL_MS = 30_000;
 const CODE_CACHE_TTL_MS = 5 * 60_000;
+const FIRST_PAINT_CACHE_MAX_AGE_MS = 5 * 60_000;
 const PRODUCT_READ_CACHE_MAX_ENTRIES = 256;
 const GITHUB_MUTATION_TIMEOUT_MS = 15_000;
 
@@ -104,10 +110,9 @@ export class DiffsGatewayError extends Error {
   }
 }
 
-type CacheEntry = { expiresAt: number; value: unknown };
-const productReadCache = new Map<string, CacheEntry>();
 type ManagedGitHubTokenEntry = { expiresAt: number; token: string };
 const managedGitHubTokenCache = new Map<string, ManagedGitHubTokenEntry>();
+const diffsLocalCaches = new Map<string, DiffsLocalCache>();
 
 function requireHome(home?: string): string {
   const resolved = home ?? process.env.CONSUELO_HOME ?? process.env.CONSUELO_OS_HOME;
@@ -173,13 +178,7 @@ async function withGithubCredential<T>(input: {
   operation: (token: string, cacheNamespace: string) => Promise<T>;
 }): Promise<T> {
   const layout = resolveConsueloHomeLayout(input.home);
-  const cacheNamespace = sourceControlCacheNamespace({
-    workspaceId: input.workspaceId,
-    connectionRef: input.repository.connectionRef,
-    provider: input.repository.provider,
-    owner: input.repository.owner,
-    repo: input.repository.repository,
-  });
+  const cacheNamespace = repositoryCacheNamespace(input.workspaceId, input.repository);
   const managedConnectionId = githubInstallationConnectionId(input.repository.connectionRef);
   if (managedConnectionId) {
     try {
@@ -244,38 +243,64 @@ function cacheKey(namespace: string, operation: string): string {
   return `${namespace}:${operation}`;
 }
 
-function pruneProductReadCache(now: number): void {
-  for (const [cacheKeyValue, entry] of productReadCache.entries()) {
-    if (entry.expiresAt <= now) productReadCache.delete(cacheKeyValue);
-  }
-  while (productReadCache.size >= PRODUCT_READ_CACHE_MAX_ENTRIES) {
-    const oldestKey = productReadCache.keys().next().value as string | undefined;
-    if (!oldestKey) break;
-    productReadCache.delete(oldestKey);
-  }
+function repositoryCacheNamespace(
+  workspaceId: string,
+  repository: RequiredWorkspaceSourceControlRepository,
+): string {
+  return sourceControlCacheNamespace({
+    workspaceId,
+    connectionRef: repository.connectionRef,
+    provider: repository.provider,
+    owner: repository.owner,
+    repo: repository.repository,
+  });
 }
 
-function cached<T>(key: string, ttlMs: number, loader: () => Promise<T>): Promise<T> {
-  const existing = productReadCache.get(key);
-  if (existing && existing.expiresAt > Date.now()) return Promise.resolve(existing.value as T);
-  if (existing) productReadCache.delete(key);
-  return loader()
-    .then((value) => {
-      const now = Date.now();
-      pruneProductReadCache(now);
-      productReadCache.set(key, { value, expiresAt: now + ttlMs });
-      return value;
-    })
-    .catch((error: unknown) => {
-      productReadCache.delete(key);
-      throw error;
-    });
+function localDiffsCache(home: string): DiffsLocalCache {
+  const cacheRoot = path.join(resolveConsueloHomeLayout(home).nodeCacheDir, 'diffs');
+  const existing = diffsLocalCaches.get(cacheRoot);
+  if (existing) return existing;
+  const created = new DiffsLocalCache({
+    root: cacheRoot,
+    maxEntries: PRODUCT_READ_CACHE_MAX_ENTRIES,
+  });
+  diffsLocalCaches.set(cacheRoot, created);
+  return created;
 }
 
-function invalidateNamespace(namespace: string): void {
-  for (const key of productReadCache.keys()) {
-    if (key.startsWith(`${namespace}:`)) productReadCache.delete(key);
-  }
+function cachedSnapshot<T>(
+  home: string,
+  key: string,
+  ttlMs: number,
+  loader: () => Promise<T>,
+): Promise<DiffsCacheSnapshot<T>> {
+  return localDiffsCache(home).getFresh(key, ttlMs, loader);
+}
+
+function cached<T>(
+  home: string,
+  key: string,
+  ttlMs: number,
+  loader: () => Promise<T>,
+): Promise<T> {
+  return cachedSnapshot(home, key, ttlMs, loader).then((snapshot) => snapshot.value);
+}
+
+function peekCachedSnapshot<T>(
+  home: string,
+  workspaceId: string,
+  repository: RequiredWorkspaceSourceControlRepository,
+  operation: string,
+): DiffsCacheSnapshot<T> | null {
+  const namespace = repositoryCacheNamespace(workspaceId, repository);
+  const snapshot = localDiffsCache(home).peek<T>(cacheKey(namespace, operation));
+  if (!snapshot) return null;
+  if (Date.now() - snapshot.writtenAt > FIRST_PAINT_CACHE_MAX_AGE_MS) return null;
+  return snapshot;
+}
+
+function invalidateNamespace(home: string, namespace: string): void {
+  localDiffsCache(home).invalidatePrefix(`${namespace}:`);
 }
 
 function rebaseProductUrls<T>(value: T, repo: RepoLocator): T {
@@ -351,19 +376,31 @@ export function loadDiffsPullRequestIndex(input: {
   owner: string;
   repo: string;
 }): Promise<PullRequestIndexData> {
+  return loadDiffsPullRequestIndexSnapshot(input).then((snapshot) => snapshot.value);
+}
+
+export function loadDiffsPullRequestIndexSnapshot(input: {
+  home?: string;
+  principal: AuthenticatedMcpPrincipal;
+  owner: string;
+  repo: string;
+}): Promise<DiffsCacheSnapshot<PullRequestIndexData>> {
   const home = requireHome(input.home);
   const workspaceId = requiredWorkspaceId(input.principal);
   const repository = requireRepository(loadWorkspace(home, workspaceId), input.owner, input.repo);
+  const locator = repositoryLocator(repository);
   return withGithubCredential({
     home,
     workspaceId,
     repository,
     principal: input.principal,
-    operation: (token, namespace) => cached(
+    operation: (token, namespace) => cachedSnapshot(
+      home,
       cacheKey(namespace, 'pulls'),
       READ_CACHE_TTL_MS,
-      () => createGithubPullRequestIndexLoader({ token })(repositoryLocator(repository)),
-    ).then((value) => rebaseProductUrls(value, repositoryLocator(repository))),
+      () => createGithubPullRequestIndexLoader({ token })(locator)
+        .then((value) => rebaseProductUrls(value, locator)),
+    ),
   });
 }
 
@@ -374,22 +411,35 @@ export function loadDiffsPullRequest(input: {
   repo: string;
   number: number;
 }): Promise<PullRequestReviewData> {
+  return loadDiffsPullRequestSnapshot(input).then((snapshot) => snapshot.value);
+}
+
+export function loadDiffsPullRequestSnapshot(input: {
+  home?: string;
+  principal: AuthenticatedMcpPrincipal;
+  owner: string;
+  repo: string;
+  number: number;
+}): Promise<DiffsCacheSnapshot<PullRequestReviewData>> {
   const home = requireHome(input.home);
   const workspaceId = requiredWorkspaceId(input.principal);
   const repository = requireRepository(loadWorkspace(home, workspaceId), input.owner, input.repo);
+  const locator = repositoryLocator(repository);
   return withGithubCredential({
     home,
     workspaceId,
     repository,
     principal: input.principal,
-    operation: (token, namespace) => cached(
+    operation: (token, namespace) => cachedSnapshot(
+      home,
       cacheKey(namespace, `pull:${input.number}`),
       READ_CACHE_TTL_MS,
       () => createGithubPullRequestLoader({ token })({
-        ...repositoryLocator(repository),
-        number: input.number,
-      }),
-    ).then((value) => rebaseProductUrls(value, repositoryLocator(repository))),
+          ...locator,
+          number: input.number,
+        })
+        .then((value) => rebaseProductUrls(value, locator)),
+    ),
   });
 }
 
@@ -411,14 +461,16 @@ export function loadDiffsCode(input: {
     repository,
     principal: input.principal,
     operation: (token, namespace) => cached(
+      home,
       cacheKey(namespace, `code:${input.ref}:${codePath}`),
       CODE_CACHE_TTL_MS,
       () => createGithubCodeBrowserLoader({ token })({
-        ...repositoryLocator(repository),
-        ref: input.ref,
-        path: codePath,
-      }),
-    ).then((value) => rebaseProductUrls(value, repositoryLocator(repository))),
+          ...repositoryLocator(repository),
+          ref: input.ref,
+          path: codePath,
+        })
+        .then((value) => rebaseProductUrls(value, repositoryLocator(repository))),
+    ),
   });
 }
 
@@ -440,14 +492,16 @@ export function loadDiffsHistory(input: {
     repository,
     principal: input.principal,
     operation: (token, namespace) => cached(
+      home,
       cacheKey(namespace, `history:${input.ref}:${codePath}`),
       CODE_CACHE_TTL_MS,
       () => createGithubCodeHistoryLoader({ token })({
-        ...repositoryLocator(repository),
-        ref: input.ref,
-        path: codePath,
-      }),
-    ).then((value) => rebaseProductUrls(value, repositoryLocator(repository))),
+          ...repositoryLocator(repository),
+          ref: input.ref,
+          path: codePath,
+        })
+        .then((value) => rebaseProductUrls(value, repositoryLocator(repository))),
+    ),
   });
 }
 
@@ -555,7 +609,7 @@ export function mergeDiffsPullRequest(input: {
       repository,
       number: input.number,
     }).then((result) => {
-      invalidateNamespace(namespace);
+      invalidateNamespace(home, namespace);
       return result;
     }),
   });
@@ -586,7 +640,7 @@ export function mutateDiffsReviewThread(input: {
       threadId: input.threadId,
       action: input.action,
     }).then((result) => {
-      invalidateNamespace(namespace);
+      invalidateNamespace(home, namespace);
       return result;
     }),
   });
@@ -614,8 +668,19 @@ export function renderDiffsIndex(input: {
   const snapshot = buildWorkspaceSourceControlSnapshot(config);
   if (!snapshot.configured && !input.owner && !input.repo) return renderSourceControlSetupPage(home);
   const repository = requireRepository(config, input.owner, input.repo);
+  const cachedIndex = peekCachedSnapshot<PullRequestIndexData>(
+    home,
+    workspaceId,
+    repository,
+    'pulls',
+  );
   return renderWorkspaceDiffsDocument(
-    renderIndexPage(repositoryLocator(repository), null, '', productRenderOptions(repository)),
+    renderIndexPage(
+      repositoryLocator(repository),
+      cachedIndex?.value ?? null,
+      cachedIndex?.etag ?? '',
+      productRenderOptions(repository),
+    ),
     home,
   );
 }
@@ -630,11 +695,17 @@ export function renderDiffsReview(input: {
   const home = requireHome(input.home);
   const workspaceId = requiredWorkspaceId(input.principal);
   const repository = requireRepository(loadWorkspace(home, workspaceId), input.owner, input.repo);
+  const cachedReview = peekCachedSnapshot<PullRequestReviewData>(
+    home,
+    workspaceId,
+    repository,
+    `pull:${input.number}`,
+  );
   return renderWorkspaceDiffsDocument(
     renderReviewPage(
       { ...repositoryLocator(repository), number: input.number },
-      null,
-      '',
+      cachedReview?.value ?? null,
+      cachedReview?.etag ?? '',
       productRenderOptions(repository),
     ),
     home,
@@ -707,6 +778,7 @@ export function renderSourceControlSetupPage(home?: string): string {
 }
 
 export function clearDiffsGatewayCacheForTests(): void {
-  productReadCache.clear();
+  for (const cache of diffsLocalCaches.values()) cache.clear();
+  diffsLocalCaches.clear();
   managedGitHubTokenCache.clear();
 }

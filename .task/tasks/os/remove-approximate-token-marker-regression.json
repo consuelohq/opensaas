@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/remove-approximate-token-marker-regression",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2566,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2566",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-remove-approximate-token-marker-regression",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_6dab17ec6ca7",
+  "tmuxSession": "opensaas-os-remove-approximate-token-marker-regression-6dab17ec",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-remove-approximate-token-marker-regression/.task/session.json",
+  "createdAt": "2026-09-23T02:35:43.229Z"
+}

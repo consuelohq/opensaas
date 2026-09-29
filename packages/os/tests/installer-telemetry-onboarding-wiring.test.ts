@@ -29,7 +29,7 @@ function telemetryWithEvents(events: InstallTelemetryEvent[]) {
 }
 
 describe('installer onboarding telemetry wiring', () => {
-  it('correlates device-code requests and records recoverable fallback failures', async () => {
+  it('correlates device-code requests and records fatal authorization startup failures', async () => {
     const events: InstallTelemetryEvent[] = [];
     const telemetry = telemetryWithEvents(events);
     const requestWorkspaceDeviceCode = vi.fn(async () => ({
@@ -44,7 +44,7 @@ describe('installer onboarding telemetry wiring', () => {
       telemetry,
     };
 
-    const result = await attemptWorkspaceDeviceLogin(input, {
+    await expect(attemptWorkspaceDeviceLogin(input, {
       readLocalNodeIdentity: vi.fn(() => undefined),
       requestWorkspaceDeviceCode,
       pollWorkspaceDeviceAccessToken: vi.fn(),
@@ -52,9 +52,7 @@ describe('installer onboarding telemetry wiring', () => {
       openDeviceVerificationUrl: vi.fn(),
       sleep: vi.fn(),
       withRuntimeHold: vi.fn(async <T>(operation: () => Promise<T>): Promise<T> => operation()),
-    });
-
-    expect(result.status).toBe('fallback');
+    })).rejects.toThrow('edge unavailable');
     expect(requestWorkspaceDeviceCode).toHaveBeenCalledWith(
       expect.objectContaining({ installId: INSTALL_ID }),
     );
@@ -65,7 +63,7 @@ describe('installer onboarding telemetry wiring', () => {
         outcome: 'failed',
         error: {
           code: 'DEVICE_CODE_REQUEST_FAILED',
-          impact: 'recoverable',
+          impact: 'fatal',
         },
       }),
     );

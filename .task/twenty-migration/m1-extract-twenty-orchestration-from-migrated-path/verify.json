@@ -1,0 +1,311 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/twenty-migration/m1-extract-twenty-orchestration-from-migrated-path",
+  "base": "origin/stream/twenty-migration",
+  "headSha": "2ab2527bbb393b31f43e219c6b5170c6fa9aa891",
+  "changeHash": "2e1190d56ac595ca5979479373e68a988d817f0291b880536e32aa37fba32c5a",
+  "changedFiles": [
+    "packages/dialer-server/src/m1-twenty-orchestration.contract.test.ts",
+    "packages/dialer/src/application/dialer-call-start-application.test.ts",
+    "packages/dialer/src/application/dialer-call-start-application.ts",
+    "packages/dialer/src/index.ts",
+    "packages/twenty-server/src/engine/core-modules/consuelo-api/infrastructure/twenty-dialer-call-start.infrastructure.ts",
+    "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-adapter-boundary.contract.spec.ts",
+    "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.ts",
+    "packages/workspace/test-selection.registry.json",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "verifiedAt": "2026-08-15T04:16:15.578Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/twenty-migration/m1-extract-twenty-orchestration-from-migrated-path.json",
+        ".task/twenty-migration/m1-extract-twenty-orchestration-from-migrated-path/current.json",
+        ".task/twenty-migration/m1-extract-twenty-orchestration-from-migrated-path/evidence-log.json",
+        ".task/twenty-migration/m1-extract-twenty-orchestration-from-migrated-path/read-log.json",
+        ".task/twenty-migration/m1-extract-twenty-orchestration-from-migrated-path/session.json",
+        ".task/twenty-migration/m1-extract-twenty-orchestration-from-migrated-path/workpad.md",
+        "packages/dialer-server/src/m1-twenty-orchestration.contract.test.ts",
+        "packages/dialer/src/application/dialer-call-start-application.test.ts",
+        "packages/dialer/src/application/dialer-call-start-application.ts",
+        "packages/dialer/src/index.ts",
+        "packages/twenty-server/src/engine/core-modules/consuelo-api/infrastructure/twenty-dialer-call-start.infrastructure.ts",
+        "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-adapter-boundary.contract.spec.ts",
+        "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.ts",
+        "packages/workspace/test-selection.registry.json",
+        "packages/workspace/test-selection.rules.json",
+        "packages/workspace/tests/test-selection.test.js"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-test-selection",
+          "critical": true,
+          "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy.",
+          "matchedFiles": [
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "dialer-package",
+          "critical": true,
+          "reason": "Dialer changes are call-path critical and must run package specs.",
+          "matchedFiles": [
+            "packages/dialer/src/application/dialer-call-start-application.test.ts",
+            "packages/dialer/src/application/dialer-call-start-application.ts",
+            "packages/dialer/src/index.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "dialer-server-package",
+          "critical": true,
+          "reason": "Dialer server changes must prove Hono transport, Twilio boundary, and standalone lifecycle contracts.",
+          "matchedFiles": [
+            "packages/dialer-server/src/m1-twenty-orchestration.contract.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "server-ci-task-contract",
+          "critical": true,
+          "reason": "Server CI changes must scope lint and typecheck to directly changed Twenty server runtime files while retaining dependency propagation.",
+          "matchedFiles": [
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "twenty-migration-call-start-orchestration",
+          "critical": true,
+          "exclusive": true,
+          "reason": "M1 call-start extraction must prove the compatibility service and architecture boundary without scheduling the unrelated full Twenty server suite.",
+          "matchedFiles": [
+            "packages/twenty-server/src/engine/core-modules/consuelo-api/infrastructure/twenty-dialer-call-start.infrastructure.ts",
+            "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-adapter-boundary.contract.spec.ts",
+            "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true
+        },
+        {
+          "name": "dialer specs",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer/src"
+          ],
+          "ruleId": "dialer-package",
+          "critical": true
+        },
+        {
+          "name": "dialer-server Hono contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-server/src"
+          ],
+          "ruleId": "dialer-server-package",
+          "critical": true
+        },
+        {
+          "name": "changed server task selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "TypeORM CLI compatibility contract",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "Twenty call-start compatibility contracts",
+          "command": [
+            "bash",
+            "-lc",
+            "cd packages/twenty-server && NODE_ENV=test npx --no-install jest --config jest.config.mjs src/engine/core-modules/consuelo-api/services/dialer-call-start.service.spec.ts src/engine/core-modules/consuelo-api/services/dialer-adapter-boundary.contract.spec.ts --runInBand"
+          ],
+          "ruleId": "twenty-migration-call-start-orchestration",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 7357,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-twenty-migration-m1-extract-twenty-orchestration-from-migrated-path\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/test-selection.test.js \u001b[2m(\u001b[22m\u001b[2m35 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 5573\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m discovers and seeds the existing test inventory \u001b[33m 3274\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m35 passed\u001b[39m\u001b[22m\u001b[90m (35)\u001b[39m\n\u001b[2m   Start at \u001b[22m 00:15:57\n\u001b[2m   Duration \u001b[22m 6.13s\u001b[2m (transform 115ms, setup 0ms, import 179ms, tests 5.57s, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "dialer specs",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer/src"
+          ],
+          "ruleId": "dialer-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 3778,
+          "outputTail": "r > explicit profile selection > should use explicit profileId when provided and bypass sampling [0.37ms]\n(pass) ParallelStrategyResolver > thompson sampling > should deterministically pick aggressive when it samples highest [0.21ms]\n(pass) ParallelStrategyResolver > thompson sampling > should use informed default priors on cold start when no posteriors are returned [0.13ms]\n(pass) ParallelStrategyResolver > thompson sampling > should merge loaded posterior values instead of using defaults [0.11ms]\n(pass) ParallelStrategyResolver > thompson sampling > should sample all profiles exactly once when no explicit profileId is set [0.13ms]\n(pass) ParallelStrategyResolver > fallback behavior > should fallback to balanced when posterior loading fails without throwing [6.45ms]\n(pass) ParallelStrategyResolver > profile lookup APIs > should return profile by id [0.07ms]\n(pass) ParallelStrategyResolver > profile lookup APIs > should return all profiles [0.05ms]\n\npackages/dialer/src/services/whittle-index.spec.ts:\n(pass) WhittleIndexService > should increase index as answer rate increases [0.09ms]\n(pass) WhittleIndexService > should increase urgency bonus as callable window closes [0.02ms]\n(pass) WhittleIndexService > should increase exploration bonus when segment sample size is low [0.01ms]\n(pass) WhittleIndexService > should reduce index as cost per attempt increases [0.01ms]\n(pass) WhittleIndexService > should rank candidates by index descending and position ascending for ties [0.07ms]\n(pass) WhittleIndexService > should apply max urgency bonus when zero hours remain in window\n(pass) WhittleIndexService > should produce near zero exploration bonus with very high sample size\n(pass) WhittleIndexService > should set index to negative cost when all positive components are zero [0.01ms]\n(pass) WhittleIndexService > should allow negative index values when cost exceeds reward\n\npackages/dialer/src/services/call-timing-model.spec.ts:\n(pass) CallTimingModel > should return null when segment has insufficient sample size [0.17ms]\n(pass) CallTimingModel > should return optimal retry time when enough observations exist [0.04ms]\n\npackages/dialer/src/services/parallel-lifecycle.contract.spec.ts:\n(pass) parallel dial lifecycle contract > keeps customer legs muted without provider hold music until the agent starts the conference [2.60ms]\n(pass) parallel dial lifecycle contract > retains a callback that arrives while later legs are still being created [3.58ms]\n(pass) parallel dial lifecycle contract > keeps exactly one durable winner under simultaneous human callbacks [9.89ms]\n(pass) parallel dial lifecycle contract > claims telemetry emission exactly once under concurrent callbacks [6.42ms]\n(pass) parallel dial lifecycle contract > records failed loser cleanup and clears it after reconciliation succeeds [4.74ms]\n(pass) parallel dial lifecycle contract > does not persist a false winner-unmute failure before the participant enters [10.19ms]\n(pass) parallel dial lifecycle contract > records failed winner unmute and clears it after reconciliation succeeds [5.21ms]\n(pass) parallel dial lifecycle contract > completes the group when the selected winner hangs up [9.04ms]\n(pass) parallel dial lifecycle contract > persists workspace ownership and rejects cross-workspace access [13.33ms]\n(pass) parallel dial lifecycle contract > ignores an answered callback after the same leg is terminal [9.89ms]\n\npackages/dialer/src/infrastructure/redis/redis-parallel-store.test.ts:\n(pass) RedisParallelStore > registers calls and reverse mappings atomically and cleans the full group [1.07ms]\n(pass) RedisParallelStore > claims one winner and one telemetry emission and serializes group operations [5.91ms]\n(pass) RedisParallelStore > renews an owned group lock while a long operation is running [182.34ms]\n(pass) RedisParallelStore > deletes known group keys when the persisted group JSON is malformed [0.28ms]\n\n 175 pass\n 0 fail\n 372 expect() calls\nRan 175 tests across 17 files. [3.77s]\n"
+        },
+        {
+          "name": "dialer-server Hono contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-server/src"
+          ],
+          "ruleId": "dialer-server-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1378,
+          "outputTail": "er group request [0.12ms]\n(pass) Twilio provider test mode > does not claim carrier delivery or callbacks for test credentials [0.03ms]\n\npackages/dialer-server/src/runtime/railway.test.ts:\n(pass) LeadConnector dialer learning > records an atomic attempt and outcome for every completed carrier leg [0.37ms]\n(pass) LeadConnector dialer learning > does not fail carrier callback handling when learning persistence is unavailable [0.14ms]\n(pass) Railway dialer-server runtime composition > selects the test dialer for follow-up operations on test-mode groups [0.38ms]\n(pass) Railway dialer-server runtime composition > keeps existing groups without a provider mode on the live dialer [0.12ms]\n(pass) Railway dialer-server runtime composition > fails closed when a test-mode group outlives its test credentials [0.10ms]\n(pass) Railway dialer-server runtime composition > composes durable LeadConnector configuration and encrypted installation storage [12.90ms]\n(pass) Railway dialer-server runtime composition > preserves input order when standalone learned data is not available [9.78ms]\n(pass) Railway dialer-server runtime composition > ranks predictive targets from LeadConnector learned outcomes without Twenty model rows [15.49ms]\n(pass) Railway dialer-server runtime composition > starts a mock standalone call session without Twenty or the compatibility API [2.86ms]\n\npackages/dialer-server/src/runtime/lead-connector-learning.test.ts:\n(pass) LeadConnector learning initialization > creates the attempt ledger before the outcome model tables [3.56ms]\n\npackages/dialer-server/src/release/production-release.test.ts:\n(pass) dialer production release safety > selects the new Railway deployment instead of racing the previous latest [0.21ms]\n(pass) dialer production release safety > smokes only non-mutating health/auth/signature boundaries [0.65ms]\n(pass) dialer production release safety > builds a secret-free release manifest from immutable deployment evidence [0.24ms]\n(pass) dialer production release safety > refuses to serialize a release manifest from non-green evidence [0.13ms]\n(pass) dialer production release safety > requires immutable one-time Marketplace bootstrap evidence [0.05ms]\n(pass) dialer production release safety > rolls Railway back to one explicit deployment id through the public API [0.32ms]\n\npackages/dialer-server/src/call-operations/application.test.ts:\n(pass) Effect call-operations transcription application > keeps inbound and outbound buffers separate and persists provider metadata only [27.84ms]\n(pass) Effect call-operations transcription application > processes duplicate frames once and flushes a terminal remainder once [3.69ms]\n(pass) Effect call-operations transcription application > keeps transcript rows idempotent when a provider stream reconnects [8.06ms]\n(pass) Effect call-operations transcription application > marks transcription failed on provider timeout without failing the call boundary [21.88ms]\n(pass) Effect call-operations transcription application > does not begin provider work when workspace transcription is disabled [0.13ms]\n\npackages/dialer-server/src/call-operations/persistence.test.ts:\n(pass) call-operations persistence > initializes canonical workspace settings, sessions, legs, segments, and transfer-compatible events [0.33ms]\n(pass) call-operations persistence > uses a workspace-scoped idempotent insert for transcript metadata [0.65ms]\n(pass) call-operations persistence > atomically upserts the canonical session and all provider legs [0.40ms]\n(pass) call-operations persistence > persists recording provider metadata without retaining a raw recording URL [0.20ms]\n\npackages/dialer-server/src/call-operations/groq.test.ts:\n(pass) Groq speech-to-text adapter > uses the OpenAI-compatible audio endpoint and returns provider-grounded metadata [1.65ms]\n(pass) Groq speech-to-text adapter > fails closed when credentials are absent [0.24ms]\n\n 141 pass\n 0 fail\n 705 expect() calls\nRan 141 tests across 30 files. [1366.00ms]\n"
+        },
+        {
+          "name": "changed server task selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 156,
+          "outputTail": "No changed Twenty server runtime files require lint or typecheck.\nRunning server lint and baseline-aware typecheck for 1 directly changed file(s).\nTwenty server typecheck matched 1 known baseline diagnostic(s).\nRunning server lint and baseline-aware typecheck for 1 directly changed file(s).\nNo changed Twenty server schema files require GraphQL generation.\nNo changed Twenty server runtime files require migration generation.\nNo changesgeneratedTwenty server migration drift matched 2 known baseline operation(s).\ngeneratedgenerated✔ parseCliArguments resolves comparison SHAs (2.069417ms)\n✔ parseCliArguments selects GraphQL generation mode (0.078208ms)\n✔ parseCliArguments selects migration generation mode (0.057125ms)\n✔ filterServerTaskFiles excludes root and config-only triggers (0.089208ms)\n✔ filterGraphqlGenerationFiles keeps only server schema and generated files (0.076542ms)\n✔ buildEslintArguments selects the owning project config and stdin filename (0.06ms)\n✔ ESLint diagnostic comparison tracks new error multiplicity without line numbers (0.200875ms)\n✔ runChangedFileLint accepts base-existing errors and rejects a new changed-file error (1.436708ms)\n✔ runChangedFileLint allows explicit lint baseline debt but rejects diagnostics beyond it (1.533625ms)\n✔ buildTypecheckArguments uses standard TypeScript without emitting (0.098958ms)\n✔ TypeScript diagnostic baseline comparison rejects only new diagnostic keys (0.19475ms)\n✔ runChangedServerTask skips Nx for config-only changes (0.33175ms)\n✔ runChangedServerTask executes lint and baseline-aware typecheck for server runtime changes (0.091625ms)\n✔ runChangedServerTask rejects a new TypeScript diagnostic outside the baseline (0.097583ms)\n✔ server lint configuration resolves the existing workspace rules project (0.52525ms)\n✔ runGraphqlGenerationCheck skips generation without schema changes (0.1ms)\n✔ runGraphqlGenerationCheck generates and verifies committed outputs (0.183875ms)\n✔ runMigrationGenerationCheck skips generation without server runtime changes (0.080083ms)\n✔ runMigrationGenerationCheck accepts a no-change TypeORM exit (0.093ms)\n✔ runMigrationGenerationCheck accepts and removes exact known migration drift (0.183417ms)\n✔ runMigrationGenerationCheck rejects changed drift beyond the baseline (0.1145ms)\n✔ runMigrationGenerationCheck rejects and removes generated drift (0.109291ms)\nℹ tests 22\nℹ suites 0\nℹ pass 22\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 93.708791\n"
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 527,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/workspace/tests/github-workflow-policy.test.js:\n(pass) GitHub workflow policy > delegates Consuelo routing to the Bun-native CI planner [210.53ms]\n(pass) GitHub workflow policy > uses one package-manager-neutral Consuelo CI setup boundary [0.29ms]\n(pass) GitHub workflow policy > includes local composite actions in workflow security policy [0.17ms]\n(pass) GitHub workflow policy > keeps OS-only Consuelo lanes off the root Yarn install [2.49ms]\n(pass) GitHub workflow policy > scopes legacy Twenty pull-request CI to Twenty-owned paths [22.14ms]\n(pass) GitHub workflow policy > does not include retired automation workflows [0.11ms]\n(pass) GitHub workflow policy > does not reference retired CI credentials or the disabled Chromatic job [2.44ms]\n(pass) GitHub workflow policy > does not retain privileged allowlist entries for deleted workflows [0.08ms]\n(pass) GitHub workflow policy > runs typecheck and test from the filtered frontend file set [0.05ms]\n(pass) GitHub workflow policy > installs Bun and scopes shared tasks to changed frontend files [0.05ms]\n(pass) GitHub workflow policy > scopes native OS distribution tests to relevant changed files [0.05ms]\n(pass) GitHub workflow policy > runs Docker Compose CI with the pgvector PostgreSQL image required by migrations [0.03ms]\n(pass) GitHub workflow policy > uses available hosted runners for the Server and Front build pipelines [0.09ms]\n(pass) GitHub workflow policy > builds Consuelo backend workspace dependencies before server typecheck [0.04ms]\n(pass) GitHub workflow policy > installs Bun before the Server unit-test job runs Bun package tests [0.04ms]\n(pass) GitHub workflow policy > allows enough time for Danger dependency installation and execution [0.03ms]\n(pass) GitHub workflow policy > explicitly allowlists the API breaking-changes workflow write permissions [0.04ms]\n\n 17 pass\n 0 fail\n 134 expect() calls\nRan 17 tests across 1 file. [515.00ms]\n"
+        },
+        {
+          "name": "TypeORM CLI compatibility contract",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1343,
+          "outputTail": "✔ Twenty server uses the Node 24-compatible TypeORM ts-node wrapper (0.754292ms)\n✔ the configured TypeORM wrapper resolves from the installed package (1238.744ms)\nℹ tests 2\nℹ suites 0\nℹ pass 2\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 1305.894583\n"
+        },
+        {
+          "name": "Twenty call-start compatibility contracts",
+          "command": [
+            "bash",
+            "-lc",
+            "cd packages/twenty-server && NODE_ENV=test npx --no-install jest --config jest.config.mjs src/engine/core-modules/consuelo-api/services/dialer-call-start.service.spec.ts src/engine/core-modules/consuelo-api/services/dialer-adapter-boundary.contract.spec.ts --runInBand"
+          ],
+          "ruleId": "twenty-migration-call-start-orchestration",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 4305,
+          "outputTail": "\u001b[31m[Nest] 85507  - \u001b[39m08/15/2026, 12:16:12 AM \u001b[31m  ERROR\u001b[39m \u001b[38;5;3m[DialerCallStartService] \u001b[39m\u001b[31m[DialerCallStart] start failed\u001b[39m\n\u001b[31m[Nest] 85507  - \u001b[39m08/15/2026, 12:16:12 AM \u001b[31m  ERROR\u001b[39m \u001b[38;5;3m[DialerCallStartService] \u001b[39mObject(7) {\n  workspaceId: \u001b[32m'3b8e6458-5fc1-4e63-8563-008ccddaa6db'\u001b[39m,\n  userId: \u001b[32m'20202020-9e3b-46d4-a556-88b9ddc2b034'\u001b[39m,\n  source: \u001b[32m'direct'\u001b[39m,\n  selectionStrategy: \u001b[32m'single'\u001b[39m,\n  requestedFanout: \u001b[33m1\u001b[39m,\n  callMode: \u001b[32m'live'\u001b[39m,\n  errorMessage: \u001b[32m'Caller ID lock transfer failed after call creation'\u001b[39m\n}\n\u001b[31m[Nest] 85507  - \u001b[39m08/15/2026, 12:16:12 AM \u001b[31m  ERROR\u001b[39m \u001b[38;5;3m[DialerCallStartService] \u001b[39m\u001b[31m[DialerCallStart] start failed\u001b[39m\n\u001b[31m[Nest] 85507  - \u001b[39m08/15/2026, 12:16:12 AM \u001b[31m  ERROR\u001b[39m \u001b[38;5;3m[DialerCallStartService] \u001b[39mObject(7) {\n  workspaceId: \u001b[32m'3b8e6458-5fc1-4e63-8563-008ccddaa6db'\u001b[39m,\n  userId: \u001b[32m'20202020-9e3b-46d4-a556-88b9ddc2b034'\u001b[39m,\n  source: \u001b[32m'direct'\u001b[39m,\n  selectionStrategy: \u001b[32m'single'\u001b[39m,\n  requestedFanout: \u001b[33m1\u001b[39m,\n  callMode: \u001b[32m'live'\u001b[39m,\n  errorMessage: \u001b[32m'Dialer call start failed'\u001b[39m\n}\nPASS twenty-server src/engine/core-modules/consuelo-api/services/dialer-call-start.service.spec.ts\nPASS twenty-server src/engine/core-modules/consuelo-api/services/dialer-adapter-boundary.contract.spec.ts\n\nTest Suites: 2 passed, 2 total\nTests:       16 passed, 16 total\nSnapshots:   0 total\nTime:        2.625 s\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -1,0 +1,8 @@
+{
+  "files": [
+    ".github/actions/consuelo-ci-setup/action.yaml",
+    ".github/workflows/consuelo-ci.yaml",
+    "packages/workspace/tests/twenty-migration-bun-cutover.test.ts"
+  ],
+  "updatedAt": "2026-09-21T01:33:53.538Z"
+}

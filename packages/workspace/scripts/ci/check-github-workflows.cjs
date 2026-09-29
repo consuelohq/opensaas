@@ -45,15 +45,15 @@ const changedFiles = readChangedFiles(baseRef);
 const changedWorkflowFiles = changedFiles.filter((file) =>
   /^\.github\/workflows\/[^/]+\.ya?ml$/.test(file),
 );
+const changedActionFiles = changedFiles.filter((file) =>
+  /^\.github\/actions\/.+\/action\.ya?ml$/.test(file),
+);
 
 const pullRequestTargetAllowlist = new Set([
-  '.github/workflows/ci-utils.yaml',
   '.github/workflows/preview-env-dispatch.yaml',
 ]);
 
 const writePermissionAllowlist = new Set([
-  '.github/workflows/ci-breaking-changes.yaml',
-  '.github/workflows/ci-utils.yaml',
   '.github/workflows/cd-deploy-main.yaml',
   '.github/workflows/cd-deploy-tag.yaml',
   '.github/workflows/consuelo-os-runtime-promote.yaml',
@@ -89,10 +89,31 @@ for (const file of changedWorkflowFiles) {
   }
 }
 
+for (const file of changedActionFiles) {
+  if (!fs.existsSync(file)) {
+    continue;
+  }
+
+  const text = fs.readFileSync(file, 'utf8');
+  const readsCredentialContext = /\$\{\{\s*(?:secrets\.|github\.token\b)/.test(text);
+  const usesMutableBranch = /@(?:main|master)(?:['"\s]|$)/.test(text);
+
+  if (readsCredentialContext) {
+    findings.push(
+      `${file}: local composite actions must receive credentials explicitly from the caller`,
+    );
+  }
+
+  if (usesMutableBranch) {
+    findings.push(`${file}: local composite actions must not use mutable main/master action refs`);
+  }
+}
+
 const payload = {
   ok: findings.length === 0,
   baseRef,
   changedWorkflowFiles,
+  changedActionFiles,
   findings,
 };
 

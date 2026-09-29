@@ -273,36 +273,106 @@ async function handleRevoke(
       return errorResponse(404, 'WORKSPACE_NODE_NOT_FOUND', 'The requested node was not found.');
     }
     const nowMs = runtime.now();
-    const revoked: WorkspaceNode = {
-      ...node,
+    const revoked = await revokeWorkspaceNode(runtime, node, nowMs);
+
+    return json({ node: safeWorkspaceNode(revoked, nowMs) }, { headers: jsonHeaders });
+  } catch {
+    return serviceUnavailableResponse();
+  }
+}
+
+async function revokeWorkspaceNode(
+  runtime: DeviceAuthorityRuntime,
+  node: WorkspaceNode,
+  nowMs: number,
+): Promise<WorkspaceNode> {
+  if ((node.state ?? 'active') === 'revoked') return node;
+  const revoked: WorkspaceNode = {
+    ...node,
+    state: 'revoked',
+    connectorStatus: 'disconnected',
+    revokedAt: nowMs,
+    updatedAt: nowMs,
+  };
+  if (runtime.workspaceRouteRegistry) {
+    await updateWorkspaceNodeTargetInD1(runtime.workspaceRouteRegistry, {
+      hostname: node.workspaceHost,
+      nodeId: node.nodeId,
       state: 'revoked',
       connectorStatus: 'disconnected',
-      revokedAt: nowMs,
-      updatedAt: nowMs,
-    };
+    });
+  }
+  try {
+    await runtime.store.putWorkspaceNode(revoked);
+  } catch (error: unknown) {
     if (runtime.workspaceRouteRegistry) {
       await updateWorkspaceNodeTargetInD1(runtime.workspaceRouteRegistry, {
-        hostname: auth.workspace.workspaceHost,
-        nodeId,
-        state: 'revoked',
-        connectorStatus: 'disconnected',
+        hostname: node.workspaceHost,
+        nodeId: node.nodeId,
+        state: node.state ?? 'active',
+        connectorStatus: node.connectorStatus,
+        lastSeenAt: node.lastSeenAt,
       });
     }
-    try {
-      await runtime.store.putWorkspaceNode(revoked);
-    } catch (error: unknown) {
-      if (runtime.workspaceRouteRegistry) {
-        await updateWorkspaceNodeTargetInD1(runtime.workspaceRouteRegistry, {
-          hostname: auth.workspace.workspaceHost,
-          nodeId,
-          state: node.state ?? 'active',
-          connectorStatus: node.connectorStatus,
-          lastSeenAt: node.lastSeenAt,
-        });
-      }
-      throw error;
-    }
+    throw error;
+  }
+  return revoked;
+}
 
+async function handleSelfRevoke(
+  request: Request,
+  runtime: DeviceAuthorityRuntime,
+): Promise<Response> {
+  if (!(request.headers.get('content-type') ?? '').toLowerCase().includes('application/json')) {
+    return errorResponse(400, 'INVALID_NODE_REVOCATION', 'A signed JSON node revocation is required.');
+  }
+  const payload = await request.text();
+  let body: Record<string, unknown>;
+  try {
+    const parsed = JSON.parse(payload);
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('invalid');
+    body = parsed as Record<string, unknown>;
+  } catch {
+    return errorResponse(400, 'INVALID_NODE_REVOCATION', 'A signed JSON node revocation is required.');
+  }
+  const workspaceId = typeof body.workspaceId === 'string' ? body.workspaceId.trim() : '';
+  const nodeId = typeof body.nodeId === 'string' ? body.nodeId.trim() : '';
+  const timestamp = typeof body.timestamp === 'number' ? body.timestamp : Number.NaN;
+  const nonce = typeof body.nonce === 'string' ? body.nonce.trim() : '';
+  const nowMs = runtime.now();
+  if (
+    !workspaceId ||
+    !nodeId ||
+    !Number.isFinite(timestamp) ||
+    nonce.length < 8 ||
+    nonce.length > 128 ||
+    Math.abs(nowMs - timestamp) > WORKSPACE_NODE_SIGNATURE_MAX_AGE_MS
+  ) {
+    return errorResponse(
+      400,
+      'INVALID_NODE_REVOCATION',
+      'Node revocation identity, timestamp, or nonce is invalid.',
+    );
+  }
+  const node = await runtime.store.byWorkspaceNodeId(nodeId);
+  if (!node || workspaceNodeId(node) !== workspaceId) {
+    return errorResponse(404, 'WORKSPACE_NODE_NOT_FOUND', 'The requested node was not found.');
+  }
+  const signature = request.headers.get('x-consuelo-node-signature')?.trim() ?? '';
+  if (!(await verifyNodeSignature(node, payload, signature))) {
+    return errorResponse(401, 'INVALID_NODE_SIGNATURE', 'The node revocation signature is invalid.');
+  }
+  const claimed = await runtime.store.claimWorkspaceNodeNonce(
+    nodeId,
+    nonce,
+    nowMs + WORKSPACE_NODE_SIGNATURE_MAX_AGE_MS,
+    nowMs,
+  );
+  if (!claimed) {
+    return errorResponse(409, 'NODE_REVOCATION_REPLAYED', 'The node revocation nonce was already used.');
+  }
+  try {
+    const revoked = await revokeWorkspaceNode(runtime, node, nowMs);
     return json({ node: safeWorkspaceNode(revoked, nowMs) }, { headers: jsonHeaders });
   } catch {
     return serviceUnavailableResponse();
@@ -840,6 +910,9 @@ export function registerWorkspaceNodeRoutes(
   );
   app.post('/workspace/nodes/heartbeat', (context) =>
     handleHeartbeat(context.req.raw, runtime),
+  );
+  app.post('/workspace/nodes/self/revoke', (context) =>
+    handleSelfRevoke(context.req.raw, runtime),
   );
   app.patch('/workspace/nodes/:nodeId', (context) =>
     handleRename(context.req.raw, runtime, context.req.param('nodeId')),

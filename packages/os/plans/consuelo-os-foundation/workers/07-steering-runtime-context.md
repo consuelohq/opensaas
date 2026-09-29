@@ -31,7 +31,7 @@ Make `os.get_steering` accurately describe the installed OS without injecting st
    - workspace ID/slug/host;
    - whether this is the workspace default node.
 2. Supported steering Markdown:
-   - `system_prompt.md` first;
+   - visible user-owned `system.md` first;
    - explicit user-added Markdown files from `~/Consuelo/Steering/` in deterministic order;
    - never `decision.md` or legacy `steering.md`.
 3. Installed skill index:

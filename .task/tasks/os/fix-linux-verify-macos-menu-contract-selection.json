@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-linux-verify-macos-menu-contract-selection",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2582,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2582",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-linux-verify-macos-menu-contract-selection",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_c4a853b9927f",
+  "tmuxSession": "opensaas-os-fix-linux-verify-macos-menu-contract-selection-c4a853b9",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-linux-verify-macos-menu-contract-selection/.task/session.json",
+  "createdAt": "2026-09-25T15:51:11.741Z"
+}

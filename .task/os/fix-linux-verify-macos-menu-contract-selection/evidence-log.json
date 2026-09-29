@@ -1,0 +1,88 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/fix-linux-verify-macos-menu-contract-selection",
+  "events": [
+    {
+      "id": "3ddf926c-6ec4-4dc8-98b5-19ca79088b0d",
+      "occurred_at": "2026-09-25T15:51:33.305Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/fix-linux-verify-macos-menu-contract-selection/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-linux-verify-macos-menu-contract-selection",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-linux-verify-macos-menu-contract-selection"
+      }
+    },
+    {
+      "id": "2b39a330-d45a-46d2-960b-e60f5b69e768",
+      "occurred_at": "2026-09-25T15:52:23.006Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/test-selection.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-linux-verify-macos-menu-contract-selection",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-linux-verify-macos-menu-contract-selection"
+      }
+    },
+    {
+      "id": "e8340d0f-230a-4df6-bcd2-07243d71e412",
+      "occurred_at": "2026-09-25T15:52:38.269Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/test-selection.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-linux-verify-macos-menu-contract-selection",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-linux-verify-macos-menu-contract-selection"
+      }
+    },
+    {
+      "id": "fa1a57ed-4132-4a29-a4c5-b840a3716141",
+      "occurred_at": "2026-09-25T15:52:43.522Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/test-selection.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-linux-verify-macos-menu-contract-selection",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-linux-verify-macos-menu-contract-selection"
+      }
+    },
+    {
+      "id": "e163f592-31b6-4ea2-b7fc-24797c390484",
+      "occurred_at": "2026-09-25T15:53:04.679Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/test-selection.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-linux-verify-macos-menu-contract-selection",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-linux-verify-macos-menu-contract-selection"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-09-25T15:53:04.775Z"
+}

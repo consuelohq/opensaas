@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_fbe60a302648",
+  "tmuxSession": "opensaas-os-polish-traces-page-and-add-runtime-insight-fbe60a30",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/polish-traces-page-and-add-runtime-insight",
+  "branch": "task/os/polish-traces-page-and-add-runtime-insight",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-polish-traces-page-and-add-runtime-insight",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-polish-traces-page-and-add-runtime-insight",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2447,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2447",
+  "createdAt": "2026-09-11T04:33:18.295Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-polish-traces-page-and-add-runtime-insight/.task/os/polish-traces-page-and-add-runtime-insight/session.json"
+}

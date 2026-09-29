@@ -147,7 +147,8 @@ function installCorrelationHeader(installId: InstallId | undefined): Record<stri
 }
 
 function errorWithMessage(json: Record<string, unknown>, error: string): string {
-  const message = stringField(json, 'message');
+  const message =
+    stringField(json, 'message') ?? stringField(json, 'error_description', 'errorDescription');
   return message ? `${error}: ${message}` : error;
 }
 
@@ -426,6 +427,9 @@ export async function pollWorkspaceDeviceAccessToken(
         status: 'denied',
         errorCode: 'DEVICE_CODE_DENIED',
         telemetryErrorCode: 'DEVICE_AUTH_DENIED',
+        message:
+          stringField(json, 'message') ??
+          stringField(json, 'error_description', 'errorDescription'),
       };
     }
     if (error === 'expired_token') {
@@ -433,6 +437,9 @@ export async function pollWorkspaceDeviceAccessToken(
         status: 'expired',
         errorCode: 'DEVICE_CODE_EXPIRED',
         telemetryErrorCode: 'DEVICE_AUTH_EXPIRED',
+        message:
+          stringField(json, 'message') ??
+          stringField(json, 'error_description', 'errorDescription'),
       };
     }
     if (error) {

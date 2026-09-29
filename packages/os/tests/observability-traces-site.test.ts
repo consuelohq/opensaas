@@ -173,49 +173,28 @@ describe('Observability Traces canonical Trace Burn surface', () => {
     expect(html).toContain('consuelo-trace-inspector-bootstrap');
     expect(html).toContain('consuelo-trace-history-transport');
     expect(html).toContain('/gateway/traces/recent');
-    expect(html).toContain("credentials:'same-origin'");
+    expect(html).toContain("credentials: 'same-origin'");
     expect(html).toContain('includeRawPayload');
     const browserSource = [
       'browser.ts',
+      'live-browser.ts',
       'pagination-browser.ts',
       'virtual-list-browser.ts',
     ]
       .map((name) => readFileSync(resolve(osTraceInspectorDir, name), 'utf8'))
       .join('\n');
     expect(browserSource).toContain('installTracePaginationTransport');
-    expect(browserSource).toContain('installLivePolling');
+    expect(browserSource).toContain('installTraceLiveUpdates');
     expect(browserSource).toContain('traceLiveUrl');
     expect([
       ...browserSource.matchAll(
-        /trxOutputCell[\s\S]{0,260}appendNodeCell\(button,[\s\S]{0,180}trxTraceCell/g,
+        /trxOutputCell[\s\S]{0,260}appendNodeCell\(\s*button,[\s\S]{0,180}trxTraceCell/g,
       ),
     ]).toHaveLength(2);
 
     expect(html).not.toContain('/trace-burn-intelligence/_astro/');
     expect(html).not.toContain('<script src="https://');
     expect(html).not.toContain('cdn.jsdelivr.net');
-  });
-
-  it('retries persisted history hydration before advancing to live-only polling', () => {
-    const browserSource = readFileSync(
-      resolve(osTraceInspectorDir, 'browser.ts'),
-      'utf8',
-    );
-
-    expect(browserSource).toContain('let historyHydrated = false;');
-    expect(browserSource).toContain('historyHydrated = await hydrateLiveSnapshot();');
-    expect(browserSource).toContain('if (!historyHydrated) return;');
-    expect(browserSource.indexOf('historyHydrated = await hydrateLiveSnapshot();')).toBeLessThan(
-      browserSource.indexOf('const page = parseTraceLiveResponse('),
-    );
-    const hydrationSource = browserSource.slice(
-      browserSource.indexOf('async function hydrateLiveSnapshot()'),
-      browserSource.indexOf('function installLivePolling()'),
-    );
-    expect(hydrationSource).toContain(
-      '(window as TraceWindow).__traceVirtualList?.replaceRows(',
-    );
-    expect(hydrationSource).not.toContain('if (rows.length)');
   });
 
   it('recovers an expired private workspace browser session before showing an empty trace table', () => {

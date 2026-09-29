@@ -107,7 +107,7 @@ function readJsonFile(filePath: string): unknown {
 function safeReadJsonFile(filePath: string): SafeJsonReadResult {
   try {
     return { ok: true, value: readJsonFile(filePath) };
-  } catch (error) {
+  } catch (error: unknown) {
     return { ok: false, error: new Error(errorMessage(error)) };
   }
 }
@@ -425,18 +425,14 @@ function existingImportCandidate(candidatePath: string): boolean {
 function localImportExists(importerPath: string, specifier: string): boolean {
   const basePath = resolve(dirname(importerPath), specifier);
   const extension = extname(basePath);
-  const candidates: string[] = [];
+  const candidates: string[] = [basePath];
 
-  if (extension.length > 0) {
-    candidates.push(basePath);
+  if (extension === '.js' || extension === '.mjs' || extension === '.cjs') {
+    const withoutExtension = basePath.slice(0, -extension.length);
+    candidates.push(`${withoutExtension}.ts`, `${withoutExtension}.tsx`);
+  }
 
-    if (extension === '.js' || extension === '.mjs' || extension === '.cjs') {
-      const withoutExtension = basePath.slice(0, -extension.length);
-      candidates.push(`${withoutExtension}.ts`, `${withoutExtension}.tsx`);
-    }
-  } else {
-    candidates.push(basePath);
-
+  if (!RESOLVE_EXTENSIONS.includes(extension)) {
     for (const resolveExtension of RESOLVE_EXTENSIONS) {
       candidates.push(`${basePath}${resolveExtension}`);
     }

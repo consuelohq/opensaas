@@ -61,8 +61,6 @@ describe('commercial deployment artifacts', () => {
       'package.json',
       'eslint.config.mjs',
       'packages/os/scripts/artifacts-design.ts',
-      'packages/twenty-docker/twenty/Dockerfile',
-      'packages/twenty-docker/twenty/Dockerfile.worker',
     ];
 
     for (const path of candidates) {
@@ -71,6 +69,6 @@ describe('commercial deployment artifacts', () => {
     }
     expect(existsSync(fromRepo('packages', 'metering', 'package.json'))).toBe(false);
     expect(existsSync(fromRepo('scripts', 'run-dev-1024.sh'))).toBe(false);
-    expect(read(fromRepo('yarn.lock'))).not.toContain('@consuelo/metering');
+    expect(read(fromRepo('bun.lock'))).not.toContain('@consuelo/metering');
   });
 });

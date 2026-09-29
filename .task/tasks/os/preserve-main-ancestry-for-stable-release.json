@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/preserve-main-ancestry-for-stable-release",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2587,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2587",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-preserve-main-ancestry-for-stable-release",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_7ccfd525ed75",
+  "tmuxSession": "opensaas-os-preserve-main-ancestry-for-stable-release-7ccfd525",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-preserve-main-ancestry-for-stable-release/.task/session.json",
+  "createdAt": "2026-09-25T17:42:53.891Z"
+}

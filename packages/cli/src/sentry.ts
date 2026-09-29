@@ -19,7 +19,17 @@ export const initSentry = async (): Promise<void> => {
     release: process.env.npm_package_version ?? '0.0.1',
     environment: process.env.NODE_ENV ?? 'production',
     beforeSend: (event) => {
-      const sensitiveKeys = ['twilioAuthToken', 'llmApiKey', 'twilioAccountSid', 'apiKey', 'token', 'password'];
+      const sensitiveKeys = [
+        'twilioAuthToken',
+        'llmApiKey',
+        'twilioAccountSid',
+        'apiKey',
+        'osAuth',
+        'accessToken',
+        'refreshToken',
+        'token',
+        'password',
+      ];
       // scrub sensitive data from extras
       if (event.extra) {
         for (const key of sensitiveKeys) delete event.extra[key];

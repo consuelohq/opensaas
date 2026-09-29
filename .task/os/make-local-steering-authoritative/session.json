@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_92f8f21ef449",
+  "tmuxSession": "opensaas-os-make-local-steering-authoritative-92f8f21e",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/make-local-steering-authoritative",
+  "branch": "task/os/make-local-steering-authoritative",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-make-local-steering-authoritative",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-make-local-steering-authoritative",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2438,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2438",
+  "createdAt": "2026-09-10T01:56:00.587Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-make-local-steering-authoritative/.task/os/make-local-steering-authoritative/session.json"
+}

@@ -37,6 +37,10 @@ const requiredFixtureFiles: Record<string, string> = {
   'scripts/os.ts': 'export const osFixture = true;\n',
   'scripts/server/main.ts': 'export const serverFixture = true;\n',
   'scripts/server/supervisor.ts': 'export const supervisorFixture = true;\n',
+  'scripts/lib/macos-supervised-heartbeat.ts':
+    'export const macosSupervisedHeartbeatFixture = true;\n',
+  'scripts/lib/macos-supervised-sidecars.ts':
+    'export const macosSupervisedSidecarsFixture = true;\n',
   'scripts/native-lifecycle-operation.ts':
     'export const nativeLifecycleOperationFixture = true;\n',
   'scripts/retire-legacy-system-daemons.sh': '#!/bin/bash\nexit 0\n',
@@ -282,7 +286,7 @@ describe('runtime bundle contract', () => {
     expect(build.status).toBe(0);
     expect(existsSync(archivePath)).toBe(true);
     expect(JSON.parse(build.stdout)).toMatchObject({
-      fileCount: Object.keys(requiredFixtureFiles).length,
+      fileCount: Object.keys(requiredFixtureFiles).length - 1,
       outputPath: archivePath,
       version: '2.3.4',
     });
@@ -295,7 +299,7 @@ describe('runtime bundle contract', () => {
     expect(verify.status).toBe(0);
     expect(JSON.parse(verify.stdout)).toMatchObject({
       archivePath,
-      fileCount: Object.keys(requiredFixtureFiles).length,
+      fileCount: Object.keys(requiredFixtureFiles).length - 1,
       valid: true,
       version: '2.3.4',
     });
@@ -355,6 +359,9 @@ describe('runtime bundle contract', () => {
     expect(classifyRuntimeBundlePath('manifests/manifest.config.ts')).toBe(
       'source-only',
     );
+    expect(classifyRuntimeBundlePath('steering/system_prompt.md')).toBe(
+      'source-only',
+    );
     expect(
       classifyRuntimeBundlePath('scripts/lib/distribution/runtime-bundle.ts'),
     ).toBe('runtime');
@@ -408,6 +415,19 @@ describe('runtime bundle contract', () => {
         'native/macos/.build/arm64-apple-macosx/release/ConsueloMenuBarApp',
       ),
     ).toBe('source-only');
+    expect(
+      classifyRuntimeBundlePath(
+        'native/macos/bin/arm64/ConsueloServiceHost',
+      ),
+    ).toBe('platform-adapter');
+    expect(
+      classifyRuntimeBundlePath(
+        'native/macos/bin/x64/ConsueloServiceHost',
+      ),
+    ).toBe('platform-adapter');
+    expect(classifyRuntimeBundlePath('native/macos/bin/arm64/debug-symbols')).toBe(
+      'source-only',
+    );
     await expect(
       buildRuntimeBundle(
         buildOptions(root, {
@@ -438,6 +458,20 @@ describe('runtime bundle contract', () => {
     expect(
       paths.some((filePath) => filePath.startsWith('native/macos/.build/')),
     ).toBe(false);
+  });
+
+  it('should preserve executable mode when macOS service hosts enter a runtime bundle', async () => {
+    const arm64Host = 'native/macos/bin/arm64/ConsueloServiceHost';
+    const x64Host = 'native/macos/bin/x64/ConsueloServiceHost';
+    const root = createFixture({
+      [arm64Host]: 'fixture-mach-o-arm64',
+      [x64Host]: 'fixture-mach-o-x64',
+    });
+
+    const result = await computeReleaseFingerprint({ sourceRoot: root });
+
+    expect(result.files.find((file) => file.path === arm64Host)?.mode).toBe(0o755);
+    expect(result.files.find((file) => file.path === x64Host)?.mode).toBe(0o755);
   });
 
   it('should preserve policy v1 when Windows builds the host', async () => {
@@ -1008,17 +1042,7 @@ describe('runtime bundle contract', () => {
     const bundledSteering = archive.entries.find(
       (entry) => entry.path === 'steering/system_prompt.md',
     );
-    const bundledSteeringText = bundledSteering?.bytes.toString('utf8') ?? '';
-    // The property that matters is that no real home path ships to customers. Any absolute
-    // /Users path in the steering must be the redacted placeholder form. This previously pinned
-    // one exact literal from an older revision, which broke as soon as the bundle was resynced
-    // from the canonical workspace steering without testing anything real.
-    for (const match of bundledSteeringText.match(/\/Users\/[^\s`|)]*/g) ?? []) {
-      expect(match.startsWith('/Users/.../')).toBe(true);
-    }
-    expect(bundledSteeringText).not.toContain('/Users/kokayi/');
-    // The bundle is what actually reaches agents, so the governance rules must be in it.
-    expect(bundledSteeringText).toContain('Alignment First');
+    expect(bundledSteering).toBeUndefined();
     expect(readFileSync(join(packageRoot, 'Dockerfile'), 'utf8')).toContain(
       'scripts/build-runtime-bundle.ts',
     );

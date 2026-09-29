@@ -1,8 +1,10 @@
 import {
+  chmodSync,
   existsSync,
   lstatSync,
   mkdirSync,
   mkdtempSync,
+  readlinkSync,
   readFileSync,
   symlinkSync,
   writeFileSync,
@@ -82,6 +84,41 @@ function extractShellFunction(source: string, name: string): string {
   throw new Error(`unterminated shell function: ${name}`);
 }
 
+function runPathSetup(
+  bootstrap: string,
+  options: { home: string; path: string },
+) {
+  const script = [
+    'set -euo pipefail',
+    extractShellFunction(bootstrap, 'has_unsafe_shared_write'),
+    extractShellFunction(bootstrap, 'resolve_cli_symlink_target'),
+    extractShellFunction(bootstrap, 'path_owner_uid'),
+    extractShellFunction(bootstrap, 'trusted_sticky_owner'),
+    extractShellFunction(bootstrap, 'is_safe_shared_path_parent'),
+    extractShellFunction(bootstrap, 'is_safe_immediate_cli_link_dir'),
+    extractShellFunction(bootstrap, 'find_immediate_cli_link_dir'),
+    extractShellFunction(bootstrap, 'ensure_command_on_path'),
+    'log() { :; }',
+    'DRY_RUN=0',
+    'PATH_HINT=""',
+    'PATH_IMMEDIATE=0',
+    'ensure_command_on_path',
+    'printf "PATH_IMMEDIATE=%s\\nPATH_HINT=%s\\n" "$PATH_IMMEDIATE" "$PATH_HINT"',
+  ].join('\n');
+  return spawnSync('/bin/bash', ['-c', script], {
+    encoding: 'utf8',
+    env: {
+      ...process.env,
+      BASH_ENV: '/dev/null',
+      ENV: '/dev/null',
+      HOME: options.home,
+      OS_HOME: join(options.home, '.consuelo'),
+      PATH: options.path,
+      SHELL: '/bin/zsh',
+    },
+  });
+}
+
 describe('bootstrap source refresh controls', () => {
   it('should declare the public installer dependency model explicitly', () => {
     const bootstrap = readBootstrap();
@@ -112,97 +149,70 @@ describe('bootstrap source refresh controls', () => {
     expect(bootstrap).not.toContain('REPO_ARCHIVE_URL');
   });
 
-  it('asks for local or cloud before dependency setup', () => {
+  it('defaults the hosted installer to local without a mode prompt while preserving explicit cloud mode', () => {
     const bootstrap = readBootstrap();
 
     expect(bootstrap).toContain('choose_os_mode');
-    expect(bootstrap).toContain('Choose Consuelo OS mode:');
-    expect(bootstrap).toContain('prompt_select');
-    expect(bootstrap).toContain('◆ %s');
-    expect(bootstrap).toContain('○ %s');
-    expect(bootstrap).toContain('read -rsn1');
+    expect(bootstrap).toContain('OS_MODE="local"');
+    expect(bootstrap).not.toContain('Choose Consuelo OS mode:');
+    expect(bootstrap).not.toContain('render_os_mode_select');
+    expect(bootstrap).not.toContain('Choose local or cloud before setup.');
     expect(bootstrap).toContain(
       'CONTACT_URL="https://consuelohq.com/contact/"',
     );
     expect(bootstrap).toContain('open_contact_url');
-    expect(bootstrap).not.toContain('Enter 1 or 2:');
-
-    expect(bootstrap.indexOf('choose_os_mode')).toBeLessThan(
-      bootstrap.indexOf('prompt_dependency_setup'),
-    );
+    expect(bootstrap).toContain('--mode <mode>      local or cloud');
+    expect(bootstrap).toContain('local|cloud) OS_MODE="$1"');
     expect(bootstrap.indexOf('choose_os_mode')).toBeLessThan(
       bootstrap.indexOf('ensure_bun'),
     );
   });
 
-  it('redraws selector choices in place instead of duplicating on arrow keys', () => {
+  it('does not carry an interactive shell selector now that hosted choices are defaulted', () => {
     const bootstrap = readBootstrap();
-    const promptSelect = extractShellFunction(bootstrap, 'prompt_select');
-
-    expect(promptSelect).toContain('prompt_lines=4');
-    expect(promptSelect).toContain('rendered=0');
-    expect(promptSelect).toContain('if [ "$rendered" -eq 1 ]; then');
-    expect(promptSelect).toContain(
-      'printf \'\\033[%sA\' "$prompt_lines" > /dev/tty',
-    );
-    expect(promptSelect).toContain(
-      'printf \'\\033[2K%s\\n\' "$message" > /dev/tty',
-    );
-    expect(promptSelect).not.toContain("printf '\\n' > /dev/tty");
+    expect(bootstrap).not.toContain('prompt_select()');
+    expect(bootstrap).not.toContain('Use arrow keys and Enter.');
   });
 
   it('exits the cloud path before source download or dependency install', () => {
     const bootstrap = readBootstrap();
+    const main = extractShellFunction(bootstrap, 'main');
 
     expect(bootstrap).toContain('handle_cloud_mode');
     expect(bootstrap).toContain(
       'Consuelo cloud is handled by the Consuelo team. Opening the contact page.',
     );
     expect(bootstrap).toContain('exit 0');
-    expect(bootstrap).toContain('OS_MODE="cloud"');
-    expect(bootstrap).toContain('handle_cloud_mode');
+    expect(bootstrap).toContain('local|cloud) OS_MODE="$1"');
 
-    expect(bootstrap.indexOf('handle_cloud_mode')).toBeLessThan(
-      bootstrap.indexOf('install_verified_runtime'),
-    );
-    expect(bootstrap.indexOf('handle_cloud_mode')).toBeLessThan(
-      bootstrap.indexOf('ensure_dependencies'),
+    expect(main.indexOf('handle_cloud_mode')).toBeLessThan(
+      main.indexOf('setup_local_runtime'),
     );
   });
 
-  it('uses one dependency gate before the Bun onboarding UI for local installs', () => {
+  it('installs required local dependencies without a redundant confirmation gate', () => {
     const bootstrap = readBootstrap();
 
-    expect(bootstrap).toContain(
+    expect(bootstrap).not.toContain('prompt_dependency_setup');
+    expect(bootstrap).not.toContain('render_dependency_progress');
+    expect(bootstrap).not.toContain(
       'Consuelo OS needs its dependencies to continue.',
     );
-    expect(bootstrap).toContain('yes');
-    expect(bootstrap).toContain('no');
-    expect(bootstrap).toContain('DEPENDENCY_STATUS="cancelled"');
-    expect(bootstrap).toContain('render_dependency_progress');
-    expect(bootstrap).toContain('CONSUELO OS');
-    expect(bootstrap).not.toContain('CONSUELO  OS');
-    expect(bootstrap).not.toContain('C O N S U E L O');
-    expect(bootstrap).toContain('● dependencies');
-    expect(bootstrap).toContain('○ security');
-    expect(bootstrap).not.toContain('○ home');
-    expect(bootstrap).toContain('○ workspace');
-    expect(bootstrap).toContain('○ security');
-    expect(bootstrap).toContain('○ skills');
-    expect(bootstrap).toContain('○ agents');
-    expect(bootstrap).toContain('○ service');
-    expect(bootstrap).toContain('○ health');
-    expect(bootstrap).not.toContain('○ artifacts');
-    expect(bootstrap).not.toContain('Press Enter to continue');
-    expect(bootstrap).not.toContain('prompt_enter');
-    expect(bootstrap).not.toContain(
-      'Consuelo OS needs the local runtime source to continue.',
+    expect(bootstrap).toContain('ensure_bun');
+    expect(bootstrap).toContain('ensure_dependencies');
+  });
+
+  it('opens the installed workspace through the authority handoff instead of forcing a second Google login', () => {
+    const bootstrap = readBootstrap();
+    const openLauncher = extractShellFunction(
+      bootstrap,
+      'open_workspace_launcher',
     );
-    expect(bootstrap).not.toContain(
-      'Consuelo OS needs its local runtime dependencies to continue.',
+
+    expect(openLauncher).toContain(
+      'https://os.consuelohq.com/auth/workspaces?workspace_host=$workspace_host&return_to=%2F',
     );
-    expect(bootstrap).not.toContain('We can download/setup this now.');
-    expect(bootstrap).not.toContain('We can install/setup this now.');
+    expect(openLauncher).not.toContain('open_url "https://$workspace_host"');
   });
 
   it('resolves existing legacy nested installs before creating a fresh flattened home', () => {
@@ -303,13 +313,20 @@ describe('bootstrap source refresh controls', () => {
   it('should activate the verified runtime after onboarding succeeds and before daemon installation', () => {
     const bootstrap = readBootstrap();
     const main = extractShellFunction(bootstrap, 'main');
+    const setupLocalRuntime = extractShellFunction(
+      bootstrap,
+      'setup_local_runtime',
+    );
     const daemonInstall = extractShellFunction(
       bootstrap,
       'install_daemons_quiet',
     );
 
-    expect(main).toContain('install_verified_runtime');
-    expect(main.indexOf('install_verified_runtime')).toBeLessThan(
+    expect(setupLocalRuntime).toContain('install_verified_runtime');
+    expect(main).toContain(
+      'run_quiet_with_loading_dots "Installing Consuelo OS" setup_local_runtime',
+    );
+    expect(main.indexOf('setup_local_runtime')).toBeLessThan(
       main.indexOf('run_onboarding'),
     );
     expect(main.indexOf('run_onboarding')).toBeLessThan(
@@ -387,18 +404,23 @@ describe('bootstrap source refresh controls', () => {
     );
 
     expect(runner).toContain('local install_args=');
+    expect(runner).toContain('install_args+=(--quiet)');
     expect(runner).toContain('install_args+=(--install-daemons)');
     expect(runner).toContain('install_args+=(--skip-daemons)');
     expect(runner).toContain('"${install_args[@]}"');
   });
 
-  it('keeps the human success summary minimal and opens the launcher last', () => {
+  it('keeps the hosted happy path quiet after browser approval and opens the launcher last', () => {
     const bootstrap = readBootstrap();
     const summary = extractShellFunction(bootstrap, 'print_success_summary');
     const main = extractShellFunction(bootstrap, 'main');
+    const daemons = extractShellFunction(bootstrap, 'maybe_install_daemons');
 
-    expect(summary).toContain('Consuelo OS setup complete');
-    expect(summary).toContain('Home: $os_home');
+    expect(summary).toContain('Consuelo OS installed');
+    expect(summary).toContain('Use now: $OS_HOME/bin/consuelo status');
+    expect(summary).not.toContain('Home:');
+    expect(summary).not.toContain('Already on PATH');
+    expect(summary).not.toContain('Try:');
     expect(summary).not.toContain('Package:');
     expect(summary).not.toContain('Config:');
     expect(summary).not.toContain('Database:');
@@ -406,6 +428,10 @@ describe('bootstrap source refresh controls', () => {
     expect(summary).not.toContain('Services:');
     expect(summary).not.toContain('Doctor:');
     expect(summary).not.toContain('Tokens and secrets');
+    expect(daemons).toContain(
+      'run_quiet_with_loading_dots "setting up background service" install_daemons_quiet',
+    );
+    expect(daemons).not.toContain('log "background service ready"');
 
     expect(bootstrap).toContain('open_workspace_launcher');
     expect(bootstrap).toContain('[ "$YES" -eq 0 ] || return 0');
@@ -418,6 +444,195 @@ describe('bootstrap source refresh controls', () => {
     expect(main.indexOf('emit_json_summary')).toBeGreaterThan(
       main.indexOf('open_workspace_launcher'),
     );
+  });
+
+  it('renders quiet setup stages as one stable in-place progress line', () => {
+    const bootstrap = readBootstrap();
+    const progress = extractShellFunction(bootstrap, 'run_quiet_with_loading_dots');
+
+    expect(progress).toContain('printf \'%s...\' "$loading_message"');
+    expect(progress).toContain('printf \'\\r%s... done\\n\' "$loading_message"');
+    expect(progress).toContain('printf \'\\r%s... failed\\n\' "$loading_message"');
+    expect(progress).not.toContain('log "${loading_message}..."');
+  });
+
+  it('makes consuelo immediately discoverable through an existing writable PATH directory', () => {
+    const bootstrap = readBootstrap();
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-bootstrap-path-'));
+    const pathDir = join(home, 'bin');
+    const canonicalBin = join(home, '.consuelo', 'bin');
+    const canonicalCli = join(canonicalBin, 'consuelo');
+    mkdirSync(pathDir, { recursive: true });
+    mkdirSync(canonicalBin, { recursive: true });
+    writeFileSync(canonicalCli, '#!/bin/sh\nexit 0\n', { mode: 0o755 });
+
+    const result = runPathSetup(bootstrap, {
+      home,
+      path: `${pathDir}:/usr/bin:/bin`,
+    });
+
+    expect(result.status, result.stderr).toBe(0);
+    const immediateCli = join(pathDir, 'consuelo');
+    expect(lstatSync(immediateCli).isSymbolicLink()).toBe(true);
+    expect(readlinkSync(immediateCli)).toBe(canonicalCli);
+    expect(result.stdout).toContain('PATH_IMMEDIATE=1');
+  });
+
+  it.each([0o775, 0o757])(
+    'should skip PATH directories with either shared write bit when mode is %s',
+    (unsafeMode) => {
+    const bootstrap = readBootstrap();
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-bootstrap-path-safety-'));
+    const unsafeDir = join(home, 'unsafe-bin');
+    const safeDir = join(home, 'safe-bin');
+    const canonicalBin = join(home, '.consuelo', 'bin');
+    const canonicalCli = join(canonicalBin, 'consuelo');
+    mkdirSync(unsafeDir, { recursive: true, mode: unsafeMode });
+    mkdirSync(safeDir, { recursive: true, mode: 0o700 });
+    chmodSync(unsafeDir, unsafeMode);
+    mkdirSync(canonicalBin, { recursive: true });
+    writeFileSync(canonicalCli, '#!/bin/sh\nexit 0\n', { mode: 0o755 });
+
+    const result = runPathSetup(bootstrap, {
+      home,
+      path: `${unsafeDir}:${safeDir}:/usr/bin:/bin`,
+    });
+
+    expect(result.status, result.stderr).toBe(0);
+    expect(existsSync(join(unsafeDir, 'consuelo'))).toBe(false);
+    expect(lstatSync(join(safeDir, 'consuelo')).isSymbolicLink()).toBe(true);
+    expect(readlinkSync(join(safeDir, 'consuelo'))).toBe(canonicalCli);
+    expect(result.stdout).toContain('PATH_IMMEDIATE=1');
+    },
+  );
+
+  it('should skip a user-owned PATH directory when a non-sticky parent is shared-writable', () => {
+    const bootstrap = readBootstrap();
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-bootstrap-parent-safety-'));
+    const replaceableParent = join(home, 'replaceable');
+    const unsafeChild = join(replaceableParent, 'bin');
+    const safeDir = join(home, 'safe-bin');
+    const canonicalBin = join(home, '.consuelo', 'bin');
+    const canonicalCli = join(canonicalBin, 'consuelo');
+    mkdirSync(unsafeChild, { recursive: true, mode: 0o700 });
+    mkdirSync(safeDir, { recursive: true, mode: 0o700 });
+    chmodSync(replaceableParent, 0o777);
+    chmodSync(unsafeChild, 0o700);
+    mkdirSync(canonicalBin, { recursive: true });
+    writeFileSync(canonicalCli, '#!/bin/sh\nexit 0\n', { mode: 0o755 });
+
+    const result = runPathSetup(bootstrap, {
+      home,
+      path: `${unsafeChild}:${safeDir}:/usr/bin:/bin`,
+    });
+
+    expect(result.status, result.stderr).toBe(0);
+    expect(existsSync(join(unsafeChild, 'consuelo'))).toBe(false);
+    expect(lstatSync(join(safeDir, 'consuelo')).isSymbolicLink()).toBe(true);
+  });
+
+  it('should recognize a relative symlink that already resolves to the canonical Consuelo CLI', () => {
+    const bootstrap = readBootstrap();
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-bootstrap-relative-link-'));
+    const pathDir = join(home, 'bin');
+    const canonicalBin = join(home, '.consuelo', 'bin');
+    const canonicalCli = join(canonicalBin, 'consuelo');
+    mkdirSync(pathDir, { recursive: true });
+    mkdirSync(canonicalBin, { recursive: true });
+    writeFileSync(canonicalCli, '#!/bin/sh\nexit 0\n', { mode: 0o755 });
+    symlinkSync('../.consuelo/bin/consuelo', join(pathDir, 'consuelo'));
+
+    const result = runPathSetup(bootstrap, {
+      home,
+      path: `${pathDir}:/usr/bin:/bin`,
+    });
+
+    expect(result.status, result.stderr).toBe(0);
+    expect(result.stdout).toContain('PATH_IMMEDIATE=1');
+    expect(result.stdout).not.toContain("Another 'consuelo' already owns PATH");
+  });
+
+  it('should normalize an absolute CLI symlink target through the physical OS home', () => {
+    const bootstrap = readBootstrap();
+    const realHome = mkdtempSync(join(tmpdir(), 'consuelo-bootstrap-absolute-link-'));
+    const aliasHome = join(tmpdir(), `consuelo-bootstrap-home-alias-${process.pid}-${Date.now()}`);
+    const pathDir = join(realHome, 'bin');
+    const canonicalBin = join(realHome, '.consuelo', 'bin');
+    const canonicalCli = join(canonicalBin, 'consuelo');
+    mkdirSync(pathDir, { recursive: true });
+    mkdirSync(canonicalBin, { recursive: true });
+    writeFileSync(canonicalCli, '#!/bin/sh\nexit 0\n', { mode: 0o755 });
+    symlinkSync(realHome, aliasHome, 'dir');
+    symlinkSync(join(aliasHome, '.consuelo', 'bin', 'consuelo'), join(pathDir, 'consuelo'));
+
+    const result = runPathSetup(bootstrap, {
+      home: aliasHome,
+      path: `${pathDir}:/usr/bin:/bin`,
+    });
+
+    expect(result.status, result.stderr).toBe(0);
+    expect(result.stdout).toContain('PATH_IMMEDIATE=1');
+    expect(result.stdout).not.toContain("Another 'consuelo' already owns PATH");
+  });
+
+  it('should reject a PATH directory whose physical parent is shared-writable through an ancestor symlink', () => {
+    const bootstrap = readBootstrap();
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-bootstrap-physical-parent-'));
+    const sharedParent = join(home, 'shared-parent');
+    const physicalRoot = join(sharedParent, 'owned-root');
+    const physicalBin = join(physicalRoot, 'bin');
+    const lexicalRoot = join(home, 'linked-root');
+    const lexicalBin = join(lexicalRoot, 'bin');
+    const safeDir = join(home, 'safe-bin');
+    const canonicalBin = join(home, '.consuelo', 'bin');
+    const canonicalCli = join(canonicalBin, 'consuelo');
+    mkdirSync(physicalBin, { recursive: true, mode: 0o700 });
+    mkdirSync(safeDir, { recursive: true, mode: 0o700 });
+    mkdirSync(canonicalBin, { recursive: true });
+    chmodSync(sharedParent, 0o777);
+    chmodSync(physicalRoot, 0o700);
+    chmodSync(physicalBin, 0o700);
+    symlinkSync(physicalRoot, lexicalRoot, 'dir');
+    writeFileSync(canonicalCli, '#!/bin/sh\nexit 0\n', { mode: 0o755 });
+
+    const result = runPathSetup(bootstrap, {
+      home,
+      path: `${lexicalBin}:${safeDir}:/usr/bin:/bin`,
+    });
+
+    expect(result.status, result.stderr).toBe(0);
+    expect(existsSync(join(physicalBin, 'consuelo'))).toBe(false);
+    expect(lstatSync(join(safeDir, 'consuelo')).isSymbolicLink()).toBe(true);
+  });
+
+  it('should require sticky shared-writable PATH parents to have a trusted owner', () => {
+    const bootstrap = readBootstrap();
+    expect(bootstrap).toContain('path_owner_uid');
+    expect(bootstrap).toContain('trusted_sticky_owner');
+  });
+
+  it('never overwrites an unrelated consuelo command already on PATH', () => {
+    const bootstrap = readBootstrap();
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-bootstrap-collision-'));
+    const pathDir = join(home, 'bin');
+    const canonicalBin = join(home, '.consuelo', 'bin');
+    mkdirSync(pathDir, { recursive: true });
+    mkdirSync(canonicalBin, { recursive: true });
+    const existingCli = join(pathDir, 'consuelo');
+    writeFileSync(existingCli, '#!/bin/sh\necho unrelated\n', { mode: 0o755 });
+    writeFileSync(join(canonicalBin, 'consuelo'), '#!/bin/sh\nexit 0\n', {
+      mode: 0o755,
+    });
+
+    const result = runPathSetup(bootstrap, {
+      home,
+      path: `${pathDir}:/usr/bin:/bin`,
+    });
+
+    expect(result.status, result.stderr).toBe(0);
+    expect(readFileSync(existingCli, 'utf8')).toContain('echo unrelated');
+    expect(result.stdout).toContain('PATH_IMMEDIATE=0');
+    expect(result.stdout).toContain("Another 'consuelo' already owns PATH");
   });
 
   it('should pin darwin cloudflared checksums when bootstrap.sh is read', () => {

@@ -466,7 +466,8 @@ const SessionWorkStartInput = z.object({
   ...requestFields,
   ...dryRunField,
   kind: z.literal('work'),
-  path: z.string().min(1),
+  path: optionalString,
+  title: optionalString,
 }).strict();
 
 export const SessionStartInput = z.union([
@@ -1252,15 +1253,33 @@ export const LifecycleUpdateInput = z.object({
   version: z.string().regex(/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/).optional(),
 });
 
-export const ReleaseInput = z.object({
+const ReleaseStartInput = z.object({
   ...requestFields,
   ...dryRunField,
+  action: z.literal('start').optional(),
   pr: z.number().int().positive(),
   repo: z.string().min(1).optional(),
   channel: z.enum(['dev', 'canary', 'beta', 'stable']).optional(),
   mergeMethod: z.enum(['merge', 'squash', 'rebase']).optional(),
   releaseOnly: z.boolean().optional(),
+  operationId: z.never().optional(),
+  tailLines: z.never().optional(),
 });
+
+const ReleaseOperationInput = z.object({
+  ...requestFields,
+  action: z.enum(['status', 'logs', 'attach', 'resume']),
+  operationId: z.string().regex(/^release-[a-f0-9]{8,64}$/),
+  tailLines: z.number().int().min(1).max(500).optional(),
+  pr: z.never().optional(),
+  repo: z.never().optional(),
+  channel: z.never().optional(),
+  mergeMethod: z.never().optional(),
+  releaseOnly: z.never().optional(),
+  dryRun: z.never().optional(),
+});
+
+export const ReleaseInput = z.union([ReleaseStartInput, ReleaseOperationInput]);
 
 export const ServerInput = z.object({
   ...requestFields,
@@ -1556,7 +1575,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   FsHttpInput: '{ url: string; method?: "get" | "post" | "put" | "patch" | "delete" | "head"; headers?: Record<string, string>; body?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   HttpInput: '{ url: string; method?: "get" | "post" | "put" | "patch" | "delete" | "head"; headers?: Record<string, string>; body?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   FsTrashInput: '{ path: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string; workSession?: string }',
-  SessionStartInput: '({ kind: "task"; stream?: string; area?: string; title?: string; workflow?: "task" | "artifacts" | "media"; bodyFile?: string; startFrom?: "main" | "stream"; dryRun?: boolean; requestId?: string; taskSession?: string } | { kind: "work"; path: string; dryRun?: boolean; requestId?: string; taskSession?: string })',
+  SessionStartInput: '({ kind: "task"; stream?: string; area?: string; title?: string; workflow?: "task" | "artifacts" | "media"; bodyFile?: string; startFrom?: "main" | "stream"; dryRun?: boolean; requestId?: string; taskSession?: string } | { kind: "work"; path?: string; title?: string; dryRun?: boolean; requestId?: string; taskSession?: string })',
   TaskStartInput: '{ stream?: string; area?: string; title?: string; workflow?: "task" | "artifacts" | "media"; description?: string; pr?: string | number; github?: string; bodyFile?: string; startFrom?: "main" | "stream"; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskInitInput: '{ area: string; branch: string; pr?: string | number; github?: string; worktree?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   TaskPushInput: '{ branch?: string; repo?: string; pr?: string | number; github?: string; message: string; changed?: boolean; files?: string[]; approved?: boolean; reason?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
@@ -1636,7 +1655,7 @@ export const schemaTypeSignatures: Record<string, string> = {
   RailwayRedeployInput: '{ service?: string; all?: boolean; wait?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   WebsiteDeployInput: '{ preview?: boolean; buildOnly?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
   LifecycleUpdateInput: '{ channel?: "stable" | "beta" | "canary" | "dev" | "nightly"; version?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
-  ReleaseInput: '{ pr: number; repo?: string; channel?: "dev" | "canary" | "beta" | "stable"; mergeMethod?: "merge" | "squash" | "rebase"; releaseOnly?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }',
+  ReleaseInput: '{ action?: "start"; pr: number; repo?: string; channel?: "dev" | "canary" | "beta" | "stable"; mergeMethod?: "merge" | "squash" | "rebase"; releaseOnly?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string } | { action: "status" | "logs" | "attach" | "resume"; operationId: string; tailLines?: number; requestId?: string; taskSession?: string }',
   ServerInput: '{ action: "status" | "consuelo-reload" | "reload" | "restart" | "stop" | "start" | "logs"; dryRun?: boolean; requestId?: string; taskSession?: string }',
   CheckFilesInput: '{ branch?: string; files: string[]; stopOnFirstError?: boolean; requestId?: string; taskSession?: string }',
   EditFlowInput: '{ branch?: string; searchPattern: string; searchPaths: string[]; from: number; to: number; contentFile: string; dryRun?: boolean; requestId?: string; taskSession?: string }',

@@ -85,6 +85,7 @@ export type TraceSitesGatewayHistoryRow = Record<string, unknown> & {
 export type TraceSitesGatewayHistoryPage = {
   rows: TraceSitesGatewayHistoryRow[];
   nextCursor: string | null;
+  liveCursor?: string;
 };
 
 export type TraceSitesGatewayHourlyAggregateBucket = {

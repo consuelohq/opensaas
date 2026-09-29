@@ -11,7 +11,7 @@ import unicornPlugin from 'eslint-plugin-unicorn';
 import unusedImportsPlugin from 'eslint-plugin-unused-imports';
 import jsoncParser from 'jsonc-eslint-parser';
 
-const twentyRules = await nxPlugin.loadWorkspaceRules(
+const consueloRules = await nxPlugin.loadWorkspaceRules(
   'packages/eslint-rules',
 );
 
@@ -57,7 +57,6 @@ export default [
         'error',
         {
           enforceBuildableLibDependency: true,
-          allow: ['twenty-ui/*', 'twenty-shared/*'],
           depConstraints: [
             {
               sourceTag: 'scope:apps',
@@ -203,7 +202,7 @@ export default [
     plugins: {
       ...mdxPlugin.flat.plugins,
       '@nx': nxPlugin,
-      twenty: { rules: twentyRules },
+      consuelo: { rules: consueloRules },
     },
   },
   mdxPlugin.flatCodeBlocks,
@@ -214,9 +213,9 @@ export default [
       'unused-imports/no-unused-imports': 'off',
       'unused-imports/no-unused-vars': 'off',
       // Enforce JSX tags on separate lines to prevent Crowdin translation issues
-      'twenty/mdx-component-newlines': 'error',
+      'consuelo/mdx-component-newlines': 'error',
       // Disallow angle bracket placeholders to prevent Crowdin translation errors
-      'twenty/no-angle-bracket-placeholders': 'error',
+      'consuelo/no-angle-bracket-placeholders': 'error',
     },
   },
 

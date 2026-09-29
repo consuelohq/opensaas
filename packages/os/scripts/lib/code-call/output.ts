@@ -26,7 +26,7 @@ const writeFullLogEffect = (stageDir: string, name: string, value: string) => Ef
   }),
 });
 
-function truncateForEnvelope(value: string, maxResultChars: number): string {
+export function truncateForEnvelope(value: string, maxResultChars: number): string {
   if (value.length <= maxResultChars) return value;
 
   let omittedChars = value.length;

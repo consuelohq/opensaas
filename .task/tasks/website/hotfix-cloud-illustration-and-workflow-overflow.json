@@ -1,0 +1,16 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/hotfix-cloud-illustration-and-workflow-overflow",
+  "baseBranch": "stream/website",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2606,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2606",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-hotfix-cloud-illustration-and-workflow-overflow",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_41203222d54d",
+  "tmuxSession": "opensaas-website-hotfix-cloud-illustration-and-workflow-overflow-41203222",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-hotfix-cloud-illustration-and-workflow-overflow/.task/session.json",
+  "createdAt": "2026-09-29T17:53:02.652Z"
+}

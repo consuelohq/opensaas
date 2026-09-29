@@ -65,23 +65,15 @@ export function userSystemPromptTemplate(): string {
   return [
     '# Your system prompt',
     '',
-    'Anything here is appended to the steering every agent receives, after the built-in runtime',
-    'steering. This file is yours: OS seeds it once and never overwrites it on update.',
+    `This ${USER_SYSTEM_PROMPT} file is the primary steering for your Consuelo workspace.`,
+    'OS seeds it once and never overwrites it on update.',
     '',
-    `See \`${USER_SYSTEM_EXAMPLE}\` in this folder for a worked example — steal whatever is useful.`,
-    'That file is only ever an example; it is never loaded into steering.',
+    `See \`${USER_SYSTEM_EXAMPLE}\` in this folder for a worked example.`,
+    'That file is an example only and is never loaded into steering.',
     '',
-    'Any other `.md` in this directory is loaded too, in filename order.',
+    'Any other `.md` file you add to this directory is loaded after this file, in filename order.',
     '',
-    'Changes are picked up when the OS service reloads:',
-    '',
-    '```sh',
-    'consuelo restart',
-    '```',
-    '',
-    'The built-in steering this extends lives in the immutable runtime at',
-    '`~/.consuelo/runtime/current/steering/system_prompt.md` and is replaced on every update, so',
-    'edit this file instead of that one.',
+    'Changes and newly added Markdown files are picked up on the next steering read; no service restart is required.',
     '',
     '## House rules',
     '',
@@ -91,39 +83,38 @@ export function userSystemPromptTemplate(): string {
 }
 
 /**
- * The example is the real bundled steering, verbatim, behind a header.
- *
- * It is generated from the same source the runtime loads, so the two cannot drift: a user reading
- * the example is reading exactly what their agents are actually given. It is excluded from steering
- * by filename, which is why it can safely contain a full instruction document.
+ * A generic worked example that is safe to refresh on every update.
+ * It is excluded from active steering by filename.
  */
-export function steeringExampleTemplate(steeringBody?: string): string {
+export function steeringExampleTemplate(): string {
   const header = [
     '<!--',
     '  example-system.md',
     '',
-    `  This is Consuelo's own steering, verbatim. It is NOT loaded: OS excludes this filename, so`,
-    '  nothing here reaches an agent no matter what it says. Every other .md in this folder IS',
-    '  loaded, so do not rename this file unless you mean it.',
+    '  This is a worked example only. It is NOT loaded into steering.',
+    '  Every other .md in this folder is loaded, so do not rename this file unless you mean it.',
     '',
-    `  Steal whatever is useful into ${USER_SYSTEM_PROMPT}, which is loaded.`,
+    `  Copy anything useful into ${USER_SYSTEM_PROMPT} or another .md file in this folder.`,
     '',
-    '  Regenerated on every update from the same steering the runtime serves, so your edits here',
-    '  would be replaced. Edit ' + USER_SYSTEM_PROMPT + ' instead.',
+    '  This example is regenerated on update, so edits here may be replaced.',
     '-->',
     '',
   ].join('\n');
-
-  if (!steeringBody) {
-    return [
-      header,
-      '# Example steering',
-      '',
-      'The bundled steering could not be read from this release, so there is nothing to show here.',
-      '',
-    ].join('\n');
-  }
-  return `${header}${steeringBody.endsWith('\n') ? steeringBody : `${steeringBody}\n`}`;
+  return [
+    header,
+    '# Example system prompt',
+    '',
+    '## Working style',
+    '',
+    '- Prefer concise answers unless more detail is useful.',
+    '- State important assumptions when they affect the result.',
+    '',
+    '## Project rules',
+    '',
+    '- Prefer existing project patterns before introducing new ones.',
+    '- Verify meaningful changes before declaring work complete.',
+    '',
+  ].join('\n');
 }
 
 export function toolCatalogTemplate(
@@ -168,8 +159,6 @@ export function reconcileManagedUserContent(input: {
   userRoot: string;
   tools: ReadonlyArray<{ name: string; description?: string }>;
   skillsIndex?: string;
-  /** The bundled steering, reproduced verbatim as the example. */
-  steeringBody?: string;
 }): ManagedUserContentAction[] {
   const actions: ManagedUserContentAction[] = [];
 
@@ -182,7 +171,7 @@ export function reconcileManagedUserContent(input: {
   actions.push(
     refresh(
       path.join(input.userRoot, 'Steering', USER_SYSTEM_EXAMPLE),
-      steeringExampleTemplate(input.steeringBody),
+      steeringExampleTemplate(),
     ),
   );
   actions.push(

@@ -13,6 +13,7 @@ import type {
   WorkspaceCloudTrial,
 } from '../types';
 import { hashHex, rand, slug } from '../utils';
+import { resolveCanonicalUser } from './canonical-user';
 import { buildManagedCloudPublicCatalog } from './managed-cloud-pricing';
 
 export const CLOUD_FIRST_TRIAL_MS = 14 * 24 * 60 * 60_000;
@@ -48,61 +49,35 @@ export async function resolveCanonicalWebUser(input: {
   intent: 'login' | 'signup';
 }): Promise<{ user: InstallControlPlaneCanonicalUser; created: boolean }> {
   try {
-    const repository = input.runtime.installControlPlaneRepository;
-    if (!repository) {
-      throw new CloudFirstOnboardingError(
-        'IDENTITY_DIRECTORY_UNAVAILABLE',
-        503,
-        'Consuelo identity is temporarily unavailable.',
-      );
+    const resolved = await resolveCanonicalUser({
+      repository: input.runtime.installControlPlaneRepository,
+      email: input.email,
+      createIfMissing: input.intent === 'signup',
+      nowMs: input.runtime.now(),
+    });
+    if (resolved.status === 'resolved') {
+      return { user: resolved.user, created: resolved.created };
     }
-    const email = normalizeEmail(input.email);
-    const existing = await repository.findCanonicalUsersByEmail(email);
-    if (existing.length > 1) {
-      throw new CloudFirstOnboardingError(
-        'IDENTITY_AMBIGUOUS',
-        409,
-        'This Google identity is connected to more than one Consuelo user.',
-      );
-    }
-    if (existing[0]) {
-      if (existing[0].userId.startsWith('google:')) {
+    switch (resolved.reason) {
+      case 'user_not_found':
+        throw new CloudFirstOnboardingError(
+          'ACCOUNT_NOT_FOUND',
+          404,
+          'No Consuelo account found for this Google account.',
+        );
+      case 'ambiguous_user':
         throw new CloudFirstOnboardingError(
           'IDENTITY_AMBIGUOUS',
           409,
-          'A legacy Google alias cannot be used as a canonical Consuelo user.',
+          'This Google identity is connected to more than one Consuelo user.',
         );
-      }
-      return { user: existing[0], created: false };
+      case 'directory_unavailable':
+        throw new CloudFirstOnboardingError(
+          'IDENTITY_DIRECTORY_UNAVAILABLE',
+          503,
+          'Consuelo identity is temporarily unavailable.',
+        );
     }
-    if (input.intent === 'login') {
-      throw new CloudFirstOnboardingError(
-        'ACCOUNT_NOT_FOUND',
-        404,
-        'No Consuelo account found for this Google account.',
-      );
-    }
-
-    const digest = await hashHex(`consuelo:web-user:${email}`);
-    const userId = `user_${digest.slice(0, 20)}`;
-    const nowIso = new Date(input.runtime.now()).toISOString();
-    await repository.upsertUser({
-      userId,
-      email,
-      workspaceIds: [],
-      createdAt: nowIso,
-      updatedAt: nowIso,
-    });
-
-    const created = await repository.findCanonicalUsersByEmail(email);
-    if (created.length !== 1 || created[0]?.userId !== userId) {
-      throw new CloudFirstOnboardingError(
-        'IDENTITY_AMBIGUOUS',
-        409,
-        'This Google identity could not be bound unambiguously.',
-      );
-    }
-    return { user: created[0], created: true };
   } catch (error: unknown) {
     if (error instanceof CloudFirstOnboardingError) throw error;
     throw new CloudFirstOnboardingError(

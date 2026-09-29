@@ -1,0 +1,102 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/twenty-migration/m2-remove-twenty-sdk-legacy-cli-surface",
+  "base": "origin/stream/twenty-migration",
+  "headSha": "d4d0a9fd95501064ab26c45327b47eb5ec83fffd",
+  "changeHash": "44976818efc240f74c9f0d941e9ecd0ae753e940655bf10b65786767a1d1e1af",
+  "changedFiles": [
+    "packages/cli/package.json",
+    "packages/cli/src/index.ts",
+    "packages/cli/tests/legacy-platform-removal.test.ts",
+    "yarn.lock"
+  ],
+  "verifiedAt": "2026-08-15T07:09:07.726Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/twenty-migration/m2-remove-twenty-sdk-legacy-cli-surface.json",
+        ".task/twenty-migration/m2-remove-twenty-sdk-legacy-cli-surface/current.json",
+        ".task/twenty-migration/m2-remove-twenty-sdk-legacy-cli-surface/evidence-log.json",
+        ".task/twenty-migration/m2-remove-twenty-sdk-legacy-cli-surface/read-log.json",
+        ".task/twenty-migration/m2-remove-twenty-sdk-legacy-cli-surface/session.json",
+        ".task/twenty-migration/m2-remove-twenty-sdk-legacy-cli-surface/verify.json",
+        ".task/twenty-migration/m2-remove-twenty-sdk-legacy-cli-surface/workpad.md",
+        "packages/cli/package.json",
+        "packages/cli/src/index.ts",
+        "packages/cli/tests/legacy-platform-removal.test.ts",
+        "yarn.lock"
+      ],
+      "matchedRules": [
+        {
+          "id": "auto:@consuelo/cli:package-test",
+          "critical": false,
+          "reason": "Auto-discovered package test script for packages/cli.",
+          "matchedFiles": [
+            "packages/cli/package.json",
+            "packages/cli/src/index.ts",
+            "packages/cli/tests/legacy-platform-removal.test.ts"
+          ],
+          "origin": "auto"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "@consuelo/cli package test",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/cli",
+            "test"
+          ],
+          "ruleId": "auto:@consuelo/cli:package-test",
+          "critical": false
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "@consuelo/cli package test",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/cli",
+            "test"
+          ],
+          "ruleId": "auto:@consuelo/cli:package-test",
+          "critical": false,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1574,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-twenty-migration-m2-remove-twenty-sdk-legacy-cli-surface/packages/cli\u001b[39m\n\n\u001b[90mstdout\u001b[2m | tests/auth.test.ts\u001b[2m > \u001b[22m\u001b[2mConsuelo CLI OS authentication\u001b[2m > \u001b[22m\u001b[2mcompletes the browser callback, token exchange, and workspace handoff end to end\n\u001b[22m\u001b[39m2026-08-15T07:09:07.483Z INFO  [CLI:Auth] Opening browser for Consuelo OS authentication...\n2026-08-15T07:09:07.483Z INFO  [CLI:Auth] If the browser does not open, visit: https://os.consuelohq.com/oauth/authorize?response_type=code&client_id=consuelo-os-operator-cli&redirect_uri=http%3A%2F%2F127.0.0.1%3A59873%2Fcallback&code_challenge=OwoNN79XzuN6G9PAiQpEr8txF4oE7hP9XGgCyex8GTE&code_challenge_method=S256&state=ahAWXUO5LDQ1Px3yh2R_OwW2088hDDXs&resource=https%3A%2F%2Fos.consuelohq.com%2Fmcp&scope=workspace%3Aread+workspace%3Anodes%3Amanage\n\n \u001b[32m✓\u001b[39m tests/auth.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 26\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/legacy-platform-removal.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 214\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m10 passed\u001b[39m\u001b[22m\u001b[90m (10)\u001b[39m\n\u001b[2m   Start at \u001b[22m 03:09:06\n\u001b[2m   Duration \u001b[22m 960ms\u001b[2m (transform 979ms, setup 0ms, import 1.10s, tests 241ms, environment 0ms)\u001b[22m\n\n$ bun x vitest run tests\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
