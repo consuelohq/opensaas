@@ -4,8 +4,12 @@
     ".gitignore",
     ".task/os/consolidate-remaining-macos-background-launch-identities/workpad.md",
     "packages/os/docs/macos-platform.md",
+    "packages/os/native/macos/Package.swift",
+    "packages/os/scripts/compact-daemon-output.test.ts",
     "packages/os/scripts/testing/macos-alpha-package.sh",
-    "packages/os/tests/distribution/release-channel-workflows.test.ts"
+    "packages/os/tests/bootstrap-source.test.ts",
+    "packages/os/tests/distribution/release-channel-workflows.test.ts",
+    "packages/os/tests/install-workspace-bootstrap-contract.test.ts"
   ],
-  "updatedAt": "2026-09-25T20:55:57.289Z"
+  "updatedAt": "2026-09-26T13:17:00.069Z"
 }

@@ -63,6 +63,7 @@ no-test waiver: none.
 
 - `.github/workflows/consuelo-os-runtime-publish.yaml`
 - `.gitignore`
+- `.task/os/consolidate-remaining-macos-background-launch-identities/workpad.md`
 - `packages/os/docs/macos-platform.md`
 - `packages/os/native/macos/Sources/ConsueloMacContractTests/main.swift`
 - `packages/os/native/macos/Sources/ConsueloMacCore/LoginItemRegistration.swift`
@@ -89,11 +90,22 @@ no-test waiver: none.
 
 ## workspace-owned: files changed
 
+- `.github/workflows/consuelo-os-runtime-publish.yaml`
+- `.gitignore`
 - `.task/os/consolidate-remaining-macos-background-launch-identities/workpad.md`
+- `packages/os/docs/macos-platform.md`
+- `packages/os/native/macos/Sources/ConsueloMacContractTests/main.swift`
+- `packages/os/native/macos/Sources/ConsueloMacCore/LoginItemRegistration.swift`
+- `packages/os/native/macos/Sources/ConsueloMacCore/Safety.swift`
+- `packages/os/native/macos/Sources/ConsueloMenuBarApp/main.swift`
+- `packages/os/scripts/testing/macos-alpha-package.sh`
+- `packages/os/tests/distribution/release-channel-workflows.test.ts`
+- `packages/os/tests/macos-platform.test.ts`
 
 ## workspace-owned: activity log
 
 - 2026-09-25 20:39:40 fs.write: `.task/os/consolidate-remaining-macos-background-launch-identities/workpad.md`
+- 2026-09-26 13:17:10 fs.write: `.task/os/consolidate-remaining-macos-background-launch-identities/workpad.md`
 
 ## workspace-owned: files read
 
@@ -109,3 +121,71 @@ no-test waiver: none.
 - 2026-09-25 20:56:05 apply-patch: `packages/os/tests/distribution/release-channel-workflows.test.ts`
 - 2026-09-25 20:57:37 `review.run`: passed — OK
 - 2026-09-25 20:58:07 `verify`: passed — OK
+- 2026-09-26 13:14:46 `review.run`: passed — OK
+- 2026-09-26 13:15:24 `verify`: failed — COMMAND_FAILED
+- 2026-09-26 13:16:52 `verify`: passed — OK
+
+## 2026-09-26 follow-up — installer capture polish + migration verification
+
+### follow-up acceptance
+
+- [x] Keep interactive TTY progress in-place while making captured/non-TTY installer output emit exactly one completed line per quiet phase.
+- [x] Re-verify the manual device authorization URL + code fallback for browser-open failure without changing the already-landed browser approval UX.
+- [x] Re-verify current macOS supervised Caddy/Cloudflared/heartbeat ownership and guarded legacy LaunchAgent retirement; do not duplicate or manually bypass the existing migration.
+- [x] Re-verify packaged Consuelo.app launch-at-login policy through native Swift contracts.
+- [x] Keep Stable runtime publication independent from Apple Developer ID/notary credentials.
+
+### follow-up implementation
+
+- `packages/os/scripts/bootstrap.sh`: `run_quiet_with_loading_dots` now distinguishes interactive stdout from captured stdout. TTYs retain the existing in-place `\r... done/failed` update; non-TTY/log capture suppresses the provisional text and emits one final line.
+- `packages/os/scripts/compact-daemon-output.test.ts`: added a behavior-level regression that executes the quiet helper with piped stdout and requires exactly `Installing Consuelo OS... done\n`.
+- No new auth, launchd ownership, or SMAppService implementation was added because those paths are already present in the current stream and their owning tests pass.
+
+### RED → GREEN evidence
+
+- RED: focused compact-output suite failed 1/7 because piped stdout contained the provisional `Installing Consuelo OS...` text plus the final completion line.
+- GREEN: focused compact-output suite passes 7/7 with 30 assertions after the TTY/non-TTY split.
+- Existing package-level bootstrap source contract passes 27/27 from its required `packages/os` working directory, including its existing in-place TTY progress contract.
+
+### auth fallback evidence
+
+- `installer-onboarding-ui.test.ts` + `scripts/onboarding-flow.test.ts`: 27/27 passed, 155 assertions.
+- Browser-open failure continues to render `Open this link to continue`, the full verification URL, the formatted device code, and clipboard-copy confirmation when available.
+- Browser-open success continues to retain an explicit URL/code fallback if the browser did not open or switched away.
+
+### macOS background ownership / migration evidence
+
+- The current stream already supervises Caddy + Cloudflared as children of the OS supervisor and supervises heartbeat on macOS; fresh supervised installs skip separate Caddy/watchdog/Cloudflared LaunchAgent installation.
+- `install-system-daemons.sh` retires legacy heartbeat, Caddy, watchdog, and Cloudflared LaunchAgents only after health checks succeed; rollback restores legacy sidecars on cutover failure.
+- `consuelo-reload.js` performs a guarded supervisor handoff when macOS sidecar capability changes, waits for HA/Caddy parity + supervised Caddy, then retires legacy sidecars; failure re-bootstraps them.
+- Live dogfood inspection found old Caddy/watchdog/Cloudflared/heartbeat launchd identities still loaded, but the installed Stable runtime `0.1.131` lacks both `macos-supervised-sidecars.ts` and `macos-supervised-heartbeat.ts`. This is expected pre-migration runtime state, not evidence of a fresh-install regression. No live LaunchAgent was manually deleted.
+- Focused macOS/lifecycle suites passed: `macos-platform` 6/6, `macos-supervised-sidecars` 4/4, `lifecycle-ingress-continuity` 2/2, `lifecycle-restart-contract` 27/27, `system-daemon-reliability` 16/16, and `consuelo-reload` 10/10.
+- Opt-in workspace bootstrap contract passed 10/10 with `CONSUELO_RUN_WORKSPACE_GATEWAY_CONTRACTS=1`, including the macOS supervisor/rollback-definition contract.
+
+### native app persistence evidence
+
+- `swift run ConsueloMacContractTests` built and passed.
+- `SMAppService.mainApp` remains limited to a packaged `.app` and only registers from the unregistered state; enabled, approval-required, unavailable, and command-line development states remain unchanged.
+
+### follow-up files changed
+
+- `packages/os/scripts/bootstrap.sh`
+- `packages/os/scripts/compact-daemon-output.test.ts`
+- task metadata/workpad generated by the managed task workflow
+
+### follow-up recovery notes
+
+- The OS task session expired between turns. Steering + Senior Engineer guidance were reloaded as required. The managed task lifecycle recreated the continuation as PR #2591 from current `stream/os`; no production edit was lost.
+- A broad Vitest invocation initially ran `bootstrap-source.test.ts` from repo root and failed only because that suite intentionally resolves `scripts/bootstrap.sh` from `process.cwd()`. Re-running from `packages/os` passed 27/27.
+- `install-workspace-bootstrap-contract.test.ts` is intentionally opt-in and initially skipped; running with `CONSUELO_RUN_WORKSPACE_GATEWAY_CONTRACTS=1` passed 10/10.
+
+- 2026-09-26 13:16:10 apply-patch: `packages/os/scripts/compact-daemon-output.test.ts`
+
+### follow-up final verification
+
+- First full verify correctly failed because the new regression used the Bun global under the selected Vitest runner (`ReferenceError: Bun is not defined`). The test was made runtime-neutral with `node:child_process.spawnSync`; no product code change was required for that failure.
+- Exact `os-installer-device-onboarding` selector command then passed: 81 passed / 11 skipped across 8 files (the 10 workspace-gateway contracts are separately opt-in and passed 10/10 when enabled).
+- Strict review: 0 blocking issues, 0 task issues, 0 attributed pre-existing issues.
+- Final full `verify --base origin/stream/os`: passed with `publishValid: true`; DB guard 0 risks / 0 findings.
+
+- 2026-09-26 13:17:10 append: `.task/os/consolidate-remaining-macos-background-launch-identities/workpad.md`
