@@ -130,8 +130,8 @@ const visibleClouds = variant === 'preview'
     height: auto;
     max-width: none;
     opacity: 0.88;
-    -webkit-mask-image: linear-gradient(to right, #000 0%, #000 52%, transparent 88%);
-    mask-image: linear-gradient(to right, #000 0%, #000 52%, transparent 88%);
+    -webkit-mask-image: linear-gradient(to right, var(--site-mask-opaque) 0%, var(--site-mask-opaque) 52%, transparent 88%);
+    mask-image: linear-gradient(to right, var(--site-mask-opaque) 0%, var(--site-mask-opaque) 52%, transparent 88%);
   }
 
   .cloud-field__cloud--near-left {

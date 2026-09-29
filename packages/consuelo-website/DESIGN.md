@@ -63,3 +63,5 @@ The homepage is composed from small Astro components. Keep responsive dimensions
 Homepage search and social copy follows the same promise as the hero: Give your AI access to your files. Metadata names files, terminal and tools and introduces solo/team work. The new versioned 1200 by 630 share card preserves the existing blue, clouds and typography; the changed filename gives crawlers a fresh asset URL. Organization and application descriptions inherit that same typed copy.
 
 Short landscape viewports use the compact footer title token and existing smaller spacing tokens, keeping the closing CTA above the license signature.
+
+Cloud alpha masks use `--site-mask-opaque`, a fully opaque mask token independent of the visible brand palette.

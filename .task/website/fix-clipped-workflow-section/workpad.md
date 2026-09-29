@@ -7,31 +7,39 @@ started: 2026-09-29
 
 ## acceptance criteria
 
-- [ ] Define explicit task acceptance criteria before coding.
+- [x] Smooth the hero cloud edge masks and regenerate larger cloud social previews without the headline divider.
+- [x] Preserve the existing hero controls and artwork positioning.
+- [x] Record the changed files and available validation evidence for release review.
 
 ## plan
 
-1. Read the relevant code and update this plan before editing.
+1. Refine CloudField image masks and cloud placement.
+2. Update generator composition and versioned cloud assets.
+3. Promote through the website stream, then validate the combined homepage release.
 
 ## files changed
 
-- none yet
+- CloudField.astro and scripts/generate-social-card.ts.
+- Encoded cloud preview PNGs, asset materialization and SEO references on pricing, changelog and documentation.
 
 ## key decisions
 
-- none yet
+- Preserve the established blue cloud artwork while smoothing the alpha transitions.
+- Version preview image paths so social crawlers can retrieve the revised artwork.
+- The combined release now uses the approved files/terminal/tools homepage positioning and its files share card.
 
 ## notes for ko
 
-- none yet
+- Earlier changes were inherited from the website stream; the final homepage release preserves them.
+- Review passed at 2026-09-29 18:58:05 as recorded below. Combined-release validation passed: 24-route Astro build, responsive regression, 10 presentation/social tests and full verification at f20345be866b062f48bf1ce464ff5a1b582dc346.
 
 ## improvements noticed
 
-- none yet
+- Cloud mask color is extracted to a semantic token by the final release review task.
 
 ## errors i ran into
 
-- none yet
+- The original committed scaffold did not include a complete handoff; this release correction records only source changes and validation supported by the available evidence.
 
 ---
 

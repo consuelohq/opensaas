@@ -2,6 +2,7 @@
   color-scheme: light;
 
   --site-color-brand: #0000F2;
+  --site-mask-opaque: #000000;
   --site-color-paper: #0000F2;
   --site-color-on-brand: #FFFFFF;
   --site-color-ink: #0000F2;
