@@ -25,21 +25,8 @@
     <span data-cloud-word-line>CONSUELO</span>
     <span data-cloud-word-line>CLOUD</span>
   </p>
-  <img
-    class="cloud-cta__art"
-    src="/generated/holding-world-editorial.png?v=20260810-line-art-v2"
-    alt="Consuelo holding a connected world"
-    width="1832"
-    height="2064"
-    loading="eager"
-    decoding="async"
-  />
-
   <p class="cloud-cta__version">CONSUELO OS <span>V0.10.3</span></p>
   <div class="cloud-cta__signature" aria-label="Consuelo OS, MIT License, 2026">
-    <span class="cloud-cta__badge" aria-hidden="true">
-      <img src="/generated/consuelo-footer-badge.png" alt="" width="242" height="346" />
-    </span>
     <span>CONSUELO</span>
     <span>MIT LICENSE <span aria-hidden="true">•</span> 2026</span>
   </div>
@@ -169,19 +156,6 @@
     font-size: 0.68em;
   }
 
-  .cloud-cta__art {
-    position: absolute;
-    z-index: 2;
-    bottom: 0;
-    left: 50%;
-    width: auto;
-    height: min(67dvh, 41.5rem);
-    max-width: 65vw;
-    object-fit: contain;
-    object-position: center bottom;
-    transform: translateX(-50%);
-  }
-
   .cloud-cta__version,
   .cloud-cta__signature {
     position: absolute;
@@ -212,22 +186,6 @@
     text-align: right;
   }
 
-  .cloud-cta__badge {
-    position: relative;
-    display: block;
-    width: 3.2rem;
-    aspect-ratio: 121 / 173;
-    overflow: hidden;
-    margin-bottom: 0.25rem;
-  }
-
-  .cloud-cta__badge img {
-    display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
   @media (min-width: 601px) and (max-width: 900px) {
     .cloud-cta {
       --cloud-gutter: clamp(5rem, 13vw, 6.5rem);
@@ -241,10 +199,6 @@
       font-size: clamp(3.05rem, 7.1vw, 3.85rem);
     }
 
-    .cloud-cta__art {
-      height: min(63dvh, 35.5rem);
-      max-width: none;
-    }
   }
 
   @media (max-width: 600px) {
@@ -290,12 +244,6 @@
       display: none;
     }
 
-    .cloud-cta__art {
-      width: auto;
-      height: min(48dvh, 26rem);
-      max-width: 110vw;
-    }
-
     .cloud-cta__version,
     .cloud-cta__signature {
       font-size: 0.48rem;
@@ -315,9 +263,6 @@
       text-align: left;
     }
 
-    .cloud-cta__badge {
-      display: none;
-    }
   }
 
   @media (prefers-reduced-motion: reduce) {

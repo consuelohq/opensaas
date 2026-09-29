@@ -79,7 +79,7 @@ describe('Consuelo OS homepage presentation', () => {
     expect(footer).toContain('Math.pow(progress, 1.15)');
   });
 
-  test('should compose the cloud footer as an illustration-led poster', async () => {
+  test('should compose the cloud footer without the removed illustration', async () => {
     const footer = await readSource('src/components/home/HomeCloudCta.astro');
 
     expect(footer).not.toContain('@chenglou/pretext');
@@ -89,16 +89,14 @@ describe('Consuelo OS homepage presentation', () => {
     expect(footer).toContain('font-size: clamp(3.1rem, 14.7vw, 3.8rem);');
     expect(footer).toContain('data-cloud-word-line>CONSUELO</span>');
     expect(footer).toContain('data-cloud-word-line>CLOUD</span>');
-    expect(footer).toContain('/generated/holding-world-editorial.png?v=20260810-line-art-v2');
+    expect(footer).not.toContain('class="cloud-cta__art"');
     expect(footer).not.toContain('filter: brightness(0) invert(1)');
     expect(footer).toContain('KEEP THE SAME WORKSPACE AND LET CONSUELO');
     expect(footer).toContain('RUN THE HOME NODE FOR YOU');
     expect(footer).toContain('--cloud-gutter: clamp(4.75rem, 8.5vw, 8rem);');
-    expect(footer).toContain('/generated/consuelo-footer-badge.png');
-    expect(footer).toContain('aspect-ratio: 121 / 173;');
+    expect(footer).not.toContain('class="cloud-cta__badge"');
     expect(footer).toContain('justify-items: end;');
     expect(footer).toContain('text-align: right;');
-    expect(footer).toContain('.cloud-cta__badge {\n      display: none;');
   });
 
   test('should generate footer binaries before dev and build without tracking them', async () => {
