@@ -342,8 +342,8 @@ test('homepage mobile layout and content follow the launch contract', { timeout:
           document.documentElement.scrollWidth - document.documentElement.clientWidth,
       };
     });
-    assert.equal(tabletFeatureGeometry.columns, 2);
-    assert.equal(tabletFeatureGeometry.visualPosition, 'sticky');
+    assert.equal(tabletFeatureGeometry.columns, 1);
+    assert.equal(tabletFeatureGeometry.visualPosition, 'static');
     assert.ok(Math.abs(tabletFeatureGeometry.stageRatio - 2032 / 1192) < 0.02);
     assert.equal(tabletFeatureGeometry.horizontalOverflow, 0);
     await featureTabletPage.close();
@@ -524,90 +524,29 @@ test('homepage mobile layout and content follow the launch contract', { timeout:
     });
 
     const mobileFooterContract = await page.evaluate(() => {
-      const art = document.querySelector('.cloud-cta__art');
       const wordmark = document.querySelector('.cloud-cta__wordmark');
       const version = document.querySelector('.cloud-cta__version');
       const signature = document.querySelector('.cloud-cta__signature');
-      const badge = document.querySelector('.cloud-cta__badge');
-      if (
-        !(art instanceof HTMLImageElement) ||
-        !(wordmark instanceof HTMLElement) ||
-        !(version instanceof HTMLElement) ||
-        !(signature instanceof HTMLElement) ||
-        !(badge instanceof HTMLElement)
-      ) {
-        throw new Error('Expected complete cloud footer composition');
+      if (!(wordmark instanceof HTMLElement) || !(version instanceof HTMLElement) || !(signature instanceof HTMLElement)) {
+        throw new Error('Expected cloud footer copy and signature');
       }
-      const artBox = art.getBoundingClientRect();
-      const badgeBox = badge.getBoundingClientRect();
-      const badgeImage = badge.querySelector('img');
-      if (!(badgeImage instanceof HTMLImageElement)) {
-        throw new Error('Expected generated badge image');
-      }
-      const canvas = document.createElement('canvas');
-      canvas.width = art.naturalWidth;
-      canvas.height = art.naturalHeight;
-      const context = canvas.getContext('2d', { willReadFrequently: true });
-      if (!context) {
-        throw new Error('Expected canvas context for footer art inspection');
-      }
-      context.drawImage(art, 0, 0);
-      const pixels = context.getImageData(0, 0, canvas.width, canvas.height).data;
-      let bluePixels = 0;
-      let whitePixels = 0;
-      for (let index = 0; index < pixels.length; index += 16) {
-        const red = pixels[index];
-        const green = pixels[index + 1];
-        const blue = pixels[index + 2];
-        const alpha = pixels[index + 3];
-        if (alpha > 220 && red < 20 && green < 20 && blue > 220) {
-          bluePixels += 1;
-        }
-        if (alpha > 220 && red > 240 && green > 240 && blue > 240) {
-          whitePixels += 1;
-        }
-      }
-      const titleLines = Array.from(
-        document.querySelectorAll('[data-cloud-title-line]'),
-      ).map((line) => Math.round(line.getBoundingClientRect().top));
-
       return {
-        artFilter: getComputedStyle(art).filter,
-        artSrc: art.getAttribute('src'),
-        artTop: artBox.top,
-        artBottom: artBox.bottom,
-        artHeight: artBox.height,
-        bluePixels,
-        whitePixels,
-        badgeDisplay: getComputedStyle(badge).display,
-        badgeSrc: badgeImage.getAttribute('src'),
-        badgeNaturalWidth: badgeImage.naturalWidth,
-        badgeNaturalHeight: badgeImage.naturalHeight,
-        badgeHeight: badgeBox.height,
-        badgeWidth: badgeBox.width,
-        signatureFontWeight: Number.parseInt(getComputedStyle(signature).fontWeight, 10),
-        signatureJustifyItems: getComputedStyle(signature).justifyItems,
-        signatureLeft: signature.getBoundingClientRect().left,
-        signatureTextAlign: getComputedStyle(signature).textAlign,
-        titleLines,
-        versionFontWeight: Number.parseInt(getComputedStyle(version).fontWeight, 10),
+        artMissing: document.querySelector('.cloud-cta__art') === null,
+        badgeMissing: document.querySelector('.cloud-cta__badge') === null,
+        titleLines: Array.from(document.querySelectorAll('[data-cloud-title-line]')).map((line) => Math.round(line.getBoundingClientRect().top)),
+        wordmarkDisplay: getComputedStyle(wordmark).display,
         versionText: version.textContent?.replace(/\s+/g, ' ').trim(),
         versionWhiteSpace: getComputedStyle(version).whiteSpace,
-        viewportHeight: window.innerHeight,
-        wordmarkDisplay: getComputedStyle(wordmark).display,
+        versionFontWeight: Number.parseInt(getComputedStyle(version).fontWeight, 10),
+        signatureFontWeight: Number.parseInt(getComputedStyle(signature).fontWeight, 10),
+        signatureJustifyItems: getComputedStyle(signature).justifyItems,
+        signatureTextAlign: getComputedStyle(signature).textAlign,
+        signatureLeft: signature.getBoundingClientRect().left,
       };
     });
     assert.equal(new Set(mobileFooterContract.titleLines).size, 2);
-    assert.ok(mobileFooterContract.artTop >= 0);
-    assert.ok(mobileFooterContract.artBottom <= mobileFooterContract.viewportHeight + 1);
-    assert.equal(
-      mobileFooterContract.artSrc,
-      '/generated/holding-world-editorial.png?v=20260810-line-art-v2',
-    );
-    assert.ok(mobileFooterContract.artHeight <= 408);
-    assert.equal(mobileFooterContract.artFilter, 'none');
-    assert.ok(mobileFooterContract.bluePixels > 1000);
-    assert.ok(mobileFooterContract.whitePixels > 1000);
+    assert.equal(mobileFooterContract.artMissing, true);
+    assert.equal(mobileFooterContract.badgeMissing, true);
     assert.equal(mobileFooterContract.wordmarkDisplay, 'none');
     assert.equal(mobileFooterContract.versionText, 'CONSUELO OS V0.10.3');
     assert.equal(mobileFooterContract.versionWhiteSpace, 'nowrap');
@@ -616,7 +555,6 @@ test('homepage mobile layout and content follow the launch contract', { timeout:
     assert.equal(mobileFooterContract.signatureJustifyItems, 'start');
     assert.equal(mobileFooterContract.signatureTextAlign, 'left');
     assert.ok(mobileFooterContract.signatureLeft <= 20);
-    assert.equal(mobileFooterContract.badgeDisplay, 'none');
 
     const reducedMotionPage = await browser.newPage({
       viewport: { width: 390, height: 844 },
@@ -678,97 +616,51 @@ test('homepage mobile layout and content follow the launch contract', { timeout:
       const copy = document.querySelector('.cloud-cta__copy');
       const description = document.querySelector('.cloud-cta__description');
       const button = document.querySelector('.cloud-cta__copy a');
-      const art = document.querySelector('.cloud-cta__art');
-      const wordLines = Array.from(document.querySelectorAll('[data-cloud-word-line]'));
       const version = document.querySelector('.cloud-cta__version');
       const signature = document.querySelector('.cloud-cta__signature');
-      const badge = document.querySelector('.cloud-cta__badge');
-      if (
-        !(heading instanceof HTMLElement) ||
-        !(copy instanceof HTMLElement) ||
-        !(description instanceof HTMLElement) ||
-        !(button instanceof HTMLElement) ||
-        !(art instanceof HTMLImageElement) ||
-        !(version instanceof HTMLElement) ||
-        !(signature instanceof HTMLElement) ||
-        !(badge instanceof HTMLElement) ||
-        wordLines.length !== 2
-      ) {
-        throw new Error('Expected complete desktop cloud poster composition');
+      const wordLines = Array.from(document.querySelectorAll('[data-cloud-word-line]'));
+      if (!(heading instanceof HTMLElement) || !(copy instanceof HTMLElement) ||
+          !(description instanceof HTMLElement) || !(button instanceof HTMLElement) ||
+          !(version instanceof HTMLElement) || !(signature instanceof HTMLElement) || wordLines.length !== 2) {
+        throw new Error('Expected complete desktop cloud copy composition');
       }
-
-      const headingBox = heading.getBoundingClientRect();
-      const copyBox = copy.getBoundingClientRect();
-      const buttonBox = button.getBoundingClientRect();
-      const artBox = art.getBoundingClientRect();
-      const versionBox = version.getBoundingClientRect();
-      const signatureBox = signature.getBoundingClientRect();
-      const badgeBox = badge.getBoundingClientRect();
-      const badgeImage = badge.querySelector('img');
-      if (!(badgeImage instanceof HTMLImageElement)) {
-        throw new Error('Expected desktop badge image');
-      }
-      const firstWordStyle = getComputedStyle(wordLines[0]);
-      const secondWordStyle = getComputedStyle(wordLines[1]);
-
       return {
         viewportWidth: window.innerWidth,
         viewportHeight: window.innerHeight,
-        titleWidth: headingBox.width,
-        titleTop: headingBox.top,
-        copyTop: copyBox.top,
-        buttonWidth: buttonBox.width,
+        titleWidth: heading.getBoundingClientRect().width,
+        titleTop: heading.getBoundingClientRect().top,
+        copyTop: copy.getBoundingClientRect().top,
+        buttonWidth: button.getBoundingClientRect().width,
         descriptionText: description.textContent?.replace(/\s+/g, ' ').trim(),
         descriptionFontFamily: getComputedStyle(description).fontFamily,
         eyebrowFontFamily: getComputedStyle(document.querySelector('.cloud-cta__eyebrow')).fontFamily,
-        artTop: artBox.top,
-        artBottom: artBox.bottom,
-        artWidth: artBox.width,
+        artMissing: document.querySelector('.cloud-cta__art') === null,
+        badgeMissing: document.querySelector('.cloud-cta__badge') === null,
         wordLineDisplays: wordLines.map((line) => getComputedStyle(line).display),
-        firstWordSize: Number.parseFloat(firstWordStyle.fontSize),
-        secondWordSize: Number.parseFloat(secondWordStyle.fontSize),
-        versionLeft: versionBox.left,
-        signatureRightGap: window.innerWidth - signatureBox.right,
+        firstWordSize: Number.parseFloat(getComputedStyle(wordLines[0]).fontSize),
+        secondWordSize: Number.parseFloat(getComputedStyle(wordLines[1]).fontSize),
+        versionLeft: version.getBoundingClientRect().left,
+        signatureRightGap: window.innerWidth - signature.getBoundingClientRect().right,
         signatureTextAlign: getComputedStyle(signature).textAlign,
         signatureJustifyItems: getComputedStyle(signature).justifyItems,
-        badgeDisplay: getComputedStyle(badge).display,
-        badgeSrc: badgeImage.getAttribute('src'),
-        badgeNaturalWidth: badgeImage.naturalWidth,
-        badgeNaturalHeight: badgeImage.naturalHeight,
-        badgeRatio: badgeBox.height / badgeBox.width,
         overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
       };
     });
-
     assert.ok(desktopFooterContract.titleWidth >= desktopFooterContract.viewportWidth * 0.35);
     assert.ok(desktopFooterContract.titleWidth <= desktopFooterContract.viewportWidth * 0.52);
     assert.ok(desktopFooterContract.titleTop <= desktopFooterContract.viewportHeight * 0.16);
     assert.ok(desktopFooterContract.copyTop <= desktopFooterContract.viewportHeight * 0.08);
     assert.ok(desktopFooterContract.buttonWidth >= 180);
-    assert.equal(
-      desktopFooterContract.descriptionText,
-      'KEEP THE SAME WORKSPACE AND LET CONSUELO RUN THE HOME NODE FOR YOU',
-    );
-    assert.equal(
-      desktopFooterContract.descriptionFontFamily,
-      desktopFooterContract.eyebrowFontFamily,
-    );
-    assert.ok(desktopFooterContract.artTop <= desktopFooterContract.viewportHeight * 0.38);
-    assert.ok(Math.abs(desktopFooterContract.artBottom - desktopFooterContract.viewportHeight) <= 1);
-    assert.ok(desktopFooterContract.artWidth >= 520);
-    assert.ok(desktopFooterContract.artWidth <= 545);
+    assert.equal(desktopFooterContract.descriptionText, 'KEEP THE SAME WORKSPACE AND LET CONSUELO RUN THE HOME NODE FOR YOU');
+    assert.equal(desktopFooterContract.descriptionFontFamily, desktopFooterContract.eyebrowFontFamily);
+    assert.equal(desktopFooterContract.artMissing, true);
+    assert.equal(desktopFooterContract.badgeMissing, true);
     assert.deepEqual(desktopFooterContract.wordLineDisplays, ['block', 'block']);
     assert.ok(desktopFooterContract.secondWordSize < desktopFooterContract.firstWordSize);
     assert.ok(desktopFooterContract.versionLeft >= desktopFooterContract.viewportWidth * 0.075);
     assert.ok(desktopFooterContract.signatureRightGap >= desktopFooterContract.viewportWidth * 0.075);
     assert.equal(desktopFooterContract.signatureTextAlign, 'right');
     assert.equal(desktopFooterContract.signatureJustifyItems, 'end');
-    assert.notEqual(desktopFooterContract.badgeDisplay, 'none');
-    assert.equal(desktopFooterContract.badgeSrc, '/generated/consuelo-footer-badge.png');
-    assert.equal(desktopFooterContract.badgeNaturalWidth, 242);
-    assert.equal(desktopFooterContract.badgeNaturalHeight, 346);
-    assert.ok(desktopFooterContract.badgeRatio >= 1.35);
-    assert.ok(desktopFooterContract.badgeRatio <= 1.5);
     assert.equal(desktopFooterContract.overflow, 0);
 
     const tabletPage = await browser.newPage({
@@ -786,41 +678,22 @@ test('homepage mobile layout and content follow the launch contract', { timeout:
 
     const tabletFooterContract = await tabletPage.evaluate(() => {
       const heading = document.querySelector('.cloud-cta h2');
-      const art = document.querySelector('.cloud-cta__art');
       const wordmark = document.querySelector('.cloud-cta__wordmark');
-      const badge = document.querySelector('.cloud-cta__badge');
-      if (
-        !(heading instanceof HTMLElement) ||
-        !(art instanceof HTMLImageElement) ||
-        !(wordmark instanceof HTMLElement) ||
-        !(badge instanceof HTMLElement)
-      ) {
-        throw new Error('Expected tablet cloud poster composition');
+      if (!(heading instanceof HTMLElement) || !(wordmark instanceof HTMLElement)) {
+        throw new Error('Expected tablet cloud copy composition');
       }
-
-      const headingBox = heading.getBoundingClientRect();
-      const artBox = art.getBoundingClientRect();
       return {
-        titleWidth: headingBox.width,
-        artAspect: artBox.width / artBox.height,
-        naturalArtAspect: art.naturalWidth / art.naturalHeight,
-        artTop: artBox.top,
-        artBottom: artBox.bottom,
+        titleWidth: heading.getBoundingClientRect().width,
+        artMissing: document.querySelector('.cloud-cta__art') === null,
+        badgeMissing: document.querySelector('.cloud-cta__badge') === null,
         wordmarkDisplay: getComputedStyle(wordmark).display,
-        badgeDisplay: getComputedStyle(badge).display,
         overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
       };
     });
-
     assert.ok(tabletFooterContract.titleWidth >= 540);
-    assert.ok(
-      Math.abs(tabletFooterContract.artAspect - tabletFooterContract.naturalArtAspect) <= 0.01,
-    );
-    assert.ok(tabletFooterContract.artTop >= 325);
-    assert.ok(tabletFooterContract.artTop <= 345);
-    assert.ok(Math.abs(tabletFooterContract.artBottom - 900) <= 1);
+    assert.equal(tabletFooterContract.artMissing, true);
+    assert.equal(tabletFooterContract.badgeMissing, true);
     assert.notEqual(tabletFooterContract.wordmarkDisplay, 'none');
-    assert.notEqual(tabletFooterContract.badgeDisplay, 'none');
     assert.equal(tabletFooterContract.overflow, 0);
     await tabletPage.close();
   } finally {
