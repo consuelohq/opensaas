@@ -1,0 +1,20 @@
+{
+  "area": "tooling-reliability",
+  "stream": "stream/tooling-reliability",
+  "taskBranch": "task/tooling-reliability/make-detached-verify-safe-for-internal-callers-and-self-hosting",
+  "baseBranch": "stream/tooling-reliability",
+  "sourceBranch": "stream/tooling-reliability",
+  "startFrom": "stream",
+  "prNumber": 2595,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2595",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2595",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2595/make-detached-verify-safe-for-internal-callers-and-self-hosting",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2595",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2595/make-detached-verify-safe-for-internal-callers-and-self-hosting",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-tooling-reliability-make-detached-verify-safe-for-internal-callers-and-self-hosting",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_5d147596bd62",
+  "tmuxSession": "opensaas-tooling-reliability-make-detached-verify-safe-for-internal-callers-a-5d147596",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-tooling-reliability-make-detached-verify-safe-for-internal-callers-and-self-hosting/.task/tooling-reliability/make-detached-verify-safe-for-internal-callers-and-self-hosting/session.json",
+  "createdAt": "2026-09-26T16:59:08.614Z"
+}

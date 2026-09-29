@@ -1,0 +1,20 @@
+{
+  "area": "tooling-reliability",
+  "stream": "stream/tooling-reliability",
+  "taskBranch": "task/tooling-reliability/fix-mcp-diagnostics-and-boundedness-review-findings",
+  "baseBranch": "stream/tooling-reliability",
+  "sourceBranch": "stream/tooling-reliability",
+  "startFrom": "stream",
+  "prNumber": 2605,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2605",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2605",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2605/fix-mcp-diagnostics-and-boundedness-review-findings",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2605",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2605/fix-mcp-diagnostics-and-boundedness-review-findings",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-tooling-reliability-fix-mcp-diagnostics-and-boundedness-review-findings",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_6e0102ab4591",
+  "tmuxSession": "opensaas-tooling-reliability-fix-mcp-diagnostics-and-boundedness-review-findi-6e0102ab",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-tooling-reliability-fix-mcp-diagnostics-and-boundedness-review-findings/.task/tooling-reliability/fix-mcp-diagnostics-and-boundedness-review-findings/session.json",
+  "createdAt": "2026-09-27T16:55:32.935Z"
+}

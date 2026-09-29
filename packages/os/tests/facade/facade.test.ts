@@ -1365,6 +1365,33 @@ describe('typed facade executor', () => {
     }
   });
 
+  it('runs task-scoped verify from the resolved task worktree instead of controller cwd', async () => {
+    const controllerRoot = mkdtempSync(join(tmpdir(), 'workspace-verify-controller-'));
+    const taskWorktree = mkdtempSync(join(tmpdir(), 'workspace-verify-task-'));
+    const taskSession = 'tsk_verify_task_worktree_routing';
+    try {
+      writeTaskSession(controllerRoot, taskSession, TEST_BRANCH, taskWorktree);
+      const plans: CommandPlan[] = [];
+      const result = await executeTool('verify', {
+        taskSession,
+        noStamp: true,
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: controllerRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      expect(plans).toHaveLength(1);
+      expect(plans[0].cwd).toBe(taskWorktree);
+      expect(plans[0].env?.TASK_WORKTREE).toBe(taskWorktree);
+    } finally {
+      rmSync(controllerRoot, { recursive: true, force: true });
+      rmSync(taskWorktree, { recursive: true, force: true });
+    }
+  });
+
   it('passes the taskSession worktree to audit', async () => {
     const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-audit-session-'));
     try {

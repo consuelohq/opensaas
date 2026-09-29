@@ -1,0 +1,20 @@
+{
+  "area": "tooling-reliability",
+  "stream": "stream/tooling-reliability",
+  "taskBranch": "task/tooling-reliability/persist-confirm-selector-ownership-in-source-rules",
+  "baseBranch": "stream/tooling-reliability",
+  "sourceBranch": "stream/tooling-reliability",
+  "startFrom": "stream",
+  "prNumber": 2599,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2599",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2599",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2599/persist-confirm-selector-ownership-in-source-rules",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2599",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2599/persist-confirm-selector-ownership-in-source-rules",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-tooling-reliability-persist-confirm-selector-ownership-in-source-rules",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_a5b1f1295d43",
+  "tmuxSession": "opensaas-tooling-reliability-persist-confirm-selector-ownership-in-source-rul-a5b1f129",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-tooling-reliability-persist-confirm-selector-ownership-in-source-rules/.task/tooling-reliability/persist-confirm-selector-ownership-in-source-rules/session.json",
+  "createdAt": "2026-09-26T18:26:09.390Z"
+}

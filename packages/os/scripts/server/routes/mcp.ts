@@ -29,8 +29,14 @@ import {
 } from '../middleware/dangerous-material';
 import { internalError, jsonResponse } from '../middleware/errors';
 import { queueGatewayAuthenticationTraceSafely } from '../../lib/trace-persistence';
+import { getToolManifestEntry } from '../../lib/facade/executor';
 import type { TraceRoutingContext } from '../../lib/trace-routing-context';
 import { logLocalOsServerError, logLocalOsServerEvent } from '../logger';
+import {
+  appendMcpRequestReceipt,
+  inspectMcpRequestReceiptBody,
+} from '../mcp-request-receipts';
+import { createMcpRequestRecoveryStore } from '../mcp-request-recovery';
 import { validateMcpRequestOrigin } from '../security/mcp-origin';
 import { executeLocalOsFacadeTool } from '../services/call-service';
 import { resolveMcpRequestSession } from '../services/mcp-session';
@@ -38,10 +44,43 @@ import { readGuardedLocalOsSteering } from '../services/steering-service';
 
 const MCP_PATH = '/mcp';
 const MCP_REQUEST_ID_PATTERN = /^[a-zA-Z0-9._:-]{8,128}$/;
+const MAX_MCP_HTTP_BODY_BYTES = 4 * 1024 * 1024;
 
 type McpRouteVariables = {
   requestId: string;
 };
+
+async function readBoundedMcpBody(request: Request): Promise<{ ok: true; body: string } | { ok: false }> {
+  const declaredLength = Number(request.headers.get('content-length'));
+  if (Number.isFinite(declaredLength) && declaredLength > MAX_MCP_HTTP_BODY_BYTES) return { ok: false };
+  if (!request.body) return { ok: true, body: '' };
+
+  const reader = request.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      if (!value) continue;
+      total += value.byteLength;
+      if (total > MAX_MCP_HTTP_BODY_BYTES) {
+        void reader.cancel().catch(() => undefined);
+        return { ok: false };
+      }
+      chunks.push(value);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+  const bytes = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return { ok: true, body: new TextDecoder().decode(bytes) };
+}
 
 function resolveMcpRequestId(request: Request): string {
   const provided = request.headers.get('x-consuelo-request-id')?.trim();
@@ -160,19 +199,83 @@ export function createMcpRoutes(
   dependencies: McpRouteDependencies = defaultDependencies,
 ) {
   const app = new Hono<{ Variables: McpRouteVariables }>();
+  const requestRecovery = createMcpRequestRecoveryStore();
 
   app.use(MCP_PATH, async (context, next) => {
+    const startedAt = Date.now();
     const requestId = resolveMcpRequestId(context.req.raw);
     const connectorKey = resolveOpenAiSessionReceiptKey(context.req.raw);
+    let receiptMetadata = {};
+    if (context.req.method === 'POST') {
+      try {
+        const boundedBody = await readBoundedMcpBody(context.req.raw.clone());
+        if (!boundedBody.ok) {
+          return jsonResponse({
+            error: {
+              code: 'MCP_BODY_TOO_LARGE',
+              message: `MCP request body exceeds ${MAX_MCP_HTTP_BODY_BYTES} bytes.`,
+            },
+          }, 413);
+        }
+        receiptMetadata = inspectMcpRequestReceiptBody(boundedBody.body);
+      } catch {
+        return jsonResponse({
+          error: {
+            code: 'MCP_BODY_READ_FAILED',
+            message: 'MCP request body could not be read safely.',
+          },
+        }, 400);
+      }
+    }
     context.set('requestId', requestId);
     logLocalOsServerEvent('local_os.mcp_request_received', {
       requestId,
       route: MCP_PATH,
       method: context.req.method,
       ...(connectorKey ? { connectorKey } : {}),
+      ...receiptMetadata,
     });
-    await next();
-    context.header('x-consuelo-request-id', requestId);
+    appendMcpRequestReceipt({
+      phase: 'received',
+      requestId,
+      ...(connectorKey ? { connectorKey } : {}),
+      ...receiptMetadata,
+      ts: new Date(startedAt).toISOString(),
+    });
+    let failed = false;
+    try {
+      await next();
+    } catch (error: unknown) {
+      failed = true;
+      throw error;
+    } finally {
+      const finishedAt = Date.now();
+      const status = failed ? 500 : context.res.status;
+      const responseFailed = failed || status >= 500;
+      appendMcpRequestReceipt({
+        phase: responseFailed ? 'failed' : 'response_ready',
+        requestId,
+        ...(connectorKey ? { connectorKey } : {}),
+        ...receiptMetadata,
+        status,
+        durationMs: Math.max(0, finishedAt - startedAt),
+        ts: new Date(finishedAt).toISOString(),
+      });
+      logLocalOsServerEvent(
+        responseFailed ? 'local_os.mcp_request_failed' : 'local_os.mcp_response_ready',
+        {
+          requestId,
+          route: MCP_PATH,
+          method: context.req.method,
+          status,
+          durationMs: Math.max(0, finishedAt - startedAt),
+          ...(connectorKey ? { connectorKey } : {}),
+          ...receiptMetadata,
+        },
+        responseFailed ? 'warn' : 'info',
+      );
+      context.header('x-consuelo-request-id', requestId);
+    }
   });
 
   app.all(MCP_PATH, async (context) => {
@@ -298,10 +401,42 @@ export function createMcpRoutes(
       });
       const result = await handleMcpGatewayJsonRpc(body, {
         getSteering: () => dependencies.getSteering(steeringCallerKey, nodeRouting),
-        executeFacadeTool: (toolName, toolInput, execution) =>
-          execution
-            ? dependencies.executeFacadeTool(toolName, toolInput, traceRouting, execution)
-            : dependencies.executeFacadeTool(toolName, toolInput, traceRouting),
+        executeFacadeTool: async (toolName, toolInput, execution) => {
+          const explicitRequestId = typeof toolInput.requestId === 'string'
+            && MCP_REQUEST_ID_PATTERN.test(toolInput.requestId.trim())
+            ? toolInput.requestId.trim()
+            : undefined;
+          const correlatedToolInput = explicitRequestId
+            ? { ...toolInput, requestId: explicitRequestId }
+            : { ...toolInput, requestId };
+          const execute = () => execution
+            ? dependencies.executeFacadeTool(toolName, correlatedToolInput, traceRouting, execution)
+            : dependencies.executeFacadeTool(toolName, correlatedToolInput, traceRouting);
+
+          if (!explicitRequestId) return execute();
+
+          let mutating = false;
+          try {
+            mutating = getToolManifestEntry(toolName)?.capabilities.mutating === true;
+          } catch {
+            return {
+              ok: false,
+              code: 'REQUEST_RECOVERY_UNAVAILABLE',
+              message: 'Mutating request recovery could not resolve the tool contract. Execution was not started.',
+              data: { requestId: explicitRequestId },
+              autoRetry: false,
+            };
+          }
+          if (!mutating) return execute();
+
+          return requestRecovery.execute({
+            requestId: explicitRequestId,
+            toolName,
+            toolInput: correlatedToolInput,
+            scope: steeringCallerKey,
+            execute,
+          });
+        },
       });
       const response = jsonResponse(result);
       if (session?.responseSessionId) {

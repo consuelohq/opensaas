@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_b9c311657d43",
+  "tmuxSession": "opensaas-tooling-reliability-route-verify-self-hosting-regression-through-foc-b9c31165",
+  "area": "tooling-reliability",
+  "stream": "stream/tooling-reliability",
+  "taskBranch": "task/tooling-reliability/route-verify-self-hosting-regression-through-focused-selection",
+  "branch": "task/tooling-reliability/route-verify-self-hosting-regression-through-focused-selection",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-tooling-reliability-route-verify-self-hosting-regression-through-focused-selection",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-tooling-reliability-route-verify-self-hosting-regression-through-focused-selection",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2601,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2601",
+  "createdAt": "2026-09-26T18:38:37.793Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-tooling-reliability-route-verify-self-hosting-regression-through-focused-selection/.task/tooling-reliability/route-verify-self-hosting-regression-through-focused-selection/session.json"
+}

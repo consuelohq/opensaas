@@ -1,0 +1,20 @@
+{
+  "area": "tooling-reliability",
+  "stream": "stream/tooling-reliability",
+  "taskBranch": "task/tooling-reliability/route-verify-self-hosting-regression-through-focused-selection",
+  "baseBranch": "stream/tooling-reliability",
+  "sourceBranch": "stream/tooling-reliability",
+  "startFrom": "stream",
+  "prNumber": 2601,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2601",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2601",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2601/route-verify-self-hosting-regression-through-focused-selection",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2601",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2601/route-verify-self-hosting-regression-through-focused-selection",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-tooling-reliability-route-verify-self-hosting-regression-through-focused-selection",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_b9c311657d43",
+  "tmuxSession": "opensaas-tooling-reliability-route-verify-self-hosting-regression-through-foc-b9c31165",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-tooling-reliability-route-verify-self-hosting-regression-through-focused-selection/.task/tooling-reliability/route-verify-self-hosting-regression-through-focused-selection/session.json",
+  "createdAt": "2026-09-26T18:38:37.798Z"
+}

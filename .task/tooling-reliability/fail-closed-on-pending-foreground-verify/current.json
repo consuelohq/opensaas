@@ -1,0 +1,20 @@
+{
+  "area": "tooling-reliability",
+  "stream": "stream/tooling-reliability",
+  "taskBranch": "task/tooling-reliability/fail-closed-on-pending-foreground-verify",
+  "baseBranch": "stream/tooling-reliability",
+  "sourceBranch": "stream/tooling-reliability",
+  "startFrom": "stream",
+  "prNumber": 2598,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2598",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2598",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2598/fail-closed-on-pending-foreground-verify",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2598",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2598/fail-closed-on-pending-foreground-verify",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-tooling-reliability-fail-closed-on-pending-foreground-verify",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_fa462790b8a8",
+  "tmuxSession": "opensaas-tooling-reliability-fail-closed-on-pending-foreground-verify-fa462790",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-tooling-reliability-fail-closed-on-pending-foreground-verify/.task/tooling-reliability/fail-closed-on-pending-foreground-verify/session.json",
+  "createdAt": "2026-09-26T18:18:02.044Z"
+}

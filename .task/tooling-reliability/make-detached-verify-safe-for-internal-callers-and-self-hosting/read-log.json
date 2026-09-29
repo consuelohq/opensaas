@@ -1,0 +1,9 @@
+{
+  "files": [
+    ".task/tooling-reliability/make-detached-verify-safe-for-internal-callers-and-self-hosting/workpad.md",
+    "packages/os/scripts/confirm.js",
+    "packages/os/tests/facade/facade.test.ts",
+    "packages/os/tests/release-tool-surface.test.ts"
+  ],
+  "updatedAt": "2026-09-26T17:01:51.449Z"
+}

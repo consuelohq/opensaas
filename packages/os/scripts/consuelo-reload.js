@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 const { execFileSync, spawn } = require('child_process');
-const { existsSync, readFileSync, readdirSync, rmSync, writeFileSync } = require('fs');
+const { closeSync, existsSync, fstatSync, openSync, readFileSync, readSync, readdirSync, rmSync, writeFileSync } = require('fs');
 const os = require('os');
 const path = require('path');
 
@@ -25,8 +25,21 @@ const PRIMARY_LAUNCH_AGENT_BOOTSTRAP_ATTEMPTS = 4;
 const PRIMARY_LAUNCH_AGENT_BOOTSTRAP_RETRY_SECONDS = 0.2;
 const EXPECTED_SERVER_NAME = 'consuelo-os';
 const CONFLICTING_LABELS = ['com.consuelo.workspace'];
-const CONSUELO_HOME = process.env.CONSUELO_HOME || path.join(HOME, '.consuelo');
+function resolveConsueloHome() {
+  const configured = process.env.CONSUELO_HOME || process.env.CONSUELO_OS_HOME || path.join(HOME, '.consuelo');
+  const expanded = configured === '~'
+    ? HOME
+    : configured.startsWith('~/')
+      ? path.join(HOME, configured.slice(2))
+      : configured;
+  const resolved = path.resolve(expanded);
+  return path.basename(resolved) === 'os' && path.basename(path.dirname(resolved)) === '.consuelo'
+    ? path.dirname(resolved)
+    : resolved;
+}
+const CONSUELO_HOME = resolveConsueloHome();
 const WORKER_POOL_STATE = path.join(CONSUELO_HOME, 'node', 'runs', 'os-worker-pool.json');
+const MCP_RECEIPT_LOG = path.join(CONSUELO_HOME, 'node', 'logs', 'mcp-requests.jsonl');
 const CADDYFILE = path.join(CONSUELO_HOME, 'node', 'caddy', 'Caddyfile');
 const MAC_SUPERVISED_SIDECARS_MARKER = path.join(OS_DIR, 'scripts', 'lib', 'macos-supervised-sidecars.ts');
 const SUPERVISED_CADDY_PID = path.join(CONSUELO_HOME, 'node', 'runs', 'supervised-sidecars', 'caddy.pid');
@@ -36,6 +49,24 @@ const RETIRED_LAUNCHD_ENV_KEYS = ['MCP_BEARER_TOKEN'];
 
 function writeStdout(message = '') { process.stdout.write(`${message}\n`); }
 function writeStderr(message = '') { process.stderr.write(`${message}\n`); }
+
+function readTailLines(filePath, lineCount = 50, maxBytes = 256 * 1024) {
+  const fd = openSync(filePath, 'r');
+  try {
+    const size = fstatSync(fd).size;
+    const bytesToRead = Math.min(size, maxBytes);
+    const buffer = Buffer.alloc(bytesToRead);
+    if (bytesToRead > 0) readSync(fd, buffer, 0, bytesToRead, Math.max(0, size - bytesToRead));
+    let text = buffer.toString('utf8');
+    if (size > bytesToRead) {
+      const firstNewline = text.indexOf('\n');
+      if (firstNewline >= 0) text = text.slice(firstNewline + 1);
+    }
+    return text.trim().split('\n').slice(-lineCount).join('\n');
+  } finally {
+    closeSync(fd);
+  }
+}
 
 function runBestEffort(command, args = []) {
   try {
@@ -724,10 +755,24 @@ switch (command) {
     refreshManagedSitesBestEffort();
     break;
 
-  case 'logs':
-    if (existsSync(LOG_FILE)) spawn('tail', ['-50', LOG_FILE], { stdio: 'inherit' });
-    else writeStdout(`no logs at ${LOG_FILE}`);
+  case 'logs': {
+    let found = false;
+    if (existsSync(LOG_FILE)) {
+      found = true;
+      writeStdout(`system log: ${LOG_FILE}`);
+      writeStdout(readTailLines(LOG_FILE));
+    }
+    if (existsSync(MCP_RECEIPT_LOG)) {
+      found = true;
+      writeStdout(`recent MCP request receipts: ${MCP_RECEIPT_LOG}`);
+      writeStdout(readTailLines(MCP_RECEIPT_LOG));
+    }
+    if (!found) {
+      writeStdout(`no logs at ${LOG_FILE}`);
+      writeStdout(`no MCP request receipts at ${MCP_RECEIPT_LOG}`);
+    }
     break;
+  }
 
   default:
     writeStderr(`unknown command: ${command}`);
