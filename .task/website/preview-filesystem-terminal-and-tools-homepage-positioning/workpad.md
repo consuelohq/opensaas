@@ -37,15 +37,18 @@ no-test waiver: this reversible static copy/layout change uses existing tests, A
 
 ## files changed
 
+- `packages/consuelo-website/.gitignore`
 - `packages/consuelo-website/DESIGN.md`
+- `packages/consuelo-website/assets/encoded/consuelo-os-og-20260929-files.png.base64`
+- `packages/consuelo-website/scripts/generate-social-card.ts`
+- `packages/consuelo-website/scripts/materialize-public-assets.ts`
 - `packages/consuelo-website/src/components/home/HomeCloudCta.astro`
 - `packages/consuelo-website/src/components/home/HomeFeaturePreview.astro`
-- `packages/consuelo-website/src/data/home-content.ts`
-- `packages/consuelo-website/src/styles/primitives.css`
+- `packages/consuelo-website/src/lib/homepage-seo.ts`
+- `packages/consuelo-website/src/lib/site-seo.ts`
 - `packages/consuelo-website/src/styles/tokens.css`
 - `packages/consuelo-website/tests/homepage-mobile-layout.test.mjs`
-- `packages/consuelo-website/tests/homepage-responsive.test.mjs`
-- `packages/consuelo-website/tests/website-structure.test.js`
+- `packages/consuelo-website/tests/social-card.test.mjs`
 
 
 ## key decisions
@@ -105,6 +108,9 @@ no-test waiver: this reversible static copy/layout change uses existing tests, A
 - 2026-09-29 20:51:45 `verify`: passed — OK
 - 2026-09-29 20:53:27 `verify`: passed — OK
 - 2026-09-29 20:54:17 `verify`: passed — OK
+- 2026-09-29 20:55:13 `verify`: passed — OK
+- 2026-09-29 20:55:32 `verify`: passed — OK
+- 2026-09-29 20:58:54 `review.run`: passed — OK
 
 ## Implemented preview
 
@@ -157,3 +163,9 @@ SEO validation: rendered title, descriptions, OG/Twitter image paths and applica
 - Last website build: 24 routes, no Astro errors or warnings (existing hints only). Rebuild after final compact-footer CSS before release.
 - Local Cloudflare OAuth is authenticated for account 90b2b9dfeefcad97b9e2325b2b2e7a96 and has Pages write access. Existing production release workflow deploys consuelo-website on main; use its website deployment receipt and check the live custom domain after main integration.
 - Current remote main was verified at a099930e; only this task's website change should appear in the final stream-to-main diff.
+
+## Stream conflict resolution
+
+The website stream advanced with two existing tasks after the main snapshot: cloud card masking/normalization, refined hero cloud placement, workflow heading sizing, and removal of feature dividers. Merge those sibling changes into this task. Resolve five overlapping files by preserving our three-pillar grid/new home SEO and keeping the upstream cloud card generator fixes, v2 pricing/changelog/docs cards, materialization mappings, cloud CSS and evidence-divider removal. Preserve the stream heading-size fix outside the grid conflict. Re-render only the new home share card using the reconciled generator and rerun affected checks before recording/pushing the merge commit.
+
+Reconciled browser/presentation/social tests passed; new homepage card regenerated at 159205 bytes. Website build passed after the conflict resolution. Complete the ordinary Git merge through task-scoped code.call so both merge parents are preserved; task.push's API commit path only takes the prior task head as its parent. This is recovery of the failed task.pr promotion, within Ko's shipping authorization.

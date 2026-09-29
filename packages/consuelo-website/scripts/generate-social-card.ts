@@ -3,15 +3,16 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { chromium } from 'playwright';
+import sharp from 'sharp';
 
 const packageRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 const tokensPath = join(packageRoot, 'src/styles/tokens.css');
 
 export const socialCards = {
   home: { fileName: 'consuelo-os-og-20260929-files.png', label: 'CONSUELO OS', headline: ['GIVE YOUR AI', 'ACCESS TO', 'YOUR FILES.'], kicker: 'FILES · TERMINAL · TOOLS', domain: 'consuelohq.com' },
-  pricing: { fileName: 'consuelo-pricing-og-20260929-clouds.png', label: 'PRICING', headline: ['THE RIGHT PLAN,', 'FOR EVERY', 'WORKSPACE.'], kicker: 'FREE · PLUS · SUPER · ULTRA', domain: 'consuelohq.com/pricing' },
-  changelog: { fileName: 'consuelo-changelog-og-20260929-clouds.png', label: 'CHANGELOG', headline: ["WHAT'S NEW", 'IN YOUR', 'WORKSPACE.'], kicker: 'THE LATEST FROM CONSUELO OS', domain: 'consuelohq.com/changelog' },
-  docs: { fileName: 'consuelo-docs-og-20260929-clouds.png', label: 'DOCS', headline: ['BUILD YOUR', 'WORKSPACE,', 'CONNECT AGENTS.'], kicker: 'GET STARTED WITH CONSUELO OS', domain: 'docs.consuelohq.com' },
+  pricing: { fileName: 'consuelo-pricing-og-20260929-clouds-v2.png', label: 'PRICING', headline: ['THE RIGHT PLAN,', 'FOR EVERY', 'WORKSPACE.'], kicker: 'FREE · PLUS · SUPER · ULTRA', domain: 'consuelohq.com/pricing' },
+  changelog: { fileName: 'consuelo-changelog-og-20260929-clouds-v2.png', label: 'CHANGELOG', headline: ["WHAT'S NEW", 'IN YOUR', 'WORKSPACE.'], kicker: 'THE LATEST FROM CONSUELO OS', domain: 'consuelohq.com/changelog' },
+  docs: { fileName: 'consuelo-docs-og-20260929-clouds-v2.png', label: 'DOCS', headline: ['BUILD YOUR', 'WORKSPACE,', 'CONNECT AGENTS.'], kicker: 'GET STARTED WITH CONSUELO OS', domain: 'docs.consuelohq.com' },
 } as const;
 
 type CardKey = keyof typeof socialCards;
@@ -92,9 +93,16 @@ export const renderSocialCard = async (key: CardKey) => {
                 content: '';
                 pointer-events: none;
               }
-              .cloud { position: absolute; z-index: 0; max-width: none; pointer-events: none; }
-              .cloud--left { width: 630px; left: -220px; bottom: -205px; opacity: 0.38; }
-              .cloud--right { width: 700px; right: -270px; top: -235px; opacity: 0.34; }
+              .cloud {
+                position: absolute;
+                z-index: 0;
+                max-width: none;
+                pointer-events: none;
+                -webkit-mask-image: linear-gradient(to right, #000 0%, #000 52%, transparent 88%);
+                mask-image: linear-gradient(to right, #000 0%, #000 52%, transparent 88%);
+              }
+              .cloud--left { width: 760px; left: -220px; bottom: -245px; opacity: 0.56; }
+              .cloud--right { width: 820px; right: -300px; top: -120px; opacity: 0.5; }
               .quiet-zone {
                 position: absolute;
                 z-index: 1;
@@ -116,8 +124,6 @@ export const renderSocialCard = async (key: CardKey) => {
               }
               h1 span { display: block; white-space: nowrap; }
               .bottom {
-                border-top: 1px solid color-mix(in srgb, ${onBrand} 45%, transparent);
-                padding-top: 24px;
                 font-size: 18px;
               }
               .kicker { font-weight: 760; letter-spacing: 2px; }
@@ -148,7 +154,8 @@ export const renderSocialCard = async (key: CardKey) => {
       }));
       await page.screenshot({ type: 'png' });
       await page.waitForTimeout(100);
-      return await page.screenshot({ type: 'png' });
+      const screenshot = await page.screenshot({ type: 'png' });
+      return await sharp(screenshot).png({ palette: true, quality: 100, effort: 8 }).toBuffer();
     } finally {
       await browser.close();
     }

@@ -12,6 +12,11 @@ const assets = [
     output: `public/consuelo-${page}-og-20260929-clouds.png`,
     format: 'png',
   })),
+  ...['os', 'pricing', 'changelog', 'docs'].map((page) => ({
+    name: `consuelo-${page}-og-20260929-clouds-v2.png`,
+    output: `public/consuelo-${page}-og-20260929-clouds-v2.png`,
+    format: 'png',
+  })),
   ...[1, 2, 3, 4].map((index) => ({
     name: `dialer-cloud-0${index}.webp`,
     output: `public/images/clouds/dialer-cloud-0${index}.webp`,
