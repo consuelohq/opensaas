@@ -1,5 +1,6 @@
 ---
 import { homeFeaturePreviewItems } from '../../data/home-content';
+import CloudField from '../visuals/CloudField.astro';
 import FeatureEvidenceFigure from './FeatureEvidenceFigure.astro';
 import FeatureStoryControl from './FeatureStoryControl.astro';
 import FeatureStoryMemory from './FeatureStoryMemory.astro';
@@ -19,15 +20,7 @@ const { sectionId = 'features' } = Astro.props as Props;
 <section class="product-panel" id={sectionId} data-section="features">
   <div class="product-panel__paper">
     <div class="product-panel__preview">
-      <img
-        class="product-panel__preview-art"
-        src="/images/home/dither/cloud-2.png"
-        alt=""
-        width="1020"
-        height="390"
-        loading="lazy"
-        aria-hidden="true"
-      />
+      <CloudField variant="preview" />
       <PreviewNotice />
     </div>
 
@@ -119,20 +112,9 @@ const { sectionId = 'features' } = Astro.props as Props;
     pointer-events: none;
   }
 
-  .product-panel__preview-art {
-    position: absolute;
-    z-index: 0;
-    right: -6%;
-    bottom: -18%;
-    max-width: none;
-    image-rendering: pixelated;
-    opacity: 0.35;
-    pointer-events: none;
-  }
-
   .product-panel__preview :global(.preview-notice) {
     position: relative;
-    z-index: 2;
+    z-index: 3;
   }
 
   .product-panel__identity {

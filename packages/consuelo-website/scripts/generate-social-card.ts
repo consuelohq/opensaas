@@ -1,4 +1,4 @@
-import { readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -129,11 +129,14 @@ export const renderHomepageSocialCard = async () => {
 };
 
 export const writeHomepageSocialCard = async (
-  outputPath = join(packageRoot, 'public/consuelo-os-og-20260714.png'),
+  outputPath = join(packageRoot, 'public/consuelo-os-og-20260929.png'),
 ) => {
   try {
     const image = await renderHomepageSocialCard();
     await writeFile(outputPath, image);
+    const encodedPath = join(packageRoot, 'assets/encoded/consuelo-os-og-20260929.png.base64');
+    await mkdir(dirname(encodedPath), { recursive: true });
+    await writeFile(encodedPath, image.toString('base64') + '\n');
     return outputPath;
   } catch (err: unknown) {
     throw new Error(`Failed to write the homepage social card: ${getErrorMessage(err)}`, {

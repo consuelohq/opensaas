@@ -12,17 +12,18 @@ const testDirectory = dirname(fileURLToPath(import.meta.url));
 describe('Consuelo homepage social card', () => {
   test('should render the versioned card on Hermes blue when sharing the homepage', async () => {
     const [committed, generator] = await Promise.all([
-      readFile(join(testDirectory, '../public/consuelo-os-og-20260714.png')),
+      readFile(join(testDirectory, '../assets/encoded/consuelo-os-og-20260929.png.base64'), 'utf8'),
       readFile(join(testDirectory, '../scripts/generate-social-card.ts'), 'utf8'),
     ]);
-    const metadata = await sharp(committed).metadata();
-    const corner = await sharp(committed)
+    const image = Buffer.from(committed.trim(), 'base64');
+    const metadata = await sharp(image).metadata();
+    const corner = await sharp(image)
       .extract({ left: 0, top: 0, width: 1, height: 1 })
       .removeAlpha()
       .raw()
       .toBuffer();
 
-    expect(committed.subarray(1, 4).toString()).toBe('PNG');
+    expect(image.subarray(0, 8).toString('hex')).toBe('89504e470d0a1a0a');
     expect({ width: metadata.width, height: metadata.height }).toEqual({
       width: 1200,
       height: 630,
@@ -31,7 +32,7 @@ describe('Consuelo homepage social card', () => {
     expect(homepageSeo.socialCardHeadline).toBe(
       'Your workspace, connected to every agent.',
     );
-    expect(homepageSeo.image).toBe('/consuelo-os-og-20260714.png');
+    expect(homepageSeo.image).toBe('/consuelo-os-og-20260929.png');
     expect(generator).toContain('YOUR WORKSPACE,');
     expect(generator).toContain('CONNECTED TO');
     expect(generator).toContain('EVERY AGENT.');

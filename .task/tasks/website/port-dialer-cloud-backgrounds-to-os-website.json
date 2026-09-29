@@ -1,0 +1,16 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/port-dialer-cloud-backgrounds-to-os-website",
+  "baseBranch": "stream/website",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2609,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2609",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-port-dialer-cloud-backgrounds-to-os-website",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_4946ba89f20c",
+  "tmuxSession": "opensaas-website-port-dialer-cloud-backgrounds-to-os-website-4946ba89",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-port-dialer-cloud-backgrounds-to-os-website/.task/session.json",
+  "createdAt": "2026-09-29T18:10:30.379Z"
+}
