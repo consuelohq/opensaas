@@ -2,7 +2,7 @@ export const homepageSeo = {
   title: 'Consuelo OS | Your workspace, connected to every agent',
   description:
     'Connect ChatGPT, Codex, Claude, and the agents that come next to the same tools, memory, workflows, and machines.',
-  image: '/consuelo-os-og-20260714.png',
+  image: '/consuelo-os-og-20260929-clouds.png',
   imageAlt: 'Consuelo OS — Your workspace, connected to every agent.',
   socialCardHeadline: 'Your workspace, connected to every agent.',
 } as const;

@@ -30,3 +30,10 @@ scripts/preview-sheet.png
 
 # Generated from the committed SVG source during dev/build.
 public/generated/
+
+# Binary assets are materialized from text sources during build.
+/public/consuelo-os-og-20260714.png
+/public/consuelo-os-og-20260929.png
+/public/images/clouds/*.webp
+
+/public/consuelo-*-og-20260929-clouds.png
