@@ -677,6 +677,30 @@ test('homepage mobile layout and content follow the launch contract', { timeout:
     });
     await checkCenteredFooter(tabletPage);
     await tabletPage.close();
+
+    for (const viewport of [{ width: 568, height: 320 }, { width: 667, height: 375 }]) {
+      const landscapePage = await browser.newPage({ viewport });
+      await landscapePage.goto(server.baseUrl, { waitUntil: 'domcontentloaded' });
+      await landscapePage.evaluate(() => document.fonts.ready);
+      const footer = await landscapePage.evaluate(() => {
+        const rect = (selector) => document.querySelector(selector).getBoundingClientRect();
+        const copy = rect('.cloud-cta__copy');
+        const version = rect('.cloud-cta__version');
+        const signature = rect('.cloud-cta__signature');
+        return {
+          copyTop: copy.top,
+          copyBottom: copy.bottom,
+          detailsTop: Math.min(version.top, signature.top),
+          height: innerHeight,
+          overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+        };
+      });
+      assert.ok(footer.copyTop >= 0, `Footer clips above ${viewport.width}x${viewport.height}`);
+      assert.ok(footer.copyBottom <= footer.height, `Footer clips below ${viewport.width}x${viewport.height}`);
+      assert.ok(footer.copyBottom < footer.detailsTop, `Footer overlaps details at ${viewport.width}x${viewport.height}: ${JSON.stringify(footer)}`);
+      assert.equal(footer.overflow, 0);
+      await landscapePage.close();
+    }
   } finally {
     await browser.close();
     await server.stop();
