@@ -2,11 +2,6 @@
 import { homeFeaturePreviewItems } from '../../data/home-content';
 import CloudField from '../visuals/CloudField.astro';
 import FeatureEvidenceFigure from './FeatureEvidenceFigure.astro';
-import FeatureStoryControl from './FeatureStoryControl.astro';
-import FeatureStoryMemory from './FeatureStoryMemory.astro';
-import FeatureStoryObserve from './FeatureStoryObserve.astro';
-import FeatureStorySecure from './FeatureStorySecure.astro';
-import FeatureStorySwitch from './FeatureStorySwitch.astro';
 import HomeFaq from './HomeFaq.astro';
 import PreviewNotice from './PreviewNotice.astro';
 
@@ -36,38 +31,43 @@ const { sectionId = 'features' } = Astro.props as Props;
       <div class="product-story" data-feature-story>
         {
           homeFeaturePreviewItems.map((item) => (
-            <article class="product-story__chapter" data-feature-chapter={item.label.toLowerCase()}>
-              <div class="product-story__visual">
-                {
-                  item.evidence ? (
+            <article
+              class:list={['product-story__chapter', { 'product-story__chapter--demo': Boolean(item.evidence), 'product-story__chapter--summary': !item.evidence }]}
+              data-feature-chapter={item.label.toLowerCase()}
+            >
+              {
+                item.evidence && item.assetSrc && item.imageAlt && (
+                  <div class="product-story__visual">
                     <FeatureEvidenceFigure
                       imageSrc={item.assetSrc}
                       imageAlt={item.imageAlt}
                       evidence={item.evidence}
                     />
-                  ) : item.motif === 'remember' ? (
-                    <FeatureStoryMemory />
-                  ) : item.motif === 'multiplayer' ? (
-                    <FeatureStoryControl />
-                  ) : item.motif === 'observe' ? (
-                    <FeatureStoryObserve />
-                  ) : item.motif === 'secure' ? (
-                    <FeatureStorySecure />
-                  ) : (
-                    <FeatureStorySwitch />
-                  )
-                }
-              </div>
-
+                  </div>
+                )
+              }
               <div class="product-story__copy">
                 <p class="product-panel__index">
                   <span class="product-panel__index-number">#{item.number}</span>{' '}
                   <span class="product-panel__index-label">{item.label}</span>
                 </p>
-                <h3>
-                  {item.title.split('\n').map((line) => <span>{line}</span>)}
-                </h3>
+                <h3>{item.title.split('\n').map((line) => <span>{line}</span>)}</h3>
                 <p class="product-panel__description">{item.body}</p>
+                <div class="product-story__actions">
+                  <a class="site-button site-button--editorial" href={item.ctaHref}>
+                    {item.ctaLabel}
+                    <svg viewBox="0 0 6 9" fill="currentColor" aria-hidden="true">
+                      <rect x="0" y="0" width="1" height="9" />
+                      <rect x="1" y="1" width="1" height="1" />
+                      <rect x="2" y="2" width="1" height="1" />
+                      <rect x="3" y="3" width="1" height="1" />
+                      <rect x="4" y="4" width="1" height="1" />
+                      <rect x="3" y="5" width="1" height="1" />
+                      <rect x="2" y="6" width="1" height="1" />
+                      <rect x="1" y="7" width="1" height="1" />
+                    </svg>
+                  </a>
+                </div>
               </div>
             </article>
           ))
@@ -164,28 +164,51 @@ const { sectionId = 'features' } = Astro.props as Props;
 
   .product-story {
     display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: var(--site-space-8);
   }
 
   .product-story__chapter {
-    display: grid;
-    grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.7fr);
-    gap: clamp(2rem, 4.5vw, 5rem);
-    min-height: min(88vh, 58rem);
-    padding-block: clamp(3rem, 7vw, 6rem);
     min-width: 0;
+    padding-block: var(--site-space-7) var(--site-space-section);
+  }
+
+  .product-story__chapter--demo {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.9fr);
+    align-items: center;
+    gap: var(--site-space-7);
+  }
+
+  .product-story__chapter--summary {
+    display: grid;
+    grid-template-rows: subgrid;
+    grid-row: span 4;
+  }
+
+  .product-story__chapter--summary .product-story__copy {
+    display: contents;
   }
 
   .product-story__visual {
-    position: sticky;
-    top: clamp(1rem, 8vh, 5rem);
-    align-self: start;
+    position: static;
     min-width: 0;
   }
 
   .product-story__copy {
     align-self: center;
     min-width: 0;
-    padding-block: 1rem;
+  }
+
+  .product-story__actions {
+    margin-top: var(--site-space-5);
+  }
+
+  .product-story__actions svg {
+    width: var(--site-space-3);
+    height: var(--site-space-4);
+    shape-rendering: crispEdges;
   }
 
   .product-panel__index {
@@ -205,7 +228,7 @@ const { sectionId = 'features' } = Astro.props as Props;
     font-size: clamp(2.25rem, 2.8vw, 3.5rem);
     font-weight: 440;
     letter-spacing: 0;
-    line-height: 0.82;
+    line-height: var(--site-leading-tight);
   }
 
   .product-story__copy h3 span {
@@ -216,24 +239,26 @@ const { sectionId = 'features' } = Astro.props as Props;
     max-width: 29rem;
     margin: 0;
     color: var(--site-color-brand);
-    font: 590 clamp(0.65rem, 0.85vw, 0.8rem)/1.65 var(--site-font-mono);
-    letter-spacing: 0.075em;
-    text-transform: uppercase;
+    font: 400 var(--site-text-md)/var(--site-leading-body) var(--site-font-body);
+    text-wrap: pretty;
   }
 
   @media (max-width: 1100px) {
-    .product-story__chapter {
+    .product-story__chapter--demo {
       grid-template-columns: 1fr;
-      gap: 1.5rem;
-      min-height: 0;
+      gap: var(--site-space-6);
+    }
+
+    .product-story__chapter--demo .product-story__copy {
+      order: 1;
     }
 
     .product-story__visual {
-      position: static;
+      order: 2;
     }
 
     .product-story__copy h3 {
-      font-size: clamp(2.5rem, 5vw, 3.8rem);
+      font-size: var(--site-text-3xl);
     }
   }
 
@@ -256,54 +281,21 @@ const { sectionId = 'features' } = Astro.props as Props;
       line-height: 0.8;
     }
 
-    .product-story__chapter {
+    .product-story {
       grid-template-columns: 1fr;
-      gap: 1.5rem;
-      min-height: 0;
-      padding-block: 3rem 4.25rem;
+      column-gap: 0;
     }
 
-    .product-story__visual {
-      position: static;
-      order: 2;
+    .product-story__chapter {
+      padding-block: var(--site-space-6) var(--site-space-7);
     }
 
-    .product-story__copy {
-      order: 1;
-      padding: 0;
+    .product-story__chapter--demo {
+      grid-column: auto;
     }
 
     .product-story__copy h3 {
-      font-size: clamp(2.8rem, 13vw, 4rem);
-    }
-
-    .product-panel__description {
-      font-size: 0.6rem;
+      font-size: var(--site-text-3xl);
     }
   }
 </style>
-
-<script>
-  const storySurfaces = Array.from(document.querySelectorAll('[data-story-animate]'));
-  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  if (reducedMotion || !('IntersectionObserver' in window)) {
-    storySurfaces.forEach((surface) => surface.setAttribute('data-story-active', 'true'));
-  } else {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (!entry.isIntersecting) return;
-          entry.target.setAttribute('data-story-active', 'true');
-          observer.unobserve(entry.target);
-        });
-      },
-      { threshold: 0.35 },
-    );
-
-    storySurfaces.forEach((surface) => {
-      surface.setAttribute('data-story-ready', 'true');
-      observer.observe(surface);
-    });
-  }
-</script>

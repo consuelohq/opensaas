@@ -1,3 +1,5 @@
+import { homepageSeo } from './homepage-seo';
+
 export type StructuredData = {
   [key: string]: unknown;
 };
@@ -10,13 +12,12 @@ export type FaqItem = {
 export const siteMetadata = {
   siteUrl: 'https://consuelohq.com',
   siteName: 'Consuelo',
-  defaultTitle: 'Consuelo OS | Your workspace, connected to every agent',
-  defaultDescription:
-    'Connect ChatGPT, Codex, Claude, and the agents that come next to the same tools, memory, workflows, and machines.',
+  defaultTitle: homepageSeo.title,
+  defaultDescription: homepageSeo.description,
   blogTitle: 'The Consuelo Blog',
   blogDescription:
     'Product updates, implementation notes, and technical writing from the Consuelo team.',
-  defaultOgImage: '/og.png',
+  defaultOgImage: homepageSeo.image,
   robots: 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1',
   themeColorLight: '#0000F2',
   themeColorDark: '#0000F2',

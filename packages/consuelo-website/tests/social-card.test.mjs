@@ -35,7 +35,7 @@ describe('Consuelo social cards', () => {
     }
   });
 
-  test('should use the cloud card for the homepage share image', () => {
-    expect(homepageSeo.image).toBe('/consuelo-os-og-20260929-clouds-v2.png');
+  test('should use the new file-access card for the homepage share image', () => {
+    expect(homepageSeo.image).toBe('/consuelo-os-og-20260929-files.png');
   });
 });
