@@ -16,17 +16,19 @@ The page should feel precise, sparse, and product-focused. Blue establishes the 
 
 1. Full-bleed blue hero with compact navigation, direct positioning, sign-in, and local install.
 2. A visible hint of the next white panel in the first viewport.
-3. White editorial product panel with a blue preview strip, large section wordmarks, and six product chapters that share one evidence-stage grammar.
-4. On desktop, each chapter gives the visual evidence the dominant column and keeps it sticky while the accompanying product statement moves through the viewport. On mobile the statement and its evidence stack naturally.
-5. Evidence uses a consistent `2032 / 1192` stage when possible, but the medium changes with the capability: recorded product footage for CONNECT, structured workspace data for REMEMBER, product-derived visualization for OBSERVE, and purpose-built product diagrams or real output for the remaining chapters.
+3. White editorial product panel with the existing preview strip and feature wordmark. Three pillars explain file access, commands on the user's computer, and reusable agent tools.
+4. The recorded demo and its copy share a vertical center on desktop. Commands and tools use two compact text columns; mobile stacks naturally. Readable body copy uses sentence-case Inter.
+5. Keep the real recording in its `2032 / 1192` stage. Avoid invented memory databases and workflow diagrams in the public funnel; supporting explanations belong in the FAQ and docs.
 6. Large FAQ typography and an accessible disclosure list.
-7. Full-bleed Consuelo Cloud close with the holding-world illustration.
+7. Full-bleed closing section centered within the existing scroll reveal: Work solo. Bring your team. Preserve the illustration removal, existing rectangular button treatment, and license signature.
 
 ## Media
 
 Feature media is evidence, not decoration. Do not force every capability into the same screenshot or video treatment. Use the smallest medium that makes the outcome obvious: real recordings when the cross-application behavior matters, deterministic HTML/CSS when the product concept is better explained as data, and cropped first-party product UI when the interface itself is the proof. Existing Consuelo illustrations remain temporary fallback media while a chapter is still being developed.
 
-The current feature proof language is intentionally mixed by capability: CONNECT uses real agent footage; REMEMBER borrows the search/get shape of workspace memory; CONTROL visualizes the real task/review/verify workflow; OBSERVE mirrors the internal Home 7-day × 24-hour trace heatmap levels and hover/focus detail; SECURE uses the real scoped-resource and browser-sealed-secret model; SWITCH keeps one work object fixed while agent surfaces hand off around it. Public examples must stay deterministic and sanitized even when their interaction model comes directly from internal product UI.
+The homepage uses real agent footage to establish the connection, and direct copy to explain file access, terminal execution and shared tools. Product examples must remain accurate and sanitized. A recorded connectivity check must not be presented as footage of a different task.
+
+The editorial button primitive preserves rectangular controls and technical labels; `--site-tracking-control` matches the existing hero control tracking. Footer title-size tokens keep the two-line closing message readable at desktop and phone widths without changing hero sizing.
 
 Do not ship large animated GIFs. Do not invent additional decorative art when an existing product asset can explain the state.
 

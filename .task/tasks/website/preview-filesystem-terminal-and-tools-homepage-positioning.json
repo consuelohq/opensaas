@@ -1,0 +1,16 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/preview-filesystem-terminal-and-tools-homepage-positioning",
+  "baseBranch": "stream/website",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2616,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2616",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-preview-filesystem-terminal-and-tools-homepage-positioning",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_ddbcdb7353da",
+  "tmuxSession": "opensaas-website-preview-filesystem-terminal-and-tools-homepage-p-ddbcdb73",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-preview-filesystem-terminal-and-tools-homepage-positioning/.task/session.json",
+  "createdAt": "2026-09-29T19:54:01.455Z"
+}

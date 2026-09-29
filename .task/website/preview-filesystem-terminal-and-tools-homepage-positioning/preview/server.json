@@ -1,0 +1,7 @@
+{
+  "pid": 79701,
+  "port": 55737,
+  "localUrl": "http://127.0.0.1:55737",
+  "tailscaleUrl": "https://picassos-mac-mini.tail38ed59.ts.net:8448/",
+  "log": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-preview-filesystem-terminal-and-tools-homepage-positioning/.task/website/preview-filesystem-terminal-and-tools-homepage-positioning/preview/server.log"
+}

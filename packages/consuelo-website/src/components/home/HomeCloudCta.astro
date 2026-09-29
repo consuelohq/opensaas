@@ -1,4 +1,5 @@
 ---
+import { homeWorkspaceClose } from '../../data/home-content';
 ---
 
 <section
@@ -9,22 +10,17 @@
   inert
 >
   <div class="cloud-cta__copy">
-    <p class="cloud-cta__eyebrow">FREE <span aria-hidden="true">•</span> PLUS <span aria-hidden="true">•</span> SUPER <span aria-hidden="true">•</span> ULTRA</p>
+    <p class="cloud-cta__eyebrow">{homeWorkspaceClose.eyebrow}</p>
     <h2 id="cloud-cta-title">
-      <span data-cloud-title-line>CONSUELO</span>
-      <span data-cloud-title-line>CLOUD</span>
+      {homeWorkspaceClose.title.split('\n').map((line) => <span data-cloud-title-line>{line}</span>)}
     </h2>
-    <p class="cloud-cta__description">
-      <span>KEEP THE SAME WORKSPACE AND LET CONSUELO</span>
-      <span>RUN THE HOME NODE FOR YOU</span>
-    </p>
-    <a href="/pricing">VIEW ALL OUR PLANS</a>
+    <p class="cloud-cta__description">{homeWorkspaceClose.description}</p>
+    <div class="cloud-cta__actions">
+      <a class="cloud-cta__primary" href={homeWorkspaceClose.primaryHref}>{homeWorkspaceClose.primaryLabel}</a>
+      <a class="cloud-cta__secondary" href={homeWorkspaceClose.secondaryHref}>{homeWorkspaceClose.secondaryLabel}</a>
+    </div>
   </div>
 
-  <p class="cloud-cta__wordmark" aria-hidden="true">
-    <span data-cloud-word-line>CONSUELO</span>
-    <span data-cloud-word-line>CLOUD</span>
-  </p>
   <p class="cloud-cta__version">CONSUELO OS <span>V0.10.3</span></p>
   <div class="cloud-cta__signature" aria-label="Consuelo OS, MIT License, 2026">
     <span>CONSUELO</span>
@@ -44,24 +40,24 @@
     width: 100%;
     height: 100svh;
     height: 100dvh;
-    place-items: start center;
+    place-items: center;
     overflow: hidden;
     background: var(--site-color-brand);
-    color: white;
+    color: var(--site-color-on-brand);
     opacity: var(--cloud-reveal-opacity);
-    padding: 7dvh var(--cloud-gutter) 0;
+    padding: var(--site-space-7) var(--cloud-gutter);
     pointer-events: var(--cloud-reveal-pointer-events);
     text-align: center;
-    transition: opacity 120ms linear;
+    transition: opacity var(--site-motion-fast) linear;
   }
 
   .cloud-cta__copy {
     position: relative;
     z-index: 4;
     display: grid;
-    width: min(46vw, 42rem);
+    width: min(100%, var(--site-container-max));
     justify-items: center;
-    gap: clamp(0.55rem, 1.25vh, 0.8rem);
+    gap: var(--site-space-5);
   }
 
   .cloud-cta__eyebrow,
@@ -76,50 +72,45 @@
   .cloud-cta__eyebrow {
     margin: 0;
     font-weight: 650;
-    letter-spacing: 0.16em;
   }
 
   .cloud-cta h2 {
     width: 100%;
     min-width: 0;
     margin: 0;
-    color: white;
+    color: var(--site-color-on-brand);
     font-family: var(--site-font-display);
-    font-size: clamp(2.8rem, 4.4vw, 4rem);
+    font-size: var(--site-footer-title-size);
     font-weight: 430;
-    letter-spacing: 0.01em;
-    line-height: 0.88;
-    white-space: nowrap;
+    line-height: var(--site-leading-tight);
   }
 
-  .cloud-cta h2 [data-cloud-title-line]:first-child::after {
-    content: ' ';
-  }
-
-  .cloud-cta__description {
-    display: grid;
-    max-width: 34rem;
-    margin: 0;
-    color: rgba(255, 255, 255, 0.84);
-    font-family: var(--site-font-mono);
-    font-size: clamp(0.64rem, 0.9vw, 0.76rem);
-    font-weight: 500;
-    line-height: 1.5;
-    letter-spacing: 0.11em;
-    text-wrap: balance;
-  }
-
-  .cloud-cta__description span {
+  .cloud-cta h2 [data-cloud-title-line] {
     display: block;
   }
 
-  .cloud-cta a {
+  .cloud-cta__description {
+    max-width: 36rem;
+    margin: 0;
+    color: var(--site-color-muted-on-brand);
+    font: 400 var(--site-text-md)/var(--site-leading-body) var(--site-font-body);
+    text-wrap: balance;
+  }
+
+  .cloud-cta__actions {
+    display: grid;
+    justify-items: center;
+    gap: var(--site-space-5);
+    margin-top: var(--site-space-4);
+  }
+
+  .cloud-cta__primary {
     display: grid;
     width: 12.5rem;
     min-height: 2.35rem;
     place-items: center;
-    border: 1px solid white;
-    background: white;
+    border: 1px solid var(--site-color-on-brand);
+    background: var(--site-color-on-brand);
     color: var(--site-color-brand);
     font: 600 0.68rem/1 var(--site-font-mono);
     letter-spacing: 0.11em;
@@ -127,33 +118,16 @@
     transition: background var(--site-motion-fast), color var(--site-motion-fast);
   }
 
-  .cloud-cta a:hover,
-  .cloud-cta a:focus-visible {
+  .cloud-cta__primary:hover,
+  .cloud-cta__primary:focus-visible {
     background: transparent;
-    color: white;
+    color: var(--site-color-on-brand);
   }
 
-  .cloud-cta__wordmark {
-    position: absolute;
-    z-index: 1;
-    top: 34dvh;
-    left: 50%;
-    margin: 0;
-    color: rgba(255, 255, 255, 0.16);
-    font-family: var(--site-font-display);
-    font-size: clamp(7rem, 10.2vw, 9.5rem);
-    line-height: 0.72;
-    transform: translateX(-50%);
-    white-space: nowrap;
-  }
-
-  .cloud-cta__wordmark [data-cloud-word-line] {
-    display: block;
-  }
-
-  .cloud-cta__wordmark [data-cloud-word-line]:last-child {
-    margin-top: 0.13em;
-    font-size: 0.68em;
+  .cloud-cta__secondary {
+    color: var(--site-color-on-brand);
+    font: 600 var(--site-text-xs)/1.4 var(--site-font-mono);
+    text-underline-offset: var(--site-space-1);
   }
 
   .cloud-cta__version,
@@ -190,58 +164,33 @@
     .cloud-cta {
       --cloud-gutter: clamp(5rem, 13vw, 6.5rem);
     }
-
-    .cloud-cta__copy {
-      width: min(74vw, 36rem);
-    }
-
-    .cloud-cta h2 {
-      font-size: clamp(3.05rem, 7.1vw, 3.85rem);
-    }
-
   }
 
   @media (max-width: 600px) {
     .cloud-cta {
       --cloud-gutter: 0.75rem;
-      padding: 3.5rem var(--cloud-gutter) 0;
     }
 
     .cloud-cta__copy {
-      width: min(100%, 22rem);
-      gap: 0.55rem;
+      gap: var(--site-space-4);
+    }
+
+    .cloud-cta__eyebrow {
+      font-size: var(--site-text-xs);
     }
 
     .cloud-cta h2 {
-      font-size: clamp(3.1rem, 14.7vw, 3.8rem);
-      line-height: 0.82;
-      white-space: normal;
-    }
-
-    .cloud-cta h2 [data-cloud-title-line] {
-      display: block;
-      white-space: nowrap;
-    }
-
-    .cloud-cta h2 [data-cloud-title-line]:first-child::after {
-      content: none;
+      font-size: var(--site-footer-title-size-mobile);
     }
 
     .cloud-cta__description {
       max-width: 21rem;
-      font-size: 0.58rem;
-      line-height: 1.5;
-      letter-spacing: 0.09em;
     }
 
-    .cloud-cta a {
+    .cloud-cta__primary {
       width: 12rem;
       min-height: 2.2rem;
       font-size: 0.62rem;
-    }
-
-    .cloud-cta__wordmark {
-      display: none;
     }
 
     .cloud-cta__version,
@@ -262,7 +211,6 @@
       justify-items: start;
       text-align: left;
     }
-
   }
 
   @media (prefers-reduced-motion: reduce) {
