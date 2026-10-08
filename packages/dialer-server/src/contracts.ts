@@ -176,6 +176,12 @@ export type LeadConnectorServerApplication = {
     { workspaceId: string; locationId: string; connected: true },
     LeadConnectorError
   >;
+  completeMarketplaceOAuth: (input: {
+    code: string;
+  }) => Effect.Effect<
+    { companyId: string; connected: true },
+    LeadConnectorError
+  >;
   processWebhook: (input: {
     rawBody: string;
     headers: Record<string, string | undefined>;

@@ -8,6 +8,7 @@ export {
 } from './constants.js';
 
 export type {
+  LeadConnectorCompanyCredential,
   LeadConnectorConfiguration,
   LeadConnectorContact,
   LeadConnectorHttpMethod,
@@ -42,6 +43,7 @@ export type { LeadConnectorError } from './errors.js';
 
 export {
   LeadConnectorClock,
+  LeadConnectorCompanyCredentialStore,
   LeadConnectorConfig,
   LeadConnectorHttpTransport,
   LeadConnectorInstallationStore,
@@ -54,6 +56,7 @@ export {
 } from './ports/index.js';
 export type {
   LeadConnectorClockService,
+  LeadConnectorCompanyCredentialStoreService,
   LeadConnectorHttpTransportService,
   LeadConnectorInstallationStoreService,
   LeadConnectorOAuthStateStoreService,
@@ -69,6 +72,11 @@ export {
   beginLeadConnectorOAuth,
   completeLeadConnectorOAuth,
 } from './application/oauth.js';
+export {
+  completeLeadConnectorMarketplaceOAuth,
+  getValidLeadConnectorCompanyAccessToken,
+  provisionLeadConnectorLocationFromCompany,
+} from './application/marketplace-oauth.js';
 export {
   exchangeLeadConnectorToken,
   getValidLeadConnectorAccessToken,

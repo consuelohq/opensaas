@@ -26,6 +26,7 @@ const createDependencies = (): DialerServerDependencies => ({
   leadConnector: {
     beginOAuth: () => Effect.die('not used'),
     completeOAuth: () => Effect.die('not used'),
+    completeMarketplaceOAuth: () => Effect.die('not used'),
     processWebhook: () => Effect.die('not used'),
     disableInstallation: () => Effect.die('not used'),
     listContacts: mock(() =>

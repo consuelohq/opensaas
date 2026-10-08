@@ -1,6 +1,7 @@
 import { Effect, Layer } from 'effect';
 
 import type {
+  LeadConnectorCompanyCredential,
   LeadConnectorInstallation,
   LeadConnectorOAuthState,
 } from '../contracts/index.js';
@@ -10,6 +11,7 @@ import {
   errorMessage,
 } from '../errors.js';
 import {
+  LeadConnectorCompanyCredentialStore,
   LeadConnectorInstallationStore,
   LeadConnectorOAuthStateStore,
   LeadConnectorWebhookEventStore,
@@ -45,6 +47,16 @@ type InstallationRow = {
   updated_at: string | Date;
 };
 
+type CompanyCredentialRow = {
+  company_id: string;
+  access_token_ciphertext: string;
+  refresh_token_ciphertext: string;
+  expires_at: string | Date;
+  scopes: unknown;
+  connected_at: string | Date;
+  updated_at: string | Date;
+};
+
 const INSTALLATION_TABLE = 'consuelo_lead_connector_installations';
 const CREATE_INSTALLATION_TABLE_SQL = `
   CREATE TABLE IF NOT EXISTS consuelo_lead_connector_installations (
@@ -62,6 +74,19 @@ const CREATE_INSTALLATION_TABLE_SQL = `
 const CREATE_INSTALLATION_LOCATION_INDEX_SQL = `
   CREATE INDEX IF NOT EXISTS consuelo_lead_connector_installations_location_idx
     ON consuelo_lead_connector_installations (location_id)
+`;
+const COMPANY_CREDENTIAL_TABLE =
+  'consuelo_lead_connector_company_credentials';
+const CREATE_COMPANY_CREDENTIAL_TABLE_SQL = `
+  CREATE TABLE IF NOT EXISTS consuelo_lead_connector_company_credentials (
+    company_id text PRIMARY KEY,
+    access_token_ciphertext text NOT NULL,
+    refresh_token_ciphertext text NOT NULL,
+    expires_at timestamptz NOT NULL,
+    scopes jsonb NOT NULL DEFAULT '[]'::jsonb,
+    connected_at timestamptz NOT NULL,
+    updated_at timestamptz NOT NULL
+  )
 `;
 const DEFAULT_WEBHOOK_TTL_SECONDS = 7 * 24 * 60 * 60;
 
@@ -97,6 +122,18 @@ const toInstallation = (row: InstallationRow): LeadConnectorInstallation => ({
   updatedAt: asIsoString(row.updated_at),
 });
 
+const toCompanyCredential = (
+  row: CompanyCredentialRow,
+): LeadConnectorCompanyCredential => ({
+  companyId: row.company_id,
+  accessTokenCiphertext: row.access_token_ciphertext,
+  refreshTokenCiphertext: row.refresh_token_ciphertext,
+  expiresAt: asIsoString(row.expires_at),
+  scopes: parseScopes(row.scopes),
+  connectedAt: asIsoString(row.connected_at),
+  updatedAt: asIsoString(row.updated_at),
+});
+
 const databaseEffect = <T>(
   operation: string,
   run: () => Promise<T>,
@@ -114,6 +151,7 @@ export const initializeLeadConnectorPersistence = (
   database
     .query(CREATE_INSTALLATION_TABLE_SQL)
     .then(() => database.query(CREATE_INSTALLATION_LOCATION_INDEX_SQL))
+    .then(() => database.query(CREATE_COMPANY_CREDENTIAL_TABLE_SQL))
     .then(() => undefined);
 
 export const createPersistentLeadConnectorStoreLayer = (options: {
@@ -146,6 +184,18 @@ export const createPersistentLeadConnectorStoreLayer = (options: {
       )
       .then((result) =>
         result.rows[0] ? toInstallation(result.rows[0]) : null,
+      );
+
+  const companyCredentialByCompanyId = (
+    companyId: string,
+  ): Promise<LeadConnectorCompanyCredential | null> =>
+    options.database
+      .query<CompanyCredentialRow>(
+        `SELECT * FROM ${COMPANY_CREDENTIAL_TABLE} WHERE company_id = $1 LIMIT 1`,
+        [companyId],
+      )
+      .then((result) =>
+        result.rows[0] ? toCompanyCredential(result.rows[0]) : null,
       );
 
   return Layer.mergeAll(
@@ -222,6 +272,38 @@ export const createPersistentLeadConnectorStoreLayer = (options: {
             .query(
               `DELETE FROM ${INSTALLATION_TABLE} WHERE workspace_id = $1`,
               [workspaceId],
+            )
+            .then(() => undefined),
+        ),
+    }),
+    Layer.succeed(LeadConnectorCompanyCredentialStore, {
+      getByCompanyId: (companyId) =>
+        databaseEffect('get-company-credential', () =>
+          companyCredentialByCompanyId(companyId),
+        ),
+      save: (credential) =>
+        databaseEffect('save-company-credential', () =>
+          options.database
+            .query(
+              `INSERT INTO ${COMPANY_CREDENTIAL_TABLE} (
+                company_id, access_token_ciphertext, refresh_token_ciphertext,
+                expires_at, scopes, connected_at, updated_at
+              ) VALUES ($1,$2,$3,$4,$5::jsonb,$6,$7)
+              ON CONFLICT (company_id) DO UPDATE SET
+                access_token_ciphertext = EXCLUDED.access_token_ciphertext,
+                refresh_token_ciphertext = EXCLUDED.refresh_token_ciphertext,
+                expires_at = EXCLUDED.expires_at,
+                scopes = EXCLUDED.scopes,
+                updated_at = EXCLUDED.updated_at`,
+              [
+                credential.companyId,
+                credential.accessTokenCiphertext,
+                credential.refreshTokenCiphertext,
+                credential.expiresAt,
+                JSON.stringify(credential.scopes),
+                credential.connectedAt,
+                credential.updatedAt,
+              ],
             )
             .then(() => undefined),
         ),

@@ -2,6 +2,7 @@ import { Context, type Effect } from 'effect';
 
 import type {
   LeadConnectorConfiguration,
+  LeadConnectorCompanyCredential,
   LeadConnectorHttpRequest,
   LeadConnectorHttpResponse,
   LeadConnectorInstallation,
@@ -72,6 +73,20 @@ export type LeadConnectorInstallationStoreService = {
 export const LeadConnectorInstallationStore =
   Context.GenericTag<LeadConnectorInstallationStoreService>(
     '@consuelo/lead-connector/InstallationStore',
+  );
+
+export type LeadConnectorCompanyCredentialStoreService = {
+  getByCompanyId: (
+    companyId: string,
+  ) => Effect.Effect<LeadConnectorCompanyCredential | null, LeadConnectorStateError>;
+  save: (
+    credential: LeadConnectorCompanyCredential,
+  ) => Effect.Effect<void, LeadConnectorStateError>;
+};
+
+export const LeadConnectorCompanyCredentialStore =
+  Context.GenericTag<LeadConnectorCompanyCredentialStoreService>(
+    '@consuelo/lead-connector/CompanyCredentialStore',
   );
 
 export type LeadConnectorOAuthStateStoreService = {

@@ -37,6 +37,12 @@ const createDependencies = (): DialerServerDependencies => ({
         connected: true as const,
       }),
     ),
+    completeMarketplaceOAuth: mock(() =>
+      Effect.succeed({
+        companyId: 'company-1',
+        connected: true as const,
+      }),
+    ),
     processWebhook: mock(() =>
       Effect.succeed({
         accepted: true as const,
@@ -158,6 +164,25 @@ describe('dialer-server LeadConnector boundary', () => {
       code: 'code-1',
       state: 'state-1',
     });
+  });
+
+  it('accepts the native Marketplace bulk-install callback without inventing OAuth state', async () => {
+    const dependencies = createDependencies();
+    const response = await createDialerServer(dependencies).request(
+      '/v1/integrations/leadconnector/callback?code=marketplace-code',
+    );
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({
+      connected: true,
+      companyId: 'company-1',
+    });
+    expect(
+      dependencies.leadConnector?.completeMarketplaceOAuth,
+    ).toHaveBeenCalledWith({
+      code: 'marketplace-code',
+    });
+    expect(dependencies.leadConnector?.completeOAuth).not.toHaveBeenCalled();
   });
 
   it('passes raw webhook bytes and provider-owned headers without exposing internal state', async () => {
