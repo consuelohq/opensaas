@@ -72,6 +72,26 @@ describe('LeadConnector Cloudflare embed edge', () => {
     expect(fixture.assetRequests).toHaveLength(0);
   });
 
+  it('rewrites the marketplace OAuth callback to the canonical backend callback', async () => {
+    const fixture = createEnvironment();
+    const worker = createLeadConnectorEdgeWorker(
+      fixture.environment.fetchOrigin,
+    );
+    const response = await worker.fetch(
+      new Request(
+        'https://dialer.example.test/api/lead-connector-embed/auth/callback?code=code-1&state=state-1',
+      ),
+      fixture.environment,
+    );
+
+    expect(response.status).toBe(201);
+    expect(fixture.originRequests).toHaveLength(1);
+    expect(fixture.originRequests[0]?.url).toBe(
+      'https://dialer-origin.example.test/v1/integrations/leadconnector/callback?code=code-1&state=state-1',
+    );
+    expect(fixture.assetRequests).toHaveLength(0);
+  });
+
   it('replaces forged client identity with a signed Cloudflare-observed identity for public customer APIs', async () => {
     const fixture = createEnvironment();
     const worker = createLeadConnectorEdgeWorker(

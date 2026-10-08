@@ -22,6 +22,11 @@ const PROXY_PREFIXES = [
   '/health',
 ] as const;
 
+const MARKETPLACE_OAUTH_CALLBACK_PATH =
+  '/api/lead-connector-embed/auth/callback';
+const BACKEND_OAUTH_CALLBACK_PATH =
+  '/v1/integrations/leadconnector/callback';
+
 const APPLICATION_SHELL_PATHS = new Set([
   '/',
   '/admin',
@@ -39,6 +44,7 @@ const STABLE_MARKETPLACE_ASSET_PATHS = new Set([
 ]);
 
 const shouldProxy = (pathname: string): boolean =>
+  pathname === MARKETPLACE_OAUTH_CALLBACK_PATH ||
   PROXY_PREFIXES.some((prefix) =>
     prefix.endsWith('/') ? pathname.startsWith(prefix) : pathname === prefix,
   );
@@ -216,6 +222,9 @@ export const createLeadConnectorEdgeWorker = (
           return new Response('Dialer origin is not configured', { status: 503 });
         }
         const target = originUrl(request, origin);
+        if (source.pathname === MARKETPLACE_OAUTH_CALLBACK_PATH) {
+          target.pathname = BACKEND_OAUTH_CALLBACK_PATH;
+        }
         const proxied = isPublicCustomerApi(source.pathname)
           ? await signedCustomerRequest(request, target, environment, clock)
           : new Request(target, request);

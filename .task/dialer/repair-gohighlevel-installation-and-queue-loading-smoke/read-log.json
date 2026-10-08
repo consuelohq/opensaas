@@ -1,0 +1,14 @@
+{
+  "files": [
+    ".task/dialer/repair-gohighlevel-installation-and-queue-loading-smoke/workpad.md",
+    "packages/dialer-server/src/errors.ts",
+    "packages/dialer-server/src/runtime/railway.ts",
+    "packages/lead-connector/package.json",
+    "packages/lead-connector/src/application/resources.ts",
+    "packages/lead-connector/src/embed/cloudflare-worker.test.ts",
+    "packages/lead-connector/src/embed/cloudflare-worker.ts",
+    "packages/lead-connector/wrangler.jsonc",
+    "packages/os/tools/railway/handler.test.ts"
+  ],
+  "updatedAt": "2026-10-08T02:00:38.106Z"
+}
