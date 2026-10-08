@@ -28,6 +28,16 @@ export type LeadConnectorInstallation = {
   updatedAt: string;
 };
 
+export type LeadConnectorCompanyCredential = {
+  companyId: string;
+  accessTokenCiphertext: string;
+  refreshTokenCiphertext: string;
+  expiresAt: string;
+  scopes: string[];
+  connectedAt: string;
+  updatedAt: string;
+};
+
 export type LeadConnectorUserContext = {
   userId: string;
   companyId: string;

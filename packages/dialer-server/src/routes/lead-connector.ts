@@ -57,8 +57,23 @@ export const createLeadConnectorPublicRoutes = (
       }
       const code = context.req.query('code');
       const state = context.req.query('state');
-      if (!code || !state) {
-        return invalidRequestResponse(context, 'Code and state are required');
+      if (!code) {
+        return invalidRequestResponse(context, 'Code is required');
+      }
+      if (!state) {
+        const marketplaceResult = await runApplicationEffect(
+          application.completeMarketplaceOAuth({ code }),
+        );
+        if (!marketplaceResult.ok) {
+          return leadConnectorErrorResponse(
+            context,
+            marketplaceResult.error,
+          );
+        }
+        return context.json({
+          connected: marketplaceResult.value.connected,
+          companyId: marketplaceResult.value.companyId,
+        });
       }
       const result = await runApplicationEffect(
         application.completeOAuth({ code, state }),
