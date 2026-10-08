@@ -3,8 +3,10 @@ WORKDIR /app
 COPY . .
 RUN bun install --frozen-lockfile --ignore-scripts
 
+FROM node:24-bookworm-slim AS node-runtime
+
 FROM oven/bun:1.3.14 AS build
-COPY --from=dependencies /usr/local/bin/node /usr/local/bin/node
+COPY --from=node-runtime /usr/local/bin/node /usr/local/bin/node
 WORKDIR /app
 COPY --from=dependencies /app /app
 RUN bun run --cwd packages/logger build

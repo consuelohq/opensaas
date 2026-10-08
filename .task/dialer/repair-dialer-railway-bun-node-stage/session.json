@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_ea018fb86301",
+  "tmuxSession": "opensaas-dialer-repair-dialer-railway-bun-node-stage-ea018fb8",
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/repair-dialer-railway-bun-node-stage",
+  "branch": "task/dialer/repair-dialer-railway-bun-node-stage",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-repair-dialer-railway-bun-node-stage",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-repair-dialer-railway-bun-node-stage",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2624,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2624",
+  "createdAt": "2026-10-08T16:10:18.390Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-repair-dialer-railway-bun-node-stage/.task/dialer/repair-dialer-railway-bun-node-stage/session.json"
+}

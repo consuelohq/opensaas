@@ -107,6 +107,15 @@ describe('M6 Bun root package-manager cutover', () => {
     const dockerfile = read('packages/dialer-server/Dockerfile');
     expect(dockerfile).toContain('FROM oven/bun:1.3.14');
     expect(dockerfile).toContain('bun install --frozen-lockfile');
+    expect(dockerfile).toContain(
+      'FROM node:24-bookworm-slim AS node-runtime',
+    );
+    expect(dockerfile).toContain(
+      'COPY --from=node-runtime /usr/local/bin/node /usr/local/bin/node',
+    );
+    expect(dockerfile).not.toContain(
+      'COPY --from=dependencies /usr/local/bin/node /usr/local/bin/node',
+    );
 
     const railway = read('packages/dialer-server/railway.json');
     expect(railway).toContain('bun.lock');
