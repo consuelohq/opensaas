@@ -140,9 +140,10 @@ export type HomeFeaturePreviewItem = {
   label: string;
   title: string;
   body: string;
-  motif: FeatureArtworkMotif;
-  imageAlt: string;
-  assetSrc: string;
+  ctaLabel: string;
+  ctaHref: string;
+  imageAlt?: string;
+  assetSrc?: string;
   evidence?: HomeFeatureEvidence;
 };
 
@@ -262,12 +263,12 @@ export const homeHero: HomeHeroContent = {
 };
 
 export const homeHeroRotatingAssistant: HomeHeroRotatingAssistantContent = {
-  ariaLabel: 'Make ChatGPT or Claude your digital worker',
-  prefix: 'Make',
+  ariaLabel: 'Give ChatGPT or Claude access to your files',
+  prefix: 'Give',
   assistants: ['ChatGPT', 'Claude'],
-  suffix: 'your digital worker',
+  suffix: 'access to your files',
   subtitle:
-    'AI is coming to the workspace, with smarter search, faster drafting and summarization and intelligent organization',
+    'Connect your AI to the files, terminal and tools on your computer. Choose what it can access, then put it to work.',
   signInLabel: 'SIGN IN',
   copyLabel: 'COPY',
   copyInstallAriaLabel: 'Copy install command',
@@ -671,16 +672,17 @@ export const homeSwitchAgents: HomeSwitchAgent[] = [
 export const homeFeaturePreviewItems: HomeFeaturePreviewItem[] = [
   {
     number: 1,
-    label: 'CONNECT',
-    title: 'SAME\nTOOLS',
-    body: 'Build your tools once. Use them from ChatGPT, Codex, Claude, Cursor, and whatever comes next.',
-    motif: 'connect',
+    label: 'FILES',
+    title: 'Your files.\nWithin reach.',
+    body: 'Give your agents secure access to the files you choose. Read documents, organize folders and save work back to your computer, from the AI you already use.',
+    ctaLabel: 'GET STARTED',
+    ctaHref: siteLinks.login,
     imageAlt: 'Screen recording of a live Consuelo OS agent session',
     assetSrc: '/images/home/connect.svg',
     evidence: {
       figureNumber: '01',
-      meta: 'One workspace / four agents',
-      caption: 'One tool contract. Four agent surfaces. The workspace stays put.',
+      meta: 'Recorded with Consuelo OS',
+      caption: 'ChatGPT, Grok, Codex and OpenCode, connected to the same workspace.',
       videoSrc: '/media/home/connect-live-session.mp4',
       posterSrc: '/media/home/connect-live-session-poster.webp',
       sequence: [
@@ -693,50 +695,31 @@ export const homeFeaturePreviewItems: HomeFeaturePreviewItem[] = [
   },
   {
     number: 2,
-    label: 'REMEMBER',
-    title: 'SHARED\nMEMORY',
-    body: 'The memory stays with your workspace, not one chat or one agent. Pick up where the work left off.',
-    motif: 'remember',
-    imageAlt: 'Inner memory chamber with glowing alcoves',
-    assetSrc: '/images/home/remember.svg',
+    label: 'YOUR COMPUTER',
+    title: 'More than\nreading files.',
+    body: 'Give your agent a way to run commands on your computer. Process data, build a website or work on a codebase. Consuelo connects it to your terminal so it can do the work, too.',
+    ctaLabel: 'CONNECT YOUR COMPUTER',
+    ctaHref: siteLinks.docs,
   },
   {
     number: 3,
-    label: 'CONTROL',
-    title: 'YOUR\nWORKFLOW',
-    body: 'Define how work gets done once. Every agent starts, checks, and ships work the same way.',
-    motif: 'multiplayer',
-    imageAlt: 'Shared workflow room with a single path through the work',
-    assetSrc: '/images/home/workflow.svg',
-  },
-  {
-    number: 4,
-    label: 'OBSERVE',
-    title: 'FULL\nTRACE',
-    body: 'Every action leaves a trace. See what ran, what changed, and why.',
-    motif: 'observe',
-    imageAlt: 'Hand reaching toward visible traces of work',
-    assetSrc: '/images/home/trace.svg',
-  },
-  {
-    number: 5,
-    label: 'SECURE',
-    title: 'YOUR\nRULES',
-    body: 'Choose which tools, files, and machines each agent can reach. Everything else stays closed.',
-    motif: 'secure',
-    imageAlt: 'Lift-off scene with guarded threshold',
-    assetSrc: '/images/home/rules.svg',
-  },
-  {
-    number: 6,
-    label: 'SWITCH',
-    title: 'NO\nLOCK-IN',
-    body: 'Use the best agent for the job. Your workspace stays put.',
-    motif: 'switch',
-    imageAlt: 'Many portals returning to the same palace',
-    assetSrc: '/images/home/switch.svg',
+    label: 'TOOLS',
+    title: 'Connect once.\nUse with every agent.',
+    body: 'Connect the apps you use or build a tool for the work you repeat. Make it available to your approved agents through Consuelo, without setting it up again in every AI app.',
+    ctaLabel: 'EXPLORE THE TOOLS',
+    ctaHref: siteLinks.docs,
   },
 ];
+
+export const homeWorkspaceClose = {
+  eyebrow: 'ONE WORKSPACE FOR PEOPLE AND AGENTS',
+  title: 'Work solo.\nBring your team.',
+  description: 'Start with one agent on your computer. Connect more agents and invite teammates into the same workspace when you are ready.',
+  primaryLabel: 'GET STARTED',
+  primaryHref: siteLinks.login,
+  secondaryLabel: 'EXPLORE CONSUELO CLOUD',
+  secondaryHref: siteLinks.pricing,
+};
 
 export const homeFooterSignup: HomeFooterSignup = {
   eyebrow: 'Be the first to know when we release new products',

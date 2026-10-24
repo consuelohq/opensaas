@@ -112,6 +112,20 @@ test('verify single-flights identical full-gate executions', () => {
   expect(verifySource).toContain('abortVerifyRun(');
 });
 
+test('agent JSON verify uses a detached resumable boundary instead of owning the long gate', () => {
+  const verifySource = fs.readFileSync(
+    path.resolve('packages/workspace/scripts/verify.js'),
+    'utf8',
+  );
+
+  expect(verifySource).toContain("verifyRun.mode === 'launch'");
+  expect(verifySource).toContain("verifyRun.mode === 'pending'");
+  expect(verifySource).toContain("'--foreground'");
+  expect(verifySource).toContain('detached: true');
+  expect(verifySource).toContain('child.unref()');
+  expect(verifySource).toContain('VERIFY_PENDING');
+});
+
 test('verify keeps review semantic-only because selected suites own test execution', () => {
   const verifySource = fs.readFileSync(
     path.resolve('packages/workspace/scripts/verify.js'),

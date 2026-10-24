@@ -3,10 +3,9 @@ const fs = require('fs');
 const path = require('path');
 const { execFileSync } = require('child_process');
 
-const DEFAULT_WAIT_MS = 10 * 60 * 1000;
 const DEFAULT_LOCK_STALE_MS = 30 * 60 * 1000;
 const DEFAULT_FAILED_REPLAY_TTL_MS = 30 * 1000;
-const POLL_MS = 1000;
+const DEFAULT_LAUNCH_GRACE_MS = 15 * 1000;
 
 function sha256(value) {
   return crypto.createHash('sha256').update(String(value)).digest('hex');
@@ -66,11 +65,6 @@ function isPidRunning(pid) {
   }
 }
 
-function sleep(ms) {
-  const buffer = new SharedArrayBuffer(4);
-  Atomics.wait(new Int32Array(buffer), 0, 0, ms);
-}
-
 function getVerifyRunDir(repoRoot) {
   return gitPath(repoRoot, 'opensaas-verify-runs');
 }
@@ -112,6 +106,8 @@ function pathsForIdentity(repoRoot, identity) {
     recordPath: path.join(dir, 'record.json'),
     stdoutPath: path.join(dir, 'stdout.txt'),
     stderrPath: path.join(dir, 'stderr.txt'),
+    workerStdoutPath: path.join(dir, 'worker.stdout.log'),
+    workerStderrPath: path.join(dir, 'worker.stderr.log'),
   };
 }
 
@@ -169,46 +165,47 @@ function markOrphaned(paths, record, reason) {
   removeLock(paths);
 }
 
-function waitForExistingRun(paths, waitMs) {
-  const start = Date.now();
+function isFreshLaunch(record) {
+  const startedAt = Date.parse(record?.startedAt || '');
+  return Number.isFinite(startedAt)
+    && Date.now() - startedAt < DEFAULT_LAUNCH_GRACE_MS;
+}
 
-  while (Date.now() - start < waitMs) {
-    const completed = readCompletedResult(paths);
-    if (completed) return completed;
-
-    const record = readActiveRecord(paths);
-    if (!record) {
-      if (!lockExists(paths)) return null;
-      if (isLockStale(paths)) {
-        removeLock(paths);
-        return null;
-      }
-      sleep(POLL_MS);
-      continue;
-    }
-
-    if (record.status !== 'running') {
+function readPendingRecord(paths) {
+  const record = readActiveRecord(paths);
+  if (!record) {
+    if (!lockExists(paths)) return null;
+    if (isLockStale(paths)) {
       removeLock(paths);
       return null;
     }
-
-    if (!isPidRunning(record.pid)) {
-      markOrphaned(paths, record, 'record pid is no longer running');
-      return null;
-    }
-
-    sleep(POLL_MS);
+    return {
+      status: 'launching',
+      pid: null,
+      workerPid: null,
+      startedAt: null,
+    };
   }
 
-  const record = readActiveRecord(paths);
-  const error = new Error(`verify run still running after ${waitMs}ms`);
-  error.code = 'VERIFY_RUN_STILL_RUNNING';
-  error.record = record;
-  throw error;
+  if (!['launching', 'running'].includes(record.status)) {
+    removeLock(paths);
+    return null;
+  }
+
+  const workerPid = Number.isInteger(record.workerPid)
+    ? record.workerPid
+    : Number.isInteger(record.pid)
+      ? record.pid
+      : null;
+  if ((workerPid && isPidRunning(workerPid)) || (record.status === 'launching' && isFreshLaunch(record))) {
+    return record;
+  }
+
+  markOrphaned(paths, record, 'verify worker is no longer running');
+  return null;
 }
 
 function beginVerifyRun(repoRoot, identity, options = {}) {
-  const waitMs = Number(options.waitMs || process.env.WORKSPACE_VERIFY_RUN_WAIT_MS || DEFAULT_WAIT_MS);
   const paths = pathsForIdentity(repoRoot, identity);
   ensureDir(paths.dir);
 
@@ -217,15 +214,58 @@ function beginVerifyRun(repoRoot, identity, options = {}) {
     return { mode: 'replay', paths, identity, result: completed };
   }
 
+  if (
+    options.adoptReservedKey
+    && options.adoptReservedKey === identity.key
+    && lockExists(paths)
+  ) {
+    const reserved = readActiveRecord(paths);
+    if (reserved?.status === 'launching' && reserved.key === identity.key) {
+      const runningRecord = {
+        ...reserved,
+        status: 'running',
+        pid: process.pid,
+        workerPid: process.pid,
+        workerStartedAt: new Date().toISOString(),
+      };
+      writeJsonAtomic(paths.recordPath, runningRecord);
+      return {
+        mode: 'run',
+        paths,
+        identity,
+        lockFd: null,
+        record: runningRecord,
+      };
+    }
+  }
+
   while (true) {
+    const replay = readCompletedResult(paths);
+    if (replay) {
+      return { mode: 'replay', paths, identity, result: replay };
+    }
+    if (lockExists(paths)) {
+      const pendingRecord = readPendingRecord(paths);
+      if (pendingRecord) {
+        return {
+          mode: 'pending',
+          paths,
+          identity,
+          record: pendingRecord,
+        };
+      }
+    }
+
     try {
       const lockFd = fs.openSync(paths.lockPath, 'wx');
       const record = {
         schema: 'verify-run-record.v1',
-        status: 'running',
+        status: options.defer ? 'launching' : 'running',
         key: identity.key,
         identity,
-        pid: process.pid,
+        pid: options.defer ? null : process.pid,
+        launcherPid: options.defer ? process.pid : null,
+        workerPid: options.defer ? null : process.pid,
         startedAt: new Date().toISOString(),
         stdoutPath: paths.stdoutPath,
         stderrPath: paths.stderrPath,
@@ -241,23 +281,53 @@ function beginVerifyRun(repoRoot, identity, options = {}) {
         removeLock(paths);
         throw writeError;
       }
-      return { mode: 'run', paths, identity, lockFd };
+      if (options.defer) {
+        fs.closeSync(lockFd);
+        return {
+          mode: 'launch',
+          paths,
+          identity,
+          lockFd: null,
+          record,
+        };
+      }
+      return { mode: 'run', paths, identity, lockFd, record };
     } catch (error) {
       if (!error || error.code !== 'EEXIST') throw error;
-
-      const existingResult = waitForExistingRun(paths, waitMs);
-      if (existingResult) {
-        return { mode: 'replay', paths, identity, result: existingResult };
+      const pendingRecord = readPendingRecord(paths);
+      if (pendingRecord) {
+        return {
+          mode: 'pending',
+          paths,
+          identity,
+          record: pendingRecord,
+        };
       }
     }
   }
 }
 
+function markVerifyRunLaunched(run, workerPid) {
+  if (!run || run.mode !== 'launch') return;
+  const record = readJson(run.paths.recordPath) || run.record || {};
+  if (record.status === 'running' || record.status === 'completed') {
+    return;
+  }
+  writeJsonAtomic(run.paths.recordPath, {
+    ...record,
+    status: 'launching',
+    workerPid: Number.isInteger(workerPid) ? workerPid : null,
+    launchedAt: new Date().toISOString(),
+  });
+}
+
 function closeRunLock(run) {
-  try {
-    fs.closeSync(run.lockFd);
-  } catch {
-    // best effort
+  if (Number.isInteger(run?.lockFd)) {
+    try {
+      fs.closeSync(run.lockFd);
+    } catch {
+      // best effort
+    }
   }
   removeLock(run.paths);
 }
@@ -286,7 +356,7 @@ function finishVerifyRun(run, result) {
 }
 
 function abortVerifyRun(run, reason = 'verify run aborted before completion') {
-  if (!run || run.mode !== 'run') return;
+  if (!run || !['run', 'launch'].includes(run.mode)) return;
 
   try {
     const existingRecord = readJson(run.paths.recordPath) || {};
@@ -314,6 +384,7 @@ module.exports = {
   finishVerifyRun,
   getVerifyRunDir,
   makeVerifyRunIdentity,
+  markVerifyRunLaunched,
   readCompletedResult,
   pathsForIdentity,
   sha256,

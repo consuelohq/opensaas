@@ -81,6 +81,25 @@ test('should replay completed verify result when identity matches', () => {
   expect(replay.result.exitCode).toBe(0);
 });
 
+test('should return pending immediately for an identical active verify run', () => {
+  const repoRoot = createRepo();
+  const verifyIdentity = identity(repoRoot);
+
+  const run = beginVerifyRun(repoRoot, verifyIdentity, { waitMs: 500 });
+  expect(run.mode).toBe('run');
+
+  const started = Date.now();
+  const pending = beginVerifyRun(repoRoot, verifyIdentity, { waitMs: 500 });
+  const elapsedMs = Date.now() - started;
+
+  expect(pending.mode).toBe('pending');
+  expect(pending.record?.status).toBe('running');
+  expect(pending.identity.key).toBe(verifyIdentity.key);
+  expect(elapsedMs).toBeLessThan(100);
+
+  abortVerifyRun(run, 'test cleanup');
+});
+
 test('should change verify identity when review arguments change', () => {
   const repoRoot = createRepo();
   const first = identity(repoRoot, { args: { reviewArgs: ['--no-tests'] } });

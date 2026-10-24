@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 
-const { execFileSync, spawnSync } = require('child_process');
+const { execFileSync, spawn, spawnSync } = require('child_process');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
@@ -18,6 +18,7 @@ const {
   beginVerifyRun,
   finishVerifyRun,
   makeVerifyRunIdentity,
+  markVerifyRunLaunched,
 } = require('./lib/verify-run-state');
 
 const GIT_OUTPUT_MAX_BUFFER = 64 * 1024 * 1024;
@@ -63,6 +64,7 @@ function parseArgs(argv) {
     reviewArgs: [],
     stamp: true,
     committedOnlyTests: false,
+    foreground: false,
   };
 
   for (let index = 0; index < argv.length; index += 1) {
@@ -79,6 +81,7 @@ function parseArgs(argv) {
       '--db-warn-only',
       '--debug-skip-db',
       '--debug-skip-review',
+      '--foreground',
       '--help',
       '--json',
       '--no-stamp',
@@ -95,6 +98,7 @@ function parseArgs(argv) {
       '--json',
       '--debug-skip-db',
       '--debug-skip-review',
+      '--foreground',
       '--no-stamp',
       '--quiet',
     ].includes(flag);
@@ -127,6 +131,9 @@ function parseArgs(argv) {
         break;
       case '--committed-only-tests':
         args.committedOnlyTests = true;
+        break;
+      case '--foreground':
+        args.foreground = true;
         break;
       case '--no-stamp':
         args.stamp = false;
@@ -573,6 +580,82 @@ function replayVerifyRun(verifyRun) {
   process.exitCode = verifyRun.result.exitCode;
 }
 
+function buildVerifyPendingPayload(verifyRun, context, workerPidOverride = null) {
+  const record = verifyRun.record || {};
+  const workerPid = Number.isInteger(workerPidOverride)
+    ? workerPidOverride
+    : Number.isInteger(record.workerPid)
+      ? record.workerPid
+      : null;
+  return {
+    status: 'VERIFY_PENDING',
+    pending: true,
+    passed: false,
+    publishValid: false,
+    runKey: verifyRun.identity.key,
+    branch: context.branch,
+    base: context.base,
+    headSha: context.headSha,
+    phase: record.status || 'running',
+    startedAt: record.startedAt || null,
+    workerPid,
+    retryAfterSeconds: 5,
+    stamp: {
+      written: false,
+      path: null,
+      publishValid: false,
+    },
+    message: 'Verification is running outside the agent turn.',
+    nextAction: 'Call verify again with the same task session to read pending or completed state; do not sleep inside this turn.',
+  };
+}
+
+function writeVerifyPending(verifyRun, context, workerPidOverride = null) {
+  process.stdout.write(
+    `${JSON.stringify(
+      buildVerifyPendingPayload(verifyRun, context, workerPidOverride),
+      null,
+      2,
+    )}\n`,
+  );
+}
+
+function launchDetachedVerify(repoRoot, verifyRun) {
+  const workerArgs = process.argv
+    .slice(2)
+    .filter((argument) => argument !== '--foreground');
+  workerArgs.push('--foreground');
+  const stdoutFd = fs.openSync(verifyRun.paths.workerStdoutPath, 'a');
+  const stderrFd = fs.openSync(verifyRun.paths.workerStderrPath, 'a');
+
+  try {
+    const child = spawn(process.execPath, [__filename, ...workerArgs], {
+      cwd: repoRoot,
+      detached: true,
+      stdio: ['ignore', stdoutFd, stderrFd],
+      env: {
+        ...process.env,
+        TASK_WORKTREE: repoRoot,
+        WORKSPACE_VERIFY_RESERVED_KEY: verifyRun.identity.key,
+      },
+    });
+    child.unref();
+    markVerifyRunLaunched(verifyRun, child.pid);
+    return child.pid;
+  } catch (error) {
+    abortVerifyRun(
+      verifyRun,
+      error instanceof Error
+        ? `failed to launch detached verify worker: ${error.message}`
+        : 'failed to launch detached verify worker',
+    );
+    throw error;
+  } finally {
+    fs.closeSync(stdoutFd);
+    fs.closeSync(stderrFd);
+  }
+}
+
 function getVerifyRoot() {
   const taskWorktree = process.env.TASK_WORKTREE;
   if (taskWorktree) {
@@ -606,22 +689,35 @@ async function main() {
     const headSha = getRefSha(repoRoot, 'HEAD');
     const verificationState = computeVerificationState(repoRoot, branch);
 
+    const verifyIdentity = makeVerifyRunIdentity({
+      repoRoot,
+      branch,
+      base,
+      headSha,
+      changeHash: verificationState.changeHash,
+      args,
+    });
     verifyRun = args.json
-      ? beginVerifyRun(
-          repoRoot,
-          makeVerifyRunIdentity({
-            repoRoot,
-            branch,
-            base,
-            headSha,
-            changeHash: verificationState.changeHash,
-            args,
-          }),
-        )
+      ? beginVerifyRun(repoRoot, verifyIdentity, {
+          defer: !args.foreground,
+          adoptReservedKey: args.foreground
+            ? process.env.WORKSPACE_VERIFY_RESERVED_KEY
+            : undefined,
+        })
       : null;
 
     if (verifyRun && verifyRun.mode === 'replay') {
       replayVerifyRun(verifyRun);
+      return;
+    }
+    if (verifyRun && verifyRun.mode === 'pending') {
+      writeVerifyPending(verifyRun, { branch, base, headSha });
+      return;
+    }
+    if (verifyRun && verifyRun.mode === 'launch') {
+      const workerPid = launchDetachedVerify(repoRoot, verifyRun);
+      writeVerifyPending(verifyRun, { branch, base, headSha }, workerPid);
+      verifyRun = null;
       return;
     }
 
@@ -740,7 +836,7 @@ async function main() {
       process.exitCode = 1;
     }
   } catch (error) {
-    if (verifyRun && verifyRun.mode === 'run') {
+    if (verifyRun && ['run', 'launch'].includes(verifyRun.mode)) {
       abortVerifyRun(
         verifyRun,
         error instanceof Error ? error.message : 'verify failed before completion',

@@ -1,0 +1,20 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/use-the-shared-mask-token-in-social-previews",
+  "baseBranch": "stream/website",
+  "sourceBranch": "stream/website",
+  "startFrom": "stream",
+  "prNumber": 2620,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2620",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2620",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2620/use-the-shared-mask-token-in-social-previews",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2620",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2620/use-the-shared-mask-token-in-social-previews",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-use-the-shared-mask-token-in-social-previews",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_f989e841998f",
+  "tmuxSession": "opensaas-website-use-the-shared-mask-token-in-social-previews-f989e841",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-use-the-shared-mask-token-in-social-previews/.task/website/use-the-shared-mask-token-in-social-previews/session.json",
+  "createdAt": "2026-09-29T21:21:20.527Z"
+}

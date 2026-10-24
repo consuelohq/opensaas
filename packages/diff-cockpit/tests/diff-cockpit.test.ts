@@ -67,6 +67,11 @@ describe('buildDiffCockpitUrl', () => {
 });
 
 describe('review page progressive hydration', () => {
+  test('does not repeatedly poll GitHub while a review is being read', () => {
+    const html = renderReviewPage({ owner: 'consuelohq', repo: 'opensaas', number: 1991 });
+    expect(html).toContain('}, 120000);');
+    expect(html).toContain('Date.now() - lastReviewLoadAt > 60000');
+  });
   test('retries transient auth handoff failures and batches long diff rendering', () => {
     const html = renderReviewPage({ owner: 'consuelohq', repo: 'opensaas', number: 1991 });
 
@@ -88,8 +93,8 @@ describe('standalone Diffs retirement', () => {
     const packageJson = JSON.parse(readRepoFile('packages/diff-cockpit/package.json')) as {
       scripts?: Record<string, string>;
     };
-    expect(packageJson.scripts).not.toHaveProperty('deploy');
-    expect(packageJson.scripts).not.toHaveProperty('dev');
+    expect(packageJson.scripts?.deploy === undefined).toBe(true);
+    expect(packageJson.scripts?.dev === undefined).toBe(true);
 
     const opener = readRepoFile('packages/workspace/scripts/diff_cockpit.ts');
     expect(opener).not.toContain('refreshDiffCockpitCache');
@@ -454,6 +459,42 @@ describe('createGithubPullRequestLoader', () => {
     );
   });
 
+  test('starts optional GitHub review reads while a slow file page is still pending', async () => {
+    const requests: string[] = [];
+    let releaseFiles: (() => void) | undefined;
+    const filesPending = new Promise<Response>((resolve) => {
+      releaseFiles = () => resolve(Response.json([]));
+    });
+    const loader = createGithubPullRequestLoader({
+      fetcher: async (input) => {
+        const url = String(input);
+        requests.push(url);
+        if (url.endsWith('/pulls/42')) {
+          return Response.json({
+            number: 42,
+            title: 'Slow changes',
+            state: 'open',
+            draft: false,
+            user: { login: 'ko' },
+            head: { ref: 'task/os/slow', sha: '' },
+            base: { ref: 'stream/os', sha: '' },
+          });
+        }
+        if (url.includes('/files?')) return filesPending;
+        if (url.includes('/reviews?') || url.includes('/comments?') || url.includes('/commits?')) return Response.json([]);
+        throw new Error('unexpected request ' + url);
+      },
+    });
+
+    const loading = loader({ owner: 'consuelohq', repo: 'opensaas', number: 42 });
+    for (let attempt = 0; attempt < 5; attempt += 1) await Promise.resolve();
+    expect(requests.some((url) => url.includes('/pulls/42/files?'))).toBe(true);
+    expect(requests.some((url) => url.includes('/pulls/42/reviews?'))).toBe(true);
+    releaseFiles?.();
+    const result = await loading;
+    expect(result.pull.title).toBe('Slow changes');
+  });
+
   test('skips stream commits for non-stream branches', async () => {
     const calls: string[] = [];
     const fetcher = async (input: string | URL): Promise<Response> => {
@@ -684,7 +725,7 @@ describe('renderIndexPage', () => {
     expect(html).toContain('data-toggle-streams');
     expect(html).toContain('showAllStreams');
     expect(html).toContain("cacheSchemaVersion = 'v5-server-snapshot-progressive'");
-    expect(html).toContain('const clientCacheTtlMs = 2 * 60 * 1000');
+    expect(html).toContain('const clientCacheTtlMs = 24 * 60 * 60 * 1000');
     expect(html).toContain('Date.now() - cachedAt > clientCacheTtlMs');
     expect(html).toContain('clearStaleIndexCaches');
     expect(html).toContain('localStorage.getItem(cacheKey)');
@@ -718,6 +759,13 @@ describe('renderIndexPage', () => {
     expect(html).not.toContain('pageSize');
   });
 
+  test('retains a day of PR titles for immediate stale-first rendering and reduces background polling', () => {
+    const html = renderIndexPage({ owner: 'consuelohq', repo: 'opensaas' });
+    expect(html).toContain('const clientCacheTtlMs = 24 * 60 * 60 * 1000');
+    expect(html).toContain('refreshIndexIfStale(120000)');
+    expect(html).toContain('data-index-load-status');
+  });
+
   test('keeps mounted PR navigation inside the configured Diffs path', () => {
     const mountedHtml = renderIndexPage(
       { owner: 'consuelohq', repo: 'opensaas' },
@@ -734,6 +782,19 @@ describe('renderIndexPage', () => {
 });
 
 describe('renderReviewPage', () => {
+  test('embeds a lightweight PR preview before heavy diffs load', () => {
+    const html = renderReviewPage(
+      { owner: 'consuelohq', repo: 'opensaas', number: 42 },
+      null,
+      '',
+      {},
+      { number: 42, title: 'Stream/os', author: 'ko', headRef: 'stream/os', baseRef: 'main', changedFiles: 461 },
+    );
+    expect(html).toContain('diff-cockpit-initial-summary');
+    expect(html).toContain('readInitialReviewSummary');
+    expect(html).toContain('readCachedReviewSummary');
+    expect(html).toContain('Stream/os');
+  });
   test('renders one responsive review surface with readable comments and native page controls', () => {
     const html = renderReviewPage({
       owner: 'consuelohq',

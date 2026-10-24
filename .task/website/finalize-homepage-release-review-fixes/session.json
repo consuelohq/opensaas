@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_7fba40f7aa4c",
+  "tmuxSession": "opensaas-website-finalize-homepage-release-review-fixes-7fba40f7",
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/finalize-homepage-release-review-fixes",
+  "branch": "task/website/finalize-homepage-release-review-fixes",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-finalize-homepage-release-review-fixes",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-finalize-homepage-release-review-fixes",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2617,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2617",
+  "createdAt": "2026-09-29T21:06:44.821Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-finalize-homepage-release-review-fixes/.task/website/finalize-homepage-release-review-fixes/session.json"
+}

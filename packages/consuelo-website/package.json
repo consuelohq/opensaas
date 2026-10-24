@@ -8,10 +8,11 @@
     "tar": "7.5.22"
   },
   "scripts": {
-    "dev": "bun run generate:footer-art && astro dev",
-    "start": "bun run generate:footer-art && astro dev",
-    "build": "bun run generate:footer-art && astro check && astro build",
+    "dev": "bun run materialize:assets && bun run generate:footer-art && astro dev",
+    "start": "bun run materialize:assets && bun run generate:footer-art && astro dev",
+    "build": "bun run materialize:assets && bun run generate:footer-art && astro check && astro build",
     "generate:social-card": "bun scripts/generate-social-card.ts",
+    "materialize:assets": "bun scripts/materialize-public-assets.ts",
     "generate:brand-assets": "bun scripts/generate-brand-assets.ts",
     "generate:footer-art": "bun scripts/generate-footer-art.ts",
     "preview": "astro preview",

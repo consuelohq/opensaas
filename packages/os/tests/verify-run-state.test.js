@@ -81,6 +81,25 @@ test('should replay completed verify result when identity matches', () => {
   expect(replay.result.exitCode).toBe(0);
 });
 
+test('should return pending immediately for an identical active verify run', () => {
+  const repoRoot = createRepo();
+  const verifyIdentity = identity(repoRoot);
+
+  const run = beginVerifyRun(repoRoot, verifyIdentity, { waitMs: 500 });
+  expect(run.mode).toBe('run');
+
+  const started = Date.now();
+  const pending = beginVerifyRun(repoRoot, verifyIdentity, { waitMs: 500 });
+  const elapsedMs = Date.now() - started;
+
+  expect(pending.mode).toBe('pending');
+  expect(pending.record?.status).toBe('running');
+  expect(pending.identity.key).toBe(verifyIdentity.key);
+  expect(elapsedMs).toBeLessThan(100);
+
+  abortVerifyRun(run, 'test cleanup');
+});
+
 test('should change verify identity when review arguments change', () => {
   const repoRoot = createRepo();
   const first = identity(repoRoot, { args: { reviewArgs: ['--no-tests'] } });
@@ -193,4 +212,18 @@ test('should abort acquired verify run when caller fails before finish', () => {
   const nextRun = beginVerifyRun(repoRoot, verifyIdentity, { waitMs: 50 });
   expect(nextRun.mode).toBe('run');
   finishVerifyRun(nextRun, { stdout: '{}\n', stderr: '', exitCode: 0 });
+});
+
+test('OS agent JSON verify uses the same detached resumable boundary', () => {
+  const source = fs.readFileSync(
+    path.resolve(import.meta.dirname, '../scripts/verify.js'),
+    'utf8',
+  );
+
+  expect(source).toContain("verifyRun.mode === 'launch'");
+  expect(source).toContain("verifyRun.mode === 'pending'");
+  expect(source).toContain("'--foreground'");
+  expect(source).toContain('detached: true');
+  expect(source).toContain('child.unref()');
+  expect(source).toContain('VERIFY_PENDING');
 });
