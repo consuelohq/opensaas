@@ -1,0 +1,7 @@
+{
+  "files": [
+    ".task/ci/stabilize-os-security-contract-ci-subprocess-timeout/verify.json",
+    "packages/workspace/tests/github-workflow-policy.test.js"
+  ],
+  "updatedAt": "2026-10-28T16:40:02.610Z"
+}

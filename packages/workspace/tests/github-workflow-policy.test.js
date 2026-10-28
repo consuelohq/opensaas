@@ -104,6 +104,17 @@ describe('GitHub workflow policy', () => {
     }
   });
 
+  test('preserves OS security contract suites with a bounded hosted-runner subprocess timeout', () => {
+    const workflow = readWorkflow('consuelo-ci.yaml');
+    const command = workflow.jobs['os-contracts'].steps.find((step) =>
+      step.name === 'Run OS contract tests')?.run;
+
+    expect(command).toContain('tests/tool-manifest.test.ts');
+    expect(command).toContain('tests/security-gateway.test.ts');
+    expect(command).toContain('tests/workspace-gateway-contract.test.ts');
+    expect(command).toContain('--testTimeout 15000');
+  });
+
   test('uses shallow parent-aware checkouts for pull-request CI without removing verification jobs', () => {
     const workflow = readWorkflow('consuelo-ci.yaml');
     for (const jobName of ['consuelo-changes', 'workflow-security', 'verify']) {
