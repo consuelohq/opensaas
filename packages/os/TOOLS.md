@@ -44,6 +44,7 @@ Task-scoped work must pass the `taskSession` returned by `task.start`. The facad
 | media | 25 |
 | memory | 1 |
 | observability | 1 |
+| posthog | 4 |
 | release | 1 |
 | review | 4 |
 | security | 1 |
@@ -1731,7 +1732,7 @@ await workspace.call({
 
 ### workspace.confidenceScore
 
-report investigation readiness from hypothesis coverage and validation evidence
+compatibility view of the readiness already returned by Explore's unified investigation policy
 
 | Field | Value |
 | --- | --- |
@@ -1847,7 +1848,7 @@ await workspace.call({
 
 ### workspace.decideNext
 
-recommend the next evidence action from hypothesis support and readiness
+compatibility view of the next evidence action already returned by Explore's unified investigation policy
 
 | Field | Value |
 | --- | --- |
@@ -1904,7 +1905,7 @@ await workspace.call({
 
 ### workspace.exploit
 
-select the strongest supported dependency hypothesis as the editing target
+compatibility alias for Explore's edit target; without an explicit override it only selects when Explore is edit-ready
 
 | Field | Value |
 | --- | --- |
@@ -1961,7 +1962,7 @@ await workspace.call({
 
 ### workspace.explore
 
-a repo-aware decision search tool for coding agents. It answers where to spend attention and what files or paths are likely relevant to a given request.
+a repo-aware investigation policy for coding agents. It retrieves the dependency graph and returns the current hypotheses, readiness, uncertainty, next evidence action, and whether the investigation is edit-ready.
 
 | Field | Value |
 | --- | --- |
@@ -4405,7 +4406,7 @@ Measure joint and segment angles from pose-track artifacts.
 | Field | Value |
 | --- | --- |
 | Category | media |
-| Signature | `workspace.media.angle.measure(Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.media.angle.measure({ dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `os media angle.measure` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 300000ms |
@@ -4464,7 +4465,7 @@ Extract audio tracks from source media into deterministic audio artifacts.
 | Field | Value |
 | --- | --- |
 | Category | media |
-| Signature | `workspace.media.audio.extract(Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.media.audio.extract({ dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `os media audio.extract` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 300000ms |
@@ -4523,7 +4524,7 @@ Normalize media audio loudness for rendering and QA workflows.
 | Field | Value |
 | --- | --- |
 | Category | media |
-| Signature | `workspace.media.audio.normalize(Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.media.audio.normalize({ dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `os media audio.normalize` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 300000ms |
@@ -4582,7 +4583,7 @@ Create a structured data-backed sports-science breakdown plan.
 | Field | Value |
 | --- | --- |
 | Category | media |
-| Signature | `workspace.media.breakdown.plan(Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.media.breakdown.plan({ dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `os media breakdown.plan` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 300000ms |
@@ -4641,7 +4642,7 @@ Estimate camera movement separately from subject movement.
 | Field | Value |
 | --- | --- |
 | Category | media |
-| Signature | `workspace.media.camera.motion(Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.media.camera.motion({ dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `os media camera.motion` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 300000ms |
@@ -4700,7 +4701,7 @@ Search and score candidate video clips for downstream media workflows.
 | Field | Value |
 | --- | --- |
 | Category | media |
-| Signature | `workspace.media.clip.search(Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.media.clip.search({ dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `os media clip.search` |
 | Capability | read-only · non-mutating · safe to retry |
 | Default timeout | 300000ms |
@@ -4759,7 +4760,7 @@ Compose a timeline and media assets into a rendered draft video.
 | Field | Value |
 | --- | --- |
 | Category | media |
-| Signature | `workspace.media.compose(Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.media.compose({ dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `os media compose` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 300000ms |
@@ -4818,7 +4819,7 @@ Check installed media runtime dependencies and optional profile readiness.
 | Field | Value |
 | --- | --- |
 | Category | media |
-| Signature | `workspace.media.doctor(Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.media.doctor({ dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `os media doctor` |
 | Capability | writes state · non-mutating · single-shot |
 | Default timeout | 300000ms |
@@ -4877,7 +4878,7 @@ Package rendered media for YouTube Shorts, TikTok, Reels, and handoff workflows.
 | Field | Value |
 | --- | --- |
 | Category | media |
-| Signature | `workspace.media.export(Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.media.export({ dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `os media export` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 300000ms |
@@ -4936,7 +4937,7 @@ Extract selected frames and frame manifests from a media source.
 | Field | Value |
 | --- | --- |
 | Category | media |
-| Signature | `workspace.media.frames.extract(Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.media.frames.extract({ dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `os media frames.extract` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 300000ms |
@@ -4995,7 +4996,7 @@ Ingest a source video or media URL into a deterministic media asset bundle.
 | Field | Value |
 | --- | --- |
 | Category | media |
-| Signature | `workspace.media.ingest(Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.media.ingest({ dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `os media ingest` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 300000ms |
@@ -5054,7 +5055,7 @@ Create media runtime dependency install plans and guarded install attempts.
 | Field | Value |
 | --- | --- |
 | Category | media |
-| Signature | `workspace.media.install(Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.media.install({ dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `os media install` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 300000ms |
@@ -5113,7 +5114,7 @@ Track generic motion vectors and features across a video range.
 | Field | Value |
 | --- | --- |
 | Category | media |
-| Signature | `workspace.media.motion.track(Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.media.motion.track({ dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `os media motion.track` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 300000ms |
@@ -5172,7 +5173,7 @@ Track configured objects or regions through a video range.
 | Field | Value |
 | --- | --- |
 | Category | media |
-| Signature | `workspace.media.object.track(Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.media.object.track({ dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `os media object.track` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 300000ms |
@@ -5231,7 +5232,7 @@ Render declarative overlay artifacts for composition.
 | Field | Value |
 | --- | --- |
 | Category | media |
-| Signature | `workspace.media.overlay.render(Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.media.overlay.render({ dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `os media overlay.render` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 300000ms |
@@ -5290,7 +5291,7 @@ Estimate human pose landmarks for sports-science analysis.
 | Field | Value |
 | --- | --- |
 | Category | media |
-| Signature | `workspace.media.pose.estimate(Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.media.pose.estimate({ dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `os media pose.estimate` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 300000ms |
@@ -5349,7 +5350,7 @@ Inspect a media source with ffprobe and normalize codec, duration, stream, and m
 | Field | Value |
 | --- | --- |
 | Category | media |
-| Signature | `workspace.media.probe(Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.media.probe({ dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `os media probe` |
 | Capability | read-only · non-mutating · safe to retry |
 | Default timeout | 300000ms |
@@ -5408,7 +5409,7 @@ Inspect rendered media for dimensions, duration, codec, size, captions, and basi
 | Field | Value |
 | --- | --- |
 | Category | media |
-| Signature | `workspace.media.qa(Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.media.qa({ dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `os media qa` |
 | Capability | read-only · non-mutating · safe to retry |
 | Default timeout | 300000ms |
@@ -5467,7 +5468,7 @@ Detect scene boundaries and candidate highlight moments.
 | Field | Value |
 | --- | --- |
 | Category | media |
-| Signature | `workspace.media.scene.detect(Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.media.scene.detect({ dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `os media scene.detect` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 300000ms |
@@ -5589,7 +5590,7 @@ Compute sports-science metrics from pose and motion artifacts.
 | Field | Value |
 | --- | --- |
 | Category | media |
-| Signature | `workspace.media.sports-science.metrics(Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.media.sports-science.metrics({ dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `os media sports-science.metrics` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 300000ms |
@@ -5778,7 +5779,7 @@ Validate a media timeline contract and referenced artifacts.
 | Field | Value |
 | --- | --- |
 | Category | media |
-| Signature | `workspace.media.timeline.validate(Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.media.timeline.validate({ dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `os media timeline.validate` |
 | Capability | read-only · non-mutating · safe to retry |
 | Default timeout | 300000ms |
@@ -5837,7 +5838,7 @@ Create transcript artifacts from a media audio or video source.
 | Field | Value |
 | --- | --- |
 | Category | media |
-| Signature | `workspace.media.transcribe(Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.media.transcribe({ input: string; mode?: "fixture" &#124; "whisper.cpp" &#124; "openai-whisper"; fixtureText?: string; language?: string; model?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `os media transcribe` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 300000ms |
@@ -5848,6 +5849,8 @@ Create transcript artifacts from a media audio or video source.
 await workspace.call({
   "tool": "media.transcribe",
   "input": {
+    "input": "media/input.wav",
+    "mode": "fixture",
     "dryRun": true
   }
 });
@@ -6011,19 +6014,258 @@ await workspace.call({
 }
 ```
 
+## posthog
+
+### workspace.posthog.capture
+
+explicitly capture a privacy-checked event to PostHog using the project token; does not capture events automatically
+
+| Field | Value |
+| --- | --- |
+| Category | posthog |
+| Signature | `workspace.posthog.capture({ event: string; distinctId: string; propertiesJson?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `Consuelo PostHog API client` |
+| Capability | writes state · mutating · single-shot |
+| Default timeout | 30000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "posthog.capture",
+  "input": {
+    "event": "website_cta_clicked",
+    "distinctId": "anon_123",
+    "propertiesJson": "{\"placement\":\"hero\"}"
+  }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### workspace.posthog.config
+
+check PostHog region and credential configuration (never returns keys); credentials are per-node environment variables or macOS Keychain
+
+| Field | Value |
+| --- | --- |
+| Category | posthog |
+| Signature | `workspace.posthog.config({ requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `Consuelo PostHog API client` |
+| Capability | read-only · non-mutating · safe to retry |
+| Default timeout | 30000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "posthog.config",
+  "input": {}
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### workspace.posthog.projects
+
+list accessible PostHog projects using the locally configured personal API key
+
+| Field | Value |
+| --- | --- |
+| Category | posthog |
+| Signature | `workspace.posthog.projects({ limit?: number; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `Consuelo PostHog API client` |
+| Capability | read-only · non-mutating · safe to retry |
+| Default timeout | 30000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "posthog.projects",
+  "input": {
+    "limit": 20
+  }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+### workspace.posthog.query
+
+run one bounded read-only HogQL query using a personal API key and PostHog project id
+
+| Field | Value |
+| --- | --- |
+| Category | posthog |
+| Signature | `workspace.posthog.query({ sql: string; projectId?: string; limit?: number; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Runtime | `Consuelo PostHog API client` |
+| Capability | read-only · non-mutating · safe to retry |
+| Default timeout | 30000ms |
+
+#### Example call
+
+```ts
+await workspace.call({
+  "tool": "posthog.query",
+  "input": {
+    "sql": "SELECT event, count() FROM events GROUP BY event ORDER BY count() DESC LIMIT 20",
+    "limit": 20
+  }
+});
+```
+
+#### Success envelope
+
+```json
+{
+  "ok": true,
+  "code": "OK",
+  "message": "command completed",
+  "data": {
+    "raw": "example"
+  },
+  "stderr": "",
+  "exitCode": 0,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
+#### Error envelope
+
+```json
+{
+  "ok": false,
+  "code": "VALIDATION_ERROR",
+  "message": "input: Required",
+  "data": {
+    "issues": []
+  },
+  "stderr": "",
+  "exitCode": 1,
+  "durationMs": 12,
+  "traceId": "trc_abc123def456",
+  "apiVersion": "1.0.0"
+}
+```
+
 ## release
 
 ### workspace.release
 
-release a Consuelo OS PR end-to-end: verify and merge it to main, wait for the exact merged SHA runtime publication, promote that exact immutable bundle through dev/canary/beta/stable as requested, then by default update this node to the exact released version and verify it; use when Ko says release, deploy this PR, release to canary, or release and update
+start or resume a durable Consuelo OS release operation: use for release to canary or another channel; pass the main-targeting review PR for the stream, receive an operation id immediately, then use status/logs/attach/resume without keeping one MCP call open; the worker verifies and merges to main, resolves the exact merged SHA immutable runtime release even if dev advances, promotes through dev/canary/beta/stable as requested, then by default updates this node to the exact released version and verifies it
 
 | Field | Value |
 | --- | --- |
 | Category | release |
-| Signature | `workspace.release({ pr: number; repo?: string; channel?: "dev" &#124; "canary" &#124; "beta" &#124; "stable"; mergeMethod?: "merge" &#124; "squash" &#124; "rebase"; releaseOnly?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
+| Signature | `workspace.release({ action?: "start"; pr: number; repo?: string; channel?: "dev" &#124; "canary" &#124; "beta" &#124; "stable"; mergeMethod?: "merge" &#124; "squash" &#124; "rebase"; releaseOnly?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string } &#124; { action: "status" &#124; "logs" &#124; "attach" &#124; "resume"; operationId: string; tailLines?: number; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } &#124; null>>` |
 | Runtime | `workspace release` |
-| Capability | writes state · mutating · single-shot |
-| Default timeout | 1200000ms |
+| Capability | writes state · mutating · safe to retry |
+| Default timeout | 30000ms |
 
 #### Example call
 
@@ -7104,7 +7346,7 @@ run or start a subagent from an instruction handoff. Write the handoff to OS tmp
 | Field | Value |
 | --- | --- |
 | Category | subagent |
-| Signature | `workspace.subagent({ action?: "run" &#124; "start" &#124; "status" &#124; "wait" &#124; "logs" &#124; "cancel"; provider?: "codex" &#124; "pi" &#124; "opencode" &#124; "grok"; model?: string; reasoningEffort?: "minimal" &#124; "low" &#124; "medium" &#124; "high" &#124; "xhigh"; bundle?: "core" &#124; "media"; policy?: "read" &#124; "edit"; instructionPath?: string; cwd?: string; runId?: string; waitMs?: number; taskSession?: string; timeoutMs?: number; outputFormat?: "text" &#124; "json"; workspaceOnly?: boolean &#124; "preferred" &#124; "strict"; requestId?: string }) => Promise<ToolResult<{ action?: "run" &#124; "start" &#124; "status" &#124; "wait" &#124; "logs" &#124; "cancel"; runId?: string; requestId?: string; provider: "codex" &#124; "pi" &#124; "opencode" &#124; "grok"; model?: string; reasoningEffort?: "minimal" &#124; "low" &#124; "medium" &#124; "high" &#124; "xhigh"; bundle: "core" &#124; "media"; outputFormat: "text" &#124; "json"; mode: "work"; policy: "read" &#124; "edit"; status: "starting" &#124; "running" &#124; "completed" &#124; "failed" &#124; "cancelled" &#124; "completion_unknown" &#124; "not_configured" &#124; "not_supported" &#124; "timed_out"; capabilities?: { modelSelection: boolean; reasoningEffort: boolean; strictWorkspaceOnly: boolean; edit: boolean; detachedExecution: boolean }; unsupportedCapabilities?: string[]; cwd: string; instructionPath: string; command: string[]; stdout: string; stderr: string; exitCode: number; finalMessage?: string; summary?: { traceId: string; compact: string; filesRead: string[]; filesEdited: string[]; toolsCalled: string[]; traceEvents: Array<{ tool: string; status: string; input?: string; output?: string; traceId?: string }> }; rawLogPath?: string; stdoutLogPath?: string; stderrLogPath?: string; stdoutChars?: number; stderrChars?: number; usage?: { inputTokens?: number; cachedInputTokens?: number; outputTokens?: number; reasoningOutputTokens?: number }; durationMs: number; audit: { taskSession?: string; branch?: string; workspaceOnly: "preferred" &#124; "strict" &#124; false; rawShellUsed: boolean } }>>` |
+| Signature | `workspace.subagent({ action?: "run" &#124; "start" &#124; "status" &#124; "wait" &#124; "logs" &#124; "cancel"; provider?: "codex" &#124; "pi" &#124; "opencode" &#124; "grok"; model?: string; reasoningEffort?: "minimal" &#124; "low" &#124; "medium" &#124; "high" &#124; "xhigh"; bundle?: "core" &#124; "media"; policy?: "read" &#124; "edit"; instructionPath?: string; cwd?: string; runId?: string; waitMs?: number; taskSession?: string; timeoutMs?: number; outputFormat?: "text" &#124; "json"; workspaceOnly?: boolean &#124; "preferred" &#124; "strict"; dryRun?: boolean; requestId?: string }) => Promise<ToolResult<{ action?: "run" &#124; "start" &#124; "status" &#124; "wait" &#124; "logs" &#124; "cancel"; runId?: string; requestId?: string; provider: "codex" &#124; "pi" &#124; "opencode" &#124; "grok"; model?: string; reasoningEffort?: "minimal" &#124; "low" &#124; "medium" &#124; "high" &#124; "xhigh"; bundle: "core" &#124; "media"; outputFormat: "text" &#124; "json"; mode: "work"; policy: "read" &#124; "edit"; status: "starting" &#124; "running" &#124; "completed" &#124; "failed" &#124; "cancelled" &#124; "completion_unknown" &#124; "not_configured" &#124; "not_supported" &#124; "timed_out"; capabilities?: { modelSelection: boolean; reasoningEffort: boolean; strictWorkspaceOnly: boolean; edit: boolean; detachedExecution: boolean }; unsupportedCapabilities?: string[]; cwd: string; instructionPath: string; command: string[]; stdout: string; stderr: string; exitCode: number; finalMessage?: string; summary?: { traceId: string; compact: string; filesRead: string[]; filesEdited: string[]; toolsCalled: string[]; traceEvents: Array<{ tool: string; status: string; input?: string; output?: string; traceId?: string }> }; rawLogPath?: string; stdoutLogPath?: string; stderrLogPath?: string; stdoutChars?: number; stderrChars?: number; usage?: { inputTokens?: number; cachedInputTokens?: number; outputTokens?: number; reasoningOutputTokens?: number }; durationMs: number; audit: { taskSession?: string; branch?: string; workspaceOnly: "preferred" &#124; "strict" &#124; false; rawShellUsed: boolean } }>>` |
 | Runtime | `workspace subagent` |
 | Capability | writes state · mutating · single-shot |
 | Default timeout | 900000ms |

@@ -2650,6 +2650,34 @@
       "reason": "Work-session Code Call and MCP routing must prove bounded execution, protected Consuelo state, session-authority validation, public schema limits, generated error-code parity, and child-process stdin/exit lifecycle behavior without selecting unrelated package-wide OS tests."
     },
     {
+      "id": "os-posthog-api-tool",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/tools/posthog/**",
+        "packages/os/scripts/posthog.ts",
+        "packages/os/scripts/lib/posthog-client.ts",
+        "packages/os/tests/posthog-tool.test.ts",
+        "packages/os/docs/posthog.md"
+      ],
+      "tests": [
+        {
+          "name": "OS PostHog provider, manifest and facade contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/posthog-tool.test.ts",
+            "tools/posthog/handler.test.ts",
+            "tests/tool-manifest.test.ts",
+            "tests/facade/facade.test.ts"
+          ]
+        }
+      ],
+      "reason": "PostHog provider edits have a focused credential/ingestion/query/manifest and typed-facade regression suite. Preserve all other critical shared-contract checks without running an unrelated whole-OS browser package suite."
+    },
+    {
       "id": "os-script-parity-audit",
       "critical": true,
       "exclusive": true,

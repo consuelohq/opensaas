@@ -993,6 +993,10 @@
       "status": "changed-needs-review",
       "reason": "The OS copy now lazy-loads yaml so scripts-only audit fixtures do not require index/config dependencies; keep the intentional runtime-specific divergence explicit."
     },
+    "scripts/lib/posthog-client.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-only privacy-checked PostHog provider client for optional per-node analytics; no workspace counterpart is needed."
+    },
     "scripts/lib/platform-cloudflare-provisioning.ts": {
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
@@ -1274,6 +1278,10 @@
     "scripts/lib/subagent/runtime.ts": {
       "status": "changed-needs-review",
       "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
+    },
+    "scripts/lib/task-merge-readiness.js": {
+      "status": "same",
+      "reason": "Shared task-merge-readiness helper is byte-identical in workspace and OS script trees."
     },
     "scripts/lib/task-meta.js": {
       "status": "changed-needs-review",
@@ -1641,6 +1649,10 @@
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
     },
+    "scripts/posthog.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned optional PostHog API CLI delegated by the PostHog tool package; no workspace counterpart required."
+    },
     "scripts/pr-review.js": {
       "status": "changed-needs-review",
       "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
@@ -1724,6 +1736,14 @@
     "scripts/server/main.ts": {
       "status": "os-only-intentional",
       "reason": "scripts/server/main.ts is an intentional OS-owned runtime, build, support, or test asset with no workspace counterpart."
+    },
+    "scripts/server/mcp-request-receipts.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned MCP request receipt tracking for retry-safe request handling; no workspace counterpart."
+    },
+    "scripts/server/mcp-request-recovery.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned MCP request recovery path for durable retry reconciliation; no workspace counterpart."
     },
     "scripts/server/middleware/auth.ts": {
       "status": "os-only-intentional",
