@@ -709,6 +709,7 @@ describe('lifecycle restart parity', () => {
       activeRuntimeRoot,
       home,
       platform: 'darwin' as const,
+      environment: { HOME: home },
       run: async (command: string, args: string[]) => {
         calls.push({ command, args });
         return { exitCode: 0, stdout: '{"ok":true,"changed":false}\n', stderr: '' };

@@ -712,6 +712,7 @@ async function main() {
     }
     if (verifyRun && verifyRun.mode === 'pending') {
       writeVerifyPending(verifyRun, { branch, base, headSha });
+      if (args.foreground) process.exitCode = 1;
       return;
     }
     if (verifyRun && verifyRun.mode === 'launch') {
