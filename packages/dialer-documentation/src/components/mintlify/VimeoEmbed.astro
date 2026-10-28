@@ -1,0 +1,13 @@
+---
+const { videoId, title = 'Video' } = Astro.props;
+const src = `https://player.vimeo.com/video/${videoId}?autoplay=1&loop=1&autopause=0&background=1&app_id=58479`;
+---
+
+<div class="vimeo-embed">
+  <iframe src={src} allow="autoplay; fullscreen; picture-in-picture; clipboard-write" title={title} loading="lazy"></iframe>
+</div>
+
+<style>
+  .vimeo-embed { border: 2px solid var(--sl-color-gray-6); border-radius: 1rem; margin: 2rem 0; overflow: hidden; padding-top: 69.01%; position: relative; }
+  iframe { border: 0; height: 100%; inset: 0; position: absolute; width: 100%; }
+</style>
