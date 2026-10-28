@@ -72,6 +72,35 @@ describe('LeadConnector Cloudflare embed edge', () => {
     expect(fixture.assetRequests).toHaveLength(0);
   });
 
+  it('preserves public webhook URL authority and body while replacing spoofed forwarding headers', async () => {
+    const fixture = createEnvironment();
+    const worker = createLeadConnectorEdgeWorker(fixture.environment.fetchOrigin);
+    const body = 'CallSid=CA_TEST&CallStatus=completed';
+    const response = await worker.fetch(
+      new Request('https://dialer.example.test:8443/webhooks/twilio/status?group=call%2Fone', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/x-www-form-urlencoded',
+          'x-twilio-signature': 'provider-signature',
+          'x-forwarded-host': 'attacker.example.test',
+          'x-forwarded-proto': 'http',
+        },
+        body,
+      }),
+      fixture.environment,
+    );
+
+    expect(response.status).toBe(201);
+    const proxied = fixture.originRequests[0]!;
+    expect(proxied.url).toBe(
+      'https://dialer-origin.example.test/webhooks/twilio/status?group=call%2Fone',
+    );
+    expect(proxied.headers.get('x-forwarded-host')).toBe('dialer.example.test:8443');
+    expect(proxied.headers.get('x-forwarded-proto')).toBe('https');
+    expect(proxied.headers.get('x-twilio-signature')).toBe('provider-signature');
+    expect(await proxied.text()).toBe(body);
+  });
+
   it('rewrites the marketplace OAuth callback to the canonical backend callback', async () => {
     const fixture = createEnvironment();
     const worker = createLeadConnectorEdgeWorker(

@@ -229,6 +229,9 @@ export const createLeadConnectorEdgeWorker = (
           ? await signedCustomerRequest(request, target, environment, clock)
           : new Request(target, request);
         if (proxied instanceof Response) return proxied;
+        // Provider signatures bind to the public URL observed at this edge.
+        proxied.headers.set('x-forwarded-host', source.host);
+        proxied.headers.set('x-forwarded-proto', source.protocol.slice(0, -1));
         return await fetchOrigin(proxied);
       }
       const asset = assetRequest(request);
