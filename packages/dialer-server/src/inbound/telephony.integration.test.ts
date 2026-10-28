@@ -55,6 +55,7 @@ suite('inbound runtime with real Postgres and simulated carrier', () => {
   let participants: { callSid: string; muted: boolean; hold: boolean }[];
   let latestOfferUrl: string;
   let latestOfferTo: string;
+  let latestOfferTimeout: number;
   const number: InboundNumber = {
     numberId: 'number-one',
     workspaceId: 'workspace',
@@ -113,6 +114,7 @@ suite('inbound runtime with real Postgres and simulated carrier', () => {
     lostOffer = false;
     latestOfferUrl = '';
     latestOfferTo = '';
+    latestOfferTimeout = 0;
     calls = new Map([
       [
         'caller',
@@ -125,6 +127,7 @@ suite('inbound runtime with real Postgres and simulated carrier', () => {
         offers++;
         latestOfferUrl = input.url;
         latestOfferTo = input.to;
+        latestOfferTimeout = input.timeoutSeconds;
         const call = {
           sid: 'rep-call-' + offers,
           accountSid: 'account',
@@ -269,6 +272,78 @@ suite('inbound runtime with real Postgres and simulated carrier', () => {
     expect(offers).toBe(1);
     expect(latestOfferTo).toBe('fixture-phone');
     expect((await capacity.read('workspace', 'slot'))?.repId).toBe('alice');
+  });
+
+  const phoneOptions = (phoneOfferMilliseconds = 40_000) => ({
+    pool, numbers: [number], phoneOfferMilliseconds,
+    endpoints: [{
+      workspaceId: 'workspace', repId: 'alice', endpointId: 'phone',
+      kind: 'phone' as const, address: 'fixture-phone',
+    }],
+    carrier, publicUrl: 'https://voice.example', authToken: 'secret', clock,
+  });
+  const readyPhone = async () => {
+    await capacity.execute({
+      workspaceId: 'workspace', capacityId: 'slot',
+      operationId: 'phone-ready', expectedVersion: 2,
+      action: { type: 'readiness', ready: true,
+        endpoints: [{ endpointId: 'phone', kind: 'phone', healthy: true }] },
+    });
+  };
+
+  it('keeps the phone acceptance budget through ringing, prompt and DTMF latency on legacy capacity', async () => {
+    service = createInboundTelephony(phoneOptions());
+    await readyPhone();
+    await incoming();
+    await tick();
+    const owner = (await capacity.read('workspace', 'slot'))!.owner!;
+    expect(owner.offerExpiresAt).toBe(new Date(milliseconds + 40_000).toISOString());
+    expect(latestOfferTimeout).toBe(20);
+    const decision = await pool.query<{ frame: { offerPolicy: { phoneOfferMilliseconds: number; selectedOfferMilliseconds: number; phoneScreeningReserveMilliseconds: number } } }>(
+      "SELECT frame FROM dialer_routing_decisions WHERE workspace_id=$1 AND result->'reservation'->>'assignmentId'=$2",
+      ['workspace', owner.assignmentId],
+    );
+    expect(decision.rows[0]?.frame.offerPolicy.phoneOfferMilliseconds).toBe(40_000);
+    expect(decision.rows[0]?.frame.offerPolicy.selectedOfferMilliseconds).toBe(40_000);
+    expect(decision.rows[0]?.frame.offerPolicy.phoneScreeningReserveMilliseconds).toBe(20_000);
+    const reference = decodeURIComponent(latestOfferUrl.split('/').at(-1)!);
+    expect(await service.handle('number-one', 'screen', {
+      AccountSid: 'account', CallSid: 'rep-call-1',
+    }, reference)).toContain('Press 1');
+    milliseconds += 15_000;
+    await tick();
+    expect((await capacity.read('workspace', 'slot'))?.owner?.phase).toBe('offering');
+    expect(await service.handle('number-one', 'accept', {
+      AccountSid: 'account', CallSid: 'rep-call-1', Digits: '1',
+    }, reference)).not.toContain('<Hangup');
+    await tick();
+    expect((await capacity.read('workspace', 'slot'))?.owner?.phase).toBe('connecting');
+    participants = [
+      { callSid: 'caller', muted: false, hold: false },
+      { callSid: 'rep-call-1', muted: false, hold: false },
+    ];
+    await tick();
+    const state = await capacity.read('workspace', 'slot');
+    expect(state?.owner?.phase).toBe('connected');
+    expect(state?.policy.offerMilliseconds).toBe(12_000);
+    expect(offers).toBe(1);
+  });
+
+  it('never extends an in-flight phone acceptance budget when configuration changes', async () => {
+    service = createInboundTelephony(phoneOptions());
+    await readyPhone();
+    await incoming();
+    await tick();
+    const deadline = (await capacity.read('workspace', 'slot'))!.owner!.offerExpiresAt;
+    const reference = decodeURIComponent(latestOfferUrl.split('/').at(-1)!);
+    service = createInboundTelephony(phoneOptions(80_000));
+    expect((await capacity.read('workspace', 'slot'))?.owner?.offerExpiresAt).toBe(deadline);
+    milliseconds += 40_000;
+    expect(await service.handle('number-one', 'accept', {
+      AccountSid: 'account', CallSid: 'rep-call-1', Digits: '1',
+    }, reference)).toContain('<Hangup');
+    expect((await capacity.read('workspace', 'slot'))?.owner?.winnerEndpointId).toBeNull();
+    expect(offers).toBe(1);
   });
 
   it('rejects empty/offline ready selections and renews an active rep after the presence lease expires', async () => {

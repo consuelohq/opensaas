@@ -1,0 +1,50 @@
+---
+type TocNode = {
+  slug: string;
+  text: string;
+  children: TocNode[];
+};
+
+interface Props {
+  items: TocNode[];
+  depth?: number;
+}
+
+const { items, depth = 0 } = Astro.props;
+---
+
+<ul class="docs-mobile-toc-list" style={`--docs-toc-depth:${depth}`}>
+  {items.map((item) => (
+    <li>
+      <a href={`#${item.slug}`}>{item.text}</a>
+      {item.children.length > 0 && <Astro.self items={item.children} depth={depth + 1} />}
+    </li>
+  ))}
+</ul>
+
+<style>
+  @layer starlight.core {
+    .docs-mobile-toc-list {
+      display: grid;
+      gap: 0;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .docs-mobile-toc-list a {
+      border-top: 1px solid var(--docs-line);
+      color: var(--docs-muted);
+      display: block;
+      font-size: var(--sl-text-sm);
+      line-height: 1.35;
+      padding: 0.72rem 0.2rem 0.72rem calc(0.2rem + 0.9rem * var(--docs-toc-depth));
+      text-decoration: none;
+    }
+
+    .docs-mobile-toc-list a:hover,
+    .docs-mobile-toc-list a:focus-visible {
+      color: var(--docs-ink);
+    }
+  }
+</style>

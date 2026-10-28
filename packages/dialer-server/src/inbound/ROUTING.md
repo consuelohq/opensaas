@@ -138,3 +138,28 @@ any owned routing request or any active routing request. After draining and
 reconciliation, an explicit down removes RD4 configuration/evidence only, retaining
 RD1/RD3 history. Down/up is not evidence retention; restore from backup if needed.
 No production activation is part of RD4.
+
+
+## Phone offer timing
+
+Phone and mixed-device reservations use a 40,000 ms total offer window by default,
+including reps registered with the earlier 12,000 ms base capacity policy. Set
+`phoneOfferMilliseconds` in the version-1 inbound configuration (or the server
+telephony/routing options) to an integer from 25,000 through 80,000 ms. Browser-only
+reservations continue to use the registered capacity policy.
+
+At dispatch, the phone ring timeout uses the remaining offer time minus a 20,000 ms
+screening reserve, bounded to 1–60 seconds. The reserve covers the provider buffer,
+spoken prompt, five-second DTMF collection window and control round-trip. These
+are deterministic policy allowances, not guarantees about network latency.
+Twilio documents both the [possible extra ring buffer](https://www.twilio.com/docs/voice/api/call-resource)
+and [Gather timing after nested audio](https://www.twilio.com/docs/voice/twiml/gather).
+
+The SDK offer action records its optional `offerMilliseconds` before dispatch.
+Old events without this value replay against their original registered policy.
+Routing decision frames record `offerPolicy.phoneOfferMilliseconds` and
+`offerPolicy.selectedOfferMilliseconds`, plus `phoneScreeningReserveMilliseconds`;
+capacity events retain the exact assigned
+deadline. Configuration changes apply to future reservations. Existing assignment
+deadlines, generation fences, caller maximum wait and unknown-effect ownership
+remain authoritative.

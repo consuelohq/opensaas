@@ -1,0 +1,21 @@
+---
+title: Browser and phone devices
+description: Answer on a configured endpoint without creating competing conversations.
+status: preview
+---
+
+A browser endpoint uses the browser's microphone, speakers and Voice SDK connection. A phone endpoint forwards an offer to an administrator-configured phone number and uses the spoken acceptance flow.
+
+## Browser setup
+
+Allow microphone access for the embedded Dialer, choose the correct input/output devices, and keep the tab connected. Browser sign-in, microphone permission and voice registration are separate prerequisites.
+
+## Phone setup
+
+Ask your administrator to verify the forwarding destination and caller number. Answer the offer and follow its screening prompt. Picking up is different from confirming that the intended rep accepted.
+
+## Multiple devices
+
+Select only endpoints you can answer. If more than one receives an offer, the first valid acceptance committed by the server owns the assignment. Other endpoints cannot create a second winning conversation.
+
+After a refresh or network change, inspect the current call state before starting another one. See [audio troubleshooting](/troubleshooting/audio/).

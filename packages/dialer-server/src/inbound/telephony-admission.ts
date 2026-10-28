@@ -46,6 +46,7 @@ export type TelephonyOptions = {
   publicUrl: string;
   authToken: string;
   clock?: () => string;
+  phoneOfferMilliseconds?: number;
   enrich?: InboundEnrichment;
   callbackRecipientCipher?: CallbackRecipientCipher;
   callbackConsent?: CallbackConsentAdapter;
