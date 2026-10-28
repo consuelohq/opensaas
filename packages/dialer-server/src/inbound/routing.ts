@@ -1,3 +1,7 @@
+import {
+  PHONE_SCREENING_RESERVE_MILLISECONDS,
+  resolvePhoneOfferMilliseconds,
+} from './phone-offer-policy';
 import { createHash } from 'node:crypto';
 import { Effect, Layer } from 'effect';
 import type { Pool, PoolClient } from 'pg';
@@ -99,8 +103,9 @@ const maintain = async (
 };
 export const createPostgresInboundRouting = (
   pool: Pool,
-  options: { clock?: () => string } = {},
+  options: { clock?: () => string; phoneOfferMilliseconds?: number } = {},
 ) => {
+  const phoneOfferMilliseconds = resolvePhoneOfferMilliseconds(options.phoneOfferMilliseconds);
   const configuration = createRoutingConfiguration(pool);
   const tick = (input: RoutingTickInput): Promise<RoutingTickResult> =>
     withInboundTransaction(
@@ -208,6 +213,7 @@ export const createPostgresInboundRouting = (
           };
           const evaluation = evaluateInboundRouting(frame);
           let reservation: RoutingTickResult['reservation'] = null;
+          let selectedOfferMilliseconds: number | null = null;
           if (
             evaluation.action === 'offer' &&
             evaluation.proposedCapacityId &&
@@ -217,6 +223,9 @@ export const createPostgresInboundRouting = (
               (capacity) =>
                 capacity.capacityId === evaluation.proposedCapacityId,
             )!;
+            const offeredEndpoints = selected.endpoints.filter((endpoint) => endpoint.healthy);
+            selectedOfferMilliseconds = offeredEndpoints.some((endpoint) => endpoint.kind === 'phone')
+              ? phoneOfferMilliseconds : selected.policy.offerMilliseconds;
             const accepted = await executeRepCapacityOnClient(
               client,
               {
@@ -229,9 +238,8 @@ export const createPostgresInboundRouting = (
                   direction: 'inbound',
                   requestId: evaluation.requestId,
                   assignmentId: operation(input.decisionId, 'assignment'),
-                  endpointIds: selected.endpoints
-                    .filter((endpoint) => endpoint.healthy)
-                    .map((endpoint) => endpoint.endpointId),
+                  endpointIds: offeredEndpoints.map((endpoint) => endpoint.endpointId),
+                  offerMilliseconds: selectedOfferMilliseconds,
                 },
               },
               { clock: () => at },
@@ -260,6 +268,10 @@ export const createPostgresInboundRouting = (
               JSON.stringify({
                 schemaVersion: 2,
                 queueVersion: queue.rows[0].version,
+                offerPolicy: {
+                  phoneOfferMilliseconds, selectedOfferMilliseconds,
+                  phoneScreeningReserveMilliseconds: PHONE_SCREENING_RESERVE_MILLISECONDS,
+                },
                 metadataVersions: rows.rows.map((row) => ({
                   requestId: row.snapshot.entityId,
                   version: row.metadata_version,

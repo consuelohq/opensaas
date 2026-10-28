@@ -119,7 +119,10 @@ export const applyRepCapacityAction = (
         direction: action.direction,
         generation,
         phase: 'offering',
-        offerExpiresAt: plus(event.at, state.policy.offerMilliseconds),
+        offerExpiresAt: plus(
+          event.at,
+          action.offerMilliseconds ?? state.policy.offerMilliseconds,
+        ),
         endpoints,
         winnerEndpointId: null,
         externalStarted: false,

@@ -47,6 +47,7 @@ export const RepCapacityActionSchema = Schema.Union(
     requestId: id,
     direction: Schema.Literal('inbound', 'outbound'),
     endpointIds: Schema.Array(id).pipe(Schema.minItems(1), Schema.maxItems(8)),
+    offerMilliseconds: Schema.optional(duration.pipe(Schema.positive())),
   }),
   Schema.Struct({
     type: Schema.Literal('accept', 'decline'),
