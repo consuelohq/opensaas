@@ -35,6 +35,21 @@ type CallbackCommand = {
 
 type CallbackRuntime = ReturnType<typeof createPostgresCallbacks>;
 
+// A callback can have multiple attempts. A callback-only webhook reference is
+// not an execution identity and may bind an older CallSid to a newer dial.
+const callbackWebhookReference = (callbackId: string, attemptId: string) =>
+  callbackId + '~' + attemptId;
+
+const parseCallbackWebhookReference = (reference: string) => {
+  const separator = reference.indexOf('~');
+  if (separator <= 0 || separator === reference.length - 1)
+    throw new Error('Callback webhook attempt identity is missing');
+  return {
+    callbackId: reference.slice(0, separator),
+    attemptId: reference.slice(separator + 1),
+  };
+};
+
 const readCommand = async (
   client: Pool | PoolClient,
   workspaceId: string,
@@ -269,25 +284,29 @@ export const createCallbackTelephony = (
         await markUnknown(workspaceId, callbackId, attemptId, commandId);
         return;
       }
+      const dialEffects = effects.filter((effect) =>
+        ['rep_bridge', 'customer_dial'].includes(effect.effect_kind),
+      );
       if (
-        effects.length >= 2 &&
-        effects
-          .filter((effect) => ['rep_bridge', 'customer_dial'].includes(effect.effect_kind))
-          .every((effect) => effect.status === 'succeeded')
+        dialEffects.length === 2 &&
+        dialEffects.every((effect) => ['succeeded', 'failed'].includes(effect.status))
       ) {
+        const result = dialEffects.every((effect) => effect.status === 'succeeded')
+          ? 'succeeded'
+          : 'failed';
         if (command.status === 'dispatched')
           await journal.updateCommand(
             workspaceId,
             commandId,
             command.version,
-            'succeeded',
+            result,
           );
         else if (command.status === 'unknown')
           await journal.updateCommand(
             workspaceId,
             commandId,
             command.version,
-            'succeeded',
+            result,
             true,
           );
       }
@@ -380,13 +399,13 @@ export const createCallbackTelephony = (
             options,
             number.numberId,
             'callback-join',
-            claimed.callback_id,
+            callbackWebhookReference(claimed.callback_id, claimed.attempt_id),
           ),
           statusCallback: telephonyUrl(
             options,
             number.numberId,
             'callback-status',
-            claimed.callback_id,
+            callbackWebhookReference(claimed.callback_id, claimed.attempt_id),
           ),
           timeoutSeconds: callback.policy.customerRingSeconds,
         });
@@ -687,6 +706,174 @@ export const createCallbackTelephony = (
     }
   };
 
+  const reconcileRejectedRepOffers = async (
+    workspaceId: string,
+    callbackId: string,
+  ) => {
+    try {
+    const callback = await callbacks.read(workspaceId, callbackId);
+    if (!callback || !['scheduled', 'retry_due', 'offering'].includes(callback.state.status))
+      return;
+    await withInboundTransaction(pool, workspaceId, async (client) => {
+      try {
+      const owned = await client.query<{ snapshot: RepCapacityState }>(
+        `SELECT snapshot FROM dialer_rep_capacity
+         WHERE workspace_id=$1 AND snapshot->'owner'->>'requestId'=$2 LIMIT 2`,
+        [workspaceId, callback.state.requestId],
+      );
+      if (owned.rows.length > 1)
+        throw new Error('Callback request owns more than one capacity slot');
+      let state = owned.rows[0]?.snapshot;
+      const owner = state?.owner;
+      if (!state || !owner || !['offering', 'unknown'].includes(owner.phase) ||
+          owner.winnerEndpointId) return;
+      const effects = await readTelephonyEffects(
+        client, workspaceId, owner.assignmentId,
+      );
+      // No side effect may have escaped: only definitively rejected rep
+      // creates prove the absence of a provider call without a SID.
+      if (!effects.length || effects.some((effect) =>
+        effect.kind !== 'offer' || effect.status !== 'failed' || effect.call_sid,
+      )) return;
+      if (owner.phase !== 'unknown') {
+        state = (await executeRepCapacityOnClient(client, {
+          workspaceId,
+          capacityId: state.capacityId,
+          expectedVersion: state.version,
+          operationId: telephonyId(owner.assignmentId, 'rejected-offers-unknown'),
+          action: {
+            type: 'unknown',
+            assignmentId: owner.assignmentId,
+            generation: owner.generation,
+          },
+        }, { clock: options.clock })).state;
+      }
+      await executeRepCapacityOnClient(client, {
+        workspaceId,
+        capacityId: state.capacityId,
+        expectedVersion: state.version,
+        operationId: telephonyId(owner.assignmentId, 'rejected-offers-release'),
+        action: {
+          type: 'reconcile',
+          assignmentId: owner.assignmentId,
+          generation: owner.generation,
+          outcome: 'no_effect',
+          evidenceId: telephonyId(owner.assignmentId, 'definitive-create-rejection'),
+        },
+      }, { clock: options.clock });
+      } catch (cause: unknown) {
+        if (cause instanceof Error) throw cause;
+        throw new Error('Rejected rep offer reconciliation failed', { cause });
+      }
+    });
+    } catch (cause: unknown) {
+      if (cause instanceof Error) throw cause;
+      throw new Error('Rejected rep offer reconciliation failed', { cause });
+    }
+  };
+
+  // Capacity release and the callback result are separate durable writes.
+  // A crash between them must not strand an ownerless dialing/unknown/cancel
+  // obligation. Only known terminal provider legs and unstarted effects can
+  // complete this recovery; unknown creates without a SID remain unresolved.
+  const reconcileOwnerlessAttempt = async (
+    workspaceId: string,
+    callbackId: string,
+    attemptId: string,
+  ) => {
+    try {
+    const callback = await callbacks.read(workspaceId, callbackId);
+    const attempt = callback?.state.attempts.at(-1);
+    if (!callback || attempt?.attemptId !== attemptId) return;
+    if (!['dialing', 'unknown', 'cancel_pending'].includes(callback.state.status))
+      return;
+    const effects = await readEffects(pool, workspaceId, callbackId, attemptId);
+    const rep = effects.find((effect) => effect.effect_kind === 'rep_bridge');
+    const customer = effects.find((effect) => effect.effect_kind === 'customer_dial');
+    if (!rep || !customer) return;
+    if (effects.some((effect) =>
+      !effect.call_sid &&
+      ['dispatched', 'unknown', 'succeeded'].includes(effect.status),
+    )) return;
+    const number = options.numbers.find((item) => item.numberId === callback.numberId);
+    if (!number) return;
+    for (const effect of effects) {
+      if (!effect.call_sid) continue;
+      const call = await options.carrier.call(effect.call_sid);
+      if (call.accountSid !== number.accountSid ||
+          !terminalCarrierStatus(call.status)) return;
+    }
+
+    const safe = await withInboundTransaction(pool, workspaceId, async (client) => {
+      try {
+      const current = await callbacks.read(workspaceId, callbackId);
+      const latest = current?.state.attempts.at(-1);
+      if (!current || latest?.attemptId !== attemptId ||
+          !['dialing', 'unknown', 'cancel_pending'].includes(current.state.status))
+        return false;
+      const capacityState = await readTelephonyCapacity(
+        client, workspaceId, attempt.capacityId,
+      );
+      if (capacityState?.owner?.assignmentId === attempt.assignmentId)
+        return false;
+      const fresh = await readEffects(client, workspaceId, callbackId, attemptId);
+      if (fresh.length !== effects.length || fresh.some((effect, index) =>
+        effect.effect_kind !== effects[index]?.effect_kind ||
+        effect.status !== effects[index]?.status ||
+        effect.call_sid !== effects[index]?.call_sid,
+      )) return false;
+      for (const effect of fresh) {
+        // Pending effects never crossed the provider boundary. A dispatched
+        // create with no SID was rejected by the safety check above.
+        if (effect.status === 'pending') {
+          await client.query(
+            `UPDATE dialer_callback_effects SET status='failed',updated_at=clock_timestamp()
+             WHERE workspace_id=$1 AND callback_id=$2 AND attempt_id=$3 AND effect_kind=$4
+               AND status='pending'`,
+            [workspaceId, callbackId, attemptId, effect.effect_kind],
+          );
+        } else if (['dispatched', 'unknown'].includes(effect.status)) {
+          await client.query(
+            `UPDATE dialer_callback_effects SET status=$5,updated_at=clock_timestamp()
+             WHERE workspace_id=$1 AND callback_id=$2 AND attempt_id=$3 AND effect_kind=$4
+               AND status IN ('dispatched','unknown')`,
+            [workspaceId, callbackId, attemptId, effect.effect_kind,
+              effect.effect_kind === 'rep_bridge' ? 'failed' : 'succeeded'],
+          );
+        }
+      }
+      return true;
+      } catch (cause: unknown) {
+        if (cause instanceof Error) throw cause;
+        throw new Error('Ownerless callback evidence transaction failed', { cause });
+      }
+    });
+    if (!safe) return;
+    await settleCommand(workspaceId, rep.command_id, callbackId, attemptId);
+    if (callback.state.status === 'cancel_pending') {
+      await callbacks.cancel({
+        workspaceId, callbackId,
+        operationId: telephonyId(attemptId, 'ownerless-cancel-reconciled'),
+        reconciled: true,
+      });
+    } else {
+      const current = await callbacks.read(workspaceId, callbackId);
+      if (current?.state.attempts.at(-1)?.attemptId !== attemptId) return;
+      if (!['dialing', 'unknown'].includes(current.state.status)) return;
+      await callbacks.recordAttemptResult({
+        workspaceId, callbackId,
+        operationId: telephonyId(attemptId, 'ownerless-result'),
+        attemptId,
+        outcome: customer.call_sid ? 'no_answer' : 'failed',
+        reconciled: current.state.status === 'unknown',
+      });
+    }
+    } catch (cause: unknown) {
+      if (cause instanceof Error) throw cause;
+      throw new Error('Ownerless callback recovery failed', { cause });
+    }
+  };
+
   const reconcileOne = async (workspaceId: string, callbackId: string) => {
     try {
       const callback = await callbacks.read(workspaceId, callbackId);
@@ -707,8 +894,10 @@ export const createCallbackTelephony = (
         !state?.owner ||
         state.owner.assignmentId !== attempt.assignmentId ||
         state.owner.generation !== attempt.generation
-      )
+      ) {
+        await reconcileOwnerlessAttempt(workspaceId, callbackId, attempt.attemptId);
         return;
+      }
       let effects = await readEffects(pool, workspaceId, callbackId, attempt.attemptId);
       let rep = effects.find((effect) => effect.effect_kind === 'rep_bridge');
       let customer = effects.find((effect) => effect.effect_kind === 'customer_dial');
@@ -736,6 +925,45 @@ export const createCallbackTelephony = (
         effects = await readEffects(pool, workspaceId, callbackId, attempt.attemptId);
         rep = effects.find((effect) => effect.effect_kind === 'rep_bridge');
         customer = effects.find((effect) => effect.effect_kind === 'customer_dial');
+      }
+      // A pre-customer bridge with a definitively ended rep cannot dispatch
+      // its pending customer dial. Fence that not-yet-sent effect before
+      // releasing capacity; a crash during the two writes is handled above.
+      if (rep?.status === 'failed' && rep.call_sid &&
+          customer?.status === 'pending' && !customer.call_sid) {
+        const repCall = await options.carrier.call(rep.call_sid);
+        if (repCall.accountSid !== number.accountSid ||
+            !terminalCarrierStatus(repCall.status)) return;
+        const fenced = await withInboundTransaction(pool, workspaceId, async (client) => {
+          try {
+          const current = await readTelephonyCapacity(client, workspaceId, attempt.capacityId);
+          const latest = await readEffects(client, workspaceId, callbackId, attempt.attemptId);
+          if (current?.owner?.assignmentId !== attempt.assignmentId ||
+              current.owner.generation !== attempt.generation ||
+              latest.find((effect) => effect.effect_kind === 'rep_bridge')?.status !== 'failed' ||
+              latest.find((effect) => effect.effect_kind === 'customer_dial')?.status !== 'pending')
+            return false;
+          const result = await client.query(
+            `UPDATE dialer_callback_effects SET status='failed',updated_at=clock_timestamp()
+             WHERE workspace_id=$1 AND callback_id=$2 AND attempt_id=$3
+               AND effect_kind='customer_dial' AND status='pending' AND call_sid IS NULL`,
+            [workspaceId, callbackId, attempt.attemptId],
+          );
+          return result.rowCount === 1;
+          } catch (cause: unknown) {
+            if (cause instanceof Error) throw cause;
+            throw new Error('Failed callback bridge fencing failed', { cause });
+          }
+        });
+        if (!fenced) return;
+        await settleCommand(workspaceId, rep.command_id, callbackId, attempt.attemptId);
+        await callbacks.releaseAttemptCapacity({
+          workspaceId, callbackId,
+          operationId: telephonyId(attempt.attemptId, 'failed-bridge-release'),
+          outcome: 'no_effect',
+        });
+        await reconcileOwnerlessAttempt(workspaceId, callbackId, attempt.attemptId);
+        return;
       }
       if (rep?.command_id ?? customer?.command_id)
         await settleCommand(
@@ -1015,14 +1243,25 @@ export const createCallbackTelephony = (
   const reconcile = async (workspaceId: string) => {
     try {
       const rows = await pool.query<{ callback_id: string }>(
-        `SELECT callback_id FROM dialer_callback_obligations
-         WHERE workspace_id=$1 AND state->>'status' IN ('dialing','unknown','connected','cancel_pending')
-         ORDER BY callback_id LIMIT 1001`,
+        `SELECT obligation.callback_id FROM dialer_callback_obligations obligation
+         WHERE obligation.workspace_id=$1 AND (
+           obligation.state->>'status' IN ('dialing','unknown','connected','cancel_pending')
+           OR EXISTS (
+             SELECT 1 FROM dialer_rep_capacity capacity
+             WHERE capacity.workspace_id=obligation.workspace_id
+               AND capacity.snapshot->'owner'->>'requestId'=obligation.request_id
+               AND capacity.snapshot->'owner'->>'phase' IN ('offering','unknown')
+           )
+         )
+         ORDER BY obligation.callback_id LIMIT 1001`,
         [workspaceId],
       );
       if (rows.rows.length > 1000)
         throw new Error('Callback reconciliation scan bound exceeded');
-      for (const row of rows.rows) await reconcileOne(workspaceId, row.callback_id);
+      for (const row of rows.rows) {
+        await reconcileRejectedRepOffers(workspaceId, row.callback_id);
+        await reconcileOne(workspaceId, row.callback_id);
+      }
     } catch (cause: unknown) {
       if (cause instanceof Error) throw cause;
       throw new Error('Async operation rejected with a non-Error cause', { cause });
@@ -1033,15 +1272,17 @@ export const createCallbackTelephony = (
     numberId: string,
     action: 'callback-join' | 'callback-status',
     facts: Record<string, string>,
-    callbackId: string,
+    reference: string,
   ) => {
     try {
+      const { callbackId, attemptId } = parseCallbackWebhookReference(reference);
       const number = options.numbers.find((candidate) => candidate.numberId === numberId);
       if (!number || facts.AccountSid !== number.accountSid || !facts.CallSid)
         throw new Error('Callback provider identity mismatch');
       const callback = await callbacks.read(number.workspaceId, callbackId);
       const attempt = callback?.state.attempts[callback.state.attempts.length - 1];
-      if (!callback || !attempt || callback.numberId !== numberId)
+      if (!callback || !attempt || attempt.attemptId !== attemptId ||
+          callback.numberId !== numberId)
         throw new Error('Callback provider binding is missing');
       const customer = (await readEffects(
         pool,
@@ -1049,22 +1290,27 @@ export const createCallbackTelephony = (
         callbackId,
         attempt.attemptId,
       )).find((effect) => effect.effect_kind === 'customer_dial');
-      if (!customer || (customer.call_sid && customer.call_sid !== facts.CallSid))
+      if (!customer ||
+          !['dispatched', 'unknown', 'succeeded'].includes(customer.status) ||
+          (customer.call_sid && customer.call_sid !== facts.CallSid))
         throw new Error('Callback customer call correlation mismatch');
-      await pool.query(
+      const correlated = await pool.query(
         `UPDATE dialer_callback_effects
          SET call_sid=$5,status=CASE WHEN status IN ('dispatched','unknown') THEN 'succeeded' ELSE status END,
              updated_at=clock_timestamp()
          WHERE workspace_id=$1 AND callback_id=$2 AND attempt_id=$3 AND effect_kind=$4
+           AND status IN ('dispatched','unknown','succeeded')
            AND (call_sid IS NULL OR call_sid=$5)`,
         [
           number.workspaceId,
           callbackId,
-          attempt.attemptId,
+          attemptId,
           'customer_dial',
           facts.CallSid,
         ],
       );
+      if (correlated.rowCount !== 1)
+        throw new Error('Callback customer call correlation changed');
       if (action === 'callback-status') {
         await settleCommand(
           number.workspaceId,

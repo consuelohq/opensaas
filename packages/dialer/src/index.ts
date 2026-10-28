@@ -198,6 +198,7 @@ export type {
 
 // Infrastructure adapters
 export { createTwilioCallProviderLayer } from './infrastructure/twilio/call-provider.js';
+export { classifyTwilioCreateFailure } from './infrastructure/twilio/create-outcome.js';
 export { createParallelStateStoreLayer } from './infrastructure/memory/parallel-state-store.js';
 export { RedisParallelStore } from './infrastructure/redis/redis-parallel-store.js';
 export type { RedisParallelClient } from './infrastructure/redis/redis-parallel-store.js';

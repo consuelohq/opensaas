@@ -1,0 +1,9 @@
+{
+  "files": [
+    "packages/dialer-server/src/inbound/callback-telephony.ts",
+    "packages/workspace/scripts/lib/verification.js",
+    "packages/workspace/scripts/task-push.js",
+    "packages/workspace/scripts/verify.js"
+  ],
+  "updatedAt": "2026-10-28T02:47:42.499Z"
+}
