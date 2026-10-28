@@ -1,3 +1,4 @@
+import { resolvePhoneOfferMilliseconds } from './phone-offer-policy';
 import { decodeCallbackPolicy } from '@consuelo/dialer';
 import type { InboundNumber, InboundEndpoint } from './telephony-contracts';
 
@@ -40,7 +41,7 @@ const unique = (values: readonly string[]) => {
 export const parseTelephonyConfig = (
   raw: string,
   accountSid: string,
-): { numbers: InboundNumber[]; endpoints: InboundEndpoint[] } => {
+): { numbers: InboundNumber[]; endpoints: InboundEndpoint[]; phoneOfferMilliseconds: number } => {
   const config = record(JSON.parse(raw));
   if (
     config.schemaVersion !== 1 ||
@@ -154,5 +155,5 @@ export const parseTelephonyConfig = (
     throw new Error(
       'Browser identity must match the existing authenticated voice identity',
     );
-  return { numbers, endpoints };
+  return { numbers, endpoints, phoneOfferMilliseconds: resolvePhoneOfferMilliseconds(config.phoneOfferMilliseconds) };
 };
