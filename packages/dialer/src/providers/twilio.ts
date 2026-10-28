@@ -13,9 +13,11 @@ import type {
   ReleaseResult,
 } from '../types.js';
 import { extractAreaCode } from '../services/local-presence.js';
-import type TwilioClient from 'twilio';
+import { createAgentVoiceIdentity } from '../services/voice-identity.js';
 import type { IncomingPhoneNumberInstance } from 'twilio/lib/rest/api/v2010/account/incomingPhoneNumber.js';
 import * as Sentry from '@sentry/node';
+
+type TwilioClient = import('twilio').Twilio;
 
 const TERMINAL_STATUSES = [
   'completed',
@@ -35,7 +37,7 @@ const TERMINAL_STATUSES = [
  */
 export class TwilioProvider implements DialerProvider {
   readonly name = 'twilio';
-  private client: ReturnType<typeof TwilioClient> | null = null;
+  private client: TwilioClient | null = null;
   private credentials: TwilioCredentials;
 
   constructor(credentials?: TwilioCredentials) {
@@ -49,7 +51,7 @@ export class TwilioProvider implements DialerProvider {
     };
   }
 
-  private async getClient(): Promise<ReturnType<typeof TwilioClient>> {
+  private async getClient(): Promise<TwilioClient> {
     try {
       if (this.client) return this.client;
       if (!this.credentials.accountSid || !this.credentials.authToken) {
@@ -125,7 +127,7 @@ export class TwilioProvider implements DialerProvider {
       const { AccessToken } = twilio.default.jwt;
       const { VoiceGrant } = AccessToken;
 
-      const identity = `user_${userId}`;
+      const identity = createAgentVoiceIdentity(userId);
       const ttl = 3600;
 
       const token = new AccessToken(accountSid!, apiKey!, apiSecret!, {

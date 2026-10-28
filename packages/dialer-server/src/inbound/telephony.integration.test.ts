@@ -23,6 +23,7 @@ import {
 } from 'bun:test';
 import { randomUUID } from 'node:crypto';
 import { Pool } from 'pg';
+import { Dialer } from '@consuelo/dialer';
 import {
   migrateDialerDatabase,
   rollbackDialerDatabaseMigration,
@@ -53,6 +54,7 @@ suite('inbound runtime with real Postgres and simulated carrier', () => {
   let calls: Map<string, CarrierCall>;
   let participants: { callSid: string; muted: boolean; hold: boolean }[];
   let latestOfferUrl: string;
+  let latestOfferTo: string;
   const number: InboundNumber = {
     numberId: 'number-one',
     workspaceId: 'workspace',
@@ -110,6 +112,7 @@ suite('inbound runtime with real Postgres and simulated carrier', () => {
     redirects = 0;
     lostOffer = false;
     latestOfferUrl = '';
+    latestOfferTo = '';
     calls = new Map([
       [
         'caller',
@@ -121,6 +124,7 @@ suite('inbound runtime with real Postgres and simulated carrier', () => {
       offer: async (input) => {
         offers++;
         latestOfferUrl = input.url;
+        latestOfferTo = input.to;
         const call = {
           sid: 'rep-call-' + offers,
           accountSid: 'account',
@@ -221,6 +225,52 @@ suite('inbound runtime with real Postgres and simulated carrier', () => {
       Direction: 'inbound',
       To: 'fixture-did',
     });
+  it('routes a browser offer to the issued voice identity while preserving rep ownership', async () => {
+    const dialer = new Dialer({
+      credentials: {
+        accountSid: 'AC' + '0'.repeat(32),
+        authToken: 'test-auth-token',
+        apiKey: 'SK' + '1'.repeat(32),
+        apiSecret: 'unit-test-secret',
+        twimlAppSid: 'AP' + '2'.repeat(32),
+      },
+    });
+    const token = await dialer.getToken('alice');
+    expect(token.identity).toBe('user_alice');
+    await incoming();
+    await service.tick();
+    expect(offers).toBe(1);
+    expect(latestOfferTo).toBe('client:' + token.identity);
+    const state = await capacity.read('workspace', 'slot');
+    expect(state?.repId).toBe('alice');
+    expect(state?.owner).toBeTruthy();
+  });
+
+  it('preserves the phone offer destination without a browser identity prefix', async () => {
+    service = createInboundTelephony({
+      pool,
+      numbers: [number],
+      endpoints: [{
+        workspaceId: 'workspace', repId: 'alice', endpointId: 'phone',
+        kind: 'phone', address: 'fixture-phone',
+      }],
+      carrier, publicUrl: 'https://voice.example', authToken: 'secret', clock,
+    });
+    await capacity.execute({
+      workspaceId: 'workspace', capacityId: 'slot',
+      operationId: 'phone-ready', expectedVersion: 2,
+      action: {
+        type: 'readiness', ready: true,
+        endpoints: [{ endpointId: 'phone', kind: 'phone', healthy: true }],
+      },
+    });
+    await incoming();
+    await service.tick();
+    expect(offers).toBe(1);
+    expect(latestOfferTo).toBe('fixture-phone');
+    expect((await capacity.read('workspace', 'slot'))?.repId).toBe('alice');
+  });
+
   it('rejects empty/offline ready selections and renews an active rep after the presence lease expires', async () => {
     const operator = createInboundOperator({
       pool, numbers: [number],

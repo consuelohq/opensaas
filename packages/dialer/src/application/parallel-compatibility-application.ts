@@ -18,6 +18,7 @@ import {
   type ValidateParallelDialCommand,
 } from '../ports/parallel-compatibility.js';
 import type { NumberPool } from '../services/local-presence.js';
+import { createAgentVoiceIdentity } from '../services/voice-identity.js';
 import type { ParallelDialResult, ProfileKey } from '../types.js';
 import { isTerminalCallStatus } from '../domain/parallel-call.js';
 import { processParallelCallback } from './process-parallel-callback.js';
@@ -346,7 +347,7 @@ export const generateParallelAgentTwiml = (input: ParallelAgentTwimlInput) =>
       'client identity',
     );
     const group = yield* runtime.getGroup(sessionId);
-    if (!group || clientIdentity !== `user_${group.userId}`) {
+    if (!group || clientIdentity !== createAgentVoiceIdentity(group.userId)) {
       return yield* Effect.fail(
         new DialerNotFoundError({
           code: 'PARALLEL_GROUP_NOT_FOUND',

@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type { PoolClient } from 'pg';
-import { classifyTwilioCreateFailure, type RepCapacityState, type InboundStoredCommand } from '@consuelo/dialer';
+import { classifyTwilioCreateFailure, createAgentVoiceIdentity, type RepCapacityState, type InboundStoredCommand } from '@consuelo/dialer';
 import {
   withInboundTransaction,
   readInboundSnapshot,
@@ -351,7 +351,7 @@ export const createTelephonyCommands = (options: TelephonyOptions) => {
           const call = await options.carrier.offer({
             to:
               target.kind === 'browser'
-                ? 'client:' + target.address
+                ? 'client:' + createAgentVoiceIdentity(target.address)
                 : target.address,
             from: number.did,
             url: telephonyUrl(
