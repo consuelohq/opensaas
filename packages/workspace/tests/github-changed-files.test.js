@@ -145,4 +145,16 @@ describe('GitHub API changed-file gate', () => {
       prFiles: [{ filename: 'unrelated.txt' }],
     })).changed).toBe('true');
   });
+
+  it.each([
+    '!packages/documentation/**',
+    'packages/documentation/(guide)/**',
+    'packages/documentation/guide\\*.md',
+  ])('runs downstream checks for unsupported negation and glob expression %s', async (pattern) => {
+    const result = await classify({
+      patterns: pattern,
+      prFiles: [{ filename: 'other/unrelated.ts' }],
+    });
+    expect(result.changed).toBe('true');
+  });
 });
