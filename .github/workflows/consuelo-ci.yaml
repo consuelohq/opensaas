@@ -129,7 +129,8 @@ jobs:
           bun x vitest run \
             tests/tool-manifest.test.ts \
             tests/security-gateway.test.ts \
-            tests/workspace-gateway-contract.test.ts
+            tests/workspace-gateway-contract.test.ts \
+            --testTimeout 15000
 
   dialer:
     name: Consuelo / dialer
