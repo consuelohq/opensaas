@@ -1,0 +1,55 @@
+---
+import SiteFooter from '../components/site/SiteFooter.astro';
+import SiteHeader from '../components/site/SiteHeader.astro';
+import MarketingLayout from '../layouts/MarketingLayout.astro';
+
+const description = 'Page not found';
+---
+
+<MarketingLayout title="404 - Not Found" description={description}>
+  <SiteHeader />
+
+  <section class="launch-section">
+    <div class="launch-content launch-content--wide not-found-hero">
+      <h1 class="not-found-hero__logo launch-mono">404</h1>
+      <h2 class="not-found-hero__subtitle">this page couldn't be found</h2>
+      <p class="launch-copy">the page you are looking for doesn't exist or has been moved.</p>
+      <a class="launch-button launch-button--sm launch-mono" href="/">return home ↗</a>
+    </div>
+  </section>
+
+  <SiteFooter />
+</MarketingLayout>
+
+<style>
+  .not-found-hero {
+    display: grid;
+    gap: 0.75rem;
+    padding-top: clamp(2.5rem, 2rem + 2vw, 5rem);
+    padding-bottom: clamp(2.5rem, 2rem + 2vw, 5rem);
+    min-height: 60vh;
+    align-content: center;
+  }
+
+  .not-found-hero__logo {
+    margin: 0;
+    font-size: clamp(1.6rem, 1rem + 2.2vw, 2.4rem);
+    font-weight: 700;
+    letter-spacing: -0.06em;
+    line-height: 1;
+  }
+
+  .not-found-hero__subtitle {
+    margin: 0;
+    font-family: var(--launch-mono-font);
+    font-size: clamp(0.88rem, 0.82rem + 0.2vw, 0.95rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.3;
+  }
+
+  .not-found-hero .launch-button {
+    justify-self: start;
+    margin-top: 1rem;
+  }
+</style>
