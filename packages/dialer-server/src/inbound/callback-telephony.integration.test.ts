@@ -328,6 +328,10 @@ suite('RD6 callback telephony with real Postgres and simulated carrier', () => {
     expect((await capacity.read('workspace', 'slot'))!.owner?.phase).toBe('wrap_up');
     await service.tick();
     expect((await callbacks.read('workspace', 'callback-one'))!.state.status).toBe('fulfilled');
+    const terminalSession = await pool.query<{ mode: string }>(
+      "SELECT mode FROM dialer_telephony_sessions WHERE workspace_id='workspace' AND request_id='callback-request-one'",
+    );
+    expect(terminalSession.rows[0]?.mode).toBe('ended');
   });
 
   it('recovers a lost customer-create response from signed provider correlation after restart', async () => {

@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 2631,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2631",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_b8f12f6d23cf",
+  "tmuxSession": "opensaas-dialer-dev-1616-finish-callback-lifecycle-draining-afte-b8f12f6d",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards/.task/session.json",
+  "createdAt": "2026-10-28T02:50:03.658Z"
+}

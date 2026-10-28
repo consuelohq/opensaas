@@ -1,0 +1,408 @@
+{
+  "version": 1,
+  "worktree_id": "task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards",
+  "events": [
+    {
+      "id": "3b64cb18-fec7-43cf-a3ac-b216e276749b",
+      "occurred_at": "2026-10-28T02:50:24.758Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/dialer-server/src/inbound/callbacks.integration.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards"
+      }
+    },
+    {
+      "id": "f7fb7981-f8f2-4105-8fc2-6086a215f7e1",
+      "occurred_at": "2026-10-28T02:50:49.062Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/dialer-server/src/inbound/callbacks.integration.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards"
+      }
+    },
+    {
+      "id": "5cf4fb3e-0e29-47b4-8a62-9229afbd8a15",
+      "occurred_at": "2026-10-28T02:50:50.328Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/dialer-server/src/inbound/telephony-config.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards"
+      }
+    },
+    {
+      "id": "73f0211c-a5fa-4f57-84b9-832b278503de",
+      "occurred_at": "2026-10-28T02:51:19.781Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/dialer-server/src/database/migrations.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards"
+      }
+    },
+    {
+      "id": "a8a3d984-2366-4eaf-aa9e-2ee0d30a13c9",
+      "occurred_at": "2026-10-28T02:51:20.010Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/dialer-server/src/inbound/customer-entry.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards"
+      }
+    },
+    {
+      "id": "db110644-b485-402e-8b2c-73e2b95d9bbf",
+      "occurred_at": "2026-10-28T02:51:21.523Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/dialer-server/src/inbound/telephony.integration.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards"
+      }
+    },
+    {
+      "id": "de4e78b3-52af-47b6-a430-382cf8962f88",
+      "occurred_at": "2026-10-28T02:52:09.573Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/dialer-server/src/inbound/routing-store.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards"
+      }
+    },
+    {
+      "id": "54a9fedd-89d6-4e22-acfb-3e0d350bc624",
+      "occurred_at": "2026-10-28T02:52:09.776Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/dialer-server/src/inbound/postgres-journal.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards"
+      }
+    },
+    {
+      "id": "1fa58630-2d30-4562-9ade-c33363405c7f",
+      "occurred_at": "2026-10-28T02:52:10.057Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/dialer/src/inbound/callback-obligation.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards"
+      }
+    },
+    {
+      "id": "4cd2deb8-2941-4c9e-8ee7-2a3768f2f53e",
+      "occurred_at": "2026-10-28T02:53:00.978Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/dialer/src/inbound/callback-scheduler.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards"
+      }
+    },
+    {
+      "id": "5603e07e-ccd8-4e1d-bd95-f9661e08a748",
+      "occurred_at": "2026-10-28T02:53:26.104Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/dialer-server/src/inbound/callbacks.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards"
+      }
+    },
+    {
+      "id": "dfb837f1-879a-4fd9-81d0-ea09d9da44ad",
+      "occurred_at": "2026-10-28T02:56:31.091Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/dialer-server/src/inbound/telephony-admission.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards"
+      }
+    },
+    {
+      "id": "ed163823-d914-4891-9b4f-e1afadf90af7",
+      "occurred_at": "2026-10-28T02:59:15.216Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/dialer/src/inbound/callback-scheduler.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards"
+      }
+    },
+    {
+      "id": "dd1905d2-504b-483a-b056-f9a42d5f8c33",
+      "occurred_at": "2026-10-28T02:59:28.215Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/dialer/src/inbound/callback-scheduler.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards"
+      }
+    },
+    {
+      "id": "54c5eb24-e97a-4e50-8d6b-fb2730df45ac",
+      "occurred_at": "2026-10-28T03:00:45.285Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/dialer-server/src/inbound/callback-telephony.integration.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards"
+      }
+    },
+    {
+      "id": "0fb9488c-9615-4ded-a163-13616ef0278e",
+      "occurred_at": "2026-10-28T03:01:51.166Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/dialer-server/src/inbound/telephony.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards"
+      }
+    },
+    {
+      "id": "4e8c5c7a-5189-4a4e-8459-d4437279ce64",
+      "occurred_at": "2026-10-28T03:02:36.113Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/dialer-server/src/inbound/telephony.integration.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards"
+      }
+    },
+    {
+      "id": "617160fd-5580-4cd9-b7d1-25d56df78659",
+      "occurred_at": "2026-10-28T04:34:09.423Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/dialer-server/src/inbound/callbacks.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards"
+      }
+    },
+    {
+      "id": "631a8728-c6aa-4a97-8879-dfa9d505454f",
+      "occurred_at": "2026-10-28T04:34:15.200Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/dialer-server/src/inbound/telephony.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards"
+      }
+    },
+    {
+      "id": "d937be83-ff7a-4928-8e1e-448f9370d86a",
+      "occurred_at": "2026-10-28T04:34:15.344Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/dialer-server/src/inbound/callbacks.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards"
+      }
+    },
+    {
+      "id": "ab3263ba-8865-4040-a005-0dc4261d44db",
+      "occurred_at": "2026-10-28T04:34:26.633Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/dialer-server/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards"
+      }
+    },
+    {
+      "id": "1e4ac837-c892-4532-9519-f82e0cf31f81",
+      "occurred_at": "2026-10-28T04:34:59.519Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/verify.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards"
+      }
+    },
+    {
+      "id": "eef90f95-5956-47e7-ab52-9829cfc56c4c",
+      "occurred_at": "2026-10-28T04:35:04.940Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/verify.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards"
+      }
+    },
+    {
+      "id": "78c0e7d2-04e0-40ae-ad93-7d046d38597d",
+      "occurred_at": "2026-10-28T04:35:05.048Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/verify.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards"
+      }
+    },
+    {
+      "id": "daf6dc03-de4a-4652-a2c7-dedc30dd4ff4",
+      "occurred_at": "2026-10-28T04:36:12.359Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards/verify.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-10-28T04:36:12.452Z"
+}

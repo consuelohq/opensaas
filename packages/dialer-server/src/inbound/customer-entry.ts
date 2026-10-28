@@ -207,6 +207,23 @@ const serviceWindows = (
   return result.sort((left, right) => left.startsAt.localeCompare(right.startsAt));
 };
 
+// Reuse the same timezone/DST, holiday and emergency-closure boundaries for
+// IVR callbacks as for public customer callback scheduling.
+export const nextInboundCallbackWindow = (
+  policy: InboundQueuePolicy,
+  at: string,
+  durationMilliseconds: number,
+): Window | null => {
+  const window = serviceWindows(policy, at)[0];
+  if (!window || !Number.isFinite(durationMilliseconds) || durationMilliseconds <= 0)
+    return null;
+  const startsAt = window.startsAt > at ? window.startsAt : at;
+  const endsAt = new Date(
+    Math.min(Date.parse(window.endsAt), Date.parse(startsAt) + durationMilliseconds),
+  ).toISOString();
+  return startsAt < endsAt ? { startsAt, endsAt } : null;
+};
+
 const windowLabel = (window: Window, timezone: string) => {
   const start = new Intl.DateTimeFormat('en-US', {
     timeZone: timezone,

@@ -1,0 +1,138 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards",
+  "base": "origin/stream/dialer",
+  "headSha": "bb6f1c1d6c6391072b7230b1acf590d16e34c103",
+  "changeHash": "0e896fe571872f40dcff5f4634a2dde7111f0bbd66c03d2025033dfeb0ff1312",
+  "changedFiles": [
+    "packages/dialer-server/src/inbound/callback-telephony.integration.test.ts",
+    "packages/dialer-server/src/inbound/callbacks.integration.test.ts",
+    "packages/dialer-server/src/inbound/callbacks.ts",
+    "packages/dialer-server/src/inbound/customer-entry.ts",
+    "packages/dialer-server/src/inbound/telephony-admission.ts",
+    "packages/dialer-server/src/inbound/telephony.integration.test.ts",
+    "packages/dialer-server/src/inbound/telephony.ts",
+    "packages/dialer-server/src/runtime/inbound.ts"
+  ],
+  "verifiedAt": "2026-10-28T04:36:02.935Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards/evidence-log.json",
+        ".task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards/read-log.json",
+        ".task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards/workpad.md",
+        ".task/tasks/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards.json",
+        "packages/dialer-server/src/inbound/callback-telephony.integration.test.ts",
+        "packages/dialer-server/src/inbound/callbacks.integration.test.ts",
+        "packages/dialer-server/src/inbound/callbacks.ts",
+        "packages/dialer-server/src/inbound/customer-entry.ts",
+        "packages/dialer-server/src/inbound/telephony-admission.ts",
+        "packages/dialer-server/src/inbound/telephony.integration.test.ts",
+        "packages/dialer-server/src/inbound/telephony.ts",
+        "packages/dialer-server/src/runtime/inbound.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "dialer-server-package",
+          "critical": true,
+          "reason": "Dialer server and shared phone-normalization changes must build contacts runtime exports before proving Hono transport, Twilio boundary, and standalone lifecycle contracts.",
+          "matchedFiles": [
+            "packages/dialer-server/src/inbound/callback-telephony.integration.test.ts",
+            "packages/dialer-server/src/inbound/callbacks.integration.test.ts",
+            "packages/dialer-server/src/inbound/callbacks.ts",
+            "packages/dialer-server/src/inbound/customer-entry.ts",
+            "packages/dialer-server/src/inbound/telephony-admission.ts",
+            "packages/dialer-server/src/inbound/telephony.integration.test.ts",
+            "packages/dialer-server/src/inbound/telephony.ts",
+            "packages/dialer-server/src/runtime/inbound.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "dialer-server contacts prerequisite",
+          "command": [
+            "yarn",
+            "nx",
+            "run",
+            "@consuelo/contacts:build"
+          ],
+          "ruleId": "dialer-server-package",
+          "critical": true
+        },
+        {
+          "name": "dialer-server Hono contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-server/src"
+          ],
+          "ruleId": "dialer-server-package",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "dialer-server contacts prerequisite",
+          "command": [
+            "yarn",
+            "nx",
+            "run",
+            "@consuelo/contacts:build"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-server-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 2911,
+          "outputTail": "yarn run v1.22.22\n$ /Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards/node_modules/.bin/nx run @consuelo/contacts:build\n\n NX   Running target build for project @consuelo/contacts and 1 task it depends on:\n\n\n\n> nx run @consuelo/logger:build\n\n> tsc\r\n\r\n\n> nx run @consuelo/contacts:build\n\n\n\n\n NX   Successfully ran target build for project @consuelo/contacts and 1 task it depends on\n\n\nDone in 2.83s.\nwarning consuelo@0.2.1: The engine \"bun\" appears to be invalid.\n\u001b[0m\u001b[2m\u001b[35m$\u001b[0m \u001b[2m\u001b[1mbun x tsc\u001b[0m\n"
+        },
+        {
+          "name": "dialer-server Hono contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-server/src"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-server-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 7776,
+          "outputTail": "lation [0.56ms]\n(pass) public inbound customer routes > returns the standard nested error envelope for every public customer failure class [0.51ms]\n\n33 tests skipped:\n(skip) local dialer lab service integration > migrates an empty isolated Postgres, exercises Redis, and tears both down\n(skip) inbound runtime configured rep registration > (unnamed)\n(skip) inbound runtime configured rep registration > starts with a disabled retired number without claiming its workspace or polling its deleted queue\n(skip) inbound runtime configured rep registration > keeps shared capacity authority while a disabled number still has a live session\n(skip) inbound runtime configured rep registration > requires fresh readiness after restarting with a replacement rep endpoint\n(skip) inbound runtime configured rep registration > registers each configured rep before the runtime exposes inbound routes\n(skip) inbound runtime configured rep registration > (unnamed)\n(skip) Postgres shared rep capacity > (unnamed)\n(skip) Postgres shared rep capacity > keeps shared capacity unavailable until the rep is ready and withdraws it when they go away\n(skip) Postgres shared rep capacity > commits one winner across competing inbound and outbound connections\n(skip) Postgres shared rep capacity > accepts one endpoint transactionally and keeps the exact idempotent result\n(skip) Postgres shared rep capacity > protects escaped offers through expiry, process recreation, and reconciliation\n(skip) Postgres shared rep capacity > rolls back commands, projections and capacity together on invalid request or tenant\n(skip) Postgres shared rep capacity > rejects acceptance after caller abandonment without losing the reservation\n(skip) Postgres shared rep capacity > authorizes the bridge generation and keeps wrap-up occupied after an uncertain connection\n(skip) Postgres shared rep capacity > discovers durable owners after restart with bounded tenant-scoped pages\n(skip) Postgres shared rep capacity > preserves identity uniqueness, history immutability and populated migration rollback\n(skip) Postgres shared rep capacity > (unnamed)\n(skip) RD7B customer entry with real Postgres > persists CRM owner enrichment for public callbacks without exposing it publicly\n(skip) RD7B customer entry with real Postgres > deduplicates public requests, persists explicit permission, and survives restart\n(skip) RD7B customer entry with real Postgres > projects append-only booking cancellation into customer responses after restart\n(skip) RD7B customer entry with real Postgres > reports uncertain booking cancellation without repeating provider effects on read or retry\n(skip) RD7B customer entry with real Postgres > keeps one revision and booking when a committed reschedule response is retried\n(skip) RD7B customer entry with real Postgres > uses server-authored service windows for reschedule and cancels the RD6 obligation\n(skip) transactional inbound routing > commits one reservation for duplicate ticks and replays immutable decision evidence\n(skip) transactional inbound routing > does not split a reservation from its evidence when persistence fails\n(skip) transactional inbound routing > expires safe offers, moves to another rep and bounds attempts across recreation\n(skip) transactional inbound routing > protects dispatched offers through expiry and escalation without reoffering\n(skip) transactional inbound routing > does not resurrect abandoned callers and records unserviceable predecessors\n(skip) transactional inbound routing > keeps callback not-before, config versions, fallback and replay after restart\n(skip) transactional inbound routing > preserves one owner under independent routing worker processes\n(skip) transactional inbound routing > rejects future request evidence without reserving capacity\n(skip) transactional inbound routing > rejects rollback with active routing and preserves older journal after safe down/up\n\n 266 pass\n 33 skip\n 0 fail\n 1490 expect() calls\nRan 299 tests across 56 files. [7.77s]\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

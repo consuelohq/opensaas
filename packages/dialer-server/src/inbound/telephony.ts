@@ -81,7 +81,19 @@ export const createInboundTelephony = (options: TelephonyOptions) => {
         const number = queues[(cursor + offset) % queues.length]!;
         const sessions = (
           await pool.query<TelephonySession>(
-            "SELECT * FROM dialer_telephony_sessions WHERE workspace_id=$1 AND queue_id=$2 AND mode IN ('waiting','voicemail') ORDER BY request_id LIMIT 1001",
+            `SELECT session.* FROM dialer_telephony_sessions session
+             WHERE session.workspace_id=$1 AND session.queue_id=$2 AND (
+               session.mode IN ('waiting','voicemail')
+               OR (
+                 session.mode='callback_requested'
+                 AND NOT EXISTS (
+                   SELECT 1 FROM dialer_callback_obligations obligation
+                   WHERE obligation.workspace_id=session.workspace_id
+                     AND obligation.request_id=session.request_id
+                 )
+               )
+             )
+             ORDER BY session.request_id LIMIT 1001`,
             [number.workspaceId, number.queueId],
           )
         ).rows;

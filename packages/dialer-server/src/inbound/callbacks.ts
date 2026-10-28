@@ -52,6 +52,14 @@ const timestamp = (value: string, label: string) => {
 const digestId = (...parts: string[]) =>
   'cb:' + createHash('sha256').update(JSON.stringify(parts)).digest('hex');
 
+// Routing fallback is the durable no-offer fence for a callback revision
+// undergoing provider-side rescheduling. The digest also binds the operation
+// to its requested window so conflicting retries cannot assume the claim.
+const rescheduleClaim = (parts: readonly string[]) =>
+  'callback-reschedule:' + digestId(...parts);
+const isRescheduleClaim = (value: string | null) =>
+  Boolean(value?.startsWith('callback-reschedule:'));
+
 export type CallbackRoutingMetadata = Pick<
   RoutingRequestMetadata,
   'requiredSkills' | 'ownerRepId' | 'ownerStatus'
@@ -350,6 +358,19 @@ export const createPostgresCallbacks = (options: CallbackStoreOptions) => {
         cause,
       });
     }
+  };
+
+  const assertNoRescheduleClaim = async (
+    workspaceId: string,
+    requestId: string,
+  ) => {
+    const result = await pool.query<{ fallback_decision_id: string | null }>(
+      `SELECT fallback_decision_id FROM dialer_routing_entries
+       WHERE workspace_id=$1 AND request_id=$2`,
+      [workspaceId, requestId],
+    );
+    if (isRescheduleClaim(result.rows[0]?.fallback_decision_id ?? null))
+      throw new Error('Callback reschedule is in progress');
   };
 
   const readBookingForRevision = async (
@@ -702,6 +723,18 @@ export const createPostgresCallbacks = (options: CallbackStoreOptions) => {
     if (!row) throw new Error('Callback obligation is missing');
     if (expectedRevision !== undefined && row.state.revision !== expectedRevision)
       throw new Error('Callback revision changed during management');
+    const routing = await client.query<{ fallback_decision_id: string | null }>(
+      `SELECT fallback_decision_id FROM dialer_routing_entries
+       WHERE workspace_id=$1 AND request_id=$2`,
+      [workspaceId, row.request_id],
+    );
+    const pendingReschedule = isRescheduleClaim(
+      routing.rows[0]?.fallback_decision_id ?? null,
+    );
+    if (pendingReschedule && action.type !== 'reschedule')
+      throw new Error('Callback reschedule is in progress');
+    if (action.type === 'reschedule' && !pendingReschedule)
+      throw new Error('Callback reschedule requires a durable routing claim');
     if (action.type === 'reschedule' && !row.recipient_ciphertext)
       throw new Error('Callback recipient has been purged');
     const before = row.state;
@@ -724,6 +757,12 @@ export const createPostgresCallbacks = (options: CallbackStoreOptions) => {
        WHERE workspace_id=$1 AND callback_id=$2`,
       [workspaceId, callbackId, after.version, JSON.stringify(after), recipientExpiresAt],
     );
+    if (terminal(after.status))
+      await client.query(
+        `UPDATE dialer_telephony_sessions SET mode='ended'
+         WHERE workspace_id=$1 AND request_id=$2 AND mode <> 'ended'`,
+        [workspaceId, row.request_id],
+      );
     await client.query(
       `INSERT INTO dialer_callback_events(
          workspace_id,callback_id,operation_id,version,action,snapshot
@@ -1004,6 +1043,8 @@ export const createPostgresCallbacks = (options: CallbackStoreOptions) => {
     const at = options.clock?.() ?? new Date().toISOString();
     const row = await loadCallback(pool, input.workspaceId, input.callbackId);
     if (!row) throw new Error('Callback obligation is missing');
+    if (input.expectedRevision !== undefined && row.state.revision !== input.expectedRevision)
+      throw new Error('Callback revision changed during management');
     const queuePolicy = await readQueuePolicy(
       pool,
       input.workspaceId,
@@ -1015,19 +1056,89 @@ export const createPostgresCallbacks = (options: CallbackStoreOptions) => {
       throw new Error('Callback reschedule window is no longer fulfillable');
     if (!isInboundQueueOpen(queuePolicy, input.notBefore))
       throw new Error('Callback reschedule must begin during staffed hours');
-    if (!(await operationAlreadyApplied(input.workspaceId, input.operationId))) {
-      if (input.expectedRevision !== undefined && row.state.revision !== input.expectedRevision)
-        throw new Error('Callback revision changed during management');
-      await cancelConfirmedBookingForRevision(row);
-    }
-    return apply(input.workspaceId, input.callbackId, {
+    const action = {
       type: 'reschedule',
       operationId: input.operationId,
       at,
       timezone: input.timezone,
       notBefore: input.notBefore,
       deadline: input.deadline,
-    }, row.state.revision);
+    } as const;
+    if (await operationAlreadyApplied(input.workspaceId, input.operationId))
+      return apply(input.workspaceId, input.callbackId, action);
+    const claimId = rescheduleClaim([
+      input.workspaceId, input.callbackId, input.operationId,
+      String(row.state.revision), input.timezone, input.notBefore, input.deadline,
+    ]);
+    // Serialize with the routing worker's per-workspace authority lock.
+    // A fallback marker is committed BEFORE any external calendar operation.
+    const claimed = await withInboundTransaction(pool, input.workspaceId, async (client) => {
+      try {
+        const current = await loadCallback(client, input.workspaceId, input.callbackId, true);
+        if (!current) throw new Error('Callback obligation is missing');
+        if (input.expectedRevision !== undefined &&
+            current.state.revision !== input.expectedRevision)
+          throw new Error('Callback revision changed during management');
+        if (current.state.revision !== row.state.revision)
+          throw new Error('Callback revision changed during reschedule claim');
+        applyCallbackAction(current.state, action);
+        const entry = await client.query<{ fallback_decision_id: string | null }>(
+          `SELECT fallback_decision_id FROM dialer_routing_entries
+           WHERE workspace_id=$1 AND request_id=$2 FOR UPDATE`,
+          [input.workspaceId, current.request_id],
+        );
+        if (!entry.rows[0]) throw new Error('Callback routing entry is missing');
+        const existingClaim = entry.rows[0].fallback_decision_id;
+        if (isRescheduleClaim(existingClaim) && existingClaim !== claimId)
+          throw new Error('Another callback reschedule is in progress');
+        const owned = await client.query(
+          `SELECT 1 FROM dialer_rep_capacity
+           WHERE workspace_id=$1 AND snapshot->'owner'->>'requestId'=$2 LIMIT 1`,
+          [input.workspaceId, current.request_id],
+        );
+        if (owned.rowCount)
+          throw new Error('Active callback assignment cannot be rescheduled');
+        await client.query(
+          `UPDATE dialer_routing_entries
+           SET routing_state='fallback',fallback_decision_id=$3
+           WHERE workspace_id=$1 AND request_id=$2`,
+          [input.workspaceId, current.request_id, claimId],
+        );
+        return current;
+      } catch (cause: unknown) {
+        if (cause instanceof Error) throw cause;
+        throw new Error('Callback reschedule claim failed', { cause });
+      }
+    });
+    // An unknown provider cancel keeps the durable routing fence in place;
+    // retry of the same operation reconciles the cancellation before release.
+    await cancelConfirmedBookingForRevision(claimed);
+    return withInboundTransaction(pool, input.workspaceId, async (client) => {
+      try {
+        const latest = await loadCallback(client, input.workspaceId, input.callbackId, true);
+        if (!latest || latest.state.revision !== claimed.state.revision)
+          throw new Error('Callback revision changed during reschedule');
+        const entry = await client.query<{ fallback_decision_id: string | null }>(
+          `SELECT fallback_decision_id FROM dialer_routing_entries
+           WHERE workspace_id=$1 AND request_id=$2 FOR UPDATE`,
+          [input.workspaceId, latest.request_id],
+        );
+        if (entry.rows[0]?.fallback_decision_id !== claimId)
+          throw new Error('Callback reschedule routing claim was lost');
+        const owned = await client.query(
+          `SELECT 1 FROM dialer_rep_capacity
+           WHERE workspace_id=$1 AND snapshot->'owner'->>'requestId'=$2 LIMIT 1`,
+          [input.workspaceId, latest.request_id],
+        );
+        if (owned.rowCount)
+          throw new Error('Active callback assignment prevents reschedule commit');
+        // applyOnClient resets routing to the NEW window in this same commit.
+        return applyOnClient(client, input.workspaceId, input.callbackId, action, claimed.state.revision);
+      } catch (cause: unknown) {
+        if (cause instanceof Error) throw cause;
+        throw new Error('Callback reschedule commit failed', { cause });
+      }
+    });
   
     } catch (cause: unknown) {
       if (cause instanceof Error) throw cause;
@@ -1051,6 +1162,7 @@ export const createPostgresCallbacks = (options: CallbackStoreOptions) => {
     if (!current) throw new Error('Callback obligation is missing');
     if (!operationApplied) {
       const row = current;
+      await assertNoRescheduleClaim(input.workspaceId, row.request_id);
       if (!terminal(row.state.status)) await cancelConfirmedBookingForRevision(row);
     }
     if (input.reconciled)
@@ -1310,16 +1422,21 @@ export const createPostgresCallbacks = (options: CallbackStoreOptions) => {
     try {
     const at = options.clock?.() ?? new Date().toISOString();
     const rows = (
-      await pool.query<StoredCallback>(
-        `SELECT * FROM dialer_callback_obligations
-         WHERE workspace_id=$1 AND queue_id=$2
-           AND state->>'status' NOT IN ('fulfilled','cancelled','exhausted','expired')
-         ORDER BY callback_id LIMIT 1001`,
+      await pool.query<StoredCallback & { reschedule_claim: string | null }>(
+        `SELECT obligation.*,entry.fallback_decision_id AS reschedule_claim
+         FROM dialer_callback_obligations obligation
+         JOIN dialer_routing_entries entry
+           ON entry.workspace_id=obligation.workspace_id
+          AND entry.request_id=obligation.request_id
+         WHERE obligation.workspace_id=$1 AND obligation.queue_id=$2
+           AND obligation.state->>'status' NOT IN ('fulfilled','cancelled','exhausted','expired')
+         ORDER BY obligation.callback_id LIMIT 1001`,
         [input.workspaceId, input.queueId],
       )
     ).rows;
     if (rows.length > 1000) throw new Error('Callback scan bound exceeded');
     for (const row of rows) {
+      if (isRescheduleClaim(row.reschedule_claim)) continue;
       const evaluation = evaluateCallbackSchedule(
         row.state,
         at,
@@ -1348,7 +1465,7 @@ export const createPostgresCallbacks = (options: CallbackStoreOptions) => {
     const evaluation = decision.evaluation;
     if (evaluation.action === 'fallback' && evaluation.requestId) {
       const row = rows.find((candidate) => candidate.request_id === evaluation.requestId);
-      if (row && !terminal(row.state.status)) {
+      if (row && !terminal(row.state.status) && !isRescheduleClaim(row.reschedule_claim)) {
         if (evaluation.reason === 'deadline')
           await apply(input.workspaceId, row.callback_id, {
             type: 'expire',
@@ -1365,7 +1482,8 @@ export const createPostgresCallbacks = (options: CallbackStoreOptions) => {
           await pool.query(
             `UPDATE dialer_routing_entries
              SET routing_state='waiting',fallback_decision_id=NULL
-             WHERE workspace_id=$1 AND request_id=$2`,
+             WHERE workspace_id=$1 AND request_id=$2
+               AND (fallback_decision_id IS NULL OR fallback_decision_id NOT LIKE 'callback-reschedule:%')`,
             [input.workspaceId, row.request_id],
           );
       }
@@ -1411,6 +1529,7 @@ export const createPostgresCallbacks = (options: CallbackStoreOptions) => {
     if (existing?.status === 'cancel_pending')
       throw new Error('Callback provider booking cancellation outcome is unknown');
     if (existing) return existing;
+    await assertNoRescheduleClaim(workspaceId, row.request_id);
     await bookingAuthority.dispatch(request);
     const result = await readReconciledBooking(workspaceId, callbackId, row.state.revision);
     if (!result) throw new Error('Callback booking dispatch evidence is missing');

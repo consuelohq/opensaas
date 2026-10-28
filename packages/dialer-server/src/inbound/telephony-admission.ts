@@ -1,4 +1,5 @@
 import { resolveInboundEnrichment } from './enrichment';
+import { nextInboundCallbackWindow } from './customer-entry';
 import { createTelephonyEndpoints } from './telephony-endpoints';
 import type { Pool } from 'pg';
 import {
@@ -348,6 +349,11 @@ export const createTelephonyAdmission = (options: TelephonyOptions) => {
             ).rows[0]?.policy;
             if (!routing || !queue)
               throw new Error('Callback routing evidence is unavailable');
+            const window = nextInboundCallbackWindow(
+              queue, at, callbackPolicy!.immediateWindowMilliseconds,
+            );
+            if (!window)
+              return hangupTwiml('Callback scheduling is currently unavailable.');
             await recordTelephonyFact(
               client,
               number.workspaceId,
@@ -369,10 +375,8 @@ export const createTelephonyAdmission = (options: TelephonyOptions) => {
                 consentReference: telephonyId(requestId, 'callback-consent'),
                 recipient: facts.From,
                 timezone: queue.timezone,
-                notBefore: at,
-                deadline: new Date(
-                  Date.parse(at) + callbackPolicy.immediateWindowMilliseconds,
-                ).toISOString(),
+                notBefore: window.startsAt,
+                deadline: window.endsAt,
                 metadata: {
                   requiredSkills: routing.requiredSkills,
                   ownerRepId: routing.ownerRepId,
