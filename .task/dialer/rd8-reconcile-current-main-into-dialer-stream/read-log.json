@@ -1,0 +1,18 @@
+{
+  "files": [
+    ".task/dialer/rd8-reconcile-current-main-into-dialer-stream/workpad.md",
+    "packages/dialer-server/src/inbound/callback-telephony.ts",
+    "packages/dialer-server/src/inbound/rep-capacity.integration.test.ts",
+    "packages/dialer/src/inbound/routing-contracts.ts",
+    "packages/os/SCRIPTS.md",
+    "packages/os/skills/task/SKILL.md",
+    "packages/os/tests/fixtures/skills/task-os-replacements.json",
+    "packages/os/tests/managed-components.test.ts",
+    "packages/os/tests/skill-migration.test.ts",
+    "packages/workspace/senior-engineer.md",
+    "packages/workspace/skills/task/SKILL.md",
+    "packages/workspace/test-selection.registry.json",
+    "packages/workspace/test-selection.rules.json"
+  ],
+  "updatedAt": "2026-09-14T14:47:46.411Z"
+}

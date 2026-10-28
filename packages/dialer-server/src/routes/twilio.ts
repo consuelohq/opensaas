@@ -161,6 +161,13 @@ export const createTwilioRoutes = (dependencies: DialerServerDependencies) => {
           'SessionId and client identity are required',
         );
       }
+      if (dependencies.inbound)
+        await dependencies.inbound.admitOutboundRep({
+          sessionId,
+          clientIdentity,
+          callSid: verified.params.CallSid ?? '',
+          accountSid: verified.params.AccountSid ?? '',
+        });
       const result = await runApplicationEffect(
         dependencies.application.generateTwilioAgentTwiml({
           sessionId,

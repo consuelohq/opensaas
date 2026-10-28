@@ -2,8 +2,13 @@ import { describe, expect, it } from 'bun:test';
 import { Effect, Either, Layer } from 'effect';
 
 import {
+  LeadConnectorClock,
+  LeadConnectorCompanyCredentialStore,
+  LeadConnectorConfig,
   LeadConnectorEmbedIdentityError,
+  LeadConnectorHttpTransport,
   LeadConnectorInstallationStore,
+  LeadConnectorTokenCipher,
   LeadConnectorUserContextDecoder,
   exchangeLeadConnectorEmbedContext,
   validateLeadConnectorEmbedIdentity,
@@ -27,6 +32,30 @@ const installation = (
 
 const makeLayer = (current: LeadConnectorInstallation | null) =>
   Layer.mergeAll(
+    Layer.succeed(LeadConnectorConfig, {
+      clientId: 'client-id',
+      clientSecret: 'client-secret',
+      redirectUri: 'https://dialer.example/callback',
+      scopes: ['contacts.readonly'],
+      authorizationUrl: 'https://marketplace.example/oauth',
+      apiBaseUrl: 'https://services.leadconnectorhq.com',
+      tokenRefreshSkewSeconds: 300,
+      userType: 'Location' as const,
+    }),
+    Layer.succeed(LeadConnectorClock, {
+      now: Effect.succeed(new Date('2026-07-24T00:00:00.000Z')),
+    }),
+    Layer.succeed(LeadConnectorCompanyCredentialStore, {
+      getByCompanyId: () => Effect.succeed(null),
+      save: () => Effect.void,
+    }),
+    Layer.succeed(LeadConnectorHttpTransport, {
+      request: () => Effect.die('unexpected provider request'),
+    }),
+    Layer.succeed(LeadConnectorTokenCipher, {
+      encrypt: (value: string) => Effect.succeed(value),
+      decrypt: (value: string) => Effect.succeed(value),
+    }),
     Layer.succeed(LeadConnectorUserContextDecoder, {
       decrypt: (_encryptedData: string) =>
         Effect.succeed({

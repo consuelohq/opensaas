@@ -6,7 +6,10 @@ import {
 } from '../application/get-call-session.js';
 import { processProviderCallback } from '../application/process-provider-callback.js';
 import { retryPendingCleanup } from '../application/retry-pending-cleanup.js';
-import { startParallelSession } from '../application/start-parallel-session.js';
+import {
+  startParallelSession,
+  type StartParallelSessionOptions,
+} from '../application/start-parallel-session.js';
 import {
   terminateCallSession,
   terminateCallSessionForWorkspace,
@@ -104,8 +107,11 @@ export class ParallelDialerService {
     );
   }
 
-  initiateGroup(options: ParallelDialOptions): Promise<ParallelDialResult> {
-    return this.run(startParallelSession(options));
+  initiateGroup(
+    options: ParallelDialOptions,
+    execution?: StartParallelSessionOptions,
+  ): Promise<ParallelDialResult> {
+    return this.run(startParallelSession(options, execution));
   }
 
   handleStatusCallback(

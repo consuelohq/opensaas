@@ -1,0 +1,55 @@
+---
+import HomeCloudCta from '../components/home/HomeCloudCta.astro';
+import HomeFeaturePreview from '../components/home/HomeFeaturePreview.astro';
+import HomeHero from '../components/home/HomeHero.astro';
+import SiteHeader from '../components/site/SiteHeader.astro';
+import { dialerFaqItems } from '../data/home-content';
+import MarketingLayout from '../layouts/MarketingLayout.astro';
+import { homepageSeo } from '../lib/homepage-seo';
+import {
+  getFaqSchema,
+  getOrganizationSchema,
+  getSoftwareApplicationSchema,
+  getWebsiteSchema,
+} from '../lib/site-seo';
+
+const schemaEntries = [
+  getOrganizationSchema(),
+  getWebsiteSchema(),
+  getSoftwareApplicationSchema({
+    name: 'Consuelo Dialer',
+    applicationCategory: 'BusinessApplication',
+    operatingSystem: 'Web',
+    description: homepageSeo.description,
+    offers: undefined,
+  }),
+  getFaqSchema(dialerFaqItems.map(({ question, answer }) => ({ question, answer }))),
+];
+---
+
+<MarketingLayout
+  title={homepageSeo.title}
+  description={homepageSeo.description}
+  canonicalPath="/"
+  image={homepageSeo.image}
+  imageAlt={homepageSeo.imageAlt}
+  schemaEntries={schemaEntries}
+>
+  <SiteHeader />
+  <main>
+    <div class="home-scroll-layer" data-home-scroll-layer>
+      <HomeHero />
+      <HomeFeaturePreview />
+    </div>
+    <HomeCloudCta />
+  </main>
+</MarketingLayout>
+
+<style>
+  .home-scroll-layer {
+    position: relative;
+    z-index: 2;
+    margin-bottom: 100dvh;
+    background: var(--site-color-brand);
+  }
+</style>

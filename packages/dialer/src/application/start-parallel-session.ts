@@ -21,6 +21,16 @@ import { executeCleanupActions } from './cleanup-actions.js';
 
 export type StartParallelSessionOptions = {
   providerTimeoutMs?: number;
+  onCreationRejected?: (event: {
+    groupId: string;
+    conferenceName: string;
+    calls: readonly ParallelCall[];
+  }) => Promise<void>;
+  onProgress?: (event: {
+    groupId: string;
+    conferenceName: string;
+    calls: readonly ParallelCall[];
+  }) => Promise<void>;
 };
 
 const DEFAULT_PROVIDER_TIMEOUT_MS = 30_000;
@@ -98,8 +108,25 @@ export const startParallelSession = (
     const providerTimeoutMs =
       options.providerTimeoutMs ?? DEFAULT_PROVIDER_TIMEOUT_MS;
 
+    const calls: ParallelCall[] = [];
     const createCalls = Effect.gen(function* () {
-      const calls: ParallelCall[] = [];
+      const reportProgress = () =>
+        Effect.tryPromise({
+          try: () =>
+            options.onProgress?.({
+              groupId,
+              conferenceName: group.conferenceName,
+              calls: [...calls],
+            }) ?? Promise.resolve(),
+          catch: (cause) =>
+            new DialerStateError({
+              operation: 'persist-creation-progress',
+              message: 'Provider creation progress could not be persisted',
+              retryable: false,
+              cause,
+            }),
+        });
+      yield* reportProgress();
       for (let index = 0; index < input.customerNumbers.length; index += 1) {
         if (index > 0) yield* clock.sleep(input.profile.staggerMs);
 
@@ -137,6 +164,7 @@ export const startParallelSession = (
         };
         calls.push(call);
         yield* state.registerCall(groupId, call, ACTIVE_CALL_TTL_SECONDS);
+        yield* reportProgress();
       }
 
       const result: ParallelDialResult = {
@@ -156,10 +184,19 @@ export const startParallelSession = (
 
     return yield* createCalls.pipe(
       Effect.catchAll((error) =>
-        failInitializingGroup(groupId).pipe(
-          Effect.catchAll(() => Effect.void),
-          Effect.zipRight(Effect.fail(error)),
-        ),
+        Effect.gen(function* () {
+          if (error._tag === 'DialerProviderError' &&
+              error.operation === 'create-call' && error.creationOutcome === 'not_created') {
+            yield* Effect.tryPromise({
+              try: () => options.onCreationRejected?.({
+                groupId, conferenceName: group.conferenceName, calls: [...calls],
+              }) ?? Promise.resolve(),
+              catch: () => error,
+            }).pipe(Effect.catchAll(() => Effect.void));
+          }
+          yield* failInitializingGroup(groupId).pipe(Effect.catchAll(() => Effect.void));
+          return yield* Effect.fail(error);
+        }),
       ),
       Effect.onInterrupt(() =>
         failInitializingGroup(groupId).pipe(Effect.catchAll(() => Effect.void)),

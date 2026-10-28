@@ -1,5 +1,6 @@
 import type {
   HazardEstimate,
+  AttemptAnswerProbability,
   PredictiveHazardSource,
   PredictiveModelStore,
   PredictiveRankedCandidate,
@@ -36,11 +37,12 @@ const localTimeParts = (evaluatedAt: Date, timeZone: string) => {
 
 const selectHazardEstimate = (params: {
   hazardEstimates: HazardEstimate[];
+  attemptProbability?: AttemptAnswerProbability;
   segmentId: string;
   attemptNumber: number;
   hourOfDay: number;
   dayOfWeek: number;
-}): { estimate: HazardEstimate | null; source: PredictiveHazardSource } => {
+}): { estimate: Pick<HazardEstimate, 'answerRate' | 'upperBound'> | null; source: PredictiveHazardSource } => {
   const attemptHazards = params.hazardEstimates.filter(
     (estimate) =>
       estimate.segmentId === params.segmentId &&
@@ -58,9 +60,11 @@ const selectHazardEstimate = (params: {
     return { estimate: exactLocalSlot, source: 'exact_local_slot' };
   }
 
-  const attemptFallback = rankHazardEstimates(attemptHazards)[0];
-  if (attemptFallback) {
-    return { estimate: attemptFallback, source: 'attempt_fallback' };
+  if (params.attemptProbability) {
+    return { estimate: {
+      answerRate: params.attemptProbability.probability,
+      upperBound: params.attemptProbability.upperBound,
+    }, source: 'attempt_fallback' };
   }
 
   return { estimate: null, source: 'missing' };
@@ -134,6 +138,7 @@ export class PredictiveSelectionModel {
 
         const hazard = selectHazardEstimate({
           hazardEstimates,
+          attemptProbability: stoppingEvidence,
           segmentId: input.segmentId,
           attemptNumber: nextAttemptNumber,
           hourOfDay: local.hour,

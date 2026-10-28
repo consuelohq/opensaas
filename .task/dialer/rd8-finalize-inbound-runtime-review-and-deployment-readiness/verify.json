@@ -1,0 +1,277 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/dialer/rd8-finalize-inbound-runtime-review-and-deployment-readiness",
+  "base": "458089050f38efdf90873a6e361bed37f7534944",
+  "headSha": "e74ed00bb08d148d3435a983b8a95d62bc92d68b",
+  "changeHash": "4c6894f3b5ae1cb0816cab498a3b6dd1a9abde629b08ed2f611244ce33d3489d",
+  "changedFiles": [
+    "packages/dialer-server/INBOUND-TESTING.md",
+    "packages/dialer-server/src/inbound/callbacks.integration.test.ts",
+    "packages/dialer-server/src/inbound/callbacks.ts",
+    "packages/dialer-server/src/inbound/telephony-admission.ts",
+    "packages/dialer-server/src/inbound/telephony.integration.test.ts",
+    "packages/dialer-server/src/inbound/telephony.ts",
+    "packages/dialer-server/src/runtime/inbound-registration.integration.test.ts",
+    "packages/dialer-server/src/runtime/inbound.ts",
+    "packages/workspace/test-selection.registry.json",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "verifiedAt": "2026-09-21T01:44:00.987Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/dialer/rd8-finalize-inbound-runtime-review-and-deployment-readiness/current.json",
+        ".task/dialer/rd8-finalize-inbound-runtime-review-and-deployment-readiness/session.json",
+        ".task/dialer/rd8-finalize-inbound-runtime-review-and-deployment-readiness/workpad.md",
+        ".task/tasks/dialer/rd8-finalize-inbound-runtime-review-and-deployment-readiness.json",
+        "packages/dialer-server/INBOUND-TESTING.md",
+        "packages/dialer-server/src/inbound/callbacks.integration.test.ts",
+        "packages/dialer-server/src/inbound/callbacks.ts",
+        "packages/dialer-server/src/inbound/telephony-admission.ts",
+        "packages/dialer-server/src/inbound/telephony.integration.test.ts",
+        "packages/dialer-server/src/inbound/telephony.ts",
+        "packages/dialer-server/src/runtime/inbound-registration.integration.test.ts",
+        "packages/dialer-server/src/runtime/inbound.ts",
+        "packages/workspace/test-selection.registry.json",
+        "packages/workspace/test-selection.rules.json",
+        "packages/workspace/tests/test-selection.test.js"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-test-selection",
+          "critical": true,
+          "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy.",
+          "matchedFiles": [
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "dialer-server-package",
+          "critical": true,
+          "reason": "Dialer server and shared phone-normalization changes must build contacts runtime exports before proving Hono transport, Twilio boundary, and standalone lifecycle contracts.",
+          "matchedFiles": [
+            "packages/dialer-server/INBOUND-TESTING.md",
+            "packages/dialer-server/src/inbound/callbacks.integration.test.ts",
+            "packages/dialer-server/src/inbound/callbacks.ts",
+            "packages/dialer-server/src/inbound/telephony-admission.ts",
+            "packages/dialer-server/src/inbound/telephony.integration.test.ts",
+            "packages/dialer-server/src/inbound/telephony.ts",
+            "packages/dialer-server/src/runtime/inbound-registration.integration.test.ts",
+            "packages/dialer-server/src/runtime/inbound.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "server-ci-task-contract",
+          "critical": true,
+          "reason": "Server CI changes must scope lint and typecheck to directly changed Twenty server runtime files while retaining dependency propagation.",
+          "matchedFiles": [
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true
+        },
+        {
+          "name": "dialer-server contacts prerequisite",
+          "command": [
+            "yarn",
+            "nx",
+            "run",
+            "@consuelo/contacts:build"
+          ],
+          "ruleId": "dialer-server-package",
+          "critical": true
+        },
+        {
+          "name": "dialer-server Hono contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-server/src"
+          ],
+          "ruleId": "dialer-server-package",
+          "critical": true
+        },
+        {
+          "name": "changed server task selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "TypeORM CLI compatibility contract",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "cwd": ".",
+          "ruleId": "workspace-test-selection",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 5891,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-rd8-finalize-inbound-runtime-review-and-deployment-readiness\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/test-selection.test.js \u001b[2m(\u001b[22m\u001b[2m82 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 5496\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m discovers and seeds the existing test inventory \u001b[33m 1732\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m provisions OS package dependencies before selected OS suites on a clean checkout \u001b[33m 469\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m82 passed\u001b[39m\u001b[22m\u001b[90m (82)\u001b[39m\n\u001b[2m   Start at \u001b[22m 21:43:51\n\u001b[2m   Duration \u001b[22m 5.61s\u001b[2m (transform 28ms, setup 0ms, import 39ms, tests 5.50s, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "dialer-server contacts prerequisite",
+          "command": [
+            "yarn",
+            "nx",
+            "run",
+            "@consuelo/contacts:build"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-server-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 782,
+          "outputTail": "\n NX   Running target build for project @consuelo/contacts and 1 task it depends on:\n\n\n\n> nx run @consuelo/logger:build  [local cache]\n\n\n> nx run @consuelo/contacts:build  [local cache]\n\n\n\n\n NX   Successfully ran target build for project @consuelo/contacts and 1 task it depends on\n\nNx read the output from the cache instead of running the command for 2 out of 2 tasks.\n\n"
+        },
+        {
+          "name": "dialer-server Hono contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-server/src"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-server-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1414,
+          "outputTail": ") inbound runtime with real Postgres and simulated carrier > rolls an empty telephony schema down and up while protecting immutable facts\n(skip) inbound runtime with real Postgres and simulated carrier > releases a definitively rejected partial group only after all known legs end, including restart\n(skip) inbound runtime with real Postgres and simulated carrier > shares capacity with outbound and retains partial creation uncertainty\n(skip) inbound runtime with real Postgres and simulated carrier > admits a duplicate incoming call once and never redials the caller\n(skip) inbound runtime with real Postgres and simulated carrier > connects only after acceptance and both unmuted participants, then wraps up\n(skip) inbound runtime with real Postgres and simulated carrier > protects unknown create outcomes across restart and never creates another offer\n(skip) inbound runtime with real Postgres and simulated carrier > rejects stale and cross-rep acceptance and cleans an abandoned caller\n(skip) inbound runtime with real Postgres and simulated carrier > persists explicit voicemail selection without recording an ordinary call\n(skip) inbound runtime with real Postgres and simulated carrier > refuses rollback while a live caller or uncertain effect exists\n(skip) inbound runtime with real Postgres and simulated carrier > (unnamed)\n(skip) RD7B customer entry with real Postgres > persists CRM owner enrichment for public callbacks without exposing it publicly\n(skip) RD7B customer entry with real Postgres > deduplicates public requests, persists explicit permission, and survives restart\n(skip) RD7B customer entry with real Postgres > projects append-only booking cancellation into customer responses after restart\n(skip) RD7B customer entry with real Postgres > reports uncertain booking cancellation without repeating provider effects on read or retry\n(skip) RD7B customer entry with real Postgres > uses server-authored service windows for reschedule and cancels the RD6 obligation\n(skip) RD6 callbacks with real Postgres > retains the encrypted recipient through a later rescheduled window and purges afterward\n(skip) RD6 callbacks with real Postgres > does not reserve early and creates one attempt only after rep acceptance\n(skip) RD6 callbacks with real Postgres > releases no-answer capacity, retries on policy backoff, and preserves original entry\n(skip) RD6 callbacks with real Postgres > blocks rollback until callback obligations are terminal and retained recipients are purged\n(skip) RD6 callbacks with real Postgres > records calendar unavailability truthfully and purges recipients after retention\n(skip) RD6 callbacks with real Postgres > reconciles a lost calendar cancellation after restart and restores management without duplicate effects\n(skip) RD6 callbacks with real Postgres > does not repeat a provider cancellation after an uncertain dispatched effect\n(skip) transactional inbound routing > commits one reservation for duplicate ticks and replays immutable decision evidence\n(skip) transactional inbound routing > does not split a reservation from its evidence when persistence fails\n(skip) transactional inbound routing > expires safe offers, moves to another rep and bounds attempts across recreation\n(skip) transactional inbound routing > protects dispatched offers through expiry and escalation without reoffering\n(skip) transactional inbound routing > does not resurrect abandoned callers and records unserviceable predecessors\n(skip) transactional inbound routing > keeps callback not-before, config versions, fallback and replay after restart\n(skip) transactional inbound routing > preserves one owner under independent routing worker processes\n(skip) transactional inbound routing > rejects future request evidence without reserving capacity\n(skip) transactional inbound routing > rejects rollback with active routing and preserves older journal after safe down/up\n\n 222 pass\n 67 skip\n 0 fail\n 1181 expect() calls\nRan 289 tests across 57 files. [1401.00ms]\n"
+        },
+        {
+          "name": "changed server task selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ],
+          "cwd": ".",
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 81,
+          "outputTail": "No changed Twenty server runtime files require lint or typecheck.\nRunning server lint and baseline-aware typecheck for 1 directly changed file(s).\nTwenty server typecheck matched 1 known baseline diagnostic(s).\nRunning server lint and baseline-aware typecheck for 1 directly changed file(s).\nNo changed Twenty server schema files require GraphQL generation.\nNo changed Twenty server runtime files require migration generation.\nNo changesgeneratedTwenty server migration drift matched 2 known baseline operation(s).\ngeneratedgenerated✔ parseCliArguments resolves comparison SHAs (0.711167ms)\n✔ parseCliArguments selects GraphQL generation mode (0.059834ms)\n✔ parseCliArguments selects migration generation mode (0.053834ms)\n✔ filterServerTaskFiles excludes root and config-only triggers (0.090666ms)\n✔ filterGraphqlGenerationFiles keeps only server schema and generated files (0.073875ms)\n✔ buildEslintArguments selects the owning project config and stdin filename (0.057875ms)\n✔ ESLint diagnostic comparison tracks new error multiplicity without line numbers (0.193625ms)\n✔ runChangedFileLint accepts base-existing errors and rejects a new changed-file error (0.872208ms)\n✔ runChangedFileLint allows explicit lint baseline debt but rejects diagnostics beyond it (0.753583ms)\n✔ buildTypecheckArguments uses standard TypeScript without emitting (0.078958ms)\n✔ TypeScript diagnostic baseline comparison rejects only new diagnostic keys (0.190916ms)\n✔ runChangedServerTask skips Nx for config-only changes (0.333ms)\n✔ runChangedServerTask executes lint and baseline-aware typecheck for server runtime changes (0.078167ms)\n✔ runChangedServerTask rejects a new TypeScript diagnostic outside the baseline (0.089542ms)\n✔ server lint configuration resolves the existing workspace rules project (0.403083ms)\n✔ runGraphqlGenerationCheck skips generation without schema changes (0.092917ms)\n✔ runGraphqlGenerationCheck generates and verifies committed outputs (0.179125ms)\n✔ runMigrationGenerationCheck skips generation without server runtime changes (0.092625ms)\n✔ runMigrationGenerationCheck accepts a no-change TypeORM exit (0.093959ms)\n✔ runMigrationGenerationCheck accepts and removes exact known migration drift (0.268583ms)\n✔ runMigrationGenerationCheck rejects changed drift beyond the baseline (0.14225ms)\n✔ runMigrationGenerationCheck rejects and removes generated drift (0.116834ms)\nℹ tests 22\nℹ suites 0\nℹ pass 22\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 48.114791\n"
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "cwd": ".",
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 140,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/workspace/tests/github-workflow-policy.test.js:\n(pass) GitHub workflow policy > does not include retired automation workflows [0.11ms]\n(pass) GitHub workflow policy > does not reference retired CI credentials or the disabled Chromatic job [4.82ms]\n(pass) GitHub workflow policy > does not retain privileged allowlist entries for deleted workflows [0.19ms]\n(pass) GitHub workflow policy > runs typecheck and test from the filtered frontend file set [0.05ms]\n(pass) GitHub workflow policy > installs Bun and scopes shared tasks to changed frontend files [0.05ms]\n(pass) GitHub workflow policy > scopes native OS distribution tests to relevant changed files [0.05ms]\n(pass) GitHub workflow policy > runs Docker Compose CI with the pgvector PostgreSQL image required by migrations [0.03ms]\n(pass) GitHub workflow policy > uses available hosted runners for the Server and Front build pipelines [0.06ms]\n(pass) GitHub workflow policy > builds Consuelo backend workspace dependencies before server typecheck [0.04ms]\n(pass) GitHub workflow policy > installs Bun before the Server unit-test job runs Bun package tests [0.03ms]\n(pass) GitHub workflow policy > allows enough time for Danger dependency installation and execution [0.03ms]\n(pass) GitHub workflow policy > explicitly allowlists the API breaking-changes workflow write permissions [0.03ms]\n\n 12 pass\n 0 fail\n 53 expect() calls\nRan 12 tests across 1 file. [133.00ms]\n"
+        },
+        {
+          "name": "TypeORM CLI compatibility contract",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+          ],
+          "cwd": ".",
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 844,
+          "outputTail": "✔ Twenty server uses the Node 24-compatible TypeORM ts-node wrapper (0.314416ms)\n✔ the configured TypeORM wrapper resolves from the installed package (778.783416ms)\nℹ tests 2\nℹ suites 0\nℹ pass 2\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 817.04975\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

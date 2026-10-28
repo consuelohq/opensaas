@@ -178,12 +178,13 @@ describe('LeadConnector embed view', () => {
     expect(html).not.toContain('data-action="transfer"');
   });
 
-  it('resolves root and admin to administration while reserving overlay paths for calling', () => {
+  it('resolves internal and public browser surfaces without conflating their authority', () => {
     expect(resolveLeadConnectorSurface('/')).toBe('admin');
     expect(resolveLeadConnectorSurface('/admin')).toBe('admin');
     expect(resolveLeadConnectorSurface('/admin/diagnostics')).toBe('admin');
     expect(resolveLeadConnectorSurface('/overlay')).toBe('overlay');
     expect(resolveLeadConnectorSurface('/overlay/session')).toBe('overlay');
+    expect(resolveLeadConnectorSurface('/call/sales')).toBe('customer');
   });
   it('renders the sidebar route as a commercial administration workspace', () => {
     const state = reduceEmbedState(

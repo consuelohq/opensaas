@@ -1,0 +1,8 @@
+{
+  "files": [
+    ".task/dialer/optimize-cloud-loading-and-reuse-clouds-in-preview-band/workpad.md",
+    "packages/consuelo-dialer-website/src/components/visuals/CloudField.astro",
+    "packages/consuelo-dialer-website/src/styles/tokens.css"
+  ],
+  "updatedAt": "2026-09-23T01:35:57.728Z"
+}

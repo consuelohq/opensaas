@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_b9ec55eb92bd",
+  "tmuxSession": "opensaas-dialer-rd8-remove-lockfile-trigger-with-local-phone-nor-b9ec55eb",
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/rd8-remove-lockfile-trigger-with-local-phone-normalization",
+  "branch": "task/dialer/rd8-remove-lockfile-trigger-with-local-phone-normalization",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-rd8-remove-lockfile-trigger-with-local-phone-normalization",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-rd8-remove-lockfile-trigger-with-local-phone-normalization",
+  "repoRoot": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-rd8-fix-clean-dialer-workspace-prerequisite-builds",
+  "prNumber": 2481,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2481",
+  "createdAt": "2026-09-14T15:34:22.174Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-rd8-remove-lockfile-trigger-with-local-phone-normalization/.task/dialer/rd8-remove-lockfile-trigger-with-local-phone-normalization/session.json"
+}

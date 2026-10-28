@@ -1,0 +1,17 @@
+{
+  "files": [
+    ".task/dialer/refine-dialer-landing-page/workpad.md",
+    "packages/consuelo-dialer-website/public/favicon.svg",
+    "packages/consuelo-dialer-website/src/components/home/DialerFeaturePlaceholder.astro",
+    "packages/consuelo-dialer-website/src/components/home/HomeDialerStats.astro",
+    "packages/consuelo-dialer-website/src/components/home/HomeHero.astro",
+    "packages/consuelo-dialer-website/src/data/site-links.ts",
+    "packages/consuelo-dialer-website/src/data/site-navigation.ts",
+    "packages/consuelo-dialer-website/src/pages/pricing.astro",
+    "packages/consuelo-dialer-website/src/styles/primitives.css",
+    "packages/consuelo-dialer-website/tests/dialer-landing.test.mjs",
+    "packages/consuelo-website/public/images/home/consuelo-mark.svg",
+    "packages/consuelo-website/src/components/site/SiteHeader.astro"
+  ],
+  "updatedAt": "2026-09-22T02:36:40.382Z"
+}

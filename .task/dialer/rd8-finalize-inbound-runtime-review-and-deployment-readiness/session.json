@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_9b3fe9a4d863",
+  "tmuxSession": "opensaas-dialer-rd8-finalize-inbound-runtime-review-and-deployme-9b3fe9a4",
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/rd8-finalize-inbound-runtime-review-and-deployment-readiness",
+  "branch": "task/dialer/rd8-finalize-inbound-runtime-review-and-deployment-readiness",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-rd8-finalize-inbound-runtime-review-and-deployment-readiness",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-rd8-finalize-inbound-runtime-review-and-deployment-readiness",
+  "repoRoot": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-rd8-finalize-inbound-runtime-review-and-deployment-readiness",
+  "prNumber": 2488,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2488",
+  "createdAt": "2026-09-21T01:40:09.833Z",
+  "tmuxCreated": false,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-rd8-finalize-inbound-runtime-review-and-deployment-readiness/.task/dialer/rd8-finalize-inbound-runtime-review-and-deployment-readiness/session.json"
+}

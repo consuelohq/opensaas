@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/rd8-address-current-head-review-findings",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 2482,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2482",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-rd8-address-current-head-review-findings",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_03e2339626cd",
+  "tmuxSession": "opensaas-dialer-rd8-address-current-head-review-findings-03e23396",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-rd8-address-current-head-review-findings/.task/session.json",
+  "createdAt": "2026-09-19T14:46:48.340Z"
+}

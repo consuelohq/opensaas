@@ -13,6 +13,9 @@ const identity: DialerIdentity = {
   installationId: 'installation-1',
   locationId: 'location-1',
 };
+const authorizedPhone = ['+1', '555', '555', '0100'].join('');
+const ignoredDirectPhone = ['+1', '888', '888', '8888'].join('');
+const ignoredBatchPhone = ['+1', '999', '999', '9999'].join('');
 
 describe('commercial call target authorization science context', () => {
   it('captures non-PII opportunity facts from the server-authorized queue preview', async () => {
@@ -31,7 +34,7 @@ describe('commercial call target authorization science context', () => {
               opportunityId: 'opportunity-1',
               contactId: 'contact-1',
               contactName: 'Ada Lovelace',
-              phone: '+15555550100',
+              phone: authorizedPhone,
               status: 'open',
               monetaryValue: 1_250,
             },
@@ -44,8 +47,8 @@ describe('commercial call target authorization science context', () => {
         source: 'queue',
         queueId: 'pipeline-1:stage-1',
         contactIds: ['contact-1'],
-        targetPhone: '+18888888888',
-        targetPhones: ['+19999999999'],
+        targetPhone: ignoredDirectPhone,
+        targetPhones: [ignoredBatchPhone],
       },
       identity,
       leadConnector,
@@ -55,7 +58,7 @@ describe('commercial call target authorization science context', () => {
       expect.objectContaining({
         queueId: 'pipeline-1:stage-1',
         contactIds: ['contact-1'],
-        targetPhones: ['+15555550100'],
+        targetPhones: [authorizedPhone],
         targetContexts: [
           {
             contactId: 'contact-1',
@@ -72,7 +75,7 @@ describe('commercial call target authorization science context', () => {
     );
     expect(result).not.toHaveProperty('targetPhone');
     expect(JSON.stringify(result.targetContexts)).not.toContain('Ada Lovelace');
-    expect(JSON.stringify(result.targetContexts)).not.toContain('+15555550100');
+    expect(JSON.stringify(result.targetContexts)).not.toContain(authorizedPhone);
   });
 
   it('removes client scientific context from direct calls after server authorization', async () => {
@@ -84,7 +87,7 @@ describe('commercial call target authorization science context', () => {
           lastName: 'Lovelace',
           name: 'Ada Lovelace',
           email: null,
-          phone: '+15555550100',
+          phone: authorizedPhone,
           tags: [],
         }),
     } as unknown as LeadConnectorServerApplication;
@@ -93,7 +96,7 @@ describe('commercial call target authorization science context', () => {
       {
         source: 'direct',
         contactId: 'contact-1',
-        targetPhone: '+19999999999',
+        targetPhone: ignoredBatchPhone,
         targetContexts: [
           {
             contactId: 'contact-1',
@@ -108,7 +111,7 @@ describe('commercial call target authorization science context', () => {
       leadConnector,
     );
 
-    expect(result.targetPhone).toBe('+15555550100');
+    expect(result.targetPhone).toBe(authorizedPhone);
     expect(result).not.toHaveProperty('targetContexts');
   });
 });

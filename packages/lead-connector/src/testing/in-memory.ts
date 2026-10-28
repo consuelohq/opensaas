@@ -1,17 +1,20 @@
 import { Effect, Layer } from 'effect';
 
 import type {
+  LeadConnectorCompanyCredential,
   LeadConnectorInstallation,
   LeadConnectorOAuthState,
 } from '../contracts/index.js';
 import { LeadConnectorInstallationOwnershipError } from '../errors.js';
 import {
+  LeadConnectorCompanyCredentialStore,
   LeadConnectorInstallationStore,
   LeadConnectorOAuthStateStore,
   LeadConnectorWebhookEventStore,
 } from '../ports/index.js';
 
 export type InMemoryLeadConnectorState = {
+  companyCredentials: Map<string, LeadConnectorCompanyCredential>;
   installationsByWorkspace: Map<string, LeadConnectorInstallation>;
   workspaceByLocation: Map<string, string>;
   oauthStates: Map<string, LeadConnectorOAuthState>;
@@ -20,6 +23,7 @@ export type InMemoryLeadConnectorState = {
 
 export const createInMemoryLeadConnectorState =
   (): InMemoryLeadConnectorState => ({
+    companyCredentials: new Map(),
     installationsByWorkspace: new Map(),
     workspaceByLocation: new Map(),
     oauthStates: new Map(),
@@ -30,6 +34,20 @@ export const createInMemoryLeadConnectorStoreLayer = (
   state: InMemoryLeadConnectorState,
 ) =>
   Layer.mergeAll(
+    Layer.succeed(LeadConnectorCompanyCredentialStore, {
+      getByCompanyId: (companyId) =>
+        Effect.sync(() => {
+          const credential = state.companyCredentials.get(companyId);
+          return credential ? structuredClone(credential) : null;
+        }),
+      save: (credential) =>
+        Effect.sync(() => {
+          state.companyCredentials.set(
+            credential.companyId,
+            structuredClone(credential),
+          );
+        }),
+    }),
     Layer.succeed(LeadConnectorInstallationStore, {
       getByWorkspaceId: (workspaceId) =>
         Effect.sync(() => {

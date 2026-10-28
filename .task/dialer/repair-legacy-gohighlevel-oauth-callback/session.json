@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_19299f5f3ce2",
+  "tmuxSession": "opensaas-dialer-repair-legacy-gohighlevel-oauth-callback-19299f5f",
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/repair-legacy-gohighlevel-oauth-callback",
+  "branch": "task/dialer/repair-legacy-gohighlevel-oauth-callback",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-repair-legacy-gohighlevel-oauth-callback",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-repair-legacy-gohighlevel-oauth-callback",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2622,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2622",
+  "createdAt": "2026-10-08T15:35:19.785Z",
+  "tmuxCreated": false,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-repair-legacy-gohighlevel-oauth-callback/.task/dialer/repair-legacy-gohighlevel-oauth-callback/session.json"
+}
