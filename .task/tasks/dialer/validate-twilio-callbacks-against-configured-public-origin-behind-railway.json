@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/validate-twilio-callbacks-against-configured-public-origin-behind-railway",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 2639,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2639",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-validate-twilio-callbacks-against-configured-public-origin-behind-railway",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_cf13811b93cc",
+  "tmuxSession": "opensaas-dialer-validate-twilio-callbacks-against-configured-pub-cf13811b",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-validate-twilio-callbacks-against-configured-public-origin-behind-railway/.task/session.json",
+  "createdAt": "2026-10-28T17:32:31.444Z"
+}
