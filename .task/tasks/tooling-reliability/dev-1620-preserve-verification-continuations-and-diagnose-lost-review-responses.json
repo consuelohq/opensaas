@@ -1,0 +1,16 @@
+{
+  "area": "tooling-reliability",
+  "stream": "stream/tooling-reliability",
+  "taskBranch": "task/tooling-reliability/dev-1620-preserve-verification-continuations-and-diagnose-lost-review-responses",
+  "baseBranch": "stream/tooling-reliability",
+  "sourceBranch": "stream/tooling-reliability",
+  "startFrom": "stream",
+  "prNumber": 2632,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2632",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-tooling-reliability-dev-1620-preserve-verification-continuations-and-diagnose-lost-review-responses",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_9ec922e094ff",
+  "tmuxSession": "opensaas-tooling-reliability-dev-1620-preserve-verification-continuations-and-9ec922e0",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-tooling-reliability-dev-1620-preserve-verification-continuations-and-diagnose-lost-review-responses/.task/session.json",
+  "createdAt": "2026-10-28T04:33:00.166Z"
+}
