@@ -1,0 +1,16 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/verify-canonical-dialer-preview-navigation",
+  "baseBranch": "stream/website",
+  "sourceBranch": "stream/website",
+  "startFrom": "stream",
+  "prNumber": 2653,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2653",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-verify-canonical-dialer-preview-navigation",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_075085168c2f",
+  "tmuxSession": "opensaas-website-verify-canonical-dialer-preview-navigation-07508516",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-verify-canonical-dialer-preview-navigation/.task/session.json",
+  "createdAt": "2026-10-28T21:38:17.359Z"
+}

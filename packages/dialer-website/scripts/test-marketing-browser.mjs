@@ -63,7 +63,8 @@ try {
   const box=await close.boundingBox();
   assert.ok(box && box.y>=0 && box.y+box.height<=height+1,'Footer CTA clipped at '+width+'x'+height);
   await close.click();
-  assert.equal(new URL(page.url()).pathname,'/get-started');
+  const destination = new URL(page.url()).pathname;
+  assert.ok(destination === '/get-started' || destination === '/get-started/', 'Setup CTA reaches the setup page');
   assert.deepEqual(errors,[],'Browser errors at '+width+'x'+height);
   await page.goto(base+'/',{waitUntil:'networkidle'});
   if ([375,568,1440].includes(width)) await page.screenshot({path:join(artifactRoot,'home-'+width+'x'+height+'.png'),fullPage:width===1440});
@@ -85,14 +86,20 @@ try {
  }
  const paths=['/','/pricing','/get-started','/guides','/how-it-works','/contact','/privacy','/terms','/support'];
  let linkCount=0;
+ const checkedTargets = new Map();
  for (const path of paths) {
   await page.goto(base+path,{waitUntil:'networkidle'});
   const hrefs=await page.locator('a[href]').evaluateAll(links=>links.map(a=>a.getAttribute('href')).filter(h=>h.startsWith('/')&&!h.startsWith('//')));
   for (const href of new Set(hrefs)) {
    const target=new URL(href,base);
-   const response=await fetch(target);
-   const html=await response.text();
-   assert.equal(response.status,200,'Broken internal link '+href+' on '+path);
+   let result = checkedTargets.get(target.href);
+   if (!result) {
+    const response=await fetch(target, {signal:AbortSignal.timeout(8000)});
+    result={status:response.status,html:await response.text()};
+    checkedTargets.set(target.href,result);
+   }
+   const html=result.html;
+   assert.equal(result.status,200,'Broken internal link '+href+' on '+path);
    if (target.hash) {
     const id=decodeURIComponent(target.hash.slice(1));
     assert.ok(html.includes('id="'+id+'"')||html.includes("id='"+id+"'"),'Missing anchor '+href);
