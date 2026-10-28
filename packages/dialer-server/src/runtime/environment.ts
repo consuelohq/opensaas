@@ -211,6 +211,7 @@ export async function loadDialerServerRuntime(
         leadConnector,
         verifyTwilioSignature: createTwilioSignatureVerifier(
           required(environment, 'TWILIO_AUTH_TOKEN'),
+          environment.DIALER_SERVER_PUBLIC_URL?.trim() || undefined,
         ),
         issueVoiceToken: (identity) => voiceDialer.getToken(identity.userId),
       },
