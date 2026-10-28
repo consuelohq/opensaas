@@ -76,6 +76,8 @@ suite('RD6 callback telephony with real Postgres and simulated carrier', () => {
   let carrier: InboundCarrier;
   let loseCustomerResponse: boolean;
   let loseRepRedirectResponse: boolean;
+  let rejectRepCreate: boolean;
+  let loseRepCreateResponse: boolean;
   let failEndFor: string | null;
   let capacity: ReturnType<typeof createPostgresRepCapacity>;
   let service: ReturnType<typeof createInboundTelephony>;
@@ -110,6 +112,8 @@ suite('RD6 callback telephony with real Postgres and simulated carrier', () => {
     calls = new Map();
     loseCustomerResponse = false;
     loseRepRedirectResponse = false;
+    rejectRepCreate = false;
+    loseRepCreateResponse = false;
     failEndFor = null;
     let sequence = 0;
     carrier = {
@@ -117,6 +121,11 @@ suite('RD6 callback telephony with real Postgres and simulated carrier', () => {
         sequence++;
         offerTargets.push(input.to);
         offerUrls.push(input.url);
+        if (input.to.startsWith('client:') && rejectRepCreate)
+          throw Object.assign(new Error('Twilio rejected the endpoint'), {
+            status: 400,
+            code: 21211,
+          });
         const sid = input.to.startsWith('client:')
           ? `rep-call-${sequence}`
           : `customer-call-${sequence}`;
@@ -126,6 +135,8 @@ suite('RD6 callback telephony with real Postgres and simulated carrier', () => {
           status: 'in-progress',
         };
         calls.set(sid, call);
+        if (input.to.startsWith('client:') && loseRepCreateResponse)
+          throw new Error('Provider may have created the rep call before losing the response');
         if (!input.to.startsWith('client:') && loseCustomerResponse) {
           loseCustomerResponse = false;
           throw new Error('provider accepted customer dial but response was lost');
@@ -273,6 +284,9 @@ suite('RD6 callback telephony with real Postgres and simulated carrier', () => {
     return { owner, repSid };
   };
 
+  const latestCustomerReference = () =>
+    decodeURIComponent(offerUrls.at(-1)!.split('/').at(-1)!);
+
   it('dials the rep first, customer second, and converges duplicate worker ticks', async () => {
     await requestCallback();
     await service.tick();
@@ -292,7 +306,7 @@ suite('RD6 callback telephony with real Postgres and simulated carrier', () => {
       'number-one',
       'callback-join',
       { AccountSid: 'account', CallSid: customerSid },
-      'callback-one',
+      latestCustomerReference(),
     );
     expect(join).toContain('<Conference');
     participants = [
@@ -349,7 +363,7 @@ suite('RD6 callback telephony with real Postgres and simulated carrier', () => {
       'number-one',
       'callback-status',
       { AccountSid: 'account', CallSid: customerSid, CallStatus: 'in-progress' },
-      'callback-one',
+      latestCustomerReference(),
     );
     participants = [
       { callSid: repSid, muted: false, hold: false },
@@ -387,7 +401,7 @@ suite('RD6 callback telephony with real Postgres and simulated carrier', () => {
       'number-one',
       'callback-join',
       { AccountSid: 'account', CallSid: customerSid },
-      'callback-one',
+      latestCustomerReference(),
     );
     participants = [
       { callSid: repSid, muted: true, hold: false },
@@ -413,7 +427,7 @@ suite('RD6 callback telephony with real Postgres and simulated carrier', () => {
       'number-one',
       'callback-join',
       { AccountSid: 'account', CallSid: customerSid },
-      'callback-one',
+      latestCustomerReference(),
     );
     participants = [
       { callSid: repSid, muted: false, hold: false },
@@ -532,5 +546,118 @@ suite('RD6 callback telephony with real Postgres and simulated carrier', () => {
     expect((await capacity.read('workspace', 'slot'))!.owner).toBeNull();
     expect((await callbacks.read('workspace', 'callback-one'))!.state.status).toBe('cancelled');
     expect(offerTargets.filter((target) => target === '+18285550123')).toHaveLength(0);
+  });
+
+  it('releases rep capacity after a definitive rejected create, without making a customer call', async () => {
+    await requestCallback();
+    rejectRepCreate = true;
+    await service.tick();
+    await service.tick();
+    expect((await capacity.read('workspace', 'slot'))!.owner).toBeNull();
+    const result = await pool.query<{ status: string }>(
+      "SELECT status FROM dialer_telephony_effects WHERE workspace_id='workspace' AND kind='offer'",
+    );
+    expect(result.rows.map((row) => row.status)).toEqual(['failed']);
+    expect(offerTargets).toEqual(['client:alice']);
+  });
+
+  it('retains capacity when a rep create outcome is ambiguous', async () => {
+    await requestCallback();
+    loseRepCreateResponse = true;
+    await service.tick();
+    await service.tick();
+    expect((await capacity.read('workspace', 'slot'))!.owner?.phase).toBe('unknown');
+    const effects = await pool.query<{ status: string; call_sid: string | null }>(
+      "SELECT status,call_sid FROM dialer_telephony_effects WHERE workspace_id='workspace' AND kind='offer'",
+    );
+    expect(effects.rows).toEqual([{ status: 'unknown', call_sid: null }]);
+    expect(offerTargets).toEqual(['client:alice']);
+  });
+
+  it('recovers the no-answer result after capacity released but callback result was not committed', async () => {
+    await requestCallback();
+    await service.tick();
+    const { repSid } = await acceptLatestRep();
+    await service.tick();
+    const customerSid = [...calls.keys()].find((sid) => sid.startsWith('customer-call-'))!;
+    calls.set(repSid, { sid: repSid, accountSid: 'account', status: 'completed' });
+    calls.set(customerSid, { sid: customerSid, accountSid: 'account', status: 'no-answer' });
+    await callbacks.releaseAttemptCapacity({
+      workspaceId: 'workspace',
+      callbackId: 'callback-one',
+      operationId: 'simulate-crash-after-capacity-release',
+      outcome: 'no_effect',
+    });
+    expect((await capacity.read('workspace', 'slot'))!.owner).toBeNull();
+    expect((await callbacks.read('workspace', 'callback-one'))!.state.status).toBe('dialing');
+    await service.tick();
+    expect((await callbacks.read('workspace', 'callback-one'))!.state.status).toBe('retry_due');
+    expect(offerTargets.filter((target) => target === '+18285550123')).toHaveLength(1);
+  });
+
+  it('finalizes cancellation after a crash between capacity release and callback result', async () => {
+    await requestCallback();
+    await service.tick();
+    const { repSid } = await acceptLatestRep();
+    await service.tick();
+    const customerSid = [...calls.keys()].find((sid) => sid.startsWith('customer-call-'))!;
+    await callbacks.cancel({
+      workspaceId: 'workspace', callbackId: 'callback-one',
+      operationId: 'cancel-before-crash', reconciled: false,
+    });
+    calls.set(repSid, { sid: repSid, accountSid: 'account', status: 'completed' });
+    calls.set(customerSid, { sid: customerSid, accountSid: 'account', status: 'completed' });
+    await callbacks.releaseAttemptCapacity({
+      workspaceId: 'workspace', callbackId: 'callback-one',
+      operationId: 'simulate-cancel-release-crash', outcome: 'no_effect',
+    });
+    expect((await capacity.read('workspace', 'slot'))!.owner).toBeNull();
+    expect((await callbacks.read('workspace', 'callback-one'))!.state.status).toBe('cancel_pending');
+    await service.tick();
+    expect((await callbacks.read('workspace', 'callback-one'))!.state.status).toBe('cancelled');
+  });
+
+  it('settles a definitively ended rep bridge before any customer call is dispatched', async () => {
+    await requestCallback();
+    await service.tick();
+    const { repSid } = await acceptLatestRep();
+    calls.set(repSid, { sid: repSid, accountSid: 'account', status: 'completed' });
+    await service.tick();
+    await service.tick();
+    expect(offerTargets.filter((target) => target === '+18285550123')).toHaveLength(0);
+    expect((await capacity.read('workspace', 'slot'))!.owner).toBeNull();
+    expect((await callbacks.read('workspace', 'callback-one'))!.state.status).toBe('retry_due');
+  });
+
+  it('rejects delayed callback webhooks from an earlier attempt rather than binding a new unknown dial', async () => {
+    await requestCallback();
+    await service.tick();
+    const { repSid } = await acceptLatestRep();
+    await service.tick();
+    const oldCustomerSid = [...calls.keys()].find((sid) => sid.startsWith('customer-call-'))!;
+    const oldReference = latestCustomerReference();
+    calls.set(oldCustomerSid, {
+      sid: oldCustomerSid, accountSid: 'account', status: 'no-answer',
+    });
+    await service.tick();
+    expect((await callbacks.read('workspace', 'callback-one'))!.state.status).toBe('retry_due');
+    // The routing reoffer fence is the original 12-second offer expiry plus
+    // its 1-second cooldown, not only the callback's 10-second retry delay.
+    seconds += 14;
+    await service.tick();
+    expect(offerTargets.filter((target) => target === 'client:alice')).toHaveLength(2);
+    const accepted = await acceptLatestRep();
+    expect(accepted.repSid).not.toBe(repSid);
+    loseCustomerResponse = true;
+    await service.tick();
+    const currentAttempt = (await callbacks.read('workspace', 'callback-one'))!.state.attempts.at(-1)!;
+    await expect(service.handle('number-one', 'callback-status', {
+      AccountSid: 'account', CallSid: oldCustomerSid, CallStatus: 'completed',
+    }, oldReference)).rejects.toThrow();
+    const updated = await pool.query<{ call_sid: string | null }>(
+      "SELECT call_sid FROM dialer_callback_effects WHERE workspace_id='workspace' AND callback_id='callback-one' AND attempt_id=$1 AND effect_kind='customer_dial'",
+      [currentAttempt.attemptId],
+    );
+    expect(updated.rows[0]?.call_sid).toBeNull();
   });
 });

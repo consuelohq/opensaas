@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import type { PoolClient } from 'pg';
-import type { RepCapacityState, InboundStoredCommand } from '@consuelo/dialer';
+import { classifyTwilioCreateFailure, type RepCapacityState, type InboundStoredCommand } from '@consuelo/dialer';
 import {
   withInboundTransaction,
   readInboundSnapshot,
@@ -404,11 +404,20 @@ export const createTelephonyCommands = (options: TelephonyOptions) => {
         );
         if (settled.rowCount !== 1)
           throw new Error('Conflicting provider correlation');
-      } catch {
+      } catch (cause: unknown) {
+        // A provider-side request rejection proves no call was created. Only
+        // ambiguous create failures may enter the protected unknown state.
+        const definitivelyRejected =
+          effect.kind === 'offer' &&
+          classifyTwilioCreateFailure(cause) === 'not_created';
         await pool.query(
-          "UPDATE dialer_telephony_effects SET status='unknown',updated_at=clock_timestamp() WHERE workspace_id=$1 AND effect_id=$2 AND status='dispatched'",
-          [effect.workspace_id, effect.effect_id],
+          "UPDATE dialer_telephony_effects SET status=$3,updated_at=clock_timestamp() WHERE workspace_id=$1 AND effect_id=$2 AND status='dispatched'",
+          [effect.workspace_id, effect.effect_id, definitivelyRejected ? 'failed' : 'unknown'],
         );
+        if (definitivelyRejected) {
+          await settleCommands(effect.workspace_id, effect.assignment_id);
+          return;
+        }
         const current = await capacity.read(
           effect.workspace_id,
           state.capacityId,
