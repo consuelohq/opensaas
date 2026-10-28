@@ -1,0 +1,16 @@
+{
+  "area": "ci",
+  "stream": "stream/ci",
+  "taskBranch": "task/ci/optimize-agent-ci-latency-while-strengthening-change-coverage",
+  "baseBranch": "stream/ci",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2634,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2634",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-ci-optimize-agent-ci-latency-while-strengthening-change-coverage",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_f8b1bc4cada2",
+  "tmuxSession": "opensaas-ci-optimize-agent-ci-latency-while-strengthening-ch-f8b1bc4c",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-ci-optimize-agent-ci-latency-while-strengthening-change-coverage/.task/session.json",
+  "createdAt": "2026-10-28T16:20:06.471Z"
+}

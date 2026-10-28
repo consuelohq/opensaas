@@ -134,8 +134,9 @@ function parseArgs(argv: string[]): CliArgs {
   return args;
 }
 
-function runGit(args: string[]): string {
+function runGit(args: string[], cwd?: string, rawOutput = false): string {
   const result = spawnSync('git', args, {
+    cwd,
     encoding: 'utf8',
     stdio: ['ignore', 'pipe', 'pipe'],
   });
@@ -143,7 +144,8 @@ function runGit(args: string[]): string {
     const detail = String(result.stderr || result.stdout || '').trim();
     throw new Error(`git ${args.join(' ')} failed${detail ? `: ${detail}` : ''}`);
   }
-  return String(result.stdout || '').trim();
+  const output = String(result.stdout || '');
+  return rawOutput ? output : output.trim();
 }
 
 function tryGit(args: string[]): string | undefined {
@@ -209,14 +211,17 @@ function fetchRemoteRefIfNeeded(baseRef: string): void {
   ]);
 }
 
-function readChangedFiles(baseSha: string): string[] {
+export function readChangedFiles(baseSha: string, cwd?: string): string[] {
   const output = runGit([
     'diff',
     '--name-only',
-    '--diff-filter=ACMR',
+    '-z',
+    '--no-renames',
     `${baseSha}...HEAD`,
-  ]);
-  return output.split(/\r?\n/).map((file) => file.trim()).filter(Boolean);
+  ], cwd, true);
+  // Git quotes non-ASCII and control characters without NUL-delimited filenames.
+  // Do not trim: whitespace can be part of a tracked path.
+  return output.split('\0').filter(Boolean);
 }
 
 function writeGithubOutput(name: string, value: string | boolean): void {

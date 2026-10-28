@@ -74,10 +74,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
-
-      - name: Resolve OS test comparison SHAs
-        uses: nrwl/nx-set-shas@v4
+          # PR merge refs include both comparison parents at depth 2.
+          # Push/manual/dispatch runs retain full history for arbitrary base SHAs.
+          fetch-depth: ${{ github.event_name == 'pull_request' && 2 || 0 }}
 
       - uses: oven-sh/setup-bun@v2
         with:

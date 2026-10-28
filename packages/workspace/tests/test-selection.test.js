@@ -2601,3 +2601,27 @@ describe('test selection registry', () => {
   });
 
 });
+
+
+describe('PostHog API tool CI selection', () => {
+  it('keeps new PostHog API tool changes on focused suites instead of the broad OS package test', () => {
+    const data = json(run([
+      'check',
+      '--changed-file', 'packages/os/package.json',
+      '--changed-file', 'packages/os/tools/posthog/manifest.ts',
+      '--changed-file', 'packages/os/scripts/lib/posthog-client.ts',
+      '--changed-file', 'packages/os/scripts/posthog.ts',
+      '--changed-file', 'packages/os/docs/posthog.md',
+      '--json',
+    ]));
+    const ids = data.matchedRules.map((rule) => rule.id);
+    expect(ids).toContain('os-posthog-api-tool');
+    expect(ids).not.toContain('auto:@consuelo/os:package-test');
+    const selected = data.selectedSuites.find((suite) => suite.ruleId === 'os-posthog-api-tool');
+    expect(selected?.command).toEqual(expect.arrayContaining([
+      'tests/posthog-tool.test.ts',
+      'tools/posthog/handler.test.ts',
+      'tests/tool-manifest.test.ts',
+    ]));
+  });
+});

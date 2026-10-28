@@ -1,0 +1,16 @@
+{
+  "area": "ci",
+  "stream": "stream/ci",
+  "taskBranch": "task/ci/address-ci-release-review-blockers-and-preserve-manual-comparison-correctness",
+  "baseBranch": "stream/ci",
+  "sourceBranch": "stream/ci",
+  "startFrom": "stream",
+  "prNumber": 2641,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2641",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-ci-address-ci-release-review-blockers-and-preserve-manual-comparison-correctness",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_d7743bbcf244",
+  "tmuxSession": "opensaas-ci-address-ci-release-review-blockers-and-preserve--d7743bbc",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-ci-address-ci-release-review-blockers-and-preserve-manual-comparison-correctness/.task/session.json",
+  "createdAt": "2026-10-28T17:58:25.894Z"
+}

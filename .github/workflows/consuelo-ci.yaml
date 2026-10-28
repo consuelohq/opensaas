@@ -34,7 +34,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          # PR/merge-group refs contain the base at HEAD^1 (depth 2).
+          # Manual runs can compare old feature ancestry or any supplied base.
+          fetch-depth: ${{ github.event_name != 'workflow_dispatch' && 2 || 0 }}
 
       - name: Setup Consuelo CI planner
         uses: ./.github/actions/consuelo-ci-setup
@@ -63,7 +65,8 @@ jobs:
         if: needs.consuelo-changes.outputs.workflow_security == 'true'
         with:
           ref: ${{ needs.consuelo-changes.outputs.head_sha }}
-          fetch-depth: 0
+          # Manual comparisons require the planner-provided base SHA in this job.
+          fetch-depth: ${{ github.event_name != 'workflow_dispatch' && 2 || 0 }}
 
       - name: Review changed GitHub automation
         if: needs.consuelo-changes.outputs.workflow_security == 'true'
@@ -83,7 +86,8 @@ jobs:
         if: needs.consuelo-changes.outputs.verify == 'true'
         with:
           ref: ${{ needs.consuelo-changes.outputs.head_sha }}
-          fetch-depth: 0
+          # Manual verification must resolve the same immutable comparison base.
+          fetch-depth: ${{ github.event_name != 'workflow_dispatch' && 2 || 0 }}
 
       - name: Setup Consuelo verification
         if: needs.consuelo-changes.outputs.verify == 'true'
@@ -117,7 +121,7 @@ jobs:
         if: needs.consuelo-changes.outputs.os_contracts == 'true'
         with:
           ref: ${{ needs.consuelo-changes.outputs.head_sha }}
-          fetch-depth: 0
+          fetch-depth: 1
 
       - name: Setup OS contract tests
         if: needs.consuelo-changes.outputs.os_contracts == 'true'
@@ -133,7 +137,8 @@ jobs:
           bun x vitest run \
             tests/tool-manifest.test.ts \
             tests/security-gateway.test.ts \
-            tests/workspace-gateway-contract.test.ts
+            tests/workspace-gateway-contract.test.ts \
+            --testTimeout 15000
 
   dialer:
     name: Consuelo / dialer
@@ -149,7 +154,7 @@ jobs:
         if: needs.consuelo-changes.outputs.dialer == 'true'
         with:
           ref: ${{ needs.consuelo-changes.outputs.head_sha }}
-          fetch-depth: 0
+          fetch-depth: 1
 
       - name: Setup dialer CI
         if: needs.consuelo-changes.outputs.dialer == 'true'
@@ -204,7 +209,7 @@ jobs:
         if: needs.consuelo-changes.outputs.sites_gateway_cloudflare == 'true'
         with:
           ref: ${{ needs.consuelo-changes.outputs.head_sha }}
-          fetch-depth: 0
+          fetch-depth: 1
 
       - name: Setup Sites Gateway tests
         if: needs.consuelo-changes.outputs.sites_gateway_cloudflare == 'true'

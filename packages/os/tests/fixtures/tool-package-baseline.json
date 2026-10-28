@@ -2392,10 +2392,10 @@
       "outputSchema": "RawOutput",
       "command": {
         "script": "confidence-score",
+        "executionScope": "runtime",
         "branchMode": "none",
         "jsonFlag": "--json",
-        "arguments": [],
-        "executionScope": "runtime"
+        "arguments": []
       },
       "exampleInput": {},
       "sessionRequired": false
@@ -2519,6 +2519,7 @@
       "outputSchema": "RawOutput",
       "command": {
         "script": "decide-next",
+        "executionScope": "runtime",
         "branchMode": "none",
         "jsonFlag": "--json",
         "arguments": [
@@ -2542,8 +2543,7 @@
             "flag": "--mark-irrelevant",
             "kind": "value"
           }
-        ],
-        "executionScope": "runtime"
+        ]
       },
       "exampleInput": {},
       "sessionRequired": false
@@ -3323,6 +3323,7 @@
       "outputSchema": "RawOutput",
       "command": {
         "script": "exploit",
+        "executionScope": "runtime",
         "branchMode": "none",
         "jsonFlag": "--json",
         "arguments": [
@@ -3335,8 +3336,7 @@
             "flag": "--target",
             "kind": "value"
           }
-        ],
-        "executionScope": "runtime"
+        ]
       },
       "exampleInput": {},
       "sessionRequired": false
@@ -6455,6 +6455,236 @@
         "arguments": []
       },
       "exampleInput": {},
+      "sessionRequired": false
+    },
+    {
+      "name": "posthog.capture",
+      "methodPath": [
+        "posthog",
+        "capture"
+      ],
+      "description": "explicitly capture a privacy-checked event to PostHog using the project token; does not capture events automatically",
+      "category": "posthog",
+      "underlying": "Consuelo PostHog API client",
+      "capabilities": {
+        "readOnly": false,
+        "mutating": true,
+        "deterministic": false,
+        "safeToRetry": false
+      },
+      "defaultTimeout": 30000,
+      "inputSchema": "PosthogCaptureInput",
+      "outputSchema": "RawOutput",
+      "search": {
+        "domainAliases": [
+          "posthog",
+          "product analytics",
+          "event analytics",
+          "hogql"
+        ],
+        "keywords": [
+          "events",
+          "analytics",
+          "funnels",
+          "capture",
+          "telemetry",
+          "product analytics"
+        ]
+      },
+      "command": {
+        "script": "posthog",
+        "subcommand": "capture",
+        "branchMode": "none",
+        "executionScope": "runtime",
+        "jsonFlag": "--json",
+        "arguments": [
+          {
+            "source": "event",
+            "flag": "--event",
+            "kind": "value",
+            "required": true
+          },
+          {
+            "source": "distinctId",
+            "flag": "--distinct-id",
+            "kind": "value",
+            "required": true
+          },
+          {
+            "source": "propertiesJson",
+            "flag": "--properties-json",
+            "kind": "value"
+          }
+        ]
+      },
+      "exampleInput": {
+        "event": "website_cta_clicked",
+        "distinctId": "anon_123",
+        "propertiesJson": "{\"placement\":\"hero\"}"
+      },
+      "sessionRequired": false
+    },
+    {
+      "name": "posthog.config",
+      "methodPath": [
+        "posthog",
+        "config"
+      ],
+      "description": "check PostHog region and credential configuration (never returns keys); credentials are per-node environment variables or macOS Keychain",
+      "category": "posthog",
+      "underlying": "Consuelo PostHog API client",
+      "capabilities": {
+        "readOnly": true,
+        "mutating": false,
+        "deterministic": false,
+        "safeToRetry": true
+      },
+      "defaultTimeout": 30000,
+      "inputSchema": "PosthogConfigInput",
+      "outputSchema": "RawOutput",
+      "search": {
+        "domainAliases": [
+          "posthog",
+          "product analytics",
+          "event analytics",
+          "hogql"
+        ],
+        "keywords": [
+          "events",
+          "analytics",
+          "funnels",
+          "capture",
+          "telemetry",
+          "product analytics"
+        ]
+      },
+      "command": {
+        "script": "posthog",
+        "subcommand": "config",
+        "branchMode": "none",
+        "executionScope": "runtime",
+        "jsonFlag": "--json",
+        "arguments": []
+      },
+      "exampleInput": {},
+      "sessionRequired": false
+    },
+    {
+      "name": "posthog.projects",
+      "methodPath": [
+        "posthog",
+        "projects"
+      ],
+      "description": "list accessible PostHog projects using the locally configured personal API key",
+      "category": "posthog",
+      "underlying": "Consuelo PostHog API client",
+      "capabilities": {
+        "readOnly": true,
+        "mutating": false,
+        "deterministic": false,
+        "safeToRetry": true
+      },
+      "defaultTimeout": 30000,
+      "inputSchema": "PosthogProjectsInput",
+      "outputSchema": "RawOutput",
+      "search": {
+        "domainAliases": [
+          "posthog",
+          "product analytics",
+          "event analytics",
+          "hogql"
+        ],
+        "keywords": [
+          "events",
+          "analytics",
+          "funnels",
+          "capture",
+          "telemetry",
+          "product analytics"
+        ]
+      },
+      "command": {
+        "script": "posthog",
+        "subcommand": "projects",
+        "branchMode": "none",
+        "executionScope": "runtime",
+        "jsonFlag": "--json",
+        "arguments": [
+          {
+            "source": "limit",
+            "flag": "--limit",
+            "kind": "value"
+          }
+        ]
+      },
+      "exampleInput": {
+        "limit": 20
+      },
+      "sessionRequired": false
+    },
+    {
+      "name": "posthog.query",
+      "methodPath": [
+        "posthog",
+        "query"
+      ],
+      "description": "run one bounded read-only HogQL query using a personal API key and PostHog project id",
+      "category": "posthog",
+      "underlying": "Consuelo PostHog API client",
+      "capabilities": {
+        "readOnly": true,
+        "mutating": false,
+        "deterministic": false,
+        "safeToRetry": true
+      },
+      "defaultTimeout": 30000,
+      "inputSchema": "PosthogQueryInput",
+      "outputSchema": "RawOutput",
+      "search": {
+        "domainAliases": [
+          "posthog",
+          "product analytics",
+          "event analytics",
+          "hogql"
+        ],
+        "keywords": [
+          "events",
+          "analytics",
+          "funnels",
+          "capture",
+          "telemetry",
+          "product analytics"
+        ]
+      },
+      "command": {
+        "script": "posthog",
+        "subcommand": "query",
+        "branchMode": "none",
+        "executionScope": "runtime",
+        "jsonFlag": "--json",
+        "arguments": [
+          {
+            "source": "sql",
+            "flag": "--sql",
+            "kind": "value",
+            "required": true
+          },
+          {
+            "source": "projectId",
+            "flag": "--project-id",
+            "kind": "value"
+          },
+          {
+            "source": "limit",
+            "flag": "--limit",
+            "kind": "value"
+          }
+        ]
+      },
+      "exampleInput": {
+        "sql": "SELECT event, count() FROM events GROUP BY event ORDER BY count() DESC LIMIT 20",
+        "limit": 20
+      },
       "sessionRequired": false
     },
     {

@@ -1,0 +1,217 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/ci/stabilize-os-security-contract-ci-subprocess-timeout",
+  "base": "origin/stream/ci",
+  "headSha": "8725bd9c549296ef1ec9a698b60ea366cf1b7158",
+  "changeHash": "e37fc72193c6c61d2d54b0316538999100295d23068ae15ff505c65a2d9da83e",
+  "changedFiles": [
+    ".github/workflows/consuelo-ci.yaml",
+    "packages/workspace/tests/github-workflow-policy.test.js"
+  ],
+  "verifiedAt": "2026-10-28T16:40:09.227Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".github/workflows/consuelo-ci.yaml",
+        ".task/ci/stabilize-os-security-contract-ci-subprocess-timeout/evidence-log.json",
+        ".task/ci/stabilize-os-security-contract-ci-subprocess-timeout/read-log.json",
+        ".task/ci/stabilize-os-security-contract-ci-subprocess-timeout/workpad.md",
+        ".task/tasks/ci/stabilize-os-security-contract-ci-subprocess-timeout.json",
+        "packages/workspace/tests/github-workflow-policy.test.js"
+      ],
+      "matchedRules": [
+        {
+          "id": "consuelo-ci-immutable-base",
+          "critical": true,
+          "reason": "Consuelo pull-request verification must use an immutable base commit and preserve the focused local OS server review contracts without selecting the broad OS package suite.",
+          "matchedFiles": [
+            ".github/workflows/consuelo-ci.yaml"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "native-os-workflow-contract",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Native OS distribution workflow and selector changes must run their exact cross-platform contracts without selecting unrelated full OS package tests.",
+          "matchedFiles": [
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "Consuelo CI immutable base and local server review contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/local-os-server-review-findings.test.ts"
+          ],
+          "ruleId": "consuelo-ci-immutable-base",
+          "critical": true
+        },
+        {
+          "name": "native OS selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-os-native-tests.test.mjs"
+          ],
+          "ruleId": "native-os-workflow-contract",
+          "critical": true
+        },
+        {
+          "name": "native Windows workflow contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/windows-platform.test.ts",
+            "packages/os/tests/windows-bootstrap-source.test.ts"
+          ],
+          "ruleId": "native-os-workflow-contract",
+          "critical": true
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "ruleId": "native-os-workflow-contract",
+          "critical": true
+        },
+        {
+          "name": "changed GitHub workflow security checks",
+          "command": [
+            "node",
+            "packages/workspace/scripts/ci/check-github-workflows.cjs"
+          ],
+          "ruleId": "native-os-workflow-contract",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "platform": "darwin",
+      "run": true,
+      "runResults": [
+        {
+          "name": "Consuelo CI immutable base and local server review contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/local-os-server-review-findings.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "consuelo-ci-immutable-base",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1306,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-ci-stabilize-os-security-contract-ci-subprocess-timeout/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/local-os-server-review-findings.test.ts \u001b[2m(\u001b[22m\u001b[2m20 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 30\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m20 passed\u001b[39m\u001b[22m\u001b[90m (20)\u001b[39m\n\u001b[2m   Start at \u001b[22m 12:40:08\n\u001b[2m   Duration \u001b[22m 247ms\u001b[2m (transform 48ms, setup 13ms, import 100ms, tests 30ms, environment 0ms)\u001b[22m\n\n$ vitest run tests/local-os-server-review-findings.test.ts\n(node:37069) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+        },
+        {
+          "name": "native OS selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-os-native-tests.test.mjs"
+          ],
+          "cwd": ".",
+          "ruleId": "native-os-workflow-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 64,
+          "outputTail": "Running focused-artifact native OS test plan.\n✔ native selector reserves enough Git output for repository-scale deletion diffs (0.392916ms)\n✔ parseCliArguments resolves comparison SHAs (0.41625ms)\n✔ parseCliArguments uses event SHAs when nx-set-shas leaves the base empty (0.04775ms)\n✔ parseCliArguments ignores zero SHAs and falls back to fetched Git history (0.0405ms)\n✔ filterRelevantNativeFiles keeps only OS native-test ownership paths (0.07ms)\n✔ selectNativeTestPlan uses the focused artifact contract for the exact metering cleanup (0.058666ms)\n✔ selectNativeTestPlan retains the full distribution suite for every broader change (0.048542ms)\n✔ runSelectedNativeTests executes the selected Bun test command (0.348125ms)\nℹ tests 8\nℹ suites 0\nℹ pass 8\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 35.811\n"
+        },
+        {
+          "name": "native Windows workflow contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/windows-platform.test.ts",
+            "packages/os/tests/windows-bootstrap-source.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "native-os-workflow-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 384,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-ci-stabilize-os-security-contract-ci-subprocess-timeout\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/windows-bootstrap-source.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/windows-platform.test.ts \u001b[2m(\u001b[22m\u001b[2m18 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 12\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m27 passed\u001b[39m\u001b[22m\u001b[90m (27)\u001b[39m\n\u001b[2m   Start at \u001b[22m 12:40:08\n\u001b[2m   Duration \u001b[22m 166ms\u001b[2m (transform 138ms, setup 0ms, import 154ms, tests 16ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "cwd": ".",
+          "ruleId": "native-os-workflow-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 73,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/workspace/tests/github-workflow-policy.test.js:\n(pass) GitHub workflow policy > delegates Consuelo routing to the Bun-native CI planner [10.64ms]\n(pass) GitHub workflow policy > uses one Bun-owned Consuelo CI setup boundary [0.13ms]\n(pass) GitHub workflow policy > includes local composite actions in workflow security policy [0.16ms]\n(pass) GitHub workflow policy > keeps OS-only Consuelo lanes off the root Bun install [2.16ms]\n(pass) GitHub workflow policy > preserves OS security contract suites with a bounded hosted-runner subprocess timeout [1.86ms]\n(pass) GitHub workflow policy > uses shallow parent-aware checkouts for pull-request CI without removing verification jobs [1.66ms]\n(pass) GitHub workflow policy > runs focused package, container, and security-contract lanes without full Git history [1.51ms]\n(pass) GitHub workflow policy > keeps docs and website status contracts while removing irrelevant checkout work [2.07ms]\n(pass) GitHub workflow policy > runs real Swamp compatibility outside blocking pull-request CI [0.50ms]\n(pass) GitHub workflow policy > does not include retired automation or legacy Twenty workflows [0.07ms]\n(pass) GitHub workflow policy > does not reference retired CI credentials [0.77ms]\n(pass) GitHub workflow policy > does not retain privileged allowlist entries for deleted workflows [0.06ms]\n(pass) GitHub workflow policy > scopes native OS distribution tests to relevant changed files [1.32ms]\n\n 13 pass\n 0 fail\n 113 expect() calls\nRan 13 tests across 1 file. [68.00ms]\n"
+        },
+        {
+          "name": "changed GitHub workflow security checks",
+          "command": [
+            "node",
+            "packages/workspace/scripts/ci/check-github-workflows.cjs"
+          ],
+          "cwd": ".",
+          "ruleId": "native-os-workflow-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 39,
+          "outputTail": "{\n  \"ok\": true,\n  \"baseRef\": \"origin/stream/ci\",\n  \"changedWorkflowFiles\": [],\n  \"changedActionFiles\": [],\n  \"findings\": []\n}\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

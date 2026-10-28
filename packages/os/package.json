@@ -55,6 +55,7 @@
     "mac": "bun ./scripts/mac.js",
     "linear": "bun ./scripts/linear.js",
     "sentry": "bun ./scripts/sentry.js",
+    "posthog": "bun ./scripts/posthog.ts",
     "security:scan": "bun ./scripts/security-scan.ts",
     "monitor:errors": "bun ./scripts/monitor-errors.ts",
     "daily-schedules": "bun ./scripts/daily-schedules.ts",
