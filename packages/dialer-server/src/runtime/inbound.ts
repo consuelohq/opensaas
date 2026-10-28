@@ -102,6 +102,38 @@ export const hasEnabledCustomerEntry = (
   numbers: readonly { readonly enabled: boolean; readonly customerEntry?: unknown }[],
 ) => numbers.some((number) => number.enabled && Boolean(number.customerEntry));
 
+// A disabled number may still have scheduled callbacks or uncertain provider
+// effects. Refuse to boot a worker which cannot decrypt or address that work.
+export const assertPendingCallbacksCanDrain = async (
+  pool: Pool,
+  numbers: readonly { readonly workspaceId: string; readonly numberId: string }[],
+  callbackRecipientSecret: string | undefined,
+): Promise<void> => {
+  try {
+    const result = await pool.query<{
+      workspace_id: string;
+      number_id: string;
+    }>(
+      `SELECT DISTINCT workspace_id,number_id FROM dialer_callback_obligations
+       WHERE state->>'status' NOT IN ('fulfilled','cancelled','exhausted','expired')
+       ORDER BY workspace_id,number_id LIMIT 1001`,
+    );
+    if (result.rows.length > 1000)
+      throw new Error('Callback draining scan bound exceeded');
+    if (result.rows.length && !callbackRecipientSecret)
+      throw new Error('DIALER_CALLBACK_RECIPIENT_SECRET is required to drain pending callbacks');
+    for (const row of result.rows) {
+      if (!numbers.some((number) =>
+        number.workspaceId === row.workspace_id && number.numberId === row.number_id,
+      ))
+        throw new Error('Callback number must remain configured until pending work drains');
+    }
+  } catch (cause: unknown) {
+    if (cause instanceof Error) throw cause;
+    throw new Error('Callback draining check rejected with a non-Error cause', { cause });
+  }
+};
+
 export const createInboundRuntime = async (environment: Environment, enrich?: InboundEnrichment) => {
   if (!inboundEnabled(environment)) return undefined;
   const accountSid = environment.TWILIO_ACCOUNT_SID?.trim();
@@ -148,6 +180,7 @@ export const createInboundRuntime = async (environment: Environment, enrich?: In
   });
   try {
     await migrateDialerDatabase(pool);
+    await assertPendingCallbacksCanDrain(pool, config.numbers, callbackRecipientSecret);
     for (const number of config.numbers.filter((number) => number.enabled)) {
       const queue = await pool.query(
         'SELECT queue_id FROM dialer_routing_queues WHERE workspace_id=$1 AND queue_id=$2',

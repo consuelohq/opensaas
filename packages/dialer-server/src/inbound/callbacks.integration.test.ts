@@ -14,6 +14,7 @@ import { createPostgresInboundRouting } from './routing';
 import { createPostgresRepCapacity } from './rep-capacity';
 import { createCallbackRecipientCipher } from './callback-recipient-cipher';
 import { createPostgresCallbacks } from './callbacks';
+import { assertPendingCallbacksCanDrain } from '../runtime/inbound';
 
 const port = Number(process.env.CONSUELO_RD6_PG_PORT);
 const suite =
@@ -153,6 +154,180 @@ suite('RD6 callbacks with real Postgres', () => {
       },
       policy: callbackPolicy,
     });
+
+  it('refuses to start without the callback secret or configured number while durable work remains', async () => {
+    await request();
+    const disabled = [{
+      workspaceId: 'workspace', numberId: 'number-one', enabled: false,
+      callback: null,
+    }];
+    await expect(assertPendingCallbacksCanDrain(pool, disabled, undefined))
+      .rejects.toThrow('DIALER_CALLBACK_RECIPIENT_SECRET');
+    await expect(assertPendingCallbacksCanDrain(pool, [], 'secret-with-sufficient-length-for-test-0001'))
+      .rejects.toThrow('must remain configured');
+    await expect(assertPendingCallbacksCanDrain(
+      pool, disabled, 'secret-with-sufficient-length-for-test-0001',
+    )).resolves.toBeUndefined();
+    await callbacks.cancel({
+      workspaceId: 'workspace', callbackId: 'callback-one',
+      operationId: 'terminate-for-draining-check', reconciled: false,
+    });
+    await expect(assertPendingCallbacksCanDrain(pool, [], undefined))
+      .resolves.toBeUndefined();
+  });
+
+  it('marks all terminal callback telephony sessions ended in the same transaction', async () => {
+    for (const terminalAction of ['cancel', 'exhaust', 'expire'] as const) {
+      await request(terminalAction);
+      const callbackId = 'callback-' + terminalAction;
+      const requestId = 'callback-request-' + terminalAction;
+      const initial = await pool.query<{ mode: string }>(
+        "SELECT mode FROM dialer_telephony_sessions WHERE workspace_id='workspace' AND request_id=$1",
+        [requestId],
+      );
+      expect(initial.rows[0]?.mode).toBe('callback_requested');
+      if (terminalAction === 'cancel') {
+        await callbacks.cancel({
+          workspaceId: 'workspace', callbackId,
+          operationId: 'terminal-' + terminalAction, reconciled: false,
+        });
+      } else {
+        if (terminalAction === 'exhaust') {
+          seconds = 10;
+          await callbacks.apply('workspace', callbackId, {
+            type: 'record_attempt', operationId: 'attempt-for-exhaust',
+            at: now(), attemptId: 'attempt-for-exhaust',
+            assignmentId: 'assignment-for-exhaust', capacityId: 'slot', generation: 1,
+          });
+          await callbacks.apply('workspace', callbackId, {
+            type: 'attempt_result', operationId: 'dialing-for-exhaust',
+            at: now(), attemptId: 'attempt-for-exhaust', outcome: 'dialing',
+            nextEligibleAt: null, reconciled: false,
+          });
+          await callbacks.apply('workspace', callbackId, {
+            type: 'attempt_result', operationId: 'retry-for-exhaust',
+            at: now(), attemptId: 'attempt-for-exhaust', outcome: 'failed',
+            nextEligibleAt: at(30), reconciled: false,
+          });
+        }
+        if (terminalAction === 'expire') seconds = 91;
+        await callbacks.apply('workspace', callbackId, {
+          type: terminalAction, operationId: 'terminal-' + terminalAction,
+          at: now(),
+        });
+      }
+      const finished = await pool.query<{ mode: string }>(
+        "SELECT mode FROM dialer_telephony_sessions WHERE workspace_id='workspace' AND request_id=$1",
+        [requestId],
+      );
+      expect(finished.rows[0]?.mode).toBe('ended');
+    }
+  });
+
+  it('claims and fences the callback revision before provider cancellation, blocking competing routing', async () => {
+    await request();
+    let releaseProvider!: () => void;
+    let enterProvider!: () => void;
+    const providerPending = new Promise<void>((resolve) => { releaseProvider = resolve; });
+    const providerEntered = new Promise<void>((resolve) => { enterProvider = resolve; });
+    const calendar = makeService({
+      book: async () => ({
+        status: 'confirmed', providerReference: 'booking-1', evidenceReference: 'booked',
+      }),
+      cancel: async (input) => {
+        enterProvider();
+        await providerPending;
+        return { status: 'cancelled', providerReference: input.providerReference,
+          evidenceReference: 'cancelled-with-evidence' };
+      },
+    });
+    await calendar.book('workspace', 'callback-one');
+    const pending = calendar.reschedule({
+      workspaceId: 'workspace', callbackId: 'callback-one',
+      operationId: 'reschedule-claim-1', expectedRevision: 1,
+      timezone: 'UTC', notBefore: at(30), deadline: at(120),
+    });
+    await providerEntered;
+    const claimed = await pool.query<{ routing_state: string; fallback_decision_id: string | null }>(
+      "SELECT routing_state,fallback_decision_id FROM dialer_routing_entries WHERE workspace_id='workspace' AND request_id='callback-request-one'",
+    );
+    expect(claimed.rows[0]?.routing_state).toBe('fallback');
+    expect(claimed.rows[0]?.fallback_decision_id?.startsWith('callback-reschedule:')).toBe(true);
+    expect((await calendar.read('workspace', 'callback-one'))!.state.revision).toBe(1);
+
+    seconds = 11;
+    await callbacks.tick({ workspaceId: 'workspace', queueId: 'sales', cycleId: 'while-reschedule-pending' });
+    expect((await capacity.read('workspace', 'slot'))!.owner).toBeNull();
+    await expect(calendar.reschedule({
+      workspaceId: 'workspace', callbackId: 'callback-one',
+      operationId: 'competing-claim', expectedRevision: 1,
+      timezone: 'UTC', notBefore: at(40), deadline: at(130),
+    })).rejects.toMatchObject({
+      cause: { message: 'Another callback reschedule is in progress' },
+    });
+    releaseProvider();
+    await pending;
+    expect((await calendar.read('workspace', 'callback-one'))!.state).toMatchObject({
+      revision: 2, status: 'scheduled', notBefore: at(30), deadline: at(120),
+    });
+    seconds = 30;
+    const routed = await callbacks.tick({
+      workspaceId: 'workspace', queueId: 'sales', cycleId: 'new-window',
+    });
+    expect(routed.evaluation.action).toBe('offer');
+    expect((await capacity.read('workspace', 'slot'))!.owner?.phase).toBe('offering');
+  });
+
+  it('preserves the routing fence across unknown calendar cancellation and resumes the same claim after restart', async () => {
+    await request();
+    let cancellations = 0;
+    let reconciled = false;
+    const adapter = {
+      book: async () => ({
+        status: 'confirmed' as const, providerReference: 'booked-provider-event',
+        evidenceReference: 'booking-evidence',
+      }),
+      cancel: async () => {
+        cancellations++;
+        throw new Error('Provider cancellation response lost');
+      },
+      reconcileCancellation: async () => reconciled
+        ? {
+            status: 'cancelled' as const, providerReference: 'booked-provider-event',
+            evidenceReference: 'verified-provider-cancellation',
+          }
+        : { status: 'unavailable' as const, providerReference: null, evidenceReference: null },
+    };
+    const calendar = makeService(adapter);
+    await calendar.book('workspace', 'callback-one');
+    const input = {
+      workspaceId: 'workspace', callbackId: 'callback-one',
+      operationId: 'recover-reschedule', expectedRevision: 1,
+      timezone: 'UTC', notBefore: at(30), deadline: at(120),
+    };
+    await expect(calendar.reschedule(input)).rejects.toThrow('Provider cancellation response lost');
+    const claimed = await pool.query<{ routing_state: string; fallback_decision_id: string | null }>(
+      "SELECT routing_state,fallback_decision_id FROM dialer_routing_entries WHERE workspace_id='workspace' AND request_id='callback-request-one'",
+    );
+    expect(claimed.rows[0]?.routing_state).toBe('fallback');
+    expect(claimed.rows[0]?.fallback_decision_id?.startsWith('callback-reschedule:')).toBe(true);
+    seconds = 11;
+    await callbacks.tick({ workspaceId: 'workspace', queueId: 'sales', cycleId: 'unknown-cancellation' });
+    expect((await capacity.read('workspace', 'slot'))!.owner).toBeNull();
+    await expect(makeService(adapter).reschedule(input)).rejects.toThrow('outcome is unknown');
+    expect(cancellations).toBe(1);
+    reconciled = true;
+    const result = await makeService(adapter).reschedule(input);
+    expect(result.state.revision).toBe(2);
+    expect(result.state.notBefore).toBe(at(30));
+    const cleared = await pool.query<{ routing_state: string; fallback_decision_id: string | null }>(
+      "SELECT routing_state,fallback_decision_id FROM dialer_routing_entries WHERE workspace_id='workspace' AND request_id='callback-request-one'",
+    );
+    expect(cleared.rows[0]).toMatchObject({
+      routing_state: 'waiting', fallback_decision_id: null,
+    });
+    expect(cancellations).toBe(1);
+  });
 
   it('retains the encrypted recipient through a later rescheduled window and purges afterward', async () => {
     await request();

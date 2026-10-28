@@ -1,0 +1,22 @@
+{
+  "files": [
+    ".task/dialer/dev-1616-finish-callback-lifecycle-draining-after-hours-and-reschedule-guards/verify.json",
+    "packages/dialer-server/package.json",
+    "packages/dialer-server/src/database/migrations.ts",
+    "packages/dialer-server/src/inbound/callback-telephony.integration.test.ts",
+    "packages/dialer-server/src/inbound/callbacks.integration.test.ts",
+    "packages/dialer-server/src/inbound/callbacks.ts",
+    "packages/dialer-server/src/inbound/customer-entry.ts",
+    "packages/dialer-server/src/inbound/postgres-journal.ts",
+    "packages/dialer-server/src/inbound/routing-store.ts",
+    "packages/dialer-server/src/inbound/telephony-admission.ts",
+    "packages/dialer-server/src/inbound/telephony-config.test.ts",
+    "packages/dialer-server/src/inbound/telephony.integration.test.ts",
+    "packages/dialer-server/src/inbound/telephony.ts",
+    "packages/dialer-server/src/runtime/inbound.ts",
+    "packages/dialer/src/inbound/callback-obligation.ts",
+    "packages/dialer/src/inbound/callback-scheduler.ts",
+    "packages/workspace/scripts/verify.js"
+  ],
+  "updatedAt": "2026-10-28T04:36:12.268Z"
+}

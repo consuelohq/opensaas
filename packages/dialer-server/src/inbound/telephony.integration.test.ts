@@ -29,6 +29,7 @@ import {
 } from '../database/migrations';
 import { createOutboundCapacity } from './outbound-capacity';
 import { createInboundTelephony } from './telephony';
+import { createCallbackRecipientCipher } from './callback-recipient-cipher';
 import { createPostgresRepCapacity } from './rep-capacity';
 import { createPostgresInboundRouting } from './routing';
 import { createPostgresInboundJournal } from './postgres-journal';
@@ -384,6 +385,76 @@ suite('inbound runtime with real Postgres and simulated carrier', () => {
     expect((await journal.replay('workspace', 'request', id))!.state).toBe(
       'overflowed',
     );
+  });
+  it('schedules an explicit after-hours IVR callback at the next staffed queue window', async () => {
+    await createPostgresInboundRouting(pool, { clock }).configureQueue({
+      schemaVersion: 1,
+      policyVersion: 'after-hours-monday',
+      workspaceId: 'workspace',
+      queueId: 'sales',
+      timezone: 'UTC',
+      weekly: [{ day: 1, startMinute: 540, endMinute: 1020 }],
+      closedDates: [],
+      emergencyClosed: false,
+      maxWaitMilliseconds: 120000,
+      maxOffers: 2,
+      reofferMilliseconds: 1000,
+      profiles: [{ repId: 'alice', skills: [] }],
+    }, 1);
+    const withCallbacks = createInboundTelephony({
+      pool,
+      numbers: [{
+        ...number,
+        callback: {
+          schemaVersion: 1, policyVersion: 'after-hours',
+          activationReference: 'callback-activation',
+          disclosure: 'We can call you back during our next staffed window.',
+          maxAttempts: 2, retryDelaysMilliseconds: [10_000],
+          immediateWindowMilliseconds: 120_000,
+          recipientRetentionMilliseconds: 180_000,
+          customerRingSeconds: 20,
+        },
+      }],
+      endpoints: [],
+      carrier,
+      publicUrl: 'https://voice.example',
+      authToken: 'secret',
+      clock,
+      callbackRecipientCipher: createCallbackRecipientCipher(
+        'fixture-callback-encryption-secret-0001',
+      ),
+      callbackConsent: async () => ({
+        allowed: true, evidenceReference: 'customer-ivr-consent', reason: 'allowed',
+      }),
+    });
+    await withCallbacks.handle('number-one', 'incoming', {
+      AccountSid: 'account', CallSid: 'caller', Direction: 'inbound', To: number.did,
+    });
+    const response = await withCallbacks.handle('number-one', 'wait', {
+      AccountSid: 'account', CallSid: 'caller', From: '+18285550123',
+      Digits: '1',
+    }, telephonyId('account', 'caller'));
+    expect(response).toContain('callback request has been saved');
+    const obligation = await pool.query<{ state: { notBefore: string; deadline: string; originalEnteredAt: string } }>(
+      "SELECT state FROM dialer_callback_obligations WHERE workspace_id='workspace'",
+    );
+    expect(obligation.rows).toHaveLength(1);
+    expect(obligation.rows[0]!.state.notBefore).toBe('2026-09-14T09:00:00.000Z');
+    expect(obligation.rows[0]!.state.deadline).toBe('2026-09-14T09:02:00.000Z');
+    expect(obligation.rows[0]!.state.originalEnteredAt).toBe(clock());
+    calls.set('caller', { sid: 'caller', accountSid: 'account', status: 'completed' });
+    expect((await withCallbacks.tick()).failures).toBe(0);
+    const callerSession = await pool.query<{ mode: string }>(
+      "SELECT mode FROM dialer_telephony_sessions WHERE workspace_id='workspace' AND caller_sid='caller'",
+    );
+    expect(callerSession.rows[0]?.mode).toBe('ended');
+    const waitingCallback = await pool.query<{ mode: string }>(
+      `SELECT session.mode FROM dialer_telephony_sessions session
+       JOIN dialer_callback_obligations callback ON callback.workspace_id=session.workspace_id
+         AND callback.request_id=session.request_id
+       WHERE session.workspace_id='workspace'`,
+    );
+    expect(waitingCallback.rows[0]?.mode).toBe('callback_requested');
   });
   it('admits signed public requests and serves the real RD7A authenticated adapter', async () => {
     const operator = createInboundOperator(
