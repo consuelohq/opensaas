@@ -1,0 +1,16 @@
+{
+  "area": "ci",
+  "stream": "stream/ci",
+  "taskBranch": "task/ci/stabilize-os-security-contract-ci-subprocess-timeout",
+  "baseBranch": "stream/ci",
+  "sourceBranch": "stream/ci",
+  "startFrom": "stream",
+  "prNumber": 2636,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2636",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-ci-stabilize-os-security-contract-ci-subprocess-timeout",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_9e1fd9aea190",
+  "tmuxSession": "opensaas-ci-stabilize-os-security-contract-ci-subprocess-tim-9e1fd9ae",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-ci-stabilize-os-security-contract-ci-subprocess-timeout/.task/session.json",
+  "createdAt": "2026-10-28T16:38:36.072Z"
+}

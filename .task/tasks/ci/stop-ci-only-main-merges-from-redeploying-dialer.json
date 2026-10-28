@@ -1,0 +1,16 @@
+{
+  "area": "ci",
+  "stream": "stream/ci",
+  "taskBranch": "task/ci/stop-ci-only-main-merges-from-redeploying-dialer",
+  "baseBranch": "stream/ci",
+  "sourceBranch": "stream/ci",
+  "startFrom": "stream",
+  "prNumber": 2643,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2643",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-ci-stop-ci-only-main-merges-from-redeploying-dialer",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_4374b5edc7c8",
+  "tmuxSession": "opensaas-ci-stop-ci-only-main-merges-from-redeploying-dialer-4374b5ed",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-ci-stop-ci-only-main-merges-from-redeploying-dialer/.task/session.json",
+  "createdAt": "2026-10-28T18:15:51.880Z"
+}

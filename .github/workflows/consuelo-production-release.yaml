@@ -67,7 +67,10 @@ jobs:
           fi
           git diff --name-only "$before" "$GITHUB_SHA" > "$RUNNER_TEMP/dialer-release-changes.txt"
           cat "$RUNNER_TEMP/dialer-release-changes.txt"
-          if grep -Eq '^(packages/(dialer|dialer-server|lead-connector|logger|contacts)/|\.github/workflows/(consuelo-ci|consuelo-production-release|consuelo-dialer-rollback)\.yaml$|package\.json$|bun\.lock$|bunfig\.toml$|\.bun-version$|nx\.json$|tsconfig[^/]*\.json$)' "$RUNNER_TEMP/dialer-release-changes.txt"; then
+          # CI and release-orchestration edits are not dialer runtime changes.
+          # Releasing them needlessly redeploys the live dialer; preserve runtime,
+          # root dependency, and explicit rollback triggers.
+          if grep -Eq '^(packages/(dialer|dialer-server|lead-connector|logger|contacts)/|\.github/workflows/consuelo-dialer-rollback\.yaml$|package\.json$|bun\.lock$|bunfig\.toml$|\.bun-version$|nx\.json$|tsconfig[^/]*\.json$)' "$RUNNER_TEMP/dialer-release-changes.txt"; then
             echo "release=true" >> "$GITHUB_OUTPUT"
           else
             echo "release=false" >> "$GITHUB_OUTPUT"

@@ -1,0 +1,8 @@
+{
+  "files": [
+    ".github/workflows/consuelo-ci.yaml",
+    "packages/workspace/tests/github-changed-files.test.js",
+    "packages/workspace/tests/github-workflow-policy.test.js"
+  ],
+  "updatedAt": "2026-10-28T17:58:33.867Z"
+}
