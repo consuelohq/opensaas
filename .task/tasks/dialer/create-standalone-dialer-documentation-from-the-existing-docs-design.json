@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/create-standalone-dialer-documentation-from-the-existing-docs-design",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2648,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2648",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-create-standalone-dialer-documentation-from-the-existing-docs-design",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_257983e25a22",
+  "tmuxSession": "opensaas-dialer-create-standalone-dialer-documentation-from-the--257983e2",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-create-standalone-dialer-documentation-from-the-existing-docs-design/.task/session.json",
+  "createdAt": "2026-10-28T21:01:55.333Z"
+}

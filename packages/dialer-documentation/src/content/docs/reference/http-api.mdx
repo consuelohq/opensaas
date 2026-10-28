@@ -1,0 +1,25 @@
+---
+title: HTTP API
+description: Use authenticated contracts and inspect their returned state.
+status: preview
+---
+
+The Hono service exposes workspace-scoped routes. Its authentication middleware derives identity before application workflows run; request-supplied user or workspace IDs cannot replace it.
+
+## Read-only routes
+
+| Method and path | Purpose |
+| --- | --- |
+| `GET /v1/calls?limit=50` | Paginated history; limits range from 1 to 100. |
+| `GET /v1/calls/active` | Active call records. |
+| `GET /v1/calls/:callId/transcript` | Transcript state and content when available and permitted. |
+| `GET /v1/voice/token` | Voice token for the authenticated rep when configured. |
+| `GET /v1/inbound/operator/snapshot` | Inbound preview rep, offers, queue and display configuration. |
+
+## Inbound commands
+
+The typed operator contract includes `POST /v1/inbound/operator/readiness`, `heartbeat`, `offers/accept`, `offers/decline` and `wrap-up`. Use its current types and server snapshot for payloads. Assignment identity and generation fence stale actions.
+
+On `409 INBOUND_ACTION_REJECTED`, refresh authoritative state instead of replaying against a newer offer. The generic configuration PATCH returns `501 STRUCTURED_POLICY_REQUIRED`; display labels cannot rewrite routing policy.
+
+Carrier webhooks use provider signatures rather than browser identity. Their public URLs and signing configuration remain separate from marketing domains.

@@ -1,0 +1,17 @@
+---
+title: Developer reference
+description: Find the contract you need without reconstructing the application.
+status: preview
+---
+
+Consuelo separates dialing behavior from server transport and provider adapters.
+
+- [`@consuelo/dialer`](/reference/sdk/) owns provider-neutral dialing behavior and runtime contracts.
+- `packages/dialer-server` composes the standalone Bun/Hono service with PostgreSQL, Redis and provider adapters.
+- `packages/lead-connector` adapts GoHighLevel identity, customer data, opportunities and the embedded UI.
+
+Keep ranking, ownership and lifecycle decisions on the server. Browsers submit intent and display authoritative state; they do not select winners or bypass capacity reservations.
+
+Use [HTTP API](/reference/http-api/) for transport and [server configuration](/reference/configuration/) for deployment inputs. The [glossary](/reference/glossary/) defines product terms.
+
+These contracts are documented from repository source. Public package publication, hosted API credentials and integration availability must be confirmed for your version. These docs introduce no new public API key or replacement login flow.

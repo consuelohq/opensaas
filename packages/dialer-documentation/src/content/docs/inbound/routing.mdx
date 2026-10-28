@@ -1,0 +1,19 @@
+---
+title: How inbound routing works
+description: Understand why a caller is offered to a particular rep.
+status: preview
+---
+
+The router makes two related decisions: which waiting caller to serve next, and which eligible rep can serve that caller.
+
+Eligibility comes before preference. A rep must belong to the right workspace and queue, meet required skills, have healthy permitted devices, be ready, and have usable capacity. Browser presence alone is insufficient.
+
+The configured policy can consider queue age, assignment affinity and rep state. The server reserves capacity before dispatching an offer. A stale or expired acceptance cannot take ownership from a newer assignment.
+
+## Acceptance and connection
+
+The first valid acceptance committed by the server wins. Device clocks do not decide the winner. After acceptance, the system still has to confirm the caller and rep media legs before reporting Connected.
+
+A caller may abandon while waiting or while an offer is ringing. That is a distinct result, not necessarily a provider failure. If a carrier command times out, capacity remains protected until reconciliation establishes what happened.
+
+For unserved callers, see [callbacks](/inbound/callbacks/) and [overflow](/inbound/voicemail/).
