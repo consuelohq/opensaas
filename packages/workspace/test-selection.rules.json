@@ -43,12 +43,19 @@
     },
     {
       "id": "workspace-publish-gate",
-      "critical": true,
       "source": [
         "packages/workspace/scripts/verify.js",
+        "packages/workspace/scripts/lib/verify-run-state.js",
+        "packages/workspace/tests/verification.test.js",
+        "packages/workspace/tests/verify-run-state.test.js",
+        "packages/os/scripts/verify.js",
+        "packages/os/scripts/lib/verify-run-state.js",
+        "packages/os/tests/verify-run-state.test.js",
         "packages/workspace/scripts/review.js",
         "packages/workspace/scripts/task-push.js",
-        "packages/workspace/scripts/lib/verification.js"
+        "packages/workspace/scripts/lib/verification.js",
+        "packages/workspace/scripts/confirm.js",
+        "packages/os/scripts/confirm.js"
       ],
       "tests": [
         {
@@ -58,10 +65,13 @@
             "x",
             "vitest",
             "run",
-            "packages/workspace/tests/verification.test.js"
+            "packages/workspace/tests/verification.test.js",
+            "packages/workspace/tests/verify-run-state.test.js",
+            "packages/os/tests/verify-run-state.test.js"
           ]
         }
       ],
+      "critical": true,
       "reason": "Review, verify, and task push changes must prove publish-gate behavior."
     },
     {
@@ -210,10 +220,9 @@
     },
     {
       "id": "workspace-stream-sync-runtime",
-      "critical": true,
-      "exclusive": true,
       "source": [
         "packages/workspace/scripts/stream-sync.js",
+        "packages/os/scripts/stream-sync.js",
         "packages/workspace/tests/stream-sync-node-modules.test.js",
         "packages/workspace/tests/stream-sync-generated-registry-conflict.test.js"
       ],
@@ -228,7 +237,34 @@
           ]
         }
       ],
+      "critical": true,
+      "exclusive": true,
       "reason": "Stream synchronization changes must prove temporary-worktree dependency linking, stale-conflict recovery, generated-registry regeneration, and fail-closed behavior before a stream is pushed."
+    },
+    {
+      "id": "workspace-task-merge-agent-boundary",
+      "source": [
+        "packages/workspace/scripts/task-merge.js",
+        "packages/workspace/scripts/lib/task-merge-readiness.js",
+        "packages/os/scripts/task-merge.js",
+        "packages/os/scripts/lib/task-merge-readiness.js",
+        "packages/workspace/tests/task-merge-readiness.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "workspace task merge agent-boundary contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/task-merge-readiness.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Agent-facing PR merge readiness must stay bounded, fail closed on unreadable or failed GitHub checks, and keep deployment polling behind an explicit operator path."
     },
     {
       "id": "workspace-explore-bench-compatibility",
@@ -1247,6 +1283,82 @@
       "reason": "MCP request admission and dangerous-material boundary changes must prove JSON-RPC transport/error behavior, fail-closed safety, authentication/gateway compatibility, and syntax without selecting the historically broad OS package suite."
     },
     {
+      "id": "os-mcp-response-completion-boundary",
+      "source": [
+        "packages/os/cloudflare/os-device-authority/src/routes/mcp-proxy.ts",
+        "packages/os/cloudflare/os-device-authority/src/services/mcp-proxy.ts",
+        "packages/os/scripts/server/mcp-request-receipts.ts",
+        "packages/os/scripts/server/routes/mcp.ts",
+        "packages/os/scripts/consuelo-reload.js",
+        "packages/workspace/scripts/consuelo-reload.js",
+        "packages/os/tools/utilities/handler.ts",
+        "packages/os/tests/mcp-gateway.test.ts",
+        "packages/os/tests/mcp-openai-session-receipt.test.ts",
+        "packages/os/tests/mcp-response-diagnostics.test.ts",
+        "packages/os/tests/workspace-node-registry-routing.test.ts",
+        "packages/os/scripts/server/mcp-request-recovery.ts",
+        "packages/os/tests/mcp-request-recovery.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS MCP response receipt contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/mcp-gateway.test.ts",
+            "packages/os/tests/mcp-openai-session-receipt.test.ts",
+            "packages/os/tests/mcp-response-diagnostics.test.ts",
+            "packages/os/tests/mcp-request-recovery.test.ts"
+          ]
+        },
+        {
+          "name": "OS MCP post-upstream completion contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/workspace-node-registry-routing.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Public MCP completion changes must prove that completed upstream responses are not blocked by non-critical post-execution bookkeeping, creation-time session affinity is established before handoff, explicit mutating requestId retries execute at most once with durable replay, local receipts remain metadata-only, and diagnostics stay focused instead of selecting the broad OS package suite."
+    },
+    {
+      "id": "os-bounded-js-syntax-runner",
+      "source": [
+        "packages/os/scripts/check-syntax.js",
+        "packages/workspace/scripts/check-syntax.js",
+        "packages/os/tests/check-syntax-runner.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS bounded JavaScript syntax runner contract",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/check-syntax-runner.test.ts"
+          ]
+        },
+        {
+          "name": "OS JavaScript syntax sweep",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "The JavaScript syntax gate is itself part of verify. Changes must prove Bun-launched runners delegate to Node with a per-file timeout and that the full syntax sweep remains bounded without selecting the broad OS package suite."
+    },
+    {
       "id": "os-chatgpt-mcp-oauth",
       "critical": true,
       "exclusive": true,
@@ -1328,8 +1440,6 @@
     },
     {
       "id": "os-mcp-call-timeout-envelope",
-      "critical": true,
-      "exclusive": true,
       "source": [
         "packages/os/scripts/lib/mcp-gateway.ts",
         "packages/os/scripts/server/routes/mcp.ts",
@@ -1337,7 +1447,8 @@
         "packages/os/scripts/lib/facade/executor.ts",
         "packages/os/scripts/lib/facade/types.ts",
         "packages/os/tests/mcp-gateway.test.ts",
-        "packages/os/tests/facade/facade.test.ts"
+        "packages/os/tests/facade/facade.test.ts",
+        "packages/os/tests/facade/not-found-recovery.test.ts"
       ],
       "tests": [
         {
@@ -1347,7 +1458,8 @@
             "x",
             "vitest",
             "run",
-            "packages/os/tests/mcp-gateway.test.ts"
+            "packages/os/tests/mcp-gateway.test.ts",
+            "packages/os/tests/facade/not-found-recovery.test.ts"
           ]
         },
         {
@@ -1370,7 +1482,33 @@
           ]
         }
       ],
+      "critical": true,
+      "exclusive": true,
       "reason": "Public MCP call timeout is envelope execution metadata, not selected tool input; changes must prove transport separation, local facade deadline propagation, and syntax without selecting the historically red package-wide OS suite."
+    },
+    {
+      "id": "os-verify-task-worktree-routing",
+      "source": [
+        "packages/os/scripts/lib/facade/executor.ts",
+        "packages/os/tests/facade/facade.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "OS verify task-worktree routing contract",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/facade/facade.test.ts",
+            "-t",
+            "runs task-scoped verify from the resolved task worktree instead of controller cwd"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Task-scoped verify self-hosting depends on facade cwd routing; changes to the executor or its facade regression must run the exact focused routing contract without falling back to the package-wide OS suite."
     },
     {
       "id": "os-device-approval-canonical-identity",

@@ -7147,6 +7147,7 @@
       "outputSchema": "RawOutput",
       "command": {
         "script": "consuelo-reload",
+        "executionScope": "runtime",
         "branchMode": "none",
         "arguments": [
           {

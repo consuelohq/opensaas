@@ -921,6 +921,19 @@ function compactVerifyData(data: unknown): unknown {
 
   return {
     schema: 'verify.summary.v1',
+    // Pending is an actionable continuation, not a completed failed verification.
+    status: compactVerifyValue(data.status),
+    pending: data.pending,
+    runKey: compactVerifyValue(data.runKey),
+    phase: compactVerifyValue(data.phase),
+    startedAt: compactVerifyValue(data.startedAt),
+    workerPid: data.workerPid,
+    retryAfterSeconds: data.retryAfterSeconds,
+    message: compactVerifyValue(data.message),
+    nextAction: compactVerifyValue(data.nextAction),
+    because: compactVerifyValue(data.because),
+    testSelection: compactVerifyValue(data.testSelection),
+    stamp: compactVerifyValue(data.stamp),
     branch: data.branch,
     base: data.base,
     headSha: data.headSha,
@@ -945,6 +958,8 @@ function maybeSyncWorkpadValidation(toolName: string, input: ToolInput, result: 
   const validationTools = ['review.run', 'verify', 'checkFiles', 'audit', 'artifacts.check'];
   const tddPhase = typeof input.tddPhase === 'string' ? input.tddPhase : '';
   if (!validationTools.includes(toolName) && !tddPhase) return;
+  if (toolName === 'verify' && isRecord(result.data)
+    && (result.data.pending === true || result.data.status === 'VERIFY_PENDING')) return;
   const taskWorktree = typeof input.taskWorktree === 'string' ? input.taskWorktree : '';
   const taskBranch = typeof input.branch === 'string' ? input.branch : '';
   if (!taskWorktree || !taskBranch.startsWith('task/')) return;
@@ -1709,6 +1724,7 @@ function resolveGitRoot(cwd: string): string {
 
 function resolveWorkspaceCommandCwd(cwd: string, script: string, input?: ToolInput): string {
   if ((script === 'code-run' || script === 'code-call') && typeof input?.taskWorktree === 'string') return input.taskWorktree;
+  if (script === 'verify' && typeof input?.taskWorktree === 'string') return input.taskWorktree;
   if (!script.startsWith('task:') && !script.startsWith('stream:')) return cwd;
   if (typeof input?.taskWorktree === 'string') return input.taskWorktree;
   return resolveControllerRoot(cwd) || cwd;
