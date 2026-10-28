@@ -1,0 +1,32 @@
+---
+import MarketingLayout from '../../layouts/MarketingLayout.astro';
+import SiteHeader from './SiteHeader.astro';
+type Props = { title: string; description: string; eyebrow?: string };
+const {title,description,eyebrow='CONSUELO DIALER'} = Astro.props;
+---
+<MarketingLayout title={title} description={description}>
+ <SiteHeader />
+ <main class="info-page">
+  <header class="info-page__hero"><p>{eyebrow}</p><h1>{title}</h1><p class="info-page__intro">{description}</p></header>
+  <article class="info-page__body"><slot /></article>
+  <footer><a href="/">Consuelo Dialer</a><a href="/pricing">Pricing</a><a href="/guides">Docs</a><a href="/contact">Contact</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a></footer>
+ </main>
+</MarketingLayout>
+<style>
+.info-page { padding: calc(var(--site-space-section) * 2) var(--site-frame-inset) var(--site-space-section); }
+.info-page__hero,.info-page__body,footer { width: min(100%, var(--site-container-max)); margin-inline: auto; }
+.info-page__hero { text-align: center; padding-bottom: var(--site-space-section); }
+.info-page__hero>p:first-child { font: 650 var(--site-text-xs)/var(--site-leading-body) var(--site-font-mono); }
+h1 { font: 400 var(--site-text-4xl)/var(--site-leading-tight) var(--site-font-display); margin: var(--site-space-5) 0; text-wrap: balance; }
+.info-page__intro { font-size: var(--site-text-lg); text-wrap: balance; }
+.info-page__body { background: var(--site-color-surface); color: var(--site-color-ink); padding: var(--site-space-section); }
+.info-page__body :global(h2) { font: 400 var(--site-text-2xl)/var(--site-leading-tight) var(--site-font-display); margin: var(--site-space-7) 0 var(--site-space-4); scroll-margin-top: var(--site-space-7); }
+.info-page__body :global(h2:first-child) { margin-top: 0; }
+.info-page__body :global(p),.info-page__body :global(li) { font-size: var(--site-text-md); line-height: var(--site-leading-body); }
+.info-page__body :global(a) { color: inherit; text-underline-offset: .2em; }
+.info-page__body :global(li) { margin-bottom: var(--site-space-4); }
+.info-page__body :global(.setup-action) { display: inline-flex; padding: var(--site-space-4) var(--site-space-5); background: var(--site-color-brand); color: var(--site-color-on-brand); font: 650 var(--site-text-sm)/var(--site-leading-body) var(--site-font-mono); text-decoration: none; margin-block: var(--site-space-4); }
+footer { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--site-space-5); padding-top: var(--site-space-7); font-size: var(--site-text-sm); }
+footer a { color: inherit; }
+@media(max-width:760px) { .info-page__body { padding: var(--site-space-6); } h1 { font-size: var(--site-text-3xl); } }
+</style>

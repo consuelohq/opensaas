@@ -1,0 +1,241 @@
+---
+import { dialerHero } from '../../data/dialer-content';
+import CloudField from '../visuals/CloudField.astro';
+type Props = { sectionId?: string };
+const {sectionId='intro'} = Astro.props as Props;
+---
+<section class="os-hero" id={sectionId} data-section="hero">
+ <CloudField />
+ <div class="os-hero__content">
+  <h1 data-hero-heading>{dialerHero.title.map(line => <span class="os-hero__heading-line">{line}</span>)}</h1>
+  <p class="os-hero__subtitle">{dialerHero.description}</p>
+  <div class="os-hero__actions"><a class="os-hero__button" href="/get-started">{dialerHero.primaryLabel} <span aria-hidden="true">↗</span></a></div>
+  <a class="os-hero__command" href="/how-it-works"><strong>{dialerHero.secondaryLabel}</strong><span aria-hidden="true">↗</span></a>
+ </div>
+</section>
+<style>.os-hero__command { text-decoration: none; }</style>
+<style>
+  .os-hero {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 90svh;
+    place-items: center;
+    overflow: hidden;
+    background: var(--site-color-brand);
+    color: white;
+    padding: clamp(7rem, 10vw, 9rem) clamp(1.25rem, 4vw, 4rem) clamp(3rem, 5vw, 4.5rem);
+    text-align: center;
+  }
+
+  .os-hero__content {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    width: min(100%, 80rem);
+    min-width: 0;
+    max-width: 100%;
+    justify-items: center;
+    gap: clamp(1rem, 1.55vw, 1.4rem);
+  }
+
+  .os-hero h1 {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+    margin: 0;
+    color: white;
+    font-family: var(--site-font-display);
+    font-size: clamp(3.75rem, 7vw, 6.75rem);
+    font-optical-sizing: auto;
+    font-weight: 400;
+    letter-spacing: 0.01em;
+    line-height: 0.96;
+    text-wrap: balance;
+  }
+
+  .os-hero__heading-line {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 0.2em;
+    white-space: normal;
+  }
+
+  .os-hero__assistant-rotator {
+    position: relative;
+    display: inline-grid;
+    overflow: hidden;
+    min-width: 3.75em;
+    place-items: baseline center;
+    vertical-align: baseline;
+  }
+
+  .os-hero__assistant-rotator > span {
+    grid-area: 1 / 1;
+    white-space: nowrap;
+  }
+
+  [data-assistant-name='Claude'] {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  .os-hero__subtitle {
+    width: min(100%, 56rem);
+    min-width: 0;
+    margin: 0;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: clamp(1rem, 1.4vw, 1.25rem);
+    line-height: 1.45;
+    text-wrap: balance;
+  }
+
+  .os-hero__actions {
+    display: grid;
+    width: min(100%, 34rem);
+    min-width: 0;
+    gap: 0.55rem;
+    margin-top: 0.45rem;
+  }
+
+  .os-hero__button,
+  .os-hero__command {
+    border: 1px solid white;
+    border-radius: 0;
+    font-family: var(--site-font-mono);
+    font-size: clamp(0.72rem, 0.9vw, 0.8rem);
+    font-weight: 650;
+    letter-spacing: 0.09em;
+  }
+
+  .os-hero__button {
+    display: flex;
+    min-height: 3.15rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    background: white;
+    box-shadow: 0.22rem 0.22rem 0 rgba(0, 0, 92, 0.28);
+    color: var(--site-color-brand);
+    text-decoration: none;
+    transform: translate(-0.08rem, -0.08rem);
+    transition: background var(--site-motion-fast), color var(--site-motion-fast), box-shadow var(--site-motion-fast), transform var(--site-motion-fast);
+  }
+
+  .os-hero__button-arrow {
+    width: 0.58rem;
+    height: 0.82rem;
+    shape-rendering: crispEdges;
+  }
+
+  .os-hero__button:hover,
+  .os-hero__button:focus-visible {
+    background: white;
+    box-shadow: 0.1rem 0.1rem 0 rgba(0, 0, 92, 0.2);
+    color: var(--site-color-brand);
+    transform: translate(0, 0);
+  }
+
+  .os-hero__command {
+    display: flex;
+    width: min(100%, 34rem);
+    min-width: 0;
+    min-height: 3.05rem;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    overflow: hidden;
+    background: transparent;
+    box-shadow: 0.2rem 0.2rem 0 rgba(255, 255, 255, 0.32);
+    color: white;
+    padding: 0.75rem 1rem;
+    text-align: left;
+    transform: translate(-0.06rem, -0.06rem);
+    transition: background var(--site-motion-fast), color var(--site-motion-fast), box-shadow var(--site-motion-fast), transform var(--site-motion-fast);
+  }
+
+  .os-hero__command code {
+    min-width: 0;
+    overflow: hidden;
+    font: inherit;
+    letter-spacing: 0;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .os-hero__command span {
+    flex: 0 0 auto;
+    font-size: 0.68rem;
+  }
+
+  .os-hero__command:hover,
+  .os-hero__command:focus-visible {
+    background: white;
+    box-shadow: 0.08rem 0.08rem 0 rgba(255, 255, 255, 0.22);
+    color: var(--site-color-brand);
+    transform: translate(0, 0);
+  }
+
+  @media (max-width: 720px) {
+    .os-hero {
+      min-height: 90svh;
+      padding: var(--dialer-hero-mobile-top) 0.9rem 2.5rem;
+    }
+
+    .os-hero__content {
+      width: 100%;
+      gap: 0.95rem;
+      transform: none;
+    }
+
+    .os-hero h1 {
+      font-size: var(--dialer-hero-text-mobile);
+      letter-spacing: 0.005em;
+      line-height: 0.98;
+    }
+
+    .os-hero__heading-line {
+      gap: 0.16em;
+    }
+
+    .os-hero__subtitle {
+      width: min(100%, 23rem);
+      max-width: 100%;
+      font-size: 0.94rem;
+      line-height: 1.48;
+    }
+
+    .os-hero__actions,
+    .os-hero__command {
+      width: min(100%, 32rem);
+    }
+
+    .os-hero__button {
+      min-height: 3rem;
+    }
+
+    .os-hero__command {
+      min-height: 2.85rem;
+      font-size: 0.64rem;
+    }
+
+  }
+
+  @media (min-width: 721px) and (max-width: 1100px) {
+    .os-hero {
+      min-height: 88svh;
+      padding-top: 8rem;
+    }
+
+    .os-hero__content {
+      transform: translateY(-1.5svh);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .os-hero__button {
+      transition: none;
+    }
+  }
+</style>

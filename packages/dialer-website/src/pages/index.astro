@@ -1,0 +1,49 @@
+---
+import HomeCloudCta from '../components/home/HomeCloudCta.astro';
+import HomeFeaturePreview from '../components/home/HomeFeaturePreview.astro';
+import HomeHero from '../components/home/HomeHero.astro';
+import SiteHeader from '../components/site/SiteHeader.astro';
+import { homeFaqItems } from '../data/dialer-content';
+import { homepageSeo } from '../lib/homepage-seo';
+import { getFaqSchema, getSoftwareApplicationSchema } from '../lib/site-seo';
+import MarketingLayout from '../layouts/MarketingLayout.astro';
+
+const schemaEntries = [
+  getSoftwareApplicationSchema({
+    name: 'Consuelo Dialer',
+    applicationCategory: 'BusinessApplication',
+    operatingSystem: 'Web',
+  }),
+  getFaqSchema(homeFaqItems),
+];
+---
+
+<MarketingLayout
+  title={homepageSeo.title}
+  description={homepageSeo.description}
+  canonicalPath="/"
+  image={homepageSeo.image}
+  imageAlt={homepageSeo.imageAlt}
+  imageWidth={1200}
+  imageHeight={630}
+  preloadImages={['/images/clouds/dialer-cloud-01.webp', '/images/clouds/dialer-cloud-02.webp']}
+  schemaEntries={schemaEntries}
+>
+  <SiteHeader pageSections={[{ id: 'features', label: 'FEATURES' }, { id: 'faq', label: 'FAQ' }]} />
+  <main>
+    <div class="home-scroll-layer" data-home-scroll-layer>
+      <HomeHero sectionId="intro" />
+      <HomeFeaturePreview sectionId="features" />
+    </div>
+    <HomeCloudCta />
+  </main>
+</MarketingLayout>
+
+<style>
+  .home-scroll-layer {
+    position: relative;
+    z-index: 2;
+    margin-bottom: 100dvh;
+    background: var(--site-color-brand);
+  }
+</style>
