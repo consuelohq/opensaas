@@ -1103,8 +1103,16 @@ describe('test selection registry', () => {
     );
     expect(prerequisite).toBeGreaterThanOrEqual(0);
     expect(server).toBeGreaterThan(prerequisite);
+    const logger = data.selectedSuites.findIndex(
+      (suite) => suite.name === 'dialer-server logger prerequisite',
+    );
+    expect(logger).toBeGreaterThanOrEqual(0);
+    expect(prerequisite).toBeGreaterThan(logger);
+    expect(data.selectedSuites[logger].command).toEqual([
+      'bun', 'run', '--cwd', 'packages/logger', 'build',
+    ]);
     expect(data.selectedSuites[prerequisite].command).toEqual([
-      'yarn', 'nx', 'run', '@consuelo/contacts:build',
+      'bun', 'run', '--cwd', 'packages/contacts', 'build',
     ]);
     expect(data.selectedSuites[server].command).toEqual([
       'bun', 'test', 'packages/dialer-server/src',

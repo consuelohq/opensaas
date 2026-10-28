@@ -1,3 +1,4 @@
+import { CALLBACK_BOOKING_ATTEMPTS_MIGRATION_ID } from '../inbound/callback-booking-attempt-migration';
 import { CALLBACK_MIGRATION_ID } from '../inbound/callback-migration';
 import { CALLBACK_BOOKING_EVENTS_MIGRATION_ID } from '../inbound/callback-booking-event-migration';
 import { CUSTOMER_ENTRY_MIGRATION_ID } from '../inbound/customer-entry-migration';
@@ -40,6 +41,9 @@ export const verifyLearningRollbackChain = async (
     const original = await client.query<{ count: string }>(
       'SELECT COUNT(*)::text AS count FROM dialer_learning_observations',
     );
+    const originalLedger = await client.query<{ migration_id: string }>(
+      'SELECT migration_id FROM consuelo_dialer_schema_migrations ORDER BY migration_id',
+    );
     await client.query('SAVEPOINT newer_migration_guard');
     await assert.rejects(() =>
       rollbackDialerDatabaseMigration(
@@ -49,6 +53,7 @@ export const verifyLearningRollbackChain = async (
     );
     await client.query('ROLLBACK TO SAVEPOINT newer_migration_guard');
     for (const id of [
+      CALLBACK_BOOKING_ATTEMPTS_MIGRATION_ID,
       CALLBACK_BOOKING_EVENTS_MIGRATION_ID,
       CUSTOMER_ENTRY_MIGRATION_ID,
       CALLBACK_MIGRATION_ID,
@@ -87,10 +92,10 @@ export const verifyLearningRollbackChain = async (
     );
     assert.equal(ledger.rows[0]?.count, 1);
     await migrateDialerDatabase(database);
-    const restored = await client.query<{ count: number }>(
-      'SELECT COUNT(*)::int AS count FROM consuelo_dialer_schema_migrations',
+    const restored = await client.query<{ migration_id: string }>(
+      'SELECT migration_id FROM consuelo_dialer_schema_migrations ORDER BY migration_id',
     );
-    assert.equal(restored.rows[0]?.count, 12);
+    assert.deepEqual(restored.rows, originalLedger.rows);
     const emptyLearning = await client.query<{ count: number }>(
       'SELECT COUNT(*)::int AS count FROM dialer_learning_observations',
     );

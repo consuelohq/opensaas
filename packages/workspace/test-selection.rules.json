@@ -2140,12 +2140,23 @@
       ],
       "tests": [
         {
+          "name": "dialer-server logger prerequisite",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/logger",
+            "build"
+          ]
+        },
+        {
           "name": "dialer-server contacts prerequisite",
           "command": [
-            "yarn",
-            "nx",
+            "bun",
             "run",
-            "@consuelo/contacts:build"
+            "--cwd",
+            "packages/contacts",
+            "build"
           ]
         },
         {
