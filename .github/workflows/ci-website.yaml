@@ -2,6 +2,7 @@ name: Consuelo Website
 
 permissions:
   contents: read
+  pull-requests: read
 
 on:
   merge_group:
@@ -12,63 +13,42 @@ concurrency:
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
+  changed-files-check:
+    uses: ./.github/workflows/changed-files.yaml
+    with:
+      files: |
+        package.json
+        bun.lock
+        yarn.lock
+        packages/consuelo-website/**
+        .github/workflows/ci-website.yaml
+        .github/workflows/changed-files.yaml
+
   website:
     name: Consuelo / website
+    needs: changed-files-check
     timeout-minutes: 10
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Resolve changed files
-        id: changes
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          case "${{ github.event_name }}" in
-            pull_request)
-              base_ref="origin/${{ github.base_ref }}"
-              ;;
-            merge_group)
-              merge_base_ref="$(jq -r '.merge_group.base_ref // "refs/heads/main"' "$GITHUB_EVENT_PATH")"
-              base_ref="${merge_base_ref#refs/heads/}"
-              base_ref="origin/${base_ref}"
-              ;;
-            *)
-              base_ref="origin/main"
-              ;;
-          esac
-
-          if [[ "$base_ref" == origin/* ]]; then
-            base_branch="${base_ref#origin/}"
-            git fetch --no-tags --prune origin "+refs/heads/${base_branch}:refs/remotes/origin/${base_branch}"
-          fi
-
-          git diff --name-only --diff-filter=ACMR "${base_ref}...HEAD" > /tmp/consuelo-website-changed-files.txt
-          cat /tmp/consuelo-website-changed-files.txt
-
-          if grep -E '^(package\.json|yarn\.lock|packages/consuelo-website/|\.github/workflows/ci-website\.yaml)' /tmp/consuelo-website-changed-files.txt >/dev/null 2>&1; then
-            echo "changed=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "changed=false" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: No website changes
-        if: steps.changes.outputs.changed != 'true'
+        if: needs.changed-files-check.outputs.any_changed != 'true'
         run: echo "No Consuelo website changes detected."
 
+      - uses: actions/checkout@v4
+        if: needs.changed-files-check.outputs.any_changed == 'true'
+        with:
+          fetch-depth: 1
+
       - uses: oven-sh/setup-bun@v2
-        if: steps.changes.outputs.changed == 'true'
+        if: needs.changed-files-check.outputs.any_changed == 'true'
 
       - name: Install website dependencies
-        if: steps.changes.outputs.changed == 'true'
+        if: needs.changed-files-check.outputs.any_changed == 'true'
         working-directory: packages/consuelo-website
         run: bun install --frozen-lockfile
 
       - name: Build Consuelo website
-        if: steps.changes.outputs.changed == 'true'
+        if: needs.changed-files-check.outputs.any_changed == 'true'
         run: bun run --cwd packages/consuelo-website build
 
   ci-website-status-check:
@@ -76,8 +56,8 @@ jobs:
     if: always() && !cancelled()
     timeout-minutes: 5
     runs-on: ubuntu-latest
-    needs: [website]
+    needs: [changed-files-check, website]
     steps:
-      - name: Fail if website failed
+      - name: Fail if website or change detection failed
         if: contains(needs.*.result, 'failure')
         run: exit 1

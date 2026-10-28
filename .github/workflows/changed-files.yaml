@@ -12,6 +12,7 @@ on:
 
 permissions:
   contents: read
+  pull-requests: read
 
 jobs:
   changed-files:
@@ -20,12 +21,65 @@ jobs:
     outputs:
       any_changed: ${{ steps.changed-files.outputs.any_changed }}
     steps:
-      - name: Fetch custom Github Actions and base branch history
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Check for changed files
+      # Avoid a full checkout for unrelated changes. Fail closed when a diff cannot
+      # be classified: unexpected events and truncated lists run the downstream job.
+      - name: Classify changed files without checkout
         id: changed-files
-        uses: tj-actions/changed-files@v45
+        uses: actions/github-script@v7
+        env:
+          CHANGED_FILE_PATTERNS: ${{ inputs.files }}
         with:
-          files: ${{ inputs.files }}
+          script: |
+            const patterns = (process.env.CHANGED_FILE_PATTERNS || '')
+              .split('\n')
+              .map((pattern) => pattern.trim())
+              .filter(Boolean);
+            const supported = (pattern) => {
+              const literal = pattern.endsWith('/**') ? pattern.slice(0, -3) : pattern;
+              return !['*', '?', '[', ']', '{', '}', '!', '(', ')', '\\'].some((token) => literal.includes(token));
+            };
+            const matches = (file) => {
+              const paths = [file.filename, file.previous_filename]
+                .filter((path) => typeof path === 'string');
+              return paths.some((path) => patterns.some((pattern) =>
+                pattern.endsWith('/**')
+                  ? path.startsWith(pattern.slice(0, -2))
+                  : path === pattern
+              ));
+            };
+            const validSha = (value) => typeof value === 'string'
+              && value.length > 0 && !/^0+$/.test(value);
+            const { owner, repo } = context.repo;
+            let changed = true;
+
+            if (patterns.length > 0 && patterns.every(supported)) {
+              if (context.eventName === 'pull_request' && context.payload.pull_request?.number) {
+                const files = await github.paginate(github.rest.pulls.listFiles, {
+                  owner, repo,
+                  pull_number: context.payload.pull_request.number,
+                  per_page: 100,
+                });
+                // The PR listing caps at 3,000 files; do not skip on truncation.
+                changed = files.length >= 3000 || files.some(matches);
+              } else if (context.eventName === 'push' || context.eventName === 'merge_group') {
+                const base = context.eventName === 'push'
+                  ? context.payload.before
+                  : context.payload.merge_group?.base_sha;
+                const head = context.eventName === 'push'
+                  ? context.sha
+                  : context.payload.merge_group?.head_sha;
+                if (validSha(base) && validSha(head)) {
+                  const response = await github.rest.repos.compareCommits({
+                    owner, repo, base, head, per_page: 100,
+                  });
+                  // GitHub compare returns up to 300 files regardless of pagination.
+                  const files = response.data.files;
+                  changed = !Array.isArray(files)
+                    || files.length >= 300
+                    || files.some(matches);
+                }
+              }
+            }
+
+            core.setOutput('any_changed', String(changed));
+            core.info('Changed-file gate: ' + (changed ? 'run' : 'skip'));

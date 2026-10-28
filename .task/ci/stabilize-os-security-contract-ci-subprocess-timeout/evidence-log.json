@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "worktree_id": "task/ci/stabilize-os-security-contract-ci-subprocess-timeout",
+  "events": [
+    {
+      "id": "08785e72-55fb-4282-a4b2-a6eb7b8962c8",
+      "occurred_at": "2026-10-28T16:38:58.240Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/github-workflow-policy.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/ci/stabilize-os-security-contract-ci-subprocess-timeout",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/ci/stabilize-os-security-contract-ci-subprocess-timeout"
+      }
+    },
+    {
+      "id": "bd619040-d72c-424c-b2e8-9582af439c6c",
+      "occurred_at": "2026-10-28T16:40:02.719Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/ci/stabilize-os-security-contract-ci-subprocess-timeout/verify.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/ci/stabilize-os-security-contract-ci-subprocess-timeout",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/ci/stabilize-os-security-contract-ci-subprocess-timeout"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-10-28T16:40:02.820Z"
+}

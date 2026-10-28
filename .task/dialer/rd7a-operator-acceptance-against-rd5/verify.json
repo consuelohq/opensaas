@@ -1,0 +1,191 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/dialer/rd7a-operator-acceptance-against-rd5",
+  "base": "origin/stream/dialer",
+  "headSha": "f2bd8a35c06c48a658f96c0ffc58bb08d53df14d",
+  "changeHash": "c872f732708b74a2dd1e70cca8bb2c63359f3408d959be82c08a2fda78d7466c",
+  "changedFiles": [
+    "areas/dialer/rd/receipts/RD7A.md",
+    "packages/dialer-server/src/inbound/operator.ts",
+    "packages/dialer-server/src/inbound/telephony-admission.ts",
+    "packages/dialer-server/src/inbound/telephony.integration.test.ts",
+    "packages/lead-connector/src/embed/agent-voice.test.ts",
+    "packages/lead-connector/src/embed/agent-voice.ts",
+    "packages/lead-connector/src/embed/controller.test.ts",
+    "packages/lead-connector/src/embed/controller.ts",
+    "packages/lead-connector/src/embed/inbound-operator.test.ts",
+    "packages/lead-connector/src/embed/inbound-operator.ts"
+  ],
+  "verifiedAt": "2026-09-13T20:31:46.383Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/dialer/rd7a-operator-acceptance-against-rd5/evidence-log.json",
+        ".task/dialer/rd7a-operator-acceptance-against-rd5/read-log.json",
+        ".task/dialer/rd7a-operator-acceptance-against-rd5/workpad.md",
+        ".task/tasks/dialer/rd7a-operator-acceptance-against-rd5.json",
+        "areas/dialer/rd/receipts/RD7A.md",
+        "packages/dialer-server/src/inbound/operator.ts",
+        "packages/dialer-server/src/inbound/telephony-admission.ts",
+        "packages/dialer-server/src/inbound/telephony.integration.test.ts",
+        "packages/lead-connector/src/embed/agent-voice.test.ts",
+        "packages/lead-connector/src/embed/agent-voice.ts",
+        "packages/lead-connector/src/embed/controller.test.ts",
+        "packages/lead-connector/src/embed/controller.ts",
+        "packages/lead-connector/src/embed/inbound-operator.test.ts",
+        "packages/lead-connector/src/embed/inbound-operator.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "os-stream-instructions",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Stream instruction storage and resolver changes must prove repository area guidance is preferred when present, OS stream fallback remains available for product-owned streams, and Dialer project context never ships as customer runtime content.",
+          "matchedFiles": [
+            "areas/dialer/rd/receipts/RD7A.md"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "dialer-server-package",
+          "critical": true,
+          "reason": "Dialer server changes must prove Hono transport, Twilio boundary, and standalone lifecycle contracts.",
+          "matchedFiles": [
+            "packages/dialer-server/src/inbound/operator.ts",
+            "packages/dialer-server/src/inbound/telephony-admission.ts",
+            "packages/dialer-server/src/inbound/telephony.integration.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "lead-connector-package",
+          "critical": true,
+          "reason": "LeadConnector provider changes must prove OAuth, token, resource, webhook, architecture, and branding contracts.",
+          "matchedFiles": [
+            "packages/lead-connector/src/embed/agent-voice.test.ts",
+            "packages/lead-connector/src/embed/agent-voice.ts",
+            "packages/lead-connector/src/embed/controller.test.ts",
+            "packages/lead-connector/src/embed/controller.ts",
+            "packages/lead-connector/src/embed/inbound-operator.test.ts",
+            "packages/lead-connector/src/embed/inbound-operator.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "OS stream instruction contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/scripts/lib/stream-instructions.test.ts",
+            "packages/os/tests/dialer-stream-instructions.test.ts",
+            "packages/workspace/tests/dialer-validation-runbook.test.ts"
+          ],
+          "ruleId": "os-stream-instructions",
+          "critical": true
+        },
+        {
+          "name": "dialer-server Hono contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-server/src"
+          ],
+          "ruleId": "dialer-server-package",
+          "critical": true
+        },
+        {
+          "name": "LeadConnector provider contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/lead-connector/src"
+          ],
+          "ruleId": "lead-connector-package",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "OS stream instruction contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/scripts/lib/stream-instructions.test.ts",
+            "packages/os/tests/dialer-stream-instructions.test.ts",
+            "packages/workspace/tests/dialer-validation-runbook.test.ts"
+          ],
+          "ruleId": "os-stream-instructions",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 498,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-rd7a-operator-acceptance-against-rd5\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/dialer-stream-instructions.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/workspace/scripts/lib/stream-instructions.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/workspace/tests/dialer-validation-runbook.test.ts \u001b[2m(\u001b[22m\u001b[2m6 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 6\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m3 passed\u001b[39m\u001b[22m\u001b[90m (3)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m11 passed\u001b[39m\u001b[22m\u001b[90m (11)\u001b[39m\n\u001b[2m   Start at \u001b[22m 16:31:44\n\u001b[2m   Duration \u001b[22m 161ms\u001b[2m (transform 178ms, setup 0ms, import 206ms, tests 12ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "dialer-server Hono contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-server/src"
+          ],
+          "ruleId": "dialer-server-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 697,
+          "outputTail": "capacity > authorizes the bridge generation and keeps wrap-up occupied after an uncertain connection\n(skip) Postgres shared rep capacity > discovers durable owners after restart with bounded tenant-scoped pages\n(skip) Postgres shared rep capacity > preserves identity uniqueness, history immutability and populated migration rollback\n(skip) Postgres shared rep capacity > (unnamed)\n(skip) inbound runtime with real Postgres and simulated carrier > (unnamed)\n(skip) inbound runtime with real Postgres and simulated carrier > reconciles outbound participants and holds wrap-up in the shared authority\n(skip) inbound runtime with real Postgres and simulated carrier > rejects identity changes during live work but allows admission to be disabled\n(skip) inbound runtime with real Postgres and simulated carrier > returns a bounded fallback and never creates a callback without explicit choice\n(skip) inbound runtime with real Postgres and simulated carrier > admits signed public requests and serves the real RD7A authenticated adapter\n(skip) inbound runtime with real Postgres and simulated carrier > commits only one winner across concurrent browser and phone acceptance\n(skip) inbound runtime with real Postgres and simulated carrier > protects and drains an uncertain bridge without reporting connection\n(skip) inbound runtime with real Postgres and simulated carrier > restarts after bridge claim and dispatches each pending effect once\n(skip) inbound runtime with real Postgres and simulated carrier > retains a callback request and bounds the no-answer fallback\n(skip) inbound runtime with real Postgres and simulated carrier > accepts late voicemail completion and deletes it on its retention deadline\n(skip) inbound runtime with real Postgres and simulated carrier > rolls an empty telephony schema down and up while protecting immutable facts\n(skip) inbound runtime with real Postgres and simulated carrier > shares capacity with outbound and retains partial creation uncertainty\n(skip) inbound runtime with real Postgres and simulated carrier > admits a duplicate incoming call once and never redials the caller\n(skip) inbound runtime with real Postgres and simulated carrier > connects only after acceptance and both unmuted participants, then wraps up\n(skip) inbound runtime with real Postgres and simulated carrier > protects unknown create outcomes across restart and never creates another offer\n(skip) inbound runtime with real Postgres and simulated carrier > rejects stale and cross-rep acceptance and cleans an abandoned caller\n(skip) inbound runtime with real Postgres and simulated carrier > persists explicit voicemail selection without recording an ordinary call\n(skip) inbound runtime with real Postgres and simulated carrier > refuses rollback while a live caller or uncertain effect exists\n(skip) inbound runtime with real Postgres and simulated carrier > (unnamed)\n(skip) transactional inbound routing > commits one reservation for duplicate ticks and replays immutable decision evidence\n(skip) transactional inbound routing > does not split a reservation from its evidence when persistence fails\n(skip) transactional inbound routing > expires safe offers, moves to another rep and bounds attempts across recreation\n(skip) transactional inbound routing > protects dispatched offers through expiry and escalation without reoffering\n(skip) transactional inbound routing > does not resurrect abandoned callers and records unserviceable predecessors\n(skip) transactional inbound routing > keeps callback not-before, config versions, fallback and replay after restart\n(skip) transactional inbound routing > preserves one owner under independent routing worker processes\n(skip) transactional inbound routing > rejects future request evidence without reserving capacity\n(skip) transactional inbound routing > rejects rollback with active routing and preserves older journal after safe down/up\n\n 188 pass\n 39 skip\n 0 fail\n 1037 expect() calls\nRan 227 tests across 44 files. [688.00ms]\n"
+        },
+        {
+          "name": "LeadConnector provider contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/lead-connector/src"
+          ],
+          "ruleId": "lead-connector-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 745,
+          "outputTail": "adConnector browser agent voice > gets microphone permission, registers the device, and resolves after the agent call is accepted [0.38ms]\n(pass) LeadConnector browser agent voice > rejects if the media call fails before acceptance and disconnects the partial leg [0.17ms]\n(pass) LeadConnector browser agent voice > waits for the inbound browser leg and accepts it only after explicit authority approval [0.22ms]\n(pass) LeadConnector browser agent voice > rejects a pending inbound browser leg without treating it as connected [0.10ms]\n\npackages/lead-connector/src/embed/idle-refresh.test.ts:\n(pass) LeadConnector idle refresh scheduling > uses focus and visible transitions without polling and fully cleans up across remounts [0.10ms]\n\npackages/lead-connector/src/embed/inbound-operator.test.ts:\n(pass) inbound operator state > projects an authoritative snapshot without inventing capacity [0.03ms]\n(pass) inbound operator state > stale acceptance keeps the offer actionable and reports the server reason [0.03ms]\n(pass) inbound operator state > renders endpoint readiness, truthful connecting state, queue visibility, and recovery controls [0.10ms]\n(pass) inbound operator adapter > sends fenced actions through authenticated UI routes [0.18ms]\n\npackages/lead-connector/src/deployment/custom-menu.test.ts:\n(pass) LeadConnector custom menu deployment contract > targets one sandbox location in iframe mode with microphone permission [0.04ms]\n(pass) LeadConnector custom menu deployment contract > updates an existing sandbox menu instead of creating duplicates [0.22ms]\n\npackages/lead-connector/src/deployment/worker-release.test.ts:\n(pass) LeadConnector production worker release > extracts one deploy version from Wrangler structured output [0.06ms]\n(pass) LeadConnector production worker release > verifies shells, proxy health, CSP, and exact launcher asset hashes [0.26ms]\n\npackages/lead-connector/src/deployment/marketplace-bootstrap.test.ts:\n(pass) stable HighLevel Marketplace bootstrap > loads the launcher assets from one stable HTTPS origin without credentials [0.05ms]\n(pass) stable HighLevel Marketplace bootstrap > rejects non-HTTPS asset origins [0.01ms]\n(pass) stable HighLevel Marketplace bootstrap > verifies the built loader against the approved one-time source SHA-256 [0.05ms]\n(pass) stable HighLevel Marketplace bootstrap > is emitted as a dedicated one-time Marketplace installation artifact [0.31ms]\n\npackages/lead-connector/src/deployment/release-workflow.contract.test.ts:\n(pass) dialer GitHub release workflow contract > classifies the complete deployed dialer surface and validates all three packages [0.23ms]\n(pass) dialer GitHub release workflow contract > builds clean Railway workspace dependencies in package order [0.36ms]\n(pass) dialer GitHub release workflow contract > releases dialer changes from main in fail-closed provider order with deployment-only secrets [1.21ms]\n(pass) dialer GitHub release workflow contract > provides explicit-id manual rollback and never guesses a previous release [0.21ms]\n\npackages/lead-connector/src/deployment/production-menu.test.ts:\n(pass) LeadConnector production custom menu deployment > updates one configured menu id and verifies exact persisted read-back [0.29ms]\n(pass) LeadConnector production custom menu deployment > fails closed when the configured id belongs to a different menu [0.08ms]\n\npackages/lead-connector/src/deployment/commercial-artifacts.test.ts:\n(pass) commercial deployment artifacts > installs an admin-only GHL menu at /admin with microphone permission [0.03ms]\n(pass) commercial deployment artifacts > builds independently versioned marketplace JavaScript and CSS artifacts [0.04ms]\n(pass) commercial deployment artifacts > centers a responsive modal backdrop while preserving a stable native launcher [0.06ms]\n(pass) commercial deployment artifacts > removes obsolete metering workspace and build references [1.25ms]\n\n 136 pass\n 0 fail\n 1123 expect() calls\nRan 136 tests across 27 files. [738.00ms]\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

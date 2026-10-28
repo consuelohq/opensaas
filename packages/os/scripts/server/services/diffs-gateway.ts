@@ -54,11 +54,16 @@ import {
 } from './diffs-local-cache';
 
 const DIFFS_PROVIDER_SCRIPT_ID = 'diffs-github-provider';
-const READ_CACHE_TTL_MS = 30_000;
+const READ_CACHE_TTL_MS = 5 * 60_000;
 const CODE_CACHE_TTL_MS = 5 * 60_000;
-const FIRST_PAINT_CACHE_MAX_AGE_MS = 5 * 60_000;
+const FIRST_PAINT_CACHE_MAX_AGE_MS = 24 * 60 * 60_000;
 const PRODUCT_READ_CACHE_MAX_ENTRIES = 256;
 const GITHUB_MUTATION_TIMEOUT_MS = 15_000;
+const GITHUB_READ_TIMEOUT_MS = 20_000;
+
+function timedGithubFetch(input: string | URL, init?: RequestInit): Promise<Response> {
+  return fetch(input, { ...init, signal: AbortSignal.timeout(GITHUB_READ_TIMEOUT_MS) });
+}
 
 function renderWorkspaceDiffsDocument(html: string, home?: string): string {
   const bodyMatch = /<body\b[^>]*>/i.exec(html);
@@ -286,6 +291,15 @@ function cached<T>(
   return cachedSnapshot(home, key, ttlMs, loader).then((snapshot) => snapshot.value);
 }
 
+function staleSnapshot<T>(home: string, key: string, loader: () => Promise<T>): Promise<DiffsCacheSnapshot<T>> {
+  return localDiffsCache(home).getStaleWhileRevalidate(
+    key,
+    READ_CACHE_TTL_MS,
+    FIRST_PAINT_CACHE_MAX_AGE_MS,
+    loader,
+  );
+}
+
 function peekCachedSnapshot<T>(
   home: string,
   workspaceId: string,
@@ -389,19 +403,15 @@ export function loadDiffsPullRequestIndexSnapshot(input: {
   const workspaceId = requiredWorkspaceId(input.principal);
   const repository = requireRepository(loadWorkspace(home, workspaceId), input.owner, input.repo);
   const locator = repositoryLocator(repository);
-  return withGithubCredential({
+  const key = cacheKey(repositoryCacheNamespace(workspaceId, repository), 'pulls');
+  return staleSnapshot(home, key, () => withGithubCredential({
     home,
     workspaceId,
     repository,
     principal: input.principal,
-    operation: (token, namespace) => cachedSnapshot(
-      home,
-      cacheKey(namespace, 'pulls'),
-      READ_CACHE_TTL_MS,
-      () => createGithubPullRequestIndexLoader({ token })(locator)
-        .then((value) => rebaseProductUrls(value, locator)),
-    ),
-  });
+    operation: (token) => createGithubPullRequestIndexLoader({ token, fetcher: timedGithubFetch })(locator)
+      .then((value) => rebaseProductUrls(value, locator)),
+  }));
 }
 
 export function loadDiffsPullRequest(input: {
@@ -425,22 +435,17 @@ export function loadDiffsPullRequestSnapshot(input: {
   const workspaceId = requiredWorkspaceId(input.principal);
   const repository = requireRepository(loadWorkspace(home, workspaceId), input.owner, input.repo);
   const locator = repositoryLocator(repository);
-  return withGithubCredential({
+  const key = cacheKey(repositoryCacheNamespace(workspaceId, repository), `pull:${input.number}`);
+  return staleSnapshot(home, key, () => withGithubCredential({
     home,
     workspaceId,
     repository,
     principal: input.principal,
-    operation: (token, namespace) => cachedSnapshot(
-      home,
-      cacheKey(namespace, `pull:${input.number}`),
-      READ_CACHE_TTL_MS,
-      () => createGithubPullRequestLoader({ token })({
-          ...locator,
-          number: input.number,
-        })
-        .then((value) => rebaseProductUrls(value, locator)),
-    ),
-  });
+    operation: (token) => createGithubPullRequestLoader({ token, fetcher: timedGithubFetch })({
+      ...locator,
+      number: input.number,
+    }).then((value) => rebaseProductUrls(value, locator)),
+  }));
 }
 
 export function loadDiffsCode(input: {
@@ -701,12 +706,15 @@ export function renderDiffsReview(input: {
     repository,
     `pull:${input.number}`,
   );
+  const cachedIndex = peekCachedSnapshot<PullRequestIndexData>(home, workspaceId, repository, 'pulls');
+  const summary = cachedIndex?.value.pulls.find((pull) => pull.number === input.number) ?? null;
   return renderWorkspaceDiffsDocument(
     renderReviewPage(
       { ...repositoryLocator(repository), number: input.number },
       cachedReview?.value ?? null,
       cachedReview?.etag ?? '',
       productRenderOptions(repository),
+      summary,
     ),
     home,
   );

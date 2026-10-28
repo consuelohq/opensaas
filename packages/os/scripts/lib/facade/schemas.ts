@@ -1016,6 +1016,30 @@ export const SentryConfigInput = z.object({
   verify: z.boolean().optional(),
 });
 
+export const PosthogConfigInput = z.object({
+  ...requestFields,
+});
+
+export const PosthogProjectsInput = z.object({
+  ...requestFields,
+  limit: z.number().int().min(1).max(100).optional(),
+});
+
+export const PosthogQueryInput = z.object({
+  ...requestFields,
+  sql: z.string().min(1).max(5000),
+  projectId: optionalString,
+  limit: z.number().int().min(1).max(100).optional(),
+});
+
+export const PosthogCaptureInput = z.object({
+  ...requestFields,
+  ...dryRunField,
+  event: z.string().min(1).max(128),
+  distinctId: z.string().min(1).max(128),
+  propertiesJson: z.string().max(10000).optional(),
+});
+
 export const SentryProjectsInput = z.object({
   ...requestFields,
   limit: z.number().int().positive().optional(),
@@ -1486,6 +1510,10 @@ export const schemaRegistry = {
   LinearListInput,
   LinearTeamScopedListInput,
   SentryConfigInput,
+  PosthogConfigInput,
+  PosthogProjectsInput,
+  PosthogQueryInput,
+  PosthogCaptureInput,
   SentryProjectsInput,
   SentryIssuesInput,
   SentryIssueInput,
@@ -1632,6 +1660,10 @@ export const schemaTypeSignatures: Record<string, string> = {
   LinearListInput: '{ first?: number; after?: string; requestId?: string; taskSession?: string }',
   LinearTeamScopedListInput: '{ team?: string; requestId?: string; taskSession?: string }',
   SentryConfigInput: '{ verify?: boolean; requestId?: string; taskSession?: string }',
+  PosthogConfigInput: '{ requestId?: string; taskSession?: string }',
+  PosthogProjectsInput: '{ limit?: number; requestId?: string; taskSession?: string }',
+  PosthogQueryInput: '{ sql: string; projectId?: string; limit?: number; requestId?: string; taskSession?: string }',
+  PosthogCaptureInput: '{ event: string; distinctId: string; propertiesJson?: string; dryRun?: boolean; requestId?: string; taskSession?: string }',
   SentryProjectsInput: '{ limit?: number; cursor?: string; requestId?: string; taskSession?: string }',
   SentryIssuesInput: '{ query?: string; project?: string; environment?: string[]; sort?: string; statsPeriod?: string; start?: string; end?: string; cursor?: string; limit?: number; expand?: string[]; collapse?: string[]; requestId?: string; taskSession?: string }',
   SentryIssueInput: '{ identifier: string; expand?: string[]; requestId?: string; taskSession?: string }',

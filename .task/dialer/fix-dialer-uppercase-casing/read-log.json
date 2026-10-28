@@ -1,0 +1,8 @@
+{
+  "files": [
+    "packages/consuelo-dialer-website/src/components/site/SiteHeader.astro",
+    "packages/consuelo-website/src/components/home/HomeHero.astro",
+    "packages/consuelo-website/src/data/home-content.ts"
+  ],
+  "updatedAt": "2026-09-23T00:51:05.087Z"
+}

@@ -166,3 +166,18 @@ describe('response-time hazard shadow evaluation', () => {
     });
   });
 });
+
+  for (const censoredCount of [160, 200]) {
+    it('reports insufficient training periods when ' + censoredCount + ' early observations are censored', async () => {
+      const rows = createRows(200).map((row, index) => index < censoredCount ? {
+        ...row, response_at: null, outcome_class: 'censored', censor_reason: 'competing_winner',
+        observed_until_at: new Date(Date.parse(row.attempted_at) + 1000).toISOString(),
+      } : row);
+      const database: LeadConnectorDatabase = { query: async <T>() => ({ rows: rows as T[] }) };
+      const result = await evaluateResponseTimeHazardShadow(database, {
+        workspaceId: 'workspace-1', segmentId: 'segment-1', minSampleSize: 100,
+        trainingFraction: 0.8, intervalMs: 5000, horizonMs: 20000,
+      });
+      expect(result).toMatchObject({ status: 'insufficient_training_periods', trainingPeriodCount: 0 });
+    });
+  }

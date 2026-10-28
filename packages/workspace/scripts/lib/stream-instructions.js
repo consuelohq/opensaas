@@ -2,7 +2,10 @@ const fs = require('fs');
 const path = require('path');
 
 function streamInstructionPath(area) {
-  return path.resolve(__dirname, '..', '..', 'streams', area, 'AGENTS.md');
+  const repoRoot = path.resolve(__dirname, '..', '..', '..', '..');
+  const areaPath = path.join(repoRoot, 'areas', area, 'AGENTS.md');
+  if (fs.existsSync(areaPath)) return areaPath;
+  return path.resolve(__dirname, '..', '..', '..', 'os', 'streams', area, 'AGENTS.md');
 }
 
 function readStreamInstructions(area) {

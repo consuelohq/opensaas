@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/speed-up-diffs-listing-and-progressive-pr-detail-loading",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2627,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2627",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-speed-up-diffs-listing-and-progressive-pr-detail-loading",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_7d53d98bae41",
+  "tmuxSession": "opensaas-os-speed-up-diffs-listing-and-progressive-pr-detail-7d53d98b",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-speed-up-diffs-listing-and-progressive-pr-detail-loading/.task/session.json",
+  "createdAt": "2026-10-24T03:48:43.084Z"
+}

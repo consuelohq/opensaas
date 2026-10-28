@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/dev-1615-recover-rejected-call-creation-and-interrupted-callbacks",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 2629,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2629",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1615-recover-rejected-call-creation-and-interrupted-callbacks",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_79c325f7a6e9",
+  "tmuxSession": "opensaas-dialer-dev-1615-recover-rejected-call-creation-and-inte-79c325f7",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1615-recover-rejected-call-creation-and-interrupted-callbacks/.task/session.json",
+  "createdAt": "2026-10-28T02:30:11.442Z"
+}

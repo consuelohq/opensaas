@@ -1,0 +1,20 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/move-dialer-guidance-to-project-boundary",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 2441,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2441",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2441",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2441/move-dialer-guidance-to-project-boundary",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2441",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2441/move-dialer-guidance-to-project-boundary",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-move-dialer-guidance-to-project-boundary",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_07f11e3c344f",
+  "tmuxSession": "opensaas-dialer-move-dialer-guidance-to-project-boundary-07f11e3c",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-move-dialer-guidance-to-project-boundary/.task/dialer/move-dialer-guidance-to-project-boundary/session.json",
+  "createdAt": "2026-09-10T02:31:08.793Z"
+}

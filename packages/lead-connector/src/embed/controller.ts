@@ -2,6 +2,14 @@ import type { LeadConnectorEmbedApi } from './api-client.js';
 import type { LeadConnectorAgentVoice } from './agent-voice.js';
 import { EmbedSessionExpiredError } from './api-client.js';
 import {
+  createInitialInboundOperatorState,
+  reduceInboundOperatorState,
+  type InboundOperatorApi,
+  type InboundOperatorConfiguration,
+  type InboundOperatorSnapshot,
+  type InboundOperatorState,
+} from './inbound-operator.js';
+import {
   normalizeClickToCallTarget,
   type LeadConnectorClickToCallTarget,
 } from './protocol.js';
@@ -25,12 +33,23 @@ export const createLeadConnectorEmbedController = (input: {
   voice: LeadConnectorAgentVoice;
   surface?: 'admin' | 'overlay';
   initialState?: LeadConnectorEmbedState;
+  inboundOperatorApi?: InboundOperatorApi;
 }) => {
   let state = input.initialState ?? createInitialEmbedState();
+  if (!state.inboundOperator) {
+    state = {
+      ...state,
+      inboundOperator: createInitialInboundOperatorState(),
+    };
+  }
   let activeVoiceSessionId: string | null = null;
   let activeRecordSessionId: string | null = null;
   let resourceRefresh: Promise<void> | null = null;
   let commercialRefresh: Promise<void> | null = null;
+  let inboundRefresh: Promise<void> | null = null;
+  let inboundHeartbeat: Promise<void> | null = null;
+  let browserVoicePrepared = false;
+  let pendingInboundAcceptance: { key: string; attemptId: string } | null = null;
   const listeners = new Set<(state: LeadConnectorEmbedState) => void>();
 
   const publish = (): void => {
@@ -45,12 +64,168 @@ export const createLeadConnectorEmbedController = (input: {
     return state;
   };
 
+  const dispatchInbound = (
+    event: Parameters<typeof reduceInboundOperatorState>[1],
+  ): InboundOperatorState => {
+    state = {
+      ...state,
+      inboundOperator: reduceInboundOperatorState(state.inboundOperator, event),
+    };
+    publish();
+    return state.inboundOperator;
+  };
+
+  const inboundEndpointKind = (endpointId: string): 'browser' | 'phone' | null =>
+    state.inboundOperator.rep.endpoints.find(
+      (endpoint) => endpoint.endpointId === endpointId,
+    )?.kind ?? null;
+
+  const snapshotHasBrowserWork = (
+    snapshot: Pick<InboundOperatorState, 'offers' | 'rep'>,
+  ): boolean => {
+    const isBrowserEndpoint = (endpointId: string | null): boolean =>
+      endpointId !== null &&
+      snapshot.rep.endpoints.some(
+        (endpoint) =>
+          endpoint.endpointId === endpointId && endpoint.kind === 'browser',
+      );
+    if (
+      snapshot.rep.assignment &&
+      ['connecting', 'connected', 'unknown'].includes(
+        snapshot.rep.assignment.phase,
+      ) &&
+      isBrowserEndpoint(snapshot.rep.assignment.endpointId)
+    )
+      return true;
+    return snapshot.offers.some((offer) =>
+      offer.eligibleEndpoints.some(isBrowserEndpoint),
+    );
+  };
+
+  const activeReadyBrowser = (
+    snapshot: Pick<InboundOperatorState, 'rep'>,
+  ): boolean =>
+    snapshot.rep.ready &&
+    snapshot.rep.endpoints.some(
+      (endpoint) =>
+        endpoint.kind === 'browser' && endpoint.active && endpoint.healthy,
+    );
+
+  const runInbound = async <T>(
+    operation: () => Promise<T>,
+  ): Promise<T | null> => {
+    try {
+      return await operation();
+    } catch (error: unknown) {
+      if (error instanceof EmbedSessionExpiredError) {
+        input.inboundOperatorApi?.setSessionToken(null);
+        input.voice.rejectIncoming();
+        dispatchInbound({
+          type: 'FAILED',
+          code: 'SESSION_EXPIRED',
+          message: 'Your embed session expired. Reconnect to continue.',
+          recoverable: true,
+        });
+        return null;
+      }
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Inbound operator request failed';
+      const code =
+        typeof error === 'object' && error !== null && 'code' in error
+          ? String(error.code)
+          : 'REQUEST_FAILED';
+      dispatchInbound({ type: 'FAILED', code, message, recoverable: true });
+      return null;
+    }
+  };
+
+  const recoverInboundBrowser = async (
+    snapshot: InboundOperatorSnapshot,
+    error: unknown,
+    eventType: 'SNAPSHOT_LOADED' | 'RECONNECTED',
+  ): Promise<void> => {
+    try {
+      browserVoicePrepared = false;
+      input.voice.rejectIncoming();
+      // Never renew the previous page's device. Preserve healthy active phones.
+      const phones = snapshot.rep.endpoints.filter(
+        (endpoint) => endpoint.kind === 'phone' && endpoint.active && endpoint.healthy,
+      );
+      const recovered = await runInbound(() =>
+        input.inboundOperatorApi!.setReadiness({
+          ready: phones.length > 0,
+          endpoints: phones.map((endpoint) => ({
+            endpointId: endpoint.endpointId, kind: endpoint.kind,
+          })),
+        }),
+      );
+      if (recovered) {
+        dispatchInbound({ type: eventType, snapshot: recovered });
+        return;
+      }
+    } catch (cause: unknown) {
+      error = cause instanceof Error
+        ? cause
+        : new Error('Browser recovery rejected with a non-Error cause', { cause });
+    } finally {
+      browserVoicePrepared = false;
+    }
+    dispatchInbound({
+      type: 'RECOVERY_REQUIRED',
+      code: 'INBOUND_BROWSER_MEDIA_FAILED',
+      message:
+        (error instanceof Error ? error.message + '. ' : '') +
+        'Browser calling is unavailable. Reconnect to restore readiness.',
+    });
+  };
+
+  const projectInboundSnapshot = async (
+    snapshot: InboundOperatorSnapshot,
+    eventType: 'SNAPSHOT_LOADED' | 'RECONNECTED',
+  ): Promise<void> => {
+    if (activeReadyBrowser(snapshot) && !browserVoicePrepared) {
+      try {
+        await input.voice.prepare();
+        browserVoicePrepared = true;
+      } catch (error: unknown) {
+        await recoverInboundBrowser(snapshot, error, eventType);
+        return;
+      }
+    } else if (!activeReadyBrowser(snapshot)) {
+      browserVoicePrepared = false;
+    }
+    if (!snapshotHasBrowserWork(snapshot)) input.voice.rejectIncoming();
+    dispatchInbound({ type: eventType, snapshot });
+  };
+
+  const loadInboundOperator = (): Promise<void> => {
+    if (!input.inboundOperatorApi || !state.sessionToken)
+      return Promise.resolve();
+    if (inboundHeartbeat) return inboundHeartbeat;
+    if (inboundRefresh) return inboundRefresh;
+    dispatchInbound({ type: 'SNAPSHOT_LOADING' });
+    inboundRefresh = (async () => {
+      try {
+        const snapshot = await runInbound(() =>
+          input.inboundOperatorApi!.getSnapshot(),
+        );
+        if (snapshot) await projectInboundSnapshot(snapshot, 'SNAPSHOT_LOADED');
+      } finally {
+        inboundRefresh = null;
+      }
+    })();
+    return inboundRefresh;
+  };
+
   const run = async <T>(operation: () => Promise<T>): Promise<T | null> => {
     try {
       return await operation();
     } catch (error: unknown) {
       if (error instanceof EmbedSessionExpiredError) {
         input.api.setSessionToken(null);
+        input.inboundOperatorApi?.setSessionToken(null);
         dispatch({ type: 'SESSION_EXPIRED' });
         return null;
       }
@@ -82,9 +257,9 @@ export const createLeadConnectorEmbedController = (input: {
     dispatch({ type: 'SESSION_UPDATED', session });
   };
 
-  const projectTransferStatus = (result: Awaited<
-    ReturnType<LeadConnectorEmbedApi['getCallTransferStatus']>
-  >): void => {
+  const projectTransferStatus = (
+    result: Awaited<ReturnType<LeadConnectorEmbedApi['getCallTransferStatus']>>,
+  ): void => {
     const transferType = state.transfer.type;
     const target = state.transfer.target;
     if (!transferType || !target) return;
@@ -134,7 +309,9 @@ export const createLeadConnectorEmbedController = (input: {
     'wrapping-up',
   ]);
 
-  const refreshResources = (options: { force?: boolean } = {}): Promise<void> => {
+  const refreshResources = (
+    options: { force?: boolean } = {},
+  ): Promise<void> => {
     if (!state.sessionToken) return Promise.resolve();
     if (!options.force && activeResourcePhases.has(state.phase)) {
       return Promise.resolve();
@@ -331,6 +508,7 @@ export const createLeadConnectorEmbedController = (input: {
         );
         if (!session) return;
         input.api.setSessionToken(session.token);
+        input.inboundOperatorApi?.setSessionToken(session.token);
         dispatch({
           type: 'AUTHENTICATED',
           token: session.token,
@@ -340,6 +518,7 @@ export const createLeadConnectorEmbedController = (input: {
           refreshResources({ force: true }),
           loadCallOperations(),
           loadCommercial(),
+          loadInboundOperator(),
         ]);
       } catch (error: unknown) {
         reportUnexpectedFailure(error);
@@ -349,6 +528,258 @@ export const createLeadConnectorEmbedController = (input: {
     refreshResources,
     loadCallOperations,
     loadCommercial,
+    loadInboundOperator,
+    heartbeatInbound: (): Promise<void> => {
+      if (
+        !input.inboundOperatorApi ||
+        !state.sessionToken ||
+        !state.inboundOperator.rep.ready ||
+        state.inboundOperator.pendingAction ||
+        ['reconnecting', 'error'].includes(state.inboundOperator.phase)
+      )
+        return Promise.resolve();
+      if (inboundHeartbeat) return inboundHeartbeat;
+      inboundHeartbeat = (async () => {
+        try {
+          if (activeReadyBrowser(state.inboundOperator)) {
+            try {
+              // Recheck the actual device before renewing authority's lease.
+              await input.voice.prepare();
+              browserVoicePrepared = true;
+            } catch (error: unknown) {
+              await recoverInboundBrowser(
+                state.inboundOperator, error, 'SNAPSHOT_LOADED',
+              );
+              return;
+            }
+          }
+          const snapshot = await runInbound(() =>
+            input.inboundOperatorApi!.heartbeat(),
+          );
+          if (snapshot) await projectInboundSnapshot(snapshot, 'SNAPSHOT_LOADED');
+        } finally {
+          inboundHeartbeat = null;
+        }
+      })();
+      return inboundHeartbeat;
+    },
+    setInboundReadiness: async (inputValue: {
+      ready: boolean;
+      endpoints: Array<{ endpointId: string; kind: 'browser' | 'phone' }>;
+    }): Promise<void> => {
+      if (!input.inboundOperatorApi) return;
+      try {
+        const browserReady =
+          inputValue.ready &&
+          inputValue.endpoints.some((endpoint) => endpoint.kind === 'browser');
+        if (browserReady) {
+          await input.voice.prepare();
+          browserVoicePrepared = true;
+        } else {
+          browserVoicePrepared = false;
+          input.voice.rejectIncoming();
+        }
+        dispatchInbound({ type: 'ACTION_STARTED', action: 'readiness' });
+        const snapshot = await runInbound(() =>
+          input.inboundOperatorApi!.setReadiness(inputValue),
+        );
+        if (snapshot)
+          dispatchInbound({ type: 'READINESS_CONFIRMED', snapshot });
+      } catch (error: unknown) {
+        dispatchInbound({
+          type: 'FAILED',
+          code: 'INBOUND_READINESS_FAILED',
+          message:
+            error instanceof Error ? error.message : 'Inbound readiness failed',
+          recoverable: true,
+        });
+      }
+    },
+    acceptInboundOffer: async (inputValue: {
+      assignmentId: string;
+      generation: number;
+      endpointId: string;
+    }): Promise<void> => {
+      if (!input.inboundOperatorApi) return;
+      try {
+        dispatchInbound({
+          type: 'ACTION_STARTED',
+          action: 'accept',
+          assignmentId: inputValue.assignmentId,
+        });
+        const acceptanceKey = `${inputValue.assignmentId}:${inputValue.generation}:${inputValue.endpointId}`;
+        if (pendingInboundAcceptance?.key !== acceptanceKey) {
+          pendingInboundAcceptance = {
+            key: acceptanceKey,
+            attemptId: globalThis.crypto.randomUUID(),
+          };
+        }
+        const acceptance = {
+          ...inputValue,
+          attemptId: pendingInboundAcceptance.attemptId,
+        };
+        const result = await runInbound(() =>
+          input.inboundOperatorApi!.acceptOffer(acceptance),
+        );
+        if (!result) return;
+        pendingInboundAcceptance = null;
+        if (result.accepted && result.snapshot) {
+          dispatchInbound({
+            type: 'ACTION_CONFIRMED',
+            action: 'accept',
+            snapshot: result.snapshot,
+          });
+          if (inboundEndpointKind(inputValue.endpointId) === 'browser') {
+            try {
+              await input.voice.acceptIncoming();
+            } catch (error: unknown) {
+              dispatchInbound({
+                type: 'RECOVERY_REQUIRED',
+                code: 'INBOUND_BROWSER_MEDIA_FAILED',
+                message:
+                  error instanceof Error
+                    ? error.message
+                    : 'Inbound browser media failed to connect.',
+              });
+            }
+          }
+        } else {
+          if (inboundEndpointKind(inputValue.endpointId) === 'browser') {
+            input.voice.rejectIncoming();
+          }
+          dispatchInbound({
+            type: 'ACTION_REJECTED',
+            action: 'accept',
+            assignmentId: inputValue.assignmentId,
+            code:
+              result.status === 'stale'
+                ? 'STALE_ASSIGNMENT'
+                : result.status.toUpperCase(),
+            message:
+              result.message ?? 'This inbound offer is no longer available.',
+          });
+        }
+      } catch (error: unknown) {
+        dispatchInbound({
+          type: 'FAILED',
+          code: 'INBOUND_ACCEPT_FAILED',
+          message:
+            error instanceof Error ? error.message : 'Inbound accept failed',
+          recoverable: true,
+        });
+      }
+    },
+    declineInboundOffer: async (inputValue: {
+      assignmentId: string;
+      generation: number;
+      reason?: string;
+    }): Promise<void> => {
+      if (!input.inboundOperatorApi) return;
+      try {
+        dispatchInbound({
+          type: 'ACTION_STARTED',
+          action: 'decline',
+          assignmentId: inputValue.assignmentId,
+        });
+        const result = await runInbound(() =>
+          input.inboundOperatorApi!.declineOffer(inputValue),
+        );
+        if (!result) return;
+        input.voice.rejectIncoming();
+        if (result.accepted || result.status === 'declined') {
+          if (result.snapshot) {
+            dispatchInbound({
+              type: 'ACTION_CONFIRMED',
+              action: 'decline',
+              snapshot: result.snapshot,
+            });
+          } else {
+            await loadInboundOperator();
+          }
+        } else {
+          dispatchInbound({
+            type: 'ACTION_REJECTED',
+            action: 'decline',
+            assignmentId: inputValue.assignmentId,
+            code: result.status.toUpperCase(),
+            message:
+              result.message ?? 'This inbound offer could not be declined.',
+          });
+        }
+      } catch (error: unknown) {
+        dispatchInbound({
+          type: 'FAILED',
+          code: 'INBOUND_DECLINE_FAILED',
+          message:
+            error instanceof Error ? error.message : 'Inbound decline failed',
+          recoverable: true,
+        });
+      }
+    },
+    reconnectInbound: async (): Promise<void> => {
+      if (!input.inboundOperatorApi) return;
+      try {
+        dispatchInbound({
+          type: 'RECOVERY_REQUIRED',
+          code: 'RECONNECTING',
+          message: 'Refreshing authoritative inbound state.',
+        });
+        const snapshot = await runInbound(() =>
+          input.inboundOperatorApi!.reconnect(),
+        );
+        if (snapshot) await projectInboundSnapshot(snapshot, 'RECONNECTED');
+      } catch (error: unknown) {
+        dispatchInbound({
+          type: 'FAILED',
+          code: 'INBOUND_RECONNECT_FAILED',
+          message:
+            error instanceof Error ? error.message : 'Inbound reconnect failed',
+          recoverable: true,
+        });
+      }
+    },
+    finishInboundWrapUp: async (inputValue: {
+      assignmentId: string;
+      generation: number;
+      disposition: string;
+      note?: string;
+    }): Promise<void> => {
+      if (!input.inboundOperatorApi) return;
+      try {
+        dispatchInbound({
+          type: 'ACTION_STARTED',
+          action: 'wrap_up',
+          assignmentId: inputValue.assignmentId,
+        });
+        const snapshot = await runInbound(() =>
+          input.inboundOperatorApi!.finishWrapUp(inputValue),
+        );
+        if (snapshot)
+          dispatchInbound({
+            type: 'ACTION_CONFIRMED',
+            action: 'wrap_up',
+            snapshot,
+          });
+      } catch (error: unknown) {
+        dispatchInbound({
+          type: 'FAILED',
+          code: 'INBOUND_WRAP_UP_FAILED',
+          message:
+            error instanceof Error ? error.message : 'Inbound wrap-up failed',
+          recoverable: true,
+        });
+      }
+    },
+    updateInboundConfiguration: async (
+      configuration: InboundOperatorConfiguration,
+    ): Promise<void> => {
+      if (!input.inboundOperatorApi) return;
+      const saved = await runInbound(() =>
+        input.inboundOperatorApi!.updateConfiguration(configuration),
+      );
+      if (saved)
+        dispatchInbound({ type: 'CONFIGURATION_SAVED', configuration: saved });
+    },
     createCheckout: async (quantities: {
       single: number;
       standard: number;
@@ -366,7 +797,9 @@ export const createLeadConnectorEmbedController = (input: {
     },
     openBillingPortal: async (): Promise<string | null> => {
       try {
-        const result = await run(() => input.api.createCommercialBillingPortal());
+        const result = await run(() =>
+          input.api.createCommercialBillingPortal(),
+        );
         return result?.url ?? null;
       } catch (cause: unknown) {
         throw normalizeAsyncError(cause);
@@ -426,21 +859,24 @@ export const createLeadConnectorEmbedController = (input: {
         const existing: Array<{
           userId: string;
           planCode: 'single' | 'standard' | 'power';
-        }> = state.commercialDashboard?.seats.flatMap((seat) => {
-          const userId = String(seat.user_id ?? seat.userId ?? '');
-          const candidatePlan = String(seat.plan_code ?? seat.planCode ?? '');
-          return userId &&
-            (candidatePlan === 'single' ||
-              candidatePlan === 'standard' ||
-              candidatePlan === 'power')
-            ? [{ userId, planCode: candidatePlan }]
-            : [];
-        }) ?? [];
+        }> =
+          state.commercialDashboard?.seats.flatMap((seat) => {
+            const userId = String(seat.user_id ?? seat.userId ?? '');
+            const candidatePlan = String(seat.plan_code ?? seat.planCode ?? '');
+            return userId &&
+              (candidatePlan === 'single' ||
+                candidatePlan === 'standard' ||
+                candidatePlan === 'power')
+              ? [{ userId, planCode: candidatePlan }]
+              : [];
+          }) ?? [];
         const assignments = [
           ...existing.filter(({ userId }) => userId !== inputValue.userId),
           inputValue,
         ];
-        const result = await run(() => input.api.updateCommercialTeam(assignments));
+        const result = await run(() =>
+          input.api.updateCommercialTeam(assignments),
+        );
         if (result) await loadCommercial();
       } catch (cause: unknown) {
         throw normalizeAsyncError(cause);
@@ -669,7 +1105,11 @@ export const createLeadConnectorEmbedController = (input: {
       try {
         const sessionId = state.activeSessionId;
         const transferId = state.transfer.transferId;
-        if (!sessionId || !transferId || state.transfer.status !== 'consulting') {
+        if (
+          !sessionId ||
+          !transferId ||
+          state.transfer.status !== 'consulting'
+        ) {
           dispatch({
             type: 'FAILED',
             code: 'WARM_TRANSFER_REQUIRED',

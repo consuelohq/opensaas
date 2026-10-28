@@ -195,6 +195,53 @@ const cleanupGroup = (): ParallelGroup => ({
 });
 
 describe('parallel Effect application programs', () => {
+  it('reports definitive rejection separately from unknown creation and cleans known calls', async () => {
+    for (const creationOutcome of ['not_created', 'unknown'] as const) {
+      const state = createState();
+      let attempts = 0;
+      const rejected: string[][] = [];
+      const provider = createProviderLayer({ createCall: () => {
+        attempts++;
+        return attempts === 1 ? Effect.succeed({ callSid: 'known-leg' })
+          : Effect.fail(new DialerProviderError({ operation: 'create-call',
+              message: 'create rejected', retryable: false, creationOutcome }));
+      } });
+      await Effect.runPromise(startParallelSession(baseOptions, {
+        onCreationRejected: async (event) => { rejected.push(event.calls.map((call) => call.callSid)); },
+      }).pipe(Effect.provide(createLayer(state, provider)), Effect.either));
+      expect(rejected).toEqual(creationOutcome === 'not_created' ? [['known-leg']] : []);
+      expect(attempts).toBe(2);
+    }
+  });
+
+  it('reports every known created leg before a later provider failure', async () => {
+    const state = createState();
+    let attempts = 0;
+    const progress: string[][] = [];
+    const provider = createProviderLayer({
+      createCall: () => {
+        attempts++;
+        return attempts === 1
+          ? Effect.succeed({ callSid: 'known-leg' })
+          : Effect.fail(
+              new DialerProviderError({
+                operation: 'create-call',
+                message: 'lost response',
+                retryable: true,
+              }),
+            );
+      },
+    });
+    await Effect.runPromise(
+      startParallelSession(baseOptions, {
+        onProgress: async (event) => {
+          progress.push(event.calls.map((call) => call.callSid));
+        },
+      }).pipe(Effect.provide(createLayer(state, provider)), Effect.either),
+    );
+    expect(progress).toEqual([[], ['known-leg']]);
+  });
+
   it('substitutes deterministic provider, state, clock, and id Layers', async () => {
     const state = createState();
 
@@ -273,7 +320,9 @@ describe('parallel Effect application programs', () => {
     expect(state.groups.get('pg_test')?.calls[1]).toEqual(
       expect.objectContaining({ contactId: 'contact-2' }),
     );
-    expect(state.groups.get('pg_test')?.calls[1]?.decisionContext).toBeUndefined();
+    expect(
+      state.groups.get('pg_test')?.calls[1]?.decisionContext,
+    ).toBeUndefined();
   });
 
   it('preserves a typed retryable provider failure', async () => {

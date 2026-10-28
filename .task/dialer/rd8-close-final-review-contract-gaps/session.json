@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_f05432cb85ae",
+  "tmuxSession": "opensaas-dialer-rd8-close-final-review-contract-gaps-f05432cb",
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/rd8-close-final-review-contract-gaps",
+  "branch": "task/dialer/rd8-close-final-review-contract-gaps",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-rd8-close-final-review-contract-gaps",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-rd8-close-final-review-contract-gaps",
+  "repoRoot": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-rd8-close-final-review-contract-gaps",
+  "prNumber": 2483,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2483",
+  "createdAt": "2026-09-20T20:23:38.462Z",
+  "tmuxCreated": false,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-rd8-close-final-review-contract-gaps/.task/dialer/rd8-close-final-review-contract-gaps/session.json"
+}

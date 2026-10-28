@@ -16,7 +16,7 @@ function write(path, content) {
   writeFileSync(path, content);
 }
 
-function setupFixture({ extraConflict = false } = {}) {
+function setupFixture({ extraConflict = false, verifyPending = false } = {}) {
   const root = mkdtempSync(join(tmpdir(), 'consuelo-stream-sync-registry-'));
   roots.push(root);
   const repo = join(root, 'repo');
@@ -32,12 +32,15 @@ function setupFixture({ extraConflict = false } = {}) {
   write(join(repo, 'package.json'), JSON.stringify({
     scripts: { verify: 'node verify.js' },
   }, null, 2));
+  const verifyPayload = verifyPending
+    ? { status: 'VERIFY_PENDING', pending: true, passed: false, publishValid: false }
+    : { status: 'VERIFY_COMPLETE', pending: false, passed: true, publishValid: true };
   write(join(repo, 'verify.js'), `
 if (process.env.TASK_WORKTREE || process.env.TASK_BRANCH) {
   process.stderr.write('task routing env leaked into stream verify\\n');
   process.exit(9);
 }
-process.stdout.write(JSON.stringify({ publishValid: true }) + '\\n');
+process.stdout.write(${JSON.stringify(JSON.stringify(verifyPayload))} + '\\n');
 `);
   write(join(repo, 'packages/workspace/scripts/test-selection.js'), `
 const fs = require('fs');
@@ -114,6 +117,30 @@ describe('stream sync generated registry conflict recovery', () => {
       'refs/heads/stream/fixture:packages/workspace/test-selection.registry.json',
     ], { encoding: 'utf8' });
     expect(JSON.parse(remoteRegistry)).toEqual({ regenerated: true });
+  });
+
+  test('fails closed without pushing when foreground verify is still pending', () => {
+    const fixture = setupFixture({ verifyPending: true });
+    const result = runSync(fixture);
+
+    expect(result.status).toBe(1);
+    const payload = JSON.parse(result.stdout);
+    expect(payload.status).toBe('checks_failed');
+    expect(payload.checks.status).toBe('fail');
+    expect(payload.checks.data).toMatchObject({
+      status: 'VERIFY_PENDING',
+      pending: true,
+      passed: false,
+    });
+    expect(payload.pushed).toBe(false);
+
+    const remoteRegistry = execFileSync('git', [
+      '--git-dir',
+      fixture.origin,
+      'show',
+      'refs/heads/stream/fixture:packages/workspace/test-selection.registry.json',
+    ], { encoding: 'utf8' });
+    expect(JSON.parse(remoteRegistry)).toEqual({ side: 'stream' });
   });
 
   test('fails closed when a non-generated source conflict is also present', () => {

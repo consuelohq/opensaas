@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/dev-1624-align-inbound-browser-offers-with-issued-voice-identities",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 2645,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2645",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1624-align-inbound-browser-offers-with-issued-voice-identities",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_71c905938cbe",
+  "tmuxSession": "opensaas-dialer-dev-1624-align-inbound-browser-offers-with-issue-71c90593",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1624-align-inbound-browser-offers-with-issued-voice-identities/.task/session.json",
+  "createdAt": "2026-10-28T19:14:18.843Z"
+}

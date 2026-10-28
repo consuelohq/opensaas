@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/repair-gohighlevel-installation-and-queue-loading-smoke",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 2621,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2621",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-repair-gohighlevel-installation-and-queue-loading-smoke",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_6d71467ba931",
+  "tmuxSession": "opensaas-dialer-repair-gohighlevel-installation-and-queue-loadin-6d71467b",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-repair-gohighlevel-installation-and-queue-loading-smoke/.task/session.json",
+  "createdAt": "2026-10-08T01:10:27.811Z"
+}

@@ -4,7 +4,7 @@ import path from 'node:path';
 
 const SNAPSHOT_SCHEMA_VERSION = 1;
 
-type CacheSource = 'memory' | 'disk' | 'fresh';
+type CacheSource = 'memory' | 'disk' | 'fresh' | 'stale';
 
 type StoredDiffsSnapshot = {
   schemaVersion: number;
@@ -35,6 +35,7 @@ export class DiffsLocalCache {
   private readonly now: () => number;
   private readonly memory = new Map<string, StoredDiffsSnapshot>();
   private readonly inFlight = new Map<string, Promise<StoredDiffsSnapshot>>();
+  private readonly nextRefreshAttemptAt = new Map<string, number>();
 
   constructor(options: DiffsLocalCacheOptions) {
     this.root = options.root;
@@ -68,7 +69,33 @@ export class DiffsLocalCache {
     return refresh.then((snapshot) => decodeSnapshot<T>(snapshot, 'fresh'));
   }
 
+  getStaleWhileRevalidate<T>(
+    key: string,
+    ttlMs: number,
+    maxAgeMs: number,
+    loader: () => Promise<T>,
+  ): Promise<DiffsCacheSnapshot<T>> {
+    const existing = this.peek<T>(key);
+    if (!existing || this.now() - existing.writtenAt > maxAgeMs) {
+      return this.getFresh(key, ttlMs, loader);
+    }
+    if (existing.expiresAt > this.now()) return Promise.resolve(existing);
+
+    if (!this.inFlight.has(key) && this.now() >= (this.nextRefreshAttemptAt.get(key) ?? 0)) {
+      // Serve the persisted snapshot without delaying first paint on credentials or GitHub.
+      this.nextRefreshAttemptAt.set(key, this.now() + 60_000);
+      void this.getFresh(key, ttlMs, loader).then(
+        () => { this.nextRefreshAttemptAt.delete(key); },
+        () => { /* Keep the retry backoff; the stale snapshot remains usable. */ },
+      );
+    }
+    return Promise.resolve({ ...existing, source: 'stale' });
+  }
+
   invalidatePrefix(prefix: string): void {
+    for (const key of this.nextRefreshAttemptAt.keys()) {
+      if (key.startsWith(prefix)) this.nextRefreshAttemptAt.delete(key);
+    }
     for (const key of this.memory.keys()) {
       if (key.startsWith(prefix)) this.memory.delete(key);
     }
@@ -84,6 +111,7 @@ export class DiffsLocalCache {
   clear(): void {
     this.memory.clear();
     this.inFlight.clear();
+    this.nextRefreshAttemptAt.clear();
   }
 
   private writeSnapshot<T>(key: string, value: T, ttlMs: number): StoredDiffsSnapshot {

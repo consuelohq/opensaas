@@ -1,0 +1,19 @@
+{
+  "files": [
+    "packages/dialer-server/src/app.ts",
+    "packages/dialer-server/src/contracts.ts",
+    "packages/dialer-server/src/inbound/callbacks.integration.test.ts",
+    "packages/dialer-server/src/inbound/callbacks.ts",
+    "packages/dialer-server/src/inbound/customer-entry.integration.test.ts",
+    "packages/dialer-server/src/inbound/customer-entry.ts",
+    "packages/dialer-server/src/inbound/telephony-config.test.ts",
+    "packages/dialer-server/src/main.ts",
+    "packages/dialer-server/src/routes/inbound-customer.test.ts",
+    "packages/dialer-server/src/routes/inbound-customer.ts",
+    "packages/dialer-server/src/runtime/environment.ts",
+    "packages/dialer-server/src/runtime/inbound.ts",
+    "packages/dialer/src/inbound/callback-contracts.ts",
+    "packages/dialer/src/inbound/callback-scheduler.ts"
+  ],
+  "updatedAt": "2026-09-19T14:52:07.289Z"
+}

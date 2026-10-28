@@ -273,7 +273,7 @@ const INDEX_MAX_PAGES = 1;
 const INDEX_ENRICH_LIMIT = 10;
 const HOT_PR_CACHE_LIMIT = 20;
 const HOT_PR_RECENT_WINDOW_MS = 72 * 60 * 60 * 1000;
-const REVIEW_REVALIDATE_MS = 15_000;
+const REVIEW_REVALIDATE_MS = 120_000;
 type PullRequestSearchTarget = Pick<
   PullRequestSummary,
   'title' | 'headRef' | 'baseRef' | 'number' | 'kind' | 'associatedStream'
@@ -756,49 +756,26 @@ export function createGithubPullRequestLoader(options: GithubLoaderOptions = {})
 
       const pullJson = await pullResponse.json();
       const pull = normalizePullRequest(pullJson);
-      const filesJson = await fetchJsonArrayPages(
-        fetcher,
-        `${apiBase}/pulls/${locator.number}/files`,
-        headers,
-        'GitHub pull request files fetch failed',
-      );
       const warnings: string[] = [];
-      const reviewsJson = await fetchPartialJsonArrayPages(
-        fetcher,
-        `${apiBase}/pulls/${locator.number}/reviews`,
-        headers,
-        warnings,
-        'reviews',
-      );
-      const issueCommentsJson = await fetchPartialJsonArrayPages(
-        fetcher,
-        `${apiBase}/issues/${locator.number}/comments`,
-        headers,
-        warnings,
-        'issue comments',
-      );
-      const reviewCommentsJson = await fetchPartialJsonArrayPages(
-        fetcher,
-        `${apiBase}/pulls/${locator.number}/comments`,
-        headers,
-        warnings,
-        'review comments',
-      );
+      // Avoid serial round trips, but cap concurrent GitHub reads per PR to protect rate limits.
+      const schedule = limitConcurrentRequests(3);
+      const [filesJson, reviewsJson, issueCommentsJson, reviewCommentsJson, reviewThreads, checks, commits, streamCommits] = await Promise.all([
+        schedule(() => fetchJsonArrayPages(fetcher, `${apiBase}/pulls/${locator.number}/files`, headers, 'GitHub pull request files fetch failed')),
+        schedule(() => fetchPartialJsonArrayPages(fetcher, `${apiBase}/pulls/${locator.number}/reviews`, headers, warnings, 'reviews')),
+        schedule(() => fetchPartialJsonArrayPages(fetcher, `${apiBase}/issues/${locator.number}/comments`, headers, warnings, 'issue comments')),
+        schedule(() => fetchPartialJsonArrayPages(fetcher, `${apiBase}/pulls/${locator.number}/comments`, headers, warnings, 'review comments')),
+        options.token ? schedule(() => loadReviewThreads(fetcher, locator, headers, warnings)) : Promise.resolve([]),
+        schedule(() => loadChecks(fetcher, apiBase, pull.headSha, headers)),
+        schedule(() => loadPullCommits(fetcher, apiBase, locator.number, headers)),
+        pull.headRef.startsWith('stream/') ? schedule(() => loadStreamCommits(fetcher, apiBase, pull.headRef, headers)) : Promise.resolve([]),
+      ]);
       const files = normalizeFiles(filesJson);
       const comments = [
         ...normalizeReviewComments(reviewsJson, 'review'),
         ...normalizeReviewComments(issueCommentsJson, 'issue-comment'),
         ...normalizeReviewComments(reviewCommentsJson, 'review-comment'),
       ];
-      const reviewThreads = options.token
-        ? await loadReviewThreads(fetcher, locator, headers, warnings)
-        : [];
       const reviewItems = normalizeReviewItems(comments, reviewThreads);
-      const checks = await loadChecks(fetcher, apiBase, pull.headSha, headers);
-      const commits = await loadPullCommits(fetcher, apiBase, locator.number, headers);
-      const streamCommits = pull.headRef.startsWith('stream/')
-        ? await loadStreamCommits(fetcher, apiBase, pull.headRef, headers)
-        : [];
 
       return {
         locator,
@@ -814,6 +791,21 @@ export function createGithubPullRequestLoader(options: GithubLoaderOptions = {})
       };
     } catch (error: unknown) {
       throw new Error(`GitHub live pull request load failed: ${getErrorMessage(error)}`);
+    }
+  };
+}
+
+function limitConcurrentRequests(limit: number) {
+  let active = 0;
+  const waiting: Array<() => void> = [];
+  return async function scheduled<T>(operation: () => Promise<T>): Promise<T> {
+    if (active >= limit) await new Promise<void>((resolve) => { waiting.push(resolve); });
+    active += 1;
+    try {
+      return await operation();
+    } finally {
+      active -= 1;
+      waiting.shift()?.();
     }
   };
 }
@@ -936,6 +928,7 @@ export function renderIndexPage(
         <button data-filter="failing">Failing</button>
         <button data-filter="draft">Draft</button>
         <button data-filter="open">Open</button>
+        <span class="muted" data-index-load-status role="status" aria-live="polite"></span>
       </div>
       <div class="stream-filter-row" data-stream-filter-row hidden>
         <span class="filter-label">Stream:</span>
@@ -981,6 +974,7 @@ export function renderReviewPage(
   initialData: PullRequestReviewData | null = null,
   initialEtag = '',
   options: DiffCockpitRenderOptions = {},
+  initialSummary: Pick<PullRequestSummary, 'number' | 'title' | 'author' | 'headRef' | 'baseRef' | 'changedFiles'> | null = null,
 ): string {
   const apiPath = `${repoApiBasePath(locator, options)}/pull/${locator.number}`;
   const writeApiPath = `${repoWriteApiBasePath(locator, options)}/pull/${locator.number}`;
@@ -990,6 +984,9 @@ export function renderReviewPage(
     : '';
   const initialEtagScript = initialEtag
     ? `  <script id="diff-cockpit-initial-etag" type="application/json">${escapeScriptJson(initialEtag)}</script>\n`
+    : '';
+  const initialSummaryScript = initialSummary
+    ? `  <script id="diff-cockpit-initial-summary" type="application/json">${escapeScriptJson(initialSummary)}</script>\n`
     : '';
 
   return `<!doctype html>
@@ -1064,7 +1061,7 @@ export function renderReviewPage(
     <div id="commit-popover" class="commit-popover" role="dialog" aria-label="Commits" hidden></div>
     <div id="mergeability-popover" class="commit-popover" role="dialog" aria-label="Mergeability" hidden></div>
   </main>
-${initialDataScript}${initialEtagScript}  <script type="module">${renderReviewClientScript(apiPath, writeApiPath)}</script>
+${initialDataScript}${initialEtagScript}${initialSummaryScript}  <script type="module">${renderReviewClientScript(apiPath, writeApiPath)}</script>
 </body>
 </html>`;
 }
@@ -3461,7 +3458,7 @@ const repoLabel = ${JSON.stringify(repoLabel)};
 const cacheSchemaVersion = 'v5-server-snapshot-progressive';
 const cacheKey = 'diff-cockpit:index:' + cacheSchemaVersion + ':' + apiPath;
 const staleCachePrefix = 'diff-cockpit:index:';
-const clientCacheTtlMs = 2 * 60 * 1000;
+const clientCacheTtlMs = 24 * 60 * 60 * 1000;
 const sectionPageSize = 10;
 let pulls = [];
 let activeFilter = 'all';
@@ -3470,6 +3467,7 @@ let activeStream = '';
 let showAllStreams = false;
 const sectionLimits = {};
 const sectionsRoot = document.querySelector('[data-sections-root]');
+const indexLoadStatus = document.querySelector('[data-index-load-status]');
 const streamRow = document.querySelector('[data-stream-filter-row]');
 const streamLabel = document.querySelector('[data-stream-filter-label]');
 const clearStream = document.querySelector('[data-clear-stream]');
@@ -3627,6 +3625,7 @@ function loadIndex(options = {}) {
   const cached = options.useCache === false ? null : (initial || loadCachedIndex());
   if (initial) applyIndexData(initial);
   if (indexLoadInFlight) return indexLoadInFlight;
+  if (indexLoadStatus) indexLoadStatus.textContent = pulls.length ? 'Updating saved PRs…' : 'Loading PRs…';
   lastIndexLoadAt = Date.now();
   const headers = { accept: 'application/json' };
   if (currentIndexEtag) headers['If-None-Match'] = currentIndexEtag;
@@ -3638,17 +3637,21 @@ function loadIndex(options = {}) {
       return response.json().then((data) => ({ data, etag }));
     })
     .then((result) => {
-      if (!result) return cached;
+      if (!result) { if (indexLoadStatus) indexLoadStatus.textContent = ''; return cached; }
       if (result.etag) currentIndexEtag = result.etag;
       const merged = mergeIndexWithCache(result.data, cached);
-      localStorage.setItem(cacheKey, JSON.stringify({ ...merged, _cachedAt: Date.now() }));
+      try { localStorage.setItem(cacheKey, JSON.stringify({ ...merged, _cachedAt: Date.now() })); } catch { /* Full storage must not block the live index. */ }
       applyIndexData(merged);
+      if (indexLoadStatus) indexLoadStatus.textContent = '';
       return merged;
-    }, (error) => { if (!pulls.length) sectionsRoot.innerHTML = '<section class="section error"><h2>Could not load pull requests</h2><p>' + escapeText(error.message || error) + '</p></section>'; })
+    }, (error) => {
+      if (indexLoadStatus) indexLoadStatus.textContent = pulls.length ? 'Saved PRs · refresh unavailable' : '';
+      if (!pulls.length) sectionsRoot.innerHTML = '<section class="section error"><h2>Could not load pull requests</h2><p>' + escapeText(error.message || error) + '</p></section>';
+    })
     .finally(() => { indexLoadInFlight = null; });
   return indexLoadInFlight;
 }
-function refreshIndexIfStale(minAgeMs = 10000) { if (document.hidden) return; if (Date.now() - lastIndexLoadAt < minAgeMs) return; loadIndex({ useCache: false }); }
+function refreshIndexIfStale(minAgeMs = 120000) { if (document.hidden) return; if (Date.now() - lastIndexLoadAt < minAgeMs) return; loadIndex({ useCache: false }); }
 document.querySelectorAll('[data-filter]').forEach((button) => button.addEventListener('click', () => { activeFilter = button.dataset.filter; resetSectionLimits(); updateActiveFilterButtons(activeFilter); renderSections(); }));
 clearStream.addEventListener('click', () => { activeStream = ''; resetSectionLimits(); renderSections(); });
 commandTriggers.forEach((trigger) => trigger.addEventListener('click', () => { if (document.body.dataset.commandPaletteState === 'open') closeCommandPalette(); else openCommandPalette(); }));
@@ -3660,9 +3663,9 @@ if (commandResults) commandResults.addEventListener('click', (event) => { const 
 if (commandPages) commandPages.addEventListener('click', (event) => { const button = event.target.closest('[data-command-page]'); if (button) runPageCommand(button); });
 if (commandInput) commandInput.addEventListener('keydown', (event) => { if (event.key === 'Enter') { const firstPr = commandResults && commandResults.querySelector('[data-command-route]'); const firstPage = commandPages && commandPages.querySelector('[data-command-page]:not([hidden])'); if (firstPr) openPull(firstPr.getAttribute('data-command-route')); else if (firstPage) runPageCommand(firstPage); } });
 document.addEventListener('keydown', (event) => { if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); if (document.body.dataset.commandPaletteState === 'open') closeCommandPalette(); else openCommandPalette(); return; } if (event.key === 'Escape' && document.body.dataset.commandPaletteState === 'open') closeCommandPalette(); });
-window.addEventListener('focus', () => refreshIndexIfStale(5000));
-document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshIndexIfStale(5000); });
-window.setInterval(() => refreshIndexIfStale(30000), 30000);
+window.addEventListener('focus', () => refreshIndexIfStale(60000));
+document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshIndexIfStale(60000); });
+window.setInterval(() => refreshIndexIfStale(120000), 120000);
 loadIndex();
 `;
 }
@@ -3768,8 +3771,13 @@ document.addEventListener('keydown', (event) => {
 
 let currentReviewEtag = readInitialReviewEtag();
 let reviewLoadInFlight = null;
+let lastReviewLoadAt = 0;
 const initialData = readInitialReviewData();
 if (initialData) applyReviewData(initialData);
+else {
+  const preview = readInitialReviewSummary() || readCachedReviewSummary();
+  if (preview) applyReviewPreview(preview);
+}
 loadLiveData();
 startReviewRevalidation();
 loadViewerLibraries();
@@ -3882,6 +3890,30 @@ function readInitialReviewData() {
   try { return JSON.parse(element.textContent); }
   catch { return null; }
 }
+function readInitialReviewSummary() {
+  const element = document.getElementById('diff-cockpit-initial-summary');
+  if (!element || !element.textContent) return null;
+  try { return JSON.parse(element.textContent); }
+  catch { return null; }
+}
+function readCachedReviewSummary() {
+  try {
+    const pullSegment = apiPath.lastIndexOf('/pull/');
+    if (pullSegment < 0) return null;
+    const number = Number(apiPath.slice(pullSegment + '/pull/'.length));
+    const indexApiPath = apiPath.slice(0, pullSegment) + '/pulls';
+    const key = 'diff-cockpit:index:v5-server-snapshot-progressive:' + indexApiPath;
+    const cached = JSON.parse(localStorage.getItem(key) || 'null');
+    if (!cached || Date.now() - Number(cached._cachedAt || 0) > 24 * 60 * 60 * 1000) return null;
+    return Array.isArray(cached.pulls) ? cached.pulls.find((pull) => pull.number === number) || null : null;
+  } catch { return null; }
+}
+function applyReviewPreview(preview) {
+  els.title.textContent = preview.title || els.title.textContent;
+  els.meta.textContent = '#' + preview.number + ' · ' + (preview.headRef || '') + ' → ' + (preview.baseRef || '') + ' · by ' + (preview.author || 'unknown') + ' · loading review…';
+  els.count.textContent = String(Number(preview.changedFiles || 0));
+  els.tree.textContent = 'Loading changed files…';
+}
 function readInitialReviewEtag() {
   const element = document.getElementById('diff-cockpit-initial-etag');
   if (!element || !element.textContent) return '';
@@ -3908,7 +3940,7 @@ function startReviewRevalidation() {
     if (document.visibilityState === 'visible') loadLiveData();
   }, ${REVIEW_REVALIDATE_MS});
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') loadLiveData();
+    if (document.visibilityState === 'visible' && Date.now() - lastReviewLoadAt > 60000) loadLiveData();
   });
 }
 
@@ -3922,6 +3954,7 @@ function fetchReviewWithAuthRetry(headers, attempt = 0) {
 
 function loadLiveData() {
   if (reviewLoadInFlight) return reviewLoadInFlight;
+  lastReviewLoadAt = Date.now();
   const headers = { accept: 'application/json' };
   if (currentReviewEtag) headers['If-None-Match'] = currentReviewEtag;
   reviewLoadInFlight = fetchReviewWithAuthRetry(headers)

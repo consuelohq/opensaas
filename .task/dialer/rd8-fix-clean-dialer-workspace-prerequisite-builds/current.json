@@ -1,0 +1,20 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/rd8-fix-clean-dialer-workspace-prerequisite-builds",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 2480,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2480",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2480",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2480/rd8-fix-clean-dialer-workspace-prerequisite-builds",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2480",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2480/rd8-fix-clean-dialer-workspace-prerequisite-builds",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-rd8-fix-clean-dialer-workspace-prerequisite-builds",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_fa5dd923c9e5",
+  "tmuxSession": "opensaas-dialer-rd8-fix-clean-dialer-workspace-prerequisite-buil-fa5dd923",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-rd8-fix-clean-dialer-workspace-prerequisite-builds/.task/dialer/rd8-fix-clean-dialer-workspace-prerequisite-builds/session.json",
+  "createdAt": "2026-09-14T15:06:00.717Z"
+}

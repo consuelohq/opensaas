@@ -1,0 +1,20 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/repair-legacy-gohighlevel-oauth-callback",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 2622,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2622",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2622",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2622/repair-legacy-gohighlevel-oauth-callback",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2622",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2622/repair-legacy-gohighlevel-oauth-callback",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-repair-legacy-gohighlevel-oauth-callback",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_19299f5f3ce2",
+  "tmuxSession": "opensaas-dialer-repair-legacy-gohighlevel-oauth-callback-19299f5f",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-repair-legacy-gohighlevel-oauth-callback/.task/dialer/repair-legacy-gohighlevel-oauth-callback/session.json",
+  "createdAt": "2026-10-08T15:35:19.790Z"
+}

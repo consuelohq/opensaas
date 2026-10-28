@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/brighten-and-reveal-right-preview-cloud",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 2561,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2561",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-brighten-and-reveal-right-preview-cloud",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_d377e8a57bd7",
+  "tmuxSession": "opensaas-dialer-brighten-and-reveal-right-preview-cloud-d377e8a5",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-brighten-and-reveal-right-preview-cloud/.task/session.json",
+  "createdAt": "2026-09-23T02:10:01.358Z"
+}

@@ -33,7 +33,12 @@ type EconomicsRow = {
 };
 
 const ATTEMPT_PROBABILITIES_SQL = `
-  WITH prepared AS (
+  WITH segment_contacts AS (
+    SELECT DISTINCT workspace_id, contact_id
+    FROM dialer_learning_observations
+    WHERE workspace_id = $1 AND segment_id = $2
+  ),
+  prepared AS (
     SELECT
       observations.workspace_id,
       observations.contact_id,
@@ -47,6 +52,9 @@ const ATTEMPT_PROBABILITIES_SQL = `
         PARTITION BY observations.workspace_id, observations.contact_id
       )::integer AS canonical_attempt_count
     FROM dialer_learning_observations AS observations
+    JOIN segment_contacts AS contacts
+      ON contacts.workspace_id = observations.workspace_id
+     AND contacts.contact_id = observations.contact_id
     LEFT JOIN contact_attempt_ledger AS ledger
       ON ledger.workspace_id = observations.workspace_id
      AND ledger.contact_id = observations.contact_id
@@ -81,7 +89,12 @@ const ATTEMPT_PROBABILITIES_SQL = `
 `;
 
 const HAZARD_ESTIMATES_SQL = `
-  WITH prepared AS (
+  WITH segment_contacts AS (
+    SELECT DISTINCT workspace_id, contact_id
+    FROM dialer_learning_observations
+    WHERE workspace_id = $1 AND segment_id = $2
+  ),
+  prepared AS (
     SELECT
       observations.workspace_id,
       observations.contact_id,
@@ -97,6 +110,9 @@ const HAZARD_ESTIMATES_SQL = `
         PARTITION BY observations.workspace_id, observations.contact_id
       )::integer AS canonical_attempt_count
     FROM dialer_learning_observations AS observations
+    JOIN segment_contacts AS contacts
+      ON contacts.workspace_id = observations.workspace_id
+     AND contacts.contact_id = observations.contact_id
     LEFT JOIN contact_attempt_ledger AS ledger
       ON ledger.workspace_id = observations.workspace_id
      AND ledger.contact_id = observations.contact_id
