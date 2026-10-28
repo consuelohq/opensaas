@@ -37,9 +37,15 @@ no-test waiver: none.
 - 2026-10-28 17:27:51 `review.run`: passed — OK
 - 2026-10-28 17:28:06 `review.run`: passed — OK
 - 2026-10-28 17:28:12 `verify`: passed — OK
+- 2026-10-28 17:29:28 `verify`: passed — OK
 
 ## Green evidence
 - 174 focused tests passed across LeadConnector and the server Twilio boundary; 1,370 assertions.
 - LeadConnector typecheck and production build passed.
 - Strict review against origin/main: two changed source files, zero issues or documentation findings; trace trc_9f2f3617b0d1.
 - Full verify passed at 2026-10-28T17:28:16.563Z; publishValid=true. Selected LeadConnector suite: 165 pass, 0 fail; database guard: no risks or findings.
+
+## Released stream ancestry reconciliation
+- origin/main and origin/stream/dialer had identical trees after the squash release but different ancestry.
+- Merged released stream history, preserving both tested Worker files. Merge commit 960aa02bc30b58c47e6a94aa383a279cd09d9407 has no source delta from its tested first parent.
+- Full verify passed again at 2026-10-28T17:29:33.303Z with publishValid=true. Synced merge history with a normal fast-forward push; no force push.
