@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/rd0-freeze-inbound-routing-decisions-and-branch-handoff",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 2442,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2442",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-rd0-freeze-inbound-routing-decisions-and-branch-handoff",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_28b9918523f4",
+  "tmuxSession": "opensaas-dialer-rd0-freeze-inbound-routing-decisions-and-branch--28b99185",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-rd0-freeze-inbound-routing-decisions-and-branch-handoff/.task/session.json",
+  "createdAt": "2026-09-10T02:40:15.719Z"
+}

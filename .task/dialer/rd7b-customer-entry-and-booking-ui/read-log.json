@@ -1,0 +1,9 @@
+{
+  "files": [
+    ".task/dialer/rd7b-customer-entry-and-booking-ui/workpad.md",
+    "areas/dialer/rd/receipts/RD6.md",
+    "packages/dialer-server/src/routes/inbound-customer.ts",
+    "packages/lead-connector/src/embed/main.ts"
+  ],
+  "updatedAt": "2026-09-13T21:26:40.895Z"
+}

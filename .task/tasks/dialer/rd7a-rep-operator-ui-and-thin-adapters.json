@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/rd7a-rep-operator-ui-and-thin-adapters",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 2469,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2469",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-rd7a-rep-operator-ui-and-thin-adapters",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_d80682260fad",
+  "tmuxSession": "opensaas-dialer-rd7a-rep-operator-ui-and-thin-adapters-d8068226",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-rd7a-rep-operator-ui-and-thin-adapters/.task/session.json",
+  "createdAt": "2026-09-13T16:25:08.632Z"
+}

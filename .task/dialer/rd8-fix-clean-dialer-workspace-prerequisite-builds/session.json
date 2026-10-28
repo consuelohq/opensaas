@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_fa5dd923c9e5",
+  "tmuxSession": "opensaas-dialer-rd8-fix-clean-dialer-workspace-prerequisite-buil-fa5dd923",
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/rd8-fix-clean-dialer-workspace-prerequisite-builds",
+  "branch": "task/dialer/rd8-fix-clean-dialer-workspace-prerequisite-builds",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-rd8-fix-clean-dialer-workspace-prerequisite-builds",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-rd8-fix-clean-dialer-workspace-prerequisite-builds",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2480,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2480",
+  "createdAt": "2026-09-14T15:06:00.711Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-rd8-fix-clean-dialer-workspace-prerequisite-builds/.task/dialer/rd8-fix-clean-dialer-workspace-prerequisite-builds/session.json"
+}

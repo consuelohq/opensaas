@@ -1,3 +1,5 @@
+import { createLeadConnectorInboundEnrichment } from './inbound-enrichment';
+import { getInboundRuntime } from './inbound';
 import { randomUUID } from 'node:crypto';
 
 import {
@@ -13,6 +15,8 @@ import {
   RedisLockStore,
   RedisParallelStore,
   type CallableTarget,
+  type ParallelDialOptions,
+  type ParallelCall,
   type DialerCallRepositoryService,
   type DialerCallRuntimeService,
   type DialerTargetRepositoryService,
@@ -59,9 +63,7 @@ import {
   resolveProviderCallerId,
   resolveTwilioProviderCredentials,
 } from './twilio-provider-mode';
-import {
-  recordLeadConnectorAttemptTelemetry,
-} from './lead-connector-learning';
+import { recordLeadConnectorAttemptTelemetry } from './lead-connector-learning';
 import { rankPredictiveTargetsWithDecision } from './predictive-target-ranking';
 
 import { normalizeAsyncError } from '../errors/normalize-async-error';
@@ -80,12 +82,10 @@ export const selectSuccessfullyCreatedTargets = <
   T extends { contactId: string },
 >(
   targets: readonly T[],
-  createdCalls: readonly { contactId?: string | null; callSid: string }[],
+  createdCalls: readonly { position: number; callSid: string }[],
 ): T[] => {
-  const createdContactIds = new Set(
-    createdCalls.flatMap((call) => (call.contactId ? [call.contactId] : [])),
-  );
-  return targets.filter((target) => createdContactIds.has(target.contactId));
+  const positions = new Set(createdCalls.map((call) => call.position));
+  return targets.filter((_target, index) => positions.has(index + 1));
 };
 
 type PgPoolLike = {
@@ -450,10 +450,10 @@ export const createRailwayCommercialApplication = async (
     const masterAccountSid = required(environment, 'TWILIO_ACCOUNT_SID');
     const masterAuthToken = required(environment, 'TWILIO_AUTH_TOKEN');
     const masterTwilio = twilio(masterAccountSid, masterAuthToken);
-    const publicUrl = required(
-      environment,
-      'DIALER_SERVER_PUBLIC_URL',
-    ).replace(/\/$/, '');
+    const publicUrl = required(environment, 'DIALER_SERVER_PUBLIC_URL').replace(
+      /\/$/,
+      '',
+    );
     if (!publicUrl.startsWith('https://')) {
       throw new Error('DIALER_SERVER_PUBLIC_URL must use HTTPS');
     }
@@ -539,11 +539,7 @@ export const createRailwayCommercialApplication = async (
             }
           },
           update: (subscriptionId, parameters, options) =>
-            stripe.subscriptions.update(
-              subscriptionId,
-              parameters,
-              options,
-            ),
+            stripe.subscriptions.update(subscriptionId, parameters, options),
         },
         webhooks: {
           constructEvent: (rawBody, signature, secret) => {
@@ -569,7 +565,8 @@ export const createRailwayCommercialApplication = async (
         });
         const incomingPhoneNumbers = Object.assign(
           (providerNumberId: string) => ({
-            remove: () => client.incomingPhoneNumbers(providerNumberId).remove(),
+            remove: () =>
+              client.incomingPhoneNumbers(providerNumberId).remove(),
           }),
           {
             create: async (request: {
@@ -579,7 +576,8 @@ export const createRailwayCommercialApplication = async (
               voiceMethod: 'POST';
             }) => {
               try {
-                const created = await client.incomingPhoneNumbers.create(request);
+                const created =
+                  await client.incomingPhoneNumbers.create(request);
                 return { sid: created.sid, phoneNumber: created.phoneNumber };
               } catch (cause: unknown) {
                 throw normalizeAsyncError(cause);
@@ -746,13 +744,71 @@ export const createRailwayTransferApplication = async (
   resources: RailwayRuntimeResources = {},
 ) => {
   try {
-    const shared = resources.database && resources.redis
-      ? null
-      : await createSharedResources(environment);
+    const shared =
+      resources.database && resources.redis
+        ? null
+        : await createSharedResources(environment);
     const database = resources.database ?? shared!.database;
     const redis = resources.redis ?? shared!.redis;
     await initializeCallOperationsPersistence(database);
     const runtime = createDialerRuntime(environment, redis);
+    const inbound = await createInboundApplicationRuntime(environment);
+    const startProviderGroup = async (
+      dialer: Dialer,
+      options: ParallelDialOptions,
+      observer?: (progress: {
+        groupId: string;
+        conferenceName: string;
+        calls: readonly ParallelCall[];
+      }) => Promise<void>,
+    ) => {
+      const guarded =
+        inbound &&
+        options.providerMode !== 'twilio-test' &&
+        inbound.ownsWorkspace(options.workspaceId)
+          ? inbound.outbound
+          : undefined;
+      const sessionId = options.dialerSessionId ?? 'session_' + randomUUID();
+      if (guarded)
+        await guarded.begin({
+          workspaceId: options.workspaceId,
+          userId: options.userId,
+          sessionId,
+          plannedCalls: options.customerNumbers.length,
+        });
+      try {
+        const result = await dialer.parallel.initiateGroup(
+          { ...options, dialerSessionId: sessionId },
+          {
+            onCreationRejected: async (progress) => {
+              if (guarded) await guarded.creationRejected(options.workspaceId, sessionId, progress);
+            },
+            onProgress: async (progress) => {
+              try {
+                if (guarded)
+                  await guarded.progress(
+                    options.workspaceId,
+                    sessionId,
+                    progress,
+                  );
+                await observer?.(progress);
+              } catch (cause: unknown) {
+                if (cause instanceof Error) throw cause;
+                throw new Error(
+                  'Async operation rejected with a non-Error cause',
+                  { cause },
+                );
+              }
+            },
+          },
+        );
+        if (guarded) await guarded.complete(options.workspaceId, sessionId);
+        return result;
+      } catch (cause: unknown) {
+        if (guarded) await guarded.unknown(options.workspaceId, sessionId);
+        throw cause;
+      }
+    };
     const repository = createPostgresTransferRepository(database);
     const publicUrl = required(environment, 'DIALER_SERVER_PUBLIC_URL');
     if (!publicUrl.startsWith('https://')) {
@@ -763,8 +819,7 @@ export const createRailwayTransferApplication = async (
         selectProviderDialerForGroup(runtime, groupId).then((dialer) =>
           dialer.parallel.getGroupForWorkspace(groupId, workspaceId),
         ),
-      selectDialer: (groupId) =>
-        selectProviderDialerForGroup(runtime, groupId),
+      selectDialer: (groupId) => selectProviderDialerForGroup(runtime, groupId),
       repository,
       publicUrl,
       generateId: () => 'transfer_' + randomUUID(),
@@ -788,6 +843,63 @@ export const createRailwayDialerApplicationLayers = async (
       await migrateDialerDatabase(database);
     }
     const runtime = createDialerRuntime(environment, redis);
+    const inbound = await createInboundApplicationRuntime(environment);
+    const startProviderGroup = async (
+      dialer: Dialer,
+      options: ParallelDialOptions,
+      observer?: (progress: {
+        groupId: string;
+        conferenceName: string;
+        calls: readonly ParallelCall[];
+      }) => Promise<void>,
+    ) => {
+      const guarded =
+        inbound &&
+        options.providerMode !== 'twilio-test' &&
+        inbound.ownsWorkspace(options.workspaceId)
+          ? inbound.outbound
+          : undefined;
+      const sessionId = options.dialerSessionId ?? 'session_' + randomUUID();
+      if (guarded)
+        await guarded.begin({
+          workspaceId: options.workspaceId,
+          userId: options.userId,
+          sessionId,
+          plannedCalls: options.customerNumbers.length,
+        });
+      try {
+        const result = await dialer.parallel.initiateGroup(
+          { ...options, dialerSessionId: sessionId },
+          {
+            onCreationRejected: async (progress) => {
+              if (guarded) await guarded.creationRejected(options.workspaceId, sessionId, progress);
+            },
+            onProgress: async (progress) => {
+              try {
+                if (guarded)
+                  await guarded.progress(
+                    options.workspaceId,
+                    sessionId,
+                    progress,
+                  );
+                await observer?.(progress);
+              } catch (cause: unknown) {
+                if (cause instanceof Error) throw cause;
+                throw new Error(
+                  'Async operation rejected with a non-Error cause',
+                  { cause },
+                );
+              }
+            },
+          },
+        );
+        if (guarded) await guarded.complete(options.workspaceId, sessionId);
+        return result;
+      } catch (cause: unknown) {
+        if (guarded) await guarded.unknown(options.workspaceId, sessionId);
+        throw cause;
+      }
+    };
     const publicUrl = required(environment, 'DIALER_SERVER_PUBLIC_URL').replace(
       /\/$/,
       '',
@@ -893,33 +1005,33 @@ export const createRailwayDialerApplicationLayers = async (
             }),
           );
           const candidates = pending.length > 0 ? pending : fallback;
-          if (!database) return Promise.resolve(candidates.slice(0, requestedFanout));
+          if (!database)
+            return Promise.resolve(candidates.slice(0, requestedFanout));
           return rankPredictiveTargetsWithDecision({
-                database,
+            database,
+            workspaceId,
+            segmentId: queueId,
+            targets: candidates,
+            timezone: environment.DIALER_LOCAL_TIMEZONE ?? 'America/New_York',
+            callableWindowEndHour: Number(
+              environment.DIALER_CALLABLE_WINDOW_END_HOUR ?? '20',
+            ),
+            preferLocalPresence,
+            onFallback: (details) =>
+              writeRuntimeEvent({
+                event: 'dialer.predictive.fifo_fallback',
+                ...details,
+              }),
+          }).then((ranking) => {
+            if (ranking.decisionLogError) {
+              writeRuntimeEvent({
+                event: 'dialer.predictive.decision_log_unavailable',
                 workspaceId,
-                segmentId: queueId,
-                targets: candidates,
-                timezone:
-                  environment.DIALER_LOCAL_TIMEZONE ?? 'America/New_York',
-                callableWindowEndHour: Number(
-                  environment.DIALER_CALLABLE_WINDOW_END_HOUR ?? '20',
-                ),
-                preferLocalPresence,
-                onFallback: (details) =>
-                  writeRuntimeEvent({
-                    event: 'dialer.predictive.fifo_fallback',
-                    ...details,
-                  }),
-              }).then((ranking) => {
-                if (ranking.decisionLogError) {
-                  writeRuntimeEvent({
-                    event: 'dialer.predictive.decision_log_unavailable',
-                    workspaceId,
-                    error: ranking.decisionLogError,
-                  });
-                }
-                return ranking.rankedTargets.slice(0, requestedFanout);
+                error: ranking.decisionLogError,
               });
+            }
+            return ranking.rankedTargets.slice(0, requestedFanout);
+          });
         }),
       createDirectQueue: () => Effect.succeed(`direct:${randomUUID()}`),
     };
@@ -998,34 +1110,35 @@ export const createRailwayDialerApplicationLayers = async (
           const commercialEnabled =
             environment.DIALER_COMMERCIAL_ENABLED?.trim().toLowerCase() ===
             'true';
-          const numbers = commercialEnabled && database
-            ? yield* tryEffect('list-commercial-caller-ids', async () => {
-            try {
-              const result = await database.query<{
-                phone_number: string;
-                provider_number_id: string | null;
-              }>(
-                `SELECT phone_number, provider_number_id
+          const numbers =
+            commercialEnabled && database
+              ? yield* tryEffect('list-commercial-caller-ids', async () => {
+                  try {
+                    const result = await database.query<{
+                      phone_number: string;
+                      provider_number_id: string | null;
+                    }>(
+                      `SELECT phone_number, provider_number_id
                  FROM dialer_phone_numbers
                  WHERE workspace_id = $1 AND user_id = $2
                    AND status = 'active'
                  ORDER BY phone_number`,
-                [input.workspaceId, input.userId],
-              );
-              return result.rows.map((number) => ({
-                phoneNumber: number.phone_number,
-                areaCode: number.phone_number.slice(2, 5),
-                isPrimary: false,
-                isActive: true,
-                twilioSid: number.provider_number_id ?? '',
-              }));
-            } catch (cause: unknown) {
-              throw normalizeAsyncError(cause);
-            }
-          })
-            : yield* tryEffect('list-caller-ids', () =>
-                runtime.liveDialer.listNumbers(),
-              );
+                      [input.workspaceId, input.userId],
+                    );
+                    return result.rows.map((number) => ({
+                      phoneNumber: number.phone_number,
+                      areaCode: number.phone_number.slice(2, 5),
+                      isPrimary: false,
+                      isActive: true,
+                      twilioSid: number.provider_number_id ?? '',
+                    }));
+                  } catch (cause: unknown) {
+                    throw normalizeAsyncError(cause);
+                  }
+                })
+              : yield* tryEffect('list-caller-ids', () =>
+                  runtime.liveDialer.listNumbers(),
+                );
           const available = [];
           for (const number of numbers) {
             const phone = normalizePhone(number.phoneNumber);
@@ -1109,13 +1222,33 @@ export const createRailwayDialerApplicationLayers = async (
               acquired.push(callerId);
             }
             const result = yield* tryEffect('initiate-provider-calls', () =>
-              dialer.parallel.initiateGroup(
+              startProviderGroup(
+                dialer,
                 buildProviderGroupOptions(input, runtime.publicUrl),
+                async (progress) => {
+                  try {
+                    groupId = progress.groupId;
+                    await finalizeSelectedDecisionRecords(
+                      input.workspaceId,
+                      selectSuccessfullyCreatedTargets(
+                        input.targets,
+                        progress.calls,
+                      ),
+                    );
+                  } catch (cause: unknown) {
+                    if (cause instanceof Error) throw cause;
+                    throw new Error(
+                      'Async operation rejected with a non-Error cause',
+                      { cause },
+                    );
+                  }
+                },
               ),
             );
             groupId = result.groupId;
             const createdCalls = result.calls.map((call) => ({
               callSid: call.callSid,
+              position: call.position,
               contactId: input.targets[call.position - 1]?.contactId ?? null,
             }));
             yield* Effect.promise(() =>
@@ -1236,7 +1369,7 @@ export const createRailwayDialerApplicationLayers = async (
         ),
       initiateGroup: (options) =>
         tryEffect('initiate-group', () =>
-          runtime.liveDialer.parallel.initiateGroup(options),
+          startProviderGroup(runtime.liveDialer, options),
         ),
       terminateGroup: (groupId) =>
         tryEffect('terminate-group', () =>
@@ -1369,3 +1502,8 @@ export const createCommercialApplicationRuntime =
   createRailwayCommercialApplication;
 export const createTransferApplicationRuntime =
   createRailwayTransferApplication;
+
+export const createInboundApplicationRuntime = (environment: RailwayEnvironment) =>
+  getInboundRuntime(environment, createLeadConnectorInboundEnrichment(
+    () => createRailwayLeadConnectorApplicationLayer(environment),
+  ));

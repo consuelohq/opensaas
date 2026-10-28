@@ -1,0 +1,32 @@
+{
+  "files": [
+    ".task/dialer/rd7a-rep-operator-ui-and-thin-adapters/workpad.md",
+    "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-rd7a-rep-operator-ui-and-thin-adapters/.consuelo/workpad.md",
+    "areas/dialer/rd/GRAPH.md",
+    "areas/dialer/rd/receipts/RD4.md",
+    "packages/dialer-server/src/inbound/README.md",
+    "packages/dialer-server/src/inbound/REP-CAPACITY.md",
+    "packages/dialer-server/src/inbound/ROUTING.md",
+    "packages/dialer-server/src/inbound/rep-capacity-commands.ts",
+    "packages/dialer-server/src/inbound/rep-capacity-projection.ts",
+    "packages/dialer-server/src/inbound/rep-capacity.ts",
+    "packages/dialer-server/src/inbound/routing-store.ts",
+    "packages/dialer-server/src/inbound/routing.ts",
+    "packages/dialer/src/inbound/index.ts",
+    "packages/dialer/src/inbound/rep-capacity-contracts.ts",
+    "packages/dialer/src/inbound/rep-capacity-ports.ts",
+    "packages/dialer/src/inbound/routing-contracts.ts",
+    "packages/dialer/src/inbound/routing-ports.ts",
+    "packages/lead-connector/src/embed/api-client.ts",
+    "packages/lead-connector/src/embed/controller.test.ts",
+    "packages/lead-connector/src/embed/controller.ts",
+    "packages/lead-connector/src/embed/index.ts",
+    "packages/lead-connector/src/embed/main.ts",
+    "packages/lead-connector/src/embed/state-machine.test.ts",
+    "packages/lead-connector/src/embed/state-machine.ts",
+    "packages/lead-connector/src/embed/surface.ts",
+    "packages/lead-connector/src/embed/view.test.ts",
+    "packages/lead-connector/src/embed/view.ts"
+  ],
+  "updatedAt": "2026-09-13T16:37:58.323Z"
+}

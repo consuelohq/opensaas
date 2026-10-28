@@ -4,6 +4,10 @@ import type {
   LeadConnectorPipeline,
 } from '../contracts/index.js';
 import type { LeadConnectorClickToCallTarget } from './protocol.js';
+import {
+  createInitialInboundOperatorState,
+  type InboundOperatorState,
+} from './inbound-operator.js';
 
 export type LeadConnectorEmbedPhase =
   | 'booting'
@@ -244,6 +248,7 @@ export type LeadConnectorEmbedState = {
   selectedCallDetail: EmbedAdminCall | null;
   selectedCallTranscript: EmbedTranscriptSegment[];
   transfer: EmbedTransferState;
+  inboundOperator: InboundOperatorState;
   error: EmbedFailure | null;
 };
 
@@ -380,6 +385,7 @@ export const createInitialEmbedState = (): LeadConnectorEmbedState => ({
     transferCallSid: null,
     conferenceSid: null,
   },
+  inboundOperator: createInitialInboundOperatorState(),
   error: null,
 });
 

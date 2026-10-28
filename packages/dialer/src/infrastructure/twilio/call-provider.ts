@@ -1,3 +1,4 @@
+import { classifyTwilioCreateFailure } from './create-outcome.js';
 import { Effect, Layer } from 'effect';
 
 import {
@@ -45,6 +46,9 @@ const providerFailure = (
     operation,
     message: errorMessage(cause),
     retryable: retryableProviderFailure(cause),
+    ...(operation === 'create-call'
+      ? { creationOutcome: classifyTwilioCreateFailure(cause) }
+      : {}),
     cause,
   });
 

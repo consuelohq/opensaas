@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/integrate-completed-inbound-dialer-stream-with-current-main-and-validate-release",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 2633,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2633",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-integrate-completed-inbound-dialer-stream-with-current-main-and-validate-release",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_8d0fd2437c6c",
+  "tmuxSession": "opensaas-dialer-integrate-completed-inbound-dialer-stream-with-c-8d0fd243",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-integrate-completed-inbound-dialer-stream-with-current-main-and-validate-release/.task/session.json",
+  "createdAt": "2026-10-28T16:00:29.053Z"
+}

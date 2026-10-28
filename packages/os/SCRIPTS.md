@@ -212,7 +212,7 @@ if you see slop, fix it before pushing. a clean diff is a fast review.
 after finishing a task, ask: "did i discover anything non-obvious?" if yes, write it to the nearest AGENTS.md:
 
 - **project-wide** → root `AGENTS.md`
-- **stream-wide product/architecture context** → update both `packages/os/streams/<area>/AGENTS.md` and `packages/workspace/streams/<area>/AGENTS.md`
+- **stream-wide product/architecture context** → update the canonical `packages/os/streams/<area>/AGENTS.md`
 - **package-specific** → `packages/foo/AGENTS.md`
 - **feature-specific** → `src/auth/AGENTS.md`
 

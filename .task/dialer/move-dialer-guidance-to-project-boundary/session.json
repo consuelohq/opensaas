@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_07f11e3c344f",
+  "tmuxSession": "opensaas-dialer-move-dialer-guidance-to-project-boundary-07f11e3c",
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/move-dialer-guidance-to-project-boundary",
+  "branch": "task/dialer/move-dialer-guidance-to-project-boundary",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-move-dialer-guidance-to-project-boundary",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-move-dialer-guidance-to-project-boundary",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2441,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2441",
+  "createdAt": "2026-09-10T02:31:08.790Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-move-dialer-guidance-to-project-boundary/.task/dialer/move-dialer-guidance-to-project-boundary/session.json"
+}

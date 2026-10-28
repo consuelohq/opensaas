@@ -12,6 +12,7 @@ describe('dialer GitHub release workflow contract', () => {
     const planner = read('packages', 'os', 'scripts', 'ci-plan.ts');
     expect(planner).toContain("file.startsWith('packages/dialer-server/')");
     expect(planner).toContain("file.startsWith('packages/lead-connector/')");
+    expect(planner).toContain("file.startsWith('packages/contacts/')");
     expect(planner).toContain("file.startsWith('packages/logger/')");
     expect(ci).toContain('bun test packages/dialer/src');
     expect(ci).toContain('bun test packages/dialer-server/src');
@@ -39,6 +40,7 @@ describe('dialer GitHub release workflow contract', () => {
     expect(dockerfile).not.toContain('yarn install');
     const builds = [
       'bun run --cwd packages/logger build',
+      'bun run --cwd packages/contacts build',
       'bun run --cwd packages/dialer build',
       'bun run --cwd packages/lead-connector build',
       'bun run --cwd packages/dialer-server build',
@@ -50,6 +52,7 @@ describe('dialer GitHub release workflow contract', () => {
       cursor = next;
     }
     expect(railway).toContain('packages/logger/**');
+    expect(railway).toContain('packages/contacts/**');
   });
 
   it('releases dialer changes from main in fail-closed provider order with deployment-only secrets', () => {
@@ -61,7 +64,7 @@ describe('dialer GitHub release workflow contract', () => {
     expect(release).toContain('- dialer');
     expect(release).toContain('environment: consuelo dialer / production');
     expect(release).toContain(
-      'packages/(dialer|dialer-server|lead-connector|logger)/',
+      'packages/(dialer|dialer-server|lead-connector|logger|contacts)/',
     );
     expect(release).toContain('bun run --cwd packages/logger build');
     expect(release.indexOf('bun run --cwd packages/logger build')).toBeLessThan(
@@ -84,6 +87,8 @@ describe('dialer GitHub release workflow contract', () => {
     expect(release).toContain('RAILWAY_DIALER_PROJECT_TOKEN');
     expect(release).not.toContain('Link Railway release target');
     expect(release).not.toContain('@railway/cli@5.27.2 link');
+    expect(release).toContain('Configure dialer edge identity secret');
+    expect(release).toContain('DIALER_EDGE_PROXY_SECRET');
     expect(release).toContain('CLOUDFLARE_DIALER_WORKER_API_TOKEN');
     expect(release).toContain(
       'consuelo-lead-connector-click-to-call.marketplace-loader.html',
@@ -101,6 +106,63 @@ describe('dialer GitHub release workflow contract', () => {
     expect(release).not.toMatch(
       /STRIPE_SECRET_KEY|TWILIO_AUTH_TOKEN|GROQ_API_KEY|DATABASE_URL|REDIS_URL/,
     );
+  });
+
+  it('rejects short trimmed edge secrets before deployment without exposing them', () => {
+    const release = read(
+      '.github',
+      'workflows',
+      'consuelo-production-release.yaml',
+    );
+    const step = release
+      .split('      - name: Validate dialer deployment configuration\n')[1]
+      ?.split('\n      - name:')[0];
+    const script = step
+      ?.split('        run: |\n')[1]
+      ?.split('\n')
+      .map((line) => line.replace(/^ {10}/, ''))
+      .join('\n');
+    expect(script).toBeDefined();
+    if (!script) throw new Error('Missing dialer deployment preflight');
+
+    const cases = [
+      { secret: '', valid: false },
+      { secret: '   ', valid: false },
+      { secret: 's'.repeat(23), valid: false },
+      { secret: '  ' + 's'.repeat(23) + '  ', valid: false },
+      { secret: '\u2003' + 's'.repeat(23) + '\u2003', valid: false },
+      { secret: 's'.repeat(24), valid: true },
+      { secret: ' \t' + 's'.repeat(24) + '\n ', valid: true },
+    ];
+    for (const { secret, valid } of cases) {
+      const result = Bun.spawnSync(['bash', '-c', script], {
+        env: {
+          PATH: process.env.PATH,
+          RAILWAY_TOKEN: 'project-token-fixture',
+          RAILWAY_DIALER_PROJECT_ID: 'project-fixture',
+          RAILWAY_DIALER_ENVIRONMENT_ID: 'environment-fixture',
+          RAILWAY_DIALER_SERVICE_ID: 'service-fixture',
+          RAILWAY_DIALER_PUBLIC_ORIGIN: 'https://dialer.example',
+          CLOUDFLARE_ACCOUNT_ID: 'cloudflare-fixture',
+          CLOUDFLARE_API_TOKEN: 'edge-token-fixture',
+          DIALER_EDGE_PROXY_SECRET: secret,
+          LEADCONNECTOR_MARKETPLACE_BOOTSTRAP_SHA256: 'a'.repeat(64),
+          LEADCONNECTOR_PRODUCTION_EMBED_URL: 'https://calls.example',
+        },
+      });
+      expect(
+        result.exitCode === 0,
+        'trimmed length ' + secret.trim().length,
+      ).toBe(valid);
+      if (secret.trim()) {
+        expect(
+          result.stdout.toString() + result.stderr.toString(),
+        ).not.toContain(secret.trim());
+      }
+    }
+    expect(
+      release.indexOf('Validate dialer deployment configuration'),
+    ).toBeLessThan(release.indexOf('Configure dialer edge identity secret'));
   });
 
   it('provides explicit-id manual rollback and never guesses a previous release', () => {

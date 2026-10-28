@@ -1,0 +1,11 @@
+{
+  "files": [
+    ".task/dialer/fix-dialer-casing-and-simplify-homepage/workpad.md",
+    "packages/consuelo-dialer-website/src/components/home/DialerFeaturePlaceholder.astro",
+    "packages/consuelo-dialer-website/src/components/site/SiteHeader.astro",
+    "packages/consuelo-dialer-website/src/data/home-content.ts",
+    "packages/consuelo-dialer-website/src/lib/homepage-seo.ts",
+    "packages/consuelo-dialer-website/tests/dialer-landing.test.mjs"
+  ],
+  "updatedAt": "2026-09-22T03:14:31.937Z"
+}

@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/consuelo-dialer-landing-page",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2517,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2517",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-consuelo-dialer-landing-page",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_fad554e41fef",
+  "tmuxSession": "opensaas-dialer-consuelo-dialer-landing-page-fad554e4",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-consuelo-dialer-landing-page/.task/session.json",
+  "createdAt": "2026-09-21T15:29:21.937Z"
+}

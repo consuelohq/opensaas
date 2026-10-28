@@ -1,0 +1,9 @@
+{
+  "files": [
+    "packages/dialer-server/src/database/migrations.test.ts",
+    "packages/dialer-server/tsconfig.json",
+    "packages/dialer/src/application/start-dialer-call.ts",
+    "packages/dialer/src/ports/dialer-call-start.ts"
+  ],
+  "updatedAt": "2026-09-10T03:27:43.596Z"
+}

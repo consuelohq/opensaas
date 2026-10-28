@@ -1,0 +1,15 @@
+{
+  "files": [
+    ".task/dialer/rd8-close-final-review-contract-gaps/workpad.md",
+    "packages/dialer-server/src/database/migrations.test.ts",
+    "packages/dialer-server/src/inbound/telephony.integration.test.ts",
+    "packages/dialer-server/src/lab/learning-rollback-scenario.ts",
+    "packages/dialer-server/src/routes/inbound-customer.test.ts",
+    "packages/dialer-server/src/routes/inbound-customer.ts",
+    "packages/lead-connector/src/embed/cloudflare-worker.ts",
+    "packages/lead-connector/src/embed/customer.test.ts",
+    "packages/workspace/scripts/lib/github.js",
+    "packages/workspace/scripts/task-push.js"
+  ],
+  "updatedAt": "2026-09-19T15:59:34.147Z"
+}

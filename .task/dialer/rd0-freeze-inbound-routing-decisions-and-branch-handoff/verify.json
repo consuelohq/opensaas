@@ -1,0 +1,106 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/dialer/rd0-freeze-inbound-routing-decisions-and-branch-handoff",
+  "base": "41b9fabbf6bd4f8e08f2345e98145ee04312cd90",
+  "headSha": "263ccbd24455391a9401e1d4476a90c2b9cbf3bb",
+  "changeHash": "e9d35dabc7384053b07f1770e4e6afb92e1d3e02fb00ab9d27c80dedf17d3180",
+  "changedFiles": [
+    "areas/dialer/rd/ACCEPTANCE.md",
+    "areas/dialer/rd/DESIGN.md",
+    "areas/dialer/rd/GRAPH.md",
+    "areas/dialer/rd/README.md",
+    "areas/dialer/rd/receipts/RD0.md"
+  ],
+  "verifiedAt": "2026-09-10T02:47:24.034Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/dialer/rd0-freeze-inbound-routing-decisions-and-branch-handoff/workpad.md",
+        ".task/tasks/dialer/rd0-freeze-inbound-routing-decisions-and-branch-handoff.json",
+        "areas/dialer/rd/ACCEPTANCE.md",
+        "areas/dialer/rd/DESIGN.md",
+        "areas/dialer/rd/GRAPH.md",
+        "areas/dialer/rd/README.md",
+        "areas/dialer/rd/receipts/RD0.md"
+      ],
+      "matchedRules": [
+        {
+          "id": "os-stream-instructions",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Stream instruction storage and resolver changes must prove repository area guidance is preferred when present, OS stream fallback remains available for product-owned streams, and Dialer project context never ships as customer runtime content.",
+          "matchedFiles": [
+            "areas/dialer/rd/ACCEPTANCE.md",
+            "areas/dialer/rd/DESIGN.md",
+            "areas/dialer/rd/GRAPH.md",
+            "areas/dialer/rd/README.md",
+            "areas/dialer/rd/receipts/RD0.md"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "OS stream instruction contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/scripts/lib/stream-instructions.test.ts",
+            "packages/os/tests/dialer-stream-instructions.test.ts",
+            "packages/workspace/tests/dialer-validation-runbook.test.ts"
+          ],
+          "ruleId": "os-stream-instructions",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "OS stream instruction contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/scripts/lib/stream-instructions.test.ts",
+            "packages/os/tests/dialer-stream-instructions.test.ts",
+            "packages/workspace/tests/dialer-validation-runbook.test.ts"
+          ],
+          "ruleId": "os-stream-instructions",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 441,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-rd0-freeze-inbound-routing-decisions-and-branch-handoff\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/dialer-stream-instructions.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 1\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/workspace/scripts/lib/stream-instructions.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/workspace/tests/dialer-validation-runbook.test.ts \u001b[2m(\u001b[22m\u001b[2m6 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m3 passed\u001b[39m\u001b[22m\u001b[90m (3)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m11 passed\u001b[39m\u001b[22m\u001b[90m (11)\u001b[39m\n\u001b[2m   Start at \u001b[22m 22:47:23\n\u001b[2m   Duration \u001b[22m 139ms\u001b[2m (transform 140ms, setup 0ms, import 162ms, tests 6ms, environment 0ms)\u001b[22m\n\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

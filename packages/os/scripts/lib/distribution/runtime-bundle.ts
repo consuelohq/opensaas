@@ -195,7 +195,6 @@ const REQUIRED_RUNTIME_INPUTS = [
   'manifests/generated/core.manifest.json',
   'hooks/dispatcher.js',
   'streams/tools/AGENTS.md',
-  'streams/dialer/AGENTS.md',
   'skills/task/SKILL.md',
   'skills/task/skill.json',
 ] as const;
@@ -419,6 +418,7 @@ export function classifyRuntimeBundlePath(
   ) {
     return 'managed-tool';
   }
+  if (filePath.startsWith('streams/dialer/')) return 'source-only';
   if (filePath.startsWith('streams/'))
     return 'runtime';
   if (filePath.startsWith('hooks/')) return 'runtime';

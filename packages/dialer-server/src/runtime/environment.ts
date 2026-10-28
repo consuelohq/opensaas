@@ -1,4 +1,9 @@
-import { Dialer, type TwilioCredentials } from '@consuelo/dialer';
+import { Effect } from 'effect';
+import {
+  Dialer,
+  DialerRequestError,
+  type TwilioCredentials,
+} from '@consuelo/dialer';
 
 import type { DialerApplicationLayers } from '../application';
 import {
@@ -23,6 +28,7 @@ import { createTwilioSignatureVerifier } from './twilio-signature';
 export type DialerServerEnvironment = Record<string, string | undefined>;
 
 type RuntimeModule = {
+  createInboundApplicationRuntime?: typeof import('./inbound').createInboundRuntime;
   createDialerApplicationLayers: (
     environment: DialerServerEnvironment,
   ) => Promise<DialerApplicationLayers> | DialerApplicationLayers;
@@ -92,6 +98,15 @@ export async function loadDialerServerRuntime(
       );
     }
     const layers = await imported.createDialerApplicationLayers(environment);
+    if (
+      environment.DIALER_INBOUND_ENABLED === 'true' &&
+      !imported.createInboundApplicationRuntime
+    )
+      throw new Error(
+        'Runtime module must compose the inbound and shared outbound authority',
+      );
+    const inbound =
+      await imported.createInboundApplicationRuntime?.(environment);
     const callOperations = imported.createCallOperationsApplicationRuntime
       ? await imported.createCallOperationsApplicationRuntime(environment)
       : undefined;
@@ -155,6 +170,7 @@ export async function loadDialerServerRuntime(
       hostname: environment.HOST?.trim() || '0.0.0.0',
       port: Number(environment.PORT || '3000'),
       dependencies: {
+        inbound,
         application: callOperations
           ? createCallHistoryDialerApplication(
               createEffectDialerApplication(layers),
@@ -173,7 +189,23 @@ export async function loadDialerServerRuntime(
           : createEffectDialerApplication(layers),
         callOperations,
         commercial,
-        transfers,
+        transfers:
+          transfers && inbound
+            ? {
+                ...transfers,
+                initiate: (input) =>
+                  inbound.ownsWorkspace(input.workspaceId)
+                    ? Effect.fail(
+                        new DialerRequestError({
+                          code: 'TRANSFER_CAPACITY_UNSUPPORTED',
+                          message:
+                            'Transfers require participant-capacity integration for inbound-enabled teams',
+                          retryable: false,
+                        }),
+                      )
+                    : transfers.initiate(input),
+              }
+            : transfers,
         authenticate,
         issueEmbedSession: embedSessions.issue,
         leadConnector,

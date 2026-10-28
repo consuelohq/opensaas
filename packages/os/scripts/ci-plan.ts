@@ -91,6 +91,7 @@ export function classifyConsueloChanges(files: string[]): ConsueloCiPlan {
       file.startsWith('packages/dialer/')
       || file.startsWith('packages/dialer-server/')
       || file.startsWith('packages/lead-connector/')
+      || file.startsWith('packages/contacts/')
       || file.startsWith('packages/logger/')
     ) {
       plan.dialer = true;

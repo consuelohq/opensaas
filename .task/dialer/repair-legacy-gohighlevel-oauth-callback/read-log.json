@@ -1,0 +1,7 @@
+{
+  "files": [
+    "packages/lead-connector/src/infrastructure/persistent-stores.ts",
+    "packages/workspace/scripts/website-deploy.js"
+  ],
+  "updatedAt": "2026-10-08T15:40:24.221Z"
+}

@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/dev-1614-restore-rep-readiness-heartbeat-and-outbound-eligibility",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 2628,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2628",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1614-restore-rep-readiness-heartbeat-and-outbound-eligibility",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_ef80b1feb408",
+  "tmuxSession": "opensaas-dialer-dev-1614-restore-rep-readiness-heartbeat-and-out-ef80b1fe",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1614-restore-rep-readiness-heartbeat-and-outbound-eligibility/.task/session.json",
+  "createdAt": "2026-10-28T02:29:50.580Z"
+}

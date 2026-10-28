@@ -149,10 +149,6 @@ describe('Effect stream service', () => {
               path: 'packages/os/streams/research/AGENTS.md',
               content: DEFAULT_STREAM_INSTRUCTIONS,
             },
-            {
-              path: 'packages/workspace/streams/research/AGENTS.md',
-              content: DEFAULT_STREAM_INSTRUCTIONS,
-            },
           ],
           message: 'chore(stream): initialize research instructions',
         },
