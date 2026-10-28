@@ -45,9 +45,14 @@ describe('bootstrap partial-install recovery CLI', () => {
     expect(source).toContain('recovery_cli_hint() {');
     expect(source).toContain('Recovery CLI is ready');
     expect(source).toContain('consuelo status');
-    expect(source).toContain('consuelo uninstall --dry-run --json');
+    expect(source).toContain('Use it in this shell with:');
+    expect(source).toContain('%s uninstall --dry-run --json');
     expect(source).toContain('grep -qF "$bin_dir" "$rc_file"');
     expect(source).toContain("Warning: another 'consuelo' is already on PATH");
+    expect(source).toContain('find_immediate_cli_link_dir() {');
+    expect(source).toContain('ln -s "$bin_dir/consuelo" "$immediate_dir/consuelo"');
+    expect(source).toContain('Use now: $OS_HOME/bin/consuelo status');
+    expect(source).toContain('PATH_IMMEDIATE=1');
 
     expectOrdered(setup, [
       'install_verified_runtime',

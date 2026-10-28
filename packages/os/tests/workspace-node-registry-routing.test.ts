@@ -1222,7 +1222,7 @@ describe('workspace node management and presence', () => {
     let nowMs = baseNow;
     let upstreamCalls = 0;
     const store = createMemoryDeviceGrantStore();
-    await seedWorkspace(store);
+    const { homeKey } = await seedWorkspace(store);
     await authorizeWorkspace(store, 'workspace-node-token');
     const routes = createInMemoryWorkspaceRouteD1();
     await seedRoutes(routes);
@@ -1315,6 +1315,45 @@ describe('workspace node management and presence', () => {
       error: { code: 'WORKSPACE_NODE_REVOKED' },
     });
     expect(upstreamCalls).toBe(0);
+
+    nowMs += 1;
+    const heartbeatBody = JSON.stringify({
+      workspaceId,
+      nodeId: 'node-home',
+      timestamp: nowMs,
+      nonce: 'heartbeat-recover-revoked-default',
+      connectorStatus: 'connected',
+      capabilities: ['mcp', 'tools'],
+      osVersion: '0.1.85',
+      mcpProtocolVersion: '2026-07-28',
+      mcpReady: true,
+    });
+    const homeHeartbeat = await handler(
+      new Request(`${origin}/workspace/nodes/heartbeat`, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'x-consuelo-node-signature': createDevicePublicKeyProof({
+            deviceKeyPair: homeKey,
+            payload: heartbeatBody,
+          }),
+        },
+        body: heartbeatBody,
+      }),
+    );
+    expect(homeHeartbeat.status).toBe(200);
+    expect((await store.byAccountWorkspace(accountId))?.defaultNodeId).toBe('node-home');
+    await expect(
+      resolveWorkspaceRouteFromD1(routes, {
+        host: workspaceHost,
+        path: '/mcp',
+        nowMs,
+      }),
+    ).resolves.toMatchObject({
+      allowed: true,
+      nodeId: 'node-home',
+      target: { connectorId: 'connector_node_home' },
+    });
   });
 
   it('should reject node mutations when an OAuth token has read-only workspace access', async () => {

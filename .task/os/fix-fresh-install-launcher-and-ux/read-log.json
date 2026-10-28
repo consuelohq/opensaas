@@ -1,0 +1,30 @@
+{
+  "files": [
+    ".task/os/fix-fresh-install-launcher-and-ux/verify.json",
+    ".task/os/fix-fresh-install-launcher-and-ux/workpad.md",
+    ".task/tasks/os/fix-fresh-install-launcher-and-ux.json",
+    "packages/os/cloudflare/os-device-authority/src/constants.ts",
+    "packages/os/cloudflare/os-device-authority/src/routes/device.ts",
+    "packages/os/cloudflare/os-device-authority/src/routes/google-oauth.ts",
+    "packages/os/cloudflare/os-device-authority/src/routes/web-auth.ts",
+    "packages/os/cloudflare/os-device-authority/src/services/connectors.ts",
+    "packages/os/cloudflare/os-device-authority/src/services/grants.ts",
+    "packages/os/cloudflare/workspace-edge/src/index.ts",
+    "packages/os/cloudflare/workspace-edge/wrangler.toml",
+    "packages/os/package.json",
+    "packages/os/scripts/bootstrap.sh",
+    "packages/os/scripts/compact-daemon-output.test.ts",
+    "packages/os/scripts/deploy-cloudflare-worker.ts",
+    "packages/os/scripts/install-system-daemons.sh",
+    "packages/os/scripts/install.ts",
+    "packages/os/scripts/onboarding-flow.test.ts",
+    "packages/os/tests/bootstrap-source.test.ts",
+    "packages/os/tests/cloudflare-worker-release-readiness.test.ts",
+    "packages/os/tests/os-device-authority-worker.test.ts",
+    "packages/os/tests/os-universal-login.test.ts",
+    "packages/os/tests/universal-login.test.ts",
+    "packages/workspace/scripts/os-release-device-auth.ts",
+    "packages/workspace/senior-engineer.md"
+  ],
+  "updatedAt": "2026-09-22T21:21:09.998Z"
+}

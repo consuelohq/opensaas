@@ -244,7 +244,8 @@
       "source": [
         "packages/workspace/scripts/stream-sync.js",
         "packages/workspace/tests/stream-sync-node-modules.test.js",
-        "packages/workspace/tests/stream-sync-generated-registry-conflict.test.js"
+        "packages/workspace/tests/stream-sync-generated-registry-conflict.test.js",
+        "packages/os/scripts/stream-sync.js"
       ],
       "tests": [
         {
@@ -580,6 +581,8 @@
         "packages/os/scripts/lib/distribution/release-channels.ts",
         "packages/os/scripts/lib/github-cli.ts",
         "packages/os/scripts/lib/release-platform-bundle.ts",
+        "packages/os/scripts/lib/release-immutable.ts",
+        "packages/os/scripts/lib/release-operation.ts",
         "packages/os/scripts/lib/release-promotion-dispatch-lock.ts",
         "packages/os/scripts/lib/release-promotion-correlation.ts",
         "packages/os/scripts/lib/release-orchestrator.ts",
@@ -592,6 +595,8 @@
         "packages/os/tests/os-device-authority-release-contract.test.ts",
         "packages/os/tests/production-release-mcp-security.test.ts",
         "packages/os/tests/release-orchestrator.test.ts",
+        "packages/os/tests/release-immutable.test.ts",
+        "packages/os/tests/release-operation.test.ts",
         "packages/os/tests/release-local-platform-bundle.test.ts",
         "packages/os/tests/release-script-promotion-correlation.test.ts",
         "packages/os/tests/release-promotion-dispatch-lock.test.ts",
@@ -617,6 +622,8 @@
             "tests/distribution/release-channels.test.ts",
             "tests/github-cli-resolution.test.ts",
             "tests/release-orchestrator.test.ts",
+            "tests/release-immutable.test.ts",
+            "tests/release-operation.test.ts",
             "tests/release-local-platform-bundle.test.ts",
             "tests/release-script-promotion-correlation.test.ts",
             "tests/release-promotion-dispatch-lock.test.ts",
@@ -1360,7 +1367,8 @@
         "packages/os/scripts/lib/facade/executor.ts",
         "packages/os/scripts/lib/facade/types.ts",
         "packages/os/tests/mcp-gateway.test.ts",
-        "packages/os/tests/facade/facade.test.ts"
+        "packages/os/tests/facade/facade.test.ts",
+        "packages/os/tests/facade/not-found-recovery.test.ts"
       ],
       "tests": [
         {
@@ -1390,6 +1398,17 @@
           "command": [
             "node",
             "packages/os/scripts/check-syntax.js"
+          ]
+        },
+        {
+          "name": "OS MCP call-timeout envelope contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/mcp-gateway.test.ts",
+            "packages/os/tests/facade/not-found-recovery.test.ts"
           ]
         }
       ],
@@ -1775,6 +1794,9 @@
       "tests": [
         {
           "name": "macOS menu Swift contracts",
+          "platforms": [
+            "darwin"
+          ],
           "command": [
             "swift",
             "run",
@@ -2590,6 +2612,31 @@
         }
       ],
       "reason": "M4 OS reference and snapshot cleanup must prove deleted Twenty topology stays absent and large-diff code.call snapshots remain safe without selecting the broad OS package suite."
+    },
+    {
+      "id": "workspace-task-merge-agent-boundary",
+      "source": [
+        "packages/workspace/scripts/task-merge.js",
+        "packages/workspace/scripts/lib/task-merge-readiness.js",
+        "packages/os/scripts/task-merge.js",
+        "packages/os/scripts/lib/task-merge-readiness.js",
+        "packages/workspace/tests/task-merge-readiness.test.ts"
+      ],
+      "tests": [
+        {
+          "name": "workspace task merge agent-boundary contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/task-merge-readiness.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Agent-facing PR merge readiness must stay bounded, fail closed on unreadable or failed GitHub checks, and keep deployment polling behind an explicit operator path."
     }
   ]
 }

@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "worktree_id": "task/swamp-tools/fix-real-swamp-workflow-schema-smoke",
+  "events": [
+    {
+      "id": "6ae5f762-81b3-4300-9672-817b21088c7e",
+      "occurred_at": "2026-09-22T02:14:50.178Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/runtime-tool-providers-swamp.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/swamp-tools/fix-real-swamp-workflow-schema-smoke",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/swamp-tools/fix-real-swamp-workflow-schema-smoke"
+      }
+    },
+    {
+      "id": "7713ea58-8b56-4339-ba57-52ba31823cca",
+      "occurred_at": "2026-09-22T02:31:37.802Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/manifest.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/swamp-tools/fix-real-swamp-workflow-schema-smoke",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/swamp-tools/fix-real-swamp-workflow-schema-smoke"
+      }
+    },
+    {
+      "id": "872bff31-f03b-4783-9c26-52f1e0cb600e",
+      "occurred_at": "2026-09-22T02:32:14.006Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/manifest-overlay.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/swamp-tools/fix-real-swamp-workflow-schema-smoke",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/swamp-tools/fix-real-swamp-workflow-schema-smoke"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-09-22T02:32:14.109Z"
+}

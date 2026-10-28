@@ -620,6 +620,47 @@ describe('Consuelo OS universal login', () => {
     expect(destination.pathname).toBe('/auth/consume');
   });
 
+  it('hands an authenticated installer browser directly to the exact active workspace it just installed', async () => {
+    const store = createMemoryDeviceGrantStore();
+    await seedMembership(store, {
+      workspaceId: 'workspace_one',
+      workspaceHost: 'one.consuelohq.com',
+    });
+    await seedMembership(store, {
+      workspaceId: 'workspace_two',
+      workspaceHost: 'two.consuelohq.com',
+    });
+    const { handler, nonce } = await createAuthority({ store });
+    const login = await webLogin({ handler, nonce });
+    const cookie = cookieHeader({
+      '__Host-consuelo_os_authority': login.authorityCookie,
+    });
+
+    const exact = await handler(
+      new Request(
+        origin +
+          '/auth/workspaces?workspace_host=two.consuelohq.com&return_to=%2F',
+        { headers: { cookie } },
+      ),
+    );
+    expect(exact.status).toBe(302);
+    const destination = new URL(exact.headers.get('location') ?? '');
+    expect(destination.origin).toBe('https://two.consuelohq.com');
+    expect(destination.pathname).toBe('/auth/consume');
+
+    const denied = await handler(
+      new Request(
+        origin +
+          '/auth/workspaces?workspace_host=not-mine.consuelohq.com&return_to=%2F',
+        { headers: { cookie } },
+      ),
+    );
+    expect(denied.status).toBe(403);
+    await expect(denied.json()).resolves.toEqual({
+      error: 'workspace_access_denied',
+    });
+  });
+
   it('requires an explicit CSRF-protected choice for multiple active memberships and ignores browser-supplied hosts', async () => {
     const store = createMemoryDeviceGrantStore();
     await seedMembership(store, {

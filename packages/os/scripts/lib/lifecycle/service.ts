@@ -1,4 +1,4 @@
-import { existsSync, readdirSync } from 'node:fs';
+import { existsSync, readdirSync, rmSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
 import type {
@@ -14,9 +14,17 @@ const MAC_RESTARTABLE_SIDECAR_SERVICE_LABELS = new Set([
   'com.consuelo.watchdog',
   'com.consuelo.availability',
 ]);
-const MAC_RESTARTABLE_SIDECAR_SERVICE_PREFIXES = [
-  'com.consuelo.os.node-heartbeat.',
-];
+const MAC_LEGACY_HEARTBEAT_SERVICE_PREFIX = 'com.consuelo.os.node-heartbeat.';
+const MAC_SUPERVISED_HEARTBEAT_MARKER = join(
+  'scripts',
+  'lib',
+  'macos-supervised-heartbeat.ts',
+);
+const MAC_SUPERVISED_SIDECARS_MARKER = join(
+  'scripts',
+  'lib',
+  'macos-supervised-sidecars.ts',
+);
 const MAC_BEST_EFFORT_SIDECAR_SERVICE_LABELS = new Set([
   'com.consuelo.watchdog',
 ]);
@@ -86,14 +94,37 @@ function installedMacRestartableSidecarLaunchAgents(environment?: NodeJS.Process
       label: name.slice(0, -'.plist'.length),
       plistPath: join(launchAgentDir, name),
     }))
-    .filter(({ label }) =>
-      MAC_RESTARTABLE_SIDECAR_SERVICE_LABELS.has(label)
-      || MAC_RESTARTABLE_SIDECAR_SERVICE_PREFIXES.some((prefix) => label.startsWith(prefix)),
-    )
+    .filter(({ label }) => MAC_RESTARTABLE_SIDECAR_SERVICE_LABELS.has(label))
     // A one-shot watchdog remains inside its launchd transaction until this process exits.
     // Tearing down that same job from consuelo restart races launchd and returns 5 or 37.
     .filter(({ label }) => !invokingServiceLabel || label !== invokingServiceLabel)
     .sort((left, right) => left.label.localeCompare(right.label));
+}
+
+function installedMacLegacyHeartbeatLaunchAgents(environment?: NodeJS.ProcessEnv): Array<{
+  label: string;
+  plistPath: string;
+}> {
+  const effectiveEnvironment = environment ?? process.env;
+  const userHome = effectiveEnvironment.HOME?.trim();
+  if (!userHome) return [];
+  const launchAgentDir = join(userHome, 'Library', 'LaunchAgents');
+  if (!existsSync(launchAgentDir)) return [];
+  return readdirSync(launchAgentDir)
+    .filter((name) => name.startsWith(MAC_LEGACY_HEARTBEAT_SERVICE_PREFIX) && name.endsWith('.plist'))
+    .map((name) => ({
+      label: name.slice(0, -'.plist'.length),
+      plistPath: join(launchAgentDir, name),
+    }))
+    .sort((left, right) => left.label.localeCompare(right.label));
+}
+
+function runtimeUsesSupervisedMacHeartbeat(runtimeRoot: string): boolean {
+  return existsSync(resolve(runtimeRoot, MAC_SUPERVISED_HEARTBEAT_MARKER));
+}
+
+function runtimeUsesSupervisedMacSidecars(runtimeRoot: string): boolean {
+  return existsSync(resolve(runtimeRoot, MAC_SUPERVISED_SIDECARS_MARKER));
 }
 
 function isBestEffortMacSidecar(label: string): boolean {
@@ -225,9 +256,58 @@ export function createReloadServiceController(input: {
             throw new Error('cannot resolve the user id for gateway restart');
           }
           const domain = 'gui/' + String(userId);
-          for (const gateway of installedMacRestartableSidecarLaunchAgents(input.environment)) {
+          const legacyHeartbeatAgents = installedMacLegacyHeartbeatLaunchAgents(input.environment);
+          const supervisedHeartbeat = runtimeUsesSupervisedMacHeartbeat(runtimeRoot);
+          if (supervisedHeartbeat) {
+            for (const heartbeat of legacyHeartbeatAgents) {
+              const service = domain + '/' + heartbeat.label;
+              const loaded = await run('launchctl', ['print', service]);
+              const loadedDetail = loaded.stdout + '\n' + loaded.stderr;
+              const knownUnloaded = loaded.exitCode === 113
+                || /No such process|Could not find service|not loaded/i.test(loadedDetail);
+              if (loaded.exitCode !== 0 && !knownUnloaded) {
+                throw new Error(
+                  'legacy heartbeat inspection failed for ' + heartbeat.label + ': '
+                  + (loaded.stderr.trim() || loaded.stdout.trim()
+                    || 'launchctl print exited ' + String(loaded.exitCode)),
+                );
+              }
+              if (loaded.exitCode === 0) {
+                const bootout = await run('launchctl', ['bootout', service]);
+                const detail = bootout.stdout + '\n' + bootout.stderr;
+                const alreadyUnloaded = bootout.exitCode === 3
+                  || /No such process|Could not find service|not loaded/i.test(detail);
+                if (bootout.exitCode !== 0 && !alreadyUnloaded) {
+                  throw new Error(
+                    'legacy heartbeat unload failed for ' + heartbeat.label + ': '
+                    + (bootout.stderr.trim() || bootout.stdout.trim()
+                      || 'launchctl bootout exited ' + String(bootout.exitCode)),
+                  );
+                }
+              }
+              rmSync(heartbeat.plistPath, { force: true });
+            }
+          }
+          const supervisedSidecars = runtimeUsesSupervisedMacSidecars(runtimeRoot);
+          const restartableAgents = [
+            ...installedMacRestartableSidecarLaunchAgents(input.environment).filter(
+              (agent) => !supervisedSidecars || agent.label !== 'com.consuelo.watchdog',
+            ),
+            ...(supervisedHeartbeat ? [] : legacyHeartbeatAgents),
+          ];
+          for (const gateway of restartableAgents) {
             const service = domain + '/' + gateway.label;
             const loaded = await run('launchctl', ['print', service]);
+            const loadedDetail = loaded.stdout + '\n' + loaded.stderr;
+            const knownUnloaded = loaded.exitCode === 113
+              || /No such process|Could not find service|not loaded/i.test(loadedDetail);
+            if (loaded.exitCode !== 0 && !knownUnloaded) {
+              throw new Error(
+                'gateway definition inspection failed for ' + gateway.label + ': '
+                + (loaded.stderr.trim() || loaded.stdout.trim()
+                  || 'launchctl print exited ' + String(loaded.exitCode)),
+              );
+            }
             const definitionReloadRequired = loaded.exitCode === 0;
             let available = false;
             let lastBootstrap: LifecycleProcessResult | undefined;

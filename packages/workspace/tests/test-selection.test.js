@@ -234,6 +234,35 @@ describe('test selection registry', () => {
     );
   });
 
+  it('keeps agent-boundary tooling changes on focused suites instead of the broad OS package test', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/task-merge.js',
+      '--changed-file',
+      'packages/os/scripts/lib/task-merge-readiness.js',
+      '--changed-file',
+      'packages/os/scripts/stream-sync.js',
+      '--changed-file',
+      'packages/os/tests/facade/not-found-recovery.test.ts',
+      '--json',
+    ]));
+
+    expect(data.matchedRules.map((rule) => rule.id)).toEqual(
+      expect.arrayContaining([
+        'workspace-task-merge-agent-boundary',
+        'workspace-stream-sync-runtime',
+        'os-mcp-call-timeout-envelope',
+      ]),
+    );
+    expect(data.selectedSuites.map((suite) => suite.name)).toContain(
+      'workspace task merge agent-boundary contracts',
+    );
+    expect(data.selectedSuites.map((suite) => suite.name)).not.toContain(
+      '@consuelo/os package test',
+    );
+  });
+
   it('suppresses a broad auto package suite when explicit critical coverage fully owns the changed code', () => {
     const registryPath = path.join(
       os.tmpdir(),
@@ -687,6 +716,10 @@ describe('test selection registry', () => {
     const result = run([
       'check',
       '--changed-file',
+      'packages/os/scripts/lib/release-operation.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/release-immutable.ts',
+      '--changed-file',
       '.github/workflows/consuelo-os-runtime-publish.yaml',
       '--changed-file',
       'packages/os/package.json',
@@ -698,6 +731,10 @@ describe('test selection registry', () => {
       'packages/workspace/scripts/os-release-device-auth.ts',
       '--changed-file',
       'packages/os/tests/production-release-mcp-security.test.ts',
+      '--changed-file',
+      'packages/os/tests/release-operation.test.ts',
+      '--changed-file',
+      'packages/os/tests/release-immutable.test.ts',
       '--json',
     ]);
     const data = json(result);
@@ -719,6 +756,8 @@ describe('test selection registry', () => {
     expect(releaseSuite?.command).toContain(
       'tests/production-release-mcp-security.test.ts',
     );
+    expect(releaseSuite?.command).toContain('tests/release-operation.test.ts');
+    expect(releaseSuite?.command).toContain('tests/release-immutable.test.ts');
   });
 
   it('uses focused OS Explore retrieval contracts instead of the broad OS package suite', () => {
@@ -1992,6 +2031,8 @@ describe('test selection registry', () => {
   it('routes native macOS menu changes through focused Mac contracts', () => {
     const data = json(run([
       'check',
+      '--platform',
+      'darwin',
       '--changed-file',
       'packages/os/native/macos/Sources/ConsueloMacCore/Presentation.swift',
       '--changed-file',
@@ -2009,6 +2050,29 @@ describe('test selection registry', () => {
     );
     expect(data.selectedSuites.map((suite) => suite.name)).toEqual([
       'macOS menu Swift contracts',
+      'macOS menu platform contracts',
+      'macOS alpha package syntax',
+    ]);
+  });
+
+  it('does not run macOS Swift menu contracts on Linux verify', () => {
+    const data = json(run([
+      'check',
+      '--platform',
+      'linux',
+      '--changed-file',
+      'packages/os/native/macos/Sources/ConsueloMacCore/Presentation.swift',
+      '--changed-file',
+      'packages/os/scripts/testing/macos-alpha-package.sh',
+      '--changed-file',
+      'packages/os/tests/macos-platform.test.ts',
+      '--json',
+    ]));
+
+    expect(data.matchedRules.map((rule) => rule.id)).toContain(
+      'os-macos-menu-app',
+    );
+    expect(data.selectedSuites.map((suite) => suite.name)).toEqual([
       'macOS menu platform contracts',
       'macOS alpha package syntax',
     ]);

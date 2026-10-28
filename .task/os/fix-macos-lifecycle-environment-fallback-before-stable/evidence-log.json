@@ -1,0 +1,152 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/fix-macos-lifecycle-environment-fallback-before-stable",
+  "events": [
+    {
+      "id": "81e61067-835e-4a13-b186-74b0302df5e0",
+      "occurred_at": "2026-09-24T00:31:19.000Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/lifecycle/service.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-macos-lifecycle-environment-fallback-before-stable",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-macos-lifecycle-environment-fallback-before-stable"
+      }
+    },
+    {
+      "id": "308dbcc4-3e9f-4137-b65b-3aa78491ca9e",
+      "occurred_at": "2026-09-24T00:31:25.683Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/lifecycle/service.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-macos-lifecycle-environment-fallback-before-stable",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-macos-lifecycle-environment-fallback-before-stable"
+      }
+    },
+    {
+      "id": "c0d3a030-afe3-4136-8338-9c46e3de53bf",
+      "occurred_at": "2026-09-24T00:31:38.989Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/lifecycle/service.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-macos-lifecycle-environment-fallback-before-stable",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-macos-lifecycle-environment-fallback-before-stable"
+      }
+    },
+    {
+      "id": "30a798d8-30b3-4920-a6d5-0ffae4122b77",
+      "occurred_at": "2026-09-24T00:31:47.156Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/lifecycle/service.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-macos-lifecycle-environment-fallback-before-stable",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-macos-lifecycle-environment-fallback-before-stable"
+      }
+    },
+    {
+      "id": "f11d371c-0cd4-4fef-aba6-5702fe3adff0",
+      "occurred_at": "2026-09-24T00:31:53.142Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/lifecycle-restart-contract.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-macos-lifecycle-environment-fallback-before-stable",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-macos-lifecycle-environment-fallback-before-stable"
+      }
+    },
+    {
+      "id": "dfba5ae1-2a37-4c07-92d0-88a67be40dab",
+      "occurred_at": "2026-09-24T00:32:06.705Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/lifecycle-restart-contract.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-macos-lifecycle-environment-fallback-before-stable",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-macos-lifecycle-environment-fallback-before-stable"
+      }
+    },
+    {
+      "id": "ab296498-f6ce-43ce-a04a-a42f671ee9df",
+      "occurred_at": "2026-09-24T00:32:06.946Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/lifecycle/service.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-macos-lifecycle-environment-fallback-before-stable",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-macos-lifecycle-environment-fallback-before-stable"
+      }
+    },
+    {
+      "id": "ad337f12-cc78-481b-9cc3-786a08fc9862",
+      "occurred_at": "2026-09-24T00:32:32.556Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/lifecycle-restart-contract.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-macos-lifecycle-environment-fallback-before-stable",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-macos-lifecycle-environment-fallback-before-stable"
+      }
+    },
+    {
+      "id": "0b063a21-35cd-4b76-b8bd-9745fb90e30b",
+      "occurred_at": "2026-09-24T00:33:09.207Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/definitely-missing.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-macos-lifecycle-environment-fallback-before-stable",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-macos-lifecycle-environment-fallback-before-stable"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-09-24T00:33:09.453Z"
+}

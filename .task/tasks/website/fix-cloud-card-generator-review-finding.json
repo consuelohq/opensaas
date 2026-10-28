@@ -1,0 +1,16 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/fix-cloud-card-generator-review-finding",
+  "baseBranch": "stream/website",
+  "sourceBranch": "stream/website",
+  "startFrom": "stream",
+  "prNumber": 2612,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2612",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-fix-cloud-card-generator-review-finding",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_6a7c83e82be0",
+  "tmuxSession": "opensaas-website-fix-cloud-card-generator-review-finding-6a7c83e8",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-fix-cloud-card-generator-review-finding/.task/session.json",
+  "createdAt": "2026-09-29T18:39:52.377Z"
+}

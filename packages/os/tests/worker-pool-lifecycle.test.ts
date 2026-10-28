@@ -364,7 +364,10 @@ describe('OS worker pool lifecycle', () => {
 
   it('wires managed macOS/direct and Linux service launch paths to the supervisor', () => {
     const daemon = readFileSync(resolve(osRoot, 'scripts/start-consuelo-daemon.sh'), 'utf8');
+    const supervisor = readFileSync(resolve(osRoot, 'scripts/server/supervisor.ts'), 'utf8');
     expect(daemon).toContain('scripts/server/supervisor.ts');
+    expect(supervisor).toContain('startMacosSupervisedSidecars');
+    expect(supervisor).toContain('supportsMacSidecarSupervision: process.platform === \'darwin\'');
 
     const unit = renderSystemdUserUnit({ home: '/tmp/consuelo-home', bunExecutable: '/usr/bin/bun' });
     expect(unit).toContain('/runtime/current/scripts/server/supervisor.ts');

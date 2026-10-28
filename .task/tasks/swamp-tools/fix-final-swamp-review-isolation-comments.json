@@ -1,0 +1,16 @@
+{
+  "area": "swamp-tools",
+  "stream": "stream/swamp-tools",
+  "taskBranch": "task/swamp-tools/fix-final-swamp-review-isolation-comments",
+  "baseBranch": "stream/swamp-tools",
+  "sourceBranch": "stream/swamp-tools",
+  "startFrom": "stream",
+  "prNumber": 2539,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2539",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-swamp-tools-fix-final-swamp-review-isolation-comments",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_1f264ec81996",
+  "tmuxSession": "opensaas-swamp-tools-fix-final-swamp-review-isolation-comments-1f264ec8",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-swamp-tools-fix-final-swamp-review-isolation-comments/.task/session.json",
+  "createdAt": "2026-09-22T20:56:43.097Z"
+}

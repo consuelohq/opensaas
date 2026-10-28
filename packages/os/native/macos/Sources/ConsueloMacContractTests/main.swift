@@ -70,6 +70,7 @@ private struct ContractSuite {
         try failedUpdatePreservesWorkingVersionAndSurfacesRecovery()
         try heartbeatMetadataDoesNotInvalidateMenuContent()
         try menuInstanceLockAllowsOnlyOneOwner()
+        try loginItemRegistrationPolicyPreservesUserControl()
         try offlineRetainsReadableStateAndFailsMutationsClosed()
         try mapsMenuActionsOnlyToAllowlistedLifecycleRequests()
         try destructiveRepairAndUninstallRequireExplicitConfirmation()
@@ -192,6 +193,34 @@ private struct ContractSuite {
         try expectTrue(first != nil, "first menu instance acquires singleton lock")
         let second = MenuBarInstanceLock.acquire(name: lockName)
         try expectTrue(second == nil, "second menu instance is rejected")
+    }
+
+    private func loginItemRegistrationPolicyPreservesUserControl() throws {
+        try expect(
+            LoginItemRegistrationPolicy.decision(for: .notRegistered, isApplicationBundle: true),
+            .register,
+            "packaged unregistered app requests launch-at-login registration"
+        )
+        try expect(
+            LoginItemRegistrationPolicy.decision(for: .enabled, isApplicationBundle: true),
+            .leaveUnchanged,
+            "enabled login item remains enabled"
+        )
+        try expect(
+            LoginItemRegistrationPolicy.decision(for: .requiresApproval, isApplicationBundle: true),
+            .leaveUnchanged,
+            "approval-required login item is not repeatedly registered"
+        )
+        try expect(
+            LoginItemRegistrationPolicy.decision(for: .unavailable, isApplicationBundle: true),
+            .leaveUnchanged,
+            "unavailable login item fails closed"
+        )
+        try expect(
+            LoginItemRegistrationPolicy.decision(for: .notRegistered, isApplicationBundle: false),
+            .leaveUnchanged,
+            "command-line development execution never registers a login item"
+        )
     }
 
     private func offlineRetainsReadableStateAndFailsMutationsClosed() throws {

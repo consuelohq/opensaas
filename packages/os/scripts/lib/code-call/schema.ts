@@ -6,6 +6,7 @@ import type { CodeCallInput, CodeCallLanguage, CodeCallMode } from './types';
 
 export const DEFAULT_TIMEOUT_MS = 180_000;
 export const DEFAULT_MAX_RESULT_CHARS = 20_000;
+export const DEFAULT_VERIFY_MAX_RESULT_CHARS = 6_000;
 const MIN_TIMEOUT_MS = 1;
 const MAX_TIMEOUT_MS = 300_000;
 const MIN_RESULT_CHARS = 1;
@@ -73,7 +74,7 @@ export const normalizeCodeCallInputEffect = (input: CodeCallInput) => Effect.gen
     ),
     maxResultChars: normalizePositiveBoundedNumber(
       input.maxResultChars,
-      DEFAULT_MAX_RESULT_CHARS,
+      mode === 'verify' ? DEFAULT_VERIFY_MAX_RESULT_CHARS : DEFAULT_MAX_RESULT_CHARS,
       MIN_RESULT_CHARS,
       MAX_RESULT_CHARS_LIMIT,
     ),

@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_5ce5b9468229",
+  "tmuxSession": "opensaas-documentation-document-swamp-application-integration-5ce5b946",
+  "area": "documentation",
+  "stream": "stream/documentation",
+  "taskBranch": "task/documentation/document-swamp-application-integration",
+  "branch": "task/documentation/document-swamp-application-integration",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-documentation-document-swamp-application-integration",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-documentation-document-swamp-application-integration",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2555,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2555",
+  "createdAt": "2026-09-23T01:41:27.864Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-documentation-document-swamp-application-integration/.task/documentation/document-swamp-application-integration/session.json"
+}

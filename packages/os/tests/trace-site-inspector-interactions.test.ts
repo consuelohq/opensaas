@@ -87,6 +87,14 @@ describe('Trace Burn keyboard and row interaction contracts', () => {
     expect(totalTokens({ rawInputJson: 'x'.repeat(40), rawResultJson: 'y'.repeat(40) })).toBe(20);
   });
 
+  it('renders token totals without approximation markers', () => {
+    const browser = readFileSync(resolve(inspectorRoot, 'browser.ts'), 'utf8');
+    const virtualList = readFileSync(resolve(inspectorRoot, 'virtual-list-browser.ts'), 'utf8');
+
+    expect(browser).not.toContain('≈');
+    expect(virtualList).not.toContain('≈');
+  });
+
   it('materializes stored batch children with their tool names and token counts', () => {
     const children = childTraceRecords({
       traceId: 'trc_parent',

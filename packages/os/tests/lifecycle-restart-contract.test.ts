@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 
@@ -99,6 +99,7 @@ describe('lifecycle restart parity', () => {
     const calls: Array<{ command: string; args: string[] }> = [];
     const controller = createReloadServiceController({
       osRoot,
+      environment: { HOME: '' },
       run: async (command, args) => {
         calls.push({ command, args });
         return { exitCode: 0, stdout: 'Consuelo OS reload scheduled\n', stderr: '' };
@@ -225,11 +226,24 @@ describe('lifecycle restart parity', () => {
       const launchctl = calls.filter((call) => call.command === 'launchctl');
       expect(JSON.stringify(launchctl)).not.toContain('com.consuelo.caddy');
       expect(JSON.stringify(launchctl)).not.toContain('com.consuelo.os.cloudflared.connector-test');
+      expect(launchctl).toContainEqual({
+        command: 'launchctl',
+        args: ['print', 'gui/501/com.consuelo.os.node-heartbeat.node-test'],
+      });
+      expect(launchctl).toContainEqual({
+        command: 'launchctl',
+        args: ['bootout', 'gui/501/com.consuelo.os.node-heartbeat.node-test'],
+      });
+      expect(launchctl).not.toContainEqual({
+        command: 'launchctl',
+        args: ['kickstart', '-k', 'gui/501/com.consuelo.os.node-heartbeat.node-test'],
+      });
+      expect(existsSync(
+        join(launchAgents, 'com.consuelo.os.node-heartbeat.node-test.plist'),
+      )).toBe(false);
       for (const label of [
         'com.consuelo.availability',
-        'com.consuelo.os.node-heartbeat.node-test',
         'com.consuelo.portless.system',
-        'com.consuelo.watchdog',
       ]) {
         expect(launchctl).toContainEqual({
           command: 'launchctl',
@@ -240,6 +254,7 @@ describe('lifecycle restart parity', () => {
           args: ['kickstart', '-k', 'gui/501/' + label],
         });
       }
+      expect(JSON.stringify(launchctl)).not.toContain('com.consuelo.watchdog');
     } finally {
       rmSync(home, { recursive: true, force: true });
     }
@@ -308,7 +323,7 @@ describe('lifecycle restart parity', () => {
     const home = mkdtempSync(join(tmpdir(), 'consuelo-restart-loaded-sidecar-visible-'));
     const launchAgents = join(home, 'Library', 'LaunchAgents');
     mkdirSync(launchAgents, { recursive: true });
-    const label = 'com.consuelo.watchdog';
+    const label = 'com.consuelo.availability';
     writeFileSync(join(launchAgents, label + '.plist'), '<plist/>\n');
     let bootstrapAttempts = 0;
     let bootoutAttempts = 0;
@@ -350,6 +365,7 @@ describe('lifecycle restart parity', () => {
 
   it('retries a transient macOS gateway bootstrap while a missing job settles', async () => {
     const home = mkdtempSync(join(tmpdir(), 'consuelo-restart-gateway-retry-'));
+    const legacyRuntimeRoot = mkdtempSync(join(tmpdir(), 'consuelo-legacy-runtime-'));
     const launchAgents = join(home, 'Library', 'LaunchAgents');
     mkdirSync(launchAgents, { recursive: true });
     const label = 'com.consuelo.os.node-heartbeat.node-test';
@@ -383,7 +399,10 @@ describe('lifecycle restart parity', () => {
         },
       });
 
-      await expect(controller.restart({ waitForCompletion: true })).resolves.toBeUndefined();
+      await expect(controller.restart({
+        waitForCompletion: true,
+        runtimeRoot: legacyRuntimeRoot,
+      })).resolves.toBeUndefined();
       expect(bootstrapAttempts).toBe(2);
       expect(calls).toContainEqual({
         command: 'launchctl',
@@ -395,11 +414,100 @@ describe('lifecycle restart parity', () => {
       });
     } finally {
       rmSync(home, { recursive: true, force: true });
+      rmSync(legacyRuntimeRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('should discover macOS sidecars from process environment when controller environment is omitted', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-restart-process-environment-'));
+    const legacyRuntimeRoot = mkdtempSync(join(tmpdir(), 'consuelo-legacy-runtime-'));
+    const launchAgents = join(home, 'Library', 'LaunchAgents');
+    mkdirSync(launchAgents, { recursive: true });
+    const label = 'com.consuelo.os.node-heartbeat.node-test';
+    writeFileSync(join(launchAgents, label + '.plist'), '<plist/>\n');
+    const calls: Array<{ command: string; args: string[] }> = [];
+    const previousHome = process.env.HOME;
+    process.env.HOME = home;
+    try {
+      const controller = createReloadServiceController({
+        osRoot,
+        platform: 'darwin',
+        userId: 501,
+        sleep: async () => {},
+        run: async (command, args) => {
+          calls.push({ command, args });
+          if (command === 'launchctl' && args[0] === 'print') {
+            return { exitCode: 113, stdout: '', stderr: 'Could not find service' };
+          }
+          return { exitCode: 0, stdout: '', stderr: '' };
+        },
+      });
+
+      await expect(controller.restart({
+        waitForCompletion: true,
+        runtimeRoot: legacyRuntimeRoot,
+      })).resolves.toBeUndefined();
+      expect(calls).toContainEqual({
+        command: 'launchctl',
+        args: ['print', 'gui/501/' + label],
+      });
+      expect(calls).toContainEqual({
+        command: 'launchctl',
+        args: ['bootstrap', 'gui/501', join(launchAgents, label + '.plist')],
+      });
+      expect(calls).toContainEqual({
+        command: 'launchctl',
+        args: ['kickstart', '-k', 'gui/501/' + label],
+      });
+    } finally {
+      if (previousHome === undefined) delete process.env.HOME;
+      else process.env.HOME = previousHome;
+      rmSync(home, { recursive: true, force: true });
+      rmSync(legacyRuntimeRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('should fail closed when launchctl cannot determine a macOS sidecar load state', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'consuelo-restart-sidecar-print-failure-'));
+    const legacyRuntimeRoot = mkdtempSync(join(tmpdir(), 'consuelo-legacy-runtime-'));
+    const launchAgents = join(home, 'Library', 'LaunchAgents');
+    mkdirSync(launchAgents, { recursive: true });
+    const label = 'com.consuelo.os.node-heartbeat.node-test';
+    const plistPath = join(launchAgents, label + '.plist');
+    writeFileSync(plistPath, '<plist/>\n');
+    mkdirSync(join(legacyRuntimeRoot, 'scripts', 'lib'), { recursive: true });
+    writeFileSync(
+      join(legacyRuntimeRoot, 'scripts', 'lib', 'macos-supervised-heartbeat.ts'),
+      'export const fixture = true;\n',
+    );
+    try {
+      const controller = createReloadServiceController({
+        osRoot,
+        platform: 'darwin',
+        environment: { HOME: home },
+        userId: 501,
+        run: async (command, args) => {
+          if (command === 'launchctl' && args[0] === 'print') {
+            return { exitCode: 5, stdout: '', stderr: 'Input/output error' };
+          }
+          return { exitCode: 0, stdout: '', stderr: '' };
+        },
+      });
+
+      await expect(controller.restart({
+        waitForCompletion: true,
+        runtimeRoot: legacyRuntimeRoot,
+      })).rejects.toThrow('legacy heartbeat inspection failed for ' + label);
+      expect(existsSync(plistPath)).toBe(true);
+    } finally {
+      rmSync(home, { recursive: true, force: true });
+      rmSync(legacyRuntimeRoot, { recursive: true, force: true });
     }
   });
 
   it('keeps node-heartbeat bootstrap failure fatal after retries are exhausted', async () => {
     const home = mkdtempSync(join(tmpdir(), 'consuelo-restart-heartbeat-failure-'));
+    const legacyRuntimeRoot = mkdtempSync(join(tmpdir(), 'consuelo-legacy-runtime-'));
     const launchAgents = join(home, 'Library', 'LaunchAgents');
     mkdirSync(launchAgents, { recursive: true });
     const label = 'com.consuelo.os.node-heartbeat.node-test';
@@ -428,17 +536,22 @@ describe('lifecycle restart parity', () => {
         },
       });
 
-      await expect(controller.restart({ waitForCompletion: true })).rejects.toThrow(
+      await expect(controller.restart({
+        waitForCompletion: true,
+        runtimeRoot: legacyRuntimeRoot,
+      })).rejects.toThrow(
         'gateway bootstrap failed for ' + label,
       );
       expect(bootstrapAttempts).toBe(4);
     } finally {
       rmSync(home, { recursive: true, force: true });
+      rmSync(legacyRuntimeRoot, { recursive: true, force: true });
     }
   });
 
   it('retries a transient macOS sidecar kickstart after bootstrap succeeds', async () => {
     const home = mkdtempSync(join(tmpdir(), 'consuelo-restart-gateway-kickstart-retry-'));
+    const legacyRuntimeRoot = mkdtempSync(join(tmpdir(), 'consuelo-legacy-runtime-'));
     const launchAgents = join(home, 'Library', 'LaunchAgents');
     mkdirSync(launchAgents, { recursive: true });
     const label = 'com.consuelo.os.node-heartbeat.node-test';
@@ -469,19 +582,23 @@ describe('lifecycle restart parity', () => {
         },
       });
 
-      await expect(controller.restart({ waitForCompletion: true })).resolves.toBeUndefined();
+      await expect(controller.restart({
+        waitForCompletion: true,
+        runtimeRoot: legacyRuntimeRoot,
+      })).resolves.toBeUndefined();
       expect(kickstartAttempts).toBe(2);
       expect(sleepCalls).toEqual([200]);
     } finally {
       rmSync(home, { recursive: true, force: true });
+      rmSync(legacyRuntimeRoot, { recursive: true, force: true });
     }
   });
 
-  it('retries launchd operation-in-progress while restarting the watchdog', async () => {
+  it('retries launchd operation-in-progress while restarting a retained launchd sidecar', async () => {
     const home = mkdtempSync(join(tmpdir(), 'consuelo-restart-watchdog-kickstart-retry-'));
     const launchAgents = join(home, 'Library', 'LaunchAgents');
     mkdirSync(launchAgents, { recursive: true });
-    const label = 'com.consuelo.watchdog';
+    const label = 'com.consuelo.availability';
     writeFileSync(join(launchAgents, label + '.plist'), '<plist/>\n');
     let kickstartAttempts = 0;
     const sleepCalls: number[] = [];

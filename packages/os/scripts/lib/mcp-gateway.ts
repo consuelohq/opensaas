@@ -325,6 +325,14 @@ export function resolveMcpGatewayRequiredScope(body: string): McpGatewayScopeRes
 
     const toolScope = resolveToolScope(facadeCall.tool, facadeCall.input);
     if (!toolScope.ok) {
+      if (toolScope.error.code === 'UNKNOWN_TOOL_SCOPE') {
+        return {
+          ok: true,
+          method: request.method,
+          toolName: facadeCall.tool,
+          requiredScope: 'mcp:call',
+        };
+      }
       return { ok: false, status: toolScope.status, error: toolScope.error };
     }
     if (toolScope.manifestKind !== 'facade-tool') return unsupportedPublicTool();

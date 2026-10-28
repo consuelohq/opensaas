@@ -1,0 +1,16 @@
+{
+  "area": "swamp-tools",
+  "stream": "stream/swamp-tools",
+  "taskBranch": "task/swamp-tools/add-real-swamp-compatibility-ci",
+  "baseBranch": "stream/swamp-tools",
+  "sourceBranch": "stream/swamp-tools",
+  "startFrom": "stream",
+  "prNumber": 2535,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2535",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-swamp-tools-add-real-swamp-compatibility-ci",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_102d4b343472",
+  "tmuxSession": "opensaas-swamp-tools-add-real-swamp-compatibility-ci-102d4b34",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-swamp-tools-add-real-swamp-compatibility-ci/.task/session.json",
+  "createdAt": "2026-09-22T02:57:45.332Z"
+}

@@ -26,6 +26,7 @@ const { isOnlyTaskMetadataConflict, resolveTaskMetadataConflicts } = require('./
 const { linkTaskWorktreeNodeModules } = require('./lib/task-node-modules');
 
 const GENERATED_TEST_SELECTION_REGISTRY = 'packages/workspace/test-selection.registry.json';
+const DEFAULT_REPO = 'consuelohq/opensaas';
 
 function writeStdout(value = '') {
   process.stdout.write(`${value}\n`);
@@ -43,6 +44,7 @@ function printHelp() {
   writeStdout('');
   writeStdout('options:');
   writeStdout('  --stream <branch>      stream branch (default: stream/<area>)');
+  writeStdout('  --repo <owner/name>    repository identity (currently consuelohq/opensaas)');
   writeStdout('  --json                 output json');
   writeStdout('  --help                 show this help');
 }
@@ -77,6 +79,9 @@ function parseArgs(argv) {
         break;
       case '--stream':
         args.stream = value;
+        break;
+      case '--repo':
+        args.repo = value;
         break;
       case '--json':
         args.json = true;
@@ -297,6 +302,9 @@ async function main() {
 
   const area = normalizeArea(args.area);
   const streamBranch = args.stream || getDefaultStreamBranch(area);
+  if (args.repo && args.repo !== DEFAULT_REPO) {
+    throw new Error(`stream.sync currently supports only ${DEFAULT_REPO}; received ${args.repo}`);
+  }
   const repoRoot = resolveGitRoot(process.cwd());
 
   assertStreamBranchName(streamBranch, area);

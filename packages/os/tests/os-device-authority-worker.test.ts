@@ -1297,6 +1297,9 @@ describe('os device authority worker', () => {
       ),
     );
     expect(callback.status).toBe(200);
+    expect(callback.headers.get('set-cookie')).toContain(
+      '__Host-consuelo_os_authority=',
+    );
     await expect(callback.text()).resolves.toContain(
       'Return to your terminal to name this workspace',
     );

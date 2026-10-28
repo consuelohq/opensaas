@@ -1,0 +1,7 @@
+{
+  "files": [
+    "packages/os/scripts/lib/manifest-overlay.ts",
+    "packages/os/scripts/lib/manifest.ts"
+  ],
+  "updatedAt": "2026-09-22T02:32:13.906Z"
+}

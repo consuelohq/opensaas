@@ -77,4 +77,57 @@ describe('DiffsLocalCache', () => {
     expect(left.etag).not.toBe(initial.etag);
     expect(loads).toBe(2);
   });
+
+  it('serves an expired persisted snapshot immediately while coalescing a background refresh', async () => {
+    let now = 1_000;
+    let refreshCount = 0;
+    let releaseRefresh: ((value: { revision: number }) => void) | undefined;
+    const root = cacheRoot();
+    const writer = new DiffsLocalCache({ root, now: () => now, maxEntries: 8 });
+    await writer.getFresh('repo:pulls', 100, async () => ({ revision: 1 }));
+    now = 1_200;
+    const cache = new DiffsLocalCache({ root, now: () => now, maxEntries: 8 });
+    const loader = () => {
+      refreshCount += 1;
+      return new Promise<{ revision: number }>((resolve) => { releaseRefresh = resolve; });
+    };
+
+    const first = await cache.getStaleWhileRevalidate('repo:pulls', 100, 86_400_000, loader);
+    const second = await cache.getStaleWhileRevalidate('repo:pulls', 100, 86_400_000, loader);
+    expect(first.value.revision).toBe(1);
+    expect(first.source).toBe('stale');
+    expect(second.etag).toBe(first.etag);
+    expect(refreshCount).toBe(1);
+
+    expect(releaseRefresh).toBeDefined();
+    releaseRefresh?.({ revision: 2 });
+    const updated = await cache.getFresh('repo:pulls', 100, loader);
+    expect(updated.value.revision).toBe(2);
+    expect(updated.etag).not.toBe(first.etag);
+    expect(refreshCount).toBe(1);
+  });
+
+  it('keeps stale data on background errors without retrying on every request', async () => {
+    let now = 1_000;
+    const cache = new DiffsLocalCache({ root: cacheRoot(), now: () => now, maxEntries: 8 });
+    await cache.getFresh('repo:pull:42', 100, async () => ({ revision: 1 }));
+    now = 2_000;
+    let calls = 0;
+    const failing = async () => {
+      calls += 1;
+      throw new Error('GitHub unavailable');
+    };
+
+    const first = await cache.getStaleWhileRevalidate('repo:pull:42', 100, 86_400_000, failing);
+    await Promise.resolve();
+    await Promise.resolve();
+    const second = await cache.getStaleWhileRevalidate('repo:pull:42', 100, 86_400_000, failing);
+    expect(first.source).toBe('stale');
+    expect(second.value.revision).toBe(1);
+    expect(calls).toBe(1);
+
+    now += 61_000;
+    await cache.getStaleWhileRevalidate('repo:pull:42', 100, 86_400_000, failing);
+    expect(calls).toBe(2);
+  });
 });
