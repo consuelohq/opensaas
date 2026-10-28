@@ -1,0 +1,15 @@
+{
+  "files": [
+    ".task/os-foundation-two/create-split-worker-23-final-audit-briefs/workpad.md",
+    "packages/os/plans/consuelo-os-foundation/environment-registry.md",
+    "packages/os/plans/consuelo-os-foundation/plan.md",
+    "packages/os/plans/consuelo-os-foundation/workers/23-final-integration-audit.md",
+    "packages/os/plans/consuelo-os-foundation/workers/23-independent-final-integration-audit.md",
+    "packages/os/plans/consuelo-os-foundation/workers/27-grok-review-pipeline.md",
+    "packages/os/plans/consuelo-os-foundation/workers/README.md",
+    "packages/os/plans/consuelo-os-foundation/workers/grok-review-template.md",
+    "packages/os/plans/consuelo-os-foundation/workers/validate-plan.ts",
+    "packages/workspace/senior-engineer.md"
+  ],
+  "updatedAt": "2026-07-27T18:32:40.988Z"
+}

@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/fix-existing-workspace-node-route-provisioning",
+  "baseBranch": "stream/security",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1488,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1488",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1488",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1488/fix-existing-workspace-node-route-provisioning",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1488",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1488/fix-existing-workspace-node-route-provisioning",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-existing-workspace-node-route-provisioning",
+  "taskSession": "tsk_7b3b240eb601",
+  "tmuxSession": "opensaas-security-fix-existing-workspace-node-route-provisioning-7b3b240e",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-existing-workspace-node-route-provisioning/.task/security/fix-existing-workspace-node-route-provisioning/session.json",
+  "createdAt": "2026-07-14T18:06:07.925Z"
+}

@@ -62,4 +62,51 @@ contractDescribe('workspace site snapshot publishing contract', () => {
       target: { kind: 'site-snapshot', manifestKey: 'sites/workspace_kokayi/launcher/2026-06-14-69e267c/index.html' },
     });
   });
+
+  it('does not let the launcher wildcard serve an unpublished child Site', async () => {
+    const registry = await loadRegistry();
+    const db = registry.createInMemoryWorkspaceRouteD1();
+    await registry.migrateWorkspaceRouteD1(db);
+    const target = {
+      kind: 'site-snapshot',
+      siteId: 'launcher',
+      versionId: 'version_1',
+      manifestKey: 'sites/workspace_kokayi/launcher/version_1/index.html',
+      cachePolicy: 'private-preview',
+    };
+    await registry.upsertWorkspaceHostnameInD1(db, {
+      workspaceId: 'workspace_kokayi',
+      workspaceSlug: 'kokayi',
+      hostname: 'kokayi.consuelohq.com',
+      baseDomain: 'consuelohq.com',
+      provider: 'cloudflare',
+      owner: 'consuelo-os-cloud',
+      status: 'active',
+      routes: [
+        {
+          surface: 'sites',
+          pathPrefix: '/',
+          auth: 'workspace-session',
+          status: 'active',
+          target,
+        },
+        {
+          surface: 'sites',
+          pathPrefix: '/tools',
+          auth: 'public',
+          status: 'disabled',
+          target: { ...target, siteId: 'tools' },
+        },
+      ],
+    });
+
+    await expect(registry.resolveWorkspaceRouteFromD1(db, {
+      host: 'kokayi.consuelohq.com',
+      path: '/tools',
+    })).resolves.toMatchObject({
+      allowed: false,
+      status: 404,
+      errorCode: 'WORKSPACE_HOSTNAME_ROUTE_NOT_FOUND',
+    });
+  });
 });

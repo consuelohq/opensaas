@@ -1,0 +1,19 @@
+{
+  "area": "os-distribution",
+  "stream": "stream/os-distribution",
+  "taskBranch": "task/os-distribution/resolve-final-distribution-review-dispositions",
+  "baseBranch": "stream/os-distribution",
+  "sourceBranch": "stream/os-distribution",
+  "startFrom": "stream",
+  "prNumber": 1629,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1629",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1629",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1629/resolve-final-distribution-review-dispositions",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1629",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1629/resolve-final-distribution-review-dispositions",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-resolve-final-distribution-review-dispositions",
+  "taskSession": "tsk_55d91f15eaba",
+  "tmuxSession": "opensaas-os-distribution-resolve-final-distribution-review-dispositions-55d91f15",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-resolve-final-distribution-review-dispositions/.task/os-distribution/resolve-final-distribution-review-dispositions/session.json",
+  "createdAt": "2026-07-24T06:24:23.880Z"
+}

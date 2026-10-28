@@ -1,0 +1,70 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/sites/april-changelog-data",
+  "base": "origin/task/sites/april-changelog-data",
+  "headSha": "2b8548ca14c8c6bc3b1aab0dc3c211da33401bc9",
+  "changeHash": "9c5bf80dc557458d038d277fda974d94cec22ce19ec243f6c1d559b77142f7b9",
+  "changedFiles": [
+    "packages/consuelo-website/bun.lock",
+    "packages/consuelo-website/package.json",
+    "packages/consuelo-website/src/data/json-files/changelogData.json",
+    "packages/consuelo-website/src/pages/changelog.astro",
+    "packages/consuelo-website/tests/website-structure.test.js"
+  ],
+  "verifiedAt": "2026-06-30T23:36:00.641Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/sites/april-changelog-data/current.json",
+        ".task/sites/april-changelog-data/session.json",
+        ".task/sites/april-changelog-data/workpad.md",
+        ".task/sites/hotfix-hero-diagram-logo-on-main/current.json",
+        ".task/sites/hotfix-hero-diagram-logo-on-main/session.json",
+        ".task/sites/hotfix-hero-diagram-logo-on-main/workpad.md",
+        ".task/sites/swap-hero-diagram-portrait-logo/current.json",
+        ".task/sites/swap-hero-diagram-portrait-logo/session.json",
+        ".task/sites/swap-hero-diagram-portrait-logo/workpad.md",
+        ".task/sites/weekly-changelog-structure/current.json",
+        ".task/sites/weekly-changelog-structure/session.json",
+        ".task/sites/weekly-changelog-structure/verify.json",
+        ".task/sites/weekly-changelog-structure/workpad.md",
+        ".task/tasks/sites/april-changelog-data.json",
+        ".task/tasks/sites/hotfix-hero-diagram-logo-on-main.json",
+        ".task/tasks/sites/swap-hero-diagram-portrait-logo.json",
+        ".task/tasks/sites/weekly-changelog-structure.json",
+        "packages/consuelo-website/bun.lock",
+        "packages/consuelo-website/package.json",
+        "packages/consuelo-website/src/data/json-files/changelogData.json",
+        "packages/consuelo-website/src/pages/changelog.astro",
+        "packages/consuelo-website/tests/website-structure.test.js"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

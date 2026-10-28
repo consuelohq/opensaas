@@ -1,0 +1,20 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/fit-homepage-footer-on-narrow-landscape-phones",
+  "baseBranch": "stream/website",
+  "sourceBranch": "stream/website",
+  "startFrom": "stream",
+  "prNumber": 2618,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2618",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2618",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2618/fit-homepage-footer-on-narrow-landscape-phones",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2618",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2618/fit-homepage-footer-on-narrow-landscape-phones",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-fit-homepage-footer-on-narrow-landscape-phones",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_1d95360c0ec9",
+  "tmuxSession": "opensaas-website-fit-homepage-footer-on-narrow-landscape-phones-1d95360c",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-fit-homepage-footer-on-narrow-landscape-phones/.task/website/fit-homepage-footer-on-narrow-landscape-phones/session.json",
+  "createdAt": "2026-09-29T21:10:29.007Z"
+}

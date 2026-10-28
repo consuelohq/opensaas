@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/refactor-local-os-server-onto-hono",
+  "baseBranch": "stream/security",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1405,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1405",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1405",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1405/refactor-local-os-server-onto-hono",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1405",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1405/refactor-local-os-server-onto-hono",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-refactor-local-os-server-onto-hono",
+  "taskSession": "tsk_73d3104edd8e",
+  "tmuxSession": "opensaas-security-refactor-local-os-server-onto-hono-73d3104e",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-refactor-local-os-server-onto-hono/.task/security/refactor-local-os-server-onto-hono/session.json",
+  "createdAt": "2026-07-11T03:41:03.574Z"
+}

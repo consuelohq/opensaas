@@ -1,0 +1,24 @@
+---
+title: Steering
+description: Control the workspace and project instructions every agent starts from.
+status: preview
+verifiedAt: 2026-09-09
+evidence:
+  - source: packages/os/scripts/lib/steering-snapshot-cache.ts
+    tests:
+      - packages/os/tests/os-get-steering-trace.test.ts
+      - packages/os/tests/steering-canonical-source.test.ts
+    runtime: Local-authoritative steering assembly, deterministic ordering, cache invalidation, and excluded example behavior were verified by focused contracts on 2026-09-09.
+---
+
+**Steering** is the durable instruction layer that tells agents how this workspace operates. Your steering lives in the visible `~/Consuelo/Steering/` directory; the installed runtime does not carry a second system prompt.
+
+Agents call `get_steering` once at the beginning of a conversation. After bootstrap, they should use targeted reads for the project or package they are changing instead of repeatedly reloading the full steering surface.
+
+## Steering layers
+
+- [How steering works](/build/steering/how-steering-works/) explains the bootstrap and resolution model.
+- [Workspace steering](/build/steering/workspace-steering/) covers `system.md`, additional Markdown files, and the excluded example file.
+- [Project steering](/build/steering/project-steering/) covers rules that apply to a narrower project or package.
+
+Steering is different from memory: steering says **how to work**; memory carries **what happened and what needs to continue**.

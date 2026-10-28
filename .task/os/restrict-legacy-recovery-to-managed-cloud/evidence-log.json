@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/restrict-legacy-recovery-to-managed-cloud",
+  "events": [
+    {
+      "id": "fbe9e5c0-72a6-4ba2-aed3-2438afff838d",
+      "occurred_at": "2026-09-08T03:16:51.991Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/managed-cloud-pricing.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/restrict-legacy-recovery-to-managed-cloud",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/restrict-legacy-recovery-to-managed-cloud"
+      }
+    },
+    {
+      "id": "5d7dfa53-4618-4b25-a223-a8a4aaa6dc9f",
+      "occurred_at": "2026-09-08T03:16:55.858Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/workspace-node-registry-routing.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/restrict-legacy-recovery-to-managed-cloud",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/restrict-legacy-recovery-to-managed-cloud"
+      }
+    },
+    {
+      "id": "276512b3-a414-428c-bc3d-8a0bc1d7236a",
+      "occurred_at": "2026-09-08T03:17:21.489Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/cloudflare/os-device-authority/src/services/mcp-proxy.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/restrict-legacy-recovery-to-managed-cloud",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/restrict-legacy-recovery-to-managed-cloud"
+      }
+    },
+    {
+      "id": "a3ff251d-c707-4bfd-8c67-26d5425bb710",
+      "occurred_at": "2026-09-08T03:17:30.803Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/managed-cloud-one-click-provisioning.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/restrict-legacy-recovery-to-managed-cloud",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/restrict-legacy-recovery-to-managed-cloud"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-09-08T03:17:30.892Z"
+}

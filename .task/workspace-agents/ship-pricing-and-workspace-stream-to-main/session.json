@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_8306671d7ad5",
+  "tmuxSession": "opensaas-workspace-agents-ship-pricing-and-workspace-stream-to-main-8306671d",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/ship-pricing-and-workspace-stream-to-main",
+  "branch": "task/workspace-agents/ship-pricing-and-workspace-stream-to-main",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-ship-pricing-and-workspace-stream-to-main",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-ship-pricing-and-workspace-stream-to-main",
+  "prNumber": 1432,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1432",
+  "createdAt": "2026-07-12T23:58:07.300Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-ship-pricing-and-workspace-stream-to-main/.task/workspace-agents/ship-pricing-and-workspace-stream-to-main/session.json"
+}

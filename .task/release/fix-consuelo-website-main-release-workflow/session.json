@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_92acce0855fa",
+  "tmuxSession": "opensaas-release-fix-consuelo-website-main-release-workflow-92acce08",
+  "area": "release",
+  "stream": "stream/release",
+  "taskBranch": "task/release/fix-consuelo-website-main-release-workflow",
+  "branch": "task/release/fix-consuelo-website-main-release-workflow",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-release-fix-consuelo-website-main-release-workflow",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-release-fix-consuelo-website-main-release-workflow",
+  "prNumber": 1260,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1260",
+  "createdAt": "2026-06-28T05:12:13.655Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-release-fix-consuelo-website-main-release-workflow/.task/release/fix-consuelo-website-main-release-workflow/session.json"
+}

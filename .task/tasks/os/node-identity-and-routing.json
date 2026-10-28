@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/node-identity-and-routing",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1881,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1881",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1881",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1881/node-identity-and-routing",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1881",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1881/node-identity-and-routing",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-node-identity-and-routing",
+  "taskSession": "tsk_c64f949d0274",
+  "tmuxSession": "opensaas-os-node-identity-and-routing-c64f949d",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-node-identity-and-routing/.task/os/node-identity-and-routing/session.json",
+  "createdAt": "2026-08-12T04:28:53.387Z"
+}

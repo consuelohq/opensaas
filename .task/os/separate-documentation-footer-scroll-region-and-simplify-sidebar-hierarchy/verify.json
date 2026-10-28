@@ -1,0 +1,72 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/separate-documentation-footer-scroll-region-and-simplify-sidebar-hierarchy",
+  "base": "origin/main",
+  "headSha": "63eb36b9e91008cff99eea5574137f94b11ae332",
+  "changeHash": "d43ef71369e4ec27d15d56e27a05f1b7ce4221b84eee00937cdbe05e9e5a3411",
+  "changedFiles": [
+    "packages/documentation/scripts/test-build-browser.mjs",
+    "packages/documentation/scripts/test-connect-browser.mjs",
+    "packages/documentation/scripts/test-foundation-browser.mjs",
+    "packages/documentation/scripts/test-observe-browser.mjs",
+    "packages/documentation/scripts/test-reference-browser.mjs",
+    "packages/documentation/scripts/test-secure-browser.mjs",
+    "packages/documentation/scripts/test-sites-browser.mjs",
+    "packages/documentation/src/components/Footer.astro",
+    "packages/documentation/src/components/SiteFooter.astro",
+    "packages/documentation/src/styles/docs.css",
+    "packages/documentation/tests/foundation.test.ts"
+  ],
+  "verifiedAt": "2026-07-15T02:42:27.041Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/separate-documentation-footer-scroll-region-and-simplify-sidebar-hierarchy/current.json",
+        ".task/os/separate-documentation-footer-scroll-region-and-simplify-sidebar-hierarchy/evidence-log.json",
+        ".task/os/separate-documentation-footer-scroll-region-and-simplify-sidebar-hierarchy/read-log.json",
+        ".task/os/separate-documentation-footer-scroll-region-and-simplify-sidebar-hierarchy/session.json",
+        ".task/os/separate-documentation-footer-scroll-region-and-simplify-sidebar-hierarchy/verify.json",
+        ".task/os/separate-documentation-footer-scroll-region-and-simplify-sidebar-hierarchy/workpad.md",
+        ".task/tasks/os/separate-documentation-footer-scroll-region-and-simplify-sidebar-hierarchy.json",
+        "packages/documentation/scripts/test-build-browser.mjs",
+        "packages/documentation/scripts/test-connect-browser.mjs",
+        "packages/documentation/scripts/test-foundation-browser.mjs",
+        "packages/documentation/scripts/test-observe-browser.mjs",
+        "packages/documentation/scripts/test-reference-browser.mjs",
+        "packages/documentation/scripts/test-secure-browser.mjs",
+        "packages/documentation/scripts/test-sites-browser.mjs",
+        "packages/documentation/src/components/Footer.astro",
+        "packages/documentation/src/components/SiteFooter.astro",
+        "packages/documentation/src/styles/docs.css",
+        "packages/documentation/tests/foundation.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

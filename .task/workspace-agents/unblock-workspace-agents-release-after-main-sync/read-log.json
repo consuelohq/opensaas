@@ -1,0 +1,8 @@
+{
+  "files": [
+    "packages/os/scripts/lib/workspace-project-cwd.ts",
+    "packages/os/scripts/session-start.ts",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "updatedAt": "2026-08-27T00:53:52.545Z"
+}

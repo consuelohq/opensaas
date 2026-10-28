@@ -1,0 +1,12 @@
+{
+  "files": [
+    ".task/security/route-fixes/workpad.md",
+    "packages/os/cloudflare/os-device-authority/src/index.ts",
+    "packages/os/package.json",
+    "packages/os/scripts/lib/consuelo-sites-trace-adapter.ts",
+    "packages/os/tests/consuelo-sites-gateway.test.ts",
+    "packages/os/tests/consuelo-sites-trace-adapter.test.ts",
+    "packages/os/tests/os-device-authority-worker.test.ts"
+  ],
+  "updatedAt": "2026-07-10T22:44:01.818Z"
+}

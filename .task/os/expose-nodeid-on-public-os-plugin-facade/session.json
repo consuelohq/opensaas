@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_f919e26f17f8",
+  "tmuxSession": "opensaas-os-expose-nodeid-on-public-os-plugin-facade-f919e26f",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/expose-nodeid-on-public-os-plugin-facade",
+  "branch": "task/os/expose-nodeid-on-public-os-plugin-facade",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-expose-nodeid-on-public-os-plugin-facade",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-expose-nodeid-on-public-os-plugin-facade",
+  "prNumber": 2004,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2004",
+  "createdAt": "2026-08-15T03:33:58.921Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-expose-nodeid-on-public-os-plugin-facade/.task/os/expose-nodeid-on-public-os-plugin-facade/session.json"
+}

@@ -1,6 +1,11 @@
-import { readFullToolManifest } from './manifest';
 import { resolveToolScope } from './security-gateway';
-import type { CallInput, CallOutput } from './types';
+import {
+  LEGACY_MCP_PROTOCOL_VERSION,
+  MODERN_MCP_PROTOCOL_VERSION,
+  modernMcpRoutingFromBody,
+  stampModernMcpResult,
+} from './mcp-protocol';
+import { normalizeMcpNodeId, normalizeMcpWorkSession } from './mcp-node-routing';
 
 type JsonObject = Record<string, unknown>;
 type JsonRpcId = string | number | null;
@@ -11,7 +16,17 @@ type ParsedJsonRpcRequest = {
   params?: unknown;
 };
 
-type ToolManifestEntry = ReturnType<typeof readFullToolManifest>['tools'][number];
+type FacadeCall = {
+  tool: string;
+  input: JsonObject;
+  taskSession?: string;
+  workSession?: string;
+  timeout?: number;
+};
+
+export type McpFacadeExecutionOptions = {
+  timeoutMs?: number;
+};
 
 export type McpGatewayScopeResolution =
   | {
@@ -27,10 +42,16 @@ export type McpGatewayScopeResolution =
     };
 
 type McpGatewayHandlerInput = {
-  executeCall: (input: CallInput) => Promise<CallOutput>;
+  getSteering: () => Promise<string>;
+  executeFacadeTool: (
+    toolName: string,
+    input: JsonObject,
+    execution?: McpFacadeExecutionOptions,
+  ) => Promise<unknown>;
 };
 
 const MCP_READ_METHODS = new Set([
+  'server/discover',
   'initialize',
   'notifications/initialized',
   'ping',
@@ -38,6 +59,84 @@ const MCP_READ_METHODS = new Set([
   'prompts/list',
   'resources/list',
 ]);
+const MCP_READ_SCOPE = 'route:/mcp:read';
+const MCP_READ_SECURITY_SCHEMES: JsonObject[] = [
+  { type: 'oauth2', scopes: [MCP_READ_SCOPE] },
+];
+const MCP_CALL_SECURITY_SCHEMES: JsonObject[] = [
+  { type: 'oauth2', scopes: ['mcp:call'] },
+];
+
+const MCP_TOOL_DESCRIPTORS: JsonObject[] = [
+  {
+    name: 'get_steering',
+    title: 'Get OS steering',
+    description: 'Return Consuelo OS steering and typed tool guidance. Call this once before using call.',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+      additionalProperties: false,
+    },
+    securitySchemes: MCP_READ_SECURITY_SCHEMES,
+    _meta: { securitySchemes: MCP_READ_SECURITY_SCHEMES },
+    annotations: {
+      readOnlyHint: true,
+      openWorldHint: false,
+      destructiveHint: false,
+    },
+  },
+  {
+    name: 'call',
+    title: 'Call an OS tool',
+    description: 'Run one typed Consuelo OS tool through the authenticated facade described by get_steering. To target a specific workspace node, pass top-level nodeId from routing.availableNodes; node names are routing targets, not tools.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        tool: {
+          type: 'string',
+          minLength: 1,
+          description: 'Exact typed tool name from OS steering.',
+        },
+        input: {
+          type: 'object',
+          description: 'Typed input object for the selected tool.',
+          additionalProperties: true,
+        },
+        taskSession: {
+          type: 'string',
+          minLength: 1,
+          description: 'Required task session for task-scoped tools.',
+        },
+        workSession: {
+          type: 'string',
+          minLength: 1,
+          maxLength: 240,
+          description: 'Work session used to route non-task work to its owning node.',
+        },
+        nodeId: {
+          type: 'string',
+          minLength: 1,
+          maxLength: 160,
+          description: 'Optional top-level workspace node target from get_steering routing.availableNodes. Omit to use the workspace default node.',
+        },
+        timeout: {
+          type: 'integer',
+          minimum: 1,
+          description: 'Optional tool timeout in milliseconds.',
+        },
+      },
+      required: ['tool'],
+      additionalProperties: false,
+    },
+    securitySchemes: MCP_CALL_SECURITY_SCHEMES,
+    _meta: { securitySchemes: MCP_CALL_SECURITY_SCHEMES },
+    annotations: {
+      readOnlyHint: true,
+      openWorldHint: false,
+      destructiveHint: false,
+    },
+  },
+];
 
 function isJsonObject(value: unknown): value is JsonObject {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -64,11 +163,76 @@ function parseJsonRpcRequest(body: string): ParsedJsonRpcRequest | null {
   };
 }
 
-function toolNameFromParams(params: unknown): string | null {
+function publicToolNameFromParams(params: unknown): string | null {
   if (!isJsonObject(params) || typeof params.name !== 'string' || params.name.trim().length === 0) {
     return null;
   }
   return params.name.trim();
+}
+
+function toolArgumentsFromParams(params: unknown): JsonObject | null {
+  if (!isJsonObject(params)) return null;
+  if (!Object.hasOwn(params, 'arguments')) return {};
+  return isJsonObject(params.arguments) ? params.arguments : null;
+}
+
+function hasOnlyKeys(value: JsonObject, keys: readonly string[]): boolean {
+  const allowed = new Set(keys);
+  return Object.keys(value).every((key) => allowed.has(key));
+}
+
+function parseFacadeCall(params: unknown): FacadeCall | null {
+  const args = toolArgumentsFromParams(params);
+  if (!args || !hasOnlyKeys(args, ['tool', 'input', 'taskSession', 'workSession', 'nodeId', 'timeout'])) return null;
+
+  const tool = typeof args.tool === 'string' ? args.tool.trim() : '';
+  if (!tool) return null;
+
+  const callInput = Object.hasOwn(args, 'input') ? args.input : {};
+  if (!isJsonObject(callInput)) return null;
+
+  const taskSession = args.taskSession;
+  if (
+    taskSession !== undefined
+    && (typeof taskSession !== 'string' || taskSession.trim().length === 0)
+  ) {
+    return null;
+  }
+
+  const workSession = normalizeMcpWorkSession(args.workSession);
+  if (workSession === null) return null;
+  if (typeof taskSession === 'string' && workSession) return null;
+
+  if (normalizeMcpNodeId(args.nodeId) === null) return null;
+
+  const timeout = args.timeout;
+  if (
+    timeout !== undefined
+    && (typeof timeout !== 'number' || !Number.isSafeInteger(timeout) || timeout < 1)
+  ) {
+    return null;
+  }
+
+  return {
+    tool,
+    input: callInput,
+    ...(typeof taskSession === 'string' ? { taskSession: taskSession.trim() } : {}),
+    ...(workSession ? { workSession } : {}),
+    ...(typeof timeout === 'number' ? { timeout } : {}),
+  };
+}
+
+function isEmptyToolArguments(params: unknown): boolean {
+  const args = toolArgumentsFromParams(params);
+  return args !== null && Object.keys(args).length === 0;
+}
+
+function facadeToolInput(call: FacadeCall): JsonObject {
+  return {
+    ...call.input,
+    ...(call.taskSession ? { taskSession: call.taskSession } : {}),
+    ...(call.workSession ? { workSession: call.workSession } : {}),
+  };
 }
 
 function jsonRpcResult(id: JsonRpcId, result: JsonObject): JsonObject {
@@ -87,38 +251,23 @@ function jsonRpcError(id: JsonRpcId, code: number, message: string): JsonObject 
   };
 }
 
-function inputSchemaFromDefinition(definition: JsonObject): JsonObject {
-  const inputSchema = definition.inputSchema;
-  return isJsonObject(inputSchema) ? inputSchema : { type: 'object', additionalProperties: true };
+function outputText(value: unknown): string {
+  return typeof value === 'string' ? value : JSON.stringify(value ?? null, null, 2);
 }
 
-function outputTextFromCall(output: CallOutput): string {
-  const visibleOutput = output.ok ? output.result ?? { ok: true } : output.error ?? { code: 'CALL_FAILED' };
-  return JSON.stringify(visibleOutput, null, 2);
+function outputIsError(value: unknown): boolean {
+  return isJsonObject(value) && value.ok === false;
 }
 
-function findCallableMcpTool(toolName: string): ToolManifestEntry | null {
-  return readFullToolManifest().tools.find((entry) => entry.name === toolName && entry.kind === 'os-skill') ?? null;
-}
-
-function listMcpTools(): JsonObject[] {
-  return readFullToolManifest().tools.filter((entry) => entry.kind === 'os-skill').map((entry) => {
-    const definition = entry.definition;
-    const title = typeof definition.title === 'string' ? definition.title : entry.name;
-    const description = typeof definition.description === 'string' ? definition.description : '';
-    const scope = resolveToolScope(entry.name);
-
-    return {
-      name: entry.name,
-      title,
-      description,
-      inputSchema: inputSchemaFromDefinition(definition),
-      annotations: {
-        consueloKind: entry.kind,
-        ...(scope.ok ? { requiredScope: scope.requiredScope, category: scope.category } : {}),
-      },
-    };
-  });
+function unsupportedPublicTool(): McpGatewayScopeResolution {
+  return {
+    ok: false,
+    status: 403,
+    error: {
+      code: 'UNSUPPORTED_MCP_TOOL',
+      message: 'MCP gateway only exposes the authenticated OS facade.',
+    },
+  };
 }
 
 export function resolveMcpGatewayRequiredScope(body: string): McpGatewayScopeResolution {
@@ -132,8 +281,8 @@ export function resolveMcpGatewayRequiredScope(body: string): McpGatewayScopeRes
   }
 
   if (request.method === 'tools/call') {
-    const toolName = toolNameFromParams(request.params);
-    if (!toolName) {
+    const publicToolName = publicToolNameFromParams(request.params);
+    if (!publicToolName) {
       return {
         ok: false,
         status: 400,
@@ -141,28 +290,57 @@ export function resolveMcpGatewayRequiredScope(body: string): McpGatewayScopeRes
       };
     }
 
-    const callableTool = findCallableMcpTool(toolName);
-    if (!callableTool) {
-      const toolScope = resolveToolScope(toolName);
-      if (!toolScope.ok) {
-        return { ok: false, status: toolScope.status, error: toolScope.error };
+    if (publicToolName === 'get_steering') {
+      if (!isEmptyToolArguments(request.params)) {
+        return {
+          ok: false,
+          status: 400,
+          error: {
+            code: 'INVALID_MCP_TOOL_CALL',
+            message: 'get_steering does not accept arguments.',
+          },
+        };
       }
       return {
-        ok: false,
-        status: 403,
-        error: { code: 'UNSUPPORTED_MCP_TOOL', message: 'MCP gateway only supports callable OS skills.' },
+        ok: true,
+        method: request.method,
+        toolName: publicToolName,
+        requiredScope: MCP_READ_SCOPE,
       };
     }
 
-    const toolScope = resolveToolScope(toolName);
+    if (publicToolName !== 'call') return unsupportedPublicTool();
+
+    const facadeCall = parseFacadeCall(request.params);
+    if (!facadeCall) {
+      return {
+        ok: false,
+        status: 400,
+        error: {
+          code: 'INVALID_MCP_TOOL_CALL',
+          message: 'call requires a typed facade tool and an object input.',
+        },
+      };
+    }
+
+    const toolScope = resolveToolScope(facadeCall.tool, facadeCall.input);
     if (!toolScope.ok) {
+      if (toolScope.error.code === 'UNKNOWN_TOOL_SCOPE') {
+        return {
+          ok: true,
+          method: request.method,
+          toolName: facadeCall.tool,
+          requiredScope: 'mcp:call',
+        };
+      }
       return { ok: false, status: toolScope.status, error: toolScope.error };
     }
+    if (toolScope.manifestKind !== 'facade-tool') return unsupportedPublicTool();
 
     return {
       ok: true,
       method: request.method,
-      toolName,
+      toolName: facadeCall.tool,
       requiredScope: toolScope.requiredScope,
     };
   }
@@ -171,7 +349,7 @@ export function resolveMcpGatewayRequiredScope(body: string): McpGatewayScopeRes
     return {
       ok: true,
       method: request.method,
-      requiredScope: 'route:/mcp:read',
+      requiredScope: MCP_READ_SCOPE,
     };
   }
 
@@ -189,44 +367,76 @@ export async function handleMcpGatewayJsonRpc(
   const request = parseJsonRpcRequest(body);
   if (!request) return jsonRpcError(null, -32600, 'Invalid JSON-RPC request.');
 
+  if (request.method === 'server/discover') {
+    return jsonRpcResult(request.id, stampModernMcpResult({
+      supportedVersions: [
+        MODERN_MCP_PROTOCOL_VERSION,
+        LEGACY_MCP_PROTOCOL_VERSION,
+      ],
+      capabilities: {
+        tools: { listChanged: false },
+        prompts: {},
+        resources: {},
+      },
+    }));
+  }
+
   if (request.method === 'initialize') {
     return jsonRpcResult(request.id, {
-      protocolVersion: '2024-11-05',
+      protocolVersion: LEGACY_MCP_PROTOCOL_VERSION,
       serverInfo: { name: 'consuelo-os-gateway', version: '1.0.0' },
       capabilities: { tools: { listChanged: false }, prompts: {}, resources: {} },
     });
   }
 
+  const result = (value: JsonObject): JsonObject =>
+    jsonRpcResult(
+      request.id,
+      modernMcpRoutingFromBody(body) ? stampModernMcpResult(value) : value,
+    );
+
   if (request.method === 'notifications/initialized' || request.method === 'ping') {
-    return jsonRpcResult(request.id, {});
+    return result({});
   }
 
   if (request.method === 'tools/list') {
-    return jsonRpcResult(request.id, { tools: listMcpTools() });
+    return result({ tools: MCP_TOOL_DESCRIPTORS });
   }
 
   if (request.method === 'prompts/list') {
-    return jsonRpcResult(request.id, { prompts: [] });
+    return result({ prompts: [] });
   }
 
   if (request.method === 'resources/list') {
-    return jsonRpcResult(request.id, { resources: [] });
+    return result({ resources: [] });
   }
 
   if (request.method !== 'tools/call') {
     return jsonRpcError(request.id, -32601, 'Method not found.');
   }
 
-  const toolName = toolNameFromParams(request.params);
-  if (!toolName) return jsonRpcError(request.id, -32602, 'Invalid tools/call params.');
+  const publicToolName = publicToolNameFromParams(request.params);
+  if (publicToolName === 'get_steering' && isEmptyToolArguments(request.params)) {
+    const steering = await input.getSteering();
+    return result({
+      content: [{ type: 'text', text: steering }],
+      isError: false,
+    });
+  }
 
-  const toolArguments = isJsonObject(request.params) && Object.hasOwn(request.params, 'arguments')
-    ? request.params.arguments
-    : {};
-  const output = await input.executeCall({ name: toolName, input: toolArguments });
+  if (publicToolName === 'call') {
+    const call = parseFacadeCall(request.params);
+    if (!call) return jsonRpcError(request.id, -32602, 'Invalid call arguments.');
 
-  return jsonRpcResult(request.id, {
-    content: [{ type: 'text', text: outputTextFromCall(output) }],
-    isError: !output.ok,
-  });
+    const toolInput = facadeToolInput(call);
+    const output = typeof call.timeout === 'number'
+      ? await input.executeFacadeTool(call.tool, toolInput, { timeoutMs: call.timeout })
+      : await input.executeFacadeTool(call.tool, toolInput);
+    return result({
+      content: [{ type: 'text', text: outputText(output) }],
+      isError: outputIsError(output),
+    });
+  }
+
+  return jsonRpcError(request.id, -32602, 'Unsupported OS tool.');
 }

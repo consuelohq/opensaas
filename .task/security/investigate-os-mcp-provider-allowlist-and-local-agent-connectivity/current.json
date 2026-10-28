@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/investigate-os-mcp-provider-allowlist-and-local-agent-connectivity",
+  "baseBranch": "stream/security",
+  "sourceBranch": "stream/security",
+  "startFrom": "stream",
+  "prNumber": 1305,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1305",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1305",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1305/investigate-os-mcp-provider-allowlist-and-local-agent-connectivity",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1305",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1305/investigate-os-mcp-provider-allowlist-and-local-agent-connectivity",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-investigate-os-mcp-provider-allowlist-and-local-agent-connectivity",
+  "taskSession": "tsk_deb6a2436c1b",
+  "tmuxSession": "opensaas-security-investigate-os-mcp-provider-allowlist-and-local--deb6a243",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-investigate-os-mcp-provider-allowlist-and-local-agent-connectivity/.task/security/investigate-os-mcp-provider-allowlist-and-local-agent-connectivity/session.json",
+  "createdAt": "2026-07-01T06:03:01.331Z"
+}

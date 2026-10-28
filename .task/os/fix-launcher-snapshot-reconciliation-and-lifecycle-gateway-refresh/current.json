@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-launcher-snapshot-reconciliation-and-lifecycle-gateway-refresh",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2005,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2005",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2005",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2005/fix-launcher-snapshot-reconciliation-and-lifecycle-gateway-refresh",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2005",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2005/fix-launcher-snapshot-reconciliation-and-lifecycle-gateway-refresh",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-launcher-snapshot-reconciliation-and-lifecycle-gateway-refresh",
+  "taskSession": "tsk_7143c458024a",
+  "tmuxSession": "opensaas-os-fix-launcher-snapshot-reconciliation-and-lifecyc-7143c458",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-launcher-snapshot-reconciliation-and-lifecycle-gateway-refresh/.task/os/fix-launcher-snapshot-reconciliation-and-lifecycle-gateway-refresh/session.json",
+  "createdAt": "2026-08-15T03:36:02.822Z"
+}

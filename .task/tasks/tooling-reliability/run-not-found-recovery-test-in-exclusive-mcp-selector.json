@@ -1,0 +1,20 @@
+{
+  "area": "tooling-reliability",
+  "stream": "stream/tooling-reliability",
+  "taskBranch": "task/tooling-reliability/run-not-found-recovery-test-in-exclusive-mcp-selector",
+  "baseBranch": "stream/tooling-reliability",
+  "sourceBranch": "stream/tooling-reliability",
+  "startFrom": "stream",
+  "prNumber": 2600,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2600",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2600",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2600/run-not-found-recovery-test-in-exclusive-mcp-selector",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2600",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2600/run-not-found-recovery-test-in-exclusive-mcp-selector",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-tooling-reliability-run-not-found-recovery-test-in-exclusive-mcp-selector",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_c2d0523c0517",
+  "tmuxSession": "opensaas-tooling-reliability-run-not-found-recovery-test-in-exclusive-mcp-sel-c2d0523c",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-tooling-reliability-run-not-found-recovery-test-in-exclusive-mcp-selector/.task/tooling-reliability/run-not-found-recovery-test-in-exclusive-mcp-selector/session.json",
+  "createdAt": "2026-09-26T18:34:06.125Z"
+}

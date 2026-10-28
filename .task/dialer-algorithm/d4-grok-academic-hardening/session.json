@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_85fa57b2413e",
+  "tmuxSession": "opensaas-dialer-algorithm-d4-grok-academic-hardening-85fa57b2",
+  "area": "dialer-algorithm",
+  "stream": "stream/dialer-algorithm",
+  "taskBranch": "task/dialer-algorithm/d4-grok-academic-hardening",
+  "branch": "task/dialer-algorithm/d4-grok-academic-hardening",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-d4-grok-academic-hardening",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-d4-grok-academic-hardening",
+  "prNumber": 2037,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2037",
+  "createdAt": "2026-08-15T06:57:48.085Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-d4-grok-academic-hardening/.task/dialer-algorithm/d4-grok-academic-hardening/session.json"
+}

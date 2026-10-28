@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_cfa1789a65f9",
+  "tmuxSession": "opensaas-tooling-address-browser-review-findings-cfa1789a",
+  "area": "tooling",
+  "stream": "stream/tooling",
+  "taskBranch": "task/tooling/address-browser-review-findings",
+  "branch": "task/tooling/address-browser-review-findings",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-tooling-address-browser-review-findings",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-tooling-address-browser-review-findings",
+  "prNumber": 1402,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1402",
+  "createdAt": "2026-07-11T03:19:36.083Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-tooling-address-browser-review-findings/.task/tooling/address-browser-review-findings/session.json"
+}

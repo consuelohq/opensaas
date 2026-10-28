@@ -1,0 +1,159 @@
+import { readFile } from 'node:fs/promises';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+import { describe, expect, test } from 'bun:test';
+
+const packageRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
+const readSource = (path) => readFile(join(packageRoot, path), 'utf8');
+
+describe('Consuelo OS homepage presentation', () => {
+  test('should present the new rotating-assistant hero without a post-paint type fitter', async () => {
+    const [hero, homeContent] = await Promise.all([
+      readSource('src/components/home/HomeHero.astro'),
+      readSource('src/data/home-content.ts'),
+    ]);
+
+    expect(hero).not.toContain('DOWNLOAD LOCALLY');
+    expect(hero).toContain('homeHeroRotatingAssistant');
+    expect(hero).toContain('data-assistant-name={primaryAssistant}');
+    expect(hero).toContain('data-assistant-name={secondaryAssistant}');
+    expect(hero).toContain('data-active-assistant={primaryAssistant}');
+    expect(homeContent).toContain("prefix: 'Give'");
+    expect(homeContent).toContain("suffix: 'access to your files'");
+    expect(homeContent).toContain("assistants: ['ChatGPT', 'Claude']");
+    expect(homeContent).toContain(
+      'Connect your AI to the files, terminal and tools on your computer.',
+    );
+    expect(hero).not.toContain('OPEN SOURCE');
+    expect(hero).not.toContain('MIT LICENSE');
+    expect(hero).toContain("import gsap from 'gsap'");
+    expect(hero).not.toContain('@chenglou/pretext');
+    expect(hero).not.toContain('new ResizeObserver');
+    expect(hero).not.toContain('document.fonts.ready');
+    expect(hero).not.toContain("style.setProperty('--hero-heading-size'");
+    expect(hero).toContain('font-size: clamp(');
+    expect(hero).toContain("window.matchMedia(REDUCED_MOTION_QUERY)");
+    // Motion contract + lifecycle review fixes
+    expect(hero).toContain('HERO_NAME_OFFSET_PX = 32');
+    expect(hero).not.toContain('yPercent');
+    expect(hero).toContain('IntersectionObserver');
+    expect(hero).toContain("addEventListener('change', handleReducedMotionChange)");
+    expect(hero).toContain("addEventListener('pageshow', handlePageShow)");
+    expect(hero).toContain('event.persisted');
+  });
+
+  test('should preload the Latin variable fonts used by the landing page', async () => {
+    const layout = await readSource('src/layouts/MarketingLayout.astro');
+
+    expect(layout).toContain("bodoni-moda-latin-wght-normal.woff2?url");
+    expect(layout).toContain("inter-latin-wght-normal.woff2?url");
+    expect(layout.match(/as="font"/g)).toHaveLength(2);
+    expect(layout.match(/as="font"/g)).toHaveLength(2);
+    expect(layout.match(/type="font\/woff2"/g)).toHaveLength(2);
+    expect(layout.match(/font-display: block/g)).toHaveLength(2);
+    expect(layout).not.toContain("import '@fontsource-variable/bodoni-moda'");
+    expect(layout).not.toContain("import '@fontsource-variable/inter'");
+  });
+
+  test('should reveal a fixed full-viewport cloud footer behind the scrolling page', async () => {
+    const [homepage, footer] = await Promise.all([
+      readSource('src/pages/index.astro'),
+      readSource('src/components/home/HomeCloudCta.astro'),
+    ]);
+
+    expect(homepage).toContain('class="home-scroll-layer"');
+    expect(homepage.indexOf('</div>')).toBeLessThan(homepage.indexOf('<HomeCloudCta'));
+    expect(footer).toContain('position: fixed;');
+    expect(footer).toContain('height: 100dvh;');
+    expect(footer).toContain('opacity: var(--cloud-reveal-opacity');
+    expect(footer).toContain('pointer-events: var(--cloud-reveal-pointer-events');
+    expect(footer).toContain("window.matchMedia('(prefers-reduced-motion: reduce)')");
+    expect(footer).toContain("window.addEventListener('scroll', scheduleReveal, { passive: true })");
+    expect(footer).toContain('window.requestAnimationFrame(updateReveal)');
+    expect(footer).toContain('data-cloud-title-line');
+    expect(footer).toContain('CONSUELO OS <span>V0.10.3</span>');
+    expect(footer).toContain('MIT LICENSE');
+    expect(footer).toContain('bottom: clamp(2rem, 7dvh, 4rem);');
+    expect(footer).toContain('window.innerHeight * 1.4');
+    expect(footer).toContain('Math.pow(progress, 1.15)');
+  });
+
+  test('should center the team invitation without the removed illustration', async () => {
+    const [footer, content, tokens] = await Promise.all([
+      readSource('src/components/home/HomeCloudCta.astro'),
+      readSource('src/data/home-content.ts'),
+      readSource('src/styles/tokens.css'),
+    ]);
+
+    expect(footer).toContain('homeWorkspaceClose');
+    expect(footer).toContain('place-items: center;');
+    expect(footer).toContain('var(--site-footer-title-size)');
+    expect(footer).toContain('var(--site-footer-title-size-mobile)');
+    expect(tokens).toContain('--site-footer-title-size:');
+    expect(tokens).toContain('--site-footer-title-size-mobile:');
+    expect(content).toContain('Work solo.');
+    expect(content).toContain('Bring your team.');
+    expect(footer).not.toContain('class="cloud-cta__art"');
+    expect(footer).not.toContain('class="cloud-cta__badge"');
+    expect(footer).toContain('homeWorkspaceClose.primaryHref');
+    expect(footer).toContain('homeWorkspaceClose.secondaryHref');
+    expect(footer).toContain('justify-items: end;');
+    expect(footer).toContain('text-align: right;');
+  });
+
+  test('should generate footer binaries before dev and build without tracking them', async () => {
+    const [packageJson, gitignore, generator] = await Promise.all([
+      readSource('package.json'),
+      readSource('.gitignore'),
+      readSource('scripts/generate-footer-art.ts'),
+    ]);
+
+    expect(packageJson).toContain('"dev": "bun run materialize:assets && bun run generate:footer-art && astro dev"');
+    expect(packageJson).toContain('"start": "bun run materialize:assets && bun run generate:footer-art && astro dev"');
+    expect(packageJson).toContain(
+      '"build": "bun run materialize:assets && bun run generate:footer-art && astro check && astro build"',
+    );
+    expect(gitignore).toContain('public/generated/');
+    expect(generator).toContain("public/generated/holding-world-editorial.png");
+    expect(generator).toContain("public/generated/consuelo-footer-badge.png");
+    expect(generator).not.toContain('bodyUnderlayMask');
+    expect(generator).toContain('holding-world-auto-fill-exclusion-mask.svg');
+  });
+
+  test('should use a refresh-visible preview notice without persistent storage', async () => {
+    const notice = await readSource('src/components/home/PreviewNotice.astro');
+
+    expect(notice).toContain('Consuelo OS is currently in preview.');
+    expect(notice).toContain('support@consuelohq.com');
+    expect(notice).toContain('data-preview-notice-dismiss');
+    expect(notice).not.toMatch(/localStorage|sessionStorage|cookie/i);
+  });
+
+  test('should use the blue placeholder and omit the homepage waitlist footer', async () => {
+    const features = await readSource('src/components/home/HomeFeaturePreview.astro');
+    const homepage = await readSource('src/pages/index.astro');
+
+    expect(features).not.toContain('integrations-blue.svg');
+    expect(features).toContain('<PreviewNotice />');
+    expect(homepage).not.toContain('SiteFooter');
+  });
+
+  test('should use editable local artwork and the compact inline sign-in arrow', async () => {
+    const [hero, features, clouds] = await Promise.all([
+      readSource('src/components/home/HomeHero.astro'),
+      readSource('src/components/home/HomeFeaturePreview.astro'),
+      readSource('src/components/visuals/CloudField.astro'),
+    ]);
+
+    expect(hero).toContain('<CloudField />');
+    expect(features).toContain('<CloudField variant="preview" />');
+    expect(clouds).toContain('/images/clouds/dialer-cloud-01.webp');
+    expect(clouds).toContain('/images/clouds/dialer-cloud-04.webp');
+    expect(hero).toContain('class="os-hero__button-arrow"');
+    expect(hero).toContain('viewBox="0 0 6 9"');
+    expect(hero).toContain('<rect x="4" y="4" width="1" height="1" />');
+    expect(hero).toContain('shape-rendering: crispEdges;');
+    expect(hero).not.toContain('PixelArrow');
+  });
+});

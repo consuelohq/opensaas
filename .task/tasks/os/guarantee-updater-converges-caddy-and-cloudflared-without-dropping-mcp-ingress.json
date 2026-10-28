@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/guarantee-updater-converges-caddy-and-cloudflared-without-dropping-mcp-ingress",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2122,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2122",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2122",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2122/guarantee-updater-converges-caddy-and-cloudflared-without-dropping-mcp-ingress",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2122",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2122/guarantee-updater-converges-caddy-and-cloudflared-without-dropping-mcp-ingress",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-guarantee-updater-converges-caddy-and-cloudflared-without-dropping-mcp-ingress",
+  "taskSession": "tsk_319a4850f123",
+  "tmuxSession": "opensaas-os-guarantee-updater-converges-caddy-and-cloudflare-319a4850",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-guarantee-updater-converges-caddy-and-cloudflared-without-dropping-mcp-ingress/.task/os/guarantee-updater-converges-caddy-and-cloudflared-without-dropping-mcp-ingress/session.json",
+  "createdAt": "2026-08-16T03:53:03.804Z"
+}

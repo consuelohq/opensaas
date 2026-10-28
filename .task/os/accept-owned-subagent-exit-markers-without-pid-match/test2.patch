@@ -1,0 +1,14 @@
+*** Begin Patch
+*** Update File: packages/os/tests/subagent-lifecycle-regressions.test.ts
+@@
+       command: ['codex', 'exec'],
+       ownerToken,
+       exitMarkerPath,
+       status: 'completion_unknown',
+@@
+       command: ['codex', 'exec'],
++      pid: 1,
+       ownerToken,
+       exitMarkerPath,
+       status: 'completion_unknown',
+*** End Patch

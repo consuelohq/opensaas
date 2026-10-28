@@ -1,0 +1,12 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/implement-pricing-route",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1380,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1380",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-implement-pricing-route",
+  "createdAt": "2026-07-13T00:06:59.933Z"
+}

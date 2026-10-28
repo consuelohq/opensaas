@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/hotfix-private-workspace-auth-durability-on-canary",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2021,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2021",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2021",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2021/hotfix-private-workspace-auth-durability-on-canary",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2021",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2021/hotfix-private-workspace-auth-durability-on-canary",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-hotfix-private-workspace-auth-durability-on-canary",
+  "taskSession": "tsk_fc1a0d684959",
+  "tmuxSession": "opensaas-os-hotfix-private-workspace-auth-durability-on-cana-fc1a0d68",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-hotfix-private-workspace-auth-durability-on-canary/.task/os/hotfix-private-workspace-auth-durability-on-canary/session.json",
+  "createdAt": "2026-08-15T04:38:47.001Z"
+}

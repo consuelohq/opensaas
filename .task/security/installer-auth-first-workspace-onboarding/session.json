@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_f63119145ba1",
+  "tmuxSession": "opensaas-security-installer-auth-first-workspace-onboarding-f6311914",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/installer-auth-first-workspace-onboarding",
+  "branch": "task/security/installer-auth-first-workspace-onboarding",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-installer-auth-first-workspace-onboarding",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-installer-auth-first-workspace-onboarding",
+  "prNumber": 1359,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1359",
+  "createdAt": "2026-07-03T11:37:37.908Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-installer-auth-first-workspace-onboarding/.task/security/installer-auth-first-workspace-onboarding/session.json"
+}

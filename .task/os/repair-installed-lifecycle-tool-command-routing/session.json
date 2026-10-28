@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_9fb1bdf53396",
+  "tmuxSession": "opensaas-os-repair-installed-lifecycle-tool-command-routing-9fb1bdf5",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/repair-installed-lifecycle-tool-command-routing",
+  "branch": "task/os/repair-installed-lifecycle-tool-command-routing",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-installed-lifecycle-tool-command-routing",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-installed-lifecycle-tool-command-routing",
+  "prNumber": 1964,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1964",
+  "createdAt": "2026-08-14T20:04:04.300Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-installed-lifecycle-tool-command-routing/.task/os/repair-installed-lifecycle-tool-command-routing/session.json"
+}

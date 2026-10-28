@@ -1,0 +1,12 @@
+{
+  "files": [
+    ".task/os/make-os-lifecycle-restarts-connector-safe/workpad.md",
+    "packages/os/scripts/lib/native-lifecycle-client.ts",
+    "packages/os/scripts/lib/native-lifecycle-operation.ts",
+    "packages/os/scripts/lifecycle.ts",
+    "packages/os/scripts/start-caddy-daemon.sh",
+    "packages/os/tests/consuelo-reload.test.ts",
+    "packages/os/tests/lifecycle-engine.test.ts"
+  ],
+  "updatedAt": "2026-08-15T03:20:23.599Z"
+}

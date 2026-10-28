@@ -1,0 +1,232 @@
+---
+import { homePlatformCards } from '../../data/home-content';
+
+type Props = {
+  sectionId?: string;
+};
+
+const { sectionId = 'platforms' } = Astro.props as Props;
+
+const isExternalHref = (href: string) => href.startsWith('http');
+---
+
+<section
+  id={sectionId}
+  class="home-platforms"
+  data-section="platforms"
+  aria-label="Consuelo platform install and connect options"
+>
+  <div class="home-platforms__grid">
+    {
+      homePlatformCards.map((card) => (
+        <article class="home-platforms__card" data-platform-card={card.id}>
+          <img
+            class="home-platforms__art"
+            src={card.imageSrc}
+            alt=""
+            aria-hidden="true"
+            loading="lazy"
+            decoding="async"
+          />
+          <span class="home-platforms__vignette" aria-hidden="true" />
+
+          <div class="home-platforms__content">
+            <p class="home-platforms__eyebrow">{card.eyebrow}</p>
+            <h2 class="home-platforms__title">{card.title}</h2>
+
+            <a
+              class="home-platforms__cta"
+              href={card.ctaHref}
+              {...(isExternalHref(card.ctaHref)
+                ? { target: '_blank', rel: 'noopener noreferrer' }
+                : {})}
+            >
+              {card.ctaIcon === 'terminal' ? (
+                <svg class="home-platforms__cta-icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M4 17l6-6-6-6" />
+                  <path d="M12 19h8" />
+                </svg>
+              ) : null}
+
+              {card.ctaIcon === 'sign-in' ? (
+                <svg class="home-platforms__cta-icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+                  <path d="M10 17l5-5-5-5" />
+                  <path d="M15 12H3" />
+                </svg>
+              ) : null}
+
+              {card.ctaIcon === 'cloud' ? (
+                <svg class="home-platforms__cta-icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z" />
+                </svg>
+              ) : null}
+
+              <span class="home-platforms__cta-label">{card.ctaLabel}</span>
+            </a>
+          </div>
+        </article>
+      ))
+    }
+  </div>
+</section>
+
+<style>
+  .home-platforms {
+    position: relative;
+    z-index: 1;
+    padding:
+      clamp(2.5rem, 5vw, 3.75rem)
+      var(--site-gutter)
+      clamp(4rem, 8vw, 7.5rem);
+    background: var(--site-color-paper);
+    color: var(--site-color-on-brand);
+  }
+
+  .home-platforms__grid {
+    display: grid;
+    gap: clamp(0.65rem, 1.15vw, 0.95rem);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    max-width: var(--site-container-wide);
+    margin-inline: auto;
+  }
+
+  .home-platforms__card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    aspect-ratio: 627 / 547;
+    background: var(--site-color-paper);
+    text-align: center;
+  }
+
+  .home-platforms__art {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.42;
+    pointer-events: none;
+  }
+
+  .home-platforms__vignette {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at center, transparent 28%, rgba(45, 72, 108, 0.28) 100%),
+      linear-gradient(180deg, rgba(61, 95, 138, 0.08) 0%, rgba(45, 72, 108, 0.18) 100%);
+    pointer-events: none;
+  }
+
+  .home-platforms__content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(1.1rem, 2.2vw, 1.85rem);
+    padding-inline: clamp(1rem, 2vw, 1.5rem);
+  }
+
+  .home-platforms__eyebrow {
+    margin: 0;
+    font-family: var(--site-font-mono);
+    font-size: clamp(0.62rem, 0.78vw, 0.72rem);
+    font-weight: 400;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--site-color-on-brand);
+    opacity: 0.7;
+  }
+
+  .home-platforms__title {
+    margin: 0;
+    font-family: var(--site-font-display);
+    font-size: clamp(2.35rem, 4.2vw, 3.65rem);
+    font-weight: 400;
+    line-height: 0.95;
+    letter-spacing: -0.02em;
+    text-transform: none;
+    color: var(--site-color-on-brand);
+  }
+
+  .home-platforms__cta {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    min-height: clamp(2.35rem, 3.2vw, 2.85rem);
+    padding:
+      clamp(0.65rem, 1.1vw, 0.85rem)
+      clamp(1rem, 1.6vw, 1.35rem)
+      clamp(0.65rem, 1.1vw, 0.85rem)
+      clamp(2.65rem, 3.8vw, 3.15rem);
+    background: var(--site-color-on-brand);
+    color: var(--site-color-paper);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
+    font-family: var(--site-font-mono);
+    font-size: clamp(0.72rem, 0.86vw, 0.82rem);
+    font-weight: 400;
+    line-height: 1;
+    letter-spacing: 0;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background var(--site-motion-fast) var(--site-ease-standard);
+  }
+
+  .home-platforms__cta:hover {
+    background: #ffffff;
+  }
+
+  .home-platforms__cta-icon {
+    position: absolute;
+    top: 50%;
+    left: clamp(0.85rem, 1.4vw, 1.15rem);
+    width: clamp(1rem, 1.35vw, 1.2rem);
+    height: clamp(1rem, 1.35vw, 1.2rem);
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.75;
+    transform: translateY(-50%);
+  }
+
+  .home-platforms__cta-label {
+    line-height: 1;
+  }
+
+  @media (max-width: 960px) {
+    .home-platforms__grid {
+      grid-template-columns: 1fr;
+    }
+
+    .home-platforms__card {
+      aspect-ratio: 2 / 1;
+      max-width: 40rem;
+      width: 100%;
+      justify-self: center;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .home-platforms {
+      padding-block:
+        clamp(2rem, 7vw, 2.75rem)
+        clamp(2.75rem, 8vw, 4rem);
+    }
+
+    .home-platforms__title {
+      font-size: clamp(2rem, 9vw, 2.65rem);
+    }
+
+    .home-platforms__cta {
+      white-space: normal;
+      text-align: left;
+      max-width: 100%;
+    }
+  }
+</style>

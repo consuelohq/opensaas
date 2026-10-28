@@ -1,0 +1,16 @@
+{
+  "area": "collaborate",
+  "stream": "stream/collaborate",
+  "taskBranch": "task/collaborate/forward-artifact-share-session-at-edge",
+  "baseBranch": "stream/collaborate",
+  "sourceBranch": "stream/collaborate",
+  "startFrom": "stream",
+  "prNumber": 2514,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2514",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-collaborate-forward-artifact-share-session-at-edge",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_076aaa246698",
+  "tmuxSession": "opensaas-collaborate-forward-artifact-share-session-at-edge-076aaa24",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-collaborate-forward-artifact-share-session-at-edge/.task/session.json",
+  "createdAt": "2026-09-21T12:50:55.245Z"
+}

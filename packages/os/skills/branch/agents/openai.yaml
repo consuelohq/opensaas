@@ -1,0 +1,4 @@
+interface:
+  display_name: "Branch"
+  short_description: "Plan large projects into safe PR/chat branch stacks"
+  default_prompt: "Help me align on a large project, find hidden risks, and freeze a dependency-aware branch and PR stack with clear parallel lanes."

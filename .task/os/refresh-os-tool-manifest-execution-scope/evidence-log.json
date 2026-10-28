@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/refresh-os-tool-manifest-execution-scope",
+  "events": [
+    {
+      "id": "f8751d9d-d3fe-47e0-b93b-12b3f032f387",
+      "occurred_at": "2026-08-26T19:05:26.304Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/tool-manifest.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refresh-os-tool-manifest-execution-scope",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refresh-os-tool-manifest-execution-scope"
+      }
+    },
+    {
+      "id": "29747423-d95b-497a-84c7-9f38facd64c3",
+      "occurred_at": "2026-08-26T19:05:39.580Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tools/google/manifest.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/refresh-os-tool-manifest-execution-scope",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/refresh-os-tool-manifest-execution-scope"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-26T19:05:39.650Z"
+}

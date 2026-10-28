@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_6ea33216fd8e",
+  "tmuxSession": "opensaas-os-distribution-fix-grok-read-reviews-and-fail-closed-6ea33216",
+  "area": "os-distribution",
+  "stream": "stream/os-distribution",
+  "taskBranch": "task/os-distribution/fix-grok-read-reviews-and-fail-closed",
+  "branch": "task/os-distribution/fix-grok-read-reviews-and-fail-closed",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-fix-grok-read-reviews-and-fail-closed",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-fix-grok-read-reviews-and-fail-closed",
+  "prNumber": 1554,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1554",
+  "createdAt": "2026-07-22T19:09:38.887Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-fix-grok-read-reviews-and-fail-closed/.task/os-distribution/fix-grok-read-reviews-and-fail-closed/session.json"
+}

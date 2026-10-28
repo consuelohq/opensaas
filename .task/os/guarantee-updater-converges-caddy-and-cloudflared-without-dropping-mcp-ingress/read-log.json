@@ -1,0 +1,12 @@
+{
+  "files": [
+    "packages/documentation/AUTHORING.md",
+    "packages/documentation/README.md",
+    "packages/documentation/src/content/docs/reference/configuration.mdx",
+    "packages/documentation/src/content/docs/start/install-consuelo-os.mdx",
+    "packages/os/scripts/install-system-daemons.sh",
+    "packages/os/scripts/lib/lifecycle/service.ts",
+    "packages/os/tests/lifecycle-ingress-continuity.test.ts"
+  ],
+  "updatedAt": "2026-08-16T04:01:34.843Z"
+}

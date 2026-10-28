@@ -1,0 +1,19 @@
+{
+  "area": "sites",
+  "stream": "stream/sites",
+  "taskBranch": "task/sites/remove-website-cookie-consent",
+  "baseBranch": "stream/sites",
+  "sourceBranch": "stream/sites",
+  "startFrom": "stream",
+  "prNumber": 1230,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1230",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1230",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1230/remove-website-cookie-consent",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1230",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1230/remove-website-cookie-consent",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-remove-website-cookie-consent",
+  "taskSession": "tsk_bcfc071a66ab",
+  "tmuxSession": "opensaas-sites-remove-website-cookie-consent-bcfc071a",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-remove-website-cookie-consent/.task/sites/remove-website-cookie-consent/session.json",
+  "createdAt": "2026-06-27T22:33:16.281Z"
+}

@@ -1,0 +1,46 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/sync-os-stream-with-main-after-mcp-continuity-merge",
+  "base": "origin/stream/os",
+  "headSha": "ae9373db7ab8fe889d82aae205ba2f309e8ba70a",
+  "changeHash": "c940fa09790eb76a79f9ed0a31c2018c1685b3da84592c167ca96d2ae59131ef",
+  "changedFiles": [],
+  "verifiedAt": "2026-08-16T02:19:03.423Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/sync-os-stream-with-main-after-mcp-continuity-merge/current.json",
+        ".task/os/sync-os-stream-with-main-after-mcp-continuity-merge/session.json",
+        ".task/os/sync-os-stream-with-main-after-mcp-continuity-merge/workpad.md",
+        ".task/tasks/os/sync-os-stream-with-main-after-mcp-continuity-merge.json"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "pass",
+      "zeroSuiteReason": "changed files are docs or task metadata",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

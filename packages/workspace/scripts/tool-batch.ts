@@ -3,7 +3,7 @@
 import fs from 'node:fs';
 
 import { runBatch } from './lib/facade/batch';
-import type { BatchStep } from './lib/facade/types';
+import type { BatchExecutionContext, BatchStep } from './lib/facade/types';
 
 function writeStdout(value: string): void {
   process.stdout.write(value);
@@ -20,10 +20,10 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 function printHelp(): void {
   writeStdout([
     'usage: bun packages/workspace/scripts/tool-batch.ts <json-array>',
-    '       bun packages/workspace/scripts/tool-batch.ts {"steps":[...]}',
+    '       bun packages/workspace/scripts/tool-batch.ts {"taskSession":"tsk_...","steps":[...]}',
     '       bun packages/workspace/scripts/tool-batch.ts --file /tmp/batch.json',
     '',
-    'runs typed workspace tools in a sequential batch.',
+    'runs typed workspace tools with optional inherited task context.',
     '',
   ].join('\n'));
 }
@@ -67,6 +67,13 @@ async function main(): Promise<void> {
     : isRecord(parsedInput) && Array.isArray(parsedInput.steps)
       ? parsedInput.steps as BatchStep[]
       : null;
+  const executionContext: BatchExecutionContext = isRecord(parsedInput)
+    ? {
+        taskSession: typeof parsedInput.taskSession === 'string' ? parsedInput.taskSession : undefined,
+        branch: typeof parsedInput.branch === 'string' ? parsedInput.branch : undefined,
+        taskWorktree: typeof parsedInput.taskWorktree === 'string' ? parsedInput.taskWorktree : undefined,
+      }
+    : {};
 
   if (!steps) {
     writeStderr('batch input must be a JSON array or an object with a steps array');
@@ -92,7 +99,7 @@ async function main(): Promise<void> {
     return;
   }
 
-  const result = await runBatch(steps);
+  const result = await runBatch(steps, {}, executionContext);
   writeStdout(`${JSON.stringify(result, null, 2)}\n`);
   if (!result.ok) process.exitCode = result.exitCode || 1;
 }

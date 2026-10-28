@@ -1,0 +1,84 @@
+---
+title: Install a skill
+description: Add or remove bundled Consuelo OS skills with the interactive CLI or direct skill names.
+status: preview
+verifiedAt: 2026-08-11
+evidence:
+  - source: packages/os/scripts/lib/skill-selection.ts
+    tests:
+      - packages/os/tests/skill-selection-cli.test.ts
+    runtime: Interactive and direct add/remove flows were verified on 2026-08-11.
+  - source: packages/os/scripts/lib/managed-component-install.ts
+    tests:
+      - packages/os/tests/skill-selection-cli.test.ts
+    runtime: Clean removal and locally modified skill preservation were verified on 2026-08-11.
+---
+
+Consuelo OS ships with skill templates that you can enable or remove after installation.
+
+## Add a skill
+
+Run the picker:
+
+```bash
+consuelo add skill
+```
+
+The picker shows only skill templates that are not currently selected.
+
+To add one or more skills directly:
+
+```bash
+consuelo add skill branch
+consuelo add skill branch browser debugger
+```
+
+Unknown bundled skill names fail instead of creating a silent configuration entry.
+
+## Remove a skill
+
+Run the installed-skill picker:
+
+```bash
+consuelo remove skill
+```
+
+Or remove by name:
+
+```bash
+consuelo remove skill branch
+```
+
+A clean managed skill is removed from the visible `~/Consuelo/Skills/<name>/` tree. If you modified the managed copy locally, Consuelo removes it from the selected set but preserves those files for explicit review.
+
+## What changes
+
+Skill selection updates one canonical intent and then reconciles the derived surfaces:
+
+```text
+<CONSUELO_HOME>/config.json
+  selectedSkills              # durable desired set
+
+<CONSUELO_HOME>/components/installed-skills.json
+                              # active managed index
+
+~/Consuelo/Skills/<name>/     # visible selected skill copy
+~/Consuelo/Skills/skills.json # full bundled catalog
+```
+
+On the next normal agent bootstrap, steering reads the active installed index and advertises selected skills that are not disabled by the manifest overlay.
+
+## Verify
+
+After adding a skill, check that:
+
+1. its name is present in `config.json.selectedSkills`;
+2. it appears in `components/installed-skills.json`;
+3. `~/Consuelo/Skills/<name>/SKILL.md` exists;
+4. a fresh agent bootstrap lists it in Installed skills.
+
+See the individual pages in [Skill Templates](/build/skills/bundled/) for each skill's purpose and boundary.
+
+## Custom skill note
+
+The current `add skill` command selects skill templates. Existing custom skills from the legacy hidden `<CONSUELO_HOME>/skills/` tree are preserved for migration; the CLI does not treat an arbitrary new folder name as a bundled install.

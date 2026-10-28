@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/clarify-os-get-steering-description",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1514,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1514",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1514",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1514/clarify-os-get-steering-description",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1514",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1514/clarify-os-get-steering-description",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-clarify-os-get-steering-description",
+  "taskSession": "tsk_28b135b88fa4",
+  "tmuxSession": "opensaas-os-clarify-os-get-steering-description-28b135b8",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-clarify-os-get-steering-description/.task/os/clarify-os-get-steering-description/session.json",
+  "createdAt": "2026-07-15T17:51:47.972Z"
+}

@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/caddy-worker-pool-rolling-reload",
+  "events": [
+    {
+      "id": "96db40c0-db8d-4b97-8715-27133143f263",
+      "occurred_at": "2026-08-11T23:57:07.836Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/server/supervisor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/caddy-worker-pool-rolling-reload",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/caddy-worker-pool-rolling-reload"
+      }
+    },
+    {
+      "id": "dc017297-24a8-4e15-b98f-c1ef98fb262e",
+      "occurred_at": "2026-08-11T23:57:14.719Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/install-state.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/caddy-worker-pool-rolling-reload",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/caddy-worker-pool-rolling-reload"
+      }
+    },
+    {
+      "id": "cb4fb03b-5fe0-48ce-ae30-626c61702900",
+      "occurred_at": "2026-08-12T00:17:01.993Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/lifecycle-restart-contract.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/caddy-worker-pool-rolling-reload",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/caddy-worker-pool-rolling-reload"
+      }
+    },
+    {
+      "id": "24ee0712-3f88-4c98-960a-965d54bc98f2",
+      "occurred_at": "2026-08-12T00:18:47.433Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/worker-pool.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/caddy-worker-pool-rolling-reload",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/caddy-worker-pool-rolling-reload"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-12T00:18:47.498Z"
+}

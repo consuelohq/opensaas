@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/installer-and-launcher-onboarding-ux-improvements",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1290,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1290",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1290",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1290/installer-and-launcher-onboarding-ux-improvements",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1290",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1290/installer-and-launcher-onboarding-ux-improvements",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-installer-and-launcher-onboarding-ux-improvements",
+  "taskSession": "tsk_2b4aeb2392de",
+  "tmuxSession": "opensaas-os-installer-and-launcher-onboarding-ux-improvement-2b4aeb23",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-installer-and-launcher-onboarding-ux-improvements/.task/os/installer-and-launcher-onboarding-ux-improvements/session.json",
+  "createdAt": "2026-06-30T19:46:53.198Z"
+}

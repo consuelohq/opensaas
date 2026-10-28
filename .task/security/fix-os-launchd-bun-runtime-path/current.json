@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/fix-os-launchd-bun-runtime-path",
+  "baseBranch": "stream/security",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1508,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1508",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1508",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1508/fix-os-launchd-bun-runtime-path",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1508",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1508/fix-os-launchd-bun-runtime-path",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-os-launchd-bun-runtime-path",
+  "taskSession": "tsk_68ad5db41c3c",
+  "tmuxSession": "opensaas-security-fix-os-launchd-bun-runtime-path-68ad5db4",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-os-launchd-bun-runtime-path/.task/security/fix-os-launchd-bun-runtime-path/session.json",
+  "createdAt": "2026-07-15T03:39:30.559Z"
+}

@@ -1,6 +1,7 @@
 #!/usr/bin/env bun
 
-const { execFileSync, spawnSync } = require('child_process');
+const { execFileSync, spawn, spawnSync } = require('child_process');
+const fs = require('fs');
 const path = require('path');
 
 const { analyzeDbRisk } = require('./lib/db-guards');
@@ -12,6 +13,13 @@ const {
   getVerifyStampPath,
   writeVerifyStamp,
 } = require('./lib/verification');
+const {
+  abortVerifyRun,
+  beginVerifyRun,
+  finishVerifyRun,
+  makeVerifyRunIdentity,
+  markVerifyRunLaunched,
+} = require('./lib/verify-run-state');
 
 function writeStdout(value = '') {
   process.stdout.write(`${value}\n`);
@@ -25,19 +33,31 @@ function printHelp() {
   writeStdout('usage: bun run verify -- [options]');
   writeStdout('');
   writeStdout('default behavior:');
-  writeStdout('  1. detect the correct base ref from task metadata when available');
+  writeStdout(
+    '  1. detect the correct base ref from task metadata when available',
+  );
   writeStdout('  2. run bun run review against that base');
   writeStdout('  3. run db/migration/graphql guardrails on affected files');
   writeStdout('  4. run docs checks when docs files changed');
-  writeStdout('  5. write task-scoped verify report metadata; publish-valid only when every gate passes');
+  writeStdout(
+    '  5. write task-scoped verify report metadata; publish-valid only when every gate passes',
+  );
   writeStdout('');
   writeStdout('options:');
-  writeStdout('  --base <ref>           compare against ref (default: task branch stamp base, then stream, then origin/main)');
-  writeStdout('  --no-review           skip bun run review and only run verify guardrails');
+  writeStdout(
+    '  --base <ref>           compare against ref (default: task branch stamp base, then stream, then origin/main)',
+  );
+  writeStdout(
+    '  --no-review           skip bun run review and only run verify guardrails',
+  );
   writeStdout('  --no-db               skip db/migration/graphql guardrails');
   writeStdout('  --db-warn-only        report db guard errors as warnings');
-  writeStdout('  --no-stamp            do not write task-scoped verify report metadata');
-  writeStdout('  --review-arg <value>  pass one extra argument to bun run review; repeatable');
+  writeStdout(
+    '  --no-stamp            do not write task-scoped verify report metadata',
+  );
+  writeStdout(
+    '  --review-arg=<value>  pass one extra argument to bun run review; repeatable',
+  );
   writeStdout('  --json                output structured json');
   writeStdout('  --quiet               reduce human output');
   writeStdout('  --help                show this help');
@@ -52,6 +72,7 @@ function parseArgs(argv) {
     review: true,
     reviewArgs: [],
     stamp: true,
+    foreground: false,
   };
 
   for (let index = 0; index < argv.length; index += 1) {
@@ -64,6 +85,7 @@ function parseArgs(argv) {
     const [flag, inlineValue] = rawArgument.split('=', 2);
     const isBooleanFlag = [
       '--db-warn-only',
+      '--foreground',
       '--help',
       '--json',
       '--no-db',
@@ -71,9 +93,22 @@ function parseArgs(argv) {
       '--no-stamp',
       '--quiet',
     ].includes(flag);
-    const value = inlineValue !== undefined ? inlineValue : isBooleanFlag ? undefined : argv[index + 1];
+    const value =
+      inlineValue !== undefined
+        ? inlineValue
+        : isBooleanFlag
+          ? undefined
+          : argv[index + 1];
 
-    if (!isBooleanFlag && (!value || value.startsWith('--'))) {
+    const isInlineReviewFlag =
+      flag === '--review-arg' &&
+      inlineValue !== undefined &&
+      value?.startsWith('--');
+
+    if (
+      !isBooleanFlag &&
+      (!value || (value.startsWith('--') && !isInlineReviewFlag))
+    ) {
       throw new Error(`missing value for ${flag}`);
     }
 
@@ -96,6 +131,9 @@ function parseArgs(argv) {
         break;
       case '--db-warn-only':
         args.dbWarnOnly = true;
+        break;
+      case '--foreground':
+        args.foreground = true;
         break;
       case '--no-stamp':
         args.stamp = false;
@@ -180,32 +218,54 @@ function addGitOutput(repoRoot, files, args) {
 
 function readChangedFiles(repoRoot, base) {
   const files = new Set();
-  addGitOutput(repoRoot, files, ['diff', '--name-only', '--diff-filter=ACMR', `${base}...HEAD`]);
-  addGitOutput(repoRoot, files, ['diff', '--name-only', '--diff-filter=ACMR', 'HEAD']);
-  addGitOutput(repoRoot, files, ['diff', '--name-only', '--diff-filter=ACMR', '--staged']);
+  addGitOutput(repoRoot, files, [
+    'diff',
+    '--name-only',
+    '--diff-filter=ACMR',
+    `${base}...HEAD`,
+  ]);
+  addGitOutput(repoRoot, files, [
+    'diff',
+    '--name-only',
+    '--diff-filter=ACMR',
+    'HEAD',
+  ]);
+  addGitOutput(repoRoot, files, [
+    'diff',
+    '--name-only',
+    '--diff-filter=ACMR',
+    '--staged',
+  ]);
 
   try {
-    const statusOutput = execFileSync('git', [
-      '-c',
-      'core.quotePath=false',
-      'status',
-      '--porcelain',
-      '-z',
-      '-uall',
-      '--',
-      '.',
-      ':!node_modules',
-    ], {
-      cwd: repoRoot,
-      encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'pipe'],
-    });
+    const statusOutput = execFileSync(
+      'git',
+      [
+        '-c',
+        'core.quotePath=false',
+        'status',
+        '--porcelain',
+        '-z',
+        '-uall',
+        '--',
+        '.',
+        ':!node_modules',
+      ],
+      {
+        cwd: repoRoot,
+        encoding: 'utf8',
+        stdio: ['ignore', 'pipe', 'pipe'],
+      },
+    );
 
     for (const entry of statusOutput.split('\0').filter(Boolean)) {
       const status = entry.slice(0, 2).trim();
       let file = entry.slice(3);
 
-      if ((status.startsWith('R') || status.startsWith('C')) && file.includes(' -> ')) {
+      if (
+        (status.startsWith('R') || status.startsWith('C')) &&
+        file.includes(' -> ')
+      ) {
         file = file.split(' -> ').pop();
       }
 
@@ -247,7 +307,16 @@ function runReview(repoRoot, base, args) {
     };
   }
 
-  const reviewArgs = ['run', 'review', '--', '--base', base, '--json', '--quiet', ...args.reviewArgs];
+  const reviewArgs = [
+    'run',
+    'review',
+    '--',
+    '--base',
+    base,
+    '--json',
+    '--quiet',
+    ...args.reviewArgs,
+  ];
   const result = spawnSync('bun', reviewArgs, {
     cwd: repoRoot,
     encoding: 'utf8',
@@ -256,9 +325,9 @@ function runReview(repoRoot, base, args) {
   });
   const data = parseReviewJson(result.stdout || '');
   const reviewIssueCount = data
-    ? (data.yours || []).length
-      + (data.preExisting || []).length
-      + (data.testResults || []).filter((testResult) => !testResult.passed).length
+    ? (data.yours || []).length +
+      (data.preExisting || []).length +
+      (data.testResults || []).filter((testResult) => !testResult.passed).length
     : 1;
 
   return {
@@ -295,12 +364,15 @@ function createDbResult(files, args) {
 }
 
 function isDocsCheckFile(filePath) {
-  return filePath.startsWith('packages/consuelo-docs/') && (
-    filePath.endsWith('.md') ||
-    filePath.endsWith('.mdx') ||
-    filePath.endsWith('.json') ||
-    filePath.endsWith('.ts') ||
-    filePath.endsWith('.js')
+  return (
+    filePath.startsWith('packages/documentation/') &&
+    (filePath.endsWith('.astro') ||
+      filePath.endsWith('.md') ||
+      filePath.endsWith('.mdx') ||
+      filePath.endsWith('.mjs') ||
+      filePath.endsWith('.ts') ||
+      filePath.endsWith('.js') ||
+      filePath.endsWith('.json'))
   );
 }
 
@@ -333,8 +405,20 @@ function createDocsResult(repoRoot, files) {
   }
 
   const commands = [
-    runDocsCommand(repoRoot, ['bun', 'run', '--cwd', 'packages/consuelo-docs', 'lint']),
-    runDocsCommand(repoRoot, ['bun', 'packages/consuelo-docs/scripts/validate-os-docs.ts']),
+    runDocsCommand(repoRoot, [
+      'bun',
+      'run',
+      '--cwd',
+      'packages/documentation',
+      'validate',
+    ]),
+    runDocsCommand(repoRoot, [
+      'bun',
+      'run',
+      '--cwd',
+      'packages/documentation',
+      'test:translation',
+    ]),
   ];
 
   return {
@@ -352,9 +436,15 @@ function printHumanResult(result) {
   writeStdout(`verify: ${result.branch} vs ${result.base}`);
   writeStdout(`head: ${result.headSha.slice(0, 8)}`);
   writeStdout(`changed files: ${result.files.length}`);
-  writeStdout(`review: ${result.review.skipped ? 'skipped' : result.review.passed ? 'pass' : 'fail'}`);
-  writeStdout(`db guard: ${result.db.skipped ? 'skipped' : result.db.passed ? 'pass' : 'fail'}`);
-  writeStdout(`docs check: ${result.docs.skipped ? 'skipped' : result.docs.passed ? 'pass' : 'fail'}`);
+  writeStdout(
+    `review: ${result.review.skipped ? 'skipped' : result.review.passed ? 'pass' : 'fail'}`,
+  );
+  writeStdout(
+    `db guard: ${result.db.skipped ? 'skipped' : result.db.passed ? 'pass' : 'fail'}`,
+  );
+  writeStdout(
+    `docs check: ${result.docs.skipped ? 'skipped' : result.docs.passed ? 'pass' : 'fail'}`,
+  );
 
   for (const risk of result.db.risks) {
     writeStdout(`  ${risk.category}: ${risk.file}`);
@@ -374,112 +464,257 @@ function printHumanResult(result) {
   }
 }
 
+function buildJsonResult(result) {
+  return {
+    branch: result.branch,
+    base: result.base,
+    headSha: result.headSha,
+    files: result.files,
+    review: {
+      skipped: result.review.skipped,
+      passed: result.review.passed,
+      status: result.review.status,
+      data: result.review.data,
+      stderr: result.review.stderr,
+    },
+    db: result.db,
+    docs: result.docs,
+    passed: result.passed,
+    publishValid: result.publishValid,
+    mode: result.mode,
+    stampPath: result.stampPath,
+  };
+}
+
+function replayVerifyRun(replay) {
+  process.stdout.write(replay.result.stdout || '');
+  process.stderr.write(replay.result.stderr || '');
+  process.exitCode = replay.result.exitCode;
+}
+
+function buildVerifyPendingPayload(verifyRun, context, workerPidOverride = null) {
+  const record = verifyRun.record || {};
+  const workerPid = Number.isInteger(workerPidOverride)
+    ? workerPidOverride
+    : Number.isInteger(record.workerPid)
+      ? record.workerPid
+      : null;
+  return {
+    status: 'VERIFY_PENDING',
+    pending: true,
+    passed: false,
+    publishValid: false,
+    runKey: verifyRun.identity.key,
+    branch: context.branch,
+    base: context.base,
+    headSha: context.headSha,
+    phase: record.status || 'running',
+    startedAt: record.startedAt || null,
+    workerPid,
+    retryAfterSeconds: 5,
+    stamp: {
+      written: false,
+      path: null,
+      publishValid: false,
+    },
+    message: 'Verification is running outside the agent turn.',
+    nextAction: 'Call verify again with the same task session to read pending or completed state; do not sleep inside this turn.',
+  };
+}
+
+function writeVerifyPending(verifyRun, context, workerPidOverride = null) {
+  process.stdout.write(
+    `${JSON.stringify(
+      buildVerifyPendingPayload(verifyRun, context, workerPidOverride),
+      null,
+      2,
+    )}\n`,
+  );
+}
+
+function launchDetachedVerify(repoRoot, verifyRun) {
+  const workerArgs = process.argv
+    .slice(2)
+    .filter((argument) => argument !== '--foreground');
+  workerArgs.push('--foreground');
+  const stdoutFd = fs.openSync(verifyRun.paths.workerStdoutPath, 'a');
+  const stderrFd = fs.openSync(verifyRun.paths.workerStderrPath, 'a');
+
+  try {
+    const child = spawn(process.execPath, [__filename, ...workerArgs], {
+      cwd: repoRoot,
+      detached: true,
+      stdio: ['ignore', stdoutFd, stderrFd],
+      env: {
+        ...process.env,
+        TASK_WORKTREE: repoRoot,
+        WORKSPACE_VERIFY_RESERVED_KEY: verifyRun.identity.key,
+      },
+    });
+    child.unref();
+    markVerifyRunLaunched(verifyRun, child.pid);
+    return child.pid;
+  } catch (error) {
+    abortVerifyRun(
+      verifyRun,
+      error instanceof Error
+        ? `failed to launch detached verify worker: ${error.message}`
+        : 'failed to launch detached verify worker',
+    );
+    throw error;
+  } finally {
+    fs.closeSync(stdoutFd);
+    fs.closeSync(stderrFd);
+  }
+}
+
 async function main() {
   const args = parseArgs(process.argv.slice(2));
+  let verifyRun = null;
 
   if (args.help) {
     printHelp();
     return;
   }
 
-  const repoRoot = resolveGitRoot(process.cwd());
-  process.chdir(repoRoot);
+  try {
+    const repoRoot = resolveGitRoot(process.cwd());
+    process.chdir(repoRoot);
 
-  const branch = getCurrentBranch(repoRoot);
-  const taskMeta = findTaskMeta(repoRoot, { currentBranch: branch });
-  const base = detectBase(repoRoot, args, branch, taskMeta);
-  const files = readChangedFiles(repoRoot, base);
-  const headSha = getRefSha(repoRoot, 'HEAD');
-  const review = runReview(repoRoot, base, args);
-  const db = createDbResult(files, args);
-  const docs = createDocsResult(repoRoot, files);
-  const passed = review.passed && db.passed && docs.passed;
-  const mode = args.review && args.db ? 'full' : 'partial';
-  const publishValid = passed && mode === 'full' && !review.skipped && !db.skipped && db.warnOnly !== true;
-  const verificationState = computeVerificationState(repoRoot, branch);
-  let stampPath = null;
-
-  if (args.stamp && taskMeta) {
-    const stamp = {
-      result: passed ? 'pass' : 'fail',
-      publishValid,
-      mode,
+    const branch = getCurrentBranch(repoRoot);
+    const taskMeta = findTaskMeta(repoRoot, { currentBranch: branch });
+    const base = detectBase(repoRoot, args, branch, taskMeta);
+    const files = readChangedFiles(repoRoot, base);
+    const headSha = getRefSha(repoRoot, 'HEAD');
+    const verificationState = computeVerificationState(repoRoot, branch);
+    const verifyIdentity = makeVerifyRunIdentity({
+      repoRoot,
       branch,
       base,
       headSha,
       changeHash: verificationState.changeHash,
-      changedFiles: files,
-      verifiedAt: new Date().toISOString(),
-      review: {
-        skipped: review.skipped,
-        passed: review.passed,
-      },
-      db: {
-        skipped: db.skipped,
-        passed: db.passed,
-        risks: db.risks,
-        findings: db.findings,
-        warnOnly: db.warnOnly === true,
-      },
-      docs: {
-        skipped: docs.skipped,
-        passed: docs.passed,
-        files: docs.files,
-        commands: docs.commands,
-      },
-      commandVersion: 1,
-    };
+      args,
+    });
+    verifyRun = args.json
+      ? beginVerifyRun(repoRoot, verifyIdentity, {
+          defer: !args.foreground,
+          adoptReservedKey: args.foreground
+            ? process.env.WORKSPACE_VERIFY_RESERVED_KEY
+            : undefined,
+        })
+      : null;
 
-    stampPath = writeVerifyStamp(repoRoot, stamp, taskMeta.data);
-    stampPath = getVerifyStampPath(repoRoot, taskMeta.data);
-  }
-
-  const result = {
-    repoRoot,
-    args,
-    branch,
-    base,
-    headSha,
-    files,
-    review,
-    db,
-    docs,
-    passed,
-    publishValid,
-    mode,
-    stampPath,
-  };
-
-  if (args.json) {
-    writeStdout(JSON.stringify({
-      branch: result.branch,
-      base: result.base,
-      headSha: result.headSha,
-      files: result.files,
-      review: {
-        skipped: result.review.skipped,
-        passed: result.review.passed,
-        status: result.review.status,
-        data: result.review.data,
-        stderr: result.review.stderr,
-      },
-      db: result.db,
-      docs: result.docs,
-      passed: result.passed,
-      publishValid: result.publishValid,
-      mode: result.mode,
-      stampPath: result.stampPath,
-    }, null, 2));
-  } else {
-    if (review.stderr && !review.passed) {
-      writeStderr(review.stderr.trim());
+    if (verifyRun && verifyRun.mode === 'replay') {
+      replayVerifyRun(verifyRun);
+      return;
+    }
+    if (verifyRun && verifyRun.mode === 'pending') {
+      writeVerifyPending(verifyRun, { branch, base, headSha });
+      if (args.foreground) process.exitCode = 1;
+      return;
+    }
+    if (verifyRun && verifyRun.mode === 'launch') {
+      const workerPid = launchDetachedVerify(repoRoot, verifyRun);
+      writeVerifyPending(verifyRun, { branch, base, headSha }, workerPid);
+      verifyRun = null;
+      return;
     }
 
-    printHumanResult(result);
-  }
+    const review = runReview(repoRoot, base, args);
+    const db = createDbResult(files, args);
+    const docs = createDocsResult(repoRoot, files);
+    const passed = review.passed && db.passed && docs.passed;
+    const mode = args.review && args.db ? 'full' : 'partial';
+    const publishValid =
+      passed &&
+      mode === 'full' &&
+      !review.skipped &&
+      !db.skipped &&
+      db.warnOnly !== true;
+    let stampPath = null;
 
-  if (!passed) {
-    process.exit(1);
+    if (args.stamp && taskMeta) {
+      const stamp = {
+        result: passed ? 'pass' : 'fail',
+        publishValid,
+        mode,
+        branch,
+        base,
+        headSha,
+        changeHash: verificationState.changeHash,
+        changedFiles: files,
+        verifiedAt: new Date().toISOString(),
+        review: {
+          skipped: review.skipped,
+          passed: review.passed,
+        },
+        db: {
+          skipped: db.skipped,
+          passed: db.passed,
+          risks: db.risks,
+          findings: db.findings,
+          warnOnly: db.warnOnly === true,
+        },
+        docs: {
+          skipped: docs.skipped,
+          passed: docs.passed,
+          files: docs.files,
+          commands: docs.commands,
+        },
+        commandVersion: 1,
+      };
+
+      stampPath = writeVerifyStamp(repoRoot, stamp, taskMeta.data);
+      stampPath = getVerifyStampPath(repoRoot, taskMeta.data);
+    }
+
+    const result = {
+      repoRoot,
+      args,
+      branch,
+      base,
+      headSha,
+      files,
+      review,
+      db,
+      docs,
+      passed,
+      publishValid,
+      mode,
+      stampPath,
+    };
+
+    if (args.json) {
+      const stdout = `${JSON.stringify(buildJsonResult(result), null, 2)}\n`;
+      process.stdout.write(stdout);
+      finishVerifyRun(verifyRun, {
+        stdout,
+        stderr: '',
+        exitCode: passed ? 0 : 1,
+      });
+      verifyRun = null;
+    } else {
+      if (review.stderr && !review.passed) {
+        writeStderr(review.stderr.trim());
+      }
+
+      printHumanResult(result);
+    }
+
+    if (!passed) {
+      process.exit(1);
+    }
+  } catch (error) {
+    if (verifyRun && ['run', 'launch'].includes(verifyRun.mode)) {
+      abortVerifyRun(
+        verifyRun,
+        error instanceof Error
+          ? error.message
+          : 'verify failed before completion',
+      );
+      verifyRun = null;
+    }
+    throw error;
   }
 }
 

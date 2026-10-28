@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_265a7e485b6f",
+  "tmuxSession": "opensaas-workspace-agents-connect-github-source-control-from-stream-265a7e48",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/connect-github-source-control-from-stream",
+  "branch": "task/workspace-agents/connect-github-source-control-from-stream",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-connect-github-source-control-from-stream",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-connect-github-source-control-from-stream",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2183,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2183",
+  "createdAt": "2026-08-26T02:04:26.324Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-connect-github-source-control-from-stream/.task/workspace-agents/connect-github-source-control-from-stream/session.json"
+}

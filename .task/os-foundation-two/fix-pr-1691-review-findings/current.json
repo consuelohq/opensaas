@@ -1,0 +1,19 @@
+{
+  "area": "os-foundation-two",
+  "stream": "stream/os-foundation-two",
+  "taskBranch": "task/os-foundation-two/fix-pr-1691-review-findings",
+  "baseBranch": "stream/os-foundation-two",
+  "sourceBranch": "stream/os-foundation-two",
+  "startFrom": "stream",
+  "prNumber": 1692,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1692",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1692",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1692/fix-pr-1691-review-findings",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1692",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1692/fix-pr-1691-review-findings",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-foundation-two-fix-pr-1691-review-findings",
+  "taskSession": "tsk_8259c0096f94",
+  "tmuxSession": "opensaas-os-foundation-two-fix-pr-1691-review-findings-8259c009",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-foundation-two-fix-pr-1691-review-findings/.task/os-foundation-two/fix-pr-1691-review-findings/session.json",
+  "createdAt": "2026-07-28T02:40:06.758Z"
+}

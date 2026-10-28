@@ -1,0 +1,19 @@
+{
+  "area": "trace-site",
+  "stream": "stream/trace-site",
+  "taskBranch": "task/trace-site/polish-internal-trace-inspector-preview",
+  "baseBranch": "stream/trace-site",
+  "sourceBranch": "stream/trace-site",
+  "startFrom": "stream",
+  "prNumber": 1398,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1398",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1398",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1398/polish-internal-trace-inspector-preview",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1398",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1398/polish-internal-trace-inspector-preview",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-trace-site-polish-internal-trace-inspector-preview",
+  "taskSession": "tsk_2dea753bde85",
+  "tmuxSession": "opensaas-trace-site-polish-internal-trace-inspector-preview-2dea753b",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-trace-site-polish-internal-trace-inspector-preview/.task/trace-site/polish-internal-trace-inspector-preview/session.json",
+  "createdAt": "2026-07-11T03:00:18.642Z"
+}

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_88d2acafcfc4",
+  "tmuxSession": "opensaas-workspace-agents-deconflict-diffs-route-tests-from-main-88d2acaf",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/deconflict-diffs-route-tests-from-main",
+  "branch": "task/workspace-agents/deconflict-diffs-route-tests-from-main",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-deconflict-diffs-route-tests-from-main",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-deconflict-diffs-route-tests-from-main",
+  "prNumber": 1883,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1883",
+  "createdAt": "2026-08-12T04:41:10.746Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-deconflict-diffs-route-tests-from-main/.task/workspace-agents/deconflict-diffs-route-tests-from-main/session.json"
+}

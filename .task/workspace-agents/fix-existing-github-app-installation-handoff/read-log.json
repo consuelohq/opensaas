@@ -1,0 +1,9 @@
+{
+  "files": [
+    ".task/workspace-agents/fix-existing-github-app-installation-handoff/workpad.md",
+    "packages/os/cloudflare/os-device-authority/src/routes/github-source-control.ts",
+    "packages/os/scripts/server/routes/settings.ts",
+    "packages/workspace/scripts/browser.js"
+  ],
+  "updatedAt": "2026-08-29T01:52:37.440Z"
+}

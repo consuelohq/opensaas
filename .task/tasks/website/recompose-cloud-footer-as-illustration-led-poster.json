@@ -1,0 +1,19 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/recompose-cloud-footer-as-illustration-led-poster",
+  "baseBranch": "stream/website",
+  "sourceBranch": "stream/website",
+  "startFrom": "stream",
+  "prNumber": 1522,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1522",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1522",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1522/recompose-cloud-footer-as-illustration-led-poster",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1522",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1522/recompose-cloud-footer-as-illustration-led-poster",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-website-recompose-cloud-footer-as-illustration-led-poster",
+  "taskSession": "tsk_a64881699580",
+  "tmuxSession": "opensaas-website-recompose-cloud-footer-as-illustration-led-poste-a6488169",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-website-recompose-cloud-footer-as-illustration-led-poster/.task/website/recompose-cloud-footer-as-illustration-led-poster/session.json",
+  "createdAt": "2026-07-16T02:21:48.068Z"
+}

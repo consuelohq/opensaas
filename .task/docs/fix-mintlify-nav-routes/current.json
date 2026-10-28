@@ -1,0 +1,19 @@
+{
+  "area": "docs",
+  "stream": "stream/docs",
+  "taskBranch": "task/docs/fix-mintlify-nav-routes",
+  "baseBranch": "stream/docs",
+  "sourceBranch": "stream/docs",
+  "startFrom": "stream",
+  "prNumber": 1315,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1315",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1315",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1315/fix-mintlify-nav-routes",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1315",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1315/fix-mintlify-nav-routes",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-fix-mintlify-nav-routes",
+  "taskSession": "tsk_7af616e1446d",
+  "tmuxSession": "opensaas-docs-fix-mintlify-nav-routes-7af616e1",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-fix-mintlify-nav-routes/.task/docs/fix-mintlify-nav-routes/session.json",
+  "createdAt": "2026-07-01T04:25:24.894Z"
+}

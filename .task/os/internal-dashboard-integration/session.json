@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_5f92fe8b25a6",
+  "tmuxSession": "opensaas-os-internal-dashboard-integration-5f92fe8b",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/internal-dashboard-integration",
+  "branch": "task/os/internal-dashboard-integration",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-internal-dashboard-integration",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-internal-dashboard-integration",
+  "prNumber": 1912,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1912",
+  "createdAt": "2026-08-13T19:14:35.707Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-internal-dashboard-integration/.task/os/internal-dashboard-integration/session.json"
+}

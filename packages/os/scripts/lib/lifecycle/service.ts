@@ -1,0 +1,504 @@
+import { existsSync, readdirSync, rmSync } from 'node:fs';
+import { join, resolve } from 'node:path';
+
+import type {
+  LifecycleHealthAcceptance,
+  LifecycleServiceController,
+} from './types';
+const LEGACY_SYSTEM_DAEMON_RETIREMENT_SCRIPT = 'retire-legacy-system-daemons.sh';
+// Caddy and Cloudflared are the public MCP availability boundary. Ordinary
+// runtime activation may rotate the OS worker pool behind Caddy, but it must
+// not tear down the ingress that carries the client's HTTP connection.
+const MAC_RESTARTABLE_SIDECAR_SERVICE_LABELS = new Set([
+  'com.consuelo.portless.system',
+  'com.consuelo.watchdog',
+  'com.consuelo.availability',
+]);
+const MAC_LEGACY_HEARTBEAT_SERVICE_PREFIX = 'com.consuelo.os.node-heartbeat.';
+const MAC_SUPERVISED_HEARTBEAT_MARKER = join(
+  'scripts',
+  'lib',
+  'macos-supervised-heartbeat.ts',
+);
+const MAC_SUPERVISED_SIDECARS_MARKER = join(
+  'scripts',
+  'lib',
+  'macos-supervised-sidecars.ts',
+);
+const MAC_BEST_EFFORT_SIDECAR_SERVICE_LABELS = new Set([
+  'com.consuelo.watchdog',
+]);
+const MAC_GATEWAY_BOOTSTRAP_ATTEMPTS = 4;
+const MAC_GATEWAY_BOOTSTRAP_RETRY_MS = 200;
+const MAC_GATEWAY_KICKSTART_ATTEMPTS = 4;
+const MAC_GATEWAY_KICKSTART_RETRY_MS = 200;
+
+export type LifecycleProcessResult = {
+  exitCode: number;
+  stdout: string;
+  stderr: string;
+};
+
+export type LifecycleProcessRunner = (
+  command: string,
+  args: string[],
+  env?: NodeJS.ProcessEnv,
+) => Promise<LifecycleProcessResult>;
+
+async function defaultRunner(
+  command: string,
+  args: string[],
+  env: NodeJS.ProcessEnv = process.env,
+): Promise<LifecycleProcessResult> {
+  try {
+    const proc = Bun.spawn([command, ...args], {
+      stdout: 'pipe',
+      stderr: 'pipe',
+      env,
+    });
+    const [stdout, stderr, exitCode] = await Promise.all([
+      new Response(proc.stdout).text(),
+      new Response(proc.stderr).text(),
+      proc.exited,
+    ]);
+    return { exitCode, stdout, stderr };
+  } catch (error: unknown) {
+    throw new Error(
+      `failed to execute lifecycle service command: ${error instanceof Error ? error.message : String(error)}`,
+      { cause: error },
+    );
+  }
+}
+
+function commandFailure(result: LifecycleProcessResult, fallback: string): Error {
+  return new Error(result.stderr.trim() || result.stdout.trim() || fallback);
+}
+
+function isLegacyDefinitionsOnlyUnsupported(result: LifecycleProcessResult): boolean {
+  const detail = `${result.stdout}\n${result.stderr}`;
+  return /unknown option:\s*--definitions-only/i.test(detail);
+}
+
+function installedMacRestartableSidecarLaunchAgents(environment?: NodeJS.ProcessEnv): Array<{
+  label: string;
+  plistPath: string;
+}> {
+  const userHome = environment?.HOME?.trim();
+  if (!userHome) return [];
+  const launchAgentDir = join(userHome, 'Library', 'LaunchAgents');
+  if (!existsSync(launchAgentDir)) return [];
+  const invokingServiceLabel = environment?.XPC_SERVICE_NAME?.trim();
+  return readdirSync(launchAgentDir)
+    .filter((name) => name.endsWith('.plist'))
+    .map((name) => ({
+      label: name.slice(0, -'.plist'.length),
+      plistPath: join(launchAgentDir, name),
+    }))
+    .filter(({ label }) => MAC_RESTARTABLE_SIDECAR_SERVICE_LABELS.has(label))
+    // A one-shot watchdog remains inside its launchd transaction until this process exits.
+    // Tearing down that same job from consuelo restart races launchd and returns 5 or 37.
+    .filter(({ label }) => !invokingServiceLabel || label !== invokingServiceLabel)
+    .sort((left, right) => left.label.localeCompare(right.label));
+}
+
+function installedMacLegacyHeartbeatLaunchAgents(environment?: NodeJS.ProcessEnv): Array<{
+  label: string;
+  plistPath: string;
+}> {
+  const effectiveEnvironment = environment ?? process.env;
+  const userHome = effectiveEnvironment.HOME?.trim();
+  if (!userHome) return [];
+  const launchAgentDir = join(userHome, 'Library', 'LaunchAgents');
+  if (!existsSync(launchAgentDir)) return [];
+  return readdirSync(launchAgentDir)
+    .filter((name) => name.startsWith(MAC_LEGACY_HEARTBEAT_SERVICE_PREFIX) && name.endsWith('.plist'))
+    .map((name) => ({
+      label: name.slice(0, -'.plist'.length),
+      plistPath: join(launchAgentDir, name),
+    }))
+    .sort((left, right) => left.label.localeCompare(right.label));
+}
+
+function runtimeUsesSupervisedMacHeartbeat(runtimeRoot: string): boolean {
+  return existsSync(resolve(runtimeRoot, MAC_SUPERVISED_HEARTBEAT_MARKER));
+}
+
+function runtimeUsesSupervisedMacSidecars(runtimeRoot: string): boolean {
+  return existsSync(resolve(runtimeRoot, MAC_SUPERVISED_SIDECARS_MARKER));
+}
+
+function isBestEffortMacSidecar(label: string): boolean {
+  return MAC_BEST_EFFORT_SIDECAR_SERVICE_LABELS.has(label);
+}
+export function createReloadServiceController(input: {
+  osRoot: string;
+  activeRuntimeRoot?: string;
+  home?: string;
+  nodeHome?: string;
+  runtimeExecutable?: string;
+  run?: LifecycleProcessRunner;
+  platform?: NodeJS.Platform;
+  environment?: NodeJS.ProcessEnv;
+  userId?: number;
+  sleep?: (milliseconds: number) => Promise<void>;
+}): LifecycleServiceController {
+  const bootstrapReloadScript = resolve(input.osRoot, 'scripts', 'consuelo-reload.js');
+  const activeRuntimeRoot = input.activeRuntimeRoot ?? input.osRoot;
+  const runtimeScripts = (runtimeRoot: string) => ({
+    reloadScript: resolve(runtimeRoot, 'scripts', 'consuelo-reload.js'),
+    daemonInstaller: resolve(runtimeRoot, 'scripts', 'install-system-daemons.sh'),
+    dependencyBootstrap: resolve(runtimeRoot, 'scripts', 'bootstrap.sh'),
+    caddyReconcileScript: resolve(
+      runtimeRoot,
+      'scripts',
+      'migrations',
+      'reconcile-caddy-worker-pool.ts',
+    ),
+  });
+  const lifecycleHome = input.home ?? (input.nodeHome ? resolve(input.nodeHome, '..') : undefined);
+  const runtimeExecutable = input.runtimeExecutable ?? process.execPath;
+  const legacySystemDaemonRetirementScript = resolve(input.osRoot, 'scripts', LEGACY_SYSTEM_DAEMON_RETIREMENT_SCRIPT);
+  const uninstallScript = resolve(input.osRoot, 'scripts', 'uninstall-system-daemons.sh');
+  const run = input.run ?? defaultRunner;
+  const platform = input.platform ?? process.platform;
+  const sleepImpl = input.sleep ?? sleep;
+  const reconcileCaddy = async (runtimeRoot = activeRuntimeRoot): Promise<void> => {
+    if (platform !== 'darwin' || !lifecycleHome) return;
+    const { caddyReconcileScript } = runtimeScripts(runtimeRoot);
+    try {
+      const result = await run(
+        runtimeExecutable,
+        [caddyReconcileScript, lifecycleHome],
+        input.environment ?? process.env,
+      );
+      if (result.exitCode !== 0) {
+        throw commandFailure(result, `Caddy reconciliation exited ${result.exitCode}`);
+      }
+    } catch (error: unknown) {
+      throw new Error(
+        `activated runtime Caddy reconciliation failed: ${error instanceof Error ? error.message : String(error)}`,
+        { cause: error },
+      );
+    }
+  };
+  return {
+    async preflight() {
+      if (!existsSync(bootstrapReloadScript)) {
+        throw new Error(`canonical reload adapter is missing: ${bootstrapReloadScript}`);
+      }
+      if (platform === 'darwin') {
+        if (!existsSync(legacySystemDaemonRetirementScript)) {
+          throw new Error(`legacy system-daemon retirement adapter is missing: ${legacySystemDaemonRetirementScript}`);
+        }
+        const legacy = await run('bash', [legacySystemDaemonRetirementScript, '--check']);
+        if (legacy.exitCode === 2) {
+          throw new Error('Legacy root Consuelo LaunchDaemons are still installed. Retire them once with: ' + `sudo bash '${legacySystemDaemonRetirementScript}' --apply` + ', then rerun the lifecycle command.');
+        }
+        if (legacy.exitCode !== 0) {
+          throw commandFailure(legacy, `legacy system-daemon check exited ${legacy.exitCode}`);
+        }
+      }
+      const { caddyReconcileScript } = runtimeScripts(activeRuntimeRoot);
+      if (existsSync(caddyReconcileScript)) await reconcileCaddy(activeRuntimeRoot);
+    },
+    async restart(options = {}) {
+      try {
+        const runtimeRoot = options.runtimeRoot ?? activeRuntimeRoot;
+        const { reloadScript, daemonInstaller, dependencyBootstrap } = runtimeScripts(runtimeRoot);
+        if (platform === 'darwin') {
+          const dependencies = await run(
+            'bash',
+            [dependencyBootstrap, '--runtime-dependencies-only'],
+            input.environment ?? process.env,
+          );
+          if (dependencies.exitCode !== 0) {
+            const legacyRollbackCompatible = options.allowDestructiveFallback
+              && /unknown option:\s*--runtime-dependencies-only/i.test(
+                `${dependencies.stdout}\n${dependencies.stderr}`,
+              );
+            if (!legacyRollbackCompatible) {
+              throw commandFailure(
+                dependencies,
+                `runtime dependency reconciliation exited ${dependencies.exitCode}`,
+              );
+            }
+          }
+          const definitions = await run(
+            'bash',
+            [daemonInstaller, '--definitions-only', '--quiet'],
+            input.environment ?? process.env,
+          );
+          if (definitions.exitCode !== 0) {
+            const legacyRollbackCompatible = options.allowDestructiveFallback
+              && isLegacyDefinitionsOnlyUnsupported(definitions);
+            if (!legacyRollbackCompatible) {
+              throw commandFailure(definitions, `LaunchAgent definition refresh exited ${definitions.exitCode}`);
+            }
+            // Older immutable releases predate the definitions-only installer mode. During
+            // automatic rollback, runtime/current has already been repointed to that release,
+            // and the installed LaunchAgent definitions use the stable runtime/current path.
+            // Keep those definitions and continue with the target release's reload adapter.
+          }
+        }
+        await reconcileCaddy(runtimeRoot);
+        const rollingCommand = options.waitForCompletion ? 'rolling-reload-now' : 'rolling-reload';
+        let result = await run(runtimeExecutable, [reloadScript, rollingCommand]);
+        if (result.exitCode !== 0 && options.allowDestructiveFallback) {
+          const fallbackCommand = options.waitForCompletion ? 'reload-now' : 'reload';
+          result = await run(runtimeExecutable, [reloadScript, fallbackCommand]);
+        }
+        if (result.exitCode !== 0) {
+          throw commandFailure(result, `reload adapter exited ${result.exitCode}`);
+        }
+        if (platform === 'darwin' && options.waitForCompletion) {
+          const userId = input.userId ?? process.getuid?.();
+          if (userId === undefined) {
+            throw new Error('cannot resolve the user id for gateway restart');
+          }
+          const domain = 'gui/' + String(userId);
+          const legacyHeartbeatAgents = installedMacLegacyHeartbeatLaunchAgents(input.environment);
+          const supervisedHeartbeat = runtimeUsesSupervisedMacHeartbeat(runtimeRoot);
+          if (supervisedHeartbeat) {
+            for (const heartbeat of legacyHeartbeatAgents) {
+              const service = domain + '/' + heartbeat.label;
+              const loaded = await run('launchctl', ['print', service]);
+              const loadedDetail = loaded.stdout + '\n' + loaded.stderr;
+              const knownUnloaded = loaded.exitCode === 113
+                || /No such process|Could not find service|not loaded/i.test(loadedDetail);
+              if (loaded.exitCode !== 0 && !knownUnloaded) {
+                throw new Error(
+                  'legacy heartbeat inspection failed for ' + heartbeat.label + ': '
+                  + (loaded.stderr.trim() || loaded.stdout.trim()
+                    || 'launchctl print exited ' + String(loaded.exitCode)),
+                );
+              }
+              if (loaded.exitCode === 0) {
+                const bootout = await run('launchctl', ['bootout', service]);
+                const detail = bootout.stdout + '\n' + bootout.stderr;
+                const alreadyUnloaded = bootout.exitCode === 3
+                  || /No such process|Could not find service|not loaded/i.test(detail);
+                if (bootout.exitCode !== 0 && !alreadyUnloaded) {
+                  throw new Error(
+                    'legacy heartbeat unload failed for ' + heartbeat.label + ': '
+                    + (bootout.stderr.trim() || bootout.stdout.trim()
+                      || 'launchctl bootout exited ' + String(bootout.exitCode)),
+                  );
+                }
+              }
+              rmSync(heartbeat.plistPath, { force: true });
+            }
+          }
+          const supervisedSidecars = runtimeUsesSupervisedMacSidecars(runtimeRoot);
+          const restartableAgents = [
+            ...installedMacRestartableSidecarLaunchAgents(input.environment).filter(
+              (agent) => !supervisedSidecars || agent.label !== 'com.consuelo.watchdog',
+            ),
+            ...(supervisedHeartbeat ? [] : legacyHeartbeatAgents),
+          ];
+          for (const gateway of restartableAgents) {
+            const service = domain + '/' + gateway.label;
+            const loaded = await run('launchctl', ['print', service]);
+            const loadedDetail = loaded.stdout + '\n' + loaded.stderr;
+            const knownUnloaded = loaded.exitCode === 113
+              || /No such process|Could not find service|not loaded/i.test(loadedDetail);
+            if (loaded.exitCode !== 0 && !knownUnloaded) {
+              throw new Error(
+                'gateway definition inspection failed for ' + gateway.label + ': '
+                + (loaded.stderr.trim() || loaded.stdout.trim()
+                  || 'launchctl print exited ' + String(loaded.exitCode)),
+              );
+            }
+            const definitionReloadRequired = loaded.exitCode === 0;
+            let available = false;
+            let lastBootstrap: LifecycleProcessResult | undefined;
+
+            if (definitionReloadRequired) {
+              const bootout = await run('launchctl', ['bootout', service]);
+              const detail = bootout.stdout + '\n' + bootout.stderr;
+              const alreadyUnloaded = bootout.exitCode === 3
+                || /No such process|Could not find service|not loaded/i.test(detail);
+              if (bootout.exitCode !== 0 && !alreadyUnloaded) {
+                throw new Error(
+                  'gateway definition unload failed for ' + gateway.label + ': '
+                  + (bootout.stderr.trim() || bootout.stdout.trim()
+                    || 'launchctl bootout exited ' + String(bootout.exitCode)),
+                );
+              }
+            }
+
+            for (let attempt = 1; attempt <= MAC_GATEWAY_BOOTSTRAP_ATTEMPTS; attempt += 1) {
+              const bootstrap = await run('launchctl', [
+                'bootstrap',
+                domain,
+                gateway.plistPath,
+              ]);
+              lastBootstrap = bootstrap;
+              if (bootstrap.exitCode === 0) {
+                available = true;
+                break;
+              }
+
+              const detail = bootstrap.stdout + '\n' + bootstrap.stderr;
+              const transientExitFive = bootstrap.exitCode === 5
+                || /Bootstrap failed:\s*5|Input\/output error/i.test(detail);
+              if (!transientExitFive) break;
+
+              const visible = await run('launchctl', ['print', service]);
+              if (visible.exitCode === 0) {
+                available = true;
+                break;
+              }
+              if (attempt < MAC_GATEWAY_BOOTSTRAP_ATTEMPTS) {
+                await sleepImpl(MAC_GATEWAY_BOOTSTRAP_RETRY_MS);
+              }
+            }
+
+            if (!available) {
+              const result = lastBootstrap ?? loaded;
+              const detail = result.stderr.trim() || result.stdout.trim()
+                || 'launchctl bootstrap exited ' + String(result.exitCode);
+              if (isBestEffortMacSidecar(gateway.label)) {
+                continue;
+              }
+              throw new Error('gateway bootstrap failed for ' + gateway.label + ': ' + detail);
+            }
+
+            let kickstarted = false;
+            let lastKickstart: LifecycleProcessResult | undefined;
+            for (let attempt = 1; attempt <= MAC_GATEWAY_KICKSTART_ATTEMPTS; attempt += 1) {
+              const kickstart = await run('launchctl', [
+                'kickstart',
+                '-k',
+                service,
+              ]);
+              lastKickstart = kickstart;
+              if (kickstart.exitCode === 0) {
+                kickstarted = true;
+                break;
+              }
+
+              const detail = kickstart.stdout + '\n' + kickstart.stderr;
+              const transientLaunchdTransition = kickstart.exitCode === 5
+                || kickstart.exitCode === 37
+                || /Bootstrap failed:\s*5|Input\/output error|Operation already in progress/i.test(detail);
+              if (!transientLaunchdTransition) break;
+              if (attempt < MAC_GATEWAY_KICKSTART_ATTEMPTS) {
+                await sleepImpl(MAC_GATEWAY_KICKSTART_RETRY_MS);
+              }
+            }
+            if (!kickstarted) {
+              const result = lastKickstart ?? {
+                exitCode: 1,
+                stdout: '',
+                stderr: '',
+              };
+              const detail = result.stderr.trim() || result.stdout.trim()
+                || 'launchctl kickstart exited ' + String(result.exitCode);
+              if (isBestEffortMacSidecar(gateway.label)) {
+                continue;
+              }
+              throw new Error('gateway kickstart failed for ' + gateway.label + ': ' + detail);
+            }
+          }
+        }
+      } catch (error: unknown) {
+        throw new Error(
+          `canonical reload adapter failed: ${error instanceof Error ? error.message : String(error)}`,
+          { cause: error },
+        );
+      }
+    },
+    async uninstall(options = {}) {
+      try {
+        if (platform === 'darwin') {
+          if (!existsSync(uninstallScript)) {
+            throw new Error(`canonical uninstall adapter is missing: ${uninstallScript}`);
+          }
+          const args = [uninstallScript, ...(options.dryRun ? ['--dry-run'] : [])];
+          const result = await run('bash', args, {
+            ...process.env,
+            ...(options.home ? { CONSUELO_HOME: options.home } : {}),
+          });
+          if (result.exitCode !== 0) {
+            throw commandFailure(result, `uninstall adapter exited ${result.exitCode}`);
+          }
+          return;
+        }
+        if (options.dryRun) return;
+        if (platform === 'linux') {
+          const ownedUnits = [
+            'consuelo-os.service',
+            'consuelo-portless.service',
+            'consuelo-watchdog.service',
+          ];
+          for (const unit of ownedUnits) {
+            const result = await run('systemctl', ['--user', 'disable', '--now', unit]);
+            const detail = `${result.stdout}\n${result.stderr}`;
+            if (
+              result.exitCode !== 0
+              && !/not loaded|not found|does not exist|no such file/i.test(detail)
+            ) {
+              throw commandFailure(result, `systemctl failed for ${unit}`);
+            }
+          }
+          return;
+        }
+        if (platform === 'win32') {
+          const ownedServices = ['ConsueloOS', 'ConsueloPortless', 'ConsueloWatchdog'];
+          for (const service of ownedServices) {
+            await run('sc.exe', ['stop', service]);
+            const deleted = await run('sc.exe', ['delete', service]);
+            const detail = `${deleted.stdout}\n${deleted.stderr}`;
+            if (deleted.exitCode !== 0 && !/does not exist|1060/i.test(detail)) {
+              throw commandFailure(deleted, `service deletion failed for ${service}`);
+            }
+          }
+        }
+      } catch (error: unknown) {
+        throw new Error(
+          `canonical service uninstall failed: ${error instanceof Error ? error.message : String(error)}`,
+          { cause: error },
+        );
+      }
+    },
+  };
+}
+
+const sleep = (milliseconds: number): Promise<void> =>
+  new Promise((resolveSleep) => setTimeout(resolveSleep, milliseconds));
+
+export function createHttpHealthAcceptance(input: {
+  url: string;
+  attempts?: number;
+  intervalMs?: number;
+  expectedName?: string;
+  expectedBundleId?: string;
+  fetchImpl?: typeof fetch;
+}): LifecycleHealthAcceptance {
+  const attempts = input.attempts ?? 40;
+  const intervalMs = input.intervalMs ?? 500;
+  const expectedName = input.expectedName ?? 'consuelo-os';
+  const fetchImpl = input.fetchImpl ?? fetch;
+  return {
+    async accept(expected = {}) {
+      for (let attempt = 0; attempt < attempts; attempt += 1) {
+        try {
+          const response = await fetchImpl(input.url, { signal: AbortSignal.timeout(2_000) });
+          if (response.ok) {
+            const body = (await response.json()) as { name?: string; bundleId?: string; version?: string };
+            const expectedBundleId = expected.bundleId ?? input.expectedBundleId;
+            if (
+              body.name === expectedName
+              && (!expectedBundleId || body.bundleId === expectedBundleId)
+              && (!expected.version || body.version === expected.version)
+            ) return true;
+          }
+        } catch {
+          // A bounded retry follows; health failure remains a typed engine result.
+        }
+        if (attempt + 1 < attempts) await sleep(intervalMs);
+      }
+      return false;
+    },
+  };
+}

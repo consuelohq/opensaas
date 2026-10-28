@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 
 // review.js — local code review: static checks + eslint + typecheck
-// splits findings into "yours" (from your diff) vs "pre-existing"
+// splits findings into "yours", "related pre-existing", and background "pre-existing"
 // usage: bun run review [options]
 
 const { execFileSync, execSync } = require('child_process');
@@ -12,6 +12,7 @@ const { getTrackedChanges } = require('./lib/git');
 const { getNxBinary, getProjectsForFiles, getProjectsWithTarget } = require('./lib/nx-projects');
 const { computeVerificationState } = require('./lib/verification');
 const { beginReviewRun, finishReviewRun, makeReviewRunIdentity } = require('./lib/review-run-state');
+const { findDocumentationOpportunities } = require('./lib/review-documentation');
 const { linkTaskWorktreeNodeModules } = require('./lib/task-node-modules');
 let outputCapture = null;
 let activeReviewRun = null;
@@ -122,7 +123,7 @@ function parseArgs(argv) {
 
 function run(cmd, args, opts = {}) {
   try {
-    return execFileSync(cmd, args, { encoding: 'utf8', maxBuffer: 10 * 1024 * 1024, ...opts }).trim();
+    return execFileSync(cmd, args, { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, ...opts }).trim();
   } catch {
     return '';
   }
@@ -159,6 +160,10 @@ function isVendoredThirdPartyFile(filePath) {
   return filePath.includes('/upstream/') || filePath.includes('/vendor/');
 }
 
+function isGeneratedArtifactFile(filePath) {
+  return filePath.includes('/generated/') || filePath.includes('/generated-metadata/');
+}
+
 function isReviewableFile(filePath) {
   return filePath.startsWith('packages/')
     && !isVendoredThirdPartyFile(filePath)
@@ -172,7 +177,7 @@ function addChangedFiles(files, args) {
   }
 }
 
-function getChangedFiles(base) {
+function getChangedRepoFiles(base) {
   const files = new Set();
   addChangedFiles(files, ['diff', '--name-only', '--diff-filter=ACMR', `${base}...HEAD`]);
   addChangedFiles(files, ['diff', '--name-only', '--diff-filter=ACMR', 'HEAD']);
@@ -180,13 +185,18 @@ function getChangedFiles(base) {
 
   try {
     for (const change of getTrackedChanges(gitRoot())) {
+      if (change.deleted) continue;
       files.add(change.path);
     }
   } catch {
     // status output is advisory; diff output above covers committed ranges.
   }
 
-  return [...files].filter(isReviewableFile).sort();
+  return [...files].map((file) => normalizeRepoPath(gitRoot(), file)).sort();
+}
+
+function getChangedFiles(base) {
+  return getChangedRepoFiles(base).filter(isReviewableFile);
 }
 
 function addChangedLineNumbers(lines, args) {
@@ -234,7 +244,7 @@ function readFileLines(filePath) {
 }
 
 function isTestFile(f) {
-  return /__tests__|\.spec\.|\.test\./.test(f);
+  return /__tests__|\.spec\.|\.test\.|\.stories\./.test(f);
 }
 
 function isLoggerFile(f) {
@@ -242,7 +252,10 @@ function isLoggerFile(f) {
 }
 
 function isReviewSelfFile(f) {
-  return f === 'packages/workspace/scripts/review.js' || f === 'packages/workspace/scripts/ai-review.js';
+  return f === 'packages/workspace/scripts/review.js'
+    || f === 'packages/workspace/scripts/ai-review.js'
+    || f === 'packages/os/scripts/review.js'
+    || f === 'packages/os/scripts/ai-review.js';
 }
 
 function checkLogging(file, lines) {
@@ -567,7 +580,7 @@ function runTests(files) {
       return m ? m[1] : null;
     }).filter(Boolean))];
   } else {
-    packages = ['api', 'dialer', 'twenty-server'];
+    packages = ['api', 'dialer'];
   }
 
   // map to packages that have jest configs
@@ -634,24 +647,67 @@ function runTests(files) {
   return results;
 }
 
-function classifyFindings(allFindings, changedLines, base) {
+function normalizeReviewPath(file) {
+  return String(file || '').replace(/\\/g, '/').replace(/^\.\//, '');
+}
+
+function packageAreaRoot(file) {
+  const normalized = normalizeReviewPath(file);
+  const packageMatch = normalized.match(/^packages\/[^/]+\//);
+  if (packageMatch) return packageMatch[0];
+  const firstSegment = normalized.split('/')[0];
+  return firstSegment ? `${firstSegment}/` : '';
+}
+
+function collectRelatedReviewRoots(files, affectedProjects = []) {
+  const roots = new Set();
+
+  for (const project of affectedProjects) {
+    const root = normalizeReviewPath(project?.root);
+    if (root) roots.add(root.endsWith('/') ? root : `${root}/`);
+  }
+
+  for (const file of files) {
+    const root = packageAreaRoot(file);
+    if (root) roots.add(root);
+  }
+
+  return roots;
+}
+
+function isRelatedReviewFinding(finding, relatedRoots) {
+  const file = normalizeReviewPath(finding?.file);
+  if (!file) return false;
+  for (const root of relatedRoots) {
+    if (file.startsWith(root)) return true;
+  }
+  return false;
+}
+
+function classifyFindings(allFindings, changedLines, relatedRoots = new Set()) {
   const yours = [];
+  const relatedPreExisting = [];
   const preExisting = [];
 
-  for (const f of allFindings) {
-    if (!f.file || !changedLines.has(f.file)) {
-      preExisting.push(f);
+  for (const finding of allFindings) {
+    const file = normalizeReviewPath(finding.file);
+    if (!file || !changedLines.has(file)) {
+      if (isRelatedReviewFinding(finding, relatedRoots)) relatedPreExisting.push(finding);
+      else preExisting.push(finding);
       continue;
     }
-    const myLines = changedLines.get(f.file);
-    if (myLines.size === 0 || myLines.has(f.line)) {
-      yours.push(f);
+
+    const myLines = changedLines.get(file);
+    if (myLines.size === 0 || myLines.has(finding.line)) {
+      yours.push(finding);
+    } else if (isRelatedReviewFinding(finding, relatedRoots)) {
+      relatedPreExisting.push(finding);
     } else {
-      preExisting.push(f);
+      preExisting.push(finding);
     }
   }
 
-  return { yours, preExisting };
+  return { yours, relatedPreExisting, preExisting };
 }
 
 function printFindings(label, findings, quiet) {
@@ -683,7 +739,7 @@ function groupFindingsByRule(findings) {
 }
 
 function findingId(owner, index) {
-  const prefix = owner === 'your_change' ? 'your' : 'pre';
+  const prefix = owner === 'your_change' ? 'your' : owner === 'related_pre_existing' ? 'related' : 'pre';
   return `${prefix}_finding_${String(index + 1).padStart(4, '0')}`;
 }
 
@@ -749,11 +805,15 @@ function summarizeReviewTests(testResults) {
   };
 }
 
-function createSummaryJsonPayload({ base, branch, files, affectedProjects, yours, preExisting, testResults, confidenceResult }) {
+const RELATED_PRE_EXISTING_PROMPT = 'Related pre-existing findings are in the same package or area as this task. Fix mechanical issues in this task, or escalate to Ko when the fix needs product, ownership, or architectural judgment.';
+
+function createSummaryJsonPayload({ base, branch, files, affectedProjects, yours, relatedPreExisting, preExisting, testResults, confidenceResult, documentationCheckRan, documentationOpportunities }) {
   const yourFindings = yours.map((finding, index) => compactFinding(finding, index, 'your_change'));
+  const relatedPreExistingFindings = relatedPreExisting.map((finding, index) => compactFinding(finding, index, 'related_pre_existing'));
   const preExistingFindings = preExisting.map((finding, index) => compactFinding(finding, index, 'pre_existing'));
   const testSummary = summarizeReviewTests(testResults);
   const checksRun = ['static_rules', 'eslint', 'typecheck', 'spec_compliance'];
+  if (documentationCheckRan) checksRun.push('documentation_opportunities');
   if (testResults.length > 0) checksRun.push('tests');
 
   return {
@@ -765,20 +825,28 @@ function createSummaryJsonPayload({ base, branch, files, affectedProjects, yours
     checksRun,
     summary: {
       yourIssues: yourFindings.length,
+      relatedPreExistingIssues: relatedPreExistingFindings.length,
       preExistingIssues: preExistingFindings.length,
       failedTestSuites: testSummary.failedSuites,
-      blockingIssues: yourFindings.length + testSummary.failedSuites,
+      blockingIssues: yourFindings.length + relatedPreExistingFindings.length + testSummary.failedSuites,
+      ...(documentationCheckRan ? { documentationOpportunities: documentationOpportunities.length } : {}),
     },
     mustFix: yourFindings,
+    relatedPreExisting: relatedPreExistingFindings,
+    relatedPreExistingPrompt: relatedPreExistingFindings.length > 0 ? RELATED_PRE_EXISTING_PROMPT : null,
     byRule: {
       yourChanges: summarizeCompactFindings(yourFindings).byRule,
+      relatedPreExisting: summarizeCompactFindings(relatedPreExistingFindings).byRule,
       preExisting: summarizeCompactFindings(preExistingFindings).byRule,
     },
     byFile: {
       yourChanges: summarizeCompactFindings(yourFindings).byFile,
+      relatedPreExisting: summarizeCompactFindings(relatedPreExistingFindings).byFile,
       preExisting: summarizeCompactFindings(preExistingFindings).byFile,
     },
+    relatedPreExistingDigest: summarizeCompactFindings(relatedPreExistingFindings),
     preExistingDigest: summarizeCompactFindings(preExistingFindings),
+    ...(documentationCheckRan ? { documentationOpportunities } : {}),
     testSummary,
     fullEvidence: {
       command: `bun run review -- --base ${base} --json`,
@@ -900,7 +968,12 @@ async function main() {
   }
 
   // get files
-  const files = args.all ? getAllTsFiles(root) : getChangedFiles(base);
+  const allChangedFiles = args.all ? getAllTsFiles(root) : getChangedRepoFiles(base);
+  const files = args.all ? allChangedFiles : allChangedFiles.filter(isReviewableFile);
+  const documentationCheckRan = !args.all;
+  const documentationOpportunities = documentationCheckRan
+    ? findDocumentationOpportunities(allChangedFiles)
+    : [];
 
   const affectedProjects = getProjectsForFiles(root, files).map((project) => ({
     name: project.name,
@@ -923,6 +996,7 @@ async function main() {
   const allFindings = [];
   const checkResults = {};
   for (const file of files) {
+    if (isGeneratedArtifactFile(file)) continue;
     const lines = readFileLines(file);
     for (const check of ALL_CHECKS) {
       const results = check(file, lines);
@@ -970,6 +1044,18 @@ async function main() {
   allFindings.push(...typecheckFindings);
   if (!args.quiet && !structuredOutput) {
     writeStdout(`  ${'TYPECHECK' + ' '.repeat(10)} ${typecheckFindings.length === 0 ? '✓ PASS' : `✗ FAIL (${typecheckFindings.length})`}`);
+  }
+
+  if (!args.quiet && !structuredOutput && documentationCheckRan) {
+    const docsStatus = documentationOpportunities.length === 0
+      ? '✓ PASS'
+      : `◇ REVIEW (${documentationOpportunities.length})`;
+    writeStdout(`  ${'DOCS_OPPORTUNITY' + ' '.repeat(2)} ${docsStatus}`);
+    for (const opportunity of documentationOpportunities) {
+      writeStdout(`    ${opportunity.surface}: ${opportunity.docs.join(', ')}`);
+    }
+  } else if (!args.quiet && !structuredOutput && !documentationCheckRan) {
+    writeStdout(`  ${'DOCS_OPPORTUNITY' + ' '.repeat(2)} ⊘ SKIPPED (--all)`);
   }
 
   // spec compliance (not per-file)
@@ -1041,15 +1127,27 @@ async function main() {
   }
 
   // classify
-  const { yours, preExisting } = classifyFindings(allFindings, changedLines, base);
+  const relatedRoots = collectRelatedReviewRoots(files, affectedProjects);
+  const { yours, relatedPreExisting, preExisting } = classifyFindings(allFindings, changedLines, relatedRoots);
 
   // include test failures in exit code
   const testsFailed = testResults.some((r) => !r.passed);
 
   if (args.json || args.summaryJson) {
-    const fullPayload = { base, branch, files: files.length, affectedProjects, yours, preExisting, testResults, confidence: confidenceResult };
+    const fullPayload = {
+      base,
+      branch,
+      files: files.length,
+      affectedProjects,
+      yours,
+      relatedPreExisting,
+      preExisting,
+      ...(documentationCheckRan ? { documentationOpportunities } : {}),
+      testResults,
+      confidence: confidenceResult,
+    };
     const payload = args.summaryJson
-      ? createSummaryJsonPayload({ base, branch, files, affectedProjects, yours, preExisting, testResults, confidenceResult })
+      ? createSummaryJsonPayload({ base, branch, files, affectedProjects, yours, relatedPreExisting, preExisting, testResults, confidenceResult, documentationCheckRan, documentationOpportunities })
       : fullPayload;
     writeStdout(JSON.stringify(payload, null, 2));
     if (reviewRun) {
@@ -1064,11 +1162,23 @@ async function main() {
   writeStdout('');
   printFindings('YOUR CHANGES', yours, args.quiet);
   writeStdout('');
-  printFindings('⚠ PRE-EXISTING (in your stream — you still own these)', preExisting, args.quiet);
+  printFindings('RELATED PRE-EXISTING (same package/area)', relatedPreExisting, args.quiet);
+  if (relatedPreExisting.length > 0) writeStdout(RELATED_PRE_EXISTING_PROMPT);
+  writeStdout('');
+  printFindings('PRE-EXISTING (background)', preExisting, args.quiet);
+  if (documentationOpportunities.length > 0) {
+    writeStdout('');
+    writeStdout(`DOCUMENTATION OPPORTUNITIES: ${documentationOpportunities.length}`);
+    for (const opportunity of documentationOpportunities) {
+      writeStdout(`  ${opportunity.surface}: ${opportunity.reason}`);
+      writeStdout(`    docs: ${opportunity.docs.join(', ')}`);
+      writeStdout(`    next: ${opportunity.suggestedAction}`);
+    }
+  }
 
   writeStdout('');
-  const total = yours.length + preExisting.length;
-  if (total === 0 && !testsFailed) {
+  const blockingTotal = yours.length + relatedPreExisting.length;
+  if (blockingTotal === 0 && !testsFailed) {
     writeStdout('✓ all checks passed');
 
     // kick off ai review in tmux background if a PR exists
@@ -1092,14 +1202,14 @@ async function main() {
       }
     } catch { /* non-critical */ }
   } else {
-    if (total > 0) {
-      writeStdout(`${total} lint/type issue(s): ${yours.length} yours, ${preExisting.length} pre-existing`);
+    if (blockingTotal > 0 || preExisting.length > 0) {
+      writeStdout(`${blockingTotal} blocking lint/type issue(s): ${yours.length} yours, ${relatedPreExisting.length} related pre-existing; ${preExisting.length} background pre-existing`);
     }
     if (testsFailed) {
       const failedSuites = testResults.filter((r) => !r.passed).map((r) => r.pkg);
       writeStdout(`test failures in: ${failedSuites.join(', ')}`);
     }
-    writeStdout('fix all issues in your stream before pushing.');
+    writeStdout('fix your-change and related pre-existing issues before pushing, or escalate related findings that need judgment.');
     process.exit(1);
   }
 }

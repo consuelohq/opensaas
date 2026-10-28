@@ -6,13 +6,14 @@ This checklist gates public OS installer releases that depend on local runtime b
 
 ## Baseline runtime contract
 
-Portless is optional. A clean public install must work without a `portless` binary, without hosted portless artifacts, and without a `com.consuelo.portless.system` LaunchAgent. In that baseline path, Consuelo OS binds the normal local service on `http://127.0.0.1:8960` and records `PORTLESS_ENABLED=0` instead of persisting a stale `PORTLESS_BIN`.
+Portless is optional. A clean public install must work without a `portless` binary, without hosted portless artifacts, and without a `com.consuelo.portless.system` LaunchAgent. In that baseline path, Consuelo OS binds the normal local service on `http://127.0.0.1:46321` and records `PORTLESS_ENABLED=0` instead of persisting a stale `PORTLESS_BIN`.
 
 Required baseline behavior:
 
 - missing portless does not fail bootstrap;
 - missing portless does not fail `install:system-daemons`;
-- generated user LaunchAgents include `com.consuelo.system` and `com.consuelo.watchdog`;
+- generated user LaunchAgents include `com.consuelo.system` and the scheduled one-shot `com.consuelo.watchdog`;
+- `com.consuelo.availability` is generated only when `CONSUELO_AVAILABILITY_ENABLED=1`, and disabling it removes the Consuelo-owned assertion on the next daemon install;
 - generated user LaunchAgents include `com.consuelo.portless.system` only when portless is configured or discoverable;
 - the local health endpoint responds on the regular local port.
 
@@ -56,9 +57,11 @@ Required baseline verification:
   Cloudflared is not required for baseline local-port installs. It is required only after approved bootstrap material selects a Cloudflare tunnel transport for a connector.
 - `~/.consuelo/os/.env` contains `BUN_BIN`, `CLOUDFLARED_BIN`, and `PORTLESS_ENABLED=0` when portless is absent;
 - `~/.consuelo/os/.env` does not contain `PORTLESS_BIN` when portless is absent;
-- `launchctl print` shows the workspace and watchdog LaunchAgents;
+- `launchctl print` shows the system and watchdog LaunchAgents;
+- when availability is explicitly enabled, `launchctl print` also shows `com.consuelo.availability` using `/usr/bin/caffeinate -s`;
+- watchdog state is writable under `$CONSUELO_HOME/node/runtime/watchdog` and does not depend on `~/Library/Caches/Consuelo` ownership;
 - `launchctl print` does not require `com.consuelo.portless.system` when portless is absent;
-- the local health endpoint responds on `http://127.0.0.1:8960/health`;
+- the local health endpoint responds on `http://127.0.0.1:46321/health`;
 - managed MCP ingress reaches the local service after approved tunnel bootstrap.
 
 Optional portless verification, only when portless is configured or optional install is enabled:

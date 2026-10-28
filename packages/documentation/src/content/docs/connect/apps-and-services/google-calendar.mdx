@@ -1,0 +1,44 @@
+---
+title: Google Calendar
+description: Read calendar ranges through gog before enabling event creation or changes.
+status: preview
+verifiedAt: 2026-07-14
+evidence:
+  - source: packages/os/integrations.md
+    tests:
+      - packages/os/tests/tool-manifest.test.ts
+    runtime: 'No native Google Calendar tool family is currently published in the OS manifest.'
+---
+
+> **Native Consuelo tool: Planned**  
+> **Available today: Yes — through `gog`.**
+
+Set up [Google Workspace](/connect/apps-and-services/google-workspace/) first. Verify the intended account and calendar with a bounded read:
+
+```bash
+gog --readonly --no-input --json calendar events --today
+```
+
+## Ask your agent
+
+```text
+Use gog to create a Calendar tool that reads bounded date ranges first.
+Resolve the calendar explicitly and return structured event fields.
+Do not create, update, move, invite, unsubscribe, or delete until I approve each method.
+```
+
+## Proposed methods
+
+```text
+google.calendar.list
+google.calendar.events
+google.calendar.create
+google.calendar.update
+google.calendar.delete
+```
+
+Creating or changing an event can notify other people and change their schedules. Require approval and show the calendar, attendees, timezone, start, and end before the write.
+
+## Official documentation
+
+[`gog` Calendar commands](https://github.com/openclaw/gogcli#calendar)

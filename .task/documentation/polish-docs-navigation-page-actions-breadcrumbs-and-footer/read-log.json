@@ -1,0 +1,13 @@
+{
+  "files": [
+    ".task/documentation/polish-docs-navigation-page-actions-breadcrumbs-and-footer/workpad.md",
+    "packages/documentation/node_modules/@astrojs/starlight/components/ContentPanel.astro",
+    "packages/documentation/scripts/check-package-boundary.mjs",
+    "packages/documentation/src/components/Sidebar.astro",
+    "packages/documentation/src/components/mintlify/Card.astro",
+    "packages/documentation/src/content/docs/build/tools/how-tools-work.mdx",
+    "packages/documentation/tests/foundation.test.ts",
+    "packages/workspace/senior-engineer.md"
+  ],
+  "updatedAt": "2026-07-15T02:01:03.981Z"
+}

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_36c2cfebbeef",
+  "tmuxSession": "opensaas-os-resolve-final-promotion-review-findings-36c2cfeb",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/resolve-final-promotion-review-findings",
+  "branch": "task/os/resolve-final-promotion-review-findings",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-resolve-final-promotion-review-findings",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-resolve-final-promotion-review-findings",
+  "prNumber": 1720,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1720",
+  "createdAt": "2026-07-29T06:43:25.505Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-resolve-final-promotion-review-findings/.task/os/resolve-final-promotion-review-findings/session.json"
+}

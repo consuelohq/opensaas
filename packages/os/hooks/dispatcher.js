@@ -5,7 +5,7 @@ const path = require('path');
 
 const { createTaskWorkflowHookRegistry } = require('./task/workflow.js');
 
-const DEFAULT_MANIFEST_PATH = path.join(__dirname, '..', 'tooling', 'dev-tool-manifest.json');
+const DEFAULT_MANIFEST_PATH = path.join(__dirname, '..', 'manifests', 'generated', 'tool.manifest.json');
 
 const LEGACY_WORKFLOW_ROLE_BY_TOOL = new Map([
   ['stream.context', 'stream.context'],
@@ -64,11 +64,11 @@ function loadManifest(options = {}) {
   const manifestText = fs.readFileSync(manifestPath, 'utf8');
   const manifest = JSON.parse(manifestText);
 
-  if (!Array.isArray(manifest)) {
-    throw new Error(`tool manifest must be a JSON array: ${manifestPath}`);
+  if (Array.isArray(manifest)) return manifest;
+  if (manifest && manifest.kind === 'consuelo-os-tool-manifest' && Array.isArray(manifest.tools)) {
+    return manifest.tools.map((entry) => entry.definition);
   }
-
-  return manifest;
+  throw new Error(`tool manifest must be a generated manifest or JSON array: ${manifestPath}`);
 }
 
 function normalizeManifest(manifest, options = {}) {

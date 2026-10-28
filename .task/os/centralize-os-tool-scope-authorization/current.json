@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/centralize-os-tool-scope-authorization",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1535,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1535",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1535",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1535/centralize-os-tool-scope-authorization",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1535",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1535/centralize-os-tool-scope-authorization",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-centralize-os-tool-scope-authorization",
+  "taskSession": "tsk_5d87350d817d",
+  "tmuxSession": "opensaas-os-centralize-os-tool-scope-authorization-5d87350d",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-centralize-os-tool-scope-authorization/.task/os/centralize-os-tool-scope-authorization/session.json",
+  "createdAt": "2026-07-19T17:15:04.545Z"
+}

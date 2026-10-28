@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_ae75d672485a",
+  "tmuxSession": "opensaas-os-install-control-plane-ae75d672",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/install-control-plane",
+  "branch": "task/os/install-control-plane",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-install-control-plane",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-install-control-plane",
+  "prNumber": 1903,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1903",
+  "createdAt": "2026-08-13T16:42:31.412Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-install-control-plane/.task/os/install-control-plane/session.json"
+}

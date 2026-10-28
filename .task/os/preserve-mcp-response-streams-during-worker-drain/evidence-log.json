@@ -1,0 +1,136 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/preserve-mcp-response-streams-during-worker-drain",
+  "events": [
+    {
+      "id": "bb03ca5e-4aed-4dda-b3da-d7abfbaa28e2",
+      "occurred_at": "2026-08-16T07:00:09.257Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/server/app.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/preserve-mcp-response-streams-during-worker-drain",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/preserve-mcp-response-streams-during-worker-drain"
+      }
+    },
+    {
+      "id": "0e6607cc-b980-4475-8169-daf190af3fd3",
+      "occurred_at": "2026-08-16T07:00:20.982Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/server/env.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/preserve-mcp-response-streams-during-worker-drain",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/preserve-mcp-response-streams-during-worker-drain"
+      }
+    },
+    {
+      "id": "304c955c-daa0-4e2c-bcc3-7bfa7f93885b",
+      "occurred_at": "2026-08-16T07:00:31.101Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/health-readiness.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/preserve-mcp-response-streams-during-worker-drain",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/preserve-mcp-response-streams-during-worker-drain"
+      }
+    },
+    {
+      "id": "6765e8f7-bb17-40b4-9e56-918af82edafd",
+      "occurred_at": "2026-08-16T07:03:18.764Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/test-selection.rules.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/preserve-mcp-response-streams-during-worker-drain",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/preserve-mcp-response-streams-during-worker-drain"
+      }
+    },
+    {
+      "id": "8d59f5a8-fc54-4cef-b8ae-f8f1c0cd9925",
+      "occurred_at": "2026-08-16T07:03:42.009Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/test-selection.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/preserve-mcp-response-streams-during-worker-drain",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/preserve-mcp-response-streams-during-worker-drain"
+      }
+    },
+    {
+      "id": "281aefb8-607c-4e77-8913-dc48f186d81d",
+      "occurred_at": "2026-08-16T07:05:55.090Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/documentation/src/content/docs/reference/configuration.mdx",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/preserve-mcp-response-streams-during-worker-drain",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/preserve-mcp-response-streams-during-worker-drain"
+      }
+    },
+    {
+      "id": "8f1a5b35-91a8-4b3e-8d1a-bff958ca7074",
+      "occurred_at": "2026-08-16T07:06:00.860Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/documentation/src/content/docs/reference/configuration.mdx",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/preserve-mcp-response-streams-during-worker-drain",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/preserve-mcp-response-streams-during-worker-drain"
+      }
+    },
+    {
+      "id": "a4b90409-b57a-43bf-a712-eb2b246cc112",
+      "occurred_at": "2026-08-16T07:06:10.173Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/documentation/src/content/docs/reference/configuration.mdx",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/preserve-mcp-response-streams-during-worker-drain",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/preserve-mcp-response-streams-during-worker-drain"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-16T07:06:10.232Z"
+}

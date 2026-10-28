@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_a03cbd45c28c",
+  "tmuxSession": "opensaas-os-distribution-harden-lifecycle-engine-transaction-a03cbd45",
+  "area": "os-distribution",
+  "stream": "stream/os-distribution",
+  "taskBranch": "task/os-distribution/harden-lifecycle-engine-transaction",
+  "branch": "task/os-distribution/harden-lifecycle-engine-transaction",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-harden-lifecycle-engine-transaction",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-harden-lifecycle-engine-transaction",
+  "prNumber": 1584,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1584",
+  "createdAt": "2026-07-23T04:13:58.641Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-harden-lifecycle-engine-transaction/.task/os-distribution/harden-lifecycle-engine-transaction/session.json"
+}

@@ -1,0 +1,232 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/gate-internal-dashboard-routing-on-complete-access-config",
+  "base": "origin/task/os/gate-internal-dashboard-routing-on-complete-access-config",
+  "headSha": "657ff0432310ddd0cb1dbfb81dfe8a27df01a5a5",
+  "changeHash": "9c412968b404a93e45fe9ae8c6b200f41c097a7fc031b0c255785cb9b4f027f5",
+  "changedFiles": [
+    "packages/os/cloudflare/workspace-edge/src/index.ts",
+    "packages/os/scripts/lib/cloudflare-worker-release-readiness.ts",
+    "packages/os/tests/cloudflare-worker-release-readiness.test.ts",
+    "packages/os/tests/internal-dashboard-integration.test.ts"
+  ],
+  "verifiedAt": "2026-08-16T22:32:26.816Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/gate-internal-dashboard-routing-on-complete-access-config/current.json",
+        ".task/os/gate-internal-dashboard-routing-on-complete-access-config/session.json",
+        ".task/os/gate-internal-dashboard-routing-on-complete-access-config/workpad.md",
+        ".task/tasks/os/gate-internal-dashboard-routing-on-complete-access-config.json",
+        "packages/os/cloudflare/workspace-edge/src/index.ts",
+        "packages/os/scripts/lib/cloudflare-worker-release-readiness.ts",
+        "packages/os/tests/cloudflare-worker-release-readiness.test.ts",
+        "packages/os/tests/internal-dashboard-integration.test.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "os-device-approval-canonical-identity",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Native OS device-approval and canonical-identity changes must prove the exact auth, tenant, and control-plane contracts without selecting unsafe unrelated package-wide OS tests.",
+          "matchedFiles": [
+            "packages/os/tests/internal-dashboard-integration.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-managed-cloud-one-click-provisioning",
+          "critical": true,
+          "exclusive": true,
+          "reason": "One-click managed-cloud control-plane, launcher, provisioning-runner, enrollment, and Worker changes must prove their focused security and lifecycle contracts without selecting the historically red unrelated OS package suite.",
+          "matchedFiles": [
+            "packages/os/cloudflare/workspace-edge/src/index.ts",
+            "packages/os/scripts/lib/cloudflare-worker-release-readiness.ts",
+            "packages/os/tests/cloudflare-worker-release-readiness.test.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "OS canonical device approval contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/canonical-device-identity.test.ts",
+            "tests/install-control-plane.test.ts",
+            "tests/install-control-plane-d1.test.ts",
+            "tests/oauth-device-page-contract.test.ts",
+            "tests/internal-dashboard-integration.test.ts",
+            "tests/native-google-device-approval.test.ts",
+            "tests/os-device-authority-worker.test.ts"
+          ],
+          "ruleId": "os-device-approval-canonical-identity",
+          "critical": true
+        },
+        {
+          "name": "OS canonical device approval syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "ruleId": "os-device-approval-canonical-identity",
+          "critical": true
+        },
+        {
+          "name": "OS one-click managed cloud contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/managed-cloud-one-click-provisioning.test.ts",
+            "tests/managed-cloud-one-click-runner.test.ts",
+            "tests/launcher-nodes-control-plane.test.ts",
+            "tests/settings-site.test.ts",
+            "tests/cloudflare-worker-release-readiness.test.ts",
+            "tests/os-device-authority-architecture.test.ts",
+            "tests/os-device-authority-release-contract.test.ts",
+            "tests/managed-cloud-node-enrollment.test.ts",
+            "tests/managed-cloud-node-enrollment-cli.test.ts",
+            "tests/platform-managed-cloud-node.test.ts",
+            "tests/managed-cloud-pricing.test.ts",
+            "tests/managed-cloud-public-pricing.test.ts",
+            "tests/managed-cloud-node-instance-contract.test.ts",
+            "tests/managed-cloud-node-contract.test.ts"
+          ],
+          "ruleId": "os-managed-cloud-one-click-provisioning",
+          "critical": true
+        },
+        {
+          "name": "OS device authority Worker contract",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/os-device-authority-worker.test.ts"
+          ],
+          "ruleId": "os-managed-cloud-one-click-provisioning",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "OS canonical device approval contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/canonical-device-identity.test.ts",
+            "tests/install-control-plane.test.ts",
+            "tests/install-control-plane-d1.test.ts",
+            "tests/oauth-device-page-contract.test.ts",
+            "tests/internal-dashboard-integration.test.ts",
+            "tests/native-google-device-approval.test.ts",
+            "tests/os-device-authority-worker.test.ts"
+          ],
+          "ruleId": "os-device-approval-canonical-identity",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 576,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-gate-internal-dashboard-routing-on-complete-access-config/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/oauth-device-page-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/install-control-plane-d1.test.ts \u001b[2m(\u001b[22m\u001b[2m6 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 11\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/install-control-plane.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 14\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/canonical-device-identity.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 9\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/native-google-device-approval.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 23\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/internal-dashboard-integration.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 39\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-worker.test.ts \u001b[2m(\u001b[22m\u001b[2m31 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 76\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m7 passed\u001b[39m\u001b[22m\u001b[90m (7)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m69 passed\u001b[39m\u001b[22m\u001b[90m (69)\u001b[39m\n\u001b[2m   Start at \u001b[22m 18:32:22\n\u001b[2m   Duration \u001b[22m 411ms\u001b[2m (transform 791ms, setup 0ms, import 1.05s, tests 175ms, environment 0ms)\u001b[22m\n\n$ vitest run tests/canonical-device-identity.test.ts tests/install-control-plane.test.ts \"tests/install-control-plane-d1.test.ts\" tests/oauth-device-page-contract.test.ts tests/internal-dashboard-integration.test.ts tests/native-google-device-approval.test.ts tests/os-device-authority-worker.test.ts\n"
+        },
+        {
+          "name": "OS canonical device approval syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "ruleId": "os-device-approval-canonical-identity",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1687,
+          "outputTail": "workspace script syntax checks passed\n"
+        },
+        {
+          "name": "OS one-click managed cloud contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/managed-cloud-one-click-provisioning.test.ts",
+            "tests/managed-cloud-one-click-runner.test.ts",
+            "tests/launcher-nodes-control-plane.test.ts",
+            "tests/settings-site.test.ts",
+            "tests/cloudflare-worker-release-readiness.test.ts",
+            "tests/os-device-authority-architecture.test.ts",
+            "tests/os-device-authority-release-contract.test.ts",
+            "tests/managed-cloud-node-enrollment.test.ts",
+            "tests/managed-cloud-node-enrollment-cli.test.ts",
+            "tests/platform-managed-cloud-node.test.ts",
+            "tests/managed-cloud-pricing.test.ts",
+            "tests/managed-cloud-public-pricing.test.ts",
+            "tests/managed-cloud-node-instance-contract.test.ts",
+            "tests/managed-cloud-node-contract.test.ts"
+          ],
+          "ruleId": "os-managed-cloud-one-click-provisioning",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1199,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-gate-internal-dashboard-routing-on-complete-access-config/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/managed-cloud-node-instance-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 46\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/platform-managed-cloud-node.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 53\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-node-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 13\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-public-pricing.test.ts \u001b[2m(\u001b[22m\u001b[2m6 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 22\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-pricing.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 7\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/cloudflare-worker-release-readiness.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-architecture.test.ts \u001b[2m(\u001b[22m\u001b[2m25 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 55\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-one-click-provisioning.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 54\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/launcher-nodes-control-plane.test.ts \u001b[2m(\u001b[22m\u001b[2m7 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 39\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-node-enrollment-cli.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 572\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m parses explicit home, onboarding, and status paths \u001b[33m 570\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-node-enrollment.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 600\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m persists one owner-only node keypair and reuses it across enrollment retries \u001b[33m 590\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-one-click-runner.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/settings-site.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 146\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-release-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m18 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 486\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m14 passed\u001b[39m\u001b[22m\u001b[90m (14)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m105 passed\u001b[39m\u001b[22m\u001b[90m (105)\u001b[39m\n\u001b[2m   Start at \u001b[22m 18:32:24\n\u001b[2m   Duration \u001b[22m 1.03s\u001b[2m (transform 2.15s, setup 0ms, import 2.90s, tests 2.10s, environment 1ms)\u001b[22m\n\n$ vitest run tests/managed-cloud-one-click-provisioning.test.ts tests/managed-cloud-one-click-runner.test.ts tests/launcher-nodes-control-plane.test.ts tests/settings-site.test.ts tests/cloudflare-worker-release-readiness.test.ts tests/os-device-authority-architecture.test.ts tests/os-device-authority-release-contract.test.ts tests/managed-cloud-node-enrollment.test.ts tests/managed-cloud-node-enrollment-cli.test.ts tests/platform-managed-cloud-node.test.ts tests/managed-cloud-pricing.test.ts tests/managed-cloud-public-pricing.test.ts tests/managed-cloud-node-instance-contract.test.ts tests/managed-cloud-node-contract.test.ts\n"
+        },
+        {
+          "name": "OS device authority Worker contract",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/os-device-authority-worker.test.ts"
+          ],
+          "ruleId": "os-managed-cloud-one-click-provisioning",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 718,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-gate-internal-dashboard-routing-on-complete-access-config\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/os-device-authority-worker.test.ts \u001b[2m(\u001b[22m\u001b[2m31 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 75\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m31 passed\u001b[39m\u001b[22m\u001b[90m (31)\u001b[39m\n\u001b[2m   Start at \u001b[22m 18:32:26\n\u001b[2m   Duration \u001b[22m 425ms\u001b[2m (transform 238ms, setup 0ms, import 283ms, tests 75ms, environment 0ms)\u001b[22m\n\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_0385043f5c86",
+  "tmuxSession": "opensaas-documentation-deploy-docs-automatically-from-main-0385043f",
+  "area": "documentation",
+  "stream": "stream/documentation",
+  "taskBranch": "task/documentation/deploy-docs-automatically-from-main",
+  "branch": "task/documentation/deploy-docs-automatically-from-main",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-deploy-docs-automatically-from-main",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-deploy-docs-automatically-from-main",
+  "prNumber": 1479,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1479",
+  "createdAt": "2026-07-14T04:20:55.995Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-deploy-docs-automatically-from-main/.task/documentation/deploy-docs-automatically-from-main/session.json"
+}

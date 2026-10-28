@@ -1,0 +1,10 @@
+{
+  "canvas": { "width": 2032, "height": 1192, "fps": 30 },
+  "edit": { "startBeatDuration": 1.25, "answerBeatDuration": 3.05, "proxyDuration": 4.3, "interAgentTransition": "hard-cut" },
+  "sources": [
+    { "agent": "ChatGPT", "capture": "Screen Recording 2026-08-31 at 17.39.04.mov", "startMediaStart": 3.7, "answerMediaStart": 19.55 },
+    { "agent": "Grok", "capture": "Screen Recording 2026-08-31 at 18.45.19.mov", "startMediaStart": 3.8, "answerMediaStart": 25.85 },
+    { "agent": "Codex", "capture": "Screen Recording 2026-08-31 at 18.49.06.mov", "startMediaStart": 4.7, "answerMediaStart": 18.75 },
+    { "agent": "OpenCode", "capture": "Screen Recording 2026-08-31 at 18.53.42.mov", "startMediaStart": 4.7, "answerMediaStart": 10.95 }
+  ]
+}

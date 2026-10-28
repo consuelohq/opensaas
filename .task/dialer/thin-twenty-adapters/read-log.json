@@ -1,0 +1,14 @@
+{
+  "files": [
+    ".task/dialer/extract-effect-application-core/workpad.md",
+    ".task/dialer/thin-twenty-adapters/workpad.md",
+    "packages/dialer/src/application/parallel-application.spec.ts",
+    "packages/twenty-server/src/engine/core-modules/consuelo-api/controllers/parallel.controller.ts",
+    "packages/twenty-server/src/engine/core-modules/consuelo-api/resolvers/dialer-call-start.resolver.ts",
+    "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.ts",
+    "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.ts",
+    "packages/workspace/scripts/task-push.js",
+    "packages/workspace/senior-engineer.md"
+  ],
+  "updatedAt": "2026-07-23T19:54:03.955Z"
+}

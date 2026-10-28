@@ -1,0 +1,116 @@
+---
+title: Pages and content
+description: Understand page source, current pointers, immutable versions, section patches, and leases.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/scripts/lib/sites.ts
+    tests:
+      - packages/os/tests/sites-cli.test.ts
+    runtime: Page publication, version history protection, section rebasing, conflicts, and leases were exercised by focused tests on 2026-07-13.
+  - source: packages/os/data-model.md
+    tests:
+      - packages/os/tests/sites-cli.test.ts
+    runtime: Registry and lease files were inspected in isolated temporary Consuelo homes.
+---
+
+A published Sites page has source, a current copy, immutable versions, and registry metadata. Keeping those roles separate prevents one agent from silently replacing another agent's work.
+
+## Page layout
+
+Publishing to `/pages/release-checklist` creates a structure like:
+
+```text
+sites/
+  pages/
+    index.html
+    release-checklist/
+      index.html
+      content.json
+      versions/
+        <version-id>/
+          index.html
+          content.json
+  .data/
+    pages/
+      registry.json
+      leases.json
+```
+
+The files directly under `release-checklist/` are the current page. Each directory under `versions/` is an immutable published copy. The registry identifies the current version and records parent version, kind, source hash, changed sections, agent, trace, and timestamps when those values were supplied.
+
+Sites protects existing version directories when it replaces the current page. A publish target cannot inject replacement content into a previously recorded version.
+
+## Typed reader content
+
+Pages with kind `spec`, `plan`, or `guide` should keep `content.json` beside the rendered `index.html`. That enables the canonical renderer and section-level updates.
+
+The reader content model supports structured sections and components. Treat the current renderer as the schema authority: begin from a working example or existing page, make a focused change, and render before publishing.
+
+## Update one section
+
+Use `sites patch` for one section of an existing typed page:
+
+```bash
+bun run --cwd "$CONSUELO_HOME" os -- sites patch \
+  --page release-checklist \
+  --section verify \
+  --input "$PWD/verify-section.json" \
+  --base-version <current-version-id> \
+  --agent agent-a \
+  --json
+```
+
+The patch input may be the section object itself. Its `id` must match the section named on the command.
+
+Sites stages the current source, replaces the requested section in `content.json`, re-renders the reader page, and publishes a new immutable version.
+
+### Concurrent edits
+
+When the page moved after your base version:
+
+- a patch to a different section can rebase onto the latest version;
+- a patch to the same changed section returns `SECTION_CONFLICT`;
+- a base version not found in history returns `UNKNOWN_BASE_VERSION`;
+- omitting the required base returns `STALE_SITES_PATCH`.
+
+Read the latest current version before resolving a conflict. Do not bypass the check simply to make the command pass.
+
+## Reserve a section while working
+
+A short-lived lease tells other agents that one section is being edited:
+
+```bash
+bun run --cwd "$CONSUELO_HOME" os -- sites lease acquire \
+  --page release-checklist \
+  --section verify \
+  --agent agent-a \
+  --ttl-minutes 45 \
+  --json
+```
+
+Inspect and release leases with:
+
+```bash
+bun run --cwd "$CONSUELO_HOME" os -- sites lease status \
+  --page release-checklist \
+  --json
+
+bun run --cwd "$CONSUELO_HOME" os -- sites lease release \
+  --page release-checklist \
+  --section verify \
+  --agent agent-a \
+  --json
+```
+
+Leases are scoped to `pageId#sectionId` and expire. Another active owner causes `LEASE_CONFLICT`. A lease is a collaboration guard, not permanent ownership or a security boundary.
+
+## Source of truth
+
+Use this hierarchy when deciding what to edit:
+
+1. project or task source is the authoring source;
+2. `content.json` is the structured reader source for typed pages;
+3. the current Sites page is the latest published review copy;
+4. immutable versions are history;
+5. the registry is metadata, not prose to edit by hand.

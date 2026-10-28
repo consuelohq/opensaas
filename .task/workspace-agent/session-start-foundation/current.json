@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agent",
+  "stream": "stream/workspace-agent",
+  "taskBranch": "task/workspace-agent/session-start-foundation",
+  "baseBranch": "stream/workspace-agent",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1984,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1984",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1984",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1984/session-start-foundation",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1984",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1984/session-start-foundation",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agent-session-start-foundation",
+  "taskSession": "tsk_af861d1df7d1",
+  "tmuxSession": "opensaas-workspace-agent-session-start-foundation-af861d1d",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agent-session-start-foundation/.task/workspace-agent/session-start-foundation/session.json",
+  "createdAt": "2026-08-15T01:30:57.748Z"
+}

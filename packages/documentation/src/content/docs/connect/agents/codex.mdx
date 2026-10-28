@@ -1,0 +1,50 @@
+---
+title: Codex
+description: Connect Codex to the local Consuelo OS MCP command.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/scripts/lib/local-agent-connectivity.ts
+    tests:
+      - packages/os/tests/local-agent-connectivity.test.ts
+      - packages/os/tests/install-state.test.ts
+    runtime: Codex native configuration and MCP verification behavior were exercised by focused tests on 2026-07-13.
+---
+Codex uses the native MCP server table in `~/.codex/config.toml`. Consuelo preserves unrelated Codex settings and writes a managed `consuelo-os` section that runs:
+
+```text
+~/.consuelo/bin/consuelo-os-mcp
+```
+
+## Connect
+
+```bash
+export CONSUELO_HOME="${CONSUELO_HOME:-$HOME/.consuelo}"
+cd "$CONSUELO_HOME"
+bun ./scripts/install.ts --yes --mode local --home "$CONSUELO_HOME" --connect-agent codex --skip-daemons
+```
+
+The resulting entry is equivalent to:
+
+```toml
+[mcp_servers."consuelo-os"]
+command = "/Users/you/.consuelo/bin/consuelo-os-mcp"
+cwd = "/Users/you/.consuelo"
+```
+
+Use the paths generated on your Mac; do not paste the example home literally.
+
+## Verify
+
+A successful installer result records Codex as `verified`. That means the OS command completed MCP `initialize`, returned `tools/list`, and exposed at least one tool. Restart Codex after configuration so it reloads `config.toml`.
+
+## Troubleshooting
+
+- Open Codex once before rerunning setup so `~/.codex` exists.
+- Fix invalid TOML before retrying. Consuelo fails without overwriting malformed configuration.
+- A `configured` status means the entry exists but the current handshake has not passed.
+- If the command path points to an old OS home, rerun the focused connection command.
+
+## Disconnect
+
+Remove the managed `consuelo-os` MCP section from `~/.codex/config.toml`, then restart Codex. Leave unrelated MCP servers and model settings in place.

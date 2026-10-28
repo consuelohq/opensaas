@@ -1,0 +1,58 @@
+---
+title: Approvals
+description: Understand the current stop-before-execution gates for sensitive OS work.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/scripts/lib/local-guardrails.ts
+    tests:
+      - packages/os/tests/local-guardrails.test.ts
+    runtime: Filesystem and shell guardrail outcomes were exercised by focused tests on 2026-07-13.
+  - source: packages/os/scripts/os.ts
+    tests:
+      - packages/os/tests/tool-manifest.test.ts
+    runtime: Runtime skill approval checks and manifest alignment were inspected in current source.
+---
+
+An approval is a boundary before sensitive work executes. It is separate from authentication: being connected to a workspace does not approve every mutation that its tools can perform.
+
+## Skill approval
+
+A runtime skill whose manifest has `requiresApproval: true` returns:
+
+```text
+APPROVAL_REQUIRED
+```
+
+The check happens **before execution**. The result includes the skill name, permission tier, and approval requirement.
+
+Current OS behavior stops at that response. It does not automatically hold the process open and resume it later. After explicit approval, the caller must use the supported approved path or rerun the action with the required authorization.
+
+## Local guardrails
+
+Current local guardrails distinguish work inside the OS home from higher-risk actions:
+
+- writes inside the OS home can proceed when the manifest permits them;
+- writes outside the OS home require approval;
+- sensitive system paths are blocked;
+- destructive shell patterns are blocked;
+- other shell execution requires approval;
+- write, execute, external, admin, record-writing, or external-side-effect capabilities must be declared consistently in the manifest.
+
+A tool or skill cannot bypass these checks by describing the action as safe in steering.
+
+## Ask at the decision point
+
+A useful approval request states:
+
+1. the exact action;
+2. the target and scope;
+3. the expected external or destructive effect;
+4. the evidence already checked;
+5. how to verify or reverse the result.
+
+Do not bundle unrelated high-impact actions into one vague approval.
+
+## Different approval types
+
+Device and account approval establishes who may connect a node or client. Action approval governs whether a particular sensitive operation may run. [Secure](/secure/) documents identity and network approval separately.

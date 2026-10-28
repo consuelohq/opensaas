@@ -1,5 +1,6 @@
 import asyncio
 import importlib.util
+import inspect
 import json
 import os
 import sys
@@ -110,6 +111,12 @@ class WorkspaceCallServerTest(unittest.TestCase):
     def assert_standard_envelope(self, result):
         for key in ['now', 'ok', 'code', 'message', 'data', 'stderr', 'exitCode', 'durationMs', 'traceId', 'apiVersion']:
             self.assertIn(key, result)
+
+    def test_default_server_name_is_consuelo_os(self):
+        with patch.dict(os.environ, {}, clear=False):
+            os.environ.pop('MCP_SERVER_NAME', None)
+            module = load_server_module()
+        self.assertEqual(module.SERVER_NAME, 'consuelo-os')
 
     def test_traced_call_uses_langfuse_when_configured(self):
         observations = []
@@ -230,7 +237,7 @@ class WorkspaceCallServerTest(unittest.TestCase):
 
         self.assertEqual(first, steering_text)
         self.assertIn('GET_STEERING_LOOP_GUARD', second)
-        self.assertIn('packages/workspace/STEERING.md', second)
+        self.assertIn('~/Consuelo/Steering/system.md', second)
         self.assertIn('fs.read', second)
         self.assertIn('GET_STEERING_RATE_LIMITED', third)
         self.assertIn('GET_STEERING_COOLDOWN', fourth)
@@ -398,6 +405,37 @@ class WorkspaceCallServerTest(unittest.TestCase):
         self.assertEqual(result, {'ok': True, 'code': 'OK'})
         self.assertEqual(events, ['event-loop-free', 'call-done'])
 
+    def test_call_public_signature_exposes_optional_node_id(self):
+        parameters = inspect.signature(self.module.call).parameters
+
+        self.assertEqual(
+            list(parameters),
+            ['tool', 'input', 'taskSession', 'nodeId', 'timeout'],
+        )
+        self.assertIsNone(parameters['nodeId'].default)
+
+    def test_call_keeps_node_id_out_of_inner_workspace_input(self):
+        captured = {}
+
+        def fake_traced_call(*args, **kwargs):
+            captured['args'] = args
+            captured['kwargs'] = kwargs
+            return {'ok': True, 'code': 'OK'}
+
+        self.module._traced_call = fake_traced_call
+
+        result = asyncio.run(self.module.call(
+            tool='status',
+            input={'detail': 'routing-proof'},
+            nodeId='cloud-1',
+            timeout=7,
+        ))
+
+        self.assertEqual(result, {'ok': True, 'code': 'OK'})
+        self.assertEqual(captured['kwargs']['tool_input'], {'detail': 'routing-proof'})
+        self.assertNotIn('nodeId', captured['kwargs'])
+        self.assertNotIn('nodeId', captured['kwargs']['tool_input'])
+
     def test_task_scoped_tools_require_task_session(self):
         manifest = json.loads(Path('packages/workspace/tooling/tool-manifest.json').read_text(encoding='utf-8'))
         required_tools = [entry['name'] for entry in manifest if entry.get('sessionRequired')]
@@ -412,7 +450,7 @@ class WorkspaceCallServerTest(unittest.TestCase):
     def test_read_only_fs_tools_do_not_require_task_session(self):
         manifest = json.loads(Path('packages/workspace/tooling/tool-manifest.json').read_text(encoding='utf-8'))
         by_name = {entry['name']: entry for entry in manifest}
-        for tool in ['fs.read', 'fs.search']:
+        for tool in ['fs.read', 'fs.search', 'fs.list']:
             with self.subTest(tool=tool):
                 self.assertIn(tool, by_name)
                 self.assertFalse(by_name[tool].get('sessionRequired'), tool)
@@ -438,12 +476,15 @@ class WorkspaceCallServerTest(unittest.TestCase):
         with patch.object(self.module.subprocess, 'run', side_effect=fake_run):
             read_result = self.module._run_workspace_call('fs.read', tool_input={'path': 'AGENTS.md'})
             search_result = self.module._run_workspace_call('fs.search', tool_input={'pattern': 'workspace', 'paths': ['AGENTS.md']})
+            list_result = self.module._run_workspace_call('fs.list', tool_input={'path': '.', 'depth': 1})
 
         self.assert_standard_envelope(read_result)
         self.assert_standard_envelope(search_result)
+        self.assert_standard_envelope(list_result)
         self.assertTrue(read_result['ok'])
         self.assertTrue(search_result['ok'])
-        self.assertEqual(len(captured), 2)
+        self.assertTrue(list_result['ok'])
+        self.assertEqual(len(captured), 3)
         for args in captured:
             resolved_input = json.loads(args[3])
             self.assertNotIn('taskSession', resolved_input)
@@ -864,16 +905,16 @@ class WorkspaceCallServerTest(unittest.TestCase):
         self.assertEqual(db_path, path_value)
         self.assertEqual(count, 0)
 
-    def test_safety_blocks_task_exec_destructive_command_and_writes_audit_log(self):
+    def test_safety_blocks_command_surface_destructive_command_and_writes_audit_log(self):
         self.module._SAFETY_AUDIT_FILE = str(Path(self.tempdir.name) / 'audit.jsonl')
         command = ''.join(chr(value) for value in [114, 109, 32, 45, 114, 102, 32, 47])
-        result = self.module._run_workspace_call('task.exec', tool_input={'command': ['bash', '-lc', command]})
+        result = self.module._run_workspace_call('mac.exec', tool_input={'command': command})
         self.assert_standard_envelope(result)
         self.assertFalse(result['ok'])
         self.assertEqual(result['code'], 'SAFETY_BLOCKED')
         audit = Path(self.module._SAFETY_AUDIT_FILE).read_text(encoding='utf-8')
         self.assertIn('"blocked": true', audit)
-        self.assertIn('task.exec', audit)
+        self.assertIn('mac.exec', audit)
 
     def test_safety_blocks_mac_exec_destructive_command_before_execution(self):
         command = ''.join(chr(value) for value in [114, 109, 32, 45, 114, 102, 32, 47])
@@ -897,7 +938,7 @@ class WorkspaceCallServerTest(unittest.TestCase):
         result = self.module._run_workspace_call('batch', tool_input={
             'steps': [
                 {'tool': 'status', 'input': {}},
-                {'tool': 'task.exec', 'input': {'command': command}},
+                {'tool': 'mac.exec', 'input': {'command': command}},
             ],
         })
         self.assert_standard_envelope(result)
@@ -910,7 +951,7 @@ class WorkspaceCallServerTest(unittest.TestCase):
         result = self.module._run_workspace_call('batch', tool_input=[
             {'tool': 'status', 'input': {}},
             {'tool': 'batch', 'input': [
-                {'tool': 'task.exec', 'input': {'command': command}},
+                {'tool': 'mac.exec', 'input': {'command': command}},
             ]},
         ])
         self.assert_standard_envelope(result)
@@ -959,7 +1000,7 @@ class WorkspaceCallServerTest(unittest.TestCase):
 
     def test_safety_blocks_supplemental_system_commands(self):
         command = ''.join(chr(value) for value in [100, 105, 115, 107, 117, 116, 105, 108, 32, 101, 114, 97, 115, 101, 32, 100, 105, 115, 107])
-        result = self.module._run_workspace_call('task.exec', tool_input={'command': command})
+        result = self.module._run_workspace_call('mac.exec', tool_input={'command': command})
         self.assert_standard_envelope(result)
         self.assertFalse(result['ok'])
         self.assertEqual(result['code'], 'SAFETY_BLOCKED')
@@ -967,20 +1008,20 @@ class WorkspaceCallServerTest(unittest.TestCase):
 
     def test_workspace_call_trace_inputs_are_scan_friendly(self):
         inputs = self.module._trace_inputs('workspace.call', (), {
-            'tool': 'task.exec',
-            'tool_input': {'command': ['bash', '-lc', 'echo hello']},
+            'tool': 'code.call',
+            'tool_input': {'language': 'bash', 'mode': 'verify', 'code': 'echo hello'},
             'taskSession': 'tsk_123',
             'timeout': 120,
         })
-        self.assertEqual(inputs['action'], 'task.exec')
-        self.assertEqual(inputs['tool'], 'task.exec')
+        self.assertEqual(inputs['action'], 'code.call')
+        self.assertEqual(inputs['tool'], 'code.call')
         self.assertEqual(inputs['taskSession'], 'tsk_123')
         self.assertEqual(inputs['timeout'], 120)
-        self.assertIn('bash -lc echo hello', inputs['inputSummary'])
-        self.assertEqual(self.module._trace_run_name('workspace.call', inputs), 'task.exec')
+        self.assertIn('echo hello', inputs['inputSummary'])
+        self.assertEqual(self.module._trace_run_name('workspace.call', inputs), 'code.call')
 
     def test_workspace_call_trace_output_surfaces_task_context(self):
-        inputs = {'tool': 'task.exec', 'taskSession': 'tsk_123'}
+        inputs = {'tool': 'code.call', 'taskSession': 'tsk_123'}
         result = {
             'ok': True,
             'code': 'OK',
@@ -993,10 +1034,10 @@ class WorkspaceCallServerTest(unittest.TestCase):
         }
         usage = {'prompt_tokens': 1, 'completion_tokens': 2, 'total_tokens': 3}
         output = self.module._trace_outputs('workspace.call', inputs, result, usage)
-        self.assertEqual(output['summary'], 'OK · task.exec · tmux=opensaas-test-tmux')
+        self.assertEqual(output['summary'], 'OK · code.call · tmux=opensaas-test-tmux')
         self.assertTrue(output['ok'])
         self.assertEqual(output['code'], 'OK')
-        self.assertEqual(output['tool'], 'task.exec')
+        self.assertEqual(output['tool'], 'code.call')
         self.assertEqual(output['taskSession'], 'tsk_123')
         self.assertEqual(output['tmuxSession'], 'opensaas-test-tmux')
         self.assertEqual(output['branch'], 'task/workspace-agents/test')
@@ -1007,13 +1048,15 @@ class WorkspaceCallServerTest(unittest.TestCase):
     def test_batch_trace_summary_lists_child_tools(self):
         summary = self.module._trace_input_summary('batch', [
             {'tool': 'fs.read', 'input': {'path': 'AGENTS.md'}},
-            {'tool': 'task.exec', 'input': {'command': ['git', 'status']}},
+            {'tool': 'code.call', 'input': {'language': 'bun', 'mode': 'read', 'code': 'console.log(\"status\")'}},
         ])
-        self.assertEqual(summary, '2 steps: fs.read, task.exec')
+        self.assertEqual(summary, '2 steps: fs.read, code.call')
 
     def test_trace_command_summary_truncates_long_values(self):
-        summary = self.module._trace_input_summary('task.exec', {
-            'command': ['python3', '-c', 'x' * 500],
+        summary = self.module._trace_input_summary('code.call', {
+            'language': 'python',
+            'mode': 'read',
+            'code': 'x' * 500,
         })
         self.assertLessEqual(len(summary), self.module._TRACE_SUMMARY_LIMIT)
         self.assertTrue(summary.endswith('…'))

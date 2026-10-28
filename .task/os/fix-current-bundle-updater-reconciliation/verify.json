@@ -1,0 +1,453 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/fix-current-bundle-updater-reconciliation",
+  "base": "origin/task/os/fix-current-bundle-updater-reconciliation",
+  "headSha": "cf23280e1ab644a5f6974e220e78a1e7fb76e3f7",
+  "changeHash": "5c7266f7c460a091b77d998561b5fb5566aa560f2ec4474df5af66cfd614ac91",
+  "changedFiles": [
+    "packages/os/scripts/lib/lifecycle/engine.ts",
+    "packages/os/tests/lifecycle-engine.test.ts",
+    "packages/os/tests/os-device-authority-release-contract.test.ts"
+  ],
+  "verifiedAt": "2026-08-15T09:40:59.081Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/fix-current-bundle-updater-reconciliation/current.json",
+        ".task/os/fix-current-bundle-updater-reconciliation/evidence-log.json",
+        ".task/os/fix-current-bundle-updater-reconciliation/read-log.json",
+        ".task/os/fix-current-bundle-updater-reconciliation/session.json",
+        ".task/os/fix-current-bundle-updater-reconciliation/workpad.md",
+        ".task/tasks/os/fix-current-bundle-updater-reconciliation.json",
+        "packages/os/scripts/lib/lifecycle/engine.ts",
+        "packages/os/tests/lifecycle-engine.test.ts",
+        "packages/os/tests/os-device-authority-release-contract.test.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "os-release-surface-freshness",
+          "critical": true,
+          "exclusive": true,
+          "reason": "OS release, signed runtime publication, default workspace-shell snapshots, and Workspace Edge migrations must prove the focused freshness path without selecting unrelated package-wide OS tests.",
+          "matchedFiles": [
+            "packages/os/tests/os-device-authority-release-contract.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-hosted-site-update-reconciliation",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Hosted Sites update reconciliation changes must prove canonical D1 route ownership, stale-default repair, lifecycle reconciliation, and node routing without selecting the historically red unrelated OS package suite.",
+          "matchedFiles": [
+            "packages/os/scripts/lib/lifecycle/engine.ts",
+            "packages/os/tests/lifecycle-engine.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-lifecycle-update-handoff",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Lifecycle updater, detached handoff, platform restart, and discoverable lifecycle-tool changes must run the exact lifecycle/facade/tool contracts without selecting unrelated flaky package-wide OS tests.",
+          "matchedFiles": [
+            "packages/os/tests/lifecycle-engine.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-managed-cloud-one-click-provisioning",
+          "critical": true,
+          "exclusive": true,
+          "reason": "One-click managed-cloud control-plane, launcher, provisioning-runner, enrollment, and Worker changes must prove their focused security and lifecycle contracts without selecting the historically red unrelated OS package suite.",
+          "matchedFiles": [
+            "packages/os/tests/os-device-authority-release-contract.test.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "OS release freshness contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/os-device-authority-release-contract.test.ts",
+            "tests/distribution/release-channel-workflows.test.ts"
+          ],
+          "ruleId": "os-release-surface-freshness",
+          "critical": true
+        },
+        {
+          "name": "Workspace production release contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/website-deploy.test.js"
+          ],
+          "ruleId": "os-release-surface-freshness",
+          "critical": true
+        },
+        {
+          "name": "Workspace Edge release dry run",
+          "command": [
+            "bun",
+            "run",
+            "os:release-workspace-edge",
+            "--",
+            "--dry-run"
+          ],
+          "ruleId": "os-release-surface-freshness",
+          "critical": true
+        },
+        {
+          "name": "OS hosted-site D1 reconciliation contract",
+          "command": [
+            "env",
+            "CONSUELO_RUN_WORKSPACE_GATEWAY_CONTRACTS=1",
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/cloudflare-d1-route-registry.test.ts"
+          ],
+          "ruleId": "os-hosted-site-update-reconciliation",
+          "critical": true
+        },
+        {
+          "name": "OS hosted-site lifecycle and node routing contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/lifecycle-engine.test.ts",
+            "tests/workspace-node-registry-routing.test.ts"
+          ],
+          "ruleId": "os-hosted-site-update-reconciliation",
+          "critical": true
+        },
+        {
+          "name": "OS lifecycle update handoff contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/lifecycle-engine.test.ts",
+            "packages/os/tests/lifecycle-restart-contract.test.ts",
+            "packages/os/tests/lifecycle-facade.test.ts",
+            "packages/os/tests/native-lifecycle-operation.test.ts",
+            "packages/os/tests/lifecycle-tool-surface.test.ts",
+            "packages/os/tests/cli-update-routing.test.ts",
+            "packages/os/tests/linux-platform.test.ts",
+            "packages/os/tests/windows-platform.test.ts",
+            "packages/os/tests/tool-manifest.test.ts",
+            "packages/os/tests/tool-package-layout.test.ts",
+            "packages/os/tests/caddy-worker-pool-reconciliation.test.ts"
+          ],
+          "ruleId": "os-lifecycle-update-handoff",
+          "critical": true
+        },
+        {
+          "name": "OS lifecycle syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "ruleId": "os-lifecycle-update-handoff",
+          "critical": true
+        },
+        {
+          "name": "OS lifecycle facade snapshots",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/facade/facade.test.ts",
+            "-t",
+            "lifecycle\\.(status|update)"
+          ],
+          "ruleId": "os-lifecycle-update-handoff",
+          "critical": true
+        },
+        {
+          "name": "OS one-click managed cloud contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/managed-cloud-one-click-provisioning.test.ts",
+            "tests/managed-cloud-one-click-runner.test.ts",
+            "tests/launcher-nodes-control-plane.test.ts",
+            "tests/settings-site.test.ts",
+            "tests/cloudflare-worker-release-readiness.test.ts",
+            "tests/os-device-authority-architecture.test.ts",
+            "tests/os-device-authority-release-contract.test.ts",
+            "tests/managed-cloud-node-enrollment.test.ts",
+            "tests/managed-cloud-node-enrollment-cli.test.ts",
+            "tests/platform-managed-cloud-node.test.ts",
+            "tests/managed-cloud-pricing.test.ts",
+            "tests/managed-cloud-public-pricing.test.ts",
+            "tests/managed-cloud-node-instance-contract.test.ts",
+            "tests/managed-cloud-node-contract.test.ts"
+          ],
+          "ruleId": "os-managed-cloud-one-click-provisioning",
+          "critical": true
+        },
+        {
+          "name": "OS device authority Worker contract",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/os-device-authority-worker.test.ts"
+          ],
+          "ruleId": "os-managed-cloud-one-click-provisioning",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "OS release freshness contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/os-device-authority-release-contract.test.ts",
+            "tests/distribution/release-channel-workflows.test.ts"
+          ],
+          "ruleId": "os-release-surface-freshness",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 2453,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-current-bundle-updater-reconciliation/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/distribution/release-channel-workflows.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 26\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-release-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m18 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 1697\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should stop release before remote mutation when readiness fails \u001b[33m 1476\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m26 passed\u001b[39m\u001b[22m\u001b[90m (26)\u001b[39m\n\u001b[2m   Start at \u001b[22m 05:40:33\n\u001b[2m   Duration \u001b[22m 2.07s\u001b[2m (transform 431ms, setup 0ms, import 337ms, tests 1.72s, environment 0ms)\u001b[22m\n\n$ vitest run tests/os-device-authority-release-contract.test.ts tests/distribution/release-channel-workflows.test.ts\n"
+        },
+        {
+          "name": "Workspace production release contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/website-deploy.test.js"
+          ],
+          "ruleId": "os-release-surface-freshness",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1101,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-current-bundle-updater-reconciliation\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/website-deploy.test.js \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 447\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m allows local deploys to use existing Wrangler auth when CLOUDFLARE_API_TOKEN is absent \u001b[33m 423\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m3 passed\u001b[39m\u001b[22m\u001b[90m (3)\u001b[39m\n\u001b[2m   Start at \u001b[22m 05:40:36\n\u001b[2m   Duration \u001b[22m 582ms\u001b[2m (transform 20ms, setup 0ms, import 27ms, tests 447ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "Workspace Edge release dry run",
+          "command": [
+            "bun",
+            "run",
+            "os:release-workspace-edge",
+            "--",
+            "--dry-run"
+          ],
+          "ruleId": "os-release-surface-freshness",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 2070,
+          "outputTail": "release=consuelo-workspace-edge\n$ bun run --cwd packages/os cloudflare:workspace-edge:deploy:dry-run\n\n ⛅️ wrangler 4.114.0 (update available 4.123.0)\n───────────────────────────────────────────────\nTotal Upload: 179.39 KiB / gzip: 39.19 KiB\nYour Worker has access to the following bindings:\nBinding                                                                                                 Resource            \nenv.OS_DEVICE_AUTHORITY (OsDeviceGrantDurableObject, defined in consuelo-os-device-authority)           Durable Object      \nenv.WORKSPACE_ROUTE_REGISTRY (consuelo-workspace-route-registry)                                        D1 Database         \nenv.SITES_SNAPSHOTS (consuelo-sites-snapshots)                                                          R2 Bucket           \n\n--dry-run: exiting now.\nConsuelo Workspace Edge dry run complete\n$ bun packages/workspace/scripts/os-release-workspace-edge.ts --dry-run\n$ wrangler deploy --config cloudflare/workspace-edge/wrangler.toml --dry-run\n"
+        },
+        {
+          "name": "OS hosted-site D1 reconciliation contract",
+          "command": [
+            "env",
+            "CONSUELO_RUN_WORKSPACE_GATEWAY_CONTRACTS=1",
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/cloudflare-d1-route-registry.test.ts"
+          ],
+          "ruleId": "os-hosted-site-update-reconciliation",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 562,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-current-bundle-updater-reconciliation/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/cloudflare-d1-route-registry.test.ts \u001b[2m(\u001b[22m\u001b[2m11 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 16\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m11 passed\u001b[39m\u001b[22m\u001b[90m (11)\u001b[39m\n\u001b[2m   Start at \u001b[22m 05:40:39\n\u001b[2m   Duration \u001b[22m 99ms\u001b[2m (transform 31ms, setup 0ms, import 28ms, tests 16ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS hosted-site lifecycle and node routing contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/lifecycle-engine.test.ts",
+            "tests/workspace-node-registry-routing.test.ts"
+          ],
+          "ruleId": "os-hosted-site-update-reconciliation",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 7389,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-current-bundle-updater-reconciliation/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/workspace-node-registry-routing.test.ts \u001b[2m(\u001b[22m\u001b[2m41 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 85\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/lifecycle-engine.test.ts \u001b[2m(\u001b[22m\u001b[2m65 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 4005\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m activates after production provisioning without leaving runtime/current as a directory \u001b[33m 374\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m106 passed\u001b[39m\u001b[22m\u001b[90m (106)\u001b[39m\n\u001b[2m   Start at \u001b[22m 05:40:39\n\u001b[2m   Duration \u001b[22m 7.22s\u001b[2m (transform 724ms, setup 0ms, import 3.55s, tests 4.09s, environment 0ms)\u001b[22m\n\n$ vitest run tests/lifecycle-engine.test.ts tests/workspace-node-registry-routing.test.ts\n"
+        },
+        {
+          "name": "OS lifecycle update handoff contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/lifecycle-engine.test.ts",
+            "packages/os/tests/lifecycle-restart-contract.test.ts",
+            "packages/os/tests/lifecycle-facade.test.ts",
+            "packages/os/tests/native-lifecycle-operation.test.ts",
+            "packages/os/tests/lifecycle-tool-surface.test.ts",
+            "packages/os/tests/cli-update-routing.test.ts",
+            "packages/os/tests/linux-platform.test.ts",
+            "packages/os/tests/windows-platform.test.ts",
+            "packages/os/tests/tool-manifest.test.ts",
+            "packages/os/tests/tool-package-layout.test.ts",
+            "packages/os/tests/caddy-worker-pool-reconciliation.test.ts"
+          ],
+          "ruleId": "os-lifecycle-update-handoff",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 6758,
+          "outputTail": "liation\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/linux-platform.test.ts \u001b[2m(\u001b[22m\u001b[2m10 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 34\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/windows-platform.test.ts \u001b[2m(\u001b[22m\u001b[2m18 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 23\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/cli-update-routing.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/caddy-worker-pool-reconciliation.test.ts \u001b[2m(\u001b[22m\u001b[2m1 test\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 28\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/lifecycle-restart-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m10 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 28\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/lifecycle-facade.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 12\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/native-lifecycle-operation.test.ts \u001b[2m(\u001b[22m\u001b[2m16 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 195\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/lifecycle-tool-surface.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 24\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/tool-manifest.test.ts \u001b[2m(\u001b[22m\u001b[2m17 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 200\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/tool-package-layout.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 427\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m generates full, core, and workflow outputs deterministically with no committed drift \u001b[33m 415\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/lifecycle-engine.test.ts \u001b[2m(\u001b[22m\u001b[2m65 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 5348\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m rejects a concurrent update lock without touching current \u001b[33m 343\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m fails closed on an archive digest mismatch and leaves current untouched \u001b[33m 316\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m activates after production provisioning without leaving runtime/current as a directory \u001b[33m 721\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m11 passed\u001b[39m\u001b[22m\u001b[90m (11)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m152 passed\u001b[39m\u001b[22m\u001b[90m (152)\u001b[39m\n\u001b[2m   Start at \u001b[22m 05:40:47\n\u001b[2m   Duration \u001b[22m 6.38s\u001b[2m (transform 4.41s, setup 0ms, import 7.41s, tests 6.32s, environment 1ms)\u001b[22m\n\n(node:49595) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n{\"level\":\"info\",\"tool\":\"lifecycle.status\",\"branch\":\"\",\"command\":\"workspace lifecycle.status\",\"implementationCommand\":\"bun run lifecycle -- status --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-15T09:40:48.443Z\"}\n{\"level\":\"warn\",\"event\":\"trace.persistence_failed\",\"code\":\"TRACE_PERSISTENCE_FAILED\",\"message\":\"Cannot find module 'bun:sqlite'\\nRequire stack:\\n- /[REDACTED_SECRET].ts\",\"ts\":\"2026-08-15T09:40:48.444Z\"}\n{\"level\":\"info\",\"tool\":\"lifecycle.update\",\"branch\":\"\",\"command\":\"workspace lifecycle.update '{\\\"channel\\\":\\\"canary\\\"}'\",\"implementationCommand\":\"bun run lifecycle -- update --channel canary --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-15T09:40:48.447Z\"}\n{\"level\":\"error\",\"tool\":\"lifecycle.update\",\"command\":\"workspace lifecycle.update\",\"implementationCommand\":\"workspace lifecycle.update\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-15T09:40:48.449Z\"}\n{\"level\":\"info\",\"tool\":\"lifecycle.update\",\"command\":\"workspace lifecycle.update\",\"implementationCommand\":\"workspace lifecycle.update\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"DRY_RUN\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-15T09:40:48.450Z\"}\n"
+        },
+        {
+          "name": "OS lifecycle syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "ruleId": "os-lifecycle-update-handoff",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 2201,
+          "outputTail": "workspace script syntax checks passed\n"
+        },
+        {
+          "name": "OS lifecycle facade snapshots",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/facade/facade.test.ts",
+            "-t",
+            "lifecycle\\.(status|update)"
+          ],
+          "ruleId": "os-lifecycle-update-handoff",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 776,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-current-bundle-updater-reconciliation\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/facade/facade.test.ts \u001b[2m(\u001b[22m\u001b[2m703 tests\u001b[22m\u001b[2m | \u001b[22m\u001b[33m694 skipped\u001b[39m\u001b[2m)\u001b[22m\u001b[32m 14\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m9 passed\u001b[39m\u001b[22m\u001b[2m | \u001b[22m\u001b[33m694 skipped\u001b[39m\u001b[90m (703)\u001b[39m\n\u001b[2m   Start at \u001b[22m 05:40:56\n\u001b[2m   Duration \u001b[22m 503ms\u001b[2m (transform 186ms, setup 0ms, import 419ms, tests 14ms, environment 0ms)\u001b[22m\n\n{\"level\":\"info\",\"tool\":\"lifecycle.status\",\"branch\":\"\",\"command\":\"workspace lifecycle.status\",\"implementationCommand\":\"bun run lifecycle -- status --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-15T09:40:56.703Z\"}\n{\"level\":\"warn\",\"event\":\"trace.persistence_failed\",\"code\":\"TRACE_PERSISTENCE_FAILED\",\"message\":\"Cannot find module 'bun:sqlite'\\nRequire stack:\\n- /[REDACTED_SECRET].ts\",\"ts\":\"2026-08-15T09:40:56.704Z\"}\n{\"level\":\"info\",\"tool\":\"lifecycle.update\",\"branch\":\"\",\"command\":\"workspace lifecycle.update '{\\\"channel\\\":\\\"stable\\\"}'\",\"implementationCommand\":\"bun run lifecycle -- update --channel stable --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-15T09:40:56.706Z\"}\n{\"level\":\"error\",\"tool\":\"lifecycle.status\",\"branch\":\"\",\"command\":\"workspace lifecycle.status\",\"implementationCommand\":\"bun run lifecycle -- status --json\",\"durationMs\":0,\"exitCode\":2,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"COMMAND_FAILED\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-15T09:40:56.708Z\"}\n{\"level\":\"error\",\"tool\":\"lifecycle.update\",\"branch\":\"\",\"command\":\"workspace lifecycle.update '{\\\"channel\\\":\\\"stable\\\"}'\",\"implementationCommand\":\"bun run lifecycle -- update --channel stable --json\",\"durationMs\":0,\"exitCode\":2,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"COMMAND_FAILED\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-15T09:40:56.709Z\"}\n{\"level\":\"error\",\"tool\":\"lifecycle.status\",\"branch\":\"\",\"command\":\"workspace lifecycle.status\",\"implementationCommand\":\"bun run lifecycle -- status --json\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"TIMEOUT\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-15T09:40:56.710Z\"}\n{\"level\":\"error\",\"tool\":\"lifecycle.update\",\"branch\":\"\",\"command\":\"workspace lifecycle.update '{\\\"channel\\\":\\\"stable\\\"}'\",\"implementationCommand\":\"bun run lifecycle -- update --channel stable --json\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"TIMEOUT\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-15T09:40:56.711Z\"}\n{\"level\":\"info\",\"tool\":\"lifecycle.update\",\"command\":\"workspace lifecycle.update\",\"implementationCommand\":\"workspace lifecycle.update\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"DRY_RUN\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-15T09:40:56.713Z\"}\n"
+        },
+        {
+          "name": "OS one-click managed cloud contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/managed-cloud-one-click-provisioning.test.ts",
+            "tests/managed-cloud-one-click-runner.test.ts",
+            "tests/launcher-nodes-control-plane.test.ts",
+            "tests/settings-site.test.ts",
+            "tests/cloudflare-worker-release-readiness.test.ts",
+            "tests/os-device-authority-architecture.test.ts",
+            "tests/os-device-authority-release-contract.test.ts",
+            "tests/managed-cloud-node-enrollment.test.ts",
+            "tests/managed-cloud-node-enrollment-cli.test.ts",
+            "tests/platform-managed-cloud-node.test.ts",
+            "tests/managed-cloud-pricing.test.ts",
+            "tests/managed-cloud-public-pricing.test.ts",
+            "tests/managed-cloud-node-instance-contract.test.ts",
+            "tests/managed-cloud-node-contract.test.ts"
+          ],
+          "ruleId": "os-managed-cloud-one-click-provisioning",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1385,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-current-bundle-updater-reconciliation/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/managed-cloud-node-instance-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 51\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/platform-managed-cloud-node.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 46\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-node-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 24\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-public-pricing.test.ts \u001b[2m(\u001b[22m\u001b[2m6 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 23\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-pricing.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 6\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/cloudflare-worker-release-readiness.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 4\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-architecture.test.ts \u001b[2m(\u001b[22m\u001b[2m25 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 46\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-one-click-provisioning.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 39\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/launcher-nodes-control-plane.test.ts \u001b[2m(\u001b[22m\u001b[2m7 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 32\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-node-enrollment-cli.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 617\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m parses explicit home, onboarding, and status paths \u001b[33m 611\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-node-enrollment.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 628\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m persists one owner-only node keypair and reuses it across enrollment retries \u001b[33m 616\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-one-click-runner.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/settings-site.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 188\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-release-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m18 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 497\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m14 passed\u001b[39m\u001b[22m\u001b[90m (14)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m105 passed\u001b[39m\u001b[22m\u001b[90m (105)\u001b[39m\n\u001b[2m   Start at \u001b[22m 05:40:56\n\u001b[2m   Duration \u001b[22m 1.15s\u001b[2m (transform 2.71s, setup 0ms, import 3.30s, tests 2.20s, environment 1ms)\u001b[22m\n\n$ vitest run tests/managed-cloud-one-click-provisioning.test.ts tests/managed-cloud-one-click-runner.test.ts tests/launcher-nodes-control-plane.test.ts tests/settings-site.test.ts tests/cloudflare-worker-release-readiness.test.ts tests/os-device-authority-architecture.test.ts tests/os-device-authority-release-contract.test.ts tests/managed-cloud-node-enrollment.test.ts tests/managed-cloud-node-enrollment-cli.test.ts tests/platform-managed-cloud-node.test.ts tests/managed-cloud-pricing.test.ts tests/managed-cloud-public-pricing.test.ts tests/managed-cloud-node-instance-contract.test.ts tests/managed-cloud-node-contract.test.ts\n"
+        },
+        {
+          "name": "OS device authority Worker contract",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/os-device-authority-worker.test.ts"
+          ],
+          "ruleId": "os-managed-cloud-one-click-provisioning",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 702,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-current-bundle-updater-reconciliation\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/os-device-authority-worker.test.ts \u001b[2m(\u001b[22m\u001b[2m31 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 80\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m31 passed\u001b[39m\u001b[22m\u001b[90m (31)\u001b[39m\n\u001b[2m   Start at \u001b[22m 05:40:58\n\u001b[2m   Duration \u001b[22m 410ms\u001b[2m (transform 219ms, setup 0ms, import 266ms, tests 80ms, environment 0ms)\u001b[22m\n\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

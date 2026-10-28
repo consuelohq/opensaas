@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "files": {
+    "tools/__init__.py": {
+      "disposition": "delete",
+      "reason": "empty package marker for retired Python tool collection"
+    },
+    "tools/brain.py": {
+      "disposition": "delete",
+      "reason": "unused legacy prototype; no manifest or runtime consumer"
+    },
+    "tools/handoff.py": {
+      "disposition": "delete",
+      "reason": "unused legacy prototype; no manifest or runtime consumer"
+    },
+    "tools/linear.py": {
+      "disposition": "delete",
+      "reason": "superseded by the Bun Linear facade and unreferenced"
+    },
+    "tools/sandbox.py": {
+      "disposition": "delete",
+      "reason": "unused legacy prototype; no manifest or runtime consumer"
+    },
+    "tools/slack.py": {
+      "disposition": "delete",
+      "reason": "unused legacy prototype; no manifest or runtime consumer"
+    }
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/documentation/refine-docs-landing-hero-and-cta-layout",
+  "base": "origin/stream/documentation",
+  "headSha": "4eb2b301395c5510503ac321d1b63b42eb3a0f47",
+  "changeHash": "5f4eb2c8a64f5acf1d622123fff0b49d73e5ee3916fa0691c878590b7600aef2",
+  "changedFiles": [
+    "packages/documentation/scripts/test-foundation-browser.mjs",
+    "packages/documentation/src/components/PageTitle.astro",
+    "packages/documentation/src/content/docs/index.mdx",
+    "packages/documentation/tests/foundation.test.ts"
+  ],
+  "verifiedAt": "2026-08-14T09:35:19.917Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/documentation/refine-docs-landing-hero-and-cta-layout/current.json",
+        ".task/documentation/refine-docs-landing-hero-and-cta-layout/evidence-log.json",
+        ".task/documentation/refine-docs-landing-hero-and-cta-layout/read-log.json",
+        ".task/documentation/refine-docs-landing-hero-and-cta-layout/session.json",
+        ".task/documentation/refine-docs-landing-hero-and-cta-layout/verify.json",
+        ".task/documentation/refine-docs-landing-hero-and-cta-layout/workpad.md",
+        ".task/tasks/documentation/refine-docs-landing-hero-and-cta-layout.json",
+        "packages/documentation/scripts/test-foundation-browser.mjs",
+        "packages/documentation/src/components/PageTitle.astro",
+        "packages/documentation/src/content/docs/index.mdx",
+        "packages/documentation/tests/foundation.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -1,0 +1,19 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/extract-lead-connector",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 1609,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1609",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1609",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1609/extract-lead-connector",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1609",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1609/extract-lead-connector",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-extract-lead-connector",
+  "taskSession": "tsk_a3a3c05eb242",
+  "tmuxSession": "opensaas-dialer-extract-lead-connector-a3a3c05e",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-extract-lead-connector/.task/dialer/extract-lead-connector/session.json",
+  "createdAt": "2026-07-24T00:55:32.331Z"
+}

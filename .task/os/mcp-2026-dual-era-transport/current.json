@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/mcp-2026-dual-era-transport",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1828,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1828",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1828",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1828/mcp-2026-dual-era-transport",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1828",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1828/mcp-2026-dual-era-transport",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-mcp-2026-dual-era-transport",
+  "taskSession": "tsk_221d6401567a",
+  "tmuxSession": "opensaas-os-mcp-2026-dual-era-transport-221d6401",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-mcp-2026-dual-era-transport/.task/os/mcp-2026-dual-era-transport/session.json",
+  "createdAt": "2026-08-10T16:02:05.894Z"
+}

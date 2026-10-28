@@ -1,0 +1,158 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/collaborate/fix-local-artifact-share-owner-flow",
+  "base": "origin/task/collaborate/fix-local-artifact-share-owner-flow",
+  "headSha": "8f059b24edca007f05d5a0b8ef26ec4305971e45",
+  "changeHash": "53293459dce69f94159090fd4c368687bcc1ba39c527f5df1d2bb29bab3d335e",
+  "changedFiles": [
+    "packages/documentation/src/content/docs/build/files-and-artifacts.mdx",
+    "packages/os/scripts/lib/artifacts.ts",
+    "packages/os/scripts/server/routes/artifacts.ts",
+    "packages/os/scripts/server/services/artifact-sharing.ts",
+    "packages/os/tests/artifact-sharing-links.test.ts"
+  ],
+  "verifiedAt": "2026-09-21T12:02:37.810Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/collaborate/fix-local-artifact-share-owner-flow/evidence-log.json",
+        ".task/collaborate/fix-local-artifact-share-owner-flow/read-log.json",
+        ".task/collaborate/fix-local-artifact-share-owner-flow/verify.json",
+        ".task/collaborate/fix-local-artifact-share-owner-flow/workpad.md",
+        ".task/tasks/collaborate/fix-local-artifact-share-owner-flow.json",
+        "packages/documentation/src/content/docs/build/files-and-artifacts.mdx",
+        "packages/os/scripts/lib/artifacts.ts",
+        "packages/os/scripts/server/routes/artifacts.ts",
+        "packages/os/scripts/server/services/artifact-sharing.ts",
+        "packages/os/tests/artifact-sharing-links.test.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "os-internal-workspace-shell",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Internal workspace shell, Sites root, and trace/config chrome changes must prove the workspace root always converges on Home across daemon refreshes, the shared route switcher stays consistent, disabled agent surfaces remain re-enableable, and syntax stays valid. These tests share process.env and local MCP daemons, so files run serially to prevent cross-file agent-verification interference.",
+          "matchedFiles": [
+            "packages/os/scripts/lib/artifacts.ts",
+            "packages/os/scripts/server/routes/artifacts.ts",
+            "packages/os/scripts/server/services/artifact-sharing.ts",
+            "packages/os/tests/artifact-sharing-links.test.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "OS internal workspace shell contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "--no-file-parallelism",
+            "tests/artifacts.test.ts",
+            "tests/artifacts-edge-routing.test.ts",
+            "tests/artifacts-hono-routes.test.ts",
+            "tests/artifact-sharing-links.test.ts",
+            "tests/settings-site.test.ts",
+            "tests/settings-control-plane.test.ts",
+            "tests/launcher-nodes-materialization.test.ts",
+            "tests/observability-traces-site.test.ts",
+            "tests/workspace-chrome.test.ts",
+            "tests/sites-cli.test.ts",
+            "tests/launcher-local-customization.test.ts",
+            "tests/install-state.test.ts",
+            "tests/local-agent-connectivity.test.ts",
+            "tests/internal-launcher-regressions.test.ts"
+          ],
+          "ruleId": "os-internal-workspace-shell",
+          "critical": true
+        },
+        {
+          "name": "OS internal workspace shell syntax",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "ruleId": "os-internal-workspace-shell",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "OS internal workspace shell contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "--no-file-parallelism",
+            "tests/artifacts.test.ts",
+            "tests/artifacts-edge-routing.test.ts",
+            "tests/artifacts-hono-routes.test.ts",
+            "tests/artifact-sharing-links.test.ts",
+            "tests/settings-site.test.ts",
+            "tests/settings-control-plane.test.ts",
+            "tests/launcher-nodes-materialization.test.ts",
+            "tests/observability-traces-site.test.ts",
+            "tests/workspace-chrome.test.ts",
+            "tests/sites-cli.test.ts",
+            "tests/launcher-local-customization.test.ts",
+            "tests/install-state.test.ts",
+            "tests/local-agent-connectivity.test.ts",
+            "tests/internal-launcher-regressions.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-internal-workspace-shell",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 36207,
+          "outputTail": "ected and returns structured publish errors \u001b[33m 677\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m renders typed guide pages through the canonical reader shell before publishing to Sites \u001b[33m 327\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m patches reader sections with auto-merge, same-section conflict, and leases \u001b[33m 985\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/settings-site.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 146\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/launcher-local-customization.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 134\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/settings-control-plane.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 138\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/artifact-sharing-links.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 184\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/observability-traces-site.test.ts \u001b[2m(\u001b[22m\u001b[2m14 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 60\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/artifacts-hono-routes.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 400\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/launcher-nodes-materialization.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 51\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/artifacts.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 115\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/internal-launcher-regressions.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 16\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/artifacts-edge-routing.test.ts \u001b[2m(\u001b[22m\u001b[2m1 test\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/workspace-chrome.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 62\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m14 passed\u001b[39m\u001b[22m\u001b[90m (14)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m100 passed\u001b[39m\u001b[22m\u001b[90m (100)\u001b[39m\n\u001b[2m   Start at \u001b[22m 08:01:58\n\u001b[2m   Duration \u001b[22m 35.13s\u001b[2m (transform 543ms, setup 1.77s, import 1.91s, tests 29.32s, environment 1ms)\u001b[22m\n\n$ vitest run --no-file-parallelism tests/artifacts.test.ts tests/artifacts-edge-routing.test.ts tests/artifacts-hono-routes.test.ts tests/artifact-sharing-links.test.ts tests/settings-site.test.ts tests/settings-control-plane.test.ts tests/launcher-nodes-materialization.test.ts tests/observability-traces-site.test.ts tests/workspace-chrome.test.ts tests/sites-cli.test.ts tests/launcher-local-customization.test.ts tests/install-state.test.ts tests/local-agent-connectivity.test.ts tests/internal-launcher-regressions.test.ts\n786 |   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);\n787 | }\n788 | \n789 | export function readManagedComponentState(home: string): ManagedComponentState {\n790 |   const root = componentsRoot(home);\n791 |   const provenanceEnvelope = readJson(join(root, PROVENANCE_FILE));\n                                   ^\nSyntaxError: JSON Parse error: Expected '}'\n      at readManagedComponentState (/Users/kokayi/.consuelo/node/tasks/worktrees/task-collaborate-fix-local-artifact-share-owner-flow/packages/os/scripts/lib/managed-components.ts:791:30)\n      at readExistingState (/Users/kokayi/.consuelo/node/tasks/worktrees/task-collaborate-fix-local-artifact-share-owner-flow/packages/os/scripts/lib/managed-component-install.ts:315:17)\n      at provisionManagedComponentIndexes (/Users/kokayi/.consuelo/node/tasks/worktrees/task-collaborate-fix-local-artifact-share-owner-flow/packages/os/scripts/lib/managed-component-install.ts:479:20)\n      at provisionLocalOs (/Users/kokayi/.consuelo/node/tasks/worktrees/task-collaborate-fix-local-artifact-share-owner-flow/packages/os/scripts/lib/install-state.ts:1978:19)\n      at /Users/kokayi/.consuelo/node/tasks/worktrees/task-collaborate-fix-local-artifact-share-owner-flow/packages/os/[eval]:3:43\n\nBun v1.3.14 (macOS arm64)\n(node:66078) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n(node:66087) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+        },
+        {
+          "name": "OS internal workspace shell syntax",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "cwd": ".",
+          "ruleId": "os-internal-workspace-shell",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 2656,
+          "outputTail": "workspace script syntax checks passed\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

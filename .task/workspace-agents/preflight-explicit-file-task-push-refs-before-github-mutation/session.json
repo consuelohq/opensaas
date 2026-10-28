@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_157e3579c61d",
+  "tmuxSession": "opensaas-workspace-agents-preflight-explicit-file-task-push-refs-before-gi-157e3579",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/preflight-explicit-file-task-push-refs-before-github-mutation",
+  "branch": "task/workspace-agents/preflight-explicit-file-task-push-refs-before-github-mutation",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-preflight-explicit-file-task-push-refs-before-github-mutation",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-preflight-explicit-file-task-push-refs-before-github-mutation",
+  "prNumber": 1848,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1848",
+  "createdAt": "2026-08-11T23:33:54.333Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-preflight-explicit-file-task-push-refs-before-github-mutation/.task/workspace-agents/preflight-explicit-file-task-push-refs-before-github-mutation/session.json"
+}

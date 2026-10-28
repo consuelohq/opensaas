@@ -1,0 +1,9 @@
+{
+  "files": [
+    "packages/os/cloudflare/workspace-edge/src/index.ts",
+    "packages/os/docs/install-control-plane.md",
+    "packages/os/package.json",
+    "packages/os/tests/internal-dashboard-integration.test.ts"
+  ],
+  "updatedAt": "2026-09-05T00:29:41.650Z"
+}

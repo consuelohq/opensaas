@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_2dea753bde85",
+  "tmuxSession": "opensaas-trace-site-polish-internal-trace-inspector-preview-2dea753b",
+  "area": "trace-site",
+  "stream": "stream/trace-site",
+  "taskBranch": "task/trace-site/polish-internal-trace-inspector-preview",
+  "branch": "task/trace-site/polish-internal-trace-inspector-preview",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-trace-site-polish-internal-trace-inspector-preview",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-trace-site-polish-internal-trace-inspector-preview",
+  "prNumber": 1398,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1398",
+  "createdAt": "2026-07-11T03:00:18.641Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-trace-site-polish-internal-trace-inspector-preview/.task/trace-site/polish-internal-trace-inspector-preview/session.json"
+}

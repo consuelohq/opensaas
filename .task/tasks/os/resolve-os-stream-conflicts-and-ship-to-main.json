@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/resolve-os-stream-conflicts-and-ship-to-main",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1434,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1434",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1434",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1434/resolve-os-stream-conflicts-and-ship-to-main",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1434",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1434/resolve-os-stream-conflicts-and-ship-to-main",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-resolve-os-stream-conflicts-and-ship-to-main",
+  "taskSession": "tsk_03ae9b00eac1",
+  "tmuxSession": "opensaas-os-resolve-os-stream-conflicts-and-ship-to-main-03ae9b00",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-resolve-os-stream-conflicts-and-ship-to-main/.task/os/resolve-os-stream-conflicts-and-ship-to-main/session.json",
+  "createdAt": "2026-07-13T00:15:14.104Z"
+}

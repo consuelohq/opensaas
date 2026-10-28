@@ -1,0 +1,10 @@
+{
+  "files": [
+    ".task/os/rename-context-tool-to-memory-and-add-senior-engineer-skill/workpad.md",
+    "packages/os/scripts/lib/runtime-state.ts",
+    "packages/os/scripts/memory.js",
+    "packages/os/scripts/tmp.js",
+    "packages/os/tooling/script-parity-classifications.json"
+  ],
+  "updatedAt": "2026-07-21T06:19:10.714Z"
+}

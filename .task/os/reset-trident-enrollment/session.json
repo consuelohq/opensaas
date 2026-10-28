@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_8b9899289a65",
+  "tmuxSession": "opensaas-os-reset-trident-enrollment-8b989928",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/reset-trident-enrollment",
+  "branch": "task/os/reset-trident-enrollment",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-reset-trident-enrollment",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-reset-trident-enrollment",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2154,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2154",
+  "createdAt": "2026-08-17T00:53:58.082Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-reset-trident-enrollment/.task/os/reset-trident-enrollment/session.json"
+}

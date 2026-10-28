@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-diffs-pr-navigation-redirect",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2427,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2427",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-diffs-pr-navigation-redirect",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_e17d88092597",
+  "tmuxSession": "opensaas-os-fix-diffs-pr-navigation-redirect-e17d8809",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-diffs-pr-navigation-redirect/.task/session.json",
+  "createdAt": "2026-09-10T00:09:00.816Z"
+}

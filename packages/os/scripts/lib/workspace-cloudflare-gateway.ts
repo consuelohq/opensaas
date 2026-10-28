@@ -172,9 +172,8 @@ export type WorkspaceHostnameRegistryRouteResolution =
     };
 
 const PUBLIC_WORKSPACE_ROUTES = [
-  '/office',
+  '/artifacts',
   '/diffs',
-  '/wiki',
   '/traces',
   '/tools',
   '/api',

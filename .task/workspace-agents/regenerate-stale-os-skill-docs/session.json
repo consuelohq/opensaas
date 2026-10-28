@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_4a8e3da459e7",
+  "tmuxSession": "opensaas-workspace-agents-regenerate-stale-os-skill-docs-4a8e3da4",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/regenerate-stale-os-skill-docs",
+  "branch": "task/workspace-agents/regenerate-stale-os-skill-docs",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-regenerate-stale-os-skill-docs",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-regenerate-stale-os-skill-docs",
+  "prNumber": 1241,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1241",
+  "createdAt": "2026-06-28T00:29:09.320Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-regenerate-stale-os-skill-docs/.task/workspace-agents/regenerate-stale-os-skill-docs/session.json"
+}

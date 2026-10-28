@@ -1,0 +1,19 @@
+{
+  "area": "documentation",
+  "stream": "stream/documentation",
+  "taskBranch": "task/documentation/docs-rebuild-the-consuelo-os-documentation-foundation",
+  "baseBranch": "stream/documentation",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1446,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1446",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1446",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1446/docs-rebuild-the-consuelo-os-documentation-foundation",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1446",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1446/docs-rebuild-the-consuelo-os-documentation-foundation",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-docs-rebuild-the-consuelo-os-documentation-foundation",
+  "taskSession": "tsk_664480a72d54",
+  "tmuxSession": "opensaas-documentation-docs-rebuild-the-consuelo-os-documentation-found-664480a7",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-docs-rebuild-the-consuelo-os-documentation-foundation/.task/documentation/docs-rebuild-the-consuelo-os-documentation-foundation/session.json",
+  "createdAt": "2026-07-13T05:11:29.640Z"
+}

@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/os-provider-tools/resolve-distribution-provider-main-sync-conflict",
+  "events": [
+    {
+      "id": "b88b6d71-3f31-4dc5-bdbb-55428e153023",
+      "occurred_at": "2026-07-24T04:43:16.847Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/distribution/runtime-bundle.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-provider-tools/resolve-distribution-provider-main-sync-conflict",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-provider-tools/resolve-distribution-provider-main-sync-conflict"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-07-24T04:43:16.902Z"
+}

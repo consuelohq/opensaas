@@ -1,0 +1,107 @@
+import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+import {
+  assertRequiredCloudflareWorkerSecrets,
+  deployCloudflareWorker,
+} from '../scripts/lib/cloudflare-worker-release-readiness';
+
+describe('Cloudflare Worker release readiness', () => {
+  it('allows deployment with the optional internal dashboard disabled', async () => {
+    const commands: string[][] = [];
+    await deployCloudflareWorker({
+      target: 'workspace-edge',
+      runner: async ({ argv }) => {
+        commands.push(argv);
+        return argv[1] === 'secret'
+          ? {
+              exitCode: 0,
+              stdout: JSON.stringify([
+                { name: 'CONSUELO_EDGE_SIGNING_SECRET' },
+                { name: 'WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET' },
+                { name: 'OPENROUTER_API_KEY' },
+              ]),
+              stderr: '',
+            }
+          : { exitCode: 0, stdout: '', stderr: '' };
+      },
+    });
+    expect(commands[1]).toEqual([
+      'wrangler',
+      'deploy',
+      '--config',
+      'cloudflare/workspace-edge/wrangler.toml',
+    ]);
+  });
+
+  it('validates required secrets before issuing deployment', async () => {
+    const commands: string[][] = [];
+    await deployCloudflareWorker({
+      target: 'os-device-authority',
+      runner: async ({ argv }) => {
+        commands.push(argv);
+        return argv[1] === 'secret'
+          ? {
+              exitCode: 0,
+              stdout: JSON.stringify({ secrets: [
+                { name: 'CLOUDFLARE_API_TOKEN' },
+                { name: 'WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET' },
+                { name: 'OS_MANAGED_CLOUD_PROVISIONER_SECRET' },
+                { name: 'OS_MANAGED_CLOUD_ENROLLMENT_SECRET' },
+                { name: 'GITHUB_APP_CLIENT_ID' },
+                { name: 'GITHUB_APP_CLIENT_SECRET' },
+              ] }),
+              stderr: '',
+            }
+          : { exitCode: 0, stdout: '', stderr: '' };
+      },
+    });
+    expect(commands[1]).toEqual([
+      'wrangler',
+      'deploy',
+      '--keep-vars',
+      '--config',
+      'cloudflare/os-device-authority/wrangler.toml',
+    ]);
+  });
+
+  it('keeps release-managed launcher snapshot vars out of the static Device Authority config', () => {
+    const config = readFileSync(
+      join(
+        process.cwd(),
+        'cloudflare',
+        'os-device-authority',
+        'wrangler.toml',
+      ),
+      'utf8',
+    );
+
+    expect(config).not.toContain(
+      'OS_DEVICE_AUTH_DEFAULT_SITE_SNAPSHOT_KEY =',
+    );
+    expect(config).not.toContain(
+      'OS_DEVICE_AUTH_DEFAULT_SITE_SNAPSHOT_VERSION_ID =',
+    );
+  });
+
+  it('rejects Device Authority deployment when GitHub OAuth client credentials are missing', () => {
+    expect(() => assertRequiredCloudflareWorkerSecrets(
+      'os-device-authority',
+      JSON.stringify({ secrets: [
+        { name: 'CLOUDFLARE_API_TOKEN' },
+        { name: 'WORKSPACE_EDGE_INTERNAL_SIGNING_SECRET' },
+        { name: 'OS_MANAGED_CLOUD_PROVISIONER_SECRET' },
+        { name: 'OS_MANAGED_CLOUD_ENROLLMENT_SECRET' },
+        { name: 'GITHUB_APP_CLIENT_ID' },
+      ] }),
+    )).toThrow('Device authority secret GITHUB_APP_CLIENT_SECRET is not configured');
+  });
+
+  it('rejects malformed metadata without exposing secret values', () => {
+    expect(() => assertRequiredCloudflareWorkerSecrets(
+      'workspace-edge',
+      'not-json',
+    )).toThrow('Workspace edge secret list response was not valid JSON');
+  });
+});

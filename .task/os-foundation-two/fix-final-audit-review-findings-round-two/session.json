@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_40db248ede3f",
+  "tmuxSession": "opensaas-os-foundation-two-fix-final-audit-review-findings-round-two-40db248e",
+  "area": "os-foundation-two",
+  "stream": "stream/os-foundation-two",
+  "taskBranch": "task/os-foundation-two/fix-final-audit-review-findings-round-two",
+  "branch": "task/os-foundation-two/fix-final-audit-review-findings-round-two",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-foundation-two-fix-final-audit-review-findings-round-two",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-foundation-two-fix-final-audit-review-findings-round-two",
+  "prNumber": 1676,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1676",
+  "createdAt": "2026-07-27T18:41:09.990Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-foundation-two-fix-final-audit-review-findings-round-two/.task/os-foundation-two/fix-final-audit-review-findings-round-two/session.json"
+}

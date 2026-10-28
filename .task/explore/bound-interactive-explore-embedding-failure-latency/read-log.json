@@ -1,0 +1,9 @@
+{
+  "files": [
+    "packages/os/package.json",
+    "packages/os/scripts/explore.js",
+    "packages/os/tests/explore-index-hydration-fallback.test.ts",
+    "packages/os/tests/semantic-embedding-gateway.test.ts"
+  ],
+  "updatedAt": "2026-09-08T14:40:29.543Z"
+}

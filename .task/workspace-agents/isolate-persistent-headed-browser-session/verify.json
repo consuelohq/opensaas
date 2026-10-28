@@ -1,0 +1,109 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace-agents/isolate-persistent-headed-browser-session",
+  "base": "origin/stream/workspace-agents",
+  "headSha": "f11083038d7ab4a17c9b7066fcced5bb36cb7add",
+  "changeHash": "2e618c94fa8ea781e7904e8db5038233dc660b25b36c0e790a60644975d27213",
+  "changedFiles": [
+    "packages/os/scripts/lib/browser/service.ts",
+    "packages/os/tests/browser-service.test.ts",
+    "packages/workspace/scripts/lib/browser/service.ts",
+    "packages/workspace/tests/browser-service.test.ts"
+  ],
+  "verifiedAt": "2026-08-26T04:39:22.046Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/workspace-agents/isolate-persistent-headed-browser-session.json",
+        ".task/workspace-agents/isolate-persistent-headed-browser-session/current.json",
+        ".task/workspace-agents/isolate-persistent-headed-browser-session/evidence-log.json",
+        ".task/workspace-agents/isolate-persistent-headed-browser-session/read-log.json",
+        ".task/workspace-agents/isolate-persistent-headed-browser-session/session.json",
+        ".task/workspace-agents/isolate-persistent-headed-browser-session/workpad.md",
+        "packages/os/scripts/lib/browser/service.ts",
+        "packages/os/tests/browser-service.test.ts",
+        "packages/workspace/scripts/lib/browser/service.ts",
+        "packages/workspace/tests/browser-service.test.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "os-browser-headed-handoff",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Browser daemon, headed handoff, and persistent-profile changes must prove visible-mode continuity and OS/workspace runtime parity without selecting unrelated package-wide OS tests.",
+          "matchedFiles": [
+            "packages/os/scripts/lib/browser/service.ts",
+            "packages/os/tests/browser-service.test.ts",
+            "packages/workspace/scripts/lib/browser/service.ts",
+            "packages/workspace/tests/browser-service.test.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "OS headed browser handoff contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/browser-service.test.ts",
+            "packages/workspace/tests/browser-service.test.ts",
+            "-t",
+            "should leave a headed browser running|should open headed mode|should use headed handoff behavior|should preserve the current daemon|should forward provider options|should keep workspace and OS browser runtimes byte-identical"
+          ],
+          "ruleId": "os-browser-headed-handoff",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "OS headed browser handoff contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/browser-service.test.ts",
+            "packages/workspace/tests/browser-service.test.ts",
+            "-t",
+            "should leave a headed browser running|should open headed mode|should use headed handoff behavior|should preserve the current daemon|should forward provider options|should keep workspace and OS browser runtimes byte-identical"
+          ],
+          "ruleId": "os-browser-headed-handoff",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 829,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-isolate-persistent-headed-browser-session\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/browser-service.test.ts \u001b[2m(\u001b[22m\u001b[2m18 tests\u001b[22m\u001b[2m | \u001b[22m\u001b[33m12 skipped\u001b[39m\u001b[2m)\u001b[22m\u001b[32m 13\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/browser-service.test.ts \u001b[2m(\u001b[22m\u001b[2m18 tests\u001b[22m\u001b[2m | \u001b[22m\u001b[33m12 skipped\u001b[39m\u001b[2m)\u001b[22m\u001b[32m 6\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m12 passed\u001b[39m\u001b[22m\u001b[2m | \u001b[22m\u001b[33m24 skipped\u001b[39m\u001b[90m (36)\u001b[39m\n\u001b[2m   Start at \u001b[22m 00:39:21\n\u001b[2m   Duration \u001b[22m 490ms\u001b[2m (transform 155ms, setup 0ms, import 582ms, tests 19ms, environment 0ms)\u001b[22m\n\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

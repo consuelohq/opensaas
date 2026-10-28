@@ -35,6 +35,10 @@ load_env_file() {
 
 load_env_file "$env_file"
 
+unset WORKSPACE_MCP_TOKEN
+unset INTERNAL_CONSUELO_API_KEY
+unset CLOUDFLARE_API_TOKEN
+
 export HOME="${PORTLESS_DAEMON_HOME:-${HOME:-/Users/$(id -un)}}"
 export USER="${PORTLESS_DAEMON_USER:-${USER:-$(id -un)}}"
 export PATH="${PORTLESS_DAEMON_PATH:-/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin}"

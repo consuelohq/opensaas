@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_03a310f10bdd",
+  "tmuxSession": "opensaas-os-web-fix-stream-coderabbit-cleanup-findings-03a310f1",
+  "area": "os-web",
+  "stream": "stream/os-web",
+  "taskBranch": "task/os-web/fix-stream-coderabbit-cleanup-findings",
+  "branch": "task/os-web/fix-stream-coderabbit-cleanup-findings",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-web-fix-stream-coderabbit-cleanup-findings",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-web-fix-stream-coderabbit-cleanup-findings",
+  "prNumber": 1622,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1622",
+  "createdAt": "2026-07-24T04:59:38.729Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-web-fix-stream-coderabbit-cleanup-findings/.task/os-web/fix-stream-coderabbit-cleanup-findings/session.json"
+}

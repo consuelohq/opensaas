@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "worktree_id": "task/os-native/resolve-macos-lifecycle-promotion-review-findings",
+  "events": [
+    {
+      "id": "73efdddd-fa66-4d2b-890c-2db95b4454b2",
+      "occurred_at": "2026-07-27T03:40:35.128Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/native-lifecycle-operation.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-native/resolve-macos-lifecycle-promotion-review-findings",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-native/resolve-macos-lifecycle-promotion-review-findings"
+      }
+    },
+    {
+      "id": "b13ed132-a141-49ab-aabc-fa5442cce122",
+      "occurred_at": "2026-07-27T03:41:59.928Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/native-lifecycle-operation.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-native/resolve-macos-lifecycle-promotion-review-findings",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-native/resolve-macos-lifecycle-promotion-review-findings"
+      }
+    },
+    {
+      "id": "ee0bedab-9975-40eb-a3dc-882b6c00f0d8",
+      "occurred_at": "2026-07-27T03:43:28.390Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".tmp-native-lock-failures.txt",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-native/resolve-macos-lifecycle-promotion-review-findings",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-native/resolve-macos-lifecycle-promotion-review-findings"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-07-27T03:43:28.447Z"
+}

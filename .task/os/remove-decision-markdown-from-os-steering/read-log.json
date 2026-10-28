@@ -1,0 +1,7 @@
+{
+  "files": [
+    "packages/os/scripts/os.ts",
+    "packages/os/tests/os-get-steering-trace.test.ts"
+  ],
+  "updatedAt": "2026-07-15T18:27:08.890Z"
+}

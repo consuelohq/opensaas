@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/repair-launcher-update-freshness-and-auth-routes",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1956,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1956",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1956",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1956/repair-launcher-update-freshness-and-auth-routes",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1956",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1956/repair-launcher-update-freshness-and-auth-routes",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-launcher-update-freshness-and-auth-routes",
+  "taskSession": "tsk_5390629a4392",
+  "tmuxSession": "opensaas-os-repair-launcher-update-freshness-and-auth-routes-5390629a",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-launcher-update-freshness-and-auth-routes/.task/os/repair-launcher-update-freshness-and-auth-routes/session.json",
+  "createdAt": "2026-08-14T09:40:17.727Z"
+}

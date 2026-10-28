@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_a641ea55965d",
+  "tmuxSession": "opensaas-os-reconcile-stripe-synthetic-checkout-observabilit-a641ea55",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/reconcile-stripe-synthetic-checkout-observability-onto-current-stream",
+  "branch": "task/os/reconcile-stripe-synthetic-checkout-observability-onto-current-stream",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-reconcile-stripe-synthetic-checkout-observability-onto-current-stream",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-reconcile-stripe-synthetic-checkout-observability-onto-current-stream",
+  "prNumber": 2002,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2002",
+  "createdAt": "2026-08-15T03:05:39.679Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-reconcile-stripe-synthetic-checkout-observability-onto-current-stream/.task/os/reconcile-stripe-synthetic-checkout-observability-onto-current-stream/session.json"
+}

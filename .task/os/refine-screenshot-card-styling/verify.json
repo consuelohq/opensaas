@@ -1,0 +1,73 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/refine-screenshot-card-styling",
+  "base": "origin/stream/os",
+  "headSha": "2768ab5ad962be535819b05d5f632e6f659be0eb",
+  "changeHash": "50ff05c56d5c98e68db13733ccdd0425a94bac25fe08d23c3cc1141ae1093c6a",
+  "changedFiles": [
+    "AGENTS.md",
+    "packages/os/SCRIPTS.md",
+    "packages/os/assets/media/screenshot/dither/cloud-1.png",
+    "packages/os/assets/media/screenshot/dither/cloud-1.png.base64",
+    "packages/os/assets/media/screenshot/dither/cloud-2.png",
+    "packages/os/assets/media/screenshot/dither/cloud-2.png.base64",
+    "packages/os/assets/media/screenshot/dither/cloud-3.png",
+    "packages/os/assets/media/screenshot/dither/cloud-3.png.base64",
+    "packages/os/assets/media/screenshot/dither/cloud-4.png",
+    "packages/os/assets/media/screenshot/dither/cloud-4.png.base64",
+    "packages/os/scripts/lib/media/screenshot.ts",
+    "packages/os/tests/media/32-screenshot-render.test.ts"
+  ],
+  "verifiedAt": "2026-07-14T18:56:02.587Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/refine-screenshot-card-styling/current.json",
+        ".task/os/refine-screenshot-card-styling/evidence-log.json",
+        ".task/os/refine-screenshot-card-styling/read-log.json",
+        ".task/os/refine-screenshot-card-styling/session.json",
+        ".task/os/refine-screenshot-card-styling/workpad.md",
+        ".task/tasks/os/refine-screenshot-card-styling.json",
+        "AGENTS.md",
+        "packages/os/SCRIPTS.md",
+        "packages/os/assets/media/screenshot/dither/cloud-1.png",
+        "packages/os/assets/media/screenshot/dither/cloud-1.png.base64",
+        "packages/os/assets/media/screenshot/dither/cloud-2.png",
+        "packages/os/assets/media/screenshot/dither/cloud-2.png.base64",
+        "packages/os/assets/media/screenshot/dither/cloud-3.png",
+        "packages/os/assets/media/screenshot/dither/cloud-3.png.base64",
+        "packages/os/assets/media/screenshot/dither/cloud-4.png",
+        "packages/os/assets/media/screenshot/dither/cloud-4.png.base64",
+        "packages/os/scripts/lib/media/screenshot.ts",
+        "packages/os/tests/media/32-screenshot-render.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

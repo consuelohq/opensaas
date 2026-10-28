@@ -8,6 +8,8 @@ All browser operations must go through the workspace facade:
 
 os.call({ tool: "browser.test", input: { url: "<url>" } })
 os.call({ tool: "browser.open", input: { url: "<url>" } })
+os.call({ tool: "browser.headed", input: { url: "<url>" } })
+os.call({ tool: "browser.status", input: {} })
 os.call({ tool: "browser.snap", input: {} })
 os.call({ tool: "browser.eval", input: { js: "<javascript>" } })
 os.call({ tool: "browser.screenshot", input: { name: "<name>", full: true } })
@@ -23,8 +25,6 @@ os.call({ tool: "browser.network", input: { args: ["requests"] } })
 os.call({ tool: "browser.dialog", input: { action: "dismiss" } })
 os.call({ tool: "browser.trace", input: { action: "start" } })
 os.call({ tool: "browser.clipboard", input: { action: "read" } })
-os.call({ tool: "browser.login", input: { name: "consuelo" } })
-os.call({ tool: "browser.reauth", input: { name: "consuelo", headed: true } })
 os.call({ tool: "browser.raw", input: { args: ["<agent-browser command>"] } })
 os.call({ tool: "browser.close", input: {} })
 Do not use stale command forms such as workspace.browser.test(...) in instructions or handoffs.
@@ -34,7 +34,9 @@ Use typed browser tools for repeated primitives. Use browser.raw only when an up
 What each browser tool is for
 Tool	Use for
 browser.test	Open a URL, wait for load, capture accessibility snapshot, and save screenshot evidence in one step. Best first call for a known URL.
-browser.open	Open a URL and capture page evidence. Use when preserving a session or continuing from an existing browser state.
+browser.open	Open a URL and capture page evidence using the shared persistent browser home.
+browser.headed	Open that same browser visibly when Ko must complete login, MFA, CAPTCHA, passkeys, or consent; leave it running afterward.
+browser.status	Report safe daemon, URL, and title metadata without authentication values.
 browser.snap	Capture the current accessibility tree and interactive refs after navigation or interaction.
 browser.eval	Execute JavaScript on the current page to extract rendered DOM text, links, tables, code blocks, metadata, or state.
 browser.screenshot	Capture visual evidence. Use full: true for full-page proof when page layout matters.
@@ -50,8 +52,6 @@ browser.network	Inspect/manage network requests, routes, or HAR capture with str
 browser.dialog	Accept or dismiss browser dialogs.
 browser.trace	Start/stop browser traces for hard UI bugs.
 browser.clipboard	Read/write browser clipboard text. Prefer this over typing long strings.
-browser.login	Run a saved auth login profile.
-browser.reauth	Restart browser auth when an authenticated session is stale. Use headed: true when Ko needs to complete auth.
 browser.raw	Rare escape hatch for upstream agent-browser features missing from the typed workspace facade.
 browser.close	Close active browser sessions when the workflow is done or state is polluted.
 Screenshots are saved to:
@@ -66,7 +66,7 @@ Extract code blocks/tables from docs	browser.eval	Query DOM for pre, code, table
 Verify what a user sees	browser.test then browser.screenshot	Capture snapshot and screenshot evidence.
 Debug Consuelo UI	browser.app or browser.consuelo when available; otherwise browser.open	Pair browser evidence with runtime/log evidence when needed.
 Interact with UI	browser.snap then browser.click/browser.fill	Re-snapshot after each major state change.
-Scrape authenticated pages	browser.login/browser.reauth, then browser.open	Use existing auth profile and avoid exposing secrets.
+Scrape authenticated pages	browser.open; browser.headed when Ko must interact	Use the shared persistent browser home and avoid exposing authentication data.
 Cite public claims in a final answer	Built-in web search/open	Browser evidence supports inspection, but built-in web citations are citation evidence.
 Known-URL fetch workflow
 Use this flow when the user gives a URL and asks to inspect, fetch, summarize, scrape, or compare it.
@@ -114,13 +114,12 @@ Report the exact page, action path, observed result, screenshot path, and any un
 Authenticated-page workflow
 Use this flow for pages that require Ko’s browser session.
 
-Open the target page.
-If logged out, run:
-os.call({ tool: "browser.login", input: { name: "consuelo" }, timeout: 300000 })
-If login requires visible user interaction, run:
-os.call({ tool: "browser.reauth", input: { name: "consuelo", headed: true }, timeout: 300000 })
-Reopen the target page after auth.
-Avoid copying secrets, tokens, credentials, or private customer data into final responses.
+Open the target page with browser.open.
+If Ko must complete login, MFA, CAPTCHA, a passkey, consent, or another human-only step, run:
+os.call({ tool: "browser.headed", input: { url: "<url>" }, timeout: 300000 })
+The headed window uses the same persistent browser home as every later browser tool. Leave it running while Ko completes the interaction.
+After Ko confirms completion, use browser.status or browser.snap, then continue with browser.open and the normal typed tools. Do not close the browser unless stale state requires an explicit reset.
+Avoid copying secrets, tokens, credentials, cookie values, or private customer data into final responses.
 Ask before submitting forms, sending messages, purchasing, deleting, changing customer-visible state, or making account/security changes.
 Extraction recipes
 Extract headings and outline

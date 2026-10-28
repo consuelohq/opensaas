@@ -1,0 +1,19 @@
+{
+  "area": "sites",
+  "stream": "stream/sites",
+  "taskBranch": "task/sites/organize-website-design-system-context",
+  "baseBranch": "stream/sites",
+  "sourceBranch": "stream/sites",
+  "startFrom": "stream",
+  "prNumber": 1243,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1243",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1243",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1243/organize-website-design-system-context",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1243",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1243/organize-website-design-system-context",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-organize-website-design-system-context",
+  "taskSession": "tsk_29e11caa6608",
+  "tmuxSession": "opensaas-sites-organize-website-design-system-context-29e11caa",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-organize-website-design-system-context/.task/sites/organize-website-design-system-context/session.json",
+  "createdAt": "2026-06-28T00:33:38.033Z"
+}

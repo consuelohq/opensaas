@@ -1,0 +1,8 @@
+{
+  "files": [
+    ".task/os/fix-release-promotion-run-correlation/workpad.md",
+    "packages/os/scripts/lib/release-orchestrator.ts",
+    "packages/os/scripts/release.ts"
+  ],
+  "updatedAt": "2026-08-26T03:17:08.686Z"
+}

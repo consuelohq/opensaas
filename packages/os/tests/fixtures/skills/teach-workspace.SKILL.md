@@ -94,7 +94,7 @@ Current renderer command help wins over stale prompt text.
 8. Verify the bundle includes `packet.md`, `extracted.md`, and `manifest.json` or equivalent saved files.
 9. Write the final Markdown lesson from the bundle.
 10. Convert the lesson into typed `content.json` for `template: guide`.
-11. Render with `sites render` or the current canonical `wiki:render` command if steering still exposes that as the renderer entrypoint.
+11. Render with `sites render` or the current canonical `artifact:render` command if steering still exposes that as the renderer entrypoint.
 12. Validate with the current validator.
 13. Publish through Sites with immutable versioning.
 14. Verify the Sites URL and `/sites` index.
@@ -184,7 +184,7 @@ bun ./scripts/os.ts sites render --template guide --input <content.json> --out <
 bun ./scripts/os.ts sites publish --target <artifact-dir> --path /pages/teach/<slug> --title "Teach — <source title>" --kind guide [--base-version <id>]
 ```
 
-If steering says the current renderer entrypoint is still `bun run wiki:render`, use it, but keep `template: guide`.
+If steering says the current renderer entrypoint is still `bun run artifact:render`, use it, but keep `template: guide`.
 
 ## Typed components
 

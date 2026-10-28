@@ -1,0 +1,12 @@
+{
+  "area": "os-distribution",
+  "stream": "stream/os-distribution",
+  "taskBranch": "task/os-distribution/harden-lifecycle-engine-transaction",
+  "baseBranch": "stream/os-distribution",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1584,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1584",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-harden-lifecycle-engine-transaction",
+  "createdAt": "2026-07-23T15:18:09.374Z"
+}

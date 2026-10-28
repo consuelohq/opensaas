@@ -1,0 +1,132 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/dialer/redact-provider-stacks-from-dialer-stream",
+  "base": "origin/task/dialer/redact-provider-stacks-from-dialer-stream",
+  "headSha": "e2bcf9d844955c44cbc54775b1211e4d2a6a5421",
+  "changeHash": "20ff8113df1277c04369a478242379da590324bbaeaf146f2572dcc674086b46",
+  "changedFiles": [
+    "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.spec.ts",
+    "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.ts"
+  ],
+  "verifiedAt": "2026-08-04T20:55:03.129Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/dialer/redact-provider-stacks-from-dialer-stream/current.json",
+        ".task/dialer/redact-provider-stacks-from-dialer-stream/session.json",
+        ".task/dialer/redact-provider-stacks-from-dialer-stream/workpad.md",
+        ".task/tasks/dialer/redact-provider-stacks-from-dialer-stream.json",
+        "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.spec.ts",
+        "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "twenty-server-project",
+          "critical": true,
+          "reason": "Server changes have the broadest backend impact and should run the project test target.",
+          "matchedFiles": [
+            "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.spec.ts",
+            "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "auto:twenty-server:test",
+          "critical": false,
+          "reason": "Auto-discovered Nx test target for packages/twenty-server.",
+          "matchedFiles": [
+            "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.spec.ts",
+            "packages/twenty-server/src/engine/core-modules/consuelo-api/services/parallel.service.ts"
+          ],
+          "origin": "auto"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "twenty-server affected test target",
+          "command": [
+            "npx",
+            "nx",
+            "test",
+            "twenty-server"
+          ],
+          "ruleId": "twenty-server-project",
+          "critical": true
+        },
+        {
+          "name": "twenty-server test",
+          "command": [
+            "npx",
+            "nx",
+            "test",
+            "twenty-server",
+            "--coverage=false"
+          ],
+          "ruleId": "auto:twenty-server:test",
+          "critical": false
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "twenty-server affected test target",
+          "command": [
+            "npx",
+            "nx",
+            "test",
+            "twenty-server"
+          ],
+          "ruleId": "twenty-server-project",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 42092,
+          "outputTail": "0m \u001b[2mpackages/twenty-server/src/engine/api/graphql/workspace-schema-builder/utils/compute-stored-gql-type-key-utils/__tests__/\u001b[22m\u001b[1mcompute-object-metadata-input-type.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/api/rest/input-request-parsers/ending-before-parser-utils/__tests__/\u001b[22m\u001b[1mparse-ending-before-rest-request.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/core-modules/search/utils/__tests__/\u001b[22m\u001b[1mformat-search-terms.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/core-modules/billing/utils/__tests__/\u001b[22m\u001b[1mnormalize-price-ref.utils.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/metadata-modules/field-metadata/utils/__tests__/\u001b[22m\u001b[1mgenerate-nullable.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/api/rest/input-request-parsers/filter-parser-utils/__tests__/\u001b[22m\u001b[1madd-default-conjunction.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/metadata-modules/flat-entity/utils/__tests__/\u001b[22m\u001b[1msort-metadata-names-children-first.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/api/graphql/workspace-schema-builder/utils/compute-stored-gql-type-key-utils/__tests__/\u001b[22m\u001b[1mcompute-enum-field-gql-type-key.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/modules/messaging/message-import-manager/utils/__tests__/\u001b[22m\u001b[1mmime-encode.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/api/graphql/workspace-schema-builder/utils/compute-stored-gql-type-key-utils/__tests__/\u001b[22m\u001b[1mcompute-composite-field-enum-type-key.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/api/graphql/workspace-schema-builder/utils/compute-stored-gql-type-key-utils/__tests__/\u001b[22m\u001b[1mcompute-object-metadata-object-type-key.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/api/graphql/workspace-schema-builder/utils/compute-stored-gql-type-key-utils/__tests__/\u001b[22m\u001b[1mcompute-composite-field-object-type-key.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/core-modules/open-api/\u001b[22m\u001b[1mopen-api.service.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/core-modules/app-token/services/\u001b[22m\u001b[1mapp-token.service.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/core-modules/file/file-upload/resolvers/\u001b[22m\u001b[1mfile-upload.resolver.spec.ts\u001b[22m\n\u001b[33mA worker process has failed to exit gracefully and has been force exited. This is likely caused by tests leaking due to improper teardown. Try running with --detectOpenHandles to find leaks. Active timers can also cause this, ensure that .unref() was called on them.\u001b[39m\n\u001b[1mTest Suites: \u001b[22m\u001b[1m\u001b[33m2 skipped\u001b[39m\u001b[22m, \u001b[1m\u001b[32m447 passed\u001b[39m\u001b[22m, 447 of 449 total\n\u001b[1mTests:       \u001b[22m\u001b[1m\u001b[33m10 skipped\u001b[39m\u001b[22m, \u001b[1m\u001b[32m3524 passed\u001b[39m\u001b[22m, 3534 total\n\u001b[1mSnapshots:   \u001b[22m\u001b[1m\u001b[32m88 passed\u001b[39m\u001b[22m, 88 total\n\u001b[1mTime:\u001b[22m        39.716 s\n"
+        },
+        {
+          "name": "twenty-server test",
+          "command": [
+            "npx",
+            "nx",
+            "test",
+            "twenty-server",
+            "--coverage=false"
+          ],
+          "ruleId": "auto:twenty-server:test",
+          "critical": false,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 41974,
+          "outputTail": "-function/logic-function-trigger/triggers/route/utils/__tests__/\u001b[22m\u001b[1mbuild-logic-function-event.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/twenty-orm/utils/__tests__/\u001b[22m\u001b[1mget-default-columns-for-index.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/modules/blocklist/utils/__tests__/\u001b[22m\u001b[1mis-email-blocklisted.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/api/rest/input-request-parsers/filter-parser-utils/__tests__/\u001b[22m\u001b[1mparse-filter-content.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/core-modules/twenty-config/utils/__tests__/\u001b[22m\u001b[1mconfig-transformers.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/core-modules/billing/utils/__tests__/\u001b[22m\u001b[1mnormalize-price-ref.utils.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/api/graphql/workspace-schema-builder/utils/compute-stored-gql-type-key-utils/__tests__/\u001b[22m\u001b[1mcompute-relation-connect-input-type-key.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/core-modules/domain/subdomain-manager/utils/__test__/\u001b[22m\u001b[1mis-subdomain-valid.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/utils/__test__/\u001b[22m\u001b[1mparse-email-body.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/modules/dashboard/tools/utils/__tests__/\u001b[22m\u001b[1mhumanize-sub-field-label.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/api/common/common-args-processors/data-arg-processor/utils/__tests__/\u001b[22m\u001b[1mis-null-equivalent-array-field.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/modules/workflow/workflow-executor/workflow-actions/iterator/utils/__tests__/\u001b[22m\u001b[1mget-all-step-ids-in-loop.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/modules/messaging/message-import-manager/drivers/gmail/utils/__tests__/\u001b[22m\u001b[1mparse-gmail-message-list-fetch-error.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/twenty-orm/utils/__tests__/\u001b[22m\u001b[1mcompute-permission-intersection.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/modules/messaging/message-import-manager/utils/__tests__/\u001b[22m\u001b[1mmime-encode.util.spec.ts\u001b[22m\n\u001b[0m\u001b[7m\u001b[1m\u001b[32m PASS \u001b[39m\u001b[22m\u001b[27m\u001b[0m \u001b[0m\u001b[7m\u001b[37m twenty-server \u001b[39m\u001b[27m\u001b[0m \u001b[2mpackages/twenty-server/src/engine/core-modules/audit/utils/\u001b[22m\u001b[1manalytics.utils.spec.ts\u001b[22m\n\u001b[33mA worker process has failed to exit gracefully and has been force exited. This is likely caused by tests leaking due to improper teardown. Try running with --detectOpenHandles to find leaks. Active timers can also cause this, ensure that .unref() was called on them.\u001b[39m\n\u001b[1mTest Suites: \u001b[22m\u001b[1m\u001b[33m2 skipped\u001b[39m\u001b[22m, \u001b[1m\u001b[32m447 passed\u001b[39m\u001b[22m, 447 of 449 total\n\u001b[1mTests:       \u001b[22m\u001b[1m\u001b[33m10 skipped\u001b[39m\u001b[22m, \u001b[1m\u001b[32m3524 passed\u001b[39m\u001b[22m, 3534 total\n\u001b[1mSnapshots:   \u001b[22m\u001b[1m\u001b[32m88 passed\u001b[39m\u001b[22m, 88 total\n\u001b[1mTime:\u001b[22m        \u001b[1m\u001b[33m39.733 s\u001b[39m\u001b[22m\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

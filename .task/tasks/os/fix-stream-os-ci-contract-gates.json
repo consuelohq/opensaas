@@ -1,0 +1,20 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-stream-os-ci-contract-gates",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2458,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2458",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2458",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2458/fix-stream-os-ci-contract-gates",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2458",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2458/fix-stream-os-ci-contract-gates",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-stream-os-ci-contract-gates",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_5c770a0ad3c7",
+  "tmuxSession": "opensaas-os-fix-stream-os-ci-contract-gates-5c770a0a",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-stream-os-ci-contract-gates/.task/os/fix-stream-os-ci-contract-gates/session.json",
+  "createdAt": "2026-09-11T05:09:15.754Z"
+}

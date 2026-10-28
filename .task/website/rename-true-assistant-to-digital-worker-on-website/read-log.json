@@ -1,0 +1,10 @@
+{
+  "files": [
+    ".task/website/rename-true-assistant-to-digital-worker-on-website/workpad.md",
+    "packages/consuelo-website/package.json",
+    "packages/consuelo-website/scripts/generate-footer-art.ts",
+    "packages/workspace/scripts/verify.js",
+    "packages/workspace/senior-engineer.md"
+  ],
+  "updatedAt": "2026-08-10T00:21:11.896Z"
+}

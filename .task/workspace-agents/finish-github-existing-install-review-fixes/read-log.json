@@ -1,0 +1,9 @@
+{
+  "files": [
+    "packages/os/cloudflare/os-device-authority/src/types.ts",
+    "packages/os/scripts/lib/github-source-control-client.ts",
+    "packages/os/tests/github-source-control-authority.test.ts",
+    "packages/os/tests/settings-hono-routes.test.ts"
+  ],
+  "updatedAt": "2026-08-29T02:23:30.835Z"
+}

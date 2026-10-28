@@ -1,0 +1,96 @@
+---
+title: Connect your first agent
+description: Let the installer configure a supported local agent and verify the MCP connection.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/scripts/lib/local-agent-connectivity.ts
+    tests:
+      - packages/os/tests/install-state.test.ts
+      - packages/os/tests/installer-local-agent-connectivity.test.ts
+    runtime: OpenCode configuration and MCP handshake verified in isolated temporary homes on 2026-07-13.
+  - source: packages/os/scripts/install.ts
+    tests:
+      - packages/os/tests/installer-onboarding-ui.test.ts
+    runtime: Installer agent detection and selected-agent verification path inspected on 2026-07-13.
+---
+
+Consuelo OS connects local coding agents through a local MCP command. The installer detects supported agents already present on the Mac, writes their native MCP configuration, and performs a real MCP handshake before reporting a connection as verified.
+
+## Connect during installation
+
+When the installer reaches **agents**, it lists detected native agents. Detected agents start selected.
+
+- Press **Space** to deselect an agent.
+- Press **Enter** to continue.
+
+The current native local paths are:
+
+| Agent | Installer support |
+| --- | --- |
+| Codex | Native |
+| Cursor | Native |
+| Claude Code | Native |
+| OpenCode | Native |
+| Factory Droid | Native |
+| Gemini CLI | Native |
+| Pi | Detected, but native MCP configuration is not currently supported |
+
+The installer preserves unrelated settings in each agent's configuration and keeps a one-time `.bak` file when it changes an existing local config.
+
+## What gets installed
+
+Supported local agents run:
+
+```text
+~/.consuelo/bin/consuelo-os-mcp
+```
+
+That command starts Consuelo OS over MCP stdio with the Consuelo home as its working context. The installer writes a `consuelo-os` entry into the agent's native configuration.
+
+## What “verified” means
+
+Configuration alone is not enough. After writing the selected agent configs, the installer starts the MCP command and checks that it can:
+
+1. complete MCP `initialize`;
+2. request `tools/list`;
+3. receive at least one tool.
+
+Only then is the selected agent recorded as `verified`.
+
+The other useful statuses are:
+
+- `detected`: the agent exists but Consuelo MCP is not configured;
+- `configured`: the native config is present but has not passed the current handshake;
+- `failed`: configuration or verification returned a specific error;
+- `unsupported`: the agent was detected but has no authoritative native setup path.
+
+## Connect another agent after installation
+
+The installer does not currently expose a safe standalone post-install agent command. Do not rerun the non-interactive installer solely to add an agent to an existing managed workspace: that provisioning path also owns workspace and node identity and requires the approved workspace bootstrap.
+
+Open the agent once so it creates its normal configuration directory, then follow its provider-specific setup page in [Connect](/connect/). The resulting native configuration points to the installed MCP command:
+
+```text
+~/.consuelo/bin/consuelo-os-mcp
+```
+
+## Verify the result
+
+The installer reports selected agents in its result. You can also inspect the non-secret status records in:
+
+```text
+~/.consuelo/config.json
+```
+
+Look for the agent name and `"status": "verified"`. Do not paste the full configuration into support messages because the same file contains broader workspace configuration.
+
+## Connect ChatGPT
+
+The workspace launcher shows a copyable HTTPS MCP URL and links to ChatGPT connector settings. That is a cloud-agent connection, not the local stdio path described above. The detailed provider-specific steps belong in [Connect](/connect/).
+
+## If no agents are detected
+
+Finish installing Consuelo OS first. Install or open the agent once so it creates its normal configuration directory, then use the relevant page in [Connect](/connect/) to add the `consuelo-os` MCP entry without reprovisioning the workspace.
+
+Pi is currently detected but unsupported for native configuration.

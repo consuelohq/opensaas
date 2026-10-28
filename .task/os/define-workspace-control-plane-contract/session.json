@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_18e8452203b3",
+  "tmuxSession": "opensaas-os-define-workspace-control-plane-contract-18e84522",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/define-workspace-control-plane-contract",
+  "branch": "task/os/define-workspace-control-plane-contract",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-define-workspace-control-plane-contract",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-define-workspace-control-plane-contract",
+  "prNumber": 1527,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1527",
+  "createdAt": "2026-07-16T15:53:49.381Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-define-workspace-control-plane-contract/.task/os/define-workspace-control-plane-contract/session.json"
+}

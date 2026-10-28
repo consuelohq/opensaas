@@ -7,6 +7,13 @@ const { spawnSync } = require('child_process');
 
 const scriptsDir = path.resolve(__dirname);
 const failures = [];
+const NODE_EXECUTABLE = process.env.NODE_BIN || (process.versions.bun ? 'node' : process.execPath);
+const SYNTAX_CHECK_TIMEOUT_MS = (() => {
+  const configured = Number(process.env.CONSUELO_SYNTAX_CHECK_TIMEOUT_MS || 10000);
+  return Number.isSafeInteger(configured) && configured >= 1000 && configured <= 60000
+    ? configured
+    : 10000;
+})();
 
 function walk(dir) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -20,9 +27,11 @@ function walk(dir) {
       continue;
     }
 
-    const result = spawnSync(process.execPath, ['--check', fullPath], {
+    const result = spawnSync(NODE_EXECUTABLE, ['--check', fullPath], {
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'pipe'],
+      timeout: SYNTAX_CHECK_TIMEOUT_MS,
+      killSignal: 'SIGKILL',
     });
 
     if (result.status !== 0 || result.error) {
@@ -34,7 +43,26 @@ function walk(dir) {
   }
 }
 
-walk(scriptsDir);
+const requestedFiles = process.argv.slice(2);
+if (requestedFiles.length > 0) {
+  for (const requestedFile of requestedFiles) {
+    const fullPath = path.resolve(requestedFile);
+    const result = spawnSync(NODE_EXECUTABLE, ['--check', fullPath], {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+      timeout: SYNTAX_CHECK_TIMEOUT_MS,
+      killSignal: 'SIGKILL',
+    });
+    if (result.status !== 0 || result.error) {
+      failures.push({
+        file: path.relative(process.cwd(), fullPath).split(path.sep).join('/'),
+        message: result.stderr || result.stdout || (result.error && result.error.message) || 'node --check failed',
+      });
+    }
+  }
+} else {
+  walk(scriptsDir);
+}
 
 if (failures.length > 0) {
   for (const failure of failures) {

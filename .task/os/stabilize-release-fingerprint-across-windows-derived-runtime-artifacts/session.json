@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_0ff676065a20",
+  "tmuxSession": "opensaas-os-stabilize-release-fingerprint-across-windows-der-0ff67606",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/stabilize-release-fingerprint-across-windows-derived-runtime-artifacts",
+  "branch": "task/os/stabilize-release-fingerprint-across-windows-derived-runtime-artifacts",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-stabilize-release-fingerprint-across-windows-derived-runtime-artifacts",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-stabilize-release-fingerprint-across-windows-derived-runtime-artifacts",
+  "prNumber": 1727,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1727",
+  "createdAt": "2026-07-29T08:15:36.279Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-stabilize-release-fingerprint-across-windows-derived-runtime-artifacts/.task/os/stabilize-release-fingerprint-across-windows-derived-runtime-artifacts/session.json"
+}

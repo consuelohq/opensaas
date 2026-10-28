@@ -15,11 +15,33 @@ type ProvisionResult = {
   configPath: string;
   dbPath: string;
   agents: ProvisionAgent[];
-  actions: Array<{ type: string; path: string; status: string; message: string }>;
+  actions: Array<{
+    type: string;
+    path: string;
+    status: string;
+    message: string;
+  }>;
 };
 
 type InstallStateContract = {
   provisionLocalOs: (options?: Record<string, unknown>) => ProvisionResult;
+};
+
+type InstallerProgressStep =
+  | 'dependencies'
+  | 'workspace'
+  | 'security'
+  | 'skills'
+  | 'agents'
+  | 'service'
+  | 'health';
+
+type InstallerUiContract = {
+  INSTALLER_PROGRESS_STEPS: InstallerProgressStep[];
+  createInstallerProgressSteps: (
+    activeStep: InstallerProgressStep | null,
+  ) => Array<{ label: string; state: string }>;
+  renderInstallerProgress: (activeStep: InstallerProgressStep | null) => void;
 };
 
 const runContract =
@@ -33,10 +55,37 @@ async function loadInstallStateContract(): Promise<InstallStateContract> {
   const module = (await import(modulePath)) as Partial<InstallStateContract>;
 
   if (typeof module.provisionLocalOs !== 'function') {
-    throw new Error('install-state contract module is missing export: provisionLocalOs');
+    throw new Error(
+      'install-state contract module is missing export: provisionLocalOs',
+    );
   }
 
   return module as InstallStateContract;
+}
+
+async function loadInstallerUiContract(): Promise<InstallerUiContract> {
+  const modulePath = pathToFileURL(
+    join(process.cwd(), 'scripts', 'install.ts'),
+  ).href;
+  const module = (await import(modulePath)) as Partial<InstallerUiContract>;
+
+  if (!Array.isArray(module.INSTALLER_PROGRESS_STEPS)) {
+    throw new Error(
+      'install contract module is missing export: INSTALLER_PROGRESS_STEPS',
+    );
+  }
+  if (typeof module.createInstallerProgressSteps !== 'function') {
+    throw new Error(
+      'install contract module is missing export: createInstallerProgressSteps',
+    );
+  }
+  if (typeof module.renderInstallerProgress !== 'function') {
+    throw new Error(
+      'install contract module is missing export: renderInstallerProgress',
+    );
+  }
+
+  return module as InstallerUiContract;
 }
 
 function readJson<T>(filePath: string): T {
@@ -46,7 +95,9 @@ function readJson<T>(filePath: string): T {
 contractDescribe('installed OS workspace bootstrap contract', () => {
   it('should provision installed security config with the approved workspace identity instead of local placeholders', async () => {
     const { provisionLocalOs } = await loadInstallStateContract();
-    const home = fs.mkdtempSync(path.join(os.tmpdir(), 'consuelo-os-workspace-bootstrap-'));
+    const home = fs.mkdtempSync(
+      path.join(os.tmpdir(), 'consuelo-os-workspace-bootstrap-'),
+    );
 
     const result = provisionLocalOs({
       home,
@@ -56,14 +107,25 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
         workspaceId: 'workspace_123',
         workspaceSlug: 'kokayi',
         workspaceHost: 'kokayi.consuelohq.com',
+        nodeId: 'node_member',
         connectorId: 'connector_123',
         connectorTransport: 'cloudflare-tunnel',
         cloudflareTunnelToken: 'cloudflared_tunnel_token_fixture',
+        nodePublicKeyJwk: '{"kty":"OKP","crv":"Ed25519","x":"public-fixture"}',
+        nodeSigningKeyJwk:
+          '{"kty":"OKP","crv":"Ed25519","x":"public-fixture","d":"private-fixture"}',
+        nodeCapabilities: ['tools', 'mcp'],
       },
     });
 
     const config = readJson<Record<string, unknown>>(result.configPath);
-    const generatedAuthPath = join(home, 'security', 'generated', 'auth.json');
+    const generatedAuthPath = join(
+      home,
+      'node',
+      'security',
+      'generated',
+      'auth.json',
+    );
     const auth = readJson<Record<string, unknown>>(generatedAuthPath);
 
     expect(config.workspace).toMatchObject({
@@ -86,22 +148,37 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
       workspaceSlug: 'kokayi',
       workspaceHost: 'kokayi.consuelohq.com',
     });
-    expect(JSON.stringify(config)).not.toMatch(/local-consuelo-os|local\.consuelohq\.com/);
-    expect(JSON.stringify(auth)).not.toMatch(/local-consuelo-os|local\.consuelohq\.com/);
+    expect(JSON.stringify(config)).not.toMatch(
+      /local-consuelo-os|local\.consuelohq\.com/,
+    );
+    expect(JSON.stringify(auth)).not.toMatch(
+      /local-consuelo-os|local\.consuelohq\.com/,
+    );
     expect(fs.existsSync(join(home, 'sites', 'index.html'))).toBe(true);
-    expect(fs.existsSync(join(home, 'sites', 'pages', 'index.html'))).toBe(true);
-    expect(fs.existsSync(join(home, 'sites', 'office', 'data', 'artifacts.json'))).toBe(true);
-    expect(fs.existsSync(join(home, 'sites', 'traces', 'index.html'))).toBe(true);
-    expect(fs.existsSync(join(home, 'sites', 'diffs', 'index.html'))).toBe(true);
+    expect(fs.existsSync(join(home, 'sites', 'pages', 'index.html'))).toBe(
+      true,
+    );
+    expect(
+      fs.existsSync(join(home, 'sites', 'artifacts', 'data', 'catalog.json')),
+    ).toBe(true);
+    expect(fs.existsSync(join(home, 'sites', 'traces', 'index.html'))).toBe(
+      true,
+    );
+    expect(fs.existsSync(join(home, 'sites', 'diffs', 'index.html'))).toBe(
+      true,
+    );
   });
 
   it('should keep connector bootstrap secrets out of config, auth, and Caddy files', async () => {
     const { provisionLocalOs } = await loadInstallStateContract();
-    const home = fs.mkdtempSync(path.join(os.tmpdir(), 'consuelo-os-workspace-bootstrap-secrets-'));
+    const home = fs.mkdtempSync(
+      path.join(os.tmpdir(), 'consuelo-os-workspace-bootstrap-secrets-'),
+    );
 
     const result = provisionLocalOs({
       home,
       mode: 'local',
+      platform: 'darwin',
       workspaceBootstrap: {
         workspaceId: 'workspace_123',
         workspaceSlug: 'kokayi',
@@ -114,8 +191,14 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
     });
 
     const config = fs.readFileSync(result.configPath, 'utf8');
-    const auth = fs.readFileSync(join(home, 'security', 'generated', 'auth.json'), 'utf8');
-    const caddyfile = fs.readFileSync(join(home, 'security', 'generated', 'Caddyfile'), 'utf8');
+    const auth = fs.readFileSync(
+      join(home, 'node', 'security', 'generated', 'auth.json'),
+      'utf8',
+    );
+    const caddyfile = fs.readFileSync(
+      join(home, 'node', 'caddy', 'Caddyfile'),
+      'utf8',
+    );
 
     for (const content of [config, auth, caddyfile]) {
       expect(content).not.toContain('installer_bootstrap_token_fixture');
@@ -123,55 +206,147 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
     }
   });
 
-  it('should plan a cloudflared launchd service and gateway auth smoke command when connector bootstrap is present', async () => {
+  it('should keep macOS heartbeat and connector behind the OS supervisor when preserving rollback definitions', async () => {
     const { provisionLocalOs } = await loadInstallStateContract();
-    const home = fs.mkdtempSync(path.join(os.tmpdir(), 'consuelo-os-workspace-bootstrap-launchd-&-'));
+    const home = fs.mkdtempSync(
+      path.join(os.tmpdir(), 'consuelo-os-workspace-bootstrap-launchd-&-'),
+    );
+    const heartbeatPlistPath = join(
+      home,
+      'node',
+      'security',
+      'generated',
+      'com.consuelo.os.node-heartbeat.node-member.plist',
+    );
+    fs.mkdirSync(path.dirname(heartbeatPlistPath), { recursive: true });
+    fs.writeFileSync(heartbeatPlistPath, '<plist>legacy heartbeat</plist>\n');
 
     const result = provisionLocalOs({
       home,
       mode: 'local',
+      platform: 'darwin',
       workspaceBootstrap: {
         workspaceId: 'workspace_123',
         workspaceSlug: 'kokayi',
         workspaceHost: 'kokayi.consuelohq.com',
+        nodeId: 'node_member',
         connectorId: 'connector_123',
         connectorTransport: 'cloudflare-tunnel',
         cloudflareTunnelToken: 'cloudflared_tunnel_token_fixture',
+        nodePublicKeyJwk: '{"kty":"OKP","crv":"Ed25519","x":"public-fixture"}',
+        nodeSigningKeyJwk:
+          '{"kty":"OKP","crv":"Ed25519","x":"public-fixture","d":"private-fixture"}',
+        nodeCapabilities: ['tools', 'mcp'],
       },
     });
 
     const plistPath = join(
       home,
+      'node',
       'security',
       'generated',
       'com.consuelo.os.cloudflared.connector-123.plist',
     );
     const plist = fs.readFileSync(plistPath, 'utf8');
+    const supervisedSidecarsPath = join(
+      home,
+      'node',
+      'security',
+      'generated',
+      'macos-supervised-sidecars.json',
+    );
+    const supervisedSidecars = readJson<Record<string, unknown>>(
+      supervisedSidecarsPath,
+    );
+    const heartbeatConfigPath = join(
+      home,
+      'node',
+      'security',
+      'generated',
+      'workspace-node-heartbeat.json',
+    );
+    const heartbeatConfig =
+      readJson<Record<string, unknown>>(heartbeatConfigPath);
 
     expect(plist).toContain('consuelo-os-workspace-bootstrap-launchd-&amp;-');
     expect(plist).not.toContain('consuelo-os-workspace-bootstrap-launchd-&-');
+    expect(supervisedSidecars).toMatchObject({
+      schemaVersion: 1,
+      connector: {
+        id: 'connector_123',
+        programArguments: expect.arrayContaining([
+          'tunnel',
+          'run',
+          '--token-file',
+          '--url',
+          'http://127.0.0.1:46320',
+        ]),
+      },
+    });
+    expect(JSON.stringify(supervisedSidecars)).not.toContain(
+      'cloudflared_tunnel_token_fixture',
+    );
+    expect(heartbeatConfig).toMatchObject({
+      authorityOrigin: 'https://os.consuelohq.com',
+      osHome: home,
+      workspaceId: 'workspace_123',
+      nodeId: 'node_member',
+      connectorStatus: 'disconnected',
+      connectorHealthUrl: expect.stringMatching(
+        /^https:\/\/c-[0-9a-f]{32}\.consuelohq\.com\/health$/,
+      ),
+      capabilities: ['mcp', 'tools'],
+    });
+    expect(heartbeatConfig).toHaveProperty('publicKeyJwk');
+    expect(heartbeatConfig).toHaveProperty('signingKeyJwk');
+    expect(fs.statSync(heartbeatConfigPath).mode & 0o777).toBe(0o600);
+    expect(fs.readFileSync(heartbeatPlistPath, 'utf8')).toBe(
+      '<plist>legacy heartbeat</plist>\n',
+    );
+    expect(JSON.stringify(heartbeatConfig)).toContain(home);
+    expect(JSON.stringify(heartbeatConfig)).not.toContain('configPath');
     expect(result.actions).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           type: 'create_file',
-          path: expect.stringContaining('com.consuelo.os.cloudflared.connector-123.plist'),
-          message: expect.stringMatching(/cloudflared/i),
+          path: supervisedSidecarsPath,
+          message: expect.stringMatching(/supervised sidecar/i),
         }),
         expect.objectContaining({
           type: 'create_file',
           path: expect.stringContaining('smoke-gateway-auth'),
           message: expect.stringMatching(/gateway auth smoke/i),
         }),
+        expect.objectContaining({
+          type: 'create_file',
+          path: heartbeatConfigPath,
+          message: expect.stringMatching(/heartbeat config/i),
+        }),
+      ]),
+    );
+    expect(result.actions).not.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ path: heartbeatPlistPath }),
       ]),
     );
     expect(
-      fs.existsSync(join(home, 'security', 'generated', 'com.consuelo.os.cloudflared.plist')),
+      fs.existsSync(
+        join(
+          home,
+          'node',
+          'security',
+          'generated',
+          'com.consuelo.os.cloudflared.plist',
+        ),
+      ),
     ).toBe(false);
   });
 
   it('should keep repeated cloudflared daemon generation label-derived and idempotent', async () => {
     const { provisionLocalOs } = await loadInstallStateContract();
-    const home = fs.mkdtempSync(path.join(os.tmpdir(), 'consuelo-os-workspace-bootstrap-idempotent-'));
+    const home = fs.mkdtempSync(
+      path.join(os.tmpdir(), 'consuelo-os-workspace-bootstrap-idempotent-'),
+    );
     const workspaceBootstrap = {
       workspaceId: 'workspace_123',
       workspaceSlug: 'kokayi',
@@ -185,7 +360,7 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
     provisionLocalOs({ home, mode: 'local', workspaceBootstrap });
 
     const generatedFiles = fs
-      .readdirSync(join(home, 'security', 'generated'))
+      .readdirSync(join(home, 'node', 'security', 'generated'))
       .filter((fileName) => fileName.startsWith('com.consuelo.os.cloudflared'));
 
     expect(generatedFiles).toEqual([
@@ -199,8 +374,10 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
       'utf8',
     );
 
-    const provisionIndex = installSource.indexOf('const result = provisionLocalOs');
-    const platformProvisioningIndex = installSource.indexOf('const platformProvisioning =');
+    const provisionIndex = installSource.indexOf('provisionLocalOs({');
+    const platformProvisioningIndex = installSource.indexOf(
+      'const platformProvisioning =',
+    );
     const payloadIndex = installSource.indexOf('const payload = {');
     const successIndex = installSource.indexOf('spin?.succeed');
 
@@ -210,12 +387,20 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
     expect(successIndex).toBeGreaterThan(payloadIndex);
     expect(installSource).toContain('platformProvisioning,');
     expect(installSource).toContain('Consuelo platform provisioning');
-    expect(installSource).not.toMatch(/publishWorkspaceEdgeSnapshot|edgePublish|wrangler/);
-    expect(installSource).not.toMatch(/CLOUDFLARE_(?:ACCOUNT_ID|API_TOKEN|ZONE_ID|CUSTOM_RULESET_ID)/);
+    expect(installSource).not.toMatch(
+      /publishWorkspaceEdgeSnapshot|edgePublish|wrangler/,
+    );
+    expect(installSource).not.toMatch(
+      /CLOUDFLARE_(?:ACCOUNT_ID|API_TOKEN|ZONE_ID|CUSTOM_RULESET_ID)/,
+    );
   });
 
-
-  it('should show workspace progress and slug workspace names before device authorization', () => {
+  it('should show workspace progress and slug workspace names before device authorization', async () => {
+    const {
+      INSTALLER_PROGRESS_STEPS,
+      createInstallerProgressSteps,
+      renderInstallerProgress,
+    } = await loadInstallerUiContract();
     const installSource = fs.readFileSync(
       join(process.cwd(), 'scripts', 'install.ts'),
       'utf8',
@@ -224,21 +409,88 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
       join(process.cwd(), 'scripts', 'lib', 'cli-ui.ts'),
       'utf8',
     );
-
-    expect(installSource).toContain("{ label: 'dependencies', state: 'complete' }");
-    expect(installSource).toContain("{ label: 'workspace', state: 'active' }");
-    expect(installSource).toContain("message: 'enter workspace name'");
-    expect(installSource).not.toContain('spaces become hyphens');
-    expect(installSource).toContain('const workspaceName = normalizeWorkspaceName(rawWorkspaceName);');
-    expect(installSource).not.toContain('workspace slug:');
-    expect(installSource.indexOf('const workspaceName = normalizeWorkspaceName(rawWorkspaceName);')).toBeLessThan(
-      installSource.indexOf('const workspaceHost = workspaceHostFromSlug(workspaceSlug);'),
+    const enrollmentSource = fs.readFileSync(
+      join(process.cwd(), 'scripts', 'lib', 'managed-cloud-node-enrollment.ts'),
+      'utf8',
     );
-    expect(cliUiSource).toContain("state?: 'pending' | 'active' | 'complete'");
-    expect(cliUiSource).toContain("if (step.state === 'active' || step.state === 'complete') return chalk.white('●');");
+
+    expect(INSTALLER_PROGRESS_STEPS).toEqual([
+      'dependencies',
+      'workspace',
+      'security',
+      'skills',
+      'agents',
+      'service',
+      'health',
+    ]);
+    expect(INSTALLER_PROGRESS_STEPS).not.toContain('artifacts');
+    expect(createInstallerProgressSteps('security')).toEqual([
+      { label: 'dependencies', state: 'complete' },
+      { label: 'workspace', state: 'complete' },
+      { label: 'security', state: 'active' },
+      { label: 'skills', state: 'pending' },
+      { label: 'agents', state: 'pending' },
+      { label: 'service', state: 'pending' },
+      { label: 'health', state: 'pending' },
+    ]);
+    expect(createInstallerProgressSteps(null)).toEqual(
+      INSTALLER_PROGRESS_STEPS.map((label) => ({ label, state: 'complete' })),
+    );
+
+    const originalWrite = process.stdout.write;
+    let rendered = '';
+    process.stdout.write = ((chunk: string | Uint8Array) => {
+      rendered += chunk.toString();
+      return true;
+    }) as typeof process.stdout.write;
+    try {
+      renderInstallerProgress('workspace');
+    } finally {
+      process.stdout.write = originalWrite;
+    }
+    expect(rendered).toContain('CONSUELO OS');
+    expect(rendered).toContain('workspace');
+
+    expect(installSource).toContain("message: 'enter workspace name'");
+    expect(installSource).toContain('resolveWorkspaceIdentity');
+    expect(installSource).toContain(
+      'workspaceBootstrapFromApprovedDeviceGrant',
+    );
+    expect(enrollmentSource).toContain(
+      'nodeSigningKeyJwk: deviceKeyPair.signingKeyJwk',
+    );
+    expect(enrollmentSource).toContain(
+      'nodePublicKeyJwk: deviceKeyPair.publicKeyJwk',
+    );
+    expect(installSource).toContain('selection.deviceKeyPair');
+    expect(installSource).toContain('liveDeviceCode.deviceKeyPair');
+    const deviceLoginCallIndex = installSource.indexOf(
+      'const deviceLogin = await attemptWorkspaceDeviceLogin({',
+    );
+    const workspaceIdentityCallIndex = installSource.indexOf(
+      'const workspaceIdentity = await resolveWorkspaceIdentity({',
+    );
+    expect(deviceLoginCallIndex).toBeGreaterThan(-1);
+    expect(workspaceIdentityCallIndex).toBeGreaterThan(deviceLoginCallIndex);
+    expect(installSource).not.toContain('spaces become hyphens');
+    expect(installSource).toContain(
+      'const workspaceName = normalizeWorkspaceName(rawWorkspaceName);',
+    );
+    expect(installSource).not.toContain('workspace slug:');
+    expect(
+      installSource.indexOf(
+        'const workspaceName = normalizeWorkspaceName(rawWorkspaceName);',
+      ),
+    ).toBeLessThan(
+      installSource.indexOf(
+        'const workspaceHost = workspaceHostFromSlug(workspaceSlug);',
+      ),
+    );
+    expect(cliUiSource).toContain(
+      "state?: 'pending' | 'active' | 'complete' | 'failed'",
+    );
+    expect(cliUiSource).toContain('One workspace. Any agent.');
   });
-
-
 
   it('should avoid duplicate final step rows after local OS save', () => {
     const installSource = fs.readFileSync(
@@ -246,11 +498,17 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
       'utf8',
     );
 
-    const afterSave = installSource.slice(installSource.indexOf("spin?.succeed(options.dryRun ? 'install plan ready' : 'local OS saved');"));
+    const afterSave = installSource.slice(
+      installSource.indexOf(
+        "spin?.succeed(options.dryRun ? 'install plan ready' : 'local OS saved');",
+      ),
+    );
     expect(afterSave).not.toContain("stepComplete('skills')");
     expect(afterSave).not.toContain("stepComplete('artifacts')");
     expect(afterSave).not.toContain("stepComplete('agents')");
-    expect(afterSave).toContain("success(options.dryRun ? 'dry run complete' : 'configuration saved')");
+    expect(afterSave).toContain(
+      "success(options.dryRun ? 'dry run complete' : 'configuration saved')",
+    );
   });
 
   it('should not print background-service explanatory copy when daemon choice was preselected', () => {
@@ -259,22 +517,23 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
       'utf8',
     );
 
-    expect(installSource).not.toContain('background service is the final setup step; tokens and secrets stay local and are not printed.');
+    expect(installSource).not.toContain(
+      'background service is the final setup step; tokens and secrets stay local and are not printed.',
+    );
   });
 
-  it('should honor preselected daemon flags without reprompting during interactive setup', () => {
+  it('should default daemon setup on while honoring explicit skip/install flags without prompting', () => {
     const installSource = fs.readFileSync(
       join(process.cwd(), 'scripts', 'install.ts'),
       'utf8',
     );
 
+    expect(installSource).toContain('let installDaemons = !options.skipDaemons;');
     expect(installSource).toContain('if (options.installDaemons) {');
     expect(installSource).toContain('installDaemons = true;');
     expect(installSource).toContain('} else if (options.skipDaemons) {');
     expect(installSource).toContain('installDaemons = false;');
-    expect(installSource.indexOf('if (options.installDaemons) {')).toBeLessThan(
-      installSource.indexOf("message: 'install local background service?'"),
-    );
+    expect(installSource).not.toContain("message: 'install local background service?'");
   });
 
   it('should resolve OS home silently instead of prompting for it in interactive setup', () => {
@@ -286,7 +545,9 @@ contractDescribe('installed OS workspace bootstrap contract', () => {
     expect(installSource).not.toContain("message: 'OS home'");
     expect(installSource).not.toContain("'workspace', 'home', 'skills'");
     expect(installSource).not.toContain("stepComplete('home')");
-    expect(installSource).toContain('const home = resolveOsHome(options.home);');
+    expect(installSource).toContain(
+      'const home = resolveOsHome(options.home);',
+    );
     expect(installSource).toContain('home,');
   });
 });

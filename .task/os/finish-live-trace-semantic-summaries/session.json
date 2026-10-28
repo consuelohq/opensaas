@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_e387b3017018",
+  "tmuxSession": "opensaas-os-finish-live-trace-semantic-summaries-e387b301",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/finish-live-trace-semantic-summaries",
+  "branch": "task/os/finish-live-trace-semantic-summaries",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-finish-live-trace-semantic-summaries",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-finish-live-trace-semantic-summaries",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2459,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2459",
+  "createdAt": "2026-09-11T05:46:35.684Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-finish-live-trace-semantic-summaries/.task/os/finish-live-trace-semantic-summaries/session.json"
+}

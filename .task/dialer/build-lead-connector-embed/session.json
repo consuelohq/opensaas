@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_963b51d90206",
+  "tmuxSession": "opensaas-dialer-build-lead-connector-embed-963b51d9",
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/build-lead-connector-embed",
+  "branch": "task/dialer/build-lead-connector-embed",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-build-lead-connector-embed",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-build-lead-connector-embed",
+  "prNumber": 1611,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1611",
+  "createdAt": "2026-07-24T01:45:44.112Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-build-lead-connector-embed/.task/dialer/build-lead-connector-embed/session.json"
+}

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_bf55f4b77aeb",
+  "tmuxSession": "opensaas-os-resolve-exact-head-mainline-security-and-transpo-bf55f4b7",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/resolve-exact-head-mainline-security-and-transport-review",
+  "branch": "task/os/resolve-exact-head-mainline-security-and-transport-review",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-resolve-exact-head-mainline-security-and-transport-review",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-resolve-exact-head-mainline-security-and-transport-review",
+  "prNumber": 1722,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1722",
+  "createdAt": "2026-07-29T07:05:24.629Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-resolve-exact-head-mainline-security-and-transport-review/.task/os/resolve-exact-head-mainline-security-and-transport-review/session.json"
+}

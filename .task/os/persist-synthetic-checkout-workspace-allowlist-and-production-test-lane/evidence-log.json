@@ -1,0 +1,152 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/persist-synthetic-checkout-workspace-allowlist-and-production-test-lane",
+  "events": [
+    {
+      "id": "841b87ad-15cb-4b41-9882-2de3773af669",
+      "occurred_at": "2026-08-15T04:17:21.844Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/cloudflare/os-device-authority/src/services/synthetic-checkout.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/persist-synthetic-checkout-workspace-allowlist-and-production-test-lane",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/persist-synthetic-checkout-workspace-allowlist-and-production-test-lane"
+      }
+    },
+    {
+      "id": "8fdf57ba-551d-4a52-86e6-641ae787099c",
+      "occurred_at": "2026-08-15T04:17:35.048Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/managed-cloud-checkout-observability.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/persist-synthetic-checkout-workspace-allowlist-and-production-test-lane",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/persist-synthetic-checkout-workspace-allowlist-and-production-test-lane"
+      }
+    },
+    {
+      "id": "c9fda648-36d2-4847-9c2c-47413539e2f4",
+      "occurred_at": "2026-08-15T04:18:06.183Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/os-device-authority-release-contract.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/persist-synthetic-checkout-workspace-allowlist-and-production-test-lane",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/persist-synthetic-checkout-workspace-allowlist-and-production-test-lane"
+      }
+    },
+    {
+      "id": "07407e40-6001-4208-90a6-9d5ad3f022a5",
+      "occurred_at": "2026-08-15T04:18:16.389Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/cloudflare/os-device-authority/src/stores.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/persist-synthetic-checkout-workspace-allowlist-and-production-test-lane",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/persist-synthetic-checkout-workspace-allowlist-and-production-test-lane"
+      }
+    },
+    {
+      "id": "11a3f071-ee27-4ca8-9ef4-6dab649e0617",
+      "occurred_at": "2026-08-15T04:19:02.459Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/managed-cloud-checkout-observability.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/persist-synthetic-checkout-workspace-allowlist-and-production-test-lane",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/persist-synthetic-checkout-workspace-allowlist-and-production-test-lane"
+      }
+    },
+    {
+      "id": "849ac54b-0952-41d7-a424-e812dc7a2e7c",
+      "occurred_at": "2026-08-15T04:19:15.705Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/os-device-authority-release-contract.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/persist-synthetic-checkout-workspace-allowlist-and-production-test-lane",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/persist-synthetic-checkout-workspace-allowlist-and-production-test-lane"
+      }
+    },
+    {
+      "id": "cb95c02e-3e27-48c5-94cb-9a0e527ffa69",
+      "occurred_at": "2026-08-15T04:19:19.096Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/managed-cloud-checkout-observability.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/persist-synthetic-checkout-workspace-allowlist-and-production-test-lane",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/persist-synthetic-checkout-workspace-allowlist-and-production-test-lane"
+      }
+    },
+    {
+      "id": "7afba79b-e932-4d76-b9c5-60d0159a1383",
+      "occurred_at": "2026-08-15T04:19:39.361Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/device-authority-release-readiness.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/persist-synthetic-checkout-workspace-allowlist-and-production-test-lane",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/persist-synthetic-checkout-workspace-allowlist-and-production-test-lane"
+      }
+    },
+    {
+      "id": "27ff759e-c01e-49e5-aee3-3dd09030adbb",
+      "occurred_at": "2026-08-15T04:24:43.474Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/persist-synthetic-checkout-workspace-allowlist-and-production-test-lane/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/persist-synthetic-checkout-workspace-allowlist-and-production-test-lane",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/persist-synthetic-checkout-workspace-allowlist-and-production-test-lane"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-15T04:24:43.540Z"
+}

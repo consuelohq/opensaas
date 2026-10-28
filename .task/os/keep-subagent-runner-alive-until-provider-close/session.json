@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_32b18221dee4",
+  "tmuxSession": "opensaas-os-keep-subagent-runner-alive-until-provider-close-32b18221",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/keep-subagent-runner-alive-until-provider-close",
+  "branch": "task/os/keep-subagent-runner-alive-until-provider-close",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-keep-subagent-runner-alive-until-provider-close",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-keep-subagent-runner-alive-until-provider-close",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2318,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2318",
+  "createdAt": "2026-08-30T20:52:07.409Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-keep-subagent-runner-alive-until-provider-close/.task/os/keep-subagent-runner-alive-until-provider-close/session.json"
+}

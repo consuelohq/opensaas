@@ -1,0 +1,42 @@
+---
+title: Artifacts
+description: Create, validate, and publish durable generated outputs through the typed artifacts tool surface.
+status: preview
+verifiedAt: 2026-08-11
+evidence:
+  - source: packages/os/skills/artifacts/SKILL.md
+    tests:
+      - packages/os/tests/artifacts-skill.test.ts
+      - packages/os/tests/artifacts.test.ts
+    runtime: The current Artifacts skill and durable artifact model were inspected on 2026-08-11.
+  - source: packages/os/manifests/generated/tool.manifest.json
+    tests:
+      - packages/os/tests/tool-manifest.test.ts
+    runtime: The active `artifacts.*` facade definitions were verified in the generated manifest on 2026-08-11.
+---
+
+Artifacts is the typed creation and publishing surface for durable Consuelo outputs. It replaces the older Office naming in the current OS tool manifest.
+
+## What it covers
+
+The current `artifacts.*` tools cover website and demo generation, digital guides, email and image briefs, motion frames, design-system lookup, validation, publishing, refresh, and related build/runtime operations.
+
+A typical flow is:
+
+```text
+brief
+  → choose the closest artifact workflow
+  → create or edit source
+  → render the output
+  → validate the rendered result
+  → publish when appropriate
+  → verify the stable artifact route and version
+```
+
+## Skill and tools
+
+Use the [Artifacts skill](/build/skills/bundled/artifacts/) for the orchestration rules. The skill coordinates the typed `artifacts.*` tools rather than introducing a second execution system.
+
+## Boundary
+
+Artifacts owns durable generated outputs and their versions. [Sites](/sites/) owns delivery infrastructure such as local/edge page materialization. Browser tools provide rendered runtime verification.

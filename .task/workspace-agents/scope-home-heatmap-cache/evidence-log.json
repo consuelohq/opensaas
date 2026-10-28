@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "worktree_id": "task/workspace-agents/scope-home-heatmap-cache",
+  "events": [
+    {
+      "id": "484fd811-8e3a-45c8-bc79-a9c29e8fb131",
+      "occurred_at": "2026-09-05T01:15:29.566Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/trace-sites-gateway-live-endpoints.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/scope-home-heatmap-cache",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/scope-home-heatmap-cache"
+      }
+    },
+    {
+      "id": "18875428-238c-42d5-b4ab-9ab22e2e64a5",
+      "occurred_at": "2026-09-05T01:15:32.207Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/trace-sites-gateway-live-endpoints.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/scope-home-heatmap-cache",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/scope-home-heatmap-cache"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-09-05T01:15:32.292Z"
+}

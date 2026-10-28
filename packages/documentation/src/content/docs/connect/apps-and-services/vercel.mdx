@@ -1,0 +1,50 @@
+---
+title: Vercel
+description: Use Vercel through the canonical provider-neutral deployment tools.
+status: preview
+verifiedAt: 2026-07-23
+evidence:
+  - source: packages/os/manifests/generated/tool.manifest.json
+    tests:
+      - packages/os/tests/tool-manifest.test.ts
+      - packages/os/tools/deployment-provider/facade.test.ts
+      - packages/os/tools/deployment-provider/vercel.test.ts
+    runtime: 'The current manifest publishes the deployment.* family with provider: vercel.'
+---
+
+> **Native Consuelo tool: Available**  
+> **Use `deployment.*` with `provider: "vercel"`.**
+
+Consuelo uses the installed Vercel CLI as the user's authenticated authority. The adapter supports detection, project and team context, deployments, status, bounded logs, preview and production deployment, environment-variable names and mutation, domains, and a guarded raw escape hatch.
+
+## Ask your agent
+
+```text
+Use deployment.context with provider vercel to verify the linked project and team.
+Use deployment.logs with provider vercel for bounded build or deployment logs.
+Use deployment.deploy only after I approve preview or production consequences.
+Use deployment.environment to list names without returning stored values.
+```
+
+## Approval boundary
+
+Reads do not require write approval. Preview and production deploys, promotion or redeploy, environment mutation, and raw argv require explicit local approval. Tokens are never read from Vercel config files or returned in results.
+
+## Available tools
+
+```text
+deployment.detect
+deployment.context
+deployment.list
+deployment.status
+deployment.logs
+deployment.deploy
+deployment.environment
+deployment.raw
+```
+
+Every call includes `provider: "vercel"`.
+
+## Official documentation
+
+[Vercel CLI documentation](https://vercel.com/docs/cli)

@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/os-distribution/fix-cross-platform-release-fingerprint-parity",
+  "events": [
+    {
+      "id": "091c09fb-e8c1-4e72-b622-4f0b986f4d6a",
+      "occurred_at": "2026-07-24T07:13:57.686Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os-distribution/fix-cross-platform-release-fingerprint-parity/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-distribution/fix-cross-platform-release-fingerprint-parity",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-distribution/fix-cross-platform-release-fingerprint-parity"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-07-24T07:13:57.740Z"
+}

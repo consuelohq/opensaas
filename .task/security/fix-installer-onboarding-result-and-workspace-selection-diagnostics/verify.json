@@ -1,0 +1,57 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/security/fix-installer-onboarding-result-and-workspace-selection-diagnostics",
+  "base": "HEAD",
+  "headSha": "76a2a1cffb9e00e4ad9fc28bfac677bc26c78978",
+  "changeHash": "9fb8e3a3d962e84b23c31bbdc41e06fc8c129627a9d6608876c0b0d907a8606c",
+  "changedFiles": [
+    "packages/os/scripts/bootstrap.sh",
+    "packages/os/scripts/install.ts",
+    "packages/os/scripts/lib/workspace-device-login-client.ts",
+    "packages/os/scripts/onboarding-flow.test.ts",
+    "packages/os/tests/oauth-device-http-client.test.ts"
+  ],
+  "verifiedAt": "2026-07-04T16:20:50.876Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/security/fix-installer-onboarding-result-and-workspace-selection-diagnostics/current.json",
+        ".task/security/fix-installer-onboarding-result-and-workspace-selection-diagnostics/session.json",
+        ".task/security/fix-installer-onboarding-result-and-workspace-selection-diagnostics/workpad.md",
+        ".task/tasks/security/fix-installer-onboarding-result-and-workspace-selection-diagnostics.json",
+        "packages/os/scripts/bootstrap.sh",
+        "packages/os/scripts/install.ts",
+        "packages/os/scripts/lib/workspace-device-login-client.ts",
+        "packages/os/scripts/onboarding-flow.test.ts",
+        "packages/os/tests/oauth-device-http-client.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

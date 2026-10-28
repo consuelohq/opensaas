@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_259015d76fc8",
+  "tmuxSession": "opensaas-os-align-device-authority-observability-config-259015d7",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/align-device-authority-observability-config",
+  "branch": "task/os/align-device-authority-observability-config",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-align-device-authority-observability-config",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-align-device-authority-observability-config",
+  "prNumber": 1919,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1919",
+  "createdAt": "2026-08-13T21:15:23.875Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-align-device-authority-observability-config/.task/os/align-device-authority-observability-config/session.json"
+}

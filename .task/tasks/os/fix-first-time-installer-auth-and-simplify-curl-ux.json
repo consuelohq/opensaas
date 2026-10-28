@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-first-time-installer-auth-and-simplify-curl-ux",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2470,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2470",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-first-time-installer-auth-and-simplify-curl-ux",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_03cf76165cb7",
+  "tmuxSession": "opensaas-os-fix-first-time-installer-auth-and-simplify-curl--03cf7616",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-first-time-installer-auth-and-simplify-curl-ux/.task/session.json",
+  "createdAt": "2026-09-13T18:07:38.605Z"
+}

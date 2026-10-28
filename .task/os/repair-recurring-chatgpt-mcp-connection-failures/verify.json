@@ -1,0 +1,743 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/repair-recurring-chatgpt-mcp-connection-failures",
+  "base": "origin/main",
+  "headSha": "257315631e15510136ced9a5cf56a1778f8cb7d0",
+  "changeHash": "92a1bd4172fb03fd2103dcaec8dccee7088202ec0470f922cb539df9d4f8117b",
+  "changedFiles": [
+    "packages/os/cloudflare/os-device-authority/src/routes/workspace-nodes.ts",
+    "packages/os/scripts/lib/workspace-cloudflare-d1-route-registry.ts",
+    "packages/os/scripts/lib/workspace-node-heartbeat-client.ts",
+    "packages/os/scripts/workspace-node-heartbeat.ts",
+    "packages/os/tests/workspace-node-heartbeat-client.test.ts",
+    "packages/os/tests/workspace-node-heartbeat-script.test.ts",
+    "packages/os/tests/workspace-node-registry-routing.test.ts",
+    "packages/os/tests/workspace-route-heartbeat-write-budget.test.ts",
+    "packages/workspace/test-selection.registry.json",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "verifiedAt": "2026-09-07T18:34:03.082Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/repair-recurring-chatgpt-mcp-connection-failures/current.json",
+        ".task/os/repair-recurring-chatgpt-mcp-connection-failures/evidence-log.json",
+        ".task/os/repair-recurring-chatgpt-mcp-connection-failures/read-log.json",
+        ".task/os/repair-recurring-chatgpt-mcp-connection-failures/verify.json",
+        ".task/os/repair-recurring-chatgpt-mcp-connection-failures/workpad.md",
+        ".task/tasks/os/repair-recurring-chatgpt-mcp-connection-failures.json",
+        "packages/os/cloudflare/os-device-authority/src/routes/workspace-nodes.ts",
+        "packages/os/scripts/lib/workspace-cloudflare-d1-route-registry.ts",
+        "packages/os/scripts/lib/workspace-node-heartbeat-client.ts",
+        "packages/os/scripts/workspace-node-heartbeat.ts",
+        "packages/os/tests/workspace-node-heartbeat-client.test.ts",
+        "packages/os/tests/workspace-node-heartbeat-script.test.ts",
+        "packages/os/tests/workspace-node-registry-routing.test.ts",
+        "packages/os/tests/workspace-route-heartbeat-write-budget.test.ts",
+        "packages/workspace/test-selection.registry.json",
+        "packages/workspace/test-selection.rules.json",
+        "packages/workspace/tests/test-selection.test.js"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-test-selection",
+          "critical": true,
+          "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy.",
+          "matchedFiles": [
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-hosted-site-update-reconciliation",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Hosted Sites update reconciliation changes must prove canonical D1 route ownership, stale-default repair, lifecycle reconciliation, and node routing without selecting the historically red unrelated OS package suite.",
+          "matchedFiles": [
+            "packages/os/scripts/lib/workspace-cloudflare-d1-route-registry.ts",
+            "packages/os/tests/workspace-node-registry-routing.test.ts",
+            "packages/os/tests/workspace-route-heartbeat-write-budget.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-secrets-management",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Secrets UI, sealed-envelope storage, signed node routes, and Workspace Edge write routing must prove browser-to-node encryption and metadata-only behavior without selecting the historically red unrelated OS package suite.",
+          "matchedFiles": [
+            "packages/os/scripts/lib/workspace-cloudflare-d1-route-registry.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-managed-cloud-one-click-provisioning",
+          "critical": true,
+          "exclusive": true,
+          "reason": "One-click managed-cloud control-plane, launcher, provisioning-runner, enrollment, and Worker changes must prove their focused security and lifecycle contracts without selecting the historically red unrelated OS package suite.",
+          "matchedFiles": [
+            "packages/os/cloudflare/os-device-authority/src/routes/workspace-nodes.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-native-menu-node-discovery",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Native menu lifecycle/auth/heartbeat changes must prove read-only enrolled-node discovery, privileged operator mutations, refresh-token persistence, heartbeat snapshot safety, and lifecycle presentation without selecting the historically red unrelated OS package suite.",
+          "matchedFiles": [
+            "packages/os/scripts/lib/workspace-node-heartbeat-client.ts",
+            "packages/os/scripts/workspace-node-heartbeat.ts",
+            "packages/os/tests/workspace-node-heartbeat-client.test.ts",
+            "packages/os/tests/workspace-node-heartbeat-script.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "server-ci-task-contract",
+          "critical": true,
+          "reason": "Server CI changes must scope lint and typecheck to directly changed Twenty server runtime files while retaining dependency propagation.",
+          "matchedFiles": [
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true
+        },
+        {
+          "name": "OS hosted-site D1 reconciliation contract",
+          "command": [
+            "env",
+            "CONSUELO_RUN_WORKSPACE_GATEWAY_CONTRACTS=1",
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/cloudflare-d1-route-registry.test.ts"
+          ],
+          "ruleId": "os-hosted-site-update-reconciliation",
+          "critical": true
+        },
+        {
+          "name": "OS hosted-site lifecycle and node routing contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/lifecycle-engine.test.ts",
+            "tests/workspace-node-registry-routing.test.ts"
+          ],
+          "ruleId": "os-hosted-site-update-reconciliation",
+          "critical": true
+        },
+        {
+          "name": "OS heartbeat D1 write budget",
+          "command": [
+            "bun",
+            "test",
+            "packages/os/tests/workspace-route-heartbeat-write-budget.test.ts"
+          ],
+          "ruleId": "os-hosted-site-update-reconciliation",
+          "critical": true
+        },
+        {
+          "name": "OS Secrets sealed credential contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/secrets-surface.test.ts",
+            "tests/secrets-hono-routes.test.ts",
+            "tests/node-sealed-credential-store.test.ts",
+            "tests/settings-site.test.ts",
+            "tests/internal-launcher-regressions.test.ts"
+          ],
+          "ruleId": "os-secrets-management",
+          "critical": true
+        },
+        {
+          "name": "OS Secrets signed gateway bridge",
+          "command": [
+            "bun",
+            "test",
+            "--cwd",
+            "packages/os",
+            "tests/local-os-server-hono-architecture.test.ts",
+            "tests/workspace-gateway-node-end-to-end.test.ts"
+          ],
+          "ruleId": "os-secrets-management",
+          "critical": true
+        },
+        {
+          "name": "OS Secrets edge route contracts",
+          "command": [
+            "env",
+            "CONSUELO_RUN_WORKSPACE_GATEWAY_CONTRACTS=1",
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/workspace-edge-route-seed-contract.test.ts",
+            "tests/workspace-edge-sites-gateway-integration.test.ts"
+          ],
+          "ruleId": "os-secrets-management",
+          "critical": true
+        },
+        {
+          "name": "OS Secrets syntax",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "ruleId": "os-secrets-management",
+          "critical": true
+        },
+        {
+          "name": "OS one-click managed cloud contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/managed-cloud-one-click-provisioning.test.ts",
+            "tests/managed-cloud-one-click-runner.test.ts",
+            "tests/launcher-nodes-control-plane.test.ts",
+            "tests/settings-site.test.ts",
+            "tests/cloudflare-worker-release-readiness.test.ts",
+            "tests/os-device-authority-architecture.test.ts",
+            "tests/os-device-authority-release-contract.test.ts",
+            "tests/managed-cloud-node-enrollment.test.ts",
+            "tests/managed-cloud-node-enrollment-cli.test.ts",
+            "tests/platform-managed-cloud-node.test.ts",
+            "tests/managed-cloud-pricing.test.ts",
+            "tests/managed-cloud-public-pricing.test.ts",
+            "tests/managed-cloud-node-instance-contract.test.ts",
+            "tests/managed-cloud-node-contract.test.ts"
+          ],
+          "ruleId": "os-managed-cloud-one-click-provisioning",
+          "critical": true
+        },
+        {
+          "name": "OS device authority Worker contract",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/os-device-authority-worker.test.ts"
+          ],
+          "ruleId": "os-managed-cloud-one-click-provisioning",
+          "critical": true
+        },
+        {
+          "name": "OS native lifecycle node discovery contracts",
+          "cwd": "packages/os",
+          "command": [
+            "node",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/native-lifecycle-endpoint.test.ts",
+            "--config",
+            "vitest.config.ts"
+          ],
+          "ruleId": "os-native-menu-node-discovery",
+          "critical": true
+        },
+        {
+          "name": "OS node heartbeat script contracts",
+          "cwd": "packages/os",
+          "command": [
+            "node",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/workspace-node-heartbeat-script.test.ts",
+            "--config",
+            "vitest.config.ts"
+          ],
+          "ruleId": "os-native-menu-node-discovery",
+          "critical": true
+        },
+        {
+          "name": "OS operator login contracts",
+          "cwd": "packages/os",
+          "command": [
+            "node",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/operator-login.test.ts",
+            "--config",
+            "vitest.config.ts"
+          ],
+          "ruleId": "os-native-menu-node-discovery",
+          "critical": true
+        },
+        {
+          "name": "OS node heartbeat client contracts",
+          "cwd": "packages/os",
+          "command": [
+            "node",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/workspace-node-heartbeat-client.test.ts",
+            "--config",
+            "vitest.config.ts"
+          ],
+          "ruleId": "os-native-menu-node-discovery",
+          "critical": true
+        },
+        {
+          "name": "OS workspace node routing contracts",
+          "cwd": "packages/os",
+          "command": [
+            "node",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/workspace-node-registry-routing.test.ts",
+            "--config",
+            "vitest.config.ts"
+          ],
+          "ruleId": "os-native-menu-node-discovery",
+          "critical": true
+        },
+        {
+          "name": "changed server task selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "TypeORM CLI compatibility contract",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "cwd": ".",
+          "ruleId": "workspace-test-selection",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 4755,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-repair-recurring-chatgpt-mcp-connection-failures\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/test-selection.test.js \u001b[2m(\u001b[22m\u001b[2m73 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 4475\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m discovers and seeds the existing test inventory \u001b[33m 1506\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m provisions OS package dependencies before selected OS suites on a clean checkout \u001b[33m 455\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m73 passed\u001b[39m\u001b[22m\u001b[90m (73)\u001b[39m\n\u001b[2m   Start at \u001b[22m 14:33:45\n\u001b[2m   Duration \u001b[22m 4.56s\u001b[2m (transform 17ms, setup 0ms, import 25ms, tests 4.48s, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS hosted-site D1 reconciliation contract",
+          "command": [
+            "env",
+            "CONSUELO_RUN_WORKSPACE_GATEWAY_CONTRACTS=1",
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/cloudflare-d1-route-registry.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-hosted-site-update-reconciliation",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 275,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-repair-recurring-chatgpt-mcp-connection-failures/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/cloudflare-d1-route-registry.test.ts \u001b[2m(\u001b[22m\u001b[2m12 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 17\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m12 passed\u001b[39m\u001b[22m\u001b[90m (12)\u001b[39m\n\u001b[2m   Start at \u001b[22m 14:33:49\n\u001b[2m   Duration \u001b[22m 86ms\u001b[2m (transform 33ms, setup 16ms, import 14ms, tests 17ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS hosted-site lifecycle and node routing contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/lifecycle-engine.test.ts",
+            "tests/workspace-node-registry-routing.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-hosted-site-update-reconciliation",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 2356,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-repair-recurring-chatgpt-mcp-connection-failures/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/workspace-node-registry-routing.test.ts \u001b[2m(\u001b[22m\u001b[2m54 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 72\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/lifecycle-engine.test.ts \u001b[2m(\u001b[22m\u001b[2m66 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 1672\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m activates after production provisioning without leaving runtime/current as a directory \u001b[33m 306\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m120 passed\u001b[39m\u001b[22m\u001b[90m (120)\u001b[39m\n\u001b[2m   Start at \u001b[22m 14:33:50\n\u001b[2m   Duration \u001b[22m 2.19s\u001b[2m (transform 476ms, setup 23ms, import 711ms, tests 1.74s, environment 0ms)\u001b[22m\n\n$ vitest run tests/lifecycle-engine.test.ts tests/workspace-node-registry-routing.test.ts\n"
+        },
+        {
+          "name": "OS heartbeat D1 write budget",
+          "command": [
+            "bun",
+            "test",
+            "packages/os/tests/workspace-route-heartbeat-write-budget.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-hosted-site-update-reconciliation",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 132,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/os/tests/workspace-route-heartbeat-write-budget.test.ts:\n(pass) workspace heartbeat D1 write budget > should write one unindexed row per changed heartbeat with 1 registered nodes [4.32ms]\n(pass) workspace heartbeat D1 write budget > should write one unindexed row per changed heartbeat with 8 registered nodes [3.59ms]\n(pass) workspace heartbeat D1 write budget > should write one unindexed row per changed heartbeat with 32 registered nodes [10.18ms]\n(pass) workspace heartbeat D1 write budget > should persist connector changes and keep published site routes during reconciliation [1.91ms]\n\n 4 pass\n 0 fail\n 16 expect() calls\nRan 4 tests across 1 file. [125.00ms]\n"
+        },
+        {
+          "name": "OS Secrets sealed credential contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/secrets-surface.test.ts",
+            "tests/secrets-hono-routes.test.ts",
+            "tests/node-sealed-credential-store.test.ts",
+            "tests/settings-site.test.ts",
+            "tests/internal-launcher-regressions.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-secrets-management",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 758,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-repair-recurring-chatgpt-mcp-connection-failures/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/secrets-surface.test.ts \u001b[2m(\u001b[22m\u001b[2m7 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 9\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/node-sealed-credential-store.test.ts \u001b[2m(\u001b[22m\u001b[2m33 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 38\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/internal-launcher-regressions.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 14\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/settings-site.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 139\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/secrets-hono-routes.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 66\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m5 passed\u001b[39m\u001b[22m\u001b[90m (5)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m58 passed\u001b[39m\u001b[22m\u001b[90m (58)\u001b[39m\n\u001b[2m   Start at \u001b[22m 14:33:52\n\u001b[2m   Duration \u001b[22m 605ms\u001b[2m (transform 645ms, setup 55ms, import 1.06s, tests 266ms, environment 0ms)\u001b[22m\n\n$ vitest run tests/secrets-surface.test.ts tests/secrets-hono-routes.test.ts tests/node-sealed-credential-store.test.ts tests/settings-site.test.ts tests/internal-launcher-regressions.test.ts\n(node:48115) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+        },
+        {
+          "name": "OS Secrets signed gateway bridge",
+          "command": [
+            "bun",
+            "test",
+            "--cwd",
+            "packages/os",
+            "tests/local-os-server-hono-architecture.test.ts",
+            "tests/workspace-gateway-node-end-to-end.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-secrets-management",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1474,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\ntests/workspace-gateway-node-end-to-end.test.ts:\n(pass) authenticated workspace edge to local OS node > carries environments, sealed secret writes, and traces through the full signed bridge [25.02ms]\n\ntests/local-os-server-hono-architecture.test.ts:\n(pass) local OS Hono server architecture > should use a dedicated Bun entrypoint and remove the flat server module [0.14ms]\n(pass) local OS Hono server architecture > should point managed process entrypoints at the supervisor and keep worker smoke direct [0.18ms]\n(pass) local OS Hono server architecture > should keep method, path, and trust policy explicit [0.23ms]\n(pass) local OS Hono server architecture > should preserve health GET behavior [109.93ms]\n(pass) local OS Hono server architecture > should preserve health POST behavior [111.38ms]\n(pass) local OS Hono server architecture > should preserve worker readiness behavior [109.14ms]\n(pass) local OS Hono server architecture > should preserve trace read route behavior [111.06ms]\n(pass) local OS Hono server architecture > should preserve trace HEAD fallback behavior [110.37ms]\n(pass) local OS Hono server architecture > should preserve trace write fallback behavior [110.93ms]\n(pass) local OS Hono server architecture > should preserve unknown route with explicit auth path behavior [112.88ms]\n(pass) local OS Hono server architecture > should preserve call method fallback behavior [116.19ms]\n(pass) local OS Hono server architecture > should preserve steering method fallback behavior [109.74ms]\n(pass) local OS Hono server architecture > should preserve steering HEAD fallback behavior [110.49ms]\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"9b825ca1-429f-41ef-9e26-9bcb88a9d2de\",\"route\":\"/mcp\",\"method\":\"GET\"},\"ts\":\"2026-09-07T18:33:54.565Z\"}\n(pass) local OS Hono server architecture > should preserve the MCP OAuth discovery challenge before method rejection [110.94ms]\n(pass) local OS Hono server architecture > should return not found only after generated auth exists [110.86ms]\n\n 16 pass\n 0 fail\n 128 expect() calls\nRan 16 tests across 2 files. [1470.00ms]\n"
+        },
+        {
+          "name": "OS Secrets edge route contracts",
+          "command": [
+            "env",
+            "CONSUELO_RUN_WORKSPACE_GATEWAY_CONTRACTS=1",
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/workspace-edge-route-seed-contract.test.ts",
+            "tests/workspace-edge-sites-gateway-integration.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-secrets-management",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 329,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-repair-recurring-chatgpt-mcp-connection-failures/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/workspace-edge-route-seed-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m10 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 41\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/workspace-edge-sites-gateway-integration.test.ts \u001b[2m(\u001b[22m\u001b[2m16 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 64\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m26 passed\u001b[39m\u001b[22m\u001b[90m (26)\u001b[39m\n\u001b[2m   Start at \u001b[22m 14:33:54\n\u001b[2m   Duration \u001b[22m 143ms\u001b[2m (transform 105ms, setup 29ms, import 43ms, tests 105ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS Secrets syntax",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "cwd": ".",
+          "ruleId": "os-secrets-management",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1777,
+          "outputTail": "workspace script syntax checks passed\n"
+        },
+        {
+          "name": "OS one-click managed cloud contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/managed-cloud-one-click-provisioning.test.ts",
+            "tests/managed-cloud-one-click-runner.test.ts",
+            "tests/launcher-nodes-control-plane.test.ts",
+            "tests/settings-site.test.ts",
+            "tests/cloudflare-worker-release-readiness.test.ts",
+            "tests/os-device-authority-architecture.test.ts",
+            "tests/os-device-authority-release-contract.test.ts",
+            "tests/managed-cloud-node-enrollment.test.ts",
+            "tests/managed-cloud-node-enrollment-cli.test.ts",
+            "tests/platform-managed-cloud-node.test.ts",
+            "tests/managed-cloud-pricing.test.ts",
+            "tests/managed-cloud-public-pricing.test.ts",
+            "tests/managed-cloud-node-instance-contract.test.ts",
+            "tests/managed-cloud-node-contract.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-managed-cloud-one-click-provisioning",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1139,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-repair-recurring-chatgpt-mcp-connection-failures/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/managed-cloud-node-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 38\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/platform-managed-cloud-node.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 60\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-node-instance-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 16\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-public-pricing.test.ts \u001b[2m(\u001b[22m\u001b[2m6 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 22\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-pricing.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 5\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/cloudflare-worker-release-readiness.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-architecture.test.ts \u001b[2m(\u001b[22m\u001b[2m26 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 37\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-one-click-provisioning.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 37\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-node-enrollment-cli.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 525\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m parses explicit home, onboarding, and status paths \u001b[33m 521\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-node-enrollment.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 539\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m persists one owner-only node keypair and reuses it across enrollment retries \u001b[33m 524\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-one-click-runner.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 4\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/launcher-nodes-control-plane.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 34\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/settings-site.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 131\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-release-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m18 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 379\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m14 passed\u001b[39m\u001b[22m\u001b[90m (14)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m108 passed\u001b[39m\u001b[22m\u001b[90m (108)\u001b[39m\n\u001b[2m   Start at \u001b[22m 14:33:56\n\u001b[2m   Duration \u001b[22m 979ms\u001b[2m (transform 2.64s, setup 168ms, import 2.95s, tests 1.83s, environment 1ms)\u001b[22m\n\n$ vitest run tests/managed-cloud-one-click-provisioning.test.ts tests/managed-cloud-one-click-runner.test.ts tests/launcher-nodes-control-plane.test.ts tests/settings-site.test.ts tests/cloudflare-worker-release-readiness.test.ts tests/os-device-authority-architecture.test.ts tests/os-device-authority-release-contract.test.ts tests/managed-cloud-node-enrollment.test.ts tests/managed-cloud-node-enrollment-cli.test.ts tests/platform-managed-cloud-node.test.ts tests/managed-cloud-pricing.test.ts tests/managed-cloud-public-pricing.test.ts tests/managed-cloud-node-instance-contract.test.ts tests/managed-cloud-node-contract.test.ts\n"
+        },
+        {
+          "name": "OS device authority Worker contract",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/os-device-authority-worker.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-managed-cloud-one-click-provisioning",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 584,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-repair-recurring-chatgpt-mcp-connection-failures\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/os-device-authority-worker.test.ts \u001b[2m(\u001b[22m\u001b[2m33 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 63\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m33 passed\u001b[39m\u001b[22m\u001b[90m (33)\u001b[39m\n\u001b[2m   Start at \u001b[22m 14:33:58\n\u001b[2m   Duration \u001b[22m 383ms\u001b[2m (transform 222ms, setup 0ms, import 266ms, tests 63ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS native lifecycle node discovery contracts",
+          "command": [
+            "node",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/native-lifecycle-endpoint.test.ts",
+            "--config",
+            "vitest.config.ts"
+          ],
+          "cwd": "packages/os",
+          "ruleId": "os-native-menu-node-discovery",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 814,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-repair-recurring-chatgpt-mcp-connection-failures/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/native-lifecycle-endpoint.test.ts \u001b[2m(\u001b[22m\u001b[2m13 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 146\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m13 passed\u001b[39m\u001b[22m\u001b[90m (13)\u001b[39m\n\u001b[2m   Start at \u001b[22m 14:33:58\n\u001b[2m   Duration \u001b[22m 631ms\u001b[2m (transform 247ms, setup 13ms, import 420ms, tests 146ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS node heartbeat script contracts",
+          "command": [
+            "node",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/workspace-node-heartbeat-script.test.ts",
+            "--config",
+            "vitest.config.ts"
+          ],
+          "cwd": "packages/os",
+          "ruleId": "os-native-menu-node-discovery",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 518,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-repair-recurring-chatgpt-mcp-connection-failures/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/workspace-node-heartbeat-script.test.ts \u001b[2m(\u001b[22m\u001b[2m13 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 27\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m13 passed\u001b[39m\u001b[22m\u001b[90m (13)\u001b[39m\n\u001b[2m   Start at \u001b[22m 14:33:59\n\u001b[2m   Duration \u001b[22m 323ms\u001b[2m (transform 99ms, setup 12ms, import 231ms, tests 27ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS operator login contracts",
+          "command": [
+            "node",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/operator-login.test.ts",
+            "--config",
+            "vitest.config.ts"
+          ],
+          "cwd": "packages/os",
+          "ruleId": "os-native-menu-node-discovery",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 305,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-repair-recurring-chatgpt-mcp-connection-failures/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/operator-login.test.ts \u001b[2m(\u001b[22m\u001b[2m18 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 43\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m18 passed\u001b[39m\u001b[22m\u001b[90m (18)\u001b[39m\n\u001b[2m   Start at \u001b[22m 14:34:00\n\u001b[2m   Duration \u001b[22m 128ms\u001b[2m (transform 19ms, setup 12ms, import 20ms, tests 43ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS node heartbeat client contracts",
+          "command": [
+            "node",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/workspace-node-heartbeat-client.test.ts",
+            "--config",
+            "vitest.config.ts"
+          ],
+          "cwd": "packages/os",
+          "ruleId": "os-native-menu-node-discovery",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1327,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-repair-recurring-chatgpt-mcp-connection-failures/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/workspace-node-heartbeat-client.test.ts \u001b[2m(\u001b[22m\u001b[2m12 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 1022\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should cancel a non-terminating 503 body and preserve the HTTP failure \u001b[33m 1004\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m12 passed\u001b[39m\u001b[22m\u001b[90m (12)\u001b[39m\n\u001b[2m   Start at \u001b[22m 14:34:00\n\u001b[2m   Duration \u001b[22m 1.14s\u001b[2m (transform 45ms, setup 12ms, import 45ms, tests 1.02s, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS workspace node routing contracts",
+          "command": [
+            "node",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/workspace-node-registry-routing.test.ts",
+            "--config",
+            "vitest.config.ts"
+          ],
+          "cwd": "packages/os",
+          "ruleId": "os-native-menu-node-discovery",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 583,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-repair-recurring-chatgpt-mcp-connection-failures/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/workspace-node-registry-routing.test.ts \u001b[2m(\u001b[22m\u001b[2m54 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 63\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m54 passed\u001b[39m\u001b[22m\u001b[90m (54)\u001b[39m\n\u001b[2m   Start at \u001b[22m 14:34:01\n\u001b[2m   Duration \u001b[22m 382ms\u001b[2m (transform 219ms, setup 12ms, import 254ms, tests 63ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "changed server task selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ],
+          "cwd": ".",
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 63,
+          "outputTail": "No changed Twenty server runtime files require lint or typecheck.\nRunning server lint and baseline-aware typecheck for 1 directly changed file(s).\nTwenty server typecheck matched 1 known baseline diagnostic(s).\nRunning server lint and baseline-aware typecheck for 1 directly changed file(s).\nNo changed Twenty server schema files require GraphQL generation.\nNo changed Twenty server runtime files require migration generation.\nNo changesgeneratedTwenty server migration drift matched 2 known baseline operation(s).\ngeneratedgenerated✔ parseCliArguments resolves comparison SHAs (0.579209ms)\n✔ parseCliArguments selects GraphQL generation mode (0.054833ms)\n✔ parseCliArguments selects migration generation mode (0.053334ms)\n✔ filterServerTaskFiles excludes root and config-only triggers (0.079792ms)\n✔ filterGraphqlGenerationFiles keeps only server schema and generated files (0.062208ms)\n✔ buildEslintArguments selects the owning project config and stdin filename (0.048833ms)\n✔ ESLint diagnostic comparison tracks new error multiplicity without line numbers (0.159208ms)\n✔ runChangedFileLint accepts base-existing errors and rejects a new changed-file error (0.611292ms)\n✔ runChangedFileLint allows explicit lint baseline debt but rejects diagnostics beyond it (0.730792ms)\n✔ buildTypecheckArguments uses standard TypeScript without emitting (0.082167ms)\n✔ TypeScript diagnostic baseline comparison rejects only new diagnostic keys (0.191ms)\n✔ runChangedServerTask skips Nx for config-only changes (0.291917ms)\n✔ runChangedServerTask executes lint and baseline-aware typecheck for server runtime changes (0.080208ms)\n✔ runChangedServerTask rejects a new TypeScript diagnostic outside the baseline (0.080708ms)\n✔ server lint configuration resolves the existing workspace rules project (0.149667ms)\n✔ runGraphqlGenerationCheck skips generation without schema changes (0.074667ms)\n✔ runGraphqlGenerationCheck generates and verifies committed outputs (0.157542ms)\n✔ runMigrationGenerationCheck skips generation without server runtime changes (0.067875ms)\n✔ runMigrationGenerationCheck accepts a no-change TypeORM exit (0.086166ms)\n✔ runMigrationGenerationCheck accepts and removes exact known migration drift (0.157084ms)\n✔ runMigrationGenerationCheck rejects changed drift beyond the baseline (0.11325ms)\n✔ runMigrationGenerationCheck rejects and removes generated drift (0.108625ms)\nℹ tests 22\nℹ suites 0\nℹ pass 22\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 38.850041\n"
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "cwd": ".",
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 109,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/workspace/tests/github-workflow-policy.test.js:\n(pass) GitHub workflow policy > does not include retired automation workflows [0.10ms]\n(pass) GitHub workflow policy > does not reference retired CI credentials or the disabled Chromatic job [0.63ms]\n(pass) GitHub workflow policy > does not retain privileged allowlist entries for deleted workflows [0.04ms]\n(pass) GitHub workflow policy > runs typecheck and test from the filtered frontend file set [0.04ms]\n(pass) GitHub workflow policy > installs Bun and scopes shared tasks to changed frontend files [0.04ms]\n(pass) GitHub workflow policy > scopes native OS distribution tests to relevant changed files [0.03ms]\n(pass) GitHub workflow policy > runs Docker Compose CI with the pgvector PostgreSQL image required by migrations [0.02ms]\n(pass) GitHub workflow policy > uses available hosted runners for the Server and Front build pipelines [0.05ms]\n(pass) GitHub workflow policy > builds Consuelo backend workspace dependencies before server typecheck [0.03ms]\n(pass) GitHub workflow policy > installs Bun before the Server unit-test job runs Bun package tests [0.03ms]\n(pass) GitHub workflow policy > allows enough time for Danger dependency installation and execution [0.02ms]\n(pass) GitHub workflow policy > explicitly allowlists the API breaking-changes workflow write permissions [0.02ms]\n\n 12 pass\n 0 fail\n 53 expect() calls\nRan 12 tests across 1 file. [103.00ms]\n"
+        },
+        {
+          "name": "TypeORM CLI compatibility contract",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+          ],
+          "cwd": ".",
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 688,
+          "outputTail": "✔ Twenty server uses the Node 24-compatible TypeORM ts-node wrapper (0.281458ms)\n✔ the configured TypeORM wrapper resolves from the installed package (632.13875ms)\nℹ tests 2\nℹ suites 0\nℹ pass 2\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 664.337292\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

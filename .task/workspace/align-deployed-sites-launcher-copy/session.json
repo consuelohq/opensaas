@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_32f0677211f3",
+  "tmuxSession": "opensaas-workspace-align-deployed-sites-launcher-copy-32f06772",
+  "area": "workspace",
+  "stream": "stream/workspace",
+  "taskBranch": "task/workspace/align-deployed-sites-launcher-copy",
+  "branch": "task/workspace/align-deployed-sites-launcher-copy",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-align-deployed-sites-launcher-copy",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-align-deployed-sites-launcher-copy",
+  "prNumber": 1319,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1319",
+  "createdAt": "2026-07-01T06:02:03.347Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-align-deployed-sites-launcher-copy/.task/workspace/align-deployed-sites-launcher-copy/session.json"
+}

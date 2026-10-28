@@ -1,0 +1,53 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/security/restore-connector-route-exclusion-task",
+  "base": "origin/main",
+  "headSha": "13ccb30444ddb77ee6b0513019bd0497f97e9b21",
+  "changeHash": "2afb9e1ab309f6d438643352a2c9cabd86e519a5aa320801162b90ea996ba140",
+  "changedFiles": [
+    "packages/os/scripts/lib/workspace-cloudflare-provisioning.ts",
+    "packages/os/tests/cloudflare-provisioning-contract.test.ts",
+    "packages/os/tests/os-device-authority-connector-provisioning.test.ts"
+  ],
+  "verifiedAt": "2026-07-13T19:43:22.892Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/security/restore-connector-route-exclusion-task/current.json",
+        ".task/security/restore-connector-route-exclusion-task/session.json",
+        ".task/security/restore-connector-route-exclusion-task/workpad.md",
+        ".task/tasks/security/restore-connector-route-exclusion-task.json",
+        "packages/os/scripts/lib/workspace-cloudflare-provisioning.ts",
+        "packages/os/tests/cloudflare-provisioning-contract.test.ts",
+        "packages/os/tests/os-device-authority-connector-provisioning.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

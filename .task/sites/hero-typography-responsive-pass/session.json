@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_a6d5d9c4ceed",
+  "tmuxSession": "opensaas-sites-hero-typography-responsive-pass-a6d5d9c4",
+  "area": "sites",
+  "stream": "stream/sites",
+  "taskBranch": "task/sites/hero-typography-responsive-pass",
+  "branch": "task/sites/hero-typography-responsive-pass",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-hero-typography-responsive-pass",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-hero-typography-responsive-pass",
+  "prNumber": 1262,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1262",
+  "createdAt": "2026-06-28T05:30:04.961Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-hero-typography-responsive-pass/.task/sites/hero-typography-responsive-pass/session.json"
+}

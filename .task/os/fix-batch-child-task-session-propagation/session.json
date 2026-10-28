@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_e6e09f96c481",
+  "tmuxSession": "opensaas-os-fix-batch-child-task-session-propagation-e6e09f96",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-batch-child-task-session-propagation",
+  "branch": "task/os/fix-batch-child-task-session-propagation",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-batch-child-task-session-propagation",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-batch-child-task-session-propagation",
+  "prNumber": 1787,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1787",
+  "createdAt": "2026-08-05T18:37:07.933Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-batch-child-task-session-propagation/.task/os/fix-batch-child-task-session-propagation/session.json"
+}

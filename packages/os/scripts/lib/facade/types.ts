@@ -9,7 +9,23 @@ export type ErrorCode =
   | 'NOT_FOUND'
   | 'TASK_SESSION_NOT_FOUND'
   | 'TASK_SESSION_REQUIRED'
-  | 'DRY_RUN';
+  | 'WORK_SESSION_NOT_FOUND'
+  | 'DRY_RUN'
+  | 'CLI_MISSING'
+  | 'UNSUPPORTED_VERSION'
+  | 'UNAUTHENTICATED'
+  | 'NO_CONTEXT'
+  | 'PERMISSION_DENIED'
+  | 'RATE_LIMITED'
+  | 'UNAVAILABLE'
+  | 'MALFORMED_OUTPUT'
+  | 'INVALID_INPUT'
+  | 'UNSUPPORTED_CAPABILITY'
+  | 'CAPABILITY_NOT_SUPPORTED'
+  | 'WAIT_TIMEOUT'
+  | 'IDEMPOTENCY_CONFLICT'
+  | 'APPROVAL_REQUIRED'
+  | 'CANCELLED';
 
 export type ToolCapabilities = {
   readOnly: boolean;
@@ -28,6 +44,7 @@ export type ToolResult<TData = unknown> = {
   exitCode: number;
   durationMs: number;
   traceId: string;
+  parentTraceId?: string;
   requestId?: string;
   inputTokens?: number;
   outputTokens?: number;
@@ -48,9 +65,11 @@ export type CommandArgument = {
 
 export type BranchMode = 'none' | 'optional' | 'required';
 export type BranchArgumentStyle = 'flag' | 'prefix';
+export type CommandExecutionScope = 'runtime' | 'workspace';
 
 export type ToolCommand = {
   script: string;
+  executionScope?: CommandExecutionScope;
   subcommand?: string;
   branchMode?: BranchMode;
   branchArgumentStyle?: BranchArgumentStyle;
@@ -58,6 +77,18 @@ export type ToolCommand = {
   dryRunFlag?: string;
   internal?: string;
   arguments: CommandArgument[];
+};
+
+export type RuntimeProviderMetadata = {
+  provider: 'swamp';
+  kind: 'model-method' | 'workflow';
+  cliPath: string;
+  repoDir: string;
+  externalId?: string;
+  externalName: string;
+  operation?: string;
+  inputSchema: Record<string, unknown>;
+  discoveredAt: string;
 };
 
 export type ToolManifestEntry = {
@@ -73,6 +104,7 @@ export type ToolManifestEntry = {
   command: ToolCommand;
   exampleInput: Record<string, unknown>;
   sessionRequired?: boolean;
+  runtimeProvider?: RuntimeProviderMetadata;
 };
 
 export type ToolInput = Record<string, unknown>;
@@ -123,6 +155,13 @@ export type ExecuteToolOptions = {
   now?: () => number;
   randomUUID?: () => string;
   logMode?: LogMode;
+  timeoutMs?: number;
+};
+
+export type BatchExecutionContext = {
+  taskSession?: string;
+  branch?: string;
+  taskWorktree?: string;
 };
 
 export type BatchStep = {

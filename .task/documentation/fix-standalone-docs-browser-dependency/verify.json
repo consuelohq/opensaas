@@ -1,0 +1,55 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/documentation/fix-standalone-docs-browser-dependency",
+  "base": "origin/stream/documentation",
+  "headSha": "588514e6627b79158fda82002b4c2e370d54995e",
+  "changeHash": "0aca9332a35db4471b381fa0a6cd46cfd167b57bee35abfd1fcc0c5c23e1a8e5",
+  "changedFiles": [
+    "packages/documentation/bun.lock",
+    "packages/documentation/package.json",
+    "packages/documentation/tests/foundation.test.ts"
+  ],
+  "verifiedAt": "2026-07-13T06:06:02.441Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/documentation/fix-standalone-docs-browser-dependency/current.json",
+        ".task/documentation/fix-standalone-docs-browser-dependency/evidence-log.json",
+        ".task/documentation/fix-standalone-docs-browser-dependency/read-log.json",
+        ".task/documentation/fix-standalone-docs-browser-dependency/session.json",
+        ".task/documentation/fix-standalone-docs-browser-dependency/workpad.md",
+        ".task/tasks/documentation/fix-standalone-docs-browser-dependency.json",
+        "packages/documentation/bun.lock",
+        "packages/documentation/package.json",
+        "packages/documentation/tests/foundation.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

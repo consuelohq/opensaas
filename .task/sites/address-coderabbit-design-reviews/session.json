@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_4ce8d8fe1efd",
+  "tmuxSession": "opensaas-sites-address-coderabbit-design-reviews-4ce8d8fe",
+  "area": "sites",
+  "stream": "stream/sites",
+  "taskBranch": "task/sites/address-coderabbit-design-reviews",
+  "branch": "task/sites/address-coderabbit-design-reviews",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-address-coderabbit-design-reviews",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-address-coderabbit-design-reviews",
+  "prNumber": 1249,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1249",
+  "createdAt": "2026-06-28T02:38:46.341Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-address-coderabbit-design-reviews/.task/sites/address-coderabbit-design-reviews/session.json"
+}

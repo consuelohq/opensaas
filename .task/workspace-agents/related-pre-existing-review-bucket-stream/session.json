@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_b926ebcaef67",
+  "tmuxSession": "opensaas-workspace-agents-related-pre-existing-review-bucket-stream-b926ebca",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/related-pre-existing-review-bucket-stream",
+  "branch": "task/workspace-agents/related-pre-existing-review-bucket-stream",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-related-pre-existing-review-bucket-stream",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-related-pre-existing-review-bucket-stream",
+  "prNumber": 1235,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1235",
+  "createdAt": "2026-06-27T23:30:14.945Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-related-pre-existing-review-bucket-stream/.task/workspace-agents/related-pre-existing-review-bucket-stream/session.json"
+}

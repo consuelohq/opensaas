@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/fix-code-rabbit-reviews-pr-1277",
+  "baseBranch": "stream/security",
+  "sourceBranch": "stream/security",
+  "startFrom": "stream",
+  "prNumber": 1278,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1278",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1278",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1278/fix-code-rabbit-reviews-pr-1277",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1278",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1278/fix-code-rabbit-reviews-pr-1277",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-code-rabbit-reviews-pr-1277",
+  "taskSession": "tsk_48c3b3ee1271",
+  "tmuxSession": "opensaas-security-fix-code-rabbit-reviews-pr-1277-48c3b3ee",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-code-rabbit-reviews-pr-1277/.task/security/fix-code-rabbit-reviews-pr-1277/session.json",
+  "createdAt": "2026-06-29T23:39:06.893Z"
+}

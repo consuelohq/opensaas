@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/hosted-installer-dry-run",
+  "baseBranch": "stream/security",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1394,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1394",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1394",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1394/hosted-installer-dry-run",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1394",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1394/hosted-installer-dry-run",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-hosted-installer-dry-run",
+  "taskSession": "tsk_7339b685bdcc",
+  "tmuxSession": "opensaas-security-hosted-installer-dry-run-7339b685",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-hosted-installer-dry-run/.task/security/hosted-installer-dry-run/session.json",
+  "createdAt": "2026-07-11T00:38:08.786Z"
+}

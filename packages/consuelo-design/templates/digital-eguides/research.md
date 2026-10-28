@@ -15,13 +15,13 @@ Run the commands from the repository root. The root package forwards to `package
 3. Render through the canonical Consuelo reader shell with one shared command:
 
 ```bash
-bun run wiki:render -- --template <spec|research> --input <content.json> --out <index.html>
+bun run artifact:render -- --template <spec|research> --input <content.json> --out <index.html>
 ```
 
 4. Validate the output before publishing:
 
 ```bash
-bun run wiki:validate -- --input <index.html>
+bun run artifact:validate -- --input <index.html>
 ```
 
 The Markdown template owns the section logic. The TypeScript renderer owns the repeatable UI/UX: top pill nav, section rail, resume reading, ScrollSmoother, back-to-top, favicon/theme-color, neutral dark mode, mobile responsiveness, cards, footer, and /design-wiki link.

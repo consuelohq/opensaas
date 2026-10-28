@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/remove-approximate-token-marker-regression",
+  "events": [
+    {
+      "id": "554a5730-1e19-46dd-84e6-bb0460ad79ba",
+      "occurred_at": "2026-09-23T02:35:55.777Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/trace-site-inspector-interactions.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/remove-approximate-token-marker-regression",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/remove-approximate-token-marker-regression"
+      }
+    },
+    {
+      "id": "cb256936-cbc4-4148-979d-4c5795b2d4ee",
+      "occurred_at": "2026-09-23T02:37:37.278Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/trace-site-inspector/model.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/remove-approximate-token-marker-regression",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/remove-approximate-token-marker-regression"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-09-23T02:37:37.452Z"
+}

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_5e8fe613de1d",
+  "tmuxSession": "opensaas-os-validate-existing-hosted-dry-run-source-5e8fe613",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/validate-existing-hosted-dry-run-source",
+  "branch": "task/os/validate-existing-hosted-dry-run-source",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-validate-existing-hosted-dry-run-source",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-validate-existing-hosted-dry-run-source",
+  "prNumber": 1740,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1740",
+  "createdAt": "2026-07-29T16:07:03.195Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-validate-existing-hosted-dry-run-source/.task/os/validate-existing-hosted-dry-run-source/session.json"
+}

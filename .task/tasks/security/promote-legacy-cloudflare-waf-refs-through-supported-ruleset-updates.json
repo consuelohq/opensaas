@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/promote-legacy-cloudflare-waf-refs-through-supported-ruleset-updates",
+  "baseBranch": "stream/security",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1459,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1459",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1459",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1459/promote-legacy-cloudflare-waf-refs-through-supported-ruleset-updates",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1459",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1459/promote-legacy-cloudflare-waf-refs-through-supported-ruleset-updates",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-promote-legacy-cloudflare-waf-refs-through-supported-ruleset-updates",
+  "taskSession": "tsk_2616141a5e42",
+  "tmuxSession": "opensaas-security-promote-legacy-cloudflare-waf-refs-through-suppo-2616141a",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-promote-legacy-cloudflare-waf-refs-through-supported-ruleset-updates/.task/security/promote-legacy-cloudflare-waf-refs-through-supported-ruleset-updates/session.json",
+  "createdAt": "2026-07-13T18:22:46.951Z"
+}

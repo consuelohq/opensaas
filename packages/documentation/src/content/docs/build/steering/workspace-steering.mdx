@@ -1,0 +1,51 @@
+---
+title: Workspace steering
+description: Customize the durable instruction files shared by agents in one OS home.
+status: preview
+verifiedAt: 2026-09-09
+evidence:
+  - source: packages/os/scripts/lib/steering-snapshot-cache.ts
+    tests:
+      - packages/os/tests/os-get-steering-trace.test.ts
+    runtime: The visible steering directory, deterministic load order, and hot cache invalidation were verified by focused tests on 2026-09-09.
+  - source: packages/os/scripts/lib/managed-user-content.ts
+    tests:
+      - packages/os/tests/managed-user-content.test.ts
+      - packages/os/tests/install-state.test.ts
+    runtime: Provisioning tests verify that `system.md` is seeded once and preserved while the excluded example can be refreshed.
+---
+
+Workspace steering lives in the visible Consuelo workspace:
+
+```text
+~/Consuelo/Steering/
+  system.md
+  example-system.md
+  <additional-files>.md
+```
+
+A fresh installation seeds `system.md` only when it is missing and writes a small `example-system.md`. Later provisions preserve `system.md`; the example is managed reference content and is not loaded into steering.
+
+## What belongs where
+
+Use `system.md` for the primary durable identity, rules, safety boundaries, and working conventions shared by agents in this Consuelo workspace.
+
+Use additional Markdown files for focused workspace policy that should be loaded for every agent. Their filenames determine alphabetical load order after `system.md`.
+
+Keep `example-system.md` as reference only. `decision.md` and legacy `steering.md` are also excluded from active steering.
+
+## Edit carefully
+
+Keep steering:
+
+- short enough to load at the start of every conversation;
+- specific enough to change behavior;
+- independent of one temporary task;
+- free of credentials and private customer data;
+- consistent with actual tools and approval policy.
+
+The local cache notices file changes on the next steering read; no Consuelo restart is required. If the current agent conversation already loaded its steering, start a new conversation or call `refresh_steering` once with a concrete reason. Do not repeatedly refresh to test formatting.
+
+## Verify
+
+Call `get_steering` from a fresh caller context and confirm `system.md` appears first and the expected additional file headings follow in filename order. If a file is missing, verify that it ends in `.md`, is a regular file, and is not one of the excluded filenames.

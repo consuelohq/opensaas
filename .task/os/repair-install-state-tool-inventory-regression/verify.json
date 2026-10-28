@@ -1,0 +1,229 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/repair-install-state-tool-inventory-regression",
+  "base": "origin/stream/os",
+  "headSha": "d67466025b53b6daf73cb245692f6908ff050b9a",
+  "changeHash": "4b3fc0f37f2126135bcb8586ee3384b90f1e7148d99c00c70d55af5e6a7f6f97",
+  "changedFiles": [
+    "packages/os/tests/install-state.test.ts",
+    "packages/workspace/test-selection.registry.json",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "verifiedAt": "2026-08-13T22:05:34.918Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/repair-install-state-tool-inventory-regression/current.json",
+        ".task/os/repair-install-state-tool-inventory-regression/evidence-log.json",
+        ".task/os/repair-install-state-tool-inventory-regression/read-log.json",
+        ".task/os/repair-install-state-tool-inventory-regression/session.json",
+        ".task/os/repair-install-state-tool-inventory-regression/workpad.md",
+        ".task/tasks/os/repair-install-state-tool-inventory-regression.json",
+        "packages/os/tests/install-state.test.ts",
+        "packages/workspace/test-selection.registry.json",
+        "packages/workspace/test-selection.rules.json",
+        "packages/workspace/tests/test-selection.test.js"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-test-selection",
+          "critical": true,
+          "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy.",
+          "matchedFiles": [
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-install-state-tool-inventory",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Install-state tool inventory regressions must run the focused manifest/install contract without selecting unrelated package-wide OS tests.",
+          "matchedFiles": [
+            "packages/os/tests/install-state.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "server-ci-task-contract",
+          "critical": true,
+          "reason": "Server CI changes must scope lint and typecheck to directly changed Twenty server runtime files while retaining dependency propagation.",
+          "matchedFiles": [
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true
+        },
+        {
+          "name": "OS install-state tool inventory contract",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/install-state.test.ts"
+          ],
+          "ruleId": "os-install-state-tool-inventory",
+          "critical": true
+        },
+        {
+          "name": "changed server task selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "TypeORM CLI compatibility contract",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1900,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-install-state-tool-inventory-regression\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/test-selection.test.js \u001b[2m(\u001b[22m\u001b[2m26 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 1620\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m discovers and seeds the existing test inventory \u001b[33m 836\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m26 passed\u001b[39m\u001b[22m\u001b[90m (26)\u001b[39m\n\u001b[2m   Start at \u001b[22m 18:05:20\n\u001b[2m   Duration \u001b[22m 1.70s\u001b[2m (transform 12ms, setup 0ms, import 18ms, tests 1.62s, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS install-state tool inventory contract",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/install-state.test.ts"
+          ],
+          "ruleId": "os-install-state-tool-inventory",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 11601,
+          "outputTail": "m\u001b[2m✓\u001b[22m\u001b[39m replaces an expired ChatGPT MCP credential during reprovisioning \u001b[33m 682\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m reports existing generated security assets as existing on reprovision \u001b[33m 674\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should reuse the active workspace and node when reprovisioning without a new bootstrap \u001b[33m 681\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should reject a noninteractive update when the active workspace conflicts with installed state \u001b[33m 469\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m creates the approved local home shape and preserves existing config \u001b[33m 1219\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m writes approved node identity into flattened node config \u001b[33m 356\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m writes an OpenCode MCP config that exposes Consuelo tools \u001b[33m 357\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m preserves credentials for previously configured agents during partial reconfiguration \u001b[33m 704\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m replaces expired local-agent credentials during reprovisioning \u001b[33m 763\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m materializes the canonical Artifacts site from persisted route-addressed artifacts \u001b[33m 592\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m preserves local user skills while refreshing the installed registry \u001b[33m 354\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m drops unknown legacy skill selections without mapping them to another skill \u001b[33m 317\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m installs every full-manifest tool even when only one skill is selected \u001b[33m 321\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m preserves local user tools while refreshing the installed registry \u001b[33m 391\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m materializes only selected bundled skills on fresh install \u001b[33m 324\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m uses default selected bundled skills when no selectedSkills option is provided \u001b[33m 355\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m configures Codex natively without writing a legacy sidecar or claiming verification \u001b[33m 351\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m reports intent and task hook runtime modules in doctor checks \u001b[33m 355\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m25 passed\u001b[39m\u001b[22m\u001b[90m (25)\u001b[39m\n\u001b[2m   Start at \u001b[22m 18:05:22\n\u001b[2m   Duration \u001b[22m 11.45s\u001b[2m (transform 24ms, setup 0ms, import 31ms, tests 11.35s, environment 0ms)\u001b[22m\n\n$ vitest run tests/install-state.test.ts\n786 |   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);\n787 | }\n788 | \n789 | export function readManagedComponentState(home: string): ManagedComponentState {\n790 |   const root = componentsRoot(home);\n791 |   const provenanceEnvelope = readJson(join(root, PROVENANCE_FILE));\n                                   ^\nSyntaxError: JSON Parse error: Expected '}'\n      at readManagedComponentState (/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-install-state-tool-inventory-regression/packages/os/scripts/lib/managed-components.ts:791:30)\n      at readExistingState (/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-install-state-tool-inventory-regression/packages/os/scripts/lib/managed-component-install.ts:316:17)\n      at provisionManagedComponentIndexes (/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-install-state-tool-inventory-regression/packages/os/scripts/lib/managed-component-install.ts:480:20)\n      at provisionLocalOs (/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-install-state-tool-inventory-regression/packages/os/scripts/lib/install-state.ts:1961:19)\n      at /private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-install-state-tool-inventory-regression/packages/os/[eval]:3:43\n\nBun v1.3.14 (macOS arm64)\n"
+        },
+        {
+          "name": "changed server task selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 63,
+          "outputTail": "No changed Twenty server runtime files require lint or typecheck.\nRunning server lint and typecheck for 1 directly changed file(s).\nNo changed Twenty server schema files require GraphQL generation.\nNo changed Twenty server runtime files require migration generation.\nNo changesgenerated✔ parseCliArguments resolves comparison SHAs (0.590667ms)\n✔ parseCliArguments selects GraphQL generation mode (0.057584ms)\n✔ parseCliArguments selects migration generation mode (0.037416ms)\n✔ filterServerTaskFiles excludes root and config-only triggers (0.077209ms)\n✔ filterGraphqlGenerationFiles keeps only server schema and generated files (0.069666ms)\n✔ buildNxArguments scopes lint and typecheck through changed files (0.060459ms)\n✔ runChangedServerTask skips Nx for config-only changes (0.263709ms)\n✔ runChangedServerTask executes Nx for server runtime changes (0.142209ms)\n✔ runGraphqlGenerationCheck skips generation without schema changes (0.083ms)\n✔ runGraphqlGenerationCheck generates and verifies committed outputs (0.210375ms)\n✔ runMigrationGenerationCheck skips generation without server runtime changes (0.076875ms)\n✔ runMigrationGenerationCheck accepts a no-change TypeORM exit (0.111916ms)\n✔ runMigrationGenerationCheck rejects and removes generated drift (0.219917ms)\nℹ tests 13\nℹ suites 0\nℹ pass 13\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 37.551292\n"
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 136,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/workspace/tests/github-workflow-policy.test.js:\n(pass) GitHub workflow policy > does not include retired automation workflows [0.09ms]\n(pass) GitHub workflow policy > does not reference retired CI credentials or the disabled Chromatic job [0.74ms]\n(pass) GitHub workflow policy > does not retain privileged allowlist entries for deleted workflows [0.05ms]\n(pass) GitHub workflow policy > runs typecheck and test from the filtered frontend file set [0.04ms]\n(pass) GitHub workflow policy > installs Bun and scopes shared tasks to changed frontend files [0.04ms]\n(pass) GitHub workflow policy > scopes native OS distribution tests to relevant changed files [0.04ms]\n(pass) GitHub workflow policy > runs Docker Compose CI with the pgvector PostgreSQL image required by migrations [0.03ms]\n(pass) GitHub workflow policy > uses available hosted runners for the Server and Front build pipelines [0.05ms]\n(pass) GitHub workflow policy > builds Consuelo backend workspace dependencies before server typecheck [0.03ms]\n(pass) GitHub workflow policy > installs Bun before the Server unit-test job runs Bun package tests [0.03ms]\n(pass) GitHub workflow policy > allows enough time for Danger dependency installation and execution [0.02ms]\n(pass) GitHub workflow policy > explicitly allowlists the API breaking-changes workflow write permissions [0.03ms]\n\n 12 pass\n 0 fail\n 53 expect() calls\nRan 12 tests across 1 file. [130.00ms]\n"
+        },
+        {
+          "name": "TypeORM CLI compatibility contract",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 688,
+          "outputTail": "✔ Twenty server uses the Node 24-compatible TypeORM ts-node wrapper (0.292042ms)\n✔ the configured TypeORM wrapper resolves from the installed package (629.444666ms)\nℹ tests 2\nℹ suites 0\nℹ pass 2\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 663.354875\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

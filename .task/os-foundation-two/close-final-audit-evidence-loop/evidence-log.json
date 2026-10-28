@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "worktree_id": "task/os-foundation-two/close-final-audit-evidence-loop",
+  "events": [
+    {
+      "id": "9c04b914-1c5b-4518-b6b6-e81be4e3a4c1",
+      "occurred_at": "2026-07-27T18:59:40.313Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/plans/consuelo-os-foundation/workers/23-final-integration-audit.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-foundation-two/close-final-audit-evidence-loop",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-foundation-two/close-final-audit-evidence-loop"
+      }
+    },
+    {
+      "id": "f9a72da2-4b95-427c-80b6-0d549b14f6c4",
+      "occurred_at": "2026-07-27T19:00:21.561Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/plans/consuelo-os-foundation/reviews/final/finding-ledger.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-foundation-two/close-final-audit-evidence-loop",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-foundation-two/close-final-audit-evidence-loop"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-07-27T19:00:21.617Z"
+}

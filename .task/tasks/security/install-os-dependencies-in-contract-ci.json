@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/install-os-dependencies-in-contract-ci",
+  "baseBranch": "stream/security",
+  "sourceBranch": "stream/security",
+  "startFrom": "stream",
+  "prNumber": 1410,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1410",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1410",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1410/install-os-dependencies-in-contract-ci",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1410",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1410/install-os-dependencies-in-contract-ci",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-install-os-dependencies-in-contract-ci",
+  "taskSession": "tsk_19746446c576",
+  "tmuxSession": "opensaas-security-install-os-dependencies-in-contract-ci-19746446",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-install-os-dependencies-in-contract-ci/.task/security/install-os-dependencies-in-contract-ci/session.json",
+  "createdAt": "2026-07-11T04:42:41.810Z"
+}

@@ -1,0 +1,162 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/make-stale-lifecycle-bootstrap-platform-neutral",
+  "base": "origin/main",
+  "headSha": "cd895d843c58fb65243d10adef48202922fcd8be",
+  "changeHash": "b11dd8bb6c297e44eb785033bc49fbbdf89c93e17999c03d4e5ebea3bbbf62d4",
+  "changedFiles": [
+    "packages/os/cloudflare/os-device-authority/src/services/mcp-proxy.ts",
+    "packages/os/tests/workspace-node-registry-routing.test.ts"
+  ],
+  "verifiedAt": "2026-09-08T14:33:07.927Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/make-stale-lifecycle-bootstrap-platform-neutral/evidence-log.json",
+        ".task/os/make-stale-lifecycle-bootstrap-platform-neutral/read-log.json",
+        ".task/os/make-stale-lifecycle-bootstrap-platform-neutral/workpad.md",
+        ".task/tasks/os/make-stale-lifecycle-bootstrap-platform-neutral.json",
+        "packages/os/cloudflare/os-device-authority/src/services/mcp-proxy.ts",
+        "packages/os/tests/workspace-node-registry-routing.test.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "os-hosted-site-update-reconciliation",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Hosted Sites update reconciliation changes must prove canonical D1 route ownership, stale-default repair, lifecycle reconciliation, and node routing without selecting the historically red unrelated OS package suite.",
+          "matchedFiles": [
+            "packages/os/cloudflare/os-device-authority/src/services/mcp-proxy.ts",
+            "packages/os/tests/workspace-node-registry-routing.test.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "OS hosted-site D1 reconciliation contract",
+          "command": [
+            "env",
+            "CONSUELO_RUN_WORKSPACE_GATEWAY_CONTRACTS=1",
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/cloudflare-d1-route-registry.test.ts"
+          ],
+          "ruleId": "os-hosted-site-update-reconciliation",
+          "critical": true
+        },
+        {
+          "name": "OS hosted-site lifecycle and node routing contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/lifecycle-engine.test.ts",
+            "tests/workspace-node-registry-routing.test.ts"
+          ],
+          "ruleId": "os-hosted-site-update-reconciliation",
+          "critical": true
+        },
+        {
+          "name": "OS heartbeat D1 write budget",
+          "command": [
+            "bun",
+            "test",
+            "packages/os/tests/workspace-route-heartbeat-write-budget.test.ts"
+          ],
+          "ruleId": "os-hosted-site-update-reconciliation",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "OS hosted-site D1 reconciliation contract",
+          "command": [
+            "env",
+            "CONSUELO_RUN_WORKSPACE_GATEWAY_CONTRACTS=1",
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/cloudflare-d1-route-registry.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-hosted-site-update-reconciliation",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1114,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-make-stale-lifecycle-bootstrap-platform-neutral/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/cloudflare-d1-route-registry.test.ts \u001b[2m(\u001b[22m\u001b[2m12 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 22\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m12 passed\u001b[39m\u001b[22m\u001b[90m (12)\u001b[39m\n\u001b[2m   Start at \u001b[22m 10:33:04\n\u001b[2m   Duration \u001b[22m 124ms\u001b[2m (transform 51ms, setup 29ms, import 18ms, tests 22ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS hosted-site lifecycle and node routing contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/lifecycle-engine.test.ts",
+            "tests/workspace-node-registry-routing.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-hosted-site-update-reconciliation",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 3138,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-make-stale-lifecycle-bootstrap-platform-neutral/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/workspace-node-registry-routing.test.ts \u001b[2m(\u001b[22m\u001b[2m65 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 222\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/lifecycle-engine.test.ts \u001b[2m(\u001b[22m\u001b[2m66 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 1946\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m activates after production provisioning without leaving runtime/current as a directory \u001b[33m 337\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m131 passed\u001b[39m\u001b[22m\u001b[90m (131)\u001b[39m\n\u001b[2m   Start at \u001b[22m 10:33:04\n\u001b[2m   Duration \u001b[22m 2.76s\u001b[2m (transform 617ms, setup 28ms, import 1.11s, tests 2.17s, environment 0ms)\u001b[22m\n\n$ vitest run tests/lifecycle-engine.test.ts tests/workspace-node-registry-routing.test.ts\n"
+        },
+        {
+          "name": "OS heartbeat D1 write budget",
+          "command": [
+            "bun",
+            "test",
+            "packages/os/tests/workspace-route-heartbeat-write-budget.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-hosted-site-update-reconciliation",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 159,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/os/tests/workspace-route-heartbeat-write-budget.test.ts:\n(pass) workspace heartbeat D1 write budget > should write one unindexed row per changed heartbeat with 1 registered nodes [4.36ms]\n(pass) workspace heartbeat D1 write budget > should write one unindexed row per changed heartbeat with 8 registered nodes [3.83ms]\n(pass) workspace heartbeat D1 write budget > should write one unindexed row per changed heartbeat with 32 registered nodes [12.79ms]\n(pass) workspace heartbeat D1 write budget > should persist connector changes and keep published site routes during reconciliation [1.55ms]\n\n 4 pass\n 0 fail\n 16 expect() calls\nRan 4 tests across 1 file. [152.00ms]\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -1,0 +1,80 @@
+---
+title: Subagents
+description: Delegate one bounded job to another supported model or harness and keep the parent agent in control of the workflow.
+status: preview
+verifiedAt: 2026-08-12
+evidence:
+  - source: packages/os/tools/subagent/schema.ts
+    tests:
+      - packages/os/tests/subagent-orchestration-contract.test.ts
+      - packages/os/tests/subagent-lifecycle-regressions.test.ts
+      - packages/os/tests/subagent-runner-termination.test.ts
+    runtime: Current run/start attachment actions, provider capability checks, durable execution, request idempotency, and task boundaries were verified from the merged subagent contracts on 2026-08-12.
+  - source: packages/os/scripts/lib/facade/schemas.ts
+    tests:
+      - packages/os/tests/tool-manifest.test.ts
+      - packages/os/tests/trace-persistence.test.ts
+    runtime: The current typed SubagentInput schema and trace correlation fields were inspected on 2026-08-12.
+---
+
+A **subagent** is another supported model or harness that receives one bounded handoff from the parent agent. Use it for delegated research, review, implementation, or another specialist pass when separating the job makes the overall workflow easier to reason about.
+
+The useful model is: **write the handoff, start the run, attach to it when needed, then let the parent agent decide what happens next.**
+
+## Start with an instruction file
+
+`subagent` does not take the full delegated job as an inline prompt. For `run` and `start`, the caller supplies an `instructionPath` to a handoff file.
+
+Write that handoff to the OS temporary handoff area first. A useful handoff states:
+
+- the bounded task;
+- the context the subagent needs;
+- what it may read or edit;
+- what it must not do;
+- the result shape you want back.
+
+The current tool accepts `codex`, `pi`, `opencode`, and `grok` as provider values. Provider capabilities are checked explicitly. If a requested provider or execution mode cannot satisfy the call, Consuelo returns `CAPABILITY_NOT_SUPPORTED` rather than silently weakening the request.
+
+## Choose whether to wait
+
+The two actions that create work are:
+
+| Action | Use it when | Result |
+| --- | --- | --- |
+| `run` | You want one call to start the subagent and wait for its terminal result. | Returns the completed or timed-out run result. |
+| `start` | You want detached execution and plan to come back later. | Returns a `runId` for the durable run. |
+
+Both require `provider` and `instructionPath`.
+
+Detached `start` is only available when the selected provider supports detached execution. The capability check is part of the result rather than an assumption the caller needs to guess.
+
+## Attach to an existing run
+
+After `start`, use the returned `runId` with one of these actions:
+
+- `status` — read the latest durable state;
+- `wait` — wait up to the requested `waitMs` for more progress or completion;
+- `logs` — read the bounded run log;
+- `cancel` — request cancellation of that run.
+
+These attachment actions do not spawn another subagent. `runId` is required, and `waitMs` is only valid with `wait`.
+
+## Read versus edit
+
+`policy: "read"` keeps the delegated job non-mutating. Use it for investigation, critique, drafting, or a second opinion.
+
+`policy: "edit"` allows the subagent to make repository changes. Edit-mode work must still obey the normal task lifecycle. The current runtime can either use an existing `taskSession` or let the delegated agent bootstrap a task with `task.start` when the handoff permits it.
+
+That boundary matters at publish time: `task.push` publishes the task branch, while `task.pr` performs the stream merge workflow. A handoff that says to stop after push must not be silently escalated into a PR merge.
+
+## Make retries intentional
+
+Use `requestId` when retrying a create action whose first response may have been lost. The subagent surface treats that identifier as the idempotency key for the request instead of blindly starting duplicate work.
+
+`timeoutMs` controls how long a synchronous `run` can wait. Long-running detached work should normally use `start` and later `wait` or `status` calls instead of holding one request open indefinitely.
+
+## What comes back
+
+The normal result is a compact trace-style summary rather than a transcript dump. It can include the trace ID, run ID, provider, status, files read, files edited, tools called, token usage, and provider capability information.
+
+Use [Traces](/observe/traces/) when you need correlation beyond the compact result. Use the [Tool List](/tools/tool-list/#subagent) for the current generated manifest entry and [Reference: Tools](/reference/tools/) for the common facade result envelope.

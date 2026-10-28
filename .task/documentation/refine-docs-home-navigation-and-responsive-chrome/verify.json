@@ -1,0 +1,70 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/documentation/refine-docs-home-navigation-and-responsive-chrome",
+  "base": "origin/main",
+  "headSha": "88af9b520b4b2818c8d870e09785988bec271ced",
+  "changeHash": "1f749983138fc37bbb254a0e20fefe0f3ca5a218a7c9bbadd331a0eb1f462078",
+  "changedFiles": [
+    "packages/documentation/scripts/test-foundation-browser.mjs",
+    "packages/documentation/src/components/BrowseMenu.astro",
+    "packages/documentation/src/components/DocsMenuTrigger.astro",
+    "packages/documentation/src/components/Header.astro",
+    "packages/documentation/src/components/MobileMenuToggle.astro",
+    "packages/documentation/src/components/PageTitle.astro",
+    "packages/documentation/src/components/SiteTitle.astro",
+    "packages/documentation/src/content/docs/index.mdx",
+    "packages/documentation/src/styles/docs.css",
+    "packages/documentation/tests/foundation.test.ts"
+  ],
+  "verifiedAt": "2026-08-14T08:57:52.505Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/documentation/refine-docs-home-navigation-and-responsive-chrome/current.json",
+        ".task/documentation/refine-docs-home-navigation-and-responsive-chrome/evidence-log.json",
+        ".task/documentation/refine-docs-home-navigation-and-responsive-chrome/read-log.json",
+        ".task/documentation/refine-docs-home-navigation-and-responsive-chrome/session.json",
+        ".task/documentation/refine-docs-home-navigation-and-responsive-chrome/verify.json",
+        ".task/documentation/refine-docs-home-navigation-and-responsive-chrome/workpad.md",
+        ".task/tasks/documentation/refine-docs-home-navigation-and-responsive-chrome.json",
+        "packages/documentation/scripts/test-foundation-browser.mjs",
+        "packages/documentation/src/components/BrowseMenu.astro",
+        "packages/documentation/src/components/DocsMenuTrigger.astro",
+        "packages/documentation/src/components/Header.astro",
+        "packages/documentation/src/components/MobileMenuToggle.astro",
+        "packages/documentation/src/components/PageTitle.astro",
+        "packages/documentation/src/components/SiteTitle.astro",
+        "packages/documentation/src/content/docs/index.mdx",
+        "packages/documentation/src/styles/docs.css",
+        "packages/documentation/tests/foundation.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

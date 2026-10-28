@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/clear-stale-managed-cloud-node-identity",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2407,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2407",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-clear-stale-managed-cloud-node-identity",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_cfe43db2cf40",
+  "tmuxSession": "opensaas-os-clear-stale-managed-cloud-node-identity-cfe43db2",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-clear-stale-managed-cloud-node-identity/.task/session.json",
+  "createdAt": "2026-09-08T03:28:28.429Z"
+}

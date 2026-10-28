@@ -2,6 +2,7 @@
   "name": "openworkspace",
   "private": true,
   "scripts": {
+    "session:start": "bun ./scripts/session-start.ts",
     "task:start": "bun ./scripts/task-start.js",
     "task:pr": "bun ./scripts/task-pr.js",
     "task:prs": "bun ./scripts/task-prs.js",
@@ -15,6 +16,7 @@
     "stream:sync": "bun ./scripts/stream-sync.js",
     "stream:context": "bun ./scripts/stream-context.js",
     "stream:list": "bun ./scripts/stream-list.js",
+    "stream:cleanup": "bun ./scripts/stream-cleanup.js",
     "railway:logs": "bun ./scripts/railway-logs.js",
     "wait": "bun ./scripts/wait.js",
     "browser": "bun ./scripts/browser.js",
@@ -37,28 +39,27 @@
     "workspace": "bun ./scripts/workspace.ts",
     "tool-runner": "bun ./scripts/tool-runner.ts",
     "tool-batch": "bun ./scripts/tool-batch.ts",
-    "tools:search": "bun ./scripts/tools-search.ts",
     "generate-tool-manifest": "bun ./scripts/generate-tool-manifest.ts",
     "generate-docs": "bun ./scripts/generate-docs.ts",
     "generate-types": "bun ./scripts/generate-types.ts",
     "test": "vitest run",
     "dialer:scenario": "bun ./scripts/run-dialer-scenario.ts",
-    "consuelo-design": "bun ./scripts/office.ts",
     "code-run": "bun ./scripts/code-run.ts",
     "code-call": "bun ./scripts/code-call.ts",
     "github": "bun ./scripts/github.js",
     "diff_cockpit": "bun ./scripts/diff_cockpit.ts",
     "consuelo-reload": "bun ./scripts/consuelo-reload.js",
     "git:diff": "bun ./scripts/git-diff.js",
-    "worker": "bun ./scripts/worker.ts",
+    "subagent": "bun ./scripts/subagent.ts",
     "os:release": "bun ./scripts/os-release.ts",
     "os:release-install": "bun ./scripts/os-release-install.ts",
     "os:release-device-auth": "bun ./scripts/os-release-device-auth.ts",
-    "office": "bun ./scripts/office.ts",
-    "task-intent": "bun ./scripts/task-intent.js"
+    "media:svg": "python3 ./scripts/media-svg.py",
+    "explore-bench": "DYLD_LIBRARY_PATH=/opt/homebrew/opt/sqlite/lib:$DYLD_LIBRARY_PATH bun ./scripts/explore-bench.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "latest",
+    "@tanstack/virtual-core": "^3.17.3",
     "effect": "^3.21.3",
     "execa": "^9.6.1",
     "node-llama-cpp": "^3.18.1",
@@ -66,9 +67,15 @@
     "tree-sitter": "^0.22.4",
     "tree-sitter-javascript": "^0.23.1",
     "tree-sitter-typescript": "^0.23.2",
+    "yaml": "^2.9.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {
     "vitest": "^4.1.5"
+  },
+  "license": "Apache-2.0",
+  "packageManager": "bun@1.3.14",
+  "overrides": {
+    "tar": "7.5.22"
   }
 }

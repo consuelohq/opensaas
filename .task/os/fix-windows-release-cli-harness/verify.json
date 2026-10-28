@@ -1,0 +1,98 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/fix-windows-release-cli-harness",
+  "base": "HEAD",
+  "headSha": "38f49be0cab26ffe5796cbf1686a8833e2520067",
+  "changeHash": "2187faae11a755d05e9187f2ffb4b656382b129ffb41c6301d3f300d852b24be",
+  "changedFiles": [
+    "packages/os/tests/distribution/release-channels-cli.test.ts"
+  ],
+  "verifiedAt": "2026-08-29T00:42:04.870Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/fix-windows-release-cli-harness/workpad.md",
+        ".task/tasks/os/fix-windows-release-cli-harness.json",
+        "packages/os/tests/distribution/release-channels-cli.test.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "os-test-source-safety",
+          "critical": true,
+          "exclusive": true,
+          "reason": "OS tests that exercise destructive-command guardrails, legacy daemon retirement, or release CLI safety must prove pure/static/dry-run behavior without selecting the entire OS package suite.",
+          "matchedFiles": [
+            "packages/os/tests/distribution/release-channels-cli.test.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "OS test source safety contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/test-source-safety.test.ts",
+            "tests/code-call.test.ts",
+            "tests/legacy-system-daemons.test.ts",
+            "tests/lifecycle-restart-contract.test.ts",
+            "tests/distribution/release-channels-cli.test.ts"
+          ],
+          "ruleId": "os-test-source-safety",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "OS test source safety contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/test-source-safety.test.ts",
+            "tests/code-call.test.ts",
+            "tests/legacy-system-daemons.test.ts",
+            "tests/lifecycle-restart-contract.test.ts",
+            "tests/distribution/release-channels-cli.test.ts"
+          ],
+          "ruleId": "os-test-source-safety",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 4794,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-windows-release-cli-harness/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/test-source-safety.test.ts \u001b[2m(\u001b[22m\u001b[2m1 test\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 91\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/distribution/release-channels-cli.test.ts \u001b[2m(\u001b[22m\u001b[2m7 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 106\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/legacy-system-daemons.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 269\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/lifecycle-restart-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m23 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 27\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/code-call.test.ts \u001b[2m(\u001b[22m\u001b[2m27 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 3939\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m allows edit mode when the facade has already routed cwd to a managed task worktree \u001b[33m 501\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m can invoke OS fs read through Bun from code.call \u001b[33m 703\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m runs through the OS facade tool-runner \u001b[33m 388\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m5 passed\u001b[39m\u001b[22m\u001b[90m (5)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m63 passed\u001b[39m\u001b[22m\u001b[90m (63)\u001b[39m\n\u001b[2m   Start at \u001b[22m 20:42:00\n\u001b[2m   Duration \u001b[22m 4.49s\u001b[2m (transform 795ms, setup 130ms, import 1.42s, tests 4.43s, environment 0ms)\u001b[22m\n\n$ vitest run tests/test-source-safety.test.ts tests/code-call.test.ts tests/legacy-system-daemons.test.ts tests/lifecycle-restart-contract.test.ts tests/distribution/release-channels-cli.test.ts\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

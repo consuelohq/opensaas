@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_6816f76f859d",
+  "tmuxSession": "opensaas-os-fix-pr-2310-unsupported-fs-patch-guidance-6816f76f",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-pr-2310-unsupported-fs-patch-guidance",
+  "branch": "task/os/fix-pr-2310-unsupported-fs-patch-guidance",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-pr-2310-unsupported-fs-patch-guidance",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-pr-2310-unsupported-fs-patch-guidance",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2340,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2340",
+  "createdAt": "2026-08-31T21:44:10.700Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-pr-2310-unsupported-fs-patch-guidance/.task/os/fix-pr-2310-unsupported-fs-patch-guidance/session.json"
+}

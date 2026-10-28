@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/verify-private-launcher-during-site-publication",
+  "baseBranch": "stream/security",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1699,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1699",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1699",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1699/verify-private-launcher-during-site-publication",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1699",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1699/verify-private-launcher-during-site-publication",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-verify-private-launcher-during-site-publication",
+  "taskSession": "tsk_0509e205e569",
+  "tmuxSession": "opensaas-security-verify-private-launcher-during-site-publication-0509e205",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-verify-private-launcher-during-site-publication/.task/security/verify-private-launcher-during-site-publication/session.json",
+  "createdAt": "2026-07-28T03:31:28.215Z"
+}

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_5bdef5acdcd5",
+  "tmuxSession": "opensaas-dialer-redesign-embedded-dialer-operator-surfaces-5bdef5ac",
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/redesign-embedded-dialer-operator-surfaces",
+  "branch": "task/dialer/redesign-embedded-dialer-operator-surfaces",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-redesign-embedded-dialer-operator-surfaces",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-redesign-embedded-dialer-operator-surfaces",
+  "prNumber": 1763,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1763",
+  "createdAt": "2026-08-03T22:56:53.546Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-redesign-embedded-dialer-operator-surfaces/.task/dialer/redesign-embedded-dialer-operator-surfaces/session.json"
+}

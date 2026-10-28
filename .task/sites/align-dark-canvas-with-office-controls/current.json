@@ -1,0 +1,19 @@
+{
+  "area": "sites",
+  "stream": "stream/sites",
+  "taskBranch": "task/sites/align-dark-canvas-with-office-controls",
+  "baseBranch": "stream/sites",
+  "sourceBranch": "stream/sites",
+  "startFrom": "stream",
+  "prNumber": 1268,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1268",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1268",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1268/align-dark-canvas-with-office-controls",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1268",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1268/align-dark-canvas-with-office-controls",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-align-dark-canvas-with-office-controls",
+  "taskSession": "tsk_72b531274920",
+  "tmuxSession": "opensaas-sites-align-dark-canvas-with-office-controls-72b53127",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-align-dark-canvas-with-office-controls/.task/sites/align-dark-canvas-with-office-controls/session.json",
+  "createdAt": "2026-06-28T15:06:39.899Z"
+}

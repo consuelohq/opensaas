@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_4233b6fa9c91",
+  "tmuxSession": "opensaas-tooling-replace-browser-auth-profiles-with-persistent-he-4233b6fa",
+  "area": "tooling",
+  "stream": "stream/tooling",
+  "taskBranch": "task/tooling/replace-browser-auth-profiles-with-persistent-headed-handoff",
+  "branch": "task/tooling/replace-browser-auth-profiles-with-persistent-headed-handoff",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-tooling-replace-browser-auth-profiles-with-persistent-headed-handoff",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-tooling-replace-browser-auth-profiles-with-persistent-headed-handoff",
+  "prNumber": 1388,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1388",
+  "createdAt": "2026-07-10T23:14:36.809Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-tooling-replace-browser-auth-profiles-with-persistent-headed-handoff/.task/tooling/replace-browser-auth-profiles-with-persistent-headed-handoff/session.json"
+}

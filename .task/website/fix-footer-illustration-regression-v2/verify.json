@@ -1,0 +1,61 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/website/fix-footer-illustration-regression-v2",
+  "base": "origin/task/website/fix-footer-illustration-regression-v2",
+  "headSha": "976f050841bbb09e3072201a2d5ec62720b41ecc",
+  "changeHash": "d87243070391a042236810f93f1eaa187f4e4bab185e41c86ab96c7a77c9d9b7",
+  "changedFiles": [
+    "packages/consuelo-website/public/images/home/holding-world-auto-fill-exclusion-mask.svg",
+    "packages/consuelo-website/public/images/home/holding-world-body-fill-mask.svg",
+    "packages/consuelo-website/scripts/generate-footer-art.ts",
+    "packages/consuelo-website/src/components/home/HomeCloudCta.astro",
+    "packages/consuelo-website/tests/footer-art.test.mjs",
+    "packages/consuelo-website/tests/homepage-mobile-layout.test.mjs",
+    "packages/consuelo-website/tests/homepage-responsive.test.mjs"
+  ],
+  "verifiedAt": "2026-08-10T04:01:55.738Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/website/fix-footer-illustration-regression-v2.json",
+        ".task/website/fix-footer-illustration-regression-v2/current.json",
+        ".task/website/fix-footer-illustration-regression-v2/session.json",
+        ".task/website/fix-footer-illustration-regression-v2/workpad.md",
+        "packages/consuelo-website/public/images/home/holding-world-auto-fill-exclusion-mask.svg",
+        "packages/consuelo-website/public/images/home/holding-world-body-fill-mask.svg",
+        "packages/consuelo-website/scripts/generate-footer-art.ts",
+        "packages/consuelo-website/src/components/home/HomeCloudCta.astro",
+        "packages/consuelo-website/tests/footer-art.test.mjs",
+        "packages/consuelo-website/tests/homepage-mobile-layout.test.mjs",
+        "packages/consuelo-website/tests/homepage-responsive.test.mjs"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

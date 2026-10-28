@@ -1,0 +1,27 @@
+{
+  "files": [
+    ".github/workflows/consuelo-os-runtime-promote.yaml",
+    ".github/workflows/consuelo-os-runtime-publish.yaml",
+    ".github/workflows/consuelo-production-release.yaml",
+    ".task/os/fix-diffs-cache-freshness-and-progressive-loading/workpad.md",
+    "packages/diff-cockpit/package.json",
+    "packages/diff-cockpit/src/index.ts",
+    "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+    "packages/os/cloudflare/os-device-authority/src/services/mcp-proxy.ts",
+    "packages/os/cloudflare/workspace-edge/README.md",
+    "packages/os/cloudflare/workspace-edge/src/index.ts",
+    "packages/os/package.json",
+    "packages/os/scripts/lib/workspace-cloudflare-edge-router.ts",
+    "packages/os/scripts/lib/workspace-edge-route-seed.ts",
+    "packages/os/scripts/server/routes/diffs.ts",
+    "packages/os/scripts/server/services/diffs-gateway.ts",
+    "packages/os/scripts/server/services/diffs-local-cache.ts",
+    "packages/os/tests/cloudflare-edge-router.test.ts",
+    "packages/os/tests/diffs-hono-routes.test.ts",
+    "packages/os/tests/diffs-local-cache.test.ts",
+    "packages/os/tests/workspace-gateway-node-proxy.test.ts",
+    "packages/workspace/hooks/diff-cockpit/cache-refresh.ts",
+    "packages/workspace/scripts/os-release.ts"
+  ],
+  "updatedAt": "2026-09-21T19:43:52.184Z"
+}

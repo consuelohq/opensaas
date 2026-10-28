@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/hotfix-canary-runtime-missing-diff-cockpit-dependency",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1904,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1904",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1904",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1904/hotfix-canary-runtime-missing-diff-cockpit-dependency",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1904",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1904/hotfix-canary-runtime-missing-diff-cockpit-dependency",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-hotfix-canary-runtime-missing-diff-cockpit-dependency",
+  "taskSession": "tsk_2ae38b0161a6",
+  "tmuxSession": "opensaas-os-hotfix-canary-runtime-missing-diff-cockpit-depen-2ae38b01",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-hotfix-canary-runtime-missing-diff-cockpit-dependency/.task/os/hotfix-canary-runtime-missing-diff-cockpit-dependency/session.json",
+  "createdAt": "2026-08-13T16:59:14.868Z"
+}

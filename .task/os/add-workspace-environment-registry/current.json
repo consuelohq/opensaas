@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-workspace-environment-registry",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1530,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1530",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1530",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1530/add-workspace-environment-registry",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1530",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1530/add-workspace-environment-registry",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-workspace-environment-registry",
+  "taskSession": "tsk_35b952a667df",
+  "tmuxSession": "opensaas-os-add-workspace-environment-registry-35b952a6",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-workspace-environment-registry/.task/os/add-workspace-environment-registry/session.json",
+  "createdAt": "2026-07-18T16:40:56.098Z"
+}

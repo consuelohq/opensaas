@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/repair-stream-server-pending-core-migration",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1935,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1935",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1935",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1935/repair-stream-server-pending-core-migration",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1935",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1935/repair-stream-server-pending-core-migration",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-stream-server-pending-core-migration",
+  "taskSession": "tsk_ce69ffcb40e5",
+  "tmuxSession": "opensaas-os-repair-stream-server-pending-core-migration-ce69ffcb",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-stream-server-pending-core-migration/.task/os/repair-stream-server-pending-core-migration/session.json",
+  "createdAt": "2026-08-14T03:01:18.407Z"
+}

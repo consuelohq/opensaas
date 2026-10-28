@@ -5,12 +5,12 @@ this is not the final tagging system. for now:
 
 for task handoffs, draft in canvas first, review with ko, then save after explicit approval
 for learning/memory handoffs where ko explicitly asks for a tmp file or says not to use canvas, write the handoff directly to /tmp/<descriptive-name>.md
-save to memory only after explicit approval, or when ko explicitly asks to save the handoff to context in the same request
+save to memory only after explicit approval, or when ko explicitly asks to save the handoff to memory in the same request
 include exact skills, scripts, tools, files, branch/PR/runtime context when applicable
 non-negotiable rules
 draft in canvas first for task handoffs unless ko explicitly asks for tmp-file-first or no canvas
 when ko asks for tmp/no-canvas, write the handoff directly to /tmp/<descriptive-name>.md
-do not save memory until ko explicitly approves, unless ko explicitly asks to save to context in the same request
+do not save memory until ko explicitly approves, unless ko explicitly asks to save to memory in the same request
 use real current-state facts from this conversation; do not invent examples
 no tables unless ko explicitly asks
 state clearly:
@@ -20,25 +20,25 @@ what next agent does first
 label uncertainty explicitly
 optimize for zero-context handoff: assume next agent knows nothing
 include exact skills/scripts/tools/files to use next
-include both the agent-facing os.call(...) command and the CLI bun ... context.js ... command for retrieval
+include both the agent-facing os.call(...) command and the CLI bun ... memory.js ... command for retrieval
 canvas doc name must be timestamped and task-descriptive
 format: Apr 29, 2026 at 16:04 <next-task-name>
 user override for handoff surface
-If ko explicitly says “do not use canvas,” “go straight to tmp file,” “save to context,” or similar, follow that surface request.
+If ko explicitly says “do not use canvas,” “go straight to tmp file,” “save to memory,” or similar, follow that surface request.
 
 The handoff skill’s default canvas-first workflow applies only when ko has not specified a different surface.
 
 Format still applies.
 
 tmp-file handoff shortcut
-Use this path when ko explicitly asks for @handoff no canvas, tmp file, go straight to tmp, or save to context.
+Use this path when ko explicitly asks for @handoff no canvas, tmp file, go straight to tmp, or save to memory.
 
 Collect the durable decisions and current state.
 Write the full handoff directly to /tmp/<descriptive-name>.md.
-Save the tmp file to context with a descriptive title.
+Save the tmp file to memory with a descriptive title.
 Return:
 tmp file path
-context title/id if available
+memory title/id if available
 exact agent command for the next agent
 exact CLI command for ko or an agent using terminal
 exact command to read the full saved handoff
@@ -61,7 +61,7 @@ best next move
 2) draft handoff in canvas
 Use required structure below.
 
-Skip canvas only when ko explicitly requests tmp-file-first, no-canvas, or direct context save.
+Skip canvas only when ko explicitly requests tmp-file-first, no-canvas, or direct memory save.
 
 3) review with ko
 Iterate until approved.
@@ -70,32 +70,33 @@ Iterate until approved.
 For canvas-reviewed handoffs:
 
 Write the approved full handoff content to a tmp Markdown file.
-Save the tmp file to context with a descriptive title.
-Return the tmp path, context title/id, agent retrieval command, CLI retrieval command, and full-read command.
+Save the tmp file to memory with a descriptive title.
+Return the tmp path, memory title/id, agent retrieval command, CLI retrieval command, and full-read command.
 For tmp-file-first handoffs:
 
 Write the full handoff directly to /tmp/<descriptive-name>.md.
-Save that tmp file to context with a descriptive title.
-Return the tmp path, context title/id, agent retrieval command, CLI retrieval command, and full-read command.
+Save that tmp file to memory with a descriptive title.
+Return the tmp path, memory title/id, agent retrieval command, CLI retrieval command, and full-read command.
 Preferred typed facade save shape:
 
 await os.call({
-  tool: "context.save",
+  tool: "memory",
   input: {
-    title: "<descriptive context title>",
+    operation: "save",
+    title: "<descriptive memory title>",
     file: "/tmp/<descriptive-name>.md"
   },
   timeout: 120,
 })
 CLI fallback save shape:
 
-bun packages/workspace/scripts/context.js save "<descriptive context title>" "/tmp/<descriptive-name>.md" --category handoff --json
+bun packages/os/scripts/memory.js save "<descriptive memory title>" "/tmp/<descriptive-name>.md" --category handoff --json
 5) memory save rule
 Save the full handoff, not a summary.
 
 Default rule: save only after ko approves.
 
-Exception: if ko explicitly asks in the same request to save to context, treat that as approval and save immediately.
+Exception: if ko explicitly asks in the same request to save to memory, treat that as approval and save immediately.
 
 Use a descriptive title. Add a tags: line at the top of the handoff content when useful for retrieval.
 
@@ -131,8 +132,9 @@ Agent retrieval command:
 await os.get_steering()
 
 await os.call({
-  tool: "context.search",
+  tool: "memory",
   input: {
+    operation: "search",
     keyword: "<handoff-title-or-best-keyword>",
     limit: 5
   },
@@ -141,25 +143,26 @@ await os.call({
 Agent save command:
 
 await os.call({
-  tool: "context.save",
+  tool: "memory",
   input: {
-    title: "<descriptive context title>",
+    operation: "save",
+    title: "<descriptive memory title>",
     file: "/tmp/<handoff-file>.md"
   },
   timeout: 120,
 })
 CLI save command:
 
-bun packages/workspace/scripts/context.js save "<descriptive context title>" "/tmp/<handoff-file>.md" --category handoff --json
+bun packages/os/scripts/memory.js save "<descriptive memory title>" "/tmp/<handoff-file>.md" --category handoff --json
 CLI search command:
 
-bun packages/workspace/scripts/context.js find "<handoff-title-or-best-keyword>" --category handoff --limit 5
+bun packages/os/scripts/memory.js find "<handoff-title-or-best-keyword>" --category handoff --limit 5
 CLI content search command:
 
-bun packages/workspace/scripts/context.js search "<tag-or-keyword>" --category handoff --limit 5
+bun packages/os/scripts/memory.js search "<tag-or-keyword>" --category handoff --limit 5
 CLI full-read command after finding the handoff:
 
-bun packages/workspace/scripts/context.js get 1 "<handoff-title-or-best-keyword>" --by-title --category handoff
+bun packages/os/scripts/memory.js get 1 "<handoff-title-or-best-keyword>" --by-title --category handoff
 Clear Communication
 Purpose
 
@@ -312,8 +315,9 @@ Minimum agent command:
 await os.get_steering()
 
 await os.call({
-  tool: "context.search",
+  tool: "memory",
   input: {
+    operation: "search",
     keyword: "<handoff-title-or-best-keyword>",
     limit: 5
   },
@@ -321,13 +325,13 @@ await os.call({
 })
 Minimum CLI search command:
 
-bun packages/workspace/scripts/context.js find "<handoff-title-or-best-keyword>" --category handoff --limit 5
+bun packages/os/scripts/memory.js find "<handoff-title-or-best-keyword>" --category handoff --limit 5
 Minimum CLI full-read command:
 
-bun packages/workspace/scripts/context.js get 1 "<handoff-title-or-best-keyword>" --by-title --category handoff
+bun packages/os/scripts/memory.js get 1 "<handoff-title-or-best-keyword>" --by-title --category handoff
 If the handoff is better retrieved by content tags than title, also include:
 
-bun packages/workspace/scripts/context.js search "<tag-or-keyword>" --category handoff --limit 5
+bun packages/os/scripts/memory.js search "<tag-or-keyword>" --category handoff --limit 5
 approval prompt format
 When requesting approval for canvas-reviewed handoffs, include this exact heading:
 
@@ -337,10 +341,10 @@ Also append a short save reminder at the end of every follow-up message until sa
 
 Small reminder: SEND "SAVE" OR "S" WHEN YOU'RE READY.
 
-Do not use this approval prompt when ko already asked to save directly to context or explicitly requested a tmp-file handoff.
+Do not use this approval prompt when ko already asked to save directly to memory or explicitly requested a tmp-file handoff.
 
 Tagging Memories for Retrieval
-When saving context via os.call({ tool: "context.save", ... }) or bun packages/workspace/scripts/context.js save, prepend a tags: line at the top of the content. This makes memories searchable by concept even when the title is generic.
+When saving memory via os.call({ tool: "memory", input: { operation: "save", ... } }) or bun packages/os/scripts/memory.js save, prepend a tags: line at the top of the content. This makes memories searchable by concept even when the title is generic.
 
 format
 tags: tag1, tag2, tag3
@@ -360,8 +364,9 @@ to search by tag
 Agent command:
 
 await os.call({
-  tool: "context.search",
+  tool: "memory",
   input: {
+    operation: "search",
     keyword: "evidence-ledger",
     limit: 5
   },
@@ -370,8 +375,9 @@ await os.call({
 Agent command with category:
 
 await os.call({
-  tool: "context.search",
+  tool: "memory",
   input: {
+    operation: "search",
     keyword: "bayesian",
     category: "decision",
     limit: 5
@@ -380,8 +386,8 @@ await os.call({
 })
 CLI fallback:
 
-bun packages/workspace/scripts/context.js search "evidence-ledger"
-bun packages/workspace/scripts/context.js search "bayesian" --category decision
+bun packages/os/scripts/memory.js search "evidence-ledger"
+bun packages/os/scripts/memory.js search "bayesian" --category decision
 instruction precision changes agent behavior
 A single word in an instruction can flip agent behavior from correct to broken. “Do not optimize for X” tells an agent to ignore X entirely. “Do not optimize only for X” tells an agent that X matters but is not sufficient alone.
 

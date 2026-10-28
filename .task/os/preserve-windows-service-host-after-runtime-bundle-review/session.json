@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_9619dd3e5477",
+  "tmuxSession": "opensaas-os-preserve-windows-service-host-after-runtime-bund-9619dd3e",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/preserve-windows-service-host-after-runtime-bundle-review",
+  "branch": "task/os/preserve-windows-service-host-after-runtime-bundle-review",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-preserve-windows-service-host-after-runtime-bundle-review",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-preserve-windows-service-host-after-runtime-bundle-review",
+  "prNumber": 1726,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1726",
+  "createdAt": "2026-07-29T07:48:48.207Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-preserve-windows-service-host-after-runtime-bundle-review/.task/os/preserve-windows-service-host-after-runtime-bundle-review/session.json"
+}

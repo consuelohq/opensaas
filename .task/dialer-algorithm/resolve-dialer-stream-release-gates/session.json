@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_9929b4246bd9",
+  "tmuxSession": "opensaas-dialer-algorithm-resolve-dialer-stream-release-gates-9929b424",
+  "area": "dialer-algorithm",
+  "stream": "stream/dialer-algorithm",
+  "taskBranch": "task/dialer-algorithm/resolve-dialer-stream-release-gates",
+  "branch": "task/dialer-algorithm/resolve-dialer-stream-release-gates",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-resolve-dialer-stream-release-gates",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-resolve-dialer-stream-release-gates",
+  "prNumber": 2066,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2066",
+  "createdAt": "2026-08-15T10:27:03.908Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-resolve-dialer-stream-release-gates/.task/dialer-algorithm/resolve-dialer-stream-release-gates/session.json"
+}

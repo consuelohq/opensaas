@@ -1,0 +1,19 @@
+{
+  "area": "os-foundation-two",
+  "stream": "stream/os-foundation-two",
+  "taskBranch": "task/os-foundation-two/provider-control-plane-audit",
+  "baseBranch": "stream/os-foundation-two",
+  "sourceBranch": "stream/os-foundation-two",
+  "startFrom": "stream",
+  "prNumber": 1684,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1684",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1684",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1684/provider-control-plane-audit",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1684",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1684/provider-control-plane-audit",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-foundation-two-provider-control-plane-audit",
+  "taskSession": "tsk_a35036a6ac1a",
+  "tmuxSession": "opensaas-os-foundation-two-provider-control-plane-audit-a35036a6",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-foundation-two-provider-control-plane-audit/.task/os-foundation-two/provider-control-plane-audit/session.json",
+  "createdAt": "2026-07-27T23:02:48.341Z"
+}

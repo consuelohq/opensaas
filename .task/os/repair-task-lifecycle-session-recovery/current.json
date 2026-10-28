@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/repair-task-lifecycle-session-recovery",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1934,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1934",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1934",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1934/repair-task-lifecycle-session-recovery",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1934",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1934/repair-task-lifecycle-session-recovery",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-task-lifecycle-session-recovery",
+  "taskSession": "tsk_83a9d047ab76",
+  "tmuxSession": "opensaas-os-repair-task-lifecycle-session-recovery-83a9d047",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-task-lifecycle-session-recovery/.task/os/repair-task-lifecycle-session-recovery/session.json",
+  "createdAt": "2026-08-14T01:40:14.567Z"
+}

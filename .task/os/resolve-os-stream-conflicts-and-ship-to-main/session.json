@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_03ae9b00eac1",
+  "tmuxSession": "opensaas-os-resolve-os-stream-conflicts-and-ship-to-main-03ae9b00",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/resolve-os-stream-conflicts-and-ship-to-main",
+  "branch": "task/os/resolve-os-stream-conflicts-and-ship-to-main",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-resolve-os-stream-conflicts-and-ship-to-main",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-resolve-os-stream-conflicts-and-ship-to-main",
+  "prNumber": 1434,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1434",
+  "createdAt": "2026-07-13T00:15:14.103Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-resolve-os-stream-conflicts-and-ship-to-main/.task/os/resolve-os-stream-conflicts-and-ship-to-main/session.json"
+}

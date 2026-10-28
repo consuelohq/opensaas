@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_0d2d8967f0ad",
+  "tmuxSession": "opensaas-os-web-implement-universal-login-membership-resolution--0d2d8967",
+  "area": "os-web",
+  "stream": "stream/os-web",
+  "taskBranch": "task/os-web/implement-universal-login-membership-resolution-and-workspace-session-handoff",
+  "branch": "task/os-web/implement-universal-login-membership-resolution-and-workspace-session-handoff",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-web-implement-universal-login-membership-resolution-and-workspace-session-handoff",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-web-implement-universal-login-membership-resolution-and-workspace-session-handoff",
+  "prNumber": 1613,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1613",
+  "createdAt": "2026-07-24T02:57:23.134Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-web-implement-universal-login-membership-resolution-and-workspace-session-handoff/.task/os-web/implement-universal-login-membership-resolution-and-workspace-session-handoff/session.json"
+}

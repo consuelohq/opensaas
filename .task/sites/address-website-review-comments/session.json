@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_34c76eee72e1",
+  "tmuxSession": "opensaas-sites-address-website-review-comments-34c76eee",
+  "area": "sites",
+  "stream": "stream/sites",
+  "taskBranch": "task/sites/address-website-review-comments",
+  "branch": "task/sites/address-website-review-comments",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-address-website-review-comments",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-address-website-review-comments",
+  "prNumber": 1228,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1228",
+  "createdAt": "2026-06-27T21:50:41.551Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-address-website-review-comments/.task/sites/address-website-review-comments/session.json"
+}

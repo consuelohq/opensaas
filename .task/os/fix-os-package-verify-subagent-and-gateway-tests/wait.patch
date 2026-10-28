@@ -1,0 +1,45 @@
+*** Begin Patch
+*** Update File: packages/os/scripts/lib/subagent/lifecycle.ts
+@@
+ export async function waitForDurableSubagentRun(
+   run: DurableSubagentRun,
+   env: NodeJS.ProcessEnv,
+   waitMs: number,
+   parser: DurableSubagentParser,
+ ): Promise<{ run: DurableSubagentRun; timedOut: boolean }> {
+   const deadline = Date.now() + Math.max(0, waitMs);
+   let current = reconcileDurableSubagentRun(run, env, parser);
+-  while (!isTerminal(current.status) && current.status !== 'cancelled' && Date.now() < deadline) {
++  while (!isDurableWaitSettled(current.status) && Date.now() < deadline) {
+     try {
+       await new Promise((resolve) => setTimeout(resolve, Math.min(50, Math.max(1, deadline - Date.now()))));
+       const read = readDurableSubagentRun(current.runId, env);
+       if (!read.ok) return { run: current, timedOut: false };
+       current = reconcileDurableSubagentRun(read.run, env, parser);
+     } catch (error: unknown) {
+       const unknown: DurableSubagentRun = {
+         ...current,
+         status: 'completion_unknown',
+         updatedAt: Date.now(),
+         error: error instanceof Error ? error.message : String(error),
+       };
+       try {
+         writeState(path.join(resolveSubagentRunDirectory(current.runId, env), 'state.json'), unknown);
+       } catch {
+         // Preserve the in-memory recovery result when durable reconciliation is unavailable.
+       }
+       return { run: unknown, timedOut: false };
+     }
+   }
+-  return { run: current, timedOut: !isTerminal(current.status) && current.status !== 'cancelled' };
++  return { run: current, timedOut: !isDurableWaitSettled(current.status) };
+ }
+@@
+ function isTerminal(status: DurableSubagentStatus): boolean {
+   return status === 'completed' || status === 'failed' || status === 'timed_out' || status === 'completion_unknown';
+ }
++
++function isDurableWaitSettled(status: DurableSubagentStatus): boolean {
++  return status === 'completed' || status === 'failed' || status === 'timed_out' || status === 'cancelled';
++}
+*** End Patch

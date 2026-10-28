@@ -1,0 +1,8 @@
+{
+  "files": [
+    "packages/os/tests/session-integration-guidance.test.ts",
+    "packages/os/tests/session-start-foundation.test.ts",
+    "packages/os/tests/subagent-orchestration-contract.test.ts"
+  ],
+  "updatedAt": "2026-08-31T03:50:57.227Z"
+}

@@ -1,0 +1,7 @@
+{
+  "files": [
+    "packages/os/scripts/lib/settings-site.ts",
+    "packages/os/scripts/lib/trace-sites-local-read-backend.ts"
+  ],
+  "updatedAt": "2026-09-05T01:06:10.855Z"
+}

@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_fda1b023a3b8",
+  "tmuxSession": "opensaas-workspace-agents-regenerate-canonical-consuelo-brand-assets-from--fda1b023",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/regenerate-canonical-consuelo-brand-assets-from-stream",
+  "branch": "task/workspace-agents/regenerate-canonical-consuelo-brand-assets-from-stream",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-regenerate-canonical-consuelo-brand-assets-from-stream",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-regenerate-canonical-consuelo-brand-assets-from-stream",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2223,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2223",
+  "createdAt": "2026-08-26T15:27:35.343Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-regenerate-canonical-consuelo-brand-assets-from-stream/.task/workspace-agents/regenerate-canonical-consuelo-brand-assets-from-stream/session.json"
+}

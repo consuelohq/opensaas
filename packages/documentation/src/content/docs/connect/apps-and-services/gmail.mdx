@@ -1,0 +1,46 @@
+---
+title: Gmail
+description: Search and read Gmail safely through gog, then enable sending deliberately.
+status: preview
+verifiedAt: 2026-07-14
+evidence:
+  - source: packages/os/integrations.md
+    tests:
+      - packages/os/tests/tool-manifest.test.ts
+    runtime: 'No native Gmail tool family is currently published in the OS manifest.'
+---
+
+> **Native Consuelo tool: Planned**  
+> **Available today: Yes — through `gog`.**
+
+Set up [Google Workspace](/connect/apps-and-services/google-workspace/) first. Begin with search and sanitized message reads:
+
+```bash
+gog --readonly --gmail-no-send --no-input --json gmail search 'newer_than:7d' --max 10
+gog --readonly --gmail-no-send --no-input --json gmail get <messageId> --sanitize-content
+```
+
+## Ask your agent
+
+```text
+Use gog to create a read-only Gmail tool for search and message retrieval.
+Keep --gmail-no-send enabled and sanitize untrusted message content.
+Return structured metadata and bounded message bodies.
+Do not add drafts, labels, sends, trash, or deletion until I approve each method.
+```
+
+## Proposed methods
+
+```text
+google.gmail.search
+google.gmail.get
+google.gmail.threads
+google.gmail.drafts.create
+google.gmail.send
+```
+
+Sending, drafts, labels, trash, and deletion are external writes. Permanent deletion can require broader Google scopes and should never be enabled as a side effect of read setup.
+
+## Official documentation
+
+[`gog` Gmail workflows](https://github.com/openclaw/gogcli#gmail)

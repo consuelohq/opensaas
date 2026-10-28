@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_be2e22f428c8",
+  "tmuxSession": "opensaas-os-fix-pr-2310-ci-completion-marker-race-be2e22f4",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-pr-2310-ci-completion-marker-race",
+  "branch": "task/os/fix-pr-2310-ci-completion-marker-race",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-pr-2310-ci-completion-marker-race",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-pr-2310-ci-completion-marker-race",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2330,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2330",
+  "createdAt": "2026-08-31T19:41:18.053Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-pr-2310-ci-completion-marker-race/.task/os/fix-pr-2310-ci-completion-marker-race/session.json"
+}

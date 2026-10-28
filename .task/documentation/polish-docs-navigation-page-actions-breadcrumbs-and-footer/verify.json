@@ -1,0 +1,68 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/documentation/polish-docs-navigation-page-actions-breadcrumbs-and-footer",
+  "base": "origin/stream/documentation",
+  "headSha": "4ca7d2b24276162f43a45e44e5b16dd72c3e6166",
+  "changeHash": "60ecd26821bdd0de4c84eb29ec873f3cb424e0c565556284f14adb99959743dc",
+  "changedFiles": [
+    "packages/documentation/astro.config.mjs",
+    "packages/documentation/scripts/test-foundation-browser.mjs",
+    "packages/documentation/src/components/Footer.astro",
+    "packages/documentation/src/components/PageTitle.astro",
+    "packages/documentation/src/components/Sidebar.astro",
+    "packages/documentation/src/components/mintlify/Card.astro",
+    "packages/documentation/src/lib/docs-navigation.ts",
+    "packages/documentation/src/styles/docs.css",
+    "packages/documentation/tests/foundation.test.ts"
+  ],
+  "verifiedAt": "2026-07-15T02:01:38.365Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/documentation/polish-docs-navigation-page-actions-breadcrumbs-and-footer/current.json",
+        ".task/documentation/polish-docs-navigation-page-actions-breadcrumbs-and-footer/evidence-log.json",
+        ".task/documentation/polish-docs-navigation-page-actions-breadcrumbs-and-footer/read-log.json",
+        ".task/documentation/polish-docs-navigation-page-actions-breadcrumbs-and-footer/session.json",
+        ".task/documentation/polish-docs-navigation-page-actions-breadcrumbs-and-footer/verify.json",
+        ".task/documentation/polish-docs-navigation-page-actions-breadcrumbs-and-footer/workpad.md",
+        ".task/tasks/documentation/polish-docs-navigation-page-actions-breadcrumbs-and-footer.json",
+        "packages/documentation/astro.config.mjs",
+        "packages/documentation/scripts/test-foundation-browser.mjs",
+        "packages/documentation/src/components/Footer.astro",
+        "packages/documentation/src/components/PageTitle.astro",
+        "packages/documentation/src/components/Sidebar.astro",
+        "packages/documentation/src/components/mintlify/Card.astro",
+        "packages/documentation/src/lib/docs-navigation.ts",
+        "packages/documentation/src/styles/docs.css",
+        "packages/documentation/tests/foundation.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

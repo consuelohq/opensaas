@@ -1,0 +1,19 @@
+{
+  "area": "documentation",
+  "stream": "stream/documentation",
+  "taskBranch": "task/documentation/polish-docs-navigation-page-actions-breadcrumbs-and-footer",
+  "baseBranch": "stream/documentation",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1504,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1504",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1504",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1504/polish-docs-navigation-page-actions-breadcrumbs-and-footer",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1504",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1504/polish-docs-navigation-page-actions-breadcrumbs-and-footer",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-polish-docs-navigation-page-actions-breadcrumbs-and-footer",
+  "taskSession": "tsk_aeeb6884947c",
+  "tmuxSession": "opensaas-documentation-polish-docs-navigation-page-actions-breadcrumbs--aeeb6884",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-polish-docs-navigation-page-actions-breadcrumbs-and-footer/.task/documentation/polish-docs-navigation-page-actions-breadcrumbs-and-footer/session.json",
+  "createdAt": "2026-07-15T01:45:05.856Z"
+}

@@ -1,5 +1,5 @@
-import { Database } from 'bun:sqlite';
 import fs from 'node:fs';
+import { createRequire } from 'node:module';
 import os from 'node:os';
 import path from 'node:path';
 
@@ -42,8 +42,20 @@ export type CapabilityHealth = {
 };
 
 type OsConfig = {
-  agents?: Array<{ name: string; connected?: boolean }>;
+  agents?: Array<{ name: string; status?: string }>;
 };
+
+type ReadonlyDatabase = { close: () => void };
+type DatabaseConstructor = new (
+  filePath: string,
+  options: { readonly: boolean },
+) => ReadonlyDatabase;
+
+function openReadonlyDatabase(filePath: string): ReadonlyDatabase {
+  const require = createRequire(import.meta.url);
+  const sqlite = require('bun:sqlite') as { Database: DatabaseConstructor };
+  return new sqlite.Database(filePath, { readonly: true });
+}
 
 function expandHome(value: string): string {
   if (value === '~') return os.homedir();
@@ -57,7 +69,7 @@ function resolveCapabilityHome(home?: string): string {
   );
 }
 
-function readConnectedAgentNames(osHome: string): string[] {
+function readVerifiedAgentNames(osHome: string): string[] {
   const configPath = path.join(osHome, 'config.json');
   if (!fs.existsSync(configPath)) return [];
   try {
@@ -65,7 +77,7 @@ function readConnectedAgentNames(osHome: string): string[] {
     return [
       ...new Set(
         (config.agents ?? [])
-          .filter((agent) => agent.connected)
+          .filter((agent) => agent.status === 'verified')
           .map((agent) => agent.name),
       ),
     ].sort();
@@ -114,7 +126,7 @@ export function getCapabilityHealth(home?: string): CapabilityHealth[] {
   const osHome = resolveCapabilityHome(home);
   const checks: CapabilityHealth[] = [];
   const configPath = path.join(osHome, 'config.json');
-  const dbPath = path.join(osHome, 'consuelo.db');
+  const dbPath = path.join(osHome, 'node', 'db', 'consuelo.db');
   const artifactPath = path.join(osHome, 'artifacts');
 
   checks.push(
@@ -128,7 +140,7 @@ export function getCapabilityHealth(home?: string): CapabilityHealth[] {
   );
 
   try {
-    const db = new Database(dbPath);
+    const db = openReadonlyDatabase(dbPath);
     db.close();
     checks.push(connected('sqlite', 'SQLite', 'SQLite database opens'));
   } catch (error: unknown) {
@@ -232,19 +244,19 @@ export function getCapabilityHealth(home?: string): CapabilityHealth[] {
         ),
   );
 
-  const connectedAgents = readConnectedAgentNames(osHome);
+  const connectedAgents = readVerifiedAgentNames(osHome);
   checks.push(
     connectedAgents.length > 0
       ? connected(
           'agent-connections',
           'Agent connections',
-          `${connectedAgents.length} agent connection(s) recorded`,
+          `${connectedAgents.length} agent MCP connection(s) verified`,
           connectedAgents,
         )
       : notConfigured(
           'agent-connections',
           'Agent connections',
-          'No local agents are connected yet',
+          'No local agent MCP connections are verified yet',
         ),
   );
 

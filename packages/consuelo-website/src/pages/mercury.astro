@@ -1,8 +1,9 @@
 ---
-import LaunchFooter from '../components/launch/LaunchFooter.astro';
-import LaunchHeader from '../components/launch/LaunchHeader.astro';
-import { mercuryFaqItems, siteLinks } from '../data/launch-content';
-import LaunchLayout from '../layouts/LaunchLayout.astro';
+import SiteFooter from '../components/site/SiteFooter.astro';
+import SiteHeader from '../components/site/SiteHeader.astro';
+import { mercuryFaqItems } from '../data/mercury-content';
+import { siteLinks } from '../data/site-links';
+import MarketingLayout from '../layouts/MarketingLayout.astro';
 
 const description = 'Mercury handles hosted dialing, AI models, and infrastructure so your team can start executing instead of configuring providers.';
 
@@ -28,8 +29,8 @@ const steps = [
 ];
 ---
 
-<LaunchLayout title="Mercury" description={description} canonicalPath="/mercury">
-  <LaunchHeader />
+<MarketingLayout title="Mercury" description={description} canonicalPath="/mercury">
+  <SiteHeader />
 
   <!-- hero -->
   <section class="launch-section">
@@ -103,8 +104,8 @@ const steps = [
     </div>
   </section>
 
-  <LaunchFooter />
-</LaunchLayout>
+  <SiteFooter />
+</MarketingLayout>
 
 <style>
   .mercury-hero {

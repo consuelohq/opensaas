@@ -1,0 +1,19 @@
+{
+  "area": "documentation",
+  "stream": "stream/documentation",
+  "taskBranch": "task/documentation/write-verified-observe-documentation-recovery",
+  "baseBranch": "stream/documentation",
+  "sourceBranch": "stream/documentation",
+  "startFrom": "stream",
+  "prNumber": 1468,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1468",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1468",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1468/write-verified-observe-documentation-recovery",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1468",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1468/write-verified-observe-documentation-recovery",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-write-verified-observe-documentation-recovery",
+  "taskSession": "tsk_830663b96ae5",
+  "tmuxSession": "opensaas-documentation-write-verified-observe-documentation-recovery-830663b9",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-write-verified-observe-documentation-recovery/.task/documentation/write-verified-observe-documentation-recovery/session.json",
+  "createdAt": "2026-07-13T19:39:18.972Z"
+}

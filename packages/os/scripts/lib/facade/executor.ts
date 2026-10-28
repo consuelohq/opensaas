@@ -3,17 +3,41 @@ import { createRequire } from 'node:module';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { Effect } from 'effect';
+import { z } from 'zod';
 
-import manifestJson from '../../../manifests/tool.manifest.json';
+import manifestJson from '../../../manifests/generated/tool.manifest.json';
+import { runToolSearch } from '../../tools-search';
+import {
+  executeDeploymentFacade,
+  type DeploymentFacadeInput,
+} from '../../../tools/deployment-provider/facade';
+import { redactDeploymentTraceInput } from '../../../tools/deployment-provider/redaction';
 
 import { runBatch } from './batch';
 import { getCurrentTask, getAreaFromBranch, resolveTaskBranch } from './branch-resolver';
 import { createToolResult, createTraceId, getErrorMessage, isTimeoutError, isToolResult } from './errors';
 import { logToolExecution } from './logger';
+import { PROCESS_TERMINATION_GRACE_MS, registerProcessTreeCleanup, shouldUseDetachedProcessGroup, terminateProcessTree } from './process-tree';
 import { getInputSchema } from './schemas';
+import { resolveBrowserConfig } from '../browser/config';
 import { executeCodeCall } from '../code-call/runtime';
+import { readEffectiveBundledFullManifest, readEffectiveFullManifest } from '../manifest';
+import { nodeResourceLockPath, withNodeResourceLock } from '../node-resource-lock';
+import {
+  executeSwampRuntimeTool,
+  runtimeProviderExecutionInput,
+  runtimeProviderFacadeControls,
+  runtimeProviderPayloadForSchema,
+} from '../runtime-tool-providers/swamp';
+import { resolveActiveWorkspaceProjectCwd } from '../workspace-project-cwd';
+import {
+  resolveWorkSessionFsScope,
+  WorkSessionFsScopeError,
+} from '../work-session-fs';
 import type { CodeCallInput } from '../code-call/types';
-import { executeWorkerCall } from '../worker/runtime';
+import { executeSubagent } from '../subagent/runtime';
 import type {
   BranchResolution,
   CommandArgument,
@@ -27,6 +51,9 @@ import type {
 } from './types';
 const require = createRequire(import.meta.url);
 const { syncTddEvidence, syncTestSelectionEvidence, syncValidationEvidence } = require('../task-workpad');
+const { recoverDurableTaskSession } = require('../task-session');
+const { readDurableTaskSessionMetadata, touchDurableTaskSessionMetadata } = require('../task-registry');
+const { getTaskWorktreeRoot } = require('../paths');
 
 type CanonicalManifestEntry = {
   kind: 'os-skill' | 'facade-tool';
@@ -44,7 +71,9 @@ export const manifestEntries = fullToolManifest.tools
   .map((entry) => entry.definition);
 
 type TaskSessionMetadata = {
-  taskSession: string;
+  taskSession?: string;
+  id?: string;
+  taskId?: string;
   tmuxSession?: string;
   branch?: string;
   taskBranch?: string;
@@ -54,60 +83,208 @@ type TaskSessionMetadata = {
 type TaskSessionResolution =
   | { ok: true; branch: string; metadata: TaskSessionMetadata }
   | { ok: false; code: 'TASK_SESSION_NOT_FOUND' | 'VALIDATION_ERROR'; message: string };
+type WorkSessionResolution =
+  | { ok: true; workSession: string; root: string }
+  | { ok: false; code: 'WORK_SESSION_NOT_FOUND' | 'PERMISSION_DENIED' | 'VALIDATION_ERROR'; message: string };
+
+const runtimePackageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
+function refreshTaskSessionActivity(
+  entry: ToolManifestEntry,
+  resolution: TaskSessionResolution | null,
+  result: ToolResult<unknown>,
+  input: ToolInput,
+  env: NodeJS.ProcessEnv,
+): void {
+  if (!entry.capabilities.mutating || !resolution?.ok || !result.ok || input.dryRun === true) return;
+  try {
+    const home = env.CONSUELO_HOME || env.CONSUELO_OS_HOME;
+    touchDurableTaskSessionMetadata(resolution.metadata.taskSession, home ? { home } : {});
+  } catch (error: unknown) {
+    process.stderr.write(`warning: failed to refresh durable task activity ${resolution.metadata.taskSession}: ${getErrorMessage(error)}\n`);
+  }
+}
 
 const MAX_LOG_COMMAND_CHARS = 4000;
+const WORK_SESSION_FS_MUTATION_TOOLS = new Set(['fs.write', 'fs.apply_patch', 'fs.trash']);
+const WORK_SESSION_FS_CONTEXT_TOOLS = new Set(['fs.read', 'fs.list', 'fs.search']);
+const WORK_SESSION_FS_TOOLS = new Set([
+  ...WORK_SESSION_FS_MUTATION_TOOLS,
+  ...WORK_SESSION_FS_CONTEXT_TOOLS,
+]);
+const WORK_SESSION_AUTHORITY_TOOLS = new Set([...WORK_SESSION_FS_TOOLS, 'code.call']);
 
-export function getToolManifestEntry(toolName: string): ToolManifestEntry | null {
-  const directMatch = manifestEntries.find((entry) => entry.name === toolName);
+function isWorkSessionFsTool(toolName: string): boolean {
+  return WORK_SESSION_FS_TOOLS.has(toolName);
+}
+
+function supportsWorkSessionAuthority(toolName: string): boolean {
+  return WORK_SESSION_AUTHORITY_TOOLS.has(toolName);
+}
+
+export function getToolManifestEntry(
+  toolName: string,
+  options: Pick<ExecuteToolOptions, 'cwd' | 'env'> = {},
+): ToolManifestEntry | null {
+  const home = options.env?.CONSUELO_HOME || options.env?.CONSUELO_OS_HOME;
+  const bundledEntries = readEffectiveBundledFullManifest(home).tools
+    .filter((entry) => entry.kind === 'facade-tool')
+    .map((entry) => entry.definition as unknown as ToolManifestEntry);
+  const bundledDirectMatch = bundledEntries.find((entry) => entry.name === toolName);
+  if (bundledDirectMatch) return bundledDirectMatch;
+  const bundledScriptMatches = bundledEntries.filter((entry) => entry.command.script === toolName);
+  if (bundledScriptMatches.length === 1) return bundledScriptMatches[0];
+
+  const entries = readEffectiveFullManifest(home, {
+    cwd: options.cwd,
+    env: options.env,
+  }).tools
+    .filter((entry) => entry.kind === 'facade-tool')
+    .map((entry) => entry.definition as unknown as ToolManifestEntry);
+  const directMatch = entries.find((entry) => entry.name === toolName);
   if (directMatch) return directMatch;
 
-  const scriptMatches = manifestEntries.filter((entry) => entry.command.script === toolName);
+  const scriptMatches = entries.filter((entry) => entry.command.script === toolName);
   return scriptMatches.length === 1 ? scriptMatches[0] : null;
 }
 
-function buildUnknownToolGuidance(toolName: string): { message: string; data: unknown | null } {
-  if (toolName !== 'fs.patch') {
-    return { message: `unknown tool: ${toolName}`, data: null };
+function unknownToolSearchQuery(toolName: string): string {
+  return toolName.replace(/[._-]+/g, ' ').replace(/\s+/g, ' ').trim() || toolName;
+}
+
+function toolSearchMatches(search: Record<string, unknown>): string[] {
+  if (!Array.isArray(search.matches)) return [];
+  return search.matches
+    .map((match) => {
+      if (!match || typeof match !== 'object' || !('name' in match)) return null;
+      const name = (match as { name?: unknown }).name;
+      return typeof name === 'string' ? name : null;
+    })
+    .filter((name): name is string => Boolean(name));
+}
+
+function browserAuthRecovery(toolName: string, candidates: string[]): string | undefined {
+  const normalized = unknownToolSearchQuery(toolName).toLowerCase();
+  if (
+    normalized.startsWith('browser ') &&
+    /\b(login|auth|profile|mfa|captcha|passkey|consent)\b/.test(normalized) &&
+    candidates.includes('browser.headed')
+  ) {
+    return 'browser.headed';
+  }
+  return undefined;
+}
+
+async function buildUnknownToolGuidance(
+  toolName: string,
+): Promise<{ message: string; data: unknown | null }> {
+  if (toolName === 'fs.patch') {
+    const manifestEntry = getToolManifestEntry('fs.apply_patch');
+    return {
+      message: [
+        'unknown tool: fs.patch.',
+        'fs.patch is not an OS tool; use fs.apply_patch instead.',
+        'Call it with exactly one of patchText or patchFile.',
+        'The fs.apply_patch manifest entry is included at data.manifestEntry.',
+      ].join(' '),
+      data: {
+        requestedTool: 'fs.patch',
+        replacementTool: 'fs.apply_patch',
+        recommendedTool: 'fs.apply_patch',
+        autoRetry: false,
+        action: 'Call fs.apply_patch with exactly one of patchText or patchFile.',
+        toolsSearchCall: {
+          tool: 'tools.search',
+          input: { query: 'fs apply patch', limit: 5, noDocs: true },
+        },
+        exampleCall: {
+          tool: 'fs.apply_patch',
+          input: {
+            taskSession: '<taskSession>',
+            patchFile: '/tmp/change.patch',
+            dryRun: true,
+          },
+        },
+        manifestEntry,
+      },
+    };
   }
 
-  const manifestEntry = getToolManifestEntry('fs.apply_patch');
-  return {
-    message: [
-      'unknown tool: fs.patch.',
-      'fs.patch is not an OS tool; use fs.apply_patch instead.',
-      'Call it with exactly one of patchText or patchFile.',
-      'The fs.apply_patch manifest entry is included at data.manifestEntry.',
-    ].join(' '),
-    data: {
-      requestedTool: 'fs.patch',
-      replacementTool: 'fs.apply_patch',
-      action: 'Call fs.apply_patch with exactly one of patchText or patchFile.',
-      exampleCall: {
-        tool: 'fs.apply_patch',
-        input: {
-          taskSession: '<taskSession>',
-          patchFile: '/tmp/change.patch',
-          dryRun: true,
+  const query = unknownToolSearchQuery(toolName);
+  try {
+    const search = await runToolSearch({
+      query,
+      limit: 5,
+      includeDocs: false,
+      includeEmbeddings: false,
+    });
+    const candidates = toolSearchMatches(search);
+    const searchedRecommendation = typeof search.recommended === 'string'
+      ? search.recommended
+      : undefined;
+    const recommendedTool = browserAuthRecovery(toolName, candidates)
+      ?? searchedRecommendation;
+    const confidence = search.confidence === 'high' || search.confidence === 'medium'
+      ? search.confidence
+      : 'low';
+    const guidance = recommendedTool
+      ? `use ${recommendedTool}`
+      : candidates.length > 0
+        ? `run tools.search to choose between ${candidates.join(', ')}`
+        : `run tools.search for ${JSON.stringify(query)}`;
+
+    return {
+      message: `unknown tool: ${toolName}; ${guidance}. This is a tool-manifest mismatch, not an authorization denial.`,
+      data: {
+        requestedTool: toolName,
+        ...(recommendedTool ? { recommendedTool } : {}),
+        ...(candidates.length > 0 ? { candidates } : {}),
+        confidence,
+        source: 'tools.search',
+        autoRetry: false,
+        action: 'Use a manifest-backed tool suggestion; do not retry guessed tool names.',
+        toolsSearchCall: {
+          tool: 'tools.search',
+          input: { query, limit: 5, noDocs: true },
         },
       },
-      manifestEntry,
-    },
-  };
+    };
+  } catch {
+    return {
+      message: `unknown tool: ${toolName}; run tools.search for ${JSON.stringify(query)}. This is a tool-manifest mismatch, not an authorization denial.`,
+      data: {
+        requestedTool: toolName,
+        confidence: 'low',
+        source: 'fallback',
+        autoRetry: false,
+        action: 'Run tools.search before choosing a replacement tool.',
+        toolsSearchCall: {
+          tool: 'tools.search',
+          input: { query, limit: 5, noDocs: true },
+        },
+      },
+    };
+  }
 }
 
 
 export const defaultRunner: ToolRunner = (plan, timeoutMs) => new Promise((resolve, reject) => {
   const child = spawn(plan.command, plan.args, {
     cwd: plan.cwd,
+    detached: shouldUseDetachedProcessGroup(),
     env: plan.env,
     stdio: ['ignore', 'pipe', 'pipe'],
   });
   let stdout = '';
   let stderr = '';
   let timedOut = false;
+  let killTimer: NodeJS.Timeout | null = null;
+  const cleanupProcessTree = registerProcessTreeCleanup(child);
   const timeout = setTimeout(() => {
     timedOut = true;
-    child.kill('SIGTERM');
+    terminateProcessTree(child, 'SIGTERM');
+    killTimer = setTimeout(() => {
+      terminateProcessTree(child, 'SIGKILL');
+    }, PROCESS_TERMINATION_GRACE_MS);
   }, timeoutMs);
 
   child.stdout.setEncoding('utf8');
@@ -116,10 +293,14 @@ export const defaultRunner: ToolRunner = (plan, timeoutMs) => new Promise((resol
   child.stderr.on('data', (chunk) => { stderr += chunk; });
   child.on('error', (error) => {
     clearTimeout(timeout);
+    if (killTimer) clearTimeout(killTimer);
+    cleanupProcessTree();
     reject(error);
   });
   child.on('close', (code) => {
     clearTimeout(timeout);
+    if (killTimer) clearTimeout(killTimer);
+    cleanupProcessTree();
     if (timedOut) {
       const error = new Error(`command timed out after ${timeoutMs}ms`) as Error & { timedOut: boolean };
       error.timedOut = true;
@@ -137,15 +318,23 @@ export async function executeTool<TData = unknown>(
 ): Promise<ToolResult<TData>> {
   const startedAt = (options.now || Date.now)();
   const traceId = createTraceId(options.randomUUID);
-  const cwd = resolveGitRoot(options.cwd || process.cwd());
+  // An MCP call supplies no cwd, and the server process runs from the immutable runtime release,
+  // which is not a repository. Falling straight through to process.cwd() left every repo-aware
+  // facade tool unable to find a git root. Prefer the workspace's configured project checkout.
+  const cwd = resolveGitRoot(
+    options.cwd || resolveActiveWorkspaceProjectCwd() || process.cwd(),
+  );
   const env = options.env || process.env;
   const runner = options.runner || defaultRunner;
-  const requestId = typeof input.requestId === 'string' ? input.requestId : undefined;
-  let entry = getToolManifestEntry(toolName);
+  let entry = getToolManifestEntry(toolName, { cwd, env });
+  const facadeInput = entry?.runtimeProvider
+    ? runtimeProviderFacadeControls(input, entry.runtimeProvider.inputSchema)
+    : input;
+  const requestId = typeof facadeInput.requestId === 'string' ? facadeInput.requestId : undefined;
 
   try {
     if (!entry) {
-      const guidance = buildUnknownToolGuidance(toolName);
+      const guidance = await buildUnknownToolGuidance(toolName);
       const result = createToolResult({
         ok: false,
         code: 'NOT_FOUND',
@@ -156,27 +345,48 @@ export async function executeTool<TData = unknown>(
         requestId,
         now: options.now,
       });
-      logResult(entry, toolName, result, '', undefined, undefined, options.logMode);
+      logResult(entry, toolName, result, '', undefined, undefined, options.logMode, { input, env });
       return result as ToolResult<TData>;
     }
 
-    const schema = getInputSchema(entry.inputSchema);
-    if (!schema) {
-      const result = createToolResult({
-        ok: false,
-        code: 'VALIDATION_ERROR',
-        message: `missing input schema: ${entry.inputSchema}`,
-        data: null,
-        durationMs: elapsedMs(startedAt, options.now),
-        traceId,
-        requestId,
-        now: options.now,
-      });
-      logResult(entry, toolName, result, entry.underlying, undefined, undefined, options.logMode);
-      return result as ToolResult<TData>;
+    let parsed: ReturnType<z.ZodType<unknown>['safeParse']>;
+    if (entry.runtimeProvider) {
+      try {
+        const schema = z.fromJSONSchema(entry.runtimeProvider.inputSchema);
+        parsed = schema.safeParse(runtimeProviderPayloadForSchema(input, entry.runtimeProvider.inputSchema));
+      } catch (error: unknown) {
+        const result = createToolResult({
+          ok: false,
+          code: 'VALIDATION_ERROR',
+          message: `invalid runtime provider input schema: ${getErrorMessage(error)}`,
+          data: null,
+          durationMs: elapsedMs(startedAt, options.now),
+          traceId,
+          requestId,
+          now: options.now,
+        });
+        logResult(entry, toolName, result, entry.underlying, undefined, undefined, options.logMode, { input, env });
+        return result as ToolResult<TData>;
+      }
+    } else {
+      const schema = getInputSchema(entry.inputSchema);
+      if (!schema) {
+        const result = createToolResult({
+          ok: false,
+          code: 'VALIDATION_ERROR',
+          message: `missing input schema: ${entry.inputSchema}`,
+          data: null,
+          durationMs: elapsedMs(startedAt, options.now),
+          traceId,
+          requestId,
+          now: options.now,
+        });
+        logResult(entry, toolName, result, entry.underlying, undefined, undefined, options.logMode, { input, env });
+        return result as ToolResult<TData>;
+      }
+      parsed = schema.safeParse(input);
     }
 
-    const parsed = schema.safeParse(input);
     if (!parsed.success) {
       const result = createToolResult({
         ok: false,
@@ -188,11 +398,38 @@ export async function executeTool<TData = unknown>(
         requestId,
         now: options.now,
       });
-      logResult(entry, toolName, result, entry.underlying, undefined, undefined, options.logMode);
+      logResult(entry, toolName, result, entry.underlying, undefined, undefined, options.logMode, { input, env });
       return result as ToolResult<TData>;
     }
 
-    const normalizedInput = normalizeInput(toolName, parsed.data as ToolInput);
+    const parsedInput = entry.runtimeProvider
+      ? runtimeProviderExecutionInput(
+        input,
+        entry.runtimeProvider.inputSchema,
+        parsed.data as ToolInput,
+      )
+      : parsed.data as ToolInput;
+    const normalizedInput = normalizeInput(toolName, parsedInput);
+    const taskHandle = typeof normalizedInput.taskSession === 'string' ? normalizedInput.taskSession.trim() : '';
+    const workHandle = typeof normalizedInput.workSession === 'string' ? normalizedInput.workSession.trim() : '';
+    if (taskHandle && workHandle) {
+      const result = createToolResult({
+        ok: false,
+        code: 'VALIDATION_ERROR',
+        message: 'Provide taskSession or workSession, but not both.',
+        data: null,
+        durationMs: elapsedMs(startedAt, options.now),
+        traceId,
+        requestId,
+        now: options.now,
+      });
+      logResult(entry, toolName, result, entry.underlying, undefined, `workspace ${toolName}`, options.logMode, {
+        input,
+        resolvedInput: normalizedInput,
+        env,
+      });
+      return result as ToolResult<TData>;
+    }
     const taskSessionResolution = resolveTaskSessionInput(normalizedInput, cwd, env);
     if (taskSessionResolution && !taskSessionResolution.ok) {
       const result = createToolResult({
@@ -205,10 +442,33 @@ export async function executeTool<TData = unknown>(
         requestId,
         now: options.now,
       });
-      logResult(entry, toolName, result, entry.underlying, undefined, `workspace ${toolName}`, options.logMode);
+      logResult(entry, toolName, result, entry.underlying, undefined, `workspace ${toolName}`, options.logMode, {
+        input,
+        resolvedInput: normalizedInput,
+        env,
+      });
       return result as ToolResult<TData>;
     }
-    if (entry.sessionRequired === true && !taskSessionResolution?.ok) {
+    const workSessionResolution = resolveWorkSessionInput(toolName, normalizedInput, cwd, env);
+    if (workSessionResolution && !workSessionResolution.ok) {
+      const result = createToolResult({
+        ok: false,
+        code: workSessionResolution.code,
+        message: workSessionResolution.message,
+        data: null,
+        durationMs: elapsedMs(startedAt, options.now),
+        traceId,
+        requestId,
+        now: options.now,
+      });
+      logResult(entry, toolName, result, entry.underlying, undefined, `workspace ${toolName}`, options.logMode, {
+        input,
+        resolvedInput: normalizedInput,
+        env,
+      });
+      return result as ToolResult<TData>;
+    }
+    if (entry.sessionRequired === true && !taskSessionResolution?.ok && !workSessionResolution?.ok) {
       const recovery = buildTaskSessionRequiredRecovery(toolName, entry, normalizedInput);
       const result = createToolResult({
         ok: false,
@@ -220,14 +480,25 @@ export async function executeTool<TData = unknown>(
         requestId,
         now: options.now,
       });
-      logResult(entry, toolName, result, entry.underlying, undefined, `workspace ${toolName}`, options.logMode);
+      logResult(entry, toolName, result, entry.underlying, undefined, `workspace ${toolName}`, options.logMode, {
+        input,
+        resolvedInput: normalizedInput,
+        env,
+      });
       return result as ToolResult<TData>;
     }
-    const scopedInput = taskSessionResolution?.ok ? {
-      ...normalizedInput,
-      branch: taskSessionResolution.branch,
-      taskWorktree: taskSessionResolution.metadata.worktree || taskSessionResolution.metadata.worktreePath,
-    } : normalizedInput;
+    const scopedInput = taskSessionResolution?.ok
+      ? {
+        ...normalizedInput,
+        branch: taskSessionResolution.branch,
+        taskWorktree: taskSessionResolution.metadata.worktree || taskSessionResolution.metadata.worktreePath,
+      }
+      : workSessionResolution?.ok
+        ? {
+          ...normalizedInput,
+          workSessionRoot: workSessionResolution.root,
+        }
+        : normalizedInput;
 
     if (entry.capabilities.mutating && scopedInput.dryRun === true && !entry.command.dryRunFlag) {
       const result = createToolResult({
@@ -240,20 +511,29 @@ export async function executeTool<TData = unknown>(
         requestId,
         now: options.now,
       });
-      logResult(entry, toolName, result, entry.underlying, undefined, `workspace ${toolName}`, options.logMode);
+      logResult(entry, toolName, result, entry.underlying, undefined, `workspace ${toolName}`, options.logMode, {
+        input,
+        resolvedInput: scopedInput,
+        env,
+      });
       return result as ToolResult<TData>;
     }
 
-    const internalResult = await executeInternalTool<TData>(entry, scopedInput, {
+    const internalInput = resolveInternalExecutionInput(entry, scopedInput, options);
+    const internalResult = await executeInternalTool<TData>(entry, internalInput, {
       cwd,
       env,
+      rawInput: input,
       runner,
       startedAt,
       traceId,
       requestId,
       options,
     });
-    if (internalResult) return internalResult;
+    if (internalResult) {
+      refreshTaskSessionActivity(entry, taskSessionResolution, internalResult as ToolResult<unknown>, scopedInput, env);
+      return internalResult;
+    }
 
     const branchResolution = resolveBranchIfNeeded(entry, scopedInput, cwd, env, options);
     if (!branchResolution.ok) {
@@ -267,7 +547,11 @@ export async function executeTool<TData = unknown>(
         requestId,
         now: options.now,
       });
-      logResult(entry, toolName, result, entry.underlying, undefined, `workspace ${toolName}`, options.logMode);
+      logResult(entry, toolName, result, entry.underlying, undefined, `workspace ${toolName}`, options.logMode, {
+        input,
+        resolvedInput: scopedInput,
+        env,
+      });
       return result as ToolResult<TData>;
     }
 
@@ -281,8 +565,14 @@ export async function executeTool<TData = unknown>(
     const facadeCmd = formatFacadeCommand(toolName, commandInput);
     const facadeCmdForLog = formatFacadeCommandForLog(toolName, commandInput);
 
-    const timeoutMs = getTimeoutMs(entry, commandInput);
-    const runResult = await runWithRetry(entry, plan, timeoutMs, runner);
+    const timeoutMs = getTimeoutMs(entry, commandInput, options);
+    const runResult = (toolName === 'browser' || toolName.startsWith('browser.'))
+      ? await withNodeResourceLock({
+        lockPath: nodeResourceLockPath(resolveBrowserConfig(env).profilePath),
+        operationId: `browser:${toolName}`,
+        waitTimeoutMs: timeoutMs,
+      }, () => runWithRetry(entry, plan, timeoutMs, runner))
+      : await runWithRetry(entry, plan, timeoutMs, runner);
     const cleanStderr = stripCommandEcho(runResult.stderr);
     if (runResult.timedOut) {
       const result = createToolResult({
@@ -297,7 +587,11 @@ export async function executeTool<TData = unknown>(
         requestId,
         now: options.now,
       });
-      logResult(entry, toolName, result, plannedCommandForLog, branchResolution.branch, facadeCmdForLog, options.logMode);
+      logResult(entry, toolName, result, plannedCommandForLog, branchResolution.branch, facadeCmdForLog, options.logMode, {
+        input,
+        resolvedInput: commandInput,
+        env,
+      });
       return result as ToolResult<TData>;
     }
 
@@ -315,7 +609,11 @@ export async function executeTool<TData = unknown>(
         requestId,
         now: options.now,
       });
-      logResult(entry, toolName, result, plannedCommandForLog, branchResolution.branch, facadeCmdForLog, options.logMode);
+      logResult(entry, toolName, result, plannedCommandForLog, branchResolution.branch, facadeCmdForLog, options.logMode, {
+        input,
+        resolvedInput: commandInput,
+        env,
+      });
       return result as ToolResult<TData>;
     }
 
@@ -329,7 +627,12 @@ export async function executeTool<TData = unknown>(
         ...(requestId && !passthrough.requestId ? { requestId } : {}),
       };
       maybeSyncWorkpadValidation(toolName, commandInput, result as ToolResult<unknown>);
-      logResult(entry, toolName, result, plannedCommandForLog, branchResolution.branch, facadeCmdForLog, options.logMode);
+      refreshTaskSessionActivity(entry, taskSessionResolution, result as ToolResult<unknown>, commandInput, env);
+      logResult(entry, toolName, result, plannedCommandForLog, branchResolution.branch, facadeCmdForLog, options.logMode, {
+        input,
+        resolvedInput: commandInput,
+        env,
+      });
       return result;
     }
 
@@ -347,7 +650,12 @@ export async function executeTool<TData = unknown>(
       now: options.now,
     });
     maybeSyncWorkpadValidation(toolName, commandInput, result as ToolResult<unknown>);
-    logResult(entry, toolName, result, plannedCommandForLog, branchResolution.branch, facadeCmdForLog, options.logMode);
+    refreshTaskSessionActivity(entry, taskSessionResolution, result as ToolResult<unknown>, commandInput, env);
+    logResult(entry, toolName, result, plannedCommandForLog, branchResolution.branch, facadeCmdForLog, options.logMode, {
+      input,
+      resolvedInput: commandInput,
+      env,
+    });
     return result;
   } catch (error: unknown) {
     const message = getErrorMessage(error);
@@ -362,7 +670,7 @@ export async function executeTool<TData = unknown>(
       requestId,
       now: options.now,
     });
-    logResult(entry, toolName, result, entry?.underlying || '', undefined, undefined, options.logMode);
+    logResult(entry, toolName, result, entry?.underlying || '', undefined, undefined, options.logMode, { input, env });
     return result as ToolResult<TData>;
   }
 }
@@ -371,6 +679,8 @@ export async function executeTool<TData = unknown>(
 type JsonRecord = Record<string, unknown>;
 
 const FACADE_FINDING_SAMPLE_LIMIT = 8;
+const FACADE_VERIFY_SAMPLE_LIMIT = 10;
+const FACADE_VERIFY_TEXT_LIMIT = 600;
 const FACADE_MESSAGE_PREVIEW_LIMIT = 240;
 
 function isRecord(value: unknown): value is JsonRecord {
@@ -384,6 +694,32 @@ function asArray(value: unknown): unknown[] {
 function previewText(value: unknown, limit = FACADE_MESSAGE_PREVIEW_LIMIT): string {
   const text = String(value || '').replace(/\u001b\[[0-9;]*m/g, '').replace(/\s+/g, ' ').trim();
   return text.length > limit ? `${text.slice(0, limit)}... truncated ${text.length - limit} chars` : text;
+}
+
+function compactVerifyList(value: unknown, sampleLimit = FACADE_VERIFY_SAMPLE_LIMIT): JsonRecord {
+  const items = asArray(value);
+  return {
+    total: items.length,
+    sample: items.slice(0, sampleLimit).map(compactVerifyValue),
+    truncated: items.length > sampleLimit,
+    omitted: Math.max(0, items.length - sampleLimit),
+  };
+}
+
+function compactVerifyValue(value: unknown): unknown {
+  if (typeof value === 'string') return previewText(value, FACADE_VERIFY_TEXT_LIMIT);
+  if (Array.isArray(value)) return compactVerifyList(value);
+  if (!isRecord(value)) return value;
+
+  const compacted: JsonRecord = {};
+  for (const [key, entryValue] of Object.entries(value)) {
+    if (typeof entryValue === 'string' && ['message', 'stderr', 'stdout', 'output', 'outputTail', 'tail'].includes(key)) {
+      compacted[key] = previewText(entryValue, FACADE_VERIFY_TEXT_LIMIT);
+      continue;
+    }
+    compacted[key] = compactVerifyValue(entryValue);
+  }
+  return compacted;
 }
 
 function compactFacadeFinding(value: unknown, index: number, owner: 'your_change' | 'pre_existing'): JsonRecord {
@@ -442,6 +778,28 @@ function buildTaskSessionRequiredRecovery(toolName: string, entry: ToolManifestE
   const safeInput = sanitizeRecoveryInput(input);
   const repoStateBound = isRepoStateBound(entry);
   const reason = taskSessionRequiredReason(toolName, entry, repoStateBound);
+  if (isWorkSessionFsTool(toolName)) {
+    return {
+      message: `${toolName} requires mutation authority. Use taskSession for managed repository work, or start a work session and pass workSession for ordinary filesystem work.`,
+      data: {
+        tool: toolName,
+        reason,
+        repoStateBound,
+        originalCall: {
+          tool: toolName,
+          input: safeInput,
+        },
+        recovery: {
+          action: 'start_task_or_work_session_then_retry',
+          steps: [
+            'For repository edits, call session.start with kind=task (or task.start for compatibility) and pass the returned taskSession.',
+            'For ordinary filesystem edits, call session.start with kind=work and the directory path, then pass the returned workSession.',
+            `Rerun ${toolName} with the same mutation input and exactly one session authority.`,
+          ],
+        },
+      },
+    };
+  }
   return {
     message: `${toolName} requires taskSession. Start a task with task.start, capture data.taskSession, then rerun ${toolName} with the same input plus taskSession.`,
     data: {
@@ -507,20 +865,24 @@ function compactReviewData(data: unknown): unknown {
   const preExisting = asArray(data.preExisting).map((finding, index) => compactFacadeFinding(finding, index, 'pre_existing'));
   const testResults = asArray(data.testResults);
   const failedSuites = testResults.filter((result) => isRecord(result) && result.passed === false);
+  const documentationCheckRan = Object.prototype.hasOwnProperty.call(data, 'documentationOpportunities');
+  const documentationOpportunities = asArray(data.documentationOpportunities);
+  const checksRun = ['static_rules', 'eslint', 'typecheck', 'spec_compliance'];
+  if (documentationCheckRan) checksRun.push('documentation_opportunities');
+  if (testResults.length > 0) checksRun.push('tests');
   return {
     schema: 'review.summary.v1',
     base: data.base,
     branch: data.branch,
     files: data.files,
     affectedProjects: data.affectedProjects,
-    checksRun: testResults.length > 0
-      ? ['static_rules', 'eslint', 'typecheck', 'spec_compliance', 'tests']
-      : ['static_rules', 'eslint', 'typecheck', 'spec_compliance'],
+    checksRun,
     summary: {
       yourIssues: yours.length,
       preExistingIssues: preExisting.length,
       failedTestSuites: failedSuites.length,
       blockingIssues: yours.length + failedSuites.length,
+      documentationOpportunities: documentationOpportunities.length,
     },
     mustFixTotal: yours.length,
     mustFix: yours.slice(0, FACADE_FINDING_SAMPLE_LIMIT),
@@ -533,6 +895,7 @@ function compactReviewData(data: unknown): unknown {
       preExisting: summarizeFacadeFindings(preExisting).byFile,
     },
     preExistingDigest: summarizeFacadeFindings(preExisting),
+    documentationOpportunities: documentationOpportunities.slice(0, FACADE_FINDING_SAMPLE_LIMIT),
     testSummary: {
       totalSuites: testResults.length,
       passedSuites: testResults.length - failedSuites.length,
@@ -548,13 +911,40 @@ function compactReviewData(data: unknown): unknown {
 }
 
 function compactVerifyData(data: unknown): unknown {
-  if (!isRecord(data) || !isRecord(data.review)) return data;
-  return {
-    ...data,
-    review: {
+  if (!isRecord(data)) return data;
+  const review = isRecord(data.review)
+    ? {
       ...data.review,
       data: compactReviewData(data.review.data),
-    },
+    }
+    : data.review;
+
+  return {
+    schema: 'verify.summary.v1',
+    // Pending is an actionable continuation, not a completed failed verification.
+    status: compactVerifyValue(data.status),
+    pending: data.pending,
+    runKey: compactVerifyValue(data.runKey),
+    phase: compactVerifyValue(data.phase),
+    startedAt: compactVerifyValue(data.startedAt),
+    workerPid: data.workerPid,
+    retryAfterSeconds: data.retryAfterSeconds,
+    message: compactVerifyValue(data.message),
+    nextAction: compactVerifyValue(data.nextAction),
+    because: compactVerifyValue(data.because),
+    testSelection: compactVerifyValue(data.testSelection),
+    stamp: compactVerifyValue(data.stamp),
+    branch: data.branch,
+    base: data.base,
+    headSha: data.headSha,
+    files: compactVerifyList(data.files),
+    review: compactVerifyValue(review),
+    db: compactVerifyValue(data.db),
+    docs: compactVerifyValue(data.docs),
+    passed: data.passed,
+    publishValid: data.publishValid,
+    mode: data.mode,
+    stampPath: data.stampPath,
   };
 }
 
@@ -565,9 +955,11 @@ function compactFacadeData(toolName: string, data: unknown): unknown {
 }
 
 function maybeSyncWorkpadValidation(toolName: string, input: ToolInput, result: ToolResult<unknown>): void {
-  const validationTools = ['review.run', 'verify', 'checkFiles', 'audit', 'office.check'];
+  const validationTools = ['review.run', 'verify', 'checkFiles', 'audit', 'artifacts.check'];
   const tddPhase = typeof input.tddPhase === 'string' ? input.tddPhase : '';
   if (!validationTools.includes(toolName) && !tddPhase) return;
+  if (toolName === 'verify' && isRecord(result.data)
+    && (result.data.pending === true || result.data.status === 'VERIFY_PENDING')) return;
   const taskWorktree = typeof input.taskWorktree === 'string' ? input.taskWorktree : '';
   const taskBranch = typeof input.branch === 'string' ? input.branch : '';
   if (!taskWorktree || !taskBranch.startsWith('task/')) return;
@@ -623,14 +1015,24 @@ function normalizeInput(toolName: string, input: ToolInput): ToolInput {
     return { ...input, mine: true };
   }
 
+  if (toolName === "media.svg") {
+    const normalized: ToolInput = { ...input };
+    for (const key of ["document", "operations", "checks", "render", "selectors"] as const) {
+      if (normalized[key] !== undefined) normalized[`${key}Json`] = JSON.stringify(normalized[key]);
+    }
+    return normalized;
+  }
+
   return input;
 }
+
 async function executeInternalTool<TData>(
   entry: ToolManifestEntry,
   input: ToolInput,
   context: {
     cwd: string;
     env: NodeJS.ProcessEnv;
+    rawInput: ToolInput;
     runner: ToolRunner;
     startedAt: number;
     traceId: string;
@@ -641,32 +1043,165 @@ async function executeInternalTool<TData>(
   const internal = entry.command.internal;
   if (!internal) return null;
 
+  try {
+
+  if (internal === 'runtime-provider') {
+    const metadata = entry.runtimeProvider;
+    if (!metadata || metadata.provider !== 'swamp') {
+      const result = createToolResult({
+        ok: false,
+        code: 'VALIDATION_ERROR',
+        message: `runtime provider metadata is missing or unsupported for ${entry.name}`,
+        data: null,
+        durationMs: elapsedMs(context.startedAt, context.options.now),
+        traceId: context.traceId,
+        requestId: context.requestId,
+        now: context.options.now,
+      });
+      logResult(entry, entry.name, result, entry.underlying, undefined, undefined, context.options.logMode, {
+        input: context.rawInput,
+        resolvedInput: input,
+        env: context.env,
+      });
+      return result as ToolResult<TData>;
+    }
+
+    const outcome = await executeSwampRuntimeTool(metadata, input, {
+      runner: context.runner,
+      timeoutMs: getTimeoutMs(entry, input, context.options),
+      env: context.env,
+    });
+    const ok = !outcome.timedOut && outcome.runResult.exitCode === 0 && !outcome.parseError;
+    const result = createToolResult({
+      ok,
+      code: ok
+        ? 'OK'
+        : outcome.timedOut
+          ? 'TIMEOUT'
+          : outcome.parseError
+            ? 'PARSE_ERROR'
+            : 'COMMAND_FAILED',
+      message: ok
+        ? `${entry.name} completed`
+        : outcome.timedOut
+          ? `command timed out after ${getTimeoutMs(entry, input, context.options)}ms`
+          : outcome.parseError ?? `${entry.name} failed`,
+      data: outcome.data,
+      stderr: stripCommandEcho(outcome.runResult.stderr),
+      exitCode: outcome.runResult.exitCode,
+      durationMs: elapsedMs(context.startedAt, context.options.now),
+      traceId: context.traceId,
+      requestId: context.requestId,
+      now: context.options.now,
+    });
+    logResult(entry, entry.name, result, entry.underlying, undefined, `workspace ${entry.name}`, context.options.logMode, {
+      input: context.rawInput,
+      resolvedInput: input,
+      env: context.env,
+    });
+    return result as ToolResult<TData>;
+  }
+
   if (internal === 'batch') {
     const steps = Array.isArray(input.steps) ? input.steps : [];
-    return runBatch(steps, context.options) as Promise<ToolResult<TData>>;
+    const result = await runBatch(steps, context.options, {
+      taskSession: typeof input.taskSession === 'string' ? input.taskSession : undefined,
+      branch: typeof input.branch === 'string' ? input.branch : undefined,
+      taskWorktree: typeof input.taskWorktree === 'string' ? input.taskWorktree : undefined,
+    }) as ToolResult<TData>;
+    logResult(entry, entry.name, result, entry.underlying, undefined, `workspace ${entry.name}`, context.options.logMode, {
+      input: context.rawInput,
+      resolvedInput: input,
+      env: context.env,
+    });
+    return result;
   }
 
   if (internal === 'code.call') {
-    return executeCodeCall(input as CodeCallInput, {
+    const codeCallInput = typeof context.options.timeoutMs === 'number'
+      ? { ...input, timeout: context.options.timeoutMs }
+      : typeof input.timeout === 'number'
+        ? input
+        : { ...input, timeout: entry.defaultTimeout };
+    const result = await executeCodeCall(codeCallInput as CodeCallInput, {
       cwd: context.cwd,
       env: context.env,
       now: context.options.now,
       randomUUID: context.options.randomUUID,
       traceId: context.traceId,
       requestId: context.requestId,
-    }) as Promise<ToolResult<TData>>;
+    }) as ToolResult<TData>;
+    logResult(entry, entry.name, result, entry.underlying, undefined, `workspace ${entry.name}`, context.options.logMode, {
+      input: context.rawInput,
+      resolvedInput: codeCallInput,
+      env: context.env,
+    });
+    return result;
   }
 
-  if (internal === 'worker.call') {
-    return executeWorkerCall(entry, input, context) as Promise<ToolResult<TData>>;
+  if (internal === 'deployment') {
+    const deploymentInput = {
+      ...input,
+      tool: entry.name,
+    } as DeploymentFacadeInput;
+    const outcome = await Effect.runPromise(Effect.either(executeDeploymentFacade(deploymentInput)));
+    const result = outcome._tag === 'Right'
+      ? createToolResult({
+        ok: true,
+        code: 'OK',
+        message: `${entry.name} completed`,
+        data: outcome.right,
+        durationMs: elapsedMs(context.startedAt, context.options.now),
+        traceId: context.traceId,
+        requestId: context.requestId,
+        now: context.options.now,
+      })
+      : createToolResult({
+        ok: false,
+        code: outcome.left.code,
+        message: outcome.left.message,
+        data: {
+          provider: outcome.left.provider,
+          operation: outcome.left.operation,
+          ...(outcome.left.diagnostics ? { diagnostics: outcome.left.diagnostics } : {}),
+          ...(outcome.left.approval ? { approval: outcome.left.approval } : {}),
+          ...(outcome.left.recovery ? { recovery: outcome.left.recovery } : {}),
+        },
+        stderr: '',
+        exitCode: 1,
+        durationMs: elapsedMs(context.startedAt, context.options.now),
+        traceId: context.traceId,
+        requestId: context.requestId,
+        now: context.options.now,
+      });
+    const traceInput = redactDeploymentTraceInput(entry.name, context.rawInput);
+    const resolvedTraceInput = redactDeploymentTraceInput(entry.name, input);
+    logResult(entry, entry.name, result, entry.underlying, undefined, `workspace ${entry.name}`, context.options.logMode, {
+      input: traceInput,
+      resolvedInput: resolvedTraceInput,
+      env: context.env,
+    });
+    return result as ToolResult<TData>;
+  }
+
+  if (internal === 'subagent') {
+    return executeSubagent(entry, input, context) as Promise<ToolResult<TData>>;
   }
 
   if (internal === 'task.current') {
+    const scopedBranch = typeof input.branch === 'string' ? input.branch : undefined;
+    const scopedWorktree = typeof input.taskWorktree === 'string' ? input.taskWorktree : undefined;
+    const scopedTask = scopedBranch && scopedWorktree ? {
+      branch: scopedBranch,
+      area: getAreaFromBranch(scopedBranch) || 'unknown',
+      worktree: scopedWorktree,
+    } : null;
     const task = getCurrentTask({
+      explicitBranch: scopedBranch,
       cwd: context.cwd,
       env: context.env,
-      currentTask: context.options.currentTask,
-      candidates: context.options.candidates,
+      currentTask: scopedTask ?? context.options.currentTask,
+      candidates: scopedTask ? [scopedTask] : context.options.candidates,
     });
     const result = createToolResult({
       ok: true,
@@ -677,7 +1212,11 @@ async function executeInternalTool<TData>(
       traceId: context.traceId,
       requestId: context.requestId,
     });
-    logResult(entry, entry.name, result, entry.underlying, task?.branch, undefined, context.options.logMode);
+    logResult(entry, entry.name, result, entry.underlying, task?.branch, undefined, context.options.logMode, {
+      input: context.rawInput,
+      resolvedInput: input,
+      env: context.env,
+    });
     return result as ToolResult<TData>;
   }
 
@@ -701,7 +1240,11 @@ async function executeInternalTool<TData>(
         requestId: context.requestId,
         now: context.options.now,
       });
-      logResult(entry, entry.name, result, entry.underlying, undefined, undefined, context.options.logMode);
+      logResult(entry, entry.name, result, entry.underlying, undefined, undefined, context.options.logMode, {
+        input: context.rawInput,
+        resolvedInput: input,
+        env: context.env,
+      });
       return result as ToolResult<TData>;
     }
 
@@ -712,7 +1255,7 @@ async function executeInternalTool<TData>(
       cwd: resolveWorkspaceCommandCwd(context.cwd, 'stream:context'),
       env: { ...context.env },
     };
-    const runResult = await context.runner(plan, entry.defaultTimeout);
+    const runResult = await context.runner(plan, getTimeoutMs(entry, input, context.options));
     const data = parseStdout(runResult.stdout, true).data as Record<string, unknown> | null;
     const aheadBehind = data && typeof data === 'object' ? data.aheadBehind as Record<string, unknown> | undefined : undefined;
     const behind = typeof aheadBehind?.behind === 'number' ? aheadBehind.behind : undefined;
@@ -733,7 +1276,11 @@ async function executeInternalTool<TData>(
       traceId: context.traceId,
       requestId: context.requestId,
     });
-    logResult(entry, entry.name, result, formatCommandForLog(plan), resolution.branch, `workspace ${entry.name}`, context.options.logMode);
+    logResult(entry, entry.name, result, formatCommandForLog(plan), resolution.branch, `workspace ${entry.name}`, context.options.logMode, {
+      input: context.rawInput,
+      resolvedInput: { ...input, branch: resolution.branch },
+      env: context.env,
+    });
     return result as ToolResult<TData>;
   }
 
@@ -746,20 +1293,34 @@ async function executeInternalTool<TData>(
     traceId: context.traceId,
     requestId: context.requestId,
   });
-  logResult(entry, entry.name, result, entry.underlying, undefined, undefined, context.options.logMode);
+  logResult(entry, entry.name, result, entry.underlying, undefined, undefined, context.options.logMode, {
+    input: context.rawInput,
+    resolvedInput: input,
+    env: context.env,
+  });
   return result as ToolResult<TData>;
+  } catch (error: unknown) {
+    if (error instanceof Error && !Object.hasOwn(error, 'consueloTool')) {
+      Object.defineProperty(error, 'consueloTool', {
+        value: entry.name,
+        enumerable: false,
+        configurable: true,
+      });
+    }
+    throw error;
+  }
 }
 
 
 function resolveTaskSessionInput(input: ToolInput, cwd: string, env: NodeJS.ProcessEnv): TaskSessionResolution | null {
-  const taskSession = typeof input.taskSession === 'string' ? input.taskSession : undefined;
-  if (!taskSession) return null;
+  const taskHandle = typeof input.taskSession === 'string' ? input.taskSession.trim() : undefined;
+  if (!taskHandle) return null;
 
-  const metadata = findTaskSessionMetadata(cwd, taskSession, env);
+  const metadata = findTaskSessionMetadata(cwd, taskHandle, env);
   if (!metadata) return {
     ok: false,
     code: 'TASK_SESSION_NOT_FOUND',
-    message: 'taskSession was not found. Use the taskSession returned by task.start and avoid root task pin fallback.',
+    message: 'taskSession was not found. Pass the taskSession returned by task.start or the matching task branch.',
   };
 
   const branch = metadata.branch || metadata.taskBranch || '';
@@ -773,16 +1334,59 @@ function resolveTaskSessionInput(input: ToolInput, cwd: string, env: NodeJS.Proc
   return { ok: true, branch, metadata };
 }
 
+function resolveWorkSessionInput(
+  toolName: string,
+  input: ToolInput,
+  cwd: string,
+  env: NodeJS.ProcessEnv,
+): WorkSessionResolution | null {
+  const workSession = typeof input.workSession === 'string' ? input.workSession.trim() : '';
+  if (!workSession) return null;
+  if (!supportsWorkSessionAuthority(toolName)) {
+    return {
+      ok: false,
+      code: 'VALIDATION_ERROR',
+      message: `${toolName} does not support workSession authority.`,
+    };
+  }
+  if (typeof input.branch === 'string' && input.branch.trim()) {
+    return {
+      ok: false,
+      code: 'VALIDATION_ERROR',
+      message: 'workSession calls cannot also select a task branch. Use taskSession for repository edits.',
+    };
+  }
+  try {
+    const scope = resolveWorkSessionFsScope({
+      workSession,
+      env,
+      managedRepoRoot: cwd,
+    });
+    return { ok: true, workSession: scope.workSession, root: scope.root };
+  } catch (error: unknown) {
+    if (error instanceof WorkSessionFsScopeError) {
+      return { ok: false, code: error.code, message: error.message };
+    }
+    return {
+      ok: false,
+      code: 'VALIDATION_ERROR',
+      message: `Unable to validate workSession: ${getErrorMessage(error)}`,
+    };
+  }
+}
+
 
 function getWorktreeRoot(env: NodeJS.ProcessEnv = process.env): string {
   return env.WORKSPACE_WORKTREE_ROOT || env.OPENSAAS_WORKTREE_ROOT || path.join(os.tmpdir(), 'opensaas-worktrees');
 }
 
-function isTaskSessionMetadata(value: unknown, expectedTaskSession: string): value is TaskSessionMetadata {
+function isTaskSessionMetadata(value: unknown, expectedTaskHandle: string): value is TaskSessionMetadata {
   if (typeof value !== 'object' || value === null) return false;
   const candidate = value as Partial<TaskSessionMetadata>;
   const branch = candidate.branch || candidate.taskBranch;
-  return candidate.taskSession === expectedTaskSession && typeof branch === 'string' && branch.length > 0;
+  const handles = [candidate.taskSession, candidate.branch, candidate.taskBranch, candidate.taskId, candidate.id]
+    .filter((handle): handle is string => typeof handle === 'string' && handle.length > 0);
+  return handles.includes(expectedTaskHandle) && typeof branch === 'string' && branch.length > 0;
 }
 
 function addSessionCandidates(candidates: Array<{ path: string; warn: boolean }>, worktreePath: string, warn: boolean): void {
@@ -802,6 +1406,28 @@ function addSessionCandidates(candidates: Array<{ path: string; warn: boolean }>
 }
 
 function findTaskSessionMetadata(cwd: string, taskSession: string, env: NodeJS.ProcessEnv): TaskSessionMetadata | null {
+  try {
+    const home = env.CONSUELO_HOME || env.CONSUELO_OS_HOME;
+    const registryOptions = home ? { home } : {};
+    const durable = readDurableTaskSessionMetadata(taskSession, registryOptions);
+    const durableWorktree = durable?.worktreePath || durable?.worktree;
+    if (
+      durable
+      && durable.status === 'active'
+      && typeof durableWorktree === 'string'
+      && fs.existsSync(durableWorktree)
+      && isTaskSessionMetadata(durable, taskSession)
+    ) {
+      return durable;
+    }
+    if (durable) {
+      const recovered = recoverDurableTaskSession(taskSession, registryOptions);
+      if (recovered && isTaskSessionMetadata(recovered, taskSession)) return recovered;
+    }
+  } catch (error: unknown) {
+    process.stderr.write(`warning: failed to recover durable task session ${taskSession}: ${getErrorMessage(error)}\n`);
+  }
+
   const candidates: Array<{ path: string; warn: boolean }> = [];
   addSessionCandidates(candidates, cwd, true);
 
@@ -809,8 +1435,13 @@ function findTaskSessionMetadata(cwd: string, taskSession: string, env: NodeJS.P
     addSessionCandidates(candidates, env.TASK_WORKTREE, true);
   }
 
-  const absoluteWorktreeRoot = getWorktreeRoot(env);
-  if (fs.existsSync(absoluteWorktreeRoot)) {
+  const home = env.CONSUELO_HOME || env.CONSUELO_OS_HOME;
+  const taskWorktreeRoots = Array.from(new Set([
+    getTaskWorktreeRoot(undefined, env),
+    getWorktreeRoot(env),
+  ].filter((value): value is string => typeof value === 'string' && value.length > 0)));
+  for (const absoluteWorktreeRoot of taskWorktreeRoots) {
+    if (!fs.existsSync(absoluteWorktreeRoot)) continue;
     for (const name of fs.readdirSync(absoluteWorktreeRoot)) {
       if (!name.startsWith('task-')) continue;
       addSessionCandidates(candidates, path.join(absoluteWorktreeRoot, name), false);
@@ -842,6 +1473,9 @@ function resolveBranchIfNeeded(
   env: NodeJS.ProcessEnv,
   options: ExecuteToolOptions,
 ): BranchResolution {
+  if (typeof input.workSessionRoot === 'string' && isWorkSessionFsTool(entry.name)) {
+    return { ok: true, branch: '', source: 'work-session' };
+  }
   const branchMode = entry.command.branchMode || 'none';
   if (branchMode === 'none') return { ok: true, branch: '', source: 'none' };
 
@@ -854,7 +1488,13 @@ function resolveBranchIfNeeded(
     candidates: options.candidates,
   });
 
-  if (branchMode === 'optional' && !resolution.ok && resolution.code === 'WORKTREE_NOT_FOUND') {
+  const hasExplicitRepoTarget = Boolean(explicitBranch);
+  if (
+    branchMode === 'optional'
+    && !hasExplicitRepoTarget
+    && !resolution.ok
+    && (resolution.code === 'WORKTREE_NOT_FOUND' || resolution.code === 'AMBIGUOUS_TASK_SELECTION')
+  ) {
     return { ok: true, branch: '', source: 'none' };
   }
 
@@ -867,6 +1507,22 @@ function buildCommandPlan(
   cwd: string,
   env: NodeJS.ProcessEnv,
 ): CommandPlan {
+  if (isWorkSessionFsTool(entry.name) && typeof input.workSessionRoot === 'string') {
+    const args = [path.join(runtimePackageRoot, 'scripts', 'fs.js')];
+    if (entry.command.subcommand) args.push(entry.command.subcommand);
+    for (const argument of entry.command.arguments) appendArgument(args, argument, input);
+    if (entry.command.jsonFlag) args.push(entry.command.jsonFlag);
+    if (entry.command.dryRunFlag && input.dryRun === true) args.push(entry.command.dryRunFlag);
+    return {
+      command: 'bun',
+      args,
+      cwd: input.workSessionRoot,
+      env: {
+        ...env,
+        ...(typeof input.workSession === 'string' ? { WORK_SESSION: input.workSession } : {}),
+      },
+    };
+  }
   const branch = typeof input.branch === 'string' ? input.branch : '';
   const script = entry.command.script === 'task:fs' && !branch ? 'fs' : entry.command.script;
   const args = ['run', script, '--'];
@@ -886,13 +1542,15 @@ function buildCommandPlan(
 
   if (entry.command.jsonFlag) args.push(entry.command.jsonFlag);
   if (entry.command.dryRunFlag && input.dryRun === true) args.push(entry.command.dryRunFlag);
+  const runtimeScoped = entry.command.executionScope === 'runtime';
 
   return {
     command: 'bun',
     args,
-    cwd: resolveWorkspaceCommandCwd(cwd, script, input),
+    cwd: runtimeScoped ? runtimePackageRoot : resolveWorkspaceCommandCwd(cwd, script, input),
     env: {
       ...env,
+      ...(runtimeScoped ? { CONSUELO_TOOL_CALLER_CWD: cwd } : {}),
       ...(branch ? { TASK_BRANCH: branch } : {}),
       ...(typeof input.taskWorktree === 'string' ? { TASK_WORKTREE: input.taskWorktree } : {}),
     },
@@ -933,8 +1591,28 @@ function appendArgument(args: string[], argument: CommandArgument, input: ToolIn
   args.push(String(value));
 }
 
-function getTimeoutMs(entry: ToolManifestEntry, input: ToolInput): number {
-  return typeof input.timeout === 'number' ? input.timeout : entry.defaultTimeout;
+function getTimeoutMs(
+  entry: ToolManifestEntry,
+  input: ToolInput,
+  options: ExecuteToolOptions = {},
+): number {
+  if (typeof options.timeoutMs === 'number') return options.timeoutMs;
+  if (typeof input.timeout === 'number') return input.timeout;
+  if (typeof input.timeoutMs === 'number') return input.timeoutMs;
+  return entry.defaultTimeout;
+}
+
+export function resolveInternalExecutionInput(
+  entry: ToolManifestEntry,
+  input: ToolInput,
+  options: ExecuteToolOptions = {},
+): ToolInput {
+  const internal = entry.command.internal;
+  if (internal !== 'deployment' && internal !== 'subagent') return input;
+  return {
+    ...input,
+    timeoutMs: getTimeoutMs(entry, input, options),
+  };
 }
 
 async function runWithRetry(
@@ -1046,7 +1724,9 @@ function resolveGitRoot(cwd: string): string {
 
 function resolveWorkspaceCommandCwd(cwd: string, script: string, input?: ToolInput): string {
   if ((script === 'code-run' || script === 'code-call') && typeof input?.taskWorktree === 'string') return input.taskWorktree;
+  if (script === 'verify' && typeof input?.taskWorktree === 'string') return input.taskWorktree;
   if (!script.startsWith('task:') && !script.startsWith('stream:')) return cwd;
+  if (typeof input?.taskWorktree === 'string') return input.taskWorktree;
   return resolveControllerRoot(cwd) || cwd;
 }
 
@@ -1071,14 +1751,52 @@ function logResult(
   implementationCommand: string,
   branch?: string,
   facadeCommand?: string,
-  logMode: ExecuteToolOptions["logMode"] = "all",
+  logMode: ExecuteToolOptions["logMode"],
+  traceContext: {
+    input?: unknown;
+    resolvedInput?: unknown;
+    env?: NodeJS.ProcessEnv;
+  } = {},
 ): void {
-  if (logMode === "silent") return;
-  if (logMode === "errors" && result.ok) return;
+  const envLogMode = traceContext.env?.CONSUELO_FACADE_LOG_MODE?.trim().toLowerCase();
+  const effectiveLogMode = envLogMode === 'silent'
+    ? 'silent'
+    : logMode ?? (envLogMode === 'errors' || envLogMode === 'all' ? envLogMode : 'all');
+  const emit = effectiveLogMode !== 'silent' && !(effectiveLogMode === 'errors' && result.ok);
+  const resolvedInput = isRecord(traceContext.resolvedInput) ? traceContext.resolvedInput : {};
+  const rawInput = isRecord(traceContext.input) ? traceContext.input : {};
+  const taskSession = typeof resolvedInput.taskSession === 'string'
+    ? resolvedInput.taskSession
+    : typeof rawInput.taskSession === 'string'
+      ? rawInput.taskSession
+      : undefined;
+  const worktree = typeof resolvedInput.taskWorktree === 'string'
+    ? resolvedInput.taskWorktree
+    : typeof resolvedInput.worktree === 'string'
+      ? resolvedInput.worktree
+      : undefined;
+  const workSession = typeof resolvedInput.workSession === 'string'
+    ? resolvedInput.workSession
+    : typeof rawInput.workSession === 'string'
+      ? rawInput.workSession
+      : undefined;
+  const workPath = typeof resolvedInput.workSessionRoot === 'string'
+    ? resolvedInput.workSessionRoot
+    : undefined;
+  const mcpTraceId = typeof resolvedInput.mcpTraceId === 'string'
+    ? resolvedInput.mcpTraceId
+    : typeof resolvedInput.parentTraceId === 'string'
+      ? resolvedInput.parentTraceId
+      : typeof rawInput.mcpTraceId === 'string'
+        ? rawInput.mcpTraceId
+        : typeof rawInput.parentTraceId === 'string'
+          ? rawInput.parentTraceId
+          : undefined;
+  const effectiveBranch = branch ?? (typeof resolvedInput.branch === 'string' ? resolvedInput.branch : undefined);
 
   logToolExecution({
     tool: entry?.name || toolName,
-    branch,
+    branch: effectiveBranch,
     command: facadeCommand || `workspace ${entry?.name || toolName}`,
     implementationCommand: implementationCommand || undefined,
     durationMs: result.durationMs,
@@ -1087,6 +1805,20 @@ function logResult(
     requestId: result.requestId,
     ok: result.ok,
     code: result.code,
+    taskSession,
+    worktree,
+    workSession,
+    workPath,
+    mcpTraceId,
+    input: traceContext.input,
+    resolvedInput: traceContext.resolvedInput,
+    result,
+    stderr: result.stderr,
+    inputTokens: result.inputTokens,
+    outputTokens: result.outputTokens,
+    totalTokens: result.totalTokens,
+    env: traceContext.env,
+    emit,
     capabilities: {
       readOnly: entry?.capabilities.readOnly ?? true,
       mutating: entry?.capabilities.mutating ?? false,

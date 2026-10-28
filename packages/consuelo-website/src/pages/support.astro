@@ -1,0 +1,110 @@
+---
+import SiteFooter from '../components/site/SiteFooter.astro';
+import SiteHeader from '../components/site/SiteHeader.astro';
+import MarketingLayout from '../layouts/MarketingLayout.astro';
+
+const description = 'Get help with Consuelo OS, Consuelo Cloud, and the Consuelo Dialer.';
+---
+
+<MarketingLayout title="Support" description={description}>
+  <SiteHeader />
+
+  <main>
+    <section class="site-section support-hero">
+      <div class="site-container site-stack site-stack--lg">
+        <div class="site-stack site-stack--sm support-heading">
+          <p class="site-eyebrow">Consuelo support</p>
+          <h1 class="site-title">Get the right help without losing your place.</h1>
+          <p class="site-copy">
+            Start with the documentation for setup and troubleshooting. Contact the Consuelo team when an installation, account, or product issue needs a person.
+          </p>
+        </div>
+
+        <div class="site-grid site-grid--3 support-options">
+          <article class="site-card site-stack site-stack--sm">
+            <p class="site-eyebrow">Documentation</p>
+            <h2>Find setup and troubleshooting guides.</h2>
+            <p>Use the maintained Consuelo documentation for OS, Cloud, integrations, and the embedded dialer.</p>
+            <a class="site-button" href="https://docs.consuelohq.com">Open documentation</a>
+          </article>
+
+          <article class="site-card site-stack site-stack--sm">
+            <p class="site-eyebrow">Direct support</p>
+            <h2>Send the issue to the Consuelo team.</h2>
+            <p>Include the product surface, what you expected, what happened, and a redacted screenshot when useful.</p>
+            <a class="site-button" href="mailto:support@consuelohq.com">Email support@consuelohq.com</a>
+          </article>
+
+          <article class="site-card site-stack site-stack--sm">
+            <p class="site-eyebrow">Sales and implementation</p>
+            <h2>Plan a rollout or implementation.</h2>
+            <p>Use the contact route for workspace design, onboarding, managed infrastructure, or a broader deployment conversation.</p>
+            <a class="site-button site-button--secondary" href="/contact">Contact Consuelo</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="site-section support-checklist">
+      <div class="site-container site-grid site-grid--2">
+        <div class="site-stack site-stack--sm">
+          <p class="site-eyebrow">Before you write</p>
+          <h2>Share enough context to reproduce the problem.</h2>
+        </div>
+        <ul class="support-list">
+          <li>The Consuelo product and page where the issue occurred.</li>
+          <li>The time of the failure and the action immediately before it.</li>
+          <li>A request ID or error code when the interface shows one.</li>
+          <li>A screenshot with credentials, tokens, and full phone numbers removed.</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <SiteFooter />
+</MarketingLayout>
+
+<style>
+  .support-hero {
+    padding-top: clamp(var(--site-space-7), 8vw, var(--site-space-8));
+  }
+
+  .support-heading {
+    max-width: 58rem;
+  }
+
+  .support-options h2,
+  .support-checklist h2 {
+    margin: 0;
+    color: var(--site-color-ink);
+    font: 600 var(--site-text-xl) / 1.15 var(--site-font-body);
+    text-wrap: balance;
+  }
+
+  .support-options p:not(.site-eyebrow),
+  .support-list {
+    margin: 0;
+    color: var(--site-color-muted);
+    font: 400 var(--site-text-md) / var(--site-leading-body) var(--site-font-body);
+  }
+
+  .support-options .site-button {
+    align-self: start;
+    margin-top: auto;
+  }
+
+  .support-checklist {
+    border-top: 1px solid var(--site-color-line);
+    background: var(--site-color-soft-white);
+  }
+
+  .support-list {
+    display: grid;
+    gap: var(--site-space-4);
+    padding-left: 1.25rem;
+  }
+
+  .support-list li::marker {
+    color: var(--site-color-accent);
+  }
+</style>

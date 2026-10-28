@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 import { createWorkflowIntentRuntime } from '../hooks/intent.js';
+import { getInputSchema } from '../scripts/lib/facade/schemas';
 
 type ManifestToolDefinition = {
   name: string;
@@ -36,7 +37,6 @@ type WorkflowBundlesFile = {
 const manifestPath = resolve(import.meta.dirname, '../tooling/tool-manifest.json');
 const bundlesPath = resolve(import.meta.dirname, '../manifests/workflow-bundles.json');
 const packageRoot = resolve(import.meta.dirname, '..');
-const repoRoot = resolve(packageRoot, '..', '..');
 const taskIntentScript = resolve(import.meta.dirname, '../scripts/task-intent.js');
 
 function readJson(path: string): unknown {
@@ -71,86 +71,166 @@ function toolNames(bundle: WorkflowBundle): string[] {
 }
 
 describe('Workspace workflow intent bundles', () => {
-  test('should generate task and office workflow bundles when loading workflow metadata', () => {
+  test('should generate only the task workflow bundle', () => {
     const bundles = readBundles();
     const task = workflowById(bundles, 'task');
-    const office = workflowById(bundles, 'office');
 
     expect(task.roles).toEqual(expect.arrayContaining(['task.start', 'task.pr', 'workpad.write']));
-    expect(toolNames(task)).toEqual(expect.arrayContaining(['task.start', 'task.pr', 'fs.write']));
+    expect(toolNames(task)).toEqual(expect.arrayContaining(['session.start', 'task.start', 'task.pr', 'fs.write']));
     expect(task.subscriptions).toEqual(
-      expect.arrayContaining([expect.objectContaining({ event: 'tool.postInvoke', tool: 'task.start' })]),
+      expect.arrayContaining([
+        expect.objectContaining({ event: 'tool.preInvoke', tool: 'session.start' }),
+        expect.objectContaining({ event: 'tool.postInvoke', tool: 'session.start' }),
+        expect.objectContaining({ event: 'tool.postInvoke', tool: 'task.start' }),
+        expect.objectContaining({ event: 'tool.postInvoke', tool: 'task.push' }),
+      ]),
     );
 
-    expect(office.aliases).toEqual(expect.arrayContaining(['design', 'sites']));
-    expect(office.roles).toEqual(expect.arrayContaining(['office.publish', 'office.generate.website']));
-    expect(toolNames(office)).toEqual(expect.arrayContaining(['design.publish', 'office.generateWebsite']));
+    expect(bundles.workflows.map((workflow) => workflow.id)).toEqual(['task']);
   });
 
-  test('should return advisory task-start guidance when starting task intent', () => {
+  test('should bind the task workflow bundle and post-start guidance to the real task session', () => {
     const runtime = createWorkflowIntentRuntime({
       manifest: readManifest(),
       bundles: readBundles(),
     });
+    const taskResult = {
+      taskSession: 'tsk_real_task',
+      area: 'workspace-agents',
+      branch: 'task/workspace-agents/intent-architecture',
+      worktreePath: '/tmp/intent-architecture',
+    };
 
     const result = runtime.start({
       workflow: 'task',
-      taskSession: 'tsk_intent_task',
-      area: 'workspace-agents',
+      taskSession: taskResult.taskSession,
+      area: taskResult.area,
       title: 'intent architecture',
+      branch: taskResult.branch,
+      worktreePath: taskResult.worktreePath,
+      taskResult,
     });
 
     expect(result.workflow).toBe('task');
-    expect(result.taskSession).toBe('tsk_intent_task');
+    expect(result.taskSession).toBe('tsk_real_task');
     expect(result.manifestBundle.tools.map((tool) => tool.name)).toEqual(expect.arrayContaining(['task.start']));
-    expect(result.hookResult).toEqual(
-      expect.objectContaining({
-        workflow: 'task',
-        stage: 'task-start-guidance',
-        advisory: expect.objectContaining({ suggestedNextTool: 'stream.context' }),
+    expect(result.hookEvent).toEqual(expect.objectContaining({
+      event: 'tool.postInvoke',
+      tool: 'task.start',
+      taskSession: 'tsk_real_task',
+      result: expect.objectContaining(taskResult),
+    }));
+    expect(result.hookResult).toEqual(expect.objectContaining({
+      workflow: 'task',
+      stage: 'workpad-bootstrap',
+      contextInjection: expect.objectContaining({
+        taskSession: 'tsk_real_task',
+        worktreePath: '/tmp/intent-architecture',
       }),
-    );
-    expect(result.hookResult?.blockedAction).toBeUndefined();
-    expect(result.hookResult?.requiredNextAction).toBeUndefined();
-    expect(JSON.stringify(result.hookResult)).toContain('startFrom');
-    expect(JSON.stringify(result.hookResult)).toContain('main');
-    expect(JSON.stringify(result.hookResult)).toContain('stream');
-    expect(result.hookEvent).toEqual(expect.objectContaining({ taskSession: 'tsk_intent_task' }));
+    }));
+    expect(result.hookResult?.requiredNextAction.tool).toBe('fs.write');
+    expect(result.hookResult?.requiredNextAction.input).toEqual(expect.objectContaining({ append: true, mkdirs: true }));
+    expect(result.hookResult?.requiredNextAction.input.content).toContain('## Test-first contract');
   });
 
-  test('should expose task.intent when reading the full and core manifests', () => {
-    const intentEntry = readManifest().find((tool) => tool.workflowRole === 'intent.start');
-    const coreIntentEntry = readCoreManifest().tools.find((tool) => tool.definition.workflowRole === 'intent.start');
+  test('should expose session.start as canonical while retaining task.start compatibility', () => {
+    const full = readManifest();
+    const core = readCoreManifest().tools;
+    const sessionEntry = full.find((tool) => tool.name === 'session.start');
+    const taskAlias = full.find((tool) => tool.name === 'task.start');
+    const coreSessionEntry = core.find((tool) => tool.name === 'session.start');
 
-    expect(intentEntry).toEqual(expect.objectContaining({
-      name: 'task.intent',
-      methodPath: ['task', 'intent'],
-      command: expect.objectContaining({ script: 'task-intent' }),
+    expect(full.map((tool) => tool.name)).not.toContain('task.intent');
+    expect(core.map((tool) => tool.name)).not.toContain('task.intent');
+    expect(sessionEntry).toEqual(expect.objectContaining({
+      name: 'session.start',
+      methodPath: ['session', 'start'],
+      category: 'session lifecycle',
+      command: expect.objectContaining({ script: 'session:start' }),
+      description: expect.stringMatching(/canonical/i),
     }));
-    expect(coreIntentEntry).toEqual(expect.objectContaining({
-      name: 'task.intent',
+    const sessionArguments = (sessionEntry?.command as { arguments?: Array<{ source?: string; flag?: string }> })?.arguments ?? [];
+    expect(sessionArguments).toContainEqual(expect.objectContaining({ source: 'description', flag: '--description' }));
+    expect(sessionArguments).toContainEqual(expect.objectContaining({ source: 'createStream', flag: '--create-stream' }));
+    expect(coreSessionEntry).toEqual(expect.objectContaining({
+      name: 'session.start',
       core: true,
       definition: expect.objectContaining({
-        name: 'task.intent',
-        methodPath: ['task', 'intent'],
-        command: expect.objectContaining({ script: 'task-intent' }),
+        methodPath: ['session', 'start'],
       }),
     }));
+    expect(taskAlias).toEqual(expect.objectContaining({
+      name: 'task.start',
+      description: expect.stringMatching(/compatibility alias/i),
+      command: expect.objectContaining({ script: 'task:start' }),
+    }));
+    const sessionStartSchema = getInputSchema('SessionStartInput');
+    expect(sessionStartSchema).not.toBeNull();
+    if (!sessionStartSchema) throw new Error('SessionStartInput schema is unavailable');
+    expect(sessionStartSchema.parse({
+      kind: 'task', area: 'workspace-agents', title: 'canonical task start',
+    })).toMatchObject({ kind: 'task' });
+    const canonicalTask = sessionStartSchema.parse({
+      kind: 'task',
+      area: 'workspace-agents',
+      title: 'canonical task start',
+      workflow: 'task',
+      description: 'kept description',
+      bodyFile: '/tmp/body.md',
+      startFrom: 'stream',
+      createStream: true,
+    });
+    expect(canonicalTask).toMatchObject({
+      kind: 'task',
+      title: 'canonical task start',
+      description: 'kept description',
+      createStream: true,
+    });
+
+    expect(sessionStartSchema.parse({
+      kind: 'work', path: '/tmp/example-work-root',
+    })).toMatchObject({ kind: 'work' });
+    expect(sessionStartSchema.parse({
+      kind: 'work',
+    })).toMatchObject({ kind: 'work' });
+    expect(sessionStartSchema.parse({
+      kind: 'work', title: 'voice shortcut',
+    })).toMatchObject({ kind: 'work', title: 'voice shortcut' });
+    expect(sessionStartSchema.parse({
+      kind: 'work', path: '/tmp/example-work-root', title: 'voice shortcut',
+    })).toMatchObject({ kind: 'work', title: 'voice shortcut' });
+    expect(() => sessionStartSchema.parse({
+      kind: 'work', path: '/tmp/example-work-root', area: 'workspace-agents',
+    })).toThrow();
+    expect(() => sessionStartSchema.parse({
+      kind: 'task', area: 'workspace-agents', path: '/tmp/should-not-be-accepted',
+    })).toThrow();
   });
 
-  test('should resolve office aliases when starting design or sites intent', () => {
+  test('should accept workflow selection through the combined task.start input', () => {
+    const parsed = getInputSchema('TaskStartInput').parse({
+      area: 'workspace-agents',
+      title: 'combined task start',
+      workflow: 'task',
+    });
+
+    expect(parsed.workflow).toBe('task');
+    for (const retiredWorkflow of ['office', 'design', 'sites']) {
+      expect(() => getInputSchema('TaskStartInput').parse({
+        area: 'workspace-agents',
+        title: 'retired workflow',
+        workflow: retiredWorkflow,
+      })).toThrow();
+    }
+  });
+
+  test('should reject artifact workflow aliases in the workspace controller', () => {
     const runtime = createWorkflowIntentRuntime({ manifest: readManifest(), bundles: readBundles() });
 
-    const design = runtime.start({ workflow: 'design', taskSession: 'tsk_design' });
-    const sites = runtime.start({ workflow: 'sites', taskSession: 'tsk_sites' });
-
-    expect(design.workflow).toBe('office');
-    expect(design.requestedWorkflow).toBe('design');
-    expect(sites.workflow).toBe('office');
-    expect(design.manifestBundle.aliases).toEqual(expect.arrayContaining(['design', 'sites']));
-    expect(design.manifestBundle.tools.map((tool) => tool.name)).toEqual(
-      expect.arrayContaining(['design.publish', 'office.generateWebsite']),
-    );
+    for (const retiredWorkflow of ['office', 'design', 'sites']) {
+      expect(() => runtime.start({ workflow: retiredWorkflow, taskSession: `tsk_${retiredWorkflow}` }))
+        .toThrow(`unknown workflow: ${retiredWorkflow}`);
+    }
   });
 
   test('should require taskSession when dispatching scoped hook events', () => {
@@ -205,48 +285,22 @@ describe('Workspace workflow intent bundles', () => {
     expect(b.hookResult?.contextInjection).toEqual(
       expect.objectContaining({ taskSession: 'tsk_b', worktreePath: '/tmp/worktree-b' }),
     );
-    expect(a.hookResult?.suggestedNextAction.tool).toBe('batch');
-    expect(JSON.stringify(a.hookResult?.suggestedNextAction.input)).toContain('code.call');
-    expect(JSON.stringify(a.hookResult?.suggestedNextAction.input)).toContain('explore');
-    expect(JSON.stringify(a.hookResult?.suggestedNextAction.input)).toContain('Bun structured repo scanner');
-    expect(JSON.stringify(a.hookResult?.suggestedNextAction.input)).toContain('Python targeted file/snippet ownership read');
-    expect(b.hookResult?.suggestedNextAction.tool).toBe('batch');
+    expect(a.hookResult?.requiredNextAction.tool).toBe('fs.write');
+    expect(a.hookResult?.requiredNextAction.taskSession).toBe('tsk_a');
+    expect(a.hookResult?.requiredNextAction.input.path).toContain('agent-a/workpad.md');
+    expect(b.hookResult?.requiredNextAction.tool).toBe('fs.write');
+    expect(b.hookResult?.requiredNextAction.taskSession).toBe('tsk_b');
+    expect(b.hookResult?.requiredNextAction.input.path).toContain('agent-b/workpad.md');
   });
 
-  test('should expose workspace task-intent help when invoked from the repo root', () => {
-    const result = spawnSync('bun', ['run', 'task-intent', '--', '--help'], {
-      cwd: repoRoot,
-      encoding: 'utf8',
-      timeout: 10_000,
-    });
+  test('should not expose a separate task-intent package command', () => {
+    const workspacePackage = readJson(resolve(packageRoot, 'package.json')) as { scripts?: Record<string, string> };
+    const rootPackage = readJson(resolve(packageRoot, '..', '..', 'package.json')) as { scripts?: Record<string, string> };
 
-    expect(result.status).toBe(0);
-    expect(result.stdout).toContain('usage: bun run task-intent -- <start|dispatch> [options]');
-  });
-
-  test('should start workspace task intent when invoked from the repo root', () => {
-    const result = spawnSync('bun', [
-      'run',
-      'task-intent',
-      '--',
-      'start',
-      '--workflow',
-      'task',
-      '--area',
-      'workspace-agents',
-      '--title',
-      'root intent smoke',
-      '--json',
-    ], {
-      cwd: repoRoot,
-      encoding: 'utf8',
-      timeout: 10_000,
-    });
-
-    expect(result.status).toBe(0);
-    const envelope = JSON.parse(result.stdout) as { workflow: string; manifestBundle?: { tools?: Array<{ name: string }> } };
-    expect(envelope.workflow).toBe('task');
-    expect(envelope.manifestBundle?.tools?.map((tool) => tool.name)).toEqual(expect.arrayContaining(['task.start']));
+    expect(workspacePackage.scripts).not.toHaveProperty('task-intent');
+    expect(rootPackage.scripts).not.toHaveProperty('task-intent');
+    expect(workspacePackage.scripts?.['task:start']).toContain('task-start.js');
+    expect(rootPackage.scripts?.['task:start']).toContain('task-start.js');
   });
 
   test('should reject unknown actions when invoking task-intent CLI', () => {

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_3526eb8a51bb",
+  "tmuxSession": "opensaas-security-fix-central-mcp-proxy-signing-gate-3526eb8a",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/fix-central-mcp-proxy-signing-gate",
+  "branch": "task/security/fix-central-mcp-proxy-signing-gate",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-central-mcp-proxy-signing-gate",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-central-mcp-proxy-signing-gate",
+  "prNumber": 1498,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1498",
+  "createdAt": "2026-07-14T23:18:03.384Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-central-mcp-proxy-signing-gate/.task/security/fix-central-mcp-proxy-signing-gate/session.json"
+}

@@ -1,0 +1,46 @@
+---
+title: Google Drive
+description: Search and audit Drive through gog before enabling file or sharing changes.
+status: preview
+verifiedAt: 2026-07-14
+evidence:
+  - source: packages/os/integrations.md
+    tests:
+      - packages/os/tests/tool-manifest.test.ts
+    runtime: 'No native Google Drive tool family is currently published in the OS manifest.'
+---
+
+> **Native Consuelo tool: Planned**  
+> **Available today: Yes — through `gog`.**
+
+Set up [Google Workspace](/connect/apps-and-services/google-workspace/) first. Verify a folder with a bounded read:
+
+```bash
+gog --readonly --no-input --json drive inventory --parent <folderId>
+gog --readonly --no-input --json drive audit sharing --parent <folderId>
+```
+
+## Ask your agent
+
+```text
+Use gog to create a read-only Drive tool for search, metadata, downloads, and sharing audits.
+Scope it to the folders I name and return JSON.
+Do not upload, move, share, change permissions, or delete files until I approve those methods.
+```
+
+## Proposed methods
+
+```text
+google.drive.search
+google.drive.get
+google.drive.download
+google.drive.auditSharing
+google.drive.upload
+google.drive.share
+```
+
+Uploads, moves, sharing, permission changes, and deletion require approval. A Google OAuth grant should include only the Drive scopes required for the methods you expose.
+
+## Official documentation
+
+[`gog` Drive workflows](https://github.com/openclaw/gogcli#drive)

@@ -4,19 +4,55 @@ set -euo pipefail
 PROGRAM="Consuelo OS bootstrap"
 HOSTED_INSTALL_COMMAND="curl -fsSL https://install.consuelohq.com/os | bash"
 HOSTED_INSTALL_COMMAND_WITH_ARGS="curl -fsSL https://install.consuelohq.com/os | bash -s --"
-OS_HOME="${CONSUELO_HOME:-$HOME/.consuelo/os}"
+BOOTSTRAP_FILE_SOURCE="${BASH_SOURCE[0]:-}"
+DEFAULT_OS_HOME="${CONSUELO_DEFAULT_HOME:-$HOME/.consuelo}"
+LEGACY_OS_HOME="${CONSUELO_LEGACY_OS_HOME:-$HOME/.consuelo/os}"
+resolve_os_home() {
+  if [ -n "${CONSUELO_HOME:-}" ]; then
+    printf '%s\n' "$CONSUELO_HOME"
+    return 0
+  fi
+  if [ -d "$LEGACY_OS_HOME" ] && [ ! -f "$DEFAULT_OS_HOME/consuelo.yaml" ]; then
+    printf '%s\n' "$LEGACY_OS_HOME"
+    return 0
+  fi
+  printf '%s\n' "$DEFAULT_OS_HOME"
+}
+OS_HOME="$(resolve_os_home)"
+resolve_runtime_home() {
+  if [ -n "${CONSUELO_RUNTIME_HOME:-}" ]; then
+    printf '%s\n' "$CONSUELO_RUNTIME_HOME"
+    return 0
+  fi
+  printf '%s\n' "$OS_HOME/runtime/current"
+}
+RUNTIME_HOME="$(resolve_runtime_home)"
+RUNTIME_RELEASES_DIR="${CONSUELO_RUNTIME_RELEASES_DIR:-$OS_HOME/runtime/releases}"
 RUNTIME_BIN_DIR="${CONSUELO_OS_RUNTIME_BIN_DIR:-$OS_HOME/bin}"
-DEFAULT_SOURCE_DIR="${TMPDIR:-/tmp}/consuelo-os-source"
-SOURCE_DIR="${CONSUELO_OS_SOURCE_DIR:-$DEFAULT_SOURCE_DIR}"
-REPO_ARCHIVE_URL="${CONSUELO_OS_REPO_ARCHIVE_URL:-https://github.com/consuelohq/opensaas/archive/refs/heads/main.tar.gz}"
+HOSTED_RELEASE_BASE_URL="https://install.consuelohq.com/os/releases"
+BAKED_RELEASE_PUBLIC_KEYS_BASE64="__CONSUELO_RELEASE_PUBLIC_KEYS_BASE64__"
+if [ "${CONSUELO_OS_DEV:-0}" = "1" ]; then
+  RELEASE_BASE_URL="${CONSUELO_RELEASE_BASE_URL:-$HOSTED_RELEASE_BASE_URL}"
+  RELEASE_PUBLIC_KEYS_BASE64="${CONSUELO_RELEASE_PUBLIC_KEYS_BASE64:-$BAKED_RELEASE_PUBLIC_KEYS_BASE64}"
+  RELEASE_CHANNEL="${CONSUELO_RELEASE_CHANNEL:-stable}"
+else
+  RELEASE_BASE_URL="$HOSTED_RELEASE_BASE_URL"
+  RELEASE_PUBLIC_KEYS_BASE64="$BAKED_RELEASE_PUBLIC_KEYS_BASE64"
+  RELEASE_CHANNEL="stable"
+fi
+TRUSTED_RELEASE_KEYS_PATH="$OS_HOME/runtime/trusted-release-keys.json"
+RELEASE_CHANNEL_STATE_PATH="$OS_HOME/runtime/channels/$RELEASE_CHANNEL.json"
 ALLOW_GLOBAL_RUNTIME_LOOKUP="${CONSUELO_OS_ALLOW_GLOBAL_RUNTIME_LOOKUP:-1}"
 CLOUDFLARED_REQUIRED="${CONSUELO_OS_REQUIRE_CLOUDFLARED:-1}"
 CLOUDFLARED_VERSION="${CONSUELO_CLOUDFLARED_VERSION:-2026.6.1}"
 CLOUDFLARED_DARWIN_ARM64_SHA256="f6d4c439c6c782b83264951d327989ce5e23373acc5942b872411601fedb020d"
 CLOUDFLARED_DARWIN_AMD64_SHA256="d7a66b525fe76820da6e5406611b61e48b40de682368ac00454d9158f085be4b"
+CADDY_VERSION="2.11.4"
+CADDY_DARWIN_ARM64_SHA256="9efb0af2d6cf09cfb5053c0e51721b9b3d4956d346234f39368d943d25a3c9a7"
+CADDY_DARWIN_AMD64_SHA256="34bc9e5cceee8d67844ef51da624f5b79e8d070f27236e050c3f0066a2dba534"
 
 MACOS_EXPECTED_SYSTEM_TOOLS=(curl tar mktemp launchctl plutil lsof script)
-INSTALLER_MANAGED_RUNTIME_BINARIES=(bun portless cloudflared)
+INSTALLER_MANAGED_RUNTIME_BINARIES=(bun caddy portless cloudflared)
 PACKAGE_MANAGED_DEPENDENCIES_DESCRIPTION="dependencies installed by bun install from packages/os/package.json"
 OPERATOR_ONLY_TOOLS=(
   wrangler
@@ -33,27 +69,65 @@ YES=0
 NO_INSTALL_BUN=0
 INSTALL_DAEMONS=0
 SKIP_DAEMONS=0
+RUNTIME_DEPENDENCIES_ONLY=0
 JSON=0
-REFRESH_SOURCE=1
 DEBUG="${CONSUELO_OS_DEBUG:-0}"
+DEV_DIAGNOSTICS="${CONSUELO_OS_DEV_DIAGNOSTICS:-0}"
+DEV_REPORT_ROOT="${CONSUELO_OS_DEV_REPORTS_DIR:-$HOME/.consuelo-dev-reports}"
+DEV_REPORT_DIR="${CONSUELO_OS_DEV_REPORT_DIR:-}"
+CHILD_INSTALL_RAW_TRANSCRIPT=""
+CHILD_INSTALL_TRANSCRIPT=""
+CONSUELO_INSTALL_ID="${CONSUELO_INSTALL_ID:-}"
 
 BUN_BIN=""
 PORTLESS_BIN="${PORTLESS_BIN:-}"
-PORTLESS_ENABLED="${PORTLESS_ENABLED:-auto}"
+PORTLESS_ENABLED="${PORTLESS_ENABLED:-0}"
 PORTLESS_INSTALL="${CONSUELO_OS_INSTALL_PORTLESS:-0}"
 PORTLESS_REQUIRED="${CONSUELO_OS_REQUIRE_PORTLESS:-0}"
 CLOUDFLARED_BIN="${CLOUDFLARED_BIN:-}"
+CADDY_BIN="${CADDY_BIN:-}"
 REPO_DIR=""
 ONBOARDING_STATUS="pending"
 DAEMON_STATUS="pending"
 BUN_STATUS="pending"
 PORTLESS_STATUS="pending"
 CLOUDFLARED_STATUS="pending"
+CADDY_STATUS="pending"
 SOURCE_STATUS="pending"
+PENDING_RUNTIME_RELEASE_DIR=""
+PENDING_CHANNEL_STATE_PATH=""
+RUNTIME_STAGE_DIR=""
 ONBOARDING_JSON=""
 DEPENDENCY_STATUS="pending"
+PATH_HINT=""
+PATH_IMMEDIATE=0
 CONTACT_URL="https://consuelohq.com/contact/"
 OS_MODE=""
+
+ensure_install_id() {
+  if printf '%s' "$CONSUELO_INSTALL_ID" | grep -Eq '^ins_[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$'; then
+    export CONSUELO_INSTALL_ID
+    return 0
+  fi
+  [ -n "$BUN_BIN" ] || fail "Consuelo OS could not create install telemetry correlation before Bun was ready"
+  local install_uuid
+  install_uuid="$("$BUN_BIN" --print 'crypto.randomUUID().toLowerCase()')" || fail "Consuelo OS could not create install telemetry correlation"
+  if ! printf '%s' "$install_uuid" | grep -Eq '^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$'; then
+    fail "Consuelo OS generated an invalid install telemetry correlation id"
+  fi
+  CONSUELO_INSTALL_ID="ins_$install_uuid"
+  export CONSUELO_INSTALL_ID
+}
+
+cleanup_runtime_stage() {
+  if [ -n "$RUNTIME_STAGE_DIR" ] && [ -d "$RUNTIME_STAGE_DIR" ]; then
+    rm -rf "$RUNTIME_STAGE_DIR"
+  fi
+  if [ -n "$PENDING_CHANNEL_STATE_PATH" ]; then
+    rm -f "$PENDING_CHANNEL_STATE_PATH"
+  fi
+}
+trap cleanup_runtime_stage EXIT
 
 usage() {
   cat <<'USAGE'
@@ -76,27 +150,107 @@ Options:
   --no-install-bun  fail with manual instructions if Bun is missing
   --install-daemons install user LaunchAgents after onboarding
   --skip-daemons    skip user LaunchAgent setup after onboarding
-  --refresh-source  refresh an existing hosted source checkout/archive before onboarding; default for hosted installs
-  --use-existing-source reuse an existing hosted source checkout when present
+  --runtime-dependencies-only  reconcile pinned Caddy/Cloudflared binaries without onboarding or service restarts
+  --refresh-source  accepted and ignored; hosted installs always resolve the current signed channel
+  --use-existing-source accepted and ignored; kept for older install commands
   --mode <mode>      local or cloud
   --json            print a machine-readable summary at the end
   --debug           print detailed daemon diagnostics
   --help, -h        show this help
 
 Environment overrides:
-  CONSUELO_OS_SOURCE_DIR       temporary checkout/download directory for hosted installs
-  CONSUELO_OS_REPO_ARCHIVE_URL source archive URL; defaults to the main branch archive
-  CONSUELO_OS_RUNTIME_BIN_DIR  local runtime binary directory; defaults to ~/.consuelo/os/bin
+  CONSUELO_OS_DEV              set to 1 to permit development release-origin and key overrides
+  CONSUELO_RELEASE_BASE_URL    development-only signed runtime release origin
+  CONSUELO_RELEASE_CHANNEL     release channel; defaults to stable
+  CONSUELO_RELEASE_PUBLIC_KEYS_BASE64 development-only trusted Ed25519 release-key JSON
+  CONSUELO_OS_RUNTIME_BIN_DIR  local runtime binary directory; defaults to ~/.consuelo/bin
+  CONSUELO_OS_DEV_DIAGNOSTICS  set to 1 to write temporary development install diagnostics
   PORTLESS_BIN                 absolute portless binary path to reuse
   CLOUDFLARED_BIN              absolute cloudflared binary path to reuse
 USAGE
 }
 
+dev_diagnostics_enabled() {
+  [ "$DEV_DIAGNOSTICS" = "1" ]
+}
+
+redact_dev_log_line() {
+  if command -v perl >/dev/null 2>&1; then
+    perl -CS -pe '
+      s/\e\][^\a]*(?:\a|\e\\)//g;
+      s/\e\[[0-9;?]*[ -\/]*[@-~]//g;
+      s#/(Users|home)/[^/\s]+#/$1/[user]#g;
+      s{([?&](?:access_token|authorization|bootstrap_token|client_secret|cloudflared?_tunnel_token|code|device_code|refresh_token|secret|state|token|user_code)=)[^&\#\s]+}{$1[redacted]}gi;
+      s#\bAuthorization\s*:\s*Bearer\s+[^\s]+#Authorization: [redacted]#gi;
+      s#\bBearer\s+[^\s]+#[redacted]#gi;
+      s#\b((?:[A-Z0-9_]*(?:TOKEN|SECRET|PASSWORD|KEY|AUTH|COOKIE|CODE|STATE)[A-Z0-9_]*|client_secret|device_code|user_code)\s*[:=]\s*)[^&\s]+#$1[redacted]#gi;
+      s#\b(?:cbt|dev|mcp|osat|pat)_[A-Za-z0-9._-]+\b#[redacted]#gi;
+      s#\b[A-Z0-9]{4}-[A-Z0-9]{4}\b#[redacted]#g;
+    '
+    return 0
+  fi
+
+  local esc bel
+  esc="$(printf '\033')"
+  bel="$(printf '\007')"
+
+  sed -E \
+    -e "s#${esc}\\][^${bel}]*${bel}##g" \
+    -e "s#${esc}\\][^${esc}]*${esc}\\\\##g" \
+    -e "s#${esc}\[[0-9;?]*[ -/]*[@-~]##g" \
+    -e 's#(/(Users|home)/)[^/[:space:]]+#\1[user]#g' \
+    -e 's#([?&](access_token|authorization|bootstrap_token|client_secret|cloudflared?_tunnel_token|code|device_code|refresh_token|secret|state|token|user_code)=)[^&#[:space:]]+#\1[redacted]#gi' \
+    -e 's#(^|[^A-Za-z0-9_])(Authorization[[:space:]]*:[[:space:]]*Bearer[[:space:]]*)[^[:space:]]+#\1Authorization: [redacted]#gi' \
+    -e 's#(^|[^A-Za-z0-9_])Bearer[[:space:]]+[^[:space:]]+#\1[redacted]#gi' \
+    -e 's#(^|[^A-Za-z0-9_])([A-Za-z0-9_]*(TOKEN|SECRET|PASSWORD|KEY|AUTH|COOKIE|CODE|STATE)[A-Za-z0-9_]*|client_secret|device_code|user_code)[[:space:]]*[:=][[:space:]]*[^&[:space:]]+#\1\2=[redacted]#gi' \
+    -e 's#(^|[^A-Za-z0-9_])((cbt|dev|mcp|osat|pat)_[A-Za-z0-9._-]+)#\1[redacted]#gi' \
+    -e 's#(^|[^A-Za-z0-9])([A-Z0-9]{4}-[A-Z0-9]{4})([^A-Za-z0-9]|$)#\1[redacted]\3#g'
+}
+
+init_dev_diagnostics() {
+  dev_diagnostics_enabled || return 0
+  if [ -z "$DEV_REPORT_DIR" ]; then
+    DEV_REPORT_DIR="$DEV_REPORT_ROOT/bootstrap-$(date -u +%Y%m%dT%H%M%SZ)-$$"
+  fi
+  mkdir -p "$DEV_REPORT_DIR"
+  chmod 700 "$DEV_REPORT_DIR" 2>/dev/null || true
+  CHILD_INSTALL_RAW_TRANSCRIPT="$DEV_REPORT_DIR/child-installer.raw.log"
+  CHILD_INSTALL_TRANSCRIPT="$DEV_REPORT_DIR/child-installer.log"
+  export CONSUELO_OS_DEV_REPORT_DIR="$DEV_REPORT_DIR"
+  printf '%s
+' "bootstrap diagnostics started" | redact_dev_log_line >> "$DEV_REPORT_DIR/bootstrap.log"
+}
+
+dev_log() {
+  dev_diagnostics_enabled || return 0
+  [ -n "$DEV_REPORT_DIR" ] || return 0
+  printf '%s %s
+' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$*" | redact_dev_log_line >> "$DEV_REPORT_DIR/bootstrap.log"
+}
+
+finalize_child_install_transcript() {
+  dev_diagnostics_enabled || return 0
+  [ -n "$CHILD_INSTALL_RAW_TRANSCRIPT" ] || return 0
+  [ -f "$CHILD_INSTALL_RAW_TRANSCRIPT" ] || return 0
+  redact_dev_log_line < "$CHILD_INSTALL_RAW_TRANSCRIPT" > "$CHILD_INSTALL_TRANSCRIPT" || true
+  rm -f "$CHILD_INSTALL_RAW_TRANSCRIPT"
+  dev_log "child installer transcript: $CHILD_INSTALL_TRANSCRIPT"
+}
+
+child_install_transcript_hint() {
+  if dev_diagnostics_enabled && [ -n "$CHILD_INSTALL_TRANSCRIPT" ] && [ -f "$CHILD_INSTALL_TRANSCRIPT" ]; then
+    printf ' Child installer transcript: %s' "$CHILD_INSTALL_TRANSCRIPT"
+  fi
+}
+
 log() {
+  dev_log "$*"
   if [ "$JSON" -eq 1 ]; then
-    printf '%s\n' "$*" >&2
+    printf '%s
+' "$*" >&2
   else
-    printf '%s\n' "$*"
+    printf '%s
+' "$*"
   fi
 }
 
@@ -132,6 +286,8 @@ emit_json_summary() {
   "portlessStatus": $(json_escape "$PORTLESS_STATUS"),
   "cloudflared": $(json_path_or_null "$CLOUDFLARED_BIN"),
   "cloudflaredStatus": $(json_escape "$CLOUDFLARED_STATUS"),
+  "caddy": $(json_path_or_null "$CADDY_BIN"),
+  "caddyStatus": $(json_escape "$CADDY_STATUS"),
   "sourceStatus": $(json_escape "$SOURCE_STATUS"),
   "dependencyStatus": $(json_escape "$DEPENDENCY_STATUS"),
   "onboardingStatus": $(json_escape "$ONBOARDING_STATUS"),
@@ -149,7 +305,8 @@ emit_json_summary() {
     "runtime": {
       "bun": { "classification": "installer_managed", "status": $(json_escape "$BUN_STATUS"), "path": $(json_path_or_null "$BUN_BIN") },
       "portless": { "classification": "optional_installer_managed", "status": $(json_escape "$PORTLESS_STATUS"), "path": $(json_path_or_null "$PORTLESS_BIN") },
-      "cloudflared": { "classification": "installer_managed", "status": $(json_escape "$CLOUDFLARED_STATUS"), "path": $(json_path_or_null "$CLOUDFLARED_BIN") }
+      "cloudflared": { "classification": "installer_managed", "status": $(json_escape "$CLOUDFLARED_STATUS"), "path": $(json_path_or_null "$CLOUDFLARED_BIN") },
+      "caddy": { "classification": "installer_managed", "status": $(json_escape "$CADDY_STATUS"), "path": $(json_path_or_null "$CADDY_BIN") }
     },
     "package": {
       "bunInstall": { "classification": "package_managed", "status": $(json_escape "$DEPENDENCY_STATUS"), "description": $(json_escape "$PACKAGE_MANAGED_DEPENDENCIES_DESCRIPTION") }
@@ -176,8 +333,8 @@ parse_args() {
       --no-install-bun) NO_INSTALL_BUN=1 ;;
       --install-daemons) INSTALL_DAEMONS=1 ;;
       --skip-daemons) SKIP_DAEMONS=1 ;;
-      --refresh-source) REFRESH_SOURCE=1 ;;
-      --use-existing-source) REFRESH_SOURCE=0 ;;
+      --runtime-dependencies-only) RUNTIME_DEPENDENCIES_ONLY=1 ;;
+      --refresh-source|--use-existing-source) ;;
       --mode)
         shift
         if [ "$#" -eq 0 ]; then
@@ -204,6 +361,9 @@ parse_args() {
 
   if [ "$INSTALL_DAEMONS" -eq 1 ] && [ "$SKIP_DAEMONS" -eq 1 ]; then
     fail "choose either --install-daemons or --skip-daemons, not both"
+  fi
+  if [ "$YES" -eq 1 ] && [ "$SKIP_DAEMONS" -eq 0 ]; then
+    INSTALL_DAEMONS=1
   fi
 }
 
@@ -250,23 +410,49 @@ run_with_loading_dots() {
   return "$status"
 }
 
-prompt_enter() {
-  local message="$1"
-  local rerun_hint="$2"
+run_quiet_with_loading_dots() {
+  local loading_message="$1"
+  shift
 
-  if [ "$YES" -eq 1 ] || [ "$DRY_RUN" -eq 1 ]; then
-    return 0
+  if [ "$DEBUG" = "1" ] || [ "$JSON" -eq 1 ] || [ "$DRY_RUN" -eq 1 ]; then
+    "$@"
+    return $?
   fi
 
-  if ! has_tty; then
-    fail "$message
+  local output_file
+  local status=0
+  local interactive_output=0
+  [ -t 1 ] && interactive_output=1
+  output_file="$(mktemp "${TMPDIR:-/tmp}/consuelo-bootstrap.XXXXXX")" ||
+    fail "Consuelo OS could not create a temporary setup log"
 
-This shell is non-interactive. Re-run with:
-  $rerun_hint"
+  # Keep setup in the current shell: it intentionally mutates globals such as
+  # BUN_BIN, RUNTIME_DIR, and INSTALL_ID that onboarding consumes afterward.
+  # Running it in the background for an animated spinner would fork those
+  # assignments into a subshell and silently lose them.
+  if [ "$interactive_output" -eq 1 ]; then
+    printf '%s...' "$loading_message"
+  fi
+  "$@" >"$output_file" 2>&1 || status=$?
+  if [ "$status" -eq 0 ]; then
+    if [ "$interactive_output" -eq 1 ]; then
+      printf '\r%s... done\n' "$loading_message"
+    else
+      printf '%s... done\n' "$loading_message"
+    fi
+  else
+    if [ "$interactive_output" -eq 1 ]; then
+      printf '\r%s... failed\n' "$loading_message"
+    else
+      printf '%s... failed\n' "$loading_message"
+    fi
   fi
 
-  printf '%s\n' "$message" > /dev/tty
-  IFS= read -r _ < /dev/tty
+  if [ "$status" -ne 0 ]; then
+    cat "$output_file" >&2
+  fi
+  rm -f "$output_file"
+  return "$status"
 }
 
 open_url() {
@@ -289,37 +475,7 @@ open_contact_url() {
 }
 
 choose_os_mode() {
-  if [ -n "$OS_MODE" ]; then
-    return 0
-  fi
-
-  if [ "$YES" -eq 1 ] || [ "$JSON" -eq 1 ] || [ "$DRY_RUN" -eq 1 ]; then
-    OS_MODE="local"
-    return 0
-  fi
-
-  if ! has_tty; then
-    fail "Choose local or cloud before setup.
-
-This shell is non-interactive. Re-run with:
-  $HOSTED_INSTALL_COMMAND_WITH_ARGS --mode local
-or:
-  $HOSTED_INSTALL_COMMAND_WITH_ARGS --mode cloud"
-  fi
-
-  while true; do
-    printf '%s\n' "Choose Consuelo OS mode:" > /dev/tty
-    printf '%s\n' "1) local" > /dev/tty
-    printf '%s\n' "2) cloud" > /dev/tty
-    printf '%s' "Enter 1 or 2: " > /dev/tty
-    IFS= read -r mode_choice < /dev/tty
-
-    case "$mode_choice" in
-      ""|1|local) OS_MODE="local"; return 0 ;;
-      2|cloud) OS_MODE="cloud"; return 0 ;;
-      *) printf '%s\n' "Enter 1 for local or 2 for cloud." > /dev/tty ;;
-    esac
-  done
+  [ -n "$OS_MODE" ] || OS_MODE="local"
 }
 
 handle_cloud_mode() {
@@ -336,25 +492,6 @@ handle_cloud_mode() {
   exit 0
 }
 
-render_dependency_progress() {
-  [ "$JSON" -eq 0 ] || return 0
-
-  log "CONSUELO  OS"
-  log "│"
-  log "● dependencies"
-  log "○ workspace"
-  log "○ skills"
-  log "○ artifacts"
-  log "○ agents"
-  log "○ health"
-  log ""
-}
-
-prompt_dependency_setup() {
-  prompt_enter "Consuelo OS needs its dependencies to continue.
-
-Press Enter to continue, or press Control-C to cancel." "$HOSTED_INSTALL_COMMAND_WITH_ARGS --yes"
-}
 require_command() {
   local tool="$1"
   local explanation="$2"
@@ -367,6 +504,9 @@ check_mac_prerequisites() {
   local os_name
   os_name="$(uname -s 2>/dev/null || true)"
   if [ "$os_name" != "Darwin" ]; then
+    if [ "$DRY_RUN" -eq 1 ]; then
+      return 0
+    fi
     fail "Consuelo OS local bootstrap currently supports macOS. Detected: ${os_name:-unknown}."
   fi
 
@@ -436,6 +576,39 @@ ensure_bun() {
 
   BUN_STATUS="installed"
   log "Bun installed: $BUN_BIN"
+}
+
+ensure_named_bun_runtime() {
+  local source="$BUN_BIN"
+  local target="$RUNTIME_BIN_DIR/consuelo-os"
+  local temporary="$target.$$.tmp"
+
+  if [ "$DRY_RUN" -eq 1 ]; then
+    log "dry-run: would install the named Consuelo service executable at $target"
+    return 0
+  fi
+  [ -x "$source" ] || fail "Consuelo OS cannot create its named service executable because Bun is unavailable: ${source:-unset}"
+  if [ "$source" = "$target" ]; then
+    return 0
+  fi
+
+  mkdir -p "$RUNTIME_BIN_DIR"
+  if [ -x "$target" ] && /usr/bin/cmp -s "$source" "$target"; then
+    BUN_BIN="$target"
+    return 0
+  fi
+
+  /bin/rm -f -- "$temporary"
+  if ! /bin/cp -c "$source" "$temporary" 2>/dev/null; then
+    /bin/cp -p "$source" "$temporary" || fail "Consuelo OS could not copy Bun to its named service executable."
+  fi
+  /bin/chmod 0755 "$temporary"
+  if ! /usr/bin/cmp -s "$source" "$temporary"; then
+    /bin/rm -f -- "$temporary"
+    fail "The Consuelo Bun service clone failed integrity verification."
+  fi
+  /bin/mv -f "$temporary" "$target"
+  BUN_BIN="$target"
 }
 
 runtime_arch() {
@@ -617,16 +790,50 @@ install_cloudflared_runtime() {
   rm -rf "$tmp_dir"
 }
 
+install_caddy_runtime() {
+  local arch asset_arch asset_name target url sha tmp_dir archive_file
+  arch="$(runtime_arch)"
+  asset_arch="$arch"
+  asset_name="caddy_${CADDY_VERSION}_mac_${asset_arch}.tar.gz"
+  target="$RUNTIME_BIN_DIR/caddy"
+  url="${CONSUELO_CADDY_DOWNLOAD_URL:-https://github.com/caddyserver/caddy/releases/download/v${CADDY_VERSION}/${asset_name}}"
+
+  case "$asset_arch" in
+    arm64) sha="${CONSUELO_CADDY_SHA256:-$CADDY_DARWIN_ARM64_SHA256}" ;;
+    amd64) sha="${CONSUELO_CADDY_SHA256:-$CADDY_DARWIN_AMD64_SHA256}" ;;
+    *) fail "unsupported Caddy architecture: $asset_arch" ;;
+  esac
+
+  tmp_dir="$(mktemp -d "${TMPDIR:-/tmp}/consuelo-runtime-caddy.XXXXXX")"
+  archive_file="$tmp_dir/$asset_name"
+  if ! curl_retry "$url" -o "$archive_file"; then
+    rm -rf "$tmp_dir"
+    return 1
+  fi
+  verify_sha256 "$archive_file" "$sha"
+  tar -xzf "$archive_file" -C "$tmp_dir"
+  if [ ! -f "$tmp_dir/caddy" ]; then
+    rm -rf "$tmp_dir"
+    fail "Caddy archive did not contain a caddy binary"
+  fi
+  mkdir -p "$(dirname "$target")"
+  mv "$tmp_dir/caddy" "$target"
+  chmod 755 "$target"
+  rm -rf "$tmp_dir"
+}
+
 ensure_portless() {
   local managed_path="$RUNTIME_BIN_DIR/portless"
 
   case "${PORTLESS_ENABLED:-auto}" in
     0|false|no)
-      PORTLESS_BIN=""
-      PORTLESS_ENABLED="0"
-      PORTLESS_STATUS="skipped"
-      log "portless disabled; Consuelo OS will use http://127.0.0.1:8960"
-      return 0
+      if [ "$PORTLESS_REQUIRED" != "1" ] && [ "$PORTLESS_INSTALL" != "1" ]; then
+        PORTLESS_BIN=""
+        PORTLESS_ENABLED="0"
+        PORTLESS_STATUS="skipped"
+        log "portless disabled; Consuelo will use http://127.0.0.1:46321"
+        return 0
+      fi
       ;;
   esac
 
@@ -668,7 +875,7 @@ ensure_portless() {
       if [ ! -x "$PORTLESS_BIN" ]; then
         PORTLESS_BIN=""
         PORTLESS_STATUS="optional_unavailable"
-        log "optional portless install finished without an executable; Consuelo OS will use http://127.0.0.1:8960"
+        log "optional portless install finished without an executable; Consuelo will use http://127.0.0.1:46321"
         return 0
       fi
       PORTLESS_ENABLED="1"
@@ -678,22 +885,34 @@ ensure_portless() {
     fi
     PORTLESS_BIN=""
     PORTLESS_STATUS="optional_unavailable"
-    log "optional portless install unavailable; Consuelo OS will use http://127.0.0.1:8960"
+    log "optional portless install unavailable; Consuelo will use http://127.0.0.1:46321"
     return 0
   fi
 
   PORTLESS_STATUS="optional_missing"
-  log "portless is not installed; Consuelo OS will use http://127.0.0.1:8960"
+  log "portless is not installed; Consuelo will use http://127.0.0.1:46321"
+}
+
+cloudflared_version_matches() {
+  local candidate="$1"
+  [ -x "$candidate" ] || return 1
+  case "$("$candidate" --version 2>/dev/null || true)" in
+    "cloudflared version ${CLOUDFLARED_VERSION}"|"cloudflared version ${CLOUDFLARED_VERSION} "*) return 0 ;;
+    *) return 1 ;;
+  esac
 }
 
 ensure_cloudflared() {
   local managed_path="$RUNTIME_BIN_DIR/cloudflared"
+  local candidate=""
   if [ "$CLOUDFLARED_REQUIRED" != "1" ]; then
     CLOUDFLARED_STATUS="skipped_not_needed"
     return 0
   fi
 
-  if CLOUDFLARED_BIN="$(find_runtime_binary "${CLOUDFLARED_BIN:-}" cloudflared "$managed_path")"; then
+  candidate="$(find_runtime_binary "${CLOUDFLARED_BIN:-}" cloudflared "$managed_path" || true)"
+  if [ -n "$candidate" ] && cloudflared_version_matches "$candidate"; then
+    CLOUDFLARED_BIN="$candidate"
     CLOUDFLARED_STATUS="present"
     log "cloudflared found: $CLOUDFLARED_BIN"
     return 0
@@ -712,6 +931,42 @@ ensure_cloudflared() {
   fi
   CLOUDFLARED_STATUS="installed"
   log "cloudflared installed: $CLOUDFLARED_BIN"
+}
+
+caddy_version_matches() {
+  local candidate="$1"
+  [ -x "$candidate" ] || return 1
+  case "$("$candidate" version 2>/dev/null || true)" in
+    "v${CADDY_VERSION}"*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+ensure_caddy() {
+  local managed_path="$RUNTIME_BIN_DIR/caddy"
+  local candidate=""
+
+  candidate="$(find_runtime_binary "${CADDY_BIN:-}" caddy "$managed_path" || true)"
+  if [ -n "$candidate" ] && caddy_version_matches "$candidate"; then
+    CADDY_BIN="$candidate"
+    CADDY_STATUS="present"
+    log "Caddy found: $CADDY_BIN"
+    return 0
+  fi
+
+  CADDY_BIN="$managed_path"
+  if [ "$DRY_RUN" -eq 1 ]; then
+    CADDY_STATUS="would_install"
+    log "dry-run: pinned Caddy is missing and would be installed to $CADDY_BIN"
+    return 0
+  fi
+
+  run_with_loading_dots "Installing Caddy" install_caddy_runtime
+  if ! caddy_version_matches "$CADDY_BIN"; then
+    fail "Caddy install finished, but $CADDY_BIN is not version v$CADDY_VERSION."
+  fi
+  CADDY_STATUS="installed"
+  log "Caddy installed: $CADDY_BIN"
 }
 
 persist_env_value() {
@@ -753,6 +1008,54 @@ remove_env_value() {
   mv "$tmp_file" "$file"
   chmod 600 "$file"
 }
+read_persisted_runtime_path() {
+  local key="$1"
+  local env_file="$OS_HOME/.env"
+  [ -f "$env_file" ] || return 1
+  local line current_key value
+  while IFS= read -r line || [ -n "$line" ]; do
+    current_key="${line%%=*}"
+    [ "$current_key" = "$key" ] || continue
+    value="${line#*=}"
+    value="${value%$'\r'}"
+    value="${value%\"}"
+    value="${value#\"}"
+    value="${value%\'}"
+    value="${value#\'}"
+    printf '%s\n' "$value"
+    return 0
+  done < "$env_file"
+  return 1
+}
+
+load_persisted_ingress_runtime_paths() {
+  if [ -z "${CADDY_BIN:-}" ]; then
+    CADDY_BIN="$(read_persisted_runtime_path CADDY_BIN || true)"
+  fi
+  if [ -z "${CLOUDFLARED_BIN:-}" ]; then
+    CLOUDFLARED_BIN="$(read_persisted_runtime_path CLOUDFLARED_BIN || true)"
+  fi
+}
+
+persist_ingress_runtime_paths() {
+  local env_file="$OS_HOME/.env"
+  if [ "$DRY_RUN" -eq 1 ]; then
+    log "dry-run: would persist ingress runtime binary paths to $env_file"
+    return 0
+  fi
+  persist_env_value "$env_file" CLOUDFLARED_BIN "$CLOUDFLARED_BIN"
+  persist_env_value "$env_file" CADDY_BIN "$CADDY_BIN"
+  export CADDY_BIN CLOUDFLARED_BIN
+}
+
+reconcile_runtime_dependencies_only() {
+  check_mac_prerequisites
+  load_persisted_ingress_runtime_paths
+  ensure_caddy
+  ensure_cloudflared
+  persist_ingress_runtime_paths
+}
+
 persist_runtime_paths() {
   local env_file="$OS_HOME/.env"
   if [ "$DRY_RUN" -eq 1 ]; then
@@ -761,6 +1064,11 @@ persist_runtime_paths() {
   fi
 
   persist_env_value "$env_file" BUN_BIN "$BUN_BIN"
+  if [ "$SOURCE_STATUS" = "local" ] && [ -n "$REPO_DIR" ]; then
+    persist_env_value "$env_file" CONSUELO_OS_PACKAGE_ROOT "$REPO_DIR"
+  else
+    remove_env_value "$env_file" CONSUELO_OS_PACKAGE_ROOT
+  fi
   if [ -n "$PORTLESS_BIN" ]; then
     persist_env_value "$env_file" PORTLESS_BIN "$PORTLESS_BIN"
     persist_env_value "$env_file" PORTLESS_ENABLED "1"
@@ -769,10 +1077,13 @@ persist_runtime_paths() {
     persist_env_value "$env_file" PORTLESS_ENABLED "0"
   fi
   persist_env_value "$env_file" CLOUDFLARED_BIN "$CLOUDFLARED_BIN"
-  export BUN_BIN PORTLESS_BIN PORTLESS_ENABLED CLOUDFLARED_BIN
+  persist_env_value "$env_file" CADDY_BIN "$CADDY_BIN"
+  export BUN_BIN CADDY_BIN PORTLESS_BIN PORTLESS_ENABLED CLOUDFLARED_BIN
 }
 
 current_repo_dir() {
+  [ -n "$BOOTSTRAP_FILE_SOURCE" ] && [ -f "$BOOTSTRAP_FILE_SOURCE" ] ||
+    return 1
   if [ -f "packages/os/scripts/install.ts" ]; then
     pwd
     return 0
@@ -783,104 +1094,393 @@ current_repo_dir() {
   fi
   return 1
 }
-download_source_archive() {
-  local tmp_dir archive_file parent_dir staged_dir
-  tmp_dir="$(mktemp -d "${TMPDIR:-/tmp}/consuelo-os-source.XXXXXX")"
-  archive_file="$tmp_dir/source.tar.gz"
-  staged_dir="$tmp_dir/source"
-  parent_dir="$(dirname "$SOURCE_DIR")"
-
-  mkdir -p "$parent_dir" "$staged_dir"
-
-  if ! curl_retry "$REPO_ARCHIVE_URL" -o "$archive_file"; then
-    rm -rf "$tmp_dir"
-    return 1
-  fi
-
-  if ! tar -xzf "$archive_file" -C "$staged_dir" --strip-components=1; then
-    rm -rf "$tmp_dir"
-    return 1
-  fi
-
-  if [ ! -f "$staged_dir/packages/os/scripts/install.ts" ]; then
-    rm -rf "$tmp_dir"
-    return 1
-  fi
-
-  rm -rf "$SOURCE_DIR"
-  mv "$staged_dir" "$SOURCE_DIR"
-  rm -rf "$tmp_dir"
-}
-
-download_source() {
-  if [ "$DRY_RUN" -eq 1 ]; then
-    REPO_DIR="$SOURCE_DIR"
-    if [ "$REFRESH_SOURCE" -eq 1 ] && [ -f "$SOURCE_DIR/packages/os/scripts/install.ts" ]; then
-      SOURCE_STATUS="would_refresh"
-      log "dry-run: would refresh Consuelo OS source from $REPO_ARCHIVE_URL at $SOURCE_DIR"
-    else
-      SOURCE_STATUS="would_download"
-      log "dry-run: would download Consuelo OS source from $REPO_ARCHIVE_URL to $SOURCE_DIR"
-    fi
+os_package_dir() {
+  if [ -f "$REPO_DIR/scripts/install.ts" ]; then
+    printf '%s\n' "$REPO_DIR"
     return 0
   fi
-
-  require_command tar "Consuelo OS needs tar to unpack the source archive. tar is expected on supported macOS installs."
-  require_command mktemp "Consuelo OS needs mktemp to stage the source archive safely. mktemp is expected on supported macOS installs."
-
-  if [ -e "$SOURCE_DIR" ] && [ ! -f "$SOURCE_DIR/packages/os/scripts/install.ts" ]; then
-    fail "$SOURCE_DIR exists but does not contain packages/os/scripts/install.ts. Move it or set CONSUELO_OS_SOURCE_DIR to another temporary path."
-  fi
-
-  if [ -f "$SOURCE_DIR/packages/os/scripts/install.ts" ]; then
-    if [ "$REFRESH_SOURCE" -eq 1 ]; then
-      run_with_loading_dots "Refreshing Consuelo OS source" download_source_archive
-      if [ ! -f "$SOURCE_DIR/packages/os/scripts/install.ts" ]; then
-        fail "refreshed source did not contain packages/os/scripts/install.ts"
-      fi
-      REPO_DIR="$SOURCE_DIR"
-      SOURCE_STATUS="refreshed"
-      return 0
-    fi
-
-    REPO_DIR="$SOURCE_DIR"
-    SOURCE_STATUS="reused"
-    log "Using existing Consuelo OS source: $REPO_DIR"
+  if [ -f "$REPO_DIR/packages/os/scripts/install.ts" ]; then
+    printf '%s\n' "$REPO_DIR/packages/os"
     return 0
   fi
-
-  run_with_loading_dots "Downloading Consuelo OS source" download_source_archive
-
-  if [ ! -f "$SOURCE_DIR/packages/os/scripts/install.ts" ]; then
-    fail "downloaded source did not contain packages/os/scripts/install.ts"
-  fi
-
-  REPO_DIR="$SOURCE_DIR"
-  SOURCE_STATUS="downloaded"
+  return 1
 }
 
-resolve_source() {
+verify_runtime_release() {
+  local stage_dir="$1"
+  local verifier="$stage_dir/verify-release.ts"
+  cat > "$verifier" <<'BUN'
+import { createHash, createPublicKey, verify } from "node:crypto";
+import { lstat, mkdir, readFile, writeFile } from "node:fs/promises";
+import { join } from "node:path";
+
+const fail = (message: string): never => {
+  throw new Error(message);
+};
+const canonicalize = (value: unknown): unknown => {
+  if (Array.isArray(value)) return value.map(canonicalize);
+  if (value && typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    return Object.fromEntries(
+      Object.keys(record).sort().flatMap((key) =>
+        record[key] === undefined ? [] : [[key, canonicalize(record[key])]],
+      ),
+    );
+  }
+  return value;
+};
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+const digestPattern = /^sha256:[a-f0-9]{64}$/;
+const isIsoTimestamp = (value: unknown): value is string =>
+  typeof value === "string" &&
+  Number.isFinite(Date.parse(value)) &&
+  new Date(value).toISOString() === value;
+const readBoundedResponse = async (
+  response: Response,
+  maximumBytes: number,
+  label: string,
+): Promise<Uint8Array> => {
+  const lengthHeader = response.headers.get("content-length");
+  if (lengthHeader !== null) {
+    const declaredLength = Number(lengthHeader);
+    if (!Number.isSafeInteger(declaredLength) || declaredLength < 0) {
+      fail(`${label} has an invalid content length`);
+    }
+    if (declaredLength > maximumBytes) fail(`${label} exceeds the maximum accepted size`);
+  }
+  if (!response.body) fail(`${label} response body is missing`);
+  const reader = response.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let totalBytes = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    totalBytes += value.byteLength;
+    if (totalBytes > maximumBytes) {
+      await reader.cancel();
+      fail(`${label} exceeds the maximum accepted size`);
+    }
+    chunks.push(value);
+  }
+  const bytes = new Uint8Array(totalBytes);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return bytes;
+};
+const baseUrl = process.env.CONSUELO_RELEASE_BASE_URL ?? fail("release base URL is required");
+const channel = process.env.CONSUELO_RELEASE_CHANNEL ?? "stable";
+const keysEncoded = process.env.CONSUELO_RELEASE_PUBLIC_KEYS_BASE64 ??
+  fail("trusted release keys are required");
+if (keysEncoded.startsWith("__CONSUELO_")) fail("hosted installer is missing trusted release keys");
+const keysJson = Buffer.from(keysEncoded, "base64").toString("utf8");
+const trustedKeys = JSON.parse(keysJson) as Record<string, string>;
+const manifestUrl = `${baseUrl.replace(/\/$/, "")}/channels/${channel}.json`;
+const manifestResponse = await fetch(manifestUrl, {
+  signal: AbortSignal.timeout(30_000),
+});
+if (!manifestResponse.ok) fail(`release manifest request failed with HTTP ${manifestResponse.status}`);
+const manifestBytes = await readBoundedResponse(
+  manifestResponse,
+  1024 * 1024,
+  "release manifest",
+);
+let manifest: unknown;
+try {
+  manifest = JSON.parse(new TextDecoder().decode(manifestBytes)) as unknown;
+} catch {
+  fail("release manifest is not valid JSON");
+}
+if (!isRecord(manifest) || !isRecord(manifest.payload) || !isRecord(manifest.signature)) {
+  fail("release manifest contract is invalid");
+}
+const payload = manifest.payload;
+const signature = manifest.signature;
+if (
+  payload.kind !== "consuelo-os-channel-manifest" ||
+  payload.schemaVersion !== 1 ||
+  payload.channel !== channel ||
+  !Number.isSafeInteger(payload.revision) ||
+  Number(payload.revision) <= 0 ||
+  !isIsoTimestamp(payload.promotedAt) ||
+  typeof payload.bundleId !== "string" ||
+  !digestPattern.test(payload.bundleId) ||
+  typeof payload.releaseFingerprint !== "string" ||
+  !digestPattern.test(payload.releaseFingerprint) ||
+  signature.algorithm !== "ed25519" ||
+  typeof signature.keyId !== "string" ||
+  typeof signature.signature !== "string" ||
+  !Array.isArray(payload.platforms)
+) fail("release manifest contract is invalid");
+const publicKey = trustedKeys[signature.keyId] ??
+  fail(`release signing key is not trusted: ${signature.keyId}`);
+const accepted = verify(
+  null,
+  Buffer.from(JSON.stringify(canonicalize(payload))),
+  createPublicKey(publicKey),
+  Buffer.from(signature.signature, "base64url"),
+);
+if (!accepted) fail("release manifest signature is invalid");
+const statePath = process.env.CONSUELO_RELEASE_STATE_PATH;
+let activeChannelState: Record<string, unknown> | undefined;
+if (statePath) {
+  let activeState: unknown;
+  try {
+    const stateStats = await lstat(statePath);
+    if (stateStats.isSymbolicLink() || !stateStats.isFile()) {
+      fail(`activated ${channel} release state must be a regular file`);
+    }
+    activeState = JSON.parse(await readFile(statePath, "utf8")) as unknown;
+  } catch (error: unknown) {
+    if (
+      !isRecord(error) ||
+      typeof error.code !== "string" ||
+      error.code !== "ENOENT"
+    ) {
+      throw error;
+    }
+  }
+  if (activeState !== undefined) {
+    if (
+      !isRecord(activeState) ||
+      activeState.kind !== "consuelo-os-bootstrap-channel-state" ||
+      activeState.schemaVersion !== 1 ||
+      activeState.channel !== channel ||
+      !Number.isSafeInteger(activeState.revision) ||
+      Number(activeState.revision) <= 0 ||
+      !isIsoTimestamp(activeState.promotedAt) ||
+      typeof activeState.releaseFingerprint !== "string" ||
+      !digestPattern.test(activeState.releaseFingerprint) ||
+      typeof activeState.bundleId !== "string" ||
+      !digestPattern.test(activeState.bundleId) ||
+      typeof activeState.platformBundleId !== "string" ||
+      !digestPattern.test(activeState.platformBundleId)
+    ) fail(`activated ${channel} release state is invalid`);
+    if (
+      Number(payload.revision) < Number(activeState.revision) ||
+      Date.parse(payload.promotedAt) < Date.parse(activeState.promotedAt)
+    ) fail(`signed release manifest is older than the activated ${channel} release`);
+    if (
+      payload.revision === activeState.revision &&
+      (
+        payload.releaseFingerprint !== activeState.releaseFingerprint ||
+        payload.bundleId !== activeState.bundleId
+      )
+    ) fail(`signed release manifest conflicts with activated ${channel} revision ${payload.revision}`);
+    activeChannelState = activeState;
+  }
+}
+const platform = process.platform;
+const architecture = process.arch;
+const selected = payload.platforms.find(
+  (candidate: unknown) =>
+    isRecord(candidate) &&
+    candidate.platform === platform &&
+    candidate.architecture === architecture,
+) ?? fail(`release does not publish ${platform}-${architecture}`);
+if (
+  typeof selected.bundleId !== "string" ||
+  !digestPattern.test(selected.bundleId)
+) fail("runtime bundle ID is invalid");
+if (
+  typeof selected.archiveDigest !== "string" ||
+  !digestPattern.test(selected.archiveDigest)
+) fail("runtime archive digest is invalid");
+if (
+  activeChannelState &&
+  payload.revision === activeChannelState.revision &&
+  selected.bundleId !== activeChannelState.platformBundleId
+) fail(`signed release manifest changes the activated ${channel} platform bundle at revision ${payload.revision}`);
+const releaseObjectPattern = new RegExp(
+  `^bundles/${selected.bundleId}/[A-Za-z0-9._+-]+\\.tar\\.gz(?:\\.sig)?$`,
+);
+if (
+  typeof selected.cloudflareObjectKey !== "string" ||
+  !releaseObjectPattern.test(selected.cloudflareObjectKey)
+) fail("runtime release object key is invalid");
+const bundleUrl = new URL(
+  selected.cloudflareObjectKey,
+  `${baseUrl.replace(/\/$/, "")}/`,
+);
+const bundleResponse = await fetch(bundleUrl, {
+  signal: AbortSignal.timeout(600_000),
+});
+if (!bundleResponse.ok) fail(`runtime bundle request failed with HTTP ${bundleResponse.status}`);
+const bytes = await readBoundedResponse(
+  bundleResponse,
+  512 * 1024 * 1024,
+  "runtime bundle",
+);
+const digest = `sha256:${createHash("sha256").update(bytes).digest("hex")}`;
+if (digest !== selected.archiveDigest) fail("runtime bundle digest does not match signed release manifest");
+const output = process.env.CONSUELO_RELEASE_STAGE_DIR ?? fail("release stage directory is required");
+await mkdir(output, { recursive: true });
+await writeFile(join(output, "runtime.tar.gz"), bytes, { mode: 0o600 });
+await writeFile(join(output, "bundle-id"), `${selected.bundleId}\n`, { mode: 0o600 });
+await writeFile(join(output, "trusted-release-keys.json"), `${JSON.stringify(trustedKeys, null, 2)}\n`, { mode: 0o600 });
+await writeFile(join(output, "channel-state.json"), `${JSON.stringify({
+  schemaVersion: 1,
+  kind: "consuelo-os-bootstrap-channel-state",
+  channel,
+  revision: payload.revision,
+  promotedAt: payload.promotedAt,
+  releaseFingerprint: payload.releaseFingerprint,
+  bundleId: payload.bundleId,
+  platformBundleId: selected.bundleId,
+}, null, 2)}\n`, { mode: 0o600 });
+BUN
+  CONSUELO_RELEASE_BASE_URL="$RELEASE_BASE_URL" \
+    CONSUELO_RELEASE_CHANNEL="$RELEASE_CHANNEL" \
+    CONSUELO_RELEASE_PUBLIC_KEYS_BASE64="$RELEASE_PUBLIC_KEYS_BASE64" \
+    CONSUELO_RELEASE_STAGE_DIR="$stage_dir" \
+    CONSUELO_RELEASE_STATE_PATH="$RELEASE_CHANNEL_STATE_PATH" \
+    "$BUN_BIN" "$verifier"
+}
+
+install_verified_runtime() {
   local local_repo
   if local_repo="$(current_repo_dir 2>/dev/null)"; then
     REPO_DIR="$local_repo"
     SOURCE_STATUS="local"
-    if [ "$REFRESH_SOURCE" -eq 1 ]; then
-      log "Using local Consuelo OS source: $REPO_DIR (--refresh-source applies only to hosted source checkouts)"
-    else
-      log "Using local Consuelo OS source: $REPO_DIR"
-    fi
+    log "Using local Consuelo OS source: $REPO_DIR"
+    return 0
+  fi
+  if [ "$DRY_RUN" -eq 1 ]; then
+    REPO_DIR="$RUNTIME_HOME"
+    SOURCE_STATUS="would_download"
+    log "dry-run: would verify and install $RELEASE_CHANNEL runtime from $RELEASE_BASE_URL"
     return 0
   fi
 
-  download_source
+  require_command tar "Consuelo OS needs tar to unpack the verified runtime bundle."
+  require_command mktemp "Consuelo OS needs mktemp to stage the verified runtime bundle safely."
+  local stage_dir bundle_id release_name release_dir extracted_dir pending_channel_state
+  stage_dir="$(mktemp -d "${TMPDIR:-/tmp}/consuelo-os-runtime.XXXXXX")"
+  RUNTIME_STAGE_DIR="$stage_dir"
+  extracted_dir="$stage_dir/runtime"
+  if ! verify_runtime_release "$stage_dir"; then
+    rm -rf "$stage_dir"
+    RUNTIME_STAGE_DIR=""
+    fail "signed Consuelo OS runtime verification failed"
+  fi
+  IFS= read -r bundle_id < "$stage_dir/bundle-id"
+  release_name="${bundle_id/:/-}"
+  release_dir="$RUNTIME_RELEASES_DIR/$release_name"
+  mkdir -p "$extracted_dir"
+  if ! tar -xzf "$stage_dir/runtime.tar.gz" -C "$extracted_dir"; then
+    rm -rf "$stage_dir"
+    RUNTIME_STAGE_DIR=""
+    fail "verified Consuelo OS runtime could not be unpacked"
+  fi
+  if [ ! -f "$extracted_dir/scripts/install.ts" ] ||
+    [ ! -f "$extracted_dir/runtime-bundle.manifest.json" ]; then
+    rm -rf "$stage_dir"
+    RUNTIME_STAGE_DIR=""
+    fail "verified Consuelo OS runtime is missing required entrypoints"
+  fi
+
+  mkdir -p "$RUNTIME_RELEASES_DIR" "$(dirname "$RUNTIME_HOME")"
+  if [ -L "$release_dir" ] || { [ -e "$release_dir" ] && [ ! -d "$release_dir" ]; }; then
+    fail "existing verified release path is not a directory: $release_dir"
+  elif [ -d "$release_dir" ]; then
+    if [ ! -f "$release_dir/scripts/install.ts" ] ||
+      [ ! -f "$release_dir/runtime-bundle.manifest.json" ]; then
+      local active_release_dir release_dir_resolved stale_release_dir
+      active_release_dir=""
+      release_dir_resolved="$(cd "$release_dir" && pwd -P)"
+      if [ -L "$RUNTIME_HOME" ]; then
+        active_release_dir="$(cd "$RUNTIME_HOME" 2>/dev/null && pwd -P || true)"
+      fi
+      if [ -n "$active_release_dir" ] &&
+        [ "$active_release_dir" = "$release_dir_resolved" ]; then
+        fail "active verified release directory is incomplete: $release_dir"
+      fi
+      stale_release_dir="${release_dir}.stale.$$"
+      mv "$release_dir" "$stale_release_dir"
+      if ! mv "$extracted_dir" "$release_dir"; then
+        mv "$stale_release_dir" "$release_dir" || true
+        fail "verified Consuelo OS runtime could not replace the incomplete release"
+      fi
+      rm -rf "$stale_release_dir"
+    fi
+  else
+    mv "$extracted_dir" "$release_dir"
+  fi
+  mkdir -p "$(dirname "$TRUSTED_RELEASE_KEYS_PATH")"
+  mv "$stage_dir/trusted-release-keys.json" "$TRUSTED_RELEASE_KEYS_PATH"
+  chmod 600 "$TRUSTED_RELEASE_KEYS_PATH"
+  pending_channel_state="$OS_HOME/runtime/.channel-state.${RELEASE_CHANNEL}.$$.new"
+  rm -f "$pending_channel_state"
+  mv "$stage_dir/channel-state.json" "$pending_channel_state"
+  chmod 600 "$pending_channel_state"
+  PENDING_CHANNEL_STATE_PATH="$pending_channel_state"
+  rm -rf "$stage_dir"
+  RUNTIME_STAGE_DIR=""
+  PENDING_RUNTIME_RELEASE_DIR="$release_dir"
+  REPO_DIR="$release_dir"
+  SOURCE_STATUS="verified"
 }
+
+activate_verified_runtime() {
+  if [ "$SOURCE_STATUS" != "verified" ]; then
+    return 0
+  fi
+  [ -n "$PENDING_RUNTIME_RELEASE_DIR" ] &&
+    [ -d "$PENDING_RUNTIME_RELEASE_DIR" ] ||
+    fail "verified Consuelo OS runtime is not staged for activation"
+
+  local temporary_link channel_state_directory
+  temporary_link="${RUNTIME_HOME}.new.$$"
+  rm -f "$temporary_link"
+  ln -s "$PENDING_RUNTIME_RELEASE_DIR" "$temporary_link"
+  if [ -d "$RUNTIME_HOME" ] && [ ! -L "$RUNTIME_HOME" ]; then
+    rmdir "$RUNTIME_HOME" ||
+      fail "$RUNTIME_HOME contains unmanaged files and cannot be activated safely"
+  elif [ -e "$RUNTIME_HOME" ] && [ ! -L "$RUNTIME_HOME" ]; then
+    fail "$RUNTIME_HOME cannot be replaced safely"
+  fi
+  mv -f -h "$temporary_link" "$RUNTIME_HOME" ||
+    fail "verified Consuelo OS runtime could not be activated"
+  [ -n "$PENDING_CHANNEL_STATE_PATH" ] &&
+    [ -f "$PENDING_CHANNEL_STATE_PATH" ] ||
+    fail "verified Consuelo OS channel state is not staged for activation"
+  channel_state_directory="$(dirname "$RELEASE_CHANNEL_STATE_PATH")"
+  mkdir -p "$channel_state_directory"
+  if [ -L "$RELEASE_CHANNEL_STATE_PATH" ] ||
+    { [ -e "$RELEASE_CHANNEL_STATE_PATH" ] && [ ! -f "$RELEASE_CHANNEL_STATE_PATH" ]; }; then
+    fail "activated release channel state is not a regular file: $RELEASE_CHANNEL_STATE_PATH"
+  fi
+  mv -f "$PENDING_CHANNEL_STATE_PATH" "$RELEASE_CHANNEL_STATE_PATH" ||
+    fail "verified Consuelo OS channel state could not be activated"
+  chmod 600 "$RELEASE_CHANNEL_STATE_PATH"
+  REPO_DIR="$RUNTIME_HOME"
+  PENDING_RUNTIME_RELEASE_DIR=""
+  PENDING_CHANNEL_STATE_PATH=""
+}
+
 install_runtime_dependencies() {
   local os_dir="$1"
-  (cd "$os_dir" && "$BUN_BIN" install)
+  log "Installing Consuelo OS runtime dependencies..."
+  (
+    cd "$os_dir"
+    BUN_INSTALL_CACHE_DIR="$OS_HOME/runtime/cache/bun" \
+      "$BUN_BIN" install --frozen-lockfile --production
+  )
+  log "Installing Consuelo OS runtime dependencies... done"
 }
 
 ensure_dependencies() {
-  local os_dir="$REPO_DIR/packages/os"
+  local os_dir
+  os_dir="$(os_package_dir)" || {
+    if [ "$DRY_RUN" -eq 1 ]; then
+      os_dir="$RUNTIME_HOME"
+    else
+      fail "Consuelo OS runtime package root is missing"
+    fi
+  }
   if [ -d "$os_dir/node_modules/@clack/prompts" ] || [ -d "$REPO_DIR/node_modules/@clack/prompts" ]; then
     DEPENDENCY_STATUS="present"
     return 0
@@ -892,7 +1492,7 @@ ensure_dependencies() {
     return 0
   fi
 
-  run_with_loading_dots "Installing Consuelo OS runtime dependencies" install_runtime_dependencies "$os_dir"
+  install_runtime_dependencies "$os_dir"
   DEPENDENCY_STATUS="installed"
 }
 
@@ -911,7 +1511,12 @@ check_install_tty() {
 run_install_with_script_pty() {
   local os_dir="$1"
   local os_home="$2"
-  local install_args=(--home "$os_home" --mode "${OS_MODE:-local}")
+  local install_args=(./scripts/install.ts --home "$os_home" --recovery-package-root "$os_dir" --mode "${OS_MODE:-local}")
+  local script_output="/dev/null"
+  local status=0
+  if [ "$DEBUG" != "1" ]; then
+    install_args+=(--quiet)
+  fi
   if [ "$INSTALL_DAEMONS" -eq 1 ]; then
     install_args+=(--install-daemons)
   fi
@@ -919,7 +1524,12 @@ run_install_with_script_pty() {
     install_args+=(--skip-daemons)
   fi
   require_command script "Consuelo OS interactive setup needs macOS script for keyboard input. Re-run non-interactively with:\n  $HOSTED_INSTALL_COMMAND_WITH_ARGS --yes --install-daemons"
-  CONSUELO_ONBOARDING_RESULT_FILE="${ONBOARDING_RESULT_FILE:-}" script -q /dev/null "$BUN_BIN" --cwd "$os_dir" ./scripts/install.ts "${install_args[@]}" < /dev/tty
+  if dev_diagnostics_enabled && [ -n "$CHILD_INSTALL_RAW_TRANSCRIPT" ]; then
+    script_output="$CHILD_INSTALL_RAW_TRANSCRIPT"
+  fi
+  CONSUELO_ONBOARDING_RESULT_FILE="${ONBOARDING_RESULT_FILE:-}" script -q "$script_output" "$BUN_BIN" --cwd "$os_dir" "${install_args[@]}" < /dev/tty || status=$?
+  finalize_child_install_transcript
+  return "$status"
 }
 
 run_install_with_tty() {
@@ -929,14 +1539,104 @@ run_install_with_tty() {
   run_install_with_script_pty "$os_dir" "$os_home"
 }
 
-run_onboarding() { # run_onboarding_json
-  local os_dir="$REPO_DIR/packages/os"
-  local os_home="$OS_HOME"
+validate_onboarding_json() {
+  local onboarding_payload="$1"
+  local validation_error
+  local validation_status=0
 
-  log "Consuelo OS runs a local background service on your Mac so agents and apps can reach your OS while you work. This is similar to common Mac utilities that run in the background. You can stop or uninstall it later."
+  if [ -z "$onboarding_payload" ]; then
+    fail "Consuelo OS interactive onboarding did not complete: onboarding result file was empty.$(child_install_transcript_hint)"
+  fi
+
+  validation_error="$(ONBOARDING_JSON_PAYLOAD="$onboarding_payload" "$BUN_BIN" --print '
+(() => {
+  const raw = process.env.ONBOARDING_JSON_PAYLOAD || "";
+  const fail = (message) => { process.stderr.write(message); process.exit(1); };
+  let payload;
+  try {
+    payload = JSON.parse(raw);
+  } catch {
+    fail("onboarding result was not valid JSON");
+  }
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+    fail("onboarding result was not a JSON object");
+  }
+  if (typeof payload.installDaemons !== "boolean") {
+    fail("onboarding result did not include installDaemons");
+  }
+  if (!payload.onboarding || typeof payload.onboarding !== "object" || Array.isArray(payload.onboarding)) {
+    fail("onboarding result did not include onboarding details");
+  }
+  return "ok";
+})()
+' 2>&1 >/dev/null)" || validation_status=$?
+  if [ "$validation_status" -ne 0 ]; then
+    fail "Consuelo OS interactive onboarding did not complete: ${validation_error:-onboarding result was invalid}.$(child_install_transcript_hint)"
+  fi
+}
+
+prepare_recovery_cli() {
+  local os_dir
+  os_dir="$(os_package_dir)" || {
+    if [ "$DRY_RUN" -eq 1 ]; then
+      log "dry-run: would materialize the Consuelo recovery CLI from the verified runtime"
+      return 0
+    fi
+    fail "Consuelo OS runtime package root is missing"
+  }
 
   if [ "$DRY_RUN" -eq 1 ]; then
-    if [ -n "$BUN_BIN" ]; then
+    log "dry-run: would install $OS_HOME/bin/consuelo before onboarding"
+    return 0
+  fi
+
+  [ -f "$os_dir/scripts/install.ts" ] ||
+    fail "verified Consuelo OS runtime is missing the installer entrypoint"
+  CONSUELO_HOME="$OS_HOME" "$BUN_BIN" --cwd "$os_dir" ./scripts/install.ts --materialize-lifecycle-command --home "$OS_HOME" --recovery-package-root "$os_dir"
+}
+
+finalize_recovery_cli() {
+  if [ "$SOURCE_STATUS" != "verified" ]; then
+    return 0
+  fi
+  if [ "$DRY_RUN" -eq 1 ]; then
+    log "dry-run: would rematerialize the Consuelo lifecycle CLI from runtime/current after activation"
+    return 0
+  fi
+  [ -f "$RUNTIME_HOME/scripts/install.ts" ] ||
+    fail "activated Consuelo OS runtime is missing the installer entrypoint"
+  CONSUELO_HOME="$OS_HOME" "$BUN_BIN" --cwd "$RUNTIME_HOME" ./scripts/install.ts --materialize-lifecycle-command --home "$OS_HOME"
+}
+
+recovery_cli_hint() {
+  [ -x "$OS_HOME/bin/consuelo" ] || return 0
+  local path_guidance="$PATH_HINT"
+  [ -n "$path_guidance" ] || path_guidance="Use the absolute recovery CLI path shown above."
+  printf '
+Recovery CLI is ready at %s.
+Use it in this shell with:
+  %s status
+  %s uninstall --dry-run --json
+%s
+To retry setup:
+  %s
+' "$OS_HOME/bin/consuelo" "$OS_HOME/bin/consuelo" "$OS_HOME/bin/consuelo" "$path_guidance" "$HOSTED_INSTALL_COMMAND"
+}
+
+run_onboarding() { # run_onboarding_json
+  local os_dir
+  os_dir="$(os_package_dir)" || {
+    if [ "$DRY_RUN" -eq 1 ]; then
+      os_dir="$REPO_DIR"
+    else
+      fail "Consuelo OS runtime package root is missing"
+    fi
+  }
+  local os_home="$OS_HOME"
+
+
+  if [ "$DRY_RUN" -eq 1 ]; then
+    if [ -n "$BUN_BIN" ] && [ -f "$os_dir/scripts/install.ts" ]; then
       "$BUN_BIN" --cwd "$os_dir" ./scripts/install.ts --dry-run --yes --json --mode "${OS_MODE:-local}"
       ONBOARDING_STATUS="dry_run"
     else
@@ -947,14 +1647,18 @@ run_onboarding() { # run_onboarding_json
   fi
 
   if [ "$YES" -eq 1 ] || [ "$JSON" -eq 1 ]; then
-    local install_args=(./scripts/install.ts --yes --json --home "$os_home" --mode "${OS_MODE:-local}")
+    local install_args=(./scripts/install.ts --yes --json --home "$os_home" --recovery-package-root "$os_dir" --mode "${OS_MODE:-local}")
     if [ "$INSTALL_DAEMONS" -eq 1 ]; then
       install_args+=(--install-daemons)
     fi
     if [ "$SKIP_DAEMONS" -eq 1 ]; then
       install_args+=(--skip-daemons)
     fi
-    ONBOARDING_JSON="$("$BUN_BIN" --cwd "$os_dir" "${install_args[@]}")"
+    local install_status=0
+    ONBOARDING_JSON="$("$BUN_BIN" --cwd "$os_dir" "${install_args[@]}")" || install_status=$?
+    if [ "$install_status" -ne 0 ]; then
+      fail "Consuelo OS installer exited before onboarding completed (exit $install_status).$(recovery_cli_hint)"
+    fi
     if [ "$JSON" -eq 1 ]; then
       printf '%s\n' "$ONBOARDING_JSON"
     fi
@@ -965,9 +1669,18 @@ run_onboarding() { # run_onboarding_json
   $HOSTED_INSTALL_COMMAND_WITH_ARGS --yes"
     fi
     ONBOARDING_RESULT_FILE="$(mktemp "${TMPDIR:-/tmp}/consueloo-onboardin.XXXXXX")"
-    run_install_with_tty "$os_dir" "$os_home"
-    ONBOARDING_JSON="$(cat "$ONBOARDING_RESULT_FILE")"
+    local install_status=0
+    if run_install_with_tty "$os_dir" "$os_home"; then
+      install_status=0
+    else
+      install_status=$?
+    fi
+    ONBOARDING_JSON="$(cat "$ONBOARDING_RESULT_FILE" 2>/dev/null || true)"
     rm -f "$ONBOARDING_RESULT_FILE"
+    if [ "$install_status" -ne 0 ]; then
+      fail "Consuelo OS installer exited before onboarding completed (exit $install_status).$(recovery_cli_hint)"
+    fi
+    validate_onboarding_json "$ONBOARDING_JSON"
     if printf '%s' "$ONBOARDING_JSON" | grep -q '"installDaemons"[[:space:]]*:[[:space:]]*true'; then
       INSTALL_DAEMONS=1
     else
@@ -998,87 +1711,322 @@ open_workspace_launcher() {
   workspace_host="$(onboarding_workspace_host || true)"
   [ -n "$workspace_host" ] || return 0
 
-  open_url "https://$workspace_host"
+  open_url "https://os.consuelohq.com/auth/workspaces?workspace_host=$workspace_host&return_to=%2F"
 }
 
 run_daemon_dry_run() {
-  local os_dir="$REPO_DIR/packages/os"
-  (cd "$os_dir" && bash ./scripts/install-system-daemons.sh --dry-run --quiet)
+  local os_dir
+  os_dir="$(os_package_dir)" || os_dir="$REPO_DIR"
+  if [ ! -f "$os_dir/scripts/install-system-daemons.sh" ]; then
+    case "$SOURCE_STATUS" in
+      would_download|would_refresh)
+        log "dry-run: would run: bash $os_dir/scripts/install-system-daemons.sh --dry-run --quiet"
+        DAEMON_STATUS="would_run"
+        return 0
+        ;;
+    esac
+    fail "$SOURCE_STATUS Consuelo OS source is missing $os_dir/scripts/install-system-daemons.sh"
+  fi
+  (
+    cd "$os_dir"
+    CONSUELO_HOME="$OS_HOME" \
+      CONSUELO_DAEMON_HOME="$HOME" \
+      CONSUELO_SECURITY_GENERATED_DIR="$OS_HOME/node/security/generated" \
+      CONSUELO_DAEMON_LOG_DIR="$OS_HOME/node/logs" \
+      bash ./scripts/install-system-daemons.sh --dry-run --quiet
+  )
   DAEMON_STATUS="dry_run"
 }
 
 install_daemons_quiet() {
-  local os_dir="$OS_HOME"
-  (cd "$os_dir" && bash ./scripts/install-system-daemons.sh --quiet)
+  local os_dir
+  os_dir="$(os_package_dir)" || fail "Consuelo OS runtime package root is missing"
+  (
+    cd "$os_dir"
+    CONSUELO_HOME="$OS_HOME" \
+      CONSUELO_DAEMON_HOME="$HOME" \
+      CONSUELO_SECURITY_GENERATED_DIR="$OS_HOME/node/security/generated" \
+      CONSUELO_DAEMON_LOG_DIR="$OS_HOME/node/logs" \
+      bash ./scripts/install-system-daemons.sh --quiet
+  )
 }
 
 maybe_install_daemons() {
   if [ "$SKIP_DAEMONS" -eq 1 ]; then
     DAEMON_STATUS="skipped"
-    log "Skipping Consuelo OS user LaunchAgent setup."
+    log "Skipping Consuelo OS background-service setup."
     return 0
   fi
 
   if [ "$DRY_RUN" -eq 1 ]; then
     if [ -n "$PORTLESS_BIN" ]; then
-      log "dry-run: would offer user LaunchAgent setup for com.consuelo.system, com.consuelo.portless.system, and com.consuelo.watchdog."
+      log "dry-run: would install the Consuelo OS background service and the optional Portless compatibility LaunchAgent."
     else
-      log "dry-run: would offer user LaunchAgent setup for com.consuelo.system and com.consuelo.watchdog; portless is optional and not configured."
+      log "dry-run: would install the Consuelo OS background service; Portless compatibility is optional and not configured."
     fi
     run_daemon_dry_run
     return 0
   fi
 
-  if [ "$INSTALL_DAEMONS" -eq 0 ] && [ "$YES" -eq 1 ]; then
-    DAEMON_STATUS="skipped"
-    log "Skipping LaunchAgent setup because --install-daemons was not passed. To install later, run: bash packages/os/scripts/bootstrap.sh --yes --install-daemons"
-    return 0
-  fi
-
   if [ "$INSTALL_DAEMONS" -eq 0 ]; then
-    prompt_enter "Consuelo OS can install user LaunchAgents so it starts at login and restarts if it crashes.
-Labels:
-- com.consuelo.system
-- com.consuelo.watchdog
-- com.consuelo.portless.system, only when portless is configured
-
-Press Enter to install these user LaunchAgents, or press Control-C to cancel." "$HOSTED_INSTALL_COMMAND_WITH_ARGS --yes --install-daemons"
+    INSTALL_DAEMONS=1
   fi
 
   if [ "$DEBUG" = "1" ]; then
-    local os_dir="$OS_HOME"
-    CONSUELO_OS_DEBUG=1 "$BUN_BIN" run --cwd "$os_dir" install:system-daemons
+    local os_dir
+    os_dir="$(os_package_dir)" || fail "Consuelo OS runtime package root is missing"
+    CONSUELO_OS_DEBUG=1 \
+      CONSUELO_HOME="$OS_HOME" \
+      CONSUELO_DAEMON_HOME="$HOME" \
+      CONSUELO_SECURITY_GENERATED_DIR="$OS_HOME/node/security/generated" \
+      CONSUELO_DAEMON_LOG_DIR="$OS_HOME/node/logs" \
+      "$BUN_BIN" run --cwd "$os_dir" install:system-daemons
   else
-    run_with_loading_dots "setting up background service" install_daemons_quiet
-    log "background service ready"
+    run_quiet_with_loading_dots "setting up background service" install_daemons_quiet
   fi
   DAEMON_STATUS="installed"
+}
+
+# A curl-pipe-bash child cannot mutate its parent shell's PATH. Prefer a safe
+# link in an already-visible writable directory; otherwise configure future
+# shells and keep the canonical absolute CLI path available immediately.
+has_unsafe_shared_write() {
+  local candidate="$1"
+  /usr/bin/find "$candidate" -prune \( -perm -020 -o -perm -002 \) -print 2>/dev/null | /usr/bin/grep -q .
+}
+
+resolve_cli_symlink_target() {
+  local link_path="$1"
+  local target=""
+  local target_dir=""
+  local target_name=""
+
+  target="$(readlink "$link_path" 2>/dev/null || true)"
+  [ -n "$target" ] || return 1
+  case "$target" in
+    /*)
+      target_dir="$(dirname "$target")"
+      target_name="$(basename "$target")"
+      (
+        cd "$target_dir" 2>/dev/null || exit 1
+        printf '%s/%s\n' "$(pwd -P)" "$target_name"
+      )
+      ;;
+    *)
+      target_dir="$(dirname "$target")"
+      target_name="$(basename "$target")"
+      (
+        cd "$(dirname "$link_path")" 2>/dev/null || exit 1
+        cd "$target_dir" 2>/dev/null || exit 1
+        printf '%s/%s\n' "$(pwd -P)" "$target_name"
+      )
+      ;;
+  esac
+}
+
+path_owner_uid() {
+  local candidate="$1"
+  if /usr/bin/stat -f '%u' "$candidate" >/dev/null 2>&1; then
+    /usr/bin/stat -f '%u' "$candidate"
+  else
+    /usr/bin/stat -c '%u' "$candidate" 2>/dev/null
+  fi
+}
+
+trusted_sticky_owner() {
+  local candidate="$1"
+  local owner_uid=""
+  local current_uid=""
+
+  owner_uid="$(path_owner_uid "$candidate")" || return 1
+  current_uid="$(id -u 2>/dev/null)" || return 1
+  [ "$owner_uid" = "$current_uid" ] || [ "$owner_uid" = "0" ]
+}
+
+is_safe_shared_path_parent() {
+  local candidate="$1"
+  if has_unsafe_shared_write "$candidate"; then
+    /usr/bin/find "$candidate" -prune -perm -1000 -print 2>/dev/null | /usr/bin/grep -q . || return 1
+    trusted_sticky_owner "$candidate" || return 1
+  fi
+  return 0
+}
+
+is_safe_immediate_cli_link_dir() {
+  local candidate="$1"
+  local cursor=""
+  local resolved_cursor=""
+  local physical_cursor=""
+
+  case "$candidate" in
+    /*) ;;
+    *) return 1 ;;
+  esac
+  [ -d "$candidate" ] || return 1
+  [ ! -L "$candidate" ] || return 1
+  [ -w "$candidate" ] || return 1
+  [ -O "$candidate" ] || return 1
+
+  has_unsafe_shared_write "$candidate" && return 1
+  cursor="$(dirname "$candidate")"
+  while [ -n "$cursor" ] && [ "$cursor" != "/" ]; do
+    [ -d "$cursor" ] || return 1
+    resolved_cursor="$(cd "$cursor" 2>/dev/null && pwd -P)" || return 1
+    is_safe_shared_path_parent "$resolved_cursor" || return 1
+    cursor="$(dirname "$cursor")"
+  done
+
+  resolved_cursor="$(cd "$candidate" 2>/dev/null && pwd -P)" || return 1
+  physical_cursor="$(dirname "$resolved_cursor")"
+  while [ -n "$physical_cursor" ] && [ "$physical_cursor" != "/" ]; do
+    [ -d "$physical_cursor" ] || return 1
+    is_safe_shared_path_parent "$physical_cursor" || return 1
+    physical_cursor="$(dirname "$physical_cursor")"
+  done
+  return 0
+}
+
+find_immediate_cli_link_dir() {
+  local bin_dir="$OS_HOME/bin"
+  local existing=""
+  local expected_cli=""
+  local path_entry=""
+  local path_entries=()
+
+  expected_cli="$(cd "$bin_dir" 2>/dev/null && printf '%s/consuelo\n' "$(pwd -P)")" || expected_cli="$bin_dir/consuelo"
+  existing="$(command -v consuelo 2>/dev/null || true)"
+  if [ -n "$existing" ]; then
+    if [ "$existing" = "$bin_dir/consuelo" ]; then
+      printf '%s\n' "$bin_dir"
+      return 0
+    fi
+    if [ -L "$existing" ] && [ "$(resolve_cli_symlink_target "$existing" 2>/dev/null || true)" = "$expected_cli" ]; then
+      dirname "$existing"
+      return 0
+    fi
+    return 2
+  fi
+
+  IFS=':' read -r -a path_entries <<< "${PATH:-}"
+  for path_entry in "${path_entries[@]}"; do
+    [ -n "$path_entry" ] || continue
+    is_safe_immediate_cli_link_dir "$path_entry" || continue
+    [ ! -e "$path_entry/consuelo" ] && [ ! -L "$path_entry/consuelo" ] || continue
+    printf '%s\n' "$path_entry"
+    return 0
+  done
+  return 1
+}
+
+ensure_command_on_path() {
+  local bin_dir="$OS_HOME/bin"
+  local rc_file=""
+  local existing=""
+  local expected_cli=""
+  local immediate_dir=""
+  local immediate_status=0
+
+  PATH_IMMEDIATE=0
+
+  if [ "$DRY_RUN" -eq 1 ]; then
+    PATH_HINT="dry-run: would expose $bin_dir through the current PATH when safe, otherwise update the supported shell profile"
+    return 0
+  fi
+
+  expected_cli="$(cd "$bin_dir" 2>/dev/null && printf '%s/consuelo\n' "$(pwd -P)")" || expected_cli="$bin_dir/consuelo"
+  existing="$(command -v consuelo 2>/dev/null || true)"
+  if [ -n "$existing" ] && [ "$existing" != "$bin_dir/consuelo" ]; then
+    if [ ! -L "$existing" ] || [ "$(resolve_cli_symlink_target "$existing" 2>/dev/null || true)" != "$expected_cli" ]; then
+      log ""
+      log "Warning: another 'consuelo' is already on PATH at $existing"
+      log "Consuelo OS will not overwrite it. Use $bin_dir/consuelo until you resolve the command collision."
+      PATH_HINT="Another 'consuelo' already owns PATH; Consuelo OS left it unchanged."
+      return 0
+    fi
+  fi
+
+  if immediate_dir="$(find_immediate_cli_link_dir)"; then
+    if [ "$immediate_dir" != "$bin_dir" ] && [ ! -e "$immediate_dir/consuelo" ] && [ ! -L "$immediate_dir/consuelo" ]; then
+      ln -s "$bin_dir/consuelo" "$immediate_dir/consuelo"
+    fi
+    PATH_IMMEDIATE=1
+    PATH_HINT="consuelo is ready in this shell via $immediate_dir"
+    return 0
+  else
+    immediate_status=$?
+    if [ "$immediate_status" -eq 2 ]; then
+      PATH_HINT="Another 'consuelo' already owns PATH; use $bin_dir/consuelo directly."
+      return 0
+    fi
+  fi
+
+  case "$(basename "${SHELL:-}")" in
+    zsh) rc_file="$HOME/.zshrc" ;;
+    bash)
+      if [ -f "$HOME/.bash_profile" ]; then rc_file="$HOME/.bash_profile"; else rc_file="$HOME/.bashrc"; fi
+      ;;
+    *) rc_file="" ;;
+  esac
+
+  if [ -z "$rc_file" ]; then
+    PATH_HINT="Add this to your shell profile:  export PATH=\"$bin_dir:\$PATH\""
+    return 0
+  fi
+
+  if [ -f "$rc_file" ] && grep -qF "$bin_dir" "$rc_file" 2>/dev/null; then
+    PATH_HINT="Already on PATH via $rc_file"
+    return 0
+  fi
+
+  {
+    printf '\n# Consuelo OS\n'
+    printf 'export PATH="%s:$PATH"\n' "$bin_dir"
+  } >> "$rc_file" 2>/dev/null || {
+    PATH_HINT="Add this to your shell profile:  export PATH=\"$bin_dir:\$PATH\""
+    return 0
+  }
+  PATH_HINT="Added $bin_dir to PATH in $rc_file — new shells can use the bare consuelo command"
 }
 
 print_success_summary() {
   [ "$JSON" -eq 0 ] || return 0
 
-  local os_home="$OS_HOME"
-
   log ""
-  log "Consuelo OS setup complete"
-  log "Home: $os_home"
+  log "Consuelo OS installed"
+  if [ "$PATH_IMMEDIATE" -ne 1 ]; then
+    [ -z "$PATH_HINT" ] || log "$PATH_HINT"
+    log "Use now: $OS_HOME/bin/consuelo status"
+  fi
+}
+
+setup_local_runtime() {
+  check_mac_prerequisites
+  ensure_bun
+  install_verified_runtime
+  ensure_dependencies
+  prepare_recovery_cli
+  ensure_command_on_path
+  ensure_named_bun_runtime
+  ensure_install_id
+  ensure_portless
+  ensure_caddy
+  ensure_cloudflared
+  persist_runtime_paths
 }
 
 main() {
   parse_args "$@"
+  if [ "$RUNTIME_DEPENDENCIES_ONLY" -eq 1 ]; then
+    reconcile_runtime_dependencies_only
+    return 0
+  fi
+  init_dev_diagnostics
   choose_os_mode
   handle_cloud_mode
-  check_mac_prerequisites
-  render_dependency_progress
-  prompt_dependency_setup
-  ensure_bun
-  ensure_portless
-  ensure_cloudflared
-  persist_runtime_paths
-  resolve_source
-  ensure_dependencies
+  run_quiet_with_loading_dots "Installing Consuelo OS" setup_local_runtime
   run_onboarding
+  activate_verified_runtime
+  finalize_recovery_cli
   maybe_install_daemons
   print_success_summary
   open_workspace_launcher
@@ -1086,4 +2034,3 @@ main() {
 }
 
 main "$@"
-

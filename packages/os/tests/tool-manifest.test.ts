@@ -1,3 +1,4 @@
+import { spawnSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, relative } from 'node:path';
@@ -5,7 +6,7 @@ import { join, relative } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { buildToolManifest, generateToolManifest } from '../scripts/generate-tool-manifest';
-import { getInputSchema, schemaTypeSignatures } from '../scripts/lib/facade/schemas';
+import { getInputSchema, outputTypeSignatures, schemaTypeSignatures } from '../scripts/lib/facade/schemas';
 import { runToolSearch } from '../scripts/tools-search';
 
 type JsonObject = Record<string, unknown>;
@@ -23,15 +24,18 @@ type SearchResult = {
 };
 
 const packageRoot = join(import.meta.dirname, '..');
-const expectedCodeCallDescription = "Run focused repo-scoped Python, Bun, or Bash programs where runtime output is the evidence: tests, package scripts, typechecks, syntax checks, exact CLI reproduction, small diagnostics, and bounded data shaping inside the active task worktree. Prefer compact packets with paths, line spans, and extracted snippets over raw file dumps.";
+const baselineDefinitions = (JSON.parse(readFileSync(join(import.meta.dirname, 'fixtures/tool-package-baseline.json'), 'utf8')) as { definitions: JsonObject[] }).definitions;
+const expectedCodeCallDescription = "Run focused Python, Bun, or Bash programs where runtime output is the evidence. Use taskSession for edits inside Consuelo-managed repositories and workSession for scoped edits in ordinary folders on the owning node. Work-session execution is write-contained to its persisted session path on supported nodes and rejects managed repos/worktrees; mac.call remains the emergency host escape hatch. Prefer compact packets with paths, line spans, and extracted snippets over raw file dumps.";
 
 const expectedDescriptions = {
   'code.call': expectedCodeCallDescription,
-  explore: 'a repo-aware decision search tool for coding agents. It answers where to spend attention and what files or paths are likely relevant to a given request.',
-  'fs.trash': 'An agent safe file deletion path. Prefered over rm rf',
-  'task.intent': 'Start or dispatch the task workflow lifecycle guidance for scoped task work.',
+  explore: 'a repo-aware investigation policy for coding agents. It retrieves the dependency graph and returns the current hypotheses, readiness, uncertainty, next evidence action, and whether the investigation is edit-ready.',
+  'fs.trash': 'move files to trash inside an authorized task worktree or work-session directory',
+  'session.start': 'Canonical session constructor. Use kind=task for managed repo work that needs a branch/worktree/PR, or kind=work for scoped ordinary filesystem work on the owning node. For work sessions, omit path to create an isolated local work directory automatically.',
+  'task.start': 'Compatibility alias for session.start({ kind: \"task\" }). Existing callers remain supported; new agents should prefer session.start for task creation.',
 } as const;
 const removedCoreToolNames = [
+  'context',
   'fs.list',
   'fs.write',
   'gh',
@@ -39,6 +43,7 @@ const removedCoreToolNames = [
   'exploit',
   'confidenceScore',
   'confirm',
+  'code.run',
   'context.list',
   'context.categories',
   'audit',
@@ -72,13 +77,14 @@ const oldContextToolNames = [
 const retainedCoreToolNames = [
   'batch',
   'code.call',
-  'code.run',
-  'context',
+  'memory',
   'explore',
   'fs.apply_patch',
   'fs.trash',
   'github',
-  'task.intent',
+  'google',
+  'session.start',
+  'task.start',
   'review.run',
   'stream.context',
   'stream.sync',
@@ -173,9 +179,9 @@ function writeFixtureConfig(regularManifestPath: string, devToolManifestPath: st
 
 function publicSurfaceText(): string {
   const publicFiles = [
-    'manifests/tool.manifest.json',
-    'manifests/core.manifest.json',
-    'manifests/workflow-bundles.json',
+    'manifests/generated/tool.manifest.json',
+    'manifests/generated/core.manifest.json',
+    'workflows/generated/workflow-bundles.json',
     'TOOLS.md',
     'src/generated/workspace.d.ts',
     'src/generated/tool-client.ts',
@@ -239,35 +245,17 @@ function assertStrongCodeCallExamples(codeCall: JsonObject | undefined): void {
 }
 
 describe('tool manifest generator', () => {
-  it('preserves every regular and dev manifest entry in the generated full manifest', () => {
-    const regularEntries = readJsonArray('tooling/tool-manifest.json');
-    const devEntries = readJsonArray('tooling/dev-tool-manifest.json');
-
+  it('preserves every characterized active package definition in the generated full manifest', () => {
     const registry = buildToolManifest({ write: false });
-    const generatedNames = registry.full.tools.map((entry) => entry.name).sort();
-    const expectedNames = Array.from(new Set([
-      ...regularEntries.map((entry) => String(entry.name)),
-      ...devEntries.map((entry) => String(entry.name)),
-    ])).sort();
-
-    expect(generatedNames).toEqual(expectedNames);
-    expect(generatedNames).toContain('batch');
-    expect(registry.full.tools).toHaveLength(expectedNames.length);
-    expect(registry.report.oldRegularToolCount).toBe(regularEntries.length);
-    expect(registry.report.oldDevToolCount).toBe(devEntries.length);
+    const generatedDefinitions = registry.full.tools.map((entry) => entry.definition);
+    expect(generatedDefinitions).toEqual(baselineDefinitions);
+    expect(registry.full.tools).toHaveLength(baselineDefinitions.length);
+    expect(registry.report.oldRegularToolCount).toBe(0);
+    expect(registry.report.oldDevToolCount).toBe(baselineDefinitions.length);
     expect(registry.report.duplicateNames).toEqual([]);
-
-    for (const original of regularEntries) {
-      const generated = registry.full.tools.find((entry) => entry.name === original.name);
-      expect(generated?.kind).toBe('os-skill');
-      expect(generated?.definition).toEqual(original);
-    }
-
-    for (const original of devEntries) {
-      const generated = registry.full.tools.find((entry) => entry.name === original.name);
-      expect(generated?.kind).toBe('facade-tool');
-      expect(generated?.definition).toEqual(original);
-    }
+    expect(registry.full.tools.map((entry) => entry.name)).toEqual(expect.arrayContaining(['batch', 'code.run', 'google', 'media.svg.convert']));
+    expect(registry.full.tools.every((entry) => entry.kind === 'facade-tool')).toBe(true);
+    expect(registry.full.tools.every((entry) => entry.sourcePath.startsWith('packages/os/tools/'))).toBe(true);
   });
 
   it('derives core from config and excludes non-core provider families', () => {
@@ -283,65 +271,74 @@ describe('tool manifest generator', () => {
     }
     expect(coreNames).not.toContain('mac.call');
     expect(coreNames).not.toContain('mac.exec');
-    expect(coreNames.filter((name) => name.startsWith('task.'))).toEqual(['task.intent']);
+    expect(coreNames.filter((name) => name.startsWith('task.'))).toEqual(['task.start']);
 
     for (const toolName of oldContextToolNames) {
       expect(coreNames).not.toContain(toolName);
     }
     expect(coreNames).not.toContain('linear.issue');
     expect(coreNames).not.toContain('sentry.issues');
-    expect(coreNames).not.toContain('railway.logs');
+    expect(coreNames).not.toContain('deployment.logs');
     expect(coreNames).not.toContain('website.deploy');
     expect(coreNames).not.toContain('browser.open');
     expect(coreNames).not.toContain('design.publish');
-    expect(coreNames).not.toContain('office.generateWebsite');
-    expect(coreNames).not.toContain('daily-revenue-brief');
-    expect(coreNames).not.toContain('get_raw_steering');
-  });
+    expect(coreNames).not.toContain('office.generateWebsite');  });
 
 
 
-  it('should model read-only fs read and search as session-optional when building manifests', () => {
+  it('should model read-only fs operations as session-optional when building manifests', () => {
     const registry = buildToolManifest({ write: false });
-    const byName = new Map(registry.full.tools.map((entry) => [entry.name, entry]));
+    const fsEntries = registry.full.tools.filter((entry) => entry.name.startsWith('fs.'));
+    const readOnlyEntries = fsEntries.filter((entry) => entry.definition.capabilities.readOnly === true);
+    const mutatingEntries = fsEntries.filter((entry) => entry.definition.capabilities.mutating === true);
+    const byName = new Map(fsEntries.map((entry) => [entry.name, entry]));
 
-    for (const toolName of ['fs.read', 'fs.search']) {
-      const entry = byName.get(toolName);
-      expect(entry?.definition.capabilities).toMatchObject({ readOnly: true, mutating: false });
-      expect(entry?.definition.command).toMatchObject({ script: 'task:fs', branchMode: 'optional' });
-      expect(entry?.definition.sessionRequired).toBe(false);
+    expect(readOnlyEntries.map((entry) => entry.name).sort()).toEqual(['fs.list', 'fs.read', 'fs.search']);
+    expect(mutatingEntries.map((entry) => entry.name).sort()).toEqual(['fs.apply_patch', 'fs.trash', 'fs.write']);
+
+    for (const entry of readOnlyEntries) {
+      expect(entry.definition.capabilities).toMatchObject({ readOnly: true, mutating: false });
+      expect(entry.definition.command).toMatchObject({ script: 'task:fs', branchMode: 'optional' });
+      expect(entry.definition.sessionRequired).toBe(false);
     }
 
-    expect(byName.get('fs.write')?.definition.sessionRequired).toBe(true);
-    expect(byName.get('fs.apply_patch')?.definition.sessionRequired).toBe(true);
+    expect(byName.get('fs.read')?.definition.command.arguments).toContainEqual({ source: 'full', flag: '--full', kind: 'boolean' });
+
+    for (const entry of mutatingEntries) {
+      expect(entry.definition.capabilities).toMatchObject({ readOnly: false, mutating: true });
+      expect(entry.definition.command).toMatchObject({ script: 'task:fs', branchMode: 'required' });
+      expect(entry.definition.sessionRequired).toBe(true);
+    }
   });
 
   it('keeps public execution surface on code.call while task lifecycle stays full-manifest only', async () => {
     const registry = buildToolManifest({ write: false });
     const fullNames = registry.full.tools.map((entry) => entry.name);
     const coreNames = registry.core.tools.map((entry) => entry.name);
-    const lifecycleTools = ['task.start', 'task.current', 'task.push', 'task.pr', 'task.finish'];
+    const lifecycleTools = ['task.current', 'task.push', 'task.pr', 'task.finish'];
     const codeCallEntry = registry.core.tools.find((entry) => entry.name === 'code.call');
     const macCallEntry = registry.full.tools.find((entry) => entry.name === 'mac.call');
 
     expect(fullNames).toContain('code.call');
     expect(coreNames).toContain('code.call');
+    expect(coreNames).toContain('task.start');
+    expect(coreNames).not.toContain('task.intent');
     expect(coreNames).not.toContain('mac.call');
     expect(coreNames).not.toContain('mac.exec');
     for (const toolName of lifecycleTools) {
       expect(fullNames).toContain(toolName);
       expect(coreNames).not.toContain(toolName);
     }
-    expect(coreNames.filter((name) => name.startsWith('task.'))).toEqual(['task.intent']);
-    expect(fullNames).not.toContain('task.call');
-    expect(fullNames).not.toContain('task.exec');
-    expect(coreNames).not.toContain('task.call');
-    expect(coreNames).not.toContain('task.exec');
+    expect(coreNames.filter((name) => name.startsWith('task.'))).toEqual(['task.start']);
+    expect(fullNames).not.toContain(`task.${'call'}`);
+    expect(fullNames).not.toContain(`task.${'exec'}`);
+    expect(coreNames).not.toContain(`task.${'call'}`);
+    expect(coreNames).not.toContain(`task.${'exec'}`);
 
     const publicText = publicSurfaceText();
-    expect(publicText).not.toContain('task.call');
-    expect(publicText).not.toContain('task.exec');
-    expect(publicText).not.toContain('task:exec');
+    expect(publicText).not.toContain(`task.${'call'}`);
+    expect(publicText).not.toContain(`task.${'exec'}`);
+    expect(publicText).not.toContain(`task:${'exec'}`);
     expect(publicText).toContain('code.call');
     expect(publicText).toContain('Do not use `mac.call` for repo-scoped tests');
 
@@ -357,18 +354,59 @@ describe('tool manifest generator', () => {
     expect(macCallEntry?.description).toContain('emergency host escape hatch');
     expect(macCallEntry?.description).toContain('Do not use `mac.call` for repo-scoped tests');
 
-    const taskCallSearch = await runToolSearch({ query: 'task.call', limit: 10, includeDocs: false, includeEmbeddings: false }) as SearchResult;
-    const taskExecSearch = await runToolSearch({ query: 'task.exec', limit: 10, includeDocs: false, includeEmbeddings: false }) as SearchResult;
+    const taskCallSearch = await runToolSearch({ query: `task.${'call'}`, limit: 10, includeDocs: false, includeEmbeddings: false }) as SearchResult;
+    const taskExecSearch = await runToolSearch({ query: `task.${'exec'}`, limit: 10, includeDocs: false, includeEmbeddings: false }) as SearchResult;
 
-    expect(taskCallSearch.matches?.map((match) => match.name)).not.toContain('task.call');
-    expect(taskExecSearch.matches?.map((match) => match.name)).not.toContain('task.exec');
+    expect(taskCallSearch.matches?.map((match) => match.name)).not.toContain(`task.${'call'}`);
+    expect(taskExecSearch.matches?.map((match) => match.name)).not.toContain(`task.${'exec'}`);
   });
 
-  it('keeps OS task intent wired to the OS runtime surface', () => {
+  it('should keep task.pr facade input and command mapping aligned when the CLI exposes the workpad escape hatch', () => {
+    // Arrange
+    const schema = getInputSchema('TaskPrInput');
     const registry = buildToolManifest({ write: false });
-    const intentEntry = registry.full.tools.find((entry) => entry.name === 'task.intent');
+    const taskPr = registry.full.tools.find((entry) => entry.name === 'task.pr');
+    const generatedTypes = readFileSync(join(import.meta.dirname, '../src/generated/workspace.d.ts'), 'utf8');
+    const taskPrSource = readFileSync(join(packageRoot, 'scripts/task-pr.js'), 'utf8');
 
-    expect(intentEntry?.definition.underlying).toBe('os task.intent');
+    // Act
+    const parsed = schema.safeParse({ ackWorkpadIncomplete: true, repo: 'example/private-repo' });
+    const argumentsList = taskPr?.definition.command?.arguments;
+    const cli = spawnSync(process.execPath, [join(packageRoot, 'scripts/task-pr.js'), '--ack-workpad-incomplete', '--help'], {
+      cwd: packageRoot,
+      encoding: 'utf8',
+    });
+
+    // Assert
+    expect(parsed.success).toBe(true);
+    if (!parsed.success) throw new Error('TaskPrInput should parse the workpad escape hatch');
+    expect(parsed.data).toEqual(expect.objectContaining({ ackWorkpadIncomplete: true, repo: 'example/private-repo' }));
+    expect(schemaTypeSignatures.TaskPrInput).toContain('ackWorkpadIncomplete?: boolean');
+    expect(schemaTypeSignatures.TaskPrInput).toContain('repo?: string');
+    expect(generatedTypes).toContain('ackWorkpadIncomplete?: boolean');
+    expect(generatedTypes).toContain('repo?: string');
+    expect(argumentsList).toContainEqual({
+      source: 'ackWorkpadIncomplete',
+      flag: '--ack-workpad-incomplete',
+      kind: 'boolean',
+    });
+    expect(argumentsList).toContainEqual({
+      source: 'repo',
+      flag: '--repo',
+      kind: 'value',
+    });
+    expect(cli.status).toBe(0);
+    expect(cli.stdout).toContain('--ack-workpad-incomplete');
+    expect(taskPrSource).toContain("const { assertWorkpadReady } = require('./lib/task-workpad');");
+    expect(taskPrSource).toContain('ackIncomplete: args.ackWorkpadIncomplete');
+  });
+
+  it('keeps OS task start wired to the OS runtime surface', () => {
+    const registry = buildToolManifest({ write: false });
+    const startEntry = registry.full.tools.find((entry) => entry.name === 'task.start');
+
+    expect(startEntry?.definition.underlying).toBe('os task.start');
+    expect(registry.full.tools.map((entry) => entry.name)).not.toContain('task.intent');
   });
 
   it("uses Ko's core tool descriptions in full and core manifests", () => {
@@ -389,21 +427,14 @@ describe('tool manifest generator', () => {
     const registry = buildToolManifest({ write: false });
     const fullNames = registry.full.tools.map((entry) => entry.name);
     const coreNames = registry.core.tools.map((entry) => entry.name);
-    const devEntries = readJsonArray('tooling/dev-tool-manifest.json');
-    const devNames = devEntries.map((entry) => String(entry.name));
     const fullEntry = registry.full.tools.find((entry) => entry.name === 'fs.apply_patch');
     const coreEntry = registry.core.tools.find((entry) => entry.name === 'fs.apply_patch');
-    const devEntry = devEntries.find((entry) => entry.name === 'fs.apply_patch');
-
     expect(fullNames).toContain('fs.apply_patch');
     expect(coreNames).toContain('fs.apply_patch');
-    expect(devNames).toContain('fs.apply_patch');
     expect(fullNames).not.toContain('fs.patch');
     expect(coreNames).not.toContain('fs.patch');
-    expect(devNames).not.toContain('fs.patch');
     expect((fullEntry?.definition as JsonObject | undefined)?.inputSchema).toBe('FsApplyPatchInput');
     expect((coreEntry?.definition as JsonObject | undefined)?.inputSchema).toBe('FsApplyPatchInput');
-    expect(devEntry?.inputSchema).toBe('FsApplyPatchInput');
   });
 
   it('should validate fs.apply_patch input when exactly one patch transport is provided', () => {
@@ -426,6 +457,40 @@ describe('tool manifest generator', () => {
     expect(generatedWorkspace).toContain('patchText?: string');
     expect(generatedWorkspace).not.toContain('fs.patch');
     expect(generatedClient).toContain('createWorkspaceClient');
+  });
+
+  it('exposes subagent token usage in generated TypeScript surfaces', () => {
+    const generatedWorkspace = readFileSync(join(packageRoot, 'src/generated/workspace.d.ts'), 'utf8');
+    const expectedUsage = 'usage?: { inputTokens?: number; cachedInputTokens?: number; outputTokens?: number; reasoningOutputTokens?: number }';
+
+    expect(outputTypeSignatures.SubagentOutput).toContain(expectedUsage);
+    expect(generatedWorkspace).toContain(expectedUsage);
+  });
+
+  it('publishes one non-core provider-neutral deployment surface and generated client types', () => {
+    const registry = buildToolManifest({ write: false });
+    const fullNames = registry.full.tools.map((entry) => entry.name);
+    const coreNames = registry.core.tools.map((entry) => entry.name);
+    const deploymentNames = fullNames.filter((name) => name.startsWith('deployment.')).sort();
+    const generatedWorkspace = readFileSync(join(packageRoot, 'src/generated/workspace.d.ts'), 'utf8');
+
+    expect(deploymentNames).toEqual([
+      'deployment.context',
+      'deployment.deploy',
+      'deployment.detect',
+      'deployment.environment',
+      'deployment.list',
+      'deployment.logs',
+      'deployment.raw',
+      'deployment.status',
+    ]);
+    expect(coreNames.filter((name) => name.startsWith('deployment.'))).toEqual([]);
+    expect(fullNames.filter((name) => /^(railway|vercel|cloudflare)\./.test(name))).toEqual([]);
+    expect(registry.full.tools
+      .filter((entry) => entry.name.startsWith('deployment.'))
+      .every((entry) => entry.definition.command.internal === 'deployment')).toBe(true);
+    expect(generatedWorkspace).toContain('deployment: {');
+    expect(generatedWorkspace).toContain('provider: "railway" | "vercel" | "cloudflare"');
   });
 
   it('should expose runtime fs result envelopes when generating OS TypeScript surfaces', () => {
@@ -481,34 +546,10 @@ describe('tool manifest generator', () => {
     expect(() => buildToolManifest({ configPath, write: false })).toThrow('duplicate tool name duplicate');
   });
 
-  it('lets tool search discover a regular non-core OS skill from the full manifest', async () => {
-    const result = await runToolSearch({
-      query: 'daily revenue brief',
-      limit: 5,
-      includeDocs: false,
-      includeEmbeddings: false,
-    }) as SearchResult;
-
-    expect(result.catalog?.source).toContain('tool.manifest.json');
-    expect(result.catalog?.toolCount).toBeGreaterThan(120);
-    expect(result.matches?.map((match) => match.name)).toContain('daily-revenue-brief');
-  });
-
-  it('keeps get_raw_steering discoverable through the full manifest without adding it to core', async () => {
+  it('keeps the generated catalog limited to canonical facade packages', () => {
     const registry = buildToolManifest({ write: false });
-    const fullNames = registry.full.tools.map((entry) => entry.name);
-    const coreNames = registry.core.tools.map((entry) => entry.name);
-
-    expect(fullNames).toContain('get_raw_steering');
-    expect(coreNames).not.toContain('get_raw_steering');
-
-    const result = await runToolSearch({
-      query: 'raw steering',
-      limit: 5,
-      includeDocs: false,
-      includeEmbeddings: false,
-    }) as SearchResult;
-
-    expect(result.matches?.map((match) => match.name)).toContain('get_raw_steering');
+    expect(registry.full.tools).toHaveLength(baselineDefinitions.length);
+    expect(registry.full.tools.every((entry) => entry.kind === 'facade-tool')).toBe(true);
+    expect(registry.full.tools.every((entry) => entry.sourcePath.startsWith('packages/os/tools/'))).toBe(true);
   });
 });

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_67ffab8e5435",
+  "tmuxSession": "opensaas-security-provision-central-mcp-connector-route-for-instal-67ffab8e",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/provision-central-mcp-connector-route-for-installed-nodes",
+  "branch": "task/security/provision-central-mcp-connector-route-for-installed-nodes",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-provision-central-mcp-connector-route-for-installed-nodes",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-provision-central-mcp-connector-route-for-installed-nodes",
+  "prNumber": 1378,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1378",
+  "createdAt": "2026-07-08T20:26:26.797Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-provision-central-mcp-connector-route-for-installed-nodes/.task/security/provision-central-mcp-connector-route-for-installed-nodes/session.json"
+}

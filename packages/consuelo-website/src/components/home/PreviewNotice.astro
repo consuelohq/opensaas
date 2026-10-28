@@ -1,0 +1,90 @@
+---
+import { siteLinks } from '../../data/site-links';
+---
+
+<aside class="preview-notice" data-preview-notice aria-label="Consuelo OS preview notice">
+  <span class="preview-notice__signal" aria-hidden="true">✦</span>
+  <p>
+    <strong>Consuelo OS is currently in preview.</strong>
+    If you have feedback or run into issues, join us on
+    <a href={siteLinks.discord}>Discord</a> or drop us a note at
+    <a href="mailto:support@consuelohq.com">support@consuelohq.com</a>.
+  </p>
+  <button type="button" data-preview-notice-dismiss aria-label="Dismiss preview notice">×</button>
+</aside>
+
+<script>
+  const notice = document.querySelector('[data-preview-notice]');
+  const dismissButton = notice?.querySelector('[data-preview-notice-dismiss]');
+
+  dismissButton?.addEventListener('click', () => {
+    if (notice instanceof HTMLElement) {
+      notice.hidden = true;
+    }
+  });
+</script>
+
+<style>
+  .preview-notice {
+    position: absolute;
+    z-index: 3;
+    top: clamp(1.25rem, 3vw, 2.5rem);
+    left: 50%;
+    display: grid;
+    width: min(calc(100% - 2rem), 35rem);
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 0.8rem;
+    border: 1px solid rgba(0, 0, 242, 0.22);
+    background: white;
+    color: var(--site-color-brand);
+    padding: 0.95rem 1rem;
+    box-shadow: 0 14px 34px rgba(0, 0, 92, 0.18);
+    transform: translateX(-50%);
+  }
+
+  .preview-notice[hidden] {
+    display: none;
+  }
+
+  .preview-notice__signal {
+    padding-top: 0.1rem;
+    font-size: 0.78rem;
+  }
+
+  .preview-notice p {
+    margin: 0;
+    font: 560 0.69rem/1.5 var(--site-font-mono);
+    letter-spacing: 0.015em;
+    text-align: left;
+  }
+
+  .preview-notice strong {
+    font-weight: 760;
+  }
+
+  .preview-notice a {
+    text-decoration: underline;
+    text-underline-offset: 0.14em;
+  }
+
+  .preview-notice button {
+    border: 0;
+    background: transparent;
+    color: var(--site-color-brand);
+    font: 500 1.15rem/0.9 var(--site-font-body);
+    padding: 0 0 0.25rem 0.3rem;
+  }
+
+  @media (max-width: 580px) {
+    .preview-notice {
+      top: 1rem;
+      gap: 0.6rem;
+      padding: 0.8rem;
+    }
+
+    .preview-notice p {
+      font-size: 0.62rem;
+    }
+  }
+</style>

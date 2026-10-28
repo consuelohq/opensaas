@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_0def7683f2d8",
+  "tmuxSession": "opensaas-dialer-algorithm-isolate-os-subagent-executable-discovery-tests-0def7683",
+  "area": "dialer-algorithm",
+  "stream": "stream/dialer-algorithm",
+  "taskBranch": "task/dialer-algorithm/isolate-os-subagent-executable-discovery-tests",
+  "branch": "task/dialer-algorithm/isolate-os-subagent-executable-discovery-tests",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-isolate-os-subagent-executable-discovery-tests",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-isolate-os-subagent-executable-discovery-tests",
+  "prNumber": 2095,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2095",
+  "createdAt": "2026-08-16T02:01:40.640Z",
+  "tmuxCreated": false,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-isolate-os-subagent-executable-discovery-tests/.task/dialer-algorithm/isolate-os-subagent-executable-discovery-tests/session.json"
+}

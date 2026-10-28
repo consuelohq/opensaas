@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_ef18f29519e9",
+  "tmuxSession": "opensaas-os-repair-targeted-device-authority-production-rele-ef18f295",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/repair-targeted-device-authority-production-release",
+  "branch": "task/os/repair-targeted-device-authority-production-release",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-targeted-device-authority-production-release",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-targeted-device-authority-production-release",
+  "prNumber": 1961,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1961",
+  "createdAt": "2026-08-14T20:49:35.230Z",
+  "tmuxCreated": false,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-targeted-device-authority-production-release/.task/os/repair-targeted-device-authority-production-release/session.json"
+}

@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/fix-installer-diagnostics-review-comments",
+  "baseBranch": "stream/security",
+  "sourceBranch": "stream/security",
+  "startFrom": "stream",
+  "prNumber": 1372,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1372",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1372",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1372/fix-installer-diagnostics-review-comments",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1372",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1372/fix-installer-diagnostics-review-comments",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-installer-diagnostics-review-comments",
+  "taskSession": "tsk_a10e1ca08d56",
+  "tmuxSession": "opensaas-security-fix-installer-diagnostics-review-comments-a10e1ca0",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-installer-diagnostics-review-comments/.task/security/fix-installer-diagnostics-review-comments/session.json",
+  "createdAt": "2026-07-05T02:56:11.589Z"
+}

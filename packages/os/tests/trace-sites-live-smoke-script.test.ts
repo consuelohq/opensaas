@@ -39,8 +39,8 @@ describe("Trace Sites live smoke script contract", () => {
       "https://trace-sites-test.consuelohq.com/gateway/traces/events",
     ]);
     expect(plan.forbiddenRoutes).toEqual([
-      "http://127.0.0.1:8960/gateway/traces/recent",
-      "http://localhost:8960/gateway/traces/recent",
+      "http://127.0.0.1:46321/gateway/traces/recent",
+      "http://localhost:46321/gateway/traces/recent",
     ]);
     assertNoLocalLeak(plan.browserVisibleOutputShape);
   });

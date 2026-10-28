@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/dialer/fix-railway-project-token-release-auth",
+  "events": [
+    {
+      "id": "203c6513-fd96-488e-8ee5-df8b2c30c48e",
+      "occurred_at": "2026-09-21T12:12:06.635Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/lead-connector/src/deployment/release-workflow.contract.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/fix-railway-project-token-release-auth",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/fix-railway-project-token-release-auth"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-09-21T12:12:06.738Z"
+}

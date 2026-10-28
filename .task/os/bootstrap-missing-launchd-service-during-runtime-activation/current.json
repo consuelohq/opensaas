@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/bootstrap-missing-launchd-service-during-runtime-activation",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1917,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1917",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1917",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1917/bootstrap-missing-launchd-service-during-runtime-activation",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1917",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1917/bootstrap-missing-launchd-service-during-runtime-activation",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-bootstrap-missing-launchd-service-during-runtime-activation",
+  "taskSession": "tsk_0240f020dfe5",
+  "tmuxSession": "opensaas-os-bootstrap-missing-launchd-service-during-runtime-0240f020",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-bootstrap-missing-launchd-service-during-runtime-activation/.task/os/bootstrap-missing-launchd-service-during-runtime-activation/session.json",
+  "createdAt": "2026-08-13T20:50:07.964Z"
+}

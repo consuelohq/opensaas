@@ -8,7 +8,7 @@ The current package proves this spine:
 get_steering -> call -> Bun skill -> structured result -> local execution record
 ```
 
-The product runtime path is Bun/TypeScript. Python files remain only as temporary compatibility/bootstrap surfaces until the Bun server fully replaces transport needs.
+The product server is Bun/TypeScript. Python is reserved for optional utilities and is not a supported server transport.
 
 ## OS portal
 
@@ -17,9 +17,9 @@ The OS portal exposes two package entrypoints:
 - `get_steering`
 - `call`
 
-The visible OS portal is `get_steering` and `call`. Internal/dev/operator raw steering is available through `call` with `name: "get_raw_steering"`.
+The visible OS portal is `get_steering` and typed facade calls. Internal raw steering remains available only through the `get-raw-steering` CLI command.
 
-Skills live behind `call` as Bun scripts under `scripts/`. They are exposed through manifests in `tooling/`.
+Skills are instruction resources under `skills/`. Callable tools are owned by TypeScript packages under `tools/` and exposed through generated manifests.
 
 Manifests are manifests. Skills are the capabilities that agents can run. Scripts are the executable implementation behind those skills.
 
@@ -80,25 +80,12 @@ Return OS steering:
 bun --cwd packages/os ./scripts/os.ts get-steering
 ```
 
-Return raw dev/operator steering through `call`:
+Return raw dev/operator steering through the internal CLI:
 
 ```bash
-bun --cwd packages/os ./scripts/os.ts call '{"name":"get_raw_steering"}'
+bun --cwd packages/os ./scripts/os.ts get-raw-steering
 ```
 
-Run the smoke skill:
-
-```bash
-bun --cwd packages/os ./scripts/os.ts call '{"name":"daily-revenue-brief"}'
-```
-
-Run the workspace snapshot skill:
-
-```bash
-bun --cwd packages/os ./scripts/os.ts call '{"name":"consuelo-workspace-snapshot","input":{"limit":25}}'
-```
-
-With GraphQL env configured, the same command attempts a harmless connectivity proof.
 
 ## Bun server
 
@@ -109,12 +96,12 @@ cd packages/os
 bun run server:run
 ```
 
-The server listens on `127.0.0.1:8850` by default.
+The server listens on `127.0.0.1:46321` by default.
 
 Override the port with:
 
 ```bash
-export CONSUELO_OS_PORT=8851
+export CONSUELO_OS_PORT=8961
 ```
 
 The server exposes:
@@ -144,7 +131,7 @@ bun run install:local -- --yes
 
 The installer prepares `CONSUELO_HOME`, local runtime folders, skill metadata, and optional agent links. Consuelo OS runs a background service on the Mac so agents and apps can reach it while you work, similar to common Mac utilities that keep a helper running in the background.
 
-## First-time Mac install
+## First-time install
 
 Hosted install path:
 
@@ -152,7 +139,13 @@ Hosted install path:
 curl -fsSL https://install.consuelohq.com/os | bash
 ```
 
-The hosted `/os` route is implemented by the production app server and serves the maintained source at `packages/os/scripts/bootstrap.sh` as a shell script. Railway/DNS should map `install.consuelohq.com` to the same production service that serves the app API, with the path `/os` left intact. If the deployed working directory differs from the repo root, set `CONSUELO_OS_BOOTSTRAP_SCRIPT_PATH` to the absolute path of `packages/os/scripts/bootstrap.sh` in that container.
+On native Windows x64, paste this into PowerShell:
+
+```powershell
+irm https://install.consuelohq.com/os.ps1 | iex
+```
+
+The dedicated Cloudflare Worker `consuelo-os-install` serves both maintained bootstrap sources: `/os` for `packages/os/scripts/bootstrap.sh` and `/os.ps1` for `packages/os/scripts/bootstrap.ps1`. The Windows route verifies the signed stable release pointer before binding its `windows-x64` bundle URL and digest into the PowerShell bootstrap. The public PowerShell bootstrap self-elevates through the normal Windows UAC prompt when service registration requires administrator rights.
 
 Repo-local bootstrap testing:
 
@@ -191,14 +184,16 @@ When portless is configured or discoverable, setup also installs:
 ~/Library/LaunchAgents/com.consuelo.portless.system.plist
 ```
 
-The labels stay:
+The baseline labels stay:
 
 ```text
 com.consuelo.system
 com.consuelo.watchdog
 ```
 
-Portless is optional. If present, status output may also include `com.consuelo.portless.system`; otherwise Consuelo OS uses the regular local service port on `http://127.0.0.1:8960`.
+Host power policy is opt-in. Set `CONSUELO_AVAILABILITY_ENABLED=1` before daemon generation or installation to add `com.consuelo.availability`, which runs Apple `/usr/bin/caffeinate -s` and prevents system sleep only while the Mac is connected to AC power. It does not prevent display sleep or alter global `pmset` settings. Disabling the setting removes an existing Consuelo availability LaunchAgent on the next daemon installation. The watchdog runs as a periodic one-shot health check and stores counters and recovery state under `$CONSUELO_HOME/node/runtime/watchdog`.
+
+Portless is optional. If present, status output may also include `com.consuelo.portless.system`; otherwise Consuelo OS uses the regular local service port on `http://127.0.0.1:46321`.
 
 Logs go under:
 
@@ -224,6 +219,7 @@ Status and stop paths are available through the local server helper and `launchc
 bun --cwd packages/os run server -- status
 bun --cwd packages/os run server -- stop
 launchctl bootout "gui/$(id -u)/com.consuelo.watchdog" || true
+launchctl bootout "gui/$(id -u)/com.consuelo.availability" 2>/dev/null || true
 launchctl bootout "gui/$(id -u)/com.consuelo.portless.system" 2>/dev/null || true
 launchctl bootout "gui/$(id -u)/com.consuelo.system" || true
 ```
@@ -233,6 +229,7 @@ To remove the user LaunchAgent plists after stopping them:
 ```bash
 rm -f ~/Library/LaunchAgents/com.consuelo.system.plist
 rm -f ~/Library/LaunchAgents/com.consuelo.watchdog.plist
+rm -f ~/Library/LaunchAgents/com.consuelo.availability.plist
 rm -f ~/Library/LaunchAgents/com.consuelo.portless.system.plist
 ```
 ## Current Boundary

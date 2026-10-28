@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/managed-cloud-pricing-and-plans",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1877,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1877",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1877",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1877/managed-cloud-pricing-and-plans",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1877",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1877/managed-cloud-pricing-and-plans",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-managed-cloud-pricing-and-plans",
+  "taskSession": "tsk_e5c87ee85d31",
+  "tmuxSession": "opensaas-os-managed-cloud-pricing-and-plans-e5c87ee8",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-managed-cloud-pricing-and-plans/.task/os/managed-cloud-pricing-and-plans/session.json",
+  "createdAt": "2026-08-12T03:51:08.601Z"
+}

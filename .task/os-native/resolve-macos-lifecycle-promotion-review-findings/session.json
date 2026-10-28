@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_a4f51d8d492b",
+  "tmuxSession": "opensaas-os-native-resolve-macos-lifecycle-promotion-review-finding-a4f51d8d",
+  "area": "os-native",
+  "stream": "stream/os-native",
+  "taskBranch": "task/os-native/resolve-macos-lifecycle-promotion-review-findings",
+  "branch": "task/os-native/resolve-macos-lifecycle-promotion-review-findings",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-native-resolve-macos-lifecycle-promotion-review-findings",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-native-resolve-macos-lifecycle-promotion-review-findings",
+  "prNumber": 1669,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1669",
+  "createdAt": "2026-07-27T03:03:59.241Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-native-resolve-macos-lifecycle-promotion-review-findings/.task/os-native/resolve-macos-lifecycle-promotion-review-findings/session.json"
+}

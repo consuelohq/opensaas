@@ -1,0 +1,55 @@
+---
+title: Nodes
+description: Understand where Consuelo runs, what home and default mean, and how a workspace can use local and cloud nodes.
+status: preview
+verifiedAt: 2026-08-12
+evidence:
+  - source: packages/os/scripts/lib/settings-site.ts
+    tests:
+      - packages/os/tests/launcher-nodes-control-plane.test.ts
+      - packages/os/tests/settings-site.test.ts
+    runtime: Node presence, current/home/default badges, and default-node selection were verified against the current Nodes control plane on 2026-08-12.
+  - source: packages/os/cloudflare/os-device-authority/src/app.ts
+    tests:
+      - packages/os/tests/workspace-node-registry-routing.test.ts
+    runtime: Separate home and default node identities plus online, stale, and offline routing behavior were verified on 2026-08-12.
+---
+
+A **node** is a computer or managed runtime that can do work for your Consuelo workspace. Your workspace can have more than one node, and each node can expose different files, applications, network access, and runtime capabilities.
+
+The useful mental model is simple: **home tells you how a node joined, default tells you where new untargeted work goes, and current tells you which node is handling the request you are looking at.**
+
+## The four labels to know
+
+| Label | What it means | Can it change? |
+| --- | --- | --- |
+| **Home** | The first approved node for the workspace. `home` is an enrollment role. | Not when you change routing. |
+| **Default** | The node that receives new OS calls when no node is chosen explicitly. | Yes. Choose another online node from the Nodes screen. |
+| **Current** | The node serving the request or local screen you are using right now. | It depends on where the request is running. |
+| **Online / stale / offline** | Whether Consuelo has recent proof that the node is reachable. | Yes, as node presence changes. |
+
+A home node is **not** automatically the permanent default. Changing the default node does not change a node's `home` or `member` role.
+
+## Local and cloud are both nodes
+
+A **local node** runs on a computer you operate. It is the right choice when work needs that computer's files, applications, or local network.
+
+A **cloud node** is a Consuelo-managed runtime designed to stay available without depending on one person's computer. Managed cloud infrastructure exists, while self-service creation from the Nodes screen is still in preview. See [Cloud nodes](/nodes/cloud/) for the exact current boundary.
+
+Both kinds of nodes belong to the same workspace. You do not create a second workspace just because some work runs in cloud and other work stays local.
+
+## What the default changes
+
+The default node is the starting point for **new untargeted work**. If an agent does not request a node and is not already inside a task that owns a node, Consuelo resolves the call to the workspace default.
+
+Changing the default does not move work that already belongs to an active task. Task ownership is intentionally sticky so a task does not suddenly lose access to the files, branch, or runtime state it started with.
+
+Read [Routing work](/nodes/routing/) for the full default → explicit → task-owned decision model.
+
+## Manage your nodes
+
+The workspace **Nodes** screen shows the nodes Consuelo knows about, their presence, platform, role, and which node is current or default. An online active node can be made the default from that screen.
+
+If a node is offline, Consuelo does not pretend it is healthy or silently route protected task-owned work somewhere else. That fail-closed behavior keeps node-local state from being substituted unexpectedly.
+
+Continue with [Local nodes](/nodes/local/), [Cloud nodes](/nodes/cloud/), or [Routing work](/nodes/routing/).

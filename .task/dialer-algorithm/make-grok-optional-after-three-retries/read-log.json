@@ -1,0 +1,12 @@
+{
+  "files": [
+    ".task/dialer-algorithm/make-grok-optional-after-three-retries/workpad.md",
+    "packages/os/manifests/manifest.config.ts",
+    "packages/os/scripts/lib/subagent/runtime.ts",
+    "packages/os/tests/subagent-executable-discovery.test.ts",
+    "packages/os/tools/subagent/manifest.ts",
+    "packages/os/tools/subagent/schema.ts",
+    "packages/workspace/scripts/verify.js"
+  ],
+  "updatedAt": "2026-08-16T03:49:54.047Z"
+}

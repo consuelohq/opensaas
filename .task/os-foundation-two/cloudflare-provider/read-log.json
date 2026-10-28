@@ -1,0 +1,26 @@
+{
+  "files": [
+    ".task/os-foundation-two/cloudflare-provider/workpad.md",
+    "packages/os/.tmp-reviews/cloudflare-provider/context-snapshot.json",
+    "packages/os/.tmp-reviews/cloudflare-provider/grok-prompt.md",
+    "packages/os/.tmp-reviews/cloudflare-provider/pr.diff",
+    "packages/os/plans/consuelo-os-foundation/plan.md",
+    "packages/os/plans/consuelo-os-foundation/workers/11-cloudflare-provider.md",
+    "packages/os/plans/consuelo-os-foundation/workers/grok-review-template.md",
+    "packages/os/scripts/build-runtime-bundle.ts",
+    "packages/os/scripts/lib/distribution/runtime-bundle.ts",
+    "packages/os/scripts/lib/task-meta.js",
+    "packages/os/scripts/lib/workspace-cloudflare-provisioning.ts",
+    "packages/os/scripts/task-push.js",
+    "packages/os/tools/deployment-provider/cloudflare-runner.ts",
+    "packages/os/tools/deployment-provider/cloudflare.test.ts",
+    "packages/os/tools/deployment-provider/cloudflare.ts",
+    "packages/os/tools/deployment-provider/handler.test.ts",
+    "packages/os/tools/deployment-provider/process.ts",
+    "packages/os/tools/deployment-provider/redaction.ts",
+    "packages/os/tools/deployment-provider/schema.ts",
+    "packages/os/tools/deployment-provider/service.ts",
+    "packages/os/tools/deployment-provider/types.ts"
+  ],
+  "updatedAt": "2026-07-23T16:31:40.959Z"
+}

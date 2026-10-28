@@ -254,6 +254,8 @@ export type ParallelAmdPolicy = 'human-only' | 'human-or-unknown';
 
 export type ParallelTerminationPolicy = 'winner-take-all';
 
+export type ParallelProviderMode = 'live' | 'twilio-test';
+
 export type ParallelDialProfile = {
   id: ProfileKey;
   fanout: number;
@@ -268,11 +270,11 @@ export type ProfilePosterior = {
   profileId: ProfileKey;
   alpha: number;
   beta: number;
-}
+};
 
 export type BetaSampler = {
   sample(alpha: number, beta: number): number;
-}
+};
 
 export type PosteriorStore = {
   loadPosteriors(workspaceId?: string): Promise<ProfilePosterior[]>;
@@ -281,7 +283,7 @@ export type PosteriorStore = {
     success: boolean,
     workspaceId?: string,
   ): Promise<void>;
-}
+};
 
 export type ParallelStrategyContext = {
   queueId: string;
@@ -315,21 +317,39 @@ export type ParallelCall = {
   dialStartedAt: string;
   answeredAt?: string;
   terminatedAt?: string;
+  predictiveDecisionId?: string;
+  decisionContext?: PredictiveDecisionContext;
+};
+
+export type ParallelCleanupAction = 'terminate-call' | 'unmute-winner';
+
+export type ParallelCleanupFailure = {
+  action: ParallelCleanupAction;
+  callSid: string;
+  message: string;
+  attempts: number;
+  firstFailedAt: string;
+  lastFailedAt: string;
+  retryable?: boolean;
 };
 
 // Full parallel dial group state (stored in redis)
 export type ParallelGroup = {
   groupId: string;
+  dialerSessionId?: string;
+  providerMode?: ParallelProviderMode;
   conferenceName: string;
   status: ParallelGroupStatus;
   winnerSid: string | null;
   calls: ParallelCall[];
+  workspaceId: string;
   queueId: string;
   userId: string;
   createdAt: string;
   campaignSegment?: string;
   profile: ParallelDialProfile;
   resolverReason: string;
+  cleanupFailures: ParallelCleanupFailure[];
   connectedAt?: string;
   completedAt?: string;
   telemetryEmittedAt?: string;
@@ -337,9 +357,14 @@ export type ParallelGroup = {
 
 /** Options for initiating a parallel dial batch */
 export interface ParallelDialOptions {
+  workspaceId: string;
+  dialerSessionId?: string;
+  providerMode?: ParallelProviderMode;
   customerNumbers: string[];
   queueId: string;
   contactIds?: string[];
+  predictiveDecisionIds?: Array<string | null>;
+  decisionContexts?: Array<PredictiveDecisionContext | null>;
   userId: string;
   fromNumbers: string[];
   statusCallbackUrl: string;
@@ -366,6 +391,11 @@ export interface ParallelDialResult {
 export interface ParallelStore {
   setGroup(groupId: string, data: string, ttlSeconds: number): Promise<void>;
   getGroup(groupId: string): Promise<string | null>;
+  registerCall(
+    groupId: string,
+    call: ParallelCall,
+    ttlSeconds: number,
+  ): Promise<void>;
   setCallMapping(
     callSid: string,
     groupId: string,
@@ -378,6 +408,12 @@ export interface ParallelStore {
     ttlSeconds: number,
   ): Promise<boolean>;
   getWinner(groupId: string): Promise<string | null>;
+  claimTelemetryEmission(
+    groupId: string,
+    emittedAt: string,
+    ttlSeconds: number,
+  ): Promise<boolean>;
+  withGroupLock<T>(groupId: string, operation: () => Promise<T>): Promise<T>;
   deleteGroup(groupId: string): Promise<void>;
 }
 
@@ -386,17 +422,55 @@ export type StoppingThreshold = {
   attemptNumber: number;
   answerProbability: number;
   expectedValue: number;
+  decisionProbability: number;
+  decisionExpectedValue: number;
   shouldStop: boolean;
 };
 
 export type StoppingModelStore = {
   getAnswerProbabilities(
     segmentId: string,
-  ): Promise<{ attemptNumber: number; probability: number }[]>;
-  getWorkspaceEconomics(workspaceId: string): Promise<{
-    valuePerConnection: number;
-    costPerAttempt: number;
-  }>;
+  ): Promise<AttemptAnswerProbability[]>;
+  getWorkspaceEconomics(workspaceId: string): Promise<WorkspaceDialerEconomics>;
+};
+
+export type WorkspaceDialerEconomics = {
+  valuePerConnection: number;
+  costPerAttempt: number;
+};
+
+export type BernoulliEstimate = {
+  successes: number;
+  trials: number;
+  probability: number;
+  lowerBound: number;
+  upperBound: number;
+};
+
+export type AttemptAnswerProbability = {
+  attemptNumber: number;
+  probability: number;
+  successes?: number;
+  trials?: number;
+  lowerBound?: number;
+  upperBound?: number;
+};
+
+export type PredictivePriorityInput = {
+  answerProbability: number;
+  answerProbabilityUpperBound?: number;
+  valuePerConnection: number;
+  costPerAttempt: number;
+};
+
+export type PredictivePriorityResult = {
+  score: number;
+  components: {
+    expectedReward: number;
+    optimisticReward: number;
+    uncertaintyBonus: number;
+    cost: number;
+  };
 };
 
 export type WhittleIndexInput = {
@@ -442,6 +516,10 @@ export type HazardEstimate = {
   attemptNumber: number;
   answerRate: number;
   sampleSize: number;
+  successes?: number;
+  trials?: number;
+  lowerBound?: number;
+  upperBound?: number;
 };
 
 export type TimingModelStore = {
@@ -455,3 +533,128 @@ export type TimingModelStore = {
   ): Promise<{ hour: number; dayOfWeek: number } | null>;
 };
 
+export type PredictiveModelQuery = {
+  workspaceId: string;
+  segmentId: string;
+};
+
+export type PredictiveHazardQuery = PredictiveModelQuery & {
+  attemptNumbers: number[];
+};
+
+export type PredictiveModelStore = {
+  getHazardEstimates(query: PredictiveHazardQuery): Promise<HazardEstimate[]>;
+  getAnswerProbabilities(
+    query: PredictiveModelQuery,
+  ): Promise<AttemptAnswerProbability[]>;
+  getWorkspaceEconomics(
+    workspaceId: string,
+  ): Promise<WorkspaceDialerEconomics>;
+};
+
+export type PredictiveSelectionCandidate = {
+  contactId: string;
+  position: number;
+  attemptsUsed: number;
+  lastAttemptAt: Date | null;
+};
+
+export type PredictiveSelectionInput = PredictiveModelQuery & {
+  localTimezone: string;
+  callableWindowEndHour?: number;
+  evaluatedAt?: Date;
+  candidates: PredictiveSelectionCandidate[];
+};
+
+export type PredictiveHazardSource =
+  | 'exact_local_slot'
+  | 'attempt_fallback'
+  | 'missing';
+
+export type PredictiveTimezoneSource = 'contact' | 'workspace_fallback';
+
+export type PredictiveSourceContext = {
+  opportunityId?: string;
+  pipelineId?: string;
+  stageId?: string;
+  opportunityStatus?: string | null;
+  opportunityValue?: number | null;
+  /** Only set when a provider supplies a trustworthy IANA timezone. */
+  contactTimezone?: string;
+};
+
+export type PredictiveDecisionContext = {
+  schemaVersion: 2;
+  capturedAt: string;
+  timezone: string;
+  timezoneSource: PredictiveTimezoneSource;
+  localHour: number;
+  localDayOfWeek: number;
+  attemptsUsed: number;
+  attemptsToday: number;
+  attemptsThisWeek: number;
+  minutesSinceLastAttempt: number | null;
+  localPresenceRequested: boolean;
+  source: PredictiveSourceContext;
+  d3: {
+    nextAttemptNumber: number;
+    answerProbability: number;
+    answerProbabilityUpperBound: number;
+    score: number | null;
+    hazardSource: PredictiveHazardSource | null;
+    suppressed: boolean;
+  };
+};
+
+export type PredictiveRankedCandidate = {
+  contactId: string;
+  position: number;
+  nextAttemptNumber: number;
+  score: number;
+  components: PredictivePriorityResult['components'];
+  hazardSource: PredictiveHazardSource;
+  answerProbability: number;
+  answerProbabilityUpperBound: number;
+};
+
+export type PredictiveSuppressedCandidate = {
+  contactId: string;
+  position: number;
+  nextAttemptNumber: number;
+  reason: 'stopping_model';
+  answerProbability: number;
+  answerProbabilityUpperBound: number;
+};
+
+export type PredictiveSelectionResult = {
+  ranked: PredictiveRankedCandidate[];
+  suppressed: PredictiveSuppressedCandidate[];
+};
+
+export type RetryDecisionReason =
+  | 'answered'
+  | 'max_attempts_reached'
+  | 'expected_value_below_attempt_cost'
+  | 'insufficient_stopping_data'
+  | 'positive_expected_value';
+
+export type RetryTimingSource =
+  | 'learned_hazard'
+  | 'insufficient_hazard_data'
+  | 'none';
+
+export type RetryOutcome = 'human_answered' | 'no_human_answer';
+
+export type RetryDecisionInput = PredictiveModelQuery & {
+  outcome: RetryOutcome;
+  attemptsUsed: number;
+  maxAttempts: number;
+};
+
+export type RetryDecisionResult = {
+  shouldRetry: boolean;
+  nextAttemptNumber: number | null;
+  reason: RetryDecisionReason;
+  preferredWindow: { hour: number; dayOfWeek: number } | null;
+  timingSource: RetryTimingSource;
+};

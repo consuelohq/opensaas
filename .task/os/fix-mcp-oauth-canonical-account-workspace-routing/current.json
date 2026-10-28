@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-mcp-oauth-canonical-account-workspace-routing",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1976,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1976",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1976",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1976/fix-mcp-oauth-canonical-account-workspace-routing",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1976",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1976/fix-mcp-oauth-canonical-account-workspace-routing",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-mcp-oauth-canonical-account-workspace-routing",
+  "taskSession": "tsk_ba77979d08a3",
+  "tmuxSession": "opensaas-os-fix-mcp-oauth-canonical-account-workspace-routin-ba77979d",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-mcp-oauth-canonical-account-workspace-routing/.task/os/fix-mcp-oauth-canonical-account-workspace-routing/session.json",
+  "createdAt": "2026-08-14T23:08:51.224Z"
+}

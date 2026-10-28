@@ -1,0 +1,52 @@
+*** Begin Patch
+*** Update File: packages/os/scripts/server/services/trace-gateway.ts
+@@
+-let traceGatewayEndpointCache: TraceSitesGatewayLiveEndpoints | null = null;
++const traceGatewayEndpointCache = new Map<string, TraceSitesGatewayLiveEndpoints>();
+@@
+ export function traceGatewayEndpoints(): TraceSitesGatewayLiveEndpoints {
+-  traceGatewayEndpointCache ??= createTraceSitesGatewayLiveEndpoints({
+-    backend: createLocalTraceSitesReadBackend({ dbPath: resolveCanonicalTraceDbPath() }),
+-    resolveScope: (traceRequest) => {
+-      const scope = traceGatewayScopeFromHeaders(traceRequest);
+-      const config = loadAuthConfigForRequest();
+-      return {
+-        ...scope,
+-        workspaceId: scope.workspaceId === 'workspace-unknown'
+-          ? config.workspaceId
+-          : scope.workspaceId,
+-        workspaceHost: resolveTraceWorkspaceHost({
+-          request: traceRequest,
+-          scopeWorkspaceHost: scope.workspaceHost,
+-          configuredWorkspaceHost: config.workspaceHost,
+-        }),
+-      };
+-    },
+-  });
+-  return traceGatewayEndpointCache;
++  const dbPath = resolveCanonicalTraceDbPath();
++  const cached = traceGatewayEndpointCache.get(dbPath);
++  if (cached) return cached;
++
++  const created = createTraceSitesGatewayLiveEndpoints({
++    backend: createLocalTraceSitesReadBackend({ dbPath }),
++    resolveScope: (traceRequest) => {
++      const scope = traceGatewayScopeFromHeaders(traceRequest);
++      const config = loadAuthConfigForRequest();
++      return {
++        ...scope,
++        workspaceId: scope.workspaceId === 'workspace-unknown'
++          ? config.workspaceId
++          : scope.workspaceId,
++        workspaceHost: resolveTraceWorkspaceHost({
++          request: traceRequest,
++          scopeWorkspaceHost: scope.workspaceHost,
++          configuredWorkspaceHost: config.workspaceHost,
++        }),
++      };
++    },
++  });
++  traceGatewayEndpointCache.set(dbPath, created);
++  return created;
+ }
+*** End Patch

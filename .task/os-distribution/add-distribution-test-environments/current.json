@@ -1,0 +1,19 @@
+{
+  "area": "os-distribution",
+  "stream": "stream/os-distribution",
+  "taskBranch": "task/os-distribution/add-distribution-test-environments",
+  "baseBranch": "stream/os-distribution",
+  "sourceBranch": "stream/os-distribution",
+  "startFrom": "stream",
+  "prNumber": 1544,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1544",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1544",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1544/add-distribution-test-environments",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1544",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1544/add-distribution-test-environments",
+  "worktreePath": "/Users/kokayi/Dev/opensaas-worktrees/task-os-distribution-add-distribution-test-environments",
+  "taskSession": "tsk_19d81cae1eb6",
+  "tmuxSession": "opensaas-os-distribution-add-distribution-test-environments-19d81cae",
+  "sessionPath": "/Users/kokayi/Dev/opensaas-worktrees/task-os-distribution-add-distribution-test-environments/.task/os-distribution/add-distribution-test-environments/session.json",
+  "createdAt": "2026-07-22T15:23:58.566Z"
+}

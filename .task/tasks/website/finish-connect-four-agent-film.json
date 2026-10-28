@@ -1,0 +1,16 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/finish-connect-four-agent-film",
+  "baseBranch": "stream/website",
+  "sourceBranch": "stream/website",
+  "startFrom": "stream",
+  "prNumber": 2346,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2346",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-finish-connect-four-agent-film",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_b7cb500c2cb5",
+  "tmuxSession": "opensaas-website-finish-connect-four-agent-film-b7cb500c",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-finish-connect-four-agent-film/.task/session.json",
+  "createdAt": "2026-08-31T23:00:39.983Z"
+}

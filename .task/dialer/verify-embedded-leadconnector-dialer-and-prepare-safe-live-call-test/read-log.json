@@ -1,0 +1,12 @@
+{
+  "files": [
+    ".task/dialer/build-lead-connector-admin-and-progressive-overlay/workpad.md",
+    ".task/dialer/verify-embedded-leadconnector-dialer-and-prepare-safe-live-call-test/workpad.md",
+    "packages/dialer-server/src/runtime/railway.test.ts",
+    "packages/dialer-server/src/runtime/railway.ts",
+    "packages/dialer/src/application/adapter-application.spec.ts",
+    "packages/dialer/src/application/start-dialer-call.ts",
+    "packages/workspace/senior-engineer.md"
+  ],
+  "updatedAt": "2026-08-01T16:27:49.219Z"
+}

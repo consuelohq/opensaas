@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_9966dcb697a8",
+  "tmuxSession": "opensaas-workspace-agents-restructure-public-docs-navigation-and-memory-9966dcb6",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/restructure-public-docs-navigation-and-memory",
+  "branch": "task/workspace-agents/restructure-public-docs-navigation-and-memory",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-restructure-public-docs-navigation-and-memory",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-restructure-public-docs-navigation-and-memory",
+  "prNumber": 1858,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1858",
+  "createdAt": "2026-08-12T00:15:39.886Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-restructure-public-docs-navigation-and-memory/.task/workspace-agents/restructure-public-docs-navigation-and-memory/session.json"
+}

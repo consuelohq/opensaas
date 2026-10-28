@@ -1,0 +1,399 @@
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+
+import { parse as parseYaml, stringify as stringifyYaml } from 'yaml';
+import { z } from 'zod';
+
+const DEFAULT_CONSUELO_HOME = '~/.consuelo';
+const DEFAULT_BRANCH = 'main';
+
+const sourceControlCodeRootSchema = z.string().min(1).transform((value) => value.trim()).refine((value) => {
+  const normalized = value;
+  if (
+    normalized === '.'
+    || normalized.startsWith('/')
+    || normalized.endsWith('/')
+    || normalized.includes('\\')
+  ) {
+    return false;
+  }
+  return normalized.split('/').every((segment) => segment !== '' && segment !== '.' && segment !== '..');
+}, 'code root must be a repository-relative path without dot segments');
+
+const projectSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1).optional(),
+  repo: z.string().regex(/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/),
+  defaultBranch: z.string().min(1).default(DEFAULT_BRANCH),
+  provider: z.string().min(1).default('github'),
+  connectionRef: z.string().min(1).optional(),
+  codeRoots: z.array(sourceControlCodeRootSchema).optional(),
+  localPaths: z.record(z.string(), z.string()).optional(),
+  worktreeRoot: z.union([z.string(), z.record(z.string(), z.string())]).optional(),
+}).strict();
+
+function isSafeLauncherHref(value: string): boolean {
+  if (value.startsWith('/')) {
+    return !value.startsWith('//') && !value.includes('\\');
+  }
+  try {
+    const url = new URL(value);
+    return url.protocol === 'https:' && url.username === '' && url.password === '';
+  } catch {
+    return false;
+  }
+}
+
+const launcherLinkSchema = z.object({
+  label: z.string().trim().min(1).max(80),
+  href: z.string().trim().min(1).max(2048).refine(
+    isSafeLauncherHref,
+    'href must be an HTTPS URL or safe root-relative path',
+  ),
+}).strict();
+
+const launcherSectionSchema = z.object({
+  id: z.string().trim().regex(
+    /^[a-z0-9](?:[a-z0-9-]{0,62}[a-z0-9])?$/,
+    'id must be a lowercase slug without leading or trailing hyphens',
+  ),
+  label: z.string().trim().min(1).max(80),
+  links: z.array(launcherLinkSchema).min(1).max(20),
+}).strict();
+
+const launcherConfigSchema = z.object({
+  extraSections: z.array(launcherSectionSchema).max(12).default([]),
+}).strict().superRefine((value, context) => {
+  const ids = new Set<string>();
+  value.extraSections.forEach((section, index) => {
+    if (ids.has(section.id)) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['extraSections', index, 'id'],
+        message: `duplicate launcher section id: ${section.id}`,
+      });
+    }
+    ids.add(section.id);
+  });
+});
+
+const workspaceYamlConfigSchema = z.object({
+  version: z.literal(1),
+  workspace: z.object({
+    id: z.string().min(1),
+    name: z.string().min(1),
+    slug: z.string().min(1).optional(),
+    host: z.string().min(1).optional(),
+  }).strict(),
+  defaults: z.object({
+    project: z.string().min(1).optional(),
+    node: z.string().min(1).optional(),
+  }).strict().default({}),
+  projects: z.array(projectSchema).default([]),
+  routing: z.record(z.string(), z.string()).default({}),
+  policy: z.object({
+    allowedAgents: z.array(z.string().min(1)).optional(),
+  }).strict().default({}),
+  sites: z.object({
+    origin: z.string().min(1).optional(),
+  }).strict().default({}),
+  agents: z.object({
+    defaults: z.array(z.string().min(1)).optional(),
+  }).strict().default({}),
+}).strict();
+
+const globalYamlConfigSchema = z.object({
+  version: z.literal(1),
+  activeWorkspace: z.string().min(1).optional(),
+  activeNode: z.string().min(1).optional(),
+  runtime: z.object({
+    current: z.string().min(1).optional(),
+  }).strict().default({}),
+  updates: z.object({
+    channel: z.enum(['stable', 'beta', 'canary', 'dev', 'nightly']).default('stable'),
+    notifications: z.discriminatedUnion('mode', [
+      z.object({ mode: z.literal('on') }).strict(),
+      z.object({ mode: z.literal('off') }).strict(),
+      z.object({
+        mode: z.literal('snoozed'),
+        snoozedUntil: z.string().datetime(),
+      }).strict(),
+    ]).default({ mode: 'on' }),
+  }).strict().default({ channel: 'stable', notifications: { mode: 'on' } }),
+  launcher: launcherConfigSchema.optional(),
+}).strict();
+
+const nodeYamlConfigSchema = z.object({
+  version: z.literal(1),
+  node: z.object({
+    id: z.string().min(1),
+    name: z.string().min(1),
+    role: z.enum(['home', 'member']).optional(),
+  }).strict(),
+  capabilities: z.array(z.string().min(1)).default([]),
+  workspaces: z.array(z.object({
+    id: z.string().min(1),
+    state: z.string().min(1),
+  }).strict()).default([]),
+}).strict();
+
+export type ConsueloProjectConfig = z.infer<typeof projectSchema>;
+export type ConsueloLauncherLinkConfig = z.infer<typeof launcherLinkSchema>;
+export type ConsueloLauncherSectionConfig = z.infer<typeof launcherSectionSchema>;
+export type ConsueloWorkspaceYamlConfig = z.infer<typeof workspaceYamlConfigSchema>;
+export type ConsueloGlobalYamlConfig = z.infer<typeof globalYamlConfigSchema>;
+export type ConsueloNodeYamlConfig = z.infer<typeof nodeYamlConfigSchema>;
+
+export type ResolvedProjectRepository = {
+  projectId: string;
+  repo: string;
+  defaultBranch: string;
+};
+
+export type ConsueloHomeLayout = {
+  home: string;
+  legacyOsHome: string;
+  globalConfigPath: string;
+  runtimeDir: string;
+  runtimeReleasesDir: string;
+  runtimeCurrentDir: string;
+  nodeDir: string;
+  nodeConfigPath: string;
+  nodeKeysDir: string;
+  nodeSecurityDir: string;
+  nodeSecurityGeneratedDir: string;
+  nodeSecurityOverridesDir: string;
+  nodeTunnelsDir: string;
+  nodeCaddyDir: string;
+  nodeCaddyfilePath: string;
+  nodeDbDir: string;
+  nodeDbPath: string;
+  nodeTraceDbPath: string;
+  nodeLogsDir: string;
+  nodeRunsDir: string;
+  nodeCacheDir: string;
+  nodeTmpDir: string;
+  workspacesDir: string;
+  workspaceDir: (workspaceId: string) => string;
+  workspaceSharedDir: (workspaceId: string) => string;
+  workspaceConfigPath: (workspaceId: string) => string;
+  nodeWorkspaceStateDir: (workspaceId: string) => string;
+};
+
+export function expandHome(value: string): string {
+  if (value === '~') return os.homedir();
+  if (value.startsWith('~/')) return path.join(os.homedir(), value.slice(2));
+  return value;
+}
+
+function isLegacyOsHome(value: string): boolean {
+  return path.basename(value) === 'os' && path.basename(path.dirname(value)) === '.consuelo';
+}
+
+function normalizeConsueloHome(value: string): string {
+  const resolved = path.resolve(expandHome(value));
+  return isLegacyOsHome(resolved) ? path.dirname(resolved) : resolved;
+}
+
+export function resolveConsueloHome(home?: string): string {
+  return normalizeConsueloHome(
+    home ?? process.env.CONSUELO_HOME ?? process.env.CONSUELO_OS_HOME ?? DEFAULT_CONSUELO_HOME,
+  );
+}
+
+export function resolveLegacyOsHome(home?: string): string {
+  const rawHome = path.resolve(
+    expandHome(home ?? process.env.CONSUELO_HOME ?? process.env.CONSUELO_OS_HOME ?? DEFAULT_CONSUELO_HOME),
+  );
+  return isLegacyOsHome(rawHome) ? rawHome : path.join(resolveConsueloHome(home), 'os');
+}
+
+export function resolveConsueloHomeLayout(home?: string): ConsueloHomeLayout {
+  const resolvedHome = resolveConsueloHome(home);
+  const nodeDir = path.join(resolvedHome, 'node');
+  const workspacesDir = path.join(resolvedHome, 'workspaces');
+
+  return {
+    home: resolvedHome,
+    legacyOsHome: resolveLegacyOsHome(home),
+    globalConfigPath: path.join(resolvedHome, 'consuelo.yaml'),
+    runtimeDir: path.join(resolvedHome, 'runtime'),
+    runtimeReleasesDir: path.join(resolvedHome, 'runtime', 'releases'),
+    runtimeCurrentDir: path.join(resolvedHome, 'runtime', 'current'),
+    nodeDir,
+    nodeConfigPath: path.join(nodeDir, 'node.yaml'),
+    nodeKeysDir: path.join(nodeDir, 'keys'),
+    nodeSecurityDir: path.join(nodeDir, 'security'),
+    nodeSecurityGeneratedDir: path.join(nodeDir, 'security', 'generated'),
+    nodeSecurityOverridesDir: path.join(nodeDir, 'security', 'overrides'),
+    nodeTunnelsDir: path.join(nodeDir, 'tunnels'),
+    nodeCaddyDir: path.join(nodeDir, 'caddy'),
+    nodeCaddyfilePath: path.join(nodeDir, 'caddy', 'Caddyfile'),
+    nodeDbDir: path.join(nodeDir, 'db'),
+    nodeDbPath: path.join(nodeDir, 'db', 'consuelo.db'),
+    nodeTraceDbPath: path.join(nodeDir, 'db', 'traces.db'),
+    nodeLogsDir: path.join(nodeDir, 'logs'),
+    nodeRunsDir: path.join(nodeDir, 'runs'),
+    nodeCacheDir: path.join(nodeDir, 'cache'),
+    nodeTmpDir: path.join(nodeDir, 'tmp'),
+    workspacesDir,
+    workspaceDir: (workspaceId: string) => path.join(workspacesDir, workspaceId),
+    workspaceSharedDir: (workspaceId: string) => path.join(workspacesDir, workspaceId, 'shared'),
+    workspaceConfigPath: (workspaceId: string) => path.join(workspacesDir, workspaceId, 'shared', 'workspace.yaml'),
+    nodeWorkspaceStateDir: (workspaceId: string) => path.join(nodeDir, 'workspaces', workspaceId, 'state'),
+  };
+}
+
+function parseYamlFile(filePath: string): unknown {
+  try {
+    return parseYaml(fs.readFileSync(filePath, 'utf8'));
+  } catch (error: unknown) {
+    const detail = error instanceof Error ? error.message : 'invalid YAML';
+    throw new Error(`${path.basename(filePath)} could not be parsed: ${detail}`);
+  }
+}
+
+function formatValidationError(filePath: string, error: z.ZodError): Error {
+  const issues = error.issues.map((issue) => `${issue.path.join('.') || '<root>'}: ${issue.message}`).join('; ');
+  return new Error(`${path.basename(filePath)} failed validation: ${issues}`);
+}
+
+export function validateWorkspaceYamlConfig(
+  value: unknown,
+  sourceName = 'workspace.yaml',
+): ConsueloWorkspaceYamlConfig {
+  const result = workspaceYamlConfigSchema.safeParse(value);
+  if (!result.success) throw formatValidationError(sourceName, result.error);
+  return result.data;
+}
+
+export function loadWorkspaceYamlConfig(filePath: string): ConsueloWorkspaceYamlConfig {
+  return validateWorkspaceYamlConfig(parseYamlFile(filePath), filePath);
+}
+
+export function loadGlobalYamlConfig(filePath: string): ConsueloGlobalYamlConfig {
+  const result = globalYamlConfigSchema.safeParse(parseYamlFile(filePath));
+  if (!result.success) throw formatValidationError(filePath, result.error);
+  return result.data;
+}
+
+export function loadNodeYamlConfig(filePath: string): ConsueloNodeYamlConfig {
+  const result = nodeYamlConfigSchema.safeParse(parseYamlFile(filePath));
+  if (!result.success) throw formatValidationError(filePath, result.error);
+  return result.data;
+}
+
+export function stringifyYamlConfig(value: unknown): string {
+  const rendered = stringifyYaml(value);
+  return rendered.endsWith('\n') ? rendered : `${rendered}\n`;
+}
+
+export function writeYamlConfig(filePath: string, value: unknown, dryRun: boolean): void {
+  if (dryRun) return;
+  const directory = path.dirname(filePath);
+  const temporaryPath = path.join(
+    directory,
+    `.${path.basename(filePath)}.${process.pid}.${crypto.randomUUID()}.tmp`,
+  );
+  fs.mkdirSync(directory, { recursive: true });
+  try {
+    const descriptor = fs.openSync(temporaryPath, 'wx', 0o600);
+    try {
+      fs.writeFileSync(descriptor, stringifyYamlConfig(value), 'utf8');
+      fs.fsyncSync(descriptor);
+    } finally {
+      fs.closeSync(descriptor);
+    }
+    fs.renameSync(temporaryPath, filePath);
+    try {
+      const directoryDescriptor = fs.openSync(directory, 'r');
+      try {
+        fs.fsyncSync(directoryDescriptor);
+      } finally {
+        fs.closeSync(directoryDescriptor);
+      }
+    } catch {
+      // Directory fsync is not available on every supported filesystem.
+    }
+  } finally {
+    fs.rmSync(temporaryPath, { force: true });
+  }
+}
+
+export function createDefaultGlobalYamlConfig(input: {
+  workspaceId: string;
+  nodeId: string;
+}): ConsueloGlobalYamlConfig {
+  return {
+    version: 1,
+    activeWorkspace: input.workspaceId,
+    activeNode: input.nodeId,
+    runtime: { current: 'runtime/current' },
+    updates: { channel: 'stable', notifications: { mode: 'on' } },
+  };
+}
+
+export function createDefaultNodeYamlConfig(input: {
+  nodeId: string;
+  nodeName: string;
+  nodeRole?: 'home' | 'member';
+  workspaceId: string;
+}): ConsueloNodeYamlConfig {
+  return {
+    version: 1,
+    node: {
+      id: input.nodeId,
+      name: input.nodeName,
+      role: input.nodeRole ?? 'home',
+    },
+    capabilities: ['local-runtime', process.platform],
+    workspaces: [{ id: input.workspaceId, state: `workspaces/${input.workspaceId}/state` }],
+  };
+}
+
+export function createDefaultWorkspaceYamlConfig(input: {
+  workspaceId: string;
+  workspaceName: string;
+  workspaceSlug: string;
+  workspaceHost: string;
+}): ConsueloWorkspaceYamlConfig {
+  return {
+    version: 1,
+    workspace: {
+      id: input.workspaceId,
+      name: input.workspaceName,
+      slug: input.workspaceSlug,
+      host: input.workspaceHost,
+    },
+    defaults: {
+      node: 'local',
+    },
+    projects: [],
+    routing: {},
+    policy: { allowedAgents: [] },
+    sites: {},
+    agents: { defaults: [] },
+  };
+}
+
+export function resolveProjectRepository(
+  config: ConsueloWorkspaceYamlConfig,
+  projectId = config.defaults.project,
+): ResolvedProjectRepository {
+  const selectedProjectId = projectId ?? config.projects[0]?.id;
+  if (!selectedProjectId) {
+    throw new Error('workspace.yaml does not define a default project.');
+  }
+
+  const project = config.projects.find((entry) => entry.id === selectedProjectId);
+  if (!project) {
+    throw new Error(`workspace.yaml does not define project ${selectedProjectId}.`);
+  }
+
+  return {
+    projectId: project.id,
+    repo: project.repo,
+    defaultBranch: project.defaultBranch,
+  };
+}

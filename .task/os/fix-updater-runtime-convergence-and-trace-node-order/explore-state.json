@@ -1,0 +1,1124 @@
+{
+  "query": "trace table Node Input Output Trace columns",
+  "budget": 8,
+  "results": [
+    {
+      "path": "packages/os/tests/workspace-node-registry-routing.test.ts",
+      "score": 0.9812,
+      "belief_prior": 0.7406,
+      "symbol": "node",
+      "chunk_type": "function",
+      "file_outline": "node authorizeWorkspace seedWorkspace seedRoutes",
+      "typed_edges": [
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/app.ts",
+          "type": "imported_by",
+          "symbol": "../cloudflare/os-device-authority/src/app"
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/services/connectors.ts",
+          "type": "imported_by",
+          "symbol": "../cloudflare/os-device-authority/src/services/connectors"
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/services/grants.ts",
+          "type": "imported_by",
+          "symbol": "../cloudflare/os-device-authority/src/services/grants"
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/services/nodes.ts",
+          "type": "imported_by",
+          "symbol": "../cloudflare/os-device-authority/src/services/nodes"
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/stores.ts",
+          "type": "imported_by",
+          "symbol": "../cloudflare/os-device-authority/src/stores"
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/types.ts",
+          "type": "imported_by",
+          "symbol": "../cloudflare/os-device-authority/src/types"
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/utils.ts",
+          "type": "imported_by",
+          "symbol": "../cloudflare/os-device-authority/src/utils"
+        },
+        {
+          "path": "packages/os/scripts/lib/mcp-node-routing.ts",
+          "type": "imported_by",
+          "symbol": "../scripts/lib/mcp-node-routing"
+        },
+        {
+          "path": "packages/os/scripts/lib/workspace-cloudflare-d1-route-registry.ts",
+          "type": "imported_by",
+          "symbol": "../scripts/lib/workspace-cloudflare-d1-route-registry"
+        },
+        {
+          "path": "packages/os/scripts/lib/workspace-cloudflare-edge-router.ts",
+          "type": "imported_by",
+          "symbol": "../scripts/lib/workspace-cloudflare-edge-router"
+        },
+        {
+          "path": "packages/os/scripts/lib/workspace-device-login-client.ts",
+          "type": "imported_by",
+          "symbol": "../scripts/lib/workspace-device-login-client"
+        },
+        {
+          "path": "packages/os/scripts/lib/workspace-edge-node-auth.ts",
+          "type": "imported_by",
+          "symbol": "../scripts/lib/workspace-edge-node-auth"
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/app.ts",
+          "type": "imports",
+          "symbol": "../cloudflare/os-device-authority/src/app"
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/services/connectors.ts",
+          "type": "imports",
+          "symbol": "../cloudflare/os-device-authority/src/services/connectors"
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/services/grants.ts",
+          "type": "imports",
+          "symbol": "../cloudflare/os-device-authority/src/services/grants"
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/services/nodes.ts",
+          "type": "imports",
+          "symbol": "../cloudflare/os-device-authority/src/services/nodes"
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/stores.ts",
+          "type": "imports",
+          "symbol": "../cloudflare/os-device-authority/src/stores"
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/types.ts",
+          "type": "imports",
+          "symbol": "../cloudflare/os-device-authority/src/types"
+        },
+        {
+          "path": "packages/os/cloudflare/os-device-authority/src/utils.ts",
+          "type": "imports",
+          "symbol": "../cloudflare/os-device-authority/src/utils"
+        },
+        {
+          "path": "packages/os/scripts/lib/mcp-node-routing.ts",
+          "type": "imports",
+          "symbol": "../scripts/lib/mcp-node-routing"
+        },
+        {
+          "path": "packages/os/scripts/lib/workspace-cloudflare-d1-route-registry.ts",
+          "type": "imports",
+          "symbol": "../scripts/lib/workspace-cloudflare-d1-route-registry"
+        },
+        {
+          "path": "packages/os/scripts/lib/workspace-cloudflare-edge-router.ts",
+          "type": "imports",
+          "symbol": "../scripts/lib/workspace-cloudflare-edge-router"
+        },
+        {
+          "path": "packages/os/scripts/lib/workspace-device-login-client.ts",
+          "type": "imports",
+          "symbol": "../scripts/lib/workspace-device-login-client"
+        },
+        {
+          "path": "packages/os/scripts/lib/workspace-edge-node-auth.ts",
+          "type": "imports",
+          "symbol": "../scripts/lib/workspace-edge-node-auth"
+        },
+        {
+          "path": "packages/os/tests/artifact-render.test.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/os/tests/artifacts-edge-redirect.test.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/os/tests/artifacts-hono-routes.test.ts",
+          "type": "sibling",
+          "symbol": null
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 93734,
+      "chunk_count": 43,
+      "last_modified": 1786766458,
+      "has_test": false,
+      "package": "os",
+      "changed_in_branch": true,
+      "evidence_state": null,
+      "information_value": 1.4008,
+      "reason": "hybrid match: function node",
+      "preview": "const node = (input: { nodeId: string; displayName: string;",
+      "graph_connections": [
+        "packages/os/cloudflare/os-device-authority/src/app.ts",
+        "packages/os/cloudflare/os-device-authority/src/services/connectors.ts",
+        "packages/os/cloudflare/os-device-authority/src/services/grants.ts",
+        "packages/os/cloudflare/os-device-authority/src/services/nodes.ts",
+        "packages/os/cloudflare/os-device-authority/src/stores.ts",
+        "packages/os/cloudflare/os-device-authority/src/types.ts",
+        "packages/os/cloudflare/os-device-authority/src/utils.ts",
+        "packages/os/scripts/lib/mcp-node-routing.ts"
+      ],
+      "graph_connection_count": 8,
+      "lines": {
+        "start": 47,
+        "end": 77
+      },
+      "target": {
+        "key": "packages/os/tests/workspace-node-registry-routing.test.ts:function:node:47-77",
+        "path": "packages/os/tests/workspace-node-registry-routing.test.ts",
+        "kind": "function",
+        "name": "node",
+        "symbol_path": "node",
+        "node_type": "arrow_function",
+        "parent_name": null,
+        "lines": {
+          "start": 47,
+          "end": 77
+        },
+        "content_hash": "57f07ebd1b692be1c640d9bd215a37468e01f5a62d01ffb5a3b414299d08d2d0",
+        "preview": "const node = (input: { nodeId: string; displayName: string;"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0.5,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 1,
+        "connectedToOtherTopResults": false,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.8300000000000001,
+        "graphRelevance": 0.8300000000000001,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.20833333333333331,
+        "nameMatch": 1,
+        "rawScore": 0.9811666666666667,
+        "recency": 1,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0.5,
+        "structuralScore": 1,
+        "tokenCoverage": 0.3333333333333333,
+        "weightedEdges": 24.900000000000002
+      }
+    },
+    {
+      "path": "scripts/operator/trace-watch.ts",
+      "score": 0.8901,
+      "belief_prior": 0.6951,
+      "symbol": "fmtTraceTime",
+      "chunk_type": "function",
+      "file_outline": "parseArgs shellQuote durationToSql isLockedError runSql sqlFilters baseSelect c fmtTraceTime fmtDuration fmtTokenCount operationTokenTotal fmtTokens shortBranch parseJson cleanText isJsonEnvelope textSize isRecord numericValue optionalNumber stringValue dataRecordFromResult codeCallInput booleanValue codeCallData normalizeCodeCallLanguage normalizeCodeCallMode codeCallSource parseStdoutPayload outputShape codeCallResults commandTextFromCodeCallResult isTestCommand codeCallResultCode codeCallFailureCode codeCallChangedCount classifyCodeCallIntent isBashTransportOnly classifyCodeCallQuality summarizeCodeCallForTraceWatch codeCallDetail codeCallOperations compactJsonValue compactTraceRow summarizeResultForTrace compactSuccessDetail verifyBecauseLines renderVerifyBecause compactErrorDetail asArray jsonString codeCallRowFromResult codeCallNestedOperationFromResult nestedOperationFromResult codeRunOperations batchOperations nestedOperationsForRow renderNestedOperation renderNestedOverflow enrichNestedOperationsWithTraceTokens hashText branchColor divider renderStartup renderRow sleep main",
+      "typed_edges": [],
+      "is_implementation": true,
+      "file_size": 41717,
+      "chunk_count": 84,
+      "last_modified": null,
+      "has_test": false,
+      "package": null,
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 0.6098,
+      "reason": "hybrid match: function fmtTraceTime",
+      "preview": "function fmtTraceTime(value: unknown): string { const date = new Date(String(value || '')); if (Number.isNaN(date.getTime())) return '--:--:--';",
+      "graph_connections": [],
+      "graph_connection_count": 0,
+      "lines": {
+        "start": 270,
+        "end": 274
+      },
+      "target": {
+        "key": "scripts/operator/trace-watch.ts:function:fmtTraceTime:270-274",
+        "path": "scripts/operator/trace-watch.ts",
+        "kind": "function",
+        "name": "fmtTraceTime",
+        "symbol_path": "fmtTraceTime",
+        "node_type": "function_declaration",
+        "parent_name": null,
+        "lines": {
+          "start": 270,
+          "end": 274
+        },
+        "content_hash": "0c913b060abdb082e837b21af14373e3e52e501f8209d6549b43af62b3fa69f3",
+        "preview": "function fmtTraceTime(value: unknown): string { const date = new Date(String(value || '')); if (Number.isNaN(date.getTime())) return '--:--:--';"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0.75,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0,
+        "connectedToOtherTopResults": false,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0,
+        "graphRelevance": 0,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.21666666666666667,
+        "nameMatch": 1,
+        "rawScore": 0.8901166666666669,
+        "recency": 0.2,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0.75,
+        "structuralScore": 1,
+        "tokenCoverage": 0.5,
+        "weightedEdges": 0
+      }
+    },
+    {
+      "path": "packages/os/scripts/lib/observability-traces-site.ts",
+      "score": 0.8721,
+      "belief_prior": 0.686,
+      "symbol": "buildObservabilityTracesSite",
+      "chunk_type": "function",
+      "file_outline": "canonicalAsset replaceExactlyOnce inlineStyle inlineScript escapeRegExp buildObservabilityTracesClientScript buildObservabilityTracesSite",
+      "typed_edges": [
+        {
+          "path": "packages/os/scripts/lib/app-files-client.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/os/scripts/lib/artifacts.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/os/scripts/lib/caddy-worker-pool-reconciliation.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/os/scripts/lib/private-workspace-session-recovery.ts",
+          "type": "imports",
+          "symbol": "./private-workspace-session-recovery"
+        },
+        {
+          "path": "packages/os/scripts/lib/sites.ts",
+          "type": "imported_by",
+          "symbol": "./observability-traces-site"
+        },
+        {
+          "path": "packages/os/scripts/lib/workspace-chrome.ts",
+          "type": "imports",
+          "symbol": "./workspace-chrome"
+        },
+        {
+          "path": "packages/os/tests/observability-traces-site.test.ts",
+          "type": "imported_by",
+          "symbol": "../scripts/lib/observability-traces-site"
+        },
+        {
+          "path": "packages/os/scripts/lib/private-workspace-session-recovery.ts",
+          "type": "imported_by",
+          "symbol": "./private-workspace-session-recovery"
+        },
+        {
+          "path": "packages/os/scripts/lib/sites.ts",
+          "type": "imports",
+          "symbol": "./observability-traces-site"
+        },
+        {
+          "path": "packages/os/scripts/lib/workspace-chrome.ts",
+          "type": "imported_by",
+          "symbol": "./workspace-chrome"
+        },
+        {
+          "path": "packages/os/tests/observability-traces-site.test.ts",
+          "type": "imports",
+          "symbol": "../scripts/lib/observability-traces-site"
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 30597,
+      "chunk_count": 16,
+      "last_modified": 1786779103,
+      "has_test": false,
+      "package": "os",
+      "changed_in_branch": true,
+      "evidence_state": null,
+      "information_value": 1.0676,
+      "reason": "hybrid match: function buildObservabilityTracesSite",
+      "preview": "export function buildObservabilityTracesSite(): string { let html = canonicalAsset('template.html'); html = inlineStyle(",
+      "graph_connections": [
+        "packages/os/scripts/lib/app-files-client.ts",
+        "packages/os/scripts/lib/artifacts.ts",
+        "packages/os/scripts/lib/caddy-worker-pool-reconciliation.ts",
+        "packages/os/scripts/lib/private-workspace-session-recovery.ts",
+        "packages/os/scripts/lib/sites.ts",
+        "packages/os/scripts/lib/workspace-chrome.ts",
+        "packages/os/tests/observability-traces-site.test.ts"
+      ],
+      "graph_connection_count": 7,
+      "lines": {
+        "start": 379,
+        "end": 464
+      },
+      "target": {
+        "key": "packages/os/scripts/lib/observability-traces-site.ts:function:buildObservabilityTracesSite:379-464",
+        "path": "packages/os/scripts/lib/observability-traces-site.ts",
+        "kind": "function",
+        "name": "buildObservabilityTracesSite",
+        "symbol_path": "buildObservabilityTracesSite",
+        "node_type": "function_declaration",
+        "parent_name": null,
+        "lines": {
+          "start": 379,
+          "end": 464
+        },
+        "content_hash": "28a848ac863787129af367e99c7886e006aee555c4cb730c45fe3e67431d65e5",
+        "preview": "export function buildObservabilityTracesSite(): string { let html = canonicalAsset('template.html'); html = inlineStyle("
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0.25,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 1,
+        "connectedToOtherTopResults": false,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.2966666666666667,
+        "graphRelevance": 0.2966666666666667,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.16666666666666666,
+        "nameMatch": 1,
+        "rawScore": 0.8720833333333335,
+        "recency": 1,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0.25,
+        "structuralScore": 1,
+        "tokenCoverage": 0.16666666666666666,
+        "weightedEdges": 8.9
+      }
+    },
+    {
+      "path": "packages/twenty-zapier/src/utils/computeInputFields.ts",
+      "score": 0.8214,
+      "belief_prior": 0.6607,
+      "symbol": "computeInputFields",
+      "chunk_type": "function",
+      "file_outline": "getListFromFieldMetadataType getTypeFromFieldMetadataType get_subfieldsFromField part 1 get_subfieldsFromField part 1 get_subfieldsFromField part 2 isFieldRequired computeInputFields",
+      "typed_edges": [],
+      "is_implementation": true,
+      "file_size": 8647,
+      "chunk_count": 8,
+      "last_modified": null,
+      "has_test": false,
+      "package": "twenty-zapier",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 0.6786,
+      "reason": "hybrid match: function computeInputFields",
+      "preview": "export const computeInputFields = ( node: Node, isRequired = false,",
+      "graph_connections": [],
+      "graph_connection_count": 0,
+      "lines": {
+        "start": 216,
+        "end": 278
+      },
+      "target": {
+        "key": "packages/twenty-zapier/src/utils/computeInputFields.ts:function:computeInputFields:216-278",
+        "path": "packages/twenty-zapier/src/utils/computeInputFields.ts",
+        "kind": "function",
+        "name": "computeInputFields",
+        "symbol_path": "computeInputFields",
+        "node_type": "arrow_function",
+        "parent_name": null,
+        "lines": {
+          "start": 216,
+          "end": 278
+        },
+        "content_hash": "0394112d359da3ba550efbd37e491e62e36bc809b47520d830add2b2bd0017c3",
+        "preview": "export const computeInputFields = ( node: Node, isRequired = false,"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0.5,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0,
+        "connectedToOtherTopResults": false,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0,
+        "graphRelevance": 0,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.20833333333333331,
+        "nameMatch": 1,
+        "rawScore": 0.8213666666666668,
+        "recency": 0.2,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0.5,
+        "structuralScore": 1,
+        "tokenCoverage": 0.3333333333333333,
+        "weightedEdges": 0
+      }
+    },
+    {
+      "path": "scripts/operator/trace-errors.ts",
+      "score": 0.8114,
+      "belief_prior": 0.6557,
+      "symbol": "parseTraceDate",
+      "chunk_type": "function",
+      "file_outline": "sqlJson parseTraceDate formatEst formatRelative formatDuration formatInteger value printTable",
+      "typed_edges": [
+        {
+          "path": "scripts/operator/trace-analytics.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "scripts/operator/trace-costs.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "scripts/operator/trace-analytics.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "scripts/operator/trace-costs.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "scripts/operator/trace-home.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "scripts/operator/trace-home.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "scripts/operator/trace-tools.ts",
+          "type": "sibling",
+          "symbol": null
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 12344,
+      "chunk_count": 16,
+      "last_modified": null,
+      "has_test": false,
+      "package": null,
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 0.964,
+      "reason": "hybrid match: function parseTraceDate",
+      "preview": "function parseTraceDate(raw: unknown): Date | null { if (raw === null || raw === undefined) return null; const text = String(raw);",
+      "graph_connections": [
+        "scripts/operator/trace-analytics.ts",
+        "scripts/operator/trace-costs.ts",
+        "scripts/operator/trace-home.ts",
+        "scripts/operator/trace-tools.ts"
+      ],
+      "graph_connection_count": 4,
+      "lines": {
+        "start": 61,
+        "end": 68
+      },
+      "target": {
+        "key": "scripts/operator/trace-errors.ts:function:parseTraceDate:61-68",
+        "path": "scripts/operator/trace-errors.ts",
+        "kind": "function",
+        "name": "parseTraceDate",
+        "symbol_path": "parseTraceDate",
+        "node_type": "function_declaration",
+        "parent_name": null,
+        "lines": {
+          "start": 61,
+          "end": 68
+        },
+        "content_hash": "5e60b84b6849873f939948e1335ac0a60afdb650f099f2c527da30f0fabb7df2",
+        "preview": "function parseTraceDate(raw: unknown): Date | null { if (raw === null || raw === undefined) return null; const text = String(raw);"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0.25,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0,
+        "connectedToOtherTopResults": true,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.07,
+        "graphRelevance": 0.07,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.19166666666666665,
+        "nameMatch": 1,
+        "rawScore": 0.8114000000000002,
+        "recency": 0.2,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0.25,
+        "structuralScore": 1,
+        "tokenCoverage": 0.3333333333333333,
+        "weightedEdges": 2.1
+      }
+    },
+    {
+      "path": "scripts/operator/trace-analytics.ts",
+      "score": 0.8114,
+      "belief_prior": 0.6557,
+      "symbol": "parseTraceDate",
+      "chunk_type": "function",
+      "file_outline": "sqlJson parseTraceDate formatEst formatRelative formatDuration formatInteger value printTable",
+      "typed_edges": [
+        {
+          "path": "scripts/operator/trace-costs.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "scripts/operator/trace-errors.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "scripts/operator/trace-home.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "scripts/operator/trace-costs.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "scripts/operator/trace-errors.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "scripts/operator/trace-home.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "scripts/operator/trace-tools.ts",
+          "type": "sibling",
+          "symbol": null
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 13686,
+      "chunk_count": 17,
+      "last_modified": null,
+      "has_test": false,
+      "package": null,
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 0.964,
+      "reason": "hybrid match: function parseTraceDate",
+      "preview": "function parseTraceDate(raw: unknown): Date | null { if (raw === null || raw === undefined) return null; const text = String(raw);",
+      "graph_connections": [
+        "scripts/operator/trace-costs.ts",
+        "scripts/operator/trace-errors.ts",
+        "scripts/operator/trace-home.ts",
+        "scripts/operator/trace-tools.ts"
+      ],
+      "graph_connection_count": 4,
+      "lines": {
+        "start": 71,
+        "end": 78
+      },
+      "target": {
+        "key": "scripts/operator/trace-analytics.ts:function:parseTraceDate:71-78",
+        "path": "scripts/operator/trace-analytics.ts",
+        "kind": "function",
+        "name": "parseTraceDate",
+        "symbol_path": "parseTraceDate",
+        "node_type": "function_declaration",
+        "parent_name": null,
+        "lines": {
+          "start": 71,
+          "end": 78
+        },
+        "content_hash": "5e60b84b6849873f939948e1335ac0a60afdb650f099f2c527da30f0fabb7df2",
+        "preview": "function parseTraceDate(raw: unknown): Date | null { if (raw === null || raw === undefined) return null; const text = String(raw);"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0.25,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0,
+        "connectedToOtherTopResults": true,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.07,
+        "graphRelevance": 0.07,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.19166666666666665,
+        "nameMatch": 1,
+        "rawScore": 0.8114000000000002,
+        "recency": 0.2,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0.25,
+        "structuralScore": 1,
+        "tokenCoverage": 0.3333333333333333,
+        "weightedEdges": 2.1
+      }
+    },
+    {
+      "path": "packages/workspace/scripts/trace-home/db.ts",
+      "score": 0.7886,
+      "belief_prior": 0.6443,
+      "symbol": "findLatestTraceDb",
+      "chunk_type": "function",
+      "file_outline": "findLatestTraceDb resolveTraceDb compactError runSql hasTable loadRowsResult loadRows",
+      "typed_edges": [
+        {
+          "path": "packages/workspace/scripts/trace-home/cli.ts",
+          "type": "imports",
+          "symbol": "./db"
+        },
+        {
+          "path": "packages/workspace/scripts/trace-home/cli.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/trace-home/command-quality.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/trace-home/cli.ts",
+          "type": "imported_by",
+          "symbol": "./db"
+        },
+        {
+          "path": "packages/workspace/scripts/trace-home/cli.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/trace-home/command-quality.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/trace-home/model.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/trace-home/tui/app.ts",
+          "type": "imported_by",
+          "symbol": "../db"
+        },
+        {
+          "path": "packages/workspace/scripts/trace-home/types.ts",
+          "type": "imports",
+          "symbol": "./types"
+        },
+        {
+          "path": "packages/workspace/tests/trace-home.test.ts",
+          "type": "imported_by",
+          "symbol": "../scripts/trace-home/db"
+        },
+        {
+          "path": "packages/workspace/scripts/trace-home/model.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/trace-home/sanitize.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/trace-home/text-renderer.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/scripts/trace-home/tui/app.ts",
+          "type": "imports",
+          "symbol": "../db"
+        },
+        {
+          "path": "packages/workspace/scripts/trace-home/types.ts",
+          "type": "imported_by",
+          "symbol": "./types"
+        },
+        {
+          "path": "packages/workspace/scripts/trace-home/types.ts",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/workspace/tests/trace-home.test.ts",
+          "type": "imports",
+          "symbol": "../scripts/trace-home/db"
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 4260,
+      "chunk_count": 10,
+      "last_modified": null,
+      "has_test": false,
+      "package": "workspace",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 1.2805,
+      "reason": "hybrid match: function findLatestTraceDb",
+      "preview": "function findLatestTraceDb(traceRoot: string): string | undefined { try { return readdirSync(traceRoot, { withFileTypes: true })",
+      "graph_connections": [
+        "packages/workspace/scripts/trace-home/cli.ts",
+        "packages/workspace/scripts/trace-home/command-quality.ts",
+        "packages/workspace/scripts/trace-home/model.ts",
+        "packages/workspace/scripts/trace-home/tui/app.ts",
+        "packages/workspace/scripts/trace-home/types.ts",
+        "packages/workspace/tests/trace-home.test.ts",
+        "packages/workspace/scripts/trace-home/sanitize.ts",
+        "packages/workspace/scripts/trace-home/text-renderer.ts"
+      ],
+      "graph_connection_count": 8,
+      "lines": {
+        "start": 11,
+        "end": 24
+      },
+      "target": {
+        "key": "packages/workspace/scripts/trace-home/db.ts:function:findLatestTraceDb:11-24",
+        "path": "packages/workspace/scripts/trace-home/db.ts",
+        "kind": "function",
+        "name": "findLatestTraceDb",
+        "symbol_path": "findLatestTraceDb",
+        "node_type": "function_declaration",
+        "parent_name": null,
+        "lines": {
+          "start": 11,
+          "end": 24
+        },
+        "content_hash": "ddd5f179b5095a961e578b2be824388bd48869b26573ebc3d93a946b23bda829",
+        "preview": "function findLatestTraceDb(traceRoot: string): string | undefined { try { return readdirSync(traceRoot, { withFileTypes: true })"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0.25,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0,
+        "connectedToOtherTopResults": false,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.35666666666666663,
+        "graphRelevance": 0.35666666666666663,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.19166666666666665,
+        "nameMatch": 1,
+        "rawScore": 0.7886000000000002,
+        "recency": 0.2,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0.25,
+        "structuralScore": 1,
+        "tokenCoverage": 0.3333333333333333,
+        "weightedEdges": 10.7
+      }
+    },
+    {
+      "path": "packages/twenty-front/src/modules/ui/input/components/ImageInput.tsx",
+      "score": 0.7659,
+      "belief_prior": 0.6329,
+      "symbol": "ImageInput",
+      "chunk_type": "function",
+      "file_outline": "ImageInput",
+      "typed_edges": [
+        {
+          "path": "packages/twenty-front/src/modules/ui/input/components/IconPicker.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/ui/input/components/IconPicker.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/ui/input/components/InputErrorHelper.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/ui/input/components/InputHint.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-shared/src/utils/applyDiff.ts",
+          "type": "imports",
+          "symbol": "twenty-shared/utils"
+        },
+        {
+          "path": "packages/twenty-ui/src/display/avatar/components/Avatar.tsx",
+          "type": "imports",
+          "symbol": "twenty-ui/display"
+        },
+        {
+          "path": "packages/twenty-ui/src/input/button/components/AnimatedButton.tsx",
+          "type": "imports",
+          "symbol": "twenty-ui/input"
+        },
+        {
+          "path": "packages/twenty-front/src/modules/ui/input/components/InputErrorHelper.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/ui/input/components/InputHint.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/ui/input/components/InputLabel.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/ui/input/components/MultiSelectControl.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/ui/input/components/Select.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/ui/input/components/SelectControl.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/ui/input/components/SelectInput.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/ui/input/components/SettingsTextInput.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/ui/input/components/TextArea.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/ui/input/components/TextInput.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/ui/input/components/TitleInput.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-front/src/modules/ui/input/components/TitleInputAutoOpenEffect.tsx",
+          "type": "sibling",
+          "symbol": null
+        },
+        {
+          "path": "packages/twenty-shared/src/utils/applyDiff.ts",
+          "type": "imported_by",
+          "symbol": "twenty-shared/utils"
+        },
+        {
+          "path": "packages/twenty-ui/src/display/avatar/components/Avatar.tsx",
+          "type": "imported_by",
+          "symbol": "twenty-ui/display"
+        },
+        {
+          "path": "packages/twenty-ui/src/input/button/components/AnimatedButton.tsx",
+          "type": "imported_by",
+          "symbol": "twenty-ui/input"
+        }
+      ],
+      "is_implementation": true,
+      "file_size": 5165,
+      "chunk_count": 4,
+      "last_modified": null,
+      "has_test": false,
+      "package": "twenty-front",
+      "changed_in_branch": false,
+      "evidence_state": null,
+      "information_value": 1.3216,
+      "reason": "hybrid match: function ImageInput",
+      "preview": "export const ImageInput = ({ picture, onUpload,",
+      "graph_connections": [
+        "packages/twenty-front/src/modules/ui/input/components/IconPicker.tsx",
+        "packages/twenty-front/src/modules/ui/input/components/InputErrorHelper.tsx",
+        "packages/twenty-front/src/modules/ui/input/components/InputHint.tsx",
+        "packages/twenty-shared/src/utils/applyDiff.ts",
+        "packages/twenty-ui/src/display/avatar/components/Avatar.tsx",
+        "packages/twenty-ui/src/input/button/components/AnimatedButton.tsx",
+        "packages/twenty-front/src/modules/ui/input/components/InputLabel.tsx",
+        "packages/twenty-front/src/modules/ui/input/components/MultiSelectControl.tsx"
+      ],
+      "graph_connection_count": 8,
+      "lines": {
+        "start": 100,
+        "end": 191
+      },
+      "target": {
+        "key": "packages/twenty-front/src/modules/ui/input/components/ImageInput.tsx:function:ImageInput:100-191",
+        "path": "packages/twenty-front/src/modules/ui/input/components/ImageInput.tsx",
+        "kind": "function",
+        "name": "ImageInput",
+        "symbol_path": "ImageInput",
+        "node_type": "arrow_function",
+        "parent_name": null,
+        "lines": {
+          "start": 100,
+          "end": 191
+        },
+        "content_hash": "b77f05b1f037a05ecbc51ac5d8fd031e887f48a72bff02e12353ab0b04bbe8ad",
+        "preview": "export const ImageInput = ({ picture, onUpload,"
+      },
+      "retrieval_types": [
+        "lexical"
+      ],
+      "score_parts": {
+        "anchorCoverage": 0.25,
+        "boost": 1,
+        "capReason": null,
+        "changeRelevance": 0,
+        "connectedToOtherTopResults": false,
+        "embeddingSimilarity": 0.9919,
+        "graphCentrality": 0.35999999999999993,
+        "graphRelevance": 0.35999999999999993,
+        "hardAnchorCoverage": 0,
+        "hasHardAnchors": false,
+        "hasImplementation": true,
+        "implementationBonus": 0.05,
+        "isGeneratedOrNoisy": false,
+        "isTypeHeavy": false,
+        "lexicalScore": 0.16666666666666666,
+        "nameMatch": 1,
+        "rawScore": 0.7658833333333335,
+        "recency": 0.2,
+        "semanticOnly": false,
+        "softAnchorCoverage": 0.25,
+        "structuralScore": 1,
+        "tokenCoverage": 0.16666666666666666,
+        "weightedEdges": 10.799999999999997
+      }
+    }
+  ],
+  "source_routes": [],
+  "index_stats": {
+    "total_files": 15723,
+    "total_chunks": 81167,
+    "last_indexed": "2026-08-15T08:06:44.204Z",
+    "last_full_index": "2026-05-28T22:34:26.578Z",
+    "cache_root": "/Users/kokayi/.cache/workspace-index/e8425497c3ee20bf0a28e9da/openrouter-qwen-qwen3-embedding-4b-2560d-workspace-code-retrieval-v1",
+    "embedding_config_id": "openrouter-qwen-qwen3-embedding-4b-2560d-workspace-code-retrieval-v1",
+    "embedding_dimensions": 2560,
+    "files_indexed": 0,
+    "chunks_embedded": 0
+  },
+  "belief_version": 2,
+  "beliefs": {
+    "packages/os/tests/workspace-node-registry-routing.test.ts": {
+      "prior": 0.7406,
+      "posterior": 0.7406,
+      "observations": []
+    },
+    "scripts/operator/trace-watch.ts": {
+      "prior": 0.6951,
+      "posterior": 0.6951,
+      "observations": []
+    },
+    "packages/os/scripts/lib/observability-traces-site.ts": {
+      "prior": 0.686,
+      "posterior": 0.686,
+      "observations": []
+    },
+    "packages/twenty-zapier/src/utils/computeInputFields.ts": {
+      "prior": 0.6607,
+      "posterior": 0.6607,
+      "observations": []
+    },
+    "scripts/operator/trace-errors.ts": {
+      "prior": 0.6557,
+      "posterior": 0.6557,
+      "observations": []
+    },
+    "scripts/operator/trace-analytics.ts": {
+      "prior": 0.6557,
+      "posterior": 0.6557,
+      "observations": []
+    },
+    "packages/workspace/scripts/trace-home/db.ts": {
+      "prior": 0.6443,
+      "posterior": 0.6443,
+      "observations": []
+    },
+    "packages/twenty-front/src/modules/ui/input/components/ImageInput.tsx": {
+      "prior": 0.6329,
+      "posterior": 0.6329,
+      "observations": []
+    }
+  },
+  "belief_event_ids": [],
+  "branch": "task/os/fix-updater-runtime-convergence-and-trace-node-order",
+  "mode": "exploring",
+  "worktree_id": "task/os/fix-updater-runtime-convergence-and-trace-node-order",
+  "updated_at": "2026-08-15T08:09:45.281Z"
+}

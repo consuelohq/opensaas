@@ -1,0 +1,42 @@
+---
+title: OpenCode
+description: Connect OpenCode to the local Consuelo OS MCP command.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/scripts/lib/local-agent-connectivity.ts
+    tests:
+      - packages/os/tests/local-agent-connectivity.test.ts
+      - packages/os/tests/install-state.test.ts
+    runtime: OpenCode native configuration and MCP verification behavior were exercised by focused tests on 2026-07-13.
+---
+OpenCode uses `~/.config/opencode/opencode.json`. Its MCP shape differs from the other JSON clients: the `consuelo-os` entry lives under `mcp`, has `type: "local"`, and stores the command as an array.
+
+## Connect
+
+```bash
+export CONSUELO_HOME="${CONSUELO_HOME:-$HOME/.consuelo}"
+cd "$CONSUELO_HOME"
+bun ./scripts/install.ts --yes --mode local --home "$CONSUELO_HOME" --connect-agent opencode --skip-daemons
+```
+
+The command array contains the installed path:
+
+```text
+~/.consuelo/bin/consuelo-os-mcp
+```
+
+## Verify
+
+OpenCode was exercised through the isolated installer test. Setup writes its native configuration and records `verified` after the MCP initialize and tool-list probe succeeds. Restart OpenCode before using the new tools.
+
+## Troubleshooting
+
+- Open OpenCode once so one of its supported config directories exists.
+- Repair malformed JSON instead of asking Consuelo to overwrite it.
+- Ensure the `consuelo-os` entry is enabled and uses the current home.
+- Read the installer message when status is `failed`; it preserves the previous config for recovery.
+
+## Disconnect
+
+Remove only `mcp["consuelo-os"]` from the OpenCode config and restart the client.

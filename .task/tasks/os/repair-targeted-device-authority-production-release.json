@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/repair-targeted-device-authority-production-release",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1961,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1961",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1961",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1961/repair-targeted-device-authority-production-release",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1961",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1961/repair-targeted-device-authority-production-release",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-targeted-device-authority-production-release",
+  "taskSession": "tsk_ef18f29519e9",
+  "tmuxSession": "opensaas-os-repair-targeted-device-authority-production-rele-ef18f295",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-targeted-device-authority-production-release/.task/os/repair-targeted-device-authority-production-release/session.json",
+  "createdAt": "2026-08-14T20:49:35.230Z"
+}

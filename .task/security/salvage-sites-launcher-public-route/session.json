@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_51a94a10cb24",
+  "tmuxSession": "opensaas-security-salvage-sites-launcher-public-route-51a94a10",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/salvage-sites-launcher-public-route",
+  "branch": "task/security/salvage-sites-launcher-public-route",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-salvage-sites-launcher-public-route",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-salvage-sites-launcher-public-route",
+  "prNumber": 1355,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1355",
+  "createdAt": "2026-07-03T11:11:35.815Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-salvage-sites-launcher-public-route/.task/security/salvage-sites-launcher-public-route/session.json"
+}

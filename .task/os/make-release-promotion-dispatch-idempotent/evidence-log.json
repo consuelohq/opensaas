@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/make-release-promotion-dispatch-idempotent",
+  "events": [
+    {
+      "id": "2b59e68b-7ea3-46ed-8d26-7ea77688734d",
+      "occurred_at": "2026-08-26T15:22:58.196Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/make-release-promotion-dispatch-idempotent/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/make-release-promotion-dispatch-idempotent",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/make-release-promotion-dispatch-idempotent"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-26T15:22:58.262Z"
+}

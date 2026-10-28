@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_fc76e9beb067",
+  "tmuxSession": "opensaas-os-add-os-settings-gateway-edge-proxy-routes-fc76e9be",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-os-settings-gateway-edge-proxy-routes",
+  "branch": "task/os/add-os-settings-gateway-edge-proxy-routes",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-os-settings-gateway-edge-proxy-routes",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-os-settings-gateway-edge-proxy-routes",
+  "prNumber": 1348,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1348",
+  "createdAt": "2026-07-03T03:21:44.145Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-os-settings-gateway-edge-proxy-routes/.task/os/add-os-settings-gateway-edge-proxy-routes/session.json"
+}

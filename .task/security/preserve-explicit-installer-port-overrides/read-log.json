@@ -1,0 +1,8 @@
+{
+  "files": [
+    ".task/security/preserve-explicit-installer-port-overrides/workpad.md",
+    "packages/os/scripts/install.ts",
+    "packages/os/scripts/server/env.ts"
+  ],
+  "updatedAt": "2026-07-11T18:56:15.726Z"
+}

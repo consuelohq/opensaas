@@ -1,0 +1,278 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/deploy-merged-os-connection-and-tracing-fix",
+  "base": "origin/task/os/deploy-merged-os-connection-and-tracing-fix",
+  "headSha": "725710e004eeaa458198c237a010149ea1574e27",
+  "changeHash": "e3e00671f8cf82af993bcb1734731d3afcfc005df80d9da04bc923c4e2d37ad2",
+  "changedFiles": [
+    "packages/os/scripts/lib/workspace-cloudflare-edge-router.ts",
+    "packages/os/tests/workspace-node-registry-routing.test.ts"
+  ],
+  "verifiedAt": "2026-09-04T16:33:35.145Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/deploy-merged-os-connection-and-tracing-fix/workpad.md",
+        ".task/tasks/os/deploy-merged-os-connection-and-tracing-fix.json",
+        "packages/os/scripts/lib/workspace-cloudflare-edge-router.ts",
+        "packages/os/tests/workspace-node-registry-routing.test.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "os-hosted-site-update-reconciliation",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Hosted Sites update reconciliation changes must prove canonical D1 route ownership, stale-default repair, lifecycle reconciliation, and node routing without selecting the historically red unrelated OS package suite.",
+          "matchedFiles": [
+            "packages/os/tests/workspace-node-registry-routing.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-secrets-management",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Secrets UI, sealed-envelope storage, signed node routes, and Workspace Edge write routing must prove browser-to-node encryption and metadata-only behavior without selecting the historically red unrelated OS package suite.",
+          "matchedFiles": [
+            "packages/os/scripts/lib/workspace-cloudflare-edge-router.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "OS hosted-site D1 reconciliation contract",
+          "command": [
+            "env",
+            "CONSUELO_RUN_WORKSPACE_GATEWAY_CONTRACTS=1",
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/cloudflare-d1-route-registry.test.ts"
+          ],
+          "ruleId": "os-hosted-site-update-reconciliation",
+          "critical": true
+        },
+        {
+          "name": "OS hosted-site lifecycle and node routing contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/lifecycle-engine.test.ts",
+            "tests/workspace-node-registry-routing.test.ts"
+          ],
+          "ruleId": "os-hosted-site-update-reconciliation",
+          "critical": true
+        },
+        {
+          "name": "OS Secrets sealed credential contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/secrets-surface.test.ts",
+            "tests/secrets-hono-routes.test.ts",
+            "tests/node-sealed-credential-store.test.ts",
+            "tests/settings-site.test.ts",
+            "tests/internal-launcher-regressions.test.ts"
+          ],
+          "ruleId": "os-secrets-management",
+          "critical": true
+        },
+        {
+          "name": "OS Secrets signed gateway bridge",
+          "command": [
+            "bun",
+            "test",
+            "--cwd",
+            "packages/os",
+            "tests/local-os-server-hono-architecture.test.ts",
+            "tests/workspace-gateway-node-end-to-end.test.ts"
+          ],
+          "ruleId": "os-secrets-management",
+          "critical": true
+        },
+        {
+          "name": "OS Secrets edge route contracts",
+          "command": [
+            "env",
+            "CONSUELO_RUN_WORKSPACE_GATEWAY_CONTRACTS=1",
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/workspace-edge-route-seed-contract.test.ts",
+            "tests/workspace-edge-sites-gateway-integration.test.ts"
+          ],
+          "ruleId": "os-secrets-management",
+          "critical": true
+        },
+        {
+          "name": "OS Secrets syntax",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "ruleId": "os-secrets-management",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "OS hosted-site D1 reconciliation contract",
+          "command": [
+            "env",
+            "CONSUELO_RUN_WORKSPACE_GATEWAY_CONTRACTS=1",
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/cloudflare-d1-route-registry.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-hosted-site-update-reconciliation",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1089,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-deploy-merged-os-connection-and-tracing-fix/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/cloudflare-d1-route-registry.test.ts \u001b[2m(\u001b[22m\u001b[2m12 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 21\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m12 passed\u001b[39m\u001b[22m\u001b[90m (12)\u001b[39m\n\u001b[2m   Start at \u001b[22m 12:33:26\n\u001b[2m   Duration \u001b[22m 115ms\u001b[2m (transform 43ms, setup 23ms, import 16ms, tests 21ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS hosted-site lifecycle and node routing contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/lifecycle-engine.test.ts",
+            "tests/workspace-node-registry-routing.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-hosted-site-update-reconciliation",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 2888,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-deploy-merged-os-connection-and-tracing-fix/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/workspace-node-registry-routing.test.ts \u001b[2m(\u001b[22m\u001b[2m52 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 77\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/lifecycle-engine.test.ts \u001b[2m(\u001b[22m\u001b[2m66 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 1800\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m activates after production provisioning without leaving runtime/current as a directory \u001b[33m 319\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m118 passed\u001b[39m\u001b[22m\u001b[90m (118)\u001b[39m\n\u001b[2m   Start at \u001b[22m 12:33:26\n\u001b[2m   Duration \u001b[22m 2.47s\u001b[2m (transform 491ms, setup 25ms, import 889ms, tests 1.88s, environment 0ms)\u001b[22m\n\n$ vitest run tests/lifecycle-engine.test.ts tests/workspace-node-registry-routing.test.ts\n"
+        },
+        {
+          "name": "OS Secrets sealed credential contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/secrets-surface.test.ts",
+            "tests/secrets-hono-routes.test.ts",
+            "tests/node-sealed-credential-store.test.ts",
+            "tests/settings-site.test.ts",
+            "tests/internal-launcher-regressions.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-secrets-management",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 873,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-deploy-merged-os-connection-and-tracing-fix/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/node-sealed-credential-store.test.ts \u001b[2m(\u001b[22m\u001b[2m33 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 45\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/secrets-surface.test.ts \u001b[2m(\u001b[22m\u001b[2m7 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 11\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/internal-launcher-regressions.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 15\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/settings-site.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 167\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/secrets-hono-routes.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 72\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m5 passed\u001b[39m\u001b[22m\u001b[90m (5)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m58 passed\u001b[39m\u001b[22m\u001b[90m (58)\u001b[39m\n\u001b[2m   Start at \u001b[22m 12:33:29\n\u001b[2m   Duration \u001b[22m 711ms\u001b[2m (transform 720ms, setup 64ms, import 1.21s, tests 309ms, environment 0ms)\u001b[22m\n\n$ vitest run tests/secrets-surface.test.ts tests/secrets-hono-routes.test.ts tests/node-sealed-credential-store.test.ts tests/settings-site.test.ts tests/internal-launcher-regressions.test.ts\n(node:19215) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+        },
+        {
+          "name": "OS Secrets signed gateway bridge",
+          "command": [
+            "bun",
+            "test",
+            "--cwd",
+            "packages/os",
+            "tests/local-os-server-hono-architecture.test.ts",
+            "tests/workspace-gateway-node-end-to-end.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-secrets-management",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1554,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\ntests/workspace-gateway-node-end-to-end.test.ts:\n(pass) authenticated workspace edge to local OS node > carries environments, sealed secret writes, and traces through the full signed bridge [31.53ms]\n\ntests/local-os-server-hono-architecture.test.ts:\n(pass) local OS Hono server architecture > should use a dedicated Bun entrypoint and remove the flat server module [0.21ms]\n(pass) local OS Hono server architecture > should point managed process entrypoints at the supervisor and keep worker smoke direct [0.76ms]\n(pass) local OS Hono server architecture > should keep method, path, and trust policy explicit [0.28ms]\n(pass) local OS Hono server architecture > should preserve health GET behavior [116.80ms]\n(pass) local OS Hono server architecture > should preserve health POST behavior [116.85ms]\n(pass) local OS Hono server architecture > should preserve worker readiness behavior [114.55ms]\n(pass) local OS Hono server architecture > should preserve trace read route behavior [118.30ms]\n(pass) local OS Hono server architecture > should preserve trace HEAD fallback behavior [116.07ms]\n(pass) local OS Hono server architecture > should preserve trace write fallback behavior [114.45ms]\n(pass) local OS Hono server architecture > should preserve unknown route with explicit auth path behavior [119.69ms]\n(pass) local OS Hono server architecture > should preserve call method fallback behavior [118.61ms]\n(pass) local OS Hono server architecture > should preserve steering method fallback behavior [113.70ms]\n(pass) local OS Hono server architecture > should preserve steering HEAD fallback behavior [114.68ms]\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"c4f4dc09-66c1-4eee-b87c-7171e9e64ee9\",\"route\":\"/mcp\",\"method\":\"GET\"},\"ts\":\"2026-09-04T16:33:31.580Z\"}\n(pass) local OS Hono server architecture > should preserve the MCP OAuth discovery challenge before method rejection [116.59ms]\n(pass) local OS Hono server architecture > should return not found only after generated auth exists [115.07ms]\n\n 16 pass\n 0 fail\n 128 expect() calls\nRan 16 tests across 2 files. [1.55s]\n"
+        },
+        {
+          "name": "OS Secrets edge route contracts",
+          "command": [
+            "env",
+            "CONSUELO_RUN_WORKSPACE_GATEWAY_CONTRACTS=1",
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/workspace-edge-route-seed-contract.test.ts",
+            "tests/workspace-edge-sites-gateway-integration.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-secrets-management",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 476,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-deploy-merged-os-connection-and-tracing-fix/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/workspace-edge-route-seed-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m10 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 57\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/workspace-edge-sites-gateway-integration.test.ts \u001b[2m(\u001b[22m\u001b[2m16 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 111\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m26 passed\u001b[39m\u001b[22m\u001b[90m (26)\u001b[39m\n\u001b[2m   Start at \u001b[22m 12:33:31\n\u001b[2m   Duration \u001b[22m 248ms\u001b[2m (transform 185ms, setup 36ms, import 83ms, tests 168ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS Secrets syntax",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "cwd": ".",
+          "ruleId": "os-secrets-management",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 2766,
+          "outputTail": "workspace script syntax checks passed\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

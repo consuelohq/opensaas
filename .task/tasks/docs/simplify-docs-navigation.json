@@ -1,0 +1,19 @@
+{
+  "area": "docs",
+  "stream": "stream/docs",
+  "taskBranch": "task/docs/simplify-docs-navigation",
+  "baseBranch": "stream/docs",
+  "sourceBranch": "stream/docs",
+  "startFrom": "stream",
+  "prNumber": 1250,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1250",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1250",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1250/simplify-docs-navigation",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1250",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1250/simplify-docs-navigation",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-simplify-docs-navigation",
+  "taskSession": "tsk_448854a048e9",
+  "tmuxSession": "opensaas-docs-simplify-docs-navigation-448854a0",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-simplify-docs-navigation/.task/docs/simplify-docs-navigation/session.json",
+  "createdAt": "2026-06-28T03:06:29.691Z"
+}

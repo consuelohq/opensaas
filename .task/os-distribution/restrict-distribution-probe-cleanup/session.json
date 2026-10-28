@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_36248a8547c3",
+  "tmuxSession": "opensaas-os-distribution-restrict-distribution-probe-cleanup-36248a85",
+  "area": "os-distribution",
+  "stream": "stream/os-distribution",
+  "taskBranch": "task/os-distribution/restrict-distribution-probe-cleanup",
+  "branch": "task/os-distribution/restrict-distribution-probe-cleanup",
+  "worktreePath": "/Users/kokayi/Dev/opensaas-worktrees/task-os-distribution-restrict-distribution-probe-cleanup",
+  "worktree": "/Users/kokayi/Dev/opensaas-worktrees/task-os-distribution-restrict-distribution-probe-cleanup",
+  "prNumber": 1550,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1550",
+  "createdAt": "2026-07-22T17:17:22.126Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/Dev/opensaas-worktrees/task-os-distribution-restrict-distribution-probe-cleanup/.task/os-distribution/restrict-distribution-probe-cleanup/session.json"
+}

@@ -1,0 +1,19 @@
+{
+  "area": "consuelo-website",
+  "stream": "stream/consuelo-website",
+  "taskBranch": "task/consuelo-website/refresh-social-card-cache-and-improve-homepage-faq",
+  "baseBranch": "stream/consuelo-website",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1440,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1440",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1440",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1440/refresh-social-card-cache-and-improve-homepage-faq",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1440",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1440/refresh-social-card-cache-and-improve-homepage-faq",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-consuelo-website-refresh-social-card-cache-and-improve-homepage-faq",
+  "taskSession": "tsk_da18eb4cde10",
+  "tmuxSession": "opensaas-consuelo-website-refresh-social-card-cache-and-improve-homepage-f-da18eb4c",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-consuelo-website-refresh-social-card-cache-and-improve-homepage-faq/.task/consuelo-website/refresh-social-card-cache-and-improve-homepage-faq/session.json",
+  "createdAt": "2026-07-13T02:18:37.205Z"
+}

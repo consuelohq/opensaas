@@ -1,8 +1,8 @@
 {
   "name": "sites",
   "title": "Sites",
-  "description": "Use this skill for Consuelo OS Sites: the user-facing local site system for generated docs, reports, files, pages, traces, diffs, and Office as one site category. Artifacts remain the internal durable provenance and storage records behind Sites.",
-  "trigger": "Invoke when the user asks about OS Sites, generated work surfaces, local Sites pages, the Office site, artifact-backed output, traces, diffs, or refreshing and finding local Sites.",
+  "description": "Use this skill for Consuelo OS site delivery infrastructure: launcher pages, typed pages, traces, diffs, settings, and the static delivery layer used by Consuelo Artifacts.",
+  "trigger": "Invoke when the user asks about OS site delivery, local site materialization, launcher pages, typed page registries, traces, diffs, settings pages, or edge snapshot routing.",
   "entrypoint": "SKILL.md",
   "load": {
     "type": "resource",
@@ -13,9 +13,9 @@
   "status": "active",
   "capabilities": [
     "sites",
-    "office",
-    "artifacts",
-    "local-pages"
+    "artifact-delivery",
+    "local-pages",
+    "edge-snapshots"
   ],
   "tools": [
     "os.get_steering",

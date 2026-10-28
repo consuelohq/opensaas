@@ -1,0 +1,88 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/stabilize-detached-subagent-exit-marker-publication",
+  "events": [
+    {
+      "id": "9bbe4ced-1639-4d1a-91e7-cf67b4ca2347",
+      "occurred_at": "2026-09-10T01:11:33.603Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/subagent-lifecycle-regressions.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/stabilize-detached-subagent-exit-marker-publication",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/stabilize-detached-subagent-exit-marker-publication"
+      }
+    },
+    {
+      "id": "d7e47103-666b-4532-b5f1-7405168a0220",
+      "occurred_at": "2026-09-10T01:11:39.990Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/subagent/process-termination.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/stabilize-detached-subagent-exit-marker-publication",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/stabilize-detached-subagent-exit-marker-publication"
+      }
+    },
+    {
+      "id": "af90ef15-915a-4c69-8823-7f7ae3bf4d3b",
+      "occurred_at": "2026-09-10T01:14:09.824Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/subagent-lifecycle-regressions.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/stabilize-detached-subagent-exit-marker-publication",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/stabilize-detached-subagent-exit-marker-publication"
+      }
+    },
+    {
+      "id": "ea1af0d9-f15d-4826-80db-e58350b61324",
+      "occurred_at": "2026-09-10T01:14:48.125Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/subagent/runtime.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/stabilize-detached-subagent-exit-marker-publication",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/stabilize-detached-subagent-exit-marker-publication"
+      }
+    },
+    {
+      "id": "30f9a780-15a6-4eb5-bc44-7ce28de15b86",
+      "occurred_at": "2026-09-10T01:14:59.988Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/test-selection.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/stabilize-detached-subagent-exit-marker-publication",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/stabilize-detached-subagent-exit-marker-publication"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-09-10T01:15:00.088Z"
+}

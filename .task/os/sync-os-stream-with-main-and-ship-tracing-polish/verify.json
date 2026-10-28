@@ -1,0 +1,922 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/sync-os-stream-with-main-and-ship-tracing-polish",
+  "base": "origin/stream/os",
+  "headSha": "c714649fc040ea212504b61182bb200c39bb10b6",
+  "changeHash": "ca5f716d9aa9086aa8b0cb497a66546bef5febc4632c57a9b0c684e38478479e",
+  "changedFiles": [
+    "packages/dialer-server/README.md",
+    "packages/dialer-server/package.json",
+    "packages/dialer-server/scripts/local-dialer-lab.ts",
+    "packages/dialer-server/src/lab/local-dialer-lab.integration.test.ts",
+    "packages/dialer-server/src/lab/local-dialer-lab.test.ts",
+    "packages/dialer-server/src/lab/local-dialer-lab.ts",
+    "packages/documentation/scripts/test-connect-browser.mjs",
+    "packages/documentation/scripts/test-foundation-browser.mjs",
+    "packages/documentation/src/components/BrowseMenu.astro",
+    "packages/documentation/src/components/DocsMenuTrigger.astro",
+    "packages/documentation/src/components/PageTitle.astro",
+    "packages/documentation/src/components/Sidebar.astro",
+    "packages/documentation/src/content/docs/connect/agents/create-your-own.mdx",
+    "packages/documentation/src/content/docs/connect/apps-and-services/create-your-own.mdx",
+    "packages/documentation/src/content/docs/connect/apps-and-services/index.mdx",
+    "packages/documentation/src/content/docs/reference/cli.mdx",
+    "packages/documentation/src/content/docs/secure/hosted-mcp-ingress.mdx",
+    "packages/documentation/src/content/docs/secure/security-model.mdx",
+    "packages/documentation/src/content/docs/start/install-consuelo-os.mdx",
+    "packages/documentation/src/lib/docs-navigation.ts",
+    "packages/documentation/src/styles/docs.css",
+    "packages/documentation/tests/connect.test.ts",
+    "packages/documentation/tests/foundation.test.ts",
+    "packages/os/scripts/lib/lifecycle/service.ts",
+    "packages/os/scripts/lib/mcp-gateway.ts",
+    "packages/os/scripts/lib/native-lifecycle-endpoint.ts",
+    "packages/os/scripts/lifecycle.ts",
+    "packages/os/scripts/os.ts",
+    "packages/os/tests/lifecycle-restart-contract.test.ts",
+    "packages/os/tests/mcp-gateway.test.ts",
+    "packages/os/tests/native-lifecycle-endpoint.test.ts",
+    "packages/os/tests/os-get-steering-trace.test.ts",
+    "packages/workspace/scripts/os-release.ts",
+    "packages/workspace/test-selection.registry.json",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/test-selection.test.js",
+    "packages/workspace/tests/website-deploy.test.js"
+  ],
+  "verifiedAt": "2026-08-15T07:47:48.184Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/dialer/local-dialer-postgres-redis-benchmark-lab/current.json",
+        ".task/dialer/local-dialer-postgres-redis-benchmark-lab/evidence-log.json",
+        ".task/dialer/local-dialer-postgres-redis-benchmark-lab/read-log.json",
+        ".task/dialer/local-dialer-postgres-redis-benchmark-lab/session.json",
+        ".task/dialer/local-dialer-postgres-redis-benchmark-lab/verify.json",
+        ".task/dialer/local-dialer-postgres-redis-benchmark-lab/workpad.md",
+        ".task/documentation/refine-desktop-docs-homepage-toward-vercel/current.json",
+        ".task/documentation/refine-desktop-docs-homepage-toward-vercel/session.json",
+        ".task/documentation/refine-desktop-docs-homepage-toward-vercel/verify.json",
+        ".task/documentation/refine-desktop-docs-homepage-toward-vercel/workpad.md",
+        ".task/documentation/rename-connect-create-your-own-docs-to-bring-your-own/current.json",
+        ".task/documentation/rename-connect-create-your-own-docs-to-bring-your-own/evidence-log.json",
+        ".task/documentation/rename-connect-create-your-own-docs-to-bring-your-own/read-log.json",
+        ".task/documentation/rename-connect-create-your-own-docs-to-bring-your-own/session.json",
+        ".task/documentation/rename-connect-create-your-own-docs-to-bring-your-own/verify.json",
+        ".task/documentation/rename-connect-create-your-own-docs-to-bring-your-own/workpad.md",
+        ".task/documentation/sync-documentation-stream-with-main-and-merge-pr-1995/current.json",
+        ".task/documentation/sync-documentation-stream-with-main-and-merge-pr-1995/evidence-log.json",
+        ".task/documentation/sync-documentation-stream-with-main-and-merge-pr-1995/read-log.json",
+        ".task/documentation/sync-documentation-stream-with-main-and-merge-pr-1995/session.json",
+        ".task/documentation/sync-documentation-stream-with-main-and-merge-pr-1995/verify.json",
+        ".task/documentation/sync-documentation-stream-with-main-and-merge-pr-1995/workpad.md",
+        ".task/documentation/sync-responsive-docs-stream-with-main-for-pr-2011/current.json",
+        ".task/documentation/sync-responsive-docs-stream-with-main-for-pr-2011/session.json",
+        ".task/documentation/sync-responsive-docs-stream-with-main-for-pr-2011/verify.json",
+        ".task/documentation/sync-responsive-docs-stream-with-main-for-pr-2011/workpad.md",
+        ".task/documentation/tighten-responsive-browse-menu-toward-vercel/current.json",
+        ".task/documentation/tighten-responsive-browse-menu-toward-vercel/evidence-log.json",
+        ".task/documentation/tighten-responsive-browse-menu-toward-vercel/read-log.json",
+        ".task/documentation/tighten-responsive-browse-menu-toward-vercel/session.json",
+        ".task/documentation/tighten-responsive-browse-menu-toward-vercel/verify.json",
+        ".task/documentation/tighten-responsive-browse-menu-toward-vercel/workpad.md",
+        ".task/documentation/yoink-vercel-responsive-docs-patterns-for-mobile-and-ipad/current.json",
+        ".task/documentation/yoink-vercel-responsive-docs-patterns-for-mobile-and-ipad/session.json",
+        ".task/documentation/yoink-vercel-responsive-docs-patterns-for-mobile-and-ipad/verify.json",
+        ".task/documentation/yoink-vercel-responsive-docs-patterns-for-mobile-and-ipad/workpad.md",
+        ".task/os/expose-nodeid-on-public-os-plugin-facade/current.json",
+        ".task/os/expose-nodeid-on-public-os-plugin-facade/session.json",
+        ".task/os/expose-nodeid-on-public-os-plugin-facade/verify.json",
+        ".task/os/expose-nodeid-on-public-os-plugin-facade/workpad.md",
+        ".task/os/hotfix-explicit-cloud-node-targeting-to-main/current.json",
+        ".task/os/hotfix-explicit-cloud-node-targeting-to-main/evidence-log.json",
+        ".task/os/hotfix-explicit-cloud-node-targeting-to-main/read-log.json",
+        ".task/os/hotfix-explicit-cloud-node-targeting-to-main/session.json",
+        ".task/os/hotfix-explicit-cloud-node-targeting-to-main/verify.json",
+        ".task/os/hotfix-explicit-cloud-node-targeting-to-main/workpad.md",
+        ".task/os/hotfix-google-oauth-callback-routing-to-main/current.json",
+        ".task/os/hotfix-google-oauth-callback-routing-to-main/session.json",
+        ".task/os/hotfix-google-oauth-callback-routing-to-main/verify.json",
+        ".task/os/hotfix-google-oauth-callback-routing-to-main/workpad.md",
+        ".task/os/hotfix-private-workspace-auth-durability-on-canary/current.json",
+        ".task/os/hotfix-private-workspace-auth-durability-on-canary/evidence-log.json",
+        ".task/os/hotfix-private-workspace-auth-durability-on-canary/read-log.json",
+        ".task/os/hotfix-private-workspace-auth-durability-on-canary/session.json",
+        ".task/os/hotfix-private-workspace-auth-durability-on-canary/verify.json",
+        ".task/os/hotfix-private-workspace-auth-durability-on-canary/workpad.md",
+        ".task/os/restore-synthetic-checkout-onto-current-production-device-authority/current.json",
+        ".task/os/restore-synthetic-checkout-onto-current-production-device-authority/evidence-log.json",
+        ".task/os/restore-synthetic-checkout-onto-current-production-device-authority/read-log.json",
+        ".task/os/restore-synthetic-checkout-onto-current-production-device-authority/session.json",
+        ".task/os/restore-synthetic-checkout-onto-current-production-device-authority/verify.json",
+        ".task/os/restore-synthetic-checkout-onto-current-production-device-authority/workpad.md",
+        ".task/os/stabilize-configuration-shell-and-redesign-tools/current.json",
+        ".task/os/stabilize-configuration-shell-and-redesign-tools/session.json",
+        ".task/os/stabilize-configuration-shell-and-redesign-tools/verify.json",
+        ".task/os/stabilize-configuration-shell-and-redesign-tools/workpad.md",
+        ".task/os/sync-os-stream-with-main-and-ship-tracing-polish/current.json",
+        ".task/os/sync-os-stream-with-main-and-ship-tracing-polish/evidence-log.json",
+        ".task/os/sync-os-stream-with-main-and-ship-tracing-polish/read-log.json",
+        ".task/os/sync-os-stream-with-main-and-ship-tracing-polish/session.json",
+        ".task/os/sync-os-stream-with-main-and-ship-tracing-polish/verify.json",
+        ".task/os/sync-os-stream-with-main-and-ship-tracing-polish/workpad.md",
+        ".task/tasks/dialer/local-dialer-postgres-redis-benchmark-lab.json",
+        ".task/tasks/documentation/refine-desktop-docs-homepage-toward-vercel.json",
+        ".task/tasks/documentation/rename-connect-create-your-own-docs-to-bring-your-own.json",
+        ".task/tasks/documentation/sync-documentation-stream-with-main-and-merge-pr-1995.json",
+        ".task/tasks/documentation/sync-responsive-docs-stream-with-main-for-pr-2011.json",
+        ".task/tasks/documentation/tighten-responsive-browse-menu-toward-vercel.json",
+        ".task/tasks/documentation/yoink-vercel-responsive-docs-patterns-for-mobile-and-ipad.json",
+        ".task/tasks/os/expose-nodeid-on-public-os-plugin-facade.json",
+        ".task/tasks/os/hotfix-explicit-cloud-node-targeting-to-main.json",
+        ".task/tasks/os/hotfix-google-oauth-callback-routing-to-main.json",
+        ".task/tasks/os/hotfix-private-workspace-auth-durability-on-canary.json",
+        ".task/tasks/os/restore-synthetic-checkout-onto-current-production-device-authority.json",
+        ".task/tasks/os/stabilize-configuration-shell-and-redesign-tools.json",
+        ".task/tasks/os/sync-os-stream-with-main-and-ship-tracing-polish.json",
+        "packages/dialer-server/README.md",
+        "packages/dialer-server/package.json",
+        "packages/dialer-server/scripts/local-dialer-lab.ts",
+        "packages/dialer-server/src/lab/local-dialer-lab.integration.test.ts",
+        "packages/dialer-server/src/lab/local-dialer-lab.test.ts",
+        "packages/dialer-server/src/lab/local-dialer-lab.ts",
+        "packages/documentation/scripts/test-connect-browser.mjs",
+        "packages/documentation/scripts/test-foundation-browser.mjs",
+        "packages/documentation/src/components/BrowseMenu.astro",
+        "packages/documentation/src/components/DocsMenuTrigger.astro",
+        "packages/documentation/src/components/PageTitle.astro",
+        "packages/documentation/src/components/Sidebar.astro",
+        "packages/documentation/src/content/docs/connect/agents/create-your-own.mdx",
+        "packages/documentation/src/content/docs/connect/apps-and-services/create-your-own.mdx",
+        "packages/documentation/src/content/docs/connect/apps-and-services/index.mdx",
+        "packages/documentation/src/content/docs/reference/cli.mdx",
+        "packages/documentation/src/content/docs/secure/hosted-mcp-ingress.mdx",
+        "packages/documentation/src/content/docs/secure/security-model.mdx",
+        "packages/documentation/src/content/docs/start/install-consuelo-os.mdx",
+        "packages/documentation/src/lib/docs-navigation.ts",
+        "packages/documentation/src/styles/docs.css",
+        "packages/documentation/tests/connect.test.ts",
+        "packages/documentation/tests/foundation.test.ts",
+        "packages/os/scripts/lib/lifecycle/service.ts",
+        "packages/os/scripts/lib/mcp-gateway.ts",
+        "packages/os/scripts/lib/native-lifecycle-endpoint.ts",
+        "packages/os/scripts/lifecycle.ts",
+        "packages/os/scripts/os.ts",
+        "packages/os/tests/lifecycle-restart-contract.test.ts",
+        "packages/os/tests/mcp-gateway.test.ts",
+        "packages/os/tests/native-lifecycle-endpoint.test.ts",
+        "packages/os/tests/os-get-steering-trace.test.ts",
+        "packages/workspace/scripts/os-release.ts",
+        "packages/workspace/test-selection.registry.json",
+        "packages/workspace/test-selection.rules.json",
+        "packages/workspace/tests/test-selection.test.js",
+        "packages/workspace/tests/website-deploy.test.js"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-test-selection",
+          "critical": true,
+          "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy.",
+          "matchedFiles": [
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-release-surface-freshness",
+          "critical": true,
+          "exclusive": true,
+          "reason": "OS release, signed runtime publication, default workspace-shell snapshots, and Workspace Edge migrations must prove the focused freshness path without selecting unrelated package-wide OS tests.",
+          "matchedFiles": [
+            "packages/workspace/scripts/os-release.ts",
+            "packages/workspace/tests/website-deploy.test.js"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-lifecycle-update-handoff",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Lifecycle updater, detached handoff, platform restart, and discoverable lifecycle-tool changes must run the exact lifecycle/facade/tool contracts without selecting unrelated flaky package-wide OS tests.",
+          "matchedFiles": [
+            "packages/os/scripts/lib/lifecycle/service.ts",
+            "packages/os/scripts/lifecycle.ts",
+            "packages/os/tests/lifecycle-restart-contract.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-mcp-admission-error-contract",
+          "critical": true,
+          "exclusive": true,
+          "reason": "MCP request admission and dangerous-material boundary changes must prove JSON-RPC transport/error behavior, fail-closed safety, authentication/gateway compatibility, and syntax without selecting the historically broad OS package suite.",
+          "matchedFiles": [
+            "packages/os/tests/mcp-gateway.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-chatgpt-node-routing-facade",
+          "critical": true,
+          "exclusive": true,
+          "reason": "ChatGPT node-routing facade or steering changes must prove top-level nodeId discovery, no inner-input leakage, explicit/default/fail-closed routing, and syntax without selecting unrelated package-wide OS tests.",
+          "matchedFiles": [
+            "packages/os/scripts/lib/mcp-gateway.ts",
+            "packages/os/scripts/os.ts",
+            "packages/os/tests/mcp-gateway.test.ts",
+            "packages/os/tests/os-get-steering-trace.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-native-menu-node-discovery",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Native menu lifecycle/auth/heartbeat changes must prove read-only enrolled-node discovery, privileged operator mutations, refresh-token persistence, heartbeat snapshot safety, and lifecycle presentation without selecting the historically red unrelated OS package suite.",
+          "matchedFiles": [
+            "packages/os/scripts/lib/native-lifecycle-endpoint.ts",
+            "packages/os/tests/native-lifecycle-endpoint.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "dialer-server-package",
+          "critical": true,
+          "reason": "Dialer server changes must prove Hono transport, Twilio boundary, and standalone lifecycle contracts.",
+          "matchedFiles": [
+            "packages/dialer-server/README.md",
+            "packages/dialer-server/package.json",
+            "packages/dialer-server/scripts/local-dialer-lab.ts",
+            "packages/dialer-server/src/lab/local-dialer-lab.integration.test.ts",
+            "packages/dialer-server/src/lab/local-dialer-lab.test.ts",
+            "packages/dialer-server/src/lab/local-dialer-lab.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "server-ci-task-contract",
+          "critical": true,
+          "reason": "Server CI changes must scope lint and typecheck to directly changed Twenty server runtime files while retaining dependency propagation.",
+          "matchedFiles": [
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true
+        },
+        {
+          "name": "OS release freshness contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/os-device-authority-release-contract.test.ts",
+            "tests/distribution/release-channel-workflows.test.ts"
+          ],
+          "ruleId": "os-release-surface-freshness",
+          "critical": true
+        },
+        {
+          "name": "Workspace production release contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/website-deploy.test.js"
+          ],
+          "ruleId": "os-release-surface-freshness",
+          "critical": true
+        },
+        {
+          "name": "Workspace Edge release dry run",
+          "command": [
+            "bun",
+            "run",
+            "os:release-workspace-edge",
+            "--",
+            "--dry-run"
+          ],
+          "ruleId": "os-release-surface-freshness",
+          "critical": true
+        },
+        {
+          "name": "OS lifecycle update handoff contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/lifecycle-engine.test.ts",
+            "packages/os/tests/lifecycle-restart-contract.test.ts",
+            "packages/os/tests/lifecycle-facade.test.ts",
+            "packages/os/tests/native-lifecycle-operation.test.ts",
+            "packages/os/tests/lifecycle-tool-surface.test.ts",
+            "packages/os/tests/cli-update-routing.test.ts",
+            "packages/os/tests/linux-platform.test.ts",
+            "packages/os/tests/windows-platform.test.ts",
+            "packages/os/tests/tool-manifest.test.ts",
+            "packages/os/tests/tool-package-layout.test.ts",
+            "packages/os/tests/caddy-worker-pool-reconciliation.test.ts"
+          ],
+          "ruleId": "os-lifecycle-update-handoff",
+          "critical": true
+        },
+        {
+          "name": "OS lifecycle syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "ruleId": "os-lifecycle-update-handoff",
+          "critical": true
+        },
+        {
+          "name": "OS lifecycle facade snapshots",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/facade/facade.test.ts",
+            "-t",
+            "lifecycle\\.(status|update)"
+          ],
+          "ruleId": "os-lifecycle-update-handoff",
+          "critical": true
+        },
+        {
+          "name": "OS MCP admission contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/mcp-gateway.test.ts"
+          ],
+          "ruleId": "os-mcp-admission-error-contract",
+          "critical": true
+        },
+        {
+          "name": "OS dangerous material ingress contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/dangerous-material-policy.test.ts"
+          ],
+          "ruleId": "os-mcp-admission-error-contract",
+          "critical": true
+        },
+        {
+          "name": "OS ChatGPT node-routing facade contracts",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/mcp-gateway.test.ts",
+            "tests/os-get-steering-trace.test.ts"
+          ],
+          "ruleId": "os-chatgpt-node-routing-facade",
+          "critical": true
+        },
+        {
+          "name": "OS ChatGPT node-routing authority contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/workspace-node-registry-routing.test.ts",
+            "tests/os-device-authority-worker.test.ts"
+          ],
+          "ruleId": "os-chatgpt-node-routing-facade",
+          "critical": true
+        },
+        {
+          "name": "OS native lifecycle node discovery contracts",
+          "command": [
+            "node",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "packages/os/tests/native-lifecycle-endpoint.test.ts",
+            "--config",
+            "packages/os/vitest.config.ts"
+          ],
+          "ruleId": "os-native-menu-node-discovery",
+          "critical": true
+        },
+        {
+          "name": "OS node heartbeat script contracts",
+          "command": [
+            "node",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "packages/os/tests/workspace-node-heartbeat-script.test.ts",
+            "--config",
+            "packages/os/vitest.config.ts"
+          ],
+          "ruleId": "os-native-menu-node-discovery",
+          "critical": true
+        },
+        {
+          "name": "OS operator login contracts",
+          "command": [
+            "node",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "packages/os/tests/operator-login.test.ts",
+            "--config",
+            "packages/os/vitest.config.ts"
+          ],
+          "ruleId": "os-native-menu-node-discovery",
+          "critical": true
+        },
+        {
+          "name": "OS node heartbeat client contracts",
+          "command": [
+            "node",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "packages/os/tests/workspace-node-heartbeat-client.test.ts",
+            "--config",
+            "packages/os/vitest.config.ts"
+          ],
+          "ruleId": "os-native-menu-node-discovery",
+          "critical": true
+        },
+        {
+          "name": "OS workspace node routing contracts",
+          "command": [
+            "node",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "packages/os/tests/workspace-node-registry-routing.test.ts",
+            "--config",
+            "packages/os/vitest.config.ts"
+          ],
+          "ruleId": "os-native-menu-node-discovery",
+          "critical": true
+        },
+        {
+          "name": "dialer-server Hono contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-server/src"
+          ],
+          "ruleId": "dialer-server-package",
+          "critical": true
+        },
+        {
+          "name": "changed server task selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "TypeORM CLI compatibility contract",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 3346,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-sync-os-stream-with-main-and-ship-tracing-polish\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/test-selection.test.js \u001b[2m(\u001b[22m\u001b[2m38 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 2957\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m discovers and seeds the existing test inventory \u001b[33m 1165\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m38 passed\u001b[39m\u001b[22m\u001b[90m (38)\u001b[39m\n\u001b[2m   Start at \u001b[22m 03:47:26\n\u001b[2m   Duration \u001b[22m 3.05s\u001b[2m (transform 16ms, setup 0ms, import 23ms, tests 2.96s, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS release freshness contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/os-device-authority-release-contract.test.ts",
+            "tests/distribution/release-channel-workflows.test.ts"
+          ],
+          "ruleId": "os-release-surface-freshness",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 967,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-sync-os-stream-with-main-and-ship-tracing-polish/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/distribution/release-channel-workflows.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 24\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-release-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m14 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 572\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should stop release before remote mutation when readiness fails \u001b[33m 459\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m22 passed\u001b[39m\u001b[22m\u001b[90m (22)\u001b[39m\n\u001b[2m   Start at \u001b[22m 03:47:29\n\u001b[2m   Duration \u001b[22m 679ms\u001b[2m (transform 203ms, setup 0ms, import 82ms, tests 596ms, environment 0ms)\u001b[22m\n\n$ vitest run tests/os-device-authority-release-contract.test.ts tests/distribution/release-channel-workflows.test.ts\n"
+        },
+        {
+          "name": "Workspace production release contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/website-deploy.test.js"
+          ],
+          "ruleId": "os-release-surface-freshness",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 763,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-sync-os-stream-with-main-and-ship-tracing-polish\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/website-deploy.test.js \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 462\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m allows local deploys to use existing Wrangler auth when CLOUDFLARE_API_TOKEN is absent \u001b[33m 441\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m3 passed\u001b[39m\u001b[22m\u001b[90m (3)\u001b[39m\n\u001b[2m   Start at \u001b[22m 03:47:30\n\u001b[2m   Duration \u001b[22m 535ms\u001b[2m (transform 9ms, setup 0ms, import 13ms, tests 462ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "Workspace Edge release dry run",
+          "command": [
+            "bun",
+            "run",
+            "os:release-workspace-edge",
+            "--",
+            "--dry-run"
+          ],
+          "ruleId": "os-release-surface-freshness",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 759,
+          "outputTail": "release=consuelo-workspace-edge\n$ bun run --cwd packages/os cloudflare:workspace-edge:deploy:dry-run\n\n ⛅️ wrangler 4.114.0 (update available 4.123.0)\n───────────────────────────────────────────────\nTotal Upload: 179.39 KiB / gzip: 39.19 KiB\nYour Worker has access to the following bindings:\nBinding                                                                                                 Resource            \nenv.OS_DEVICE_AUTHORITY (OsDeviceGrantDurableObject, defined in consuelo-os-device-authority)           Durable Object      \nenv.WORKSPACE_ROUTE_REGISTRY (consuelo-workspace-route-registry)                                        D1 Database         \nenv.SITES_SNAPSHOTS (consuelo-sites-snapshots)                                                          R2 Bucket           \n\n--dry-run: exiting now.\nConsuelo Workspace Edge dry run complete\n$ bun packages/workspace/scripts/os-release-workspace-edge.ts --dry-run\n$ wrangler deploy --config cloudflare/workspace-edge/wrangler.toml --dry-run\n"
+        },
+        {
+          "name": "OS lifecycle update handoff contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/lifecycle-engine.test.ts",
+            "packages/os/tests/lifecycle-restart-contract.test.ts",
+            "packages/os/tests/lifecycle-facade.test.ts",
+            "packages/os/tests/native-lifecycle-operation.test.ts",
+            "packages/os/tests/lifecycle-tool-surface.test.ts",
+            "packages/os/tests/cli-update-routing.test.ts",
+            "packages/os/tests/linux-platform.test.ts",
+            "packages/os/tests/windows-platform.test.ts",
+            "packages/os/tests/tool-manifest.test.ts",
+            "packages/os/tests/tool-package-layout.test.ts",
+            "packages/os/tests/caddy-worker-pool-reconciliation.test.ts"
+          ],
+          "ruleId": "os-lifecycle-update-handoff",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 2949,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-sync-os-stream-with-main-and-ship-tracing-polish\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/linux-platform.test.ts \u001b[2m(\u001b[22m\u001b[2m10 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 12\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/windows-platform.test.ts \u001b[2m(\u001b[22m\u001b[2m18 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 13\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/caddy-worker-pool-reconciliation.test.ts \u001b[2m(\u001b[22m\u001b[2m1 test\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 11\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/cli-update-routing.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 5\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/lifecycle-restart-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m10 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 12\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/lifecycle-facade.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 15\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/native-lifecycle-operation.test.ts \u001b[2m(\u001b[22m\u001b[2m16 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 47\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/lifecycle-tool-surface.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 27\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/tool-manifest.test.ts \u001b[2m(\u001b[22m\u001b[2m17 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 89\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/tool-package-layout.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 422\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m generates full, core, and workflow outputs deterministically with no committed drift \u001b[33m 408\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/lifecycle-engine.test.ts \u001b[2m(\u001b[22m\u001b[2m64 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 1911\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m activates after production provisioning without leaving runtime/current as a directory \u001b[33m 365\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m11 passed\u001b[39m\u001b[22m\u001b[90m (11)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m151 passed\u001b[39m\u001b[22m\u001b[90m (151)\u001b[39m\n\u001b[2m   Start at \u001b[22m 03:47:31\n\u001b[2m   Duration \u001b[22m 2.63s\u001b[2m (transform 3.06s, setup 0ms, import 4.68s, tests 2.56s, environment 1ms)\u001b[22m\n\n(node:30868) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n{\"level\":\"info\",\"tool\":\"lifecycle.status\",\"branch\":\"\",\"command\":\"workspace lifecycle.status\",\"implementationCommand\":\"bun run lifecycle -- status --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-15T07:47:32.670Z\"}\n{\"level\":\"warn\",\"event\":\"trace.persistence_failed\",\"code\":\"TRACE_PERSISTENCE_FAILED\",\"message\":\"Cannot find module 'bun:sqlite'\\nRequire stack:\\n- /[REDACTED_SECRET].ts\",\"ts\":\"2026-08-15T07:47:32.671Z\"}\n{\"level\":\"info\",\"tool\":\"lifecycle.update\",\"branch\":\"\",\"command\":\"workspace lifecycle.update '{\\\"channel\\\":\\\"canary\\\"}'\",\"implementationCommand\":\"bun run lifecycle -- update --channel canary --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-15T07:47:32.674Z\"}\n{\"level\":\"error\",\"tool\":\"lifecycle.update\",\"command\":\"workspace lifecycle.update\",\"implementationCommand\":\"workspace lifecycle.update\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-15T07:47:32.676Z\"}\n{\"level\":\"info\",\"tool\":\"lifecycle.update\",\"command\":\"workspace lifecycle.update\",\"implementationCommand\":\"workspace lifecycle.update\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"DRY_RUN\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-15T07:47:32.679Z\"}\n"
+        },
+        {
+          "name": "OS lifecycle syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "ruleId": "os-lifecycle-update-handoff",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1761,
+          "outputTail": "workspace script syntax checks passed\n"
+        },
+        {
+          "name": "OS lifecycle facade snapshots",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/facade/facade.test.ts",
+            "-t",
+            "lifecycle\\.(status|update)"
+          ],
+          "ruleId": "os-lifecycle-update-handoff",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 790,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-sync-os-stream-with-main-and-ship-tracing-polish\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/facade/facade.test.ts \u001b[2m(\u001b[22m\u001b[2m703 tests\u001b[22m\u001b[2m | \u001b[22m\u001b[33m694 skipped\u001b[39m\u001b[2m)\u001b[22m\u001b[32m 14\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m9 passed\u001b[39m\u001b[22m\u001b[2m | \u001b[22m\u001b[33m694 skipped\u001b[39m\u001b[90m (703)\u001b[39m\n\u001b[2m   Start at \u001b[22m 03:47:36\n\u001b[2m   Duration \u001b[22m 474ms\u001b[2m (transform 189ms, setup 0ms, import 390ms, tests 14ms, environment 0ms)\u001b[22m\n\n{\"level\":\"info\",\"tool\":\"lifecycle.status\",\"branch\":\"\",\"command\":\"workspace lifecycle.status\",\"implementationCommand\":\"bun run lifecycle -- status --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-15T07:47:37.121Z\"}\n{\"level\":\"warn\",\"event\":\"trace.persistence_failed\",\"code\":\"TRACE_PERSISTENCE_FAILED\",\"message\":\"Cannot find module 'bun:sqlite'\\nRequire stack:\\n- /[REDACTED_SECRET].ts\",\"ts\":\"2026-08-15T07:47:37.122Z\"}\n{\"level\":\"info\",\"tool\":\"lifecycle.update\",\"branch\":\"\",\"command\":\"workspace lifecycle.update '{\\\"channel\\\":\\\"stable\\\"}'\",\"implementationCommand\":\"bun run lifecycle -- update --channel stable --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-15T07:47:37.124Z\"}\n{\"level\":\"error\",\"tool\":\"lifecycle.status\",\"branch\":\"\",\"command\":\"workspace lifecycle.status\",\"implementationCommand\":\"bun run lifecycle -- status --json\",\"durationMs\":0,\"exitCode\":2,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"COMMAND_FAILED\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-15T07:47:37.125Z\"}\n{\"level\":\"error\",\"tool\":\"lifecycle.update\",\"branch\":\"\",\"command\":\"workspace lifecycle.update '{\\\"channel\\\":\\\"stable\\\"}'\",\"implementationCommand\":\"bun run lifecycle -- update --channel stable --json\",\"durationMs\":0,\"exitCode\":2,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"COMMAND_FAILED\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-15T07:47:37.126Z\"}\n{\"level\":\"error\",\"tool\":\"lifecycle.status\",\"branch\":\"\",\"command\":\"workspace lifecycle.status\",\"implementationCommand\":\"bun run lifecycle -- status --json\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"TIMEOUT\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-15T07:47:37.127Z\"}\n{\"level\":\"error\",\"tool\":\"lifecycle.update\",\"branch\":\"\",\"command\":\"workspace lifecycle.update '{\\\"channel\\\":\\\"stable\\\"}'\",\"implementationCommand\":\"bun run lifecycle -- update --channel stable --json\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"TIMEOUT\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-15T07:47:37.128Z\"}\n{\"level\":\"info\",\"tool\":\"lifecycle.update\",\"command\":\"workspace lifecycle.update\",\"implementationCommand\":\"workspace lifecycle.update\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"DRY_RUN\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-15T07:47:37.130Z\"}\n"
+        },
+        {
+          "name": "OS MCP admission contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/mcp-gateway.test.ts"
+          ],
+          "ruleId": "os-mcp-admission-error-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1111,
+          "outputTail": "ge\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"f6857fae-b384-42dc-8f83-b8ca03f6c667\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-15T07:47:38.198Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"84e21b13-b765-4f95-8be9-4f9fa3e54ab1\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-15T07:47:38.199Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"c41bf6f5-472f-4123-b011-3e7f8dd697f7\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-15T07:47:38.202Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"2d7d8461-f9b5-4843-807a-772005323eda\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-15T07:47:38.208Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"f07d09e7-ed1e-4027-b846-fc5ee3955903\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-15T07:47:38.214Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"0fbb47cb-265b-4818-ac0c-fbd88782bdd4\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-15T07:47:38.220Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"73e61aa5-e182-47fa-a569-e863969f3451\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-15T07:47:38.226Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"4a753b75-0063-440f-917d-8b189a0b1157\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-15T07:47:38.232Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"6f371f69-a54a-48c6-9ab3-c7b904a9056f\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-15T07:47:38.235Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"5b18d686-7668-4486-995c-b723cd61fa86\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-15T07:47:38.239Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"c02fe750-cae4-4177-b0a2-6a0a89a6fe6a\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-15T07:47:38.240Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"36a6696d-b9cb-4941-8009-7c24079d75f9\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-15T07:47:38.242Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"6fdd251b-6687-4665-a8bd-abdbabe19ab2\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-15T07:47:38.245Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"3613c1dc-56ff-4582-b7c4-c1d204f79778\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-15T07:47:38.251Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"2010b4f8-4f15-4451-8050-c5f8799b83c9\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-15T07:47:38.257Z\"}\n(node:31277) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+        },
+        {
+          "name": "OS dangerous material ingress contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/dangerous-material-policy.test.ts"
+          ],
+          "ruleId": "os-mcp-admission-error-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 422,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-sync-os-stream-with-main-and-ship-tracing-polish/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/dangerous-material-policy.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 149\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m4 passed\u001b[39m\u001b[22m\u001b[90m (4)\u001b[39m\n\u001b[2m   Start at \u001b[22m 03:47:38\n\u001b[2m   Duration \u001b[22m 227ms\u001b[2m (transform 23ms, setup 0ms, import 30ms, tests 149ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS ChatGPT node-routing facade contracts",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/mcp-gateway.test.ts",
+            "tests/os-get-steering-trace.test.ts"
+          ],
+          "ruleId": "os-chatgpt-node-routing-facade",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 3251,
+          "outputTail": "ge\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"8619eb31-7ad4-4f2b-a271-6b557215fa9b\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-15T07:47:40.058Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"dbf01234-1ae1-4c89-a7c4-1c271d8baf36\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-15T07:47:40.059Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"20c23ebc-7449-4d64-9a77-3e28fbe03e0c\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-15T07:47:40.064Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"cd813b0a-3045-4cf4-b6d7-19b69c88ec3a\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-15T07:47:40.071Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"4d285bf4-15ff-4a7c-b1ba-be375d33230c\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-15T07:47:40.079Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"a53868a6-b1eb-4a16-b872-5e17be877eff\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-15T07:47:40.087Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"bf7a3d70-5790-4127-84e7-91c85d4529da\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-15T07:47:40.094Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"c4c98b49-4cf1-4107-a17f-7fd7a072b138\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-15T07:47:40.105Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"4c601c38-97f3-4018-9a8f-8b862cdfe0de\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-15T07:47:40.111Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"9f8159ff-9624-4bfa-84c0-6d3a8498d673\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-15T07:47:40.114Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"49af909c-da2c-447e-b0e0-9382987de0d9\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-15T07:47:40.119Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"bd67fde3-4b41-4525-b1be-a39eb974a76c\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-15T07:47:40.121Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"f5f9487d-d7fb-47a6-8114-9b39d37909cf\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-15T07:47:40.125Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"58c944f7-e84c-4cf6-86cc-ddc4560e5a21\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-15T07:47:40.134Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"4cf7821f-a719-49f6-be60-7ef4632bb91f\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-15T07:47:40.140Z\"}\n(node:31332) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+        },
+        {
+          "name": "OS ChatGPT node-routing authority contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/workspace-node-registry-routing.test.ts",
+            "tests/os-device-authority-worker.test.ts"
+          ],
+          "ruleId": "os-chatgpt-node-routing-facade",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 533,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-sync-os-stream-with-main-and-ship-tracing-polish/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/workspace-node-registry-routing.test.ts \u001b[2m(\u001b[22m\u001b[2m41 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 50\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-worker.test.ts \u001b[2m(\u001b[22m\u001b[2m31 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 57\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m72 passed\u001b[39m\u001b[22m\u001b[90m (72)\u001b[39m\n\u001b[2m   Start at \u001b[22m 03:47:42\n\u001b[2m   Duration \u001b[22m 369ms\u001b[2m (transform 448ms, setup 0ms, import 532ms, tests 106ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS native lifecycle node discovery contracts",
+          "command": [
+            "node",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "packages/os/tests/native-lifecycle-endpoint.test.ts",
+            "--config",
+            "packages/os/vitest.config.ts"
+          ],
+          "ruleId": "os-native-menu-node-discovery",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1102,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-sync-os-stream-with-main-and-ship-tracing-polish\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/native-lifecycle-endpoint.test.ts \u001b[2m(\u001b[22m\u001b[2m13 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 160\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m13 passed\u001b[39m\u001b[22m\u001b[90m (13)\u001b[39m\n\u001b[2m   Start at \u001b[22m 03:47:42\n\u001b[2m   Duration \u001b[22m 805ms\u001b[2m (transform 309ms, setup 0ms, import 587ms, tests 160ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS node heartbeat script contracts",
+          "command": [
+            "node",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "packages/os/tests/workspace-node-heartbeat-script.test.ts",
+            "--config",
+            "packages/os/vitest.config.ts"
+          ],
+          "ruleId": "os-native-menu-node-discovery",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 627,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-sync-os-stream-with-main-and-ship-tracing-polish\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/workspace-node-heartbeat-script.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 15\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m5 passed\u001b[39m\u001b[22m\u001b[90m (5)\u001b[39m\n\u001b[2m   Start at \u001b[22m 03:47:43\n\u001b[2m   Duration \u001b[22m 325ms\u001b[2m (transform 92ms, setup 0ms, import 252ms, tests 15ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS operator login contracts",
+          "command": [
+            "node",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "packages/os/tests/operator-login.test.ts",
+            "--config",
+            "packages/os/vitest.config.ts"
+          ],
+          "ruleId": "os-native-menu-node-discovery",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 425,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-sync-os-stream-with-main-and-ship-tracing-polish\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/operator-login.test.ts \u001b[2m(\u001b[22m\u001b[2m18 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 45\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m18 passed\u001b[39m\u001b[22m\u001b[90m (18)\u001b[39m\n\u001b[2m   Start at \u001b[22m 03:47:44\n\u001b[2m   Duration \u001b[22m 139ms\u001b[2m (transform 19ms, setup 0ms, import 34ms, tests 45ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS node heartbeat client contracts",
+          "command": [
+            "node",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "packages/os/tests/workspace-node-heartbeat-client.test.ts",
+            "--config",
+            "packages/os/vitest.config.ts"
+          ],
+          "ruleId": "os-native-menu-node-discovery",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 441,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-sync-os-stream-with-main-and-ship-tracing-polish\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/workspace-node-heartbeat-client.test.ts \u001b[2m(\u001b[22m\u001b[2m6 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 16\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m6 passed\u001b[39m\u001b[22m\u001b[90m (6)\u001b[39m\n\u001b[2m   Start at \u001b[22m 03:47:44\n\u001b[2m   Duration \u001b[22m 130ms\u001b[2m (transform 43ms, setup 0ms, import 54ms, tests 16ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS workspace node routing contracts",
+          "command": [
+            "node",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "packages/os/tests/workspace-node-registry-routing.test.ts",
+            "--config",
+            "packages/os/vitest.config.ts"
+          ],
+          "ruleId": "os-native-menu-node-discovery",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 775,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-sync-os-stream-with-main-and-ship-tracing-polish\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/workspace-node-registry-routing.test.ts \u001b[2m(\u001b[22m\u001b[2m41 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 60\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m41 passed\u001b[39m\u001b[22m\u001b[90m (41)\u001b[39m\n\u001b[2m   Start at \u001b[22m 03:47:45\n\u001b[2m   Duration \u001b[22m 422ms\u001b[2m (transform 248ms, setup 0ms, import 302ms, tests 60ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "dialer-server Hono contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-server/src"
+          ],
+          "ruleId": "dialer-server-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 940,
+          "outputTail": "ges/dialer-server/src/runtime/railway.test.ts:\n(pass) LeadConnector dialer learning > records an atomic attempt and outcome for every completed carrier leg [0.15ms]\n(pass) LeadConnector dialer learning > does not fail carrier callback handling when learning persistence is unavailable [0.06ms]\n(pass) Railway dialer-server runtime composition > selects the test dialer for follow-up operations on test-mode groups [0.15ms]\n(pass) Railway dialer-server runtime composition > keeps existing groups without a provider mode on the live dialer [0.04ms]\n(pass) Railway dialer-server runtime composition > fails closed when a test-mode group outlives its test credentials [0.04ms]\n(pass) Railway dialer-server runtime composition > composes durable LeadConnector configuration and encrypted installation storage [1.68ms]\n(pass) Railway dialer-server runtime composition > preserves input order when standalone learned data is not available [1.40ms]\n(pass) Railway dialer-server runtime composition > ranks predictive targets from LeadConnector learned outcomes without Twenty model rows [0.52ms]\n(pass) Railway dialer-server runtime composition > starts a mock standalone call session without Twenty or the compatibility API [0.87ms]\n\npackages/dialer-server/src/runtime/lead-connector-learning.test.ts:\n(pass) LeadConnector learning initialization > creates the attempt ledger before the outcome model tables [1.22ms]\n\npackages/dialer-server/src/release/production-release.test.ts:\n(pass) dialer production release safety > selects the new Railway deployment instead of racing the previous latest [0.09ms]\n(pass) dialer production release safety > smokes only non-mutating health/auth/signature boundaries [0.30ms]\n(pass) dialer production release safety > builds a secret-free release manifest from immutable deployment evidence [0.09ms]\n(pass) dialer production release safety > refuses to serialize a release manifest from non-green evidence [0.03ms]\n(pass) dialer production release safety > requires immutable one-time Marketplace bootstrap evidence [0.02ms]\n(pass) dialer production release safety > rolls Railway back to one explicit deployment id through the public API [0.13ms]\n\npackages/dialer-server/src/call-operations/application.test.ts:\n(pass) Effect call-operations transcription application > keeps inbound and outbound buffers separate and persists provider metadata only [1.87ms]\n(pass) Effect call-operations transcription application > processes duplicate frames once and flushes a terminal remainder once [0.19ms]\n(pass) Effect call-operations transcription application > keeps transcript rows idempotent when a provider stream reconnects [0.26ms]\n(pass) Effect call-operations transcription application > marks transcription failed on provider timeout without failing the call boundary [22.55ms]\n(pass) Effect call-operations transcription application > does not begin provider work when workspace transcription is disabled [0.15ms]\n\npackages/dialer-server/src/call-operations/persistence.test.ts:\n(pass) call-operations persistence > initializes canonical workspace settings, sessions, legs, segments, and transfer-compatible events [0.17ms]\n(pass) call-operations persistence > uses a workspace-scoped idempotent insert for transcript metadata [0.21ms]\n(pass) call-operations persistence > atomically upserts the canonical session and all provider legs [0.14ms]\n(pass) call-operations persistence > persists recording provider metadata without retaining a raw recording URL [0.09ms]\n\npackages/dialer-server/src/call-operations/groq.test.ts:\n(pass) Groq speech-to-text adapter > uses the OpenAI-compatible audio endpoint and returns provider-grounded metadata [0.91ms]\n(pass) Groq speech-to-text adapter > fails closed when credentials are absent [0.09ms]\n\n1 tests skipped:\n(skip) local dialer lab service integration > migrates an empty isolated Postgres, exercises Redis, and tears both down\n\n 142 pass\n 1 skip\n 0 fail\n 705 expect() calls\nRan 143 tests across 31 files. [931.00ms]\n"
+        },
+        {
+          "name": "changed server task selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 70,
+          "outputTail": "No changed Twenty server runtime files require lint or typecheck.\nRunning server lint and baseline-aware typecheck for 1 directly changed file(s).\nTwenty server typecheck matched 1 known baseline diagnostic(s).\nRunning server lint and baseline-aware typecheck for 1 directly changed file(s).\nNo changed Twenty server schema files require GraphQL generation.\nNo changed Twenty server runtime files require migration generation.\nNo changesgeneratedTwenty server migration drift matched 2 known baseline operation(s).\ngeneratedgenerated✔ parseCliArguments resolves comparison SHAs (0.674791ms)\n✔ parseCliArguments selects GraphQL generation mode (0.061333ms)\n✔ parseCliArguments selects migration generation mode (0.057292ms)\n✔ filterServerTaskFiles excludes root and config-only triggers (0.097583ms)\n✔ filterGraphqlGenerationFiles keeps only server schema and generated files (0.072958ms)\n✔ buildEslintArguments selects the owning project config and stdin filename (0.056ms)\n✔ ESLint diagnostic comparison tracks new error multiplicity without line numbers (0.190875ms)\n✔ runChangedFileLint accepts base-existing errors and rejects a new changed-file error (1.3015ms)\n✔ runChangedFileLint allows explicit lint baseline debt but rejects diagnostics beyond it (0.341417ms)\n✔ buildTypecheckArguments uses standard TypeScript without emitting (0.081417ms)\n✔ TypeScript diagnostic baseline comparison rejects only new diagnostic keys (0.181417ms)\n✔ runChangedServerTask skips Nx for config-only changes (0.310834ms)\n✔ runChangedServerTask executes lint and baseline-aware typecheck for server runtime changes (0.089666ms)\n✔ runChangedServerTask rejects a new TypeScript diagnostic outside the baseline (0.083958ms)\n✔ server lint configuration resolves the existing workspace rules project (0.346375ms)\n✔ runGraphqlGenerationCheck skips generation without schema changes (0.078291ms)\n✔ runGraphqlGenerationCheck generates and verifies committed outputs (0.140875ms)\n✔ runMigrationGenerationCheck skips generation without server runtime changes (0.07525ms)\n✔ runMigrationGenerationCheck accepts a no-change TypeORM exit (0.085959ms)\n✔ runMigrationGenerationCheck accepts and removes exact known migration drift (0.1725ms)\n✔ runMigrationGenerationCheck rejects changed drift beyond the baseline (0.11325ms)\n✔ runMigrationGenerationCheck rejects and removes generated drift (0.095583ms)\nℹ tests 22\nℹ suites 0\nℹ pass 22\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 44.045958\n"
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 220,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/workspace/tests/github-workflow-policy.test.js:\n(pass) GitHub workflow policy > does not include retired automation workflows [0.08ms]\n(pass) GitHub workflow policy > does not reference retired CI credentials or the disabled Chromatic job [2.52ms]\n(pass) GitHub workflow policy > does not retain privileged allowlist entries for deleted workflows [0.18ms]\n(pass) GitHub workflow policy > runs typecheck and test from the filtered frontend file set [0.04ms]\n(pass) GitHub workflow policy > installs Bun and scopes shared tasks to changed frontend files [0.04ms]\n(pass) GitHub workflow policy > scopes native OS distribution tests to relevant changed files [0.04ms]\n(pass) GitHub workflow policy > runs Docker Compose CI with the pgvector PostgreSQL image required by migrations [0.03ms]\n(pass) GitHub workflow policy > uses available hosted runners for the Server and Front build pipelines [0.06ms]\n(pass) GitHub workflow policy > builds Consuelo backend workspace dependencies before server typecheck [0.04ms]\n(pass) GitHub workflow policy > installs Bun before the Server unit-test job runs Bun package tests [0.04ms]\n(pass) GitHub workflow policy > allows enough time for Danger dependency installation and execution [0.03ms]\n(pass) GitHub workflow policy > explicitly allowlists the API breaking-changes workflow write permissions [0.03ms]\n\n 12 pass\n 0 fail\n 53 expect() calls\nRan 12 tests across 1 file. [213.00ms]\n"
+        },
+        {
+          "name": "TypeORM CLI compatibility contract",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 855,
+          "outputTail": "✔ Twenty server uses the Node 24-compatible TypeORM ts-node wrapper (0.293916ms)\n✔ the configured TypeORM wrapper resolves from the installed package (791.446916ms)\nℹ tests 2\nℹ suites 0\nℹ pass 2\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 828.236084\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

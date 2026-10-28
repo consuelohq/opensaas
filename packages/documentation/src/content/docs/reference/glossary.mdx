@@ -1,0 +1,84 @@
+---
+title: Glossary
+description: Canonical meanings for Consuelo OS product and runtime terms.
+status: preview
+verifiedAt: 2026-08-12
+evidence:
+  - source: packages/os/README.md
+    tests:
+      - packages/os/tests/install-state.test.ts
+      - packages/os/tests/mcp-gateway.test.ts
+    runtime: Installed layout, portal entrypoints, MCP discovery, and execution records were inspected on 2026-07-13.
+  - source: packages/os/scripts/lib/consuelo-home.ts
+    tests:
+      - packages/os/tests/consuelo-home-config.test.ts
+    runtime: Workspace, node, and home configuration schemas were compared with generated files on 2026-07-13.
+---
+
+**Agent** — A client such as ChatGPT, Codex, Claude Code, Cursor, OpenCode, or Gemini CLI that connects to Consuelo OS.
+
+**Approval** — An explicit gate required before a caller performs a sensitive action. Approval is separate from identity, authentication, and authorization.
+
+**Artifact** — A durable output with metadata linking it to the work, skill, run, or trace that produced it.
+
+**Call** — One invocation of an OS skill using `CallInput`, producing `CallOutput`.
+
+**Connector** — A controlled connection between Consuelo OS and an external service or between the hosted edge and a node.
+
+**Consuelo home** — The machine-local root for installed runtime, node state, workspace configuration, tools, skills, logs, and artifacts. The default is `~/.consuelo`.
+
+**Core manifest** — The small generated bootstrap set available with normal steering. It is not the full installed tool catalog.
+
+**Effective manifest** — The generated full manifest after local settings overlays remove disabled tools or skills.
+
+**Facade tool** — A typed operation called through the workspace tool facade, such as `fs.read` or `task.start`. It has validated input and a `ToolResult` envelope.
+
+**File** — Workspace material stored or referenced within an allowed file boundary. A file is not automatically an artifact.
+
+**Current node** — The node serving the request or local runtime context being inspected.
+
+**Default node** — The workspace node used for new untargeted OS calls when no task owner or explicit node determines routing.
+
+**Home node** — The first approved node's enrollment role. Home is an identity and registration concept; it is separate from the mutable default node used for routing.
+
+**Live OS** — The active runtime and tool authority on a node. It can execute permitted work and produce current traces.
+
+**Local node** — A Consuelo OS installation on a computer you operate. A local node can have the `home` or `member` enrollment role.
+
+**MCP** — Model Context Protocol, the discovery and invocation protocol used to connect supported agents to OS skills.
+
+**Member node** — A later approved node with the `member` enrollment role.
+
+**Node** — A computer or managed runtime running Consuelo OS, with node-local identity, security material, database, logs, and runtime state.
+
+**Cloud node** — A Consuelo-managed node intended to stay available without depending on one person's computer.
+
+**Node presence** — The current online, stale, or offline state derived from recent node proof. Presence affects whether a node can receive routed work.
+
+**Route source** — The reason a node was selected for a call: task ownership, an explicit node request, or the workspace default.
+
+**OS skill** — A discoverable skill entry that MCP can list and call. It can contain guidance, executable behavior, or both depending on its metadata.
+
+**Permission** — The declared effect tier for a skill: `guidance`, `read`, `draft`, `write`, `execute`, `external`, or `admin`.
+
+**Run** — One bounded execution of work. A run can contain several related tool calls and artifacts.
+
+**Script** — Executable implementation behind a tool or skill. A script is not automatically a public tool.
+
+**Site** — A human-facing page or collection rendered from workspace output. Office is one Site category.
+
+**Static snapshot** — Published Site content served without consulting the live node for each read.
+
+**Steering** — Durable workspace and project instructions agents load before working.
+
+**Task session** — The identifier for one isolated task. Once a task starts on a node, its session also keeps follow-up routed work on that owning node until affinity is successfully released.
+
+**Tool** — One operation an agent can call. In broad product language this includes facade tools and callable OS skills; exact manifests distinguish their `kind`.
+
+**Tool call** — One invocation of a named tool with structured input and a structured result.
+
+**Trace** — The correlation record for what ran, what it returned, how long it took, and which related events or artifacts it produced.
+
+**Workspace** — The shared identity, configuration, rules, tools, and durable work boundary used across agents and nodes.
+
+**Workflow bundle** — A generated definition that coordinates a known sequence of tools or skills under one workflow identifier.

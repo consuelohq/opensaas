@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { spawnSync } from 'node:child_process';
 import { afterEach, expect, test } from 'vitest';
 
 import verification from '../scripts/lib/verification.js';
@@ -74,4 +75,19 @@ test('getVerifyStampMismatch rejects pass stamps without publishValid', () => {
   expect(getVerifyStampMismatch(repoRoot, 'task/os-skills/example-task', taskMeta)).toBe(
     'last verify stamp is not publish-valid',
   );
+});
+
+test('verify CLI accepts an inline forwarded review flag', () => {
+  const result = spawnSync(
+    'bun',
+    ['scripts/verify.js', '--review-arg=--no-tests', '--help'],
+    {
+      cwd: path.join(process.cwd()),
+      encoding: 'utf8',
+    },
+  );
+
+  expect(result.status).toBe(0);
+  expect(result.stdout).toContain('usage: bun run verify');
+  expect(result.stderr).toBe('');
 });

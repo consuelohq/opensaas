@@ -1,0 +1,16 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/repair-connect-media-binary-assets",
+  "baseBranch": "stream/website",
+  "sourceBranch": "stream/website",
+  "startFrom": "stream",
+  "prNumber": 2342,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2342",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-repair-connect-media-binary-assets",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_6307e05fb6ae",
+  "tmuxSession": "opensaas-website-repair-connect-media-binary-assets-6307e05f",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-repair-connect-media-binary-assets/.task/session.json",
+  "createdAt": "2026-08-31T22:00:10.888Z"
+}

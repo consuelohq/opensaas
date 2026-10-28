@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_49f6c48be40c",
+  "tmuxSession": "opensaas-docs-docs-sidebar-structure-49f6c48b",
+  "area": "docs",
+  "stream": "stream/docs",
+  "taskBranch": "task/docs/docs-sidebar-structure",
+  "branch": "task/docs/docs-sidebar-structure",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-docs-sidebar-structure",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-docs-sidebar-structure",
+  "prNumber": 1272,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1272",
+  "createdAt": "2026-06-28T17:48:56.032Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-docs-sidebar-structure/.task/docs/docs-sidebar-structure/session.json"
+}

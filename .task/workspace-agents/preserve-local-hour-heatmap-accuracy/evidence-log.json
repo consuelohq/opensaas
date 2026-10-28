@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "worktree_id": "task/workspace-agents/preserve-local-hour-heatmap-accuracy",
+  "events": [
+    {
+      "id": "23502690-b504-4793-8b07-38a907e573a4",
+      "occurred_at": "2026-09-05T01:05:06.234Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/settings-site.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/preserve-local-hour-heatmap-accuracy",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/preserve-local-hour-heatmap-accuracy"
+      }
+    },
+    {
+      "id": "776c6052-2cae-4cb8-a6e7-23a6c4b52b36",
+      "occurred_at": "2026-09-05T01:06:08.410Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/trace-sites-local-read-backend.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/preserve-local-hour-heatmap-accuracy",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/preserve-local-hour-heatmap-accuracy"
+      }
+    },
+    {
+      "id": "4700608f-5aa4-4118-8b0b-ec707f747af0",
+      "occurred_at": "2026-09-05T01:06:10.940Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/trace-sites-local-read-backend.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/preserve-local-hour-heatmap-accuracy",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/preserve-local-hour-heatmap-accuracy"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-09-05T01:06:11.025Z"
+}

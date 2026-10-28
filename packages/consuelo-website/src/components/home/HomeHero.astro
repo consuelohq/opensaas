@@ -1,0 +1,491 @@
+---
+import { homeHeroRotatingAssistant, INSTALL_COMMAND } from '../../data/home-content';
+import CloudField from '../visuals/CloudField.astro';
+
+type Props = {
+  sectionId?: string;
+};
+
+const { sectionId = 'intro' } = Astro.props as Props;
+const heroCopy = homeHeroRotatingAssistant;
+const [primaryAssistant, secondaryAssistant] = heroCopy.assistants;
+---
+
+<section class="os-hero" id={sectionId} data-section="hero">
+  <CloudField />
+
+  <div class="os-hero__content">
+    <h1 data-hero-heading aria-label={heroCopy.ariaLabel}>
+      <span class="os-hero__heading-line">
+        <span>{heroCopy.prefix}</span>
+        <span
+          class="os-hero__assistant-rotator"
+          data-assistant-rotator
+          data-active-assistant={primaryAssistant}
+          aria-hidden="true"
+        >
+          <span data-assistant-name={primaryAssistant}>{primaryAssistant}</span>
+          <span data-assistant-name={secondaryAssistant}>{secondaryAssistant}</span>
+        </span>
+      </span>
+      <span class="os-hero__heading-line">{heroCopy.suffix}</span>
+    </h1>
+    <p class="os-hero__subtitle">
+      {heroCopy.subtitle}
+    </p>
+
+    <div class="os-hero__actions">
+      <a class="os-hero__button" href="https://os.consuelohq.com">
+        {heroCopy.signInLabel}
+        <svg class="os-hero__button-arrow" viewBox="0 0 6 9" fill="currentColor" aria-hidden="true">
+          <rect x="0" y="0" width="1" height="9" />
+          <rect x="1" y="1" width="1" height="1" />
+          <rect x="2" y="2" width="1" height="1" />
+          <rect x="3" y="3" width="1" height="1" />
+          <rect x="4" y="4" width="1" height="1" />
+          <rect x="3" y="5" width="1" height="1" />
+          <rect x="2" y="6" width="1" height="1" />
+          <rect x="1" y="7" width="1" height="1" />
+        </svg>
+      </a>
+    </div>
+
+    <button class="os-hero__command" type="button" data-copy-install data-copy-default={heroCopy.copyLabel} aria-label={heroCopy.copyInstallAriaLabel}>
+      <code data-install-command>{INSTALL_COMMAND}</code>
+      <span data-copy-label>{heroCopy.copyLabel}</span>
+    </button>
+  </div>
+</section>
+
+<script>
+  import { installCommandForPlatform } from '../../lib/install-command';
+
+  const command = installCommandForPlatform(navigator.platform || navigator.userAgent);
+  document.querySelectorAll('[data-install-command]').forEach((node) => {
+    node.textContent = command;
+  });
+
+  const labels = Array.from(document.querySelectorAll('[data-copy-label]')).filter(
+    (label) => label instanceof HTMLElement,
+  );
+
+  document.querySelectorAll('[data-copy-install]').forEach((button) => {
+    button.addEventListener('click', async () => {
+      if (!navigator.clipboard) {
+        return;
+      }
+
+      try {
+        await navigator.clipboard.writeText(command);
+      } catch {
+        return;
+      }
+
+      labels.forEach((label) => {
+        label.textContent = 'COPIED';
+      });
+      window.setTimeout(() => {
+        const copyLabel = button.getAttribute('data-copy-default') ?? 'COPY';
+        labels.forEach((label) => {
+          label.textContent = copyLabel;
+        });
+      }, 1500);
+    });
+  });
+</script>
+
+<script>
+  import gsap from 'gsap';
+
+  // Hero/editorial motion contract: translation max 32px (animations.md).
+  const HERO_NAME_OFFSET_PX = 32;
+  const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)';
+  const ROTATION_EASE = 'power3.inOut';
+  const ROTATION_DURATION = 0.52;
+
+  const hero = document.querySelector('[data-section="hero"]');
+  const rotator = document.querySelector('[data-assistant-rotator]');
+  const primaryName = document.querySelector('[data-assistant-name="ChatGPT"]');
+  const secondaryName = document.querySelector('[data-assistant-name="Claude"]');
+  const reduceMotion = window.matchMedia(REDUCED_MOTION_QUERY);
+
+  let timeline: gsap.core.Timeline | null = null;
+  let context: gsap.Context | null = null;
+  let visibilityObserver: IntersectionObserver | null = null;
+  let isHeroVisible = true;
+
+  const hasRotatorNodes = () =>
+    rotator instanceof HTMLElement &&
+    primaryName instanceof HTMLElement &&
+    secondaryName instanceof HTMLElement;
+
+  const clearInlineMotionStyles = () => {
+    if (!(primaryName instanceof HTMLElement) || !(secondaryName instanceof HTMLElement)) {
+      return;
+    }
+
+    for (const node of [primaryName, secondaryName]) {
+      node.style.removeProperty('opacity');
+      node.style.removeProperty('visibility');
+      node.style.removeProperty('transform');
+    }
+  };
+
+  const resetActiveAssistant = () => {
+    if (!(rotator instanceof HTMLElement)) {
+      return;
+    }
+
+    rotator.dataset.activeAssistant = 'ChatGPT';
+  };
+
+  const destroyRotation = () => {
+    visibilityObserver?.disconnect();
+    visibilityObserver = null;
+    timeline?.kill();
+    timeline = null;
+    context?.revert();
+    context = null;
+    clearInlineMotionStyles();
+    resetActiveAssistant();
+  };
+
+  const syncTimelinePlayback = () => {
+    if (!timeline) {
+      return;
+    }
+
+    if (isHeroVisible && !reduceMotion.matches) {
+      timeline.play();
+      return;
+    }
+
+    timeline.pause();
+  };
+
+  const bindVisibilityObserver = () => {
+    if (!(hero instanceof HTMLElement) || typeof IntersectionObserver === 'undefined') {
+      isHeroVisible = true;
+      syncTimelinePlayback();
+      return;
+    }
+
+    visibilityObserver = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        isHeroVisible = entry?.isIntersecting ?? false;
+        syncTimelinePlayback();
+      },
+      { threshold: 0.15 },
+    );
+    visibilityObserver.observe(hero);
+  };
+
+  const startRotation = () => {
+    if (!hasRotatorNodes() || reduceMotion.matches) {
+      destroyRotation();
+      return;
+    }
+
+    if (!(rotator instanceof HTMLElement) || !(primaryName instanceof HTMLElement) || !(secondaryName instanceof HTMLElement)) {
+      return;
+    }
+
+    destroyRotation();
+
+    context = gsap.context(() => {
+      gsap.set(primaryName, { autoAlpha: 1, y: 0 });
+      gsap.set(secondaryName, { autoAlpha: 0, y: HERO_NAME_OFFSET_PX });
+
+      timeline = gsap.timeline({
+        repeat: -1,
+        paused: true,
+      });
+
+      timeline
+        .to(
+          primaryName,
+          { autoAlpha: 0, y: -HERO_NAME_OFFSET_PX, duration: ROTATION_DURATION, ease: ROTATION_EASE },
+          2.4,
+        )
+        .to(
+          secondaryName,
+          { autoAlpha: 1, y: 0, duration: ROTATION_DURATION, ease: ROTATION_EASE },
+          '<',
+        )
+        .call(() => {
+          rotator.dataset.activeAssistant = 'Claude';
+        })
+        .set(primaryName, { autoAlpha: 0, y: HERO_NAME_OFFSET_PX }, '+=2.6')
+        .to(
+          secondaryName,
+          { autoAlpha: 0, y: -HERO_NAME_OFFSET_PX, duration: ROTATION_DURATION, ease: ROTATION_EASE },
+          '<',
+        )
+        .to(
+          primaryName,
+          { autoAlpha: 1, y: 0, duration: ROTATION_DURATION, ease: ROTATION_EASE },
+          '<',
+        )
+        .call(() => {
+          rotator.dataset.activeAssistant = 'ChatGPT';
+        });
+    }, rotator);
+
+    bindVisibilityObserver();
+    syncTimelinePlayback();
+  };
+
+  const handleReducedMotionChange = () => {
+    if (reduceMotion.matches) {
+      destroyRotation();
+      return;
+    }
+
+    startRotation();
+  };
+
+  const handlePageHide = () => {
+    destroyRotation();
+  };
+
+  const handlePageShow = (event: PageTransitionEvent) => {
+    if (!event.persisted) {
+      return;
+    }
+
+    isHeroVisible = true;
+    startRotation();
+  };
+
+  startRotation();
+  reduceMotion.addEventListener('change', handleReducedMotionChange);
+  window.addEventListener('pagehide', handlePageHide);
+  window.addEventListener('pageshow', handlePageShow);
+</script>
+
+<style>
+  .os-hero {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 90svh;
+    place-items: center;
+    overflow: hidden;
+    background: var(--site-color-brand);
+    color: white;
+    padding: clamp(7rem, 10vw, 9rem) clamp(1.25rem, 4vw, 4rem) clamp(3rem, 5vw, 4.5rem);
+    text-align: center;
+  }
+
+  .os-hero__content {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    width: min(100%, 80rem);
+    min-width: 0;
+    max-width: 100%;
+    justify-items: center;
+    gap: clamp(1rem, 1.55vw, 1.4rem);
+  }
+
+  .os-hero h1 {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+    margin: 0;
+    color: white;
+    font-family: var(--site-font-display);
+    font-size: clamp(3.75rem, 7vw, 6.75rem);
+    font-optical-sizing: auto;
+    font-weight: 400;
+    letter-spacing: 0.01em;
+    line-height: 0.96;
+    text-wrap: balance;
+  }
+
+  .os-hero__heading-line {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 0.2em;
+    white-space: nowrap;
+  }
+
+  .os-hero__assistant-rotator {
+    position: relative;
+    display: inline-grid;
+    overflow: hidden;
+    min-width: 3.75em;
+    place-items: baseline center;
+    vertical-align: baseline;
+  }
+
+  .os-hero__assistant-rotator > span {
+    grid-area: 1 / 1;
+    white-space: nowrap;
+  }
+
+  [data-assistant-name='Claude'] {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  .os-hero__subtitle {
+    width: min(100%, 56rem);
+    min-width: 0;
+    margin: 0;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: clamp(1rem, 1.4vw, 1.25rem);
+    line-height: 1.45;
+    text-wrap: balance;
+  }
+
+  .os-hero__actions {
+    display: grid;
+    width: min(100%, 34rem);
+    min-width: 0;
+    gap: 0.55rem;
+    margin-top: 0.45rem;
+  }
+
+  .os-hero__button,
+  .os-hero__command {
+    border: 1px solid white;
+    border-radius: 0;
+    font-family: var(--site-font-mono);
+    font-size: clamp(0.72rem, 0.9vw, 0.8rem);
+    font-weight: 650;
+    letter-spacing: 0.09em;
+  }
+
+  .os-hero__button {
+    display: flex;
+    min-height: 3.15rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    background: white;
+    box-shadow: 0.22rem 0.22rem 0 rgba(0, 0, 92, 0.28);
+    color: var(--site-color-brand);
+    text-decoration: none;
+    transform: translate(-0.08rem, -0.08rem);
+    transition: background var(--site-motion-fast), color var(--site-motion-fast), box-shadow var(--site-motion-fast), transform var(--site-motion-fast);
+  }
+
+  .os-hero__button-arrow {
+    width: 0.58rem;
+    height: 0.82rem;
+    shape-rendering: crispEdges;
+  }
+
+  .os-hero__button:hover,
+  .os-hero__button:focus-visible {
+    background: white;
+    box-shadow: 0.1rem 0.1rem 0 rgba(0, 0, 92, 0.2);
+    color: var(--site-color-brand);
+    transform: translate(0, 0);
+  }
+
+  .os-hero__command {
+    display: flex;
+    width: min(100%, 34rem);
+    min-width: 0;
+    min-height: 3.05rem;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    overflow: hidden;
+    background: transparent;
+    box-shadow: 0.2rem 0.2rem 0 rgba(255, 255, 255, 0.32);
+    color: white;
+    padding: 0.75rem 1rem;
+    text-align: left;
+    transform: translate(-0.06rem, -0.06rem);
+    transition: background var(--site-motion-fast), color var(--site-motion-fast), box-shadow var(--site-motion-fast), transform var(--site-motion-fast);
+  }
+
+  .os-hero__command code {
+    min-width: 0;
+    overflow: hidden;
+    font: inherit;
+    letter-spacing: 0;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .os-hero__command span {
+    flex: 0 0 auto;
+    font-size: 0.68rem;
+  }
+
+  .os-hero__command:hover,
+  .os-hero__command:focus-visible {
+    background: white;
+    box-shadow: 0.08rem 0.08rem 0 rgba(255, 255, 255, 0.22);
+    color: var(--site-color-brand);
+    transform: translate(0, 0);
+  }
+
+  @media (max-width: 720px) {
+    .os-hero {
+      min-height: 90svh;
+      padding: 6.1rem 0.9rem 2.5rem;
+    }
+
+    .os-hero__content {
+      width: 100%;
+      gap: 0.95rem;
+      transform: translateY(-3.5svh);
+    }
+
+    .os-hero h1 {
+      font-size: clamp(2rem, 10vw, 3.2rem);
+      letter-spacing: 0.005em;
+      line-height: 0.98;
+    }
+
+    .os-hero__heading-line {
+      gap: 0.16em;
+    }
+
+    .os-hero__subtitle {
+      width: min(100%, 23rem);
+      max-width: 100%;
+      font-size: 0.94rem;
+      line-height: 1.48;
+    }
+
+    .os-hero__actions,
+    .os-hero__command {
+      width: min(100%, 32rem);
+    }
+
+    .os-hero__button {
+      min-height: 3rem;
+    }
+
+    .os-hero__command {
+      min-height: 2.85rem;
+      font-size: 0.64rem;
+    }
+
+  }
+
+  @media (min-width: 721px) and (max-width: 1100px) {
+    .os-hero {
+      min-height: 88svh;
+      padding-top: 8rem;
+    }
+
+    .os-hero__content {
+      transform: translateY(-1.5svh);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .os-hero__button {
+      transition: none;
+    }
+  }
+</style>

@@ -1,0 +1,19 @@
+{
+  "area": "os-provider-tools",
+  "stream": "stream/os-provider-tools",
+  "taskBranch": "task/os-provider-tools/harden-deployment-provider-core",
+  "baseBranch": "stream/os-provider-tools",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1585,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1585",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1585",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1585/harden-deployment-provider-core",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1585",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1585/harden-deployment-provider-core",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-provider-tools-harden-deployment-provider-core",
+  "taskSession": "tsk_d1860258ab13",
+  "tmuxSession": "opensaas-os-provider-tools-harden-deployment-provider-core-d1860258",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-provider-tools-harden-deployment-provider-core/.task/os-provider-tools/harden-deployment-provider-core/session.json",
+  "createdAt": "2026-07-23T04:35:35.239Z"
+}

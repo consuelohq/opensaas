@@ -1,0 +1,9 @@
+{
+  "files": [
+    ".task/os/improve-consuelo-help-ux/workpad.md",
+    "packages/cli/src/index.ts",
+    "packages/os/scripts/lifecycle.ts",
+    "packages/os/tests/lifecycle-engine.test.ts"
+  ],
+  "updatedAt": "2026-08-11T23:58:57.717Z"
+}

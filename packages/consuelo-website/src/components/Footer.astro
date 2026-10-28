@@ -1,5 +1,6 @@
 ---
 import type { HTMLAttributes } from "astro/types";
+import IconRss from "@/assets/icons/IconRss.svg";
 import Socials from "./Socials.astro";
 
 const currentYear = new Date().getFullYear();
@@ -15,15 +16,26 @@ const { noMarginTop = false, class: className, ...attrs } = Astro.props;
   class:list={["app-layout", { "mt-auto": !noMarginTop }, className]}
   {...attrs}
 >
-  <div
-    class:list={[
-      "py-6 sm:py-4",
-      "border-t border-border",
-      "flex flex-col items-center justify-between sm:flex-row-reverse",
-    ]}
-  >
-    <Socials />
-    <div class="my-2 flex flex-col items-center whitespace-nowrap sm:flex-row">
+  <div class="blog-footer border-t border-border py-8 sm:py-6">
+    <div class="blog-footer__intro">
+      <a
+        href="/rss.xml"
+        class="blog-footer__rss focus-outline"
+        aria-label="RSS Feed"
+        title="RSS Feed"
+      >
+        <IconRss width={20} height={20} aria-hidden="true" />
+        <span>RSS Feed</span>
+      </a>
+      <p>Tips, updates, stories, and the latest news from Consuelo.</p>
+    </div>
+
+    <div class="blog-footer__community">
+      <span class="blog-footer__label">Social links</span>
+      <Socials />
+    </div>
+
+    <div class="blog-footer__copyright">
       <span>&#169; {currentYear} Consuelo. All rights reserved.</span>
     </div>
   </div>

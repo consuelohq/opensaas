@@ -1,0 +1,54 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace-agents/implement-pricing-route",
+  "base": "origin/stream/workspace-agents",
+  "headSha": "aa473087299e8ea41eac6cdb0e06fef9a9a9467a",
+  "changeHash": "0f8c7c10c55302840ff61d1aac336e38b2ab9de978326aba17498277c34ab513",
+  "changedFiles": [
+    "packages/consuelo-website/src/data/site-links.ts",
+    "packages/consuelo-website/src/pages/pricing.astro",
+    "packages/consuelo-website/tests/website-structure.test.js"
+  ],
+  "verifiedAt": "2026-07-13T00:13:21.140Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/workspace-agents/implement-pricing-route.json",
+        ".task/workspace-agents/implement-pricing-route/current.json",
+        ".task/workspace-agents/implement-pricing-route/evidence-log.json",
+        ".task/workspace-agents/implement-pricing-route/read-log.json",
+        ".task/workspace-agents/implement-pricing-route/workpad.md",
+        "packages/consuelo-website/src/data/site-links.ts",
+        "packages/consuelo-website/src/pages/pricing.astro",
+        "packages/consuelo-website/tests/website-structure.test.js"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -1,0 +1,63 @@
+import { describe, expect, it } from 'vitest';
+
+import { buildToolManifest } from '../scripts/generate-tool-manifest';
+import { getInputSchema } from '../scripts/lib/facade/schemas';
+import { runToolSearch } from '../scripts/tools-search';
+
+describe('release tool surface', () => {
+  it('publishes one concise top-level release tool with the end-to-end runtime workflow', () => {
+    const manifest = buildToolManifest({ write: false });
+    const release = manifest.full.tools.find((entry) => entry.name === 'release');
+
+    expect(release?.definition).toMatchObject({
+      name: 'release',
+      methodPath: ['release'],
+      category: 'release',
+      capabilities: { readOnly: false, mutating: true, safeToRetry: true },
+      inputSchema: 'ReleaseInput',
+      command: {
+        script: 'release',
+        executionScope: 'runtime',
+        branchMode: 'none',
+        jsonFlag: '--json',
+      },
+    });
+    expect(release?.definition.description).toContain('release to canary');
+    expect(release?.definition.description).toContain('exact released version');
+    expect(release?.definition.description).toContain('main-targeting review PR');
+    expect(release?.definition.description).toContain('operation id');
+    expect(release?.definition.description).toContain('resume');
+    expect(Number(release?.definition.defaultTimeout)).toBeLessThanOrEqual(30_000);
+  });
+
+  it('validates durable start, status, logs, attach, and resume inputs', () => {
+    const schema = getInputSchema('ReleaseInput');
+    expect(schema).not.toBeNull();
+    expect(schema?.safeParse({ pr: 2185, channel: 'canary' }).success).toBe(true);
+    expect(schema?.safeParse({ action: 'start', pr: 2185, channel: 'canary' }).success).toBe(true);
+    expect(schema?.safeParse({ pr: 2185, channel: 'stable', releaseOnly: true, mergeMethod: 'squash' }).success).toBe(true);
+    expect(schema?.safeParse({ action: 'status', operationId: 'release-deadbeef' }).success).toBe(true);
+    expect(schema?.safeParse({ action: 'logs', operationId: 'release-deadbeef', tailLines: 50 }).success).toBe(true);
+    expect(schema?.safeParse({ action: 'attach', operationId: 'release-deadbeef' }).success).toBe(true);
+    expect(schema?.safeParse({ action: 'resume', operationId: 'release-deadbeef' }).success).toBe(true);
+    expect(schema?.safeParse({ action: 'status' }).success).toBe(false);
+    expect(schema?.safeParse({ action: 'start', operationId: 'release-deadbeef' }).success).toBe(false);
+    expect(schema?.safeParse({ pr: 0, channel: 'canary' }).success).toBe(false);
+    expect(schema?.safeParse({ pr: 2185, channel: 'nightly' }).success).toBe(false);
+  });
+
+  it.each([
+    'release to canary',
+    'deploy this PR',
+    'release and update',
+    'release to production',
+  ])('is discoverable for %s', async (query) => {
+    const result = await runToolSearch({
+      query,
+      limit: 5,
+      includeDocs: false,
+      includeEmbeddings: false,
+    });
+    expect(result.matches.map((match) => match.name)).toContain('release');
+  });
+});

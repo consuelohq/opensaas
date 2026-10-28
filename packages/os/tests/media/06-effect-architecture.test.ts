@@ -19,6 +19,7 @@ const expectedMediaModules = [
   'scripts/lib/media/audio.ts',
   'scripts/lib/media/vision.ts',
   'scripts/lib/media/overlays.ts',
+  'scripts/lib/media/screenshot.ts',
   'scripts/lib/media/export.ts',
   'scripts/lib/media/source-capture/schema.ts',
   'scripts/lib/media/source-capture/errors.ts',
@@ -45,6 +46,7 @@ describe('media Effect architecture', () => {
     const compose = await importMediaModule('scripts/lib/media/compose.ts');
     const qa = await importMediaModule('scripts/lib/media/qa.ts');
     const ingest = await importMediaModule('scripts/lib/media/ingest.ts');
+    const screenshot = await importMediaModule('scripts/lib/media/screenshot.ts');
 
     for (const [module, effectName, cliName] of [
       [probe, 'probeEffect', 'probeForCli'],
@@ -53,6 +55,7 @@ describe('media Effect architecture', () => {
       [compose, 'composeEffect', 'composeForCli'],
       [qa, 'qaEffect', 'qaForCli'],
       [ingest, 'ingestMediaEffect', 'ingestMediaForCli'],
+      [screenshot, 'renderScreenshotEffect', 'renderScreenshotForCli'],
     ] as const) {
       expectFunctionExport(module, effectName);
       expectFunctionExport(module, cliName);

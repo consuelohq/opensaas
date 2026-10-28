@@ -1,0 +1,50 @@
+---
+title: Cloudflare
+description: Use Cloudflare through the canonical provider-neutral deployment tools.
+status: preview
+verifiedAt: 2026-07-23
+evidence:
+  - source: packages/os/manifests/generated/tool.manifest.json
+    tests:
+      - packages/os/tests/tool-manifest.test.ts
+      - packages/os/tools/deployment-provider/facade.test.ts
+      - packages/os/tools/deployment-provider/cloudflare.test.ts
+    runtime: 'The current manifest publishes the deployment.* family with provider: cloudflare and excludes Consuelo operator provisioning.'
+---
+
+> **Native Consuelo tool: Available**  
+> **Use `deployment.*` with `provider: "cloudflare"`.**
+
+Consuelo uses the installed Wrangler CLI as the user's authenticated authority. The customer adapter supports detection, account context, projects and deployments, bounded logs, Worker or Pages deploys, environment or secret-name management, domains, and a guarded raw escape hatch.
+
+## Ask your agent
+
+```text
+Use deployment.context with provider cloudflare to verify the authenticated account.
+Use deployment.logs with provider cloudflare for bounded logs.
+Use deployment.deploy only after I approve the exact Worker or Pages target.
+Use deployment.environment to list names without returning secret values.
+```
+
+## Security boundary
+
+The customer adapter cannot invoke Consuelo OS release deployment, workspace-edge deployment, WAF migration, connector or DNS provisioning, route-registry administration, or Consuelo production credentials. Read operations are approval-free. Deploys, environment mutation, and raw argv require explicit local approval.
+
+## Available tools
+
+```text
+deployment.detect
+deployment.context
+deployment.list
+deployment.status
+deployment.logs
+deployment.deploy
+deployment.environment
+deployment.raw
+```
+
+Every call includes `provider: "cloudflare"`.
+
+## Official documentation
+
+[Cloudflare Wrangler documentation](https://developers.cloudflare.com/workers/wrangler/)

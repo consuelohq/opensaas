@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/os-observability-route-source-stabilization",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1325,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1325",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1325",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1325/os-observability-route-source-stabilization",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1325",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1325/os-observability-route-source-stabilization",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-os-observability-route-source-stabilization",
+  "taskSession": "tsk_b2c307053451",
+  "tmuxSession": "opensaas-workspace-agents-os-observability-route-source-stabilization-b2c30705",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-os-observability-route-source-stabilization/.task/workspace-agents/os-observability-route-source-stabilization/session.json",
+  "createdAt": "2026-07-01T18:03:08.638Z"
+}

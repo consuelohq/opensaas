@@ -1,0 +1,15 @@
+{
+  "files": [
+    "packages/diff-cockpit/src/index.ts",
+    "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+    "packages/os/scripts/lib/settings-sites-gateway-endpoints.ts",
+    "packages/os/scripts/lib/source-control-config.ts",
+    "packages/os/scripts/server/routes/diffs.ts",
+    "packages/os/scripts/server/routes/settings.ts",
+    "packages/os/scripts/server/services/diffs-gateway.ts",
+    "packages/os/tests/diffs-hono-routes.test.ts",
+    "packages/os/tests/settings-sites-gateway-endpoints.test.ts",
+    "packages/os/tests/workspace-edge-sites-gateway-integration.test.ts"
+  ],
+  "updatedAt": "2026-08-12T05:03:30.399Z"
+}

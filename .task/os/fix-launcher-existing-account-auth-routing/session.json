@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_694223d91b09",
+  "tmuxSession": "opensaas-os-fix-launcher-existing-account-auth-routing-694223d9",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-launcher-existing-account-auth-routing",
+  "branch": "task/os/fix-launcher-existing-account-auth-routing",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-launcher-existing-account-auth-routing",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-launcher-existing-account-auth-routing",
+  "prNumber": 1962,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1962",
+  "createdAt": "2026-08-14T18:05:00.086Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-launcher-existing-account-auth-routing/.task/os/fix-launcher-existing-account-auth-routing/session.json"
+}

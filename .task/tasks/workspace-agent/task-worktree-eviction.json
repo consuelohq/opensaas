@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agent",
+  "stream": "stream/workspace-agent",
+  "taskBranch": "task/workspace-agent/task-worktree-eviction",
+  "baseBranch": "stream/workspace-agent",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2006,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2006",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2006",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2006/task-worktree-eviction",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2006",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2006/task-worktree-eviction",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agent-task-worktree-eviction",
+  "taskSession": "tsk_fef2f919ea4a",
+  "tmuxSession": "opensaas-workspace-agent-task-worktree-eviction-fef2f919",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agent-task-worktree-eviction/.task/workspace-agent/task-worktree-eviction/session.json",
+  "createdAt": "2026-08-15T03:51:12.753Z"
+}

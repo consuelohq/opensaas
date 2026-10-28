@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-workspace-configuration-routes",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1529,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1529",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1529",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1529/add-workspace-configuration-routes",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1529",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1529/add-workspace-configuration-routes",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-workspace-configuration-routes",
+  "taskSession": "tsk_ba76bcbe8457",
+  "tmuxSession": "opensaas-os-add-workspace-configuration-routes-ba76bcbe",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-workspace-configuration-routes/.task/os/add-workspace-configuration-routes/session.json",
+  "createdAt": "2026-07-18T16:18:24.910Z"
+}

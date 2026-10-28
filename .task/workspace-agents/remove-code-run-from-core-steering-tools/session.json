@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_39f5b4c3122e",
+  "tmuxSession": "opensaas-workspace-agents-remove-code-run-from-core-steering-tools-39f5b4c3",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/remove-code-run-from-core-steering-tools",
+  "branch": "task/workspace-agents/remove-code-run-from-core-steering-tools",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-remove-code-run-from-core-steering-tools",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-remove-code-run-from-core-steering-tools",
+  "prNumber": 1298,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1298",
+  "createdAt": "2026-06-30T22:06:51.638Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-remove-code-run-from-core-steering-tools/.task/workspace-agents/remove-code-run-from-core-steering-tools/session.json"
+}

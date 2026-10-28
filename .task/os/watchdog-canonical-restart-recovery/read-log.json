@@ -1,0 +1,12 @@
+{
+  "files": [
+    ".task/os/watchdog-canonical-restart-recovery/workpad.md",
+    "packages/os/SCRIPTS.md",
+    "packages/os/scripts/bootstrap.sh",
+    "packages/os/scripts/lib/lifecycle/engine.ts",
+    "packages/os/scripts/lifecycle.ts",
+    "packages/os/tests/consuelo-reload.test.ts",
+    "packages/os/tests/system-daemon-reliability.test.ts"
+  ],
+  "updatedAt": "2026-08-11T22:11:02.106Z"
+}

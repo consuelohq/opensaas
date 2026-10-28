@@ -1,0 +1,13 @@
+{
+  "files": [
+    ".github/workflows/consuelo-os-runtime-promote.yaml",
+    ".github/workflows/consuelo-production-release.yaml",
+    ".task/os/repair-targeted-device-authority-production-release/workpad.md",
+    "packages/os/cloudflare/os-device-authority/wrangler.toml",
+    "packages/os/scripts/lib/managed-cloud-pricing.ts",
+    "packages/os/tests/production-release-mcp-security.test.ts",
+    "packages/workspace/scripts/os-release.ts",
+    "packages/workspace/tests/website-deploy.test.js"
+  ],
+  "updatedAt": "2026-08-14T20:53:01.724Z"
+}

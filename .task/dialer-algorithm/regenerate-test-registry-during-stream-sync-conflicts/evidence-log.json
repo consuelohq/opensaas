@@ -1,0 +1,88 @@
+{
+  "version": 1,
+  "worktree_id": "task/dialer-algorithm/regenerate-test-registry-during-stream-sync-conflicts",
+  "events": [
+    {
+      "id": "59061202-9da2-4949-b650-034b22bd18ed",
+      "occurred_at": "2026-08-16T02:31:03.726Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/stream-sync.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer-algorithm/regenerate-test-registry-during-stream-sync-conflicts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer-algorithm/regenerate-test-registry-during-stream-sync-conflicts"
+      }
+    },
+    {
+      "id": "47cdfc24-e07a-4848-a8ea-9b3648941698",
+      "occurred_at": "2026-08-16T02:31:14.689Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/stream-sync-node-modules.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer-algorithm/regenerate-test-registry-during-stream-sync-conflicts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer-algorithm/regenerate-test-registry-during-stream-sync-conflicts"
+      }
+    },
+    {
+      "id": "ba193fa4-84ae-4793-93b5-167cc08f21d8",
+      "occurred_at": "2026-08-16T02:31:27.980Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/paths.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer-algorithm/regenerate-test-registry-during-stream-sync-conflicts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer-algorithm/regenerate-test-registry-during-stream-sync-conflicts"
+      }
+    },
+    {
+      "id": "9cfbbd58-d913-4eea-9ead-4fc57d94f2a7",
+      "occurred_at": "2026-08-16T02:31:37.173Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/task-node-modules.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer-algorithm/regenerate-test-registry-during-stream-sync-conflicts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer-algorithm/regenerate-test-registry-during-stream-sync-conflicts"
+      }
+    },
+    {
+      "id": "5e8599e6-3de5-40b0-bb00-57190844495a",
+      "occurred_at": "2026-08-16T02:34:19.127Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/stream-sync-generated-registry-conflict.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer-algorithm/regenerate-test-registry-during-stream-sync-conflicts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer-algorithm/regenerate-test-registry-during-stream-sync-conflicts"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-16T02:34:19.186Z"
+}

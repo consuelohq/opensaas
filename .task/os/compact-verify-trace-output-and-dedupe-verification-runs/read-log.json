@@ -1,0 +1,16 @@
+{
+  "files": [
+    "packages/os/definitely-missing.json",
+    "packages/os/scripts/lib/code-call/snapshot.ts",
+    "packages/os/scripts/lib/verify-run-state.js",
+    "packages/os/scripts/verify.js",
+    "packages/os/tests/audit/fixtures/script-parity-classifications.json",
+    "packages/os/tests/code-call.test.ts",
+    "packages/os/tests/verify-run-state.test.js",
+    "packages/workspace/scripts/lib/verification.js",
+    "packages/workspace/scripts/lib/verify-run-state.js",
+    "packages/workspace/scripts/verify.js",
+    "packages/workspace/tests/verification.test.js"
+  ],
+  "updatedAt": "2026-09-22T23:38:08.226Z"
+}

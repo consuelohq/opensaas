@@ -1,0 +1,8 @@
+{
+  "files": [
+    ".task/os/recover-managed-release-source-with-local-trust/workpad.md",
+    "packages/os/scripts/lib/platforms/linux.ts",
+    "packages/os/tests/workspace-node-registry-routing.test.ts"
+  ],
+  "updatedAt": "2026-09-08T15:05:49.682Z"
+}

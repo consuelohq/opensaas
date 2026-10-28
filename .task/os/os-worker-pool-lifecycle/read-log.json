@@ -1,0 +1,24 @@
+{
+  "files": [
+    ".task/os/os-worker-pool-lifecycle/workpad.md",
+    "packages/os/scripts/consuelo-reload.js",
+    "packages/os/scripts/lib/worker-pool.ts",
+    "packages/os/scripts/server/app.ts",
+    "packages/os/scripts/server/main.ts",
+    "packages/os/scripts/server/route-policies.ts",
+    "packages/os/scripts/server/routes/health.ts",
+    "packages/os/scripts/server/routes/mcp.ts",
+    "packages/os/scripts/server/supervisor.ts",
+    "packages/os/tests/audit/fixtures/script-parity-classifications.json",
+    "packages/os/tests/audit/script-parity-audit.test.ts",
+    "packages/os/tests/bun-product-server-contract.test.ts",
+    "packages/os/tests/consuelo-reload.test.ts",
+    "packages/os/tests/distribution/runtime-bundle.test.ts",
+    "packages/os/tests/lifecycle-engine.test.ts",
+    "packages/os/tests/local-os-server-hono-architecture.test.ts",
+    "packages/os/tests/os-device-authority-architecture.test.ts",
+    "packages/os/tests/worker-pool-lifecycle.test.ts",
+    "packages/workspace/scripts/task-push.js"
+  ],
+  "updatedAt": "2026-08-11T23:38:02.798Z"
+}

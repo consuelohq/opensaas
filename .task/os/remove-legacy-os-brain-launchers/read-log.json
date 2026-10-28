@@ -1,0 +1,8 @@
+{
+  "files": [
+    ".task/os/remove-legacy-os-brain-launchers/workpad.md",
+    "packages/os/SCRIPTS.md",
+    "packages/os/tests/audit/script-parity-audit.test.ts"
+  ],
+  "updatedAt": "2026-07-11T04:13:26.817Z"
+}

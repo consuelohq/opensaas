@@ -1,0 +1,57 @@
+---
+title: Files and artifacts
+description: Distinguish ordinary files from versioned outputs with provenance and optional app visibility.
+status: preview
+verifiedAt: 2026-09-21
+evidence:
+  - source: packages/os/scripts/lib/artifacts.ts
+    tests:
+      - packages/os/tests/artifacts.test.ts
+      - packages/os/tests/artifacts-skill.test.ts
+    runtime: Local artifact creation, versioning, rollback, and trace linkage were exercised by focused tests on 2026-08-11.
+  - source: packages/os/scripts/lib/consuelo-sites-artifacts-adapter.ts
+    tests:
+      - packages/os/tests/consuelo-sites-artifacts-adapter.test.ts
+    runtime: Current artifact delivery through the Sites gateway adapter was inspected and verified by focused tests.
+  - source: packages/os/scripts/server/services/artifact-sharing.ts
+    tests:
+      - packages/os/tests/artifact-sharing-links.test.ts
+      - packages/os/tests/artifacts-edge-routing.test.ts
+    runtime: Private viewer-link creation, claim, expiry, revocation, and public edge routing were exercised by focused tests on 2026-09-21.
+---
+
+A **file** is ordinary material an agent can read or write within its allowed scope. An **artifact** is a durable output with metadata and versions that connect it to the execution that produced it.
+
+## Local artifact model
+
+Current local artifacts store:
+
+- an artifact record and immutable versions in the local SQLite database;
+- bytes under the OS artifact directory;
+- the producing trace and skill;
+- type, format, status, and timestamps;
+- a current version that can be rolled back.
+
+Creation and update writes are atomic. Artifact changes can refresh the local Sites view so the output is reviewable without exposing raw storage paths as the product surface.
+
+## Files remain useful
+
+Use ordinary files for source material, configuration, scratch work, repository changes, and inputs that do not need artifact metadata. A file does not become an artifact merely because an agent created it.
+
+## Publishing and delivery
+
+Artifacts can be rendered and published through the current Artifacts/Sites path. Publishing is separate from drafting: the artifact remains a durable versioned output, while Sites owns the page-delivery layer and stable routes.
+
+## Share a private link
+
+From the Artifacts page, choose **Share** on an artifact. On phones and tablets, Consuelo opens the system share sheet so you can send the private link through Messages or another app. On browsers without a share sheet, Consuelo copies the link when clipboard access is available. Even when you open Artifacts through the local loopback UI, the link uses your HTTPS workspace host so it works on the recipient's device.
+
+Creating the link is the owner's approval. The recipient does not need to install Consuelo or sign in just to view that artifact. The link is viewer-only, expires after seven days by default, and can be revoked. A shared link grants access only to that artifact and its own files; it does not grant access to the workspace, node, tools, traces, credentials, or sibling artifacts.
+
+The access key is kept in the URL fragment, which browsers do not send in the initial HTTP request. Consuelo exchanges it for a short-lived, path-scoped secure browser session, stores only hashes of share secrets, disables indexing, and suppresses referrer leakage on shared responses.
+
+## Provenance
+
+Keep the trace identifier with the artifact handoff. It lets a later agent connect the output to tool calls and failures instead of treating an unexplained file as authoritative.
+
+Use [Sites](/sites/) for publishing pages and [Observe](/observe/) for trace inspection.

@@ -1,0 +1,10 @@
+{
+  "files": [
+    ".task/workspace-agents/fix-tracing-tool-labels-and-batch-child-inputs/workpad.md",
+    "packages/os/scripts/lib/trace-site-inspector/model.ts",
+    "packages/os/scripts/lib/trace-site-inspector/table-formatters.ts",
+    "packages/os/tests/observability-traces-site.test.ts",
+    "packages/os/tests/trace-site-inspector-os-owned.test.ts"
+  ],
+  "updatedAt": "2026-08-26T01:55:43.613Z"
+}

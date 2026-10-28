@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_5ff8b3c17fab",
+  "tmuxSession": "opensaas-os-unify-node-heartbeat-agent-presence-5ff8b3c1",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/unify-node-heartbeat-agent-presence",
+  "branch": "task/os/unify-node-heartbeat-agent-presence",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-unify-node-heartbeat-agent-presence",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-unify-node-heartbeat-agent-presence",
+  "prNumber": 1709,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1709",
+  "createdAt": "2026-07-28T06:44:19.445Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-unify-node-heartbeat-agent-presence/.task/os/unify-node-heartbeat-agent-presence/session.json"
+}

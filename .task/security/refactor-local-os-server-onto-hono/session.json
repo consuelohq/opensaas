@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_73d3104edd8e",
+  "tmuxSession": "opensaas-security-refactor-local-os-server-onto-hono-73d3104e",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/refactor-local-os-server-onto-hono",
+  "branch": "task/security/refactor-local-os-server-onto-hono",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-refactor-local-os-server-onto-hono",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-refactor-local-os-server-onto-hono",
+  "prNumber": 1405,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1405",
+  "createdAt": "2026-07-11T03:41:03.573Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-refactor-local-os-server-onto-hono/.task/security/refactor-local-os-server-onto-hono/session.json"
+}

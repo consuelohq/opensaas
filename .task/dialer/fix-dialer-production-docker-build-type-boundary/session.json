@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_af4bf4c765e7",
+  "tmuxSession": "opensaas-dialer-fix-dialer-production-docker-build-type-boundary-af4bf4c7",
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/fix-dialer-production-docker-build-type-boundary",
+  "branch": "task/dialer/fix-dialer-production-docker-build-type-boundary",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-fix-dialer-production-docker-build-type-boundary",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-fix-dialer-production-docker-build-type-boundary",
+  "prNumber": 1896,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1896",
+  "createdAt": "2026-08-12T18:55:25.625Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-fix-dialer-production-docker-build-type-boundary/.task/dialer/fix-dialer-production-docker-build-type-boundary/session.json"
+}

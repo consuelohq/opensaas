@@ -1,6 +1,5 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { spawnSync } from 'node:child_process';
 
 import { describe, expect, it } from 'vitest';
 
@@ -11,34 +10,26 @@ import {
   expectSchemaAccepts,
   hasCommand,
   importMediaModule,
-  readManifestArray,
+  readGeneratedManifest,
   removeTempDir,
   runMediaCli,
 } from './helpers';
 
 function writeFixturePng(dir: string): string {
   const path = join(dir, 'fixture.png');
-  const result = spawnSync('ffmpeg', [
-    '-hide_banner',
-    '-loglevel',
-    'error',
-    '-f',
-    'lavfi',
-    '-i',
-    'color=c=white:s=8x8:d=1',
-    '-vf',
-    'drawbox=x=2:y=2:w=4:h=4:color=black:t=fill',
-    '-frames:v',
-    '1',
+  writeFileSync(
     path,
-  ], { encoding: 'utf8' });
-  expect(result.status, 'ffmpeg should generate fixture PNG: ' + result.stderr).toBe(0);
+    Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAGUlEQVR4nGP4TwAwEK2AgYEBBQ+EArJ9AQDEFs8xYAHzPwAAAABJRU5ErkJggg==',
+      'base64',
+    ),
+  );
   return path;
 }
 
 describe('media.svg.convert', () => {
   it('declares a visible media SVG conversion tool', () => {
-    const tools = readManifestArray('tooling/media-tool-manifest.json');
+    const tools = readGeneratedManifest('manifests/generated/tool.manifest.json').tools.map((entry) => entry.definition);
     const tool = tools.find((entry) => entry.name === 'media.svg.convert');
 
     expect(tool).toBeDefined();

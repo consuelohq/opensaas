@@ -264,7 +264,8 @@ type WorkerExecutionContext = {
 
 const DEFAULT_OWNER = 'consuelohq';
 const DEFAULT_REPO = 'opensaas';
-const COCKPIT_ORIGIN = 'https://diffs.consuelohq.com';
+const WORKSPACE_DIFFS_ORIGIN = 'https://internal.consuelohq.com/diffs';
+const LEGACY_WORKER_ORIGIN = 'https://diffs.consuelohq.com';
 const MAX_PAGES = 10;
 const INDEX_OPEN_PULL_LIMIT = 75;
 const INDEX_RECENT_PULL_LIMIT = 75;
@@ -272,7 +273,7 @@ const INDEX_MAX_PAGES = 1;
 const INDEX_ENRICH_LIMIT = 10;
 const HOT_PR_CACHE_LIMIT = 20;
 const HOT_PR_RECENT_WINDOW_MS = 72 * 60 * 60 * 1000;
-const REVIEW_REVALIDATE_MS = 15_000;
+const REVIEW_REVALIDATE_MS = 120_000;
 type PullRequestSearchTarget = Pick<
   PullRequestSummary,
   'title' | 'headRef' | 'baseRef' | 'number' | 'kind' | 'associatedStream'
@@ -364,6 +365,17 @@ export function parsePullRequestLocator(
     };
   }
 
+  const internalDiffsMatch = value.match(
+    /^https:\/\/internal\.consuelohq\.com\/diffs\/([^/]+)\/([^/]+)\/pull\/(\d+)(?:[/?#].*)?$/,
+  );
+  if (internalDiffsMatch) {
+    return {
+      owner: internalDiffsMatch[1] || defaultOwner,
+      repo: internalDiffsMatch[2] || fallbackRepo,
+      number: Number(internalDiffsMatch[3]),
+    };
+  }
+
   const routeMatch = value.match(/^\/?([^/]+)\/([^/]+)\/pull\/(\d+)(?:[/?#].*)?$/);
   if (routeMatch) {
     return {
@@ -392,7 +404,7 @@ export function parseRepoLocator(input: string, defaultRepo = `${DEFAULT_OWNER}/
 }
 
 export function buildDiffCockpitUrl(locator: PullRequestLocator): string {
-  return `${COCKPIT_ORIGIN}/${encodeURIComponent(locator.owner)}/${encodeURIComponent(
+  return `${WORKSPACE_DIFFS_ORIGIN}/${encodeURIComponent(locator.owner)}/${encodeURIComponent(
     locator.repo,
   )}/pull/${locator.number}`;
 }
@@ -744,49 +756,26 @@ export function createGithubPullRequestLoader(options: GithubLoaderOptions = {})
 
       const pullJson = await pullResponse.json();
       const pull = normalizePullRequest(pullJson);
-      const filesJson = await fetchJsonArrayPages(
-        fetcher,
-        `${apiBase}/pulls/${locator.number}/files`,
-        headers,
-        'GitHub pull request files fetch failed',
-      );
       const warnings: string[] = [];
-      const reviewsJson = await fetchPartialJsonArrayPages(
-        fetcher,
-        `${apiBase}/pulls/${locator.number}/reviews`,
-        headers,
-        warnings,
-        'reviews',
-      );
-      const issueCommentsJson = await fetchPartialJsonArrayPages(
-        fetcher,
-        `${apiBase}/issues/${locator.number}/comments`,
-        headers,
-        warnings,
-        'issue comments',
-      );
-      const reviewCommentsJson = await fetchPartialJsonArrayPages(
-        fetcher,
-        `${apiBase}/pulls/${locator.number}/comments`,
-        headers,
-        warnings,
-        'review comments',
-      );
+      // Avoid serial round trips, but cap concurrent GitHub reads per PR to protect rate limits.
+      const schedule = limitConcurrentRequests(3);
+      const [filesJson, reviewsJson, issueCommentsJson, reviewCommentsJson, reviewThreads, checks, commits, streamCommits] = await Promise.all([
+        schedule(() => fetchJsonArrayPages(fetcher, `${apiBase}/pulls/${locator.number}/files`, headers, 'GitHub pull request files fetch failed')),
+        schedule(() => fetchPartialJsonArrayPages(fetcher, `${apiBase}/pulls/${locator.number}/reviews`, headers, warnings, 'reviews')),
+        schedule(() => fetchPartialJsonArrayPages(fetcher, `${apiBase}/issues/${locator.number}/comments`, headers, warnings, 'issue comments')),
+        schedule(() => fetchPartialJsonArrayPages(fetcher, `${apiBase}/pulls/${locator.number}/comments`, headers, warnings, 'review comments')),
+        options.token ? schedule(() => loadReviewThreads(fetcher, locator, headers, warnings)) : Promise.resolve([]),
+        schedule(() => loadChecks(fetcher, apiBase, pull.headSha, headers)),
+        schedule(() => loadPullCommits(fetcher, apiBase, locator.number, headers)),
+        pull.headRef.startsWith('stream/') ? schedule(() => loadStreamCommits(fetcher, apiBase, pull.headRef, headers)) : Promise.resolve([]),
+      ]);
       const files = normalizeFiles(filesJson);
       const comments = [
         ...normalizeReviewComments(reviewsJson, 'review'),
         ...normalizeReviewComments(issueCommentsJson, 'issue-comment'),
         ...normalizeReviewComments(reviewCommentsJson, 'review-comment'),
       ];
-      const reviewThreads = options.token
-        ? await loadReviewThreads(fetcher, locator, headers, warnings)
-        : [];
       const reviewItems = normalizeReviewItems(comments, reviewThreads);
-      const checks = await loadChecks(fetcher, apiBase, pull.headSha, headers);
-      const commits = await loadPullCommits(fetcher, apiBase, locator.number, headers);
-      const streamCommits = pull.headRef.startsWith('stream/')
-        ? await loadStreamCommits(fetcher, apiBase, pull.headRef, headers)
-        : [];
 
       return {
         locator,
@@ -802,6 +791,21 @@ export function createGithubPullRequestLoader(options: GithubLoaderOptions = {})
       };
     } catch (error: unknown) {
       throw new Error(`GitHub live pull request load failed: ${getErrorMessage(error)}`);
+    }
+  };
+}
+
+function limitConcurrentRequests(limit: number) {
+  let active = 0;
+  const waiting: Array<() => void> = [];
+  return async function scheduled<T>(operation: () => Promise<T>): Promise<T> {
+    if (active >= limit) await new Promise<void>((resolve) => { waiting.push(resolve); });
+    active += 1;
+    try {
+      return await operation();
+    } finally {
+      active -= 1;
+      waiting.shift()?.();
     }
   };
 }
@@ -848,10 +852,51 @@ export function buildFileTree(files: GitHubPullRequestFile[]): FileTreeNode {
   return root;
 }
 
-export function renderIndexPage(repo: RepoLocator, initialData: PullRequestIndexData | null = null, initialEtag = ''): string {
-  const apiPath = `/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/pulls`;
+export type DiffCockpitRenderOptions = {
+  mountPath?: string;
+  apiBasePath?: string;
+  writeApiBasePath?: string;
+  codeRoot?: string;
+  defaultBranch?: string;
+};
+
+function normalizedMountPath(value: string | undefined): string {
+  const trimmed = value?.trim() ?? '';
+  if (!trimmed || trimmed === '/') return '';
+  return `/${trimmed.replace(/^\/+|\/+$/g, '')}`;
+}
+
+function mountedPath(path: string, options: DiffCockpitRenderOptions): string {
+  return `${normalizedMountPath(options.mountPath)}${path.startsWith('/') ? path : `/${path}`}`;
+}
+
+function repoApiBasePath(repo: RepoLocator, options: DiffCockpitRenderOptions): string {
+  const configuredBase = options.apiBasePath?.trim();
+  const base = configuredBase
+    ? `/${configuredBase.replace(/^\/+|\/+$/g, '')}`
+    : '/api';
+  return `${base}/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}`;
+}
+
+function repoWriteApiBasePath(repo: RepoLocator, options: DiffCockpitRenderOptions): string {
+  const configuredBase = options.writeApiBasePath?.trim();
+  if (!configuredBase) return repoApiBasePath(repo, options);
+  const base = `/${configuredBase.replace(/^\/+|\/+$/g, '')}`;
+  return `${base}/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}`;
+}
+
+export function renderIndexPage(
+  repo: RepoLocator,
+  initialData: PullRequestIndexData | null = null,
+  initialEtag = '',
+  options: DiffCockpitRenderOptions = {},
+): string {
+  const apiPath = `${repoApiBasePath(repo, options)}/pulls`;
   const repoLabel = `${repo.owner}/${repo.repo}`;
-  const mainCodePath = `/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/tree/main/packages`;
+  const defaultBranch = options.defaultBranch?.trim() || 'main';
+  const codeRoot = options.codeRoot === undefined ? 'packages' : normalizeCodePath(options.codeRoot);
+  const mainCodePath = mountedPath(buildCodeBrowserPath(repo, defaultBranch, codeRoot), options);
+  const homePath = normalizedMountPath(options.mountPath) || '/';
   const initialDataScript = initialData
     ? `  <script id="diff-cockpit-index-initial-data" type="application/json">${escapeScriptJson(initialData)}</script>\n`
     : '';
@@ -869,7 +914,7 @@ export function renderIndexPage(repo: RepoLocator, initialData: PullRequestIndex
 <body class="index-page" data-api-path="${escapeAttribute(apiPath)}" data-active-stream="" data-command-palette-state="closed">
   <div class="shell index-shell">
     <div class="wiki-topbar" data-pagefind-ignore>
-      <a class="brand" href="/">Consuelo Diffs</a>
+      <a class="brand" href="${escapeAttribute(homePath)}">Consuelo Diffs</a>
       <nav class="nav" aria-label="Primary">
         <button class="command-button command-button-plain" type="button" data-command-trigger aria-controls="diff-command-palette" aria-expanded="false"><span>Search</span><span class="command-shortcut">⌘K</span></button>
       </nav>
@@ -883,6 +928,7 @@ export function renderIndexPage(repo: RepoLocator, initialData: PullRequestIndex
         <button data-filter="failing">Failing</button>
         <button data-filter="draft">Draft</button>
         <button data-filter="open">Open</button>
+        <span class="muted" data-index-load-status role="status" aria-live="polite"></span>
       </div>
       <div class="stream-filter-row" data-stream-filter-row hidden>
         <span class="filter-label">Stream:</span>
@@ -903,7 +949,7 @@ export function renderIndexPage(repo: RepoLocator, initialData: PullRequestIndex
         <label class="command-input-row" for="diff-command-input"><span class="sr-only">Search pull requests and pages</span><input id="diff-command-input" class="command-input" type="search" placeholder="Search PRs or jump pages, e.g. code.call" autocomplete="off" spellcheck="false" /></label>
         <div class="command-section"><p class="command-section-title">Page</p><div class="command-list" data-command-pages>
           <button class="command-item" type="button" data-command-page data-command-label="Go to: PR inbox" data-command-url="#pull-requests"><span class="command-key">GI</span><span><strong>Go to: PR inbox</strong><small>Show the pull request inbox.</small></span></button>
-          <button class="command-item" type="button" data-command-page data-command-label="Go to: Main code" data-command-url="${escapeAttribute(mainCodePath)}"><span class="command-key">GC</span><span><strong>Go to: Main code</strong><small>Open the main packages browser.</small></span></button>
+          <button class="command-item" type="button" data-command-page data-command-label="Go to: Main code" data-command-url="${escapeAttribute(mainCodePath)}"><span class="command-key">GC</span><span><strong>Go to: Main code</strong><small>Open the main code browser.</small></span></button>
           <button class="command-item" type="button" data-command-page data-command-label="Go to: Merges" data-command-filter="all" data-command-url="#recently-merged"><span class="command-key">GM</span><span><strong>Go to: Merges</strong><small>Jump to merging and recently merged PRs.</small></span></button>
           <button class="command-item" type="button" data-command-page data-command-label="Go to: Streams" data-command-filter="stream" data-command-url="#streams"><span class="command-key">GS</span><span><strong>Go to: Streams</strong><small>Show stream pull requests.</small></span></button>
           <button class="command-item" type="button" data-command-page data-command-label="Go to: Failing PRs" data-command-filter="failing" data-command-url="#pull-requests"><span class="command-key">GF</span><span><strong>Go to: Failing PRs</strong><small>Filter conflicts and failed checks.</small></span></button>
@@ -918,20 +964,29 @@ export function renderIndexPage(repo: RepoLocator, initialData: PullRequestIndex
       <div class="footer-links" aria-label="Footer links"><a href="#pull-requests">Inbox</a></div>
     </footer>
   </div>
-${initialDataScript}${initialEtagScript}  <script type="module">${renderIndexClientScript(apiPath, repo)}</script>
+${initialDataScript}${initialEtagScript}  <script type="module">${renderIndexClientScript(apiPath, repo, options)}</script>
 </body>
 </html>`;
 }
 
-export function renderReviewPage(locator: PullRequestLocator, initialData: PullRequestReviewData | null = null, initialEtag = ''): string {
-  const apiPath = `/api/${encodeURIComponent(locator.owner)}/${encodeURIComponent(
-    locator.repo,
-  )}/pull/${locator.number}`;
+export function renderReviewPage(
+  locator: PullRequestLocator,
+  initialData: PullRequestReviewData | null = null,
+  initialEtag = '',
+  options: DiffCockpitRenderOptions = {},
+  initialSummary: Pick<PullRequestSummary, 'number' | 'title' | 'author' | 'headRef' | 'baseRef' | 'changedFiles'> | null = null,
+): string {
+  const apiPath = `${repoApiBasePath(locator, options)}/pull/${locator.number}`;
+  const writeApiPath = `${repoWriteApiBasePath(locator, options)}/pull/${locator.number}`;
+  const homePath = normalizedMountPath(options.mountPath) || '/';
   const initialDataScript = initialData
     ? `  <script id="diff-cockpit-initial-data" type="application/json">${escapeScriptJson(initialData)}</script>\n`
     : '';
   const initialEtagScript = initialEtag
     ? `  <script id="diff-cockpit-initial-etag" type="application/json">${escapeScriptJson(initialEtag)}</script>\n`
+    : '';
+  const initialSummaryScript = initialSummary
+    ? `  <script id="diff-cockpit-initial-summary" type="application/json">${escapeScriptJson(initialSummary)}</script>\n`
     : '';
 
   return `<!doctype html>
@@ -944,10 +999,10 @@ export function renderReviewPage(locator: PullRequestLocator, initialData: PullR
   )}#${locator.number}</title>
   <style>${renderStyles()}</style>
 </head>
-<body class="review-page" data-review-drawer="closed" data-ai-sidebar="closed" data-file-pane-collapsed="false" data-file-pane-drawer="open" data-comments-visible="true" data-current-view="diff" data-api-path="${escapeAttribute(apiPath)}">
+<body class="review-page" data-review-drawer="closed" data-file-pane-collapsed="false" data-file-pane-drawer="closed" data-comments-visible="true" data-current-view="diff" data-api-path="${escapeAttribute(apiPath)}">
   <header class="topbar review-topbar">
     <div>
-      <p class="eyebrow"><a href="/">Consuelo Diffs</a></p>
+      <p class="eyebrow"><a href="${escapeAttribute(homePath)}">Consuelo Diffs</a></p>
       <h1 id="pr-title">${escapeHtml(locator.owner)}/${escapeHtml(locator.repo)} #${
         locator.number
       }</h1>
@@ -969,7 +1024,10 @@ export function renderReviewPage(locator: PullRequestLocator, initialData: PullR
       <div id="tree-root" class="tree-root" data-trees-library="@pierre/trees">Loading…</div>
     </aside>
     <div id="file-pane-resizer" class="file-pane-resizer" role="separator" aria-label="Resize file pane" aria-orientation="vertical"></div>
-    <button id="mobile-files-toggle" class="mobile-files-toggle" type="button" aria-label="Close files" aria-expanded="true">×</button>
+    <button id="mobile-files-toggle" class="mobile-files-toggle" type="button" aria-label="Open files" aria-expanded="false">
+      <span class="mobile-files-icon mobile-files-icon-tree" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="M5 6.5h5l2 2h7v9H5z"></path><path d="M8 12h8M8 15h8"></path></svg></span>
+      <span class="mobile-files-icon mobile-files-icon-close" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><path d="m7 7 10 10M17 7 7 17"></path></svg></span>
+    </button>
     <button id="mobile-file-backdrop" class="mobile-file-backdrop" type="button" aria-label="Close files"></button>
     <section class="review-pane" aria-label="File diff">
       <div id="selected-file" class="selected-file">Select a file</div>
@@ -977,7 +1035,7 @@ export function renderReviewPage(locator: PullRequestLocator, initialData: PullR
     </section>
     <aside id="review-drawer" class="review-drawer" aria-label="Review panel" aria-hidden="true">
       <div class="drawer-head">
-        <strong>panel</strong>
+        <strong>Review</strong>
         <button id="drawer-close" type="button">Close</button>
       </div>
       <div id="drawer-content" class="drawer-content">
@@ -999,28 +1057,31 @@ export function renderReviewPage(locator: PullRequestLocator, initialData: PullR
         <div id="drawer-commits" class="drawer-section drawer-section-closed"><div class="drawer-section-head"><button class="drawer-section-toggle" type="button" data-drawer-section-toggle="commits" aria-expanded="false"><span>Commits</span><span class="drawer-section-caret">›</span></button></div></div>
       </div>
     </aside>
-    <aside id="ai-comments-sidebar" class="ai-comments-sidebar" aria-label="Comments" aria-hidden="true">
-      <div class="ai-comments-head">
-        <div><strong>Comments</strong><p id="ai-comments-summary" class="muted">Loading review comments…</p></div>
-        <button id="ai-comments-close" type="button">Close</button>
-      </div>
-      <div id="ai-comments-content" class="ai-comments-content"><div class="comment-card muted">Loading CodeRabbit and Codex comments…</div></div>
-    </aside>
+    <button id="review-panel-backdrop" class="review-panel-backdrop" type="button" aria-label="Close review panel"></button>
     <div id="commit-popover" class="commit-popover" role="dialog" aria-label="Commits" hidden></div>
     <div id="mergeability-popover" class="commit-popover" role="dialog" aria-label="Mergeability" hidden></div>
   </main>
-${initialDataScript}${initialEtagScript}  <script type="module">${renderReviewClientScript(apiPath)}</script>
+${initialDataScript}${initialEtagScript}${initialSummaryScript}  <script type="module">${renderReviewClientScript(apiPath, writeApiPath)}</script>
 </body>
 </html>`;
 }
 
 
 
-export function renderCodeBrowserPage(repo: RepoLocator, ref = 'main', path = 'packages'): string {
+export function renderCodeBrowserPage(
+  repo: RepoLocator,
+  ref = 'main',
+  path = 'packages',
+  options: DiffCockpitRenderOptions = {},
+): string {
   const normalizedPath = normalizeCodePath(path);
-  const apiPath = `/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/code?ref=${encodeURIComponent(ref)}&path=${encodeURIComponent(normalizedPath)}`;
-  const historyPath = buildCodeHistoryPath(repo, ref, normalizedPath);
+  const apiPath = `${repoApiBasePath(repo, options)}/code?ref=${encodeURIComponent(ref)}&path=${encodeURIComponent(normalizedPath)}`;
+  const historyPath = mountedPath(buildCodeHistoryPath(repo, ref, normalizedPath), options);
   const repoLabel = `${repo.owner}/${repo.repo}`;
+  const homePath = normalizedMountPath(options.mountPath) || '/';
+  const pullRequestsPath = mountedPath(`/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}`, options);
+  const codeRoot = options.codeRoot === undefined ? 'packages' : normalizeCodePath(options.codeRoot);
+  const rootCodePath = mountedPath(buildCodeBrowserPath(repo, ref, codeRoot), options);
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -1032,10 +1093,10 @@ export function renderCodeBrowserPage(repo: RepoLocator, ref = 'main', path = 'p
 <body class="code-page" data-api-path="${escapeAttribute(apiPath)}">
   <div class="shell code-shell">
     <div class="wiki-topbar" data-pagefind-ignore>
-      <a class="brand" href="/">Consuelo Diffs</a>
+      <a class="brand" href="${escapeAttribute(homePath)}">Consuelo Diffs</a>
       <nav class="nav" aria-label="Primary">
-        <a href="/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}">Pull Requests</a>
-        <a class="active-nav" href="${escapeAttribute(buildCodeBrowserPath(repo, ref, 'packages'))}">${escapeHtml(ref)}</a>
+        <a href="${escapeAttribute(pullRequestsPath)}">Pull Requests</a>
+        <a class="active-nav" href="${escapeAttribute(rootCodePath)}">${escapeHtml(ref)}</a>
       </nav>
     </div>
     <header class="code-hero" data-pagefind-ignore>
@@ -1065,11 +1126,20 @@ export function renderCodeBrowserPage(repo: RepoLocator, ref = 'main', path = 'p
 </html>`;
 }
 
-export function renderHistoryPage(repo: RepoLocator, ref = 'main', path = 'packages'): string {
+export function renderHistoryPage(
+  repo: RepoLocator,
+  ref = 'main',
+  path = 'packages',
+  options: DiffCockpitRenderOptions = {},
+): string {
   const normalizedPath = normalizeCodePath(path);
-  const apiPath = `/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/history?ref=${encodeURIComponent(ref)}&path=${encodeURIComponent(normalizedPath)}`;
-  const codePath = buildCodeBrowserPath(repo, ref, normalizedPath);
+  const apiPath = `${repoApiBasePath(repo, options)}/history?ref=${encodeURIComponent(ref)}&path=${encodeURIComponent(normalizedPath)}`;
+  const codePath = mountedPath(buildCodeBrowserPath(repo, ref, normalizedPath), options);
   const repoLabel = `${repo.owner}/${repo.repo}`;
+  const homePath = normalizedMountPath(options.mountPath) || '/';
+  const pullRequestsPath = mountedPath(`/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}`, options);
+  const codeRoot = options.codeRoot === undefined ? 'packages' : normalizeCodePath(options.codeRoot);
+  const rootCodePath = mountedPath(buildCodeBrowserPath(repo, ref, codeRoot), options);
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -1081,10 +1151,10 @@ export function renderHistoryPage(repo: RepoLocator, ref = 'main', path = 'packa
 <body class="code-page" data-api-path="${escapeAttribute(apiPath)}">
   <div class="shell code-shell">
     <div class="wiki-topbar" data-pagefind-ignore>
-      <a class="brand" href="/">Consuelo Diffs</a>
+      <a class="brand" href="${escapeAttribute(homePath)}">Consuelo Diffs</a>
       <nav class="nav" aria-label="Primary">
-        <a href="/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}">Pull Requests</a>
-        <a class="active-nav" href="${escapeAttribute(buildCodeBrowserPath(repo, ref, 'packages'))}">${escapeHtml(ref)}</a>
+        <a href="${escapeAttribute(pullRequestsPath)}">Pull Requests</a>
+        <a class="active-nav" href="${escapeAttribute(rootCodePath)}">${escapeHtml(ref)}</a>
       </nav>
     </div>
     <header class="code-hero" data-pagefind-ignore>
@@ -1104,13 +1174,37 @@ export function renderHistoryPage(repo: RepoLocator, ref = 'main', path = 'packa
 </html>`;
 }
 
+function renderStandaloneSetupPage(): string {
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Consuelo Diffs · Configure repository</title>
+  <style>
+    :root { color-scheme: light dark; font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 32px; }
+    main { width: min(680px, 100%); }
+    code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  </style>
+</head>
+<body>
+  <main>
+    <p>Consuelo Diffs</p>
+    <h1>Configure a default repository</h1>
+    <p>This standalone Diffs worker has no default repository. Set <code>DIFF_COCKPIT_DEFAULT_REPO</code> to an explicit <code>owner/repository</code> value, or use the workspace-scoped Consuelo Diffs route.</p>
+  </main>
+</body>
+</html>`;
+}
+
 export function createWorker(options: GithubLoaderOptions = {}) {
   memoryJsonCache.clear();
   return {
     async fetch(request: Request, env?: DiffCockpitEnv, ctx?: WorkerExecutionContext) {
       const url = new URL(request.url);
       const token = options.token ?? env?.GITHUB_TOKEN ?? env?.GH_TOKEN;
-      const defaultRepo = env?.DIFF_COCKPIT_DEFAULT_REPO ?? `${DEFAULT_OWNER}/${DEFAULT_REPO}`;
+      const defaultRepo = env?.DIFF_COCKPIT_DEFAULT_REPO?.trim() ?? '';
       const reviewLoader = createGithubPullRequestLoader({ fetcher: options.fetcher, token });
       const indexLoader = createGithubPullRequestIndexLoader({ fetcher: options.fetcher, token });
       const codeLoader = createGithubCodeBrowserLoader({ fetcher: options.fetcher, token });
@@ -1222,6 +1316,7 @@ export function createWorker(options: GithubLoaderOptions = {}) {
       }
 
       if (url.pathname === '/') {
+        if (!defaultRepo) return html(renderStandaloneSetupPage());
         try {
           const repo = parseRepoLocator('', defaultRepo);
           const indexApiUrl = new URL(`${url.origin}/api/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/pulls`);
@@ -1266,6 +1361,12 @@ export function createWorker(options: GithubLoaderOptions = {}) {
       }
 
       let locator: PullRequestLocator;
+      if (!defaultRepo && /^\/\d+\/?$/.test(url.pathname)) {
+        return new Response(renderStandaloneSetupPage(), {
+          status: 404,
+          headers: { 'content-type': 'text/html; charset=utf-8' },
+        });
+      }
       try {
         locator = parsePullRequestLocator(url.pathname, defaultRepo);
       } catch (error: unknown) {
@@ -2198,7 +2299,7 @@ async function handleGithubWebhook(deps: GithubWebhookDeps): Promise<Response> {
     return internalJson({ ok: false, error: 'missing pull request locator' }, 400);
   }
   try {
-    const invalidated = await invalidatePullRequestReviewCache(deps.edgeCache, COCKPIT_ORIGIN, { owner, repo: repoName, number: pullNumber });
+    const invalidated = await invalidatePullRequestReviewCache(deps.edgeCache, LEGACY_WORKER_ORIGIN, { owner, repo: repoName, number: pullNumber });
     return internalJson({ ok: true, event, action, invalidated: [invalidated.path], edgeInvalidated: invalidated.edgeInvalidated });
   } catch (error: unknown) {
     return internalJson({ ok: false, error: getErrorMessage(error) }, 502);
@@ -2265,7 +2366,11 @@ async function handleCacheRefresh(deps: CacheRefreshDeps): Promise<Response> {
     return internalJson({ error: `invalid JSON body: ${getErrorMessage(error)}` }, 400);
   }
 
-  const repo = parseRepoLocator('', stringValue(input.repo, deps.defaultRepo));
+  const repoInput = stringValue(input.repo, deps.defaultRepo).trim();
+  if (!repoInput) {
+    return internalJson({ error: 'repository is required; set repo or DIFF_COCKPIT_DEFAULT_REPO' }, 400);
+  }
+  const repo = parseRepoLocator('', repoInput);
   const pullNumbers = normalizeRefreshPulls(input.pulls);
   const codePaths = normalizeRefreshCodePaths(input.codePaths);
   const requestOrigin = new URL(deps.request.url).origin;
@@ -2992,10 +3097,15 @@ body[data-file-pane-collapsed="true"] .file-pane, body[data-file-pane-collapsed=
 .file-pane-resizer:hover { opacity:1; }
 .pane-heading { position:sticky; top:0; z-index:2; display:flex; justify-content:space-between; padding:14px 14px 10px; background:var(--paper); border-bottom:1px solid var(--line); font-weight:650; }
 .tree-root { padding:8px; }
-.tree-node { display:flex; align-items:center; gap:6px; width:100%; text-align:left; padding:5px 8px; color:var(--ink); overflow:hidden; white-space:nowrap; }
+.tree-node { display:flex; align-items:center; gap:7px; width:100%; min-height:30px; text-align:left; padding:5px 8px; color:var(--ink); overflow:hidden; white-space:nowrap; border-radius:6px; }
 .tree-label { overflow:hidden; text-overflow:ellipsis; flex:1; }
 .tree-stats { color:var(--quiet); margin-left:auto; font-variant-numeric:tabular-nums; }
-.file-icon { color:var(--quiet); width:16px; text-align:center; }
+.review-page .file-icon { display:inline-flex; align-items:center; justify-content:center; width:22px; min-width:22px; height:18px; border:1px solid color-mix(in srgb, var(--line) 74%, transparent); border-radius:4px; color:var(--muted); background:color-mix(in srgb, var(--surface) 72%, transparent); font:600 9px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; letter-spacing:-.02em; }
+.file-status-dot { width:7px; height:7px; flex:0 0 7px; border-radius:999px; background:var(--quiet); }
+.file-status-dot[data-status="added"] { background:#3fb950; }
+.file-status-dot[data-status="removed"] { background:#f85149; }
+.file-status-dot[data-status="renamed"] { background:#a371f7; }
+.file-status-dot[data-status="modified"] { background:#d29922; }
 .tree-node:hover, .tree-node[aria-current="true"], .tree-node.is-visible { background:var(--soft); text-decoration:none; }
 .tree-node.file { cursor:pointer; }
 .tree-children { margin-left:14px; padding-left:10px; border-left:1px solid var(--line); }
@@ -3008,7 +3118,6 @@ body[data-file-pane-collapsed="true"] .file-pane, body[data-file-pane-collapsed=
 .tree-depth-3 { --tree-depth:3; }
 .directory-toggle { display:flex; align-items:center; gap:6px; width:100%; text-align:left; padding:5px 8px; color:var(--ink); }
 .tree-twist { color:var(--quiet); width:12px; text-align:center; }
-.status { color:var(--quiet); font-size:12px; margin-right:5px; }
 .review-pane { min-width:0; overflow-y:auto; overflow-x:hidden; background:var(--paper); overscroll-behavior:contain; }
 .selected-file { position:sticky; top:0; z-index:1; padding:12px 16px; border-bottom:1px solid var(--line); background:var(--paper); font-size:13px; color:var(--muted); overflow-wrap:anywhere; }
 .diff-root { padding:0; max-width:100%; overflow-x:hidden; }
@@ -3026,26 +3135,21 @@ body[data-comments-visible="false"] .inline-comment { display:none; }
 .diff-line.add { background:rgba(31, 136, 61, .18); }
 .diff-line.del { background:rgba(248, 81, 73, .18); }
 .diff-line.hunk { color:var(--quiet); background:var(--soft); }
-.mobile-files-toggle { display:none; position:fixed; left:18px; bottom:18px; z-index:11; width:54px; height:54px; align-items:center; justify-content:center; border-radius:999px; border:1px solid var(--line); background:var(--surface); box-shadow:0 12px 30px rgba(0,0,0,.28); font-size:22px; }
+.mobile-files-toggle { display:none; position:fixed; left:18px; bottom:calc(18px + env(safe-area-inset-bottom)); z-index:11; width:54px; height:54px; align-items:center; justify-content:center; border-radius:999px; border:1px solid var(--line); background:var(--surface); box-shadow:0 12px 30px rgba(0,0,0,.28); }
+.mobile-files-icon { width:22px; height:22px; display:inline-flex; align-items:center; justify-content:center; }
+.mobile-files-icon svg { width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+.mobile-files-icon-close { display:none; }
+body[data-file-pane-drawer="open"] .mobile-files-icon-tree { display:none; }
+body[data-file-pane-drawer="open"] .mobile-files-icon-close { display:inline-flex; }
 .mobile-file-backdrop { display:none; }
-.ai-comments-sidebar { position:absolute; top:0; right:0; width:min(380px, 36vw); height:100%; transform:translateX(0); transition:transform .16s ease; border-left:1px solid var(--line); background:var(--paper); z-index:4; overflow:auto; }
-body[data-ai-sidebar="closed"] .ai-comments-sidebar { transform:translateX(100%); }
-body[data-ai-sidebar="open"] .review-pane { margin-right:min(380px, 36vw); }
-.ai-comments-head { position:sticky; top:0; z-index:2; display:flex; justify-content:space-between; align-items:flex-start; gap:12px; padding:14px; border-bottom:1px solid var(--line); background:var(--paper); }
-.ai-comments-head p { margin:4px 0 0; font-size:12px; }
-.ai-comments-content { display:grid; gap:8px; padding:10px; }
-.ai-review-card { border:1px solid var(--line); border-radius:12px; background:var(--surface); overflow:hidden; }
-.ai-review-card.is-resolved { opacity:.68; }
-.ai-review-summary { width:100%; display:grid; grid-template-columns:auto minmax(0, 1fr) auto auto; gap:8px; align-items:start; padding:10px; text-align:left; }
-.ai-review-main { min-width:0; display:grid; gap:3px; }
-.ai-review-main strong, .ai-review-main span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.ai-review-main span { color:var(--muted); font-size:12px; }
-.ai-review-expanded { border-top:1px solid var(--line); padding:10px; display:grid; gap:10px; }
 .ai-review-actions { display:flex; flex-wrap:wrap; gap:6px; }
 .ai-review-action { display:inline-flex; align-items:center; min-height:28px; border:1px solid var(--line); border-radius:999px; padding:4px 9px; color:var(--muted); background:var(--paper); font-size:12px; }
-@media (max-width: 1120px) { body[data-ai-sidebar="open"] .review-pane { margin-right:0; } .ai-comments-sidebar { width:min(420px, 92vw); z-index:6; box-shadow:-18px 0 45px rgba(0,0,0,.22); } }
-.review-drawer { position:absolute; top:0; right:0; width:min(480px, 92vw); height:100%; transform:translateX(100%); transition:transform .16s ease; background:var(--surface); border-left:1px solid var(--line); box-shadow:-18px 0 45px rgba(0, 0, 0, .22); z-index:5; overflow:auto; }
+.merge-confirm-actions { display:flex; align-items:center; justify-content:flex-end; gap:8px; margin-top:12px; }
+.merge-confirm-button { min-height:30px; padding:5px 11px; border-radius:999px; }
+.review-drawer { position:absolute; top:0; right:0; width:min(520px, 94vw); height:100%; transform:translateX(100%); transition:transform .16s ease; background:var(--surface); border-left:1px solid var(--line); box-shadow:-18px 0 45px rgba(0, 0, 0, .22); z-index:5; overflow:auto; }
 body[data-review-drawer="open"] .review-drawer { transform:translateX(0); }
+.review-panel-backdrop { display:none; position:absolute; inset:0; z-index:4; background:transparent; cursor:default; }
+body[data-review-drawer="open"] .review-panel-backdrop { display:block; }
 .drawer-head { position:sticky; top:0; z-index:2; display:flex; justify-content:space-between; align-items:center; padding:14px; border-bottom:1px solid var(--line); background:var(--surface); }
 .drawer-content { padding:14px; display:grid; gap:10px; }
 .action-grid { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:8px; }
@@ -3056,8 +3160,14 @@ body[data-review-drawer="open"] .review-drawer { transform:translateX(0); }
 .drawer-section-state { color:var(--quiet); font-size:11px; font-weight:500; text-transform:uppercase; letter-spacing:.05em; }
 .drawer-section-caret { color:var(--quiet); font-size:14px; }
 .drawer-section-body { display:grid; gap:0; }
-.comment-card, .commit-card { padding:10px 12px; border-top:1px solid var(--line); }
+.comment-card, .commit-card { padding:12px 14px; border-top:1px solid var(--line); }
 .drawer-section-body > .comment-card:first-child, .drawer-section-body > .commit-card:first-child { border-top:0; }
+.review-comment-card { display:grid; gap:10px; cursor:default; }
+.review-comment-card[data-comment-jump] { cursor:pointer; }
+.review-comment-card[data-comment-jump]:hover { background:color-mix(in srgb, var(--soft) 68%, transparent); }
+.review-comment-head { display:flex; align-items:flex-start; justify-content:space-between; gap:10px; min-width:0; }
+.review-comment-source { display:flex; align-items:center; gap:7px; min-width:0; flex-wrap:wrap; }
+.review-comment-location { color:var(--muted); font-size:12px; overflow-wrap:anywhere; }
 .review-summary-card { display:flex; flex-wrap:wrap; gap:6px; }
 .summary-chip { margin-right:0; cursor:pointer; }
 .prompt-preview { max-height:360px; overflow:auto; }
@@ -3075,12 +3185,25 @@ body[data-review-drawer="open"] .review-drawer { transform:translateX(0); }
 .commit-title { margin:0 0 4px; font-weight:650; }
 .commit-delta { color:var(--quiet); }
 .comment-meta, .commit-meta { color:var(--quiet); font-size:12px; margin-bottom:5px; }
-.comment-body { font-size:13px; line-height:1.5; }
+.comment-body { min-width:0; font-size:14px; line-height:1.62; overflow-wrap:anywhere; word-break:break-word; }
 .comment-body pre, .comment-body code { font-family:Menlo, Monaco, Consolas, monospace; background:var(--soft); border-radius:4px; padding:1px 4px; }
+.comment-body sub { font-size:11px; line-height:1.3; vertical-align:baseline; }
+.comment-body sub sub { display:inline-flex; align-items:center; margin:1px 2px 1px 0; padding:2px 6px; border:1px solid var(--line); border-radius:999px; background:var(--soft); color:var(--muted); font-size:10px; font-weight:650; letter-spacing:.02em; }
 .comment-jump { display:inline-flex; margin-left:6px; color:var(--accent); }
 .badge { display:inline-flex; align-items:center; border:1px solid var(--line); border-radius:999px; padding:2px 7px; font-size:11px; color:var(--muted); background:var(--surface); }
 .kbd { font:11px/1.2 "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; border:1px solid var(--line); border-radius:5px; padding:2px 5px; background:var(--soft); color:var(--ink); }
 .error { border:1px solid var(--danger); color:var(--danger); background:var(--surface); padding:14px; border-radius:10px; }
+@media (min-width: 761px) and (max-width: 1366px) {
+  .review-page .layout { grid-template-columns:minmax(0, 1fr); }
+  .review-page .file-pane-resizer { display:none; }
+  .review-page .file-pane { position:fixed; left:0; top:76px; bottom:0; width:min(420px, 88vw); z-index:9; transform:translateX(-102%); transition:transform .18s ease; border-right:1px solid var(--line); border-top:0; box-shadow:20px 0 50px rgba(0,0,0,.32); }
+  .review-page[data-file-pane-collapsed="true"] .file-pane { display:block; }
+  body[data-file-pane-drawer="open"] .file-pane { transform:translateX(0); }
+  .review-page .mobile-files-toggle { display:flex; }
+  .review-page .mobile-file-backdrop { display:none; position:fixed; inset:76px 0 0; z-index:8; background:rgba(0,0,0,.22); }
+  body[data-file-pane-drawer="open"] .mobile-file-backdrop { display:block; }
+  body[data-review-drawer="open"] .review-panel-backdrop { background:rgba(0,0,0,.12); }
+}
 @media (max-width: 760px) {
   .wiki-topbar { align-items:flex-start; flex-direction:column; padding:20px 0; }
   .nav { gap:14px; flex-wrap:wrap; }
@@ -3139,6 +3262,11 @@ body[data-review-drawer="open"] .review-drawer { transform:translateX(0); }
   body[data-file-pane-drawer="open"] .mobile-files-toggle { background:var(--ink); color:var(--paper); }
   .mobile-file-backdrop { display:none; position:fixed; inset:0; z-index:8; background:rgba(0,0,0,.35); }
   body[data-file-pane-drawer="open"] .mobile-file-backdrop { display:block; }
+  .review-drawer { width:100vw; max-width:100vw; border-left:0; }
+  .drawer-content { padding:10px; }
+  .comment-card, .commit-card { padding:12px; }
+  .review-comment-head { align-items:flex-start; }
+  .comment-body { font-size:14px; line-height:1.65; }
 
 @media (max-width: 760px) {
   .index-shell{max-width:calc(100vw - 28px);padding:0 0 calc(92px + env(safe-area-inset-bottom));}
@@ -3313,16 +3441,24 @@ function escapeAttribute(value) { return escapeHtml(value); }
 `;
 }
 
-function renderIndexClientScript(apiPath: string, repo: RepoLocator): string {
-  const routePrefix = `/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/pull/`;
+function renderIndexClientScript(
+  apiPath: string,
+  repo: RepoLocator,
+  options: DiffCockpitRenderOptions = {},
+): string {
+  const routePrefix = `${mountedPath(
+    `/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.repo)}/pull`,
+    options,
+  )}/`;
   const repoLabel = `${repo.owner}/${repo.repo}`;
   return `
 const apiPath = ${JSON.stringify(apiPath)};
 const routePrefix = ${JSON.stringify(routePrefix)};
 const repoLabel = ${JSON.stringify(repoLabel)};
-const cacheSchemaVersion = 'v4-mergeability-live';
+const cacheSchemaVersion = 'v5-server-snapshot-progressive';
 const cacheKey = 'diff-cockpit:index:' + cacheSchemaVersion + ':' + apiPath;
 const staleCachePrefix = 'diff-cockpit:index:';
+const clientCacheTtlMs = 24 * 60 * 60 * 1000;
 const sectionPageSize = 10;
 let pulls = [];
 let activeFilter = 'all';
@@ -3331,6 +3467,7 @@ let activeStream = '';
 let showAllStreams = false;
 const sectionLimits = {};
 const sectionsRoot = document.querySelector('[data-sections-root]');
+const indexLoadStatus = document.querySelector('[data-index-load-status]');
 const streamRow = document.querySelector('[data-stream-filter-row]');
 const streamLabel = document.querySelector('[data-stream-filter-label]');
 const clearStream = document.querySelector('[data-clear-stream]');
@@ -3458,7 +3595,7 @@ function openCommandPalette() { commandPalette.hidden = false; commandBackdrop.h
 function closeCommandPalette() { commandPalette.hidden = true; commandBackdrop.hidden = true; document.body.dataset.commandPaletteState = 'closed'; commandTriggers.forEach((trigger) => trigger.setAttribute('aria-expanded', 'false')); }
 function updateActiveFilterButtons(filter) { document.querySelectorAll('[data-filter]').forEach((item) => item.classList.toggle('active', item.dataset.filter === filter)); }
 function runPageCommand(button) { const filter = button.getAttribute('data-command-filter'); const url = button.getAttribute('data-command-url') || '#pull-requests'; if (filter) { activeFilter = filter; updateActiveFilterButtons(filter); resetSectionLimits(); renderSections(); } closeCommandPalette(); if (url.startsWith('#')) { const sectionId = url.slice(1); const target = document.querySelector('[data-section-id="' + sectionId + '"]') || document.querySelector(url); if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' }); } else window.location.href = url; }
-function readCachedIndex() { try { const cached = localStorage.getItem(cacheKey); return cached ? JSON.parse(cached) : null; } catch { localStorage.removeItem(cacheKey); return null; } }
+function readCachedIndex() { try { const cached = localStorage.getItem(cacheKey); if (!cached) return null; const parsed = JSON.parse(cached); const cachedAt = Number(parsed && parsed._cachedAt || 0); if (!cachedAt || Date.now() - cachedAt > clientCacheTtlMs) { localStorage.removeItem(cacheKey); return null; } return parsed; } catch { localStorage.removeItem(cacheKey); return null; } }
 function mergePullWithCache(pull, cachedPull) { if (!cachedPull) return pull; return { ...cachedPull, ...pull, additions: Number(pull.additions || 0) || Number(cachedPull.additions || 0), deletions: Number(pull.deletions || 0) || Number(cachedPull.deletions || 0), changedFiles: Number(pull.changedFiles || 0) || Number(cachedPull.changedFiles || 0), checkStatus: pull.checkStatus === 'unknown' ? cachedPull.checkStatus : pull.checkStatus, reviewStatus: pull.reviewStatus === 'unknown' || pull.reviewStatus === 'none' ? cachedPull.reviewStatus : pull.reviewStatus, mergeability: pull.mergeability === 'unknown' ? cachedPull.mergeability : pull.mergeability }; }
 function mergeIndexWithCache(data, cached) { if (!cached || !Array.isArray(cached.pulls) || !Array.isArray(data.pulls)) return data; const cachedByNumber = new Map(cached.pulls.map((pull) => [pull.number, pull])); return { ...data, pulls: data.pulls.map((pull) => mergePullWithCache(pull, cachedByNumber.get(pull.number))) }; }
 function applyIndexData(data) { pulls = Array.isArray(data.pulls) ? data.pulls : []; resetSectionLimits(); renderSections(); }
@@ -3467,6 +3604,7 @@ function loadCachedIndex() { clearStaleIndexCaches(); const cached = readCachedI
 let lastIndexLoadAt = 0;
 let indexLoadInFlight = null;
 let currentIndexEtag = readInitialIndexEtag();
+const indexAuthRetryDelaysMs = [250, 1000, 2500];
 function readScriptJson(id) {
   const element = document.getElementById(id);
   if (!element || !element.textContent) return null;
@@ -3475,15 +3613,23 @@ function readScriptJson(id) {
 }
 function readInitialIndexData() { return readScriptJson('diff-cockpit-index-initial-data'); }
 function readInitialIndexEtag() { return readScriptJson('diff-cockpit-index-initial-etag') || ''; }
+function fetchIndexWithAuthRetry(headers, attempt = 0) {
+  return fetch(apiPath, { headers, cache: 'no-cache' }).then((response) => {
+    if (response.status !== 401 || attempt >= indexAuthRetryDelaysMs.length) return response;
+    return new Promise((resolve) => window.setTimeout(resolve, indexAuthRetryDelaysMs[attempt]))
+      .then(() => fetchIndexWithAuthRetry(headers, attempt + 1));
+  });
+}
 function loadIndex(options = {}) {
   const initial = options.useCache === false ? null : readInitialIndexData();
   const cached = options.useCache === false ? null : (initial || loadCachedIndex());
   if (initial) applyIndexData(initial);
   if (indexLoadInFlight) return indexLoadInFlight;
+  if (indexLoadStatus) indexLoadStatus.textContent = pulls.length ? 'Updating saved PRs…' : 'Loading PRs…';
   lastIndexLoadAt = Date.now();
   const headers = { accept: 'application/json' };
   if (currentIndexEtag) headers['If-None-Match'] = currentIndexEtag;
-  indexLoadInFlight = fetch(apiPath, { headers, cache: 'no-cache' })
+  indexLoadInFlight = fetchIndexWithAuthRetry(headers)
     .then((response) => {
       if (response.status === 304) return null;
       if (!response.ok) throw new Error('Live PR index fetch failed: ' + response.status);
@@ -3491,17 +3637,21 @@ function loadIndex(options = {}) {
       return response.json().then((data) => ({ data, etag }));
     })
     .then((result) => {
-      if (!result) return cached;
+      if (!result) { if (indexLoadStatus) indexLoadStatus.textContent = ''; return cached; }
       if (result.etag) currentIndexEtag = result.etag;
       const merged = mergeIndexWithCache(result.data, cached);
-      localStorage.setItem(cacheKey, JSON.stringify(merged));
+      try { localStorage.setItem(cacheKey, JSON.stringify({ ...merged, _cachedAt: Date.now() })); } catch { /* Full storage must not block the live index. */ }
       applyIndexData(merged);
+      if (indexLoadStatus) indexLoadStatus.textContent = '';
       return merged;
-    }, (error) => { if (!pulls.length) sectionsRoot.innerHTML = '<section class="section error"><h2>Could not load pull requests</h2><p>' + escapeText(error.message || error) + '</p></section>'; })
+    }, (error) => {
+      if (indexLoadStatus) indexLoadStatus.textContent = pulls.length ? 'Saved PRs · refresh unavailable' : '';
+      if (!pulls.length) sectionsRoot.innerHTML = '<section class="section error"><h2>Could not load pull requests</h2><p>' + escapeText(error.message || error) + '</p></section>';
+    })
     .finally(() => { indexLoadInFlight = null; });
   return indexLoadInFlight;
 }
-function refreshIndexIfStale(minAgeMs = 10000) { if (document.hidden) return; if (Date.now() - lastIndexLoadAt < minAgeMs) return; loadIndex({ useCache: false }); }
+function refreshIndexIfStale(minAgeMs = 120000) { if (document.hidden) return; if (Date.now() - lastIndexLoadAt < minAgeMs) return; loadIndex({ useCache: false }); }
 document.querySelectorAll('[data-filter]').forEach((button) => button.addEventListener('click', () => { activeFilter = button.dataset.filter; resetSectionLimits(); updateActiveFilterButtons(activeFilter); renderSections(); }));
 clearStream.addEventListener('click', () => { activeStream = ''; resetSectionLimits(); renderSections(); });
 commandTriggers.forEach((trigger) => trigger.addEventListener('click', () => { if (document.body.dataset.commandPaletteState === 'open') closeCommandPalette(); else openCommandPalette(); }));
@@ -3513,16 +3663,21 @@ if (commandResults) commandResults.addEventListener('click', (event) => { const 
 if (commandPages) commandPages.addEventListener('click', (event) => { const button = event.target.closest('[data-command-page]'); if (button) runPageCommand(button); });
 if (commandInput) commandInput.addEventListener('keydown', (event) => { if (event.key === 'Enter') { const firstPr = commandResults && commandResults.querySelector('[data-command-route]'); const firstPage = commandPages && commandPages.querySelector('[data-command-page]:not([hidden])'); if (firstPr) openPull(firstPr.getAttribute('data-command-route')); else if (firstPage) runPageCommand(firstPage); } });
 document.addEventListener('keydown', (event) => { if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); if (document.body.dataset.commandPaletteState === 'open') closeCommandPalette(); else openCommandPalette(); return; } if (event.key === 'Escape' && document.body.dataset.commandPaletteState === 'open') closeCommandPalette(); });
-window.addEventListener('focus', () => refreshIndexIfStale(5000));
-document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshIndexIfStale(5000); });
-window.setInterval(() => refreshIndexIfStale(30000), 30000);
+window.addEventListener('focus', () => refreshIndexIfStale(60000));
+document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshIndexIfStale(60000); });
+window.setInterval(() => refreshIndexIfStale(120000), 120000);
 loadIndex();
 `;
 }
-function renderReviewClientScript(apiPath: string): string {
+function renderReviewClientScript(apiPath: string, writeApiPath = apiPath): string {
+  const mutationApiPathVariable = writeApiPath === apiPath ? 'apiPath' : 'writeApiPath';
   return `
 const apiPath = ${JSON.stringify(apiPath)};
-const state = { data: null, selected: null, diffModule: null, treeModule: null, activeFile: null, inlineCommentsVisible: true, currentView: false, observer: null, collapsedFolders: new Set(), expandedReviewItems: new Set(), drawerSections: { status: true, summary: true, prompt: false, checks: false, comments: false, commits: false } };
+const writeApiPath = ${JSON.stringify(writeApiPath)};
+const defaultCollapsedRoots = new Set(['.github', '.task']);
+const state = { data: null, selected: null, diffModule: null, treeModule: null, activeFile: null, inlineCommentsVisible: true, currentView: false, observer: null, scrollHandler: null, diffRenderVersion: 0, renderedFileCount: 0, collapsedFolders: new Set(), collapsedFoldersInitialized: false, drawerSections: { status: true, summary: true, prompt: false, checks: false, comments: false, commits: false } };
+const reviewAuthRetryDelaysMs = [250, 1000, 2500];
+const diffRenderBatchSize = 8;
 const els = {
   title: document.getElementById('pr-title'),
   meta: document.getElementById('pr-meta'),
@@ -3534,11 +3689,8 @@ const els = {
   navMergeability: document.getElementById('mergeability-nav-button'),
   navCommits: document.getElementById('commit-nav-button'),
   aiCommentsToggle: document.getElementById('ai-comments-toggle'),
-  aiCommentsSidebar: document.getElementById('ai-comments-sidebar'),
-  aiCommentsClose: document.getElementById('ai-comments-close'),
-  aiCommentsSummary: document.getElementById('ai-comments-summary'),
-  aiCommentsContent: document.getElementById('ai-comments-content'),
   drawerClose: document.getElementById('drawer-close'),
+  reviewPanelBackdrop: document.getElementById('review-panel-backdrop'),
   copyAll: document.getElementById('copy-all-comments'),
   copyReviewLink: document.getElementById('copy-review-link'),
   copyCurrentCommitLink: document.getElementById('copy-current-commit-link'),
@@ -3563,8 +3715,8 @@ const els = {
 
 els.drawerToggle.addEventListener('click', () => preserveDiffViewport(() => setDrawer(document.body.dataset.reviewDrawer !== 'open')));
 els.drawerClose.addEventListener('click', () => preserveDiffViewport(() => setDrawer(false)));
-els.aiCommentsToggle.addEventListener('click', () => preserveDiffViewport(() => setAiSidebar(document.body.dataset.aiSidebar !== 'open')));
-els.aiCommentsClose.addEventListener('click', () => preserveDiffViewport(() => setAiSidebar(false)));
+els.reviewPanelBackdrop.addEventListener('click', () => preserveDiffViewport(() => setDrawer(false)));
+els.aiCommentsToggle.addEventListener('click', () => preserveDiffViewport(() => openReviewDrawerSection('comments')));
 els.mobileFilesToggle.addEventListener('click', () => preserveDiffViewport(() => setFilePaneDrawer(document.body.dataset.filePaneDrawer !== 'open')));
 els.mobileFileBackdrop.addEventListener('click', () => preserveDiffViewport(() => setFilePaneDrawer(false)));
 els.copyAll.addEventListener('click', () => copyText(buildCommentsMarkdown()));
@@ -3583,8 +3735,8 @@ document.addEventListener('click', (event) => {
   if (mergeabilityButton) { toggleMergeabilityPopover(); return; }
   const closeMergeability = event.target.closest('[data-close-mergeability]');
   if (closeMergeability) { closeMergeabilityPopover(); return; }
-  const aiToggle = event.target.closest('[data-ai-review-toggle]');
-  if (aiToggle) { toggleReviewItem(aiToggle.dataset.reviewItemId); return; }
+  const confirmMerge = event.target.closest('[data-confirm-merge]');
+  if (confirmMerge) { confirmMergePullRequest(); return; }
   const aiCopyLink = event.target.closest('[data-ai-review-copy-link]');
   if (aiCopyLink) { copyReviewItemField(aiCopyLink.dataset.reviewItemId, 'link'); return; }
   const aiCopyBody = event.target.closest('[data-ai-review-copy-body]');
@@ -3594,17 +3746,21 @@ document.addEventListener('click', (event) => {
   const aiResolve = event.target.closest('[data-ai-review-resolve]');
   if (aiResolve) { resolveReviewItem(aiResolve.dataset.reviewItemId); return; }
   const jumpButton = event.target.closest('[data-comment-jump]');
-  if (jumpButton) navigateToComment(jumpButton.dataset.commentFile, jumpButton.dataset.commentLine);
+  if (jumpButton) {
+    navigateToComment(jumpButton.dataset.commentFile, jumpButton.dataset.commentLine);
+    preserveDiffViewport(() => setDrawer(false));
+  }
 });
+document.addEventListener('pointerdown', handleOutsidePointerDown);
 els.openChatGpt.addEventListener('click', () => openChatGptPrompt());
 els.copyCodex.addEventListener('click', () => copyText(buildCodexPrompt()));
 
-els.mergePrButton.addEventListener('click', () => mergePullRequest());
+els.mergePrButton.addEventListener('click', () => renderMergeConfirmation());
 document.addEventListener('keydown', (event) => {
   if (event.target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(event.target.tagName)) return;
   if (event.key === 'p') preserveDiffViewport(() => setDrawer(document.body.dataset.reviewDrawer !== 'open'));
   if (event.key === 'f') toggleFilePane();
-  if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'm') { event.preventDefault(); mergePullRequest(); return; }
+  if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'm') { event.preventDefault(); renderMergeConfirmation(); return; }
   if (event.key === 'm') toggleMergeabilityPopover();
   if (event.key === 'v') toggleCurrentView();
   if (event.key === 'i') toggleInlineComments();
@@ -3614,8 +3770,14 @@ document.addEventListener('keydown', (event) => {
 });
 
 let currentReviewEtag = readInitialReviewEtag();
+let reviewLoadInFlight = null;
+let lastReviewLoadAt = 0;
 const initialData = readInitialReviewData();
 if (initialData) applyReviewData(initialData);
+else {
+  const preview = readInitialReviewSummary() || readCachedReviewSummary();
+  if (preview) applyReviewPreview(preview);
+}
 loadLiveData();
 startReviewRevalidation();
 loadViewerLibraries();
@@ -3680,25 +3842,77 @@ function preserveDiffViewport(callback) {
 function setDrawer(open) {
   document.body.dataset.reviewDrawer = open ? 'open' : 'closed';
   els.drawerToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+  if (!open) els.aiCommentsToggle.setAttribute('aria-expanded', 'false');
   document.getElementById('review-drawer').setAttribute('aria-hidden', open ? 'false' : 'true');
 }
-function setAiSidebar(open) {
-  document.body.dataset.aiSidebar = open ? 'open' : 'closed';
-  els.aiCommentsToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-  els.aiCommentsSidebar.setAttribute('aria-hidden', open ? 'false' : 'true');
+function openReviewDrawerSection(sectionId) {
+  if (sectionId) state.drawerSections[sectionId] = true;
+  renderDrawer();
+  setDrawer(true);
+  els.aiCommentsToggle.setAttribute('aria-expanded', sectionId === 'comments' ? 'true' : 'false');
+  window.requestAnimationFrame(() => {
+    const section = sectionId ? document.getElementById('drawer-' + sectionId) : null;
+    if (section) section.scrollIntoView({ block: 'nearest' });
+  });
+}
+function handleOutsidePointerDown(event) {
+  const target = event.target;
+  if (!target || typeof target.closest !== 'function') return;
+  if (
+    document.body.dataset.reviewDrawer === 'open'
+    && !target.closest('#review-drawer')
+    && !target.closest('#drawer-toggle')
+    && !target.closest('#ai-comments-toggle')
+  ) {
+    preserveDiffViewport(() => setDrawer(false));
+  }
+  if (!els.commitPopover.hidden && !target.closest('#commit-popover') && !target.closest('[data-open-commits]')) {
+    closeCommitPopover();
+  }
+  if (
+    !els.mergeabilityPopover.hidden
+    && !target.closest('#mergeability-popover')
+    && !target.closest('[data-open-mergeability]')
+    && !target.closest('#merge-pr-button')
+  ) {
+    closeMergeabilityPopover();
+  }
 }
 function setFilePaneDrawer(open) {
   if (open) document.body.dataset.filePaneCollapsed = 'false';
   document.body.dataset.filePaneDrawer = open ? 'open' : 'closed';
   els.mobileFilesToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
   els.mobileFilesToggle.setAttribute('aria-label', open ? 'Close files' : 'Open files');
-  els.mobileFilesToggle.textContent = open ? '×' : '▣';
 }
 function readInitialReviewData() {
   const element = document.getElementById('diff-cockpit-initial-data');
   if (!element || !element.textContent) return null;
   try { return JSON.parse(element.textContent); }
   catch { return null; }
+}
+function readInitialReviewSummary() {
+  const element = document.getElementById('diff-cockpit-initial-summary');
+  if (!element || !element.textContent) return null;
+  try { return JSON.parse(element.textContent); }
+  catch { return null; }
+}
+function readCachedReviewSummary() {
+  try {
+    const pullSegment = apiPath.lastIndexOf('/pull/');
+    if (pullSegment < 0) return null;
+    const number = Number(apiPath.slice(pullSegment + '/pull/'.length));
+    const indexApiPath = apiPath.slice(0, pullSegment) + '/pulls';
+    const key = 'diff-cockpit:index:v5-server-snapshot-progressive:' + indexApiPath;
+    const cached = JSON.parse(localStorage.getItem(key) || 'null');
+    if (!cached || Date.now() - Number(cached._cachedAt || 0) > 24 * 60 * 60 * 1000) return null;
+    return Array.isArray(cached.pulls) ? cached.pulls.find((pull) => pull.number === number) || null : null;
+  } catch { return null; }
+}
+function applyReviewPreview(preview) {
+  els.title.textContent = preview.title || els.title.textContent;
+  els.meta.textContent = '#' + preview.number + ' · ' + (preview.headRef || '') + ' → ' + (preview.baseRef || '') + ' · by ' + (preview.author || 'unknown') + ' · loading review…';
+  els.count.textContent = String(Number(preview.changedFiles || 0));
+  els.tree.textContent = 'Loading changed files…';
 }
 function readInitialReviewEtag() {
   const element = document.getElementById('diff-cockpit-initial-etag');
@@ -3709,6 +3923,7 @@ function readInitialReviewEtag() {
 
 function applyReviewData(data) {
   state.data = data;
+  initializeDefaultCollapsedFolders(state.data.tree);
   const previousFile = state.selected && state.selected.filename;
   const files = state.data.files || [];
   state.selected = files.find((file) => file.filename === previousFile) || files[0] || null;
@@ -3717,9 +3932,7 @@ function applyReviewData(data) {
   renderTree();
   renderSelectedFile();
   renderLongDiffs();
-  setupActiveFileObserver();
   renderDrawer();
-  renderAiCommentsSidebar();
 }
 
 function startReviewRevalidation() {
@@ -3727,14 +3940,24 @@ function startReviewRevalidation() {
     if (document.visibilityState === 'visible') loadLiveData();
   }, ${REVIEW_REVALIDATE_MS});
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') loadLiveData();
+    if (document.visibilityState === 'visible' && Date.now() - lastReviewLoadAt > 60000) loadLiveData();
+  });
+}
+
+function fetchReviewWithAuthRetry(headers, attempt = 0) {
+  return fetch(apiPath, { headers, cache: 'no-cache' }).then((response) => {
+    if (response.status !== 401 || attempt >= reviewAuthRetryDelaysMs.length) return response;
+    return new Promise((resolve) => window.setTimeout(resolve, reviewAuthRetryDelaysMs[attempt]))
+      .then(() => fetchReviewWithAuthRetry(headers, attempt + 1));
   });
 }
 
 function loadLiveData() {
+  if (reviewLoadInFlight) return reviewLoadInFlight;
+  lastReviewLoadAt = Date.now();
   const headers = { accept: 'application/json' };
   if (currentReviewEtag) headers['If-None-Match'] = currentReviewEtag;
-  fetch(apiPath, { headers, cache: 'no-cache' })
+  reviewLoadInFlight = fetchReviewWithAuthRetry(headers)
     .then((response) => {
       if (response.status === 304) return null;
       if (!response.ok) throw new Error('Live PR fetch failed: ' + response.status);
@@ -3750,19 +3973,31 @@ function loadLiveData() {
       (error) => {
         if (!state.data) els.tree.textContent = error.message || String(error);
       },
-    );
+    )
+    .finally(() => { reviewLoadInFlight = null; });
+  return reviewLoadInFlight;
 }
 
-async function mergePullRequest() {
+function renderMergeConfirmation() {
   if (!state.data?.pull) {
     renderMergeResult('Load PR data before merging.');
     return;
   }
   const pull = state.data.pull;
-  if (!window.confirm('Merge PR #' + pull.number + ' into ' + pull.baseRef + '?')) return;
+  closeCommitPopover();
+  els.mergeabilityPopover.hidden = false;
+  els.mergeabilityPopover.innerHTML = '<div class="commit-popover-head"><strong>Merge PR #' + escapeHtml(pull.number) + '</strong><button type="button" data-close-mergeability>Close</button></div><div class="commit-card"><p class="commit-title">Merge into ' + escapeHtml(pull.baseRef || 'base branch') + '?</p><p class="muted">This uses the existing protected Diffs merge action.</p><div class="merge-confirm-actions"><button class="ai-review-action" type="button" data-close-mergeability>Cancel</button><button class="action-button merge-confirm-button" type="button" data-confirm-merge>Merge PR</button></div></div>';
+}
+
+async function confirmMergePullRequest() {
+  if (!state.data?.pull) {
+    renderMergeResult('Load PR data before merging.');
+    return;
+  }
+  const pull = state.data.pull;
   renderMergeResult('Merging PR #' + pull.number + '…');
   try {
-    const response = await fetch(apiPath + '/merge', { method: 'POST', headers: { accept: 'application/json' } });
+    const response = await fetch(${mutationApiPathVariable} + '/merge', { method: 'POST', headers: { accept: 'application/json' } });
     const result = await response.json().catch(() => ({}));
     if (!response.ok || result.ok === false) {
       renderMergeResult('Merge failed: ' + (result.error || response.status));
@@ -3813,12 +4048,25 @@ function renderTreeNode(node, depth) {
   if (node.type === 'file') {
     const current = state.selected && state.selected.filename === node.file.filename;
     const visible = state.activeFile === node.file.filename;
-    return '<div class="tree-branch tree-depth-' + Math.min(depth, 3) + '"><button class="tree-node file ' + (visible ? 'is-visible' : '') + '" type="button" data-file="' + escapeAttribute(node.file.filename) + '" aria-current="' + (current ? 'true' : 'false') + '"><span class="file-icon">' + escapeHtml(fileIcon(node.file.filename)) + '</span><span class="status">' + escapeHtml(statusToken(node.file.status)) + '</span><span class="tree-label">' + escapeHtml(node.name) + '</span><span class="tree-stats">+' + escapeHtml(node.file.additions) + ' −' + escapeHtml(node.file.deletions) + '</span>' + fileCommentBadge(node.file.filename) + '</button></div>';
+    const status = statusKind(node.file.status);
+    const label = statusLabel(node.file.status);
+    return '<div class="tree-branch tree-depth-' + Math.min(depth, 3) + '"><button class="tree-node file ' + (visible ? 'is-visible' : '') + '" type="button" data-file="' + escapeAttribute(node.file.filename) + '" aria-current="' + (current ? 'true' : 'false') + '"><span class="file-icon">' + escapeHtml(fileIcon(node.file.filename)) + '</span><span class="file-status-dot" data-status="' + escapeAttribute(status) + '" title="' + escapeAttribute(label) + '" aria-label="' + escapeAttribute(label) + '"></span><span class="tree-label">' + escapeHtml(node.name) + '</span><span class="tree-stats">+' + escapeHtml(node.file.additions) + ' −' + escapeHtml(node.file.deletions) + '</span>' + fileCommentBadge(node.file.filename) + '</button></div>';
   }
   const folderPath = node.path || node.name;
   const collapsed = state.collapsedFolders.has(folderPath);
   const children = collapsed ? '' : '<div class="tree-children">' + node.children.map((child) => renderTreeNode(child, depth + 1)).join('') + '</div>';
   return '<div class="tree-branch tree-depth-' + Math.min(depth, 3) + '"><button class="directory-toggle" type="button" data-folder-path="' + escapeAttribute(folderPath) + '" aria-expanded="' + String(!collapsed) + '"><span class="tree-twist">' + (collapsed ? '›' : '⌄') + '</span><span class="tree-label">' + escapeHtml(node.name) + '</span></button>' + children + '</div>';
+}
+
+function initializeDefaultCollapsedFolders(tree) {
+  if (state.collapsedFoldersInitialized) return;
+  const roots = tree && Array.isArray(tree.children) ? tree.children : [];
+  for (const node of roots) {
+    if (node && node.type === 'directory' && defaultCollapsedRoots.has(node.name)) {
+      state.collapsedFolders.add(node.path || node.name);
+    }
+  }
+  state.collapsedFoldersInitialized = true;
 }
 
 function fileCommentBadge(filename) {
@@ -3838,10 +4086,54 @@ function renderSelectedFile() {
 
 function renderLongDiffs() {
   if (!state.data || !Array.isArray(state.data.files) || state.data.files.length === 0) {
+    state.diffRenderVersion += 1;
+    state.renderedFileCount = 0;
     els.diff.innerHTML = '<div class="error">No changed files found.</div>';
     return;
   }
-  els.diff.innerHTML = state.data.files.map(renderDiffFile).join('');
+  const files = state.data.files;
+  const renderVersion = state.diffRenderVersion + 1;
+  state.diffRenderVersion = renderVersion;
+  state.renderedFileCount = Math.min(diffRenderBatchSize, files.length);
+  els.diff.innerHTML = files.slice(0, state.renderedFileCount).map(renderDiffFile).join('');
+  setupActiveFileObserver();
+  if (state.renderedFileCount >= files.length) return;
+
+  const renderNextBatch = () => {
+    if (state.diffRenderVersion !== renderVersion || !state.data) return;
+    const start = state.renderedFileCount;
+    const end = Math.min(start + diffRenderBatchSize, files.length);
+    if (end <= start) return;
+    els.diff.insertAdjacentHTML('beforeend', files.slice(start, end).map(renderDiffFile).join(''));
+    state.renderedFileCount = end;
+    setupActiveFileObserver();
+    if (end < files.length) scheduleDiffRender(renderNextBatch);
+  };
+  scheduleDiffRender(renderNextBatch);
+}
+
+function scheduleDiffRender(callback) {
+  if (typeof window.requestIdleCallback === 'function') {
+    window.requestIdleCallback(callback, { timeout: 150 });
+    return;
+  }
+  window.setTimeout(callback, 16);
+}
+
+function ensureFileRendered(file) {
+  if (!file || !state.data || !Array.isArray(state.data.files)) return;
+  const index = state.data.files.findIndex((candidate) => candidate.filename === file.filename);
+  if (index < 0 || index < state.renderedFileCount) return;
+  const end = Math.min(
+    state.data.files.length,
+    Math.ceil((index + 1) / diffRenderBatchSize) * diffRenderBatchSize,
+  );
+  els.diff.insertAdjacentHTML(
+    'beforeend',
+    state.data.files.slice(state.renderedFileCount, end).map(renderDiffFile).join(''),
+  );
+  state.renderedFileCount = end;
+  setupActiveFileObserver();
 }
 
 function renderDiffFile(file) {
@@ -3853,6 +4145,7 @@ function renderDiffFile(file) {
 
 function scrollToFile(file) {
   if (!file) return;
+  ensureFileRendered(file);
   const target = document.getElementById(fileDomId(file.filename));
   if (target) target.scrollIntoView({ block: 'start' });
 }
@@ -3882,38 +4175,62 @@ function aiReviewItems() {
     }));
 }
 
-function renderAiCommentsSidebar() {
-  const items = aiReviewItems();
-  const unresolved = items.filter((item) => !item.isResolved).length;
-  els.aiCommentsSummary.textContent = formatCountLabel(items.length, 'comment') + ' · ' + unresolved.toLocaleString() + ' unresolved';
-  els.aiCommentsContent.innerHTML = items.length ? items.map(renderAiReviewItem).join('') : '<div class="comment-card muted">No CodeRabbit or Codex comments found.</div>';
+function unifiedReviewItems() {
+  const items = [...aiReviewItems()];
+  const seen = new Set(items.map((item) => item.htmlUrl || [item.author, item.path || '', item.line || '', item.body].join('|')));
+  for (const comment of state.data?.comments || []) {
+    const key = comment.url || [comment.author, comment.path || '', comment.line || '', comment.body].join('|');
+    if (seen.has(key)) continue;
+    seen.add(key);
+    items.push({
+      id: comment.nodeId || comment.id,
+      provider: comment.provider,
+      source: comment.source,
+      author: comment.author,
+      body: comment.body,
+      htmlUrl: comment.url,
+      createdAt: comment.createdAt,
+      path: comment.path,
+      line: comment.line,
+      isResolved: false,
+      isOutdated: false,
+      canResolve: false,
+      resolutionSource: 'local',
+    });
+  }
+  return items.sort((left, right) => {
+    const pathOrder = String(left.path || '').localeCompare(String(right.path || ''));
+    if (pathOrder !== 0) return pathOrder;
+    const lineOrder = Number(left.line || 0) - Number(right.line || 0);
+    return lineOrder || String(left.createdAt || '').localeCompare(String(right.createdAt || ''));
+  });
 }
 
-function renderAiReviewItem(item) {
-  const expanded = state.expandedReviewItems.has(item.id);
-  const stateClass = item.isResolved ? 'is-resolved' : 'is-unresolved';
-  const stateLabel = item.isResolved ? 'resolved' : 'unresolved';
-  const sourceLabel = item.canResolve ? 'GitHub thread' : 'local only';
-  const location = item.path ? item.path + (item.line ? ':' + item.line : '') : 'conversation';
-  const jump = item.path ? '<button class="ai-review-action" type="button" data-comment-jump data-comment-file="' + escapeAttribute(item.path) + '" data-comment-line="' + escapeAttribute(String(item.line || '')) + '">jump</button>' : '';
-  const body = expanded ? '<div class="ai-review-expanded"><div class="comment-body">' + renderMarkdown(item.body) + '</div><div class="ai-review-actions"><button class="ai-review-action" type="button" data-ai-review-copy-link data-review-item-id="' + escapeAttribute(item.id) + '">copy link</button><button class="ai-review-action" type="button" data-ai-review-copy-body data-review-item-id="' + escapeAttribute(item.id) + '">copy body</button><button class="ai-review-action" type="button" data-ai-review-copy-prompt data-review-item-id="' + escapeAttribute(item.id) + '">copy prompt</button>' + jump + renderReviewResolveButton(item) + '</div></div>' : '';
-  return '<article class="ai-review-card ' + stateClass + '"><button class="ai-review-summary" type="button" data-ai-review-toggle data-review-item-id="' + escapeAttribute(item.id) + '" aria-expanded="' + String(expanded) + '"><span class="badge">' + escapeHtml(item.provider) + '</span><span class="ai-review-main"><strong>' + escapeHtml(location) + '</strong><span>' + escapeHtml(previewText(item.body, 126)) + '</span></span><span class="badge">' + escapeHtml(stateLabel) + '</span><span class="badge">' + escapeHtml(sourceLabel) + '</span></button>' + body + '</article>';
+function renderUnifiedReviewComment(item) {
+  const stateClass = item.isResolved ? ' is-resolved' : '';
+  const jumpAttributes = item.path
+    ? ' data-comment-jump data-comment-file="' + escapeAttribute(item.path) + '" data-comment-line="' + escapeAttribute(String(item.line || '')) + '"'
+    : '';
+  const location = item.path
+    ? item.path + (item.line ? ':' + item.line : '')
+    : 'Pull request conversation';
+  const resolved = item.isResolved ? '<span class="badge">resolved</span>' : '';
+  const copyLink = item.htmlUrl ? '<button class="ai-review-action" type="button" data-ai-review-copy-link data-review-item-id="' + escapeAttribute(item.id) + '">copy link</button>' : '';
+  return '<article class="comment-card review-comment-card' + stateClass + '"' + jumpAttributes + '>' +
+    '<div class="review-comment-head"><div class="review-comment-source"><strong>' + escapeHtml(item.author || item.provider) + '</strong><span class="badge">' + escapeHtml(item.provider) + '</span></div>' + resolved + '</div>' +
+    '<div class="review-comment-location">' + escapeHtml(location) + '</div>' +
+    '<div class="comment-body">' + renderMarkdown(item.body) + '</div>' +
+    '<div class="ai-review-actions">' + copyLink + '<button class="ai-review-action" type="button" data-ai-review-copy-body data-review-item-id="' + escapeAttribute(item.id) + '">copy body</button><button class="ai-review-action" type="button" data-ai-review-copy-prompt data-review-item-id="' + escapeAttribute(item.id) + '">copy prompt</button>' + renderReviewResolveButton(item) + '</div>' +
+  '</article>';
 }
 
 function renderReviewResolveButton(item) {
-  if (!item.canResolve || !item.threadId) return '<span class="badge">' + escapeHtml(item.resolutionSource || 'local') + '</span>';
+  if (!item.canResolve || !item.threadId) return '';
   return '<button class="ai-review-action" type="button" data-ai-review-resolve data-review-item-id="' + escapeAttribute(item.id) + '">' + (item.isResolved ? 'mark unresolved' : 'mark resolved') + '</button>';
 }
 
-function toggleReviewItem(itemId) {
-  if (!itemId) return;
-  if (state.expandedReviewItems.has(itemId)) state.expandedReviewItems.delete(itemId);
-  else state.expandedReviewItems.add(itemId);
-  renderAiCommentsSidebar();
-}
-
 function findReviewItem(itemId) {
-  return aiReviewItems().find((item) => item.id === itemId) || null;
+  return unifiedReviewItems().find((item) => item.id === itemId) || null;
 }
 
 function copyReviewItemField(itemId, field) {
@@ -3937,13 +4254,13 @@ async function resolveReviewItem(itemId) {
   if (!item || !item.canResolve || !item.threadId) return;
   const action = item.isResolved ? 'unresolve' : 'resolve';
   try {
-    const response = await fetch(apiPath + '/review-threads/' + encodeURIComponent(item.threadId) + '/' + action, { method: 'POST', headers: { accept: 'application/json' } });
+    const response = await fetch(${mutationApiPathVariable} + '/review-threads/' + encodeURIComponent(item.threadId) + '/' + action, { method: 'POST', headers: { accept: 'application/json' } });
     if (!response.ok) return;
     item.isResolved = !item.isResolved;
-    renderAiCommentsSidebar();
+    renderDrawer();
     loadLiveData();
   } catch {
-    renderAiCommentsSidebar();
+    renderDrawer();
   }
 }
 
@@ -3952,12 +4269,12 @@ function previewText(value, maxLength) {
   return compact.length > maxLength ? compact.slice(0, maxLength - 1) + '…' : compact;
 }
 function renderDrawer() {
-  const comments = state.data.comments || [];
+  const reviewItems = unifiedReviewItems();
   const commits = reviewCommits();
   const checks = state.data.checks || [];
   const pull = state.data.pull;
   const mergeLabel = mergeabilityLabel(pull);
-  const commentsLabel = comments.length.toLocaleString() + ' ' + (comments.length === 1 ? 'comment' : 'comments');
+  const commentsLabel = reviewItems.length.toLocaleString() + ' ' + (reviewItems.length === 1 ? 'comment' : 'comments');
   const commitsLabel = commits.length.toLocaleString() + ' ' + (commits.length === 1 ? 'commit' : 'commits');
   const checksLabel = checks.length.toLocaleString() + ' ' + (checks.length === 1 ? 'check' : 'checks');
   els.navMergeability.textContent = mergeLabel;
@@ -3970,7 +4287,7 @@ function renderDrawer() {
   els.drawerSummary.innerHTML = renderDrawerSection('summary', 'Review summary', summaryBody, true);
   els.drawerPrompt.innerHTML = renderDrawerSection('prompt', 'Prompt for AI agents', promptBody, false);
   els.drawerChecks.innerHTML = renderDrawerSection('checks', 'Checks', checks.length ? checks.map(renderCheck).join('') : '<div class="comment-card muted">No checks found.</div>', false);
-  els.drawerComments.innerHTML = renderDrawerSection('comments', 'Comments', comments.length ? comments.map(renderComment).join('') : '<div class="comment-card muted">No review comments found.</div>', false);
+  els.drawerComments.innerHTML = renderDrawerSection('comments', 'Comments', reviewItems.length ? reviewItems.map(renderUnifiedReviewComment).join('') : '<div class="comment-card muted">No review comments found.</div>', false);
   els.drawerCommits.innerHTML = renderDrawerSection('commits', 'Commits', commits.length ? commits.map(renderCommit).join('') : '<div class="commit-card muted">No commits found for this PR.</div>', false);
 }
 
@@ -4278,7 +4595,62 @@ function markdownHeadingLevel(value) {
 
 function renderInlineMarkdown(value) {
   const backtick = String.fromCharCode(96);
-  return renderMarkdownLinks(replaceDelimited(replaceDelimited(escapeHtml(String(value || '')), backtick, '<code>', '</code>'), '**', '<strong>', '</strong>'));
+  const escaped = replaceDelimited(replaceDelimited(escapeHtml(String(value || '')), backtick, '<code>', '</code>'), '**', '<strong>', '</strong>');
+  return restoreSafeMarkdownTags(renderMarkdownLinks(renderInlineEmphasis(escaped)));
+}
+
+function renderInlineEmphasis(value) {
+  return replaceInlineEmphasisMarker(
+    replaceInlineEmphasisMarker(String(value || ''), '_'),
+    '*',
+  );
+}
+
+function replaceInlineEmphasisMarker(value, marker) {
+  const whitespace = String.fromCharCode(9, 10);
+  const openBoundary = ' ([{>' + whitespace;
+  const closeBoundary = ' )]},.!?:;<' + whitespace;
+  let output = '';
+  let cursor = 0;
+  while (cursor < value.length) {
+    const start = value.indexOf(marker, cursor);
+    if (start === -1) return output + value.slice(cursor);
+    const before = start > 0 ? value.charAt(start - 1) : '';
+    const insideCode = value.lastIndexOf('<code>', start) > value.lastIndexOf('</code>', start);
+    const insideStrong = value.lastIndexOf('<strong>', start) > value.lastIndexOf('</strong>', start);
+    if (insideCode || insideStrong || (before && !openBoundary.includes(before))) {
+      output += value.slice(cursor, start + marker.length);
+      cursor = start + marker.length;
+      continue;
+    }
+    const end = value.indexOf(marker, start + marker.length);
+    if (end === -1) return output + value.slice(cursor);
+    const after = end + marker.length < value.length ? value.charAt(end + marker.length) : '';
+    const content = value.slice(start + marker.length, end);
+    if (!content || content.startsWith(' ') || content.endsWith(' ') || (after && !closeBoundary.includes(after))) {
+      output += value.slice(cursor, start + marker.length);
+      cursor = start + marker.length;
+      continue;
+    }
+    output += value.slice(cursor, start) + '<em>' + content + '</em>';
+    cursor = end + marker.length;
+  }
+  return output;
+}
+
+function restoreSafeMarkdownTags(value) {
+  const safeTags = {
+    '&lt;sub&gt;': '<sub>',
+    '&lt;/sub&gt;': '</sub>',
+    '&lt;sup&gt;': '<sup>',
+    '&lt;/sup&gt;': '</sup>',
+    '&lt;br&gt;': '<br>',
+    '&lt;br/&gt;': '<br>',
+    '&lt;br /&gt;': '<br>',
+  };
+  let output = String(value || '');
+  for (const [encoded, html] of Object.entries(safeTags)) output = output.split(encoded).join(html);
+  return output;
 }
 
 function replaceDelimited(value, marker, openTag, closeTag) {
@@ -4324,16 +4696,14 @@ function renderMarkdownLinks(value) {
 }
 
 function navigateToComment(file, line) {
+  const changedFile = state.data && Array.isArray(state.data.files)
+    ? state.data.files.find((candidate) => candidate.filename === file)
+    : null;
+  if (changedFile) ensureFileRendered(changedFile);
   const target = document.getElementById(fileDomId(file));
   if (target) target.scrollIntoView({ block: 'start' });
   const comment = document.querySelector('[data-comment-file="' + CSS.escape(file) + '"][data-comment-line="' + CSS.escape(String(line || '')) + '"]');
   if (comment) comment.scrollIntoView({ block: 'center' });
-}
-
-function setupCommentJumps() {
-  document.querySelectorAll('[data-comment-jump]').forEach((button) => {
-    button.addEventListener('click', () => navigateToComment(button.dataset.commentFile, button.dataset.commentLine));
-  });
 }
 
 function setupActiveFileObserver() {
@@ -4344,7 +4714,6 @@ function setupActiveFileObserver() {
   if (state.scrollHandler && reviewPane) reviewPane.removeEventListener('scroll', state.scrollHandler);
   state.scrollHandler = () => window.requestAnimationFrame(updateActiveFileFromViewport);
   if (reviewPane) reviewPane.addEventListener('scroll', state.scrollHandler, { passive: true });
-  setupCommentJumps();
   updateActiveFileFromViewport();
 }
 
@@ -4408,9 +4777,20 @@ function fileIcon(filename) {
   if (extension === 'ts' || extension === 'tsx') return 'TS';
   if (extension === 'js' || extension === 'jsx') return 'JS';
   if (extension === 'json') return '{}';
-  if (extension === 'md') return 'M';
-  if (extension === 'toml' || extension === 'yml' || extension === 'yaml') return '⚙';
-  return '•';
+  if (extension === 'md') return 'MD';
+  if (extension === 'toml') return 'TM';
+  if (extension === 'yml' || extension === 'yaml') return 'YML';
+  return '·';
+}
+
+function statusKind(status) {
+  if (status === 'added' || status === 'removed' || status === 'renamed') return status;
+  return 'modified';
+}
+
+function statusLabel(status) {
+  const kind = statusKind(status);
+  return kind.charAt(0).toUpperCase() + kind.slice(1);
 }
 
 function statusToken(status) {

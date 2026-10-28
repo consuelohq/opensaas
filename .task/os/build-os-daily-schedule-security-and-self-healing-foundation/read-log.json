@@ -1,0 +1,28 @@
+{
+  "files": [
+    ".task/os/build-os-daily-schedule-security-and-self-healing-foundation/session.json",
+    ".task/os/build-os-daily-schedule-security-and-self-healing-foundation/workpad.md",
+    "packages/documentation/src/content/docs/reference/tools.mdx",
+    "packages/os/scripts/artifacts.ts",
+    "packages/os/scripts/lib/artifacts.ts",
+    "packages/os/scripts/lib/consuelo-home.ts",
+    "packages/os/scripts/lib/daily-schedules-publisher.ts",
+    "packages/os/scripts/lib/facade/schemas.ts",
+    "packages/os/scripts/lib/install-telemetry.ts",
+    "packages/os/scripts/lib/trace-sites-local-read-backend.ts",
+    "packages/os/scripts/lib/trace-store.ts",
+    "packages/os/scripts/monitor-errors.ts",
+    "packages/os/skills/artifacts/SKILL.md",
+    "packages/os/skills/sites/SKILL.md",
+    "packages/os/tests/artifacts.test.ts",
+    "packages/os/tests/fixtures/tool-package-baseline.json",
+    "packages/os/tools/artifacts/schema.ts",
+    "packages/os/tools/package.ts",
+    "packages/os/tools/registry.ts",
+    "packages/os/tools/sentry/handler.test.ts",
+    "packages/os/tools/sentry/handler.ts",
+    "packages/os/tools/utilities/handler.ts",
+    "packages/workspace/senior-engineer.md"
+  ],
+  "updatedAt": "2026-08-14T02:12:29.361Z"
+}

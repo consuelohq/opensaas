@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/add-invalid-timestamp-tests",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 1242,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1242",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1242",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1242/add-invalid-timestamp-tests",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1242",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1242/add-invalid-timestamp-tests",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-invalid-timestamp-tests",
+  "taskSession": "tsk_47e147926beb",
+  "tmuxSession": "opensaas-workspace-agents-add-invalid-timestamp-tests-47e14792",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-invalid-timestamp-tests/.task/workspace-agents/add-invalid-timestamp-tests/session.json",
+  "createdAt": "2026-06-28T00:30:16.739Z"
+}

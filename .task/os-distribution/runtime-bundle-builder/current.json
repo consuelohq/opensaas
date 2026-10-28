@@ -1,0 +1,19 @@
+{
+  "area": "os-distribution",
+  "stream": "stream/os-distribution",
+  "taskBranch": "task/os-distribution/runtime-bundle-builder",
+  "baseBranch": "stream/os-distribution",
+  "sourceBranch": "stream/os-distribution",
+  "startFrom": "stream",
+  "prNumber": 1556,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1556",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1556",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1556/runtime-bundle-builder",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1556",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1556/runtime-bundle-builder",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-runtime-bundle-builder",
+  "taskSession": "tsk_a9586916907c",
+  "tmuxSession": "opensaas-os-distribution-runtime-bundle-builder-a9586916",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-runtime-bundle-builder/.task/os-distribution/runtime-bundle-builder/session.json",
+  "createdAt": "2026-07-22T20:18:03.847Z"
+}

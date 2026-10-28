@@ -180,12 +180,12 @@ Use this shape:
 
 ```markdown
 **High / Auth**
-`startDialerCall` appears to be protected by `NoPermissionGuard`, but that guard currently returns `true`, so any authenticated workspace user can access the live dialing path.
-This matters because live outbound dialing is customer-impacting behavior and should be gated by the real permission model.
-Suggested fix: switch this mutation to the correct permission guard or add an explicit authorization check before allowing live call startup.
+The changed operation appears to accept authenticated requests without the required authorization check.
+This matters because the operation is customer-impacting and should be gated by the product's real permission model.
+Suggested fix: apply the correct permission guard or add an explicit authorization check before the operation executes.
 <details>
 <summary>Prompt for AI Agents</summary>
-Verify this finding against current code. If still valid, update `packages/twenty-server/src/engine/core-modules/consuelo-api/resolvers/dialer-call-start.resolver.ts` so `startDialerCall` uses the correct authorization guard for live dialing. Confirm unauthorized workspace users cannot start live calls, then run the relevant resolver/auth tests.
+Verify this finding against current code. If still valid, update the cited operation so it uses the correct authorization guard. Confirm unauthorized users cannot execute it, then run the relevant authorization tests.
 </details>
 ```
 
@@ -194,8 +194,8 @@ Verify this finding against current code. If still valid, update `packages/twent
 If issues are found, produce a short summary comment:
 
 ```markdown
-- **High / Auth — `packages/twenty-server/src/.../dialer-call-start.resolver.ts:42`:** `startDialerCall` is guarded by `NoPermissionGuard`, which currently allows any authenticated workspace user to hit the live dialing path. This should use the real permission guard before merging.
-- **High / Reliability — `packages/twenty-server/src/.../dialer-call-start.service.ts:704-804`:** caller-ID locks are released and re-acquired around active Twilio calls, creating a race where concurrent starts can reuse the same caller ID.
+- **High / Auth — `<path>:42`:** the changed operation lacks the required authorization gate. Apply the product's real permission guard before merging.
+- **High / Reliability — `<path>:120-160`:** resource ownership is released and re-acquired across an active operation, creating a race for concurrent requests.
 ☑️ issues found
 ```
 
@@ -216,17 +216,17 @@ Use this shape:
 Verify each finding against the current PR diff before editing. Fix only findings that are still valid. For stale or already-fixed findings, record a brief reason and skip them. Keep changes focused, preserve existing Consuelo patterns, and validate with the most relevant tests/checks.
 Findings to verify and fix:
 1. CR-001 — High / Auth
-   File: `packages/twenty-server/src/engine/core-modules/consuelo-api/resolvers/dialer-call-start.resolver.ts`
+   File: `<path from the finding>`
    Lines: 40-55
-   Risk: `startDialerCall` may be callable by users who should not have live dialing access.
+   Risk: the operation may be callable by users who lack the required permission.
    Fix intent: replace the ineffective guard with the correct permission gate or add explicit authorization.
-   Validate: unauthorized users cannot start live dialing; authorized users still can.
+   Validate: unauthorized users cannot execute the operation; authorized users still can.
 2. CR-002 — High / Reliability
-   File: `packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.ts`
-   Lines: 704-804
-   Risk: caller-ID lock release/re-acquire creates a race during active Twilio startup.
-   Fix intent: transfer lock ownership atomically or keep placeholder locks until safe release.
-   Validate: concurrent start attempts cannot share caller IDs.
+   File: `<path from the finding>`
+   Lines: 120-160
+   Risk: resource release/re-acquire creates a race during an active operation.
+   Fix intent: transfer ownership atomically or hold the resource until safe release.
+   Validate: concurrent attempts cannot claim the same protected resource.
 After changes, run the relevant targeted tests and workspace review command. Report fixed, skipped, and validation results.
 ```
 

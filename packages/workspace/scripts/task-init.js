@@ -8,7 +8,12 @@ const path = require('path');
 const { resolvePrRefNumber } = require('./lib/pr-ref');
 const { execSync } = require('child_process');
 
-const { writeTaskMeta, readTaskMeta } = require('./lib/task-meta');
+const {
+  getTaskSessionPath,
+  readTaskMeta,
+  readValidTaskMetaForWorktree,
+  writeTaskMeta,
+} = require('./lib/task-meta');
 
 function writeStdout(s = '') { process.stdout.write(s + '\n'); }
 function writeStderr(s = '') { process.stderr.write(s + '\n'); }
@@ -78,7 +83,6 @@ function main() {
   if (!args.area) throw new Error('missing required --area');
   if (!args.branch) throw new Error('missing required --branch');
 
-  const stream = args.stream || `stream/${args.area}`;
   const worktreePath = args.worktree || detectWorktree(args.branch);
 
   if (!worktreePath) {
@@ -92,20 +96,39 @@ function main() {
     throw new Error(`worktree path does not exist: ${worktreePath}`);
   }
 
+  const existing = readValidTaskMetaForWorktree(worktreePath, args.branch) || {};
+  let session = {};
+  const sessionPath = getTaskSessionPath(worktreePath, args.branch);
+  try {
+    session = JSON.parse(fs.readFileSync(sessionPath, 'utf8'));
+    const sessionBranch = session.taskBranch || session.branch;
+    if (sessionBranch && sessionBranch !== args.branch) session = {};
+  } catch {
+    session = {};
+  }
+  const recovered = { ...existing, ...session };
+  const stream = args.stream || recovered.stream || `stream/${args.area}`;
+  const prNumber = args.pr ?? recovered.prNumber ?? recovered.taskPrNumber ?? null;
   const repo = 'consuelohq/opensaas';
-  const prUrl = args.pr ? `https://github.com/${repo}/pull/${args.pr}` : '';
+  const canonicalPrUrl = prNumber ? `https://github.com/${repo}/pull/${prNumber}` : '';
+  const prUrl = args.pr ? canonicalPrUrl : recovered.prUrl || canonicalPrUrl;
 
   const meta = {
+    ...recovered,
     area: args.area,
     stream,
     taskBranch: args.branch,
     baseBranch: stream,
-    sourceBranch: 'main',
-    startFrom: 'main',
-    prNumber: args.pr || null,
+    sourceBranch: recovered.sourceBranch || 'main',
+    startFrom: recovered.startFrom || 'main',
+    prNumber,
     prUrl,
     worktreePath,
-    createdAt: new Date().toISOString(),
+    ...(recovered.taskSession ? { taskSession: recovered.taskSession } : {}),
+    ...(recovered.tmuxSession ? { tmuxSession: recovered.tmuxSession } : {}),
+    ...(recovered.sessionPath ? { sessionPath: recovered.sessionPath } : {}),
+    ...(recovered.tmuxCreated !== undefined ? { tmuxCreated: recovered.tmuxCreated } : {}),
+    createdAt: recovered.createdAt || new Date().toISOString(),
   };
 
   writeTaskMeta(worktreePath, meta);

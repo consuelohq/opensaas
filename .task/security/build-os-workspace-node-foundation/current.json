@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/build-os-workspace-node-foundation",
+  "baseBranch": "stream/security",
+  "sourceBranch": "stream/security",
+  "startFrom": "stream",
+  "prNumber": 1336,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1336",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1336",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1336/build-os-workspace-node-foundation",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1336",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1336/build-os-workspace-node-foundation",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-build-os-workspace-node-foundation",
+  "taskSession": "tsk_cff4e1e6d108",
+  "tmuxSession": "opensaas-security-build-os-workspace-node-foundation-cff4e1e6",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-build-os-workspace-node-foundation/.task/security/build-os-workspace-node-foundation/session.json",
+  "createdAt": "2026-07-02T18:11:59.984Z"
+}

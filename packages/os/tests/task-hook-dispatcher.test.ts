@@ -10,7 +10,7 @@ import {
   renderHookResult,
 } from '../hooks/dispatcher.js';
 
-const actualManifestPath = resolve(import.meta.dirname, '../tooling/dev-tool-manifest.json');
+const actualManifestPath = resolve(import.meta.dirname, '../manifests/generated/tool.manifest.json');
 const taskHookScript = resolve(import.meta.dirname, '../scripts/task-hook.js');
 const taskStartScript = resolve(import.meta.dirname, '../scripts/task-start.js');
 
@@ -43,9 +43,13 @@ describe('OS hook dispatcher', () => {
           taskSessionPlacement: 'top-level',
           taskSession: 'tsk_dispatch',
         }),
+        contextInjection: expect.objectContaining({
+          taskSession: 'tsk_dispatch',
+          worktreePath: '/tmp/dispatcher-example',
+        }),
       }),
     );
-    expect(result.requiredNextAction.input.path).toBe('.task/os/dispatcher-example/workpad.md');
+    expect(result.requiredNextAction.input).toEqual(expect.objectContaining({ append: true, mkdirs: true }));
     expect(JSON.stringify(result)).not.toContain('fs.put');
   });
 
@@ -83,14 +87,24 @@ describe('OS hook dispatcher', () => {
 
   test('task-start script emits post-start guidance through the dispatcher', () => {
     const source = readFileSync(taskStartScript, 'utf8');
+    const mainSource = source.slice(source.indexOf('async function main()'));
+    const preflight = mainSource.indexOf('resolveStreamContextBeforeTaskMutation({');
 
     expect(source).toContain("require('../hooks/dispatcher.js')");
-    expect(source).toContain('dispatchHookEvent({');
-    expect(source).toContain("event: 'tool.postInvoke'");
-    expect(source).toContain("tool: 'task.start'");
-    expect(source).toContain("workflow: 'task'");
-    expect(source).toContain('task hook guidance failed');
-    expect(source).toContain('renderHookResult(guidance)');
+    expect(source).toContain("require('../hooks/intent.js')");
+    expect(source).toContain("getTaskWorkpadPathFromMeta");
+    expect(source).toContain('const workpadPath = getTaskWorkpadPathFromMeta(worktreePath, taskMeta);');
+    expect(source).toContain('fs.mkdirSync(path.dirname(workpadPath), { recursive: true });');
+    expect(source).not.toContain("path.join(worktreePath, '.task', 'workpad.md')");
+    expect(source).toContain("path.join(__dirname, 'stream-context.js')");
+    expect(preflight).toBeGreaterThan(-1);
+    for (const mutation of ['ensureRemoteStreamBranch({', 'ensureRemoteTaskBranch({', 'createWorktree(', 'createBootstrapCommit({', 'createPullRequest({']) {
+      expect(preflight).toBeLessThan(mainSource.indexOf(mutation));
+    }
+    expect(source).toContain('createWorkflowIntentRuntime().start({');
+    expect(source).toContain('workflow: args.workflow');
+    expect(source).toMatch(/createWorkflowIntentRuntime\(\)\.start\(\{[\s\S]*?\btaskResult,\s*\}\);/);
+    expect(source).toContain('renderHookResult(workflowStart.hookResult)');
     expect(source).not.toContain("getTaskHookGuidance('after-task-start'");
   });
 

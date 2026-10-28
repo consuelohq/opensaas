@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/probe-configured-daemon-port-during-cutover",
+  "baseBranch": "stream/security",
+  "sourceBranch": "stream/security",
+  "startFrom": "stream",
+  "prNumber": 1418,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1418",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1418",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1418/probe-configured-daemon-port-during-cutover",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1418",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1418/probe-configured-daemon-port-during-cutover",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-probe-configured-daemon-port-during-cutover",
+  "taskSession": "tsk_d2f4ca891df6",
+  "tmuxSession": "opensaas-security-probe-configured-daemon-port-during-cutover-d2f4ca89",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-probe-configured-daemon-port-during-cutover/.task/security/probe-configured-daemon-port-during-cutover/session.json",
+  "createdAt": "2026-07-11T18:42:04.106Z"
+}

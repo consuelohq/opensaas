@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-post-merge-installer-review-findings",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1745,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1745",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1745",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1745/fix-post-merge-installer-review-findings",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1745",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1745/fix-post-merge-installer-review-findings",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-post-merge-installer-review-findings",
+  "taskSession": "tsk_e165fb96f643",
+  "tmuxSession": "opensaas-os-fix-post-merge-installer-review-findings-e165fb96",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-post-merge-installer-review-findings/.task/os/fix-post-merge-installer-review-findings/session.json",
+  "createdAt": "2026-07-29T21:43:02.053Z"
+}

@@ -5,18 +5,20 @@ import { join, relative } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { buildWorkspaceToolManifest, generateWorkspaceToolManifest } from '../scripts/generate-tool-manifest';
+import { getInputSchema, outputTypeSignatures, schemaTypeSignatures } from '../scripts/lib/facade/schemas';
 
 type JsonObject = Record<string, unknown>;
 
 const packageRoot = join(import.meta.dirname, '..');
-const osCoreManifestPath = join(packageRoot, '..', 'os', 'manifests', 'core.manifest.json');
+const osCoreManifestPath = join(packageRoot, '..', 'os', 'manifests', 'generated', 'core.manifest.json');
 const expectedCodeCallDescription = "Run focused repo-scoped Python, Bun, or Bash programs where runtime output is the evidence: tests, package scripts, typechecks, syntax checks, exact CLI reproduction, small diagnostics, and bounded data shaping inside the active task worktree. Prefer compact packets with paths, line spans, and extracted snippets over raw file dumps.";
 
 const expectedDescriptions = {
   'code.call': expectedCodeCallDescription,
   explore: 'a repo-aware decision search tool for coding agents. It answers where to spend attention and what files or paths are likely relevant to a given request.',
   'fs.trash': 'An agent safe file deletion path. Prefered over rm rf',
-  intent: 'Start a task workflow for scoped write access. It dispatches progressively disclosed tools, workflow hooks, validation steps, and rules that preserve user safety and alignment.',
+  'session.start': 'Canonical session constructor. Use kind=task for managed repo work that needs a branch/worktree/PR, or kind=work for scoped ordinary filesystem work on the owning node. For work sessions, omit path to create an isolated local work directory automatically.',
+  'task.start': 'Compatibility alias for session.start({ kind: \"task\" }). Existing callers remain supported; new agents should prefer session.start for task creation.',
 } as const;
 const removedCoreToolNames = [
   'fs.list',
@@ -26,6 +28,7 @@ const removedCoreToolNames = [
   'exploit',
   'confidenceScore',
   'confirm',
+  'code.run',
   'context.list',
   'context.categories',
   'audit',
@@ -56,16 +59,18 @@ const oldContextToolNames = [
   'context.trace',
 ] as const;
 
+const workspaceOnlyCoreToolNames = ['context'] as const;
+
 const retainedCoreToolNames = [
   'batch',
   'code.call',
-  'code.run',
   'context',
   'explore',
   'fs.apply_patch',
   'fs.trash',
   'github',
-  'intent',
+  'session.start',
+  'task.start',
   'review.run',
   'stream.context',
   'stream.sync',
@@ -158,6 +163,7 @@ describe('workspace tool manifest generator', () => {
     expect(names(registry.full.tools)).toEqual(sourceEntries.map((entry) => String(entry.name)).sort());
     expect(registry.full.tools).toHaveLength(sourceEntries.length);
     expect(names(registry.full.tools)).toContain('batch');
+    expect(names(registry.full.tools)).toContain('code.run');
     expect(names(registry.full.tools)).toContain('context');
     for (const toolName of oldContextToolNames) {
       expect(names(registry.full.tools)).not.toContain(toolName);
@@ -170,10 +176,12 @@ describe('workspace tool manifest generator', () => {
     const osCore = JSON.parse(readFileSync(osCoreManifestPath, 'utf8')) as { tools: Array<{ name: string }> };
     const workspaceSource = readJsonArray('tooling/tool-manifest.json');
     const workspaceNames = new Set(workspaceSource.map((entry) => String(entry.name)));
-    const expectedCoreNames = osCore.tools
-      .map((tool) => tool.name)
-      .filter((name) => workspaceNames.has(name))
-      .sort();
+    const expectedCoreNames = [
+      ...osCore.tools
+        .map((tool) => tool.name)
+        .filter((name) => workspaceNames.has(name)),
+      ...workspaceOnlyCoreToolNames,
+    ].sort();
 
     const registry = buildWorkspaceToolManifest({ write: false });
     const coreNames = names(registry.core.tools);
@@ -188,7 +196,7 @@ describe('workspace tool manifest generator', () => {
     for (const toolName of removedCoreToolNames) {
       expect(coreNames).not.toContain(toolName);
     }
-    expect(coreNames.some((name) => name.startsWith('task.'))).toBe(false);
+    expect(coreNames.filter((name) => name.startsWith('task.'))).toEqual(['task.start']);
     for (const toolName of oldContextToolNames) {
       expect(coreNames).not.toContain(toolName);
     }
@@ -228,6 +236,58 @@ describe('workspace tool manifest generator', () => {
     assertStrongCodeCallExamples(codeCall as JsonObject | undefined);
   });
 
+  it('keeps every read-only fs tool task-session optional and every fs mutator task-scoped', () => {
+    const registry = buildWorkspaceToolManifest({ write: false });
+    const fsEntries = registry.full.tools.filter((entry) => entry.name.startsWith('fs.'));
+    const readOnlyEntries = fsEntries.filter((entry) => entry.definition.capabilities.readOnly === true);
+    const mutatingEntries = fsEntries.filter((entry) => entry.definition.capabilities.mutating === true);
+
+    expect(readOnlyEntries.map((entry) => entry.name).sort()).toEqual(['fs.list', 'fs.read', 'fs.search']);
+    expect(mutatingEntries.map((entry) => entry.name).sort()).toEqual(['fs.apply_patch', 'fs.trash', 'fs.write']);
+
+    for (const entry of readOnlyEntries) {
+      expect(entry.definition.sessionRequired).toBe(false);
+      expect(entry.definition.command.branchMode).toBe('optional');
+    }
+
+    for (const entry of mutatingEntries) {
+      expect(entry.definition.sessionRequired).toBe(true);
+      expect(entry.definition.command.branchMode).toBe('required');
+    }
+  });
+
+  it('should keep task.pr command metadata aligned when the CLI exposes the workpad escape hatch', () => {
+    // Arrange
+    const schema = getInputSchema('TaskPrInput');
+    const registry = buildWorkspaceToolManifest({ write: false });
+    const taskPr = registry.full.tools.find((entry) => entry.name === 'task.pr');
+    const generatedTypes = readFileSync(join(packageRoot, 'src/generated/workspace.d.ts'), 'utf8');
+
+    // Act
+    const parsed = schema?.safeParse({ ackWorkpadIncomplete: true, repo: 'example/private-repo' });
+    const command = taskPr?.definition.command;
+
+    // Assert
+    expect(parsed?.success).toBe(true);
+    if (!parsed?.success) throw new Error('TaskPrInput should parse the workpad escape hatch');
+    expect(parsed.data).toEqual(expect.objectContaining({ ackWorkpadIncomplete: true, repo: 'example/private-repo' }));
+    expect(schemaTypeSignatures.TaskPrInput).toContain('ackWorkpadIncomplete?: boolean');
+    expect(schemaTypeSignatures.TaskPrInput).toContain('repo?: string');
+    expect(generatedTypes).toContain('ackWorkpadIncomplete?: boolean');
+    expect(generatedTypes).toContain('repo?: string');
+    expect(command).toMatchObject({ script: 'task:pr' });
+    expect(command?.arguments).toContainEqual({
+      source: 'ackWorkpadIncomplete',
+      flag: '--ack-workpad-incomplete',
+      kind: 'boolean',
+    });
+    expect(command?.arguments).toContainEqual({
+      source: 'repo',
+      flag: '--repo',
+      kind: 'value',
+    });
+  });
+
   it('writes full and core manifests to override output paths', () => {
     const fullOutputPath = join(fixtureRoot, 'tool-manifest.json');
     const coreOutputPath = join(fixtureRoot, 'core-manifest.json');
@@ -250,4 +310,15 @@ describe('workspace tool manifest generator', () => {
     expect(core.tools.map((tool) => tool.name)).toContain('tools.search');
     expect(workflows.sourceManifest).toBe(expectedSourceManifest);
   });
+
+  it('session.start advertises distinct typed task and work success shapes', () => {
+    const sessionStart = buildWorkspaceToolManifest().full.tools.find((entry) => entry.name === 'session.start');
+    expect(sessionStart?.definition.outputSchema).toBe('SessionStartOutput');
+    const signature = outputTypeSignatures.SessionStartOutput;
+    expect(signature).toContain('taskSession');
+    expect(signature).toContain('taskBranch');
+    expect(signature).toContain('workSession');
+    expect(signature).toContain('ownerNodeId');
+  });
+
 });

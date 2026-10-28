@@ -1,0 +1,20 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/fix-browser-session-isolation",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2202,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2202",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2202",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2202/fix-browser-session-isolation",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2202",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2202/fix-browser-session-isolation",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-fix-browser-session-isolation",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_8b0d5c919898",
+  "tmuxSession": "opensaas-workspace-agents-fix-browser-session-isolation-8b0d5c91",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-fix-browser-session-isolation/.task/workspace-agents/fix-browser-session-isolation/session.json",
+  "createdAt": "2026-08-26T05:13:01.794Z"
+}

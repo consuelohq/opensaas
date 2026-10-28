@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_d6f6f8ddc6d5",
+  "tmuxSession": "opensaas-os-reconcile-existing-managed-cloud-node-work-with--d6f6f8dd",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/reconcile-existing-managed-cloud-node-work-with-current-os-architecture",
+  "branch": "task/os/reconcile-existing-managed-cloud-node-work-with-current-os-architecture",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-reconcile-existing-managed-cloud-node-work-with-current-os-architecture",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-reconcile-existing-managed-cloud-node-work-with-current-os-architecture",
+  "prNumber": 1876,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1876",
+  "createdAt": "2026-08-12T03:50:42.709Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-reconcile-existing-managed-cloud-node-work-with-current-os-architecture/.task/os/reconcile-existing-managed-cloud-node-work-with-current-os-architecture/session.json"
+}

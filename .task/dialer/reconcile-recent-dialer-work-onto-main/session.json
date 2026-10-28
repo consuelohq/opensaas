@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_50ad50478c0c",
+  "tmuxSession": "opensaas-dialer-reconcile-recent-dialer-work-onto-main-50ad5047",
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/reconcile-recent-dialer-work-onto-main",
+  "branch": "task/dialer/reconcile-recent-dialer-work-onto-main",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-reconcile-recent-dialer-work-onto-main",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-reconcile-recent-dialer-work-onto-main",
+  "prNumber": 1899,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1899",
+  "createdAt": "2026-08-13T00:06:23.070Z",
+  "tmuxCreated": false,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-reconcile-recent-dialer-work-onto-main/.task/dialer/reconcile-recent-dialer-work-onto-main/session.json"
+}

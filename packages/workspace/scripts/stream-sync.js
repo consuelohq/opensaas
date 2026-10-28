@@ -23,6 +23,10 @@ const {
 } = require('./lib/paths');
 const { assertStreamBranchName, getDefaultStreamBranch, normalizeArea } = require('./lib/validation');
 const { isOnlyTaskMetadataConflict, resolveTaskMetadataConflicts } = require('./lib/task-meta');
+const { linkTaskWorktreeNodeModules } = require('./lib/task-node-modules');
+
+const GENERATED_TEST_SELECTION_REGISTRY = 'packages/workspace/test-selection.registry.json';
+const DEFAULT_REPO = 'consuelohq/opensaas';
 
 function writeStdout(value = '') {
   process.stdout.write(`${value}\n`);
@@ -40,6 +44,7 @@ function printHelp() {
   writeStdout('');
   writeStdout('options:');
   writeStdout('  --stream <branch>      stream branch (default: stream/<area>)');
+  writeStdout('  --repo <owner/name>    repository identity (currently consuelohq/opensaas)');
   writeStdout('  --json                 output json');
   writeStdout('  --help                 show this help');
 }
@@ -75,6 +80,9 @@ function parseArgs(argv) {
       case '--stream':
         args.stream = value;
         break;
+      case '--repo':
+        args.repo = value;
+        break;
       case '--json':
         args.json = true;
         break;
@@ -97,6 +105,48 @@ function createTemporaryStreamWorktree(repoRoot, streamBranch) {
   return worktreePath;
 }
 
+function isManagedTemporaryStreamWorktree(worktreePath, streamBranch) {
+  const worktreeRoot = fs.realpathSync.native(path.resolve(getWorktreeRoot()));
+  const resolvedWorktreePath = fs.realpathSync.native(path.resolve(worktreePath));
+  const relativePath = path.relative(worktreeRoot, resolvedWorktreePath);
+  const expectedPrefix = `${toWorktreeDirectoryName(streamBranch)}-sync-`;
+
+  return (
+    relativePath.length > 0 &&
+    !relativePath.startsWith('..') &&
+    !path.isAbsolute(relativePath) &&
+    path.basename(resolvedWorktreePath).startsWith(expectedPrefix)
+  );
+}
+
+function recoverStaleConflictedStreamWorktree(repoRoot, existingWorktree, streamBranch) {
+  if (!existingWorktree || !isManagedTemporaryStreamWorktree(existingWorktree.path, streamBranch)) {
+    return null;
+  }
+
+  const conflictFiles = getConflictFiles(repoRoot, existingWorktree.path);
+  if (conflictFiles.length === 0) {
+    return null;
+  }
+
+  removeWorktree(repoRoot, existingWorktree.path, true);
+  pruneWorktrees(repoRoot);
+  return {
+    path: existingWorktree.path,
+    conflictFiles,
+  };
+}
+
+function resolveMainWorktreeRoot(repoRoot) {
+  const output = runGit(['worktree', 'list', '--porcelain'], { cwd: repoRoot });
+  const blocks = output.split(/\n\n+/).filter(Boolean);
+  const mainBlock = blocks.find((block) => block.includes(`branch refs/heads/${DEFAULT_MAIN_BRANCH}`));
+  const worktreeLine = (mainBlock || blocks[0] || '')
+    .split('\n')
+    .find((line) => line.startsWith('worktree '));
+  return worktreeLine ? worktreeLine.slice('worktree '.length) : repoRoot;
+}
+
 function runMerge(worktreePath, mainBranch) {
   return spawnSync('git', ['-C', worktreePath, 'merge', '--no-ff', '--no-edit', `origin/${mainBranch}`], {
     encoding: 'utf8',
@@ -107,6 +157,50 @@ function runMerge(worktreePath, mainBranch) {
 function getConflictFiles(repoRoot, worktreePath) {
   const output = runGit(['-C', worktreePath, 'diff', '--name-only', '--diff-filter=U'], { cwd: repoRoot });
   return output ? output.split('\n').filter(Boolean) : [];
+}
+
+function mergeCandidateEnv(worktreePath) {
+  const env = { ...process.env, PWD: worktreePath };
+  delete env.TASK_BRANCH;
+  delete env.TASK_WORKTREE;
+  return env;
+}
+
+function resolveGeneratedTestSelectionRegistryConflict(repoRoot, worktreePath, conflictFiles) {
+  if (conflictFiles.length !== 1 || conflictFiles[0] !== GENERATED_TEST_SELECTION_REGISTRY) {
+    return { resolved: false, files: [] };
+  }
+
+  const generator = spawnSync('node', [
+    'packages/workspace/scripts/test-selection.js',
+    'generate',
+    '--out',
+    GENERATED_TEST_SELECTION_REGISTRY,
+    '--json',
+  ], {
+    cwd: worktreePath,
+    env: mergeCandidateEnv(worktreePath),
+    encoding: 'utf8',
+    maxBuffer: 10 * 1024 * 1024,
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+
+  if (generator.status !== 0) {
+    return {
+      resolved: false,
+      files: [],
+      error: [generator.stdout, generator.stderr].filter(Boolean).join('\n').trim(),
+    };
+  }
+
+  runGit(['-C', worktreePath, 'add', '--', GENERATED_TEST_SELECTION_REGISTRY], { cwd: repoRoot });
+  const remainingConflicts = getConflictFiles(repoRoot, worktreePath);
+
+  return {
+    resolved: remainingConflicts.length === 0,
+    files: remainingConflicts.length === 0 ? [GENERATED_TEST_SELECTION_REGISTRY] : [],
+    remainingConflicts,
+  };
 }
 
 function parseJsonOutput(output) {
@@ -132,11 +226,12 @@ function parseJsonOutput(output) {
 
 function runStreamChecks(worktreePath) {
   const verifyBase = `origin/${DEFAULT_MAIN_BRANCH}`;
-  const command = `bun run verify -- --base ${verifyBase} --debug-skip-review --no-stamp --db-warn-only --json`;
+  const command = `bun run verify -- --foreground --base ${verifyBase} --debug-skip-review --no-stamp --db-warn-only --json`;
   const result = spawnSync('bun', [
     'run',
     'verify',
     '--',
+    '--foreground',
     '--base',
     verifyBase,
     '--debug-skip-review',
@@ -145,17 +240,25 @@ function runStreamChecks(worktreePath) {
     '--json',
   ], {
     cwd: worktreePath,
+    env: mergeCandidateEnv(worktreePath),
     encoding: 'utf8',
     maxBuffer: 10 * 1024 * 1024,
     stdio: ['ignore', 'pipe', 'pipe'],
   });
 
+  const data = parseJsonOutput(result.stdout || '');
+  const verifyCompleted =
+    result.status === 0 &&
+    data?.pending !== true &&
+    data?.status !== 'VERIFY_PENDING' &&
+    data?.passed === true;
+
   return {
     skipped: false,
     command,
-    status: result.status === 0 ? 'pass' : 'fail',
+    status: verifyCompleted ? 'pass' : 'fail',
     exitCode: result.status,
-    data: parseJsonOutput(result.stdout || ''),
+    data,
     stderr: result.stderr || '',
   };
 }
@@ -207,6 +310,9 @@ async function main() {
 
   const area = normalizeArea(args.area);
   const streamBranch = args.stream || getDefaultStreamBranch(area);
+  if (args.repo && args.repo !== DEFAULT_REPO) {
+    throw new Error(`stream.sync currently supports only ${DEFAULT_REPO}; received ${args.repo}`);
+  }
   const repoRoot = resolveGitRoot(process.cwd());
 
   assertStreamBranchName(streamBranch, area);
@@ -221,7 +327,15 @@ async function main() {
   }
   pruneWorktrees(repoRoot);
 
-  const existingWorktree = getWorktreeForBranch(repoRoot, streamBranch);
+  let existingWorktree = getWorktreeForBranch(repoRoot, streamBranch);
+  const recoveredStaleWorktree = recoverStaleConflictedStreamWorktree(
+    repoRoot,
+    existingWorktree,
+    streamBranch,
+  );
+  if (recoveredStaleWorktree) {
+    existingWorktree = null;
+  }
 
   if (!existingWorktree) {
     createOrResetLocalBranch(repoRoot, streamBranch, `origin/${streamBranch}`);
@@ -238,6 +352,11 @@ async function main() {
 
   ensureWorktreeClean(worktreePath, `${streamBranch} worktree`);
   runGit(['-C', worktreePath, 'reset', '--hard', `origin/${streamBranch}`], { cwd: repoRoot });
+  linkTaskWorktreeNodeModules({
+    repoRoot: resolveMainWorktreeRoot(repoRoot),
+    worktreePath,
+    writeStderr,
+  });
 
   const mergeResult = runMerge(worktreePath, DEFAULT_MAIN_BRANCH);
   const mergeOutput = [mergeResult.stdout, mergeResult.stderr].filter(Boolean).join('\n').trim();
@@ -257,16 +376,18 @@ async function main() {
     printResult(
       {
         stream: streamBranch,
-        status: 'success',
+        status: pushed ? 'success' : 'checks_failed',
         worktreePath,
         temporaryWorktree: createdTemporaryWorktree,
         mergeOutput,
         conflictFiles: [],
+        recoveredStaleWorktree: recoveredStaleWorktree?.path || null,
         checks,
         pushed,
       },
       args.json,
     );
+    if (!pushed) process.exitCode = 1;
     return;
   }
 
@@ -274,6 +395,44 @@ async function main() {
 
   if (conflictFiles.length === 0) {
     throw new Error(mergeOutput || `merge failed for ${streamBranch}`);
+  }
+
+  const generatedResolution = resolveGeneratedTestSelectionRegistryConflict(
+    repoRoot,
+    worktreePath,
+    conflictFiles,
+  );
+
+  if (generatedResolution.resolved) {
+    let checks;
+    let pushed = false;
+    try {
+      runGit(['-C', worktreePath, 'commit', '--no-edit'], { cwd: repoRoot });
+      checks = runStreamChecks(worktreePath);
+      pushed = pushStreamBranch(repoRoot, worktreePath, streamBranch, checks);
+    } finally {
+      if (createdTemporaryWorktree) {
+        removeWorktree(repoRoot, worktreePath, true);
+      }
+    }
+
+    printResult(
+      {
+        stream: streamBranch,
+        status: pushed ? 'success' : 'checks_failed',
+        worktreePath,
+        temporaryWorktree: createdTemporaryWorktree,
+        mergeOutput,
+        conflictFiles: [],
+        recoveredStaleWorktree: recoveredStaleWorktree?.path || null,
+        autoResolvedGeneratedFiles: generatedResolution.files,
+        checks,
+        pushed,
+      },
+      args.json,
+    );
+    if (!pushed) process.exitCode = 1;
+    return;
   }
 
   if (isOnlyTaskMetadataConflict(conflictFiles)) {
@@ -297,17 +456,19 @@ async function main() {
       printResult(
         {
           stream: streamBranch,
-          status: 'success',
+          status: pushed ? 'success' : 'checks_failed',
           worktreePath,
           temporaryWorktree: createdTemporaryWorktree,
           mergeOutput,
           conflictFiles: [],
+          recoveredStaleWorktree: recoveredStaleWorktree?.path || null,
           autoResolvedMetadata: resolution,
           checks,
           pushed,
         },
         args.json,
       );
+      if (!pushed) process.exitCode = 1;
       return;
     }
   }
@@ -318,6 +479,10 @@ async function main() {
     reason: 'merge failed before stream checks could run',
   };
 
+  if (createdTemporaryWorktree) {
+    removeWorktree(repoRoot, worktreePath, true);
+  }
+
   printResult(
     {
       stream: streamBranch,
@@ -326,6 +491,7 @@ async function main() {
       temporaryWorktree: createdTemporaryWorktree,
       mergeOutput,
       conflictFiles,
+      recoveredStaleWorktree: recoveredStaleWorktree?.path || null,
       checks,
     },
     args.json,

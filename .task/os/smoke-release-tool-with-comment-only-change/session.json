@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_d117b2bbb97c",
+  "tmuxSession": "opensaas-os-smoke-release-tool-with-comment-only-change-d117b2bb",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/smoke-release-tool-with-comment-only-change",
+  "branch": "task/os/smoke-release-tool-with-comment-only-change",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-smoke-release-tool-with-comment-only-change",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-smoke-release-tool-with-comment-only-change",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2191,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2191",
+  "createdAt": "2026-08-26T04:08:26.572Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-smoke-release-tool-with-comment-only-change/.task/os/smoke-release-tool-with-comment-only-change/session.json"
+}

@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/compact-explore-response-contract",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 2050,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2050",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2050",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2050/compact-explore-response-contract",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2050",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2050/compact-explore-response-contract",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-compact-explore-response-contract",
+  "taskSession": "tsk_3eff5b3e1ded",
+  "tmuxSession": "opensaas-workspace-agents-compact-explore-response-contract-3eff5b3e",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-compact-explore-response-contract/.task/workspace-agents/compact-explore-response-contract/session.json",
+  "createdAt": "2026-08-15T08:26:05.595Z"
+}

@@ -1,0 +1,55 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/security/fix-installer-child-exit-diagnostics-and-transcript-redaction",
+  "base": "origin/stream/security",
+  "headSha": "e0dc8e1ccb8a458b53b6ef8479514638eb2b84b8",
+  "changeHash": "a5f2d3158c0f8fd058ecb2138b6bff3bb0f700eaf5bdd075755ed31e1ccaf993",
+  "changedFiles": [
+    "packages/os/scripts/bootstrap.sh",
+    "packages/os/scripts/install.ts",
+    "packages/os/scripts/onboarding-flow.test.ts",
+    "packages/os/tests/bootstrap-source.test.ts"
+  ],
+  "verifiedAt": "2026-07-05T02:16:33.605Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/security/fix-installer-child-exit-diagnostics-and-transcript-redaction/current.json",
+        ".task/security/fix-installer-child-exit-diagnostics-and-transcript-redaction/session.json",
+        ".task/security/fix-installer-child-exit-diagnostics-and-transcript-redaction/workpad.md",
+        ".task/tasks/security/fix-installer-child-exit-diagnostics-and-transcript-redaction.json",
+        "packages/os/scripts/bootstrap.sh",
+        "packages/os/scripts/install.ts",
+        "packages/os/scripts/onboarding-flow.test.ts",
+        "packages/os/tests/bootstrap-source.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

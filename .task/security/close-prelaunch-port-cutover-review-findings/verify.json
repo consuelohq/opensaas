@@ -1,0 +1,60 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/security/close-prelaunch-port-cutover-review-findings",
+  "base": "origin/stream/security",
+  "headSha": "b8bbfc8702967ca49943e580145f9fb83fe362d7",
+  "changeHash": "b13597c71615690b374f24aa8007f1a06a3b72281e971af229ba4d5271fe44e5",
+  "changedFiles": [
+    "packages/documentation/src/content/docs/os/getting-started/connect-agents.mdx",
+    "packages/documentation/src/content/docs/os/getting-started/install.mdx",
+    "packages/os/scripts/lib/install-state.ts",
+    "packages/os/scripts/server/services/trace-gateway.ts",
+    "packages/os/tests/local-os-port-cutover.test.ts",
+    "packages/os/tests/trace-gateway-workspace-host.test.ts"
+  ],
+  "verifiedAt": "2026-07-11T17:32:33.303Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/security/close-prelaunch-port-cutover-review-findings/current.json",
+        ".task/security/close-prelaunch-port-cutover-review-findings/session.json",
+        ".task/security/close-prelaunch-port-cutover-review-findings/verify.json",
+        ".task/security/close-prelaunch-port-cutover-review-findings/workpad.md",
+        ".task/tasks/security/close-prelaunch-port-cutover-review-findings.json",
+        "packages/documentation/src/content/docs/os/getting-started/connect-agents.mdx",
+        "packages/documentation/src/content/docs/os/getting-started/install.mdx",
+        "packages/os/scripts/lib/install-state.ts",
+        "packages/os/scripts/server/services/trace-gateway.ts",
+        "packages/os/tests/local-os-port-cutover.test.ts",
+        "packages/os/tests/trace-gateway-workspace-host.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

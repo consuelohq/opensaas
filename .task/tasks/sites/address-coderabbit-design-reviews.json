@@ -1,0 +1,19 @@
+{
+  "area": "sites",
+  "stream": "stream/sites",
+  "taskBranch": "task/sites/address-coderabbit-design-reviews",
+  "baseBranch": "stream/sites",
+  "sourceBranch": "stream/sites",
+  "startFrom": "stream",
+  "prNumber": 1249,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1249",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1249",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1249/address-coderabbit-design-reviews",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1249",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1249/address-coderabbit-design-reviews",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-address-coderabbit-design-reviews",
+  "taskSession": "tsk_4ce8d8fe1efd",
+  "tmuxSession": "opensaas-sites-address-coderabbit-design-reviews-4ce8d8fe",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-address-coderabbit-design-reviews/.task/sites/address-coderabbit-design-reviews/session.json",
+  "createdAt": "2026-06-28T02:38:46.342Z"
+}

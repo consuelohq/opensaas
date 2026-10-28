@@ -30,5 +30,49 @@
   {
     "from": "Normal workspace calls should be task-session scoped instead of branch-threaded.",
     "to": "Normal OS calls should be task-session scoped instead of branch-threaded."
+  },
+  {
+    "from": "durable context before analysis",
+    "to": "durable memory before analysis"
+  },
+  {
+    "from": "to context",
+    "to": "to memory"
+  },
+  {
+    "from": "context save",
+    "to": "memory save"
+  },
+  {
+    "from": "contextTitle",
+    "to": "memoryTitle"
+  },
+  {
+    "from": "noContextSave",
+    "to": "noMemorySave"
+  },
+  {
+    "from": "context-bundle.md",
+    "to": "memory-bundle.md"
+  },
+  {
+    "from": "context entry",
+    "to": "memory entry"
+  },
+  {
+    "from": "packet/context information",
+    "to": "packet/memory information"
+  },
+  {
+    "from": "text context bundle",
+    "to": "text memory bundle"
+  },
+  {
+    "from": "saved context",
+    "to": "saved memory"
+  },
+  {
+    "from": "context bundle",
+    "to": "memory bundle"
   }
 ]

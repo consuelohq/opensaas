@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-public-windows-installer-and-platform-aware-landing-command",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2439,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2439",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-add-public-windows-installer-and-platform-aware-landing-command",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_86eed2eaec22",
+  "tmuxSession": "opensaas-os-add-public-windows-installer-and-platform-aware--86eed2ea",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-add-public-windows-installer-and-platform-aware-landing-command/.task/session.json",
+  "createdAt": "2026-09-10T01:58:17.574Z"
+}

@@ -1,0 +1,55 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/security/provision-central-mcp-connector-route-for-installed-nodes",
+  "base": "origin/stream/security",
+  "headSha": "67c7a8dc97b75995b1800623d3eec8012823d4c3",
+  "changeHash": "ee74062c50a48aff1e4c9ae577c156f4fd10878bde679e976217d63b1e7034fa",
+  "changedFiles": [
+    "packages/os/cloudflare/os-device-authority/src/index.ts",
+    "packages/os/scripts/lib/workspace-cloudflare-provisioning.ts",
+    "packages/os/tests/cloudflare-provisioning-contract.test.ts",
+    "packages/os/tests/os-device-authority-worker.test.ts"
+  ],
+  "verifiedAt": "2026-07-08T21:24:05.071Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/security/provision-central-mcp-connector-route-for-installed-nodes/current.json",
+        ".task/security/provision-central-mcp-connector-route-for-installed-nodes/session.json",
+        ".task/security/provision-central-mcp-connector-route-for-installed-nodes/workpad.md",
+        ".task/tasks/security/provision-central-mcp-connector-route-for-installed-nodes.json",
+        "packages/os/cloudflare/os-device-authority/src/index.ts",
+        "packages/os/scripts/lib/workspace-cloudflare-provisioning.ts",
+        "packages/os/tests/cloudflare-provisioning-contract.test.ts",
+        "packages/os/tests/os-device-authority-worker.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

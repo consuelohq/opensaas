@@ -5,7 +5,8 @@
 /* astropaper base styles — adapted from astro-paper/src/styles/global.css for tw3 */
 
 :root {
-  --mono-font: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  --system-font: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --mono-font: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
   --background: #ffffff;
   --foreground: #000000;
   --accent: #000000;
@@ -34,9 +35,10 @@
   }
   body {
     @apply flex min-h-screen flex-col bg-background text-foreground;
-    font-family: var(--mono-font);
-    font-size: 0.9rem;
-    line-height: 1.55;
+    font-family: var(--system-font);
+    font-size: 1rem;
+    line-height: 1.6;
+    text-rendering: optimizeLegibility;
   }
   a,
   button {
@@ -53,7 +55,17 @@
 }
 
 .app-layout {
-  @apply mx-auto w-full max-w-3xl px-4;
+  @apply mx-auto w-full max-w-3xl;
+  padding-inline: clamp(1.5rem, 4vw, 2.5rem);
+}
+
+#article {
+  max-width: 42rem;
+  margin-inline: auto;
+  font-size: 1.0625rem;
+  line-height: 1.75;
+  overflow-wrap: anywhere;
+  text-wrap: pretty;
 }
 
 .active-nav {
@@ -130,6 +142,10 @@ svg.icon-tabler {
     }
 
     table {
+      display: block;
+      width: 100%;
+      overflow-x: auto;
+
       th,
       td {
         @apply border border-border p-2;
@@ -198,6 +214,11 @@ svg.icon-tabler {
 
 /* hide scrollbar on mobile — scroll-to-top button is sufficient */
 @media (max-width: 639px) {
+  #article {
+    font-size: 1rem;
+    line-height: 1.75;
+  }
+
   html {
     scrollbar-width: none;
   }
@@ -206,7 +227,7 @@ svg.icon-tabler {
   }
 }
 
-/* language selector vars (from LaunchLayout) */
+/* language selector vars (from MarketingLayout) */
 :root {
   --launch-muted: #B3B3B3;
   --launch-fg: var(--foreground);
@@ -335,5 +356,241 @@ body[data-language-translating] [data-translate-ignore] * {
   .language-selector__option {
     padding: 0.75rem 1.25rem !important;
     font-size: 1rem !important;
+  }
+}
+
+/* Blog article utility navigation */
+#post-utility-nav {
+  justify-content: flex-start;
+}
+
+#post-utility-nav .language-selector,
+#post-utility-nav .language-selector__button {
+  min-height: 2.25rem;
+}
+
+#post-utility-nav .language-selector__button {
+  line-height: 1;
+}
+
+/* Footer keeps the RSS description and community links available site-wide. */
+.blog-footer {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.blog-footer__intro,
+.blog-footer__community {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.blog-footer__intro p,
+.blog-footer__label,
+.blog-footer__copyright {
+  color: color-mix(in srgb, var(--foreground) 68%, transparent);
+  font-size: 0.875rem;
+}
+
+.blog-footer__rss {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+}
+
+.blog-footer__rss svg {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+
+.blog-footer__copyright {
+  align-self: end;
+}
+
+@media (min-width: 40rem) {
+  .blog-footer {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+  }
+
+  .blog-footer__community {
+    align-items: flex-end;
+  }
+
+  .blog-footer__copyright {
+    grid-column: 1 / -1;
+    justify-self: end;
+  }
+}
+
+/* Compact/tablet TOC: sticky, horizontally swipeable, and click navigable. */
+.article-toc {
+  position: sticky;
+  top: 0.25rem;
+  z-index: 20;
+  margin: 1.5rem 0 2rem;
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: rgba(0, 0, 0, 0.92);
+  backdrop-filter: blur(14px);
+}
+
+.article-toc__title {
+  margin-bottom: 0.625rem;
+  color: color-mix(in srgb, var(--foreground) 72%, transparent);
+  font-size: 0.75rem;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+}
+
+.article-toc__scroller {
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.article-toc__scroller::-webkit-scrollbar {
+  display: none;
+}
+
+.article-toc__item {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.5rem;
+  max-width: min(18rem, 75vw);
+  padding: 0.35rem 0.5rem;
+  border-radius: 0.45rem;
+  color: color-mix(in srgb, var(--foreground) 58%, transparent);
+  font-size: 0.75rem;
+  line-height: 1.3;
+  text-decoration: none;
+  scroll-snap-align: center;
+  transition: color 160ms ease, background-color 160ms ease;
+}
+
+.article-toc__item:hover,
+.article-toc__item:focus-visible {
+  color: color-mix(in srgb, var(--foreground) 86%, transparent);
+  background: var(--muted);
+}
+
+.article-toc__item[aria-current="location"] {
+  color: var(--foreground);
+  background: color-mix(in srgb, var(--foreground) 9%, transparent);
+}
+
+.article-toc__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.article-toc__rail {
+  display: block;
+  flex: 0 0 auto;
+  width: 1rem;
+  height: 2px;
+  border-radius: 999px;
+  background: #666;
+  transition: width 180ms ease, background-color 180ms ease;
+}
+
+.article-toc__item:hover .article-toc__rail,
+.article-toc__item:focus-visible .article-toc__rail {
+  width: 1.5rem;
+  background: #aaa;
+}
+
+.article-toc__item[aria-current="location"] .article-toc__rail {
+  width: 2rem;
+  background: #fff;
+}
+
+/* Wide screens: collapse the TOC to right-side rails and reveal labels on hover/focus. */
+@media (min-width: 86rem) {
+  .article-toc {
+    position: fixed;
+    top: 50%;
+    right: max(1.5rem, calc((100vw - 92rem) / 2));
+    width: 18rem;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    backdrop-filter: none;
+    transform: translateY(-50%);
+  }
+
+  .article-toc__title {
+    margin: 0 0 0.75rem;
+    text-align: right;
+  }
+
+  .article-toc__scroller {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.15rem;
+    overflow: visible;
+    scroll-snap-type: none;
+  }
+
+  .article-toc__item {
+    width: 100%;
+    max-width: none;
+    min-height: 1.75rem;
+    justify-content: flex-end;
+    padding: 0.15rem 0;
+    background: transparent !important;
+  }
+
+  .article-toc__label {
+    max-width: 0;
+    opacity: 0;
+    transform: translateX(0.5rem);
+    transition: max-width 220ms ease, opacity 180ms ease, transform 220ms ease;
+  }
+
+  .article-toc:hover .article-toc__label,
+  .article-toc:focus-within .article-toc__label,
+  .article-toc__item[aria-current="location"] .article-toc__label {
+    max-width: 14rem;
+    opacity: 0.72;
+    transform: translateX(0);
+  }
+
+  .article-toc__item[aria-current="location"] .article-toc__label {
+    color: #fff;
+    opacity: 0.92;
+  }
+
+  .article-toc__rail {
+    width: 0.875rem;
+  }
+
+  .article-toc__item:hover .article-toc__rail,
+  .article-toc__item:focus-visible .article-toc__rail {
+    width: 1.75rem;
+  }
+
+  .article-toc__item[aria-current="location"] .article-toc__rail {
+    width: 2.25rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .article-toc__item,
+  .article-toc__label,
+  .article-toc__rail {
+    transition: none;
   }
 }

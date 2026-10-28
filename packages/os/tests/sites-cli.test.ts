@@ -12,21 +12,28 @@ type SitesCommandResult = {
   indexPath: string;
   pagesDir?: string;
   pagesRegistryPath?: string;
-  officeIndexPath: string;
-  officeDataPath: string;
-  officeAssetsDir: string;
+  artifactsIndexPath: string;
+  artifactsDataPath: string;
   tracesIndexPath: string;
   diffsIndexPath: string;
   docsIndexPath: string;
+  configurationIndexPath: string;
+  toolsIndexPath: string;
+  environmentsIndexPath: string;
+  secretsIndexPath: string;
   url: string;
   artifacts: number;
   generatedAt: string | null;
   indexExists: boolean;
-  officeIndexExists: boolean;
-  officeDataExists: boolean;
+  artifactsIndexExists: boolean;
+  artifactsDataExists: boolean;
   tracesIndexExists: boolean;
   diffsIndexExists: boolean;
   docsIndexExists: boolean;
+  configurationIndexExists: boolean;
+  toolsIndexExists: boolean;
+  environmentsIndexExists: boolean;
+  secretsIndexExists: boolean;
   message: string;
   pageId?: string;
   pagePath?: string;
@@ -85,12 +92,15 @@ function runSitesCommand(args: string[]): SitesCommandResult {
   `)) as SitesCommandResult;
 }
 
-describe('Sites artifact database loading', () => {
-  it('should guard database stat before opening SQLite', () => {
+describe('Sites artifact boundary', () => {
+  it('delegates artifact materialization without loading SQLite', () => {
     const source = readFileSync('scripts/lib/sites.ts', 'utf8');
-    expect(source).toContain('try {\n    stat = fs.statSync(dbPath);');
-    expect(source).toContain('} catch {\n    return [];\n  }');
-    expect(source.indexOf('stat = fs.statSync(dbPath);')).toBeLessThan(source.indexOf('const Database = loadBunSqliteDatabase();'));
+    expect(source).toContain("import {\n  artifactsSiteDataPath,");
+    expect(source).toContain('readArtifactCatalog,');
+    expect(source).toContain('refreshArtifactsSite,');
+    expect(source).not.toContain('bun:sqlite');
+    expect(source).not.toContain('loadBunSqliteDatabase');
+    expect(source).not.toContain('OfficeSiteData');
   });
 });
 describe('Sites CLI', () => {
@@ -103,11 +113,15 @@ describe('Sites CLI', () => {
     expect(pathResult.indexPath).toBe(join(tempHome, 'sites', 'index.html'));
     expect(pathResult.pagesDir).toBe(join(tempHome, 'sites', 'pages'));
     expect(pathResult.pagesRegistryPath).toBe(join(tempHome, 'sites', '.data', 'pages', 'registry.json'));
-    expect(pathResult.officeIndexPath).toBe(join(tempHome, 'sites', 'office', 'index.html'));
-    expect(pathResult.officeDataPath).toBe(join(tempHome, 'sites', 'office', 'data', 'artifacts.json'));
+    expect(pathResult.artifactsIndexPath).toBe(join(tempHome, 'sites', 'artifacts', 'index.html'));
+    expect(pathResult.artifactsDataPath).toBe(join(tempHome, 'sites', 'artifacts', 'data', 'catalog.json'));
     expect(pathResult.tracesIndexPath).toBe(join(tempHome, 'sites', 'traces', 'index.html'));
     expect(pathResult.diffsIndexPath).toBe(join(tempHome, 'sites', 'diffs', 'index.html'));
     expect(pathResult.docsIndexPath).toBe(join(tempHome, 'sites', 'docs', 'index.html'));
+    expect(pathResult.configurationIndexPath).toBe(join(tempHome, 'sites', 'configuration', 'index.html'));
+    expect(pathResult.toolsIndexPath).toBe(join(tempHome, 'sites', 'tools', 'index.html'));
+    expect(pathResult.environmentsIndexPath).toBe(join(tempHome, 'sites', 'environments', 'index.html'));
+    expect(pathResult.secretsIndexPath).toBe(join(tempHome, 'sites', 'secrets', 'index.html'));
     expect(pathResult).not.toHaveProperty('githubIndexPath');
     expect(pathResult.url.startsWith('file:')).toBe(true);
 
@@ -117,14 +131,28 @@ describe('Sites CLI', () => {
     expect(refreshResult.artifacts).toBe(0);
     expect(existsSync(refreshResult.indexPath)).toBe(true);
     expect(existsSync(join(tempHome, 'sites', 'pages', 'index.html'))).toBe(true);
-    expect(existsSync(refreshResult.officeIndexPath)).toBe(true);
-    expect(existsSync(refreshResult.officeDataPath)).toBe(true);
+    expect(existsSync(refreshResult.artifactsIndexPath)).toBe(true);
+    expect(existsSync(refreshResult.artifactsDataPath)).toBe(true);
     expect(existsSync(refreshResult.tracesIndexPath)).toBe(true);
+    const tracesHtml = readFileSync(refreshResult.tracesIndexPath, 'utf8');
+    expect(tracesHtml).toContain('data-workspace-route-trigger');
+    expect(tracesHtml).toContain('aria-current="page" href="/tracing"');
+    expect(tracesHtml).toContain('<span>Tracing</span>');
+    expect(tracesHtml).toContain('aria-label="Workspace routes"');
+    expect(tracesHtml).toContain('/gateway/traces/recent');
+    expect(tracesHtml).not.toContain('Reserved Sites page');
     expect(existsSync(refreshResult.diffsIndexPath)).toBe(true);
     expect(existsSync(refreshResult.docsIndexPath)).toBe(true);
+    for (const route of ['configuration', 'tools', 'environments', 'secrets']) {
+      const routePath = join(tempHome, 'sites', route, 'index.html');
+      expect(existsSync(routePath)).toBe(true);
+      const routeHtml = readFileSync(routePath, 'utf8');
+      expect(routeHtml).not.toContain('window.__CONSUELO_SETTINGS__');
+      expect(routeHtml).not.toContain('private_workspace_marker');
+    }
     expect(existsSync(join(tempHome, 'sites', 'github', 'index.html'))).toBe(false);
-    expect(existsSync(join(tempHome, 'pages', 'office', 'index.html'))).toBe(false);
-    expect(JSON.parse(readFileSync(refreshResult.officeDataPath, 'utf8')).artifacts).toEqual([]);
+    expect(existsSync(join(tempHome, 'sites', 'office', 'index.html'))).toBe(false);
+    expect(JSON.parse(readFileSync(refreshResult.artifactsDataPath, 'utf8')).entries).toEqual([]);
 
     const statusResult = runSitesCommand(['status', '--json']);
 
@@ -132,11 +160,15 @@ describe('Sites CLI', () => {
       ok: true,
       command: 'status',
       indexExists: true,
-      officeIndexExists: true,
-      officeDataExists: true,
+      artifactsIndexExists: true,
+      artifactsDataExists: true,
       tracesIndexExists: true,
       diffsIndexExists: true,
       docsIndexExists: true,
+      configurationIndexExists: true,
+      toolsIndexExists: true,
+      environmentsIndexExists: true,
+      secretsIndexExists: true,
       artifacts: 0,
     });
 
@@ -154,7 +186,7 @@ describe('Sites CLI', () => {
       ok: true,
       command: 'status',
       indexPath: join(tempHome, 'sites', 'index.html'),
-      officeDataPath: join(tempHome, 'sites', 'office', 'data', 'artifacts.json'),
+      artifactsDataPath: join(tempHome, 'sites', 'artifacts', 'data', 'catalog.json'),
     });
     expect(cliStatus).not.toHaveProperty('githubIndexPath');
 
@@ -163,50 +195,70 @@ describe('Sites CLI', () => {
   });
 
 
-  it('renders the Sites launcher with the public Markdown terminal UI and local OS routes', () => {
+  it('materializes Home as the durable workspace root on every Sites refresh', () => {
+    const first = runSitesCommand(['refresh', '--json']);
+    const firstHtml = readFileSync(first.indexPath, 'utf8');
+
+    expect(firstHtml).toContain('<title>Home - Consuelo OS</title>');
+    expect(firstHtml).toContain('data-workspace-shell');
+    expect(firstHtml).toContain('data-workspace-route-trigger');
+    expect(firstHtml).toContain('aria-current="page" href="/configuration"');
+    expect(firstHtml).toContain('/gateway/configuration/snapshot');
+    expect(firstHtml).not.toContain('Welcome to Consuelo OS');
+    expect(firstHtml).not.toContain('data-agent-count');
+
+    const second = runSitesCommand(['refresh', '--json']);
+    const secondHtml = readFileSync(second.indexPath, 'utf8');
+    expect(secondHtml).toBe(firstHtml);
+  });
+
+  it('keeps the workspace root on Home regardless of the authenticated workspace host', () => {
+    writeFileSync(
+      join(tempHome, 'config.json'),
+      JSON.stringify({ workspace: { host: 'acme.consuelohq.com' } }, null, 2),
+    );
+
     const refreshResult = runSitesCommand(['refresh', '--json']);
     const html = readFileSync(refreshResult.indexPath, 'utf8');
 
-    for (const marker of [
-      '<title>Consuelo OS Sites</title>',
-      'CONSUELO OS █',
-      'CONTACT:</span> SUPPORT@CONSUELOHQ.COM',
-      'LOCATION:</span> USA',
-      'STATUS:</span> ONLINE',
-      'OPEN POSITION:',
-      '[Systems Engineer](</span><a href="/jobs"',
-      '>/careers/systems-engineer</a>',
-      'SITES:',
-      '[GTM](</span><a href="https://app.consuelohq.com/welcome"',
-      '>https://sites.consuelohq.com/gtm</a>',
-      '[Office](</span><a href="office/"',
-      '>https://sites.consuelohq.com/office</a>',
-      '[Tracing](</span><a href="traces/"',
-      '>https://sites.consuelohq.com/tracing</a>',
-      '[Diffs](</span><a href="diffs/"',
-      '>https://sites.consuelohq.com/diffs</a>',
-      '[Documentation](</span><a href="docs/"',
-      '>https://docs.consuelohq.com/</a>',
-      'WRITING:',
-      '[On Decision Loops](</span><a href="/writing/on-decision-loops"',
-      'font-family: "Geist Mono", "Geist", ui-monospace',
-      'font-weight: 400',
-      'letter-spacing: 0.02em',
-      '@media (max-width: 430px)',
-      'const siteHotkeys = {',
-      '"2": "office/"',
-      '"3": "traces/"',
-      '"4": "diffs/"',
-      '"5": "docs/"',
-      'window.location.assign(href)',
-    ]) {
-      expect(html).toContain(marker);
-    }
+    expect(html).toContain('<title>Home - Consuelo OS</title>');
+    expect(html).toContain('href="/configuration"');
+    expect(html).toContain('href="/tracing"');
+    expect(html).toContain('href="/tools"');
+    expect(html).toContain('href="/nodes"');
+    expect(html).toContain('href="/secrets"');
+    expect(html).toContain('href="https://docs.consuelohq.com/"');
+    expect(html).toContain('data-overview-heatmap');
+    expect(html).not.toContain('Welcome to Consuelo OS');
+    expect(html).not.toContain('https://sites.consuelohq.com/');
+  });
 
-    expect(html.match(/target="_blank"/g)?.length).toBeGreaterThanOrEqual(7);
-    expect(html).toContain('rel="noopener noreferrer"');
-    expect(html).not.toContain('Versioned local Sites pages with current pointers');
-    expect(html).not.toContain('<div class="grid">');
+  it('keeps Sites refresh presentation-only instead of mutating the ChatGPT MCP connection', () => {
+    const configPath = join(tempHome, 'node', 'security', 'generated', 'chatgpt-mcp.json');
+    mkdirSync(join(tempHome, 'node', 'security', 'generated'), { recursive: true });
+    writeFileSync(configPath, JSON.stringify({
+      version: 1,
+      kind: 'consuelo-chatgpt-mcp-connection',
+      auth: 'bearer',
+      url: 'https://legacy-workspace.consuelohq.com/mcp',
+      localUrl: 'http://127.0.0.1:46321/mcp',
+      tokenId: 'token_existing',
+      bearerToken: 'cst_existing',
+      scopes: ['route:/mcp:read', 'tool:*:read'],
+      createdAt: '2026-06-13T00:00:00.000Z',
+    }, null, 2));
+
+    const refreshResult = runSitesCommand(['refresh', '--json']);
+    const html = readFileSync(refreshResult.indexPath, 'utf8');
+    const persisted = JSON.parse(readFileSync(configPath, 'utf8'));
+
+    expect(html).toContain('<title>Home - Consuelo OS</title>');
+    expect(html).not.toContain('https://legacy-workspace.consuelohq.com/mcp');
+    expect(persisted).toMatchObject({
+      url: 'https://legacy-workspace.consuelohq.com/mcp',
+      tokenId: 'token_existing',
+      bearerToken: 'cst_existing',
+    });
   });
 
   it('publishes Sites pages with immutable versions and stale base-version protection', () => {
@@ -403,5 +455,4 @@ describe('Sites CLI', () => {
   });
 
 });
-
 

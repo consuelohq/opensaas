@@ -1,3 +1,5 @@
+import { homepageSeo } from './homepage-seo';
+
 export type StructuredData = {
   [key: string]: unknown;
 };
@@ -10,16 +12,15 @@ export type FaqItem = {
 export const siteMetadata = {
   siteUrl: 'https://consuelohq.com',
   siteName: 'Consuelo',
-  defaultTitle: 'Consuelo | Sales Infrastructure for Insurance Sales Teams',
-  defaultDescription:
-    'Power dialer, AI CRM, real-time coaching, and analytics for insurance sales teams. Composable and built to integrate everywhere your team works.',
-  blogTitle: 'Consuelo Blog',
+  defaultTitle: homepageSeo.title,
+  defaultDescription: homepageSeo.description,
+  blogTitle: 'The Consuelo Blog',
   blogDescription:
     'Product updates, implementation notes, and technical writing from the Consuelo team.',
-  defaultOgImage: '/og.png',
+  defaultOgImage: homepageSeo.image,
   robots: 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1',
-  themeColorLight: '#ffffff',
-  themeColorDark: '#000000',
+  themeColorLight: '#0000F2',
+  themeColorDark: '#0000F2',
   twitterHandle: '@consuelohq',
   docsUrl: 'https://docs.consuelohq.com',
   appUrl: 'https://app.consuelohq.com',
@@ -53,7 +54,7 @@ export const getOrganizationSchema = (): StructuredData => ({
   '@id': `${siteMetadata.siteUrl}/#organization`,
   name: siteMetadata.siteName,
   url: siteMetadata.siteUrl,
-  logo: resolveImageUrl('/logo.svg'),
+  logo: resolveImageUrl('/favicon.svg'),
   sameAs: [siteMetadata.githubUrl, siteMetadata.docsUrl],
   description: siteMetadata.defaultDescription,
 });
@@ -72,9 +73,9 @@ export const getSoftwareApplicationSchema = (
 ): StructuredData => ({
   '@type': 'SoftwareApplication',
   '@id': `${siteMetadata.siteUrl}/#application`,
-  name: siteMetadata.siteName,
-  applicationCategory: 'BusinessApplication',
-  operatingSystem: 'Web',
+  name: 'Consuelo OS',
+  applicationCategory: 'DeveloperApplication',
+  operatingSystem: 'macOS, Linux, Web',
   url: siteMetadata.siteUrl,
   description: siteMetadata.defaultDescription,
   author: { '@id': `${siteMetadata.siteUrl}/#organization` },

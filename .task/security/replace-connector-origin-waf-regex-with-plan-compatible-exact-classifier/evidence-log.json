@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/security/replace-connector-origin-waf-regex-with-plan-compatible-exact-classifier",
+  "events": [
+    {
+      "id": "94cb88a9-2f24-4e21-8aa3-1d013ce368a7",
+      "occurred_at": "2026-07-13T18:49:43.751Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/managed-os-mcp-origin-class-migration.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/security/replace-connector-origin-waf-regex-with-plan-compatible-exact-classifier",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/security/replace-connector-origin-waf-regex-with-plan-compatible-exact-classifier"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-07-13T18:49:43.808Z"
+}

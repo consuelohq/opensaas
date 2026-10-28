@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_18a901c1b2c0",
+  "tmuxSession": "opensaas-os-fix-visible-dialer-steering-install-state-regres-18a901c1",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-visible-dialer-steering-install-state-regression",
+  "branch": "task/os/fix-visible-dialer-steering-install-state-regression",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-visible-dialer-steering-install-state-regression",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-visible-dialer-steering-install-state-regression",
+  "prNumber": 1789,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1789",
+  "createdAt": "2026-08-05T21:11:54.229Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-visible-dialer-steering-install-state-regression/.task/os/fix-visible-dialer-steering-install-state-regression/session.json"
+}

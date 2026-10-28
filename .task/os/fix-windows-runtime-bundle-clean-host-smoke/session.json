@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_a632d6203c79",
+  "tmuxSession": "opensaas-os-fix-windows-runtime-bundle-clean-host-smoke-a632d620",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-windows-runtime-bundle-clean-host-smoke",
+  "branch": "task/os/fix-windows-runtime-bundle-clean-host-smoke",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-windows-runtime-bundle-clean-host-smoke",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-windows-runtime-bundle-clean-host-smoke",
+  "prNumber": 1905,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1905",
+  "createdAt": "2026-08-13T17:16:34.364Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-windows-runtime-bundle-clean-host-smoke/.task/os/fix-windows-runtime-bundle-clean-host-smoke/session.json"
+}

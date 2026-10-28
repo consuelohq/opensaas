@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_6782da23a109",
+  "tmuxSession": "opensaas-dialer-algorithm-make-os-media-fixtures-ci-portable-6782da23",
+  "area": "dialer-algorithm",
+  "stream": "stream/dialer-algorithm",
+  "taskBranch": "task/dialer-algorithm/make-os-media-fixtures-ci-portable",
+  "branch": "task/dialer-algorithm/make-os-media-fixtures-ci-portable",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-make-os-media-fixtures-ci-portable",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-make-os-media-fixtures-ci-portable",
+  "prNumber": 2068,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2068",
+  "createdAt": "2026-08-15T10:41:46.262Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-make-os-media-fixtures-ci-portable/.task/dialer-algorithm/make-os-media-fixtures-ci-portable/session.json"
+}

@@ -13,7 +13,7 @@ This stream owns the workspace agent operating layer: typed workspace facade com
 ## operating rules
 
 - Work only on stream/workspace-agents unless ko explicitly selects another stream.
-- Start code/doc changes through the task workflow: stream.context -> task.start -> workpad -> validate -> task.push -> task.pr.
+- Start code/doc changes through the task workflow: stream.context -> session.start({ kind: "task" }) -> workpad -> validate -> task.push -> task.pr.
 - Treat workspace facade envelopes as the API contract. Keep JSON output stable and parseable.
 - Prefer central facade-layer changes over per-script duplication when changing tool result behavior.
 - Keep agent helper primitives small, typed, and observable before adding blocking behavior.

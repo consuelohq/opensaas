@@ -1,0 +1,19 @@
+{
+  "area": "documentation",
+  "stream": "stream/documentation",
+  "taskBranch": "task/documentation/write-build-with-os-documentation",
+  "baseBranch": "stream/documentation",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1453,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1453",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1453",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1453/write-build-with-os-documentation",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1453",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1453/write-build-with-os-documentation",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-write-build-with-os-documentation",
+  "taskSession": "tsk_ea7c621a7c62",
+  "tmuxSession": "opensaas-documentation-write-build-with-os-documentation-ea7c621a",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-write-build-with-os-documentation/.task/documentation/write-build-with-os-documentation/session.json",
+  "createdAt": "2026-07-13T16:39:29.111Z"
+}

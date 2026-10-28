@@ -105,12 +105,11 @@ contractDescribe(
       expect(plan.publicRoutes.map((route) => route.path).sort()).toEqual([
         '/api',
         '/apps/chatgpt',
+        '/artifacts',
         '/diffs',
         '/mcp',
-        '/office',
         '/tools',
         '/traces',
-        '/wiki',
       ]);
       expect(plan.publicRoutes).toEqual(
         expect.arrayContaining([

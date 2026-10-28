@@ -388,6 +388,75 @@ function createStore(repoRoot, remoteUrl) {
     ].join('\n')).all(vector, limit);
   }
 
+  function searchChunksByText(terms, limit) {
+    const cleanTerms = Array.from(new Set((terms || [])
+      .map((term) => String(term || '').trim().toLowerCase())
+      .filter((term) => term.length >= 3 && /^[a-z0-9./-]+$/.test(term))))
+      .slice(0, 24);
+    if (cleanTerms.length === 0 || !Number.isFinite(limit) || limit <= 0) return [];
+
+    const rowsByChunk = new Map();
+    const perTermLimit = Math.max(12, Math.ceil(limit / Math.max(1, Math.min(cleanTerms.length, 8))));
+    const statement = db.query([
+      'SELECT',
+      '  chunks.id AS chunkId,',
+      '  chunks.file_path AS filePath,',
+      '  chunks.start_line AS startLine,',
+      '  chunks.end_line AS endLine,',
+      '  chunks.chunk_type AS chunkType,',
+      '  chunks.name AS name,',
+      '  chunks.content AS content,',
+      '  (CASE WHEN LOWER(chunks.file_path) LIKE ? THEN 5 ELSE 0 END',
+      '   + CASE WHEN LOWER(COALESCE(chunks.name, \"\")) LIKE ? THEN 4 ELSE 0 END',
+      '   + CASE WHEN LOWER(chunks.content) LIKE ? THEN 1 ELSE 0 END) AS termSupport',
+      'FROM chunks',
+      'WHERE LOWER(chunks.file_path) LIKE ?',
+      '   OR LOWER(COALESCE(chunks.name, \"\")) LIKE ?',
+      '   OR LOWER(chunks.content) LIKE ?',
+      'ORDER BY termSupport DESC, LENGTH(chunks.file_path), chunks.file_path, chunks.seq',
+      'LIMIT ?',
+    ].join('\n'));
+
+    for (const term of cleanTerms) {
+      const pattern = `%${term}%`;
+      const rows = statement.all(
+        pattern,
+        pattern,
+        pattern,
+        pattern,
+        pattern,
+        pattern,
+        perTermLimit,
+      );
+      for (const row of rows) {
+        const existing = rowsByChunk.get(row.chunkId);
+        if (!existing) {
+          rowsByChunk.set(row.chunkId, {
+            ...row,
+            lexicalSupport: Number(row.termSupport || 0),
+            matchedTerms: 1,
+          });
+          continue;
+        }
+        existing.lexicalSupport += Number(row.termSupport || 0);
+        existing.matchedTerms += 1;
+      }
+    }
+
+    return Array.from(rowsByChunk.values())
+      .map((row) => ({
+        ...row,
+        lexicalSupport: row.lexicalSupport + (row.matchedTerms * 2),
+      }))
+      .sort((left, right) => {
+        if (right.lexicalSupport !== left.lexicalSupport) return right.lexicalSupport - left.lexicalSupport;
+        if (right.matchedTerms !== left.matchedTerms) return right.matchedTerms - left.matchedTerms;
+        if (left.filePath !== right.filePath) return left.filePath.localeCompare(right.filePath);
+        return Number(left.startLine || 0) - Number(right.startLine || 0);
+      })
+      .slice(0, limit);
+  }
+
   function getFile(pathName) {
     return db.query('SELECT * FROM files WHERE path = ?').get(pathName);
   }
@@ -637,6 +706,7 @@ function createStore(repoRoot, remoteUrl) {
     replaceChunks,
     replaceGraphEdges,
     searchChunks,
+    searchChunksByText,
     setCachedEmbedding,
     setMeta,
     setOverlay,

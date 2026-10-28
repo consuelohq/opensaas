@@ -1,0 +1,61 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/refine-homepage-hero-rotating-assistant-copy",
+  "base": "origin/task/os/refine-homepage-hero-rotating-assistant-copy",
+  "headSha": "81c6e5481f8823d569bea19000a09154d906157f",
+  "changeHash": "f6c619bb6458a914d575ba977ead95a183fa03fe8db6066cfc32aa82cbd69967",
+  "changedFiles": [
+    "packages/consuelo-website/bun.lock",
+    "packages/consuelo-website/package.json",
+    "packages/consuelo-website/src/components/home/HomeHero.astro",
+    "packages/consuelo-website/src/components/site/SiteHeader.astro",
+    "packages/consuelo-website/tests/homepage-responsive.test.mjs",
+    "packages/consuelo-website/tests/site-header.test.mjs"
+  ],
+  "verifiedAt": "2026-07-29T16:58:04.825Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/refine-homepage-hero-rotating-assistant-copy/current.json",
+        ".task/os/refine-homepage-hero-rotating-assistant-copy/evidence-log.json",
+        ".task/os/refine-homepage-hero-rotating-assistant-copy/read-log.json",
+        ".task/os/refine-homepage-hero-rotating-assistant-copy/session.json",
+        ".task/os/refine-homepage-hero-rotating-assistant-copy/workpad.md",
+        ".task/tasks/os/refine-homepage-hero-rotating-assistant-copy.json",
+        "packages/consuelo-website/bun.lock",
+        "packages/consuelo-website/package.json",
+        "packages/consuelo-website/src/components/home/HomeHero.astro",
+        "packages/consuelo-website/src/components/site/SiteHeader.astro",
+        "packages/consuelo-website/tests/homepage-responsive.test.mjs",
+        "packages/consuelo-website/tests/site-header.test.mjs"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

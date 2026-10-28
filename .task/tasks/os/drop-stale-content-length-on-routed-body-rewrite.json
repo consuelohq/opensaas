@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/drop-stale-content-length-on-routed-body-rewrite",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2283,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2283",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-drop-stale-content-length-on-routed-body-rewrite",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_a0ab7a795e25",
+  "tmuxSession": "opensaas-os-drop-stale-content-length-on-routed-body-rewrite-a0ab7a79",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-drop-stale-content-length-on-routed-body-rewrite/.task/session.json",
+  "createdAt": "2026-08-29T04:39:58.570Z"
+}

@@ -25,10 +25,13 @@ const EXCLUDE_DIRS = new Set([
   'generated',
   'generated-metadata',
   'coverage',
+  'vendor',
+  'worktrees',
+  '.worktrees',
   '__pycache__',
   '.task',
 ]);
-const EXCLUDE_FILE_NAMES = new Set(['package-lock.json', 'yarn.lock']);
+const EXCLUDE_FILE_NAMES = new Set(['package-lock.json', 'bun.lock']);
 
 function writeStderr(value = '') {
   process.stderr.write(`${value}\n`);

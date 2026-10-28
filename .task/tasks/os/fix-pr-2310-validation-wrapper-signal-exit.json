@@ -1,0 +1,20 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-pr-2310-validation-wrapper-signal-exit",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2336,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2336",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2336",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2336/fix-pr-2310-validation-wrapper-signal-exit",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2336",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2336/fix-pr-2310-validation-wrapper-signal-exit",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-pr-2310-validation-wrapper-signal-exit",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_143091963f3f",
+  "tmuxSession": "opensaas-os-fix-pr-2310-validation-wrapper-signal-exit-14309196",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-pr-2310-validation-wrapper-signal-exit/.task/os/fix-pr-2310-validation-wrapper-signal-exit/session.json",
+  "createdAt": "2026-08-31T21:10:25.540Z"
+}

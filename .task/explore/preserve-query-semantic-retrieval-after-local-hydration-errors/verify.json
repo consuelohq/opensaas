@@ -1,0 +1,312 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/explore/preserve-query-semantic-retrieval-after-local-hydration-errors",
+  "base": "stream/explore",
+  "headSha": "09a9167f6f8674257d98872371ff1d6a4ed6dfe4",
+  "changeHash": "e5c45938ab61cfa54e703170f7a36cd8c3f7b942710858958617484692f80cd9",
+  "changedFiles": [
+    "packages/os/scripts/explore.js",
+    "packages/os/scripts/lib/index/embedder.js",
+    "packages/os/scripts/lib/index/embedding-gateway.js",
+    "packages/os/scripts/lib/index/indexer.js",
+    "packages/os/tests/explore-index-hydration-fallback.test.ts",
+    "packages/os/tests/semantic-embedding-gateway.test.ts",
+    "packages/workspace/test-selection.registry.json",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "verifiedAt": "2026-09-08T15:03:21.455Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/explore/preserve-query-semantic-retrieval-after-local-hydration-errors/evidence-log.json",
+        ".task/explore/preserve-query-semantic-retrieval-after-local-hydration-errors/read-log.json",
+        ".task/explore/preserve-query-semantic-retrieval-after-local-hydration-errors/workpad.md",
+        ".task/tasks/explore/preserve-query-semantic-retrieval-after-local-hydration-errors.json",
+        "packages/os/scripts/explore.js",
+        "packages/os/scripts/lib/index/embedder.js",
+        "packages/os/scripts/lib/index/embedding-gateway.js",
+        "packages/os/scripts/lib/index/indexer.js",
+        "packages/os/tests/explore-index-hydration-fallback.test.ts",
+        "packages/os/tests/semantic-embedding-gateway.test.ts",
+        "packages/workspace/test-selection.registry.json",
+        "packages/workspace/test-selection.rules.json",
+        "packages/workspace/tests/test-selection.test.js"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-test-selection",
+          "critical": true,
+          "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy.",
+          "matchedFiles": [
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-explore-retrieval-science",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Agent-facing OS Explore retrieval, unified investigation-policy, shadow VOI, and E6 controlled-trial promotion-gate changes must prove hard scope, missing-semantic fallback, honest hypothesis/readiness state, neutral reads, explicit relevance evidence, one shared E4 next-action/edit-readiness control, shadow-only empirical E5 VOI abstention/cost math, fixed-sample paired E6 evidence with exact sign-test and required-node safety gates, hosted embeddings, runtime routing, benchmark metrics, and compact/full output without selecting the historically red package-wide OS suite.",
+          "matchedFiles": [
+            "packages/os/scripts/explore.js",
+            "packages/os/scripts/lib/index/embedder.js",
+            "packages/os/scripts/lib/index/embedding-gateway.js",
+            "packages/os/scripts/lib/index/indexer.js",
+            "packages/os/tests/explore-index-hydration-fallback.test.ts",
+            "packages/os/tests/semantic-embedding-gateway.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-compact-explore-response",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Compact explore response shaping and decision-engine integration must prove bounded summary/detail contracts without selecting the unrelated broad OS package suite.",
+          "matchedFiles": [
+            "packages/os/scripts/explore.js"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "server-ci-task-contract",
+          "critical": true,
+          "reason": "Server CI changes must scope lint and typecheck to directly changed Twenty server runtime files while retaining dependency propagation.",
+          "matchedFiles": [
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true
+        },
+        {
+          "name": "OS Explore retrieval science contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/explore-retrieval-policy.test.ts",
+            "tests/explore-retriever-fallback.test.ts",
+            "tests/explore-index-hydration-fallback.test.ts",
+            "tests/explore-bench.test.ts",
+            "tests/explore-output-contract.test.ts",
+            "tests/explore-hypothesis-model.test.ts",
+            "tests/explore-voi-policy.test.ts",
+            "tests/explore-promotion-gate.test.ts",
+            "tests/explore-runtime-routing.test.ts",
+            "tests/semantic-embedding-edge-gateway.test.ts",
+            "tests/semantic-embedding-gateway.test.ts",
+            "tests/semantic-embedding-identity.test.ts",
+            "tools/decision-engine/handler.test.ts"
+          ],
+          "ruleId": "os-explore-retrieval-science",
+          "critical": true
+        },
+        {
+          "name": "OS compact explore response contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/explore-output-contract.test.ts"
+          ],
+          "ruleId": "os-compact-explore-response",
+          "critical": true
+        },
+        {
+          "name": "changed server task selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "TypeORM CLI compatibility contract",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "cwd": ".",
+          "ruleId": "workspace-test-selection",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 5206,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-explore-preserve-query-semantic-retrieval-after-local-hydration-errors\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/test-selection.test.js \u001b[2m(\u001b[22m\u001b[2m73 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 4807\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m discovers and seeds the existing test inventory \u001b[33m 1608\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m provisions OS package dependencies before selected OS suites on a clean checkout \u001b[33m 359\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m73 passed\u001b[39m\u001b[22m\u001b[90m (73)\u001b[39m\n\u001b[2m   Start at \u001b[22m 11:02:56\n\u001b[2m   Duration \u001b[22m 4.93s\u001b[2m (transform 26ms, setup 0ms, import 37ms, tests 4.81s, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS Explore retrieval science contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/explore-retrieval-policy.test.ts",
+            "tests/explore-retriever-fallback.test.ts",
+            "tests/explore-index-hydration-fallback.test.ts",
+            "tests/explore-bench.test.ts",
+            "tests/explore-output-contract.test.ts",
+            "tests/explore-hypothesis-model.test.ts",
+            "tests/explore-voi-policy.test.ts",
+            "tests/explore-promotion-gate.test.ts",
+            "tests/explore-runtime-routing.test.ts",
+            "tests/semantic-embedding-edge-gateway.test.ts",
+            "tests/semantic-embedding-gateway.test.ts",
+            "tests/semantic-embedding-identity.test.ts",
+            "tools/decision-engine/handler.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-explore-retrieval-science",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 17657,
+          "outputTail": "ts/explore-retriever-fallback.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 663\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should return lexical results when semantic embedding is unavailable \u001b[33m 408\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/explore-runtime-routing.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 19\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/explore-bench.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 1224\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should remain syntactically executable when the benchmark CLI source is checked \u001b[33m 447\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should reject missing values when a value-taking benchmark CLI flag is last \u001b[33m 770\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/explore-index-hydration-fallback.test.ts \u001b[2m(\u001b[22m\u001b[2m6 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 17206\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should stop after the first failed hydration batch and continue with lexical retrieval \u001b[33m 1733\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should bound a hung semantic provider and avoid a second query-time wait after hydration fails \u001b[33m 9568\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should bound successful semantic hydration instead of rebuilding the whole index synchronously \u001b[33m 1700\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should preserve query semantic retrieval when changed-document hydration fails local validation \u001b[33m 2739\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should mark query-time semantic fallback degraded after successful document hydration \u001b[33m 1464\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m13 passed\u001b[39m\u001b[22m\u001b[90m (13)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m98 passed\u001b[39m\u001b[22m\u001b[90m (98)\u001b[39m\n\u001b[2m   Start at \u001b[22m 11:03:01\n\u001b[2m   Duration \u001b[22m 17.42s\u001b[2m (transform 993ms, setup 222ms, import 1.65s, tests 19.23s, environment 1ms)\u001b[22m\n\n$ vitest run tests/explore-retrieval-policy.test.ts tests/explore-retriever-fallback.test.ts tests/explore-index-hydration-fallback.test.ts tests/explore-bench.test.ts tests/explore-output-contract.test.ts tests/explore-hypothesis-model.test.ts tests/explore-voi-policy.test.ts tests/explore-promotion-gate.test.ts tests/explore-runtime-routing.test.ts tests/semantic-embedding-edge-gateway.test.ts tests/semantic-embedding-gateway.test.ts tests/semantic-embedding-identity.test.ts tools/decision-engine/handler.test.ts\n{\"level\":\"info\",\"tool\":\"explore\",\"branch\":\"\",\"command\":\"workspace explore '{\\\"query\\\":\\\"where is Explore retrieval implemented\\\"}'\",\"implementationCommand\":\"bun run explore -- where is Explore retrieval implemented --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-08T15:03:02.929Z\"}\n{\"level\":\"info\",\"tool\":\"confidenceScore\",\"branch\":\"\",\"command\":\"workspace confidenceScore\",\"implementationCommand\":\"bun run confidence-score -- --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-08T15:03:02.937Z\"}\n{\"level\":\"info\",\"tool\":\"decideNext\",\"branch\":\"\",\"command\":\"workspace decideNext\",\"implementationCommand\":\"bun run decide-next -- --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-08T15:03:02.940Z\"}\n{\"level\":\"info\",\"tool\":\"exploit\",\"branch\":\"\",\"command\":\"workspace exploit\",\"implementationCommand\":\"bun run exploit -- --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-09-08T15:03:02.942Z\"}\n(node:84640) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+        },
+        {
+          "name": "OS compact explore response contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/explore-output-contract.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-compact-explore-response",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 463,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-explore-preserve-query-semantic-retrieval-after-local-hydration-errors/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/explore-output-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m6 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 4\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m6 passed\u001b[39m\u001b[22m\u001b[90m (6)\u001b[39m\n\u001b[2m   Start at \u001b[22m 11:03:19\n\u001b[2m   Duration \u001b[22m 236ms\u001b[2m (transform 47ms, setup 36ms, import 138ms, tests 4ms, environment 0ms)\u001b[22m\n\n$ vitest run tests/explore-output-contract.test.ts\n"
+        },
+        {
+          "name": "changed server task selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ],
+          "cwd": ".",
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 75,
+          "outputTail": "No changed Twenty server runtime files require lint or typecheck.\nRunning server lint and baseline-aware typecheck for 1 directly changed file(s).\nTwenty server typecheck matched 1 known baseline diagnostic(s).\nRunning server lint and baseline-aware typecheck for 1 directly changed file(s).\nNo changed Twenty server schema files require GraphQL generation.\nNo changed Twenty server runtime files require migration generation.\nNo changesgeneratedTwenty server migration drift matched 2 known baseline operation(s).\ngeneratedgenerated✔ parseCliArguments resolves comparison SHAs (0.681125ms)\n✔ parseCliArguments selects GraphQL generation mode (0.06325ms)\n✔ parseCliArguments selects migration generation mode (0.054ms)\n✔ filterServerTaskFiles excludes root and config-only triggers (0.088791ms)\n✔ filterGraphqlGenerationFiles keeps only server schema and generated files (0.07075ms)\n✔ buildEslintArguments selects the owning project config and stdin filename (0.070458ms)\n✔ ESLint diagnostic comparison tracks new error multiplicity without line numbers (0.180334ms)\n✔ runChangedFileLint accepts base-existing errors and rejects a new changed-file error (1.41425ms)\n✔ runChangedFileLint allows explicit lint baseline debt but rejects diagnostics beyond it (0.758083ms)\n✔ buildTypecheckArguments uses standard TypeScript without emitting (0.095ms)\n✔ TypeScript diagnostic baseline comparison rejects only new diagnostic keys (0.199833ms)\n✔ runChangedServerTask skips Nx for config-only changes (0.331625ms)\n✔ runChangedServerTask executes lint and baseline-aware typecheck for server runtime changes (0.094334ms)\n✔ runChangedServerTask rejects a new TypeScript diagnostic outside the baseline (0.08725ms)\n✔ server lint configuration resolves the existing workspace rules project (0.446375ms)\n✔ runGraphqlGenerationCheck skips generation without schema changes (0.074333ms)\n✔ runGraphqlGenerationCheck generates and verifies committed outputs (0.160542ms)\n✔ runMigrationGenerationCheck skips generation without server runtime changes (0.073666ms)\n✔ runMigrationGenerationCheck accepts a no-change TypeORM exit (0.08725ms)\n✔ runMigrationGenerationCheck accepts and removes exact known migration drift (0.178291ms)\n✔ runMigrationGenerationCheck rejects changed drift beyond the baseline (0.109375ms)\n✔ runMigrationGenerationCheck rejects and removes generated drift (0.097584ms)\nℹ tests 22\nℹ suites 0\nℹ pass 22\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 47.744083\n"
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "cwd": ".",
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 397,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/workspace/tests/github-workflow-policy.test.js:\n(pass) GitHub workflow policy > does not include retired automation workflows [0.27ms]\n(pass) GitHub workflow policy > does not reference retired CI credentials or the disabled Chromatic job [5.26ms]\n(pass) GitHub workflow policy > does not retain privileged allowlist entries for deleted workflows [0.40ms]\n(pass) GitHub workflow policy > runs typecheck and test from the filtered frontend file set [0.05ms]\n(pass) GitHub workflow policy > installs Bun and scopes shared tasks to changed frontend files [0.21ms]\n(pass) GitHub workflow policy > scopes native OS distribution tests to relevant changed files [0.05ms]\n(pass) GitHub workflow policy > runs Docker Compose CI with the pgvector PostgreSQL image required by migrations [0.04ms]\n(pass) GitHub workflow policy > uses available hosted runners for the Server and Front build pipelines [0.06ms]\n(pass) GitHub workflow policy > builds Consuelo backend workspace dependencies before server typecheck [0.04ms]\n(pass) GitHub workflow policy > installs Bun before the Server unit-test job runs Bun package tests [0.05ms]\n(pass) GitHub workflow policy > allows enough time for Danger dependency installation and execution [0.03ms]\n(pass) GitHub workflow policy > explicitly allowlists the API breaking-changes workflow write permissions [0.03ms]\n\n 12 pass\n 0 fail\n 53 expect() calls\nRan 12 tests across 1 file. [391.00ms]\n"
+        },
+        {
+          "name": "TypeORM CLI compatibility contract",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+          ],
+          "cwd": ".",
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 835,
+          "outputTail": "✔ Twenty server uses the Node 24-compatible TypeORM ts-node wrapper (0.301833ms)\n✔ the configured TypeORM wrapper resolves from the installed package (771.304ms)\nℹ tests 2\nℹ suites 0\nℹ pass 2\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 808.528583\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

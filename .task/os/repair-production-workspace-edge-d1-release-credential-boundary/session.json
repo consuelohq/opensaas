@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_a1db34473bde",
+  "tmuxSession": "opensaas-os-repair-production-workspace-edge-d1-release-cred-a1db3447",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/repair-production-workspace-edge-d1-release-credential-boundary",
+  "branch": "task/os/repair-production-workspace-edge-d1-release-credential-boundary",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-production-workspace-edge-d1-release-credential-boundary",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-production-workspace-edge-d1-release-credential-boundary",
+  "prNumber": 2118,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2118",
+  "createdAt": "2026-08-16T03:39:30.523Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-repair-production-workspace-edge-d1-release-credential-boundary/.task/os/repair-production-workspace-edge-d1-release-credential-boundary/session.json"
+}

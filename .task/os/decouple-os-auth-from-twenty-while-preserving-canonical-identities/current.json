@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/decouple-os-auth-from-twenty-while-preserving-canonical-identities",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1939,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1939",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1939",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1939/decouple-os-auth-from-twenty-while-preserving-canonical-identities",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1939",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1939/decouple-os-auth-from-twenty-while-preserving-canonical-identities",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-decouple-os-auth-from-twenty-while-preserving-canonical-identities",
+  "taskSession": "tsk_f5ae8770e707",
+  "tmuxSession": "opensaas-os-decouple-os-auth-from-twenty-while-preserving-ca-f5ae8770",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-decouple-os-auth-from-twenty-while-preserving-canonical-identities/.task/os/decouple-os-auth-from-twenty-while-preserving-canonical-identities/session.json",
+  "createdAt": "2026-08-14T04:32:28.488Z"
+}

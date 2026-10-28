@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_587bb56f0933",
+  "tmuxSession": "opensaas-os-address-foundation-mainline-review-blockers-587bb56f",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/address-foundation-mainline-review-blockers",
+  "branch": "task/os/address-foundation-mainline-review-blockers",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-address-foundation-mainline-review-blockers",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-address-foundation-mainline-review-blockers",
+  "prNumber": 1717,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1717",
+  "createdAt": "2026-07-29T04:04:47.446Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-address-foundation-mainline-review-blockers/.task/os/address-foundation-mainline-review-blockers/session.json"
+}

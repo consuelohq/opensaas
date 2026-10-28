@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/restructure-apps-and-services-documentation",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1485,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1485",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1485",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1485/restructure-apps-and-services-documentation",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1485",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1485/restructure-apps-and-services-documentation",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-restructure-apps-and-services-documentation",
+  "taskSession": "tsk_91f22f45f390",
+  "tmuxSession": "opensaas-os-restructure-apps-and-services-documentation-91f22f45",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-restructure-apps-and-services-documentation/.task/os/restructure-apps-and-services-documentation/session.json",
+  "createdAt": "2026-07-14T17:42:38.522Z"
+}

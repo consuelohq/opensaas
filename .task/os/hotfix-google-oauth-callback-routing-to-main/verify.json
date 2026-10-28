@@ -1,0 +1,181 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/hotfix-google-oauth-callback-routing-to-main",
+  "base": "f432752db617b666b2c5e24449ad87a94da5e07b",
+  "headSha": "491b9dd5bc43d1f24197cc7d263711ca6d8d2708",
+  "changeHash": "914d43920491a57cbb70eb415d07cbe23a8890dccfc2e33765b758eb38c8def1",
+  "changedFiles": [
+    "packages/os/cloudflare/os-device-authority/src/routes/google-oauth.ts",
+    "packages/os/cloudflare/os-device-authority/src/services/mcp-oauth.ts",
+    "packages/os/tests/os-device-authority-worker.test.ts"
+  ],
+  "verifiedAt": "2026-08-15T01:32:18.853Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/hotfix-google-oauth-callback-routing-to-main/current.json",
+        ".task/os/hotfix-google-oauth-callback-routing-to-main/session.json",
+        ".task/os/hotfix-google-oauth-callback-routing-to-main/verify.json",
+        ".task/os/hotfix-google-oauth-callback-routing-to-main/workpad.md",
+        ".task/tasks/os/hotfix-google-oauth-callback-routing-to-main.json",
+        "packages/os/cloudflare/os-device-authority/src/routes/google-oauth.ts",
+        "packages/os/cloudflare/os-device-authority/src/services/mcp-oauth.ts",
+        "packages/os/tests/os-device-authority-worker.test.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "os-chatgpt-mcp-oauth",
+          "critical": true,
+          "exclusive": true,
+          "reason": "ChatGPT MCP OAuth client binding and authorization changes must prove the exact client/redirect, Worker, architecture, release, and syntax contracts without selecting unrelated package-wide OS tests.",
+          "matchedFiles": [
+            "packages/os/cloudflare/os-device-authority/src/services/mcp-oauth.ts",
+            "packages/os/tests/os-device-authority-worker.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-device-approval-canonical-identity",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Native OS device-approval and canonical-identity changes must prove the exact auth, tenant, and control-plane contracts without selecting unsafe unrelated package-wide OS tests.",
+          "matchedFiles": [
+            "packages/os/cloudflare/os-device-authority/src/routes/google-oauth.ts",
+            "packages/os/tests/os-device-authority-worker.test.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "OS ChatGPT MCP OAuth contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/operator-oauth-client.test.ts",
+            "tests/os-device-authority-worker.test.ts",
+            "tests/os-device-authority-architecture.test.ts",
+            "tests/os-device-authority-release-contract.test.ts"
+          ],
+          "ruleId": "os-chatgpt-mcp-oauth",
+          "critical": true
+        },
+        {
+          "name": "OS ChatGPT MCP OAuth syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "ruleId": "os-chatgpt-mcp-oauth",
+          "critical": true
+        },
+        {
+          "name": "OS canonical device approval contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/canonical-device-identity.test.ts",
+            "tests/install-control-plane.test.ts",
+            "tests/install-control-plane-d1.test.ts",
+            "tests/oauth-device-page-contract.test.ts",
+            "tests/internal-dashboard-integration.test.ts",
+            "tests/native-google-device-approval.test.ts",
+            "tests/os-device-authority-worker.test.ts"
+          ],
+          "ruleId": "os-device-approval-canonical-identity",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "OS ChatGPT MCP OAuth contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/operator-oauth-client.test.ts",
+            "tests/os-device-authority-worker.test.ts",
+            "tests/os-device-authority-architecture.test.ts",
+            "tests/os-device-authority-release-contract.test.ts"
+          ],
+          "ruleId": "os-chatgpt-mcp-oauth",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 983,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-hotfix-google-oauth-callback-routing-to-main/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/operator-oauth-client.test.ts \u001b[2m(\u001b[22m\u001b[2m30 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-architecture.test.ts \u001b[2m(\u001b[22m\u001b[2m25 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 30\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-worker.test.ts \u001b[2m(\u001b[22m\u001b[2m31 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 70\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-release-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m11 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 613\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should stop release before remote mutation when readiness fails \u001b[33m 527\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m4 passed\u001b[39m\u001b[22m\u001b[90m (4)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m97 passed\u001b[39m\u001b[22m\u001b[90m (97)\u001b[39m\n\u001b[2m   Start at \u001b[22m 21:32:15\n\u001b[2m   Duration \u001b[22m 734ms\u001b[2m (transform 672ms, setup 0ms, import 664ms, tests 716ms, environment 0ms)\u001b[22m\n\n$ vitest run tests/operator-oauth-client.test.ts tests/os-device-authority-worker.test.ts tests/os-device-authority-architecture.test.ts tests/os-device-authority-release-contract.test.ts\n"
+        },
+        {
+          "name": "OS ChatGPT MCP OAuth syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "ruleId": "os-chatgpt-mcp-oauth",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 2127,
+          "outputTail": "workspace script syntax checks passed\n"
+        },
+        {
+          "name": "OS canonical device approval contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/canonical-device-identity.test.ts",
+            "tests/install-control-plane.test.ts",
+            "tests/install-control-plane-d1.test.ts",
+            "tests/oauth-device-page-contract.test.ts",
+            "tests/internal-dashboard-integration.test.ts",
+            "tests/native-google-device-approval.test.ts",
+            "tests/os-device-authority-worker.test.ts"
+          ],
+          "ruleId": "os-device-approval-canonical-identity",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 652,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-hotfix-google-oauth-callback-routing-to-main/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/oauth-device-page-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 4\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/install-control-plane.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 16\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/install-control-plane-d1.test.ts \u001b[2m(\u001b[22m\u001b[2m6 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 12\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/canonical-device-identity.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 10\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/native-google-device-approval.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 21\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/internal-dashboard-integration.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 36\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-worker.test.ts \u001b[2m(\u001b[22m\u001b[2m31 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 76\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m7 passed\u001b[39m\u001b[22m\u001b[90m (7)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m66 passed\u001b[39m\u001b[22m\u001b[90m (66)\u001b[39m\n\u001b[2m   Start at \u001b[22m 21:32:18\n\u001b[2m   Duration \u001b[22m 459ms\u001b[2m (transform 870ms, setup 0ms, import 1.18s, tests 174ms, environment 0ms)\u001b[22m\n\n$ vitest run tests/canonical-device-identity.test.ts tests/install-control-plane.test.ts \"tests/install-control-plane-d1.test.ts\" tests/oauth-device-page-contract.test.ts tests/internal-dashboard-integration.test.ts tests/native-google-device-approval.test.ts tests/os-device-authority-worker.test.ts\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

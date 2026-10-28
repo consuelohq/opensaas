@@ -1,0 +1,16 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/preserve-local-hour-heatmap-accuracy",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 2392,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2392",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-preserve-local-hour-heatmap-accuracy",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_1b4b89dd208e",
+  "tmuxSession": "opensaas-workspace-agents-preserve-local-hour-heatmap-accuracy-1b4b89dd",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-preserve-local-hour-heatmap-accuracy/.task/session.json",
+  "createdAt": "2026-09-05T01:04:53.376Z"
+}

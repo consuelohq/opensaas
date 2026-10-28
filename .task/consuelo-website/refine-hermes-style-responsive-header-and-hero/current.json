@@ -1,0 +1,19 @@
+{
+  "area": "consuelo-website",
+  "stream": "stream/consuelo-website",
+  "taskBranch": "task/consuelo-website/refine-hermes-style-responsive-header-and-hero",
+  "baseBranch": "stream/consuelo-website",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1289,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1289",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1289",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1289/refine-hermes-style-responsive-header-and-hero",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1289",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1289/refine-hermes-style-responsive-header-and-hero",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-consuelo-website-refine-hermes-style-responsive-header-and-hero",
+  "taskSession": "tsk_a27694fc8f35",
+  "tmuxSession": "opensaas-consuelo-website-refine-hermes-style-responsive-header-and-hero-a27694fc",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-consuelo-website-refine-hermes-style-responsive-header-and-hero/.task/consuelo-website/refine-hermes-style-responsive-header-and-hero/session.json",
+  "createdAt": "2026-06-30T17:21:58.526Z"
+}

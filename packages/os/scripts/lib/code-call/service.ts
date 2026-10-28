@@ -1,9 +1,10 @@
 import { Effect } from 'effect';
 
 import { createToolResult, createTraceId, getErrorMessage } from '../facade/errors';
+import { resolveActiveWorkspaceProjectCwd } from '../workspace-project-cwd';
 import { codeCallServiceError, isCodeCallServiceError, type CodeCallServiceError } from './errors';
 import { resolveSafeCwdEffect, resolveSafeFileEffect } from './location';
-import { truncateOutputEffect } from './output';
+import { truncateForEnvelope, truncateOutputEffect } from './output';
 import { detectTransportMistakeEffect, validateEditDryRunEffect, validateEditScopeEffect, validateMutationPolicyEffect } from './policy';
 import { runRuntimeEffect } from './process';
 import { cleanupStagedSourceEffect, loadSourceEffect, stageSourceEffect, validateSourceInputsEffect } from './source';
@@ -11,12 +12,19 @@ import { elapsedMs, normalizeCodeCallInputEffect } from './schema';
 import { captureSnapshotEffect, changedFiles } from './snapshot';
 import type { CodeCallContext, CodeCallData, CodeCallInput, CodeCallLanguage, CodeCallMode, CodeCallMistakeClass, CodeCallResult } from './types';
 
+const TOP_LEVEL_STDERR_MAX_CHARS = 2_000;
+
 function runtimeEnv(input: CodeCallInput, baseEnv: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
   return {
     ...baseEnv,
+    ...(input.mode === 'verify' ? { CONSUELO_FACADE_LOG_MODE: 'silent' } : {}),
     ...(typeof input.branch === 'string' && input.branch ? { TASK_BRANCH: input.branch } : {}),
     ...(typeof input.taskWorktree === 'string' && input.taskWorktree ? { TASK_WORKTREE: input.taskWorktree } : {}),
   };
+}
+
+function compactTopLevelStderr(value: string | undefined): string {
+  return truncateForEnvelope(value || '', TOP_LEVEL_STDERR_MAX_CHARS);
 }
 
 function buildData(input: {
@@ -107,7 +115,7 @@ function failureResult(input: {
       stdoutLogPath: error.stdoutLogPath,
       stderrLogPath: error.stderrLogPath,
     }),
-    stderr,
+    stderr: compactTopLevelStderr(stderr),
     exitCode,
     durationMs,
     traceId: input.traceId,
@@ -137,18 +145,22 @@ export function executeCodeCallEffect(input: CodeCallInput, context: CodeCallCon
   };
 
   const program = Effect.gen(function* () {
-    const contextCwd = context.cwd || process.cwd();
+    // An explicit context cwd always wins. Otherwise prefer the workspace's configured project
+    // checkout over the server process cwd, which for a launchd or systemd service is not a git
+    // repository and leaves every repo-aware tool unable to find a root.
+    const contextCwd =
+      context.cwd || resolveActiveWorkspaceProjectCwd() || process.cwd();
     const normalized = yield* normalizeCodeCallInputEffect(input);
     fallback.language = normalized.language;
     fallback.requestedLanguage = normalized.requestedLanguage;
     fallback.runtime = normalized.provider.runtime;
     fallback.mode = normalized.mode;
 
-    const cwdResolution = yield* resolveSafeCwdEffect(input, contextCwd);
+    const cwdResolution = yield* resolveSafeCwdEffect(input, contextCwd, context.env || process.env);
     fallback.cwd = cwdResolution.cwd;
 
     if (normalized.mode === 'edit') {
-      yield* validateEditScopeEffect(input, cwdResolution.cwd);
+      yield* validateEditScopeEffect(input, cwdResolution);
     }
     yield* validateEditDryRunEffect(input, cwdResolution.cwd);
     yield* validateSourceInputsEffect(input);
@@ -172,11 +184,31 @@ export function executeCodeCallEffect(input: CodeCallInput, context: CodeCallCon
         env: runtimeEnv(input, context.env || process.env),
         stdin: loaded.stdin,
         timeoutMs: normalized.timeoutMs,
+        writeBoundaryRoot: cwdResolution.writeBoundaryRoot,
+        scratchRoot: staged.stageDir,
+        requireContainment: cwdResolution.containmentRequired,
+        allowBoundaryWrites: normalized.mode === 'edit',
       });
       const after = yield* captureSnapshotEffect(cwdResolution.cwd);
       const filesChanged = changedFiles(before, after);
       const output = yield* truncateOutputEffect(staged.stageDir, run.stdout, run.stderr, normalized.maxResultChars);
       keepStageDir = output.truncated;
+
+      if (run.containmentUnavailable) {
+        return yield* Effect.fail(codeCallServiceError({
+          envelopeCode: 'CODE_CALL_VALIDATION_ERROR',
+          message: 'workSession edit containment is unavailable on this node. Use a supported structured tool or mac.call as the emergency host escape hatch.',
+          detectedMistakeClass: 'containment_unavailable',
+          cwd: cwdResolution.cwd,
+          exitCode: 1,
+          stdout: output.stdout,
+          stderr: output.stderr,
+          filesChanged,
+          truncated: output.truncated,
+          stdoutLogPath: output.stdoutLogPath,
+          stderrLogPath: output.stderrLogPath,
+        }));
+      }
 
       if (run.timedOut) {
         return yield* Effect.fail(codeCallServiceError({
@@ -237,7 +269,7 @@ export function executeCodeCallEffect(input: CodeCallInput, context: CodeCallCon
           stdoutLogPath: output.stdoutLogPath,
           stderrLogPath: output.stderrLogPath,
         }),
-        stderr: output.stderr,
+        stderr: compactTopLevelStderr(output.stderr),
         exitCode: run.exitCode,
         durationMs,
         traceId,

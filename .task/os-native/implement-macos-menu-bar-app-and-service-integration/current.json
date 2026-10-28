@@ -1,0 +1,19 @@
+{
+  "area": "os-native",
+  "stream": "stream/os-native",
+  "taskBranch": "task/os-native/implement-macos-menu-bar-app-and-service-integration",
+  "baseBranch": "stream/os-native",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1666,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1666",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1666",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1666/implement-macos-menu-bar-app-and-service-integration",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1666",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1666/implement-macos-menu-bar-app-and-service-integration",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-native-implement-macos-menu-bar-app-and-service-integration",
+  "taskSession": "tsk_3be06270a4c2",
+  "tmuxSession": "opensaas-os-native-implement-macos-menu-bar-app-and-service-integra-3be06270",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-native-implement-macos-menu-bar-app-and-service-integration/.task/os-native/implement-macos-menu-bar-app-and-service-integration/session.json",
+  "createdAt": "2026-07-26T23:29:15.334Z"
+}

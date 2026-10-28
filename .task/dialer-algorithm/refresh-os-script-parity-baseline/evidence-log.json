@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "worktree_id": "task/dialer-algorithm/refresh-os-script-parity-baseline",
+  "events": [
+    {
+      "id": "f7629a5a-9436-4981-b3ea-e82d77138a5d",
+      "occurred_at": "2026-08-15T11:13:21.008Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/audit/script-parity-audit.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer-algorithm/refresh-os-script-parity-baseline",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer-algorithm/refresh-os-script-parity-baseline"
+      }
+    },
+    {
+      "id": "1711c37f-3aae-434c-85a4-4cf5965a1399",
+      "occurred_at": "2026-08-15T11:14:26.984Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/bun-product-server-contract.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer-algorithm/refresh-os-script-parity-baseline",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer-algorithm/refresh-os-script-parity-baseline"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-15T11:14:27.039Z"
+}

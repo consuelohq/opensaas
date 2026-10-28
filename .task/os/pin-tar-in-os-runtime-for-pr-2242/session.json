@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_763c65987d1b",
+  "tmuxSession": "opensaas-os-pin-tar-in-os-runtime-for-pr-2242-763c6598",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/pin-tar-in-os-runtime-for-pr-2242",
+  "branch": "task/os/pin-tar-in-os-runtime-for-pr-2242",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-pin-tar-in-os-runtime-for-pr-2242",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-pin-tar-in-os-runtime-for-pr-2242",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2244,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2244",
+  "createdAt": "2026-08-28T02:48:16.782Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-pin-tar-in-os-runtime-for-pr-2242/.task/os/pin-tar-in-os-runtime-for-pr-2242/session.json"
+}

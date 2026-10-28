@@ -1,9 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  createMemoryDeviceGrantStore,
-  createOsDeviceAuthorityHandler,
-} from '../cloudflare/os-device-authority/src/index';
+import { createOsDeviceAuthorityHandler } from '../cloudflare/os-device-authority/src/app';
+import { createMemoryDeviceGrantStore } from '../cloudflare/os-device-authority/src/stores';
 import {
   CONSUELO_DEVICE_CODE_URL,
   CONSUELO_OAUTH_ACCESS_TOKEN_URL,
@@ -22,6 +20,20 @@ const contractDescribe = runHardeningContracts ? describe : describe.skip;
 
 const origin = 'https://os.consuelohq.com';
 const approvalAssertionSecret = 'test-approval-assertion-secret';
+
+const successfulWorkspaceRouteSetup = {
+  workspaceRouteRegistry: {
+    exec: async () => ({ count: 0, duration: 0 }),
+  } as unknown as NonNullable<
+    Parameters<typeof createOsDeviceAuthorityHandler>[0]['workspaceRouteRegistry']
+  >,
+  workspaceConnectorProvisioner: async () => ({
+    connectorId: 'connector-test',
+    cloudflareTunnelToken: 'cloudflare-tunnel-token-test',
+    tunnelOriginUrl: 'https://c-8258e2e5dbb491df8a8325ff3a69b472.consuelohq.com',
+    localServiceUrl: 'http://127.0.0.1:46321',
+  }),
+};
 
 function b64(bytes: Uint8Array): string {
   let s = '';
@@ -190,6 +202,7 @@ contractDescribe('os device approval auth hardening contract', () => {
   it('should reject approved device-code redemption without the matching local device proof', async () => {
     let currentMs = Date.parse('2026-06-13T00:00:00.000Z');
     const handler = createOsDeviceAuthorityHandler({
+      ...successfulWorkspaceRouteSetup,
       store: createMemoryDeviceGrantStore(),
       origin,
       now: () => currentMs,
@@ -229,6 +242,7 @@ contractDescribe('os device approval auth hardening contract', () => {
   it('should approve with a signed stronger-auth assertion and bind bootstrap to the device public key', async () => {
     let currentMs = Date.parse('2026-06-13T00:00:00.000Z');
     const handler = createOsDeviceAuthorityHandler({
+      ...successfulWorkspaceRouteSetup,
       store: createMemoryDeviceGrantStore(),
       origin,
       now: () => currentMs,

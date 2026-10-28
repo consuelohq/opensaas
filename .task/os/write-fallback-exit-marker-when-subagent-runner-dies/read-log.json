@@ -1,0 +1,10 @@
+{
+  "files": [
+    ".task/os/write-fallback-exit-marker-when-subagent-runner-dies/workpad.md",
+    "packages/os/scripts/lib/subagent/lifecycle.ts",
+    "packages/os/scripts/lib/subagent/runner.ts",
+    "packages/os/tests/subagent-lifecycle-regressions.test.ts",
+    "packages/workspace/senior-engineer.md"
+  ],
+  "updatedAt": "2026-08-30T21:14:21.898Z"
+}

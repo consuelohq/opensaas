@@ -129,7 +129,7 @@ contractDescribe('workspace hostname edge routing contract', () => {
     expect(await personal.text()).toContain('sites/workspace_kokayi/kokayi-home/version_1/index.html');
     expect(business.status).toBe(200);
     expect(await business.text()).toContain('sites/workspace_openai/openai-home/version_1/index.html');
-    expect(cachePuts.map((entry) => entry.url)).toEqual(['https://kokayi.consuelohq.com/', 'https://openai.consuelohq.com/']);
+    expect(cachePuts.map((entry) => entry.url)).toEqual([]);
     expect(r2Reads).toEqual(['sites/workspace_kokayi/kokayi-home/version_1/index.html', 'sites/workspace_openai/openai-home/version_1/index.html']);
   });
 
@@ -160,9 +160,9 @@ contractDescribe('workspace hostname edge routing contract', () => {
     });
 
     const response = await router.fetch(new Request('https://kokayi.consuelohq.com/private'));
-    const body = (await response.json()) as { error: { code: string } };
-    expect(response.status).toBe(503);
-    expect(body.error.code).toBe('WORKSPACE_EDGE_AUTH_REQUIRED');
+    const body = (await response.json()) as { error: string };
+    expect(response.status).toBe(401);
+    expect(body.error).toBe('workspace_session_required');
     expect(cacheMatchCount).toBe(0);
     expect(cachePutCount).toBe(0);
     expect(r2ReadCount).toBe(0);

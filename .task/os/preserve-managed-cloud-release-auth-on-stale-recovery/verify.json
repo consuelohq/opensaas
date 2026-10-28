@@ -1,0 +1,162 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/preserve-managed-cloud-release-auth-on-stale-recovery",
+  "base": "origin/stream/os",
+  "headSha": "c6ddf0733f24c34f2ffe69b190e2c84cf42e21c7",
+  "changeHash": "6c3f0cf1afff5095e8171ccdacd76d51f12f184b7e60ac9efab6069bb81a0d91",
+  "changedFiles": [
+    "packages/os/cloudflare/os-device-authority/src/services/mcp-proxy.ts",
+    "packages/os/tests/workspace-node-registry-routing.test.ts"
+  ],
+  "verifiedAt": "2026-09-08T14:55:20.327Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/preserve-managed-cloud-release-auth-on-stale-recovery/evidence-log.json",
+        ".task/os/preserve-managed-cloud-release-auth-on-stale-recovery/read-log.json",
+        ".task/os/preserve-managed-cloud-release-auth-on-stale-recovery/workpad.md",
+        ".task/tasks/os/preserve-managed-cloud-release-auth-on-stale-recovery.json",
+        "packages/os/cloudflare/os-device-authority/src/services/mcp-proxy.ts",
+        "packages/os/tests/workspace-node-registry-routing.test.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "os-hosted-site-update-reconciliation",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Hosted Sites update reconciliation changes must prove canonical D1 route ownership, stale-default repair, lifecycle reconciliation, and node routing without selecting the historically red unrelated OS package suite.",
+          "matchedFiles": [
+            "packages/os/cloudflare/os-device-authority/src/services/mcp-proxy.ts",
+            "packages/os/tests/workspace-node-registry-routing.test.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "OS hosted-site D1 reconciliation contract",
+          "command": [
+            "env",
+            "CONSUELO_RUN_WORKSPACE_GATEWAY_CONTRACTS=1",
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/cloudflare-d1-route-registry.test.ts"
+          ],
+          "ruleId": "os-hosted-site-update-reconciliation",
+          "critical": true
+        },
+        {
+          "name": "OS hosted-site lifecycle and node routing contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/lifecycle-engine.test.ts",
+            "tests/workspace-node-registry-routing.test.ts"
+          ],
+          "ruleId": "os-hosted-site-update-reconciliation",
+          "critical": true
+        },
+        {
+          "name": "OS heartbeat D1 write budget",
+          "command": [
+            "bun",
+            "test",
+            "packages/os/tests/workspace-route-heartbeat-write-budget.test.ts"
+          ],
+          "ruleId": "os-hosted-site-update-reconciliation",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "OS hosted-site D1 reconciliation contract",
+          "command": [
+            "env",
+            "CONSUELO_RUN_WORKSPACE_GATEWAY_CONTRACTS=1",
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/cloudflare-d1-route-registry.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-hosted-site-update-reconciliation",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 416,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-preserve-managed-cloud-release-auth-on-stale-recovery/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/cloudflare-d1-route-registry.test.ts \u001b[2m(\u001b[22m\u001b[2m12 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 19\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m12 passed\u001b[39m\u001b[22m\u001b[90m (12)\u001b[39m\n\u001b[2m   Start at \u001b[22m 10:55:16\n\u001b[2m   Duration \u001b[22m 100ms\u001b[2m (transform 34ms, setup 16ms, import 15ms, tests 19ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS hosted-site lifecycle and node routing contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/lifecycle-engine.test.ts",
+            "tests/workspace-node-registry-routing.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-hosted-site-update-reconciliation",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 3334,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-preserve-managed-cloud-release-auth-on-stale-recovery/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/workspace-node-registry-routing.test.ts \u001b[2m(\u001b[22m\u001b[2m67 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 858\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should resolve the stale lifecycle Bun executable across historical install shapes \u001b[33m 610\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/lifecycle-engine.test.ts \u001b[2m(\u001b[22m\u001b[2m66 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 2244\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m activates after production provisioning without leaving runtime/current as a directory \u001b[33m 356\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m133 passed\u001b[39m\u001b[22m\u001b[90m (133)\u001b[39m\n\u001b[2m   Start at \u001b[22m 10:55:16\n\u001b[2m   Duration \u001b[22m 3.07s\u001b[2m (transform 559ms, setup 36ms, import 1.05s, tests 3.10s, environment 0ms)\u001b[22m\n\n$ vitest run tests/lifecycle-engine.test.ts tests/workspace-node-registry-routing.test.ts\n"
+        },
+        {
+          "name": "OS heartbeat D1 write budget",
+          "command": [
+            "bun",
+            "test",
+            "packages/os/tests/workspace-route-heartbeat-write-budget.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-hosted-site-update-reconciliation",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 165,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/os/tests/workspace-route-heartbeat-write-budget.test.ts:\n(pass) workspace heartbeat D1 write budget > should write one unindexed row per changed heartbeat with 1 registered nodes [5.56ms]\n(pass) workspace heartbeat D1 write budget > should write one unindexed row per changed heartbeat with 8 registered nodes [3.92ms]\n(pass) workspace heartbeat D1 write budget > should write one unindexed row per changed heartbeat with 32 registered nodes [11.84ms]\n(pass) workspace heartbeat D1 write budget > should persist connector changes and keep published site routes during reconciliation [1.66ms]\n\n 4 pass\n 0 fail\n 16 expect() calls\nRan 4 tests across 1 file. [159.00ms]\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -1,0 +1,19 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/implement-queue-first-leadconnector-dialer-experience",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 1777,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1777",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1777",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1777/implement-queue-first-leadconnector-dialer-experience",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1777",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1777/implement-queue-first-leadconnector-dialer-experience",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-implement-queue-first-leadconnector-dialer-experience",
+  "taskSession": "tsk_3fe1f7ca7343",
+  "tmuxSession": "opensaas-dialer-implement-queue-first-leadconnector-dialer-exper-3fe1f7ca",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-implement-queue-first-leadconnector-dialer-experience/.task/dialer/implement-queue-first-leadconnector-dialer-experience/session.json",
+  "createdAt": "2026-08-04T22:27:18.739Z"
+}

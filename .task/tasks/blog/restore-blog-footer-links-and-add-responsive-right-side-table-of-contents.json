@@ -1,0 +1,19 @@
+{
+  "area": "blog",
+  "stream": "stream/blog",
+  "taskBranch": "task/blog/restore-blog-footer-links-and-add-responsive-right-side-table-of-contents",
+  "baseBranch": "stream/blog",
+  "sourceBranch": "stream/blog",
+  "startFrom": "stream",
+  "prNumber": 1454,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1454",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1454",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1454/restore-blog-footer-links-and-add-responsive-right-side-table-of-contents",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1454",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1454/restore-blog-footer-links-and-add-responsive-right-side-table-of-contents",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-blog-restore-blog-footer-links-and-add-responsive-right-side-table-of-contents",
+  "taskSession": "tsk_79a515f1d74f",
+  "tmuxSession": "opensaas-blog-restore-blog-footer-links-and-add-responsive-rig-79a515f1",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-blog-restore-blog-footer-links-and-add-responsive-right-side-table-of-contents/.task/blog/restore-blog-footer-links-and-add-responsive-right-side-table-of-contents/session.json",
+  "createdAt": "2026-07-13T16:57:52.102Z"
+}

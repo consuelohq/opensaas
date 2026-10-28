@@ -1,0 +1,104 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/fix-bootstrap-dry-runs-on-linux-ci",
+  "events": [
+    {
+      "id": "5eb84529-7037-4c99-baba-d9969748a41d",
+      "occurred_at": "2026-09-21T16:02:16.730Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/installer-runtime-dependencies.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-bootstrap-dry-runs-on-linux-ci",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-bootstrap-dry-runs-on-linux-ci"
+      }
+    },
+    {
+      "id": "86291fe2-cb3e-4722-a094-da8f88e98adb",
+      "occurred_at": "2026-09-21T16:02:22.875Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/bootstrap.sh",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-bootstrap-dry-runs-on-linux-ci",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-bootstrap-dry-runs-on-linux-ci"
+      }
+    },
+    {
+      "id": "70363e40-6c64-436f-8484-006d201bd8bc",
+      "occurred_at": "2026-09-21T16:02:30.448Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/bootstrap.sh",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-bootstrap-dry-runs-on-linux-ci",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-bootstrap-dry-runs-on-linux-ci"
+      }
+    },
+    {
+      "id": "3b712a49-12eb-41f5-9acd-26873c91564b",
+      "occurred_at": "2026-09-21T16:02:31.853Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/bootstrap.sh",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-bootstrap-dry-runs-on-linux-ci",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-bootstrap-dry-runs-on-linux-ci"
+      }
+    },
+    {
+      "id": "77f7a504-ed45-4a44-9353-a50674433262",
+      "occurred_at": "2026-09-21T16:02:49.764Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/installer-runtime-dependencies.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-bootstrap-dry-runs-on-linux-ci",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-bootstrap-dry-runs-on-linux-ci"
+      }
+    },
+    {
+      "id": "9be8804e-3980-4f1b-b249-286883a31da3",
+      "occurred_at": "2026-09-21T16:03:59.775Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/bootstrap.sh",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-bootstrap-dry-runs-on-linux-ci",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-bootstrap-dry-runs-on-linux-ci"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-09-21T16:03:59.900Z"
+}

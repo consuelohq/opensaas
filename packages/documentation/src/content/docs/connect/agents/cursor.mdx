@@ -1,0 +1,38 @@
+---
+title: Cursor
+description: Connect Cursor to the local Consuelo OS MCP command.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/scripts/lib/local-agent-connectivity.ts
+    tests:
+      - packages/os/tests/local-agent-connectivity.test.ts
+      - packages/os/tests/install-state.test.ts
+    runtime: Cursor native configuration and MCP verification behavior were exercised by focused tests on 2026-07-13.
+---
+Cursor uses `~/.cursor/mcp.json`. Consuelo adds a stdio server named `consuelo-os` under `mcpServers` without replacing other servers.
+
+## Connect
+
+```bash
+export CONSUELO_HOME="${CONSUELO_HOME:-$HOME/.consuelo}"
+cd "$CONSUELO_HOME"
+bun ./scripts/install.ts --yes --mode local --home "$CONSUELO_HOME" --connect-agent cursor --skip-daemons
+```
+
+The generated entry uses `type: "stdio"`, the installed `consuelo-os-mcp` command, the Consuelo home as `cwd`, and the same path in `CONSUELO_HOME`.
+
+## Verify
+
+The installer records Cursor as `verified` only after the MCP command initializes and returns tools. Restart Cursor, open its MCP settings, and confirm `consuelo-os` is available.
+
+## Troubleshooting
+
+- Cursor can be detected from either `~/.cursor` or its macOS application-support directory.
+- Invalid JSON causes setup to fail closed. Repair the file before retrying.
+- If the server is present but unavailable, compare its command and working directory with the active Consuelo home.
+- A stale configured entry is rewritten, but unrelated entries remain untouched.
+
+## Disconnect
+
+Remove `mcpServers.consuelo-os` from `~/.cursor/mcp.json`, then restart Cursor. Do not delete the entire file if it contains other MCP servers.

@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/stabilize-release-fingerprint-across-windows-derived-runtime-artifacts",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1727,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1727",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1727",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1727/stabilize-release-fingerprint-across-windows-derived-runtime-artifacts",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1727",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1727/stabilize-release-fingerprint-across-windows-derived-runtime-artifacts",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-stabilize-release-fingerprint-across-windows-derived-runtime-artifacts",
+  "taskSession": "tsk_0ff676065a20",
+  "tmuxSession": "opensaas-os-stabilize-release-fingerprint-across-windows-der-0ff67606",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-stabilize-release-fingerprint-across-windows-derived-runtime-artifacts/.task/os/stabilize-release-fingerprint-across-windows-derived-runtime-artifacts/session.json",
+  "createdAt": "2026-07-29T08:15:36.280Z"
+}

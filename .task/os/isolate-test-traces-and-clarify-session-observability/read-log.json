@@ -1,0 +1,19 @@
+{
+  "files": [
+    ".task/os/isolate-test-traces-and-clarify-session-observability/workpad.md",
+    "packages/os/package.json",
+    "packages/os/scripts/lib/observability-traces-site.ts",
+    "packages/os/scripts/lib/trace-site-inspector/model.ts",
+    "packages/os/scripts/lib/trace-site-inspector/virtual-list-browser.ts",
+    "packages/os/tests/observability-traces-site.test.ts",
+    "packages/os/tests/trace-history-redaction.test.ts",
+    "packages/os/tests/trace-persistence.test.ts",
+    "packages/os/tests/trace-site-inspector-interactions.test.ts",
+    "packages/os/tests/trace-sites-gateway-live-endpoints.test.ts",
+    "packages/os/tests/work-session-code-call.test.ts",
+    "packages/os/vitest.config.ts",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "updatedAt": "2026-08-29T00:03:21.319Z"
+}

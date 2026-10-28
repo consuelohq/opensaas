@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_b03a8a027a84",
+  "tmuxSession": "opensaas-os-wire-canonical-os-trace-persistence-b03a8a02",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/wire-canonical-os-trace-persistence",
+  "branch": "task/os/wire-canonical-os-trace-persistence",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-wire-canonical-os-trace-persistence",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-wire-canonical-os-trace-persistence",
+  "prNumber": 1517,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1517",
+  "createdAt": "2026-07-15T22:44:06.781Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-wire-canonical-os-trace-persistence/.task/os/wire-canonical-os-trace-persistence/session.json"
+}

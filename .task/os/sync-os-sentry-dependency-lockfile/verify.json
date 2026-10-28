@@ -1,0 +1,233 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/sync-os-sentry-dependency-lockfile",
+  "base": "origin/stream/os",
+  "headSha": "e8fd210624bcb38c4c602b08b375f853178f9329",
+  "changeHash": "7a9eb2505123f14e179106e08087137cb747fe3b236bd13d30387d4e4b1b2e27",
+  "changedFiles": [
+    "packages/os/bun.lock",
+    "packages/workspace/test-selection.registry.json",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "verifiedAt": "2026-08-13T21:50:50.446Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/sync-os-sentry-dependency-lockfile/current.json",
+        ".task/os/sync-os-sentry-dependency-lockfile/evidence-log.json",
+        ".task/os/sync-os-sentry-dependency-lockfile/read-log.json",
+        ".task/os/sync-os-sentry-dependency-lockfile/session.json",
+        ".task/os/sync-os-sentry-dependency-lockfile/workpad.md",
+        ".task/tasks/os/sync-os-sentry-dependency-lockfile.json",
+        "packages/os/bun.lock",
+        "packages/workspace/test-selection.registry.json",
+        "packages/workspace/test-selection.rules.json",
+        "packages/workspace/tests/test-selection.test.js"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-test-selection",
+          "critical": true,
+          "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy.",
+          "matchedFiles": [
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-bun-lockfile-consistency",
+          "critical": true,
+          "exclusive": true,
+          "reason": "OS dependency lock changes must prove the exact frozen Bun install contract used by distribution and release workflows without selecting unrelated package-wide tests.",
+          "matchedFiles": [
+            "packages/os/bun.lock"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "server-ci-task-contract",
+          "critical": true,
+          "reason": "Server CI changes must scope lint and typecheck to directly changed Twenty server runtime files while retaining dependency propagation.",
+          "matchedFiles": [
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true
+        },
+        {
+          "name": "OS Bun frozen lockfile contract",
+          "command": [
+            "bun",
+            "install",
+            "--cwd",
+            "packages/os",
+            "--frozen-lockfile",
+            "--lockfile-only",
+            "--dry-run"
+          ],
+          "ruleId": "os-bun-lockfile-consistency",
+          "critical": true
+        },
+        {
+          "name": "changed server task selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "TypeORM CLI compatibility contract",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1933,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-sync-os-sentry-dependency-lockfile\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/test-selection.test.js \u001b[2m(\u001b[22m\u001b[2m25 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 1617\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m discovers and seeds the existing test inventory \u001b[33m 866\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m25 passed\u001b[39m\u001b[22m\u001b[90m (25)\u001b[39m\n\u001b[2m   Start at \u001b[22m 17:50:47\n\u001b[2m   Duration \u001b[22m 1.71s\u001b[2m (transform 13ms, setup 0ms, import 19ms, tests 1.62s, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS Bun frozen lockfile contract",
+          "command": [
+            "bun",
+            "install",
+            "--cwd",
+            "packages/os",
+            "--frozen-lockfile",
+            "--lockfile-only",
+            "--dry-run"
+          ],
+          "ruleId": "os-bun-lockfile-consistency",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 11,
+          "outputTail": "bun install v1.3.14 (0d9b296a)\n\nSaved bun.lock (281 packages) [4.00ms]\nSaved lockfile\n"
+        },
+        {
+          "name": "changed server task selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 64,
+          "outputTail": "No changed Twenty server runtime files require lint or typecheck.\nRunning server lint and typecheck for 1 directly changed file(s).\nNo changed Twenty server schema files require GraphQL generation.\nNo changed Twenty server runtime files require migration generation.\nNo changesgenerated✔ parseCliArguments resolves comparison SHAs (0.591416ms)\n✔ parseCliArguments selects GraphQL generation mode (0.055541ms)\n✔ parseCliArguments selects migration generation mode (0.038333ms)\n✔ filterServerTaskFiles excludes root and config-only triggers (0.081625ms)\n✔ filterGraphqlGenerationFiles keeps only server schema and generated files (0.066833ms)\n✔ buildNxArguments scopes lint and typecheck through changed files (0.054875ms)\n✔ runChangedServerTask skips Nx for config-only changes (0.258ms)\n✔ runChangedServerTask executes Nx for server runtime changes (0.134708ms)\n✔ runGraphqlGenerationCheck skips generation without schema changes (0.075916ms)\n✔ runGraphqlGenerationCheck generates and verifies committed outputs (0.194667ms)\n✔ runMigrationGenerationCheck skips generation without server runtime changes (0.073041ms)\n✔ runMigrationGenerationCheck accepts a no-change TypeORM exit (0.094541ms)\n✔ runMigrationGenerationCheck rejects and removes generated drift (0.205958ms)\nℹ tests 13\nℹ suites 0\nℹ pass 13\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 38.125959\n"
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 165,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/workspace/tests/github-workflow-policy.test.js:\n(pass) GitHub workflow policy > does not include retired automation workflows [0.08ms]\n(pass) GitHub workflow policy > does not reference retired CI credentials or the disabled Chromatic job [3.25ms]\n(pass) GitHub workflow policy > does not retain privileged allowlist entries for deleted workflows [0.07ms]\n(pass) GitHub workflow policy > runs typecheck and test from the filtered frontend file set [0.04ms]\n(pass) GitHub workflow policy > installs Bun and scopes shared tasks to changed frontend files [0.04ms]\n(pass) GitHub workflow policy > scopes native OS distribution tests to relevant changed files [0.04ms]\n(pass) GitHub workflow policy > runs Docker Compose CI with the pgvector PostgreSQL image required by migrations [0.03ms]\n(pass) GitHub workflow policy > uses available hosted runners for the Server and Front build pipelines [0.06ms]\n(pass) GitHub workflow policy > builds Consuelo backend workspace dependencies before server typecheck [0.03ms]\n(pass) GitHub workflow policy > installs Bun before the Server unit-test job runs Bun package tests [0.03ms]\n(pass) GitHub workflow policy > allows enough time for Danger dependency installation and execution [0.02ms]\n(pass) GitHub workflow policy > explicitly allowlists the API breaking-changes workflow write permissions [0.02ms]\n\n 12 pass\n 0 fail\n 53 expect() calls\nRan 12 tests across 1 file. [159.00ms]\n"
+        },
+        {
+          "name": "TypeORM CLI compatibility contract",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 775,
+          "outputTail": "✔ Twenty server uses the Node 24-compatible TypeORM ts-node wrapper (0.304792ms)\n✔ the configured TypeORM wrapper resolves from the installed package (711.074792ms)\nℹ tests 2\nℹ suites 0\nℹ pass 2\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 747.978375\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/installer-dry-run",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1393,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1393",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1393",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1393/installer-dry-run",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1393",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1393/installer-dry-run",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-installer-dry-run",
+  "taskSession": "tsk_40ac298362f8",
+  "tmuxSession": "opensaas-os-installer-dry-run-40ac2983",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-installer-dry-run/.task/os/installer-dry-run/session.json",
+  "createdAt": "2026-07-11T00:28:03.201Z"
+}

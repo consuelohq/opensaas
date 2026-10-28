@@ -1,0 +1,12 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/rename-settings-surface-to-configuration",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": null,
+  "prUrl": "",
+  "worktreePath": "/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-rename-settings-surface-to-configuration",
+  "createdAt": "2026-07-18T04:40:26.557Z"
+}

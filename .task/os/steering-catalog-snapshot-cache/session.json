@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_b3459ed64551",
+  "tmuxSession": "opensaas-os-steering-catalog-snapshot-cache-b3459ed6",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/steering-catalog-snapshot-cache",
+  "branch": "task/os/steering-catalog-snapshot-cache",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-steering-catalog-snapshot-cache",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-steering-catalog-snapshot-cache",
+  "prNumber": 1860,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1860",
+  "createdAt": "2026-08-12T00:34:51.344Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-steering-catalog-snapshot-cache/.task/os/steering-catalog-snapshot-cache/session.json"
+}

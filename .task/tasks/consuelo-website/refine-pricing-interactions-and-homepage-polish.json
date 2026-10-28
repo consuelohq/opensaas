@@ -1,0 +1,19 @@
+{
+  "area": "consuelo-website",
+  "stream": "stream/consuelo-website",
+  "taskBranch": "task/consuelo-website/refine-pricing-interactions-and-homepage-polish",
+  "baseBranch": "stream/consuelo-website",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1447,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1447",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1447",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1447/refine-pricing-interactions-and-homepage-polish",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1447",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1447/refine-pricing-interactions-and-homepage-polish",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-consuelo-website-refine-pricing-interactions-and-homepage-polish",
+  "taskSession": "tsk_a6ddc75013a3",
+  "tmuxSession": "opensaas-consuelo-website-refine-pricing-interactions-and-homepage-polish-a6ddc750",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-consuelo-website-refine-pricing-interactions-and-homepage-polish/.task/consuelo-website/refine-pricing-interactions-and-homepage-polish/session.json",
+  "createdAt": "2026-07-13T05:19:40.096Z"
+}

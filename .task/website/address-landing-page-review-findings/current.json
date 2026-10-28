@@ -1,0 +1,19 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/address-landing-page-review-findings",
+  "baseBranch": "stream/website",
+  "sourceBranch": "stream/website",
+  "startFrom": "stream",
+  "prNumber": 1424,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1424",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1424",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1424/address-landing-page-review-findings",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1424",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1424/address-landing-page-review-findings",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-website-address-landing-page-review-findings",
+  "taskSession": "tsk_bd2a3e8a9516",
+  "tmuxSession": "opensaas-website-address-landing-page-review-findings-bd2a3e8a",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-website-address-landing-page-review-findings/.task/website/address-landing-page-review-findings/session.json",
+  "createdAt": "2026-07-11T20:31:42.173Z"
+}

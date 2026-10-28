@@ -1,0 +1,9 @@
+{
+  "files": [
+    ".task/os/fix-pr-2310-review-comments/workpad.md",
+    "packages/os/package.json",
+    "packages/os/scripts/lib/subagent/process-termination.ts",
+    "packages/workspace/scripts/verify.js"
+  ],
+  "updatedAt": "2026-08-31T18:55:28.800Z"
+}

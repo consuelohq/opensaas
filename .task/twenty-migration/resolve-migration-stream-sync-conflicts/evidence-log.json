@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/twenty-migration/resolve-migration-stream-sync-conflicts",
+  "events": [
+    {
+      "id": "32becfec-1863-479d-95fb-bab3a0983dc1",
+      "occurred_at": "2026-09-21T00:06:12.191Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/twenty-migration/resolve-migration-stream-sync-conflicts/verify.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/twenty-migration/resolve-migration-stream-sync-conflicts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/twenty-migration/resolve-migration-stream-sync-conflicts"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-09-21T00:06:12.308Z"
+}

@@ -1,0 +1,118 @@
+---
+title: Create a site
+description: Prepare a page target, render typed content when appropriate, and verify it before publishing.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/scripts/os.ts
+    tests:
+      - packages/os/tests/sites-cli.test.ts
+    runtime: The installed package command for Sites status and render was exercised from a clean temporary Consuelo home on 2026-07-13.
+  - source: packages/os/scripts/lib/sites.ts
+    tests:
+      - packages/os/tests/sites-cli.test.ts
+    runtime: File and directory publish targets plus canonical reader output were exercised by focused tests.
+---
+
+import Note from '../../../components/mintlify/Note.astro';
+
+There is no standalone `sites create` command. Create the source you want to publish, render it when the page uses a supported reader template, then pass the resulting file or directory to `sites publish`.
+
+## 1. Choose a page kind
+
+Sites currently records one of these page kinds:
+
+| Kind | Use it for | Recommended source |
+| --- | --- | --- |
+| `spec` | A structured product or system specification | Typed `content.json`, rendered with the `spec` template |
+| `plan` | A plan, work map, or execution document | Typed `content.json`, rendered with the `plan` template |
+| `guide` | A reader-facing guide or teaching page | Typed `content.json`, rendered with the `guide` template |
+| `trace` | A trace-focused view or report | Existing HTML file or directory |
+| `diff` | A reviewable change or diff surface | Existing HTML file or directory |
+| `office` | An Office-produced page or artifact view | Existing generated output |
+| `uncategorized` | Output that does not fit another current kind | Existing HTML file or directory |
+
+For `spec`, `plan`, and `guide`, the canonical path is typed content plus the Consuelo reader renderer. Do not hand-author a replacement reader shell.
+
+## 2. Create typed content
+
+This is a minimal verified `guide` input:
+
+```json
+{
+  "template": "guide",
+  "title": "Release checklist",
+  "eyebrow": "operations guide",
+  "thesis": "Verify the important result before calling the release complete.",
+  "metadata": {
+    "status": "draft",
+    "owner": "Workspace team",
+    "date": "2026-07-13"
+  },
+  "sections": [
+    {
+      "id": "verify",
+      "eyebrow": "step one",
+      "title": "Verify the output",
+      "body": ["Open the page and check its primary path."]
+    }
+  ],
+  "ledger": [
+    {
+      "title": "Ship checklist",
+      "items": [
+        { "status": "todo", "text": "Verify the rendered page." }
+      ]
+    }
+  ]
+}
+```
+
+Save it in a working directory that you control, for example:
+
+```text
+release-checklist/
+  content.json
+```
+
+The renderer owns the page shell and validates the typed input. Keep source content with the project or task that produced it; the generated Sites copy is not a substitute for source control.
+
+## 3. Render the reader page
+
+```bash
+export CONSUELO_HOME="${CONSUELO_HOME:-$HOME/.consuelo}"
+bun run --cwd "$CONSUELO_HOME" os -- sites render \
+  --template guide \
+  --input "$PWD/release-checklist/content.json" \
+  --out "$PWD/release-checklist/index.html" \
+  --json
+```
+
+A successful result includes:
+
+```json
+{
+  "ok": true,
+  "command": "render",
+  "renderTemplate": "guide",
+  "rendered": true
+}
+```
+
+The supported renderer templates are `spec`, `plan`, and `guide`. The template flag and the input's intended template should agree.
+
+## 4. Inspect before publishing
+
+Open the generated `index.html` directly or use your normal browser-review workflow. Check:
+
+- headings and section order;
+- links and embedded assets;
+- narrow and wide viewports;
+- the primary action or conclusion;
+- that no credentials, private routes, or scratch notes are exposed.
+
+Then continue to [Publish](/sites/publish/).
+
+<Note>
+  A single `.html` publish target is copied as `index.html`. A directory target is copied recursively, so keep its `index.html` and assets together.
+</Note>

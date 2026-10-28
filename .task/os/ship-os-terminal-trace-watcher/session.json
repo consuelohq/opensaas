@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_4920af722e38",
+  "tmuxSession": "opensaas-os-ship-os-terminal-trace-watcher-4920af72",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/ship-os-terminal-trace-watcher",
+  "branch": "task/os/ship-os-terminal-trace-watcher",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-ship-os-terminal-trace-watcher",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-ship-os-terminal-trace-watcher",
+  "prNumber": 1518,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1518",
+  "createdAt": "2026-07-15T23:26:54.963Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-ship-os-terminal-trace-watcher/.task/os/ship-os-terminal-trace-watcher/session.json"
+}

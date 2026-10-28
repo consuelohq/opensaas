@@ -1,0 +1,7 @@
+{
+  "files": [
+    ".task/os-distribution/fix-runtime-bundle-verification-gaps/workpad.md",
+    "packages/os/scripts/lib/distribution/runtime-bundle.ts"
+  ],
+  "updatedAt": "2026-07-22T23:35:56.018Z"
+}

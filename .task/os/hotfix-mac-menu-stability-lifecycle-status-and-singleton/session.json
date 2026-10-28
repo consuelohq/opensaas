@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_9956a187bcb3",
+  "tmuxSession": "opensaas-os-hotfix-mac-menu-stability-lifecycle-status-and-s-9956a187",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/hotfix-mac-menu-stability-lifecycle-status-and-singleton",
+  "branch": "task/os/hotfix-mac-menu-stability-lifecycle-status-and-singleton",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-hotfix-mac-menu-stability-lifecycle-status-and-singleton",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-hotfix-mac-menu-stability-lifecycle-status-and-singleton",
+  "prNumber": 1971,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1971",
+  "createdAt": "2026-08-14T21:42:35.069Z",
+  "tmuxCreated": false,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-hotfix-mac-menu-stability-lifecycle-status-and-singleton/.task/os/hotfix-mac-menu-stability-lifecycle-status-and-singleton/session.json"
+}

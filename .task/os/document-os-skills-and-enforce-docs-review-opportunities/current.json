@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/document-os-skills-and-enforce-docs-review-opportunities",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1856,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1856",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1856",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1856/document-os-skills-and-enforce-docs-review-opportunities",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1856",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1856/document-os-skills-and-enforce-docs-review-opportunities",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-document-os-skills-and-enforce-docs-review-opportunities",
+  "taskSession": "tsk_a8f607b6d192",
+  "tmuxSession": "opensaas-os-document-os-skills-and-enforce-docs-review-oppor-a8f607b6",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-document-os-skills-and-enforce-docs-review-opportunities/.task/os/document-os-skills-and-enforce-docs-review-opportunities/session.json",
+  "createdAt": "2026-08-12T00:06:50.113Z"
+}

@@ -1,0 +1,12 @@
+{
+  "files": [
+    ".task/security/repair-systemic-connector-origin-tls-and-complete-chatgpt-mcp-onboarding/workpad.md",
+    "packages/os/SCRIPTS.md",
+    "packages/os/cloudflare/os-device-authority/src/types.ts",
+    "packages/os/cloudflare/os-device-authority/wrangler.toml",
+    "packages/os/tests/os-device-approval-auth-hardening-contract.test.ts",
+    "packages/os/tests/os-device-authority-worker.test.ts",
+    "packages/workspace/senior-engineer.md"
+  ],
+  "updatedAt": "2026-07-11T20:17:27.721Z"
+}

@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/serialize-full-release-state-queue",
+  "events": [
+    {
+      "id": "98a07c0b-f178-4b39-ae04-652fca481ebd",
+      "occurred_at": "2026-08-26T18:35:57.062Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/release.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/serialize-full-release-state-queue",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/serialize-full-release-state-queue"
+      }
+    },
+    {
+      "id": "6544712e-d24e-4f9e-9a6e-0cd7c1238e4e",
+      "occurred_at": "2026-08-26T18:36:41.623Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/release-promotion-dispatch-lock.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/serialize-full-release-state-queue",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/serialize-full-release-state-queue"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-26T18:36:41.681Z"
+}

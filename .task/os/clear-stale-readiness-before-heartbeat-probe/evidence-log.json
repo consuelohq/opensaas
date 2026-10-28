@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/clear-stale-readiness-before-heartbeat-probe",
+  "events": [
+    {
+      "id": "ac9c3570-83d6-4867-9829-c4e0b738a201",
+      "occurred_at": "2026-08-29T04:36:18.234Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/workspace-node-heartbeat-script.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/clear-stale-readiness-before-heartbeat-probe",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/clear-stale-readiness-before-heartbeat-probe"
+      }
+    },
+    {
+      "id": "bddd8dd7-94ff-44d7-ab0f-4f2c99cac59e",
+      "occurred_at": "2026-08-29T04:36:36.186Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/workspace-node-heartbeat.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/clear-stale-readiness-before-heartbeat-probe",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/clear-stale-readiness-before-heartbeat-probe"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-29T04:36:36.324Z"
+}

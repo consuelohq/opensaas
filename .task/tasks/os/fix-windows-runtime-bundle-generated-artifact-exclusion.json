@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-windows-runtime-bundle-generated-artifact-exclusion",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1724,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1724",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1724",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1724/fix-windows-runtime-bundle-generated-artifact-exclusion",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1724",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1724/fix-windows-runtime-bundle-generated-artifact-exclusion",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-windows-runtime-bundle-generated-artifact-exclusion",
+  "taskSession": "tsk_9cbe4b3ae1b2",
+  "tmuxSession": "opensaas-os-fix-windows-runtime-bundle-generated-artifact-ex-9cbe4b3a",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-windows-runtime-bundle-generated-artifact-exclusion/.task/os/fix-windows-runtime-bundle-generated-artifact-exclusion/session.json",
+  "createdAt": "2026-07-29T07:36:45.072Z"
+}

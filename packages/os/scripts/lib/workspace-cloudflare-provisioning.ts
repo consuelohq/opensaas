@@ -1,3 +1,9 @@
+import {
+  createConnectorOriginHostname,
+  createConnectorOriginHostnameWafExpression,
+  normalizeConnectorOriginBaseDomain,
+} from './connector-origin-hostname';
+
 export type WorkspaceCloudflareProvisioningInput = {
   workspaceId: string;
   workspaceSlug: string;
@@ -31,13 +37,36 @@ export type CloudflareRuleset = {
   rules: CloudflareRulesetRule[];
 };
 
+export type TrustedOsMcpProviderIpSourceId =
+  | 'openai_chatgpt_connectors'
+  | 'openai_codex_cloud'
+  | 'anthropic_claude';
+
+export type CloudflareAccountIpListItemInput = {
+  ip: string;
+  comment?: string;
+};
+
+export type TrustedProviderIpAllowlistSyncResult =
+  | {
+      status: 'skipped';
+      reason: 'trusted provider IP allowlist env not configured';
+    }
+  | {
+      status: 'synced';
+      count: number;
+      operationId?: string;
+    };
+
 export type WorkspaceCloudflareManagedOsMcpIngressPolicyConfig = {
   zoneId: string;
   customRulesetId?: string;
   baseDomain: string;
   mcpAllowedIpsListName: string;
   temporaryDenyIpCidrs?: string[];
-  reservedHostnames?: string[];
+  trustedProviderIpSourceIds?: TrustedOsMcpProviderIpSourceId[];
+  trustedProviderExtraIpCidrs?: string[];
+  managedMcpHostnames?: string[];
   allowInstallBootstrapRuleId?: string;
   allowInstallBootstrapRuleRef?: string;
   allowInstallBootstrapRuleDescription?: string;
@@ -63,6 +92,10 @@ export type WorkspaceCloudflareManagedOsMcpIngressPolicyClient = {
   getAccountIpList: (input: {
     name: string;
   }) => Promise<{ id: string; name: string } | null>;
+  createAccountIpListItems: (input: {
+    listId: string;
+    items: CloudflareAccountIpListItemInput[];
+  }) => Promise<{ operationId?: string }>;
   getZoneCustomRuleset: (input: {
     zoneId: string;
     rulesetId?: string;
@@ -109,8 +142,16 @@ export type WorkspaceCloudflareProvisioningClient = {
   putTunnelConfig: (input: {
     tunnelId: string;
     hostname: string;
+    httpHostHeader: string;
     localServiceUrl: string;
   }) => Promise<void>;
+  createOrReuseWorkerRouteExclusion: (input: {
+    zoneId: string;
+    pattern: string;
+  }) => Promise<{
+    routeId: string;
+    status: 'created' | 'updated' | 'unchanged';
+  }>;
   createOrReuseDnsRecord: (input: {
     zoneId: string;
     name: string;
@@ -152,6 +193,7 @@ export type WorkspaceCloudflareProvisioningPlan = {
     tunnelName: string;
     workspaceDnsRecord: { name: string };
     osTunnelDnsRecord: { name: string };
+    osTunnelWorkerRouteExclusion: { pattern: string };
     edgeHostname: string;
     localServiceUrl: string;
   };
@@ -196,8 +238,11 @@ const MANAGED_OS_MCP_POLICY_ENV_KEYS = [
   'CLOUDFLARE_ALLOW_INSTALL_BOOTSTRAP_RULE_REF',
   'CLOUDFLARE_ALLOW_INSTALL_BOOTSTRAP_RULE_DESCRIPTION',
   'CLOUDFLARE_MCP_TEMPORARY_DENY_CIDRS',
+  'CLOUDFLARE_MCP_TRUSTED_PROVIDER_IP_SOURCES',
+  'CLOUDFLARE_MCP_TRUSTED_PROVIDER_EXTRA_CIDRS',
+  'CLOUDFLARE_MCP_MANAGED_HOSTNAMES',
 ] as const;
-const DEFAULT_RESERVED_HOSTNAME_LABELS = [
+const DEFAULT_NON_WORKSPACE_MCP_HOSTNAME_LABELS = [
   'app',
   'docs',
   'diffs',
@@ -207,24 +252,50 @@ const DEFAULT_RESERVED_HOSTNAME_LABELS = [
   'www',
   'sites',
   'os',
-  'internal',
   'workspace-edge',
   'workspace',
 ] as const;
+const DEFAULT_MANAGED_OS_MCP_HOSTNAME_LABELS = ['os'] as const;
 
-const normalizeBaseDomain = (baseDomain: string): string => {
-  const normalized = baseDomain
-    .trim()
-    .toLowerCase()
-    .replace(/^https?:\/\//, '')
-    .replace(/\/$/, '');
-
-  if (!normalized || normalized.includes('/')) {
-    throw new Error('base domain must be a hostname');
-  }
-
-  return normalized;
+type TrustedProviderIpRange = {
+  cidr: string;
+  sourceId: TrustedOsMcpProviderIpSourceId | 'manual_extra';
 };
+
+type TrustedProviderIpSource =
+  | {
+      kind: 'openai-json';
+      id: TrustedOsMcpProviderIpSourceId;
+      url: string;
+    }
+  | {
+      kind: 'static';
+      id: TrustedOsMcpProviderIpSourceId;
+      cidrs: string[];
+    };
+
+const TRUSTED_OS_MCP_PROVIDER_IP_SOURCES: Record<
+  TrustedOsMcpProviderIpSourceId,
+  TrustedProviderIpSource
+> = {
+  openai_chatgpt_connectors: {
+    kind: 'openai-json',
+    id: 'openai_chatgpt_connectors',
+    url: 'https://openai.com/chatgpt-connectors.json',
+  },
+  openai_codex_cloud: {
+    kind: 'openai-json',
+    id: 'openai_codex_cloud',
+    url: 'https://openai.com/chatgpt-agents.json',
+  },
+  anthropic_claude: {
+    kind: 'static',
+    id: 'anthropic_claude',
+    cidrs: ['160.79.104.0/21'],
+  },
+};
+
+const normalizeBaseDomain = normalizeConnectorOriginBaseDomain;
 
 const normalizeCloudflareListName = (listName: string): string => {
   const normalized = listName.trim().replace(/^\$/, '');
@@ -240,11 +311,39 @@ const normalizeIpCidrLiteral = (value: string): string => {
   const normalized = value.trim();
 
   if (!/^[0-9a-fA-F:.]+\/\d{1,3}$/.test(normalized)) {
-    throw new Error('temporary deny CIDR must be an IPv4 or IPv6 CIDR literal');
+    throw new Error('CIDR must be an IPv4 or IPv6 CIDR literal');
   }
 
   return normalized;
 };
+
+const splitCommaSeparatedValues = (value: string | undefined): string[] =>
+  normalizeOptionalValue(value)
+    ?.split(',')
+    .map((item) => item.trim())
+    .filter(Boolean) ?? [];
+
+const normalizeTrustedProviderIpSourceId = (
+  value: string,
+): TrustedOsMcpProviderIpSourceId => {
+  const normalized = value.trim();
+
+  if (normalized in TRUSTED_OS_MCP_PROVIDER_IP_SOURCES) {
+    return normalized as TrustedOsMcpProviderIpSourceId;
+  }
+
+  throw new Error(`unknown trusted OS MCP provider IP source: ${normalized}`);
+};
+
+const normalizeProviderIpSourceIds = (
+  value: string | undefined,
+): TrustedOsMcpProviderIpSourceId[] => [
+  ...new Set(splitCommaSeparatedValues(value).map(normalizeTrustedProviderIpSourceId)),
+];
+
+const normalizeIpCidrs = (values: string[]): string[] => [
+  ...new Set(values.map(normalizeIpCidrLiteral)),
+];
 
 const normalizeOptionalValue = (value: string | undefined): string | undefined => {
   const normalized = value?.trim();
@@ -278,6 +377,110 @@ const readActionParameters = (
 ): Record<string, unknown> | undefined => {
   const value = input.action_parameters;
   return isRecord(value) ? value : undefined;
+};
+
+const parseOpenAiIpFeed = (input: {
+  payload: unknown;
+  sourceId: TrustedOsMcpProviderIpSourceId;
+}): TrustedProviderIpRange[] => {
+  if (!isRecord(input.payload) || !Array.isArray(input.payload.prefixes)) {
+    throw new Error(`trusted provider IP feed ${input.sourceId} returned invalid JSON`);
+  }
+
+  return input.payload.prefixes.flatMap((prefix): TrustedProviderIpRange[] => {
+    if (!isRecord(prefix)) return [];
+    const cidrs = [
+      readString(prefix, 'ipv4Prefix'),
+      readString(prefix, 'ipv6Prefix'),
+    ].filter((cidr): cidr is string => Boolean(cidr));
+
+    return cidrs.map((cidr) => ({
+      cidr: normalizeIpCidrLiteral(cidr),
+      sourceId: input.sourceId,
+    }));
+  });
+};
+
+const fetchTrustedProviderIpSource = async (input: {
+  source: TrustedProviderIpSource;
+  fetchImpl: typeof fetch;
+}): Promise<TrustedProviderIpRange[]> => {
+  if (input.source.kind === 'static') {
+    return normalizeIpCidrs(input.source.cidrs).map((cidr) => ({
+      cidr,
+      sourceId: input.source.id,
+    }));
+  }
+
+  try {
+    const response = await input.fetchImpl(input.source.url);
+    if (!response.ok) {
+      throw new Error(`status ${response.status}`);
+    }
+
+    const payload = await response.json();
+    return parseOpenAiIpFeed({ payload, sourceId: input.source.id });
+  } catch (error: unknown) {
+    throw new Error(
+      `trusted provider IP source ${input.source.id} fetch failed: ${getErrorMessage(error)}`,
+      { cause: error },
+    );
+  }
+};
+
+const resolveTrustedOsMcpProviderIpRangeDetails = async (input: {
+  sourceIds?: TrustedOsMcpProviderIpSourceId[];
+  extraCidrs?: string[];
+  fetchImpl?: typeof fetch;
+}): Promise<TrustedProviderIpRange[]> => {
+  try {
+    const fetchImpl = input.fetchImpl ?? globalThis.fetch;
+    if (typeof fetchImpl !== 'function') {
+      throw new Error('trusted provider IP source fetch implementation is required');
+    }
+
+    const sourceRanges = await Promise.all(
+      (input.sourceIds ?? []).map((sourceId) =>
+        fetchTrustedProviderIpSource({
+          source: TRUSTED_OS_MCP_PROVIDER_IP_SOURCES[sourceId],
+          fetchImpl,
+        }),
+      ),
+    );
+    const extraRanges = normalizeIpCidrs(input.extraCidrs ?? []).map((cidr) => ({
+      cidr,
+      sourceId: 'manual_extra' as const,
+    }));
+    const ranges: TrustedProviderIpRange[] = [...sourceRanges.flat(), ...extraRanges];
+    const seenCidrs = new Set<string>();
+
+    return ranges.filter((range) => {
+      if (seenCidrs.has(range.cidr)) return false;
+      seenCidrs.add(range.cidr);
+      return true;
+    });
+  } catch (error: unknown) {
+    throw new Error(
+      `trusted OS MCP provider IP range resolution failed: ${getErrorMessage(error)}`,
+      { cause: error },
+    );
+  }
+};
+
+export const resolveTrustedOsMcpProviderIpRanges = async (input: {
+  sourceIds?: TrustedOsMcpProviderIpSourceId[];
+  extraCidrs?: string[];
+  fetchImpl?: typeof fetch;
+}): Promise<string[]> => {
+  try {
+    const ranges = await resolveTrustedOsMcpProviderIpRangeDetails(input);
+    return ranges.map((range) => range.cidr);
+  } catch (error: unknown) {
+    throw new Error(
+      `trusted OS MCP provider IP range list resolution failed: ${getErrorMessage(error)}`,
+      { cause: error },
+    );
+  }
 };
 
 const parseCloudflareRule = (value: unknown): CloudflareRulesetRule | null => {
@@ -376,33 +579,81 @@ const hasManagedOsMcpIngressPolicyEnv = (
     Boolean(normalizeOptionalValue(env[key])),
   );
 
-const createDefaultReservedHostnames = (baseDomain: string): string[] =>
-  DEFAULT_RESERVED_HOSTNAME_LABELS.map((label) => `${label}.${baseDomain}`);
+const createDefaultManagedOsMcpHostnames = (baseDomain: string): string[] =>
+  DEFAULT_MANAGED_OS_MCP_HOSTNAME_LABELS.map((label) => `${label}.${baseDomain}`);
 
-const normalizeReservedHostnames = (input: {
+const createDefaultNonWorkspaceMcpHostnames = (baseDomain: string): string[] =>
+  DEFAULT_NON_WORKSPACE_MCP_HOSTNAME_LABELS.map(
+    (label) => `${label}.${baseDomain}`,
+  );
+
+const assertHostnameBelongsToBaseDomain = (input: {
+  hostname: string;
   baseDomain: string;
-  reservedHostnames?: string[];
+}): void => {
+  if (
+    input.hostname !== input.baseDomain &&
+    !input.hostname.endsWith(`.${input.baseDomain}`)
+  ) {
+    throw new Error(`managed OS MCP hostname ${input.hostname} must belong to base domain ${input.baseDomain}`);
+  }
+};
+
+const normalizeManagedOsMcpHostnames = (input: {
+  baseDomain: string;
+  managedMcpHostnames?: string[];
 }): string[] => {
-  const values = input.reservedHostnames ?? createDefaultReservedHostnames(input.baseDomain);
-  return [...new Set(values.map(normalizeBaseDomain))].sort();
+  const values =
+    input.managedMcpHostnames && input.managedMcpHostnames.length > 0
+      ? input.managedMcpHostnames
+      : createDefaultManagedOsMcpHostnames(input.baseDomain);
+  const hostnames = [...new Set(values.map(normalizeBaseDomain))].sort();
+  for (const hostname of hostnames) {
+    assertHostnameBelongsToBaseDomain({ hostname, baseDomain: input.baseDomain });
+  }
+  return hostnames;
 };
 
 const formatHostnameSet = (hostnames: string[]): string =>
   hostnames.map((hostname) => `  "${hostname}"`).join('\n');
+
+const indentExpression = (expression: string, indent: string): string =>
+  expression
+    .split('\n')
+    .map((line) => `${indent}${line}`)
+    .join('\n');
 
 const formatIpSet = (cidrs: string[], indent: string): string =>
   cidrs.map((cidr) => `${indent}${cidr}`).join('\n');
 
 const createManagedOsMcpBaseExpression = (input: {
   baseDomain: string;
-  reservedHostnames: string[];
-}): string =>
-  [
+  managedMcpHostnames: string[];
+}): string => {
+  const connectorOriginHostnameExpression = createConnectorOriginHostnameWafExpression({
+    baseDomain: input.baseDomain,
+  });
+  const workspaceHostnameExpression = [
     `ends_with(http.host, ".${input.baseDomain}")`,
-    `not ends_with(http.host, ".os-origin.${input.baseDomain}")`,
-    `not (http.host in {\n${formatHostnameSet(input.reservedHostnames)}\n})`,
-    'starts_with(http.request.uri.path, "/mcp")',
+    `not (${connectorOriginHostnameExpression})`,
+    `not (http.host in {\n${formatHostnameSet(
+      createDefaultNonWorkspaceMcpHostnames(input.baseDomain),
+    )}\n})`,
   ].join('\nand ');
+  const centralHostnameExpression = `http.host in {\n${formatHostnameSet(
+    input.managedMcpHostnames,
+  )}\n}`;
+
+  return [
+    '(',
+    '  (',
+    indentExpression(workspaceHostnameExpression, '    '),
+    '  )',
+    `  or ${centralHostnameExpression.replace(/\n/g, '\n  ')}`,
+    ')',
+    'and starts_with(http.request.uri.path, "/mcp")',
+  ].join('\n');
+};
 
 const createRuleSummary = (
   rule: CloudflareRulesetRule,
@@ -481,6 +732,7 @@ const assertManagedOsMcpIngressPolicyClient = (
   WorkspaceCloudflareManagedOsMcpIngressPolicyClient => {
   const requiredMethods: Array<keyof WorkspaceCloudflareManagedOsMcpIngressPolicyClient> = [
     'getAccountIpList',
+    'createAccountIpListItems',
     'getZoneCustomRuleset',
     'createZoneCustomRuleset',
     'createZoneCustomRulesetRule',
@@ -497,6 +749,67 @@ const assertManagedOsMcpIngressPolicyClient = (
   }
 };
 
+const createTrustedProviderIpListItems = (
+  ranges: TrustedProviderIpRange[],
+): CloudflareAccountIpListItemInput[] =>
+  ranges.map((range) => ({
+    ip: range.cidr,
+    comment: `Consuelo OS MCP trusted provider: ${range.sourceId}`,
+  }));
+
+export const syncManagedOsMcpTrustedProviderIpAllowlist = async (input: {
+  cloudflare:
+    | WorkspaceCloudflareProvisioningClient
+    | WorkspaceCloudflareManagedOsMcpIngressPolicyClient;
+  config: WorkspaceCloudflareManagedOsMcpIngressPolicyConfig;
+  fetchImpl?: typeof fetch;
+}): Promise<TrustedProviderIpAllowlistSyncResult> => {
+  try {
+    const sourceIds = input.config.trustedProviderIpSourceIds ?? [];
+    const extraCidrs = input.config.trustedProviderExtraIpCidrs ?? [];
+
+    if (sourceIds.length === 0 && extraCidrs.length === 0) {
+      return {
+        status: 'skipped',
+        reason: 'trusted provider IP allowlist env not configured',
+      };
+    }
+
+    assertManagedOsMcpIngressPolicyClient(input.cloudflare);
+    const allowedIpsListName = normalizeCloudflareListName(
+      input.config.mcpAllowedIpsListName,
+    );
+    const accountList = await input.cloudflare.getAccountIpList({
+      name: allowedIpsListName,
+    });
+
+    if (!accountList) {
+      throw new Error(`Cloudflare account IP list ${allowedIpsListName} was not found`);
+    }
+
+    const ranges = await resolveTrustedOsMcpProviderIpRangeDetails({
+      sourceIds,
+      extraCidrs,
+      fetchImpl: input.fetchImpl,
+    });
+    const result = await input.cloudflare.createAccountIpListItems({
+      listId: accountList.id,
+      items: createTrustedProviderIpListItems(ranges),
+    });
+
+    return {
+      status: 'synced',
+      count: ranges.length,
+      ...(result.operationId ? { operationId: result.operationId } : {}),
+    };
+  } catch (error: unknown) {
+    throw new Error(
+      `Cloudflare managed OS MCP trusted provider IP allowlist sync failed: ${getErrorMessage(error)}`,
+      { cause: error },
+    );
+  }
+};
+
 const DNS_LABEL_ERROR =
   'must be DNS-label safe: 1-63 chars, no leading/trailing hyphen, [a-z0-9-] only';
 
@@ -508,13 +821,13 @@ export const buildManagedOsMcpIngressPolicyRules = (
   const temporaryDenyIpCidrs = [
     ...new Set((input.temporaryDenyIpCidrs ?? []).map(normalizeIpCidrLiteral)),
   ];
-  const reservedHostnames = normalizeReservedHostnames({
+  const managedMcpHostnames = normalizeManagedOsMcpHostnames({
     baseDomain,
-    reservedHostnames: input.reservedHostnames,
+    managedMcpHostnames: input.managedMcpHostnames,
   });
   const baseExpression = createManagedOsMcpBaseExpression({
     baseDomain,
-    reservedHostnames,
+    managedMcpHostnames,
   });
   const allowedIpsExpression = `ip.src in $${mcpAllowedIpsListName}`;
   const allowTemporaryDenyExpression = temporaryDenyIpCidrs.length
@@ -560,12 +873,18 @@ export const createManagedOsMcpIngressPolicyConfigFromEnv = (input: {
     throw new Error('CLOUDFLARE_MCP_ALLOWED_IPS_LIST_NAME is required');
   }
 
-  const temporaryDenyIpCidrs = normalizeOptionalValue(
+  const temporaryDenyIpCidrs = splitCommaSeparatedValues(
     input.env.CLOUDFLARE_MCP_TEMPORARY_DENY_CIDRS,
-  )
-    ?.split(',')
-    .map((value) => value.trim())
-    .filter(Boolean);
+  );
+  const trustedProviderIpSourceIds = normalizeProviderIpSourceIds(
+    input.env.CLOUDFLARE_MCP_TRUSTED_PROVIDER_IP_SOURCES,
+  );
+  const trustedProviderExtraIpCidrs = normalizeIpCidrs(
+    splitCommaSeparatedValues(input.env.CLOUDFLARE_MCP_TRUSTED_PROVIDER_EXTRA_CIDRS),
+  );
+  const managedMcpHostnames = splitCommaSeparatedValues(
+    input.env.CLOUDFLARE_MCP_MANAGED_HOSTNAMES,
+  );
   const config: WorkspaceCloudflareManagedOsMcpIngressPolicyConfig = {
     zoneId,
     baseDomain: normalizeBaseDomain(input.baseDomain),
@@ -599,6 +918,9 @@ export const createManagedOsMcpIngressPolicyConfigFromEnv = (input: {
         }
       : {}),
     ...(temporaryDenyIpCidrs?.length ? { temporaryDenyIpCidrs } : {}),
+    ...(trustedProviderIpSourceIds.length ? { trustedProviderIpSourceIds } : {}),
+    ...(trustedProviderExtraIpCidrs.length ? { trustedProviderExtraIpCidrs } : {}),
+    ...(managedMcpHostnames.length ? { managedMcpHostnames } : {}),
   };
 
   buildManagedOsMcpIngressPolicyRules(config);
@@ -619,7 +941,7 @@ const createCloudflareApiRequest = (
   input: CloudflareManagedOsMcpIngressPolicyClientInput,
 ): ((request: {
   operation: string;
-  method: 'GET' | 'POST' | 'PATCH';
+  method: 'GET' | 'POST' | 'PATCH' | 'PUT';
   path: string;
   body?: unknown;
   allowNotFound?: boolean;
@@ -683,6 +1005,368 @@ const createCloudflareManagedPolicyClientError = (
     { cause: error },
   );
 
+const createCloudflareWorkspaceProvisioningClientError = (
+  operation: string,
+  error: unknown,
+): Error =>
+  new Error(
+    `Cloudflare workspace provisioning client ${operation} failed: ${getErrorMessage(error)}`,
+    { cause: error },
+  );
+
+const readRequiredString = (input: {
+  value: Record<string, unknown>;
+  key: string;
+  operation: string;
+}): string => {
+  const value = readString(input.value, input.key);
+  if (!value) {
+    throw new Error(`Cloudflare API ${input.operation} response was missing ${input.key}`);
+  }
+
+  return value;
+};
+
+const readCloudflareResultArray = (input: {
+  value: unknown;
+  operation: string;
+}): unknown[] => {
+  if (!Array.isArray(input.value)) {
+    throw new Error(`Cloudflare API ${input.operation} response was not an array`);
+  }
+
+  return input.value;
+};
+
+type CloudflareWorkerRoute = {
+  id: string;
+  pattern: string;
+  script?: string;
+};
+
+const parseCloudflareWorkerRoute = (input: {
+  value: unknown;
+  operation: string;
+}): CloudflareWorkerRoute => {
+  if (!isRecord(input.value)) {
+    throw new Error(`Cloudflare API ${input.operation} route response was invalid`);
+  }
+  const id = readRequiredString({
+    value: input.value,
+    key: 'id',
+    operation: input.operation,
+  });
+  const pattern = readRequiredString({
+    value: input.value,
+    key: 'pattern',
+    operation: input.operation,
+  });
+  const scriptValue = input.value.script;
+  if (
+    scriptValue !== undefined &&
+    scriptValue !== null &&
+    (typeof scriptValue !== 'string' || !scriptValue.trim())
+  ) {
+    throw new Error(`Cloudflare API ${input.operation} route script was invalid`);
+  }
+
+  return {
+    id,
+    pattern,
+    ...(typeof scriptValue === 'string' ? { script: scriptValue } : {}),
+  };
+};
+
+const assertWorkerRouteExclusion = (input: {
+  route: CloudflareWorkerRoute;
+  pattern: string;
+  operation: string;
+}): void => {
+  if (input.route.pattern !== input.pattern || input.route.script !== undefined) {
+    throw new Error(
+      `Cloudflare API ${input.operation} did not return the expected no-script route`,
+    );
+  }
+};
+
+const readTunnelToken = (input: {
+  value: unknown;
+  operation: string;
+}): string => {
+  if (typeof input.value === 'string' && input.value.trim()) {
+    return input.value.trim();
+  }
+  if (!isRecord(input.value)) {
+    throw new Error(`Cloudflare API ${input.operation} token response was invalid`);
+  }
+
+  const token =
+    readString(input.value, 'token') ??
+    readString(input.value, 'tunnel_token') ??
+    readString(input.value, 'tunnelToken') ??
+    readString(input.value, 'credential') ??
+    readString(input.value, 'tunnelCredential');
+  if (!token) {
+    throw new Error(`Cloudflare API ${input.operation} response was missing tunnel token`);
+  }
+
+  return token;
+};
+
+const findCloudflareRecordByName = (input: {
+  records: unknown[];
+  name: string;
+}): Record<string, unknown> | undefined =>
+  input.records.find((record): record is Record<string, unknown> =>
+    isRecord(record) && readString(record, 'name') === input.name,
+  );
+
+const findCloudflareTunnelByName = (input: {
+  tunnels: unknown[];
+  name: string;
+}): Record<string, unknown> | undefined =>
+  input.tunnels.find((tunnel): tunnel is Record<string, unknown> =>
+    isRecord(tunnel) &&
+    readString(tunnel, 'name') === input.name &&
+    !readString(tunnel, 'deleted_at'),
+  );
+
+export const createCloudflareWorkspaceProvisioningClient = (
+  input: CloudflareManagedOsMcpIngressPolicyClientInput,
+): WorkspaceCloudflareProvisioningClient => {
+  const accountId = normalizeOptionalValue(input.accountId);
+  if (!accountId) throw new Error('Cloudflare account id is required');
+  const request = createCloudflareApiRequest(input);
+
+  return {
+    async createOrReuseTunnel(input) {
+      try {
+        const tunnelsResult = await request({
+          operation: 'listCloudflareTunnels',
+          method: 'GET',
+          path: `${createCloudflarePath('accounts', accountId, 'cfd_tunnel')}?name=${encodeURIComponent(input.name)}`,
+        });
+        const existingTunnel = findCloudflareTunnelByName({
+          tunnels: readCloudflareResultArray({
+            value: tunnelsResult,
+            operation: 'listCloudflareTunnels',
+          }),
+          name: input.name,
+        });
+        let tunnel = existingTunnel;
+        if (!tunnel) {
+          const created = await request({
+            operation: 'createCloudflareTunnel',
+            method: 'POST',
+            path: createCloudflarePath('accounts', accountId, 'cfd_tunnel'),
+            body: {
+              name: input.name,
+              config_src: 'cloudflare',
+            },
+          });
+          if (!isRecord(created)) {
+            throw new Error('Cloudflare tunnel creation response was invalid');
+          }
+          tunnel = created;
+        }
+        const tunnelId = readRequiredString({
+          value: tunnel,
+          key: 'id',
+          operation: 'createOrReuseTunnel',
+        });
+        const tokenResult = await request({
+          operation: 'getCloudflareTunnelToken',
+          method: 'GET',
+          path: createCloudflarePath('accounts', accountId, 'cfd_tunnel', tunnelId, 'token'),
+        });
+
+        return {
+          tunnelId,
+          tunnelCredential: readTunnelToken({
+            value: tokenResult,
+            operation: 'getCloudflareTunnelToken',
+          }),
+          connectorCredentialId: input.connectorId,
+        };
+      } catch (error: unknown) {
+        throw createCloudflareWorkspaceProvisioningClientError(
+          'createOrReuseTunnel',
+          error,
+        );
+      }
+    },
+    async putTunnelConfig(input) {
+      try {
+        await request({
+          operation: 'putCloudflareTunnelConfig',
+          method: 'PUT',
+          path: createCloudflarePath(
+            'accounts',
+            accountId,
+            'cfd_tunnel',
+            input.tunnelId,
+            'configurations',
+          ),
+          body: {
+            config: {
+              ingress: [
+                {
+                  hostname: input.hostname,
+                  service: input.localServiceUrl,
+                  originRequest: {
+                    httpHostHeader: input.httpHostHeader,
+                  },
+                },
+                { service: 'http_status:404' },
+              ],
+            },
+          },
+        });
+      } catch (error: unknown) {
+        throw createCloudflareWorkspaceProvisioningClientError(
+          'putTunnelConfig',
+          error,
+        );
+      }
+    },
+    async createOrReuseWorkerRouteExclusion(input) {
+      try {
+        const routesResult = await request({
+          operation: 'listCloudflareWorkerRoutes',
+          method: 'GET',
+          path: createCloudflarePath('zones', input.zoneId, 'workers', 'routes'),
+        });
+        const routes = readCloudflareResultArray({
+          value: routesResult,
+          operation: 'listCloudflareWorkerRoutes',
+        }).map((value) =>
+          parseCloudflareWorkerRoute({
+            value,
+            operation: 'listCloudflareWorkerRoutes',
+          }),
+        );
+        const exactRoutes = routes.filter((route) => route.pattern === input.pattern);
+        if (exactRoutes.length > 1) {
+          throw new Error(
+            `Cloudflare returned duplicate Worker routes for pattern ${input.pattern}`,
+          );
+        }
+
+        const existing = exactRoutes[0];
+        if (existing && existing.script === undefined) {
+          return { routeId: existing.id, status: 'unchanged' };
+        }
+
+        const operation = existing
+          ? 'updateCloudflareWorkerRouteExclusion'
+          : 'createCloudflareWorkerRouteExclusion';
+        const result = await request({
+          operation,
+          method: existing ? 'PUT' : 'POST',
+          path: existing
+            ? createCloudflarePath(
+                'zones',
+                input.zoneId,
+                'workers',
+                'routes',
+                existing.id,
+              )
+            : createCloudflarePath('zones', input.zoneId, 'workers', 'routes'),
+          body: { pattern: input.pattern },
+        });
+        const route = parseCloudflareWorkerRoute({ value: result, operation });
+        assertWorkerRouteExclusion({
+          route,
+          pattern: input.pattern,
+          operation,
+        });
+
+        return {
+          routeId: route.id,
+          status: existing ? 'updated' : 'created',
+        };
+      } catch (error: unknown) {
+        throw createCloudflareWorkspaceProvisioningClientError(
+          'createOrReuseWorkerRouteExclusion',
+          error,
+        );
+      }
+    },
+    async createOrReuseDnsRecord(input) {
+      try {
+        const recordsResult = await request({
+          operation: 'listCloudflareDnsRecords',
+          method: 'GET',
+          path: `${createCloudflarePath('zones', input.zoneId, 'dns_records')}?type=${input.type}&name=${encodeURIComponent(input.name)}`,
+        });
+        const existingRecord = findCloudflareRecordByName({
+          records: readCloudflareResultArray({
+            value: recordsResult,
+            operation: 'listCloudflareDnsRecords',
+          }),
+          name: input.name,
+        });
+
+        if (existingRecord) {
+          const recordId = readRequiredString({
+            value: existingRecord,
+            key: 'id',
+            operation: 'createOrReuseDnsRecord',
+          });
+          const existingContent = readString(existingRecord, 'content');
+          const existingProxied = readBoolean(existingRecord, 'proxied') ?? false;
+          if (existingContent === input.content && existingProxied === input.proxied) {
+            return { recordId };
+          }
+          await request({
+            operation: 'updateCloudflareDnsRecord',
+            method: 'PATCH',
+            path: createCloudflarePath('zones', input.zoneId, 'dns_records', recordId),
+            body: {
+              type: input.type,
+              name: input.name,
+              content: input.content,
+              proxied: input.proxied,
+              ttl: 1,
+            },
+          });
+
+          return { recordId };
+        }
+
+        const created = await request({
+          operation: 'createCloudflareDnsRecord',
+          method: 'POST',
+          path: createCloudflarePath('zones', input.zoneId, 'dns_records'),
+          body: {
+            type: input.type,
+            name: input.name,
+            content: input.content,
+            proxied: input.proxied,
+            ttl: 1,
+          },
+        });
+        if (!isRecord(created)) {
+          throw new Error('Cloudflare DNS record creation response was invalid');
+        }
+
+        return {
+          recordId: readRequiredString({
+            value: created,
+            key: 'id',
+            operation: 'createCloudflareDnsRecord',
+          }),
+        };
+      } catch (error: unknown) {
+        throw createCloudflareWorkspaceProvisioningClientError(
+          'createOrReuseDnsRecord',
+          error,
+        );
+      }
+    },
+  };
+};
+
 export const createCloudflareManagedOsMcpIngressPolicyClient = (
   input: CloudflareManagedOsMcpIngressPolicyClientInput,
 ): WorkspaceCloudflareManagedOsMcpIngressPolicyClient => {
@@ -720,6 +1404,33 @@ export const createCloudflareManagedOsMcpIngressPolicyClient = (
         return { id, name };
       } catch (error: unknown) {
         throw createCloudflareManagedPolicyClientError('getAccountIpList', error);
+      }
+    },
+    async createAccountIpListItems(input) {
+      try {
+        const result = await request({
+          operation: 'createAccountIpListItems',
+          method: 'POST',
+          path: createCloudflarePath(
+            'accounts',
+            accountId,
+            'rules',
+            'lists',
+            input.listId,
+            'items',
+          ),
+          body: input.items,
+        });
+
+        if (!isRecord(result)) return {};
+        const operationId = readString(result, 'operation_id');
+
+        return operationId ? { operationId } : {};
+      } catch (error: unknown) {
+        throw createCloudflareManagedPolicyClientError(
+          'createAccountIpListItems',
+          error,
+        );
       }
     },
     async getZoneCustomRuleset(input) {
@@ -904,14 +1615,6 @@ export const ensureManagedOsMcpIngressPolicy = async (input: {
     const allowedIpsListName = normalizeCloudflareListName(
       input.config.mcpAllowedIpsListName,
     );
-    const accountList = await input.cloudflare.getAccountIpList({
-      name: allowedIpsListName,
-    });
-
-    if (!accountList) {
-      throw new Error(`Cloudflare account IP list ${allowedIpsListName} was not found`);
-    }
-
     const desiredRules = buildManagedOsMcpIngressPolicyRules({
       ...input.config,
       mcpAllowedIpsListName: allowedIpsListName,
@@ -1051,7 +1754,10 @@ export const planWorkspaceCloudflareProvisioning = (
   );
   const localServiceUrl = input.localServiceUrl ?? 'http://localhost:3000';
   const workspaceHostname = `${workspaceSlug}.${baseDomain}`;
-  const osTunnelHostname = `${connectorLabel}.os-origin.${baseDomain}`;
+  const osTunnelHostname = createConnectorOriginHostname({
+    connectorId: input.connectorId,
+    baseDomain,
+  });
   const osTarget: WorkspaceCloudflareRouteTarget = {
     kind: 'os-connector',
     connectorId: input.connectorId,
@@ -1092,6 +1798,7 @@ export const planWorkspaceCloudflareProvisioning = (
       tunnelName: `workspace-${input.workspaceId}-${connectorLabel}`,
       workspaceDnsRecord: { name: workspaceHostname },
       osTunnelDnsRecord: { name: osTunnelHostname },
+      osTunnelWorkerRouteExclusion: { pattern: `${osTunnelHostname}/*` },
       edgeHostname,
       localServiceUrl,
     },
@@ -1120,7 +1827,13 @@ export const applyWorkspaceCloudflareProvisioning = async (input: {
     await input.cloudflare.putTunnelConfig({
       tunnelId: tunnel.tunnelId,
       hostname: plan.osTunnelHostname,
+      httpHostHeader: plan.workspaceHostname,
       localServiceUrl: plan.cloudflare.localServiceUrl,
+    });
+
+    await input.cloudflare.createOrReuseWorkerRouteExclusion({
+      zoneId: plan.cloudflare.zoneId,
+      pattern: plan.cloudflare.osTunnelWorkerRouteExclusion.pattern,
     });
 
     await input.cloudflare.createOrReuseDnsRecord({
@@ -1150,9 +1863,10 @@ export const applyWorkspaceCloudflareProvisioning = async (input: {
       registryRecord: createRegistryRecord({ plan, baseDomain }),
     };
   } catch (error: unknown) {
-    throw new Error('workspace Cloudflare provisioning failed', {
-      cause: error,
-    });
+    throw new Error(
+      `workspace Cloudflare provisioning failed: ${getErrorMessage(error)}`,
+      { cause: error },
+    );
   }
 };
 

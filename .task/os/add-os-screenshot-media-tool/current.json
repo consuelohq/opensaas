@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-os-screenshot-media-tool",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1482,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1482",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1482",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1482/add-os-screenshot-media-tool",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1482",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1482/add-os-screenshot-media-tool",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-os-screenshot-media-tool",
+  "taskSession": "tsk_67c01cfe1944",
+  "tmuxSession": "opensaas-os-add-os-screenshot-media-tool-67c01cfe",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-os-screenshot-media-tool/.task/os/add-os-screenshot-media-tool/session.json",
+  "createdAt": "2026-07-14T16:57:43.638Z"
+}

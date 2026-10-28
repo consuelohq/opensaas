@@ -79,11 +79,11 @@ contractDescribe('workspace connector transport contract', () => {
       transport: 'cloudflare-tunnel',
       localServiceUrl: 'http://127.0.0.1:8850',
       tokenPath: '/tmp/consuelo-os-smoke/os/security/generated/cloudflared-tunnel.token',
-      launchd: expect.objectContaining({
+      launchd: {
         label: 'com.consuelo.os.cloudflared.connector-123',
         keepAlive: true,
         runAtLoad: true,
-      }),
+      },
     });
     expect(plan.launchd?.programArguments[0]).toBe(
       '/tmp/consuelo-os-smoke/os/bin/cloudflared',

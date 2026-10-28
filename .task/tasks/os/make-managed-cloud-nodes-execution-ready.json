@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/make-managed-cloud-nodes-execution-ready",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2251,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2251",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-make-managed-cloud-nodes-execution-ready",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_e5ac1659649d",
+  "tmuxSession": "opensaas-os-make-managed-cloud-nodes-execution-ready-e5ac1659",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-make-managed-cloud-nodes-execution-ready/.task/session.json",
+  "createdAt": "2026-08-28T23:14:57.192Z"
+}

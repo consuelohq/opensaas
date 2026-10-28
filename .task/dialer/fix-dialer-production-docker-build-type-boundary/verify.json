@@ -1,0 +1,102 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/dialer/fix-dialer-production-docker-build-type-boundary",
+  "base": "origin/main",
+  "headSha": "580a2568d84ccbace8798885577c3fa564b1bb3d",
+  "changeHash": "2769349bef4868f946ed313ef4d90866471c9b48890a88ec9917128e31f69f46",
+  "changedFiles": [
+    "packages/dialer/package.json",
+    "packages/dialer/project.json",
+    "packages/dialer/tsconfig.build.json",
+    "packages/twenty-docker/docker-compose.yml",
+    "packages/twenty-docker/twenty/Dockerfile",
+    "packages/twenty-docker/twenty/Dockerfile.worker"
+  ],
+  "verifiedAt": "2026-08-12T20:12:22.091Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/dialer/fix-dialer-production-docker-build-type-boundary/current.json",
+        ".task/dialer/fix-dialer-production-docker-build-type-boundary/evidence-log.json",
+        ".task/dialer/fix-dialer-production-docker-build-type-boundary/read-log.json",
+        ".task/dialer/fix-dialer-production-docker-build-type-boundary/session.json",
+        ".task/dialer/fix-dialer-production-docker-build-type-boundary/verify.json",
+        ".task/dialer/fix-dialer-production-docker-build-type-boundary/workpad.md",
+        ".task/tasks/dialer/fix-dialer-production-docker-build-type-boundary.json",
+        "packages/dialer/package.json",
+        "packages/dialer/project.json",
+        "packages/dialer/tsconfig.build.json",
+        "packages/twenty-docker/docker-compose.yml",
+        "packages/twenty-docker/twenty/Dockerfile",
+        "packages/twenty-docker/twenty/Dockerfile.worker"
+      ],
+      "matchedRules": [
+        {
+          "id": "dialer-package",
+          "critical": true,
+          "reason": "Dialer changes are call-path critical and must run package specs.",
+          "matchedFiles": [
+            "packages/dialer/package.json",
+            "packages/dialer/project.json",
+            "packages/dialer/tsconfig.build.json"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "dialer specs",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer/src"
+          ],
+          "ruleId": "dialer-package",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "dialer specs",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer/src"
+          ],
+          "ruleId": "dialer-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 2006,
+          "outputTail": "file selection > should use explicit profileId when provided and bypass sampling [0.26ms]\n(pass) ParallelStrategyResolver > thompson sampling > should deterministically pick aggressive when it samples highest [0.14ms]\n(pass) ParallelStrategyResolver > thompson sampling > should use informed default priors on cold start when no posteriors are returned [0.08ms]\n(pass) ParallelStrategyResolver > thompson sampling > should merge loaded posterior values instead of using defaults [0.06ms]\n(pass) ParallelStrategyResolver > thompson sampling > should sample all profiles exactly once when no explicit profileId is set [0.04ms]\n(pass) ParallelStrategyResolver > fallback behavior > should fallback to balanced when posterior loading fails without throwing [2.44ms]\n(pass) ParallelStrategyResolver > profile lookup APIs > should return profile by id [0.03ms]\n(pass) ParallelStrategyResolver > profile lookup APIs > should return all profiles [0.03ms]\n\npackages/dialer/src/services/whittle-index.spec.ts:\n(pass) WhittleIndexService > should increase index as answer rate increases [0.07ms]\n(pass) WhittleIndexService > should increase urgency bonus as callable window closes [0.02ms]\n(pass) WhittleIndexService > should increase exploration bonus when segment sample size is low [0.02ms]\n(pass) WhittleIndexService > should reduce index as cost per attempt increases [0.02ms]\n(pass) WhittleIndexService > should rank candidates by index descending and position ascending for ties [0.08ms]\n(pass) WhittleIndexService > should apply max urgency bonus when zero hours remain in window [0.01ms]\n(pass) WhittleIndexService > should produce near zero exploration bonus with very high sample size [0.01ms]\n(pass) WhittleIndexService > should set index to negative cost when all positive components are zero [0.01ms]\n(pass) WhittleIndexService > should allow negative index values when cost exceeds reward\n\npackages/dialer/src/services/call-timing-model.spec.ts:\n(pass) CallTimingModel > should return null when segment has insufficient sample size [0.15ms]\n(pass) CallTimingModel > should return optimal retry time when enough observations exist [0.05ms]\n\npackages/dialer/src/services/parallel-lifecycle.contract.spec.ts:\n(pass) parallel dial lifecycle contract > keeps customer legs muted without provider hold music until the agent starts the conference [1.28ms]\n(pass) parallel dial lifecycle contract > retains a callback that arrives while later legs are still being created [2.26ms]\n(pass) parallel dial lifecycle contract > keeps exactly one durable winner under simultaneous human callbacks [3.95ms]\n(pass) parallel dial lifecycle contract > claims telemetry emission exactly once under concurrent callbacks [3.56ms]\n(pass) parallel dial lifecycle contract > records failed loser cleanup and clears it after reconciliation succeeds [2.81ms]\n(pass) parallel dial lifecycle contract > does not persist a false winner-unmute failure before the participant enters [1.08ms]\n(pass) parallel dial lifecycle contract > records failed winner unmute and clears it after reconciliation succeeds [1.22ms]\n(pass) parallel dial lifecycle contract > completes the group when the selected winner hangs up [2.63ms]\n(pass) parallel dial lifecycle contract > persists workspace ownership and rejects cross-workspace access [4.12ms]\n(pass) parallel dial lifecycle contract > ignores an answered callback after the same leg is terminal [3.74ms]\n\npackages/dialer/src/infrastructure/redis/redis-parallel-store.test.ts:\n(pass) RedisParallelStore > registers calls and reverse mappings atomically and cleans the full group [0.59ms]\n(pass) RedisParallelStore > claims one winner and one telemetry emission and serializes group operations [5.36ms]\n(pass) RedisParallelStore > renews an owned group lock while a long operation is running [180.81ms]\n(pass) RedisParallelStore > deletes known group keys when the persisted group JSON is malformed [0.60ms]\n\n 171 pass\n 0 fail\n 362 expect() calls\nRan 171 tests across 16 files. [1.98s]\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

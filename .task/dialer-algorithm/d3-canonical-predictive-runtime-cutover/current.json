@@ -1,0 +1,19 @@
+{
+  "area": "dialer-algorithm",
+  "stream": "stream/dialer-algorithm",
+  "taskBranch": "task/dialer-algorithm/d3-canonical-predictive-runtime-cutover",
+  "baseBranch": "stream/dialer-algorithm",
+  "sourceBranch": "stream/dialer-algorithm",
+  "startFrom": "stream",
+  "prNumber": 2023,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2023",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2023",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2023/d3-canonical-predictive-runtime-cutover",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2023",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2023/d3-canonical-predictive-runtime-cutover",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-d3-canonical-predictive-runtime-cutover",
+  "taskSession": "tsk_c77f6794c7d3",
+  "tmuxSession": "opensaas-dialer-algorithm-d3-canonical-predictive-runtime-cutover-c77f6794",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-d3-canonical-predictive-runtime-cutover/.task/dialer-algorithm/d3-canonical-predictive-runtime-cutover/session.json",
+  "createdAt": "2026-08-15T04:45:21.276Z"
+}

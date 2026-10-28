@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-diffs-mobile-file-tray-regression",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2496,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2496",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-diffs-mobile-file-tray-regression",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_00836b7924b3",
+  "tmuxSession": "opensaas-os-fix-diffs-mobile-file-tray-regression-00836b79",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-diffs-mobile-file-tray-regression/.task/session.json",
+  "createdAt": "2026-09-21T03:32:23.094Z"
+}

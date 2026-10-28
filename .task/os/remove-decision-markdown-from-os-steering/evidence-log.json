@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/remove-decision-markdown-from-os-steering",
+  "events": [
+    {
+      "id": "17fbe96f-d65a-48f3-a1cf-ccb95ff00a3b",
+      "occurred_at": "2026-07-15T18:27:08.912Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/os.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/remove-decision-markdown-from-os-steering",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/remove-decision-markdown-from-os-steering"
+      }
+    },
+    {
+      "id": "f01bc3d3-4343-4709-acf8-e27c599e45a7",
+      "occurred_at": "2026-07-15T18:27:09.001Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/os-get-steering-trace.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/remove-decision-markdown-from-os-steering",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/remove-decision-markdown-from-os-steering"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-07-15T18:27:09.069Z"
+}

@@ -32,6 +32,8 @@ const expectedMistakeClasses = [
   'runtime_missing',
   'cwd_out_of_scope',
   'invalid_source',
+  'work_session_protected_root',
+  'containment_unavailable',
   'unsafe_shell',
 ];
 
@@ -68,7 +70,7 @@ describe('OS code.call parity with Workspace PR 846', () => {
       expect(typeSource).toContain(`'${mistakeClass}'`);
     }
 
-    expect(codeCallSource).toContain('const DEFAULT_TIMEOUT_MS = 30_000;');
+    expect(codeCallSource).toContain('const DEFAULT_TIMEOUT_MS = 180_000;');
     expect(codeCallSource).toContain('const DEFAULT_MAX_RESULT_CHARS = 20_000;');
   });
 });

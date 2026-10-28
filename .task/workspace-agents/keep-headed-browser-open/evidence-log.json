@@ -1,0 +1,88 @@
+{
+  "version": 1,
+  "worktree_id": "task/workspace-agents/keep-headed-browser-open",
+  "events": [
+    {
+      "id": "d38bc21f-6bc0-470e-9866-db6413967455",
+      "occurred_at": "2026-08-26T04:12:55.068Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/cloudflare/os-device-authority/src/routes/github-source-control.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/keep-headed-browser-open",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/keep-headed-browser-open"
+      }
+    },
+    {
+      "id": "60f078ac-07d8-48c6-83ae-10d98baea8d6",
+      "occurred_at": "2026-08-26T04:14:58.317Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/workspace-agents/keep-headed-browser-open/verify.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/keep-headed-browser-open",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/keep-headed-browser-open"
+      }
+    },
+    {
+      "id": "bbbe4089-aaa0-4f8d-920d-624c73f0fe89",
+      "occurred_at": "2026-08-26T04:15:31.719Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/test-selection.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/keep-headed-browser-open",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/keep-headed-browser-open"
+      }
+    },
+    {
+      "id": "945ae610-2361-42bb-9358-bb7cb9c877a8",
+      "occurred_at": "2026-08-26T04:15:46.218Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/test-selection.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/keep-headed-browser-open",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/keep-headed-browser-open"
+      }
+    },
+    {
+      "id": "779e0668-eed2-40d1-af80-8cec073da5e4",
+      "occurred_at": "2026-08-26T04:17:23.775Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/github-workflow-policy.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/keep-headed-browser-open",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/keep-headed-browser-open"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-26T04:17:23.932Z"
+}

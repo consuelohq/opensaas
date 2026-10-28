@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_7890434a50be",
+  "tmuxSession": "opensaas-documentation-document-branch-graph-workflow-and-upgrade-branc-7890434a",
+  "area": "documentation",
+  "stream": "stream/documentation",
+  "taskBranch": "task/documentation/document-branch-graph-workflow-and-upgrade-branch-skill",
+  "branch": "task/documentation/document-branch-graph-workflow-and-upgrade-branch-skill",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-document-branch-graph-workflow-and-upgrade-branch-skill",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-document-branch-graph-workflow-and-upgrade-branch-skill",
+  "prNumber": 2017,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2017",
+  "createdAt": "2026-08-15T09:00:11.512Z",
+  "tmuxCreated": false,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-document-branch-graph-workflow-and-upgrade-branch-skill/.task/documentation/document-branch-graph-workflow-and-upgrade-branch-skill/session.json"
+}

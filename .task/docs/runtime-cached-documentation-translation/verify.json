@@ -1,0 +1,75 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/docs/runtime-cached-documentation-translation",
+  "base": "origin/task/docs/runtime-cached-documentation-translation",
+  "headSha": "76698589e4c8f08fb4fb89ad0748279ef1e7a212",
+  "changeHash": "27773fca1077f04ffbd765a1cb6f8ad30d62ff645f6ec6e941877b8d8b326307",
+  "changedFiles": [
+    "packages/documentation/.gitignore",
+    "packages/documentation/README.md",
+    "packages/documentation/astro.config.mjs",
+    "packages/documentation/bun.lock",
+    "packages/documentation/package.json",
+    "packages/documentation/scripts/test-translation.mjs",
+    "packages/documentation/scripts/validate-documentation.mjs",
+    "packages/documentation/src/components/translation/RuntimeLanguageSelect.astro",
+    "packages/documentation/src/lib/translation/cache.ts",
+    "packages/documentation/src/lib/translation/languages.ts",
+    "packages/documentation/src/lib/translation/provider.ts",
+    "packages/documentation/src/lib/translation/source.ts",
+    "packages/documentation/src/lib/translation/text.ts",
+    "packages/documentation/src/pages/api/docs/translate.ts"
+  ],
+  "verifiedAt": "2026-07-01T22:50:16.703Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/docs/runtime-cached-documentation-translation/current.json",
+        ".task/docs/runtime-cached-documentation-translation/session.json",
+        ".task/docs/runtime-cached-documentation-translation/workpad.md",
+        ".task/tasks/docs/runtime-cached-documentation-translation.json",
+        "packages/documentation/.gitignore",
+        "packages/documentation/README.md",
+        "packages/documentation/astro.config.mjs",
+        "packages/documentation/bun.lock",
+        "packages/documentation/package.json",
+        "packages/documentation/scripts/test-translation.mjs",
+        "packages/documentation/scripts/validate-documentation.mjs",
+        "packages/documentation/src/components/translation/RuntimeLanguageSelect.astro",
+        "packages/documentation/src/lib/translation/cache.ts",
+        "packages/documentation/src/lib/translation/languages.ts",
+        "packages/documentation/src/lib/translation/provider.ts",
+        "packages/documentation/src/lib/translation/source.ts",
+        "packages/documentation/src/lib/translation/text.ts",
+        "packages/documentation/src/pages/api/docs/translate.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

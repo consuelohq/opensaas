@@ -1,0 +1,56 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/consolidate-stale-prs-for-canary",
+  "base": "origin/task/os/consolidate-stale-prs-for-canary",
+  "headSha": "cefa8a526016602de6e585cedcc250c8f4a12a4a",
+  "changeHash": "e4eabc4d6a7c7274059d28cff91f435bb582c72d399cc45a69a44d313b57066f",
+  "changedFiles": [
+    "packages/consuelo-website/bun.lock",
+    "packages/consuelo-website/package-lock.json",
+    "packages/consuelo-website/package.json",
+    "yarn.lock"
+  ],
+  "verifiedAt": "2026-08-28T02:24:54.033Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/consolidate-stale-prs-for-canary/current.json",
+        ".task/os/consolidate-stale-prs-for-canary/session.json",
+        ".task/os/consolidate-stale-prs-for-canary/verify.json",
+        ".task/os/consolidate-stale-prs-for-canary/workpad.md",
+        ".task/tasks/os/consolidate-stale-prs-for-canary.json",
+        "packages/consuelo-website/bun.lock",
+        "packages/consuelo-website/package-lock.json",
+        "packages/consuelo-website/package.json",
+        "yarn.lock"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

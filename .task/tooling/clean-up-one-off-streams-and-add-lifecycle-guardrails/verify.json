@@ -1,0 +1,282 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/tooling/clean-up-one-off-streams-and-add-lifecycle-guardrails",
+  "base": "origin/main",
+  "headSha": "40c185c484fababd49ff2cdf7a7bd111327cdb0d",
+  "changeHash": "a23e1192d6ae2287c75460460f18db02fe7064a1097603895805325df2a4b237",
+  "changedFiles": [
+    "package.json",
+    "packages/documentation/src/content/docs/os/tools/browser-tools.mdx",
+    "packages/os/SCRIPTS.md",
+    "packages/os/TOOLS.md",
+    "packages/os/manifests/manifest.config.json",
+    "packages/os/manifests/tool.manifest.json",
+    "packages/os/manifests/workflow-bundles.json",
+    "packages/os/package.json",
+    "packages/os/scripts/browser.js",
+    "packages/os/scripts/lib/browser/cli.ts",
+    "packages/os/scripts/lib/browser/config.ts",
+    "packages/os/scripts/lib/browser/errors.ts",
+    "packages/os/scripts/lib/browser/process.ts",
+    "packages/os/scripts/lib/browser/service.ts",
+    "packages/os/scripts/lib/browser/types.ts",
+    "packages/os/scripts/lib/facade/schemas.ts",
+    "packages/os/scripts/lib/stream-lifecycle.js",
+    "packages/os/scripts/stream-cleanup.js",
+    "packages/os/scripts/task-start.js",
+    "packages/os/scripts/tools-search.ts",
+    "packages/os/skills/browser/SKILL.md",
+    "packages/os/skills/skills.json",
+    "packages/os/src/generated/workspace.d.ts",
+    "packages/os/tests/browser-service.test.ts",
+    "packages/os/tests/facade/__snapshots__/facade.test.ts.snap",
+    "packages/os/tests/fixtures/skills/browser-workspace.SKILL.md",
+    "packages/os/tests/tools-search-v2.test.ts",
+    "packages/os/tooling/dev-tool-manifest.json",
+    "packages/os/tooling/script-parity-classifications.json",
+    "packages/workspace/SCRIPTS.md",
+    "packages/workspace/TOOLS.md",
+    "packages/workspace/manifests/manifest.config.json",
+    "packages/workspace/manifests/tool-manifest.json",
+    "packages/workspace/manifests/workflow-bundles.json",
+    "packages/workspace/package.json",
+    "packages/workspace/scripts/browser.js",
+    "packages/workspace/scripts/lib/browser/cli.ts",
+    "packages/workspace/scripts/lib/browser/config.ts",
+    "packages/workspace/scripts/lib/browser/errors.ts",
+    "packages/workspace/scripts/lib/browser/process.ts",
+    "packages/workspace/scripts/lib/browser/service.ts",
+    "packages/workspace/scripts/lib/browser/types.ts",
+    "packages/workspace/scripts/lib/facade/schemas.ts",
+    "packages/workspace/scripts/lib/stream-lifecycle.js",
+    "packages/workspace/scripts/stream-cleanup.js",
+    "packages/workspace/scripts/task-start.js",
+    "packages/workspace/scripts/tools-search.ts",
+    "packages/workspace/src/generated/workspace.d.ts",
+    "packages/workspace/tests/browser-service.test.ts",
+    "packages/workspace/tests/facade/__snapshots__/facade.test.ts.snap",
+    "packages/workspace/tests/stream-lifecycle.test.ts",
+    "packages/workspace/tests/tools-search-v2.test.ts",
+    "packages/workspace/tooling/tool-manifest.json"
+  ],
+  "verifiedAt": "2026-07-10T23:45:26.854Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/tooling/clean-up-one-off-streams-and-add-lifecycle-guardrails.json",
+        ".task/tasks/tooling/replace-browser-auth-profiles-with-persistent-headed-handoff.json",
+        ".task/tooling/clean-up-one-off-streams-and-add-lifecycle-guardrails/current.json",
+        ".task/tooling/clean-up-one-off-streams-and-add-lifecycle-guardrails/evidence-log.json",
+        ".task/tooling/clean-up-one-off-streams-and-add-lifecycle-guardrails/read-log.json",
+        ".task/tooling/clean-up-one-off-streams-and-add-lifecycle-guardrails/session.json",
+        ".task/tooling/clean-up-one-off-streams-and-add-lifecycle-guardrails/verify.json",
+        ".task/tooling/clean-up-one-off-streams-and-add-lifecycle-guardrails/workpad.md",
+        ".task/tooling/replace-browser-auth-profiles-with-persistent-headed-handoff/current.json",
+        ".task/tooling/replace-browser-auth-profiles-with-persistent-headed-handoff/session.json",
+        ".task/tooling/replace-browser-auth-profiles-with-persistent-headed-handoff/verify.json",
+        ".task/tooling/replace-browser-auth-profiles-with-persistent-headed-handoff/workpad.md",
+        "package.json",
+        "packages/documentation/src/content/docs/os/tools/browser-tools.mdx",
+        "packages/os/SCRIPTS.md",
+        "packages/os/TOOLS.md",
+        "packages/os/manifests/manifest.config.json",
+        "packages/os/manifests/tool.manifest.json",
+        "packages/os/manifests/workflow-bundles.json",
+        "packages/os/package.json",
+        "packages/os/scripts/browser.js",
+        "packages/os/scripts/lib/browser/cli.ts",
+        "packages/os/scripts/lib/browser/config.ts",
+        "packages/os/scripts/lib/browser/errors.ts",
+        "packages/os/scripts/lib/browser/process.ts",
+        "packages/os/scripts/lib/browser/service.ts",
+        "packages/os/scripts/lib/browser/types.ts",
+        "packages/os/scripts/lib/facade/schemas.ts",
+        "packages/os/scripts/lib/stream-lifecycle.js",
+        "packages/os/scripts/stream-cleanup.js",
+        "packages/os/scripts/task-start.js",
+        "packages/os/scripts/tools-search.ts",
+        "packages/os/skills/browser/SKILL.md",
+        "packages/os/skills/skills.json",
+        "packages/os/src/generated/workspace.d.ts",
+        "packages/os/tests/browser-service.test.ts",
+        "packages/os/tests/facade/__snapshots__/facade.test.ts.snap",
+        "packages/os/tests/fixtures/skills/browser-workspace.SKILL.md",
+        "packages/os/tests/tools-search-v2.test.ts",
+        "packages/os/tooling/dev-tool-manifest.json",
+        "packages/os/tooling/script-parity-classifications.json",
+        "packages/workspace/SCRIPTS.md",
+        "packages/workspace/TOOLS.md",
+        "packages/workspace/manifests/manifest.config.json",
+        "packages/workspace/manifests/tool-manifest.json",
+        "packages/workspace/manifests/workflow-bundles.json",
+        "packages/workspace/package.json",
+        "packages/workspace/scripts/browser.js",
+        "packages/workspace/scripts/lib/browser/cli.ts",
+        "packages/workspace/scripts/lib/browser/config.ts",
+        "packages/workspace/scripts/lib/browser/errors.ts",
+        "packages/workspace/scripts/lib/browser/process.ts",
+        "packages/workspace/scripts/lib/browser/service.ts",
+        "packages/workspace/scripts/lib/browser/types.ts",
+        "packages/workspace/scripts/lib/facade/schemas.ts",
+        "packages/workspace/scripts/lib/stream-lifecycle.js",
+        "packages/workspace/scripts/stream-cleanup.js",
+        "packages/workspace/scripts/task-start.js",
+        "packages/workspace/scripts/tools-search.ts",
+        "packages/workspace/src/generated/workspace.d.ts",
+        "packages/workspace/tests/browser-service.test.ts",
+        "packages/workspace/tests/facade/__snapshots__/facade.test.ts.snap",
+        "packages/workspace/tests/stream-lifecycle.test.ts",
+        "packages/workspace/tests/tools-search-v2.test.ts",
+        "packages/workspace/tooling/tool-manifest.json"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-facade",
+          "critical": true,
+          "reason": "Workspace facade and manifest changes must prove typed tool input contracts.",
+          "matchedFiles": [
+            "packages/workspace/scripts/lib/facade/schemas.ts",
+            "packages/workspace/src/generated/workspace.d.ts",
+            "packages/workspace/tooling/tool-manifest.json"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "workspace-task-session",
+          "critical": true,
+          "reason": "Task routing and metadata changes must prove task-session behavior.",
+          "matchedFiles": [
+            "packages/workspace/scripts/task-start.js"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "workspace-audit-docs",
+          "critical": false,
+          "reason": "Workspace script/docs changes should keep audit behavior covered.",
+          "matchedFiles": [
+            "packages/workspace/SCRIPTS.md",
+            "packages/workspace/TOOLS.md"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace facade input contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/facade/facade.test.ts",
+            "--test-name-pattern",
+            "validates input"
+          ],
+          "ruleId": "workspace-facade",
+          "critical": true
+        },
+        {
+          "name": "workspace task session tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/task-session.test.js",
+            "packages/workspace/tests/task-meta.test.ts"
+          ],
+          "ruleId": "workspace-task-session",
+          "critical": true
+        },
+        {
+          "name": "workspace audit tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/audit/audit.test.ts"
+          ],
+          "ruleId": "workspace-audit-docs",
+          "critical": false
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace facade input contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/facade/facade.test.ts",
+            "--test-name-pattern",
+            "validates input"
+          ],
+          "ruleId": "workspace-facade",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 231,
+          "outputTail": "de\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-07-10T23:45:26.110Z\"}\n(pass) typed facade executor > validates input for stream.sync [0.14ms]\n(pass) typed facade executor > validates input for task.cleanup [0.13ms]\n(pass) typed facade executor > validates input for task.current\n(pass) typed facade executor > validates input for task.ensureSynced [0.07ms]\n(pass) typed facade executor > validates input for task.finish\n{\"level\":\"error\",\"tool\":\"task.init\",\"command\":\"workspace task.init\",\"implementationCommand\":\"workspace task.init\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-07-10T23:45:26.110Z\"}\n(pass) typed facade executor > validates input for task.init [0.24ms]\n(pass) typed facade executor > validates input for task.merge [0.10ms]\n(pass) typed facade executor > validates input for task.pr [0.12ms]\n(pass) typed facade executor > validates input for task.prs\n{\"level\":\"error\",\"tool\":\"task.push\",\"command\":\"workspace task.push\",\"implementationCommand\":\"workspace task.push\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-07-10T23:45:26.111Z\"}\n(pass) typed facade executor > validates input for task.push [0.27ms]\n{\"level\":\"error\",\"tool\":\"task.start\",\"command\":\"workspace task.start\",\"implementationCommand\":\"workspace task.start\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-07-10T23:45:26.111Z\"}\n(pass) typed facade executor > validates input for task.start [0.28ms]\n(pass) typed facade executor > validates input for taskMeta.smoke\n{\"level\":\"error\",\"tool\":\"tmp\",\"command\":\"workspace tmp\",\"implementationCommand\":\"workspace tmp\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-07-10T23:45:26.111Z\"}\n(pass) typed facade executor > validates input for tmp [0.22ms]\n{\"level\":\"error\",\"tool\":\"tools.search\",\"command\":\"workspace tools.search\",\"implementationCommand\":\"workspace tools.search\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-07-10T23:45:26.112Z\"}\n(pass) typed facade executor > validates input for tools.search [0.24ms]\n(pass) typed facade executor > validates input for verify [0.10ms]\n(pass) typed facade executor > validates input for wait [0.16ms]\n(pass) typed facade executor > validates input for website.deploy [0.07ms]\n{\"level\":\"error\",\"tool\":\"worker.call\",\"command\":\"workspace worker.call\",\"implementationCommand\":\"workspace worker.call\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-07-10T23:45:26.112Z\"}\n(pass) typed facade executor > validates input for worker.call [0.33ms]\n{\"level\":\"error\",\"tool\":\"media.svg\",\"command\":\"workspace media.svg\",\"implementationCommand\":\"workspace media:svg\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-07-10T23:45:26.113Z\"}\n(pass) typed facade executor > validates input for media.svg [0.35ms]\n\n 125 pass\n 437 filtered out\n 0 fail\n 56 expect() calls\nRan 125 tests across 1 file. [223.00ms]\n"
+        },
+        {
+          "name": "workspace task session tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/task-session.test.js",
+            "packages/workspace/tests/task-meta.test.ts"
+          ],
+          "ruleId": "workspace-task-session",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 110,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/workspace/tests/task-meta.test.ts:\n(pass) task metadata lookup > ignores historical scoped task metadata on main status lookup [1.27ms]\n(pass) task metadata lookup > uses scoped task metadata for matching task branch lookup [0.63ms]\n\npackages/workspace/tests/task-session.test.js:\n(pass) assertTmuxAvailable delegates to the tmux availability check [0.06ms]\n(pass) resolveTaskTmuxSession prefers explicit tmux metadata [0.20ms]\n(pass) resolveTaskTmuxSession derives a bounded session from compatible task metadata [0.18ms]\n(pass) resolveTaskTmuxSession accepts realpath-equivalent worktree metadata [0.31ms]\n(pass) resolveTaskTmuxSession ignores metadata for a different task branch [0.02ms]\n(pass) terminateTaskTmuxSession reports dry run without invoking tmux [0.08ms]\n(pass) terminateTaskTmuxSession warns and continues when tmux is unavailable [0.06ms]\n(pass) terminateTaskTmuxSession continues when no tmux session exists [0.05ms]\n(pass) terminateTaskTmuxSession warns when tmux has-session returns an unexpected failure [0.05ms]\n(pass) terminateTaskTmuxSession closes an explicit existing tmux session [0.03ms]\n\n 12 pass\n 0 fail\n 31 expect() calls\nRan 12 tests across 2 files. [104.00ms]\n"
+        },
+        {
+          "name": "workspace audit tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/audit/audit.test.ts"
+          ],
+          "ruleId": "workspace-audit-docs",
+          "critical": false,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 439,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-tooling-clean-up-one-off-streams-and-add-lifecycle-guardrails\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/audit/audit.test.ts \u001b[2m(\u001b[22m\u001b[2m1 test\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 114\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m   Start at \u001b[22m 19:45:26\n\u001b[2m   Duration \u001b[22m 199ms\u001b[2m (transform 16ms, setup 0ms, import 21ms, tests 114ms, environment 0ms)\u001b[22m\n\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

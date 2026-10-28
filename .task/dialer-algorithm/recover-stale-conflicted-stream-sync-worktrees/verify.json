@@ -1,0 +1,245 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/dialer-algorithm/recover-stale-conflicted-stream-sync-worktrees",
+  "base": "stream/dialer-algorithm",
+  "headSha": "42521a6f04a9de434b994e6ab6c9e931a50474e1",
+  "changeHash": "77e809c5f68860ba18ed1e15ad3e0bb05cca90c703253d9d79dba417ad584542",
+  "changedFiles": [
+    "packages/workspace/scripts/stream-sync.js",
+    "packages/workspace/test-selection.registry.json",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/stream-sync-generated-registry-conflict.test.js",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "verifiedAt": "2026-08-16T02:46:24.822Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/dialer-algorithm/clean-temporary-stream-sync-worktrees-after-conflicts/current.json",
+        ".task/dialer-algorithm/clean-temporary-stream-sync-worktrees-after-conflicts/evidence-log.json",
+        ".task/dialer-algorithm/clean-temporary-stream-sync-worktrees-after-conflicts/read-log.json",
+        ".task/dialer-algorithm/clean-temporary-stream-sync-worktrees-after-conflicts/session.json",
+        ".task/dialer-algorithm/clean-temporary-stream-sync-worktrees-after-conflicts/verify.json",
+        ".task/dialer-algorithm/clean-temporary-stream-sync-worktrees-after-conflicts/workpad.md",
+        ".task/dialer-algorithm/recover-stale-conflicted-stream-sync-worktrees/current.json",
+        ".task/dialer-algorithm/recover-stale-conflicted-stream-sync-worktrees/evidence-log.json",
+        ".task/dialer-algorithm/recover-stale-conflicted-stream-sync-worktrees/read-log.json",
+        ".task/dialer-algorithm/recover-stale-conflicted-stream-sync-worktrees/session.json",
+        ".task/dialer-algorithm/recover-stale-conflicted-stream-sync-worktrees/verify.json",
+        ".task/dialer-algorithm/recover-stale-conflicted-stream-sync-worktrees/workpad.md",
+        ".task/dialer-algorithm/regenerate-test-registry-during-stream-sync-conflicts/current.json",
+        ".task/dialer-algorithm/regenerate-test-registry-during-stream-sync-conflicts/evidence-log.json",
+        ".task/dialer-algorithm/regenerate-test-registry-during-stream-sync-conflicts/read-log.json",
+        ".task/dialer-algorithm/regenerate-test-registry-during-stream-sync-conflicts/session.json",
+        ".task/dialer-algorithm/regenerate-test-registry-during-stream-sync-conflicts/verify.json",
+        ".task/dialer-algorithm/regenerate-test-registry-during-stream-sync-conflicts/workpad.md",
+        ".task/tasks/dialer-algorithm/clean-temporary-stream-sync-worktrees-after-conflicts.json",
+        ".task/tasks/dialer-algorithm/recover-stale-conflicted-stream-sync-worktrees.json",
+        ".task/tasks/dialer-algorithm/regenerate-test-registry-during-stream-sync-conflicts.json",
+        "packages/workspace/scripts/stream-sync.js",
+        "packages/workspace/test-selection.registry.json",
+        "packages/workspace/test-selection.rules.json",
+        "packages/workspace/tests/stream-sync-generated-registry-conflict.test.js",
+        "packages/workspace/tests/test-selection.test.js"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-test-selection",
+          "critical": true,
+          "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy.",
+          "matchedFiles": [
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "workspace-stream-sync-runtime",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Stream sync merge, worktree, generated-registry recovery, and push-gate changes must prove focused real-Git sync behavior without selecting unrelated workspace package tests.",
+          "matchedFiles": [
+            "packages/workspace/scripts/stream-sync.js",
+            "packages/workspace/tests/stream-sync-generated-registry-conflict.test.js"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "server-ci-task-contract",
+          "critical": true,
+          "reason": "Server CI changes must scope lint and typecheck to directly changed Twenty server runtime files while retaining dependency propagation.",
+          "matchedFiles": [
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true
+        },
+        {
+          "name": "workspace stream sync runtime contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/stream-sync-node-modules.test.js",
+            "packages/workspace/tests/stream-sync-generated-registry-conflict.test.js"
+          ],
+          "ruleId": "workspace-stream-sync-runtime",
+          "critical": true
+        },
+        {
+          "name": "changed server task selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "TypeORM CLI compatibility contract",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 2587,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-recover-stale-conflicted-stream-sync-worktrees\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/test-selection.test.js \u001b[2m(\u001b[22m\u001b[2m43 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 2319\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m discovers and seeds the existing test inventory \u001b[33m 1066\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m43 passed\u001b[39m\u001b[22m\u001b[90m (43)\u001b[39m\n\u001b[2m   Start at \u001b[22m 22:46:20\n\u001b[2m   Duration \u001b[22m 2.39s\u001b[2m (transform 12ms, setup 0ms, import 18ms, tests 2.32s, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "workspace stream sync runtime contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/stream-sync-node-modules.test.js",
+            "packages/workspace/tests/stream-sync-generated-registry-conflict.test.js"
+          ],
+          "ruleId": "workspace-stream-sync-runtime",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1638,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/workspace/tests/stream-sync-node-modules.test.js:\n(pass) stream sync links main-worktree node_modules before running verify [0.32ms]\n\npackages/workspace/tests/stream-sync-generated-registry-conflict.test.js:\nhint: Using 'master' as the name for the initial branch. This default branch name\nhint: is subject to change. To configure the initial branch name to use in all\nhint: of your new repositories, which will suppress this warning, call:\nhint:\nhint: \tgit config --global init.defaultBranch <name>\nhint:\nhint: Names commonly chosen instead of 'master' are 'main', 'trunk' and\nhint: 'development'. The just-created branch can be renamed via this command:\nhint:\nhint: \tgit branch -m <name>\nhint:\nhint: Disable this message with \"git config set advice.defaultBranchName false\"\nTo /var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/consuelo-stream-sync-registry-91I5EU/origin.git\n * [new branch]      main -> main\nSwitched to a new branch 'stream/fixture'\nTo /var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/consuelo-stream-sync-registry-91I5EU/origin.git\n * [new branch]      stream/fixture -> stream/fixture\nSwitched to branch 'main'\nTo /var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/consuelo-stream-sync-registry-91I5EU/origin.git\n   3bc3d51..f68fb1c  main -> main\n(pass) stream sync generated registry conflict recovery > regenerates the generated test-selection registry when it is the only conflict [572.83ms]\nhint: Using 'master' as the name for the initial branch. This default branch name\nhint: is subject to change. To configure the initial branch name to use in all\nhint: of your new repositories, which will suppress this warning, call:\nhint:\nhint: \tgit config --global init.defaultBranch <name>\nhint:\nhint: Names commonly chosen instead of 'master' are 'main', 'trunk' and\nhint: 'development'. The just-created branch can be renamed via this command:\nhint:\nhint: \tgit branch -m <name>\nhint:\nhint: Disable this message with \"git config set advice.defaultBranchName false\"\nTo /var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/consuelo-stream-sync-registry-w5mCFe/origin.git\n * [new branch]      main -> main\nSwitched to a new branch 'stream/fixture'\nTo /var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/consuelo-stream-sync-registry-w5mCFe/origin.git\n * [new branch]      stream/fixture -> stream/fixture\nSwitched to branch 'main'\nTo /var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/consuelo-stream-sync-registry-w5mCFe/origin.git\n   800947f..5aa6282  main -> main\n(pass) stream sync generated registry conflict recovery > fails closed when a non-generated source conflict is also present [444.11ms]\nhint: Using 'master' as the name for the initial branch. This default branch name\nhint: is subject to change. To configure the initial branch name to use in all\nhint: of your new repositories, which will suppress this warning, call:\nhint:\nhint: \tgit config --global init.defaultBranch <name>\nhint:\nhint: Names commonly chosen instead of 'master' are 'main', 'trunk' and\nhint: 'development'. The just-created branch can be renamed via this command:\nhint:\nhint: \tgit branch -m <name>\nhint:\nhint: Disable this message with \"git config set advice.defaultBranchName false\"\nTo /var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/consuelo-stream-sync-registry-M6QMxV/origin.git\n * [new branch]      main -> main\nSwitched to a new branch 'stream/fixture'\nTo /var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/consuelo-stream-sync-registry-M6QMxV/origin.git\n * [new branch]      stream/fixture -> stream/fixture\nSwitched to branch 'main'\nTo /var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/consuelo-stream-sync-registry-M6QMxV/origin.git\n   800947f..5aa6282  main -> main\nPreparing worktree (checking out 'stream/fixture')\n(pass) stream sync generated registry conflict recovery > recovers a stale conflicted temporary stream worktree before syncing [492.42ms]\n\n 4 pass\n 0 fail\n 21 expect() calls\nRan 4 tests across 2 files. [1.63s]\n"
+        },
+        {
+          "name": "changed server task selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 61,
+          "outputTail": "No changed Twenty server runtime files require lint or typecheck.\nRunning server lint and baseline-aware typecheck for 1 directly changed file(s).\nTwenty server typecheck matched 1 known baseline diagnostic(s).\nRunning server lint and baseline-aware typecheck for 1 directly changed file(s).\nNo changed Twenty server schema files require GraphQL generation.\nNo changed Twenty server runtime files require migration generation.\nNo changesgeneratedTwenty server migration drift matched 2 known baseline operation(s).\ngeneratedgenerated✔ parseCliArguments resolves comparison SHAs (0.574792ms)\n✔ parseCliArguments selects GraphQL generation mode (0.052459ms)\n✔ parseCliArguments selects migration generation mode (0.056667ms)\n✔ filterServerTaskFiles excludes root and config-only triggers (0.079041ms)\n✔ filterGraphqlGenerationFiles keeps only server schema and generated files (0.060875ms)\n✔ buildEslintArguments selects the owning project config and stdin filename (0.048167ms)\n✔ ESLint diagnostic comparison tracks new error multiplicity without line numbers (0.155458ms)\n✔ runChangedFileLint accepts base-existing errors and rejects a new changed-file error (0.6105ms)\n✔ runChangedFileLint allows explicit lint baseline debt but rejects diagnostics beyond it (0.671833ms)\n✔ buildTypecheckArguments uses standard TypeScript without emitting (0.082708ms)\n✔ TypeScript diagnostic baseline comparison rejects only new diagnostic keys (0.192ms)\n✔ runChangedServerTask skips Nx for config-only changes (0.288167ms)\n✔ runChangedServerTask executes lint and baseline-aware typecheck for server runtime changes (0.079291ms)\n✔ runChangedServerTask rejects a new TypeScript diagnostic outside the baseline (0.083042ms)\n✔ server lint configuration resolves the existing workspace rules project (0.13575ms)\n✔ runGraphqlGenerationCheck skips generation without schema changes (0.089875ms)\n✔ runGraphqlGenerationCheck generates and verifies committed outputs (0.167417ms)\n✔ runMigrationGenerationCheck skips generation without server runtime changes (0.071625ms)\n✔ runMigrationGenerationCheck accepts a no-change TypeORM exit (0.109209ms)\n✔ runMigrationGenerationCheck accepts and removes exact known migration drift (0.176084ms)\n✔ runMigrationGenerationCheck rejects changed drift beyond the baseline (0.123041ms)\n✔ runMigrationGenerationCheck rejects and removes generated drift (0.106792ms)\nℹ tests 22\nℹ suites 0\nℹ pass 22\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 38.229292\n"
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 130,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/workspace/tests/github-workflow-policy.test.js:\n(pass) GitHub workflow policy > does not include retired automation workflows [0.07ms]\n(pass) GitHub workflow policy > does not reference retired CI credentials or the disabled Chromatic job [0.74ms]\n(pass) GitHub workflow policy > does not retain privileged allowlist entries for deleted workflows [0.05ms]\n(pass) GitHub workflow policy > runs typecheck and test from the filtered frontend file set [0.04ms]\n(pass) GitHub workflow policy > installs Bun and scopes shared tasks to changed frontend files [0.03ms]\n(pass) GitHub workflow policy > scopes native OS distribution tests to relevant changed files [0.03ms]\n(pass) GitHub workflow policy > runs Docker Compose CI with the pgvector PostgreSQL image required by migrations [0.02ms]\n(pass) GitHub workflow policy > uses available hosted runners for the Server and Front build pipelines [0.05ms]\n(pass) GitHub workflow policy > builds Consuelo backend workspace dependencies before server typecheck [0.03ms]\n(pass) GitHub workflow policy > installs Bun before the Server unit-test job runs Bun package tests [0.03ms]\n(pass) GitHub workflow policy > allows enough time for Danger dependency installation and execution [0.02ms]\n(pass) GitHub workflow policy > explicitly allowlists the API breaking-changes workflow write permissions [0.02ms]\n\n 12 pass\n 0 fail\n 53 expect() calls\nRan 12 tests across 1 file. [124.00ms]\n"
+        },
+        {
+          "name": "TypeORM CLI compatibility contract",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 420,
+          "outputTail": "✔ Twenty server uses the Node 24-compatible TypeORM ts-node wrapper (0.265625ms)\n✔ the configured TypeORM wrapper resolves from the installed package (364.410875ms)\nℹ tests 2\nℹ suites 0\nℹ pass 2\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 396.500834\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

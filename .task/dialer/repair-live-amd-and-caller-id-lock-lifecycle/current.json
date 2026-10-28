@@ -1,0 +1,19 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/repair-live-amd-and-caller-id-lock-lifecycle",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 1555,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1555",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1555",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1555/repair-live-amd-and-caller-id-lock-lifecycle",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1555",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1555/repair-live-amd-and-caller-id-lock-lifecycle",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-repair-live-amd-and-caller-id-lock-lifecycle",
+  "taskSession": "tsk_fc06001f9236",
+  "tmuxSession": "opensaas-dialer-repair-live-amd-and-caller-id-lock-lifecycle-fc06001f",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-repair-live-amd-and-caller-id-lock-lifecycle/.task/dialer/repair-live-amd-and-caller-id-lock-lifecycle/session.json",
+  "createdAt": "2026-07-22T22:49:06.180Z"
+}

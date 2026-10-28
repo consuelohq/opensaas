@@ -1,0 +1,19 @@
+{
+  "files": [
+    ".task/os/stabilize-stream-os-for-main-merge/workpad.md",
+    "packages/documentation/src/content/docs/build/skills/bundled/index.mdx",
+    "packages/documentation/src/content/docs/build/skills/bundled/research-ingest.mdx",
+    "packages/documentation/src/lib/legacy-redirects.mjs",
+    "packages/os/package.json",
+    "packages/os/scripts/lib/worker-pool.ts",
+    "packages/os/scripts/server/routes/health.ts",
+    "packages/os/tests/consuelo-reload.test.ts",
+    "packages/os/tests/worker-pool-lifecycle.test.ts",
+    "packages/os/tests/worker-pool-process.test.ts",
+    "packages/os/vitest.config.ts",
+    "packages/workspace/scripts/lib/review-documentation.js",
+    "packages/workspace/scripts/review.js",
+    "packages/workspace/senior-engineer.md"
+  ],
+  "updatedAt": "2026-08-12T01:09:44.308Z"
+}

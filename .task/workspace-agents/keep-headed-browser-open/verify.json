@@ -1,0 +1,244 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace-agents/keep-headed-browser-open",
+  "base": "origin/stream/workspace-agents",
+  "headSha": "1f250d704a9518e432eb2684cdfda88ced203575",
+  "changeHash": "c06ead983a33edde56ebf2eed781a102b493d15e3170bce927d48b3614b4f4f0",
+  "changedFiles": [
+    "packages/os/scripts/lib/browser/service.ts",
+    "packages/os/tests/browser-service.test.ts",
+    "packages/workspace/scripts/lib/browser/service.ts",
+    "packages/workspace/test-selection.registry.json",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/browser-service.test.ts",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "verifiedAt": "2026-08-26T04:17:57.114Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/workspace-agents/keep-headed-browser-open.json",
+        ".task/workspace-agents/keep-headed-browser-open/current.json",
+        ".task/workspace-agents/keep-headed-browser-open/evidence-log.json",
+        ".task/workspace-agents/keep-headed-browser-open/read-log.json",
+        ".task/workspace-agents/keep-headed-browser-open/session.json",
+        ".task/workspace-agents/keep-headed-browser-open/workpad.md",
+        "packages/os/scripts/lib/browser/service.ts",
+        "packages/os/tests/browser-service.test.ts",
+        "packages/workspace/scripts/lib/browser/service.ts",
+        "packages/workspace/test-selection.registry.json",
+        "packages/workspace/test-selection.rules.json",
+        "packages/workspace/tests/browser-service.test.ts",
+        "packages/workspace/tests/test-selection.test.js"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-test-selection",
+          "critical": true,
+          "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy.",
+          "matchedFiles": [
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-browser-headed-handoff",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Browser daemon, headed handoff, and persistent-profile changes must prove visible-mode continuity and OS/workspace runtime parity without selecting unrelated package-wide OS tests.",
+          "matchedFiles": [
+            "packages/os/scripts/lib/browser/service.ts",
+            "packages/os/tests/browser-service.test.ts",
+            "packages/workspace/scripts/lib/browser/service.ts",
+            "packages/workspace/tests/browser-service.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "server-ci-task-contract",
+          "critical": true,
+          "reason": "Server CI changes must scope lint and typecheck to directly changed Twenty server runtime files while retaining dependency propagation.",
+          "matchedFiles": [
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true
+        },
+        {
+          "name": "OS headed browser handoff contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/browser-service.test.ts",
+            "packages/workspace/tests/browser-service.test.ts",
+            "-t",
+            "should leave a headed browser running|should open headed mode|should use headed handoff behavior|should preserve the current daemon|should forward provider options|should keep workspace and OS browser runtimes byte-identical"
+          ],
+          "ruleId": "os-browser-headed-handoff",
+          "critical": true
+        },
+        {
+          "name": "changed server task selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "TypeORM CLI compatibility contract",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 3359,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-keep-headed-browser-open\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/test-selection.test.js \u001b[2m(\u001b[22m\u001b[2m47 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 2981\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m discovers and seeds the existing test inventory \u001b[33m 1358\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m47 passed\u001b[39m\u001b[22m\u001b[90m (47)\u001b[39m\n\u001b[2m   Start at \u001b[22m 00:17:52\n\u001b[2m   Duration \u001b[22m 3.10s\u001b[2m (transform 17ms, setup 0ms, import 25ms, tests 2.98s, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS headed browser handoff contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/browser-service.test.ts",
+            "packages/workspace/tests/browser-service.test.ts",
+            "-t",
+            "should leave a headed browser running|should open headed mode|should use headed handoff behavior|should preserve the current daemon|should forward provider options|should keep workspace and OS browser runtimes byte-identical"
+          ],
+          "ruleId": "os-browser-headed-handoff",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 665,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-keep-headed-browser-open\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/browser-service.test.ts \u001b[2m(\u001b[22m\u001b[2m16 tests\u001b[22m\u001b[2m | \u001b[22m\u001b[33m10 skipped\u001b[39m\u001b[2m)\u001b[22m\u001b[32m 6\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/workspace/tests/browser-service.test.ts \u001b[2m(\u001b[22m\u001b[2m16 tests\u001b[22m\u001b[2m | \u001b[22m\u001b[33m10 skipped\u001b[39m\u001b[2m)\u001b[22m\u001b[32m 4\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m12 passed\u001b[39m\u001b[22m\u001b[2m | \u001b[22m\u001b[33m20 skipped\u001b[39m\u001b[90m (32)\u001b[39m\n\u001b[2m   Start at \u001b[22m 00:17:55\n\u001b[2m   Duration \u001b[22m 398ms\u001b[2m (transform 130ms, setup 0ms, import 526ms, tests 10ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "changed server task selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 80,
+          "outputTail": "No changed Twenty server runtime files require lint or typecheck.\nRunning server lint and baseline-aware typecheck for 1 directly changed file(s).\nTwenty server typecheck matched 1 known baseline diagnostic(s).\nRunning server lint and baseline-aware typecheck for 1 directly changed file(s).\nNo changed Twenty server schema files require GraphQL generation.\nNo changed Twenty server runtime files require migration generation.\nNo changesgeneratedTwenty server migration drift matched 2 known baseline operation(s).\ngeneratedgenerated✔ parseCliArguments resolves comparison SHAs (0.656417ms)\n✔ parseCliArguments selects GraphQL generation mode (0.058334ms)\n✔ parseCliArguments selects migration generation mode (0.055792ms)\n✔ filterServerTaskFiles excludes root and config-only triggers (0.097709ms)\n✔ filterGraphqlGenerationFiles keeps only server schema and generated files (0.068584ms)\n✔ buildEslintArguments selects the owning project config and stdin filename (0.055209ms)\n✔ ESLint diagnostic comparison tracks new error multiplicity without line numbers (0.1815ms)\n✔ runChangedFileLint accepts base-existing errors and rejects a new changed-file error (0.870708ms)\n✔ runChangedFileLint allows explicit lint baseline debt but rejects diagnostics beyond it (0.698542ms)\n✔ buildTypecheckArguments uses standard TypeScript without emitting (0.0845ms)\n✔ TypeScript diagnostic baseline comparison rejects only new diagnostic keys (0.169625ms)\n✔ runChangedServerTask skips Nx for config-only changes (0.306125ms)\n✔ runChangedServerTask executes lint and baseline-aware typecheck for server runtime changes (0.084333ms)\n✔ runChangedServerTask rejects a new TypeScript diagnostic outside the baseline (0.080917ms)\n✔ server lint configuration resolves the existing workspace rules project (0.344ms)\n✔ runGraphqlGenerationCheck skips generation without schema changes (0.068083ms)\n✔ runGraphqlGenerationCheck generates and verifies committed outputs (0.142625ms)\n✔ runMigrationGenerationCheck skips generation without server runtime changes (0.08025ms)\n✔ runMigrationGenerationCheck accepts a no-change TypeORM exit (0.083125ms)\n✔ runMigrationGenerationCheck accepts and removes exact known migration drift (0.175667ms)\n✔ runMigrationGenerationCheck rejects changed drift beyond the baseline (0.112458ms)\n✔ runMigrationGenerationCheck rejects and removes generated drift (0.101417ms)\nℹ tests 22\nℹ suites 0\nℹ pass 22\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 45.816792\n"
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 124,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/workspace/tests/github-workflow-policy.test.js:\n(pass) GitHub workflow policy > does not include retired automation workflows [0.13ms]\n(pass) GitHub workflow policy > does not reference retired CI credentials or the disabled Chromatic job [3.27ms]\n(pass) GitHub workflow policy > does not retain privileged allowlist entries for deleted workflows [0.16ms]\n(pass) GitHub workflow policy > runs typecheck and test from the filtered frontend file set [0.04ms]\n(pass) GitHub workflow policy > installs Bun and scopes shared tasks to changed frontend files [0.04ms]\n(pass) GitHub workflow policy > scopes native OS distribution tests to relevant changed files [0.04ms]\n(pass) GitHub workflow policy > runs Docker Compose CI with the pgvector PostgreSQL image required by migrations [0.02ms]\n(pass) GitHub workflow policy > uses available hosted runners for the Server and Front build pipelines [0.06ms]\n(pass) GitHub workflow policy > builds Consuelo backend workspace dependencies before server typecheck [0.04ms]\n(pass) GitHub workflow policy > installs Bun before the Server unit-test job runs Bun package tests [0.04ms]\n(pass) GitHub workflow policy > allows enough time for Danger dependency installation and execution [0.02ms]\n(pass) GitHub workflow policy > explicitly allowlists the API breaking-changes workflow write permissions [0.02ms]\n\n 12 pass\n 0 fail\n 53 expect() calls\nRan 12 tests across 1 file. [117.00ms]\n"
+        },
+        {
+          "name": "TypeORM CLI compatibility contract",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 861,
+          "outputTail": "✔ Twenty server uses the Node 24-compatible TypeORM ts-node wrapper (0.309917ms)\n✔ the configured TypeORM wrapper resolves from the installed package (796.88625ms)\nℹ tests 2\nℹ suites 0\nℹ pass 2\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 833.448208\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

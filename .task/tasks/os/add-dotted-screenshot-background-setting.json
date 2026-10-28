@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-dotted-screenshot-background-setting",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1487,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1487",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1487",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1487/add-dotted-screenshot-background-setting",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1487",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1487/add-dotted-screenshot-background-setting",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-dotted-screenshot-background-setting",
+  "taskSession": "tsk_83e95ef7cc9b",
+  "tmuxSession": "opensaas-os-add-dotted-screenshot-background-setting-83e95ef7",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-dotted-screenshot-background-setting/.task/os/add-dotted-screenshot-background-setting/session.json",
+  "createdAt": "2026-07-14T17:59:47.481Z"
+}

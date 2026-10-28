@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_83ec1106a9a8",
+  "tmuxSession": "opensaas-workspace-agents-make-task-start-hooks-executable-and-workflow-bu-83ec1106",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/make-task-start-hooks-executable-and-workflow-bundles-current",
+  "branch": "task/workspace-agents/make-task-start-hooks-executable-and-workflow-bundles-current",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-make-task-start-hooks-executable-and-workflow-bundles-current",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-make-task-start-hooks-executable-and-workflow-bundles-current",
+  "prNumber": 1854,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1854",
+  "createdAt": "2026-08-11T23:59:33.113Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-make-task-start-hooks-executable-and-workflow-bundles-current/.task/workspace-agents/make-task-start-hooks-executable-and-workflow-bundles-current/session.json"
+}

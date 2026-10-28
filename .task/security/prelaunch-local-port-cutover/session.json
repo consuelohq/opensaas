@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_d7bee540cdac",
+  "tmuxSession": "opensaas-security-prelaunch-local-port-cutover-d7bee540",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/prelaunch-local-port-cutover",
+  "branch": "task/security/prelaunch-local-port-cutover",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-prelaunch-local-port-cutover",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-prelaunch-local-port-cutover",
+  "prNumber": 1412,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1412",
+  "createdAt": "2026-07-11T05:16:01.542Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-prelaunch-local-port-cutover/.task/security/prelaunch-local-port-cutover/session.json"
+}

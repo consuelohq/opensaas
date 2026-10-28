@@ -1,0 +1,19 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/fix-mobile-hero-overflow-and-footer-artwork-rendering",
+  "baseBranch": "stream/website",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1811,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1811",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1811",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1811/fix-mobile-hero-overflow-and-footer-artwork-rendering",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1811",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1811/fix-mobile-hero-overflow-and-footer-artwork-rendering",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-website-fix-mobile-hero-overflow-and-footer-artwork-rendering",
+  "taskSession": "tsk_eb4e7f1cc676",
+  "tmuxSession": "opensaas-website-fix-mobile-hero-overflow-and-footer-artwork-rend-eb4e7f1c",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-website-fix-mobile-hero-overflow-and-footer-artwork-rendering/.task/website/fix-mobile-hero-overflow-and-footer-artwork-rendering/session.json",
+  "createdAt": "2026-08-10T01:42:44.276Z"
+}

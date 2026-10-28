@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_66379677ff9c",
+  "tmuxSession": "opensaas-os-web-repair-google-sign-in-launcher-redirect-66379677",
+  "area": "os-web",
+  "stream": "stream/os-web",
+  "taskBranch": "task/os-web/repair-google-sign-in-launcher-redirect",
+  "branch": "task/os-web/repair-google-sign-in-launcher-redirect",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-web-repair-google-sign-in-launcher-redirect",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-web-repair-google-sign-in-launcher-redirect",
+  "prNumber": 1704,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1704",
+  "createdAt": "2026-07-28T03:59:02.651Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-web-repair-google-sign-in-launcher-redirect/.task/os-web/repair-google-sign-in-launcher-redirect/session.json"
+}

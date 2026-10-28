@@ -1,0 +1,15 @@
+{
+  "files": [
+    ".task/os/installer-and-launcher-onboarding-ux-improvements/workpad.md",
+    "AGENTS.md",
+    "packages/os/scripts/compact-daemon-output.test.ts",
+    "packages/os/scripts/install-tty.test.ts",
+    "packages/os/scripts/lib/launcher-onboarding.ts",
+    "packages/os/scripts/lib/sites.ts",
+    "packages/os/tests/bootstrap-source.test.ts",
+    "packages/os/tests/install-state.test.ts",
+    "packages/os/tests/installer-onboarding-ui.test.ts",
+    "packages/os/tests/sites-cli.test.ts"
+  ],
+  "updatedAt": "2026-06-30T20:06:22.772Z"
+}

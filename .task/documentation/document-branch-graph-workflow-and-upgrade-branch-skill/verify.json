@@ -1,0 +1,270 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/documentation/document-branch-graph-workflow-and-upgrade-branch-skill",
+  "base": "origin/task/documentation/document-branch-graph-workflow-and-upgrade-branch-skill",
+  "headSha": "94f7634ac0f0dc8caf318b73030c40ee0880fc3a",
+  "changeHash": "ef13697dd643224c953f5ec84942b3d1a37ec2b81e433637937791b12772ec43",
+  "changedFiles": [
+    "packages/documentation/public/images/workflows/branch-in-new-chat.jpg",
+    "packages/documentation/src/content/docs/build/skills/bundled/branch.mdx",
+    "packages/documentation/src/content/docs/build/skills/bundled/index.mdx",
+    "packages/documentation/src/content/docs/reference/workflows/branch-graph.mdx",
+    "packages/documentation/src/content/docs/workflows/branch-graph.mdx",
+    "packages/documentation/src/content/docs/workflows/index.mdx",
+    "packages/documentation/src/lib/docs-navigation.ts",
+    "packages/documentation/tests/foundation.test.ts",
+    "packages/documentation/tests/navigation-memory.test.ts",
+    "packages/documentation/tests/reference.test.ts",
+    "packages/os/skills/branch/SKILL.md",
+    "packages/os/skills/branch/skill.json",
+    "packages/os/skills/skills.json",
+    "packages/os/tests/branch-skill.test.ts",
+    "packages/workspace/test-selection.registry.json",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "verifiedAt": "2026-08-15T09:31:55.083Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/documentation/document-branch-graph-workflow-and-upgrade-branch-skill/current.json",
+        ".task/documentation/document-branch-graph-workflow-and-upgrade-branch-skill/evidence-log.json",
+        ".task/documentation/document-branch-graph-workflow-and-upgrade-branch-skill/read-log.json",
+        ".task/documentation/document-branch-graph-workflow-and-upgrade-branch-skill/session.json",
+        ".task/documentation/document-branch-graph-workflow-and-upgrade-branch-skill/workpad.md",
+        ".task/tasks/documentation/document-branch-graph-workflow-and-upgrade-branch-skill.json",
+        "packages/documentation/public/images/workflows/branch-in-new-chat.jpg",
+        "packages/documentation/src/content/docs/build/skills/bundled/branch.mdx",
+        "packages/documentation/src/content/docs/build/skills/bundled/index.mdx",
+        "packages/documentation/src/content/docs/reference/workflows/branch-graph.mdx",
+        "packages/documentation/src/content/docs/workflows/branch-graph.mdx",
+        "packages/documentation/src/content/docs/workflows/index.mdx",
+        "packages/documentation/src/lib/docs-navigation.ts",
+        "packages/documentation/tests/foundation.test.ts",
+        "packages/documentation/tests/navigation-memory.test.ts",
+        "packages/documentation/tests/reference.test.ts",
+        "packages/os/skills/branch/SKILL.md",
+        "packages/os/skills/branch/skill.json",
+        "packages/os/skills/skills.json",
+        "packages/os/tests/branch-skill.test.ts",
+        "packages/workspace/test-selection.registry.json",
+        "packages/workspace/test-selection.rules.json",
+        "packages/workspace/tests/test-selection.test.js"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-test-selection",
+          "critical": true,
+          "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy.",
+          "matchedFiles": [
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-bundled-skill-contract",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Bundled skill instructions, metadata, registry output, and skill-routing contracts must run the focused skill lifecycle suite without selecting unrelated historically red package-wide OS tests.",
+          "matchedFiles": [
+            "packages/os/skills/branch/SKILL.md",
+            "packages/os/skills/branch/skill.json",
+            "packages/os/skills/skills.json",
+            "packages/os/tests/branch-skill.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "server-ci-task-contract",
+          "critical": true,
+          "reason": "Server CI changes must scope lint and typecheck to directly changed Twenty server runtime files while retaining dependency propagation.",
+          "matchedFiles": [
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true
+        },
+        {
+          "name": "OS bundled skill contracts",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/os",
+            "test",
+            "--",
+            "tests/branch-skill.test.ts",
+            "tests/cli-skill-routing.test.ts",
+            "tests/onboarding-skills.test.ts",
+            "tests/skill-selection-cli.test.ts",
+            "tests/skills-registry.test.ts"
+          ],
+          "ruleId": "os-bundled-skill-contract",
+          "critical": true
+        },
+        {
+          "name": "changed server task selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "TypeORM CLI compatibility contract",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 3382,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-document-branch-graph-workflow-and-upgrade-branch-skill\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/test-selection.test.js \u001b[2m(\u001b[22m\u001b[2m35 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 2907\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m discovers and seeds the existing test inventory \u001b[33m 1605\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m35 passed\u001b[39m\u001b[22m\u001b[90m (35)\u001b[39m\n\u001b[2m   Start at \u001b[22m 05:31:36\n\u001b[2m   Duration \u001b[22m 3.03s\u001b[2m (transform 20ms, setup 0ms, import 30ms, tests 2.91s, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS bundled skill contracts",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/os",
+            "test",
+            "--",
+            "tests/branch-skill.test.ts",
+            "tests/cli-skill-routing.test.ts",
+            "tests/onboarding-skills.test.ts",
+            "tests/skill-selection-cli.test.ts",
+            "tests/skills-registry.test.ts"
+          ],
+          "ruleId": "os-bundled-skill-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 10575,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-document-branch-graph-workflow-and-upgrade-branch-skill/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/branch-skill.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 6\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/cli-skill-routing.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 6\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/skills-registry.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 28\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/onboarding-skills.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 16\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/skill-selection-cli.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 8377\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m adds branch through config, managed index, visible Skills, and steering discovery \u001b[33m 1698\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m removes a clean bundled skill from config, managed index, visible Skills, and steering discovery \u001b[33m 1675\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m deselects but preserves a locally modified bundled skill for explicit review \u001b[33m 1702\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m interactive add offers only unselected bundled skills and uses skill names as labels \u001b[33m 1652\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m interactive remove offers only selected bundled skills \u001b[33m 1648\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m5 passed\u001b[39m\u001b[22m\u001b[90m (5)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m22 passed\u001b[39m\u001b[22m\u001b[90m (22)\u001b[39m\n\u001b[2m   Start at \u001b[22m 05:31:40\n\u001b[2m   Duration \u001b[22m 10.24s\u001b[2m (transform 1.15s, setup 0ms, import 1.90s, tests 8.43s, environment 0ms)\u001b[22m\n\n$ vitest run tests/branch-skill.test.ts tests/cli-skill-routing.test.ts tests/onboarding-skills.test.ts tests/skill-selection-cli.test.ts tests/skills-registry.test.ts\n"
+        },
+        {
+          "name": "changed server task selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 220,
+          "outputTail": "No changed Twenty server runtime files require lint or typecheck.\nRunning server lint and baseline-aware typecheck for 1 directly changed file(s).\nTwenty server typecheck matched 1 known baseline diagnostic(s).\nRunning server lint and baseline-aware typecheck for 1 directly changed file(s).\nNo changed Twenty server schema files require GraphQL generation.\nNo changed Twenty server runtime files require migration generation.\nNo changesgeneratedTwenty server migration drift matched 2 known baseline operation(s).\ngeneratedgenerated✔ parseCliArguments resolves comparison SHAs (1.607458ms)\n✔ parseCliArguments selects GraphQL generation mode (0.094083ms)\n✔ parseCliArguments selects migration generation mode (0.06125ms)\n✔ filterServerTaskFiles excludes root and config-only triggers (0.095917ms)\n✔ filterGraphqlGenerationFiles keeps only server schema and generated files (0.075833ms)\n✔ buildEslintArguments selects the owning project config and stdin filename (0.055542ms)\n✔ ESLint diagnostic comparison tracks new error multiplicity without line numbers (0.697958ms)\n✔ runChangedFileLint accepts base-existing errors and rejects a new changed-file error (1.478291ms)\n✔ runChangedFileLint allows explicit lint baseline debt but rejects diagnostics beyond it (1.380333ms)\n✔ buildTypecheckArguments uses standard TypeScript without emitting (0.169917ms)\n✔ TypeScript diagnostic baseline comparison rejects only new diagnostic keys (0.350416ms)\n✔ runChangedServerTask skips Nx for config-only changes (0.541375ms)\n✔ runChangedServerTask executes lint and baseline-aware typecheck for server runtime changes (0.12275ms)\n✔ runChangedServerTask rejects a new TypeScript diagnostic outside the baseline (0.116917ms)\n✔ server lint configuration resolves the existing workspace rules project (0.592792ms)\n✔ runGraphqlGenerationCheck skips generation without schema changes (0.244584ms)\n✔ runGraphqlGenerationCheck generates and verifies committed outputs (0.406541ms)\n✔ runMigrationGenerationCheck skips generation without server runtime changes (0.174792ms)\n✔ runMigrationGenerationCheck accepts a no-change TypeORM exit (0.236083ms)\n✔ runMigrationGenerationCheck accepts and removes exact known migration drift (0.531875ms)\n✔ runMigrationGenerationCheck rejects changed drift beyond the baseline (0.322958ms)\n✔ runMigrationGenerationCheck rejects and removes generated drift (0.354959ms)\nℹ tests 22\nℹ suites 0\nℹ pass 22\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 121.160375\n"
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 621,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/workspace/tests/github-workflow-policy.test.js:\n(pass) GitHub workflow policy > does not include retired automation workflows [0.22ms]\n(pass) GitHub workflow policy > does not reference retired CI credentials or the disabled Chromatic job [4.31ms]\n(pass) GitHub workflow policy > does not retain privileged allowlist entries for deleted workflows [0.24ms]\n(pass) GitHub workflow policy > runs typecheck and test from the filtered frontend file set [0.06ms]\n(pass) GitHub workflow policy > installs Bun and scopes shared tasks to changed frontend files [0.05ms]\n(pass) GitHub workflow policy > scopes native OS distribution tests to relevant changed files [0.05ms]\n(pass) GitHub workflow policy > runs Docker Compose CI with the pgvector PostgreSQL image required by migrations [0.03ms]\n(pass) GitHub workflow policy > uses available hosted runners for the Server and Front build pipelines [0.07ms]\n(pass) GitHub workflow policy > builds Consuelo backend workspace dependencies before server typecheck [0.04ms]\n(pass) GitHub workflow policy > installs Bun before the Server unit-test job runs Bun package tests [0.05ms]\n(pass) GitHub workflow policy > allows enough time for Danger dependency installation and execution [0.03ms]\n(pass) GitHub workflow policy > explicitly allowlists the API breaking-changes workflow write permissions [0.09ms]\n\n 12 pass\n 0 fail\n 53 expect() calls\nRan 12 tests across 1 file. [608.00ms]\n"
+        },
+        {
+          "name": "TypeORM CLI compatibility contract",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 2513,
+          "outputTail": "✔ Twenty server uses the Node 24-compatible TypeORM ts-node wrapper (0.575125ms)\n✔ the configured TypeORM wrapper resolves from the installed package (2348.765291ms)\nℹ tests 2\nℹ suites 0\nℹ pass 2\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 2452.215958\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -1,0 +1,19 @@
+{
+  "area": "documentation",
+  "stream": "stream/documentation",
+  "taskBranch": "task/documentation/write-verified-connect-documentation",
+  "baseBranch": "stream/documentation",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1452,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1452",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1452",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1452/write-verified-connect-documentation",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1452",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1452/write-verified-connect-documentation",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-write-verified-connect-documentation",
+  "taskSession": "tsk_d0623ce13ae6",
+  "tmuxSession": "opensaas-documentation-write-verified-connect-documentation-d0623ce1",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-write-verified-connect-documentation/.task/documentation/write-verified-connect-documentation/session.json",
+  "createdAt": "2026-07-13T16:04:22.743Z"
+}

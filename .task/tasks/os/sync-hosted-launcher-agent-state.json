@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/sync-hosted-launcher-agent-state",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1532,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1532",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1532",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1532/sync-hosted-launcher-agent-state",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1532",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1532/sync-hosted-launcher-agent-state",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-sync-hosted-launcher-agent-state",
+  "taskSession": "tsk_e0fa2d1e0e2d",
+  "tmuxSession": "opensaas-os-sync-hosted-launcher-agent-state-e0fa2d1e",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-sync-hosted-launcher-agent-state/.task/os/sync-hosted-launcher-agent-state/session.json",
+  "createdAt": "2026-07-19T03:19:02.389Z"
+}

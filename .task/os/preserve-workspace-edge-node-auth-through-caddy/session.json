@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_3334c6b654b6",
+  "tmuxSession": "opensaas-os-preserve-workspace-edge-node-auth-through-caddy-3334c6b6",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/preserve-workspace-edge-node-auth-through-caddy",
+  "branch": "task/os/preserve-workspace-edge-node-auth-through-caddy",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-preserve-workspace-edge-node-auth-through-caddy",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-preserve-workspace-edge-node-auth-through-caddy",
+  "prNumber": 1987,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1987",
+  "createdAt": "2026-08-15T02:19:30.371Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-preserve-workspace-edge-node-auth-through-caddy/.task/os/preserve-workspace-edge-node-auth-through-caddy/session.json"
+}

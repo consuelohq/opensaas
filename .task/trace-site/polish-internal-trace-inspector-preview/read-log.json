@@ -1,0 +1,15 @@
+{
+  "files": [
+    ".task/trace-site/polish-internal-trace-inspector-preview/workpad.md",
+    "packages/consuelo-design/trace-burn-intelligence/src/scripts/traceExplorer.ts",
+    "packages/consuelo-design/trace-burn-intelligence/tests/artifactContract.test.ts",
+    "packages/consuelo-website/DESIGN.md",
+    "packages/os/skills/task/SKILL.md",
+    "packages/workspace/package.json",
+    "packages/workspace/scripts/os-release-device-auth.ts",
+    "packages/workspace/scripts/trace-site-inspector/preview.ts",
+    "packages/workspace/scripts/website-deploy.js",
+    "packages/workspace/senior-engineer.md"
+  ],
+  "updatedAt": "2026-07-11T03:24:35.888Z"
+}

@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/stabilize-subagent-lifecycle-ci-for-os-release",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2430,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2430",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-stabilize-subagent-lifecycle-ci-for-os-release",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_3731b2a95ca0",
+  "tmuxSession": "opensaas-os-stabilize-subagent-lifecycle-ci-for-os-release-3731b2a9",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-stabilize-subagent-lifecycle-ci-for-os-release/.task/session.json",
+  "createdAt": "2026-09-10T00:43:59.897Z"
+}

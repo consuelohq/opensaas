@@ -1,0 +1,7 @@
+{
+  "files": [
+    "packages/os/scripts/lib/windows-platform.ts",
+    "packages/os/scripts/windows-platform.ts"
+  ],
+  "updatedAt": "2026-07-25T01:34:08.433Z"
+}

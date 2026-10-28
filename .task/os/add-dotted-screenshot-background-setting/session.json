@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_83e95ef7cc9b",
+  "tmuxSession": "opensaas-os-add-dotted-screenshot-background-setting-83e95ef7",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/add-dotted-screenshot-background-setting",
+  "branch": "task/os/add-dotted-screenshot-background-setting",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-dotted-screenshot-background-setting",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-dotted-screenshot-background-setting",
+  "prNumber": 1487,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1487",
+  "createdAt": "2026-07-14T17:59:47.480Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-add-dotted-screenshot-background-setting/.task/os/add-dotted-screenshot-background-setting/session.json"
+}

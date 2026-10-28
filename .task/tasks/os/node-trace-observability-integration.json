@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/node-trace-observability-integration",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1891,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1891",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1891",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1891/node-trace-observability-integration",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1891",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1891/node-trace-observability-integration",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-node-trace-observability-integration",
+  "taskSession": "tsk_7384aa94d6ba",
+  "tmuxSession": "opensaas-os-node-trace-observability-integration-7384aa94",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-node-trace-observability-integration/.task/os/node-trace-observability-integration/session.json",
+  "createdAt": "2026-08-12T14:30:03.151Z"
+}

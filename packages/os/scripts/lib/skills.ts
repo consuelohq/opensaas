@@ -79,7 +79,14 @@ export function validateBundledSkills(): SkillValidationIssue[] {
 
     const manifestEntry = manifestByName.get(skill.name);
     if (!manifestEntry) {
-      issues.push({ skill: skill.name, code: 'SKILL_NOT_IN_MANIFEST', message: 'skill metadata has no manifest entry' });
+      if (!skill.script) {
+        issues.push({ skill: skill.name, code: 'SKILL_SCRIPT_MISSING', message: 'script-backed skill metadata must declare a script' });
+        continue;
+      }
+      const scriptPath = path.join(getPackageRoot(), skill.script);
+      if (!fs.existsSync(scriptPath)) {
+        issues.push({ skill: skill.name, code: 'SKILL_SCRIPT_NOT_FOUND', message: 'script-backed skill implementation does not exist' });
+      }
       continue;
     }
     if (skill.script !== manifestEntry.implementation.script) {

@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/installer-diagnostics-and-node-foundation",
+  "baseBranch": "stream/security",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1361,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1361",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1361",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1361/installer-diagnostics-and-node-foundation",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1361",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1361/installer-diagnostics-and-node-foundation",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-installer-diagnostics-and-node-foundation",
+  "taskSession": "tsk_390db3031706",
+  "tmuxSession": "opensaas-security-installer-diagnostics-and-node-foundation-390db303",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-installer-diagnostics-and-node-foundation/.task/security/installer-diagnostics-and-node-foundation/session.json",
+  "createdAt": "2026-07-03T18:38:11.481Z"
+}

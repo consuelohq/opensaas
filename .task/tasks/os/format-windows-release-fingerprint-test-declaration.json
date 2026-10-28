@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/format-windows-release-fingerprint-test-declaration",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1730,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1730",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1730",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1730/format-windows-release-fingerprint-test-declaration",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1730",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1730/format-windows-release-fingerprint-test-declaration",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-format-windows-release-fingerprint-test-declaration",
+  "taskSession": "tsk_0ac02aa8ebe9",
+  "tmuxSession": "opensaas-os-format-windows-release-fingerprint-test-declarat-0ac02aa8",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-format-windows-release-fingerprint-test-declaration/.task/os/format-windows-release-fingerprint-test-declaration/session.json",
+  "createdAt": "2026-07-29T08:27:30.925Z"
+}

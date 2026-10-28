@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_72720f4b3560",
+  "tmuxSession": "opensaas-twenty-migration-m3-detach-twenty-runtime-infrastructure-72720f4b",
+  "area": "twenty-migration",
+  "stream": "stream/twenty-migration",
+  "taskBranch": "task/twenty-migration/m3-detach-twenty-runtime-infrastructure",
+  "branch": "task/twenty-migration/m3-detach-twenty-runtime-infrastructure",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-twenty-migration-m3-detach-twenty-runtime-infrastructure",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-twenty-migration-m3-detach-twenty-runtime-infrastructure",
+  "prNumber": 2045,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2045",
+  "createdAt": "2026-08-15T07:36:04.461Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-twenty-migration-m3-detach-twenty-runtime-infrastructure/.task/twenty-migration/m3-detach-twenty-runtime-infrastructure/session.json"
+}

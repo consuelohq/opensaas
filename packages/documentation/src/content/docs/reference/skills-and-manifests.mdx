@@ -1,0 +1,94 @@
+---
+title: Skills and manifests
+description: Skill metadata, selection state, installed indexes, steering discovery, and generated tool manifests.
+status: preview
+verifiedAt: 2026-08-11
+evidence:
+  - source: packages/os/scripts/lib/steering-skills.ts
+    tests:
+      - packages/os/tests/skills-registry.test.ts
+      - packages/os/tests/os-get-steering-trace.test.ts
+    runtime: Active installed-skill discovery and disabled-skill filtering were verified on 2026-08-11.
+  - source: packages/os/scripts/lib/managed-component-install.ts
+    tests:
+      - packages/os/tests/skill-selection-cli.test.ts
+    runtime: Managed skill index and visible materialization behavior were verified on 2026-08-11.
+  - source: packages/os/manifests/generated/tool.manifest.json
+    tests:
+      - packages/os/tests/tool-manifest.test.ts
+    runtime: The generated full and core manifest files were inspected on 2026-08-11.
+---
+
+A skill packages reusable agent guidance or executable workspace behavior behind one discoverable name.
+
+## Source skill directory
+
+Skill Templates are authored in:
+
+```text
+packages/os/skills/<name>/
+  skill.json
+  SKILL.md
+  agents/
+  references/
+  scripts/
+  subskills/
+```
+
+`SKILL.md` is the normal guidance entrypoint. `skill.json` contains compact metadata used for registry validation, installation, policy, and discovery.
+
+Common metadata includes `name`, `title`, `description`, `trigger`, `load`, `permission`, `requiresApproval`, `status`, capabilities, tools, optional scripts, and subskills.
+
+## Selection and active installed index
+
+The durable bundled-skill choice is `selectedSkills` in:
+
+```text
+<CONSUELO_HOME>/config.json
+```
+
+Provisioning derives the active managed index:
+
+```text
+<CONSUELO_HOME>/components/installed-skills.json
+```
+
+Its `selected` entries are the managed skill templates that should be active. Preserved custom skills from the legacy hidden tree can appear separately as `legacyCustom`.
+
+Selected skill templates are materialized for the user under:
+
+```text
+~/Consuelo/Skills/<name>/
+```
+
+The complete bundled catalog is:
+
+```text
+~/Consuelo/Skills/skills.json
+```
+
+The immutable shipped guidance lives in the active runtime under `skills/<name>/SKILL.md` relative to `<CONSUELO_HOME>/runtime/current/`.
+
+## Steering discovery
+
+`get_steering` prefers `components/installed-skills.json` for the compact Installed skills section. It combines selected managed skills with preserved custom metadata and removes skills disabled by `manifest.overlay.json`.
+
+The full Markdown guidance is not appended to steering. The agent loads the skill entrypoint when that workflow applies.
+
+## Generated registries and manifests
+
+| File | Kind | Purpose |
+| --- | --- | --- |
+| `packages/os/skills/skills.json` | bundled skill registry | Compact metadata for skills shipped by the OS package. |
+| `packages/os/manifests/generated/tool.manifest.json` | `consuelo-os-tool-manifest` | Full generated callable tool registry. |
+| `packages/os/manifests/generated/core.manifest.json` | `consuelo-os-core-manifest` | Small bootstrap surface used by normal steering. |
+
+The skill registry and tool manifests are generated artifacts. Change their source metadata/generators, then regenerate and validate them rather than hand-editing generated output.
+
+## Installed versus disabled
+
+Removing a bundled skill with `consuelo remove skill` changes `selectedSkills` and reconciles the managed install. Disabling a skill through settings changes `manifest.overlay.json`. These are distinct operations: an installed skill can remain on disk while being filtered from the effective runtime surface.
+
+## Compatibility
+
+`<CONSUELO_HOME>/skills/skills.json` is a legacy compatibility surface, not the preferred active managed index. Existing user-owned folders in the legacy hidden tree are preserved for explicit migration rather than silently deleted.

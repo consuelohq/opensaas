@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_8c3c741d1e60",
+  "tmuxSession": "opensaas-os-hotfix-explicit-cloud-node-targeting-to-main-8c3c741d",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/hotfix-explicit-cloud-node-targeting-to-main",
+  "branch": "task/os/hotfix-explicit-cloud-node-targeting-to-main",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-hotfix-explicit-cloud-node-targeting-to-main",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-hotfix-explicit-cloud-node-targeting-to-main",
+  "prNumber": 1982,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1982",
+  "createdAt": "2026-08-15T01:24:59.250Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-hotfix-explicit-cloud-node-targeting-to-main/.task/os/hotfix-explicit-cloud-node-targeting-to-main/session.json"
+}

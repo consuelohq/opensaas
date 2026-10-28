@@ -1,0 +1,19 @@
+{
+  "area": "sites",
+  "stream": "stream/sites",
+  "taskBranch": "task/sites/hotfix-hero-diagram-logo-on-main",
+  "baseBranch": "stream/sites",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1271,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1271",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1271",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1271/hotfix-hero-diagram-logo-on-main",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1271",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1271/hotfix-hero-diagram-logo-on-main",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-hotfix-hero-diagram-logo-on-main",
+  "taskSession": "tsk_f193a33ac1c5",
+  "tmuxSession": "opensaas-sites-hotfix-hero-diagram-logo-on-main-f193a33a",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-hotfix-hero-diagram-logo-on-main/.task/sites/hotfix-hero-diagram-logo-on-main/session.json",
+  "createdAt": "2026-06-28T15:35:19.714Z"
+}

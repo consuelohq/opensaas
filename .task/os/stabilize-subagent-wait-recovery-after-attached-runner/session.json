@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_c476ab15a9db",
+  "tmuxSession": "opensaas-os-stabilize-subagent-wait-recovery-after-attached--c476ab15",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/stabilize-subagent-wait-recovery-after-attached-runner",
+  "branch": "task/os/stabilize-subagent-wait-recovery-after-attached-runner",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-stabilize-subagent-wait-recovery-after-attached-runner",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-stabilize-subagent-wait-recovery-after-attached-runner",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2317,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2317",
+  "createdAt": "2026-08-30T20:38:17.734Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-stabilize-subagent-wait-recovery-after-attached-runner/.task/os/stabilize-subagent-wait-recovery-after-attached-runner/session.json"
+}

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_1dfaf54fe0f7",
+  "tmuxSession": "opensaas-os-preserve-mcp-response-streams-during-worker-drai-1dfaf54f",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/preserve-mcp-response-streams-during-worker-drain",
+  "branch": "task/os/preserve-mcp-response-streams-during-worker-drain",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-preserve-mcp-response-streams-during-worker-drain",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-preserve-mcp-response-streams-during-worker-drain",
+  "prNumber": 2143,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2143",
+  "createdAt": "2026-08-16T06:59:29.767Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-preserve-mcp-response-streams-during-worker-drain/.task/os/preserve-mcp-response-streams-during-worker-drain/session.json"
+}

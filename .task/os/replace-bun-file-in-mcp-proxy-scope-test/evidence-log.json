@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/replace-bun-file-in-mcp-proxy-scope-test",
+  "events": [
+    {
+      "id": "ca4e1a3e-9c0a-44f0-8fd4-e6368b27c44e",
+      "occurred_at": "2026-08-31T04:06:54.434Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/tool-scope-authorization.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/replace-bun-file-in-mcp-proxy-scope-test",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/replace-bun-file-in-mcp-proxy-scope-test"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-31T04:06:54.526Z"
+}

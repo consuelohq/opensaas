@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_ca561bb3bed9",
+  "tmuxSession": "opensaas-website-fix-website-deploy-cloudflare-auth-fallback-ca561bb3",
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/fix-website-deploy-cloudflare-auth-fallback",
+  "branch": "task/website/fix-website-deploy-cloudflare-auth-fallback",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-website-fix-website-deploy-cloudflare-auth-fallback",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-website-fix-website-deploy-cloudflare-auth-fallback",
+  "prNumber": 1297,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1297",
+  "createdAt": "2026-06-30T21:36:36.376Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-website-fix-website-deploy-cloudflare-auth-fallback/.task/website/fix-website-deploy-cloudflare-auth-fallback/session.json"
+}

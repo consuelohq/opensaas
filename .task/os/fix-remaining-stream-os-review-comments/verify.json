@@ -1,0 +1,203 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/fix-remaining-stream-os-review-comments",
+  "base": "origin/stream/os",
+  "headSha": "7831495029193fa9ae3ccf9a25f8be4c8c310d71",
+  "changeHash": "b80934f5acd079ffbf51f257fd50fad9879ef58c12267be42ec2781acb62f341",
+  "changedFiles": [
+    "packages/os/cloudflare/os-device-authority/src/services/mcp-proxy.ts",
+    "packages/os/cloudflare/os-device-authority/src/services/nodes.ts",
+    "packages/os/cloudflare/os-device-authority/src/stores.ts",
+    "packages/os/cloudflare/os-device-authority/src/types.ts",
+    "packages/os/scripts/lib/settings-site.ts",
+    "packages/os/tests/launcher-nodes-control-plane.test.ts",
+    "packages/os/tests/settings-site.test.ts",
+    "packages/os/tests/trace-persistence.test.ts",
+    "packages/os/tests/workspace-edge-sites-gateway-integration.test.ts",
+    "packages/os/tests/workspace-node-registry-routing.test.ts"
+  ],
+  "verifiedAt": "2026-08-12T18:11:35.810Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/fix-remaining-stream-os-review-comments/current.json",
+        ".task/os/fix-remaining-stream-os-review-comments/evidence-log.json",
+        ".task/os/fix-remaining-stream-os-review-comments/read-log.json",
+        ".task/os/fix-remaining-stream-os-review-comments/session.json",
+        ".task/os/fix-remaining-stream-os-review-comments/workpad.md",
+        ".task/tasks/os/fix-remaining-stream-os-review-comments.json",
+        "packages/os/cloudflare/os-device-authority/src/services/mcp-proxy.ts",
+        "packages/os/cloudflare/os-device-authority/src/services/nodes.ts",
+        "packages/os/cloudflare/os-device-authority/src/stores.ts",
+        "packages/os/cloudflare/os-device-authority/src/types.ts",
+        "packages/os/scripts/lib/settings-site.ts",
+        "packages/os/tests/launcher-nodes-control-plane.test.ts",
+        "packages/os/tests/settings-site.test.ts",
+        "packages/os/tests/trace-persistence.test.ts",
+        "packages/os/tests/workspace-edge-sites-gateway-integration.test.ts",
+        "packages/os/tests/workspace-node-registry-routing.test.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "os-workspace-edge-rollout",
+          "critical": true,
+          "reason": "Workspace edge rollout changes must preserve immutable snapshots and live node/connector route state without relying on a broad package test.",
+          "matchedFiles": [
+            "packages/os/tests/workspace-edge-sites-gateway-integration.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "auto:@consuelo/os:package-test",
+          "critical": false,
+          "reason": "Auto-discovered package test script for packages/os.",
+          "matchedFiles": [
+            "packages/os/cloudflare/os-device-authority/src/services/mcp-proxy.ts",
+            "packages/os/cloudflare/os-device-authority/src/services/nodes.ts",
+            "packages/os/cloudflare/os-device-authority/src/stores.ts",
+            "packages/os/cloudflare/os-device-authority/src/types.ts",
+            "packages/os/scripts/lib/settings-site.ts",
+            "packages/os/tests/launcher-nodes-control-plane.test.ts",
+            "packages/os/tests/settings-site.test.ts",
+            "packages/os/tests/trace-persistence.test.ts",
+            "packages/os/tests/workspace-edge-sites-gateway-integration.test.ts",
+            "packages/os/tests/workspace-node-registry-routing.test.ts"
+          ],
+          "origin": "auto"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "OS workspace edge snapshot publisher contracts",
+          "command": [
+            "env",
+            "CONSUELO_RUN_WORKSPACE_GATEWAY_CONTRACTS=1",
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/install-edge-site-publisher.test.ts"
+          ],
+          "ruleId": "os-workspace-edge-rollout",
+          "critical": true
+        },
+        {
+          "name": "OS workspace edge route preservation contracts",
+          "command": [
+            "env",
+            "CONSUELO_RUN_WORKSPACE_GATEWAY_CONTRACTS=1",
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/workspace-edge-route-seed-contract.test.ts",
+            "tests/workspace-edge-sites-gateway-integration.test.ts"
+          ],
+          "ruleId": "os-workspace-edge-rollout",
+          "critical": true
+        },
+        {
+          "name": "@consuelo/os package test",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "run",
+            "test"
+          ],
+          "ruleId": "auto:@consuelo/os:package-test",
+          "critical": false
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "OS workspace edge snapshot publisher contracts",
+          "command": [
+            "env",
+            "CONSUELO_RUN_WORKSPACE_GATEWAY_CONTRACTS=1",
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/install-edge-site-publisher.test.ts"
+          ],
+          "ruleId": "os-workspace-edge-rollout",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 394,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-remaining-stream-os-review-comments/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/install-edge-site-publisher.test.ts \u001b[2m(\u001b[22m\u001b[2m7 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 34\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m7 passed\u001b[39m\u001b[22m\u001b[90m (7)\u001b[39m\n\u001b[2m   Start at \u001b[22m 14:11:35\n\u001b[2m   Duration \u001b[22m 101ms\u001b[2m (transform 35ms, setup 0ms, import 26ms, tests 34ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS workspace edge route preservation contracts",
+          "command": [
+            "env",
+            "CONSUELO_RUN_WORKSPACE_GATEWAY_CONTRACTS=1",
+            "bun",
+            "--cwd",
+            "packages/os",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/workspace-edge-route-seed-contract.test.ts",
+            "tests/workspace-edge-sites-gateway-integration.test.ts"
+          ],
+          "ruleId": "os-workspace-edge-rollout",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 328,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-remaining-stream-os-review-comments/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/workspace-edge-route-seed-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 41\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/workspace-edge-sites-gateway-integration.test.ts \u001b[2m(\u001b[22m\u001b[2m14 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 60\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m23 passed\u001b[39m\u001b[22m\u001b[90m (23)\u001b[39m\n\u001b[2m   Start at \u001b[22m 14:11:35\n\u001b[2m   Duration \u001b[22m 136ms\u001b[2m (transform 104ms, setup 0ms, import 67ms, tests 102ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "@consuelo/os package test",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "run",
+            "test"
+          ],
+          "ruleId": "auto:@consuelo/os:package-test",
+          "critical": false,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 5,
+          "outputTail": "dev --config cloudflare/workspace-edge/wrangler.toml\n\n  $ bun run cloudflare:workspace-edge:deploy:dry-run\n    wrangler deploy --config cloudflare/workspace-edge/wrangler.toml --dry-run\n\n  $ bun run cloudflare:workspace-edge:deploy\n    bun ./scripts/deploy-cloudflare-worker.ts workspace-edge\n\n  $ bun run cloudflare:workspace-edge:migrate\n    wrangler d1 migrations apply consuelo-workspace-route-registry --config cloudflare/workspace-edge/wrangler.toml\n\n  $ bun run cloudflare:workspace-edge:seed\n    bun ./scripts/seed-workspace-edge-route.ts\n\n  $ bun run platform:managed-os-mcp-ingress:provision\n    bun ./scripts/provision-managed-os-mcp-ingress-policy.ts\n\n  $ bun run cloud:node\n    bun ./scripts/managed-cloud-node.ts\n\n  $ bun run smoke:workspace-edge\n    bun ./scripts/smoke-workspace-edge.ts\n\n  $ bun run media\n    bun ./scripts/media.ts\n\n  $ bun run media:doctor\n    bun ./scripts/media.ts doctor --json\n\n  $ bun run media:install\n    bun ./scripts/media.ts install\n\n  $ bun run media:screenshot\n    bun ./scripts/media.ts screenshot render\n\n  $ bun run media:test\n    vitest run tests/media\n\n  $ bun run media:test:manifest\n    vitest run tests/media/00-manifest-taxonomy.test.ts tests/media/01-package-boundaries.test.ts tests/media/02-workflow-intent.test.ts\n\n  $ bun run media:test:deps\n    vitest run tests/media/03-runtime-dependency-catalog.test.ts tests/media/04-installer-plan.test.ts tests/media/05-doctor.test.ts\n\n  $ bun run media:test:contracts\n    vitest run tests/media/06-effect-architecture.test.ts tests/media/07-contracts-asset.test.ts tests/media/08-contracts-timeline.test.ts tests/media/09-contracts-render-result.test.ts tests/media/10-cli-json-envelope.test.ts\n\n  $ bun run media:test:core\n    vitest run tests/media/11-core-probe.test.ts tests/media/12-core-frames-extract.test.ts tests/media/13-core-timeline-validate.test.ts tests/media/14-core-compose.test.ts tests/media/15-core-qa.test.ts\n\n  $ bun run media:test:youtube\n    vitest run tests/media/18-youtube-clip-search.test.ts tests/media/19-youtube-ingest.test.ts\n\n  $ bun run media:test:audio\n    vitest run tests/media/20-audio-transcribe.test.ts\n\n  $ bun run media:test:vision\n    vitest run tests/media/21-scene-detect.test.ts tests/media/22-vision-light-opencv.test.ts tests/media/23-vision-pose-mediapipe.test.ts tests/media/24-motion-track.test.ts\n\n  $ bun run media:test:render\n    vitest run tests/media/25-overlay-render.test.ts tests/media/26-sports-science-breakdown.test.ts tests/media/27-export-package.test.ts tests/media/32-screenshot-render.test.ts\n\n  $ bun run media:test:handoff\n    vitest run tests/media/28-artifact-handoff.test.ts tests/media/29-storage-budget.test.ts tests/media/30-fixtures-integration.test.ts\n\n  $ bun run media:test:ingest\n    vitest run tests/media/16-source-capture-internal.test.ts tests/media/17-media-ingest-source-capture.test.ts tests/media/18-youtube-clip-search.test.ts tests/media/19-youtube-ingest.test.ts\n\n  $ bun run media:test:svg\n    vitest run tests/media/31-svg-convert.test.ts\n\n  $ bun run media:svg\n    python3 ./scripts/media-svg.py\n\n  $ bun run trace:watch\n    bun ./scripts/trace-watch.ts\n\n  $ bun run build:observability-traces-runtime\n    bun build ./scripts/lib/trace-site-inspector/browser.ts --outfile ./assets/vendor/observability-traces-v38/inspector.js --target browser --format iife --minify\n\n  $ bun run generate-tool-manifest:check\n    bun ./scripts/generate-tool-manifest.ts --check\n\n  $ bun run lifecycle\n    bun ./scripts/lifecycle.ts\n\n  $ bun run windows-platform\n    bun ./scripts/windows-platform.ts\n\n  $ bun run managed-components\n    bun ./scripts/managed-components.ts\n\n  $ bun run cloudflare:device-authority:deploy:dry-run\n    wrangler deploy --config cloudflare/os-device-authority/wrangler.toml --dry-run\n\n  $ bun run cloudflare:device-authority:deploy\n    bun ./scripts/deploy-cloudflare-worker.ts os-device-authority\n\n  $ bun run login\n    bun ./scripts/login.ts\n\n  $ bun run secrets\n    bun ./scripts/secrets.ts\n\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

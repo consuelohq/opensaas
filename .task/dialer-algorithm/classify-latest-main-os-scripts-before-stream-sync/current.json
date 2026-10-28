@@ -1,0 +1,19 @@
+{
+  "area": "dialer-algorithm",
+  "stream": "stream/dialer-algorithm",
+  "taskBranch": "task/dialer-algorithm/classify-latest-main-os-scripts-before-stream-sync",
+  "baseBranch": "stream/dialer-algorithm",
+  "sourceBranch": "stream/dialer-algorithm",
+  "startFrom": "stream",
+  "prNumber": 2093,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2093",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2093",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2093/classify-latest-main-os-scripts-before-stream-sync",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2093",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2093/classify-latest-main-os-scripts-before-stream-sync",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-classify-latest-main-os-scripts-before-stream-sync",
+  "taskSession": "tsk_7b4f167bc35f",
+  "tmuxSession": "opensaas-dialer-algorithm-classify-latest-main-os-scripts-before-stream-sy-7b4f167b",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-classify-latest-main-os-scripts-before-stream-sync/.task/dialer-algorithm/classify-latest-main-os-scripts-before-stream-sync/session.json",
+  "createdAt": "2026-08-15T20:12:49.417Z"
+}

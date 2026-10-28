@@ -1,0 +1,557 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/restore-synthetic-checkout-onto-current-production-device-authority",
+  "base": "origin/main",
+  "headSha": "0c9938e391248c29658bbbe2ee0a697eb9d1eaee",
+  "changeHash": "bd161bd2aae0c355766219a18df3891ce314bd173deeba331289e5c4f9d53f42",
+  "changedFiles": [
+    "packages/os/cloudflare/os-device-authority/src/app.ts",
+    "packages/os/cloudflare/os-device-authority/src/routes/health.ts",
+    "packages/os/cloudflare/os-device-authority/src/routes/web-auth.ts",
+    "packages/os/cloudflare/os-device-authority/src/security/route-policies.ts",
+    "packages/os/cloudflare/os-device-authority/src/security/web-auth-contract.ts",
+    "packages/os/cloudflare/os-device-authority/src/services/checkout-observability.ts",
+    "packages/os/cloudflare/os-device-authority/src/services/managed-cloud-billing.ts",
+    "packages/os/cloudflare/os-device-authority/src/services/synthetic-checkout.ts",
+    "packages/os/cloudflare/os-device-authority/src/types.ts",
+    "packages/os/cloudflare/os-device-authority/src/worker.ts",
+    "packages/os/scripts/lib/device-authority-release-readiness.ts",
+    "packages/os/tests/managed-cloud-checkout-observability.test.ts",
+    "packages/os/tests/os-device-authority-architecture.test.ts",
+    "packages/os/tests/os-device-authority-release-contract.test.ts",
+    "packages/workspace/test-selection.registry.json",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "verifiedAt": "2026-08-15T05:06:55.227Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/restore-synthetic-checkout-onto-current-production-device-authority/current.json",
+        ".task/os/restore-synthetic-checkout-onto-current-production-device-authority/evidence-log.json",
+        ".task/os/restore-synthetic-checkout-onto-current-production-device-authority/read-log.json",
+        ".task/os/restore-synthetic-checkout-onto-current-production-device-authority/session.json",
+        ".task/os/restore-synthetic-checkout-onto-current-production-device-authority/verify.json",
+        ".task/os/restore-synthetic-checkout-onto-current-production-device-authority/workpad.md",
+        ".task/tasks/os/restore-synthetic-checkout-onto-current-production-device-authority.json",
+        "packages/os/cloudflare/os-device-authority/src/app.ts",
+        "packages/os/cloudflare/os-device-authority/src/routes/health.ts",
+        "packages/os/cloudflare/os-device-authority/src/routes/web-auth.ts",
+        "packages/os/cloudflare/os-device-authority/src/security/route-policies.ts",
+        "packages/os/cloudflare/os-device-authority/src/security/web-auth-contract.ts",
+        "packages/os/cloudflare/os-device-authority/src/services/checkout-observability.ts",
+        "packages/os/cloudflare/os-device-authority/src/services/managed-cloud-billing.ts",
+        "packages/os/cloudflare/os-device-authority/src/services/synthetic-checkout.ts",
+        "packages/os/cloudflare/os-device-authority/src/types.ts",
+        "packages/os/cloudflare/os-device-authority/src/worker.ts",
+        "packages/os/scripts/lib/device-authority-release-readiness.ts",
+        "packages/os/tests/managed-cloud-checkout-observability.test.ts",
+        "packages/os/tests/os-device-authority-architecture.test.ts",
+        "packages/os/tests/os-device-authority-release-contract.test.ts",
+        "packages/workspace/test-selection.registry.json",
+        "packages/workspace/test-selection.rules.json",
+        "packages/workspace/tests/test-selection.test.js"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-test-selection",
+          "critical": true,
+          "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy.",
+          "matchedFiles": [
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-release-surface-freshness",
+          "critical": true,
+          "exclusive": true,
+          "reason": "OS release, signed runtime publication, default workspace-shell snapshots, and Workspace Edge migrations must prove the focused freshness path without selecting unrelated package-wide OS tests.",
+          "matchedFiles": [
+            "packages/os/tests/os-device-authority-release-contract.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-managed-cloud-checkout-observability",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Managed-cloud checkout, Stripe synthetic testing, PostHog funnel instrumentation, Sentry error reporting, and checkout security changes must prove focused billing/auth/release contracts without selecting the historically noisy unrelated OS package suite.",
+          "matchedFiles": [
+            "packages/os/cloudflare/os-device-authority/src/security/web-auth-contract.ts",
+            "packages/os/cloudflare/os-device-authority/src/services/checkout-observability.ts",
+            "packages/os/cloudflare/os-device-authority/src/services/managed-cloud-billing.ts",
+            "packages/os/cloudflare/os-device-authority/src/services/synthetic-checkout.ts",
+            "packages/os/scripts/lib/device-authority-release-readiness.ts",
+            "packages/os/tests/managed-cloud-checkout-observability.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-cloud-first-auth-onboarding",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Cloud-first Consuelo OS login, canonical signup, workspace trial, and provisioning handoff changes must prove the exact browser auth, managed-cloud, installer-lifecycle, launcher, Worker, and syntax contracts without selecting unrelated package-wide OS tests.",
+          "matchedFiles": [
+            "packages/os/cloudflare/os-device-authority/src/routes/health.ts",
+            "packages/os/cloudflare/os-device-authority/src/routes/web-auth.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-managed-cloud-one-click-provisioning",
+          "critical": true,
+          "exclusive": true,
+          "reason": "One-click managed-cloud control-plane, launcher, provisioning-runner, enrollment, and Worker changes must prove their focused security and lifecycle contracts without selecting the historically red unrelated OS package suite.",
+          "matchedFiles": [
+            "packages/os/cloudflare/os-device-authority/src/app.ts",
+            "packages/os/cloudflare/os-device-authority/src/security/route-policies.ts",
+            "packages/os/cloudflare/os-device-authority/src/types.ts",
+            "packages/os/cloudflare/os-device-authority/src/worker.ts",
+            "packages/os/tests/os-device-authority-architecture.test.ts",
+            "packages/os/tests/os-device-authority-release-contract.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "server-ci-task-contract",
+          "critical": true,
+          "reason": "Server CI changes must scope lint and typecheck to directly changed Twenty server runtime files while retaining dependency propagation.",
+          "matchedFiles": [
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true
+        },
+        {
+          "name": "OS release freshness contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/os-device-authority-release-contract.test.ts",
+            "tests/distribution/release-channel-workflows.test.ts"
+          ],
+          "ruleId": "os-release-surface-freshness",
+          "critical": true
+        },
+        {
+          "name": "Workspace production release contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/website-deploy.test.js"
+          ],
+          "ruleId": "os-release-surface-freshness",
+          "critical": true
+        },
+        {
+          "name": "Workspace Edge release dry run",
+          "command": [
+            "bun",
+            "run",
+            "os:release-workspace-edge",
+            "--",
+            "--dry-run"
+          ],
+          "ruleId": "os-release-surface-freshness",
+          "critical": true
+        },
+        {
+          "name": "OS managed cloud checkout observability contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "vitest",
+            "run",
+            "tests/managed-cloud-checkout-observability.test.ts",
+            "tests/cloud-first-web-onboarding.test.ts",
+            "tests/os-device-authority-worker.test.ts",
+            "tests/os-device-authority-release-contract.test.ts",
+            "tests/os-web-auth-contract.test.ts",
+            "tests/os-device-authority-architecture.test.ts",
+            "tests/os-universal-login.test.ts",
+            "tests/security-scan.test.ts"
+          ],
+          "ruleId": "os-managed-cloud-checkout-observability",
+          "critical": true
+        },
+        {
+          "name": "OS managed cloud checkout observability syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "ruleId": "os-managed-cloud-checkout-observability",
+          "critical": true
+        },
+        {
+          "name": "OS cloud-first auth onboarding contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/os-universal-login.test.ts",
+            "tests/cloud-first-web-onboarding.test.ts",
+            "tests/managed-cloud-one-click-provisioning.test.ts",
+            "tests/managed-cloud-one-click-runner.test.ts",
+            "tests/managed-cloud-node-enrollment.test.ts",
+            "tests/managed-cloud-node-lifecycle-onboarding.test.ts",
+            "tests/launcher-nodes-control-plane.test.ts",
+            "tests/managed-cloud-pricing.test.ts"
+          ],
+          "ruleId": "os-cloud-first-auth-onboarding",
+          "critical": true
+        },
+        {
+          "name": "OS cloud-first auth onboarding Worker contract",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/os-device-authority-worker.test.ts"
+          ],
+          "ruleId": "os-cloud-first-auth-onboarding",
+          "critical": true
+        },
+        {
+          "name": "OS one-click managed cloud contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/managed-cloud-one-click-provisioning.test.ts",
+            "tests/managed-cloud-one-click-runner.test.ts",
+            "tests/launcher-nodes-control-plane.test.ts",
+            "tests/settings-site.test.ts",
+            "tests/cloudflare-worker-release-readiness.test.ts",
+            "tests/os-device-authority-architecture.test.ts",
+            "tests/os-device-authority-release-contract.test.ts",
+            "tests/managed-cloud-node-enrollment.test.ts",
+            "tests/managed-cloud-node-enrollment-cli.test.ts",
+            "tests/platform-managed-cloud-node.test.ts",
+            "tests/managed-cloud-pricing.test.ts",
+            "tests/managed-cloud-node-instance-contract.test.ts",
+            "tests/managed-cloud-node-contract.test.ts"
+          ],
+          "ruleId": "os-managed-cloud-one-click-provisioning",
+          "critical": true
+        },
+        {
+          "name": "changed server task selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "TypeORM CLI compatibility contract",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 2442,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-restore-synthetic-checkout-onto-current-production-device-authority\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/test-selection.test.js \u001b[2m(\u001b[22m\u001b[2m36 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 2128\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m discovers and seeds the existing test inventory \u001b[33m 1017\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m36 passed\u001b[39m\u001b[22m\u001b[90m (36)\u001b[39m\n\u001b[2m   Start at \u001b[22m 01:06:43\n\u001b[2m   Duration \u001b[22m 2.21s\u001b[2m (transform 14ms, setup 0ms, import 21ms, tests 2.13s, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS release freshness contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/os-device-authority-release-contract.test.ts",
+            "tests/distribution/release-channel-workflows.test.ts"
+          ],
+          "ruleId": "os-release-surface-freshness",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1014,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-restore-synthetic-checkout-onto-current-production-device-authority/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/distribution/release-channel-workflows.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 28\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-release-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m13 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 673\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should stop release before remote mutation when readiness fails \u001b[33m 578\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m21 passed\u001b[39m\u001b[22m\u001b[90m (21)\u001b[39m\n\u001b[2m   Start at \u001b[22m 01:06:46\n\u001b[2m   Duration \u001b[22m 777ms\u001b[2m (transform 199ms, setup 0ms, import 114ms, tests 701ms, environment 0ms)\u001b[22m\n\n$ vitest run tests/os-device-authority-release-contract.test.ts tests/distribution/release-channel-workflows.test.ts\n"
+        },
+        {
+          "name": "Workspace production release contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/website-deploy.test.js"
+          ],
+          "ruleId": "os-release-surface-freshness",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 781,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-restore-synthetic-checkout-onto-current-production-device-authority\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/website-deploy.test.js \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 484\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m allows local deploys to use existing Wrangler auth when CLOUDFLARE_API_TOKEN is absent \u001b[33m 462\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m3 passed\u001b[39m\u001b[22m\u001b[90m (3)\u001b[39m\n\u001b[2m   Start at \u001b[22m 01:06:47\n\u001b[2m   Duration \u001b[22m 552ms\u001b[2m (transform 8ms, setup 0ms, import 13ms, tests 484ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "Workspace Edge release dry run",
+          "command": [
+            "bun",
+            "run",
+            "os:release-workspace-edge",
+            "--",
+            "--dry-run"
+          ],
+          "ruleId": "os-release-surface-freshness",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 633,
+          "outputTail": "release=consuelo-workspace-edge\n$ bun run --cwd packages/os cloudflare:workspace-edge:deploy:dry-run\n\n ⛅️ wrangler 4.114.0 (update available 4.123.0)\n───────────────────────────────────────────────\nTotal Upload: 179.39 KiB / gzip: 39.19 KiB\nYour Worker has access to the following bindings:\nBinding                                                                                                 Resource            \nenv.OS_DEVICE_AUTHORITY (OsDeviceGrantDurableObject, defined in consuelo-os-device-authority)           Durable Object      \nenv.WORKSPACE_ROUTE_REGISTRY (consuelo-workspace-route-registry)                                        D1 Database         \nenv.SITES_SNAPSHOTS (consuelo-sites-snapshots)                                                          R2 Bucket           \n\n--dry-run: exiting now.\nConsuelo Workspace Edge dry run complete\n$ bun packages/workspace/scripts/os-release-workspace-edge.ts --dry-run\n$ wrangler deploy --config cloudflare/workspace-edge/wrangler.toml --dry-run\n"
+        },
+        {
+          "name": "OS managed cloud checkout observability contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "vitest",
+            "run",
+            "tests/managed-cloud-checkout-observability.test.ts",
+            "tests/cloud-first-web-onboarding.test.ts",
+            "tests/os-device-authority-worker.test.ts",
+            "tests/os-device-authority-release-contract.test.ts",
+            "tests/os-web-auth-contract.test.ts",
+            "tests/os-device-authority-architecture.test.ts",
+            "tests/os-universal-login.test.ts",
+            "tests/security-scan.test.ts"
+          ],
+          "ruleId": "os-managed-cloud-checkout-observability",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 779,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-restore-synthetic-checkout-onto-current-production-device-authority/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/security-scan.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 7\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-web-auth-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 8\u001b[2mms\u001b[22m\u001b[39m\n\u001b[90mstdout\u001b[2m | tests/managed-cloud-checkout-observability.test.ts\u001b[2m > \u001b[22m\u001b[2mmanaged cloud checkout observability\u001b[2m > \u001b[22m\u001b[2mprojects checkout events to PostHog without email, secrets, or raw payloads\n\u001b[22m\u001b[39m{\"event\":\"consuelo.os.checkout\",\"event_id\":\"evt_checkout_observe_1\",\"event_name\":\"checkout_session_created\",\"synthetic\":false,\"account_id\":\"user_opaque_123\",\"checkout_id\":\"mcc_opaque_456\",\"plan_id\":\"performance\",\"pricing_version\":\"pricing-v1\",\"monthly_price_cents\":12500,\"currency\":\"USD\",\"outcome\":\"success\"}\n\n \u001b[32m✓\u001b[39m tests/managed-cloud-checkout-observability.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 48\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-architecture.test.ts \u001b[2m(\u001b[22m\u001b[2m25 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 50\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/cloud-first-web-onboarding.test.ts \u001b[2m(\u001b[22m\u001b[2m13 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 80\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-universal-login.test.ts \u001b[2m(\u001b[22m\u001b[2m10 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 42\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-worker.test.ts \u001b[2m(\u001b[22m\u001b[2m31 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 103\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-release-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m13 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 443\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should stop release before remote mutation when readiness fails \u001b[33m 366\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m8 passed\u001b[39m\u001b[22m\u001b[90m (8)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m114 passed\u001b[39m\u001b[22m\u001b[90m (114)\u001b[39m\n\u001b[2m   Start at \u001b[22m 01:06:48\n\u001b[2m   Duration \u001b[22m 615ms\u001b[2m (transform 1.59s, setup 0ms, import 1.87s, tests 781ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS managed cloud checkout observability syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "ruleId": "os-managed-cloud-checkout-observability",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1746,
+          "outputTail": "workspace script syntax checks passed\n"
+        },
+        {
+          "name": "OS cloud-first auth onboarding contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/os-universal-login.test.ts",
+            "tests/cloud-first-web-onboarding.test.ts",
+            "tests/managed-cloud-one-click-provisioning.test.ts",
+            "tests/managed-cloud-one-click-runner.test.ts",
+            "tests/managed-cloud-node-enrollment.test.ts",
+            "tests/managed-cloud-node-lifecycle-onboarding.test.ts",
+            "tests/launcher-nodes-control-plane.test.ts",
+            "tests/managed-cloud-pricing.test.ts"
+          ],
+          "ruleId": "os-cloud-first-auth-onboarding",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 958,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-restore-synthetic-checkout-onto-current-production-device-authority/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/managed-cloud-pricing.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 6\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-one-click-provisioning.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 38\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/cloud-first-web-onboarding.test.ts \u001b[2m(\u001b[22m\u001b[2m13 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 63\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/launcher-nodes-control-plane.test.ts \u001b[2m(\u001b[22m\u001b[2m7 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 29\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-universal-login.test.ts \u001b[2m(\u001b[22m\u001b[2m10 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 41\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-node-enrollment.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 562\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m persists one owner-only node keypair and reuses it across enrollment retries \u001b[33m 541\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-node-lifecycle-onboarding.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 590\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m builds deterministic noninteractive installer args from the cloud descriptor \u001b[33m 584\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-one-click-runner.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m8 passed\u001b[39m\u001b[22m\u001b[90m (8)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m56 passed\u001b[39m\u001b[22m\u001b[90m (56)\u001b[39m\n\u001b[2m   Start at \u001b[22m 01:06:50\n\u001b[2m   Duration \u001b[22m 740ms\u001b[2m (transform 2.12s, setup 0ms, import 2.41s, tests 1.33s, environment 1ms)\u001b[22m\n\n$ vitest run tests/os-universal-login.test.ts tests/cloud-first-web-onboarding.test.ts tests/managed-cloud-one-click-provisioning.test.ts tests/managed-cloud-one-click-runner.test.ts tests/managed-cloud-node-enrollment.test.ts tests/managed-cloud-node-lifecycle-onboarding.test.ts tests/launcher-nodes-control-plane.test.ts tests/managed-cloud-pricing.test.ts\n"
+        },
+        {
+          "name": "OS cloud-first auth onboarding Worker contract",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/os-device-authority-worker.test.ts"
+          ],
+          "ruleId": "os-cloud-first-auth-onboarding",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 778,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-restore-synthetic-checkout-onto-current-production-device-authority\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/os-device-authority-worker.test.ts \u001b[2m(\u001b[22m\u001b[2m31 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 84\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m31 passed\u001b[39m\u001b[22m\u001b[90m (31)\u001b[39m\n\u001b[2m   Start at \u001b[22m 01:06:51\n\u001b[2m   Duration \u001b[22m 499ms\u001b[2m (transform 290ms, setup 0ms, import 347ms, tests 84ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS one-click managed cloud contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/managed-cloud-one-click-provisioning.test.ts",
+            "tests/managed-cloud-one-click-runner.test.ts",
+            "tests/launcher-nodes-control-plane.test.ts",
+            "tests/settings-site.test.ts",
+            "tests/cloudflare-worker-release-readiness.test.ts",
+            "tests/os-device-authority-architecture.test.ts",
+            "tests/os-device-authority-release-contract.test.ts",
+            "tests/managed-cloud-node-enrollment.test.ts",
+            "tests/managed-cloud-node-enrollment-cli.test.ts",
+            "tests/platform-managed-cloud-node.test.ts",
+            "tests/managed-cloud-pricing.test.ts",
+            "tests/managed-cloud-node-instance-contract.test.ts",
+            "tests/managed-cloud-node-contract.test.ts"
+          ],
+          "ruleId": "os-managed-cloud-one-click-provisioning",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1435,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-restore-synthetic-checkout-onto-current-production-device-authority/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/platform-managed-cloud-node.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 121\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-node-instance-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 115\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-pricing.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 8\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-node-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 30\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/cloudflare-worker-release-readiness.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 4\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-one-click-provisioning.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 44\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-architecture.test.ts \u001b[2m(\u001b[22m\u001b[2m25 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 54\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-node-enrollment-cli.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 878\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m parses explicit home, onboarding, and status paths \u001b[33m 875\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-node-enrollment.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 852\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m persists one owner-only node keypair and reuses it across enrollment retries \u001b[33m 837\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/launcher-nodes-control-plane.test.ts \u001b[2m(\u001b[22m\u001b[2m7 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 43\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-one-click-runner.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-release-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m13 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 901\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should stop release before remote mutation when readiness fails \u001b[33m 681\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/settings-site.test.ts \u001b[2m(\u001b[22m\u001b[2m7 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 124\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m13 passed\u001b[39m\u001b[22m\u001b[90m (13)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m93 passed\u001b[39m\u001b[22m\u001b[90m (93)\u001b[39m\n\u001b[2m   Start at \u001b[22m 01:06:52\n\u001b[2m   Duration \u001b[22m 1.24s\u001b[2m (transform 3.72s, setup 0ms, import 4.13s, tests 3.18s, environment 5ms)\u001b[22m\n\n$ vitest run tests/managed-cloud-one-click-provisioning.test.ts tests/managed-cloud-one-click-runner.test.ts tests/launcher-nodes-control-plane.test.ts tests/settings-site.test.ts tests/cloudflare-worker-release-readiness.test.ts tests/os-device-authority-architecture.test.ts tests/os-device-authority-release-contract.test.ts tests/managed-cloud-node-enrollment.test.ts tests/managed-cloud-node-enrollment-cli.test.ts tests/platform-managed-cloud-node.test.ts tests/managed-cloud-pricing.test.ts tests/managed-cloud-node-instance-contract.test.ts tests/managed-cloud-node-contract.test.ts\n"
+        },
+        {
+          "name": "changed server task selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 74,
+          "outputTail": "No changed Twenty server runtime files require lint or typecheck.\nRunning server lint and baseline-aware typecheck for 1 directly changed file(s).\nTwenty server typecheck matched 1 known baseline diagnostic(s).\nRunning server lint and baseline-aware typecheck for 1 directly changed file(s).\nNo changed Twenty server schema files require GraphQL generation.\nNo changed Twenty server runtime files require migration generation.\nNo changesgeneratedTwenty server migration drift matched 2 known baseline operation(s).\ngeneratedgenerated✔ parseCliArguments resolves comparison SHAs (0.708792ms)\n✔ parseCliArguments selects GraphQL generation mode (0.05475ms)\n✔ parseCliArguments selects migration generation mode (0.054333ms)\n✔ filterServerTaskFiles excludes root and config-only triggers (0.085416ms)\n✔ filterGraphqlGenerationFiles keeps only server schema and generated files (0.087792ms)\n✔ buildEslintArguments selects the owning project config and stdin filename (0.063709ms)\n✔ ESLint diagnostic comparison tracks new error multiplicity without line numbers (0.1825ms)\n✔ runChangedFileLint accepts base-existing errors and rejects a new changed-file error (0.824458ms)\n✔ runChangedFileLint allows explicit lint baseline debt but rejects diagnostics beyond it (0.779292ms)\n✔ buildTypecheckArguments uses standard TypeScript without emitting (0.072375ms)\n✔ TypeScript diagnostic baseline comparison rejects only new diagnostic keys (0.168084ms)\n✔ runChangedServerTask skips Nx for config-only changes (0.337792ms)\n✔ runChangedServerTask executes lint and baseline-aware typecheck for server runtime changes (0.098625ms)\n✔ runChangedServerTask rejects a new TypeScript diagnostic outside the baseline (0.1035ms)\n✔ server lint configuration resolves the existing workspace rules project (0.385083ms)\n✔ runGraphqlGenerationCheck skips generation without schema changes (0.115625ms)\n✔ runGraphqlGenerationCheck generates and verifies committed outputs (0.189041ms)\n✔ runMigrationGenerationCheck skips generation without server runtime changes (0.100542ms)\n✔ runMigrationGenerationCheck accepts a no-change TypeORM exit (0.091875ms)\n✔ runMigrationGenerationCheck accepts and removes exact known migration drift (0.308083ms)\n✔ runMigrationGenerationCheck rejects changed drift beyond the baseline (0.127458ms)\n✔ runMigrationGenerationCheck rejects and removes generated drift (0.112875ms)\nℹ tests 22\nℹ suites 0\nℹ pass 22\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 46.296875\n"
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 153,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/workspace/tests/github-workflow-policy.test.js:\n(pass) GitHub workflow policy > does not include retired automation workflows [0.08ms]\n(pass) GitHub workflow policy > does not reference retired CI credentials or the disabled Chromatic job [3.84ms]\n(pass) GitHub workflow policy > does not retain privileged allowlist entries for deleted workflows [0.15ms]\n(pass) GitHub workflow policy > runs typecheck and test from the filtered frontend file set [0.05ms]\n(pass) GitHub workflow policy > installs Bun and scopes shared tasks to changed frontend files [0.04ms]\n(pass) GitHub workflow policy > scopes native OS distribution tests to relevant changed files [0.05ms]\n(pass) GitHub workflow policy > runs Docker Compose CI with the pgvector PostgreSQL image required by migrations [0.03ms]\n(pass) GitHub workflow policy > uses available hosted runners for the Server and Front build pipelines [0.08ms]\n(pass) GitHub workflow policy > builds Consuelo backend workspace dependencies before server typecheck [0.05ms]\n(pass) GitHub workflow policy > installs Bun before the Server unit-test job runs Bun package tests [0.04ms]\n(pass) GitHub workflow policy > allows enough time for Danger dependency installation and execution [0.03ms]\n(pass) GitHub workflow policy > explicitly allowlists the API breaking-changes workflow write permissions [0.02ms]\n\n 12 pass\n 0 fail\n 53 expect() calls\nRan 12 tests across 1 file. [146.00ms]\n"
+        },
+        {
+          "name": "TypeORM CLI compatibility contract",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 869,
+          "outputTail": "✔ Twenty server uses the Node 24-compatible TypeORM ts-node wrapper (0.325ms)\n✔ the configured TypeORM wrapper resolves from the installed package (802.818833ms)\nℹ tests 2\nℹ suites 0\nℹ pass 2\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 840.840875\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

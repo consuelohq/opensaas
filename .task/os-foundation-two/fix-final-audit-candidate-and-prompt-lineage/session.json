@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_febdb34d6c61",
+  "tmuxSession": "opensaas-os-foundation-two-fix-final-audit-candidate-and-prompt-lineage-febdb34d",
+  "area": "os-foundation-two",
+  "stream": "stream/os-foundation-two",
+  "taskBranch": "task/os-foundation-two/fix-final-audit-candidate-and-prompt-lineage",
+  "branch": "task/os-foundation-two/fix-final-audit-candidate-and-prompt-lineage",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-foundation-two-fix-final-audit-candidate-and-prompt-lineage",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-foundation-two-fix-final-audit-candidate-and-prompt-lineage",
+  "prNumber": 1677,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1677",
+  "createdAt": "2026-07-27T18:48:46.338Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-foundation-two-fix-final-audit-candidate-and-prompt-lineage/.task/os-foundation-two/fix-final-audit-candidate-and-prompt-lineage/session.json"
+}

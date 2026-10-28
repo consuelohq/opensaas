@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "worktree_id": "task/dialer-algorithm/resolve-dialer-stream-release-gates",
+  "events": [
+    {
+      "id": "1989ce58-a1b7-4d20-80a0-b4c756ed061b",
+      "occurred_at": "2026-08-15T10:28:15.720Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/facade/facade.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer-algorithm/resolve-dialer-stream-release-gates",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer-algorithm/resolve-dialer-stream-release-gates"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-15T10:28:15.7

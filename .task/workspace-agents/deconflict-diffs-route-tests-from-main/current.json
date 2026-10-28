@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/deconflict-diffs-route-tests-from-main",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 1883,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1883",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1883",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1883/deconflict-diffs-route-tests-from-main",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1883",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1883/deconflict-diffs-route-tests-from-main",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-deconflict-diffs-route-tests-from-main",
+  "taskSession": "tsk_88d2acafcfc4",
+  "tmuxSession": "opensaas-workspace-agents-deconflict-diffs-route-tests-from-main-88d2acaf",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-deconflict-diffs-route-tests-from-main/.task/workspace-agents/deconflict-diffs-route-tests-from-main/session.json",
+  "createdAt": "2026-08-12T04:41:10.748Z"
+}

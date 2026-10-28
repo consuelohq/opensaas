@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_9e2d40dee68a",
+  "tmuxSession": "opensaas-security-polish-os-device-oauth-ux-9e2d40de",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/polish-os-device-oauth-ux",
+  "branch": "task/security/polish-os-device-oauth-ux",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-polish-os-device-oauth-ux",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-polish-os-device-oauth-ux",
+  "prNumber": 1276,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1276",
+  "createdAt": "2026-06-29T21:02:57.083Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-polish-os-device-oauth-ux/.task/security/polish-os-device-oauth-ux/session.json"
+}

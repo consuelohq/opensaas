@@ -1,0 +1,19 @@
+{
+  "area": "os-provider-tools",
+  "stream": "stream/os-provider-tools",
+  "taskBranch": "task/os-provider-tools/generic-railway-provider-adapter",
+  "baseBranch": "stream/os-provider-tools",
+  "sourceBranch": "stream/os-provider-tools",
+  "startFrom": "stream",
+  "prNumber": 1589,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1589",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1589",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1589/generic-railway-provider-adapter",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1589",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1589/generic-railway-provider-adapter",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-provider-tools-generic-railway-provider-adapter",
+  "taskSession": "tsk_c056419bddd5",
+  "tmuxSession": "opensaas-os-provider-tools-generic-railway-provider-adapter-c056419b",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-provider-tools-generic-railway-provider-adapter/.task/os-provider-tools/generic-railway-provider-adapter/session.json",
+  "createdAt": "2026-07-23T15:40:27.681Z"
+}

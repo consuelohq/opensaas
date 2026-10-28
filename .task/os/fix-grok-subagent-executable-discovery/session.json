@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_f2c5c63368ba",
+  "tmuxSession": "opensaas-os-fix-grok-subagent-executable-discovery-f2c5c633",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-grok-subagent-executable-discovery",
+  "branch": "task/os/fix-grok-subagent-executable-discovery",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-grok-subagent-executable-discovery",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-grok-subagent-executable-discovery",
+  "prNumber": 1536,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1536",
+  "createdAt": "2026-07-20T17:36:19.740Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-grok-subagent-executable-discovery/.task/os/fix-grok-subagent-executable-discovery/session.json"
+}

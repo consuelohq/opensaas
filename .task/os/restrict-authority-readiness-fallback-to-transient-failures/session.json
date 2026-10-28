@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_6af48a48703e",
+  "tmuxSession": "opensaas-os-restrict-authority-readiness-fallback-to-transie-6af48a48",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/restrict-authority-readiness-fallback-to-transient-failures",
+  "branch": "task/os/restrict-authority-readiness-fallback-to-transient-failures",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-restrict-authority-readiness-fallback-to-transient-failures",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-restrict-authority-readiness-fallback-to-transient-failures",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2376,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2376",
+  "createdAt": "2026-09-04T15:39:41.178Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-restrict-authority-readiness-fallback-to-transient-failures/.task/os/restrict-authority-readiness-fallback-to-transient-failures/session.json"
+}

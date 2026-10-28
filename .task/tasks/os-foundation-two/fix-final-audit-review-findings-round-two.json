@@ -1,0 +1,19 @@
+{
+  "area": "os-foundation-two",
+  "stream": "stream/os-foundation-two",
+  "taskBranch": "task/os-foundation-two/fix-final-audit-review-findings-round-two",
+  "baseBranch": "stream/os-foundation-two",
+  "sourceBranch": "stream/os-foundation-two",
+  "startFrom": "stream",
+  "prNumber": 1676,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1676",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1676",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1676/fix-final-audit-review-findings-round-two",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1676",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1676/fix-final-audit-review-findings-round-two",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-foundation-two-fix-final-audit-review-findings-round-two",
+  "taskSession": "tsk_40db248ede3f",
+  "tmuxSession": "opensaas-os-foundation-two-fix-final-audit-review-findings-round-two-40db248e",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-foundation-two-fix-final-audit-review-findings-round-two/.task/os-foundation-two/fix-final-audit-review-findings-round-two/session.json",
+  "createdAt": "2026-07-27T18:41:09.991Z"
+}

@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/fix-chatgpt-central-mcp-tool-discovery",
+  "baseBranch": "stream/security",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1494,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1494",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1494",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1494/fix-chatgpt-central-mcp-tool-discovery",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1494",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1494/fix-chatgpt-central-mcp-tool-discovery",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-chatgpt-central-mcp-tool-discovery",
+  "taskSession": "tsk_e9079aeff701",
+  "tmuxSession": "opensaas-security-fix-chatgpt-central-mcp-tool-discovery-e9079aef",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-chatgpt-central-mcp-tool-discovery/.task/security/fix-chatgpt-central-mcp-tool-discovery/session.json",
+  "createdAt": "2026-07-14T19:13:02.221Z"
+}

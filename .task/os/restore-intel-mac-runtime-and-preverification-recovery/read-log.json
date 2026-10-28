@@ -1,0 +1,25 @@
+{
+  "files": [
+    ".github/workflows/consuelo-os-distribution-environments.yaml",
+    ".github/workflows/consuelo-os-runtime-publish.yaml",
+    ".task/os/restore-intel-mac-runtime-and-preverification-recovery/read-log.json",
+    "packages/os/docs/distribution/release-channels.md",
+    "packages/os/package.json",
+    "packages/os/scripts/bootstrap.sh",
+    "packages/os/scripts/install.ts",
+    "packages/os/scripts/lib/distribution/release-channels.ts",
+    "packages/os/scripts/lib/install-state.ts",
+    "packages/os/skills/task/SKILL.md",
+    "packages/os/tests/bootstrap-recovery-cli.test.ts",
+    "packages/os/tests/distribution/release-channel-workflows.test.ts",
+    "packages/os/tests/distribution/release-channels.test.ts",
+    "packages/os/tests/distribution/release-publication-preparer.test.ts",
+    "packages/os/tests/distribution/workflow-contract.test.ts",
+    "packages/os/tests/installer-runtime-dependencies.test.ts",
+    "packages/workspace/scripts/github.js",
+    "packages/workspace/scripts/lib/github.js",
+    "packages/workspace/scripts/task-push.js",
+    "packages/workspace/senior-engineer.md"
+  ],
+  "updatedAt": "2026-09-10T00:06:39.653Z"
+}

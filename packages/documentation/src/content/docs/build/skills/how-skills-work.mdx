@@ -1,0 +1,95 @@
+---
+title: How skills work
+description: Learn how skills package reusable operating guidance and how Consuelo selects, installs, and advertises them.
+status: preview
+verifiedAt: 2026-08-11
+evidence:
+  - source: packages/os/scripts/lib/steering-skills.ts
+    tests:
+      - packages/os/tests/os-get-steering-trace.test.ts
+      - packages/os/tests/skills-registry.test.ts
+    runtime: The active installed-skill catalog and steering append path were verified on 2026-08-11.
+  - source: packages/os/scripts/lib/managed-component-install.ts
+    tests:
+      - packages/os/tests/skill-selection-cli.test.ts
+    runtime: Managed skill selection, visible materialization, and preservation behavior were verified on 2026-08-11.
+---
+
+A **skill** is reusable operating guidance for a kind of work. It tells an agent when a workflow applies, how to combine Consuelo tools, what boundaries to preserve, and how to verify the result.
+
+A skill is different from a tool:
+
+- **tools** perform typed operations;
+- **skills** teach an agent how to combine operations well;
+- **scripts** contain executable implementation when a workflow needs it.
+
+Browse the skills that ship with OS in [Skill Templates](/build/skills/bundled/).
+
+## The skill contract
+
+A bundled skill normally starts with:
+
+```text
+skills/<name>/
+  SKILL.md
+  skill.json
+```
+
+`SKILL.md` is the guidance entrypoint. `skill.json` supplies compact discovery and policy metadata such as the skill name, trigger, permission, approval requirements, capabilities, and load path.
+
+The generated catalog intentionally does **not** embed every `SKILL.md` body into steering. Steering advertises a compact active-skill list; the detailed guidance is loaded when the skill applies.
+
+## Selection and installation
+
+The durable selection lives in:
+
+```text
+<CONSUELO_HOME>/config.json
+  selectedSkills: [...]
+```
+
+Consuelo reconciles that desired set into:
+
+```text
+<CONSUELO_HOME>/components/installed-skills.json
+```
+
+That active index is the preferred source for the Installed skills section of steering. Selected skill templates are also materialized in the visible user tree:
+
+```text
+~/Consuelo/Skills/<name>/
+```
+
+The full bundled catalog is visible at:
+
+```text
+~/Consuelo/Skills/skills.json
+```
+
+The immutable runtime implementation lives under `<CONSUELO_HOME>/runtime/current/skills/`.
+
+## Enable and remove skills
+
+Use the picker:
+
+```bash
+consuelo add skill
+consuelo remove skill
+```
+
+Or name skills directly:
+
+```bash
+consuelo add skill branch browser
+consuelo remove skill teach
+```
+
+Removing a clean managed skill removes its visible materialization. If the managed copy has local modifications, Consuelo deselects it but preserves the edited files for explicit review instead of deleting them.
+
+## Disabled is different from unselected
+
+`selectedSkills` controls installation. `manifest.overlay.json` can separately disable an installed skill from the effective runtime surface. Steering filters disabled skills even when they remain selected on disk.
+
+## Legacy custom skills
+
+Existing user-owned skills in the legacy hidden `<CONSUELO_HOME>/skills/` tree are preserved and represented as `legacyCustom` in the managed index for explicit migration. New bundled selection uses the current managed/visible layout above.

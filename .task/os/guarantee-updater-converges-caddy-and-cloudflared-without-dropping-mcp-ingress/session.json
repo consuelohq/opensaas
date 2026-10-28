@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_319a4850f123",
+  "tmuxSession": "opensaas-os-guarantee-updater-converges-caddy-and-cloudflare-319a4850",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/guarantee-updater-converges-caddy-and-cloudflared-without-dropping-mcp-ingress",
+  "branch": "task/os/guarantee-updater-converges-caddy-and-cloudflared-without-dropping-mcp-ingress",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-guarantee-updater-converges-caddy-and-cloudflared-without-dropping-mcp-ingress",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-guarantee-updater-converges-caddy-and-cloudflared-without-dropping-mcp-ingress",
+  "prNumber": 2122,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2122",
+  "createdAt": "2026-08-16T03:53:03.803Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-guarantee-updater-converges-caddy-and-cloudflared-without-dropping-mcp-ingress/.task/os/guarantee-updater-converges-caddy-and-cloudflared-without-dropping-mcp-ingress/session.json"
+}

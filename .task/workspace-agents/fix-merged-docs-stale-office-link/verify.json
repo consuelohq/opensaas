@@ -1,0 +1,56 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace-agents/fix-merged-docs-stale-office-link",
+  "base": "origin/main",
+  "headSha": "2705c664450a268b9005880ad1472b3554dda5c6",
+  "changeHash": "7b01bfe87148951eb512cf42716088087a0b70dfbe4db2886d9096e19ab24ce0",
+  "changedFiles": [
+    "packages/documentation/src/content/docs/tools/index.mdx",
+    "packages/workspace/scripts/stream-sync.js",
+    "packages/workspace/tests/stream-sync-node-modules.test.js"
+  ],
+  "verifiedAt": "2026-08-12T01:32:38.458Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/workspace-agents/fix-merged-docs-stale-office-link.json",
+        ".task/workspace-agents/fix-merged-docs-stale-office-link/current.json",
+        ".task/workspace-agents/fix-merged-docs-stale-office-link/evidence-log.json",
+        ".task/workspace-agents/fix-merged-docs-stale-office-link/read-log.json",
+        ".task/workspace-agents/fix-merged-docs-stale-office-link/session.json",
+        ".task/workspace-agents/fix-merged-docs-stale-office-link/verify.json",
+        ".task/workspace-agents/fix-merged-docs-stale-office-link/workpad.md",
+        "packages/documentation/src/content/docs/tools/index.mdx",
+        "packages/workspace/scripts/stream-sync.js",
+        "packages/workspace/tests/stream-sync-node-modules.test.js"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

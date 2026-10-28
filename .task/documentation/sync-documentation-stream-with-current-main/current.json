@@ -1,0 +1,19 @@
+{
+  "area": "documentation",
+  "stream": "stream/documentation",
+  "taskBranch": "task/documentation/sync-documentation-stream-with-current-main",
+  "baseBranch": "stream/documentation",
+  "sourceBranch": "stream/documentation",
+  "startFrom": "stream",
+  "prNumber": 1955,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1955",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1955",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1955/sync-documentation-stream-with-current-main",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1955",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1955/sync-documentation-stream-with-current-main",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-sync-documentation-stream-with-current-main",
+  "taskSession": "tsk_ca9cce8b07d8",
+  "tmuxSession": "opensaas-documentation-sync-documentation-stream-with-current-main-ca9cce8b",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-sync-documentation-stream-with-current-main/.task/documentation/sync-documentation-stream-with-current-main/session.json",
+  "createdAt": "2026-08-14T09:37:27.143Z"
+}

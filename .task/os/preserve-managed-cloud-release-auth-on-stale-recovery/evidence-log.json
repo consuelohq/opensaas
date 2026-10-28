@@ -1,0 +1,88 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/preserve-managed-cloud-release-auth-on-stale-recovery",
+  "events": [
+    {
+      "id": "5e882c8e-130d-467c-9042-76eea5113323",
+      "occurred_at": "2026-09-08T14:51:22.153Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/cloudflare/os-device-authority/src/services/mcp-proxy.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/preserve-managed-cloud-release-auth-on-stale-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/preserve-managed-cloud-release-auth-on-stale-recovery"
+      }
+    },
+    {
+      "id": "425a3a8e-b7ed-4b72-987d-f54447168f70",
+      "occurred_at": "2026-09-08T14:51:41.140Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/workspace-node-registry-routing.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/preserve-managed-cloud-release-auth-on-stale-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/preserve-managed-cloud-release-auth-on-stale-recovery"
+      }
+    },
+    {
+      "id": "be072202-e594-4929-9a6e-23fb7e86a619",
+      "occurred_at": "2026-09-08T14:52:00.706Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/managed-cloud-node.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/preserve-managed-cloud-release-auth-on-stale-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/preserve-managed-cloud-release-auth-on-stale-recovery"
+      }
+    },
+    {
+      "id": "eaa37a4b-054c-4c43-bb77-2dc2aa634f6d",
+      "occurred_at": "2026-09-08T14:52:17.905Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/native-lifecycle-operation.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/preserve-managed-cloud-release-auth-on-stale-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/preserve-managed-cloud-release-auth-on-stale-recovery"
+      }
+    },
+    {
+      "id": "29a70591-c62c-48ce-b7dc-5f8c80b13d2b",
+      "occurred_at": "2026-09-08T14:52:25.548Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/bootstrap.sh",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/preserve-managed-cloud-release-auth-on-stale-recovery",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/preserve-managed-cloud-release-auth-on-stale-recovery"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-09-08T14:52:25.647Z"
+}

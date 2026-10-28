@@ -31,7 +31,7 @@ describe("OS TraceStore and TraceObservation runtime boundary", () => {
     await observations.recordSkillExecution({
       traceId: "trc_skill_001",
       workspaceId: "wrk_trace_sites_tdd",
-      name: "daily-revenue-brief",
+      name: "fixture-report",
       status: "ok",
       startedAt: "2026-06-16T00:00:00.000Z",
       durationMs: 20,
@@ -39,7 +39,7 @@ describe("OS TraceStore and TraceObservation runtime boundary", () => {
     await observations.recordFacadeToolExecution({
       traceId: "trc_facade_001",
       workspaceId: "wrk_trace_sites_tdd",
-      toolName: "workspace.context.search",
+      toolName: "workspace.memory",
       taskSession: "tsk_001",
       branch: "task/os/trace-sites-tdd",
       status: "ok",
@@ -149,7 +149,7 @@ describe("OS TraceStore and TraceObservation runtime boundary", () => {
     });
     await store.ingestLegacySkillExecution({
       trace_id: "trc_legacy_skill",
-      name: "daily-revenue-brief",
+      name: "fixture-report",
       status: "succeeded",
       started_at: "2026-06-16T00:00:00.000Z",
       duration_ms: 10,
@@ -168,7 +168,7 @@ describe("OS TraceStore and TraceObservation runtime boundary", () => {
     });
     expect(recent.events).toEqual([
       expect.objectContaining({ traceId: "trc_legacy_tool", toolName: "workspace.fs.read" }),
-      expect.objectContaining({ traceId: "trc_legacy_skill", toolName: "daily-revenue-brief" }),
+      expect.objectContaining({ traceId: "trc_legacy_skill", toolName: "fixture-report" }),
     ]);
     assertNoBrowserLeak(recent);
   });

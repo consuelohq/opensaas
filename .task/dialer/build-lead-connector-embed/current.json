@@ -1,0 +1,19 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/build-lead-connector-embed",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 1611,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1611",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1611",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1611/build-lead-connector-embed",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1611",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1611/build-lead-connector-embed",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-build-lead-connector-embed",
+  "taskSession": "tsk_963b51d90206",
+  "tmuxSession": "opensaas-dialer-build-lead-connector-embed-963b51d9",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-build-lead-connector-embed/.task/dialer/build-lead-connector-embed/session.json",
+  "createdAt": "2026-07-24T01:45:44.113Z"
+}

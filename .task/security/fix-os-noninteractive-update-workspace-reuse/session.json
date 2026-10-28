@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_0ac02b9b9ce0",
+  "tmuxSession": "opensaas-security-fix-os-noninteractive-update-workspace-reuse-0ac02b9b",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/fix-os-noninteractive-update-workspace-reuse",
+  "branch": "task/security/fix-os-noninteractive-update-workspace-reuse",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-os-noninteractive-update-workspace-reuse",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-os-noninteractive-update-workspace-reuse",
+  "prNumber": 1512,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1512",
+  "createdAt": "2026-07-15T05:31:29.957Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-os-noninteractive-update-workspace-reuse/.task/security/fix-os-noninteractive-update-workspace-reuse/session.json"
+}

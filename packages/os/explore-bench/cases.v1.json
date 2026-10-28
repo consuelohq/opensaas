@@ -1,0 +1,98 @@
+{
+  "schemaVersion": 1,
+  "description": "Curated agent-facing Consuelo OS ExploreBench cases. Relevance: 3=primary implementation owner, 2=important dependency/caller, 1=useful validation/context. Required labels measure dependency coverage.",
+  "cases": [
+    {
+      "id": "explore-ranking",
+      "query": "where is Consuelo OS Explore retrieval ranking and graph expansion implemented",
+      "labels": [
+        { "path": "packages/os/scripts/lib/search/ranker.js", "relevance": 3, "role": "ranking", "required": true },
+        { "path": "packages/os/scripts/lib/search/retriever.js", "relevance": 3, "role": "retrieval", "required": true },
+        { "path": "packages/os/scripts/explore.js", "relevance": 2, "role": "entrypoint", "required": true }
+      ]
+    },
+    {
+      "id": "explore-beliefs",
+      "query": "how does Consuelo OS Explore store evidence and update investigation beliefs after reads and tests",
+      "labels": [
+        { "path": "packages/os/scripts/lib/state/explore-state.js", "relevance": 3, "role": "belief-state", "required": true },
+        { "path": "packages/os/scripts/lib/state/evidence-log.js", "relevance": 3, "role": "evidence-log", "required": true },
+        { "path": "packages/os/scripts/explore.js", "relevance": 2, "role": "producer", "required": true },
+        { "path": "packages/os/scripts/decide-next.js", "relevance": 2, "role": "policy-consumer", "required": false }
+      ]
+    },
+    {
+      "id": "task-start",
+      "query": "how does Consuelo OS task start create and initialize an isolated engineering task worktree",
+      "labels": [
+        { "path": "packages/os/scripts/task-start.js", "relevance": 3, "role": "entrypoint", "required": true },
+        { "path": "packages/os/scripts/lib/task-meta.js", "relevance": 2, "role": "task-state", "required": true },
+        { "path": "packages/os/scripts/lib/task-session.js", "relevance": 2, "role": "session", "required": false },
+        { "path": "packages/os/scripts/lib/task-workpad.js", "relevance": 1, "role": "workpad", "required": false }
+      ]
+    },
+    {
+      "id": "task-push",
+      "query": "where does Consuelo OS task push enforce verification stamps and publish approval",
+      "labels": [
+        { "path": "packages/os/scripts/task-push.js", "relevance": 3, "role": "entrypoint", "required": true },
+        { "path": "packages/os/scripts/lib/verification.js", "relevance": 2, "role": "verification", "required": true },
+        { "path": "packages/os/scripts/lib/task-selection.js", "relevance": 2, "role": "task-selection", "required": true }
+      ]
+    },
+    {
+      "id": "stream-sync",
+      "query": "how does Consuelo OS stream sync update a durable stream branch and handle task metadata conflicts",
+      "labels": [
+        { "path": "packages/os/scripts/stream-sync.js", "relevance": 3, "role": "entrypoint", "required": true },
+        { "path": "packages/os/scripts/lib/task-meta.js", "relevance": 2, "role": "conflict-resolution", "required": true },
+        { "path": "packages/os/scripts/lib/git.js", "relevance": 2, "role": "git-operations", "required": false }
+      ]
+    },
+    {
+      "id": "strict-review",
+      "query": "where does Consuelo OS review select affected projects run tests and track review state",
+      "labels": [
+        { "path": "packages/os/scripts/review.js", "relevance": 3, "role": "entrypoint", "required": true },
+        { "path": "packages/os/scripts/lib/review-run-state.js", "relevance": 2, "role": "review-state", "required": true },
+        { "path": "packages/os/scripts/lib/nx-projects.js", "relevance": 2, "role": "project-selection", "required": false }
+      ]
+    },
+    {
+      "id": "code-call",
+      "query": "how does Consuelo OS code.call load source execute the selected runtime and return trace metadata",
+      "labels": [
+        { "path": "packages/os/scripts/code-call.ts", "relevance": 2, "role": "cli-entrypoint", "required": true },
+        { "path": "packages/os/scripts/lib/code-call/runtime.ts", "relevance": 3, "role": "runtime", "required": true },
+        { "path": "packages/os/scripts/lib/code-call/service.ts", "relevance": 3, "role": "service", "required": true },
+        { "path": "packages/os/scripts/lib/code-call/source.ts", "relevance": 1, "role": "source-loader", "required": false }
+      ]
+    },
+    {
+      "id": "trace-search",
+      "query": "where does Consuelo OS query the local tool trace database and compile structured trace search terms",
+      "labels": [
+        { "path": "packages/os/scripts/lib/trace-sites-local-read-backend.ts", "relevance": 3, "role": "trace-query", "required": true },
+        { "path": "packages/os/scripts/lib/trace-search-query.ts", "relevance": 3, "role": "query-compiler", "required": true },
+        { "path": "packages/os/tests/trace-search-query.test.ts", "relevance": 1, "role": "test", "required": false }
+      ]
+    },
+    {
+      "id": "tool-manifest",
+      "query": "where is the Consuelo OS tool manifest generated and validated",
+      "labels": [
+        { "path": "packages/os/scripts/generate-tool-manifest.ts", "relevance": 3, "role": "generator", "required": true },
+        { "path": "packages/os/manifests/generated/tool.manifest.json", "relevance": 2, "role": "generated-artifact", "required": true },
+        { "path": "packages/os/tests/tool-manifest.test.ts", "relevance": 1, "role": "test", "required": false }
+      ]
+    },
+    {
+      "id": "explicit-search-scope",
+      "query": "Within packages/os/scripts/lib/search, where is Explore retrieval ranking implemented",
+      "labels": [
+        { "path": "packages/os/scripts/lib/search/retriever.js", "relevance": 3, "role": "retrieval", "required": true },
+        { "path": "packages/os/scripts/lib/search/ranker.js", "relevance": 3, "role": "ranking", "required": true }
+      ]
+    }
+  ]
+}

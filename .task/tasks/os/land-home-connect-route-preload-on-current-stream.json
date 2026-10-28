@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/land-home-connect-route-preload-on-current-stream",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2054,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2054",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2054",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2054/land-home-connect-route-preload-on-current-stream",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2054",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2054/land-home-connect-route-preload-on-current-stream",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-land-home-connect-route-preload-on-current-stream",
+  "taskSession": "tsk_ff45d48f1731",
+  "tmuxSession": "opensaas-os-land-home-connect-route-preload-on-current-strea-ff45d48f",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-land-home-connect-route-preload-on-current-stream/.task/os/land-home-connect-route-preload-on-current-stream/session.json",
+  "createdAt": "2026-08-15T08:31:25.472Z"
+}

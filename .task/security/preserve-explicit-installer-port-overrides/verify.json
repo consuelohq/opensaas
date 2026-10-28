@@ -1,0 +1,56 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/security/preserve-explicit-installer-port-overrides",
+  "base": "origin/stream/security",
+  "headSha": "ebe1ffc25106228b2ea7c9e2af41cb918ec44037",
+  "changeHash": "9f3462e0f0d9ffcc8b280394e82132c86f1393a0201a973c1b79c49a7118699f",
+  "changedFiles": [
+    "packages/os/scripts/install.ts",
+    "packages/os/scripts/server/env.ts",
+    "packages/os/tests/local-os-port-cutover.test.ts"
+  ],
+  "verifiedAt": "2026-07-11T18:59:19.118Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/security/preserve-explicit-installer-port-overrides/current.json",
+        ".task/security/preserve-explicit-installer-port-overrides/evidence-log.json",
+        ".task/security/preserve-explicit-installer-port-overrides/read-log.json",
+        ".task/security/preserve-explicit-installer-port-overrides/session.json",
+        ".task/security/preserve-explicit-installer-port-overrides/verify.json",
+        ".task/security/preserve-explicit-installer-port-overrides/workpad.md",
+        ".task/tasks/security/preserve-explicit-installer-port-overrides.json",
+        "packages/os/scripts/install.ts",
+        "packages/os/scripts/server/env.ts",
+        "packages/os/tests/local-os-port-cutover.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

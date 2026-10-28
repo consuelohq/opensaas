@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_ea7c621a7c62",
+  "tmuxSession": "opensaas-documentation-write-build-with-os-documentation-ea7c621a",
+  "area": "documentation",
+  "stream": "stream/documentation",
+  "taskBranch": "task/documentation/write-build-with-os-documentation",
+  "branch": "task/documentation/write-build-with-os-documentation",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-write-build-with-os-documentation",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-write-build-with-os-documentation",
+  "prNumber": 1453,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1453",
+  "createdAt": "2026-07-13T16:39:29.109Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-write-build-with-os-documentation/.task/documentation/write-build-with-os-documentation/session.json"
+}

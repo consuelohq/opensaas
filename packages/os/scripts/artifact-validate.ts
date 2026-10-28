@@ -26,7 +26,7 @@ export const REQUIRED_READER_MARKERS = [
   'https://consuelohq.com/favicon.svg',
   'name="theme-color" content="#202020"',
   '@media (prefers-color-scheme: dark)',
-  '/design-wiki',
+  '/artifacts',
 ] as const;
 
 function markerIsPresent(html: string, marker: string): boolean {

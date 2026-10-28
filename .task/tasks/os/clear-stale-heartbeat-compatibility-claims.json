@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/clear-stale-heartbeat-compatibility-claims",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2289,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2289",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-clear-stale-heartbeat-compatibility-claims",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_4057e8a3f14c",
+  "tmuxSession": "opensaas-os-clear-stale-heartbeat-compatibility-claims-4057e8a3",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-clear-stale-heartbeat-compatibility-claims/.task/session.json",
+  "createdAt": "2026-08-29T06:27:13.411Z"
+}

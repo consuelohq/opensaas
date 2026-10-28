@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/refine-skill-templates-docs-and-copy-feedback",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1866,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1866",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1866",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1866/refine-skill-templates-docs-and-copy-feedback",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1866",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1866/refine-skill-templates-docs-and-copy-feedback",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-refine-skill-templates-docs-and-copy-feedback",
+  "taskSession": "tsk_186a09c46e22",
+  "tmuxSession": "opensaas-os-refine-skill-templates-docs-and-copy-feedback-186a09c4",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-refine-skill-templates-docs-and-copy-feedback/.task/os/refine-skill-templates-docs-and-copy-feedback/session.json",
+  "createdAt": "2026-08-12T01:35:55.505Z"
+}

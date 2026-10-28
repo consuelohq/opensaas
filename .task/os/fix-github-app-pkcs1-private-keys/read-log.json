@@ -1,0 +1,7 @@
+{
+  "files": [
+    ".task/os/fix-github-app-pkcs1-private-keys/workpad.md",
+    "packages/os/tests/github-source-control-authority.test.ts"
+  ],
+  "updatedAt": "2026-09-01T01:45:35.023Z"
+}

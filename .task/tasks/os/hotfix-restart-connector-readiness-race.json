@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/hotfix-restart-connector-readiness-race",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2366,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2366",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-hotfix-restart-connector-readiness-race",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_2bc7f9371aaa",
+  "tmuxSession": "opensaas-os-hotfix-restart-connector-readiness-race-2bc7f937",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-hotfix-restart-connector-readiness-race/.task/session.json",
+  "createdAt": "2026-09-01T17:05:04.101Z"
+}

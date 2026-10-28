@@ -90,7 +90,7 @@ describe('CallerIdLockService', () => {
       expect(await service.releaseLock('pending-session')).toBe(true);
     });
 
-    it('should preserve Redis TTL when transferring a lock', async () => {
+    it('should promote Redis TTL when transferring a lock to a provider call', async () => {
       const redisStore = new RedisLockStore('redis://localhost:6379');
       const evalMock = jest.fn().mockResolvedValue(1);
 
@@ -101,16 +101,79 @@ describe('CallerIdLockService', () => {
       });
 
       await expect(
-        redisStore.transfer('+15551234567', 'pending-session', 'CA_123'),
+        redisStore.transfer(
+          '+15551234567',
+          'pending-session',
+          'CA_123',
+          new Date('2026-07-23T00:00:00.000Z'),
+        ),
       ).resolves.toBe(true);
 
       const script = evalMock.mock.calls[0][0] as string;
 
-      expect(script).toContain("redis.call('PTTL', key)");
+      expect(script).toContain('lock.expiresAt = nextExpiresAt');
       expect(script).toContain(
-        "redis.call('SET', key, cjson.encode(lock), 'PX', pttl)",
+        "redis.call('SET', key, cjson.encode(lock), 'PX', activeTtlMs)",
       );
-      expect(script).not.toContain("'EX', ttl");
+    });
+  });
+
+  describe('refreshLock', () => {
+    it('should extend an active lock owned by the provider call', async () => {
+      const shortService = new CallerIdLockService(store, 5, 50);
+      await shortService.acquireLock(
+        '+15551234567',
+        'user-1',
+        'pending-session',
+      );
+      await shortService.transferLock(
+        '+15551234567',
+        'pending-session',
+        'CA_123',
+      );
+
+      await new Promise((resolve) => setTimeout(resolve, 30));
+
+      expect(await shortService.refreshLock('+15551234567', 'CA_123')).toBe(
+        true,
+      );
+
+      await new Promise((resolve) => setTimeout(resolve, 30));
+
+      expect(await shortService.isNumberAvailable('+15551234567')).toBe(false);
+    });
+
+    it('should reject refresh from a stale call owner', async () => {
+      await service.acquireLock('+15551234567', 'user-1', 'CA_123');
+
+      expect(await service.refreshLock('+15551234567', 'CA_STALE')).toBe(false);
+    });
+
+    it('should atomically refresh Redis ownership and TTL', async () => {
+      const redisStore = new RedisLockStore('redis://localhost:6379');
+      const evalMock = jest.fn().mockResolvedValue(1);
+
+      Object.assign(redisStore, {
+        redis: {
+          eval: evalMock,
+        },
+      });
+
+      await expect(
+        redisStore.refresh(
+          '+15551234567',
+          'CA_123',
+          new Date('2026-07-23T00:00:00.000Z'),
+        ),
+      ).resolves.toBe(true);
+
+      const script = evalMock.mock.calls[0][0] as string;
+
+      expect(script).toContain('if lock.callSid ~= expected then');
+      expect(script).toContain('lock.expiresAt = nextExpiresAt');
+      expect(script).toContain(
+        "redis.call('SET', key, cjson.encode(lock), 'PX', activeTtlMs)",
+      );
     });
   });
 

@@ -1,0 +1,19 @@
+{
+  "area": "os-distribution",
+  "stream": "stream/os-distribution",
+  "taskBranch": "task/os-distribution/install-wrangler-in-release-publish-jobs",
+  "baseBranch": "stream/os-distribution",
+  "sourceBranch": "stream/os-distribution",
+  "startFrom": "stream",
+  "prNumber": 1634,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1634",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1634",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1634/install-wrangler-in-release-publish-jobs",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1634",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1634/install-wrangler-in-release-publish-jobs",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-install-wrangler-in-release-publish-jobs",
+  "taskSession": "tsk_ec309865491f",
+  "tmuxSession": "opensaas-os-distribution-install-wrangler-in-release-publish-jobs-ec309865",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-install-wrangler-in-release-publish-jobs/.task/os-distribution/install-wrangler-in-release-publish-jobs/session.json",
+  "createdAt": "2026-07-24T07:31:24.529Z"
+}

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_201ee93cd8b6",
+  "tmuxSession": "opensaas-os-web-fix-os-web-preserve-authority-metadata-routes-in-201ee93c",
+  "area": "os-web",
+  "stream": "stream/os-web",
+  "taskBranch": "task/os-web/fix-os-web-preserve-authority-metadata-routes-in-auth-matrix",
+  "branch": "task/os-web/fix-os-web-preserve-authority-metadata-routes-in-auth-matrix",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-web-fix-os-web-preserve-authority-metadata-routes-in-auth-matrix",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-web-fix-os-web-preserve-authority-metadata-routes-in-auth-matrix",
+  "prNumber": 1565,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1565",
+  "createdAt": "2026-07-22T21:43:29.155Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-web-fix-os-web-preserve-authority-metadata-routes-in-auth-matrix/.task/os-web/fix-os-web-preserve-authority-metadata-routes-in-auth-matrix/session.json"
+}

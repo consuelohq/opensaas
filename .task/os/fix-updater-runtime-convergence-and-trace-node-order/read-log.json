@@ -1,0 +1,25 @@
+{
+  "files": [
+    ".github/workflows/consuelo-os-runtime-promote.yaml",
+    ".github/workflows/consuelo-os-runtime-publish.yaml",
+    ".github/workflows/consuelo-production-release.yaml",
+    ".task/os/fix-updater-runtime-convergence-and-trace-node-order/workpad.md",
+    "packages/os/cloudflare/os-device-authority/src/app.ts",
+    "packages/os/cloudflare/os-device-authority/src/routes/managed-cloud-provisioning.ts",
+    "packages/os/cloudflare/os-device-authority/src/types.ts",
+    "packages/os/cloudflare/workspace-edge/migrations/0002_site_snapshot_route_targets.sql",
+    "packages/os/package.json",
+    "packages/os/scripts/lib/lifecycle/engine.ts",
+    "packages/os/scripts/lib/observability-traces-site.ts",
+    "packages/os/scripts/lib/trace-site-inspector/virtual-list-browser.ts",
+    "packages/os/scripts/lib/workspace-cloudflare-d1-route-registry.ts",
+    "packages/os/scripts/lib/workspace-edge-route-seed.ts",
+    "packages/os/tests/managed-cloud-one-click-provisioning.test.ts",
+    "packages/os/tests/observability-traces-site.test.ts",
+    "packages/os/tests/os-device-authority-release-contract.test.ts",
+    "packages/workspace/scripts/os-release-device-auth.ts",
+    "packages/workspace/scripts/os-release.ts",
+    "packages/workspace/tests/website-deploy.test.js"
+  ],
+  "updatedAt": "2026-08-15T08:28:34.255Z"
+}

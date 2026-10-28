@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_e6ba6255d489",
+  "tmuxSession": "opensaas-security-stabilize-installer-cloud-handoff-lifecycle-e6ba6255",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/stabilize-installer-cloud-handoff-lifecycle",
+  "branch": "task/security/stabilize-installer-cloud-handoff-lifecycle",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-stabilize-installer-cloud-handoff-lifecycle",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-stabilize-installer-cloud-handoff-lifecycle",
+  "prNumber": 1374,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1374",
+  "createdAt": "2026-07-08T16:22:47.019Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-stabilize-installer-cloud-handoff-lifecycle/.task/security/stabilize-installer-cloud-handoff-lifecycle/session.json"
+}

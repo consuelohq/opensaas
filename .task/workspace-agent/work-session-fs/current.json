@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agent",
+  "stream": "stream/workspace-agent",
+  "taskBranch": "task/workspace-agent/work-session-fs",
+  "baseBranch": "stream/workspace-agent",
+  "sourceBranch": "stream/workspace-agent",
+  "startFrom": "stream",
+  "prNumber": 1993,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1993",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1993",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1993/work-session-fs",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1993",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1993/work-session-fs",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agent-work-session-fs",
+  "taskSession": "tsk_89d3eff21790",
+  "tmuxSession": "opensaas-workspace-agent-work-session-fs-89d3eff2",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agent-work-session-fs/.task/workspace-agent/work-session-fs/session.json",
+  "createdAt": "2026-08-15T02:38:27.456Z"
+}

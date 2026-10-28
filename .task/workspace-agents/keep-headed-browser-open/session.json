@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_ce70f1ae267e",
+  "tmuxSession": "opensaas-workspace-agents-keep-headed-browser-open-ce70f1ae",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/keep-headed-browser-open",
+  "branch": "task/workspace-agents/keep-headed-browser-open",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-keep-headed-browser-open",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-keep-headed-browser-open",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2192,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2192",
+  "createdAt": "2026-08-26T04:10:05.201Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-keep-headed-browser-open/.task/workspace-agents/keep-headed-browser-open/session.json"
+}

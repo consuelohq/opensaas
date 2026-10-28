@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_69d03466c88d",
+  "tmuxSession": "opensaas-workspace-agents-fix-selected-repo-conflict-recovery-and-preserve-69d03466",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/fix-selected-repo-conflict-recovery-and-preserve-task-push-index",
+  "branch": "task/workspace-agents/fix-selected-repo-conflict-recovery-and-preserve-task-push-index",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-selected-repo-conflict-recovery-and-preserve-task-push-index",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-selected-repo-conflict-recovery-and-preserve-task-push-index",
+  "prNumber": 1859,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1859",
+  "createdAt": "2026-08-12T00:23:12.446Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-selected-repo-conflict-recovery-and-preserve-task-push-index/.task/workspace-agents/fix-selected-repo-conflict-recovery-and-preserve-task-push-index/session.json"
+}

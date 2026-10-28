@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_ef1dd97b5eaa",
+  "tmuxSession": "opensaas-os-fix-stream-server-typecheck-regressions-ef1dd97b",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-stream-server-typecheck-regressions",
+  "branch": "task/os/fix-stream-server-typecheck-regressions",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-stream-server-typecheck-regressions",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-stream-server-typecheck-regressions",
+  "prNumber": 1929,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1929",
+  "createdAt": "2026-08-14T00:24:03.719Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-stream-server-typecheck-regressions/.task/os/fix-stream-server-typecheck-regressions/session.json"
+}

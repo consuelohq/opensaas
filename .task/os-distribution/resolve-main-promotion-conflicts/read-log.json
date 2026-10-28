@@ -1,0 +1,11 @@
+{
+  "files": [
+    "AGENTS.md",
+    "CODING-STANDARDS.md",
+    "packages/os/plans/consuelo-os-foundation/environment-registry.md",
+    "packages/os/plans/consuelo-os-foundation/plan.md",
+    "packages/os/scripts/lib/distribution/runtime-bundle.ts",
+    "packages/workspace/senior-engineer.md"
+  ],
+  "updatedAt": "2026-07-23T19:06:12.169Z"
+}

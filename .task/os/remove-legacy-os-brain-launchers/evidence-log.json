@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/remove-legacy-os-brain-launchers",
+  "events": [
+    {
+      "id": "9fc61e79-59e1-4e68-93fe-18cae847361c",
+      "occurred_at": "2026-07-11T04:09:10.326Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/remove-legacy-os-brain-launchers/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/remove-legacy-os-brain-launchers",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/remove-legacy-os-brain-launchers"
+      }
+    },
+    {
+      "id": "b0c588c7-4c7e-4976-8ab2-a0e78143ec89",
+      "occurred_at": "2026-07-11T04:09:17.169Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/SCRIPTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/remove-legacy-os-brain-launchers",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/remove-legacy-os-brain-launchers"
+      }
+    },
+    {
+      "id": "428da6e3-48b8-4450-a8a3-b7333663eab8",
+      "occurred_at": "2026-07-11T04:10:35.330Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/audit/script-parity-audit.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/remove-legacy-os-brain-launchers",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/remove-legacy-os-brain-launchers"
+      }
+    },
+    {
+      "id": "2b791dcf-3ee2-42f8-9e39-9f18f8bf5025",
+      "occurred_at": "2026-07-11T04:13:26.886Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/remove-legacy-os-brain-launchers/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/remove-legacy-os-brain-launchers",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/remove-legacy-os-brain-launchers"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-07-11T04:13:26.952Z"
+}

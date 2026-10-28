@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_09521217cdb1",
+  "tmuxSession": "opensaas-os-verify-release-local-platform-bundle-09521217",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/verify-release-local-platform-bundle",
+  "branch": "task/os/verify-release-local-platform-bundle",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-verify-release-local-platform-bundle",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-verify-release-local-platform-bundle",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2189,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2189",
+  "createdAt": "2026-08-26T03:43:26.010Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-verify-release-local-platform-bundle/.task/os/verify-release-local-platform-bundle/session.json"
+}

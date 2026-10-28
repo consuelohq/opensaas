@@ -1,0 +1,471 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/improve-tracing-cost-light-mode-and-session-palette",
+  "base": "origin/main",
+  "headSha": "d5ade3124cecbbc53105f152d451c5b556c32be0",
+  "changeHash": "186658da6be3d4153771f94a240fe353172946075091aaa86fcd2b0a20ebe7b4",
+  "changedFiles": [
+    "packages/documentation/src/content/docs/observe/traces.mdx",
+    "packages/os/assets/vendor/observability-traces-v38/inspector.js",
+    "packages/os/scripts/lib/observability-traces-site.ts",
+    "packages/os/scripts/lib/trace-cost-estimator.ts",
+    "packages/os/scripts/lib/trace-site-inspector/session-colors.ts",
+    "packages/os/scripts/lib/trace-site-inspector/virtual-list-browser.ts",
+    "packages/os/scripts/lib/trace-sites-local-read-backend.ts",
+    "packages/os/tests/observability-traces-site.test.ts",
+    "packages/os/tests/trace-history-redaction.test.ts",
+    "packages/os/tests/trace-site-inspector-interactions.test.ts",
+    "packages/workspace/test-selection.registry.json",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "verifiedAt": "2026-08-26T05:49:05.197Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/improve-tracing-cost-light-mode-and-session-palette/current.json",
+        ".task/os/improve-tracing-cost-light-mode-and-session-palette/evidence-log.json",
+        ".task/os/improve-tracing-cost-light-mode-and-session-palette/read-log.json",
+        ".task/os/improve-tracing-cost-light-mode-and-session-palette/session.json",
+        ".task/os/improve-tracing-cost-light-mode-and-session-palette/workpad.md",
+        ".task/tasks/os/improve-tracing-cost-light-mode-and-session-palette.json",
+        "packages/documentation/src/content/docs/observe/traces.mdx",
+        "packages/os/assets/vendor/observability-traces-v38/inspector.js",
+        "packages/os/scripts/lib/observability-traces-site.ts",
+        "packages/os/scripts/lib/trace-cost-estimator.ts",
+        "packages/os/scripts/lib/trace-site-inspector/session-colors.ts",
+        "packages/os/scripts/lib/trace-site-inspector/virtual-list-browser.ts",
+        "packages/os/scripts/lib/trace-sites-local-read-backend.ts",
+        "packages/os/tests/observability-traces-site.test.ts",
+        "packages/os/tests/trace-history-redaction.test.ts",
+        "packages/os/tests/trace-site-inspector-interactions.test.ts",
+        "packages/workspace/test-selection.registry.json",
+        "packages/workspace/test-selection.rules.json",
+        "packages/workspace/tests/test-selection.test.js"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-test-selection",
+          "critical": true,
+          "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy.",
+          "matchedFiles": [
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "trace-site-pagination",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Current OS Trace gateway and Trace Burn changes must prove authenticated history paging, canonical TraceStore resolution, safe redaction, and OS-owned virtual-list/browser behavior.",
+          "matchedFiles": [
+            "packages/os/assets/vendor/observability-traces-v38/inspector.js",
+            "packages/os/scripts/lib/observability-traces-site.ts",
+            "packages/os/scripts/lib/trace-cost-estimator.ts",
+            "packages/os/scripts/lib/trace-site-inspector/session-colors.ts",
+            "packages/os/scripts/lib/trace-site-inspector/virtual-list-browser.ts",
+            "packages/os/scripts/lib/trace-sites-local-read-backend.ts",
+            "packages/os/tests/observability-traces-site.test.ts",
+            "packages/os/tests/trace-history-redaction.test.ts",
+            "packages/os/tests/trace-site-inspector-interactions.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-internal-workspace-shell",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Internal workspace shell, Sites root, and trace/config chrome changes must prove the workspace root always converges on Home across daemon refreshes, the shared route switcher stays consistent, disabled agent surfaces remain re-enableable, and syntax stays valid. These tests share process.env and local MCP daemons, so files run serially to prevent cross-file agent-verification interference.",
+          "matchedFiles": [
+            "packages/os/scripts/lib/observability-traces-site.ts",
+            "packages/os/tests/observability-traces-site.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "server-ci-task-contract",
+          "critical": true,
+          "reason": "Server CI changes must scope lint and typecheck to directly changed Twenty server runtime files while retaining dependency propagation.",
+          "matchedFiles": [
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "workspace-session-integration",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Session constructor, canonical guidance, task-start compatibility, and workspace fallback changes must prove the integrated task/work session contract.",
+          "matchedFiles": [
+            "packages/os/scripts/lib/observability-traces-site.ts",
+            "packages/os/tests/observability-traces-site.test.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true
+        },
+        {
+          "name": "OS trace gateway and Trace Burn contracts",
+          "command": [
+            "bun",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "--root",
+            "packages/os",
+            "tests/trace-sites-history-endpoint-contract.test.ts",
+            "tests/trace-sites-gateway-read-layer.test.ts",
+            "tests/trace-history-redaction.test.ts",
+            "tests/trace-site-inspector-os-owned.test.ts",
+            "tests/observability-traces-site.test.ts",
+            "tests/redaction.test.ts",
+            "tests/runtime-bundle-managed-site-assets.test.ts"
+          ],
+          "ruleId": "trace-site-pagination",
+          "critical": true
+        },
+        {
+          "name": "OS canonical TraceStore runtime boundary",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/trace-sites-runtime-boundary.test.ts"
+          ],
+          "ruleId": "trace-site-pagination",
+          "critical": true
+        },
+        {
+          "name": "OS trace persistence and session search contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "--root",
+            "packages/os",
+            "tests/trace-persistence.test.ts",
+            "tests/trace-search-query.test.ts"
+          ],
+          "ruleId": "trace-site-pagination",
+          "critical": true
+        },
+        {
+          "name": "OS internal workspace shell contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "--no-file-parallelism",
+            "tests/settings-site.test.ts",
+            "tests/launcher-nodes-materialization.test.ts",
+            "tests/observability-traces-site.test.ts",
+            "tests/sites-cli.test.ts",
+            "tests/launcher-local-customization.test.ts",
+            "tests/install-state.test.ts",
+            "tests/local-agent-connectivity.test.ts"
+          ],
+          "ruleId": "os-internal-workspace-shell",
+          "critical": true
+        },
+        {
+          "name": "OS internal workspace shell syntax",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "ruleId": "os-internal-workspace-shell",
+          "critical": true
+        },
+        {
+          "name": "changed server task selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "TypeORM CLI compatibility contract",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "workspace session integration contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/session-integration-guidance.test.ts",
+            "packages/os/tests/session-start-foundation.test.ts",
+            "packages/os/tests/task-hook-workflow-contract.test.ts",
+            "packages/os/tests/task-hooks.test.ts",
+            "packages/workspace/tests/task-hook-workflow-contract.test.ts",
+            "packages/workspace/tests/task-hooks.test.ts",
+            "packages/workspace/tests/workflow-intent.test.ts",
+            "packages/workspace/tests/session-start-compatibility.test.ts",
+            "packages/os/tests/observability-traces-site.test.ts"
+          ],
+          "ruleId": "workspace-session-integration",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 3596,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-improve-tracing-cost-light-mode-and-session-palette\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/test-selection.test.js \u001b[2m(\u001b[22m\u001b[2m46 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 3231\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m discovers and seeds the existing test inventory \u001b[33m 1508\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m46 passed\u001b[39m\u001b[22m\u001b[90m (46)\u001b[39m\n\u001b[2m   Start at \u001b[22m 01:48:25\n\u001b[2m   Duration \u001b[22m 3.32s\u001b[2m (transform 17ms, setup 0ms, import 24ms, tests 3.23s, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS trace gateway and Trace Burn contracts",
+          "command": [
+            "bun",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "--root",
+            "packages/os",
+            "tests/trace-sites-history-endpoint-contract.test.ts",
+            "tests/trace-sites-gateway-read-layer.test.ts",
+            "tests/trace-history-redaction.test.ts",
+            "tests/trace-site-inspector-os-owned.test.ts",
+            "tests/observability-traces-site.test.ts",
+            "tests/redaction.test.ts",
+            "tests/runtime-bundle-managed-site-assets.test.ts"
+          ],
+          "ruleId": "trace-site-pagination",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 520,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-improve-tracing-cost-light-mode-and-session-palette/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/redaction.test.ts \u001b[2m(\u001b[22m\u001b[2m6 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 4\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/trace-sites-gateway-read-layer.test.ts \u001b[2m(\u001b[22m\u001b[2m10 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 6\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/trace-history-redaction.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 6\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/trace-sites-history-endpoint-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 8\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/trace-site-inspector-os-owned.test.ts \u001b[2m(\u001b[22m\u001b[2m16 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 6\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/observability-traces-site.test.ts \u001b[2m(\u001b[22m\u001b[2m14 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 40\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/runtime-bundle-managed-site-assets.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 118\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m7 passed\u001b[39m\u001b[22m\u001b[90m (7)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m57 passed\u001b[39m\u001b[22m\u001b[90m (57)\u001b[39m\n\u001b[2m   Start at \u001b[22m 01:48:29\n\u001b[2m   Duration \u001b[22m 283ms\u001b[2m (transform 464ms, setup 0ms, import 550ms, tests 188ms, environment 1ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS canonical TraceStore runtime boundary",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/trace-sites-runtime-boundary.test.ts"
+          ],
+          "ruleId": "trace-site-pagination",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 383,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-improve-tracing-cost-light-mode-and-session-palette/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/trace-sites-runtime-boundary.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m3 passed\u001b[39m\u001b[22m\u001b[90m (3)\u001b[39m\n\u001b[2m   Start at \u001b[22m 01:48:29\n\u001b[2m   Duration \u001b[22m 101ms\u001b[2m (transform 19ms, setup 0ms, import 27ms, tests 3ms, environment 0ms)\u001b[22m\n\n$ vitest run tests/trace-sites-runtime-boundary.test.ts\n"
+        },
+        {
+          "name": "OS trace persistence and session search contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "--root",
+            "packages/os",
+            "tests/trace-persistence.test.ts",
+            "tests/trace-search-query.test.ts"
+          ],
+          "ruleId": "trace-site-pagination",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 3341,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-improve-tracing-cost-light-mode-and-session-palette/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/trace-search-query.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 12\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/trace-persistence.test.ts \u001b[2m(\u001b[22m\u001b[2m12 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 2975\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m persists a silent facade success with redacted input and serves it through the Hono read backend \u001b[33m 369\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m persists code.call and batch parent envelopes alongside nested child traces \u001b[33m 638\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m fails open when the trace path is unavailable \u001b[33m 305\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m persists durable Codex child events once under the originating trace across later attachments \u001b[33m 811\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m16 passed\u001b[39m\u001b[22m\u001b[90m (16)\u001b[39m\n\u001b[2m   Start at \u001b[22m 01:48:30\n\u001b[2m   Duration \u001b[22m 3.12s\u001b[2m (transform 57ms, setup 0ms, import 114ms, tests 2.99s, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS internal workspace shell contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "--no-file-parallelism",
+            "tests/settings-site.test.ts",
+            "tests/launcher-nodes-materialization.test.ts",
+            "tests/observability-traces-site.test.ts",
+            "tests/sites-cli.test.ts",
+            "tests/launcher-local-customization.test.ts",
+            "tests/install-state.test.ts",
+            "tests/local-agent-connectivity.test.ts"
+          ],
+          "ruleId": "os-internal-workspace-shell",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 27098,
+          "outputTail": "\u001b[2m)\u001b[22m\u001b[33m 4757\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m prints, refreshes, opens, and reports the local Sites paths \u001b[33m 804\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m materializes Home as the durable workspace root on every Sites refresh \u001b[33m 316\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m publishes Sites pages with immutable versions and stale base-version protection \u001b[33m 784\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m keeps reserved page versions protected and returns structured publish errors \u001b[33m 1136\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m renders typed guide pages through the canonical reader shell before publishing to Sites \u001b[33m 474\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m patches reader sections with auto-merge, same-section conflict, and leases \u001b[33m 958\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/local-agent-connectivity.test.ts \u001b[2m(\u001b[22m\u001b[2m14 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 5533\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should detect local agents when provisioning uses the supplied user home \u001b[33m 544\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m persists verified only after the installed stdio command completes an MCP handshake \u001b[33m 1396\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m persists verification outcomes independently for each configured agent \u001b[33m 761\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m requires re-verification after a selected client is reconfigured \u001b[33m 1011\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m requires re-verification when the package-root MCP server changes \u001b[33m 950\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should launch MCP with the persisted package root and Bun executable \u001b[33m 306\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/settings-site.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 170\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/launcher-local-customization.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 92\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/launcher-nodes-materialization.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 78\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/observability-traces-site.test.ts \u001b[2m(\u001b[22m\u001b[2m14 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 49\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m7 passed\u001b[39m\u001b[22m\u001b[90m (7)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m74 passed\u001b[39m\u001b[22m\u001b[90m (74)\u001b[39m\n\u001b[2m   Start at \u001b[22m 01:48:33\n\u001b[2m   Duration \u001b[22m 26.92s\u001b[2m (transform 336ms, setup 0ms, import 1.25s, tests 24.95s, environment 0ms)\u001b[22m\n\n$ vitest run --no-file-parallelism tests/settings-site.test.ts tests/launcher-nodes-materialization.test.ts tests/observability-traces-site.test.ts tests/sites-cli.test.ts tests/launcher-local-customization.test.ts tests/install-state.test.ts tests/local-agent-connectivity.test.ts\n786 |   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);\n787 | }\n788 | \n789 | export function readManagedComponentState(home: string): ManagedComponentState {\n790 |   const root = componentsRoot(home);\n791 |   const provenanceEnvelope = readJson(join(root, PROVENANCE_FILE));\n                                   ^\nSyntaxError: JSON Parse error: Expected '}'\n      at readManagedComponentState (/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-improve-tracing-cost-light-mode-and-session-palette/packages/os/scripts/lib/managed-components.ts:791:30)\n      at readExistingState (/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-improve-tracing-cost-light-mode-and-session-palette/packages/os/scripts/lib/managed-component-install.ts:316:17)\n      at provisionManagedComponentIndexes (/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-improve-tracing-cost-light-mode-and-session-palette/packages/os/scripts/lib/managed-component-install.ts:480:20)\n      at provisionLocalOs (/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-improve-tracing-cost-light-mode-and-session-palette/packages/os/scripts/lib/install-state.ts:1961:19)\n      at /Users/kokayi/.consuelo/node/tasks/worktrees/task-os-improve-tracing-cost-light-mode-and-session-palette/packages/os/[eval]:3:43\n\nBun v1.3.14 (macOS arm64)\n"
+        },
+        {
+          "name": "OS internal workspace shell syntax",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "ruleId": "os-internal-workspace-shell",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 2045,
+          "outputTail": "workspace script syntax checks passed\n"
+        },
+        {
+          "name": "changed server task selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 71,
+          "outputTail": "No changed Twenty server runtime files require lint or typecheck.\nRunning server lint and baseline-aware typecheck for 1 directly changed file(s).\nTwenty server typecheck matched 1 known baseline diagnostic(s).\nRunning server lint and baseline-aware typecheck for 1 directly changed file(s).\nNo changed Twenty server schema files require GraphQL generation.\nNo changed Twenty server runtime files require migration generation.\nNo changesgeneratedTwenty server migration drift matched 2 known baseline operation(s).\ngeneratedgenerated✔ parseCliArguments resolves comparison SHAs (0.899ms)\n✔ parseCliArguments selects GraphQL generation mode (0.066583ms)\n✔ parseCliArguments selects migration generation mode (0.054791ms)\n✔ filterServerTaskFiles excludes root and config-only triggers (0.079542ms)\n✔ filterGraphqlGenerationFiles keeps only server schema and generated files (0.060791ms)\n✔ buildEslintArguments selects the owning project config and stdin filename (0.058791ms)\n✔ ESLint diagnostic comparison tracks new error multiplicity without line numbers (0.177917ms)\n✔ runChangedFileLint accepts base-existing errors and rejects a new changed-file error (0.767709ms)\n✔ runChangedFileLint allows explicit lint baseline debt but rejects diagnostics beyond it (0.767417ms)\n✔ buildTypecheckArguments uses standard TypeScript without emitting (0.080083ms)\n✔ TypeScript diagnostic baseline comparison rejects only new diagnostic keys (0.193583ms)\n✔ runChangedServerTask skips Nx for config-only changes (0.299458ms)\n✔ runChangedServerTask executes lint and baseline-aware typecheck for server runtime changes (0.079208ms)\n✔ runChangedServerTask rejects a new TypeScript diagnostic outside the baseline (0.081ms)\n✔ server lint configuration resolves the existing workspace rules project (0.327166ms)\n✔ runGraphqlGenerationCheck skips generation without schema changes (0.081459ms)\n✔ runGraphqlGenerationCheck generates and verifies committed outputs (0.147667ms)\n✔ runMigrationGenerationCheck skips generation without server runtime changes (0.063708ms)\n✔ runMigrationGenerationCheck accepts a no-change TypeORM exit (0.088667ms)\n✔ runMigrationGenerationCheck accepts and removes exact known migration drift (0.168583ms)\n✔ runMigrationGenerationCheck rejects changed drift beyond the baseline (0.109209ms)\n✔ runMigrationGenerationCheck rejects and removes generated drift (0.107083ms)\nℹ tests 22\nℹ suites 0\nℹ pass 22\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 43.358917\n"
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 148,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/workspace/tests/github-workflow-policy.test.js:\n(pass) GitHub workflow policy > does not include retired automation workflows [0.74ms]\n(pass) GitHub workflow policy > does not reference retired CI credentials or the disabled Chromatic job [3.15ms]\n(pass) GitHub workflow policy > does not retain privileged allowlist entries for deleted workflows [0.16ms]\n(pass) GitHub workflow policy > runs typecheck and test from the filtered frontend file set [0.03ms]\n(pass) GitHub workflow policy > installs Bun and scopes shared tasks to changed frontend files [0.03ms]\n(pass) GitHub workflow policy > scopes native OS distribution tests to relevant changed files [0.04ms]\n(pass) GitHub workflow policy > runs Docker Compose CI with the pgvector PostgreSQL image required by migrations [0.03ms]\n(pass) GitHub workflow policy > uses available hosted runners for the Server and Front build pipelines [0.05ms]\n(pass) GitHub workflow policy > builds Consuelo backend workspace dependencies before server typecheck [0.03ms]\n(pass) GitHub workflow policy > installs Bun before the Server unit-test job runs Bun package tests [0.22ms]\n(pass) GitHub workflow policy > allows enough time for Danger dependency installation and execution [0.04ms]\n(pass) GitHub workflow policy > explicitly allowlists the API breaking-changes workflow write permissions [0.02ms]\n\n 12 pass\n 0 fail\n 53 expect() calls\nRan 12 tests across 1 file. [141.00ms]\n"
+        },
+        {
+          "name": "TypeORM CLI compatibility contract",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1204,
+          "outputTail": "✔ Twenty server uses the Node 24-compatible TypeORM ts-node wrapper (0.287834ms)\n✔ the configured TypeORM wrapper resolves from the installed package (1129.58825ms)\nℹ tests 2\nℹ suites 0\nℹ pass 2\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 1177.334958\n"
+        },
+        {
+          "name": "workspace session integration contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/session-integration-guidance.test.ts",
+            "packages/os/tests/session-start-foundation.test.ts",
+            "packages/os/tests/task-hook-workflow-contract.test.ts",
+            "packages/os/tests/task-hooks.test.ts",
+            "packages/workspace/tests/task-hook-workflow-contract.test.ts",
+            "packages/workspace/tests/task-hooks.test.ts",
+            "packages/workspace/tests/workflow-intent.test.ts",
+            "packages/workspace/tests/session-start-compatibility.test.ts",
+            "packages/os/tests/observability-traces-site.test.ts"
+          ],
+          "ruleId": "workspace-session-integration",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 941,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-improve-tracing-cost-light-mode-and-session-palette\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/session-integration-guidance.test.ts \u001b[2m(\u001b[22m\u001b[2m1 test\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 6\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/workspace/tests/task-hooks.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 4\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/task-hooks.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 4\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/workspace/tests/task-hook-workflow-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m12 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 32\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/task-hook-workflow-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m12 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 30\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/observability-traces-site.test.ts \u001b[2m(\u001b[22m\u001b[2m14 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 54\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/workspace/tests/workflow-intent.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 41\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/session-start-foundation.test.ts \u001b[2m(\u001b[22m\u001b[2m10 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 57\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/workspace/tests/session-start-compatibility.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 253\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m9 passed\u001b[39m\u001b[22m\u001b[90m (9)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m69 passed\u001b[39m\u001b[22m\u001b[90m (69)\u001b[39m\n\u001b[2m   Start at \u001b[22m 01:49:04\n\u001b[2m   Duration \u001b[22m 623ms\u001b[2m (transform 1.23s, setup 0ms, import 1.52s, tests 480ms, environment 1ms)\u001b[22m\n\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

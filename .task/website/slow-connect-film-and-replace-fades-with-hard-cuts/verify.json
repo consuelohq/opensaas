@@ -1,0 +1,53 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/website/slow-connect-film-and-replace-fades-with-hard-cuts",
+  "base": "origin/stream/website",
+  "headSha": "ca82914eb1b16545e76b855a303782d303d72b33",
+  "changeHash": "a4b2b59f01c6abe68577e5e7cbe8dfd483df6205d80ab58a8626f08e4fb4b2dd",
+  "changedFiles": [
+    "packages/consuelo-website/motion/connect/index.html",
+    "packages/consuelo-website/motion/connect/source-timing.json",
+    "packages/consuelo-website/public/media/home/connect-live-session-poster.webp",
+    "packages/consuelo-website/public/media/home/connect-live-session.mp4"
+  ],
+  "verifiedAt": "2026-09-01T00:18:57.865Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/website/slow-connect-film-and-replace-fades-with-hard-cuts.json",
+        ".task/website/slow-connect-film-and-replace-fades-with-hard-cuts/workpad.md",
+        "packages/consuelo-website/motion/connect/index.html",
+        "packages/consuelo-website/motion/connect/source-timing.json",
+        "packages/consuelo-website/public/media/home/connect-live-session-poster.webp",
+        "packages/consuelo-website/public/media/home/connect-live-session.mp4"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

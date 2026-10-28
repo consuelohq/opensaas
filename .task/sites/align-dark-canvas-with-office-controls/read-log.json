@@ -1,0 +1,7 @@
+{
+  "files": [
+    "packages/consuelo-website/tests/website-structure.test.js",
+    "packages/workspace/scripts/office.ts"
+  ],
+  "updatedAt": "2026-06-28T15:10:56.327Z"
+}

@@ -1,0 +1,55 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/website/bust-cloud-footer-artwork-cache",
+  "base": "origin/main",
+  "headSha": "87b09f02e6fa9d6a9cbb682f80fa4f08264a0467",
+  "changeHash": "528ced846037e973d70a47158de945afe9db577dd0d0f1566e41494c5d634084",
+  "changedFiles": [
+    "packages/consuelo-website/src/components/home/HomeCloudCta.astro",
+    "packages/consuelo-website/tests/homepage-mobile-layout.test.mjs",
+    "packages/consuelo-website/tests/homepage-responsive.test.mjs"
+  ],
+  "verifiedAt": "2026-08-10T01:15:53.978Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/website/bust-cloud-footer-artwork-cache.json",
+        ".task/website/bust-cloud-footer-artwork-cache/current.json",
+        ".task/website/bust-cloud-footer-artwork-cache/evidence-log.json",
+        ".task/website/bust-cloud-footer-artwork-cache/read-log.json",
+        ".task/website/bust-cloud-footer-artwork-cache/session.json",
+        ".task/website/bust-cloud-footer-artwork-cache/workpad.md",
+        "packages/consuelo-website/src/components/home/HomeCloudCta.astro",
+        "packages/consuelo-website/tests/homepage-mobile-layout.test.mjs",
+        "packages/consuelo-website/tests/homepage-responsive.test.mjs"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

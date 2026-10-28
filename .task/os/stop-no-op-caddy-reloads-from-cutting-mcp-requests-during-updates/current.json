@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/stop-no-op-caddy-reloads-from-cutting-mcp-requests-during-updates",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2128,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2128",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2128",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2128/stop-no-op-caddy-reloads-from-cutting-mcp-requests-during-updates",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2128",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2128/stop-no-op-caddy-reloads-from-cutting-mcp-requests-during-updates",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-stop-no-op-caddy-reloads-from-cutting-mcp-requests-during-updates",
+  "taskSession": "tsk_19b910582052",
+  "tmuxSession": "opensaas-os-stop-no-op-caddy-reloads-from-cutting-mcp-reques-19b91058",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-stop-no-op-caddy-reloads-from-cutting-mcp-requests-during-updates/.task/os/stop-no-op-caddy-reloads-from-cutting-mcp-requests-during-updates/session.json",
+  "createdAt": "2026-08-16T04:47:51.391Z"
+}

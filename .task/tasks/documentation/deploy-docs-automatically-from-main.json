@@ -1,0 +1,19 @@
+{
+  "area": "documentation",
+  "stream": "stream/documentation",
+  "taskBranch": "task/documentation/deploy-docs-automatically-from-main",
+  "baseBranch": "stream/documentation",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1479,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1479",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1479",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1479/deploy-docs-automatically-from-main",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1479",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1479/deploy-docs-automatically-from-main",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-deploy-docs-automatically-from-main",
+  "taskSession": "tsk_0385043f5c86",
+  "tmuxSession": "opensaas-documentation-deploy-docs-automatically-from-main-0385043f",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-deploy-docs-automatically-from-main/.task/documentation/deploy-docs-automatically-from-main/session.json",
+  "createdAt": "2026-07-14T04:20:55.997Z"
+}

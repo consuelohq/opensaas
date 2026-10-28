@@ -1,0 +1,19 @@
+{
+  "area": "os-distribution",
+  "stream": "stream/os-distribution",
+  "taskBranch": "task/os-distribution/audit-macos-watchdog-before-main",
+  "baseBranch": "stream/os-distribution",
+  "sourceBranch": "stream/os-distribution",
+  "startFrom": "stream",
+  "prNumber": 1628,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1628",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1628",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1628/audit-macos-watchdog-before-main",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1628",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1628/audit-macos-watchdog-before-main",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-audit-macos-watchdog-before-main",
+  "taskSession": "tsk_851e1163d6e0",
+  "tmuxSession": "opensaas-os-distribution-audit-macos-watchdog-before-main-851e1163",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-audit-macos-watchdog-before-main/.task/os-distribution/audit-macos-watchdog-before-main/session.json",
+  "createdAt": "2026-07-24T05:47:04.184Z"
+}

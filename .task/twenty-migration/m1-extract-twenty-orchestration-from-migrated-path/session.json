@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_7e8acd19a839",
+  "tmuxSession": "opensaas-twenty-migration-m1-extract-twenty-orchestration-from-migrated-pa-7e8acd19",
+  "area": "twenty-migration",
+  "stream": "stream/twenty-migration",
+  "taskBranch": "task/twenty-migration/m1-extract-twenty-orchestration-from-migrated-path",
+  "branch": "task/twenty-migration/m1-extract-twenty-orchestration-from-migrated-path",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-twenty-migration-m1-extract-twenty-orchestration-from-migrated-path",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-twenty-migration-m1-extract-twenty-orchestration-from-migrated-path",
+  "prNumber": 2010,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2010",
+  "createdAt": "2026-08-15T04:03:52.898Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-twenty-migration-m1-extract-twenty-orchestration-from-migrated-path/.task/twenty-migration/m1-extract-twenty-orchestration-from-migrated-path/session.json"
+}

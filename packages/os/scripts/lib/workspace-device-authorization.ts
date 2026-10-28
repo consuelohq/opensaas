@@ -1,8 +1,12 @@
 import { randomBytes } from 'node:crypto';
 
+import type { InstallErrorCode } from './install-telemetry-contract';
+
 export const CONSUELO_DEVICE_VERIFICATION_URL = 'https://os.consuelohq.com/login/device';
 export const CONSUELO_DEVICE_CODE_URL = 'https://os.consuelohq.com/login/device/code';
+export const CONSUELO_DEVICE_WORKSPACE_URL = 'https://os.consuelohq.com/login/device/workspace';
 export const CONSUELO_OAUTH_ACCESS_TOKEN_URL = 'https://os.consuelohq.com/login/oauth/access_token';
+export const CONSUELO_WORKSPACE_AGENT_STATUS_URL = 'https://os.consuelohq.com/workspace/agents';
 
 export type WorkspaceDeviceAuthorizationSession = {
   deviceCode: string;
@@ -20,15 +24,27 @@ export type WorkspaceDeviceAuthorizationPollResult =
     }
   | {
       status: 'approved';
+      userId?: string;
+      accountEmail?: string;
       workspaceId: string;
       workspaceSlug: string;
       workspaceHost: string;
+      nodeId?: string;
+      nodeName?: string;
+      nodeRole?: 'home' | 'member';
+      nodeStatus?: 'created' | 'reconnected';
       connectorId: string;
+      edgeRequestSigningSecret?: string;
       connectorBootstrapToken: string;
       connectorBootstrapExpiresAt: string;
       cloudflareTunnelToken?: string;
     }
-  | { status: 'denied' | 'expired'; errorCode: string };
+  | {
+      status: 'denied' | 'expired';
+      errorCode: string;
+      telemetryErrorCode?: InstallErrorCode;
+      message?: string;
+    };
 
 export type WorkspaceDeviceAuthorizationStartInput = {
   clientId: string;

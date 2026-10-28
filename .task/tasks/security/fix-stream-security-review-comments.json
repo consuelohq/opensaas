@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/fix-stream-security-review-comments",
+  "baseBranch": "stream/security",
+  "sourceBranch": "stream/security",
+  "startFrom": "stream",
+  "prNumber": 1363,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1363",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1363",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1363/fix-stream-security-review-comments",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1363",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1363/fix-stream-security-review-comments",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-stream-security-review-comments",
+  "taskSession": "tsk_da009004479c",
+  "tmuxSession": "opensaas-security-fix-stream-security-review-comments-da009004",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-stream-security-review-comments/.task/security/fix-stream-security-review-comments/session.json",
+  "createdAt": "2026-07-04T03:58:05.163Z"
+}

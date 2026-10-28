@@ -1,6 +1,8 @@
 #!/usr/bin/env bun
 
-const { execFileSync, spawnSync } = require('child_process');
+const { execFileSync, spawn, spawnSync } = require('child_process');
+const fs = require('fs');
+const os = require('os');
 const path = require('path');
 
 const { analyzeDbRisk } = require('./lib/db-guards');
@@ -11,6 +13,16 @@ const {
   computeVerificationState,
   writeVerifyStamp,
 } = require('./lib/verification');
+const {
+  abortVerifyRun,
+  beginVerifyRun,
+  finishVerifyRun,
+  makeVerifyRunIdentity,
+  markVerifyRunLaunched,
+} = require('./lib/verify-run-state');
+
+const GIT_OUTPUT_MAX_BUFFER = 64 * 1024 * 1024;
+const TEST_SELECTION_OUTPUT_MAX_BUFFER = 64 * 1024 * 1024;
 
 function writeStdout(value = '') {
   process.stdout.write(`${value}\n`);
@@ -31,6 +43,7 @@ function printHelp() {
   writeStdout('');
   writeStdout('options:');
   writeStdout('  --base <ref>           compare against ref (default: task branch stamp base, then stream, then origin/main)');
+  writeStdout('  --committed-only-tests select tests only from base...HEAD; ignore install/workspace noise');
   writeStdout('  --debug-skip-review   debug only: skip review; never writes publish-valid stamp');
   writeStdout('  --debug-skip-db       debug only: skip db guardrails; never writes publish-valid stamp');
   writeStdout('  --db-warn-only        debug only: report db guard errors as warnings; never publish-valid');
@@ -50,6 +63,8 @@ function parseArgs(argv) {
     review: true,
     reviewArgs: [],
     stamp: true,
+    committedOnlyTests: false,
+    foreground: false,
   };
 
   for (let index = 0; index < argv.length; index += 1) {
@@ -62,9 +77,11 @@ function parseArgs(argv) {
     const [flag, inlineValue] = rawArgument.split('=', 2);
     const knownFlags = [
       '--base',
+      '--committed-only-tests',
       '--db-warn-only',
       '--debug-skip-db',
       '--debug-skip-review',
+      '--foreground',
       '--help',
       '--json',
       '--no-stamp',
@@ -76,10 +93,12 @@ function parseArgs(argv) {
     }
     const isBooleanFlag = [
       '--db-warn-only',
+      '--committed-only-tests',
       '--help',
       '--json',
       '--debug-skip-db',
       '--debug-skip-review',
+      '--foreground',
       '--no-stamp',
       '--quiet',
     ].includes(flag);
@@ -109,6 +128,12 @@ function parseArgs(argv) {
         break;
       case '--db-warn-only':
         args.dbWarnOnly = true;
+        break;
+      case '--committed-only-tests':
+        args.committedOnlyTests = true;
+        break;
+      case '--foreground':
+        args.foreground = true;
         break;
       case '--no-stamp':
         args.stamp = false;
@@ -212,6 +237,7 @@ function readChangedFiles(repoRoot, base) {
       cwd: repoRoot,
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'pipe'],
+      maxBuffer: GIT_OUTPUT_MAX_BUFFER,
     });
 
     for (const entry of statusOutput.split('\0').filter(Boolean)) {
@@ -234,6 +260,7 @@ function readChangedFiles(repoRoot, base) {
 }
 
 const REVIEW_STDERR_LIMIT = 4000;
+const REGISTRY_FAILURE_OUTPUT_LIMIT = 2000;
 
 function compactText(text, limit = REVIEW_STDERR_LIMIT) {
   const value = String(text || '');
@@ -242,6 +269,19 @@ function compactText(text, limit = REVIEW_STDERR_LIMIT) {
     chars: value.length,
     truncated: value.length > limit,
   };
+}
+
+function compactRegistryFailureOutput(text) {
+  const value = String(text || '')
+    .replace(/\u001b\[[0-9;]*m/g, '')
+    .replace(/gh[ops]_[A-Za-z0-9_]+/g, '<redacted-token>')
+    .trim();
+  if (!value) return [];
+
+  const tail = value.length > REGISTRY_FAILURE_OUTPUT_LIMIT
+    ? `... truncated ${value.length - REGISTRY_FAILURE_OUTPUT_LIMIT} chars\n${value.slice(-REGISTRY_FAILURE_OUTPUT_LIMIT)}`
+    : value;
+  return tail.split(/\r?\n/).filter(Boolean);
 }
 
 function countFindings(value) {
@@ -292,7 +332,7 @@ function runReview(repoRoot, base, args) {
     };
   }
 
-  const reviewArgs = ['run', 'review', '--', '--base', base, '--summary-json', '--quiet', ...args.reviewArgs];
+  const reviewArgs = ['run', 'review', '--', '--base', base, '--summary-json', '--quiet', '--no-tests', ...args.reviewArgs];
   const result = spawnSync('bun', reviewArgs, {
     cwd: repoRoot,
     encoding: 'utf8',
@@ -313,23 +353,40 @@ function runReview(repoRoot, base, args) {
 }
 
 
-function runTestSelection(repoRoot, base) {
-  const result = spawnSync('bun', ['packages/workspace/scripts/test-selection.js', 'check', '--base', base, '--run', '--json'], {
+function runTestSelection(repoRoot, base, args) {
+  const selectionArgs = ['packages/workspace/scripts/test-selection.js', 'check', '--base', base];
+  if (args.committedOnlyTests) selectionArgs.push('--committed-only');
+  const selectionResultPath = path.join(
+    os.tmpdir(),
+    `opensaas-test-selection-${process.pid}-${Date.now()}.json`,
+  );
+  selectionArgs.push('--run', '--json', '--out', selectionResultPath);
+  const result = spawnSync('bun', selectionArgs, {
     cwd: repoRoot,
     encoding: 'utf8',
     stdio: ['ignore', 'pipe', 'pipe'],
-    maxBuffer: 1024 * 1024 * 8,
+    maxBuffer: TEST_SELECTION_OUTPUT_MAX_BUFFER,
   });
   let data = null;
   try {
-    data = JSON.parse(result.stdout || '{}');
-  } catch {
-    data = { passed: false, error: 'failed to parse test-selection JSON', stdout: result.stdout || '' };
+    data = JSON.parse(fs.readFileSync(selectionResultPath, 'utf8'));
+  } catch (error) {
+    data = {
+      passed: false,
+      error: `failed to read test-selection result file: ${error instanceof Error ? error.message : String(error)}`,
+      stdout: result.stdout || '',
+    };
+  } finally {
+    fs.rmSync(selectionResultPath, { force: true });
   }
   return {
     skipped: false,
     passed: result.status === 0 && data.passed === true,
     status: result.status,
+    signal: result.signal || null,
+    error: result.error
+      ? { code: result.error.code || null, message: result.error.message || String(result.error) }
+      : null,
     data,
     stderr: result.stderr || '',
   };
@@ -400,8 +457,43 @@ function createBecause(result) {
     const matched = Array.isArray(selection.matchedRules) ? selection.matchedRules.map((rule) => rule.id).join(', ') : '';
     if (suiteCount > 0) {
       lines.push(`registry selected ${suiteCount} suite${suiteCount === 1 ? '' : 's'}${matched ? ` from ${matched}` : ''} and ${result.testSelection.passed ? 'passed' : 'failed'}`);
+      const registryFailures = Array.isArray(selection.failedSuites)
+        ? selection.failedSuites
+        : [];
+      for (const failure of registryFailures) {
+        const name = failure && failure.name ? String(failure.name) : 'unnamed suite';
+        const exitCode = Number.isInteger(failure && failure.exitCode)
+          ? failure.exitCode
+          : 'unknown';
+        lines.push(`registry failure: ${name} (exit ${exitCode})`);
+        for (const outputLine of compactRegistryFailureOutput(failure && failure.outputTail)) {
+          lines.push(`registry output: ${outputLine}`);
+        }
+      }
     } else if (selection.zeroSuiteReason) {
       lines.push(`registry selected 0 suites because ${selection.zeroSuiteReason}`);
+    } else if (
+      result.testSelection.error
+      || result.testSelection.signal
+      || result.testSelection.status !== 0
+      || selection.error
+    ) {
+      const details = [];
+      if (result.testSelection.error) {
+        const code = result.testSelection.error.code
+          ? ` ${result.testSelection.error.code}`
+          : '';
+        details.push(`error${code}: ${result.testSelection.error.message}`);
+      }
+      if (result.testSelection.signal) details.push(`signal ${result.testSelection.signal}`);
+      if (result.testSelection.status !== null && result.testSelection.status !== undefined) {
+        details.push(`exit ${result.testSelection.status}`);
+      }
+      if (selection.error) details.push(String(selection.error));
+      lines.push(`registry runner failure: ${details.join('; ') || 'unknown selector failure'}`);
+      for (const outputLine of compactRegistryFailureOutput(result.testSelection.stderr)) {
+        lines.push(`registry stderr: ${outputLine}`);
+      }
     } else {
       lines.push('registry selected 0 suites and gave no reason');
     }
@@ -482,6 +574,88 @@ function printHumanResult(result) {
   }
 }
 
+function replayVerifyRun(verifyRun) {
+  process.stdout.write(verifyRun.result.stdout || '');
+  process.stderr.write(verifyRun.result.stderr || '');
+  process.exitCode = verifyRun.result.exitCode;
+}
+
+function buildVerifyPendingPayload(verifyRun, context, workerPidOverride = null) {
+  const record = verifyRun.record || {};
+  const workerPid = Number.isInteger(workerPidOverride)
+    ? workerPidOverride
+    : Number.isInteger(record.workerPid)
+      ? record.workerPid
+      : null;
+  return {
+    status: 'VERIFY_PENDING',
+    pending: true,
+    passed: false,
+    publishValid: false,
+    runKey: verifyRun.identity.key,
+    branch: context.branch,
+    base: context.base,
+    headSha: context.headSha,
+    phase: record.status || 'running',
+    startedAt: record.startedAt || null,
+    workerPid,
+    retryAfterSeconds: 5,
+    stamp: {
+      written: false,
+      path: null,
+      publishValid: false,
+    },
+    message: 'Verification is running outside the agent turn.',
+    nextAction: 'Call verify again with the same task session to read pending or completed state; do not sleep inside this turn.',
+  };
+}
+
+function writeVerifyPending(verifyRun, context, workerPidOverride = null) {
+  process.stdout.write(
+    `${JSON.stringify(
+      buildVerifyPendingPayload(verifyRun, context, workerPidOverride),
+      null,
+      2,
+    )}\n`,
+  );
+}
+
+function launchDetachedVerify(repoRoot, verifyRun) {
+  const workerArgs = process.argv
+    .slice(2)
+    .filter((argument) => argument !== '--foreground');
+  workerArgs.push('--foreground');
+  const stdoutFd = fs.openSync(verifyRun.paths.workerStdoutPath, 'a');
+  const stderrFd = fs.openSync(verifyRun.paths.workerStderrPath, 'a');
+
+  try {
+    const child = spawn(process.execPath, [__filename, ...workerArgs], {
+      cwd: repoRoot,
+      detached: true,
+      stdio: ['ignore', stdoutFd, stderrFd],
+      env: {
+        ...process.env,
+        TASK_WORKTREE: repoRoot,
+        WORKSPACE_VERIFY_RESERVED_KEY: verifyRun.identity.key,
+      },
+    });
+    child.unref();
+    markVerifyRunLaunched(verifyRun, child.pid);
+    return child.pid;
+  } catch (error) {
+    abortVerifyRun(
+      verifyRun,
+      error instanceof Error
+        ? `failed to launch detached verify worker: ${error.message}`
+        : 'failed to launch detached verify worker',
+    );
+    throw error;
+  } finally {
+    fs.closeSync(stdoutFd);
+    fs.closeSync(stderrFd);
+  }
+}
+
 function getVerifyRoot() {
   const taskWorktree = process.env.TASK_WORKTREE;
   if (taskWorktree) {
@@ -497,127 +671,180 @@ function getVerifyRoot() {
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
+  let verifyRun = null;
 
   if (args.help) {
     printHelp();
     return;
   }
 
-  const repoRoot = getVerifyRoot();
-  process.chdir(repoRoot);
+  try {
+    const repoRoot = getVerifyRoot();
+    process.chdir(repoRoot);
 
-  const branch = getCurrentBranch(repoRoot);
-  const taskMeta = findTaskMeta(repoRoot, { currentBranch: branch });
-  const base = detectBase(repoRoot, args, branch, taskMeta);
-  const files = readChangedFiles(repoRoot, base);
-  const headSha = getRefSha(repoRoot, 'HEAD');
-  const review = runReview(repoRoot, base, args);
-  const testSelection = runTestSelection(repoRoot, base);
-  const db = createDbResult(files, args);
-  const passed = review.passed && testSelection.passed && db.passed;
-  const mode = review.skipped || db.skipped || args.dbWarnOnly ? 'partial' : 'full';
-  const publishValid = passed && mode === 'full';
-  const verificationState = computeVerificationState(repoRoot, branch);
-  let stampPath = null;
-  const stamp = {
-    result: passed ? 'pass' : 'fail',
-    publishValid,
-    mode,
-    branch,
-    base,
-    headSha,
-    changeHash: verificationState.changeHash,
-    changedFiles: files,
-    verifiedAt: new Date().toISOString(),
-    review: {
-      skipped: review.skipped,
-      passed: review.passed,
-      status: review.status,
-    },
-    testSelection: {
-      skipped: testSelection.skipped,
-      passed: testSelection.passed,
-      status: testSelection.status,
-      data: testSelection.data,
-    },
-    db: {
-      skipped: db.skipped,
-      passed: db.passed,
-      warnOnly: db.warnOnly,
-      risks: db.risks,
-      findings: db.findings,
-    },
-    commandVersion: 2,
-  };
+    const branch = getCurrentBranch(repoRoot);
+    const taskMeta = findTaskMeta(repoRoot, { currentBranch: branch });
+    const base = detectBase(repoRoot, args, branch, taskMeta);
+    const files = readChangedFiles(repoRoot, base);
+    const headSha = getRefSha(repoRoot, 'HEAD');
+    const verificationState = computeVerificationState(repoRoot, branch);
 
-  if (publishValid && args.stamp && taskMeta) {
-    stampPath = writeVerifyStamp(repoRoot, stamp);
-  }
+    const verifyIdentity = makeVerifyRunIdentity({
+      repoRoot,
+      branch,
+      base,
+      headSha,
+      changeHash: verificationState.changeHash,
+      args,
+    });
+    verifyRun = args.json
+      ? beginVerifyRun(repoRoot, verifyIdentity, {
+          defer: !args.foreground,
+          adoptReservedKey: args.foreground
+            ? process.env.WORKSPACE_VERIFY_RESERVED_KEY
+            : undefined,
+        })
+      : null;
 
-  const result = {
-    repoRoot,
-    args,
-    branch,
-    base,
-    headSha,
-    files,
-    review,
-    testSelection,
-    db,
-    passed,
-    publishValid,
-    mode,
-    stamp,
-    stampPath,
-  };
-  result.because = createBecause(result);
-
-  if (args.json) {
-    writeStdout(JSON.stringify({
-      branch: result.branch,
-      base: result.base,
-      headSha: result.headSha,
-      files: result.files,
-      mode: result.mode,
-      publishValid: result.publishValid,
-      because: result.because,
-      review: {
-        skipped: result.review.skipped,
-        passed: result.review.passed,
-        status: result.review.status,
-        data: result.review.data,
-        stderr: compactText(result.review.stderr).text,
-        stderrChars: compactText(result.review.stderr).chars,
-        stderrTruncated: compactText(result.review.stderr).truncated,
-      },
-      testSelection: {
-        skipped: result.testSelection.skipped,
-        passed: result.testSelection.passed,
-        status: result.testSelection.status,
-        data: result.testSelection.data,
-        stderr: compactText(result.testSelection.stderr).text,
-        stderrChars: compactText(result.testSelection.stderr).chars,
-        stderrTruncated: compactText(result.testSelection.stderr).truncated,
-      },
-      db: result.db,
-      passed: result.passed,
-      stamp: {
-        written: Boolean(result.stampPath),
-        path: result.stampPath,
-        publishValid: result.publishValid,
-      },
-      stampPath: result.stampPath,
-    }, null, 2));
-  } else {
-    if (review.stderr && !review.passed) {
-      writeStderr(review.stderr.trim());
+    if (verifyRun && verifyRun.mode === 'replay') {
+      replayVerifyRun(verifyRun);
+      return;
+    }
+    if (verifyRun && verifyRun.mode === 'pending') {
+      writeVerifyPending(verifyRun, { branch, base, headSha });
+      if (args.foreground) process.exitCode = 1;
+      return;
+    }
+    if (verifyRun && verifyRun.mode === 'launch') {
+      const workerPid = launchDetachedVerify(repoRoot, verifyRun);
+      writeVerifyPending(verifyRun, { branch, base, headSha }, workerPid);
+      verifyRun = null;
+      return;
     }
 
-    printHumanResult(result);
-  }
+    const review = runReview(repoRoot, base, args);
+    const testSelection = runTestSelection(repoRoot, base, args);
+    const db = createDbResult(files, args);
+    const passed = review.passed && testSelection.passed && db.passed;
+    const mode = review.skipped || db.skipped || args.dbWarnOnly ? 'partial' : 'full';
+    const publishValid = passed && mode === 'full';
+    let stampPath = null;
+    const stamp = {
+      result: passed ? 'pass' : 'fail',
+      publishValid,
+      mode,
+      branch,
+      base,
+      headSha,
+      changeHash: verificationState.changeHash,
+      changedFiles: files,
+      verifiedAt: new Date().toISOString(),
+      review: {
+        skipped: review.skipped,
+        passed: review.passed,
+        status: review.status,
+      },
+      testSelection: {
+        skipped: testSelection.skipped,
+        passed: testSelection.passed,
+        status: testSelection.status,
+        data: testSelection.data,
+      },
+      db: {
+        skipped: db.skipped,
+        passed: db.passed,
+        warnOnly: db.warnOnly,
+        risks: db.risks,
+        findings: db.findings,
+      },
+      commandVersion: 2,
+    };
 
-  if (!passed) {
-    process.exit(1);
+    if (publishValid && args.stamp && taskMeta) {
+      stampPath = writeVerifyStamp(repoRoot, stamp);
+    }
+
+    const result = {
+      repoRoot,
+      args,
+      branch,
+      base,
+      headSha,
+      files,
+      review,
+      testSelection,
+      db,
+      passed,
+      publishValid,
+      mode,
+      stamp,
+      stampPath,
+    };
+    result.because = createBecause(result);
+
+    if (args.json) {
+      const stdout = `${JSON.stringify({
+        branch: result.branch,
+        base: result.base,
+        headSha: result.headSha,
+        files: result.files,
+        mode: result.mode,
+        publishValid: result.publishValid,
+        because: result.because,
+        review: {
+          skipped: result.review.skipped,
+          passed: result.review.passed,
+          status: result.review.status,
+          data: result.review.data,
+          stderr: compactText(result.review.stderr).text,
+          stderrChars: compactText(result.review.stderr).chars,
+          stderrTruncated: compactText(result.review.stderr).truncated,
+        },
+        testSelection: {
+          skipped: result.testSelection.skipped,
+          passed: result.testSelection.passed,
+          status: result.testSelection.status,
+          data: result.testSelection.data,
+          stderr: compactText(result.testSelection.stderr).text,
+          stderrChars: compactText(result.testSelection.stderr).chars,
+          stderrTruncated: compactText(result.testSelection.stderr).truncated,
+        },
+        db: result.db,
+        passed: result.passed,
+        stamp: {
+          written: Boolean(result.stampPath),
+          path: result.stampPath,
+          publishValid: result.publishValid,
+        },
+        stampPath: result.stampPath,
+      }, null, 2)}\n`;
+      process.stdout.write(stdout);
+      finishVerifyRun(verifyRun, {
+        stdout,
+        stderr: '',
+        exitCode: passed ? 0 : 1,
+      });
+      verifyRun = null;
+    } else {
+      if (review.stderr && !review.passed) {
+        writeStderr(review.stderr.trim());
+      }
+
+      printHumanResult(result);
+    }
+
+    if (!passed) {
+      process.exitCode = 1;
+    }
+  } catch (error) {
+    if (verifyRun && ['run', 'launch'].includes(verifyRun.mode)) {
+      abortVerifyRun(
+        verifyRun,
+        error instanceof Error ? error.message : 'verify failed before completion',
+      );
+      verifyRun = null;
+    }
+    throw error;
   }
 }
 

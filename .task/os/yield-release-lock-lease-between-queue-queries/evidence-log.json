@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/yield-release-lock-lease-between-queue-queries",
+  "events": [
+    {
+      "id": "d0246e5c-079b-412b-9432-6b3c686e74fb",
+      "occurred_at": "2026-08-26T18:53:46.567Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/release-promotion-dispatch-lock.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/yield-release-lock-lease-between-queue-queries",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/yield-release-lock-lease-between-queue-queries"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2

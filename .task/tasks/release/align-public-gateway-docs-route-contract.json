@@ -1,0 +1,19 @@
+{
+  "area": "release",
+  "stream": "stream/release",
+  "taskBranch": "task/release/align-public-gateway-docs-route-contract",
+  "baseBranch": "stream/release",
+  "sourceBranch": "stream/release",
+  "startFrom": "stream",
+  "prNumber": 1288,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1288",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1288",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1288/align-public-gateway-docs-route-contract",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1288",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1288/align-public-gateway-docs-route-contract",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-release-align-public-gateway-docs-route-contract",
+  "taskSession": "tsk_317d85e1f943",
+  "tmuxSession": "opensaas-release-align-public-gateway-docs-route-contract-317d85e1",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-release-align-public-gateway-docs-route-contract/.task/release/align-public-gateway-docs-route-contract/session.json",
+  "createdAt": "2026-06-30T15:39:24.220Z"
+}

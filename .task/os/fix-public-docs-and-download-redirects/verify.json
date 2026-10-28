@@ -1,0 +1,64 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/fix-public-docs-and-download-redirects",
+  "base": "origin/stream/os",
+  "headSha": "a9d6c9de1429863e287c7c6f68fcbe23b5a1d8d4",
+  "changeHash": "35b27acc87a2c6bb55bf534513562ecc173473f04444bcfe98accbfcc5b8fab4",
+  "changedFiles": [
+    "packages/consuelo-website/public/_redirects",
+    "packages/consuelo-website/src/pages/support.astro",
+    "packages/consuelo-website/tests/website-structure.test.js",
+    "packages/documentation/src/content/docs/connect/apps-and-services/leadconnector-dialer.mdx",
+    "packages/documentation/src/lib/docs-navigation.ts",
+    "packages/documentation/src/lib/legacy-redirects.mjs",
+    "packages/documentation/tests/connect.test.ts"
+  ],
+  "verifiedAt": "2026-07-28T03:59:46.326Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/fix-public-docs-and-download-redirects/current.json",
+        ".task/os/fix-public-docs-and-download-redirects/evidence-log.json",
+        ".task/os/fix-public-docs-and-download-redirects/read-log.json",
+        ".task/os/fix-public-docs-and-download-redirects/session.json",
+        ".task/os/fix-public-docs-and-download-redirects/verify.json",
+        ".task/os/fix-public-docs-and-download-redirects/workpad.md",
+        ".task/tasks/os/fix-public-docs-and-download-redirects.json",
+        "packages/consuelo-website/public/_redirects",
+        "packages/consuelo-website/src/pages/support.astro",
+        "packages/consuelo-website/tests/website-structure.test.js",
+        "packages/documentation/src/content/docs/connect/apps-and-services/leadconnector-dialer.mdx",
+        "packages/documentation/src/lib/docs-navigation.ts",
+        "packages/documentation/src/lib/legacy-redirects.mjs",
+        "packages/documentation/tests/connect.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

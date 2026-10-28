@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/close-prelaunch-port-cutover-review-findings",
+  "baseBranch": "stream/security",
+  "sourceBranch": "stream/security",
+  "startFrom": "stream",
+  "prNumber": 1417,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1417",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1417",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1417/close-prelaunch-port-cutover-review-findings",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1417",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1417/close-prelaunch-port-cutover-review-findings",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-close-prelaunch-port-cutover-review-findings",
+  "taskSession": "tsk_f1decb00bf2a",
+  "tmuxSession": "opensaas-security-close-prelaunch-port-cutover-review-findings-f1decb00",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-close-prelaunch-port-cutover-review-findings/.task/security/close-prelaunch-port-cutover-review-findings/session.json",
+  "createdAt": "2026-07-11T17:21:49.452Z"
+}

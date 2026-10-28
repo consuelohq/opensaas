@@ -1,0 +1,565 @@
+import { createHash } from 'node:crypto';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+import { afterEach, describe, expect, it } from 'vitest';
+
+import {
+  canonicalReleaseJson,
+  createEmptyReleaseState,
+  planDevPublication,
+  type ReleaseMutationResult,
+  type ReleaseState,
+} from '../../scripts/lib/distribution/release-channels';
+import {
+  createReleaseProviderCommandBackend,
+  executeReleaseProviderMutation,
+  type ReleaseProviderBackend,
+  type ReleaseProviderCommandRunner,
+  type ReleaseProviderConfig,
+} from '../../scripts/lib/distribution/release-channel-provider';
+
+const roots: string[] = [];
+const SOURCE_COMMIT = '0123456789abcdef0123456789abcdef01234567';
+const PLATFORM_BUNDLE_ID = `sha256:${'2'.repeat(64)}`;
+const RELEASE_SET_ID = `sha256:${'3'.repeat(64)}`;
+const FINGERPRINT = `sha256:${'4'.repeat(64)}`;
+const TAG = 'consuelo-os-v1.2.3';
+
+function tempRoot(): string {
+  const root = mkdtempSync(join(tmpdir(), 'consuelo-provider-retry-'));
+  roots.push(root);
+  return root;
+}
+
+function digestFile(path: string): string {
+  return `sha256:${createHash('sha256').update(readFileSync(path)).digest('hex')}`;
+}
+
+function digestJson(value: unknown): string {
+  return `sha256:${createHash('sha256').update(`${JSON.stringify(value, null, 2)}\n`).digest('hex')}`;
+}
+
+function publicationMutation(): ReleaseMutationResult {
+  const root = tempRoot();
+  const archivePath = join(root, 'runtime.tar.gz');
+  const signaturePath = join(root, 'runtime.tar.gz.sig');
+  writeFileSync(archivePath, 'archive-bytes');
+  writeFileSync(signaturePath, 'signature-bytes');
+  const state = createEmptyReleaseState();
+  state.revision = 1;
+  state.allocations[SOURCE_COMMIT + ':' + FINGERPRINT] = '1.2.3';
+  state.releases[RELEASE_SET_ID] = {
+    bundleId: RELEASE_SET_ID,
+    bundles: [{
+      architecture: 'x64',
+      archiveDigest: digestFile(archivePath),
+      bundleId: PLATFORM_BUNDLE_ID,
+      cloudflare: {
+        digest: digestFile(archivePath),
+        objectKey: `bundles/${PLATFORM_BUNDLE_ID}/runtime.tar.gz`,
+      },
+      github: {
+        assetName: 'runtime.tar.gz',
+        digest: digestFile(archivePath),
+      },
+      manifest: {
+        architecture: 'x64',
+        bundleId: PLATFORM_BUNDLE_ID,
+        platform: 'linux',
+        releaseFingerprint: FINGERPRINT,
+        schemaVersion: 1,
+        sourceCommit: SOURCE_COMMIT,
+        version: '1.2.3',
+      },
+      platform: 'linux',
+      signature: {
+        algorithm: 'ed25519',
+        keyId: 'fixture',
+        signature: 'fixture',
+      },
+    }],
+    createdAt: '2026-07-23T00:00:00.000Z',
+    evidence: [{ kind: 'tests', reference: 'fixture' }],
+    immutableTag: TAG,
+    releaseFingerprint: FINGERPRINT,
+    sourceCommit: SOURCE_COMMIT,
+    version: '1.2.3',
+  };
+  state.tags[TAG] = RELEASE_SET_ID;
+  state.githubReleases[TAG] = {
+    bundleId: RELEASE_SET_ID,
+    prerelease: true,
+    releaseFingerprint: FINGERPRINT,
+    sourceCommit: SOURCE_COMMIT,
+    tag: TAG,
+    version: '1.2.3',
+  };
+  state.channels.dev = {
+    payload: {
+      bundleId: RELEASE_SET_ID,
+      channel: 'dev',
+      evidence: [{ kind: 'tests', reference: 'fixture' }],
+      kind: 'consuelo-os-channel-manifest',
+      platforms: [{
+        architecture: 'x64',
+        archiveDigest: digestFile(archivePath),
+        bundleId: PLATFORM_BUNDLE_ID,
+        cloudflareObjectKey: `bundles/${PLATFORM_BUNDLE_ID}/runtime.tar.gz`,
+        githubAssetName: 'runtime.tar.gz',
+        platform: 'linux',
+      }],
+      promotedAt: '2026-07-23T00:00:00.000Z',
+      releaseFingerprint: FINGERPRINT,
+      revision: 1,
+      schemaVersion: 1,
+      sourceChannel: null,
+      sourceCommit: SOURCE_COMMIT,
+      version: '1.2.3',
+    },
+    signature: {
+      algorithm: 'ed25519',
+      keyId: 'fixture',
+      signature: 'fixture',
+      signedAt: '2026-07-23T00:00:00.000Z',
+    },
+  };
+  return {
+    artifacts: {
+      [PLATFORM_BUNDLE_ID]: { archivePath, signaturePath },
+    },
+    changed: true,
+    idempotent: false,
+    operations: [
+      { kind: 'create-immutable-tag', bundleId: RELEASE_SET_ID, tag: TAG },
+      { kind: 'create-github-release', bundleId: RELEASE_SET_ID, prerelease: true, tag: TAG },
+      { kind: 'upload-github-asset', assetName: 'runtime.tar.gz', bundleId: PLATFORM_BUNDLE_ID, digest: digestFile(archivePath) },
+      { kind: 'put-cloudflare-object', bundleId: PLATFORM_BUNDLE_ID, digest: digestFile(archivePath), objectKey: `bundles/${PLATFORM_BUNDLE_ID}/runtime.tar.gz` },
+      { kind: 'create-github-deployment', bundleId: RELEASE_SET_ID, environment: 'consuelo-os-dev' },
+      { kind: 'put-channel-manifest', bundleId: RELEASE_SET_ID, channel: 'dev', digest: digestJson(state.channels.dev) },
+    ],
+    state,
+  };
+}
+
+function promotionMutation(): ReleaseMutationResult {
+  const state = createEmptyReleaseState();
+  state.revision = 2;
+  state.releases[RELEASE_SET_ID] = {
+    bundleId: RELEASE_SET_ID,
+    bundles: [],
+    createdAt: '2026-07-23T00:00:00.000Z',
+    evidence: [{ kind: 'tests', reference: 'fixture' }],
+    immutableTag: TAG,
+    releaseFingerprint: FINGERPRINT,
+    sourceCommit: SOURCE_COMMIT,
+    version: '1.2.3',
+  };
+  state.githubReleases[TAG] = {
+    bundleId: RELEASE_SET_ID,
+    prerelease: true,
+    releaseFingerprint: FINGERPRINT,
+    sourceCommit: SOURCE_COMMIT,
+    tag: TAG,
+    version: '1.2.3',
+  };
+  state.channels.canary = {
+    payload: {
+      bundleId: RELEASE_SET_ID,
+      channel: 'canary',
+      evidence: [{ kind: 'tests', reference: 'fixture' }],
+      kind: 'consuelo-os-channel-manifest',
+      platforms: [],
+      promotedAt: '2026-07-23T00:00:00.000Z',
+      releaseFingerprint: FINGERPRINT,
+      revision: 2,
+      schemaVersion: 1,
+      sourceChannel: 'dev',
+      sourceCommit: SOURCE_COMMIT,
+      version: '1.2.3',
+    },
+    signature: {
+      algorithm: 'ed25519',
+      keyId: 'fixture',
+      signature: 'fixture',
+      signedAt: '2026-07-23T00:00:00.000Z',
+    },
+  };
+  return {
+    changed: true,
+    idempotent: false,
+    operations: [
+      { kind: 'update-protected-channel-ref', channel: 'canary', sourceCommit: SOURCE_COMMIT },
+      { kind: 'update-github-release', prerelease: true, tag: TAG },
+      { kind: 'create-github-deployment', bundleId: RELEASE_SET_ID, environment: 'consuelo-os-canary' },
+      { kind: 'put-channel-manifest', bundleId: RELEASE_SET_ID, channel: 'canary', digest: digestJson(state.channels.canary) },
+    ],
+    state,
+  };
+}
+
+const config: ReleaseProviderConfig = {
+  cloudflareAccountId: 'account',
+  cloudflareApiToken: 'cloudflare-secret',
+  githubRepository: 'consuelohq/opensaas',
+  githubToken: 'github-secret',
+  r2Bucket: 'consuelo-os-releases',
+};
+
+function backend(input: {
+  assetDigest?: string | null;
+  assetDigests?: Record<string, string | null>;
+  failAfter?: string;
+  integrated?: boolean;
+  r2Digests?: Record<string, string | null>;
+  remoteState?: ReleaseState | null;
+  remoteStates?: Array<ReleaseState | null>;
+  tagSha?: string | null;
+} = {}): ReleaseProviderBackend & { readonly currentState: ReleaseState | null; writes: string[] } {
+  const writes: string[] = [];
+  let releaseStateReads = 0;
+  let currentState = input.remoteState === undefined
+    ? createEmptyReleaseState()
+    : structuredClone(input.remoteState);
+  const record = (value: string): void => {
+    writes.push(value);
+    if (input.failAfter === value) throw new Error('injected provider interruption after ' + value);
+  };
+  return {
+    get currentState() { return structuredClone(currentState); },
+    writes,
+    async createDeployment(value) { record('deployment:' + value.environment); },
+    async createGithubRelease(value) { record('release:' + value.tag); },
+    async createProtectedRef(value) { record('create-ref:' + value.channel); },
+    async createTag(value) { record('tag:' + value.tag); },
+    async deploymentExists() { return true; },
+    async getGithubAssetDigest(_tag, name) { return input.assetDigests?.[name] ?? input.assetDigest ?? null; },
+    async getGithubRelease() { return { prerelease: true }; },
+    async getProtectedRefSha() { return SOURCE_COMMIT; },
+    async getR2ObjectDigest(key) { return input.r2Digests?.[key] ?? null; },
+    async getReleaseState() {
+      const hasSequencedState = releaseStateReads < (input.remoteStates?.length ?? 0);
+      const sequenced = hasSequencedState ? input.remoteStates?.[releaseStateReads] : undefined;
+      releaseStateReads += 1;
+      return structuredClone(hasSequencedState ? sequenced ?? null : currentState);
+    },
+    async getTagSha() { return input.tagSha ?? null; },
+    async isCommitIntegratedToMain() { return input.integrated ?? true; },
+    async putR2Object(key, path) {
+      const value = 'r2:' + key + ':' + digestFile(path);
+      writes.push(value);
+      if (key === 'state/release-state.json') {
+        currentState = JSON.parse(readFileSync(path, 'utf8')) as ReleaseState;
+      }
+      if (input.failAfter === value || input.failAfter === 'r2:' + key) {
+        throw new Error('injected provider interruption after ' + value);
+      }
+    },
+    async updateGithubRelease(value) { record('update-release:' + value.tag); },
+    async updateProtectedRef(value) { record('update-ref:' + value.channel); },
+    async uploadGithubAsset(value) { record('asset:' + value.name + ':' + digestFile(value.path)); },
+  };
+}
+afterEach(() => {
+  for (const root of roots.splice(0)) rmSync(root, { force: true, recursive: true });
+});
+
+describe('release provider retry safety', () => {
+  it('binds deployment identity to the manifest for its environment', async () => {
+    const mutation = promotionMutation();
+    const canary = mutation.state.channels.canary!;
+    mutation.state.channels.dev = {
+      payload: {
+        ...structuredClone(canary.payload),
+        channel: 'dev',
+        promotedAt: '2026-07-22T00:00:00.000Z',
+        revision: 1,
+        sourceChannel: null,
+      },
+      signature: {
+        ...structuredClone(canary.signature),
+        signature: 'older-dev-signature',
+        signedAt: '2026-07-22T00:00:00.000Z',
+      },
+    };
+    const remoteState = createEmptyReleaseState();
+    remoteState.revision = 1;
+    const fake = backend({ remoteState });
+    let deploymentIdentity:
+      | Parameters<ReleaseProviderBackend['createDeployment']>[0]
+      | undefined;
+    fake.deploymentExists = async (identity) => {
+      deploymentIdentity = identity;
+      return true;
+    };
+
+    await executeReleaseProviderMutation({
+      config,
+      mutation,
+      sourceCommit: SOURCE_COMMIT,
+    }, { backend: fake });
+
+    const expectedManifestDigest = `sha256:${createHash('sha256')
+      .update(canonicalReleaseJson(canary))
+      .digest('hex')}`;
+    expect(deploymentIdentity?.environment).toBe('consuelo-os-canary');
+    expect(deploymentIdentity?.manifestDigest).toBe(expectedManifestDigest);
+  });
+
+  it('skips exact immutable provider objects and commits state last', async () => {
+    const mutation = publicationMutation();
+    const archive = mutation.artifacts![PLATFORM_BUNDLE_ID].archivePath;
+    const signature = mutation.artifacts![PLATFORM_BUNDLE_ID].signaturePath;
+    const manifestDigest = digestJson(mutation.state.channels.dev);
+    const fake = backend({
+      assetDigests: {
+        'runtime.tar.gz': digestFile(archive),
+        'runtime.tar.gz.sig': digestFile(signature),
+      },
+      r2Digests: {
+        [`bundles/${PLATFORM_BUNDLE_ID}/runtime.tar.gz`]: digestFile(archive),
+        [`bundles/${PLATFORM_BUNDLE_ID}/runtime.tar.gz.sig`]: digestFile(signature),
+        'channels/dev.json': manifestDigest,
+        [`channel-history/dev/${manifestDigest.slice('sha256:'.length)}.json`]: manifestDigest,
+      },
+      tagSha: SOURCE_COMMIT,
+    });
+
+    await executeReleaseProviderMutation({ config, mutation, sourceCommit: SOURCE_COMMIT }, {
+      backend: fake,
+    });
+
+    expect(fake.writes).toHaveLength(2);
+    expect(fake.writes[0]).toMatch(/^r2:state\/release-state\.json:/);
+    expect(fake.writes[1]).toMatch(/^r2:state\/release-state\.json:/);
+  });
+
+  it('rejects an immutable GitHub asset with a different digest', async () => {
+    const mutation = publicationMutation();
+    const fake = backend({
+      assetDigest: `sha256:${'f'.repeat(64)}`,
+      tagSha: SOURCE_COMMIT,
+    });
+
+    await expect(executeReleaseProviderMutation({
+      config,
+      mutation,
+      sourceCommit: SOURCE_COMMIT,
+    }, { backend: fake })).rejects.toThrow(
+      'GitHub release asset runtime.tar.gz already exists with a different digest',
+    );
+    expect(fake.writes).toHaveLength(1);
+    expect(fake.writes[0]).toMatch(/^r2:state\/release-state\.json:/);
+  });
+
+  it('rejects a stale remote release-state revision before provider mutation', async () => {
+    const mutation = publicationMutation();
+    const remoteState = createEmptyReleaseState();
+    remoteState.revision = 9;
+    const fake = backend({ remoteState });
+
+    await expect(executeReleaseProviderMutation({
+      config,
+      mutation,
+      sourceCommit: SOURCE_COMMIT,
+    }, { backend: fake })).rejects.toThrow(
+      'remote release state revision changed: expected 0, actual 9',
+    );
+    expect(fake.writes).toEqual([]);
+  });
+
+  it('fails closed when remote release state changes before allocation reservation', async () => {
+    const mutation = publicationMutation();
+    const initialState = createEmptyReleaseState();
+    const concurrentState = createEmptyReleaseState();
+    concurrentState.revision = 1;
+    concurrentState.audit.push({
+      action: 'promote',
+      bundleId: `sha256:${'9'.repeat(64)}`,
+      channel: 'canary',
+      occurredAt: '2026-07-23T00:00:01.000Z',
+      revision: 1,
+      version: '9.9.9',
+    });
+    const fake = backend({ remoteStates: [initialState, concurrentState] });
+
+    await expect(executeReleaseProviderMutation({
+      config,
+      mutation,
+      sourceCommit: SOURCE_COMMIT,
+    }, { backend: fake })).rejects.toThrow(
+      'remote release state changed before allocation reservation',
+    );
+    expect(fake.writes.some((write) => write.startsWith('r2:state/release-state.json:'))).toBe(false);
+  });
+
+  it('treats an already committed identical release state as an exact retry no-op', async () => {
+    const mutation = publicationMutation();
+    const fake = backend({ remoteState: structuredClone(mutation.state) });
+
+    const result = await executeReleaseProviderMutation({
+      config,
+      mutation,
+      sourceCommit: SOURCE_COMMIT,
+    }, { backend: fake });
+
+    expect(result).toEqual([]);
+    expect(fake.writes).toEqual([]);
+  });
+
+  it('persists the version allocation before an external provider interruption', async () => {
+    const mutation = publicationMutation();
+    const fake = backend({ failAfter: 'tag:' + TAG });
+
+    await expect(executeReleaseProviderMutation({
+      config,
+      mutation,
+      sourceCommit: SOURCE_COMMIT,
+    }, { backend: fake })).rejects.toThrow(
+      'injected provider interruption after tag:' + TAG,
+    );
+
+    expect(fake.currentState?.allocations[SOURCE_COMMIT + ':' + FINGERPRINT]).toBe('1.2.3');
+    const retry = planDevPublication(fake.currentState!, {
+      immutableTags: [TAG],
+      releaseFingerprint: FINGERPRINT,
+      sourceCommit: SOURCE_COMMIT,
+    });
+    expect(retry).toMatchObject({
+      changed: true,
+      immutableTag: TAG,
+      retry: true,
+      version: '1.2.3',
+    });
+  });
+
+  it('should resume without replacing immutable bytes when deployment creation is interrupted', async () => {
+    const mutation = publicationMutation();
+    const fake = backend({
+      failAfter: 'deployment:consuelo-os-dev',
+      tagSha: SOURCE_COMMIT,
+    });
+    const assetDigests = new Map<string, string>();
+    const r2Digests = new Map<string, string>();
+    const uploadGithubAsset = fake.uploadGithubAsset;
+    const putR2Object = fake.putR2Object;
+    fake.getGithubAssetDigest = async (_tag, name) => assetDigests.get(name) ?? null;
+    fake.uploadGithubAsset = async (value) => {
+      await uploadGithubAsset(value);
+      assetDigests.set(value.name, digestFile(value.path));
+    };
+    fake.getR2ObjectDigest = async (key) => r2Digests.get(key) ?? null;
+    fake.putR2Object = async (key, path) => {
+      await putR2Object(key, path);
+      r2Digests.set(key, digestFile(path));
+    };
+    fake.deploymentExists = async () => fake.writes.includes('deployment:consuelo-os-dev');
+
+    await expect(executeReleaseProviderMutation({
+      config,
+      mutation,
+      sourceCommit: SOURCE_COMMIT,
+    }, { backend: fake })).rejects.toThrow(
+      'injected provider interruption after deployment:consuelo-os-dev',
+    );
+    const immutableWriteCount = fake.writes.filter((write) =>
+      write.startsWith('asset:') || write.startsWith('r2:bundles/'),
+    ).length;
+    expect(immutableWriteCount).toBeGreaterThan(0);
+
+    await executeReleaseProviderMutation({
+      config,
+      mutation,
+      sourceCommit: SOURCE_COMMIT,
+    }, { backend: fake });
+
+    expect(fake.writes.filter((write) => write === 'deployment:consuelo-os-dev')).toHaveLength(1);
+    expect(fake.writes.filter((write) =>
+      write.startsWith('asset:') || write.startsWith('r2:bundles/'),
+    )).toHaveLength(immutableWriteCount);
+    expect(fake.writes.at(-1)).toMatch(/^r2:state\/release-state\.json:/);
+  });
+
+  it('downloads and hashes a GitHub asset when digest metadata is unavailable', async () => {
+    const remoteBytes = Buffer.from('remote-release-asset');
+    const runner: ReleaseProviderCommandRunner = async (planned) => {
+      if (planned.purpose === `read GitHub Release ${TAG}`) {
+        return {
+          exitCode: 0,
+          stderr: '',
+          stdout: JSON.stringify({ assets: [{ digest: null, name: 'runtime.tar.gz' }] }),
+        };
+      }
+      if (planned.purpose === 'download GitHub Release asset runtime.tar.gz') {
+        const directoryIndex = planned.args.indexOf('--dir');
+        const directory = planned.args[directoryIndex + 1];
+        writeFileSync(join(directory, 'runtime.tar.gz'), remoteBytes);
+        return { exitCode: 0, stderr: '', stdout: '' };
+      }
+      throw new Error(`unexpected provider command: ${planned.purpose}`);
+    };
+    const provider = createReleaseProviderCommandBackend(config, runner);
+
+    expect(await provider.getGithubAssetDigest(TAG, 'runtime.tar.gz')).toBe(
+      `sha256:${createHash('sha256').update(remoteBytes).digest('hex')}`,
+    );
+  });
+
+  it('creates a deployment without inheriting the currently running publication status', async () => {
+    let captured: Parameters<ReleaseProviderCommandRunner>[0] | null = null;
+    const runner: ReleaseProviderCommandRunner = async (planned) => {
+      captured = planned;
+      return { exitCode: 0, stderr: '', stdout: '{}' };
+    };
+    const provider = createReleaseProviderCommandBackend(config, runner);
+
+    const identity = {
+      authority: 'signed-r2-channel-manifest' as const,
+      bundleId: RELEASE_SET_ID,
+      environment: 'consuelo-os-dev',
+      manifestDigest: 'sha256:' + '5'.repeat(64),
+      platforms: [{
+        architecture: 'x64',
+        archiveDigest: 'sha256:' + '6'.repeat(64),
+        bundleId: PLATFORM_BUNDLE_ID,
+        platform: 'linux',
+      }],
+      releaseFingerprint: FINGERPRINT,
+      sourceCommit: SOURCE_COMMIT,
+      version: '1.2.3',
+    };
+    await provider.createDeployment(identity);
+
+    expect(captured?.purpose).toBe('create GitHub Deployment consuelo-os-dev');
+    expect(captured?.args).toEqual(expect.arrayContaining([
+      'ref=' + SOURCE_COMMIT,
+      'environment=consuelo-os-dev',
+      'auto_merge=false',
+      'payload[authority]=signed-r2-channel-manifest',
+    ]));
+    const encodedIdentity = captured?.args.find((argument) =>
+      argument.startsWith('payload[releaseIdentity]='),
+    )?.slice('payload[releaseIdentity]='.length);
+    expect(JSON.parse(encodedIdentity ?? 'null')).toEqual(identity);
+    const requiredContextsIndex = captured?.args.indexOf('required_contexts[]') ?? -1;
+    expect(requiredContextsIndex).toBeGreaterThan(0);
+    expect(captured?.args[requiredContextsIndex - 1]).toBe('-F');
+  });
+
+  it('requires the promoted source commit to be integrated to main before moving a protected ref', async () => {
+    const mutation = promotionMutation();
+    const remoteState = createEmptyReleaseState();
+    remoteState.revision = 1;
+    const fake = backend({ integrated: false, remoteState });
+
+    await expect(executeReleaseProviderMutation({
+      config,
+      mutation,
+      sourceCommit: SOURCE_COMMIT,
+    }, { backend: fake })).rejects.toThrow(
+      'source commit is not integrated to main',
+    );
+    expect(fake.writes).toEqual([]);
+  });
+});

@@ -1,0 +1,16 @@
+{
+  "files": [
+    ".task/os/add-workspace-environment-registry/workpad.md",
+    "packages/os/scripts/lib/control-plane-audit.ts",
+    "packages/os/scripts/lib/environment-control-plane.ts",
+    "packages/os/scripts/lib/settings-control-plane.ts",
+    "packages/os/scripts/lib/settings-site.ts",
+    "packages/os/scripts/lib/settings-sites-gateway-endpoints.ts",
+    "packages/os/scripts/server/middleware/auth.ts",
+    "packages/os/tests/settings-site.test.ts",
+    "packages/os/tests/trace-sites-browser-client.test.ts",
+    "packages/os/tests/workspace-edge-route-seed-contract.test.ts",
+    "packages/os/tests/workspace-edge-sites-gateway-integration.test.ts"
+  ],
+  "updatedAt": "2026-07-18T17:01:53.677Z"
+}

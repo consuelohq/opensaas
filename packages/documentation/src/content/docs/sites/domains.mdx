@@ -1,0 +1,68 @@
+---
+title: Domains
+description: Understand local file URLs, Consuelo-managed workspace hostnames, and the current custom-domain boundary.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/scripts/lib/install-edge-site-publisher.ts
+    tests:
+      - packages/os/tests/install-edge-site-publisher.test.ts
+      - packages/os/tests/workspace-site-snapshot-publishing.test.ts
+    runtime: Snapshot planning, immutable object keys, route registration, and edge verification were exercised by focused contract tests on 2026-07-13.
+  - source: packages/os/scripts/lib/workspace-cloudflare-edge-router.ts
+    tests:
+      - packages/os/tests/workspace-hostname-edge-router.test.ts
+    runtime: Public snapshot serving, reserved hostname rejection, and private-preview rejection were exercised by focused contract tests.
+---
+
+Local Sites and hosted Sites use different addresses.
+
+## Local addresses
+
+The user-facing `sites` commands create local files. `sites open` returns a `file:` URL such as:
+
+```text
+file:///Users/you/.consuelo/sites/index.html
+```
+
+A locally published page lives beneath:
+
+```text
+$CONSUELO_HOME/sites/pages/<slug>/index.html
+```
+
+This is available on the machine that owns the Consuelo home. Local publish does not upload the page or make it reachable from the public internet.
+
+## Consuelo-managed workspace hostname
+
+An approved managed workspace can have a Consuelo-managed workspace hostname, normally beneath `consuelohq.com`. During the managed installation path, the control plane can publish selected generated Sites snapshots to platform storage, register their routes, and verify the exact version at the edge.
+
+The current managed snapshot plan includes the workspace launcher and selected OS-owned surfaces such as Office, Traces, Diffs, Docs, and Settings. Public routes are served from immutable snapshot objects identified by a version. Live or protected workspace routes follow separate authentication and routing rules.
+
+This operation requires Consuelo platform infrastructure and scoped workspace approval. The internal publisher explicitly is not a public installer capability.
+
+## Custom domains
+
+Custom domains are **not currently self-service** in the Sites CLI. There is no `sites domains add` command, and editing a hostname into local configuration does not provision DNS, certificates, route ownership, or snapshot storage.
+
+For a Consuelo-managed workspace hostname or a domain request during preview, contact Consuelo support. Treat a requested hostname as pending until its public route has been provisioned and verified.
+
+## Reserved hostnames
+
+Consuelo protects platform hostnames such as the app, docs, installer, and API surfaces from being claimed as workspace hostnames. Requests to a reserved or unknown workspace host fail through the platform safety boundary instead of falling through to arbitrary content.
+
+## Public versus private routes
+
+A public static snapshot can be served from managed object storage. A route marked as a private preview is not served through the public snapshot path without the required authorization. Do not publish private workspace information merely because a local file can be opened in a browser.
+
+## Verify a managed route
+
+When Consuelo provisions a managed route, verify:
+
+1. the exact hostname and path;
+2. an HTTP `200` from the intended route;
+3. that the returned site version matches the published snapshot;
+4. that the body matches the expected content;
+5. that private paths remain unavailable without their required authorization.
+
+The local `sites publish` result alone is not proof of a hosted deployment.

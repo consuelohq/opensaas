@@ -1,0 +1,14 @@
+{
+  "files": [
+    ".task/os/refine-production-auth-login-visual-parity/workpad.md",
+    "packages/consuelo-website/public/favicon.svg",
+    "packages/consuelo-website/public/images/home/consuelo-mark.svg",
+    "packages/consuelo-website/public/images/logo/logo-white.svg",
+    "packages/consuelo-website/public/images/logo/logo.svg",
+    "packages/consuelo-website/scripts/generate-brand-assets.ts",
+    "packages/documentation/public/favicon.svg",
+    "packages/os/cloudflare/os-device-authority/src/routes/web-auth.ts",
+    "packages/os/tests/os-universal-login.test.ts"
+  ],
+  "updatedAt": "2026-08-14T10:14:55.582Z"
+}

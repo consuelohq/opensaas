@@ -1,0 +1,12 @@
+{
+  "files": [
+    ".github/workflows/ci-front.yaml",
+    "packages/os/tooling/script-parity-classifications.json",
+    "packages/workspace/package.json",
+    "packages/workspace/scripts/fs.js",
+    "packages/workspace/scripts/lib/code-call/process.ts",
+    "packages/workspace/scripts/lib/code-call/service.ts",
+    "packages/workspace/scripts/lib/facade/schemas.ts"
+  ],
+  "updatedAt": "2026-07-10T22:56:46.708Z"
+}

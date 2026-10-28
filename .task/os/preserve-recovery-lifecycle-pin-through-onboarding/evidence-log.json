@@ -1,0 +1,184 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/preserve-recovery-lifecycle-pin-through-onboarding",
+  "events": [
+    {
+      "id": "0fd09dec-68b0-4e1d-8ff9-e924ba198ee9",
+      "occurred_at": "2026-08-29T00:55:21.924Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/bootstrap.sh",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/preserve-recovery-lifecycle-pin-through-onboarding",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/preserve-recovery-lifecycle-pin-through-onboarding"
+      }
+    },
+    {
+      "id": "5a0a8b59-5945-47af-bd98-0a87f65a8f5d",
+      "occurred_at": "2026-08-29T00:55:28.664Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/bootstrap.sh",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/preserve-recovery-lifecycle-pin-through-onboarding",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/preserve-recovery-lifecycle-pin-through-onboarding"
+      }
+    },
+    {
+      "id": "dd13f923-af41-4322-b5fd-43354b9d8af6",
+      "occurred_at": "2026-08-29T00:55:28.766Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/install-state.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/preserve-recovery-lifecycle-pin-through-onboarding",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/preserve-recovery-lifecycle-pin-through-onboarding"
+      }
+    },
+    {
+      "id": "4885c909-a0f9-412d-b80f-0adf16526587",
+      "occurred_at": "2026-08-29T00:55:37.309Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/lifecycle-command.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/preserve-recovery-lifecycle-pin-through-onboarding",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/preserve-recovery-lifecycle-pin-through-onboarding"
+      }
+    },
+    {
+      "id": "c2fa2900-d1de-4a5c-bc43-4c90a35b9949",
+      "occurred_at": "2026-08-29T00:55:42.334Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/bootstrap.sh",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/preserve-recovery-lifecycle-pin-through-onboarding",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/preserve-recovery-lifecycle-pin-through-onboarding"
+      }
+    },
+    {
+      "id": "45b5f35d-00d1-49ca-951d-e4675dbf86fd",
+      "occurred_at": "2026-08-29T00:55:56.274Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/lifecycle-command.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/preserve-recovery-lifecycle-pin-through-onboarding",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/preserve-recovery-lifecycle-pin-through-onboarding"
+      }
+    },
+    {
+      "id": "29819dc0-c24d-4519-ad11-3ccd94ab78c5",
+      "occurred_at": "2026-08-29T00:56:28.371Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/bootstrap-recovery-cli.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/preserve-recovery-lifecycle-pin-through-onboarding",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/preserve-recovery-lifecycle-pin-through-onboarding"
+      }
+    },
+    {
+      "id": "508ef430-b94a-49b9-b1fa-d49a35dc7674",
+      "occurred_at": "2026-08-29T00:57:11.844Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/bootstrap.sh",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/preserve-recovery-lifecycle-pin-through-onboarding",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/preserve-recovery-lifecycle-pin-through-onboarding"
+      }
+    },
+    {
+      "id": "ed419d72-dbf6-4359-a2c6-c79f81e9818e",
+      "occurred_at": "2026-08-29T00:57:24.876Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/install.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/preserve-recovery-lifecycle-pin-through-onboarding",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/preserve-recovery-lifecycle-pin-through-onboarding"
+      }
+    },
+    {
+      "id": "e828adb7-bfc4-4186-895f-e42445f0775b",
+      "occurred_at": "2026-08-29T00:57:37.110Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/install.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/preserve-recovery-lifecycle-pin-through-onboarding",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/preserve-recovery-lifecycle-pin-through-onboarding"
+      }
+    },
+    {
+      "id": "2bdc79df-07b3-4ac7-8a08-4624428f938e",
+      "occurred_at": "2026-08-29T00:57:46.389Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/install.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/preserve-recovery-lifecycle-pin-through-onboarding",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/preserve-recovery-lifecycle-pin-through-onboarding"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-29T00:57:46.522Z"
+}

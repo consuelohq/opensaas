@@ -1,67 +1,55 @@
-# AGENTS.md — consuelo-website
+# AGENTS.md — Consuelo website
 
-marketing site for consuelo. astro 5 + tailwind v4 + react 19 islands.
+This package owns the public Consuelo website. When an agent works on the website, this file is the first package-level rule surface.
 
-## stack
+## Source of truth
 
-- **framework:** astro 5.x (static output, `bun` package manager)
-- **styling:** tailwind v4 (css-first config via `@theme` in global.css, no tailwind.config.js)
-- **components:** react 19 for interactive islands (cookie banner, etc.), astro for everything else
-- **fonts:** geist sans + geist mono (variable, from `public/fonts/`)
-- **design system:** geist (https://vercel.com/geist/introduction) — use its patterns/components where possible
-- **analytics:** posthog (loaded only after cookie consent)
+Read these files before visual or structural website work:
 
-## design tokens
+1. `DESIGN.md` — visual direction, tokens, primitives, and style policy.
+2. `animations.md` — motion timing, easing, and interaction policy.
+3. `COMPONENTS.md` — component ownership and edit boundaries.
+4. `src/styles/tokens.css` — executable design decisions.
+5. `src/styles/primitives.css` — reusable CSS building blocks.
 
-pure black and white. no grays in the token system — use opacity for muted text.
+`packages/consuelo-design` is the design tooling, template, archive, and upstream-reference layer. Website implementation rules live here in `packages/consuelo-website`.
 
-```css
---color-bg: #fff (light) / #000 (dark)
---color-fg: #000 (light) / #fff (dark)
-```
+## Stack
 
-dark mode follows device preference via `prefers-color-scheme`. no manual toggle.
+- Framework: Astro static website with Bun package commands.
+- Components: Astro for static surfaces; React islands only for browser state that needs hydration.
+- Styling: CSS-first tokens and primitives for first-party website work.
+- Typography: visitor device system UI stack for page text; native monospace stack for code.
+- Data: editable copy, links, navigation, and FAQ data live in typed modules under `src/data`.
+- Analytics: `MarketingLayout.astro` owns public-site PostHog bootstrapping.
 
-## file conventions
+## Component ownership
 
-- `src/components/` — shared components (.astro for static, .tsx for interactive)
-- `src/layouts/` — page layouts (SiteLayout.astro is the base)
-- `src/pages/` — file-based routing
-- `src/data/` — static data (nav items, feature lists, pricing, etc.)
-- `src/styles/global.css` — fonts, tailwind @theme, base styles
-- `public/` — static assets (fonts, images, favicons)
+- `src/layouts/MarketingLayout.astro` is the public website shell. It owns SEO wiring, analytics bootstrapping, global public-site styles, and shared page frame behavior.
+- `src/components/site/` owns global chrome such as `SiteHeader`, `SiteFooter`, and `LanguageSelector`.
+- `src/components/home/` owns homepage sections. Edit `HomeHero.astro` for the homepage hero and neighboring `Home*.astro` files for section-level work.
+- `src/components/ui/` and `src/components/blocks/` are inherited reusable surfaces. Use them only when they fit the current design contract.
 
-## rules
+## Style rules
 
-- prefer astro components over react — only use react when you need client-side interactivity
-- use `client:load` for above-fold interactive components, `client:visible` for below-fold
-- no default exports — named exports only
-- keep components small and composable
-- images go in `public/images/`, reference as `/images/...`
-- all text content that might change goes in `src/data/` as typed objects, not hardcoded in components
+- Use tokens from `src/styles/tokens.css` for color, typography, spacing, radius, shadows, layout, motion, and z-index.
+- Use primitives from `src/styles/primitives.css` for repeated layout and component patterns.
+- Component-local CSS may compose tokens and primitives for component-specific structure.
+- Do not add one-off raw hex colors, spacing scales, shadows, radii, font stacks, or animation timings inside components.
+- When a new design value is necessary, add a semantic token and document the reason in `DESIGN.md`.
+- When a reusable visual pattern appears twice, promote it to `primitives.css`.
+- Keep upstream Open Design systems as references. Curate decisions into website-owned files before using them in website code.
 
-## commands
+## Implementation rules
 
-```bash
-bun run dev      # dev server at localhost:4321
-bun run build    # static build to dist/
-bun run preview  # preview production build
-```
+- Prefer changing typed data modules before hardcoding copy in components.
+- Keep homepage sections directly addressable by file name.
+- Preserve SEO, 404, contact, login/device, blog, Mercury, legal, and redirect surfaces when changing shared layout files.
+- Add or extend `packages/consuelo-website/tests/website-structure.test.js` when moving docs, data modules, routes, or design-system ownership.
+- Run `bun test packages/consuelo-website/tests/website-structure.test.js` and `bun run --cwd packages/consuelo-website build` after website structural changes.
 
-## seo
+## Forbidden regressions
 
-SiteLayout.astro handles all meta tags, OG, twitter cards, JSON-LD. pass props to override per-page:
-
-```astro
-<SiteLayout title="Pricing" description="Simple, transparent pricing.">
-```
-
-## analytics (posthog)
-
-posthog loads only after user accepts cookies. deep tracking includes:
-- page views with full URL + referrer
-- scroll depth (25%, 50%, 75%, 100%)
-- CTA clicks (book a demo, for developers, pricing links)
-- section visibility (which sections users actually see)
-- time on page
-- outbound link clicks
+- Do not recreate `components/launch`, `data/launch-*`, or new `launch-*` source files.
+- Do not route agents through stale package-local specs or old starter-kit instructions.
+- Do not import `packages/consuelo-design/upstream/open-design/design-systems/*` as a website source of truth.

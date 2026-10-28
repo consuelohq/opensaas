@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_349d93f781d8",
+  "tmuxSession": "opensaas-os-foundation-two-repair-final-audit-kickoff-and-coordinate-fallba-349d93f7",
+  "area": "os-foundation-two",
+  "stream": "stream/os-foundation-two",
+  "taskBranch": "task/os-foundation-two/repair-final-audit-kickoff-and-coordinate-fallback",
+  "branch": "task/os-foundation-two/repair-final-audit-kickoff-and-coordinate-fallback",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-foundation-two-repair-final-audit-kickoff-and-coordinate-fallback",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-foundation-two-repair-final-audit-kickoff-and-coordinate-fallback",
+  "prNumber": 1686,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1686",
+  "createdAt": "2026-07-28T00:48:42.021Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-foundation-two-repair-final-audit-kickoff-and-coordinate-fallback/.task/os-foundation-two/repair-final-audit-kickoff-and-coordinate-fallback/session.json"
+}

@@ -1,0 +1,52 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os-web/workspace-trace-table-through-hono",
+  "base": "origin/stream/os-web",
+  "headSha": "e8ab5e0b3e7ac7c6276596d99e26af68512bf835",
+  "changeHash": "a0a73f84a30a1dddb8c249c5bed9fa86fb885c18048bc45762280cb1f8b14888",
+  "changedFiles": [
+    "packages/workspace/tests/trace-site-inspector.test.ts"
+  ],
+  "verifiedAt": "2026-07-24T17:40:16.124Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os-web/workspace-trace-table-through-hono/current.json",
+        ".task/os-web/workspace-trace-table-through-hono/evidence-log.json",
+        ".task/os-web/workspace-trace-table-through-hono/read-log.json",
+        ".task/os-web/workspace-trace-table-through-hono/session.json",
+        ".task/os-web/workspace-trace-table-through-hono/verify.json",
+        ".task/os-web/workspace-trace-table-through-hono/workpad.md",
+        ".task/tasks/os-web/workspace-trace-table-through-hono.json",
+        "packages/workspace/tests/trace-site-inspector.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

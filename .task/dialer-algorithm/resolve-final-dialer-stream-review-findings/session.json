@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_e677c7011161",
+  "tmuxSession": "opensaas-dialer-algorithm-resolve-final-dialer-stream-review-findings-e677c701",
+  "area": "dialer-algorithm",
+  "stream": "stream/dialer-algorithm",
+  "taskBranch": "task/dialer-algorithm/resolve-final-dialer-stream-review-findings",
+  "branch": "task/dialer-algorithm/resolve-final-dialer-stream-review-findings",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-algorithm-resolve-final-dialer-stream-review-findings",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-algorithm-resolve-final-dialer-stream-review-findings",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2452,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2452",
+  "createdAt": "2026-09-10T03:55:13.458Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-algorithm-resolve-final-dialer-stream-review-findings/.task/dialer-algorithm/resolve-final-dialer-stream-review-findings/session.json"
+}

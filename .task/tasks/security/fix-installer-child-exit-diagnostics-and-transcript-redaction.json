@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/fix-installer-child-exit-diagnostics-and-transcript-redaction",
+  "baseBranch": "stream/security",
+  "sourceBranch": "stream/security",
+  "startFrom": "stream",
+  "prNumber": 1370,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1370",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1370",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1370/fix-installer-child-exit-diagnostics-and-transcript-redaction",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1370",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1370/fix-installer-child-exit-diagnostics-and-transcript-redaction",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-installer-child-exit-diagnostics-and-transcript-redaction",
+  "taskSession": "tsk_8749159fa57f",
+  "tmuxSession": "opensaas-security-fix-installer-child-exit-diagnostics-and-transcr-8749159f",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-installer-child-exit-diagnostics-and-transcript-redaction/.task/security/fix-installer-child-exit-diagnostics-and-transcript-redaction/session.json",
+  "createdAt": "2026-07-05T02:08:35.336Z"
+}

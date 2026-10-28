@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "worktree_id": "task/collaborate/harden-artifact-share-upgrade-path",
+  "events": [
+    {
+      "id": "ee9cf4d7-1fe2-498e-9e29-b19df77536ac",
+      "occurred_at": "2026-09-21T12:10:51.195Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/artifact-sharing-links.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/collaborate/harden-artifact-share-upgrade-path",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/collaborate/harden-artifact-share-upgrade-path"
+      }
+    },
+    {
+      "id": "23f7e65a-96de-4e6a-9d61-72345d955e21",
+      "occurred_at": "2026-09-21T12:11:16.573Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/server/routes/artifacts.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/collaborate/harden-artifact-share-upgrade-path",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/collaborate/harden-artifact-share-upgrade-path"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-09-21T12:11:16.671Z"
+}

@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/workspace-agents/add-invalid-timestamp-tests",
+  "events": [
+    {
+      "id": "c293bee1-c20d-4624-99d3-85c90c61c28a",
+      "occurred_at": "2026-06-28T00:30:30.262Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/trace-home/model.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/workspace-agents/add-invalid-timestamp-tests",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/workspace-agents/add-invalid-timestamp-tests"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-06-28T00:30:30.344Z"
+}

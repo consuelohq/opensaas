@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_d25980cd5827",
+  "tmuxSession": "opensaas-os-make-os-lifecycle-restarts-connector-safe-d25980cd",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/make-os-lifecycle-restarts-connector-safe",
+  "branch": "task/os/make-os-lifecycle-restarts-connector-safe",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-make-os-lifecycle-restarts-connector-safe",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-make-os-lifecycle-restarts-connector-safe",
+  "prNumber": 1999,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1999",
+  "createdAt": "2026-08-15T02:59:03.760Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-make-os-lifecycle-restarts-connector-safe/.task/os/make-os-lifecycle-restarts-connector-safe/session.json"
+}

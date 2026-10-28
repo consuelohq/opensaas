@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/preserve-windows-release-fingerprint-verifier-compatibility",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1731,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1731",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1731",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1731/preserve-windows-release-fingerprint-verifier-compatibility",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1731",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1731/preserve-windows-release-fingerprint-verifier-compatibility",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-preserve-windows-release-fingerprint-verifier-compatibility",
+  "taskSession": "tsk_f9e71f755ed3",
+  "tmuxSession": "opensaas-os-preserve-windows-release-fingerprint-verifier-co-f9e71f75",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-preserve-windows-release-fingerprint-verifier-compatibility/.task/os/preserve-windows-release-fingerprint-verifier-compatibility/session.json",
+  "createdAt": "2026-07-29T08:34:32.046Z"
+}

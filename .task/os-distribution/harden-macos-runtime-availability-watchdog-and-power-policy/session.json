@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_ff8affc8eb11",
+  "tmuxSession": "opensaas-os-distribution-harden-macos-runtime-availability-watchdog-and-p-ff8affc8",
+  "area": "os-distribution",
+  "stream": "stream/os-distribution",
+  "taskBranch": "task/os-distribution/harden-macos-runtime-availability-watchdog-and-power-policy",
+  "branch": "task/os-distribution/harden-macos-runtime-availability-watchdog-and-power-policy",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-harden-macos-runtime-availability-watchdog-and-power-policy",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-harden-macos-runtime-availability-watchdog-and-power-policy",
+  "prNumber": 1625,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1625",
+  "createdAt": "2026-07-24T05:29:03.141Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-harden-macos-runtime-availability-watchdog-and-power-policy/.task/os-distribution/harden-macos-runtime-availability-watchdog-and-power-policy/session.json"
+}

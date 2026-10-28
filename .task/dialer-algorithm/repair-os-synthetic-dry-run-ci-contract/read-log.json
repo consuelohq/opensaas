@@ -1,0 +1,10 @@
+{
+  "files": [
+    "packages/os/manifests/generated/tool.manifest.json",
+    "packages/os/scripts/lib/facade/executor.ts",
+    "packages/os/tests/facade/facade.test.ts",
+    "packages/os/tools/package.ts",
+    "packages/workspace/tests/facade/facade.test.ts"
+  ],
+  "updatedAt": "2026-08-15T10:58:50.466Z"
+}

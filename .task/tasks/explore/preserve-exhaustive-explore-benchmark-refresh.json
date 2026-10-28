@@ -1,0 +1,16 @@
+{
+  "area": "explore",
+  "stream": "stream/explore",
+  "taskBranch": "task/explore/preserve-exhaustive-explore-benchmark-refresh",
+  "baseBranch": "stream/explore",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2302,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2302",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-explore-preserve-exhaustive-explore-benchmark-refresh",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_29b1c52a3b2e",
+  "tmuxSession": "opensaas-explore-preserve-exhaustive-explore-benchmark-refresh-29b1c52a",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-explore-preserve-exhaustive-explore-benchmark-refresh/.task/session.json",
+  "createdAt": "2026-08-29T08:01:39.396Z"
+}

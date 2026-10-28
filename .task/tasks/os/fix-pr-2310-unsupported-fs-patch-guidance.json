@@ -1,0 +1,20 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-pr-2310-unsupported-fs-patch-guidance",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2340,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2340",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2340",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2340/fix-pr-2310-unsupported-fs-patch-guidance",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2340",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2340/fix-pr-2310-unsupported-fs-patch-guidance",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-pr-2310-unsupported-fs-patch-guidance",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_6816f76f859d",
+  "tmuxSession": "opensaas-os-fix-pr-2310-unsupported-fs-patch-guidance-6816f76f",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-pr-2310-unsupported-fs-patch-guidance/.task/os/fix-pr-2310-unsupported-fs-patch-guidance/session.json",
+  "createdAt": "2026-08-31T21:44:10.705Z"
+}

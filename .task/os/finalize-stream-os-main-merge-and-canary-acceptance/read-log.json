@@ -1,0 +1,17 @@
+{
+  "files": [
+    ".task/os/finalize-stream-os-main-merge-and-canary-acceptance/workpad.md",
+    "packages/os/scripts/lib/observability-traces-site.ts",
+    "packages/os/scripts/lib/trace-site-inspector/model.ts",
+    "packages/os/scripts/lib/trace-site-inspector/virtual-list-browser.ts",
+    "packages/os/scripts/lib/trace-sites-gateway-contract.ts",
+    "packages/os/scripts/lib/trace-sites-gateway-read-layer.ts",
+    "packages/os/scripts/lib/trace-sites-local-read-backend.ts",
+    "packages/os/tests/observability-traces-site.test.ts",
+    "packages/os/tests/trace-site-inspector-interactions.test.ts",
+    "packages/os/vitest.config.ts",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "updatedAt": "2026-08-29T00:36:28.895Z"
+}

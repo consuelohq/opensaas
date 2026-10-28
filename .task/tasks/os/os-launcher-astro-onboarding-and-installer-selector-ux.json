@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/os-launcher-astro-onboarding-and-installer-selector-ux",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1304,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1304",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1304",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1304/os-launcher-astro-onboarding-and-installer-selector-ux",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1304",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1304/os-launcher-astro-onboarding-and-installer-selector-ux",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-os-launcher-astro-onboarding-and-installer-selector-ux",
+  "taskSession": "tsk_e7f2b8087335",
+  "tmuxSession": "opensaas-os-os-launcher-astro-onboarding-and-installer-selec-e7f2b808",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-os-launcher-astro-onboarding-and-installer-selector-ux/.task/os/os-launcher-astro-onboarding-and-installer-selector-ux/session.json",
+  "createdAt": "2026-06-30T23:41:06.973Z"
+}

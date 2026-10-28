@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_efb94b99d89e",
+  "tmuxSession": "opensaas-os-native-implement-linux-platform-support-efb94b99",
+  "area": "os-native",
+  "stream": "stream/os-native",
+  "taskBranch": "task/os-native/implement-linux-platform-support",
+  "branch": "task/os-native/implement-linux-platform-support",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-native-implement-linux-platform-support",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-native-implement-linux-platform-support",
+  "prNumber": 1645,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1645",
+  "createdAt": "2026-07-24T18:03:46.709Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-native-implement-linux-platform-support/.task/os-native/implement-linux-platform-support/session.json"
+}

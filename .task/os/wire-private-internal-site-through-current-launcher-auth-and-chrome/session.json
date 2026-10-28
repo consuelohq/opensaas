@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_0ea23bacd9be",
+  "tmuxSession": "opensaas-os-wire-private-internal-site-through-current-launc-0ea23bac",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/wire-private-internal-site-through-current-launcher-auth-and-chrome",
+  "branch": "task/os/wire-private-internal-site-through-current-launcher-auth-and-chrome",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-wire-private-internal-site-through-current-launcher-auth-and-chrome",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-wire-private-internal-site-through-current-launcher-auth-and-chrome",
+  "prNumber": 2139,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2139",
+  "createdAt": "2026-08-16T06:33:10.312Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-wire-private-internal-site-through-current-launcher-auth-and-chrome/.task/os/wire-private-internal-site-through-current-launcher-auth-and-chrome/session.json"
+}

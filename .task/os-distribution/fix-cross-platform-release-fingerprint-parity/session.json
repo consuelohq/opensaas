@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_8785082fde37",
+  "tmuxSession": "opensaas-os-distribution-fix-cross-platform-release-fingerprint-parity-8785082f",
+  "area": "os-distribution",
+  "stream": "stream/os-distribution",
+  "taskBranch": "task/os-distribution/fix-cross-platform-release-fingerprint-parity",
+  "branch": "task/os-distribution/fix-cross-platform-release-fingerprint-parity",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-fix-cross-platform-release-fingerprint-parity",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-fix-cross-platform-release-fingerprint-parity",
+  "prNumber": 1632,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1632",
+  "createdAt": "2026-07-24T07:11:24.190Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-fix-cross-platform-release-fingerprint-parity/.task/os-distribution/fix-cross-platform-release-fingerprint-parity/session.json"
+}

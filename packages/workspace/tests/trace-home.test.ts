@@ -2,10 +2,9 @@ import { mkdtempSync, mkdirSync, rmSync, utimesSync, writeFileSync } from 'node:
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, test } from 'vitest';
-import { classifyTaskCallCommand, classifyTaskExecCommand } from '../scripts/trace-home/command-quality';
 import { parseArgs } from '../scripts/trace-home/cli';
 import { resolveTraceDb } from '../scripts/trace-home/db';
-import { buildTraceHomeModel } from '../scripts/trace-home/model';
+import { buildTraceHomeModel, formatTime } from '../scripts/trace-home/model';
 import { stripWrapperInternals } from '../scripts/trace-home/sanitize';
 import { renderTraceHome } from '../scripts/trace-home/text-renderer';
 import type { TraceHomeRow } from '../scripts/trace-home/types';
@@ -15,6 +14,24 @@ import {
   reduceTraceHomeState,
   stateToBuildOptions,
 } from '../scripts/trace-home/tui/state';
+
+
+function expectedLocalTimestamp(value: string): string {
+  const date = new Date(value);
+  const parts = Object.fromEntries(
+    new Intl.DateTimeFormat('en-US', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+    }).formatToParts(date).map((part) => [part.type, part.value]),
+  ) as Record<string, string>;
+
+  return `${parts.year}-${parts.month}-${parts.day} ${parts.hour === '24' ? '00' : parts.hour}:${parts.minute}:${parts.second}`;
+}
 
 function row(overrides: Partial<TraceHomeRow>): TraceHomeRow {
   return {
@@ -69,18 +86,18 @@ const fixtureRows: TraceHomeRow[] = [
   }),
   row({
     rownum: 2,
-    record_id: 'task-exec-good',
+    record_id: 'code-call-good',
     trace_id: 'trc_good',
-    tool: 'task.exec',
+    tool: 'code.call',
     duration_ms: 140,
     total_tokens: 3400,
     resolved_input_json: JSON.stringify({ command: ['bun', 'test', 'packages/workspace/tests/trace-home.test.ts'] }),
   }),
   row({
     rownum: 3,
-    record_id: 'task-call-suspect',
+    record_id: 'code-call-suspect',
     trace_id: 'trc_suspect',
-    tool: 'task.call',
+    tool: 'code.call',
     status: 'failed',
     code: 'COMMAND_FAILED',
     exit_code: 1,
@@ -92,9 +109,9 @@ const fixtureRows: TraceHomeRow[] = [
   }),
   row({
     rownum: 4,
-    record_id: 'task-exec-bad',
+    record_id: 'code-call-bad',
     trace_id: 'trc_bad',
-    tool: 'task.exec',
+    tool: 'code.call',
     duration_ms: 900,
     total_tokens: 1200,
     resolved_input_json: JSON.stringify({ command: ['bash', '-lc', `${broad} .task/tmp`] }),
@@ -127,9 +144,43 @@ describe('trace home', () => {
     expect(model.visibleRows).toHaveLength(5);
     expect(model.rows[0].children).toHaveLength(2);
     expect(model.rows[4].children.map((child) => child.tool)).toEqual(['fs.read', 'fs.search', 'git.diff']);
-    expect(model.rawShell).toMatchObject({ total: 3, good: 1, suspect: 1, bad: 1 });
+    expect(model.rawShell).toMatchObject({ total: 0, good: 0, suspect: 0, bad: 0 });
     expect(model.topTools[0].tool).toBe('code.run');
     expect(model.inspect?.tabs).toContain('JSON');
+  });
+
+  test('model formats trace time as the local full timestamp', () => {
+    const timestamp = '2026-06-01T20:00:33.000Z';
+
+    expect(formatTime(timestamp)).toBe(expectedLocalTimestamp(timestamp));
+    expect(formatTime(timestamp)).toMatch(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/);
+  });
+
+  test('model returns the placeholder timestamp when input is invalid', () => {
+    expect(formatTime('bad-input')).toBe('---- -- -- --:--:--');
+  });
+
+  test('renderer prioritizes timestamp, tool-status alignment, and the full branch', () => {
+    const timestamp = '2026-06-01T20:00:33.000Z';
+    const model = buildTraceHomeModel([
+      row({
+        rownum: 99,
+        record_id: 'layout-1',
+        trace_id: 'trc_layout',
+        tool: 'code.call',
+        branch: 'task/workspace-agents/polish-trace-watch-layout-and-timestamps',
+        ts: timestamp,
+        duration_ms: 4321,
+        total_tokens: 1900,
+        result_json: JSON.stringify({ ok: true, code: 'OK', message: 'code.call completed' }),
+      }),
+    ], { selectedTraceId: 'trc_layout', live: false });
+
+    const output = renderTraceHome(model, { width: 151, height: 44, color: false });
+
+    expect(output).toContain('TIMESTAMP            TOOL');
+    expect(output).toContain(`${expectedLocalTimestamp(timestamp)}  ✓ code.call`);
+    expect(output).toContain('workspace-agents/polish-trace-watch-layout-and-timestamps');
   });
 
   test('sanitization hides wrapper internals and summarizes GitHub raw failure', () => {
@@ -137,18 +188,6 @@ describe('trace home', () => {
     expect(stripWrapperInternals(wrapper)).not.toContain('execFileSync');
     expect(model.rawJson).not.toContain('execFileSync');
     expect(model.selected?.message).toContain('github raw failed');
-  });
-
-  test('command classification covers task.call and task.exec', () => {
-    expect(classifyTaskCallCommand(['bun', 'test']).quality).toBe('good');
-    expect(classifyTaskExecCommand(['bash', '-lc', "sed -n '1,20p' packages/workspace/index.ts"]).quality).toBe('suspect');
-    expect(classifyTaskExecCommand(['bash', '-lc', `${broad} .task/tmp`]).quality).toBe('bad');
-  });
-
-  test('command classification marks direct file inspection as suspect', () => {
-    expect(classifyTaskCallCommand(['rg', 'trace:home', 'packages/workspace']).quality).toBe('suspect');
-    expect(classifyTaskExecCommand(['git', 'status']).quality).toBe('suspect');
-    expect(classifyTaskExecCommand(['git', 'show', 'HEAD:packages/workspace/package.json']).replacement).toBe("fs.read({ path: 'packages/workspace/package.json' })");
   });
 
   test('trace db resolution derives latest trace database from trace root', () => {

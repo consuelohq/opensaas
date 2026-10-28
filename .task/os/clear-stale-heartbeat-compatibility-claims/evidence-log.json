@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/clear-stale-heartbeat-compatibility-claims",
+  "events": [
+    {
+      "id": "85edfc17-47fd-4ba8-ad05-194c289f5b42",
+      "occurred_at": "2026-08-29T06:27:24.995Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/cloudflare/os-device-authority/src/routes/workspace-nodes.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/clear-stale-heartbeat-compatibility-claims",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/clear-stale-heartbeat-compatibility-claims"
+      }
+    },
+    {
+      "id": "df8bb722-b71d-4d79-8f08-618de3260141",
+      "occurred_at": "2026-08-29T06:27:29.615Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/workspace-node-registry-routing.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/clear-stale-heartbeat-compatibility-claims",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/clear-stale-heartbeat-compatibility-claims"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-29T06:27:29.699Z"
+}

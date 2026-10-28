@@ -1,0 +1,10 @@
+{
+  "files": [
+    "packages/os/tests/windows-bootstrap-source.test.ts",
+    "packages/workspace/scripts/test-selection.js",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/test-selection.test.js",
+    "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+  ],
+  "updatedAt": "2026-08-15T03:11:32.917Z"
+}

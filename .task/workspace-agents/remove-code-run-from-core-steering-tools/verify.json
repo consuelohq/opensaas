@@ -1,0 +1,67 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace-agents/remove-code-run-from-core-steering-tools",
+  "base": "origin/stream/workspace-agents",
+  "headSha": "b890f632c334c9081e9349de5512d1c8393a1cc0",
+  "changeHash": "abf3ea93ef5a138a11024e3b5464a912f51f4dbfc90b492af2a50f2bf91c3c5d",
+  "changedFiles": [
+    "packages/os/manifests/core.manifest.json",
+    "packages/os/manifests/manifest.config.json",
+    "packages/os/manifests/tool.manifest.json",
+    "packages/os/manifests/workflow-bundles.json",
+    "packages/os/tests/tool-manifest.test.ts",
+    "packages/workspace/manifests/core-manifest.json",
+    "packages/workspace/manifests/manifest.config.json",
+    "packages/workspace/manifests/tool-manifest.json",
+    "packages/workspace/manifests/workflow-bundles.json",
+    "packages/workspace/tests/tool-manifest.test.ts"
+  ],
+  "verifiedAt": "2026-06-30T22:21:13.571Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/workspace-agents/remove-code-run-from-core-steering-tools.json",
+        ".task/workspace-agents/remove-code-run-from-core-steering-tools/current.json",
+        ".task/workspace-agents/remove-code-run-from-core-steering-tools/session.json",
+        ".task/workspace-agents/remove-code-run-from-core-steering-tools/workpad.md",
+        "packages/os/manifests/core.manifest.json",
+        "packages/os/manifests/manifest.config.json",
+        "packages/os/manifests/tool.manifest.json",
+        "packages/os/manifests/workflow-bundles.json",
+        "packages/os/tests/tool-manifest.test.ts",
+        "packages/workspace/manifests/core-manifest.json",
+        "packages/workspace/manifests/manifest.config.json",
+        "packages/workspace/manifests/tool-manifest.json",
+        "packages/workspace/manifests/workflow-bundles.json",
+        "packages/workspace/tests/tool-manifest.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

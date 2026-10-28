@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_287a4c76b8ae",
+  "tmuxSession": "opensaas-os-restrict-hosted-dry-run-daemon-bypass-287a4c76",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/restrict-hosted-dry-run-daemon-bypass",
+  "branch": "task/os/restrict-hosted-dry-run-daemon-bypass",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-restrict-hosted-dry-run-daemon-bypass",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-restrict-hosted-dry-run-daemon-bypass",
+  "prNumber": 1739,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1739",
+  "createdAt": "2026-07-29T15:57:41.175Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-restrict-hosted-dry-run-daemon-bypass/.task/os/restrict-hosted-dry-run-daemon-bypass/session.json"
+}

@@ -1,0 +1,19 @@
+{
+  "area": "tooling",
+  "stream": "stream/tooling",
+  "taskBranch": "task/tooling/address-pr-1389-review-findings-and-merge-to-main",
+  "baseBranch": "stream/tooling",
+  "sourceBranch": "stream/tooling",
+  "startFrom": "stream",
+  "prNumber": 1429,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1429",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1429",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1429/address-pr-1389-review-findings-and-merge-to-main",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1429",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1429/address-pr-1389-review-findings-and-merge-to-main",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-tooling-address-pr-1389-review-findings-and-merge-to-main",
+  "taskSession": "tsk_4ffd48607294",
+  "tmuxSession": "opensaas-tooling-address-pr-1389-review-findings-and-merge-to-mai-4ffd4860",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-tooling-address-pr-1389-review-findings-and-merge-to-main/.task/tooling/address-pr-1389-review-findings-and-merge-to-main/session.json",
+  "createdAt": "2026-07-12T23:37:59.666Z"
+}

@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 
-// website-deploy.js — build and deploy consuelo-website to cloudflare pages
+// website-deploy.js - build and deploy consuelo-website to Cloudflare Pages
 // usage: bun run website:deploy -- [options]
 
 const { execSync } = require('child_process');
@@ -67,7 +67,7 @@ function main() {
   if (!args.skipBuild) {
     writeStderr('building consuelo-website...');
     try {
-      run('npm run build', { timeout: 180000 });
+      run('bun run build', { timeout: 180000 });
       writeStderr('build complete.');
     } catch (err) {
       writeStdout('build failed:');
@@ -82,10 +82,15 @@ function main() {
   }
 
   // deploy
+  if (!process.env.CLOUDFLARE_API_TOKEN || !process.env.CLOUDFLARE_API_TOKEN.trim()) {
+    writeStderr('CLOUDFLARE_API_TOKEN is required to deploy consuelo-website to Cloudflare Pages.');
+    process.exit(1);
+  }
+
   writeStderr(`deploying to cloudflare pages (branch: ${branch})...`);
   try {
     const output = run(
-      `npx wrangler pages deploy dist --project-name=${PROJECT_NAME} --branch=${branch}`,
+      `bunx wrangler pages deploy dist --project-name=${PROJECT_NAME} --branch=${branch}`,
       { timeout: 120000 },
     );
 

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_62ec21737f59",
+  "tmuxSession": "opensaas-os-fix-stream-os-review-comments-before-main-62ec2173",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-stream-os-review-comments-before-main",
+  "branch": "task/os/fix-stream-os-review-comments-before-main",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-stream-os-review-comments-before-main",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-stream-os-review-comments-before-main",
+  "prNumber": 1894,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1894",
+  "createdAt": "2026-08-12T17:47:18.489Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-stream-os-review-comments-before-main/.task/os/fix-stream-os-review-comments-before-main/session.json"
+}

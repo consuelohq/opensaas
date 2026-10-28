@@ -1,0 +1,136 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/twenty-migration/repair-bun-clean-runner-ci-dependencies",
+  "base": "origin/stream/twenty-migration",
+  "headSha": "dbd3421461e427780b2c80705f10140ad6184ac5",
+  "changeHash": "701f9e626674ec3ee30166d8086ff04aaed113718e409b6be47ff766f52fdb33",
+  "changedFiles": [
+    ".github/actions/consuelo-ci-setup/action.yaml",
+    ".github/workflows/consuelo-ci.yaml",
+    "bun.lock",
+    "packages/dialer/package.json",
+    "packages/workspace/tests/twenty-migration-bun-cutover.test.ts"
+  ],
+  "verifiedAt": "2026-09-21T01:36:51.364Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".github/actions/consuelo-ci-setup/action.yaml",
+        ".github/workflows/consuelo-ci.yaml",
+        ".task/tasks/twenty-migration/repair-bun-clean-runner-ci-dependencies.json",
+        ".task/twenty-migration/repair-bun-clean-runner-ci-dependencies/evidence-log.json",
+        ".task/twenty-migration/repair-bun-clean-runner-ci-dependencies/read-log.json",
+        ".task/twenty-migration/repair-bun-clean-runner-ci-dependencies/workpad.md",
+        "bun.lock",
+        "packages/dialer/package.json",
+        "packages/workspace/tests/twenty-migration-bun-cutover.test.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "consuelo-ci-immutable-base",
+          "critical": true,
+          "reason": "Consuelo pull-request verification must use an immutable base commit and preserve the focused local OS server review contracts without selecting the broad OS package suite.",
+          "matchedFiles": [
+            ".github/workflows/consuelo-ci.yaml"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "dialer-package",
+          "critical": true,
+          "reason": "Dialer changes are call-path critical and must run package specs.",
+          "matchedFiles": [
+            "packages/dialer/package.json"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "Consuelo CI immutable base and local server review contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/local-os-server-review-findings.test.ts"
+          ],
+          "ruleId": "consuelo-ci-immutable-base",
+          "critical": true
+        },
+        {
+          "name": "dialer specs",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer/src"
+          ],
+          "ruleId": "dialer-package",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "Consuelo CI immutable base and local server review contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/local-os-server-review-findings.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "consuelo-ci-immutable-base",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 636,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-twenty-migration-repair-bun-clean-runner-ci-dependencies/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/local-os-server-review-findings.test.ts \u001b[2m(\u001b[22m\u001b[2m20 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 49\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m20 passed\u001b[39m\u001b[22m\u001b[90m (20)\u001b[39m\n\u001b[2m   Start at \u001b[22m 21:36:48\n\u001b[2m   Duration \u001b[22m 271ms\u001b[2m (transform 73ms, setup 24ms, import 101ms, tests 49ms, environment 0ms)\u001b[22m\n\n$ vitest run tests/local-os-server-review-findings.test.ts\n(node:52407) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+        },
+        {
+          "name": "dialer specs",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer/src"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 2139,
+          "outputTail": ".ts:\n(pass) CallTimingModel > should return null when segment has insufficient sample size [0.16ms]\n(pass) CallTimingModel > should return optimal retry time when enough observations exist [0.04ms]\n(pass) CallTimingModel > prefers a timing bin with stronger lower-bound evidence over a lucky tiny raw rate [0.03ms]\n(pass) CallTimingModel > breaks exact timing-evidence ties by stable calendar coordinates [0.03ms]\n\npackages/dialer/src/services/retry-decision-model.contract.spec.ts:\n(pass) mature retry decision contract > separates whether to retry from the learned preferred timing window [0.38ms]\n(pass) mature retry decision contract > keeps retrying within the cap when stopping evidence is missing [0.08ms]\n(pass) mature retry decision contract > stops on answered calls, the attempt cap, or observed negative expected value [0.08ms]\n\npackages/dialer/src/services/contextual-response-model.spec.ts:\n(pass) ContextualResponseModel > learns a regularized contextual response signal without changing the D3 policy contract [29.89ms]\n(pass) ContextualResponseModel > keeps candidate-specific opportunity economics separate from response probability [0.07ms]\n(pass) ContextualResponseModel > matches the penalized Bernoulli objective gradient by finite differences [0.25ms]\n(pass) ContextualResponseModel > keeps regularization strength stable when the empirical sample is replicated [84.86ms]\n(pass) ContextualResponseModel > does not regularize the intercept and keeps extreme encoded values finite [0.45ms]\n(pass) ContextualResponseModel > encodes missing spacing differently from a real zero-minute spacing [0.03ms]\n\npackages/dialer/src/services/predictive-selection-science.spec.ts:\n(pass) scientific predictive selection contract > uses calibrated upper probability evidence for exploration rather than an arbitrary sample-size bonus [0.38ms]\n(pass) scientific predictive selection contract > does not change an otherwise identical priority because a contact is older than 48 hours [0.45ms]\n(pass) scientific predictive selection contract > preserves FIFO for a decision set when any candidate lacks comparable hazard evidence [0.19ms]\n\npackages/dialer/src/services/parallel-lifecycle.contract.spec.ts:\n(pass) parallel dial lifecycle contract > keeps customer legs muted without provider hold music until the agent starts the conference [1.67ms]\n(pass) parallel dial lifecycle contract > retains a callback that arrives while later legs are still being created [3.92ms]\n(pass) parallel dial lifecycle contract > keeps exactly one durable winner under simultaneous human callbacks [5.00ms]\n(pass) parallel dial lifecycle contract > claims telemetry emission exactly once under concurrent callbacks [3.45ms]\n(pass) parallel dial lifecycle contract > records failed loser cleanup and clears it after reconciliation succeeds [3.39ms]\n(pass) parallel dial lifecycle contract > does not persist a false winner-unmute failure before the participant enters [1.12ms]\n(pass) parallel dial lifecycle contract > records failed winner unmute and clears it after reconciliation succeeds [1.85ms]\n(pass) parallel dial lifecycle contract > completes the group when the selected winner hangs up [3.52ms]\n(pass) parallel dial lifecycle contract > persists workspace ownership and rejects cross-workspace access [4.55ms]\n(pass) parallel dial lifecycle contract > ignores an answered callback after the same leg is terminal [7.47ms]\n\npackages/dialer/src/infrastructure/redis/redis-parallel-store.test.ts:\n(pass) RedisParallelStore > registers calls and reverse mappings atomically and cleans the full group [0.47ms]\n(pass) RedisParallelStore > claims one winner and one telemetry emission and serializes group operations [4.65ms]\n(pass) RedisParallelStore > renews an owned group lock while a long operation is running [180.40ms]\n(pass) RedisParallelStore > deletes known group keys when the persisted group JSON is malformed [0.15ms]\n\n 224 pass\n 0 fail\n 503 expect() calls\nRan 224 tests across 26 files. [2.13s]\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

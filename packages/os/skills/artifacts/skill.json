@@ -1,0 +1,31 @@
+{
+  "name": "artifacts",
+  "title": "Artifacts",
+  "description": "Canonical orchestration skill for creating, validating, publishing, finding, and revising durable Consuelo artifacts such as sites, guides, specifications, plans, reports, demos, emails, images, and motion outputs.",
+  "trigger": "Invoke when the user asks to create, revise, publish, validate, inspect, search, or roll back a durable generated output through Consuelo Artifacts.",
+  "entrypoint": "SKILL.md",
+  "load": {
+    "type": "resource",
+    "path": "packages/os/skills/artifacts/SKILL.md"
+  },
+  "script": "scripts/artifacts.ts",
+  "permission": "draft",
+  "requiresApproval": false,
+  "status": "active",
+  "artifactTypes": [
+    "site",
+    "guide",
+    "specification",
+    "plan",
+    "report",
+    "document",
+    "demo",
+    "media"
+  ],
+  "capabilities": [
+    "artifacts",
+    "artifact-generation",
+    "artifact-publishing",
+    "artifact-history"
+  ]
+}

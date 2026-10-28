@@ -1,0 +1,178 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/swamp-tools/add-real-swamp-compatibility-ci",
+  "base": "origin/stream/swamp-tools",
+  "headSha": "0433a67b30ce7125265c055a997b83a1320331ad",
+  "changeHash": "4de5be53a3c11a7e3fa2b038941871a0ee594642611b90336e07ad029190ac64",
+  "changedFiles": [
+    ".github/scripts/consuelo-swamp-compat.ts",
+    ".github/workflows/consuelo-swamp-compat.yaml",
+    "packages/workspace/tests/github-workflow-policy.test.js"
+  ],
+  "verifiedAt": "2026-09-22T03:15:03.737Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".github/scripts/consuelo-swamp-compat.ts",
+        ".github/workflows/consuelo-swamp-compat.yaml",
+        ".task/swamp-tools/add-real-swamp-compatibility-ci/evidence-log.json",
+        ".task/swamp-tools/add-real-swamp-compatibility-ci/read-log.json",
+        ".task/swamp-tools/add-real-swamp-compatibility-ci/workpad.md",
+        ".task/tasks/swamp-tools/add-real-swamp-compatibility-ci.json",
+        "packages/workspace/tests/github-workflow-policy.test.js"
+      ],
+      "matchedRules": [
+        {
+          "id": "native-os-workflow-contract",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Native OS distribution workflow and selector changes must run their exact cross-platform contracts without selecting unrelated full OS package tests.",
+          "matchedFiles": [
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "native OS selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-os-native-tests.test.mjs"
+          ],
+          "ruleId": "native-os-workflow-contract",
+          "critical": true
+        },
+        {
+          "name": "native Windows workflow contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/windows-platform.test.ts",
+            "packages/os/tests/windows-bootstrap-source.test.ts"
+          ],
+          "ruleId": "native-os-workflow-contract",
+          "critical": true
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "ruleId": "native-os-workflow-contract",
+          "critical": true
+        },
+        {
+          "name": "changed GitHub workflow security checks",
+          "command": [
+            "node",
+            "packages/workspace/scripts/ci/check-github-workflows.cjs"
+          ],
+          "ruleId": "native-os-workflow-contract",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "native OS selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-os-native-tests.test.mjs"
+          ],
+          "cwd": ".",
+          "ruleId": "native-os-workflow-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 71,
+          "outputTail": "Running focused-artifact native OS test plan.\n✔ native selector reserves enough Git output for repository-scale deletion diffs (0.402125ms)\n✔ parseCliArguments resolves comparison SHAs (0.363416ms)\n✔ parseCliArguments uses event SHAs when nx-set-shas leaves the base empty (0.0475ms)\n✔ parseCliArguments ignores zero SHAs and falls back to fetched Git history (0.043583ms)\n✔ filterRelevantNativeFiles keeps only OS native-test ownership paths (0.072958ms)\n✔ selectNativeTestPlan uses the focused artifact contract for the exact metering cleanup (0.060292ms)\n✔ selectNativeTestPlan retains the full distribution suite for every broader change (0.044458ms)\n✔ runSelectedNativeTests executes the selected Bun test command (0.366125ms)\nℹ tests 8\nℹ suites 0\nℹ pass 8\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 41.421583\n"
+        },
+        {
+          "name": "native Windows workflow contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/windows-platform.test.ts",
+            "packages/os/tests/windows-bootstrap-source.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "native-os-workflow-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 649,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-swamp-tools-add-real-swamp-compatibility-ci\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/windows-bootstrap-source.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 8\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/windows-platform.test.ts \u001b[2m(\u001b[22m\u001b[2m18 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 19\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m27 passed\u001b[39m\u001b[22m\u001b[90m (27)\u001b[39m\n\u001b[2m   Start at \u001b[22m 23:15:03\n\u001b[2m   Duration \u001b[22m 239ms\u001b[2m (transform 213ms, setup 0ms, import 231ms, tests 26ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "cwd": ".",
+          "ruleId": "native-os-workflow-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 127,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/workspace/tests/github-workflow-policy.test.js:\n(pass) GitHub workflow policy > delegates Consuelo routing to the Bun-native CI planner [21.73ms]\n(pass) GitHub workflow policy > uses one Bun-owned Consuelo CI setup boundary [0.38ms]\n(pass) GitHub workflow policy > includes local composite actions in workflow security policy [0.18ms]\n(pass) GitHub workflow policy > keeps OS-only Consuelo lanes off the root Bun install [2.21ms]\n(pass) GitHub workflow policy > runs real Swamp compatibility outside blocking pull-request CI [0.71ms]\n(pass) GitHub workflow policy > does not include retired automation or legacy Twenty workflows [0.07ms]\n(pass) GitHub workflow policy > does not reference retired CI credentials [2.13ms]\n(pass) GitHub workflow policy > does not retain privileged allowlist entries for deleted workflows [0.08ms]\n(pass) GitHub workflow policy > scopes native OS distribution tests to relevant changed files [0.04ms]\n\n 9 pass\n 0 fail\n 82 expect() calls\nRan 9 tests across 1 file. [121.00ms]\n"
+        },
+        {
+          "name": "changed GitHub workflow security checks",
+          "command": [
+            "node",
+            "packages/workspace/scripts/ci/check-github-workflows.cjs"
+          ],
+          "cwd": ".",
+          "ruleId": "native-os-workflow-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 39,
+          "outputTail": "{\n  \"ok\": true,\n  \"baseRef\": \"origin/stream/swamp-tools\",\n  \"changedWorkflowFiles\": [],\n  \"changedActionFiles\": [],\n  \"findings\": []\n}\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

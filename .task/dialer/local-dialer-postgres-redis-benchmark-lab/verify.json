@@ -1,0 +1,240 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/dialer/local-dialer-postgres-redis-benchmark-lab",
+  "base": "main",
+  "headSha": "02c1914b318c04d2f28ef3f65b1266bb182ee55d",
+  "changeHash": "5107e396e6e9fc1013ada37fe10f08229d23b64d28e74b7fd1a67db5676acc06",
+  "changedFiles": [
+    "packages/dialer-server/README.md",
+    "packages/dialer-server/package.json",
+    "packages/dialer-server/scripts/local-dialer-lab.ts",
+    "packages/dialer-server/src/lab/local-dialer-lab.integration.test.ts",
+    "packages/dialer-server/src/lab/local-dialer-lab.test.ts",
+    "packages/dialer-server/src/lab/local-dialer-lab.ts",
+    "packages/os/cloudflare/os-device-authority/src/routes/google-oauth.ts",
+    "packages/os/cloudflare/os-device-authority/src/services/mcp-oauth.ts",
+    "packages/os/tests/os-device-authority-worker.test.ts"
+  ],
+  "verifiedAt": "2026-08-15T03:13:25.886Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/dialer/local-dialer-postgres-redis-benchmark-lab/current.json",
+        ".task/dialer/local-dialer-postgres-redis-benchmark-lab/evidence-log.json",
+        ".task/dialer/local-dialer-postgres-redis-benchmark-lab/read-log.json",
+        ".task/dialer/local-dialer-postgres-redis-benchmark-lab/session.json",
+        ".task/dialer/local-dialer-postgres-redis-benchmark-lab/verify.json",
+        ".task/dialer/local-dialer-postgres-redis-benchmark-lab/workpad.md",
+        ".task/os/hotfix-google-oauth-callback-routing-to-main/current.json",
+        ".task/os/hotfix-google-oauth-callback-routing-to-main/session.json",
+        ".task/os/hotfix-google-oauth-callback-routing-to-main/verify.json",
+        ".task/os/hotfix-google-oauth-callback-routing-to-main/workpad.md",
+        ".task/tasks/dialer/local-dialer-postgres-redis-benchmark-lab.json",
+        ".task/tasks/os/hotfix-google-oauth-callback-routing-to-main.json",
+        "packages/dialer-server/README.md",
+        "packages/dialer-server/package.json",
+        "packages/dialer-server/scripts/local-dialer-lab.ts",
+        "packages/dialer-server/src/lab/local-dialer-lab.integration.test.ts",
+        "packages/dialer-server/src/lab/local-dialer-lab.test.ts",
+        "packages/dialer-server/src/lab/local-dialer-lab.ts",
+        "packages/os/cloudflare/os-device-authority/src/routes/google-oauth.ts",
+        "packages/os/cloudflare/os-device-authority/src/services/mcp-oauth.ts",
+        "packages/os/tests/os-device-authority-worker.test.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "os-chatgpt-mcp-oauth",
+          "critical": true,
+          "exclusive": true,
+          "reason": "ChatGPT MCP OAuth client binding and authorization changes must prove the exact client/redirect, Worker, architecture, release, and syntax contracts without selecting unrelated package-wide OS tests.",
+          "matchedFiles": [
+            "packages/os/cloudflare/os-device-authority/src/services/mcp-oauth.ts",
+            "packages/os/tests/os-device-authority-worker.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-device-approval-canonical-identity",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Native OS device-approval and canonical-identity changes must prove the exact auth, tenant, and control-plane contracts without selecting unsafe unrelated package-wide OS tests.",
+          "matchedFiles": [
+            "packages/os/cloudflare/os-device-authority/src/routes/google-oauth.ts",
+            "packages/os/tests/os-device-authority-worker.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "dialer-server-package",
+          "critical": true,
+          "reason": "Dialer server changes must prove Hono transport, Twilio boundary, and standalone lifecycle contracts.",
+          "matchedFiles": [
+            "packages/dialer-server/README.md",
+            "packages/dialer-server/package.json",
+            "packages/dialer-server/scripts/local-dialer-lab.ts",
+            "packages/dialer-server/src/lab/local-dialer-lab.integration.test.ts",
+            "packages/dialer-server/src/lab/local-dialer-lab.test.ts",
+            "packages/dialer-server/src/lab/local-dialer-lab.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "OS ChatGPT MCP OAuth contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/operator-oauth-client.test.ts",
+            "tests/os-device-authority-worker.test.ts",
+            "tests/os-device-authority-architecture.test.ts",
+            "tests/os-device-authority-release-contract.test.ts"
+          ],
+          "ruleId": "os-chatgpt-mcp-oauth",
+          "critical": true
+        },
+        {
+          "name": "OS ChatGPT MCP OAuth syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "ruleId": "os-chatgpt-mcp-oauth",
+          "critical": true
+        },
+        {
+          "name": "OS canonical device approval contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/canonical-device-identity.test.ts",
+            "tests/install-control-plane.test.ts",
+            "tests/install-control-plane-d1.test.ts",
+            "tests/oauth-device-page-contract.test.ts",
+            "tests/internal-dashboard-integration.test.ts",
+            "tests/native-google-device-approval.test.ts",
+            "tests/os-device-authority-worker.test.ts"
+          ],
+          "ruleId": "os-device-approval-canonical-identity",
+          "critical": true
+        },
+        {
+          "name": "dialer-server Hono contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-server/src"
+          ],
+          "ruleId": "dialer-server-package",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "OS ChatGPT MCP OAuth contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/operator-oauth-client.test.ts",
+            "tests/os-device-authority-worker.test.ts",
+            "tests/os-device-authority-architecture.test.ts",
+            "tests/os-device-authority-release-contract.test.ts"
+          ],
+          "ruleId": "os-chatgpt-mcp-oauth",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 658,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-local-dialer-postgres-redis-benchmark-lab/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/operator-oauth-client.test.ts \u001b[2m(\u001b[22m\u001b[2m30 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 4\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-architecture.test.ts \u001b[2m(\u001b[22m\u001b[2m25 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 27\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-worker.test.ts \u001b[2m(\u001b[22m\u001b[2m31 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 66\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-release-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m11 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 392\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should stop release before remote mutation when readiness fails \u001b[33m 320\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m4 passed\u001b[39m\u001b[22m\u001b[90m (4)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m97 passed\u001b[39m\u001b[22m\u001b[90m (97)\u001b[39m\n\u001b[2m   Start at \u001b[22m 23:13:22\n\u001b[2m   Duration \u001b[22m 504ms\u001b[2m (transform 624ms, setup 0ms, import 604ms, tests 489ms, environment 0ms)\u001b[22m\n\n$ vitest run tests/operator-oauth-client.test.ts tests/os-device-authority-worker.test.ts tests/os-device-authority-architecture.test.ts tests/os-device-authority-release-contract.test.ts\n"
+        },
+        {
+          "name": "OS ChatGPT MCP OAuth syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "ruleId": "os-chatgpt-mcp-oauth",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1732,
+          "outputTail": "workspace script syntax checks passed\n"
+        },
+        {
+          "name": "OS canonical device approval contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/canonical-device-identity.test.ts",
+            "tests/install-control-plane.test.ts",
+            "tests/install-control-plane-d1.test.ts",
+            "tests/oauth-device-page-contract.test.ts",
+            "tests/internal-dashboard-integration.test.ts",
+            "tests/native-google-device-approval.test.ts",
+            "tests/os-device-authority-worker.test.ts"
+          ],
+          "ruleId": "os-device-approval-canonical-identity",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 520,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-local-dialer-postgres-redis-benchmark-lab/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/oauth-device-page-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/install-control-plane-d1.test.ts \u001b[2m(\u001b[22m\u001b[2m6 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 10\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/install-control-plane.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 15\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/canonical-device-identity.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 9\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/native-google-device-approval.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 18\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/internal-dashboard-integration.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 32\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-worker.test.ts \u001b[2m(\u001b[22m\u001b[2m31 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 65\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m7 passed\u001b[39m\u001b[22m\u001b[90m (7)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m66 passed\u001b[39m\u001b[22m\u001b[90m (66)\u001b[39m\n\u001b[2m   Start at \u001b[22m 23:13:24\n\u001b[2m   Duration \u001b[22m 362ms\u001b[2m (transform 680ms, setup 0ms, import 924ms, tests 151ms, environment 0ms)\u001b[22m\n\n$ vitest run tests/canonical-device-identity.test.ts tests/install-control-plane.test.ts \"tests/install-control-plane-d1.test.ts\" tests/oauth-device-page-contract.test.ts tests/internal-dashboard-integration.test.ts tests/native-google-device-approval.test.ts tests/os-device-authority-worker.test.ts\n"
+        },
+        {
+          "name": "dialer-server Hono contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-server/src"
+          ],
+          "ruleId": "dialer-server-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 490,
+          "outputTail": "ges/dialer-server/src/runtime/railway.test.ts:\n(pass) LeadConnector dialer learning > records an atomic attempt and outcome for every completed carrier leg [0.15ms]\n(pass) LeadConnector dialer learning > does not fail carrier callback handling when learning persistence is unavailable [0.06ms]\n(pass) Railway dialer-server runtime composition > selects the test dialer for follow-up operations on test-mode groups [0.15ms]\n(pass) Railway dialer-server runtime composition > keeps existing groups without a provider mode on the live dialer [0.04ms]\n(pass) Railway dialer-server runtime composition > fails closed when a test-mode group outlives its test credentials [0.03ms]\n(pass) Railway dialer-server runtime composition > composes durable LeadConnector configuration and encrypted installation storage [2.02ms]\n(pass) Railway dialer-server runtime composition > preserves input order when standalone learned data is not available [1.65ms]\n(pass) Railway dialer-server runtime composition > ranks predictive targets from LeadConnector learned outcomes without Twenty model rows [1.28ms]\n(pass) Railway dialer-server runtime composition > starts a mock standalone call session without Twenty or the compatibility API [1.12ms]\n\npackages/dialer-server/src/runtime/lead-connector-learning.test.ts:\n(pass) LeadConnector learning initialization > creates the attempt ledger before the outcome model tables [1.55ms]\n\npackages/dialer-server/src/release/production-release.test.ts:\n(pass) dialer production release safety > selects the new Railway deployment instead of racing the previous latest [0.08ms]\n(pass) dialer production release safety > smokes only non-mutating health/auth/signature boundaries [0.29ms]\n(pass) dialer production release safety > builds a secret-free release manifest from immutable deployment evidence [0.08ms]\n(pass) dialer production release safety > refuses to serialize a release manifest from non-green evidence [0.03ms]\n(pass) dialer production release safety > requires immutable one-time Marketplace bootstrap evidence [0.02ms]\n(pass) dialer production release safety > rolls Railway back to one explicit deployment id through the public API [0.12ms]\n\npackages/dialer-server/src/call-operations/application.test.ts:\n(pass) Effect call-operations transcription application > keeps inbound and outbound buffers separate and persists provider metadata only [2.03ms]\n(pass) Effect call-operations transcription application > processes duplicate frames once and flushes a terminal remainder once [0.22ms]\n(pass) Effect call-operations transcription application > keeps transcript rows idempotent when a provider stream reconnects [0.28ms]\n(pass) Effect call-operations transcription application > marks transcription failed on provider timeout without failing the call boundary [22.63ms]\n(pass) Effect call-operations transcription application > does not begin provider work when workspace transcription is disabled [0.13ms]\n\npackages/dialer-server/src/call-operations/persistence.test.ts:\n(pass) call-operations persistence > initializes canonical workspace settings, sessions, legs, segments, and transfer-compatible events [0.16ms]\n(pass) call-operations persistence > uses a workspace-scoped idempotent insert for transcript metadata [0.19ms]\n(pass) call-operations persistence > atomically upserts the canonical session and all provider legs [0.13ms]\n(pass) call-operations persistence > persists recording provider metadata without retaining a raw recording URL [0.07ms]\n\npackages/dialer-server/src/call-operations/groq.test.ts:\n(pass) Groq speech-to-text adapter > uses the OpenAI-compatible audio endpoint and returns provider-grounded metadata [0.94ms]\n(pass) Groq speech-to-text adapter > fails closed when credentials are absent [0.09ms]\n\n1 tests skipped:\n(skip) local dialer lab service integration > migrates an empty isolated Postgres, exercises Redis, and tears both down\n\n 142 pass\n 1 skip\n 0 fail\n 705 expect() calls\nRan 143 tests across 31 files. [483.00ms]\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

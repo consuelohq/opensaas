@@ -1,0 +1,8 @@
+{
+  "files": [
+    ".task/workspace-agents/unify-task-intent-and-task-start-tooling/workpad.md",
+    "packages/os/scripts/task-start.js",
+    "packages/workspace/scripts/task-start.js"
+  ],
+  "updatedAt": "2026-07-10T02:09:43.913Z"
+}

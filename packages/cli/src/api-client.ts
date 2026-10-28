@@ -37,14 +37,17 @@ const resolveConfig = (): ApiClientConfig => {
   if (!apiKey) {
     error('not configured');
     log('');
-    log('  to authenticate with your consuelo account:');
-    log('    consuelo init --managed');
-    log('');
-    log('  or set an API key:');
+    if (config.osAuth) {
+      log('  you are signed in to Consuelo OS, but this legacy API command');
+      log('  still requires an explicit API key until it is migrated.');
+      log('');
+    } else {
+      log('  to sign in to Consuelo OS:');
+      log('    consuelo login');
+      log('');
+    }
+    log('  for this legacy API command, set:');
     log('    export CONSUELO_API_KEY=your-api-key');
-    log('');
-    log('  you can create an API key at:');
-    log('    https://app.consuelohq.com/settings/developers');
     log('');
     process.exit(1);
   }

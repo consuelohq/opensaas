@@ -3,7 +3,11 @@ set -euo pipefail
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 root_dir="$(cd "$script_dir/.." && pwd)"
-generated_dir="$script_dir/generated"
+# Generated plists must not land inside the runtime release: that directory is an immutable,
+# fingerprinted bundle, and writing into it makes every node that has ever started its services
+# report installState "corrupt" because the files are absent from the bundle manifest. This is the
+# same mutable location the cloudflared plist already uses.
+generated_dir="${CONSUELO_SECURITY_GENERATED_DIR:-${CONSUELO_HOME:-$HOME/.consuelo}/node/security/generated}"
 env_file="$root_dir/.env"
 mkdir -p "$generated_dir"
 
@@ -63,20 +67,56 @@ if ! id -u "$consuelo_user" >/dev/null 2>&1; then
   exit 1
 fi
 consuelo_home="${CONSUELO_DAEMON_HOME:-${HOME:-/Users/$consuelo_user}}"
-log_dir="${CONSUELO_DAEMON_LOG_DIR:-$root_dir/logs}"
+consuelo_data_home="${CONSUELO_HOME:-$consuelo_home/.consuelo}"
+managed_runtime_root="$consuelo_data_home/runtime/current"
+if [ ! -e "$managed_runtime_root" ]; then
+  managed_runtime_root="$root_dir"
+fi
+persisted_env_file="$consuelo_data_home/.env"
+if [ "$persisted_env_file" != "$env_file" ]; then
+  load_env_file "$persisted_env_file"
+fi
+log_dir="${CONSUELO_DAEMON_LOG_DIR:-$consuelo_data_home/node/logs}"
 workspace_label="$(sanitize_label 'com.consuelo.system' "${WORKSPACE_DAEMON_LABEL:-com.consuelo.system}")"
+caddy_label="$(sanitize_label 'com.consuelo.caddy' "${CADDY_DAEMON_LABEL:-com.consuelo.caddy}")"
 portless_label="$(sanitize_label 'com.consuelo.portless.system' "${PORTLESS_DAEMON_LABEL:-com.consuelo.portless.system}")"
 watchdog_label="$(sanitize_label 'com.consuelo.watchdog' "${WORKSPACE_WATCHDOG_LABEL:-com.consuelo.watchdog}")"
+availability_label="$(sanitize_label 'com.consuelo.availability' "${CONSUELO_AVAILABILITY_LABEL:-com.consuelo.availability}")"
 workspace_path="${WORKSPACE_DAEMON_PATH:-/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin}"
+caddy_path="${CADDY_DAEMON_PATH:-/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin}"
 portless_path="${PORTLESS_DAEMON_PATH:-/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin}"
 watchdog_path="${WORKSPACE_WATCHDOG_PATH:-/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin}"
+watchdog_interval_seconds="${WORKSPACE_WATCHDOG_INTERVAL_SECONDS:-30}"
+watchdog_local_port="${WORKSPACE_WATCHDOG_LOCAL_PORT:-${CONSUELO_CADDY_INGRESS_PORT:-46320}}"
+availability_enabled="${CONSUELO_AVAILABILITY_ENABLED:-0}"
+case "$watchdog_interval_seconds" in
+  ''|*[!0-9]*)
+    echo "invalid WORKSPACE_WATCHDOG_INTERVAL_SECONDS: $watchdog_interval_seconds" >&2
+    exit 1
+    ;;
+esac
+if [ "$watchdog_interval_seconds" -lt 1 ]; then
+  echo "WORKSPACE_WATCHDOG_INTERVAL_SECONDS must be greater than zero" >&2
+  exit 1
+fi
+case "$watchdog_local_port" in
+  ''|*[!0-9]*)
+    echo "invalid WORKSPACE_WATCHDOG_LOCAL_PORT: $watchdog_local_port" >&2
+    exit 1
+    ;;
+esac
+if [ "$watchdog_local_port" -lt 1 ] || [ "$watchdog_local_port" -gt 65535 ]; then
+  echo "WORKSPACE_WATCHDOG_LOCAL_PORT must be between 1 and 65535" >&2
+  exit 1
+fi
 bun_bin="$(xml_escape "${BUN_BIN:-}")"
+caddy_bin="$(xml_escape "${CADDY_BIN:-}")"
 portless_bin="$(xml_escape "${PORTLESS_BIN:-}")"
 portless_allow_path_lookup="${PORTLESS_ALLOW_PATH_LOOKUP:-0}"
 if [ -z "${PORTLESS_BIN:-}" ] && [ ! -f "$env_file" ]; then
   portless_allow_path_lookup="1"
 fi
-portless_enabled="${PORTLESS_ENABLED:-auto}"
+portless_enabled="${PORTLESS_ENABLED:-0}"
 portless_should_generate="0"
 case "$portless_enabled" in
   0|false|no)
@@ -100,7 +140,32 @@ esac
 if [ "$portless_should_generate" != "1" ]; then
   rm -f "$generated_dir/${portless_label}.plist"
 fi
+case "$availability_enabled" in
+  0|false|no) rm -f "$generated_dir/${availability_label}.plist" ;;
+  *) availability_enabled="1" ;;
+esac
 portless_allow_path_lookup="$(xml_escape "$portless_allow_path_lookup")"
+
+runtime_arch=""
+case "$(uname -m 2>/dev/null || true)" in
+  arm64|aarch64) runtime_arch="arm64" ;;
+  x86_64|amd64) runtime_arch="x64" ;;
+esac
+service_host_path=""
+if [ -n "$runtime_arch" ]; then
+  service_host_candidate="$managed_runtime_root/native/macos/bin/$runtime_arch/ConsueloServiceHost"
+  if [ -x "$service_host_candidate" ]; then
+    service_host_path="$(xml_escape "$service_host_candidate")"
+  fi
+fi
+if [ -n "$service_host_path" ]; then
+  workspace_program_arguments="    <string>${service_host_path}</string>
+    <string>--runtime-root</string>
+    <string>$(xml_escape "$managed_runtime_root")</string>"
+else
+  workspace_program_arguments="    <string>/bin/bash</string>
+    <string>$(xml_escape "$managed_runtime_root")/scripts/start-consuelo-daemon.sh</string>"
+fi
 
 cat > "$generated_dir/${workspace_label}.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
@@ -111,15 +176,14 @@ cat > "$generated_dir/${workspace_label}.plist" <<PLIST
   <string>${workspace_label}</string>
   <key>ProgramArguments</key>
   <array>
-    <string>/bin/bash</string>
-    <string>${root_dir}/scripts/start-consuelo-daemon.sh</string>
+${workspace_program_arguments}
   </array>
   <key>RunAtLoad</key>
   <true/>
   <key>KeepAlive</key>
   <true/>
   <key>WorkingDirectory</key>
-  <string>${root_dir}</string>
+  <string>${managed_runtime_root}</string>
   <key>StandardOutPath</key>
   <string>${log_dir}/system.log</string>
   <key>StandardErrorPath</key>
@@ -134,12 +198,94 @@ cat > "$generated_dir/${workspace_label}.plist" <<PLIST
     <string>${consuelo_user}</string>
     <key>WORKSPACE_DAEMON_HOME</key>
     <string>${consuelo_home}</string>
+    <key>WORKSPACE_DAEMON_CONSUELO_HOME</key>
+    <string>${consuelo_data_home}</string>
+    <!-- Canonical name. Runtime code reads CONSUELO_HOME; exporting only the WORKSPACE_DAEMON_
+         prefixed form left it unset inside the server process, so anything resolving the OS home
+         from the environment silently fell back to the runtime release directory. -->
+    <key>CONSUELO_HOME</key>
+    <string>${consuelo_data_home}</string>
     <key>WORKSPACE_DAEMON_USER</key>
     <string>${consuelo_user}</string>
     <key>WORKSPACE_DAEMON_PATH</key>
     <string>${workspace_path}</string>
     <key>BUN_BIN</key>
     <string>${bun_bin}</string>
+  </dict>
+</dict>
+</plist>
+PLIST
+
+if [ "$availability_enabled" = "1" ]; then
+cat > "$generated_dir/${availability_label}.plist" <<PLIST
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>${availability_label}</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/usr/bin/caffeinate</string>
+    <string>-s</string>
+  </array>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <true/>
+  <key>ProcessType</key>
+  <string>Background</string>
+  <key>StandardOutPath</key>
+  <string>${log_dir}/availability.log</string>
+  <key>StandardErrorPath</key>
+  <string>${log_dir}/availability.log</string>
+  <key>ThrottleInterval</key>
+  <integer>10</integer>
+</dict>
+</plist>
+PLIST
+fi
+
+cat > "$generated_dir/${caddy_label}.plist" <<PLIST
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>${caddy_label}</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>${managed_runtime_root}/scripts/start-caddy-daemon.sh</string>
+  </array>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <true/>
+  <key>WorkingDirectory</key>
+  <string>${managed_runtime_root}</string>
+  <key>StandardOutPath</key>
+  <string>${log_dir}/caddy.log</string>
+  <key>StandardErrorPath</key>
+  <string>${log_dir}/caddy.log</string>
+  <key>ThrottleInterval</key>
+  <integer>5</integer>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>HOME</key>
+    <string>${consuelo_home}</string>
+    <key>USER</key>
+    <string>${consuelo_user}</string>
+    <key>CADDY_DAEMON_HOME</key>
+    <string>${consuelo_home}</string>
+    <key>CADDY_DAEMON_CONSUELO_HOME</key>
+    <string>${consuelo_data_home}</string>
+    <key>CADDY_DAEMON_USER</key>
+    <string>${consuelo_user}</string>
+    <key>CADDY_DAEMON_PATH</key>
+    <string>${caddy_path}</string>
+    <key>CADDY_BIN</key>
+    <string>${caddy_bin}</string>
   </dict>
 </dict>
 </plist>
@@ -156,7 +302,7 @@ cat > "$generated_dir/${portless_label}.plist" <<PLIST
   <key>ProgramArguments</key>
   <array>
     <string>/bin/bash</string>
-    <string>${root_dir}/scripts/start-portless-daemon.sh</string>
+    <string>${managed_runtime_root}/scripts/start-portless-daemon.sh</string>
   </array>
   <key>RunAtLoad</key>
   <true/>
@@ -202,14 +348,16 @@ cat > "$generated_dir/${watchdog_label}.plist" <<PLIST
   <key>ProgramArguments</key>
   <array>
     <string>/bin/bash</string>
-    <string>${root_dir}/scripts/workspace-watchdog.sh</string>
+    <string>${managed_runtime_root}/scripts/workspace-watchdog.sh</string>
   </array>
   <key>RunAtLoad</key>
   <true/>
-  <key>KeepAlive</key>
-  <true/>
+  <key>StartInterval</key>
+  <integer>${watchdog_interval_seconds}</integer>
+  <key>ProcessType</key>
+  <string>Background</string>
   <key>WorkingDirectory</key>
-  <string>${root_dir}</string>
+  <string>${managed_runtime_root}</string>
   <key>StandardOutPath</key>
   <string>${log_dir}/watchdog.log</string>
   <key>StandardErrorPath</key>
@@ -218,8 +366,22 @@ cat > "$generated_dir/${watchdog_label}.plist" <<PLIST
   <integer>5</integer>
   <key>EnvironmentVariables</key>
   <dict>
+    <key>HOME</key>
+    <string>${consuelo_home}</string>
+    <key>CONSUELO_HOME</key>
+    <string>${consuelo_data_home}</string>
     <key>PATH</key>
     <string>${watchdog_path}</string>
+    <key>WORKSPACE_DAEMON_LABEL</key>
+    <string>${workspace_label}</string>
+    <key>WORKSPACE_WATCHDOG_CADDY_LABEL</key>
+    <string>${caddy_label}</string>
+    <key>PORTLESS_DAEMON_LABEL</key>
+    <string>${portless_label}</string>
+    <key>WORKSPACE_WATCHDOG_LOCAL_PORT</key>
+    <string>${watchdog_local_port}</string>
+    <key>WORKSPACE_WATCHDOG_LOCAL_URL</key>
+    <string>http://127.0.0.1:${watchdog_local_port}/health</string>
   </dict>
 </dict>
 </plist>

@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/finish-internal-mcp-ingress-security-and-audit-unknown-tokens",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1908,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1908",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1908",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1908/finish-internal-mcp-ingress-security-and-audit-unknown-tokens",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1908",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1908/finish-internal-mcp-ingress-security-and-audit-unknown-tokens",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-finish-internal-mcp-ingress-security-and-audit-unknown-tokens",
+  "taskSession": "tsk_909582883083",
+  "tmuxSession": "opensaas-os-finish-internal-mcp-ingress-security-and-audit-u-90958288",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-finish-internal-mcp-ingress-security-and-audit-unknown-tokens/.task/os/finish-internal-mcp-ingress-security-and-audit-unknown-tokens/session.json",
+  "createdAt": "2026-08-13T18:20:37.168Z"
+}

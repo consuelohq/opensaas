@@ -73,8 +73,8 @@ export default {
         fancy: "url(https://www.svgrepo.com/show/269/color-picker.svg)",
       },
       fontFamily: {
-        sans: ["Geist Mono", ...defaultTheme.fontFamily.mono],
-        headings: ["Geist Mono", ...defaultTheme.fontFamily.mono],
+        sans: [...defaultTheme.fontFamily.sans],
+        headings: [...defaultTheme.fontFamily.sans],
       },
       keyframes: {
         dropdown: {

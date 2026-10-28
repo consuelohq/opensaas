@@ -16,12 +16,12 @@ const sourceCaptureModules = [
 ] as const;
 
 const visibleSurfaceFiles = [
-  'tooling/media-tool-manifest.json',
-  'tooling/dev-tool-manifest.json',
-  'manifests/tool.manifest.json',
-  'manifests/core.manifest.json',
-  'tooling/workflows.json',
-  'manifests/workflow-bundles.json',
+  'tools/media/schema.ts',
+  'tools/media/handler.ts',
+  'manifests/generated/tool.manifest.json',
+  'manifests/generated/core.manifest.json',
+  'workflows/workflows.ts',
+  'workflows/generated/workflow-bundles.json',
 ] as const;
 
 describe('media source capture internal boundary', () => {

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_d3d718b1c0cd",
+  "tmuxSession": "opensaas-documentation-fix-standalone-docs-browser-dependency-d3d718b1",
+  "area": "documentation",
+  "stream": "stream/documentation",
+  "taskBranch": "task/documentation/fix-standalone-docs-browser-dependency",
+  "branch": "task/documentation/fix-standalone-docs-browser-dependency",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-fix-standalone-docs-browser-dependency",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-fix-standalone-docs-browser-dependency",
+  "prNumber": 1450,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1450",
+  "createdAt": "2026-07-13T06:01:16.111Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-documentation-fix-standalone-docs-browser-dependency/.task/documentation/fix-standalone-docs-browser-dependency/session.json"
+}

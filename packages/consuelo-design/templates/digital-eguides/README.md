@@ -27,8 +27,8 @@ Do not add a new workspace facade command for each template. The command returns
 Use the repo-root renderer commands when producing durable wiki pages:
 
 ```bash
-bun run wiki:render -- --template <spec|research> --input <content.json> --out <index.html>
-bun run wiki:validate -- --file <index.html> --template <spec|research>
+bun run artifact:render -- --template <spec|research> --input <content.json> --out <index.html>
+bun run artifact:validate -- --file <index.html> --template <spec|research>
 ```
 
 Use the shared typed components instead of custom HTML wherever possible: `callout`, `cards`, `metrics`, `table`, `flow`, `timeline`, `details`, `ranges`, `comparisons`, and `ledger`. The component data changes by content contract: specs use them for decisions, requirements, validation, and task ledgers; research lessons use them for source cards, vocabulary, evidence, reveals, explanations, and memory review; plans use them for context, phase sequencing, risks, validation, and handoff.

@@ -1,0 +1,88 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/mcp-auth-principal-context",
+  "events": [
+    {
+      "id": "9322e609-f83c-42f5-8b5b-ee142146da87",
+      "occurred_at": "2026-08-10T03:31:55.109Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/mcp-auth-principal-context/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/mcp-auth-principal-context",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/mcp-auth-principal-context"
+      }
+    },
+    {
+      "id": "c46a1b3c-c8c3-4deb-9717-53c58a283341",
+      "occurred_at": "2026-08-10T03:33:01.341Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/os-device-authority-worker.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/mcp-auth-principal-context",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/mcp-auth-principal-context"
+      }
+    },
+    {
+      "id": "23688d4d-1c42-4f32-9899-ec95963ec224",
+      "occurred_at": "2026-08-10T03:33:59.603Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/security-gateway.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/mcp-auth-principal-context",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/mcp-auth-principal-context"
+      }
+    },
+    {
+      "id": "39c6701e-a0a2-40dc-90ab-13cc156d506d",
+      "occurred_at": "2026-08-10T03:35:32.536Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/security-gateway.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/mcp-auth-principal-context",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/mcp-auth-principal-context"
+      }
+    },
+    {
+      "id": "2146d06e-e3bd-4b82-8afd-1fdb9fe04dc5",
+      "occurred_at": "2026-08-10T03:39:50.671Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/mcp-auth-principal-context/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/mcp-auth-principal-context",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/mcp-auth-principal-context"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-10T03:39:50.748Z"
+}

@@ -1,0 +1,376 @@
+import { randomUUID } from 'node:crypto';
+
+import type { AgentName } from './local-agent-connectivity';
+import {
+  parseWorkspaceNodeSnapshot,
+  type WorkspaceNodeSnapshot,
+} from './workspace-node-snapshot-cache';
+
+import {
+  createDevicePublicKeyProof,
+  type WorkspaceDeviceKeyPair,
+} from './workspace-device-login-client';
+
+export const WORKSPACE_NODE_HEARTBEAT_INTERVAL_SECONDS = 30;
+
+export type WorkspaceNodeHeartbeatConfig = {
+  authorityOrigin: string;
+  workspaceId: string;
+  nodeId: string;
+  connectorStatus: 'connected' | 'disconnected';
+  capabilities: string[];
+  publicKeyJwk: string;
+  signingKeyJwk: string;
+  /**
+   * Public half of the node's credential-encryption key.
+   *
+   * Published so a setup surface can seal a credential to this node without the control plane
+   * being able to open it. Without this the remote ceremony requires hand-carrying the key file
+   * between machines, which is not a product. Optional because a node installed before the key
+   * existed has none until its next release activation.
+   */
+  encryptionPublicKeyJwk?: string;
+};
+
+export type WorkspaceNodeHeartbeatResult = {
+  nodeId: string;
+  presence: 'online' | 'stale' | 'offline';
+  routeReady: boolean;
+  connectorId?: string;
+  edgeRequestSigningSecret?: string;
+  workspace?: WorkspaceNodeSnapshot;
+};
+
+export type WorkspaceNodeHeartbeatRuntimeStatus = {
+  osVersion?: string;
+  bundleId?: string;
+  mcpProtocolVersion?: string;
+  mcpReady?: boolean;
+};
+
+export type WorkspaceNodeHeartbeatClient = {
+  send: (
+    runtimeStatus?: WorkspaceNodeHeartbeatRuntimeStatus,
+  ) => Promise<WorkspaceNodeHeartbeatResult>;
+};
+
+export class WorkspaceNodeHeartbeatRequestError extends Error {
+  readonly status?: number;
+  readonly code?: string;
+
+  constructor(
+    message: string,
+    options: { cause?: unknown; status?: number; code?: string } = {},
+  ) {
+    super(
+      message,
+      options.cause === undefined ? undefined : { cause: options.cause },
+    );
+    this.name = 'WorkspaceNodeHeartbeatRequestError';
+    this.status = options.status;
+    this.code = options.code;
+  }
+}
+
+export function isTransientWorkspaceNodeHeartbeatRequestError(
+  error: unknown,
+): error is WorkspaceNodeHeartbeatRequestError {
+  return (
+    error instanceof WorkspaceNodeHeartbeatRequestError
+    && (error.status === undefined || error.status >= 500)
+  );
+}
+
+const KNOWN_AGENT_NAMES = new Set<AgentName>([
+  'claude',
+  'codex',
+  'cursor',
+  'factory',
+  'gemini',
+  'opencode',
+  'pi',
+]);
+
+function normalizeAgentNames(
+  value: readonly AgentName[] | undefined,
+): AgentName[] | undefined {
+  if (value === undefined) return undefined;
+  const names: AgentName[] = [];
+  for (const candidate of value) {
+    if (!KNOWN_AGENT_NAMES.has(candidate)) {
+      throw new Error(
+        'workspace node heartbeat agents must contain only known agent identifiers',
+      );
+    }
+    names.push(candidate);
+  }
+  return [...new Set(names)].sort();
+}
+
+function requiredString(value: string, label: string): string {
+  const normalized = value.trim();
+  if (!normalized)
+    throw new Error(`workspace node heartbeat ${label} is required`);
+  return normalized;
+}
+
+function optionalBoundedString(
+  value: string | undefined,
+  label: string,
+  maximumLength: number,
+): string | undefined {
+  if (value === undefined) return undefined;
+  const normalized = value.trim();
+  if (!normalized || normalized.length > maximumLength) {
+    throw new Error(`workspace node heartbeat ${label} is invalid`);
+  }
+  return normalized;
+}
+
+function normalizeRuntimeStatus(
+  status: WorkspaceNodeHeartbeatRuntimeStatus | undefined,
+): WorkspaceNodeHeartbeatRuntimeStatus {
+  if (!status) return {};
+  if (status.mcpReady !== undefined && typeof status.mcpReady !== 'boolean') {
+    throw new Error('workspace node heartbeat MCP readiness must be boolean');
+  }
+  const osVersion = optionalBoundedString(status.osVersion, 'OS version', 80);
+  const bundleId = optionalBoundedString(status.bundleId, 'bundle ID', 160);
+  const mcpProtocolVersion = optionalBoundedString(
+    status.mcpProtocolVersion,
+    'MCP protocol version',
+    80,
+  );
+  return {
+    ...(osVersion ? { osVersion } : {}),
+    ...(bundleId ? { bundleId } : {}),
+    ...(mcpProtocolVersion ? { mcpProtocolVersion } : {}),
+    ...(status.mcpReady === undefined ? {} : { mcpReady: status.mcpReady }),
+  };
+}
+
+function normalizeAuthorityOrigin(value: string): string {
+  const origin = new URL(requiredString(value, 'authority origin'));
+  if (origin.protocol !== 'https:' && origin.hostname !== 'localhost') {
+    throw new Error('workspace node heartbeat authority origin must use HTTPS');
+  }
+  return origin.origin;
+}
+
+function normalizeConfig(
+  config: WorkspaceNodeHeartbeatConfig,
+): WorkspaceNodeHeartbeatConfig {
+  const capabilities = [
+    ...new Set(
+      config.capabilities.map((value) => value.trim()).filter(Boolean),
+    ),
+  ].sort();
+  if (capabilities.length > 32) {
+    throw new Error(
+      'workspace node heartbeat capabilities may contain at most 32 unique values',
+    );
+  }
+  JSON.parse(requiredString(config.publicKeyJwk, 'public key'));
+  JSON.parse(requiredString(config.signingKeyJwk, 'signing key'));
+  if (
+    config.connectorStatus !== 'connected' &&
+    config.connectorStatus !== 'disconnected'
+  ) {
+    throw new Error(
+      'workspace node heartbeat connector status must be connected or disconnected',
+    );
+  }
+  return {
+    authorityOrigin: normalizeAuthorityOrigin(config.authorityOrigin),
+    workspaceId: requiredString(config.workspaceId, 'workspace ID'),
+    nodeId: requiredString(config.nodeId, 'node ID'),
+    connectorStatus: config.connectorStatus,
+    capabilities,
+    publicKeyJwk: config.publicKeyJwk,
+    signingKeyJwk: config.signingKeyJwk,
+    ...(typeof config.encryptionPublicKeyJwk === 'string' &&
+    config.encryptionPublicKeyJwk.trim() !== ''
+      ? { encryptionPublicKeyJwk: config.encryptionPublicKeyJwk.trim() }
+      : {}),
+  };
+}
+
+function safeHeartbeatResult(payload: unknown): WorkspaceNodeHeartbeatResult {
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+    throw new Error(
+      'workspace node heartbeat returned an invalid JSON response',
+    );
+  }
+  const nodeId = (payload as { nodeId?: unknown }).nodeId;
+  const presence = (payload as { presence?: unknown }).presence;
+  const routeReady = (payload as { routeReady?: unknown }).routeReady === true;
+  const connectorId = (payload as { connectorId?: unknown }).connectorId;
+  const edgeRequestSigningSecret = (
+    payload as { edgeRequestSigningSecret?: unknown }
+  ).edgeRequestSigningSecret;
+  const rawWorkspace = (payload as { workspace?: unknown }).workspace;
+  if (
+    typeof nodeId !== 'string' ||
+    !['online', 'stale', 'offline'].includes(String(presence))
+  ) {
+    throw new Error(
+      'workspace node heartbeat returned an invalid JSON response',
+    );
+  }
+  const hasConnector = typeof connectorId === 'string' && connectorId.trim() !== '';
+  const hasSecret =
+    typeof edgeRequestSigningSecret === 'string' &&
+    edgeRequestSigningSecret.trim() !== '';
+  if (hasConnector !== hasSecret) {
+    throw new Error('workspace node heartbeat returned incomplete edge authentication metadata');
+  }
+  return {
+    nodeId,
+    presence: presence as WorkspaceNodeHeartbeatResult['presence'],
+    routeReady,
+    ...(hasConnector && hasSecret
+      ? {
+          connectorId: connectorId.trim(),
+          edgeRequestSigningSecret: edgeRequestSigningSecret.trim(),
+        }
+      : {}),
+    ...(rawWorkspace === undefined
+      ? {}
+      : { workspace: parseWorkspaceNodeSnapshot(rawWorkspace) }),
+  };
+}
+
+async function readHeartbeatErrorBody(response: Response): Promise<unknown> {
+  const reader = response.body?.getReader();
+  if (!reader) return undefined;
+  let timeout: ReturnType<typeof setTimeout> | undefined;
+  const readBody = async (): Promise<unknown> => {
+    const decoder = new TextDecoder();
+    let text = '';
+    let bytes = 0;
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) return JSON.parse(text + decoder.decode()) as unknown;
+      bytes += value.byteLength;
+      if (bytes > 16_384) return undefined;
+      text += decoder.decode(value, { stream: true });
+    }
+  };
+  try {
+    return await Promise.race([
+      readBody(),
+      new Promise<undefined>((resolve) => {
+        timeout = setTimeout(() => resolve(undefined), 1_000);
+      }),
+    ]);
+  } finally {
+    clearTimeout(timeout);
+    // Diagnostic bodies must not hold heartbeat reporting open or wait on cancellation.
+    void reader.cancel().catch(() => {});
+  }
+}
+
+export function createWorkspaceNodeHeartbeatClient(input: {
+  config: WorkspaceNodeHeartbeatConfig;
+  agents?: readonly AgentName[];
+  fetchImpl?: typeof fetch;
+  now?: () => number;
+  createNonce?: () => string;
+}): WorkspaceNodeHeartbeatClient {
+  const config = normalizeConfig(input.config);
+  const agents = normalizeAgentNames(input.agents);
+  const fetchImpl = input.fetchImpl ?? globalThis.fetch;
+  const now = input.now ?? Date.now;
+  const createNonce = input.createNonce ?? randomUUID;
+  const deviceKeyPair: WorkspaceDeviceKeyPair = {
+    algorithm: 'Ed25519',
+    publicKeyJwk: config.publicKeyJwk,
+    signingKeyJwk: config.signingKeyJwk,
+  };
+
+  return {
+    async send(
+      runtimeStatus?: WorkspaceNodeHeartbeatRuntimeStatus,
+    ): Promise<WorkspaceNodeHeartbeatResult> {
+      const normalizedRuntimeStatus = normalizeRuntimeStatus(runtimeStatus);
+      const payload = JSON.stringify({
+        workspaceId: config.workspaceId,
+        nodeId: config.nodeId,
+        timestamp: now(),
+        nonce: requiredString(createNonce(), 'nonce'),
+        connectorStatus: config.connectorStatus,
+        platform: process.platform,
+        architecture: process.arch,
+        capabilities: config.capabilities,
+        // Inside the signed payload, so the authority can trust the key it is asked to publish.
+        ...(config.encryptionPublicKeyJwk
+          ? { encryptionPublicKeyJwk: config.encryptionPublicKeyJwk }
+          : {}),
+        ...(agents === undefined ? {} : { agents }),
+        ...normalizedRuntimeStatus,
+      });
+      const signature = createDevicePublicKeyProof({ deviceKeyPair, payload });
+      let response: Response;
+      try {
+        response = await fetchImpl(
+          new Request(
+            new URL('/workspace/nodes/heartbeat', config.authorityOrigin),
+            {
+              method: 'POST',
+              headers: {
+                'content-type': 'application/json',
+                accept: 'application/json',
+                'x-consuelo-node-signature': signature,
+              },
+              body: payload,
+            },
+          ),
+        );
+      } catch (error: unknown) {
+        throw new WorkspaceNodeHeartbeatRequestError(
+          'workspace node heartbeat request failed',
+          {
+            cause: error,
+          },
+        );
+      }
+      if (!response.ok) {
+        let code: string | undefined;
+        try {
+          const body = await readHeartbeatErrorBody(response);
+          const error = body && typeof body === 'object' && 'error' in body
+            ? body.error
+            : undefined;
+          const candidate = error && typeof error === 'object' && 'code' in error
+            ? error.code
+            : undefined;
+          // Only stable public codes may reach local diagnostics; never echo provider bodies.
+          if (
+            candidate === 'WORKSPACE_ROUTE_QUOTA_EXCEEDED' ||
+            candidate === 'WORKSPACE_ROUTE_RECONCILIATION_FAILED' ||
+            candidate === 'WORKSPACE_ROUTE_NOT_READY'
+          ) code = candidate;
+        } catch {
+          // Proxy failures may return HTML instead of the authority JSON envelope.
+        }
+        throw new WorkspaceNodeHeartbeatRequestError(
+          `workspace node heartbeat failed with HTTP ${response.status}${code ? ': ' + code : ''}`,
+          { status: response.status, code },
+        );
+      }
+      let body: unknown;
+      try {
+        body = await response.json();
+      } catch (error: unknown) {
+        throw new Error('workspace node heartbeat returned invalid JSON', {
+          cause: error,
+        });
+      }
+      const result = safeHeartbeatResult(body);
+      if (result.nodeId !== config.nodeId) {
+        throw new Error('workspace node heartbeat returned a different node identity');
+      }
+      return result;
+    },
+  };
+}

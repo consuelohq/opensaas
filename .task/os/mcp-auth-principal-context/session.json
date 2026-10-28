@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_ed7327e9ccf1",
+  "tmuxSession": "opensaas-os-mcp-auth-principal-context-ed7327e9",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/mcp-auth-principal-context",
+  "branch": "task/os/mcp-auth-principal-context",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-mcp-auth-principal-context",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-mcp-auth-principal-context",
+  "prNumber": 1819,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1819",
+  "createdAt": "2026-08-10T03:31:44.900Z",
+  "tmuxCreated": false,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-mcp-auth-principal-context/.task/os/mcp-auth-principal-context/session.json"
+}

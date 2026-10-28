@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/drop-stale-content-length-on-routed-body-rewrite",
+  "events": [
+    {
+      "id": "b626a091-5646-4c30-889d-3d552ef6dbf6",
+      "occurred_at": "2026-08-29T04:40:15.333Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/cloudflare/os-device-authority/src/services/mcp-proxy.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/drop-stale-content-length-on-routed-body-rewrite",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/drop-stale-content-length-on-routed-body-rewrite"
+      }
+    },
+    {
+      "id": "c2338000-df33-48e2-b975-75b7ae22c854",
+      "occurred_at": "2026-08-29T04:40:21.128Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/workspace-node-registry-routing.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/drop-stale-content-length-on-routed-body-rewrite",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/drop-stale-content-length-on-routed-body-rewrite"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-29T04:40:21.287Z"
+}

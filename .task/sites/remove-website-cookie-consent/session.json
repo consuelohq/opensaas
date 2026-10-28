@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_bcfc071a66ab",
+  "tmuxSession": "opensaas-sites-remove-website-cookie-consent-bcfc071a",
+  "area": "sites",
+  "stream": "stream/sites",
+  "taskBranch": "task/sites/remove-website-cookie-consent",
+  "branch": "task/sites/remove-website-cookie-consent",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-remove-website-cookie-consent",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-remove-website-cookie-consent",
+  "prNumber": 1230,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1230",
+  "createdAt": "2026-06-27T22:33:16.279Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-remove-website-cookie-consent/.task/sites/remove-website-cookie-consent/session.json"
+}

@@ -3,10 +3,7 @@ import { listBundledSkills, type SkillMetadata } from './skills';
 export const CORE_SKILL_GROUP_LABEL = 'Core OS skills (suggested starting point)';
 export const OPTIONAL_SKILL_GROUP_LABEL = 'Optional skills';
 
-const OPTIONAL_SKILL_NAMES = new Set([
-  'consuelo-workspace-snapshot',
-  'daily-revenue-brief',
-]);
+const OPTIONAL_SKILL_NAMES = new Set<string>();
 
 export type OnboardingSkillOption = {
   value: string;
@@ -85,8 +82,8 @@ export function getGroupedOnboardingSkillOptions(
       [CORE_SKILL_GROUP_LABEL]: coreOptions.map(toPromptOption),
       [OPTIONAL_SKILL_GROUP_LABEL]: optionalOptions.map(toPromptOption),
     },
-    initialValues: [],
-    cursorAt: CORE_SKILL_GROUP_LABEL,
+    initialValues: coreOptions.map((option) => option.value),
+    cursorAt: coreOptions[0]?.value ?? optionalOptions[0]?.value ?? CORE_SKILL_GROUP_LABEL,
     selectableGroups: true,
     groupSpacing: 1,
   };

@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_d91b5ff13c3a",
+  "tmuxSession": "opensaas-os-address-reload-sites-coderabbit-findings-d91b5ff1",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/address-reload-sites-coderabbit-findings",
+  "branch": "task/os/address-reload-sites-coderabbit-findings",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-address-reload-sites-coderabbit-findings",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-address-reload-sites-coderabbit-findings",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2248,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2248",
+  "createdAt": "2026-08-28T23:10:21.864Z",
+  "tmuxCreated": false,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-address-reload-sites-coderabbit-findings/.task/os/address-reload-sites-coderabbit-findings/session.json"
+}

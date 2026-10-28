@@ -1,0 +1,92 @@
+---
+title: CLI
+description: User-facing Consuelo OS lifecycle, update, channel, and skill-management commands.
+status: preview
+verifiedAt: 2026-08-26
+evidence:
+  - source: packages/os/scripts/lifecycle.ts
+    tests:
+      - packages/os/tests/lifecycle-help.test.ts
+      - packages/os/tests/lifecycle-engine.test.ts
+      - packages/os/tests/lifecycle-restart-contract.test.ts
+      - packages/os/tests/skill-selection-cli.test.ts
+    runtime: Root help, lifecycle handoff/restart, and skill-management command contracts were verified on 2026-08-15.
+---
+
+The installed user-facing command is `consuelo`.
+
+```bash
+consuelo help
+```
+
+Running `consuelo` without a command shows local OS status.
+
+## Commands
+
+| Command | Purpose |
+| --- | --- |
+| `consuelo status` | Show installation and runtime status. |
+| `consuelo install` | Install and configure Consuelo OS. |
+| `consuelo restart` | Restart Consuelo OS services. |
+| `consuelo update` | Check for or install OS updates. |
+| `consuelo repair` | Repair the current installation. |
+| `consuelo rollback` | Roll back to the previous verified release. |
+| `consuelo add skill` | Install bundled skills; opens a picker when no names are supplied. |
+| `consuelo remove skill` | Remove selected bundled skills; opens a picker when no names are supplied. |
+| `consuelo channel` | Show or change the release channel. |
+| `consuelo updates` | Manage update notification preferences. |
+| `consuelo uninstall` | Remove Consuelo OS from the machine. |
+| `consuelo dev` | Development and recovery commands. |
+
+## Skill management
+
+Interactive:
+
+```bash
+consuelo add skill
+consuelo remove skill
+```
+
+Direct:
+
+```bash
+consuelo add skill branch browser
+consuelo remove skill teach
+```
+
+See [Install a skill](/build/skills/install-a-skill/) for selection, materialization, and local-modification preservation behavior.
+
+## Update examples
+
+```bash
+consuelo update --check
+consuelo update --yes
+consuelo update --channel beta --check
+consuelo update --channel canary --version 1.2.3 --check
+```
+
+Available release channels are `stable`, `beta`, `canary`, `dev`, and `nightly`.
+
+`--version X.Y.Z` makes `update` require that exact signed runtime version instead of accepting whichever version the channel pointer currently exposes. Operator release automation uses this to ensure the machine that initiated a release is activated on the platform-specific runtime bundle selected from that exact signed release. The version check does not bypass channel signatures or downgrade policy.
+
+### Restart and update gateway reconciliation
+
+`consuelo restart` reconciles the local gateway from the currently active runtime before reloading services. On macOS, a completed restart also reloads installed local gateway sidecars such as the Cloudflare connector, node heartbeat, Caddy or Portless, watchdog, and availability service before health acceptance completes.
+
+`consuelo update` activates the verified candidate first, then runs gateway reconciliation and reload from that newly active runtime rather than from the older process that initiated the update. If the installed release is already current, a normal update still performs this service reconciliation instead of returning early; `consuelo update --check` remains read-only. This prevents an otherwise healthy OS process from continuing alongside stale gateway definitions.
+
+Private workspace pages depend on signed Workspace Edge headers surviving that local gateway hop. A lifecycle command now fails if the activated runtime cannot complete its gateway reconciliation instead of silently continuing with stale configuration.
+
+## Common options
+
+```text
+--json       Machine-readable output where the command supports it
+--quiet      Suppress human-readable output
+-h, --help   Print help
+```
+
+Command-specific options include update/channel flags, rollback/uninstall dry-run controls, and development reset confirmation. `consuelo help` is the authoritative compact command index for the installed version.
+
+## Agent runtime interface
+
+The OS package also contains lower-level agent/operator runtime entrypoints such as `scripts/os.ts`. Agents normally reach those capabilities through MCP and the typed OS facade rather than asking a user to run the Bun script directly. Treat the public `consuelo` command above as the user-facing lifecycle CLI.

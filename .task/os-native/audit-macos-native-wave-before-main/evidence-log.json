@@ -1,0 +1,424 @@
+{
+  "version": 1,
+  "worktree_id": "task/os-native/audit-macos-native-wave-before-main",
+  "events": [
+    {
+      "id": "24dd30c2-b0de-4b8b-a5d1-9ce0e65f2c6d",
+      "occurred_at": "2026-07-27T02:30:01.924Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/native/macos/Sources/ConsueloMenuBarApp/main.swift",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-native/audit-macos-native-wave-before-main",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-native/audit-macos-native-wave-before-main"
+      }
+    },
+    {
+      "id": "2706a7cf-bb7f-4b6d-a41c-5c4c11d000f8",
+      "occurred_at": "2026-07-27T02:30:01.956Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/distribution/runtime-bundle.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-native/audit-macos-native-wave-before-main",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-native/audit-macos-native-wave-before-main"
+      }
+    },
+    {
+      "id": "d1954eec-40df-4e2f-81d1-8b3022c3b9da",
+      "occurred_at": "2026-07-27T02:31:55.695Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/lifecycle/types.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-native/audit-macos-native-wave-before-main",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-native/audit-macos-native-wave-before-main"
+      }
+    },
+    {
+      "id": "ab28ca95-3225-468a-a454-99563856f28e",
+      "occurred_at": "2026-07-27T02:32:06.059Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/native/macos/Sources/ConsueloMacCore/UnixSocketLifecycleTransport.swift",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-native/audit-macos-native-wave-before-main",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-native/audit-macos-native-wave-before-main"
+      }
+    },
+    {
+      "id": "c65880f5-f7a5-4f1e-b84f-0cc0a86f6e88",
+      "occurred_at": "2026-07-27T02:32:12.223Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/lifecycle/engine.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-native/audit-macos-native-wave-before-main",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-native/audit-macos-native-wave-before-main"
+      }
+    },
+    {
+      "id": "98bc015c-31fd-4549-9180-d29924cca59c",
+      "occurred_at": "2026-07-27T02:33:50.877Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/cloudflare/os-device-authority/src/services/nodes.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-native/audit-macos-native-wave-before-main",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-native/audit-macos-native-wave-before-main"
+      }
+    },
+    {
+      "id": "e565d35f-355f-4e59-8c02-74d681caa9b6",
+      "occurred_at": "2026-07-27T02:34:36.748Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/native-lifecycle-client.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-native/audit-macos-native-wave-before-main",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-native/audit-macos-native-wave-before-main"
+      }
+    },
+    {
+      "id": "a4e9a7ad-f701-45c3-9caa-c4176ed65b35",
+      "occurred_at": "2026-07-27T02:36:01.521Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/native-lifecycle-endpoint.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-native/audit-macos-native-wave-before-main",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-native/audit-macos-native-wave-before-main"
+      }
+    },
+    {
+      "id": "f70b1527-dc3b-4fb5-81a7-a4211a82c240",
+      "occurred_at": "2026-07-27T02:36:56.129Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/package-macos-alpha.sh",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-native/audit-macos-native-wave-before-main",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-native/audit-macos-native-wave-before-main"
+      }
+    },
+    {
+      "id": "b8b81607-5502-4639-93da-4c07da54a044",
+      "occurred_at": "2026-07-27T02:37:04.783Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/native/macos/Package.swift",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-native/audit-macos-native-wave-before-main",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-native/audit-macos-native-wave-before-main"
+      }
+    },
+    {
+      "id": "f297542a-f59e-46ae-8a86-c47757ef8206",
+      "occurred_at": "2026-07-27T02:37:13.689Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/testing/macos-alpha-package.sh",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-native/audit-macos-native-wave-before-main",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-native/audit-macos-native-wave-before-main"
+      }
+    },
+    {
+      "id": "72f6ec59-d4c1-4371-9e2c-9a7663e92c91",
+      "occurred_at": "2026-07-27T02:38:08.247Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/macos-platform.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-native/audit-macos-native-wave-before-main",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-native/audit-macos-native-wave-before-main"
+      }
+    },
+    {
+      "id": "a75ecc34-8af4-475c-bbf0-c496662b0758",
+      "occurred_at": "2026-07-27T02:41:10.575Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/server/main.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-native/audit-macos-native-wave-before-main",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-native/audit-macos-native-wave-before-main"
+      }
+    },
+    {
+      "id": "c94f7edb-b536-4552-aaa8-ff8a9cc85063",
+      "occurred_at": "2026-07-27T02:42:34.031Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/server/main.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-native/audit-macos-native-wave-before-main",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-native/audit-macos-native-wave-before-main"
+      }
+    },
+    {
+      "id": "5902c7b2-063a-493d-b1d8-86fc9c5ad6cf",
+      "occurred_at": "2026-07-27T02:43:59.462Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/native-lifecycle-client.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-native/audit-macos-native-wave-before-main",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-native/audit-macos-native-wave-before-main"
+      }
+    },
+    {
+      "id": "948ff089-f5ac-4b7e-acfd-f888fd9f005c",
+      "occurred_at": "2026-07-27T02:44:05.776Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/native/macos/Sources/ConsueloMacCore/LifecycleModels.swift",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-native/audit-macos-native-wave-before-main",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-native/audit-macos-native-wave-before-main"
+      }
+    },
+    {
+      "id": "13feecf1-85c4-410c-8792-df0b12966689",
+      "occurred_at": "2026-07-27T02:44:10.615Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/native/macos/Sources/ConsueloMacCore/LifecycleModels.swift",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-native/audit-macos-native-wave-before-main",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-native/audit-macos-native-wave-before-main"
+      }
+    },
+    {
+      "id": "5d4ff6ac-593e-4694-8a29-741320471750",
+      "occurred_at": "2026-07-27T02:44:15.221Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/native/macos/Sources/ConsueloMacCore/LifecycleClient.swift",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-native/audit-macos-native-wave-before-main",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-native/audit-macos-native-wave-before-main"
+      }
+    },
+    {
+      "id": "14a51b72-4238-4431-9e60-1ad198bd0292",
+      "occurred_at": "2026-07-27T02:44:26.377Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/native/macos/Sources/ConsueloMacCore/UnixSocketLifecycleTransport.swift",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-native/audit-macos-native-wave-before-main",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-native/audit-macos-native-wave-before-main"
+      }
+    },
+    {
+      "id": "553f2a48-d452-4004-9716-a9ae15c8a41d",
+      "occurred_at": "2026-07-27T02:44:39.467Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/native-lifecycle-client.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-native/audit-macos-native-wave-before-main",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-native/audit-macos-native-wave-before-main"
+      }
+    },
+    {
+      "id": "754d1f8d-0bb1-4a25-983e-0c0b8ecb5d02",
+      "occurred_at": "2026-07-27T02:45:03.547Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/native-lifecycle-endpoint.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-native/audit-macos-native-wave-before-main",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-native/audit-macos-native-wave-before-main"
+      }
+    },
+    {
+      "id": "1e3c8b85-620b-47cb-aa18-78554ddca5ca",
+      "occurred_at": "2026-07-27T02:45:07.372Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/native-lifecycle-endpoint.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-native/audit-macos-native-wave-before-main",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-native/audit-macos-native-wave-before-main"
+      }
+    },
+    {
+      "id": "fc23de3a-5fb2-4c08-afe7-a9cc32c85be9",
+      "occurred_at": "2026-07-27T02:46:49.892Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/lifecycle/diagnostics.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-native/audit-macos-native-wave-before-main",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-native/audit-macos-native-wave-before-main"
+      }
+    },
+    {
+      "id": "3a28620b-7251-41c0-8b0b-05da29794636",
+      "occurred_at": "2026-07-27T02:46:56.788Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/native/macos/Sources/ConsueloMacCore/Safety.swift",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-native/audit-macos-native-wave-before-main",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-native/audit-macos-native-wave-before-main"
+      }
+    },
+    {
+      "id": "5100d9fb-9480-444b-9cc9-a7546e0ed4f6",
+      "occurred_at": "2026-07-27T02:47:20.507Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/native-lifecycle-endpoint.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-native/audit-macos-native-wave-before-main",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-native/audit-macos-native-wave-before-main"
+      }
+    },
+    {
+      "id": "3b686456-2309-4554-b788-076f60582753",
+      "occurred_at": "2026-07-27T02:49:59.215Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os-native/audit-macos-native-wave-before-main/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-native/audit-macos-native-wave-before-main",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-native/audit-macos-native-wave-before-main"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-07-27T02:49:59.272Z"
+}

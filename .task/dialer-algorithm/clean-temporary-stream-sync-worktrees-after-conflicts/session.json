@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_cb53b40bc194",
+  "tmuxSession": "opensaas-dialer-algorithm-clean-temporary-stream-sync-worktrees-after-conf-cb53b40b",
+  "area": "dialer-algorithm",
+  "stream": "stream/dialer-algorithm",
+  "taskBranch": "task/dialer-algorithm/clean-temporary-stream-sync-worktrees-after-conflicts",
+  "branch": "task/dialer-algorithm/clean-temporary-stream-sync-worktrees-after-conflicts",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-clean-temporary-stream-sync-worktrees-after-conflicts",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-clean-temporary-stream-sync-worktrees-after-conflicts",
+  "prNumber": 2101,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2101",
+  "createdAt": "2026-08-16T02:40:19.259Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-algorithm-clean-temporary-stream-sync-worktrees-after-conflicts/.task/dialer-algorithm/clean-temporary-stream-sync-worktrees-after-conflicts/session.json"
+}

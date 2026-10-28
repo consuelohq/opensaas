@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_a533c1b7958f",
+  "tmuxSession": "opensaas-workspace-agents-implement-pricing-route-a533c1b7",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/implement-pricing-route",
+  "branch": "task/workspace-agents/implement-pricing-route",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-implement-pricing-route",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-implement-pricing-route",
+  "prNumber": 1380,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1380",
+  "createdAt": "2026-07-08T23:39:09.038Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-implement-pricing-route/.task/workspace-agents/implement-pricing-route/session.json"
+}

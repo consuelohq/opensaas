@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_e5c87ee85d31",
+  "tmuxSession": "opensaas-os-managed-cloud-pricing-and-plans-e5c87ee8",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/managed-cloud-pricing-and-plans",
+  "branch": "task/os/managed-cloud-pricing-and-plans",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-managed-cloud-pricing-and-plans",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-managed-cloud-pricing-and-plans",
+  "prNumber": 1877,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1877",
+  "createdAt": "2026-08-12T03:51:08.599Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-managed-cloud-pricing-and-plans/.task/os/managed-cloud-pricing-and-plans/session.json"
+}

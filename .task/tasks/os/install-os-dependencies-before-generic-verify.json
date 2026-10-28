@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/install-os-dependencies-before-generic-verify",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1967,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1967",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1967",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1967/install-os-dependencies-before-generic-verify",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1967",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1967/install-os-dependencies-before-generic-verify",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-install-os-dependencies-before-generic-verify",
+  "taskSession": "tsk_3d5a6ebeb9eb",
+  "tmuxSession": "opensaas-os-install-os-dependencies-before-generic-verify-3d5a6ebe",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-install-os-dependencies-before-generic-verify/.task/os/install-os-dependencies-before-generic-verify/session.json",
+  "createdAt": "2026-08-14T20:33:15.805Z"
+}

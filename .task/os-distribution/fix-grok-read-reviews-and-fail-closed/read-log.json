@@ -1,0 +1,12 @@
+{
+  "files": [
+    ".task/os-distribution/fix-grok-read-reviews-and-fail-closed/verify.json",
+    "packages/os/.tmp-reviews/pr-1554/grok-prompt.md",
+    "packages/os/.tmp-reviews/read-policy-smoke/grok-prompt.md",
+    "packages/os/plans/consuelo-os-foundation/environment-registry.md",
+    "packages/os/plans/consuelo-os-foundation/workers/validate-plan.ts",
+    "packages/os/scripts/lib/subagent/runtime.ts",
+    "packages/os/tests/subagent-executable-discovery.test.ts"
+  ],
+  "updatedAt": "2026-07-22T19:29:41.063Z"
+}

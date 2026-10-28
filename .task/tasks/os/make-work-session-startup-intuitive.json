@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/make-work-session-startup-intuitive",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2492,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2492",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-make-work-session-startup-intuitive",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_afad0d8eb319",
+  "tmuxSession": "opensaas-os-make-work-session-startup-intuitive-afad0d8e",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-make-work-session-startup-intuitive/.task/session.json",
+  "createdAt": "2026-09-21T02:27:58.706Z"
+}

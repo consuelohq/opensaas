@@ -1,0 +1,19 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/thin-twenty-adapters",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 1599,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1599",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1599",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1599/thin-twenty-adapters",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1599",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1599/thin-twenty-adapters",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-thin-twenty-adapters",
+  "taskSession": "tsk_12e44ebfc7d8",
+  "tmuxSession": "opensaas-dialer-thin-twenty-adapters-12e44ebf",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-thin-twenty-adapters/.task/dialer/thin-twenty-adapters/session.json",
+  "createdAt": "2026-07-23T19:14:18.617Z"
+}

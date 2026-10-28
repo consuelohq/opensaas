@@ -1,0 +1,301 @@
+---
+import { homeFeaturePreviewItems } from '../../data/home-content';
+import CloudField from '../visuals/CloudField.astro';
+import FeatureEvidenceFigure from './FeatureEvidenceFigure.astro';
+import HomeFaq from './HomeFaq.astro';
+import PreviewNotice from './PreviewNotice.astro';
+
+type Props = {
+  sectionId?: string;
+};
+
+const { sectionId = 'features' } = Astro.props as Props;
+---
+
+<section class="product-panel" id={sectionId} data-section="features">
+  <div class="product-panel__paper">
+    <div class="product-panel__preview">
+      <CloudField variant="preview" />
+      <PreviewNotice />
+    </div>
+
+    <div class="product-panel__identity">
+      <img src="/images/home/consuelo-mark.svg" alt="" width="58" height="58" />
+      <p>CONSUELO OS</p>
+      <a href="https://os.consuelohq.com">MEMBER? SIGN IN</a>
+    </div>
+
+    <div class="product-panel__features">
+      <h2>FEATURES</h2>
+
+      <div class="product-story" data-feature-story>
+        {
+          homeFeaturePreviewItems.map((item) => (
+            <article
+              class:list={['product-story__chapter', { 'product-story__chapter--demo': Boolean(item.evidence), 'product-story__chapter--summary': !item.evidence }]}
+              data-feature-chapter={item.label.toLowerCase()}
+            >
+              {
+                item.evidence && item.assetSrc && item.imageAlt && (
+                  <div class="product-story__visual">
+                    <FeatureEvidenceFigure
+                      imageSrc={item.assetSrc}
+                      imageAlt={item.imageAlt}
+                      evidence={item.evidence}
+                    />
+                  </div>
+                )
+              }
+              <div class="product-story__copy">
+                <p class="product-panel__index">
+                  <span class="product-panel__index-number">#{item.number}</span>{' '}
+                  <span class="product-panel__index-label">{item.label}</span>
+                </p>
+                <h3>{item.title.split('\n').map((line) => <span>{line}</span>)}</h3>
+                <p class="product-panel__description">{item.body}</p>
+                <div class="product-story__actions">
+                  <a class="site-button site-button--editorial" href={item.ctaHref}>
+                    {item.ctaLabel}
+                    <svg viewBox="0 0 6 9" fill="currentColor" aria-hidden="true">
+                      <rect x="0" y="0" width="1" height="9" />
+                      <rect x="1" y="1" width="1" height="1" />
+                      <rect x="2" y="2" width="1" height="1" />
+                      <rect x="3" y="3" width="1" height="1" />
+                      <rect x="4" y="4" width="1" height="1" />
+                      <rect x="3" y="5" width="1" height="1" />
+                      <rect x="2" y="6" width="1" height="1" />
+                      <rect x="1" y="7" width="1" height="1" />
+                    </svg>
+                  </a>
+                </div>
+              </div>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+
+    <HomeFaq />
+  </div>
+</section>
+
+<style>
+  .product-panel {
+    position: relative;
+    z-index: 3;
+    background: var(--site-color-brand);
+    margin-top: var(--site-sticky-sliver);
+    padding: var(--site-sticky-sliver) var(--site-frame-inset) var(--site-frame-inset);
+  }
+
+  .product-panel__paper {
+    background: white;
+    color: var(--site-color-brand);
+  }
+
+  .product-panel__preview {
+    position: relative;
+    isolation: isolate;
+    height: clamp(11rem, 24vw, 22rem);
+    overflow: hidden;
+    background: var(--site-color-brand);
+    border: clamp(0.45rem, 1.1vw, 0.85rem) solid white;
+    border-bottom-width: 0;
+  }
+
+  .product-panel__preview::after {
+    position: absolute;
+    z-index: 0;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(0, 0, 242, 0.06), rgba(0, 0, 242, 0.32));
+    content: '';
+    pointer-events: none;
+  }
+
+  .product-panel__preview :global(.preview-notice) {
+    position: relative;
+    z-index: 3;
+  }
+
+  .product-panel__identity {
+    display: grid;
+    justify-items: center;
+    gap: 0.7rem;
+    padding: clamp(2.75rem, 6vw, 5rem) 1rem clamp(2.5rem, 5vw, 4.5rem);
+    text-align: center;
+  }
+
+  .product-panel__identity img {
+    width: 3.6rem;
+    height: 3.6rem;
+    border: 1px solid var(--site-color-brand);
+    object-fit: contain;
+  }
+
+  .product-panel__identity p {
+    margin: 0;
+    font-family: var(--site-font-display);
+    font-size: clamp(1.45rem, 2.4vw, 2rem);
+    line-height: 1;
+  }
+
+  .product-panel__identity a {
+    border: 1px solid var(--site-color-brand);
+    padding: 0.28rem 0.55rem;
+    font: 650 0.62rem/1 var(--site-font-mono);
+    letter-spacing: 0.08em;
+    text-decoration: none;
+  }
+
+  .product-panel__features {
+    padding: 0 clamp(1rem, 4.7vw, 5rem);
+  }
+
+  .product-panel__features > h2 {
+    margin: clamp(2.5rem, 5vw, 4rem) 0 clamp(3rem, 6vw, 5.5rem);
+    color: var(--site-color-brand);
+    font-family: var(--site-font-display);
+    font-size: clamp(6rem, 15vw, 14rem);
+    font-weight: 430;
+    letter-spacing: 0;
+    line-height: 0.72;
+    text-align: center;
+  }
+
+  .product-story {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: var(--site-space-8);
+  }
+
+  .product-story__chapter {
+    min-width: 0;
+    padding-block: var(--site-space-7) var(--site-space-section);
+  }
+
+  .product-story__chapter--demo {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.9fr);
+    align-items: center;
+    gap: var(--site-space-7);
+  }
+
+  .product-story__chapter--summary {
+    display: grid;
+    grid-template-rows: subgrid;
+    grid-row: span 4;
+  }
+
+  .product-story__chapter--summary .product-story__copy {
+    display: contents;
+  }
+
+  .product-story__visual {
+    position: static;
+    min-width: 0;
+  }
+
+  .product-story__copy {
+    align-self: center;
+    min-width: 0;
+  }
+
+  .product-story__actions {
+    margin-top: var(--site-space-5);
+  }
+
+  .product-story__actions svg {
+    width: var(--site-space-3);
+    height: var(--site-space-4);
+    shape-rendering: crispEdges;
+  }
+
+  .product-panel__index {
+    margin: 0 0 1rem;
+    font: 620 0.63rem/1 var(--site-font-mono);
+    letter-spacing: 0.15em;
+  }
+
+  .product-panel__index-label {
+    color: var(--site-color-art-muted);
+  }
+
+  .product-story__copy h3 {
+    margin: 0 0 clamp(1.25rem, 2.4vw, 2rem);
+    color: var(--site-color-brand);
+    font-family: var(--site-font-display);
+    font-size: clamp(2.25rem, 2.8vw, 3.5rem);
+    font-weight: 440;
+    letter-spacing: 0;
+    line-height: var(--site-leading-tight);
+  }
+
+  .product-story__copy h3 span {
+    display: block;
+  }
+
+  .product-panel__description {
+    max-width: 29rem;
+    margin: 0;
+    color: var(--site-color-brand);
+    font: 400 var(--site-text-md)/var(--site-leading-body) var(--site-font-body);
+    text-wrap: pretty;
+  }
+
+  @media (max-width: 1100px) {
+    .product-story__chapter--demo {
+      grid-template-columns: 1fr;
+      gap: var(--site-space-6);
+    }
+
+    .product-story__chapter--demo .product-story__copy {
+      order: 1;
+    }
+
+    .product-story__visual {
+      order: 2;
+    }
+
+    .product-story__copy h3 {
+      font-size: var(--site-text-3xl);
+    }
+  }
+
+  @media (max-width: 760px) {
+    .product-panel__preview {
+      height: 10.5rem;
+    }
+
+    .product-panel__identity {
+      padding: 2.4rem 1rem 3rem;
+    }
+
+    .product-panel__features {
+      padding-inline: 1.25rem;
+    }
+
+    .product-panel__features > h2 {
+      margin: 2rem 0 3rem;
+      font-size: clamp(3.25rem, 15vw, 4rem);
+      line-height: 0.8;
+    }
+
+    .product-story {
+      grid-template-columns: 1fr;
+      column-gap: 0;
+    }
+
+    .product-story__chapter {
+      padding-block: var(--site-space-6) var(--site-space-7);
+    }
+
+    .product-story__chapter--demo {
+      grid-column: auto;
+    }
+
+    .product-story__copy h3 {
+      font-size: var(--site-text-3xl);
+    }
+  }
+</style>

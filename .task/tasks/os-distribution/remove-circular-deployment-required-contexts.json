@@ -1,0 +1,19 @@
+{
+  "area": "os-distribution",
+  "stream": "stream/os-distribution",
+  "taskBranch": "task/os-distribution/remove-circular-deployment-required-contexts",
+  "baseBranch": "stream/os-distribution",
+  "sourceBranch": "stream/os-distribution",
+  "startFrom": "stream",
+  "prNumber": 1638,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1638",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1638",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1638/remove-circular-deployment-required-contexts",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1638",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1638/remove-circular-deployment-required-contexts",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-remove-circular-deployment-required-contexts",
+  "taskSession": "tsk_03ccb973a50d",
+  "tmuxSession": "opensaas-os-distribution-remove-circular-deployment-required-contexts-03ccb973",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-remove-circular-deployment-required-contexts/.task/os-distribution/remove-circular-deployment-required-contexts/session.json",
+  "createdAt": "2026-07-24T15:05:13.600Z"
+}

@@ -1,0 +1,95 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/finish-wide-ipad-diffs-and-review-markdown-polish",
+  "base": "origin/stream/os",
+  "headSha": "3fc97f454a96c99cb70540bad4683c3641952984",
+  "changeHash": "c0112d5878bbe245ea1ce55980bf12d450f977374f1d739bdba262eb33dffed5",
+  "changedFiles": [
+    "packages/diff-cockpit/src/index.ts",
+    "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+  ],
+  "verifiedAt": "2026-09-21T17:04:41.791Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/finish-wide-ipad-diffs-and-review-markdown-polish/evidence-log.json",
+        ".task/os/finish-wide-ipad-diffs-and-review-markdown-polish/read-log.json",
+        ".task/os/finish-wide-ipad-diffs-and-review-markdown-polish/workpad.md",
+        ".task/tasks/os/finish-wide-ipad-diffs-and-review-markdown-polish.json",
+        "packages/diff-cockpit/src/index.ts",
+        "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "auto:@consuelo/diff-cockpit:package-test",
+          "critical": false,
+          "reason": "Auto-discovered package test script for packages/diff-cockpit.",
+          "matchedFiles": [
+            "packages/diff-cockpit/src/index.ts",
+            "packages/diff-cockpit/tests/diff-cockpit.test.ts"
+          ],
+          "origin": "auto"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "@consuelo/diff-cockpit package test",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/diff-cockpit",
+            "test"
+          ],
+          "ruleId": "auto:@consuelo/diff-cockpit:package-test",
+          "critical": false
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "@consuelo/diff-cockpit package test",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/diff-cockpit",
+            "test"
+          ],
+          "cwd": ".",
+          "ruleId": "auto:@consuelo/diff-cockpit:package-test",
+          "critical": false,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 48,
+          "outputTail": "(pass) review page progressive hydration > retries transient auth handoff failures and batches long diff rendering [0.44ms]\n(pass) standalone Diffs retirement > removes the standalone Worker and automatic KV cache warmers while preserving hostname safety [0.80ms]\n(pass) normalizeReviewItems > keeps GitHub review thread resolution as source of truth for AI comments [0.38ms]\n(pass) createGithubCodeBrowserLoader > loads the packages tree with latest commit metadata and commit count [0.73ms]\n(pass) createGithubCodeBrowserLoader > renders markdown file contents when the selected file is markdown [0.44ms]\n(pass) createGithubCodeHistoryLoader > loads path history and builds commit tree links [0.19ms]\n(pass) createGithubPullRequestIndexLoader > fetches all PR states and enriches homepage metadata [0.56ms]\n(pass) createGithubPullRequestLoader > fetches live GitHub PR metadata, files, review comments, and commits [0.72ms]\n(pass) createGithubPullRequestLoader > throws a clear error when GitHub PR metadata fails [0.11ms]\n(pass) createGithubPullRequestLoader > skips stream commits for non-stream branches [0.13ms]\n(pass) createGithubPullRequestLoader > handles empty file, comment, and review arrays [0.08ms]\n(pass) buildFileTree > groups files by path segment and preserves file metadata [0.07ms]\n(pass) createGithubPullRequestIndexLoader GraphQL mergeability > loads all PRs with mergeability in paginated GraphQL requests when token is available [0.32ms]\n(pass) pull request index grouping > derives stream ownership from stream and task branches [0.02ms]\n(pass) pull request index grouping > groups pull requests into collapsible sections and filters by stream [0.16ms]\n(pass) pull request index grouping > streams section shows open streams by default and all streams when toggled [0.05ms]\n(pass) pull request index grouping > scores dotted fuzzy PR search across PR fields [0.21ms]\n(pass) renderCodeBrowserPage > renders the main packages browser shell and history shell [0.41ms]\n(pass) renderIndexPage > renders a Graphite-like PR inbox with command search and load-more sections [1.28ms]\n(pass) renderIndexPage > keeps mounted PR navigation inside the configured Diffs path [0.10ms]\n(pass) renderReviewPage > renders one responsive review surface with readable comments and native page controls [3.06ms]\n(pass) createWorker > updates GitHub review threads through the review thread API endpoint [0.79ms]\n(pass) createWorker > invalidates PR cache for resolved GitHub review-thread webhooks [0.66ms]\n(pass) createWorker > does not silently default the standalone homepage to OpenSaaS [0.08ms]\n(pass) createWorker > routes the standalone homepage to the configured repository shell [0.26ms]\n(pass) createWorker > hydrates PR pages from shared API cache when available [0.38ms]\n(pass) createWorker > keeps the PR loading shell when shared API cache misses [0.15ms]\n(pass) createWorker > merges a pull request through the merge API endpoint [0.18ms]\n(pass) createWorker > routes code browser pages and APIs for main packages and history [0.52ms]\n(pass) createWorker > refresh endpoint uses waitUntil so cron does not block on slow cache warming [1.10ms]\n(pass) createWorker > server-renders warmed inbox and PR pages from shared API cache [0.59ms]\n(pass) createWorker > refresh stores homepage snapshots in durable shared storage for cross-device first paint [0.49ms]\n(pass) createWorker > refresh endpoint protects and prewarms homepage and PR API cache entries [0.66ms]\n(pass) createWorker > returns homepage API shared cache headers and 304 for unchanged ETags [0.23ms]\n(pass) createWorker > prewarms a bounded hot PR set from the homepage snapshot when no explicit pulls are provided [1.42ms]\n(pass) createWorker > uses strict shared cache headers for open PR details and long cache headers for inactive PR details [0.24ms]\n(pass) createWorker > returns PR API cache headers and 304 for unchanged ETags [0.21ms]\n\n 42 pass\n 0 fail\n 434 expect() calls\nRan 42 tests across 1 file. [31.00ms]\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_a63bba200c22",
+  "tmuxSession": "opensaas-dialer-add-hono-bun-server-a63bba20",
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/add-hono-bun-server",
+  "branch": "task/dialer/add-hono-bun-server",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-add-hono-bun-server",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-add-hono-bun-server",
+  "prNumber": 1608,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1608",
+  "createdAt": "2026-07-23T23:20:58.384Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-add-hono-bun-server/.task/dialer/add-hono-bun-server/session.json"
+}

@@ -2,6 +2,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { applyManifestOverlay, readManifestOverlay } from './manifest-overlay';
+import {
+  readRuntimeToolManifestEntries,
+  type RuntimeToolRegistryOptions,
+} from './runtime-tool-registry';
 import type { OsManifestEntry } from './types';
 
 type JsonObject = Record<string, unknown>;
@@ -20,8 +25,8 @@ type CanonicalToolManifest = {
 
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
 const packageRoot = path.resolve(currentDir, '..', '..');
-const fullManifestPath = path.join(packageRoot, 'manifests', 'tool.manifest.json');
-const coreManifestPath = path.join(packageRoot, 'manifests', 'core.manifest.json');
+const fullManifestPath = path.join(packageRoot, 'manifests', 'generated', 'tool.manifest.json');
+const coreManifestPath = path.join(packageRoot, 'manifests', 'generated', 'core.manifest.json');
 
 function isObject(value: unknown): value is JsonObject {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -61,8 +66,36 @@ export function readCoreToolManifest(): CanonicalToolManifest {
   return readToolManifest(coreManifestPath);
 }
 
-export function readManifest(): OsManifestEntry[] {
-  return readFullToolManifest().tools
+export function readEffectiveBundledFullManifest(home?: string): CanonicalToolManifest {
+  return applyManifestOverlay(readFullToolManifest(), readManifestOverlay(home));
+}
+
+export function readEffectiveFullManifest(
+  home?: string,
+  runtimeOptions: Omit<RuntimeToolRegistryOptions, 'home'> = {},
+): CanonicalToolManifest {
+  const bundled = readFullToolManifest();
+  const bundledNames = new Set(bundled.tools.map((entry) => entry.name));
+  const runtimeTools = readRuntimeToolManifestEntries({
+    ...runtimeOptions,
+    home,
+  }).filter((entry) => !bundledNames.has(entry.name));
+  const merged: CanonicalToolManifest = {
+    ...bundled,
+    tools: [
+      ...bundled.tools,
+      ...(runtimeTools as unknown as CanonicalManifestEntry[]),
+    ],
+  };
+  return applyManifestOverlay(merged, readManifestOverlay(home));
+}
+
+export function readEffectiveCoreManifest(home?: string): CanonicalToolManifest {
+  return applyManifestOverlay(readCoreToolManifest(), readManifestOverlay(home));
+}
+
+export function readManifest(home?: string): OsManifestEntry[] {
+  return readEffectiveFullManifest(home).tools
     .filter((entry) => entry.kind === 'os-skill')
     .map((entry) => {
       if (!isOsManifestEntry(entry.definition)) {
@@ -73,8 +106,8 @@ export function readManifest(): OsManifestEntry[] {
     });
 }
 
-export function findManifestEntry(name: string): OsManifestEntry | null {
-  return readManifest().find((entry) => entry.name === name) ?? null;
+export function findManifestEntry(name: string, home?: string): OsManifestEntry | null {
+  return readManifest(home).find((entry) => entry.name === name) ?? null;
 }
 
 export function getPackageRoot(): string {

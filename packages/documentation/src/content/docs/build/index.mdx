@@ -1,0 +1,46 @@
+---
+title: Workspace capabilities
+description: Legacy entry point for the callable tools, reusable skills, steering, workflows, memory, artifacts, and approvals in Consuelo OS.
+status: preview
+verifiedAt: 2026-08-11
+evidence:
+  - source: packages/os/manifests/generated/tool.manifest.json
+    tests:
+      - packages/os/tests/tool-manifest.test.ts
+    runtime: The current generated tool surface was inspected on 2026-08-11.
+  - source: packages/os/skills/skills.json
+    tests:
+      - packages/os/tests/skill-migration.test.ts
+    runtime: The current skill registry was inspected on 2026-08-11.
+  - source: packages/os/scripts/lib/streams/context-runtime.ts
+    tests:
+      - packages/os/tests/stream-service.test.ts
+    runtime: Current stream continuity behavior was inspected on 2026-08-11.
+---
+
+This URL is kept for compatibility. The documentation is now organized by the capability an agent needs instead of one catch-all section.
+
+## Choose a section
+
+- [Tools](/tools/) covers callable operations, discovery, workflows, and sites.
+- [Skills](/skills/) covers reusable operating guidance and capability packages.
+- [Steering](/steering/) covers the instructions loaded before work begins.
+- [Memory](/memory/) covers workpads, handoffs, streams, saved memory, and durable files.
+- [Secure](/secure/) covers approvals, credentials, permissions, and network boundaries.
+- [Observe](/observe/) covers traces, tool calls, artifacts, logs, and debugging.
+
+## How the pieces fit
+
+A tool performs one typed operation. A skill teaches an agent how to combine operations for a kind of work. Steering says how the workspace should be operated. Memory carries state that another agent may need later. Workflows coordinate repeated multi-step work, while Secure and Observe define the execution boundaries and the evidence left behind.
+
+A normal agent path is still:
+
+```text
+get_steering
+  → discover a tool or load a skill
+  → call typed tools
+  → produce files or artifacts
+  → inspect the trace
+```
+
+Use the top-level sections above for current documentation. Existing `/build/...` detail URLs remain available so links and in-flight documentation work do not break during the information-architecture change.

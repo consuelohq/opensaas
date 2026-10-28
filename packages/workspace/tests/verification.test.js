@@ -85,3 +85,113 @@ test('partial or skipped gates are rejected', () => {
   writeVerifyStamp(repoRoot, validStamp(repoRoot, { db: { skipped: false, passed: true, warnOnly: true, risks: [], findings: [] } }));
   expect(getVerifyStampMismatch(repoRoot, 'main')).toContain('db');
 });
+
+test('verify human output identifies failed registry suites', () => {
+  const source = fs.readFileSync(
+    path.resolve(path.dirname(new URL(import.meta.url).pathname), '../scripts/verify.js'),
+    'utf8',
+  );
+  expect(source).toContain('registry failure:');
+  expect(source).toContain('selection.failedSuites');
+  expect(source).toContain('failure.outputTail');
+  expect(source).toContain('compactRegistryFailureOutput');
+  expect(source).toContain('registry runner failure:');
+  expect(source).toContain('result.testSelection.error');
+});
+
+
+test('verify single-flights identical full-gate executions', () => {
+  const verifySource = fs.readFileSync(
+    path.resolve('packages/workspace/scripts/verify.js'),
+    'utf8',
+  );
+  expect(verifySource).toContain("require('./lib/verify-run-state')");
+  expect(verifySource).toContain('makeVerifyRunIdentity({');
+  expect(verifySource).toContain("verifyRun.mode === 'replay'");
+  expect(verifySource).toContain('finishVerifyRun(verifyRun');
+  expect(verifySource).toContain('abortVerifyRun(');
+});
+
+test('agent JSON verify uses a detached resumable boundary instead of owning the long gate', () => {
+  const verifySource = fs.readFileSync(
+    path.resolve('packages/workspace/scripts/verify.js'),
+    'utf8',
+  );
+
+  expect(verifySource).toContain("verifyRun.mode === 'launch'");
+  expect(verifySource).toContain("verifyRun.mode === 'pending'");
+  expect(verifySource).toContain("'--foreground'");
+  expect(verifySource).toContain('detached: true');
+  expect(verifySource).toContain('child.unref()');
+  expect(verifySource).toContain('VERIFY_PENDING');
+});
+
+test('synchronous verify consumers opt into foreground completion', () => {
+  for (const relativePath of [
+    'packages/workspace/scripts/stream-sync.js',
+    'packages/os/scripts/stream-sync.js',
+    'packages/workspace/scripts/confirm.js',
+    'packages/os/scripts/confirm.js',
+  ]) {
+    const source = fs.readFileSync(path.resolve(relativePath), 'utf8');
+    expect(source, relativePath).toContain("'--foreground'");
+  }
+});
+
+test('synchronous verify boundaries fail closed when an identical run is still pending', () => {
+  for (const relativePath of [
+    'packages/workspace/scripts/verify.js',
+    'packages/os/scripts/verify.js',
+  ]) {
+    const source = fs.readFileSync(path.resolve(relativePath), 'utf8');
+    expect(source, relativePath).toContain("if (args.foreground) process.exitCode = 1;");
+  }
+
+  for (const relativePath of [
+    'packages/workspace/scripts/confirm.js',
+    'packages/os/scripts/confirm.js',
+  ]) {
+    const source = fs.readFileSync(path.resolve(relativePath), 'utf8');
+    expect(source, relativePath).toContain("data.pending !== true");
+    expect(source, relativePath).toContain("data.status !== 'VERIFY_PENDING'");
+    expect(source, relativePath).toContain("data.passed === true");
+  }
+
+  for (const relativePath of [
+    'packages/workspace/scripts/stream-sync.js',
+    'packages/os/scripts/stream-sync.js',
+  ]) {
+    const source = fs.readFileSync(path.resolve(relativePath), 'utf8');
+    expect(source, relativePath).toContain("data?.pending !== true");
+    expect(source, relativePath).toContain("data?.status !== 'VERIFY_PENDING'");
+    expect(source, relativePath).toContain("data?.passed === true");
+  }
+});
+
+test('verify keeps review semantic-only because selected suites own test execution', () => {
+  const verifySource = fs.readFileSync(
+    path.resolve('packages/workspace/scripts/verify.js'),
+    'utf8',
+  );
+  const runTestSelectionSource = verifySource.slice(
+    verifySource.indexOf('function runTestSelection'),
+    verifySource.indexOf('function createDbResult'),
+  );
+
+  expect(verifySource).toContain(
+    "'--summary-json', '--quiet', '--no-tests', ...args.reviewArgs",
+  );
+  expect(verifySource).toContain(
+    "const selectionArgs = ['packages/workspace/scripts/test-selection.js', 'check', '--base', base];",
+  );
+  expect(runTestSelectionSource).toContain('selectionResultPath');
+  expect(runTestSelectionSource).toContain(
+    "selectionArgs.push('--run', '--json', '--out', selectionResultPath);",
+  );
+  expect(runTestSelectionSource).toContain(
+    "JSON.parse(fs.readFileSync(selectionResultPath, 'utf8'))",
+  );
+  expect(runTestSelectionSource).toContain(
+    'maxBuffer: TEST_SELECTION_OUTPUT_MAX_BUFFER',
+  );
+});

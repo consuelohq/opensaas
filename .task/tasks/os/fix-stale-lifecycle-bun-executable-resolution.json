@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-stale-lifecycle-bun-executable-resolution",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2413,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2413",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-stale-lifecycle-bun-executable-resolution",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_8e2103649025",
+  "tmuxSession": "opensaas-os-fix-stale-lifecycle-bun-executable-resolution-8e210364",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-stale-lifecycle-bun-executable-resolution/.task/session.json",
+  "createdAt": "2026-09-08T14:39:01.238Z"
+}

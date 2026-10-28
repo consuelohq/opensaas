@@ -1,5 +1,13 @@
-import { describe, expect, test } from 'vitest';
+import { describe, expect, test, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
+
+import {
+  attemptWorkspaceDeviceLogin,
+  completeWorkspaceDeviceSelection,
+  registerInstallerDiagnosticsLifecycleHooks,
+  syncVerifiedAgentsAfterInstall,
+} from './install';
+import type { InstallDiagnostics } from './lib/install-diagnostics';
 
 const install = readFileSync(new URL('./install.ts', import.meta.url), 'utf8');
 const bootstrap = readFileSync(new URL('./bootstrap.sh', import.meta.url), 'utf8');
@@ -12,11 +20,38 @@ const daemonGenerator = readFileSync(
   'utf8',
 );
 
+type RecordedInstallerStep = {
+  step: string;
+  status: string;
+  data?: Record<string, unknown>;
+};
+
+function createMockDiagnostics() {
+  const steps: RecordedInstallerStep[] = [];
+  const diagnostics: InstallDiagnostics = {
+    enabled: true,
+    reportDir: '',
+    recordStep: vi.fn((step: string, status: string, data?: unknown) => {
+      steps.push({ step, status, data: data as Record<string, unknown> | undefined });
+    }),
+    recordPromptDecision: vi.fn(),
+    recordHttp: vi.fn(),
+    finish: vi.fn(),
+  };
+
+  return { diagnostics, steps };
+}
+
 describe('Consuelo OS hosted onboarding flow', () => {
-  test('skills are a real prompt with explicit multiselect instructions', () => {
+  test('skills use the recommended defaults without a multiselect prompt', () => {
     expect(install).toContain('selectedSkills');
-    expect(install).toContain("message: 'select skills to enable — Use Space to select skills, press Enter to continue'");
-    expect(install).toContain('skills, artifacts, agents, and health');
+    expect(install).toContain('getDefaultSelectedSkillNames()');
+    expect(install).not.toContain(
+      "'select skills to enable — Use Space to select skills, press Enter to continue'",
+    );
+    expect(install).toContain('createInstallerProgressSteps');
+    expect(install).toContain("'service'");
+    expect(install).toContain("'health'");
   });
 
   test('local artifact storage is automatic after local mode is selected', () => {
@@ -26,48 +61,124 @@ describe('Consuelo OS hosted onboarding flow', () => {
     expect(install).not.toContain('local artifacts (save generated files under OS home)');
   });
 
-  test('workspace identity asks for a name and derives slug plus host internally', () => {
+  test('workspace identity starts with authorization before naming a new workspace', () => {
     expect(install).toContain('workspaceName');
     expect(install).toContain('--workspace-name');
     expect(install).toContain("message: 'enter workspace name'");
     expect(install).toContain('workspaceHostFromSlug');
     expect(install).toContain('consuelohq.com');
     expect(install).toContain('workspace name is required');
+    expect(install).toContain('requestWorkspaceDeviceCode({');
+    expect(install).toContain('readLocalNodeIdentity');
+    expect(install).toContain('nodeId: localNodeIdentity?.nodeId');
+    expect(install).toContain('nodeName: localNodeIdentity?.nodeName');
+    expect(install).toContain('resolveWorkspaceIdentity');
+    const promptOptionsSource = install.slice(install.indexOf('async function promptOptions'));
+    expect(promptOptionsSource.indexOf('attemptWorkspaceDeviceLogin({')).toBeLessThan(
+      promptOptionsSource.indexOf('resolveWorkspaceIdentity({'),
+    );
+    const resolveWorkspaceIdentitySource = install.slice(
+      install.indexOf('async function resolveWorkspaceIdentity'),
+      install.indexOf('async function promptOptions'),
+    );
+    expect(resolveWorkspaceIdentitySource.indexOf('const approvedBootstrap = input.deviceLogin.workspaceBootstrap')).toBeLessThan(
+      resolveWorkspaceIdentitySource.indexOf("message: 'enter workspace name'"),
+    );
+    expect(resolveWorkspaceIdentitySource).toContain("input.deviceLogin.status !== 'workspace_required'");
     expect(install).not.toContain("message: 'Consuelo workspace URL'");
     expect(install).not.toContain("message: 'workspace short name'");
     expect(install).not.toContain('workspace URL is required');
     expect(install).not.toContain('internal.consuelohq.com');
   });
 
-  test('normal installer attempts real device login and falls back cleanly', () => {
+  test('normal installer requires real device login instead of falling back to anonymous bootstrap', () => {
     expect(install).toContain('attemptWorkspaceDeviceLogin');
     expect(install).toContain('requestWorkspaceDeviceCode');
     expect(install).toContain('pollWorkspaceDeviceAccessToken');
     expect(install).toContain('openDeviceVerificationUrl');
-    expect(install).toContain('Device login unavailable; continuing with local workspace bootstrap.');
+    expect(install).not.toContain('Device login unavailable; continuing with local workspace bootstrap.');
+    expect(install).not.toContain('Device login was not approved before timeout; continuing with local workspace bootstrap.');
     expect(install).toContain("if (liveDeviceCode.status !== 'started')");
     expect(install).not.toContain('workspaceActivation');
     expect(install).not.toContain('app.consuelohq.com/os/activate');
   });
 
-  test('local and cloud mode labels are plain choices', () => {
-    expect(install).toContain("label: 'local'");
-    expect(install).toContain("label: 'cloud'");
-    expect(install).not.toContain("label: 'local compute'");
-    expect(install).not.toContain("label: 'cloud compute'");
+  test('verified local agents sync to the hosted launcher without making local install depend on the control plane', async () => {
+    const calls: Array<{ url: string; init?: RequestInit }> = [];
+    const synced = await syncVerifiedAgentsAfterInstall({
+      workspaceBootstrap: {
+        workspaceId: 'workspace_internal',
+        workspaceSlug: 'internal',
+        workspaceHost: 'internal.consuelohq.com',
+        connectorId: 'connector_internal',
+        connectorTransport: 'cloudflare-tunnel',
+        connectorBootstrapToken: 'cbt_installer_sync',
+      },
+      agents: [
+        { name: 'codex', status: 'verified' },
+        { name: 'gemini', status: 'verified' },
+        { name: 'cursor', status: 'failed' },
+      ],
+      fetchImpl: async (url, init) => {
+        calls.push({ url: String(url), init });
+        return {
+          ok: true,
+          status: 200,
+          async json() {
+            return { ok: true, connectedAgentCount: 2 };
+          },
+        };
+      },
+    });
+
+    expect(synced).toMatchObject({ status: 'synced', connectedAgentCount: 2 });
+    expect(calls).toHaveLength(1);
+    expect(JSON.parse(String(calls[0].init?.body))).toEqual({ agents: ['codex', 'gemini'] });
+
+    await expect(syncVerifiedAgentsAfterInstall({
+      workspaceBootstrap: {
+        workspaceId: 'workspace_internal',
+        workspaceSlug: 'internal',
+        workspaceHost: 'internal.consuelohq.com',
+        connectorId: 'connector_internal',
+        connectorTransport: 'cloudflare-tunnel',
+        connectorBootstrapToken: 'cbt_installer_sync',
+      },
+      agents: [{ name: 'codex', status: 'verified' }],
+      fetchImpl: async () => {
+        throw new Error('control plane unavailable');
+      },
+    })).resolves.toMatchObject({ status: 'unavailable' });
+
+    await expect(syncVerifiedAgentsAfterInstall({
+      agents: [{ name: 'codex', status: 'verified' }],
+    })).resolves.toEqual({ status: 'skipped', reason: 'bootstrap_credential_unavailable' });
+  });
+
+  test('interactive onboarding defaults to local without asking for a mode', () => {
+    const promptOptionsSource = install.slice(install.indexOf('async function promptOptions'));
+    expect(promptOptionsSource).toContain("const mode: OsMode = options.mode ?? 'local';");
+    expect(promptOptionsSource).not.toContain("message: 'choose an OS mode'");
+    expect(promptOptionsSource).not.toContain("label: 'local'");
+    expect(promptOptionsSource).not.toContain("label: 'cloud'");
     expect(install).not.toContain('workspace URL stays the stable access path');
     expect(install).not.toContain('connect to cloud OS');
   });
 
-  test('agent multiselect explains Space selection', () => {
-    expect(install).toContain('Use Space to select agents');
-    expect(install).toContain('press Enter to continue');
+  test('skills and detected agents use their recommended defaults without prompting', () => {
+    const promptOptionsSource = install.slice(install.indexOf('async function promptOptions'));
+    expect(promptOptionsSource).toContain('getDefaultSelectedSkillNames()');
+    expect(promptOptionsSource).toContain('detectedAgents.map((agent) => agent.name)');
+    expect(promptOptionsSource).not.toContain('groupMultiselect({');
+    expect(promptOptionsSource).not.toContain('multiselect({');
+    expect(promptOptionsSource).not.toContain('select skills to enable');
+    expect(promptOptionsSource).not.toContain('found — press Space to not connect to this workspace, Enter to continue');
   });
 
-  test('background service confirmation is part of install.ts onboarding intent', () => {
+  test('background service defaults on without a confirmation prompt', () => {
     expect(install).toContain('installDaemons');
-    expect(install).toContain("message: 'install local background service?'");
-    expect(install).toContain('background service is the final setup step');
+    expect(install).not.toContain("message: 'install local background service?'");
+    expect(bootstrap).not.toContain('Consuelo OS runs a local background service on your Mac so agents and apps can reach your OS while you work.');
   });
 
   test('human bootstrap consumes install.ts json intent for daemon install', () => {
@@ -82,25 +193,328 @@ describe('Consuelo OS hosted onboarding flow', () => {
     expect(install).not.toContain('for (const action of result.actions)');
   });
 
-  test('daemon installer normal output is compact', () => {
+
+  test('should serialize interactive daemon choice when returning to hosted bootstrap', () => {
+    const payloadSource = install.slice(install.indexOf('const payload ='));
+    expect(payloadSource).toContain('installDaemons: installDaemons');
+    expect(payloadSource).not.toContain('installDaemons: options.installDaemons');
+  });
+
+  test('should default new installs to flattened Consuelo home when hosted bootstrap runs', () => {
+    expect(bootstrap).toContain('DEFAULT_OS_HOME="${CONSUELO_DEFAULT_HOME:-$HOME/.consuelo}"');
+    expect(bootstrap).toContain('OS_HOME="$(resolve_os_home)"');
+    expect(bootstrap).toContain(`printf '%s\\n' "$OS_HOME/runtime/current"`);
+    expect(bootstrap).toContain('local bin_dir="$OS_HOME/bin"');
+    expect(bootstrap).not.toContain('OS_HOME="${CONSUELO_HOME:-$HOME/.consuelo/os}"');
+  });
+
+  test('should gate development diagnostics when preparing installer diagnostics for launch removal', () => {
+    expect(bootstrap).toContain('CONSUELO_OS_DEV_DIAGNOSTICS');
+    expect(bootstrap).toContain('CONSUELO_OS_DEV_REPORT_DIR');
+    expect(bootstrap).toContain('bootstrap.log');
+    expect(install).toContain('createInstallDiagnostics');
+    expect(install).toContain('recordInstallerStep');
+    expect(install).toContain('recordPromptDecision');
+  });
+
+
+  test('should fail hosted bootstrap when child installer does not emit valid onboarding json', () => {
+    expect(bootstrap).toContain('validate_onboarding_json');
+    expect(bootstrap).toContain('interactive onboarding did not complete');
+    expect(bootstrap).toContain('onboarding result file was empty');
+    expect(bootstrap).toContain('onboarding result did not include installDaemons');
+    expect(bootstrap).toContain('install_status=$?');
+    expect(bootstrap).toContain('Consuelo OS installer exited before onboarding completed');
+    expect(bootstrap).toContain('child-installer.log');
+    expect(bootstrap).toContain('Child installer transcript');
+    const validateOnboardingJsonIndex = bootstrap.indexOf('validate_onboarding_json "$ONBOARDING_JSON"');
+    const installDaemonsCheckIndex = bootstrap.indexOf(`if printf '%s' "$ONBOARDING_JSON"`);
+    expect(validateOnboardingJsonIndex).toBeGreaterThanOrEqual(0);
+    expect(installDaemonsCheckIndex).toBeGreaterThanOrEqual(0);
+    expect(validateOnboardingJsonIndex).toBeLessThan(installDaemonsCheckIndex);
+  });
+
+
+  test('should record process lifecycle diagnostics when installer lifecycle events fire', () => {
+    const { diagnostics, steps } = createMockDiagnostics();
+    const handlers = new Map<string, (...args: unknown[]) => void>();
+    const lifecycleTarget = {
+      once: vi.fn((event: string, handler: (...args: unknown[]) => void) => {
+        handlers.set(event, handler);
+        return lifecycleTarget;
+      }),
+    };
+    const kill = vi.fn();
+
+    registerInstallerDiagnosticsLifecycleHooks(diagnostics, lifecycleTarget, { kill, pid: 12345 });
+    handlers.get('beforeExit')?.(0);
+    handlers.get('exit')?.(0);
+    handlers.get('SIGTERM')?.();
+
+    expect(steps).toEqual([
+      { step: 'process_lifecycle', status: 'beforeExit', data: { exitCode: 0 } },
+      { step: 'process_lifecycle', status: 'exit', data: { exitCode: 0 } },
+      { step: 'process_lifecycle', status: 'signal', data: { signal: 'SIGTERM' } },
+    ]);
+    expect(kill).toHaveBeenCalledWith(12345, 'SIGTERM');
+  });
+
+  test('should record device login polling breadcrumbs in runtime order', async () => {
+    const { diagnostics, steps } = createMockDiagnostics();
+    const order: string[] = [];
+    const dependencies = {
+      readLocalNodeIdentity: vi.fn(() => undefined),
+      requestWorkspaceDeviceCode: vi.fn(async () => {
+        order.push('request-code');
+        return {
+          status: 'started' as const,
+          deviceKeyPair: {
+            algorithm: 'Ed25519' as const,
+            publicKeyJwk: '{}',
+            signingKeyJwk: '{}',
+          },
+          session: {
+            deviceCode: 'device-secret',
+            userCode: '7YMS4KV8',
+            verificationUri: 'https://os.consuelohq.com/login/device',
+            verificationUriComplete: 'https://os.consuelohq.com/login/device?user_code=7YMS4KV8',
+            expiresAt: new Date(Date.now() + 60_000).toISOString(),
+            intervalSeconds: 5,
+          },
+        };
+      }),
+      printDeviceLoginPrompt: vi.fn(async () => {
+        order.push('prompt');
+      }),
+      openDeviceVerificationUrl: vi.fn(async () => {
+        order.push('open');
+        return true;
+      }),
+      sleep: vi.fn(async () => {
+        order.push('sleep');
+      }),
+      withRuntimeHold: vi.fn(async <T>(operation: () => Promise<T>): Promise<T> => {
+        order.push('runtime-hold');
+        return operation();
+      }),
+      pollWorkspaceDeviceAccessToken: vi.fn(async () => {
+        order.push('poll');
+        return { status: 'workspace_required' as const, intervalSeconds: 5, message: 'workspace name required' };
+      }),
+    };
+
+    const result = await attemptWorkspaceDeviceLogin(
+      { dryRun: false, home: '/tmp/consuelo-home', diagnostics },
+      dependencies,
+    );
+
+    expect(result.status).toBe('workspace_required');
+    expect(order).toEqual(['request-code', 'open', 'prompt', 'runtime-hold', 'sleep', 'poll']);
+    const deviceLoginSteps = steps.filter((step) => step.step === 'device_login');
+    expect(deviceLoginSteps.map((step) => step.status)).toEqual([
+      'start',
+      'browser_open',
+      'prompt_displayed',
+      'poll_wait',
+      'poll_request',
+      'poll_result',
+      'complete',
+    ]);
+    expect(deviceLoginSteps.find((step) => step.status === 'prompt_displayed')?.data).toEqual({ displayed: true });
+    expect(deviceLoginSteps.find((step) => step.status === 'poll_request')?.data).toEqual({ intervalSeconds: 5 });
+    expect(JSON.stringify(deviceLoginSteps.find((step) => step.status === 'prompt_displayed')?.data)).not.toContain('https://');
+  });
+
+  test('should stop immediately when browser authorization is denied', async () => {
+    const { diagnostics } = createMockDiagnostics();
+    const dependencies = {
+      readLocalNodeIdentity: vi.fn(() => undefined),
+      requestWorkspaceDeviceCode: vi.fn(async () => ({
+        status: 'started' as const,
+        deviceKeyPair: {
+          algorithm: 'Ed25519' as const,
+          publicKeyJwk: '{}',
+          signingKeyJwk: '{}',
+        },
+        session: {
+          deviceCode: 'device-secret',
+          userCode: '7YMS4KV8',
+          verificationUri: 'https://os.consuelohq.com/login/device',
+          verificationUriComplete: 'https://os.consuelohq.com/login/device?user_code=7YMS4KV8',
+          expiresAt: new Date(Date.now() + 60_000).toISOString(),
+          intervalSeconds: 5,
+        },
+      })),
+      printDeviceLoginPrompt: vi.fn(async () => undefined),
+      openDeviceVerificationUrl: vi.fn(async () => true),
+      sleep: vi.fn(async () => undefined),
+      withRuntimeHold: vi.fn(async <T>(operation: () => Promise<T>): Promise<T> => operation()),
+      pollWorkspaceDeviceAccessToken: vi.fn(async () => ({
+        status: 'denied' as const,
+        errorCode: 'DEVICE_CODE_DENIED',
+        telemetryErrorCode: 'DEVICE_AUTH_DENIED' as const,
+        message: 'This account could not be verified for device setup.',
+      })),
+    };
+
+    await expect(attemptWorkspaceDeviceLogin(
+      { dryRun: false, home: '/tmp/consuelo-home', diagnostics },
+      dependencies,
+    )).rejects.toThrow('This account could not be verified for device setup.');
+
+    expect(dependencies.pollWorkspaceDeviceAccessToken).toHaveBeenCalledTimes(1);
+    expect(dependencies.sleep).toHaveBeenCalledTimes(1);
+  });
+
+  test('should record explicit diagnostics breadcrumbs when workspace selection posts', () => {
+    expect(install).toContain("'workspace_selection'");
+    expect(install).toContain("recordInstallerStep(diagnostics, 'workspace_selection', 'start'");
+    expect(install).toContain("recordInstallerStep(diagnostics, 'workspace_selection', 'request'");
+    expect(install).toContain("diagnostics.recordHttp('device.workspace_selection'");
+    expect(install).toContain("recordInstallerStep(diagnostics, 'workspace_selection', 'complete'");
+    expect(install).toContain("recordInstallerStep(diagnostics, 'workspace_selection', 'failed'");
+    const selectionSource = install.slice(
+      install.indexOf("let selected: Awaited<ReturnType<typeof selectWorkspaceForDeviceLogin>>"),
+      install.indexOf(`if (selected.status === 'approved')`),
+    );
+    expect(selectionSource).toContain('try');
+    expect(selectionSource).toContain('catch (error: unknown)');
+  });
+
+  test('should hold runtime while workspace selection posts when device login needs workspace creation', async () => {
+    const { diagnostics, steps } = createMockDiagnostics();
+    const order: string[] = [];
+    const dependencies = {
+      withRuntimeHold: vi.fn(async <T>(operation: () => Promise<T>): Promise<T> => {
+        order.push('runtime-hold:start');
+        const result = await operation();
+        order.push('runtime-hold:end');
+        return result;
+      }),
+      selectWorkspaceForDeviceLogin: vi.fn(async () => {
+        order.push('select-workspace');
+        return {
+          status: 'approved' as const,
+          workspaceId: 'workspace-alpha',
+          workspaceSlug: 'alpha',
+          workspaceHost: 'alpha.consuelohq.com',
+          connectorId: 'connector-alpha',
+          connectorBootstrapToken: 'connector-token-alpha',
+          nodeId: 'node-alpha',
+          nodeName: 'Alpha Mac',
+          nodeRole: 'home' as const,
+          nodeStatus: 'created' as const,
+        };
+      }),
+    };
+
+    const result = await completeWorkspaceDeviceSelection(
+      {
+        diagnostics,
+        selection: {
+          deviceCode: 'device-code-alpha',
+          intervalSeconds: 5,
+          deviceKeyPair: {
+            algorithm: 'Ed25519',
+            publicKeyJwk: 'public-key-alpha',
+            signingKeyJwk: 'signing-key-alpha',
+          },
+        },
+        workspaceName: 'alpha',
+        workspaceSlug: 'alpha',
+        workspaceHost: 'alpha.consuelohq.com',
+      },
+      dependencies,
+    );
+
+    expect(order).toEqual(['runtime-hold:start', 'select-workspace', 'runtime-hold:end']);
+    expect(dependencies.selectWorkspaceForDeviceLogin).toHaveBeenCalledWith({
+      clientId: 'consuelo-os-installer',
+      deviceCode: 'device-code-alpha',
+      intervalSeconds: 5,
+      deviceKeyPair: {
+        algorithm: 'Ed25519',
+        publicKeyJwk: 'public-key-alpha',
+        signingKeyJwk: 'signing-key-alpha',
+      },
+      workspaceName: 'alpha',
+      workspaceSlug: 'alpha',
+      workspaceHost: 'alpha.consuelohq.com',
+    });
+    expect(result.workspaceBootstrap?.workspaceId).toBe('workspace-alpha');
+    expect(diagnostics.recordHttp).toHaveBeenCalledWith('device.workspace_selection', 200, 'approved');
+    expect(steps.filter((step) => step.step === 'workspace_selection').map((step) => step.status)).toEqual([
+      'start',
+      'request',
+      'complete',
+    ]);
+    expect(JSON.stringify(steps)).not.toContain('connector-token-alpha');
+  });
+
+  test('should preserve workspace selection failure details when cloud handoff is rejected', async () => {
+    const { diagnostics, steps } = createMockDiagnostics();
+    const dependencies = {
+      withRuntimeHold: vi.fn(async <T>(operation: () => Promise<T>): Promise<T> => operation()),
+      selectWorkspaceForDeviceLogin: vi.fn(async () => ({
+        status: 'unavailable' as const,
+        message: 'workspace_host_conflict: workspace host is already registered',
+      })),
+    };
+
+    await expect(completeWorkspaceDeviceSelection(
+      {
+        diagnostics,
+        selection: {
+          deviceCode: 'device-code-beta',
+          intervalSeconds: 5,
+          deviceKeyPair: {
+            algorithm: 'Ed25519',
+            publicKeyJwk: 'public-key-beta',
+            signingKeyJwk: 'signing-key-beta',
+          },
+        },
+        workspaceName: 'beta',
+        workspaceSlug: 'beta',
+        workspaceHost: 'beta.consuelohq.com',
+      },
+      dependencies,
+    )).rejects.toThrow('workspace selection failed: unavailable: workspace_host_conflict: workspace host is already registered');
+
+    expect(diagnostics.recordHttp).toHaveBeenCalledWith('device.workspace_selection', 400, 'unavailable');
+    expect(steps.filter((step) => step.step === 'workspace_selection').map((step) => step.status)).toEqual([
+      'start',
+      'request',
+      'failed',
+    ]);
+    expect(steps.find((step) => step.status === 'failed')?.data).toEqual({
+      status: 'unavailable',
+      message: 'workspace_host_conflict: workspace host is already registered',
+    });
+  });
+
+  test('should keep daemon installer output compact when setup succeeds normally', () => {
     expect(daemonInstall).toContain('print_debug_state');
     expect(daemonInstall).toContain('background service setup complete');
     expect(daemonInstall).not.toContain('generated user LaunchAgent plists in');
   });
 
-  test('daemon installer defaults logs to the writable OS home log directory', () => {
-    expect(daemonInstall).toContain('log_dir="${CONSUELO_DAEMON_LOG_DIR:-$root_dir/logs}"');
-    expect(daemonGenerator).toContain('log_dir="${CONSUELO_DAEMON_LOG_DIR:-$root_dir/logs}"');
+  test('should default daemon logs to writable OS home log directory when generating launch agents', () => {
+    expect(daemonInstall).toContain(
+      'log_dir="${CONSUELO_DAEMON_LOG_DIR:-$consuelo_data_home/node/logs}"',
+    );
+    expect(daemonGenerator).toContain(
+      'log_dir="${CONSUELO_DAEMON_LOG_DIR:-$consuelo_data_home/node/logs}"',
+    );
     expect(daemonInstall).not.toContain('$daemon_home/Library/Logs/Consuelo');
-    expect(bootstrap).toContain('local log_dir="$os_home/logs"');
+    expect(bootstrap).not.toContain('$daemon_home/Library/Logs/Consuelo');
   });
 
-  test('hosted bootstrap resolves final runtime commands from OS package root', () => {
-    expect(bootstrap).toContain('OS_HOME="${CONSUELO_HOME:-$HOME/.consuelo/os}"');
+  test('should resolve final runtime commands from flattened Consuelo home when hosted bootstrap completes', () => {
+    expect(bootstrap).toContain('DEFAULT_OS_HOME="${CONSUELO_DEFAULT_HOME:-$HOME/.consuelo}"');
+    expect(bootstrap).toContain('OS_HOME="$(resolve_os_home)"');
     expect(bootstrap).toContain('local os_home="$OS_HOME"');
-    expect(bootstrap).toContain('local os_dir="$OS_HOME"');
-    expect(bootstrap).toContain('local doctor_cmd="CONSUELO_HOME=$os_home $BUN_BIN --cwd $os_home run doctor"');
-    expect(bootstrap).toContain('log "Package: $os_home"');
+    expect(bootstrap).toContain('log "Consuelo OS installed"');
+    expect(bootstrap).not.toContain('log "Home: $os_home"');
     expect(bootstrap).not.toContain('$HOME/.consuelo/source/opensaas');
     expect(bootstrap).not.toContain('REPO_DIR/packages/os run doctor');
     expect(bootstrap).not.toContain('log "Source: $REPO_DIR"');

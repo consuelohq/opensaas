@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_73f9387f3de0",
+  "tmuxSession": "opensaas-security-fix-os-oauth-tool-scope-continuity-73f9387f",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/fix-os-oauth-tool-scope-continuity",
+  "branch": "task/security/fix-os-oauth-tool-scope-continuity",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-os-oauth-tool-scope-continuity",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-os-oauth-tool-scope-continuity",
+  "prNumber": 1510,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1510",
+  "createdAt": "2026-07-15T04:47:08.358Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-os-oauth-tool-scope-continuity/.task/security/fix-os-oauth-tool-scope-continuity/session.json"
+}

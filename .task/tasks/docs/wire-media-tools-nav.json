@@ -1,0 +1,19 @@
+{
+  "area": "docs",
+  "stream": "stream/docs",
+  "taskBranch": "task/docs/wire-media-tools-nav",
+  "baseBranch": "stream/docs",
+  "sourceBranch": "stream/docs",
+  "startFrom": "stream",
+  "prNumber": 1245,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1245",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1245",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1245/wire-media-tools-nav",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1245",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1245/wire-media-tools-nav",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-wire-media-tools-nav",
+  "taskSession": "tsk_d7ae15602c75",
+  "tmuxSession": "opensaas-docs-wire-media-tools-nav-d7ae1560",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-wire-media-tools-nav/.task/docs/wire-media-tools-nav/session.json",
+  "createdAt": "2026-06-28T00:43:44.203Z"
+}

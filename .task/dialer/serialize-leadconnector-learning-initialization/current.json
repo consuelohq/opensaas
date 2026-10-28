@@ -1,0 +1,19 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/serialize-leadconnector-learning-initialization",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 1754,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1754",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1754",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1754/serialize-leadconnector-learning-initialization",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1754",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1754/serialize-leadconnector-learning-initialization",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-serialize-leadconnector-learning-initialization",
+  "taskSession": "tsk_f78ed94d271e",
+  "tmuxSession": "opensaas-dialer-serialize-leadconnector-learning-initialization-f78ed94d",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-serialize-leadconnector-learning-initialization/.task/dialer/serialize-leadconnector-learning-initialization/session.json",
+  "createdAt": "2026-08-01T16:42:44.636Z"
+}

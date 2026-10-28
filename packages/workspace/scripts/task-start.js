@@ -2,11 +2,12 @@
 
 const fs = require('fs');
 const path = require('path');
+const { execFileSync } = require('child_process');
 
 const {
   DEFAULT_MAIN_BRANCH,
   DEFAULT_REPO,
-  getWorktreeRoot,
+  getTaskWorktreeRoot,
   resolveGitRoot,
   toWorktreeDirectoryName,
 } = require('./lib/paths');
@@ -17,6 +18,7 @@ const {
   getDefaultTaskBranch,
   normalizeArea,
 } = require('./lib/validation');
+const { resolveRemoteStreamAction } = require('./lib/stream-lifecycle');
 const {
   createBranch,
   createPullRequest,
@@ -39,7 +41,8 @@ const { buildGraphitePullRequestUrl } = require('./lib/pr-links');
 const { parsePrRef } = require('./lib/pr-ref');
 const { assertTmuxAvailable, ensureTaskTmuxSession, writeTaskSessionMetadata } = require('./lib/task-session');
 const { linkTaskWorktreeNodeModules } = require('./lib/task-node-modules');
-const { dispatchHookEvent, renderHookResult } = require('../hooks/dispatcher.js');
+const { renderHookResult } = require('../hooks/dispatcher.js');
+const { createWorkflowIntentRuntime } = require('../hooks/intent.js');
 const DEFAULT_START_FROM = 'main';
 const START_FROM_OPTIONS = new Set(['main', 'stream']);
 
@@ -59,7 +62,9 @@ function printHelp() {
   writeStdout('  --title <value>        task title used for branch slug and pr title');
   writeStdout('');
   writeStdout('options:');
+  writeStdout('  --workflow <value>    workflow bundle to return: task (default: task)');
   writeStdout('  --stream <branch>      target stream branch for later push/pr flow (default: stream/<area>)');
+  writeStdout('  --create-stream        explicitly create the remote stream when it does not exist');
   writeStdout(`  --start-from <mode>    source branch for the new task: ${Array.from(START_FROM_OPTIONS).join('|')} (default: ${DEFAULT_START_FROM})`);
   writeStdout('  --branch <name>        task branch (default: task/<area>/<slug>)');
   writeStdout('  --pr <number-or-url>   adopt/infer from an existing PR reference');
@@ -67,7 +72,7 @@ function printHelp() {
   writeStdout(`  --repo <owner/name>    github repository (default: ${DEFAULT_REPO})`);
   writeStdout('  --body <text>          pull request body text');
   writeStdout('  --body-file <path>     pull request body markdown file');
-  writeStdout('  --worktree-root <dir>  worktree root (default: $WORKSPACE_WORKTREE_ROOT, $OPENSAAS_WORKTREE_ROOT, or os.tmpdir()/opensaas-worktrees)');
+  writeStdout('  --worktree-root <dir>  worktree root (default: $WORKSPACE_WORKTREE_ROOT, $OPENSAAS_WORKTREE_ROOT, or $CONSUELO_HOME/node/tasks/worktrees)');
   writeStdout('  --json                 print machine-readable json');
   writeStdout('  --help                 show this help message');
 }
@@ -77,6 +82,7 @@ function parseArgs(argv) {
     repo: DEFAULT_REPO,
     json: false,
     startFrom: DEFAULT_START_FROM,
+    workflow: 'task',
   };
 
   for (let index = 0; index < argv.length; index += 1) {
@@ -87,7 +93,7 @@ function parseArgs(argv) {
     }
 
     const [flag, inlineValue] = rawArgument.split('=', 2);
-    const isBooleanFlag = flag === '--json' || flag === '--help';
+    const isBooleanFlag = flag === '--json' || flag === '--help' || flag === '--create-stream';
     const value = inlineValue !== undefined ? inlineValue : isBooleanFlag ? undefined : argv[index + 1];
 
     if (!isBooleanFlag && (!value || value.startsWith('--'))) {
@@ -105,12 +111,18 @@ function parseArgs(argv) {
       case '--title':
         args.title = value;
         break;
+      case '--workflow':
+        args.workflow = value;
+        break;
       case '--stream':
       case '--base':
         args.stream = value;
         break;
       case '--start-from':
         args.startFrom = value;
+        break;
+      case '--create-stream':
+        args.createStream = true;
         break;
       case '--branch':
         args.branch = value;
@@ -183,6 +195,8 @@ function printResult(result, useJson) {
     return;
   }
 
+  writeStdout(`workflow: ${result.requestedWorkflow}`);
+  writeStdout(`resolved workflow: ${result.workflow}`);
   writeStdout(`area: ${result.area}`);
   writeStdout(`stream: ${result.stream}`);
   writeStdout(`start from: ${result.startFrom}`);
@@ -195,6 +209,7 @@ function printResult(result, useJson) {
   writeStdout(`created pr: ${result.createdPr}`);
   writeStdout(`task session: ${result.taskSession}`);
   writeStdout(`tmux session: ${result.tmuxSession}`);
+  writeStdout(`workflow tools: ${result.manifestBundle?.tools?.map((tool) => tool.name).join(', ') || ''}`);
   writeStdout(`pr: #${result.prNumber}`);
   writeStdout(`url: ${result.prUrl}`);
   writeStdout(`github: ${result.githubPrUrl}`);
@@ -257,11 +272,16 @@ function resolveSourceBranch(startFrom, stream) {
   return DEFAULT_MAIN_BRANCH;
 }
 
-async function ensureRemoteStreamBranch({ token, repository, streamBranch, mainRef }) {
+async function ensureRemoteStreamBranch({ token, repository, streamBranch, mainRef, createStream }) {
   try {
     let streamRef = await getBranchRef({ token, repository, branch: streamBranch });
+    const action = resolveRemoteStreamAction({
+      streamBranch,
+      remoteExists: Boolean(streamRef),
+      createStream: Boolean(createStream),
+    });
 
-    if (streamRef) {
+    if (action === 'reuse') {
       return {
         streamRef,
         created: false,
@@ -323,6 +343,57 @@ function createBootstrapCommit({ repoRoot, worktreePath, taskBranch }) {
   runGit(['-C', worktreePath, 'push', 'origin', taskBranch], { cwd: repoRoot });
 }
 
+function compactResolvedStreamContext(result) {
+  return {
+    area: result?.area || null,
+    stream: result?.stream || null,
+    aheadBehind: result?.aheadBehind || null,
+    openTaskPrCount: Array.isArray(result?.openTaskPullRequests?.pullRequests)
+      ? result.openTaskPullRequests.pullRequests.length
+      : 0,
+    recentWorkpadCount: Array.isArray(result?.recentWorkpads?.workpads)
+      ? result.recentWorkpads.workpads.length
+      : 0,
+  };
+}
+
+function resolveStreamContextBeforeTaskMutation({ repoRoot, args, area, stream }) {
+  const preflight = createWorkflowIntentRuntime().start({
+    workflow: args.workflow,
+    area,
+    title: args.title,
+    hasStreamContext: false,
+  });
+  const requiredAction = preflight.hookResult?.requiredNextAction;
+
+  if (args.workflow !== 'task') return null;
+  if (!requiredAction || requiredAction.tool !== 'stream.context') {
+    throw new Error('task.start preflight did not resolve the required stream.context action');
+  }
+
+  const streamContextScript = path.join(__dirname, 'stream-context.js');
+  try {
+    const stdout = execFileSync(process.execPath, [
+      streamContextScript,
+      '--area', area,
+      '--stream', stream,
+      '--repo', args.repo,
+      '--json',
+    ], {
+      cwd: repoRoot,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    return compactResolvedStreamContext(JSON.parse(stdout));
+  } catch (error) {
+    const stderr = error && typeof error === 'object' && 'stderr' in error
+      ? String(error.stderr || '').trim()
+      : '';
+    const message = stderr || (error instanceof Error ? error.message : String(error));
+    throw new Error(`task.start stream.context preflight failed before mutation: ${message}`);
+  }
+}
+
 async function main() {
   try {
     let args = parseArgs(process.argv.slice(2));
@@ -352,11 +423,19 @@ async function main() {
     const area = normalizeArea(args.area);
     const stream = args.stream || getDefaultStreamBranch(area);
     const taskBranch = args.branch || getDefaultTaskBranch(area, args.title);
-    const worktreeRoot = getWorktreeRoot(args.worktreeRoot);
+    const worktreeRoot = getTaskWorktreeRoot(args.worktreeRoot);
+    fs.mkdirSync(worktreeRoot, { recursive: true });
 
     assertStreamBranchName(stream, area);
     assertTaskBranchName(taskBranch, area);
     assertTmuxAvailable();
+
+    const streamContext = resolveStreamContextBeforeTaskMutation({
+      repoRoot,
+      args,
+      area,
+      stream,
+    });
 
     fetchOrigin(repoRoot);
 
@@ -371,6 +450,7 @@ async function main() {
       repository: args.repo,
       streamBranch: stream,
       mainRef,
+      createStream: args.createStream,
     });
 
     if (streamDetails.created) {
@@ -498,6 +578,7 @@ async function main() {
       stream,
       taskBranch,
       worktreePath,
+      repoRoot,
       prNumber: pullRequest.number,
       prUrl: pullRequest.html_url,
     }, taskTmux.created);
@@ -518,6 +599,7 @@ async function main() {
       taskPrUrl: pullRequest.html_url,
       taskGraphitePrUrl: graphitePrUrl,
       worktreePath,
+      repoRoot,
       taskSession: taskSessionMeta.taskSession,
       tmuxSession: taskSessionMeta.tmuxSession,
       sessionPath: taskSessionMeta.sessionPath,
@@ -605,52 +687,49 @@ async function main() {
     ].join('\n');
     fs.writeFileSync(workpadPath, workpad, 'utf8');
 
-    printResult(
-      {
-        area,
-        stream,
-        sourceBranch,
-        startFrom: args.startFrom,
-        branch: taskBranch,
-        worktreePath,
-        prNumber: pullRequest.number,
-        prUrl: graphitePrUrl,
-        githubPrUrl: pullRequest.html_url,
-        graphitePrUrl,
-        taskSession: taskSessionMeta.taskSession,
-        tmuxSession: taskSessionMeta.tmuxSession,
-        createdBranch: remoteTaskDetails.created,
-        createdWorktree,
-        bootstrappedBranch,
-        createdPr,
-      },
-      args.json,
-    );
+    const taskResult = {
+      area,
+      stream,
+      sourceBranch,
+      startFrom: args.startFrom,
+      branch: taskBranch,
+      worktreePath,
+      prNumber: pullRequest.number,
+      prUrl: graphitePrUrl,
+      githubPrUrl: pullRequest.html_url,
+      graphitePrUrl,
+      taskSession: taskSessionMeta.taskSession,
+      tmuxSession: taskSessionMeta.tmuxSession,
+      createdBranch: remoteTaskDetails.created,
+      createdWorktree,
+      bootstrappedBranch,
+      createdPr,
+      streamContext,
+    };
+    const workflowStart = createWorkflowIntentRuntime().start({
+      workflow: args.workflow,
+      taskSession: taskSessionMeta.taskSession,
+      area,
+      title: args.title,
+      branch: taskBranch,
+      worktreePath,
+      taskResult,
+    });
+    const combinedResult = {
+      ...taskResult,
+      workflow: workflowStart.workflow,
+      requestedWorkflow: workflowStart.requestedWorkflow,
+      manifestBundle: workflowStart.manifestBundle,
+      hookEvent: workflowStart.hookEvent,
+      hookResult: workflowStart.hookResult,
+    };
 
-    // guard 4: emit manifest-driven task hook guidance for non-JSON callers
-    if (!args.json) {
-      try {
-        const guidance = dispatchHookEvent({
-          event: {
-            event: 'tool.postInvoke',
-            tool: 'task.start',
-            workflow: 'task',
-            result: {
-              area,
-              branch: taskBranch,
-              taskSession: taskSessionMeta.taskSession,
-              worktreePath,
-            },
-          },
-        });
-        if (guidance) {
-          writeStderr('');
-          writeStderr('task hook guidance:');
-          writeStderr(renderHookResult(guidance).trimEnd());
-        }
-      } catch (error) {
-        writeStderr(`warning: task hook guidance failed: ${error instanceof Error ? error.message : String(error)}`);
-      }
+    printResult(combinedResult, args.json);
+
+    if (!args.json && workflowStart.hookResult) {
+      writeStderr('');
+      writeStderr('workflow guidance:');
+      writeStderr(renderHookResult(workflowStart.hookResult).trimEnd());
     }
   } catch (error) {
     throw error;

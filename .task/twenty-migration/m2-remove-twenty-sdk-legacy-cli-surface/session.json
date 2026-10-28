@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_ab5e5b64d145",
+  "tmuxSession": "opensaas-twenty-migration-m2-remove-twenty-sdk-legacy-cli-surface-ab5e5b64",
+  "area": "twenty-migration",
+  "stream": "stream/twenty-migration",
+  "taskBranch": "task/twenty-migration/m2-remove-twenty-sdk-legacy-cli-surface",
+  "branch": "task/twenty-migration/m2-remove-twenty-sdk-legacy-cli-surface",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-twenty-migration-m2-remove-twenty-sdk-legacy-cli-surface",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-twenty-migration-m2-remove-twenty-sdk-legacy-cli-surface",
+  "prNumber": 2040,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2040",
+  "createdAt": "2026-08-15T07:03:38.539Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-twenty-migration-m2-remove-twenty-sdk-legacy-cli-surface/.task/twenty-migration/m2-remove-twenty-sdk-legacy-cli-surface/session.json"
+}

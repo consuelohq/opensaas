@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_7e4f4911b4c3",
+  "tmuxSession": "opensaas-docs-fix-docs-navigation-generators-7e4f4911",
+  "area": "docs",
+  "stream": "stream/docs",
+  "taskBranch": "task/docs/fix-docs-navigation-generators",
+  "branch": "task/docs/fix-docs-navigation-generators",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-fix-docs-navigation-generators",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-fix-docs-navigation-generators",
+  "prNumber": 1256,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1256",
+  "createdAt": "2026-06-28T04:18:01.871Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-fix-docs-navigation-generators/.task/docs/fix-docs-navigation-generators/session.json"
+}

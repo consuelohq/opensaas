@@ -1,0 +1,19 @@
+{
+  "area": "docs",
+  "stream": "stream/docs",
+  "taskBranch": "task/docs/media-tools-docs",
+  "baseBranch": "stream/docs",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1229,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1229",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1229",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1229/media-tools-docs",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1229",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1229/media-tools-docs",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-media-tools-docs",
+  "taskSession": "tsk_c653d43b2cdb",
+  "tmuxSession": "opensaas-docs-media-tools-docs-c653d43b",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-media-tools-docs/.task/docs/media-tools-docs/session.json",
+  "createdAt": "2026-06-27T22:25:08.170Z"
+}

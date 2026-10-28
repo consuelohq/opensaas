@@ -1,0 +1,20 @@
+{
+  "area": "dialer-algorithm",
+  "stream": "stream/dialer-algorithm",
+  "taskBranch": "task/dialer-algorithm/resolve-final-dialer-stream-review-findings",
+  "baseBranch": "stream/dialer-algorithm",
+  "sourceBranch": "stream/dialer-algorithm",
+  "startFrom": "stream",
+  "prNumber": 2452,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2452",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2452",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2452/resolve-final-dialer-stream-review-findings",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2452",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2452/resolve-final-dialer-stream-review-findings",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-algorithm-resolve-final-dialer-stream-review-findings",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_e677c7011161",
+  "tmuxSession": "opensaas-dialer-algorithm-resolve-final-dialer-stream-review-findings-e677c701",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-algorithm-resolve-final-dialer-stream-review-findings/.task/dialer-algorithm/resolve-final-dialer-stream-review-findings/session.json",
+  "createdAt": "2026-09-10T03:55:13.463Z"
+}

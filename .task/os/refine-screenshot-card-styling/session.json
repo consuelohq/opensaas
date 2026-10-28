@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_ee56b2384f2c",
+  "tmuxSession": "opensaas-os-refine-screenshot-card-styling-ee56b238",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/refine-screenshot-card-styling",
+  "branch": "task/os/refine-screenshot-card-styling",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-refine-screenshot-card-styling",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-refine-screenshot-card-styling",
+  "prNumber": 1492,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1492",
+  "createdAt": "2026-07-14T18:47:57.921Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-refine-screenshot-card-styling/.task/os/refine-screenshot-card-styling/session.json"
+}

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_c1c95b40e67d",
+  "tmuxSession": "opensaas-os-close-foundation-audit-findings-and-release-c1c95b40",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/close-foundation-audit-findings-and-release",
+  "branch": "task/os/close-foundation-audit-findings-and-release",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-close-foundation-audit-findings-and-release",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-close-foundation-audit-findings-and-release",
+  "prNumber": 1715,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1715",
+  "createdAt": "2026-07-29T02:20:15.550Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-close-foundation-audit-findings-and-release/.task/os/close-foundation-audit-findings-and-release/session.json"
+}

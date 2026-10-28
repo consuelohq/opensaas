@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/repair-systemic-connector-origin-tls-and-complete-chatgpt-mcp-onboarding",
+  "baseBranch": "stream/security",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1422,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1422",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1422",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1422/repair-systemic-connector-origin-tls-and-complete-chatgpt-mcp-onboarding",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1422",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1422/repair-systemic-connector-origin-tls-and-complete-chatgpt-mcp-onboarding",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-repair-systemic-connector-origin-tls-and-complete-chatgpt-mcp-onboarding",
+  "taskSession": "tsk_ba37de6d7ed1",
+  "tmuxSession": "opensaas-security-repair-systemic-connector-origin-tls-and-complet-ba37de6d",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-repair-systemic-connector-origin-tls-and-complete-chatgpt-mcp-onboarding/.task/security/repair-systemic-connector-origin-tls-and-complete-chatgpt-mcp-onboarding/session.json",
+  "createdAt": "2026-07-11T20:08:23.134Z"
+}

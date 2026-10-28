@@ -328,8 +328,14 @@ function readWorkflowConfig(config: ToolManifestConfig, configDir: string): {
 function workflowMatches(entry: GeneratedToolManifestEntry, workflow: WorkflowBundleConfig): boolean {
   const role = typeof entry.definition.workflowRole === 'string' ? entry.definition.workflowRole : undefined;
   const category = entry.category.toLowerCase();
+  const subscribedTools = new Set(
+    (Array.isArray(workflow.subscriptions) ? workflow.subscriptions : [])
+      .map((subscription) => typeof subscription.tool === 'string' ? subscription.tool : null)
+      .filter((tool): tool is string => Boolean(tool)),
+  );
 
-  return Boolean(role && valueToStringArray(workflow.roles).includes(role))
+  return subscribedTools.has(entry.name)
+    || Boolean(role && valueToStringArray(workflow.roles).includes(role))
     || valueToStringArray(workflow.categories).some((workflowCategory) => category === workflowCategory.toLowerCase());
 }
 

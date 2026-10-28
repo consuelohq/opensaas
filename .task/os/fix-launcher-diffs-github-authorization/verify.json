@@ -1,0 +1,108 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/fix-launcher-diffs-github-authorization",
+  "base": "origin/stream/os",
+  "headSha": "3d2a89b43efb25fd6549943fa70e9d75a2341d1e",
+  "changeHash": "e7f9d6e8d764d70672add3402467752af409ca8b13ed4fba94a4847eac821e5b",
+  "changedFiles": [
+    "packages/os/cloudflare/os-device-authority/src/services/github-source-control.ts",
+    "packages/os/tests/github-source-control-authority.test.ts"
+  ],
+  "verifiedAt": "2026-09-01T01:29:34.560Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/fix-launcher-diffs-github-authorization/evidence-log.json",
+        ".task/os/fix-launcher-diffs-github-authorization/read-log.json",
+        ".task/os/fix-launcher-diffs-github-authorization/workpad.md",
+        ".task/tasks/os/fix-launcher-diffs-github-authorization.json",
+        "packages/os/cloudflare/os-device-authority/src/services/github-source-control.ts",
+        "packages/os/tests/github-source-control-authority.test.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "os-github-source-control",
+          "critical": true,
+          "exclusive": true,
+          "reason": "GitHub App source-control onboarding, installation handoff, workspace repository materialization, and Diffs credential brokering must prove their focused security and UX contracts without selecting the historically red unrelated OS package suite.",
+          "matchedFiles": [
+            "packages/os/cloudflare/os-device-authority/src/services/github-source-control.ts",
+            "packages/os/tests/github-source-control-authority.test.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "OS GitHub source-control contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/github-source-control-authority.test.ts",
+            "tests/source-control-config.test.ts",
+            "tests/settings-hono-routes.test.ts",
+            "tests/settings-site.test.ts",
+            "tests/diffs-hono-routes.test.ts",
+            "tests/settings-sites-gateway-endpoints.test.ts",
+            "tests/os-device-authority-worker.test.ts"
+          ],
+          "ruleId": "os-github-source-control",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "OS GitHub source-control contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/github-source-control-authority.test.ts",
+            "tests/source-control-config.test.ts",
+            "tests/settings-hono-routes.test.ts",
+            "tests/settings-site.test.ts",
+            "tests/diffs-hono-routes.test.ts",
+            "tests/settings-sites-gateway-endpoints.test.ts",
+            "tests/os-device-authority-worker.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-github-source-control",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 2287,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-launcher-diffs-github-authorization/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/source-control-config.test.ts \u001b[2m(\u001b[22m\u001b[2m7 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 72\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-worker.test.ts \u001b[2m(\u001b[22m\u001b[2m33 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 301\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/settings-site.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 263\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/settings-sites-gateway-endpoints.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 308\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/github-source-control-authority.test.ts \u001b[2m(\u001b[22m\u001b[2m10 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 636\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/diffs-hono-routes.test.ts \u001b[2m(\u001b[22m\u001b[2m10 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 145\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/settings-hono-routes.test.ts \u001b[2m(\u001b[22m\u001b[2m14 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 400\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m7 passed\u001b[39m\u001b[22m\u001b[90m (7)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m90 passed\u001b[39m\u001b[22m\u001b[90m (90)\u001b[39m\n\u001b[2m   Start at \u001b[22m 21:29:32\n\u001b[2m   Duration \u001b[22m 1.96s\u001b[2m (transform 3.48s, setup 163ms, import 6.77s, tests 2.13s, environment 1ms)\u001b[22m\n\n$ vitest run tests/github-source-control-authority.test.ts tests/source-control-config.test.ts tests/settings-hono-routes.test.ts tests/settings-site.test.ts tests/diffs-hono-routes.test.ts tests/settings-sites-gateway-endpoints.test.ts tests/os-device-authority-worker.test.ts\n(node:90480) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n(node:90476) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

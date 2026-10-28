@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "worktree_id": "task/os-foundation-two/fix-final-audit-candidate-and-prompt-lineage",
+  "events": [
+    {
+      "id": "9ad02ee9-6e8e-436d-af02-e953bae1cb16",
+      "occurred_at": "2026-07-27T18:49:00.854Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os-foundation-two/fix-final-audit-candidate-and-prompt-lineage/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-foundation-two/fix-final-audit-candidate-and-prompt-lineage",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-foundation-two/fix-final-audit-candidate-and-prompt-lineage"
+      }
+    },
+    {
+      "id": "e2589208-e5f8-48c5-abbd-0d176ab15029",
+      "occurred_at": "2026-07-27T18:49:16.855Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/plans/consuelo-os-foundation/workers/23a-core-runtime-lifecycle-recovery-audit.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-foundation-two/fix-final-audit-candidate-and-prompt-lineage",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-foundation-two/fix-final-audit-candidate-and-prompt-lineage"
+      }
+    },
+    {
+      "id": "d6b56acf-0a1a-4e37-995a-a0c6253a3952",
+      "occurred_at": "2026-07-27T18:50:35.833Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/plans/consuelo-os-foundation/workers/validate-plan.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-foundation-two/fix-final-audit-candidate-and-prompt-lineage",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-foundation-two/fix-final-audit-candidate-and-prompt-lineage"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-07-27T18:50:35.889Z"
+}

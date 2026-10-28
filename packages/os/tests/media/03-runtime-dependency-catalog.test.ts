@@ -74,7 +74,7 @@ describe('media runtime dependency catalog', () => {
       optional: false,
     });
     expect(ffmpeg?.versionCommands).toEqual(expect.arrayContaining([['ffmpeg', '-version'], ['ffprobe', '-version']]));
-    expect(ffmpeg?.requiredBy).toEqual(expect.arrayContaining(['media.probe', 'media.frames.extract', 'media.compose', 'media.qa']));
+    expect(ffmpeg?.requiredBy).toEqual(expect.arrayContaining(['media.probe', 'media.frames.extract', 'media.screenshot.render', 'media.compose', 'media.qa']));
   });
 
   it('should satisfy media contract when it keeps YouTube, audio, OpenCV, and MediaPipe out of media-core', async () => {

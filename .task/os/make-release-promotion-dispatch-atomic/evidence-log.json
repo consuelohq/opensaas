@@ -1,0 +1,136 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/make-release-promotion-dispatch-atomic",
+  "events": [
+    {
+      "id": "1b28cea0-67af-4f12-9e02-e797c1778967",
+      "occurred_at": "2026-08-26T18:09:20.750Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/release-script-promotion-correlation.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/make-release-promotion-dispatch-atomic",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/make-release-promotion-dispatch-atomic"
+      }
+    },
+    {
+      "id": "657fdf78-867c-402c-a496-65656a26b923",
+      "occurred_at": "2026-08-26T18:09:26.618Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/consuelo-home.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/make-release-promotion-dispatch-atomic",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/make-release-promotion-dispatch-atomic"
+      }
+    },
+    {
+      "id": "322c0a0a-c0cc-4c33-96de-dadb40192502",
+      "occurred_at": "2026-08-26T18:10:14.814Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/release.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/make-release-promotion-dispatch-atomic",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/make-release-promotion-dispatch-atomic"
+      }
+    },
+    {
+      "id": "17df6522-7b0f-4f1b-ab04-b0cdf32b8d81",
+      "occurred_at": "2026-08-26T18:10:18.042Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/release.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/make-release-promotion-dispatch-atomic",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/make-release-promotion-dispatch-atomic"
+      }
+    },
+    {
+      "id": "7889ebe7-8c93-4f35-ab9f-7b4c37c29d7b",
+      "occurred_at": "2026-08-26T18:13:53.619Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/test-selection.rules.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/make-release-promotion-dispatch-atomic",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/make-release-promotion-dispatch-atomic"
+      }
+    },
+    {
+      "id": "66d3251c-d29c-4435-a656-593b74631095",
+      "occurred_at": "2026-08-26T18:13:56.776Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/test-selection.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/make-release-promotion-dispatch-atomic",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/make-release-promotion-dispatch-atomic"
+      }
+    },
+    {
+      "id": "254a2a5e-a5ef-4e1a-9116-9eb0d760808c",
+      "occurred_at": "2026-08-26T18:14:00.445Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/test-selection.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/make-release-promotion-dispatch-atomic",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/make-release-promotion-dispatch-atomic"
+      }
+    },
+    {
+      "id": "fc5c78a3-dddc-48f3-92bb-1e70e1df2b92",
+      "occurred_at": "2026-08-26T18:14:56.041Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/make-release-promotion-dispatch-atomic/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/make-release-promotion-dispatch-atomic",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/make-release-promotion-dispatch-atomic"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-26T18:14:56.099Z"
+}

@@ -1,0 +1,7 @@
+{
+  "files": [
+    "packages/os/tests/media/31-svg-convert.test.ts",
+    "packages/os/tests/media/helpers.ts"
+  ],
+  "updatedAt": "2026-08-15T10:42:18.409Z"
+}

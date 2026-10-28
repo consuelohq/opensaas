@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_a189c6b7bec9",
+  "tmuxSession": "opensaas-os-refresh-stale-twenty-graphql-outputs-a189c6b7",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/refresh-stale-twenty-graphql-outputs",
+  "branch": "task/os/refresh-stale-twenty-graphql-outputs",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-refresh-stale-twenty-graphql-outputs",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-refresh-stale-twenty-graphql-outputs",
+  "prNumber": 1936,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1936",
+  "createdAt": "2026-08-14T03:30:25.580Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-refresh-stale-twenty-graphql-outputs/.task/os/refresh-stale-twenty-graphql-outputs/session.json"
+}

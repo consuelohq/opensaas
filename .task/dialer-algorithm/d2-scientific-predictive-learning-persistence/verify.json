@@ -1,0 +1,230 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/dialer-algorithm/d2-scientific-predictive-learning-persistence",
+  "base": "origin/task/dialer-algorithm/d2-scientific-predictive-learning-persistence",
+  "headSha": "d634ac7a859a17617708b505761126781919f1fd",
+  "changeHash": "7d736f5bd4fadd05e9deb286b7ceef78941f7848eaa4c95187861893f62552a8",
+  "changedFiles": [
+    "packages/dialer-server/scripts/local-dialer-lab.ts",
+    "packages/dialer-server/src/database/migrations.test.ts",
+    "packages/dialer-server/src/database/migrations.ts",
+    "packages/dialer-server/src/lab/local-dialer-lab.integration.test.ts",
+    "packages/dialer-server/src/lab/local-dialer-lab.ts",
+    "packages/dialer-server/src/learning/postgres-predictive-model-store.contract.test.ts",
+    "packages/dialer-server/src/learning/postgres-predictive-model-store.ts",
+    "packages/dialer-server/src/runtime/lead-connector-learning.test.ts",
+    "packages/dialer-server/src/runtime/lead-connector-learning.ts",
+    "packages/dialer-server/src/runtime/railway.test.ts",
+    "packages/dialer-server/src/runtime/railway.ts",
+    "packages/dialer/MODEL.md",
+    "packages/dialer/src/domain/learning-observation.spec.ts",
+    "packages/dialer/src/domain/learning-observation.ts",
+    "packages/dialer/src/index.ts",
+    "packages/dialer/src/services/binomial-estimate.spec.ts",
+    "packages/dialer/src/services/binomial-estimate.ts",
+    "packages/dialer/src/services/cadence-optimizer.service.ts",
+    "packages/dialer/src/services/cadence-optimizer.spec.ts",
+    "packages/dialer/src/services/call-timing-model.service.ts",
+    "packages/dialer/src/services/call-timing-model.spec.ts",
+    "packages/dialer/src/services/index.ts",
+    "packages/dialer/src/services/predictive-priority.contract.spec.ts",
+    "packages/dialer/src/services/predictive-priority.service.ts",
+    "packages/dialer/src/services/predictive-selection-model.contract.spec.ts",
+    "packages/dialer/src/services/predictive-selection-model.ts",
+    "packages/dialer/src/services/predictive-selection-science.spec.ts",
+    "packages/dialer/src/services/retry-decision-model.ts",
+    "packages/dialer/src/services/stopping-model.spec.ts",
+    "packages/dialer/src/services/stopping-model.ts",
+    "packages/dialer/src/services/whittle-index.service.ts",
+    "packages/dialer/src/types.ts"
+  ],
+  "verifiedAt": "2026-08-15T04:39:35.432Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/dialer-algorithm/d2-scientific-predictive-learning-persistence/current.json",
+        ".task/dialer-algorithm/d2-scientific-predictive-learning-persistence/evidence-log.json",
+        ".task/dialer-algorithm/d2-scientific-predictive-learning-persistence/read-log.json",
+        ".task/dialer-algorithm/d2-scientific-predictive-learning-persistence/session.json",
+        ".task/dialer-algorithm/d2-scientific-predictive-learning-persistence/verify.json",
+        ".task/dialer-algorithm/d2-scientific-predictive-learning-persistence/workpad.md",
+        ".task/tasks/dialer-algorithm/d2-scientific-predictive-learning-persistence.json",
+        "packages/dialer-server/scripts/local-dialer-lab.ts",
+        "packages/dialer-server/src/database/migrations.test.ts",
+        "packages/dialer-server/src/database/migrations.ts",
+        "packages/dialer-server/src/lab/local-dialer-lab.integration.test.ts",
+        "packages/dialer-server/src/lab/local-dialer-lab.ts",
+        "packages/dialer-server/src/learning/postgres-predictive-model-store.contract.test.ts",
+        "packages/dialer-server/src/learning/postgres-predictive-model-store.ts",
+        "packages/dialer-server/src/runtime/lead-connector-learning.test.ts",
+        "packages/dialer-server/src/runtime/lead-connector-learning.ts",
+        "packages/dialer-server/src/runtime/railway.test.ts",
+        "packages/dialer-server/src/runtime/railway.ts",
+        "packages/dialer/MODEL.md",
+        "packages/dialer/src/domain/learning-observation.spec.ts",
+        "packages/dialer/src/domain/learning-observation.ts",
+        "packages/dialer/src/index.ts",
+        "packages/dialer/src/services/binomial-estimate.spec.ts",
+        "packages/dialer/src/services/binomial-estimate.ts",
+        "packages/dialer/src/services/cadence-optimizer.service.ts",
+        "packages/dialer/src/services/cadence-optimizer.spec.ts",
+        "packages/dialer/src/services/call-timing-model.service.ts",
+        "packages/dialer/src/services/call-timing-model.spec.ts",
+        "packages/dialer/src/services/index.ts",
+        "packages/dialer/src/services/predictive-priority.contract.spec.ts",
+        "packages/dialer/src/services/predictive-priority.service.ts",
+        "packages/dialer/src/services/predictive-selection-model.contract.spec.ts",
+        "packages/dialer/src/services/predictive-selection-model.ts",
+        "packages/dialer/src/services/predictive-selection-science.spec.ts",
+        "packages/dialer/src/services/retry-decision-model.ts",
+        "packages/dialer/src/services/stopping-model.spec.ts",
+        "packages/dialer/src/services/stopping-model.ts",
+        "packages/dialer/src/services/whittle-index.service.ts",
+        "packages/dialer/src/types.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "dialer-package",
+          "critical": true,
+          "reason": "Dialer changes are call-path critical and must run package specs.",
+          "matchedFiles": [
+            "packages/dialer/MODEL.md",
+            "packages/dialer/src/domain/learning-observation.spec.ts",
+            "packages/dialer/src/domain/learning-observation.ts",
+            "packages/dialer/src/index.ts",
+            "packages/dialer/src/services/binomial-estimate.spec.ts",
+            "packages/dialer/src/services/binomial-estimate.ts",
+            "packages/dialer/src/services/cadence-optimizer.service.ts",
+            "packages/dialer/src/services/cadence-optimizer.spec.ts",
+            "packages/dialer/src/services/call-timing-model.service.ts",
+            "packages/dialer/src/services/call-timing-model.spec.ts",
+            "packages/dialer/src/services/index.ts",
+            "packages/dialer/src/services/predictive-priority.contract.spec.ts",
+            "packages/dialer/src/services/predictive-priority.service.ts",
+            "packages/dialer/src/services/predictive-selection-model.contract.spec.ts",
+            "packages/dialer/src/services/predictive-selection-model.ts",
+            "packages/dialer/src/services/predictive-selection-science.spec.ts",
+            "packages/dialer/src/services/retry-decision-model.ts",
+            "packages/dialer/src/services/stopping-model.spec.ts",
+            "packages/dialer/src/services/stopping-model.ts",
+            "packages/dialer/src/services/whittle-index.service.ts",
+            "packages/dialer/src/types.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "dialer-server-package",
+          "critical": true,
+          "reason": "Dialer server changes must prove Hono transport, Twilio boundary, and standalone lifecycle contracts.",
+          "matchedFiles": [
+            "packages/dialer-server/scripts/local-dialer-lab.ts",
+            "packages/dialer-server/src/database/migrations.test.ts",
+            "packages/dialer-server/src/database/migrations.ts",
+            "packages/dialer-server/src/lab/local-dialer-lab.integration.test.ts",
+            "packages/dialer-server/src/lab/local-dialer-lab.ts",
+            "packages/dialer-server/src/learning/postgres-predictive-model-store.contract.test.ts",
+            "packages/dialer-server/src/learning/postgres-predictive-model-store.ts",
+            "packages/dialer-server/src/runtime/lead-connector-learning.test.ts",
+            "packages/dialer-server/src/runtime/lead-connector-learning.ts",
+            "packages/dialer-server/src/runtime/railway.test.ts",
+            "packages/dialer-server/src/runtime/railway.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "dialer specs",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer/src"
+          ],
+          "ruleId": "dialer-package",
+          "critical": true
+        },
+        {
+          "name": "dialer-server Hono contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-server/src"
+          ],
+          "ruleId": "dialer-server-package",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "dialer specs",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer/src"
+          ],
+          "ruleId": "dialer-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 2035,
+          "outputTail": "e exists [0.03ms]\n\npackages/dialer/src/services/whittle-index.spec.ts:\n(pass) WhittleIndexService > should increase index as answer rate increases [0.10ms]\n(pass) WhittleIndexService > should increase urgency bonus as callable window closes [0.03ms]\n(pass) WhittleIndexService > should increase exploration bonus when segment sample size is low [0.02ms]\n(pass) WhittleIndexService > should reduce index as cost per attempt increases [0.02ms]\n(pass) WhittleIndexService > should rank candidates by index descending and position ascending for ties [0.10ms]\n(pass) WhittleIndexService > should apply max urgency bonus when zero hours remain in window [0.02ms]\n(pass) WhittleIndexService > should produce near zero exploration bonus with very high sample size [0.02ms]\n(pass) WhittleIndexService > should set index to negative cost when all positive components are zero [0.02ms]\n(pass) WhittleIndexService > should allow negative index values when cost exceeds reward [0.02ms]\n\npackages/dialer/src/services/call-timing-model.spec.ts:\n(pass) CallTimingModel > should return null when segment has insufficient sample size [0.26ms]\n(pass) CallTimingModel > should return optimal retry time when enough observations exist [0.07ms]\n(pass) CallTimingModel > prefers a timing bin with stronger lower-bound evidence over a lucky tiny raw rate [0.05ms]\n\npackages/dialer/src/services/retry-decision-model.contract.spec.ts:\n(pass) mature retry decision contract > separates whether to retry from the learned preferred timing window [0.44ms]\n(pass) mature retry decision contract > keeps retrying within the cap when stopping evidence is missing [0.09ms]\n(pass) mature retry decision contract > stops on answered calls, the attempt cap, or observed negative expected value [0.12ms]\n\npackages/dialer/src/services/predictive-selection-science.spec.ts:\n(pass) scientific predictive selection contract > uses calibrated upper probability evidence for exploration rather than an arbitrary sample-size bonus [0.44ms]\n(pass) scientific predictive selection contract > does not change an otherwise identical priority because a contact is older than 48 hours [0.23ms]\n\npackages/dialer/src/services/parallel-lifecycle.contract.spec.ts:\n(pass) parallel dial lifecycle contract > keeps customer legs muted without provider hold music until the agent starts the conference [2.08ms]\n(pass) parallel dial lifecycle contract > retains a callback that arrives while later legs are still being created [2.93ms]\n(pass) parallel dial lifecycle contract > keeps exactly one durable winner under simultaneous human callbacks [5.63ms]\n(pass) parallel dial lifecycle contract > claims telemetry emission exactly once under concurrent callbacks [4.60ms]\n(pass) parallel dial lifecycle contract > records failed loser cleanup and clears it after reconciliation succeeds [4.01ms]\n(pass) parallel dial lifecycle contract > does not persist a false winner-unmute failure before the participant enters [0.99ms]\n(pass) parallel dial lifecycle contract > records failed winner unmute and clears it after reconciliation succeeds [1.23ms]\n(pass) parallel dial lifecycle contract > completes the group when the selected winner hangs up [2.57ms]\n(pass) parallel dial lifecycle contract > persists workspace ownership and rejects cross-workspace access [6.19ms]\n(pass) parallel dial lifecycle contract > ignores an answered callback after the same leg is terminal [5.46ms]\n\npackages/dialer/src/infrastructure/redis/redis-parallel-store.test.ts:\n(pass) RedisParallelStore > registers calls and reverse mappings atomically and cleans the full group [2.03ms]\n(pass) RedisParallelStore > claims one winner and one telemetry emission and serializes group operations [4.65ms]\n(pass) RedisParallelStore > renews an owned group lock while a long operation is running [180.85ms]\n(pass) RedisParallelStore > deletes known group keys when the persisted group JSON is malformed [0.30ms]\n\n 200 pass\n 0 fail\n 441 expect() calls\nRan 200 tests across 22 files. [2.02s]\n"
+        },
+        {
+          "name": "dialer-server Hono contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-server/src"
+          ],
+          "ruleId": "dialer-server-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 684,
+          "outputTail": "(pass) LeadConnector dialer learning > does not fail carrier callback handling when learning persistence is unavailable [0.11ms]\n(pass) Railway dialer-server runtime composition > selects the test dialer for follow-up operations on test-mode groups [0.15ms]\n(pass) Railway dialer-server runtime composition > keeps existing groups without a provider mode on the live dialer [0.04ms]\n(pass) Railway dialer-server runtime composition > fails closed when a test-mode group outlives its test credentials [0.04ms]\n(pass) Railway dialer-server runtime composition > composes durable LeadConnector configuration and encrypted installation storage [2.20ms]\n(pass) Railway dialer-server runtime composition > preserves input order when standalone learned data is not available [2.30ms]\n(pass) Railway dialer-server runtime composition > ranks predictive targets from LeadConnector learned outcomes without Twenty model rows [0.86ms]\n(pass) Railway dialer-server runtime composition > starts a mock standalone call session without Twenty or the compatibility API [1.53ms]\n\npackages/dialer-server/src/runtime/lead-connector-learning.test.ts:\n(pass) LeadConnector learning initialization > creates the compatibility attempt ledger before the compatibility outcome tables [2.23ms]\n(pass) LeadConnector learning initialization > uses the canonical observation insert as the idempotency gate for compatibility writes [0.63ms]\n\npackages/dialer-server/src/release/production-release.test.ts:\n(pass) dialer production release safety > selects the new Railway deployment instead of racing the previous latest [0.15ms]\n(pass) dialer production release safety > smokes only non-mutating health/auth/signature boundaries [0.49ms]\n(pass) dialer production release safety > builds a secret-free release manifest from immutable deployment evidence [0.10ms]\n(pass) dialer production release safety > refuses to serialize a release manifest from non-green evidence [0.03ms]\n(pass) dialer production release safety > requires immutable one-time Marketplace bootstrap evidence [0.02ms]\n(pass) dialer production release safety > rolls Railway back to one explicit deployment id through the public API [0.16ms]\n\npackages/dialer-server/src/call-operations/application.test.ts:\n(pass) Effect call-operations transcription application > keeps inbound and outbound buffers separate and persists provider metadata only [3.65ms]\n(pass) Effect call-operations transcription application > processes duplicate frames once and flushes a terminal remainder once [0.40ms]\n(pass) Effect call-operations transcription application > keeps transcript rows idempotent when a provider stream reconnects [0.63ms]\n(pass) Effect call-operations transcription application > marks transcription failed on provider timeout without failing the call boundary [22.92ms]\n(pass) Effect call-operations transcription application > does not begin provider work when workspace transcription is disabled [0.15ms]\n\npackages/dialer-server/src/call-operations/persistence.test.ts:\n(pass) call-operations persistence > initializes canonical workspace settings, sessions, legs, segments, and transfer-compatible events [0.17ms]\n(pass) call-operations persistence > uses a workspace-scoped idempotent insert for transcript metadata [0.22ms]\n(pass) call-operations persistence > atomically upserts the canonical session and all provider legs [0.13ms]\n(pass) call-operations persistence > persists recording provider metadata without retaining a raw recording URL [0.08ms]\n\npackages/dialer-server/src/call-operations/groq.test.ts:\n(pass) Groq speech-to-text adapter > uses the OpenAI-compatible audio endpoint and returns provider-grounded metadata [1.70ms]\n(pass) Groq speech-to-text adapter > fails closed when credentials are absent [0.27ms]\n\n1 tests skipped:\n(skip) local dialer lab service integration > migrates an empty isolated Postgres, exercises Redis, and tears both down\n\n 148 pass\n 1 skip\n 0 fail\n 747 expect() calls\nRan 149 tests across 32 files. [671.00ms]\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [
+      {
+        "category": "database-script",
+        "file": "packages/dialer-server/src/database/migrations.test.ts",
+        "severity": "warning",
+        "message": "database reset/migration/sync script changed"
+      },
+      {
+        "category": "database-script",
+        "file": "packages/dialer-server/src/database/migrations.ts",
+        "severity": "warning",
+        "message": "database reset/migration/sync script changed"
+      }
+    ],
+    "findings": []
+  },
+  "commandVersion": 2
+}

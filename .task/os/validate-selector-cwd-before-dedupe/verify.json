@@ -1,0 +1,95 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/validate-selector-cwd-before-dedupe",
+  "base": "origin/stream/os",
+  "headSha": "e3738e7f9ebc1c779b3e7a179f2be02547fd950e",
+  "changeHash": "7b7e2dfc0d6a89841ceccea839c031bf4e983675a2e56b2ad721d8af34b50f6f",
+  "changedFiles": [
+    "packages/workspace/scripts/test-selection.js",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "verifiedAt": "2026-08-29T07:04:15.773Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/validate-selector-cwd-before-dedupe/evidence-log.json",
+        ".task/os/validate-selector-cwd-before-dedupe/read-log.json",
+        ".task/os/validate-selector-cwd-before-dedupe/workpad.md",
+        ".task/tasks/os/validate-selector-cwd-before-dedupe.json",
+        "packages/workspace/scripts/test-selection.js",
+        "packages/workspace/tests/test-selection.test.js"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-test-selection",
+          "critical": true,
+          "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy.",
+          "matchedFiles": [
+            "packages/workspace/scripts/test-selection.js",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "cwd": ".",
+          "ruleId": "workspace-test-selection",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 4388,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-validate-selector-cwd-before-dedupe\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/test-selection.test.js \u001b[2m(\u001b[22m\u001b[2m72 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 4123\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m discovers and seeds the existing test inventory \u001b[33m 1422\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m72 passed\u001b[39m\u001b[22m\u001b[90m (72)\u001b[39m\n\u001b[2m   Start at \u001b[22m 03:04:11\n\u001b[2m   Duration \u001b[22m 4.20s\u001b[2m (transform 16ms, setup 0ms, import 24ms, tests 4.12s, environment 0ms)\u001b[22m\n\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

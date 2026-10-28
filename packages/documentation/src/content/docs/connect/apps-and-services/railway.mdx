@@ -1,0 +1,48 @@
+---
+title: Railway
+description: Use Railway through the canonical provider-neutral deployment tools.
+status: preview
+verifiedAt: 2026-07-23
+evidence:
+  - source: packages/os/manifests/generated/tool.manifest.json
+    tests:
+      - packages/os/tests/tool-manifest.test.ts
+      - packages/os/tools/deployment-provider/facade.test.ts
+    runtime: 'The current manifest publishes deployment.detect, deployment.context, deployment.list, deployment.status, deployment.logs, deployment.deploy, deployment.environment, and deployment.raw with provider: railway.'
+---
+
+> **Native Consuelo tool: Available**  
+> **Use `deployment.*` with `provider: "railway"`.**
+
+Consuelo exposes Railway detection, context, listing, status, logs, deployment, environment metadata, and raw argv through one canonical deployment surface. Read operations are approval-free. Deploy, redeploy, promotion, environment mutation, and raw execution require explicit local approval.
+
+## Ask your agent
+
+```text
+Use deployment.logs with provider railway for bounded runtime or build logs.
+Use deployment.deploy with provider railway and action redeploy only after I approve the exact target.
+Use deployment.environment action list for variable names; never return environment values.
+```
+
+## Available tools
+
+```text
+deployment.detect
+deployment.context
+deployment.list
+deployment.status
+deployment.logs
+deployment.deploy
+deployment.environment
+deployment.raw
+```
+
+Every call includes `provider: "railway"`. Use `tools.search` for natural-language discovery such as “show Railway deployment logs,” “check Railway deployment status,” or “redeploy the Railway service.”
+
+## Approval boundary
+
+Reads do not require write approval. Deploy, redeploy, promote, environment set/delete, and raw argv require explicit local approval before the Railway CLI runs. Environment values are supplied through the provider adapter’s secret-safe input path and are never returned.
+
+## Official documentation
+
+[Railway CLI](https://docs.railway.com/cli)

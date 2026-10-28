@@ -1,7 +1,7 @@
 {
   "name": "Consuelo",
   "short_name": "Consuelo",
-  "description": "Open-source sales infrastructure for insurance sales teams — crm, dialer, real-time ai coaching, and analytics.",
+  "description": "One workspace for ChatGPT, Codex, Claude, and every agent that comes next.",
   "icons": [
     {
       "src": "/favicon-192x192.png",
@@ -19,13 +19,17 @@
       "type": "image/png"
     }
   ],
-  "theme_color": "#000000",
-  "background_color": "#000000",
+  "theme_color": "#0000F2",
+  "background_color": "#FFFFFF",
   "display": "standalone",
   "start_url": "/",
   "scope": "/",
   "orientation": "portrait-primary",
-  "categories": ["business", "productivity", "technology"],
+  "categories": [
+    "business",
+    "productivity",
+    "technology"
+  ],
   "lang": "en-US",
   "dir": "ltr"
 }

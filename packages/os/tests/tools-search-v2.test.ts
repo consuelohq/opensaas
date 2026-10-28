@@ -5,6 +5,7 @@ import { runToolSearch } from '../scripts/tools-search';
 type ToolMatch = {
   name: string;
   capabilities?: { readOnly?: boolean; mutating?: boolean };
+  description?: string;
 };
 
 type ToolSearchPayload = {
@@ -44,6 +45,13 @@ describe('OS tools.search v2 intent resolution', () => {
     }
   });
 
+  it('routes PR review comment feedback to the GitHub facade', async () => {
+    const payload = await runSearch('CodeRabbit Codex PR review comments', 5);
+    expect(payload.recommended).toBe('github');
+    expect(names(payload)[0]).toBe('github');
+    expect(payload.matches[0].description).toContain('pr.reviews');
+  });
+
   it('keeps task and stream workflow tools ahead of code.call', async () => {
     const expectations: Array<[string, string]> = [
       ['task push changed files', 'task.push'],
@@ -51,6 +59,7 @@ describe('OS tools.search v2 intent resolution', () => {
       ['merge git task branch conflict', 'task.merge'],
       ['finish completed task branch', 'task.finish'],
       ['stream sync branch', 'stream.sync'],
+      ['create a new stream branch', 'stream.create'],
     ];
 
     for (const [query, expected] of expectations) {
@@ -67,5 +76,20 @@ describe('OS tools.search v2 intent resolution', () => {
     expect((await runSearch('list directory files', 5)).recommended).toBe('fs.list');
     expect((await runSearch('apply anchored patch', 5)).recommended).toBe('fs.apply_patch');
     expect((await runSearch('write patch file contents', 5)).recommended).toBe('fs.apply_patch');
+  });
+
+  it('routes provider deployment intents to the canonical deployment surface', async () => {
+    const expectations: Array<[string, string]> = [
+      ['show railway deployment logs', 'deployment.logs'],
+      ['check vercel deployment status', 'deployment.status'],
+      ['list cloudflare environment variable names', 'deployment.environment'],
+      ['redeploy railway service', 'deployment.deploy'],
+    ];
+
+    for (const [query, expected] of expectations) {
+      const payload = await runSearch(query, 8);
+      expect(payload.recommended, query).toBe(expected);
+      expect(names(payload)[0], query).toBe(expected);
+    }
   });
 });

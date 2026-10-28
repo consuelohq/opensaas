@@ -1,0 +1,55 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/security/fix-os-oauth-tool-scope-continuity",
+  "base": "HEAD",
+  "headSha": "b95d1be977b110ff4489acb60bef0982e681b3ba",
+  "changeHash": "fd88e04a411a2fb484694fe9530d4f17df0b49d89cc95992b410e0cb1a5adf71",
+  "changedFiles": [
+    "packages/os/cloudflare/os-device-authority/src/services/mcp-oauth.ts",
+    "packages/os/scripts/server/services/oauth-introspection.ts",
+    "packages/os/tests/local-os-server-review-findings.test.ts",
+    "packages/os/tests/os-device-authority-worker.test.ts"
+  ],
+  "verifiedAt": "2026-07-15T05:06:29.846Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/security/fix-os-oauth-tool-scope-continuity/current.json",
+        ".task/security/fix-os-oauth-tool-scope-continuity/session.json",
+        ".task/security/fix-os-oauth-tool-scope-continuity/workpad.md",
+        ".task/tasks/security/fix-os-oauth-tool-scope-continuity.json",
+        "packages/os/cloudflare/os-device-authority/src/services/mcp-oauth.ts",
+        "packages/os/scripts/server/services/oauth-introspection.ts",
+        "packages/os/tests/local-os-server-review-findings.test.ts",
+        "packages/os/tests/os-device-authority-worker.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

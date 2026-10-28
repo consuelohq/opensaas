@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_bd40aed11854",
+  "tmuxSession": "opensaas-os-fix-public-docs-and-download-redirects-bd40aed1",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-public-docs-and-download-redirects",
+  "branch": "task/os/fix-public-docs-and-download-redirects",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-public-docs-and-download-redirects",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-public-docs-and-download-redirects",
+  "prNumber": 1698,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1698",
+  "createdAt": "2026-07-28T03:29:53.317Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-public-docs-and-download-redirects/.task/os/fix-public-docs-and-download-redirects/session.json"
+}

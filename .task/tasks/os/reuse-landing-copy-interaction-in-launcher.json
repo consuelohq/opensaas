@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/reuse-landing-copy-interaction-in-launcher",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1927,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1927",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1927",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1927/reuse-landing-copy-interaction-in-launcher",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1927",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1927/reuse-landing-copy-interaction-in-launcher",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-reuse-landing-copy-interaction-in-launcher",
+  "taskSession": "tsk_074a8bb79b82",
+  "tmuxSession": "opensaas-os-reuse-landing-copy-interaction-in-launcher-074a8bb7",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-reuse-landing-copy-interaction-in-launcher/.task/os/reuse-landing-copy-interaction-in-launcher/session.json",
+  "createdAt": "2026-08-13T23:54:33.491Z"
+}

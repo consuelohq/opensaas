@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_a1316827b909",
+  "tmuxSession": "opensaas-workspace-agents-resolve-diffs-workspace-edge-route-seed-merge-co-a1316827",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/resolve-diffs-workspace-edge-route-seed-merge-conflict",
+  "branch": "task/workspace-agents/resolve-diffs-workspace-edge-route-seed-merge-conflict",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-resolve-diffs-workspace-edge-route-seed-merge-conflict",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-resolve-diffs-workspace-edge-route-seed-merge-conflict",
+  "prNumber": 1882,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1882",
+  "createdAt": "2026-08-12T04:32:47.375Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-resolve-diffs-workspace-edge-route-seed-merge-conflict/.task/workspace-agents/resolve-diffs-workspace-edge-route-seed-merge-conflict/session.json"
+}

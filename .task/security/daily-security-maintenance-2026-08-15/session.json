@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_1ce0a3f90d3e",
+  "tmuxSession": "opensaas-security-daily-security-maintenance-2026-08-15-1ce0a3f9",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/daily-security-maintenance-2026-08-15",
+  "branch": "task/security/daily-security-maintenance-2026-08-15",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-daily-security-maintenance-2026-08-15",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-daily-security-maintenance-2026-08-15",
+  "prNumber": 2073,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2073",
+  "createdAt": "2026-08-15T13:30:19.534Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-daily-security-maintenance-2026-08-15/.task/security/daily-security-maintenance-2026-08-15/session.json"
+}

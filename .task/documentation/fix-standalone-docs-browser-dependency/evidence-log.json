@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/documentation/fix-standalone-docs-browser-dependency",
+  "events": [
+    {
+      "id": "40d1e98d-de33-4207-8e03-0f6d5bd5cd4b",
+      "occurred_at": "2026-07-13T06:02:02.731Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/documentation/tests/foundation.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/documentation/fix-standalone-docs-browser-dependency",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/documentation/fix-standalone-docs-browser-dependency"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-07-13T06:02:02.786Z"
+}

@@ -1,0 +1,136 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/enforce-mcp-call-timeouts-for-internal-facade-tools",
+  "events": [
+    {
+      "id": "8743510c-5fb1-4822-9232-002faaf0de09",
+      "occurred_at": "2026-08-29T00:46:40.390Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/enforce-mcp-call-timeouts-for-internal-facade-tools/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/enforce-mcp-call-timeouts-for-internal-facade-tools",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/enforce-mcp-call-timeouts-for-internal-facade-tools"
+      }
+    },
+    {
+      "id": "57746059-ec09-47f7-b937-396b41203441",
+      "occurred_at": "2026-08-29T00:46:48.715Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/enforce-mcp-call-timeouts-for-internal-facade-tools",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/enforce-mcp-call-timeouts-for-internal-facade-tools"
+      }
+    },
+    {
+      "id": "3b640252-4ca8-46c5-8870-74c2f3655b13",
+      "occurred_at": "2026-08-29T00:46:53.126Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/facade/executor.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/enforce-mcp-call-timeouts-for-internal-facade-tools",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/enforce-mcp-call-timeouts-for-internal-facade-tools"
+      }
+    },
+    {
+      "id": "1aa8d664-d535-4da2-8322-416f717abbfe",
+      "occurred_at": "2026-08-29T00:47:02.236Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/subagent/runtime.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/enforce-mcp-call-timeouts-for-internal-facade-tools",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/enforce-mcp-call-timeouts-for-internal-facade-tools"
+      }
+    },
+    {
+      "id": "1196d94f-0060-4eb4-a9ed-97d3158d7829",
+      "occurred_at": "2026-08-29T00:47:07.524Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tools/deployment-provider/facade.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/enforce-mcp-call-timeouts-for-internal-facade-tools",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/enforce-mcp-call-timeouts-for-internal-facade-tools"
+      }
+    },
+    {
+      "id": "6a3c340f-aed5-4033-b354-51d0150ad62b",
+      "occurred_at": "2026-08-29T00:47:20.906Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/facade/batch.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/enforce-mcp-call-timeouts-for-internal-facade-tools",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/enforce-mcp-call-timeouts-for-internal-facade-tools"
+      }
+    },
+    {
+      "id": "98000404-0418-40ff-a95a-29004068c7b9",
+      "occurred_at": "2026-08-29T00:47:50.672Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/facade/facade.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/enforce-mcp-call-timeouts-for-internal-facade-tools",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/enforce-mcp-call-timeouts-for-internal-facade-tools"
+      }
+    },
+    {
+      "id": "e34ff453-be07-49a2-897f-d84226916b9a",
+      "occurred_at": "2026-08-29T00:48:04.373Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/manifests/generated/tool.manifest.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/enforce-mcp-call-timeouts-for-internal-facade-tools",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/enforce-mcp-call-timeouts-for-internal-facade-tools"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-29T00:48:04.520Z"
+}

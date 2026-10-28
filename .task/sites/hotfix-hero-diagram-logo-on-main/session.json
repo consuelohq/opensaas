@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_f193a33ac1c5",
+  "tmuxSession": "opensaas-sites-hotfix-hero-diagram-logo-on-main-f193a33a",
+  "area": "sites",
+  "stream": "stream/sites",
+  "taskBranch": "task/sites/hotfix-hero-diagram-logo-on-main",
+  "branch": "task/sites/hotfix-hero-diagram-logo-on-main",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-hotfix-hero-diagram-logo-on-main",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-hotfix-hero-diagram-logo-on-main",
+  "prNumber": 1271,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1271",
+  "createdAt": "2026-06-28T15:35:19.713Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-hotfix-hero-diagram-logo-on-main/.task/sites/hotfix-hero-diagram-logo-on-main/session.json"
+}

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_f4e5e20bb7b3",
+  "tmuxSession": "opensaas-os-distribution-fix-runtime-bundle-verification-gaps-f4e5e20b",
+  "area": "os-distribution",
+  "stream": "stream/os-distribution",
+  "taskBranch": "task/os-distribution/fix-runtime-bundle-verification-gaps",
+  "branch": "task/os-distribution/fix-runtime-bundle-verification-gaps",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-fix-runtime-bundle-verification-gaps",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-fix-runtime-bundle-verification-gaps",
+  "prNumber": 1574,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1574",
+  "createdAt": "2026-07-22T23:37:59.051Z",
+  "tmuxCreated": false,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-fix-runtime-bundle-verification-gaps/.task/os-distribution/fix-runtime-bundle-verification-gaps/session.json"
+}

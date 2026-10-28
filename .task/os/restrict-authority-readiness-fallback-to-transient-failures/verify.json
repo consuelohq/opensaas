@@ -1,0 +1,263 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/restrict-authority-readiness-fallback-to-transient-failures",
+  "base": "origin/stream/os",
+  "headSha": "3a40ca2ae87558e6b60ba716a8d6a64d43022591",
+  "changeHash": "a6bf6039735764f19d52ab7557135428981f9cab7a3baf0ae5976e0f7fea48b1",
+  "changedFiles": [
+    "packages/os/scripts/lib/workspace-node-heartbeat-client.ts",
+    "packages/os/scripts/workspace-node-heartbeat.ts",
+    "packages/os/tests/workspace-node-heartbeat-script.test.ts"
+  ],
+  "verifiedAt": "2026-09-04T15:43:29.480Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/restrict-authority-readiness-fallback-to-transient-failures/current.json",
+        ".task/os/restrict-authority-readiness-fallback-to-transient-failures/session.json",
+        ".task/os/restrict-authority-readiness-fallback-to-transient-failures/workpad.md",
+        ".task/tasks/os/restrict-authority-readiness-fallback-to-transient-failures.json",
+        "packages/os/scripts/lib/workspace-node-heartbeat-client.ts",
+        "packages/os/scripts/workspace-node-heartbeat.ts",
+        "packages/os/tests/workspace-node-heartbeat-script.test.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "os-native-menu-node-discovery",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Native menu lifecycle/auth/heartbeat changes must prove read-only enrolled-node discovery, privileged operator mutations, refresh-token persistence, heartbeat snapshot safety, and lifecycle presentation without selecting the historically red unrelated OS package suite.",
+          "matchedFiles": [
+            "packages/os/scripts/lib/workspace-node-heartbeat-client.ts",
+            "packages/os/scripts/workspace-node-heartbeat.ts",
+            "packages/os/tests/workspace-node-heartbeat-script.test.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "OS native lifecycle node discovery contracts",
+          "cwd": "packages/os",
+          "command": [
+            "node",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/native-lifecycle-endpoint.test.ts",
+            "--config",
+            "vitest.config.ts"
+          ],
+          "ruleId": "os-native-menu-node-discovery",
+          "critical": true
+        },
+        {
+          "name": "OS node heartbeat script contracts",
+          "cwd": "packages/os",
+          "command": [
+            "node",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/workspace-node-heartbeat-script.test.ts",
+            "--config",
+            "vitest.config.ts"
+          ],
+          "ruleId": "os-native-menu-node-discovery",
+          "critical": true
+        },
+        {
+          "name": "OS operator login contracts",
+          "cwd": "packages/os",
+          "command": [
+            "node",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/operator-login.test.ts",
+            "--config",
+            "vitest.config.ts"
+          ],
+          "ruleId": "os-native-menu-node-discovery",
+          "critical": true
+        },
+        {
+          "name": "OS node heartbeat client contracts",
+          "cwd": "packages/os",
+          "command": [
+            "node",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/workspace-node-heartbeat-client.test.ts",
+            "--config",
+            "vitest.config.ts"
+          ],
+          "ruleId": "os-native-menu-node-discovery",
+          "critical": true
+        },
+        {
+          "name": "OS workspace node routing contracts",
+          "cwd": "packages/os",
+          "command": [
+            "node",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/workspace-node-registry-routing.test.ts",
+            "--config",
+            "vitest.config.ts"
+          ],
+          "ruleId": "os-native-menu-node-discovery",
+          "critical": true
+        },
+        {
+          "name": "OS native menu node discovery syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "ruleId": "os-native-menu-node-discovery",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "OS native lifecycle node discovery contracts",
+          "command": [
+            "node",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/native-lifecycle-endpoint.test.ts",
+            "--config",
+            "vitest.config.ts"
+          ],
+          "cwd": "packages/os",
+          "ruleId": "os-native-menu-node-discovery",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1181,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-restrict-authority-readiness-fallback-to-transient-failures/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/native-lifecycle-endpoint.test.ts \u001b[2m(\u001b[22m\u001b[2m13 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 154\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m13 passed\u001b[39m\u001b[22m\u001b[90m (13)\u001b[39m\n\u001b[2m   Start at \u001b[22m 11:43:24\n\u001b[2m   Duration \u001b[22m 825ms\u001b[2m (transform 290ms, setup 16ms, import 588ms, tests 154ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS node heartbeat script contracts",
+          "command": [
+            "node",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/workspace-node-heartbeat-script.test.ts",
+            "--config",
+            "vitest.config.ts"
+          ],
+          "cwd": "packages/os",
+          "ruleId": "os-native-menu-node-discovery",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 550,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-restrict-authority-readiness-fallback-to-transient-failures/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/workspace-node-heartbeat-script.test.ts \u001b[2m(\u001b[22m\u001b[2m13 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 36\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m13 passed\u001b[39m\u001b[22m\u001b[90m (13)\u001b[39m\n\u001b[2m   Start at \u001b[22m 11:43:25\n\u001b[2m   Duration \u001b[22m 354ms\u001b[2m (transform 104ms, setup 13ms, import 250ms, tests 36ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS operator login contracts",
+          "command": [
+            "node",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/operator-login.test.ts",
+            "--config",
+            "vitest.config.ts"
+          ],
+          "cwd": "packages/os",
+          "ruleId": "os-native-menu-node-discovery",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 346,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-restrict-authority-readiness-fallback-to-transient-failures/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/operator-login.test.ts \u001b[2m(\u001b[22m\u001b[2m18 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 48\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m18 passed\u001b[39m\u001b[22m\u001b[90m (18)\u001b[39m\n\u001b[2m   Start at \u001b[22m 11:43:26\n\u001b[2m   Duration \u001b[22m 146ms\u001b[2m (transform 22ms, setup 14ms, import 23ms, tests 48ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS node heartbeat client contracts",
+          "command": [
+            "node",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/workspace-node-heartbeat-client.test.ts",
+            "--config",
+            "vitest.config.ts"
+          ],
+          "cwd": "packages/os",
+          "ruleId": "os-native-menu-node-discovery",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 387,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-restrict-authority-readiness-fallback-to-transient-failures/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/workspace-node-heartbeat-client.test.ts \u001b[2m(\u001b[22m\u001b[2m6 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 16\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m6 passed\u001b[39m\u001b[22m\u001b[90m (6)\u001b[39m\n\u001b[2m   Start at \u001b[22m 11:43:26\n\u001b[2m   Duration \u001b[22m 149ms\u001b[2m (transform 55ms, setup 16ms, import 54ms, tests 16ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS workspace node routing contracts",
+          "command": [
+            "node",
+            "../../node_modules/vitest/vitest.mjs",
+            "run",
+            "tests/workspace-node-registry-routing.test.ts",
+            "--config",
+            "vitest.config.ts"
+          ],
+          "cwd": "packages/os",
+          "ruleId": "os-native-menu-node-discovery",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 675,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-restrict-authority-readiness-fallback-to-transient-failures/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/workspace-node-registry-routing.test.ts \u001b[2m(\u001b[22m\u001b[2m52 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 74\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m52 passed\u001b[39m\u001b[22m\u001b[90m (52)\u001b[39m\n\u001b[2m   Start at \u001b[22m 11:43:26\n\u001b[2m   Duration \u001b[22m 473ms\u001b[2m (transform 274ms, setup 15ms, import 323ms, tests 74ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS native menu node discovery syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "cwd": ".",
+          "ruleId": "os-native-menu-node-discovery",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1840,
+          "outputTail": "workspace script syntax checks passed\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

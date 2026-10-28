@@ -1,0 +1,19 @@
+{
+  "area": "tooling",
+  "stream": "stream/tooling",
+  "taskBranch": "task/tooling/remove-stale-twenty-emails-breaking-change-dependency",
+  "baseBranch": "stream/tooling",
+  "sourceBranch": "stream/tooling",
+  "startFrom": "stream",
+  "prNumber": 1431,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1431",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1431",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1431/remove-stale-twenty-emails-breaking-change-dependency",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1431",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1431/remove-stale-twenty-emails-breaking-change-dependency",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-tooling-remove-stale-twenty-emails-breaking-change-dependency",
+  "taskSession": "tsk_7b8359140cd3",
+  "tmuxSession": "opensaas-tooling-remove-stale-twenty-emails-breaking-change-depen-7b835914",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-tooling-remove-stale-twenty-emails-breaking-change-dependency/.task/tooling/remove-stale-twenty-emails-breaking-change-dependency/session.json",
+  "createdAt": "2026-07-12T23:53:24.730Z"
+}

@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "worktree_id": "task/os-distribution/fix-runtime-bundle-verification-gaps",
+  "events": [
+    {
+      "id": "fb8562b5-a9be-4185-802e-8b37c561e8b8",
+      "occurred_at": "2026-07-22T23:35:35.294Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os-distribution/fix-runtime-bundle-verification-gaps/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-distribution/fix-runtime-bundle-verification-gaps",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-distribution/fix-runtime-bundle-verification-gaps"
+      }
+    },
+    {
+      "id": "b29ad233-bacc-4d03-8fec-8a21afb08a8c",
+      "occurred_at": "2026-07-22T23:35:56.075Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/distribution/runtime-bundle.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-distribution/fix-runtime-bundle-verification-gaps",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-distribution/fix-runtime-bundle-verification-gaps"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-07-22T23:35:56.129Z"
+}

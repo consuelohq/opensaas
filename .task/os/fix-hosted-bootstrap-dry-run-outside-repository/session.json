@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_fa3064d15013",
+  "tmuxSession": "opensaas-os-fix-hosted-bootstrap-dry-run-outside-repository-fa3064d1",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-hosted-bootstrap-dry-run-outside-repository",
+  "branch": "task/os/fix-hosted-bootstrap-dry-run-outside-repository",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-hosted-bootstrap-dry-run-outside-repository",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-hosted-bootstrap-dry-run-outside-repository",
+  "prNumber": 1737,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1737",
+  "createdAt": "2026-07-29T10:28:47.425Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-hosted-bootstrap-dry-run-outside-repository/.task/os/fix-hosted-bootstrap-dry-run-outside-repository/session.json"
+}

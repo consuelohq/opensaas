@@ -1,0 +1,49 @@
+---
+title: GitHub
+description: Use the built-in GitHub facade for repository, issue, pull request, and review work.
+status: preview
+verifiedAt: 2026-07-14
+evidence:
+  - source: packages/os/manifests/generated/tool.manifest.json
+    tests:
+      - packages/os/tests/tool-manifest.test.ts
+      - packages/os/tests/github.test.ts
+    runtime: 'The current `workspace.github` facade and focused GitHub tests were inspected on 2026-07-14.'
+---
+
+> **Native Consuelo tool: Available now**  
+> **Available today: Yes — through `workspace.github`.**
+
+The built-in GitHub facade supports typed pull-request, review, file, diff, branch comparison, repository, and explicit raw operations. Authentication remains local to the runtime through the GitHub CLI or `GITHUB_TOKEN`.
+
+## Ask your agent
+
+```text
+Use workspace.github for this repository.
+Start with pr.view, pr.files, branch.compare, or another read-only operation.
+Use typed operations instead of raw GitHub calls whenever possible.
+Before a merge, comment, branch mutation, or raw escape hatch, show me the target and request approval.
+```
+
+## Verify access
+
+Use a read operation against the intended repository. Confirm the owner, repository, branch, and pull request before any mutation.
+
+## Common methods
+
+```text
+workspace.github({ operation: "pr.view", pr: 123 })
+workspace.github({ operation: "pr.files", pr: 123 })
+workspace.github({ operation: "pr.reviews", pr: 123 })
+workspace.github({ operation: "branch.compare", base: "main", head: "feature" })
+```
+
+Raw operations require an explicit reason because they bypass the smaller typed contract.
+
+## Credentials and approval
+
+Keep GitHub authentication in the GitHub CLI, Apple Keychain-backed credential helper, or a local `GITHUB_TOKEN`. Never paste a token into a prompt. Merges, comments, releases, branch changes, and repository settings are writes and require approval.
+
+## Official documentation
+
+[GitHub CLI documentation](https://cli.github.com/manual/)

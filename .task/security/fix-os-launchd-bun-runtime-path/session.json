@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_68ad5db41c3c",
+  "tmuxSession": "opensaas-security-fix-os-launchd-bun-runtime-path-68ad5db4",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/fix-os-launchd-bun-runtime-path",
+  "branch": "task/security/fix-os-launchd-bun-runtime-path",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-os-launchd-bun-runtime-path",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-os-launchd-bun-runtime-path",
+  "prNumber": 1508,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1508",
+  "createdAt": "2026-07-15T03:39:30.557Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-os-launchd-bun-runtime-path/.task/security/fix-os-launchd-bun-runtime-path/session.json"
+}

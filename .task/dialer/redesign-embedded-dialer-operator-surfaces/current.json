@@ -1,0 +1,19 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/redesign-embedded-dialer-operator-surfaces",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 1763,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1763",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1763",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1763/redesign-embedded-dialer-operator-surfaces",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1763",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1763/redesign-embedded-dialer-operator-surfaces",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-redesign-embedded-dialer-operator-surfaces",
+  "taskSession": "tsk_5bdef5acdcd5",
+  "tmuxSession": "opensaas-dialer-redesign-embedded-dialer-operator-surfaces-5bdef5ac",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-redesign-embedded-dialer-operator-surfaces/.task/dialer/redesign-embedded-dialer-operator-surfaces/session.json",
+  "createdAt": "2026-08-03T22:56:53.547Z"
+}

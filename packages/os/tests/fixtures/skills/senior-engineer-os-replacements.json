@@ -26,5 +26,17 @@
   {
     "from": "Normal workspace calls should be task-session scoped instead of branch-threaded.",
     "to": "Normal OS calls should be task-session scoped instead of branch-threaded."
+  },
+  {
+    "from": "context.search",
+    "to": "memory.search"
+  },
+  {
+    "from": "context memory",
+    "to": "project memory"
+  },
+  {
+    "from": "`memory.search`",
+    "to": "`memory` with `operation: \"search\"`"
   }
 ]

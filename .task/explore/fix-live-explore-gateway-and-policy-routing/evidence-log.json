@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/explore/fix-live-explore-gateway-and-policy-routing",
+  "events": [
+    {
+      "id": "18c51c31-cb20-4cdf-a988-d193fa72cf3f",
+      "occurred_at": "2026-08-29T07:46:55.508Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/explore-index-hydration-fallback.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/explore/fix-live-explore-gateway-and-policy-routing",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/explore/fix-live-explore-gateway-and-policy-routing"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-29T07:46:55.594Z"
+}

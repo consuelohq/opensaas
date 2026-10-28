@@ -1,0 +1,104 @@
+{
+  "version": 1,
+  "worktree_id": "task/os-distribution/resolve-main-promotion-conflicts",
+  "events": [
+    {
+      "id": "4b6b877a-6ba8-4b8f-8592-5f13aa873435",
+      "occurred_at": "2026-07-23T19:04:12.199Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/senior-engineer.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-distribution/resolve-main-promotion-conflicts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-distribution/resolve-main-promotion-conflicts"
+      }
+    },
+    {
+      "id": "0812031f-00b2-44be-a256-37ae6714ecb9",
+      "occurred_at": "2026-07-23T19:04:21.638Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "AGENTS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-distribution/resolve-main-promotion-conflicts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-distribution/resolve-main-promotion-conflicts"
+      }
+    },
+    {
+      "id": "bd3f8666-0b81-4756-a22f-7ab7d6004445",
+      "occurred_at": "2026-07-23T19:04:27.580Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "CODING-STANDARDS.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-distribution/resolve-main-promotion-conflicts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-distribution/resolve-main-promotion-conflicts"
+      }
+    },
+    {
+      "id": "6ef7b189-c269-4a7c-af85-c74901de911f",
+      "occurred_at": "2026-07-23T19:04:33.074Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/plans/consuelo-os-foundation/plan.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-distribution/resolve-main-promotion-conflicts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-distribution/resolve-main-promotion-conflicts"
+      }
+    },
+    {
+      "id": "cf17b174-79c2-4d72-87dc-9fcfe8d8c555",
+      "occurred_at": "2026-07-23T19:04:40.588Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/plans/consuelo-os-foundation/environment-registry.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-distribution/resolve-main-promotion-conflicts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-distribution/resolve-main-promotion-conflicts"
+      }
+    },
+    {
+      "id": "d458235c-64b2-4f26-8fa8-1d03c7bb3c31",
+      "occurred_at": "2026-07-23T19:06:12.275Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/distribution/runtime-bundle.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os-distribution/resolve-main-promotion-conflicts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os-distribution/resolve-main-promotion-conflicts"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-07-23T19:06:12.335Z"
+}

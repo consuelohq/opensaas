@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "worktree_id": "task/dialer/enforce-ghl-call-target-authorization",
+  "events": [
+    {
+      "id": "a9e7b9a7-452e-48cf-88c3-a16cbd0ba722",
+      "occurred_at": "2026-08-10T02:43:18.007Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/lead-connector/src/application/resources.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/enforce-ghl-call-target-authorization",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/enforce-ghl-call-target-authorization"
+      }
+    },
+    {
+      "id": "fe921629-8188-46ea-af18-fa651a1edfd9",
+      "occurred_at": "2026-08-10T02:45:05.046Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/lead-connector/src/application.contract.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/enforce-ghl-call-target-authorization",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/enforce-ghl-call-target-authorization"
+      }
+    },
+    {
+      "id": "5a70f2a7-bdc8-493d-b62c-f30316a0cee6",
+      "occurred_at": "2026-08-10T02:45:13.592Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/lead-connector/src/application.contract.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/enforce-ghl-call-target-authorization",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/enforce-ghl-call-target-authorization"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-10T02:45:13.647Z"
+}

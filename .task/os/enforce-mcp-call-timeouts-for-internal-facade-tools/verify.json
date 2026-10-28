@@ -1,0 +1,280 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/enforce-mcp-call-timeouts-for-internal-facade-tools",
+  "base": "origin/stream/os",
+  "headSha": "1f5c560a18d6d317de8365e58dbc871760ad78c1",
+  "changeHash": "3d8602b441c6e88032715fe3475638e35300e2facf14d2dd49a325aa35df3506",
+  "changedFiles": [
+    "packages/os/scripts/lib/facade/executor.ts",
+    "packages/os/tests/facade/facade.test.ts"
+  ],
+  "verifiedAt": "2026-08-29T00:51:07.982Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/enforce-mcp-call-timeouts-for-internal-facade-tools/evidence-log.json",
+        ".task/os/enforce-mcp-call-timeouts-for-internal-facade-tools/read-log.json",
+        ".task/os/enforce-mcp-call-timeouts-for-internal-facade-tools/workpad.md",
+        ".task/tasks/os/enforce-mcp-call-timeouts-for-internal-facade-tools.json",
+        "packages/os/scripts/lib/facade/executor.ts",
+        "packages/os/tests/facade/facade.test.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "os-mcp-call-timeout-envelope",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Public MCP call timeout is envelope execution metadata, not selected tool input; changes must prove transport separation, local facade deadline propagation, and syntax without selecting the historically red package-wide OS suite.",
+          "matchedFiles": [
+            "packages/os/scripts/lib/facade/executor.ts",
+            "packages/os/tests/facade/facade.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-task-worktree-eviction",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Durable task eviction, recovery archives, inactivity GC, supervisor scheduling, and facade recovery must prove reversible cleanup without selecting the unrelated package-wide OS baseline.",
+          "matchedFiles": [
+            "packages/os/scripts/lib/facade/executor.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-work-session-fs",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Work-session filesystem authority must prove trusted session-root routing, escape resistance, generated tool contracts, and unchanged task-session filesystem behavior without selecting unrelated package-wide OS tests.",
+          "matchedFiles": [
+            "packages/os/scripts/lib/facade/executor.ts",
+            "packages/os/tests/facade/facade.test.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "OS MCP call-timeout envelope contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/mcp-gateway.test.ts"
+          ],
+          "ruleId": "os-mcp-call-timeout-envelope",
+          "critical": true
+        },
+        {
+          "name": "OS MCP call-timeout facade contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/facade/facade.test.ts",
+            "-t",
+            "call execution timeout"
+          ],
+          "ruleId": "os-mcp-call-timeout-envelope",
+          "critical": true
+        },
+        {
+          "name": "OS MCP call-timeout syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "ruleId": "os-mcp-call-timeout-envelope",
+          "critical": true
+        },
+        {
+          "name": "task worktree eviction and recovery contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/task-worktree-eviction.test.ts",
+            "packages/workspace/tests/durable-task-worktrees.test.ts",
+            "packages/workspace/tests/task-session.test.js",
+            "packages/os/tests/task-worktree-gc-scheduler.test.ts"
+          ],
+          "ruleId": "os-task-worktree-eviction",
+          "critical": true
+        },
+        {
+          "name": "OS work-session filesystem authority contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/work-session-fs.test.ts",
+            "packages/os/tests/fs-write.test.ts",
+            "packages/os/tests/session-start-foundation.test.ts",
+            "packages/os/tests/tool-manifest.test.ts"
+          ],
+          "ruleId": "os-work-session-fs",
+          "critical": true
+        },
+        {
+          "name": "OS task-session filesystem compatibility contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/facade/facade.test.ts",
+            "-t",
+            "fs\\.(apply_patch|write|read)"
+          ],
+          "ruleId": "os-work-session-fs",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "OS MCP call-timeout envelope contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/mcp-gateway.test.ts"
+          ],
+          "ruleId": "os-mcp-call-timeout-envelope",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1751,
+          "outputTail": "age\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"6716c554-2a6d-44c7-a691-be72bee780d2\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-29T00:50:43.780Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"59ba74fe-6fcb-4819-a35f-0cca4a382fa9\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-29T00:50:43.781Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"de7d580c-785c-48c8-be34-d73c74353b16\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-29T00:50:43.784Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"4188fcab-2927-4936-9bf9-5604e5c150e5\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-29T00:50:43.788Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"1884f379-e970-4f19-885e-0f61c67d7fe7\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-29T00:50:43.793Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"063b44e6-b68f-42d3-b7e1-23eee4b7416b\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-29T00:50:43.798Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"caa8db80-21f8-4480-a31f-fb8b57da4ffe\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-29T00:50:43.802Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"6a79949a-2f4a-4111-b08d-59e58a06c48c\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-29T00:50:43.807Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"0a940717-003c-471a-82e3-7cdb29e7bff2\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-29T00:50:43.810Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"008909eb-ecba-47a4-8341-faf20911038d\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-29T00:50:43.811Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"412ef5a6-3820-4713-9bc3-28d6cce52828\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-29T00:50:43.813Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"f8a08d02-a898-4413-ad9c-87106e7410b5\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-29T00:50:43.814Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"2d6806b8-82d6-48fa-9490-676f36468264\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-29T00:50:43.817Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"8ae726e3-d499-4621-a363-b9482b8ae5db\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-29T00:50:43.822Z\"}\n{\"level\":\"info\",\"service\":\"consuelo-os-local-server\",\"event\":\"local_os.mcp_request_received\",\"message\":\"local_os.mcp_request_received\",\"context\":{\"requestId\":\"f6135928-3b84-4f36-8ec9-8cea409b4038\",\"route\":\"/mcp\",\"method\":\"POST\"},\"ts\":\"2026-08-29T00:50:43.826Z\"}\n(node:9354) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+        },
+        {
+          "name": "OS MCP call-timeout facade contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/facade/facade.test.ts",
+            "-t",
+            "call execution timeout"
+          ],
+          "ruleId": "os-mcp-call-timeout-envelope",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1461,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-enforce-mcp-call-timeouts-for-internal-facade-tools\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/facade/facade.test.ts \u001b[2m(\u001b[22m\u001b[2m724 tests\u001b[22m\u001b[2m | \u001b[22m\u001b[33m721 skipped\u001b[39m\u001b[2m)\u001b[22m\u001b[32m 213\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m3 passed\u001b[39m\u001b[22m\u001b[2m | \u001b[22m\u001b[33m721 skipped\u001b[39m\u001b[90m (724)\u001b[39m\n\u001b[2m   Start at \u001b[22m 20:50:44\n\u001b[2m   Duration \u001b[22m 1.08s\u001b[2m (transform 398ms, setup 0ms, import 752ms, tests 213ms, environment 0ms)\u001b[22m\n\n{\"level\":\"info\",\"tool\":\"session.start\",\"branch\":\"\",\"command\":\"workspace session.start '{\\\"kind\\\":\\\"work\\\",\\\"path\\\":\\\"/tmp/session-runtime-scope\\\"}'\",\"implementationCommand\":\"bun run session:start -- --kind work --path /tmp/session-runtime-scope --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-29T00:50:45.105Z\"}\n{\"level\":\"info\",\"tool\":\"task.ensureSynced\",\"branch\":\"task/workspace-agents/test\",\"command\":\"workspace task.ensureSynced\",\"implementationCommand\":\"bun run stream:context -- --area workspace-agents --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-29T00:50:45.121Z\"}\n(node:9371) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n{\"level\":\"error\",\"tool\":\"code.call\",\"command\":\"workspace code.call\",\"implementationCommand\":\"os code.call\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"TIMEOUT\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-29T00:50:45.297Z\"}\n"
+        },
+        {
+          "name": "OS MCP call-timeout syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "ruleId": "os-mcp-call-timeout-envelope",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 2684,
+          "outputTail": "workspace script syntax checks passed\n"
+        },
+        {
+          "name": "task worktree eviction and recovery contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/task-worktree-eviction.test.ts",
+            "packages/workspace/tests/durable-task-worktrees.test.ts",
+            "packages/workspace/tests/task-session.test.js",
+            "packages/os/tests/task-worktree-gc-scheduler.test.ts"
+          ],
+          "ruleId": "os-task-worktree-eviction",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 13391,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-enforce-mcp-call-timeouts-for-internal-facade-tools\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/task-worktree-gc-scheduler.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 4\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/workspace/tests/durable-task-worktrees.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 7\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/workspace/tests/task-session.test.js \u001b[2m(\u001b[22m\u001b[2m13 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 1465\u001b[2mms\u001b[22m\u001b[39m\n   \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m recoverDurableTaskSession restores an evicted worktree before recreating tmux \u001b[33m 1325\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/workspace/tests/task-worktree-eviction.test.ts \u001b[2m(\u001b[22m\u001b[2m15 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 12824\u001b[2mms\u001b[22m\u001b[39m\n   \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m durable activity lease updates lastActiveAt without rewriting task creation time \u001b[33m 510\u001b[2mms\u001b[22m\u001b[39m\n   \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m recovery archive captures dirty, untracked, and locally-ahead state without changing the real branch or index \u001b[33m 1176\u001b[2mms\u001b[22m\u001b[39m\n   \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m dirty task eviction archives unique state, removes the worktree, and restores the exact file contents \u001b[33m 1701\u001b[2mms\u001b[22m\u001b[39m\n   \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m clean remote-backed task eviction needs no recovery bundle and keeps the branch recoverable \u001b[33m 986\u001b[2mms\u001b[22m\u001b[39m\n   \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m archive failure is fail-closed and never removes the worktree \u001b[33m 716\u001b[2mms\u001b[22m\u001b[39m\n   \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m tampered recovery bundle is rejected before restore and the archive remains available \u001b[33m 1439\u001b[2mms\u001b[22m\u001b[39m\n   \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m an evicting task with its worktree still present rejects recovery instead of racing eviction \u001b[33m 622\u001b[2mms\u001b[22m\u001b[39m\n   \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m stale evicting task with a live worktree recovers to active after the eviction lease expires \u001b[33m 633\u001b[2mms\u001b[22m\u001b[39m\n   \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m stale evicting task with a removed worktree is finalized as evicted and restored \u001b[33m 761\u001b[2mms\u001b[22m\u001b[39m\n   \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m durable registry transition rejects a stale updatedAt compare-and-swap writer \u001b[33m 563\u001b[2mms\u001b[22m\u001b[39m\n   \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m durable registry transitions reject stale status writers \u001b[33m 536\u001b[2mms\u001b[22m\u001b[39m\n   \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m corrupt recovery manifest reports the manifest path \u001b[33m 1236\u001b[2mms\u001b[22m\u001b[39m\n   \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m evicting task rejects recovery even after its worktree has been removed \u001b[33m 651\u001b[2mms\u001b[22m\u001b[39m\n   \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m final recovery cleanup deletes only task-owned archive and registry state \u001b[33m 1288\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m4 passed\u001b[39m\u001b[22m\u001b[90m (4)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m32 passed\u001b[39m\u001b[22m\u001b[90m (32)\u001b[39m\n\u001b[2m   Start at \u001b[22m 20:50:48\n\u001b[2m   Duration \u001b[22m 13.01s\u001b[2m (transform 199ms, setup 0ms, import 329ms, tests 14.30s, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS work-session filesystem authority contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/work-session-fs.test.ts",
+            "packages/os/tests/fs-write.test.ts",
+            "packages/os/tests/session-start-foundation.test.ts",
+            "packages/os/tests/tool-manifest.test.ts"
+          ],
+          "ruleId": "os-work-session-fs",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 4669,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-enforce-mcp-call-timeouts-for-internal-facade-tools\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/fs-write.test.ts \u001b[2m(\u001b[22m\u001b[2m13 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 596\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/session-start-foundation.test.ts \u001b[2m(\u001b[22m\u001b[2m12 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 90\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/tool-manifest.test.ts \u001b[2m(\u001b[22m\u001b[2m17 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 121\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/work-session-fs.test.ts \u001b[2m(\u001b[22m\u001b[2m10 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 3170\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m uses the work-session path as the relative context for read, list, and search \u001b[33m 603\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m applies patches and trashes files inside the trusted work-session root \u001b[33m 737\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m rejects lexical and absolute write escapes \u001b[33m 477\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m rejects symlink escapes for write, apply-patch, and trash \u001b[33m 505\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m rejects a work session rooted in the managed repo and its linked worktrees \u001b[33m 404\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m4 passed\u001b[39m\u001b[22m\u001b[90m (4)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m52 passed\u001b[39m\u001b[22m\u001b[90m (52)\u001b[39m\n\u001b[2m   Start at \u001b[22m 20:51:01\n\u001b[2m   Duration \u001b[22m 4.25s\u001b[2m (transform 2.08s, setup 0ms, import 3.29s, tests 3.98s, environment 0ms)\u001b[22m\n\n(node:17432) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n(node:17428) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+        },
+        {
+          "name": "OS task-session filesystem compatibility contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/facade/facade.test.ts",
+            "-t",
+            "fs\\.(apply_patch|write|read)"
+          ],
+          "ruleId": "os-work-session-fs",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1631,
+          "outputTail": ".write\",\"implementationCommand\":\"workspace fs.write\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-29T00:51:07.338Z\"}\n{\"level\":\"info\",\"tool\":\"fs.apply_patch\",\"branch\":\"task/workspace-agents/test\",\"command\":\"workspace fs.apply_patch '{\\\"taskSession\\\":\\\"tsk_apply_patch_test\\\",\\\"dryRun\\\":true,\\\"patchText\\\":\\\"*** Begin Patch\\\\n*** End Patch\\\",\\\"branch\\\":\\\"task/workspace-agents/test\\\",\\\"taskWorktree\\\":\\\"/[REDACTED_SECRET]\\\"}'\",\"implementationCommand\":\"bun run task:fs -- --branch task/workspace-agents/test apply-patch --patch-text *** Begin Patch\\n*** End Patch --dry-run\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-29T00:51:07.418Z\"}\n{\"level\":\"info\",\"tool\":\"fs.write\",\"branch\":\"task/workspace-agents/test\",\"command\":\"workspace fs.write '{\\\"taskSession\\\":\\\"tsk_fs_write_test\\\",\\\"path\\\":\\\"tmp/example.txt\\\",\\\"contentFile\\\":\\\"/tmp/payload.txt\\\",\\\"force\\\":true,\\\"mkdirs\\\":true,\\\"branch\\\":\\\"task/workspace-agents/test\\\",\\\"taskWorktree\\\":\\\"/[REDACTED_SECRET]\\\"}'\",\"implementationCommand\":\"bun run task:fs -- --branch task/workspace-agents/test write tmp/example.txt --content-file /tmp/payload.txt --force --mkdirs\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-29T00:51:07.495Z\"}\n{\"level\":\"info\",\"tool\":\"fs.write\",\"branch\":\"task/workspace-agents/test\",\"command\":\"workspace fs.write '{\\\"taskSession\\\":\\\"tsk_fs_write_append_test\\\",\\\"path\\\":\\\"tmp/example.txt\\\",\\\"content\\\":\\\"payload\\\",\\\"append\\\":true,\\\"branch\\\":\\\"task/workspace-agents/test\\\",\\\"taskWorktree\\\":\\\"/[REDACTED_SECRET]\\\"}'\",\"implementationCommand\":\"bun run task:fs -- --branch task/workspace-agents/test write tmp/example.txt --content payload --append\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-29T00:51:07.554Z\"}\n{\"level\":\"info\",\"tool\":\"fs.read\",\"branch\":\"task/workspace-agents/test\",\"command\":\"workspace fs.read '{\\\"taskSession\\\":\\\"tsk_read_page\\\",\\\"path\\\":\\\"packages/os/scripts/fs.js\\\",\\\"offset\\\":5,\\\"limit\\\":20,\\\"branch\\\":\\\"task/workspace-agents/test\\\",\\\"taskWorktree\\\":\\\"/[REDACTED_SECRET]\\\"}'\",\"implementationCommand\":\"bun run task:fs -- --branch task/workspace-agents/test read packages/os/scripts/fs.js --offset 5 --limit 20 --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-29T00:51:07.611Z\"}\n{\"level\":\"info\",\"tool\":\"fs.read\",\"branch\":\"task/workspace-agents/test\",\"command\":\"workspace fs.read '{\\\"taskSession\\\":\\\"tsk_read_multi\\\",\\\"files\\\":[{\\\"path\\\":\\\"src/a.ts\\\",\\\"offset\\\":1,\\\"limit\\\":80},{\\\"path\\\":\\\"src/b.ts\\\",\\\"offset\\\":100,\\\"limit\\\":60}],\\\"filesJson\\\":\\\"[{\\\\\\\"path\\\\\\\":\\\\\\\"src/a.ts\\\\\\\",\\\\\\\"offset\\\\\\\":1,\\\\\\\"limit\\\\\\\":80},{\\\\\\\"path\\\\\\\":\\\\\\\"src/b.ts\\\\\\\",\\\\\\\"offset\\\\\\\":100,\\\\\\\"limit\\\\\\\":60}]\\\",\\\"branch\\\":\\\"task/workspace-agents/test\\\",\\\"taskWorktree\\\":\\\"/[REDACTED_SECRET]\\\"}'\",\"implementationCommand\":\"bun run task:fs -- --branch task/workspace-agents/test read --files-json [{\\\"path\\\":\\\"src/a.ts\\\",\\\"offset\\\":1,\\\"limit\\\":80},{\\\"path\\\":\\\"src/b.ts\\\",\\\"offset\\\":100,\\\"limit\\\":60}] --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-29T00:51:07.686Z\"}\n(node:18401) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

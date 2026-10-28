@@ -113,7 +113,7 @@ function validateSkillMetadata(skill: JsonObject, skillDir: string): void {
   }
 }
 
-function compactSkillMetadata(skill: JsonObject): JsonObject {
+function compactSkillMetadata(skill: JsonObject, skillDir: string): JsonObject {
   const compact: JsonObject = {};
 
   for (const field of COMPACT_FIELDS) {
@@ -121,6 +121,15 @@ function compactSkillMetadata(skill: JsonObject): JsonObject {
       compact[field] = skill[field as CompactField];
     }
   }
+
+  const name = assertString(skill.name, 'name', path.basename(skillDir));
+  const entrypoint = assertString(skill.entrypoint, 'entrypoint', name);
+  const load = isObject(skill.load) ? skill.load : {};
+  compact.load = {
+    ...load,
+    type: typeof load.type === 'string' ? load.type : 'resource',
+    path: `skills/${name}/${entrypoint}`,
+  };
 
   return compact;
 }
@@ -135,7 +144,7 @@ export function buildSkillsRegistry(options: GenerateSkillsRegistryOptions = {})
   const skills = skillDirs.map((skillDir) => {
     const skill = readJsonObject(path.join(skillDir, 'skill.json'));
     validateSkillMetadata(skill, skillDir);
-    return compactSkillMetadata(skill);
+    return compactSkillMetadata(skill, skillDir);
   }).sort((left, right) => String(left.name).localeCompare(String(right.name)));
 
   return { version: 1, skills };

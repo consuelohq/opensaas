@@ -1,0 +1,21 @@
+{
+  "files": [
+    ".task/os/separate-documentation-footer-scroll-region-and-simplify-sidebar-hierarchy/workpad.md",
+    "/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/consuelo-research/20260715T023623Z-www-youtube-com-watch-v-Ln-8QM8KhQ-themeRefresh-1-34824168/packet.md",
+    "packages/documentation/README.md",
+    "packages/documentation/astro.config.mjs",
+    "packages/documentation/dist/index.html",
+    "packages/documentation/package.json",
+    "packages/documentation/scripts/test-foundation-browser.mjs",
+    "packages/documentation/src/components/Footer.astro",
+    "packages/documentation/src/components/PageTitle.astro",
+    "packages/documentation/src/components/Sidebar.astro",
+    "packages/documentation/src/components/SiteFooter.astro",
+    "packages/documentation/src/components/translation/RuntimeLanguageSelect.astro",
+    "packages/documentation/src/pages/api/docs/translate.ts",
+    "packages/documentation/src/styles/docs.css",
+    "packages/documentation/tests/foundation.test.ts",
+    "packages/workspace/senior-engineer.md"
+  ],
+  "updatedAt": "2026-07-15T02:42:38.792Z"
+}

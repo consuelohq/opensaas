@@ -1,0 +1,118 @@
+---
+title: Debugging failures
+description: Move from a user-visible symptom to the smallest relevant run, trace, tool call, artifact, or gateway failure.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/scripts/doctor-errors.ts
+    tests:
+      - packages/os/tests/doctor-logs.test.ts
+      - packages/os/tests/doctor-redaction.test.ts
+    runtime: A failed missing-skill execution returned SKILL_NOT_FOUND through doctor:errors in an isolated home on 2026-07-13.
+  - source: packages/os/scripts/lib/trace-sites-gateway-read-layer.ts
+    tests:
+      - packages/os/tests/trace-sites-gateway-read-layer.test.ts
+      - packages/os/tests/trace-sites-browser-client.test.ts
+    runtime: Bridge-required, trace-store unavailable, cached aggregate, and live fallback paths were checked through focused contracts.
+---
+
+Debug from the symptom inward. Keep the original trace ID and stable error code, then inspect the smallest store that can explain the failure.
+
+## 1. Classify the failure
+
+| Symptom | Likely surface | First check |
+| --- | --- | --- |
+| A skill returned `ok: false` | OS run | `doctor:errors -- --trace-id <id> --json` |
+| A repository or browser tool failed | Workspace tool call | `context -- trace --trace-id <id> --raw --json` |
+| A run succeeded but the file is missing | Artifact | Read the returned artifact ID and run `artifacts history`. |
+| Traces page is empty or stale | Trace Sites gateway | Check the page state and whether the compatible gateway route is available. |
+| A command hung or exceeded a caller timeout | Run or tool call | Check whether a result was recorded before retrying. |
+| The wrong branch changed | Workspace task context | Inspect `taskSession`, branch, and worktree on the tool row. |
+
+## 2. Start with the trace ID
+
+For an OS run:
+
+```bash
+export CONSUELO_HOME="${CONSUELO_HOME:-$HOME/.consuelo}"
+bun run --cwd "$CONSUELO_HOME" doctor:errors -- --trace-id trc_example --json
+bun run --cwd "$CONSUELO_HOME" doctor:watch -- --trace-id trc_example --once --json
+```
+
+For a workspace tool call:
+
+```bash
+bun run --cwd "$CONSUELO_HOME" context -- trace --trace-id trc_example --raw --json
+```
+
+Do not begin with a broad database dump. A specific trace ID reduces unrelated private data and makes timing easier to reconstruct.
+
+## 3. Read the error code before the prose
+
+Stable codes tell you which layer rejected the request.
+
+| Code | Current meaning | Next step |
+| --- | --- | --- |
+| `SKILL_NOT_FOUND` | The requested skill is not in the active manifest. | Check the exact skill name and installed skill registry. Do not create a similarly named skill just to silence the error. |
+| `APPROVAL_REQUIRED` | A mutating call needs approval before execution. | Review the proposed action and approve through the owning workflow. |
+| `COMMAND_FAILED` | A workspace command exited unsuccessfully. | Read exit code and bounded stderr, then reproduce the narrow command in the same task context. |
+| `TASK_SESSION_NOT_FOUND` | The scoped task session cannot be resolved. | Check task state before creating or attaching another worktree. |
+| `BRIDGE_REQUIRED` | Hosted Trace Sites cannot reach an off-network local source. | Use local evidence or configure the supported bridge path. |
+| `TRACE_STORE_UNAVAILABLE` | The trace store is down and no usable aggregate cache is available. | Check gateway health and use local run or tool evidence while the hosted surface is unavailable. |
+| `RAW_PAYLOAD_ACCESS_DENIED` | The caller requested raw trace data without permission. | Use redacted or summarized data unless explicit access is required and authorized. |
+
+Keep the code in bug reports. Messages can become clearer over time; codes are the safer machine-facing reference.
+
+## 4. Confirm whether the operation actually completed
+
+A timeout only means the caller stopped waiting. It does not prove the underlying operation failed.
+
+Check:
+
+1. Is there a run or tool row with the trace ID?
+2. Is its status final or still `started`, `running`, or `pending`?
+3. Did an artifact version appear?
+4. Did the branch or external system change?
+5. Is the hosted UI stale while local evidence is current?
+
+Retry only after deciding whether the first attempt completed. Duplicate writes and duplicate reviews are harder to repair than one slow call.
+
+## 5. Inspect task context for repository failures
+
+A workspace tool row can include `taskSession`, branch, and worktree. Compare them with the intended task. If the worktree disappeared after a restart, preserve any surviving commit or untracked file evidence before creating a recovery task.
+
+Do not force-reset a branch, overwrite unknown work, or delete a stale worktree as a first debugging step.
+
+## 6. Follow artifact provenance
+
+When a result says it created an artifact:
+
+```bash
+bun run --cwd "$CONSUELO_HOME" artifacts -- history --id art_example --json
+```
+
+Confirm the current version, trace ID, storage path, `contentSha256`, and file existence. If the run returned no artifact descriptor, do not infer that a file should exist merely because the skill name sounds document-producing.
+
+## 7. Interpret Trace Sites states correctly
+
+- `stale` means the last snapshot may still be visible while live updates are disconnected.
+- `degraded` means some data remains usable under reduced health.
+- `bridge-required` means the hosted gateway cannot hydrate that local source without a bridge.
+- `TRACE_STORE_UNAVAILABLE` means the trace store and aggregate fallback cannot satisfy the read.
+
+The page can fail while local runs and tool traces remain queryable. Use the local commands rather than repeatedly refreshing the browser.
+
+## Escalation packet
+
+Provide:
+
+- exact symptom;
+- trace ID and stable error code;
+- timestamp and duration;
+- skill or tool name;
+- task session, branch, and worktree when relevant;
+- artifact ID and current version when relevant;
+- whether the failure was local OS, workspace tooling, or the hosted gateway;
+- the smallest redacted result or stderr excerpt that demonstrates the issue.
+
+Exclude credentials, raw payloads, unrelated customer records, and entire trace databases.

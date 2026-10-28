@@ -1,0 +1,110 @@
+---
+title: Publish
+description: Publish a local, immutable Sites page and update it without overwriting someone else's work.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/scripts/os.ts
+    tests:
+      - packages/os/tests/sites-cli.test.ts
+    runtime: First publish, stale publish rejection, base-version update, forced recovery, and structured result fields were exercised on 2026-07-13.
+  - source: packages/os/scripts/lib/sites.ts
+    tests:
+      - packages/os/tests/sites-cli.test.ts
+    runtime: Current copies, immutable public versions, private version data, and registry metadata were verified in isolated temporary homes.
+---
+
+import Note from '../../../components/mintlify/Note.astro';
+
+`sites publish` copies an existing file or directory into the local Sites page registry. Every successful publish creates an immutable version and updates the page's current copy.
+
+## First publish
+
+```bash
+export CONSUELO_HOME="${CONSUELO_HOME:-$HOME/.consuelo}"
+bun run --cwd "$CONSUELO_HOME" os -- sites publish \
+  --target "$PWD/release-checklist" \
+  --path /pages/release-checklist \
+  --title "Release checklist" \
+  --kind guide \
+  --json
+```
+
+Required values:
+
+- `--target` — an existing HTML file or directory;
+- `--path` — a page slug, conventionally `/pages/<slug>`;
+- `--title` or `--name` — the reader-facing title.
+
+Use `--kind` to record `spec`, `plan`, `guide`, `trace`, `diff`, `office`, or `uncategorized`. When omitted, the current implementation records `uncategorized`.
+
+A successful result includes `publishedVersionId`, `currentVersionId`, `versionCount`, `currentPath`, `versionPath`, and `pagesRegistryPath`.
+
+## Update an existing page
+
+Read the current version from the previous result, `sites status`, or the page registry. Then publish with that version as your base:
+
+```bash
+bun run --cwd "$CONSUELO_HOME" os -- sites publish \
+  --target "$PWD/release-checklist" \
+  --path /pages/release-checklist \
+  --title "Release checklist" \
+  --kind guide \
+  --base-version <current-version-id> \
+  --sections verify,ship-checklist \
+  --agent agent-a \
+  --trace <trace-id> \
+  --json
+```
+
+`--sections`, `--agent`, and `--trace` add provenance to the version record. They do not replace the need to preserve the actual source.
+
+If the page already exists and `--base-version` is missing or stale, publish returns:
+
+```text
+STALE_SITES_PUBLISH
+```
+
+The result includes the required current base. Read the latest page, reconcile the change, and retry with that value.
+
+## Intentional recovery overwrite
+
+`--force-publish` bypasses the base-version check. Use it only for an explicitly approved recovery or intentional overwrite:
+
+```bash
+bun run --cwd "$CONSUELO_HOME" os -- sites publish \
+  --target "$PWD/release-checklist" \
+  --path /pages/release-checklist \
+  --title "Release checklist" \
+  --kind guide \
+  --force-publish \
+  --json
+```
+
+A forced publish still creates a new immutable version. It does not erase version history, but it can replace the current page without proving that your source included the latest work.
+
+## Plan without writing
+
+Use `--dry-run` to validate target, path, kind, and version constraints while skipping filesystem writes:
+
+```bash
+bun run --cwd "$CONSUELO_HOME" os -- sites publish \
+  --target "$PWD/release-checklist" \
+  --path /pages/release-checklist \
+  --title "Release checklist" \
+  --kind guide \
+  --dry-run \
+  --json
+```
+
+## Verify the result
+
+1. Confirm the command returned `ok: true`.
+2. Open `currentPath/index.html` or the returned current file.
+3. Confirm `versionPath` exists and contains the same intended output.
+4. Inspect `sites/pages/index.html` to see the current version and version count.
+5. Keep the version ID in the handoff for the next editor.
+
+<Note>
+  This command publishes locally under `CONSUELO_HOME`. Consuelo-managed hosted snapshots are provisioned and verified by the platform, not by this user-facing command.
+</Note>

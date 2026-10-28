@@ -1,5 +1,9 @@
+const fs = require('fs');
+const path = require('path');
 const { listWorktrees } = require('./git');
 const { readValidTaskMetaForWorktree } = require('./task-meta');
+const { listDurableTaskSessionMetadata } = require('./task-registry');
+const { recoverDurableTaskSession } = require('./task-session');
 const { resolvePrRefNumber } = require('./pr-ref');
 
 function parseTaskSelectorPrefix(rawArgs) {
@@ -7,13 +11,14 @@ function parseTaskSelectorPrefix(rawArgs) {
     area: null,
     branch: null,
     prNumber: null,
+    taskSession: null,
   };
 
   let index = 0;
   while (index < rawArgs.length) {
     const flag = rawArgs[index];
 
-    if (flag === '--area' || flag === '--branch' || flag === '--pr' || flag === '--github') {
+    if (flag === '--area' || flag === '--branch' || flag === '--pr' || flag === '--github' || flag === '--task-session') {
       const value = rawArgs[index + 1];
       if (!value || value.startsWith('--')) {
         throw new Error(`missing value for ${flag}`);
@@ -22,6 +27,7 @@ function parseTaskSelectorPrefix(rawArgs) {
       if (flag === '--area') selector.area = value;
       if (flag === '--branch') selector.branch = value;
       if (flag === '--pr' || flag === '--github') selector.prNumber = resolvePrRefNumber(value);
+      if (flag === '--task-session') selector.taskSession = value;
       index += 2;
       continue;
     }
@@ -56,6 +62,7 @@ function taskMatchesSelector(task, selector = {}) {
   if (selector.area && task.meta.area !== selector.area) return false;
   if (selector.branch && task.meta.taskBranch !== selector.branch && task.branch !== selector.branch) return false;
   if (selector.prNumber !== null && selector.prNumber !== undefined && getTaskPrNumber(task) !== selector.prNumber) return false;
+  if (selector.taskSession && task.meta.taskSession !== selector.taskSession) return false;
   return true;
 }
 
@@ -64,6 +71,7 @@ function getSelectorLabel(selector = {}) {
   if (selector.area) parts.push(`area "${selector.area}"`);
   if (selector.branch) parts.push(`branch "${selector.branch}"`);
   if (selector.prNumber !== null && selector.prNumber !== undefined) parts.push(`pr #${selector.prNumber}`);
+  if (selector.taskSession) parts.push(`task session "${selector.taskSession}"`);
   return parts.length > 0 ? parts.join(', ') : 'any active task';
 }
 
@@ -81,7 +89,7 @@ function selectTaskFromCandidatesResult(tasks, selector = {}) {
     const labels = matches.map(getTaskLabel).join(', ');
     return {
       task: null,
-      error: `multiple active tasks found (${labels}). use --branch <task-branch>, --pr <number-or-url>, or --github <url> to select one.`,
+      error: `multiple active tasks found (${labels}). use --task-session <id>, --branch <task-branch>, --pr <number-or-url>, or --github <url> to select one.`,
     };
   }
 
@@ -94,22 +102,63 @@ function selectTaskFromCandidates(tasks, selector = {}) {
   return result.task;
 }
 
+function normalizeComparablePath(filePath) {
+  const resolved = path.resolve(filePath);
+  try { return fs.realpathSync.native(resolved); } catch { return resolved; }
+}
+
+function registryMatchesWorktree(metadata, worktree) {
+  if (!metadata || !worktree) return false;
+  const branch = metadata.taskBranch || metadata.branch;
+  const registeredPath = metadata.worktreePath || metadata.worktree;
+  if (!branch || branch !== worktree.branch || !registeredPath) return false;
+  return normalizeComparablePath(registeredPath) === normalizeComparablePath(worktree.path);
+}
+
 function findActiveTaskCandidates(repoRoot) {
   const worktrees = listWorktrees(repoRoot);
+  const registry = listDurableTaskSessionMetadata();
   const tasks = [];
 
   for (const worktree of worktrees) {
-    if (worktree.path === repoRoot) continue;
-    const meta = readValidTaskMetaForWorktree(worktree.path, worktree.branch);
-    if (!meta) continue;
+    const localMeta = readValidTaskMetaForWorktree(worktree.path, worktree.branch);
+    const durableMeta = registry.find((metadata) => registryMatchesWorktree(metadata, worktree)) || null;
+    if (!localMeta && !durableMeta) continue;
+    const meta = localMeta && durableMeta
+      ? { ...durableMeta, ...localMeta, taskSession: durableMeta.taskSession || localMeta.taskSession }
+      : localMeta || durableMeta;
     tasks.push({ worktreePath: worktree.path, meta, branch: worktree.branch });
   }
 
   return tasks;
 }
 
-function findActiveTaskResult(repoRoot, selector = {}) {
-  return selectTaskFromCandidatesResult(findActiveTaskCandidates(repoRoot), selector);
+function findActiveTaskResult(repoRoot, selector = {}, options = {}) {
+  const result = selectTaskFromCandidatesResult(findActiveTaskCandidates(repoRoot), selector);
+  if (!selector.taskSession) return result;
+  try {
+    const recoverTaskSession = options.recoverTaskSession || recoverDurableTaskSession;
+    const recovered = recoverTaskSession(selector.taskSession);
+    if (!recovered) return result;
+    if (result.task) {
+      result.task.meta = { ...result.task.meta, ...recovered };
+      result.task.worktreePath = recovered.worktreePath || result.task.worktreePath;
+      return result;
+    }
+    return {
+      task: {
+        worktreePath: recovered.worktreePath || recovered.worktree,
+        meta: recovered,
+        branch: recovered.taskBranch || recovered.branch,
+      },
+      error: null,
+    };
+  } catch (error) {
+    return {
+      task: null,
+      error: `task session recovery failed for ${selector.taskSession}: ${error instanceof Error ? error.message : String(error)}`,
+    };
+  }
 }
 
 function findActiveTask(repoRoot, selector = {}) {

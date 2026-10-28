@@ -3,15 +3,18 @@ set -euo pipefail
 
 dry_run=0
 quiet=0
+definitions_only=0
 debug="${CONSUELO_OS_DEBUG:-0}"
 for arg in "$@"; do
   case "$arg" in
     --dry-run) dry_run=1 ;;
     --quiet) quiet=1 ;;
+    --definitions-only) definitions_only=1 ;;
     --debug) debug=1 ;;
     --help|-h)
-      echo "usage: bash scripts/install-system-daemons.sh [--dry-run] [--quiet] [--debug]"
+      echo "usage: bash scripts/install-system-daemons.sh [--dry-run] [--definitions-only] [--quiet] [--debug]"
       echo "installs Consuelo OS user LaunchAgents in ~/Library/LaunchAgents"
+      echo "  --definitions-only  refresh plist definitions without restarting live services"
       echo "  --quiet  suppress normal success details for hosted bootstrap output"
       exit 0
       ;;
@@ -24,7 +27,36 @@ done
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 root_dir="$(cd "$script_dir/.." && pwd)"
+env_file="$root_dir/.env"
 log_prefix="[consuelo-os-launchagent-install]"
+install_id="${CONSUELO_INSTALL_ID:-}"
+background_service_result_file="${CONSUELO_BACKGROUND_SERVICE_RESULT_FILE:-}"
+background_service_failure_code="BACKGROUND_SERVICE_INSTALL_FAILED"
+stage_pid=""
+
+record_background_service_failure() {
+  local status="$1"
+  [ "$status" -ne 0 ] || return 0
+  if [ -n "$background_service_result_file" ]; then
+    {
+      printf 'install_id=%s\n' "$install_id"
+      printf 'error_code=%s\n' "$background_service_failure_code"
+    } > "$background_service_result_file" 2>/dev/null || true
+  fi
+  if [ -n "$install_id" ]; then
+    printf '%s install_id=%s error_code=%s\n' "$log_prefix" "$install_id" "$background_service_failure_code" >&2
+  fi
+}
+
+cleanup_background_service_install() {
+  local status=$?
+  if [ -n "$stage_pid" ]; then
+    kill "$stage_pid" 2>/dev/null || true
+  fi
+  record_background_service_failure "$status"
+}
+
+trap cleanup_background_service_install EXIT
 
 daemon_user="${CONSUELO_DAEMON_USER:-${USER:-$(id -un)}}"
 if ! id -u "$daemon_user" >/dev/null 2>&1; then
@@ -32,22 +64,49 @@ if ! id -u "$daemon_user" >/dev/null 2>&1; then
   exit 1
 fi
 daemon_home="${CONSUELO_DAEMON_HOME:-${HOME:-/Users/$daemon_user}}"
+consuelo_data_home="${CONSUELO_HOME:-$daemon_home/.consuelo}"
+state_env_file="$consuelo_data_home/.env"
 launch_agent_dir="$daemon_home/Library/LaunchAgents"
-log_dir="${CONSUELO_DAEMON_LOG_DIR:-$root_dir/logs}"
+log_dir="${CONSUELO_DAEMON_LOG_DIR:-$consuelo_data_home/node/logs}"
 workspace_label="${WORKSPACE_DAEMON_LABEL:-com.consuelo.system}"
+caddy_label="${CADDY_DAEMON_LABEL:-com.consuelo.caddy}"
 portless_label="${PORTLESS_DAEMON_LABEL:-com.consuelo.portless.system}"
 watchdog_label="${WORKSPACE_WATCHDOG_LABEL:-com.consuelo.watchdog}"
+availability_label="${CONSUELO_AVAILABILITY_LABEL:-com.consuelo.availability}"
 workspace_agent_plist="$launch_agent_dir/${workspace_label}.plist"
+caddy_agent_plist="$launch_agent_dir/${caddy_label}.plist"
 portless_agent_plist="$launch_agent_dir/${portless_label}.plist"
 watchdog_agent_plist="$launch_agent_dir/${watchdog_label}.plist"
-workspace_generated_plist="$script_dir/generated/${workspace_label}.plist"
-portless_generated_plist="$script_dir/generated/${portless_label}.plist"
-watchdog_generated_plist="$script_dir/generated/${watchdog_label}.plist"
-cloudflared_generated_dir="${CONSUELO_SECURITY_GENERATED_DIR:-$root_dir/security/generated}"
+availability_agent_plist="$launch_agent_dir/${availability_label}.plist"
+# Resolve from the mutable generated directory, falling back to the legacy in-release location so
+# a node installed before the move keeps working until its plists are regenerated.
+system_generated_dir="${CONSUELO_SECURITY_GENERATED_DIR:-$consuelo_data_home/node/security/generated}"
+resolve_generated_plist() {
+  local label="$1"
+  if [ -f "$system_generated_dir/${label}.plist" ]; then
+    printf '%s\n' "$system_generated_dir/${label}.plist"
+  else
+    printf '%s\n' "$script_dir/generated/${label}.plist"
+  fi
+}
+workspace_generated_plist="$(resolve_generated_plist "$workspace_label")"
+caddy_generated_plist="$(resolve_generated_plist "$caddy_label")"
+portless_generated_plist="$(resolve_generated_plist "$portless_label")"
+watchdog_generated_plist="$(resolve_generated_plist "$watchdog_label")"
+availability_generated_plist="$(resolve_generated_plist "$availability_label")"
+cloudflared_generated_dir="${CONSUELO_SECURITY_GENERATED_DIR:-$consuelo_data_home/node/security/generated}"
+caddyfile="${CONSUELO_CADDYFILE:-$consuelo_data_home/node/caddy/Caddyfile}"
+caddy_ingress_port="${CONSUELO_CADDY_INGRESS_PORT:-46320}"
+portless_backup_dir="$consuelo_data_home/node/portless-backup"
 cloudflared_labels=()
 cloudflared_generated_plists=()
 cloudflared_agent_plists=()
 portless_enabled=0
+availability_enabled=0
+supervised_sidecars=0
+if [ -f "$root_dir/scripts/lib/macos-supervised-sidecars.ts" ]; then
+  supervised_sidecars=1
+fi
 stage_port="${WORKSPACE_STAGE_PORT:-}"
 if [ -z "$stage_port" ]; then
   for candidate_port in 8961 8962 8963 9851 10851; do
@@ -61,9 +120,58 @@ if [ -z "$stage_port" ]; then
   echo "unable to find a free stage port" >&2
   exit 1
 fi
-local_health_url="${WORKSPACE_CUTOVER_LOCAL_HEALTH_URL:-http://127.0.0.1:8960/health}"
 uid_value="$(id -u "$daemon_user")"
 launch_domain="gui/$uid_value"
+
+load_env_file() {
+  local file="$1"
+  if [ ! -f "$file" ]; then
+    return 0
+  fi
+
+  local line key value
+  while IFS= read -r line || [ -n "$line" ]; do
+    case "$line" in
+      ''|'#'*) continue ;;
+    esac
+    key="${line%%=*}"
+    value="${line#*=}"
+    if [ "$key" = "$line" ]; then
+      continue
+    fi
+    case "$key" in
+      ''|*[!A-Za-z0-9_]*|[0-9]*) continue ;;
+    esac
+    value="${value%$'\r'}"
+    value="${value%\"}"
+    value="${value#\"}"
+    value="${value%\'}"
+    value="${value#\'}"
+    export "$key=$value"
+  done < "$file"
+}
+
+resolve_cutover_local_port() {
+  local file="$1"
+  (
+    load_env_file "$file"
+    printf '%s\n' "${WORKSPACE_DAEMON_PORT:-${CONSUELO_OS_PORT:-${PORT:-46321}}}"
+  )
+}
+
+resolve_cutover_local_health_url() {
+  local file="$1"
+  if [ -n "${WORKSPACE_CUTOVER_LOCAL_HEALTH_URL:-}" ]; then
+    printf '%s\n' "$WORKSPACE_CUTOVER_LOCAL_HEALTH_URL"
+    return 0
+  fi
+
+  local port
+  port="$(resolve_cutover_local_port "$file")"
+  printf 'http://127.0.0.1:%s/health\n' "$port"
+}
+
+local_health_url="$(resolve_cutover_local_health_url "$env_file")"
 
 log() {
   printf '%s %s\n' "$log_prefix" "$*"
@@ -74,9 +182,79 @@ extract_plist_label() {
   sed -n '/<key>Label<\/key>/{n;s/.*<string>\(.*\)<\/string>.*/\1/p;q;}' "$plist"
 }
 
+xml_escape() {
+  local value="$1"
+  value="${value//&/&amp;}"
+  value="${value//</&lt;}"
+  value="${value//>/&gt;}"
+  value="${value//\"/&quot;}"
+  value="${value//\'/&apos;}"
+  printf '%s\n' "$value"
+}
+
+reconcile_cloudflared_plist_binary() {
+  local plist="$1"
+  local cloudflared_bin="${CLOUDFLARED_BIN:-}"
+  if [ -z "$cloudflared_bin" ] || [ ! -x "$cloudflared_bin" ]; then
+    echo "managed cloudflared binary is missing or not executable while reconciling: $plist" >&2
+    return 1
+  fi
+
+  local escaped_bin current_bin
+  escaped_bin="$(xml_escape "$cloudflared_bin")"
+  current_bin="$(awk '
+    /<key>ProgramArguments<\/key>/ { in_args = 1; next }
+    in_args {
+      start = index($0, "<string>")
+      finish = index($0, "</string>")
+      if (start > 0 && finish > start) {
+        print substr($0, start + length("<string>"), finish - start - length("<string>"))
+        exit
+      }
+      if ($0 ~ /<\/array>/) exit
+    }
+  ' "$plist")"
+  if [ "$current_bin" = "$escaped_bin" ]; then
+    return 0
+  fi
+  if [ "$dry_run" -eq 1 ]; then
+    log "dry-run: would update Cloudflared binary in $plist to $cloudflared_bin"
+    return 0
+  fi
+
+  local temporary_path
+  temporary_path="$(mktemp "${plist}.tmp.XXXXXX")"
+  if ! awk -v replacement="$escaped_bin" '
+    BEGIN { in_args = 0; replaced = 0 }
+    {
+      if ($0 ~ /<key>ProgramArguments<\/key>/) in_args = 1
+      if (in_args && !replaced) {
+        start = index($0, "<string>")
+        finish = index($0, "</string>")
+        if (start > 0 && finish > start) {
+          prefix = substr($0, 1, start - 1)
+          suffix = substr($0, finish + length("</string>"))
+          $0 = prefix "<string>" replacement "</string>" suffix
+          replaced = 1
+        }
+      }
+      print
+      if (in_args && $0 ~ /<\/array>/) in_args = 0
+    }
+    END { if (!replaced) exit 42 }
+  ' "$plist" > "$temporary_path"; then
+    rm -f "$temporary_path"
+    echo "unable to rewrite Cloudflared ProgramArguments in plist: $plist" >&2
+    return 1
+  fi
+  chmod 600 "$temporary_path"
+  mv "$temporary_path" "$plist"
+}
+
 append_cloudflared_plist() {
   local plist="$1"
   local label existing_label
+  reconcile_cloudflared_plist_binary "$plist"
   label="$(extract_plist_label "$plist")"
   if [ -z "$label" ]; then
     echo "unable to read Label from cloudflared plist: $plist" >&2
@@ -108,33 +286,126 @@ collect_cloudflared_plists() {
 service_labels_csv() {
   local labels="$workspace_label"
   local label
+  if [ "$supervised_sidecars" != "1" ]; then
+    labels="$labels, $caddy_label"
+  fi
   if [ "$portless_enabled" = "1" ]; then
     labels="$labels, $portless_label"
   fi
-  labels="$labels, $watchdog_label"
-  for label in "${cloudflared_labels[@]+"${cloudflared_labels[@]}"}"; do
-    labels="$labels, $label"
-  done
+  if [ "$supervised_sidecars" != "1" ]; then
+    labels="$labels, $watchdog_label"
+  fi
+  if [ "$availability_enabled" = "1" ]; then
+    labels="$labels, $availability_label"
+  fi
+  if [ "$supervised_sidecars" != "1" ]; then
+    for label in "${cloudflared_labels[@]+"${cloudflared_labels[@]}"}"; do
+      labels="$labels, $label"
+    done
+  fi
   printf '%s\n' "$labels"
 }
 
-derive_external_health_url() {
-  if [ -n "${WORKSPACE_WATCHDOG_EXTERNAL_URL:-}" ]; then
-    printf '%s\n' "$WORKSPACE_WATCHDOG_EXTERNAL_URL"
+derive_connector_health_url() {
+  if [ -n "${CONSUELO_CONNECTOR_HEALTH_URL:-}" ]; then
+    printf '%s\n' "$CONSUELO_CONNECTOR_HEALTH_URL"
     return 0
   fi
 
-  if [ -z "${MCP_SERVER_URL:-}" ]; then
-    return 0
+  local config_file="$consuelo_data_home/config.json"
+  local bun_bin="${BUN_BIN:-}"
+  [ -f "$config_file" ] || return 1
+  if [ -z "$bun_bin" ]; then
+    bun_bin="$(command -v bun || true)"
   fi
+  [ -n "$bun_bin" ] || return 1
 
-  local base_url="${MCP_SERVER_URL%/}"
-  if [[ "$base_url" == */mcp ]]; then
-    printf '%s/health\n' "${base_url%/mcp}"
-    return 0
+  CONSUELO_CONNECTOR_CONFIG_PATH="$config_file" \
+    CONSUELO_CONNECTOR_ORIGIN_BASE_DOMAIN="${CONSUELO_CONNECTOR_ORIGIN_BASE_DOMAIN:-consuelohq.com}" \
+    "$bun_bin" --print '
+(() => {
+  const { createHash } = require("node:crypto");
+  const { readFileSync } = require("node:fs");
+  const config = JSON.parse(readFileSync(process.env.CONSUELO_CONNECTOR_CONFIG_PATH, "utf8"));
+  const connectorId = String(config?.connector?.id || "").trim().toLowerCase();
+  const baseDomain = String(process.env.CONSUELO_CONNECTOR_ORIGIN_BASE_DOMAIN || "").trim().toLowerCase();
+  if (!/^[a-z0-9](?:[a-z0-9._:-]{0,253}[a-z0-9])?$/.test(connectorId)) {
+    throw new Error("connector id is missing or invalid");
+  }
+  if (!/^[a-z0-9.-]+\.[a-z]{2,}$/.test(baseDomain)) {
+    throw new Error("connector origin base domain is invalid");
+  }
+  const digest = createHash("sha256")
+    .update("consuelo:connector-origin:v1\0" + connectorId)
+    .digest("hex")
+    .slice(0, 32);
+  return "https://c-" + digest + "." + baseDomain + "/health";
+})()
+'
+}
+
+derive_workspace_host() {
+  local config_file="$consuelo_data_home/config.json"
+  local bun_bin="${BUN_BIN:-}"
+  [ -f "$config_file" ] || return 1
+  if [ -z "$bun_bin" ]; then
+    bun_bin="$(command -v bun || true)"
   fi
+  [ -n "$bun_bin" ] || return 1
 
-  printf '%s/health\n' "$base_url"
+  CONSUELO_WORKSPACE_CONFIG_PATH="$config_file" "$bun_bin" --print '
+(() => {
+  const { readFileSync } = require("node:fs");
+  const config = JSON.parse(readFileSync(process.env.CONSUELO_WORKSPACE_CONFIG_PATH, "utf8"));
+  const host = String(config?.workspace?.host || "").trim().toLowerCase();
+  if (!/^[a-z0-9.-]+\.[a-z]{2,}$/.test(host)) {
+    throw new Error("workspace host is missing or invalid");
+  }
+  return host;
+})()
+'
+}
+
+resolve_caddy_bin() {
+  (
+    load_env_file "$env_file"
+    load_env_file "$state_env_file"
+    managed_caddy_bin="$consuelo_data_home/bin/caddy"
+    if [ -n "${CADDY_BIN:-}" ]; then
+      printf '%s\n' "$CADDY_BIN"
+    elif [ -x "$managed_caddy_bin" ]; then
+      printf '%s\n' "$managed_caddy_bin"
+    else
+      command -v caddy || true
+    fi
+  )
+}
+
+resolve_cloudflared_bin() {
+  (
+    load_env_file "$env_file"
+    load_env_file "$state_env_file"
+    managed_cloudflared_bin="$consuelo_data_home/bin/cloudflared"
+    if [ -n "${CLOUDFLARED_BIN:-}" ] && [ -x "$CLOUDFLARED_BIN" ]; then
+      printf '%s\n' "$CLOUDFLARED_BIN"
+    elif [ -x "$managed_cloudflared_bin" ]; then
+      printf '%s\n' "$managed_cloudflared_bin"
+    else
+      command -v cloudflared || true
+    fi
+  )
+}
+
+resolve_bun_bin() {
+  (
+    load_env_file "$env_file"
+    load_env_file "$state_env_file"
+    if [ -n "${BUN_BIN:-}" ]; then
+      printf '%s\n' "$BUN_BIN"
+    else
+      command -v bun || true
+    fi
+  )
 }
 
 wait_for_health() {
@@ -157,6 +428,29 @@ wait_for_health() {
   return 1
 }
 
+wait_for_workspace_health() {
+  wait_for_health "$local_health_url" 20 1
+}
+
+wait_for_caddy_health() {
+  local workspace_host="$1"
+  local url="http://127.0.0.1:${caddy_ingress_port}/health"
+  local attempt
+  for attempt in $(seq 1 20); do
+    if [ "$debug" = "1" ]; then
+      if curl --fail --silent --show-error --max-time 5 --header "Host: $workspace_host" "$url" >/dev/null; then
+        return 0
+      fi
+    else
+      if curl --fail --silent --max-time 5 --header "Host: $workspace_host" "$url" >/dev/null 2>&1; then
+        return 0
+      fi
+    fi
+    sleep 1
+  done
+  return 1
+}
+
 bootout_agent() {
   local label="$1"
   launchctl bootout "$launch_domain/$label" 2>/dev/null || true
@@ -169,6 +463,34 @@ bootstrap_agent() {
   launchctl kickstart -k "$launch_domain/$label"
 }
 
+remove_disabled_agent() {
+  local label="$1"
+  local plist="$2"
+  bootout_agent "$label"
+  rm -f "$plist"
+}
+
+retire_legacy_portless_services() {
+  local legacy_label legacy_plist timestamp
+  timestamp="$(date -u +%Y%m%dT%H%M%SZ)"
+  for legacy_label in com.consuelo.portless com.consuelo.portless.system; do
+    if [ "$portless_enabled" = "1" ] && [ "$legacy_label" = "$portless_label" ]; then
+      continue
+    fi
+    legacy_plist="$launch_agent_dir/${legacy_label}.plist"
+    if [ "$dry_run" -eq 1 ]; then
+      log "would retire recognized legacy Portless service: $legacy_label"
+      continue
+    fi
+    bootout_agent "$legacy_label"
+    if [ -f "$legacy_plist" ]; then
+      mkdir -p "$portless_backup_dir"
+      mv "$legacy_plist" "$portless_backup_dir/${legacy_label}.${timestamp}.plist"
+      log "retired legacy Portless service to $portless_backup_dir"
+    fi
+  done
+}
+
 rollback_agents() {
   local label
   log "rolling back user LaunchAgents"
@@ -176,21 +498,46 @@ rollback_agents() {
     bootout_agent "$label"
   done
   bootout_agent "$watchdog_label"
+  if [ "$availability_enabled" = "1" ]; then
+    bootout_agent "$availability_label"
+  fi
   if [ "$portless_enabled" = "1" ]; then
     bootout_agent "$portless_label"
   fi
+  bootout_agent "$caddy_label"
   bootout_agent "$workspace_label"
+  restore_legacy_supervised_sidecar_agents
+}
+
+restore_legacy_supervised_sidecar_agents() {
+  [ "$supervised_sidecars" = "1" ] || return 0
+  local index
+  if [ -f "$caddy_agent_plist" ]; then
+    bootout_agent "$caddy_label"
+    bootstrap_agent "$caddy_label" "$caddy_agent_plist" || true
+  fi
+  for index in "${!cloudflared_labels[@]}"; do
+    if [ -f "${cloudflared_agent_plists[$index]}" ]; then
+      bootout_agent "${cloudflared_labels[$index]}"
+      bootstrap_agent "${cloudflared_labels[$index]}" "${cloudflared_agent_plists[$index]}" || true
+    fi
+  done
+  if [ -f "$watchdog_agent_plist" ]; then
+    bootout_agent "$watchdog_label"
+    bootstrap_agent "$watchdog_label" "$watchdog_agent_plist" || true
+  fi
 }
 
 print_repair_hint() {
   log "Consuelo OS services were not healthy after LaunchAgent setup."
   log "Log directory: $log_dir"
   log "System log: $log_dir/system.log"
+  log "Caddy log: $log_dir/caddy.log"
   if [ "$portless_enabled" = "1" ]; then
     log "Portless log: $log_dir/portless.log"
   fi
   log "Watchdog log: $log_dir/watchdog.log"
-  log "Doctor: CONSUELO_HOME=$daemon_home/.consuelo/os bun --cwd $root_dir run doctor"
+  log "Doctor: CONSUELO_HOME=$consuelo_data_home bun --cwd $root_dir run doctor"
   log "Retry services: bash $script_dir/install-system-daemons.sh"
   log "Remove services only: bash $script_dir/uninstall-system-daemons.sh"
   log "Debug details: CONSUELO_OS_DEBUG=1 bash $script_dir/install-system-daemons.sh --debug"
@@ -202,7 +549,7 @@ print_success_summary() {
   log "Services: $(service_labels_csv)"
   log "LaunchAgents: $launch_agent_dir"
   log "Logs: $log_dir"
-  log "Doctor: CONSUELO_HOME=$daemon_home/.consuelo/os bun --cwd $root_dir run doctor"
+  log "Doctor: CONSUELO_HOME=$consuelo_data_home bun --cwd $root_dir run doctor"
   log "Tokens and secrets are saved in local config/state files and are not printed."
 }
 
@@ -210,13 +557,23 @@ print_debug_state() {
   [ "$debug" = "1" ] || return 0
   local label
   launchctl print "$launch_domain/$workspace_label" | sed -n '1,80p'
+  if [ "$supervised_sidecars" != "1" ]; then
+    launchctl print "$launch_domain/$caddy_label" | sed -n '1,80p'
+  fi
   if [ "$portless_enabled" = "1" ]; then
     launchctl print "$launch_domain/$portless_label" | sed -n '1,80p'
   fi
-  launchctl print "$launch_domain/$watchdog_label" | sed -n '1,80p'
-  for label in "${cloudflared_labels[@]+"${cloudflared_labels[@]}"}"; do
-    launchctl print "$launch_domain/$label" | sed -n '1,80p'
-  done
+  if [ "$supervised_sidecars" != "1" ]; then
+    launchctl print "$launch_domain/$watchdog_label" | sed -n '1,80p'
+  fi
+  if [ "$availability_enabled" = "1" ]; then
+    launchctl print "$launch_domain/$availability_label" | sed -n '1,80p'
+  fi
+  if [ "$supervised_sidecars" != "1" ]; then
+    for label in "${cloudflared_labels[@]+"${cloudflared_labels[@]}"}"; do
+      launchctl print "$launch_domain/$label" | sed -n '1,80p'
+    done
+  fi
 }
 
 run_generate_daemons() {
@@ -228,96 +585,261 @@ run_generate_daemons() {
 }
 
 run_plutil_lint() {
-  local plists=("$workspace_generated_plist" "$watchdog_generated_plist")
+  local plists=("$workspace_generated_plist" "$caddy_generated_plist" "$watchdog_generated_plist")
   local plist
+  local plutil_bin=""
+  if [ "$availability_enabled" = "1" ]; then
+    plists+=("$availability_generated_plist")
+  fi
   if [ "$portless_enabled" = "1" ]; then
     plists+=("$portless_generated_plist")
   fi
   for plist in "${cloudflared_generated_plists[@]+"${cloudflared_generated_plists[@]}"}"; do
     plists+=("$plist")
   done
-  if [ "$debug" = "1" ]; then
-    plutil -lint "${plists[@]}"
-  else
-    plutil -lint "${plists[@]}" >/dev/null
+
+  # Production installs run on macOS, where /usr/bin/plutil is canonical.
+  # GitHub's Linux verification runner does not provide plutil, so keep the
+  # same plist validity check there with Python's standard plist parser.
+  if [ -x /usr/bin/plutil ]; then
+    plutil_bin="/usr/bin/plutil"
+  elif command -v plutil >/dev/null 2>&1; then
+    plutil_bin="$(command -v plutil)"
+  fi
+
+  if [ -n "$plutil_bin" ]; then
+    if [ "$debug" = "1" ]; then
+      "$plutil_bin" -lint "${plists[@]}"
+    else
+      "$plutil_bin" -lint "${plists[@]}" >/dev/null
+    fi
+    return 0
+  fi
+
+  if command -v python3 >/dev/null 2>&1; then
+    python3 - "${plists[@]}" <<'PY'
+import plistlib
+import sys
+
+for plist_path in sys.argv[1:]:
+    with open(plist_path, "rb") as plist_file:
+        plistlib.load(plist_file)
+PY
+    return 0
+  fi
+
+  echo "plist validation unavailable: install plutil or python3" >&2
+  return 127
+}
+
+install_launch_agent_definitions() {
+  install -m 644 "$workspace_generated_plist" "$workspace_agent_plist"
+  if [ "$supervised_sidecars" != "1" ]; then
+    install -m 644 "$caddy_generated_plist" "$caddy_agent_plist"
+  fi
+  if [ "$portless_enabled" = "1" ]; then
+    install -m 644 "$portless_generated_plist" "$portless_agent_plist"
+  fi
+  if [ "$supervised_sidecars" != "1" ]; then
+    install -m 644 "$watchdog_generated_plist" "$watchdog_agent_plist"
+  fi
+  if [ "$availability_enabled" = "1" ]; then
+    install -m 644 "$availability_generated_plist" "$availability_agent_plist"
+  fi
+  if [ "$supervised_sidecars" != "1" ]; then
+    for index in "${!cloudflared_generated_plists[@]}"; do
+      install -m 644 "${cloudflared_generated_plists[$index]}" "${cloudflared_agent_plists[$index]}"
+    done
   fi
 }
 
+retire_legacy_heartbeat_agents() {
+  local plist label
+  for plist in "$launch_agent_dir"/com.consuelo.os.node-heartbeat*.plist; do
+    [ -e "$plist" ] || continue
+    label="$(basename "$plist" .plist)"
+    bootout_agent "$label"
+    rm -f "$plist"
+    log "retired legacy heartbeat LaunchAgent: $label"
+  done
+}
+
+retire_legacy_supervised_sidecar_agents() {
+  [ "$supervised_sidecars" = "1" ] || return 0
+  local plist label
+  bootout_agent "$caddy_label"
+  rm -f "$caddy_agent_plist"
+  bootout_agent "$watchdog_label"
+  rm -f "$watchdog_agent_plist"
+  for plist in "$launch_agent_dir"/com.consuelo.os.cloudflared*.plist; do
+    [ -e "$plist" ] || continue
+    label="$(basename "$plist" .plist)"
+    bootout_agent "$label"
+    rm -f "$plist"
+  done
+  log "retired legacy Caddy, Cloudflared, and watchdog LaunchAgents"
+}
+
 if [ "$dry_run" -eq 0 ]; then
-  mkdir -p "$launch_agent_dir" "$log_dir"
+  mkdir -p "$launch_agent_dir" "$log_dir" "$consuelo_data_home/node/runtime/watchdog"
 fi
 
 run_generate_daemons
+# The generator writes into the mutable OS security directory. Resolve the
+# generated paths again after generation so a first dry-run/install does not
+# keep pointing at the retired in-release fallback paths selected above.
+workspace_generated_plist="$(resolve_generated_plist "$workspace_label")"
+caddy_generated_plist="$(resolve_generated_plist "$caddy_label")"
+portless_generated_plist="$(resolve_generated_plist "$portless_label")"
+watchdog_generated_plist="$(resolve_generated_plist "$watchdog_label")"
+availability_generated_plist="$(resolve_generated_plist "$availability_label")"
 if [ -f "$portless_generated_plist" ]; then
   portless_enabled=1
 fi
+if [ -f "$availability_generated_plist" ]; then
+  availability_enabled=1
+fi
+CLOUDFLARED_BIN="$(resolve_cloudflared_bin)"
+export CLOUDFLARED_BIN
 collect_cloudflared_plists
 
 bash -n "$script_dir/start-consuelo-daemon.sh"
+bash -n "$script_dir/start-caddy-daemon.sh"
 bash -n "$script_dir/start-portless-daemon.sh"
 bash -n "$script_dir/workspace-watchdog.sh"
 bash -n "$script_dir/generate-system-daemons.sh"
 bash -n "$script_dir/install-system-daemons.sh"
 run_plutil_lint
 if [ "$dry_run" -eq 1 ]; then
+  retire_legacy_portless_services
   log "Services: $(service_labels_csv)"
   log "dry run complete; generated and linted user LaunchAgent plist files without installing services"
   exit 0
 fi
 
+if [ "$definitions_only" -eq 1 ]; then
+  background_service_failure_code="BACKGROUND_SERVICE_INSTALL_FAILED"
+  install_launch_agent_definitions
+  log "LaunchAgent definitions refreshed without restarting services"
+  exit 0
+fi
+
+caddy_bin="$(resolve_caddy_bin)"
+if [ -z "$caddy_bin" ] || [ ! -x "$caddy_bin" ]; then
+  log "managed Caddy binary is missing or not executable"
+  exit 1
+fi
+if [ ! -f "$caddyfile" ]; then
+  log "managed Caddyfile is missing: $caddyfile"
+  exit 1
+fi
+if ! "$caddy_bin" validate --config "$caddyfile" --adapter caddyfile >/dev/null; then
+  log "managed Caddyfile validation failed"
+  exit 1
+fi
+
 [ "$quiet" = "1" ] || log "running Consuelo OS smoke test on port $stage_port"
-WORKSPACE_DAEMON_PORT="$stage_port" bash "$script_dir/start-consuelo-daemon.sh" > /tmp/consuelo-os-stage.log 2>&1 &
+background_service_failure_code="BACKGROUND_SERVICE_START_FAILED"
+CONSUELO_OS_SINGLE_WORKER_SMOKE_TEST=1 \
+  WORKSPACE_DAEMON_PORT="$stage_port" \
+  bash "$script_dir/start-consuelo-daemon.sh" > /tmp/consuelo-os-stage.log 2>&1 &
 stage_pid=$!
-trap 'kill "$stage_pid" 2>/dev/null || true' EXIT
+background_service_failure_code="BACKGROUND_SERVICE_HEALTHCHECK_FAILED"
 if ! wait_for_health "http://127.0.0.1:${stage_port}/health" 20 1; then
   log "stage Consuelo OS service did not become healthy"
   exit 1
 fi
 kill "$stage_pid" 2>/dev/null || true
 wait "$stage_pid" 2>/dev/null || true
-trap - EXIT
+stage_pid=""
 
-install -m 644 "$workspace_generated_plist" "$workspace_agent_plist"
-if [ "$portless_enabled" = "1" ]; then
-  install -m 644 "$portless_generated_plist" "$portless_agent_plist"
+retire_legacy_portless_services
+
+background_service_failure_code="BACKGROUND_SERVICE_INSTALL_FAILED"
+install_launch_agent_definitions
+if [ "$availability_enabled" != "1" ]; then
+  remove_disabled_agent "$availability_label" "$availability_agent_plist"
 fi
-install -m 644 "$watchdog_generated_plist" "$watchdog_agent_plist"
-for index in "${!cloudflared_generated_plists[@]}"; do
-  install -m 644 "${cloudflared_generated_plists[$index]}" "${cloudflared_agent_plists[$index]}"
-done
 
 for label in "${cloudflared_labels[@]+"${cloudflared_labels[@]}"}"; do
   bootout_agent "$label"
 done
 bootout_agent "$watchdog_label"
+if [ "$availability_enabled" = "1" ]; then
+  bootout_agent "$availability_label"
+fi
 if [ "$portless_enabled" = "1" ]; then
   bootout_agent "$portless_label"
 fi
+bootout_agent "$caddy_label"
 bootout_agent "$workspace_label"
 
+background_service_failure_code="BACKGROUND_SERVICE_START_FAILED"
+if [ "$availability_enabled" = "1" ]; then
+  bootstrap_agent "$availability_label" "$availability_agent_plist"
+fi
 bootstrap_agent "$workspace_label" "$workspace_agent_plist"
+if [ "$supervised_sidecars" != "1" ]; then
+  bootstrap_agent "$caddy_label" "$caddy_agent_plist"
+fi
 if [ "$portless_enabled" = "1" ]; then
   bootstrap_agent "$portless_label" "$portless_agent_plist"
 fi
-for index in "${!cloudflared_labels[@]}"; do
-  bootstrap_agent "${cloudflared_labels[$index]}" "${cloudflared_agent_plists[$index]}"
-done
-bootstrap_agent "$watchdog_label" "$watchdog_agent_plist"
+if [ "$supervised_sidecars" != "1" ]; then
+  for index in "${!cloudflared_labels[@]}"; do
+    bootstrap_agent "${cloudflared_labels[$index]}" "${cloudflared_agent_plists[$index]}"
+  done
+  bootstrap_agent "$watchdog_label" "$watchdog_agent_plist"
+fi
 
-if ! wait_for_health "$local_health_url" 20 1; then
+background_service_failure_code="BACKGROUND_SERVICE_HEALTHCHECK_FAILED"
+if ! wait_for_workspace_health; then
   log "local Consuelo OS health failed after LaunchAgent cutover"
   print_repair_hint
   rollback_agents
   exit 1
 fi
 
-external_health_url="$(derive_external_health_url || true)"
-if [ -n "$external_health_url" ] && ! wait_for_health "$external_health_url" 20 1; then
-  log "external health failed after LaunchAgent cutover"
+workspace_host="$(derive_workspace_host || true)"
+if [ -z "$workspace_host" ]; then
+  log "workspace host could not be derived for the managed Caddy ingress check"
   print_repair_hint
   rollback_agents
   exit 1
 fi
+if ! wait_for_caddy_health "$workspace_host"; then
+  log "managed Caddy ingress health failed after LaunchAgent cutover"
+  print_repair_hint
+  rollback_agents
+  exit 1
+fi
+
+bun_bin="$(resolve_bun_bin)"
+if [ -z "$bun_bin" ] || ! CONSUELO_HOME="$consuelo_data_home" "$bun_bin" "$script_dir/verify-local-agents.ts"; then
+  log "configured local-agent MCP transport verification failed after LaunchAgent cutover"
+  print_repair_hint
+  rollback_agents
+  exit 1
+fi
+
+if [ "${#cloudflared_labels[@]}" -gt 0 ]; then
+  connector_health_url="$(derive_connector_health_url || true)"
+  if [ -z "$connector_health_url" ]; then
+    log "assigned connector health URL could not be derived after LaunchAgent cutover"
+    print_repair_hint
+    rollback_agents
+    exit 1
+  fi
+  if ! wait_for_health "$connector_health_url" 40 1; then
+    log "assigned connector health failed after LaunchAgent cutover"
+    print_repair_hint
+    rollback_agents
+    exit 1
+  fi
+fi
+
+retire_legacy_heartbeat_agents
+retire_legacy_supervised_sidecar_agents
 
 print_success_summary
 print_debug_state

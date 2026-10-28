@@ -61,7 +61,7 @@ describe("Trace Sites gateway live stream contract", () => {
                 id: "trace_001",
                 cursor: "cur_002",
                 idempotencyKey: "idem_001",
-                toolName: "workspace.context.search",
+                toolName: "workspace.memory",
                 status: "ok",
                 startedAt: "2026-06-16T00:00:00.000Z",
               },

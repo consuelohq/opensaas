@@ -1,0 +1,729 @@
+import { POSIX_INSTALL_COMMAND } from '../lib/install-command';
+import { siteLinks } from './site-links';
+
+export type HomeAnnouncement = {
+  badge: string;
+  text: string;
+  linkLabel: string;
+  linkHref: string;
+};
+
+export type HomeHeroContent = {
+  title: string;
+  description: string;
+};
+
+export type HomeHeroRotatingAssistantContent = {
+  ariaLabel: string;
+  prefix: string;
+  assistants: readonly [string, string];
+  suffix: string;
+  subtitle: string;
+  signInLabel: string;
+  copyLabel: string;
+  copyInstallAriaLabel: string;
+};
+
+export type HomeTab = {
+  id: string;
+  label: string;
+  kind: 'link' | 'command';
+  value: string;
+  href?: string;
+  imageSrc: string;
+  darkImageSrc?: string;
+  imageAlt: string;
+};
+
+export type HomeOverviewContent = {
+  eyebrow: string;
+  title: string;
+  intro: string;
+  ctaLabel: string;
+  ctaHref: string;
+};
+
+export type HomeOverviewFeature = {
+  title: string;
+  text: string;
+};
+
+export type HomeStatsContent = {
+  eyebrow: string;
+  title: string;
+  intro: string;
+};
+
+export type HomeMetric = {
+  value: string;
+  label: string;
+  caption: string;
+  chart: 'line' | 'dots' | 'bars';
+  points?: number[];
+  filledDots?: number;
+  bars?: number[];
+};
+
+export type HomePrivacyContent = {
+  eyebrow: string;
+  title: string;
+  description: string;
+  linkLabel: string;
+  linkHref: string;
+};
+
+export type HomeFaqContent = {
+  eyebrow: string;
+  title: string;
+  intro: string;
+};
+
+export type HomeFaqDetailBlock =
+  | {
+      type: 'paragraph';
+      text: string;
+    }
+  | {
+      type: 'list';
+      items: string[];
+    }
+  | {
+      type: 'steps';
+      items: Array<{
+        label: string;
+        text: string;
+      }>;
+    };
+
+export type HomeFaqItem = {
+  question: string;
+  answer: string;
+  details?: HomeFaqDetailBlock[];
+  linkLabel?: string;
+  linkHref?: string;
+};
+
+export type HomeMercuryPromoContent = {
+  eyebrow: string;
+  title: string;
+  intro: string;
+  primaryLabel: string;
+  primaryHref: string;
+  secondaryLabel: string;
+  secondaryHref: string;
+};
+
+export type HomeMercuryHighlight = {
+  title: string;
+  text: string;
+};
+
+export type FeatureArtworkMotif =
+  | 'connect'
+  | 'remember'
+  | 'multiplayer'
+  | 'observe'
+  | 'secure'
+  | 'switch';
+
+export type HomeFeatureEvidence = {
+  figureNumber: string;
+  meta: string;
+  caption: string;
+  sequence: Array<{ label: string }>;
+  videoSrc?: string;
+  posterSrc?: string;
+};
+
+export type HomeFeaturePreviewItem = {
+  number: number;
+  label: string;
+  title: string;
+  body: string;
+  ctaLabel: string;
+  ctaHref: string;
+  imageAlt?: string;
+  assetSrc?: string;
+  evidence?: HomeFeatureEvidence;
+};
+
+export type HomeMemoryMoment = {
+  day: string;
+  time: string;
+  kind: 'decision' | 'artifact' | 'context' | 'retrieved';
+  title: string;
+  detail: string;
+};
+
+export type HomeObserveTraceRow = {
+  startedAt: string;
+  tokens: number;
+  cost: number;
+};
+
+export type HomeObserveTrace = {
+  time: string;
+  agent: string;
+  tool: string;
+  node: string;
+  duration: string;
+  result: string;
+  summary: string;
+};
+
+export type HomeWorkflowRule = {
+  label: string;
+  value: string;
+  detail: string;
+};
+
+export type HomeWorkflowStage = {
+  label: string;
+  tool: string;
+  detail: string;
+  status: string;
+};
+
+export type HomeSecurityResource = {
+  kind: 'tool' | 'node' | 'secret';
+  name: string;
+  state: string;
+  detail: string;
+};
+
+export type HomeSwitchAgent = {
+  label: string;
+  role: string;
+};
+
+export type HomePlatformCardCtaIcon = 'terminal' | 'sign-in' | 'cloud';
+
+export type HomePlatformCard = {
+  id: string;
+  eyebrow: string;
+  title: string;
+  imageSrc: string;
+  imageAlt: string;
+  ctaLabel: string;
+  ctaHref: string;
+  ctaIcon: HomePlatformCardCtaIcon;
+};
+
+export const homePlatformCards: HomePlatformCard[] = [
+  {
+    id: 'macos',
+    eyebrow: 'macOS 12+',
+    title: 'Mac OS',
+    imageSrc: '/images/platforms/macos-art.svg',
+    imageAlt: 'Consuelo terminal install on macOS',
+    ctaLabel: 'Install via terminal',
+    ctaHref: '#install',
+    ctaIcon: 'terminal',
+  },
+  {
+    id: 'chat-native',
+    eyebrow: 'Chat native',
+    title: 'ChatGPT / Claude',
+    imageSrc: '/images/platforms/chat-native-art.svg',
+    imageAlt: 'Connect ChatGPT and Claude to Consuelo',
+    ctaLabel: 'Sign in to connect',
+    ctaHref: 'https://os.consuelohq.com',
+    ctaIcon: 'sign-in',
+  },
+  {
+    id: 'cloud-workspace',
+    eyebrow: 'Always on',
+    title: 'Cloud Workspace',
+    imageSrc: '/images/platforms/cloud-workspace-art.svg',
+    imageAlt: 'Deploy Consuelo to the cloud',
+    ctaLabel: 'Deploy to Consuelo Cloud',
+    ctaHref: 'https://os.consuelohq.com',
+    ctaIcon: 'cloud',
+  },
+];
+
+export type HomeFooterSignup = {
+  eyebrow: string;
+  title: string;
+  intro: string;
+  buttonLabel: string;
+};
+
+export const homeAnnouncement: HomeAnnouncement = {
+  badge: 'New',
+  text: 'App in beta for Chrome and Safari.',
+  linkLabel: 'Sign up now',
+  linkHref: siteLinks.app,
+};
+
+export const homeHero: HomeHeroContent = {
+  title: 'Decision infrastructure for revenue teams.',
+  description:
+        'Bring calls, GTM data, files, analytics, and agents into one workspace built to help your team decide what to do next.',
+};
+
+export const homeHeroRotatingAssistant: HomeHeroRotatingAssistantContent = {
+  ariaLabel: 'Give ChatGPT or Claude access to your files',
+  prefix: 'Give',
+  assistants: ['ChatGPT', 'Claude'],
+  suffix: 'access to your files',
+  subtitle:
+    'Connect your AI to the files, terminal and tools on your computer. Choose what it can access, then put it to work.',
+  signInLabel: 'SIGN IN',
+  copyLabel: 'COPY',
+  copyInstallAriaLabel: 'Copy install command',
+};
+
+export const INSTALL_COMMAND = POSIX_INSTALL_COMMAND;
+
+export const homeTabs: HomeTab[] = [
+  {
+    id: 'terminal',
+    label: 'macOS / Linux',
+    kind: 'command',
+    value: INSTALL_COMMAND,
+    imageSrc: '/images/gifs/demo-light.gif',
+    darkImageSrc: '/images/gifs/demo-dark.gif',
+    imageAlt: 'Consuelo terminal install preview',
+  },
+  {
+    id: 'chatgpt',
+    label: 'ChatGPT',
+    kind: 'command',
+    value: 'consuelo connect chatgpt --workspace os-cloud',
+    imageSrc: '/images/gifs/demo-light.gif',
+    darkImageSrc: '/images/gifs/demo-dark.gif',
+    imageAlt: 'Consuelo ChatGPT workspace preview',
+  },
+];
+
+export const homeOverview: HomeOverviewContent = {
+  eyebrow: 'What is Consuelo?',
+  title: 'One place for your GTM data, workflows, and agent execution.',
+  intro:
+        'Consuelo is the operating tool for revenue teams. Your CRM, dialer, workflows, and AI agents all work against the same context, so execution compounds instead of breaking across tools.',
+  ctaLabel: 'Read docs',
+  ctaHref: siteLinks.docs,
+};
+
+export const homeOverviewFeatures: HomeOverviewFeature[] = [
+  {
+    title: 'Shared system of context',
+    text: 'Keep contacts, sales activity, shared files, and workflows in one place that both reps and agents can use.',
+  },
+  {
+       title: 'Predictive dialer',
+    text: 'Multi-line dial with spam protection, local presence, and zero latency.',
+  },
+  {
+    title: 'Signals & intelligence',
+    text: 'Prioritize leads based on real-time intent signals and live sales context.',
+  },
+  {
+    title: 'CRM',
+    text: 'Manage contacts, pipeline, and call controls.',
+  },
+  {
+    title: 'Automations',
+    text: 'Let agents handle the manual busywork while your team stays on the highest-leverage work.',
+  },
+  {
+    title: 'Secure integrations',
+        text: 'Enterprise-grade sync with your existing stack.',
+  },
+  {
+    title: 'AI whisper',
+    text: 'Surface live context, coaching, and what to say next while calls are happening.',
+  },
+  {
+    title: 'Agent-native workflows',
+    text: 'Give AI agents the same revenue system your team uses.',
+  },
+];
+
+export const homeStats: HomeStatsContent = {
+  eyebrow: 'The open sales infrastructure layer',
+  title:
+    'Built for teams that need one revenue system across browser work, CRM, dialing, coaching, automations, and AI agents.',
+  intro:
+    '',
+};
+
+export const homeMetrics: HomeMetric[] = [
+  {
+    value: '18.4K',
+    label: 'Weekly dials routed',
+    caption: 'Seven day outbound volume',
+    chart: 'line',
+    points: [12, 16, 19, 26, 34, 46, 54, 67, 72, 86],
+  },
+  {
+    value: '41',
+    label: 'Teams operating live',
+    caption: 'Active workspaces on the stack',
+    chart: 'dots',
+    filledDots: 41,
+  },
+  {
+    value: '2.7M',
+    label: 'Call minutes tracked',
+    caption: 'Rolling 30 day minutes',
+    chart: 'bars',
+    bars: [18, 26, 21, 33, 28, 41, 37, 49, 43, 56, 47, 61],
+  },
+];
+
+export const homePrivacy: HomePrivacyContent = {
+  eyebrow: 'Built for privacy first',
+  title: 'Consuelo does not store provider keys or call recordings on shared infrastructure,',
+  description: 'so that it can operate in privacy-sensitive environments. Learn more about',
+  linkLabel: 'privacy.',
+  linkHref: siteLinks.privacy,
+};
+
+export const homeFaq: HomeFaqContent = {
+  eyebrow: 'FAQ',
+  title: 'Answers people usually need before they trust the stack.',
+  intro: '',
+};
+
+export const homeFaqItems: HomeFaqItem[] = [
+  {
+    question: 'What is Consuelo OS?',
+    answer:
+      'Consuelo OS is an open workspace layer that gives different AI agents the same tools, memory, workflows, and access to the machines where your work lives. It keeps the workspace stable even when you switch agents.',
+    details: [
+      {
+        type: 'paragraph',
+        text: 'Consuelo OS is the shared layer between your agents and your work. Instead of rebuilding context and integrations inside every chat, you define them once in a workspace.',
+      },
+      {
+        type: 'list',
+        items: [
+          'Tools stay available across ChatGPT, Codex, Claude, Cursor, and local runtimes.',
+          'Memory and workflow rules belong to the workspace, not one conversation.',
+          'Nodes let approved agents reach the computers where work can actually run.',
+        ],
+      },
+    ],
+  },
+  {
+    question: 'How does Consuelo Cloud work?',
+    answer:
+      'Consuelo Cloud runs your home node for you, so the workspace stays available without requiring you to maintain an always-on machine. Local and cloud nodes use the same workspace model.',
+    details: [
+      {
+        type: 'paragraph',
+        text: 'Consuelo Cloud is the managed home for a workspace. It keeps routing, tools, and shared context available while your laptop is closed, without changing how agents connect.',
+      },
+      {
+        type: 'list',
+        items: [
+          'Start with a managed home node that is always available.',
+          'Add your own computers as extra nodes when work must run near local files or apps.',
+          'Keep the same tools, memory, and policies whichever node handles the work.',
+        ],
+      },
+    ],
+  },
+  {
+    question: 'Which agents can I connect?',
+    answer:
+      'Connect ChatGPT, Codex, Claude, Cursor, and local agent runtimes. Consuelo is designed around the workspace rather than one model vendor, so you can change agents without rebuilding your operating layer.',
+    details: [
+      {
+        type: 'paragraph',
+        text: 'Use the agent that fits the job. Consuelo gives each approved agent a consistent way to discover the workspace, call tools, continue from shared context, and hand work to a node.',
+      },
+      {
+        type: 'list',
+        items: [
+          'Chat agents such as ChatGPT and Claude',
+          'Coding agents such as Codex and Cursor',
+          'Local or custom runtimes connected through the same workspace contracts',
+        ],
+      },
+    ],
+  },
+  {
+    question: 'What belongs in a workspace?',
+    answer:
+      'A workspace is the shared boundary for your tools, memory, workflows, policies, nodes, and teammates. It keeps the way you work consistent across agents and devices.',
+    details: [
+      {
+        type: 'paragraph',
+        text: 'Think of a workspace as the durable operating context for a project or team. Chats can end and models can change; the workspace remains.',
+      },
+      {
+        type: 'list',
+        items: [
+          'Tools and integrations agents are allowed to use',
+          'Shared memory, instructions, and workflow conventions',
+          'Registered nodes, members, and access rules',
+          'The trace of what ran, what changed, and where it happened',
+        ],
+      },
+    ],
+  },
+  {
+    question: 'How do nodes work?',
+    answer:
+      'A node is a computer or cloud runner registered to your workspace. Start with one home node, then add more machines when agents need to reach work in different places.',
+    details: [
+      {
+        type: 'steps',
+        items: [
+          {
+            label: 'Home node',
+            text: 'The default place that keeps the workspace available and routes work.',
+          },
+          {
+            label: 'Additional nodes',
+            text: 'Your laptop, desktop, server, or another runner can join the same workspace.',
+          },
+          {
+            label: 'Routing',
+            text: 'A task runs on the node that has the right files, tools, and permission. Adding another computer does not create another workspace.',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    question: 'How do tools work?',
+    answer:
+      'Tools are capabilities and integrations an agent can use through the workspace. Consuelo includes useful starting tools, and you can customize them or add tools that match your stack.',
+    details: [
+      {
+        type: 'paragraph',
+        text: 'A tool turns an integration or repeatable action into something every approved agent can use consistently. Configure it once, then expose it through the workspace instead of wiring it into each agent separately.',
+      },
+      {
+        type: 'list',
+        items: [
+          'Start with built-in tools that cover common workspace actions.',
+          'Connect the services and internal systems your team already relies on.',
+          'Add guidance, permissions, and defaults without forking the tool for every model.',
+        ],
+      },
+    ],
+  },
+  {
+    question: 'Can I bring my team?',
+    answer:
+      'Yes. A workspace is designed for teammates to share tools, context, nodes, and workflows while keeping permissions and responsibilities clear.',
+    details: [
+      {
+        type: 'paragraph',
+        text: 'Invite teammates into the same workspace so human and agent work builds on one operating context. A teammate can pick up a trace, reuse a tool, or continue a workflow without reconstructing the project from a private chat.',
+      },
+      {
+        type: 'list',
+        items: [
+          'Share the tools and conventions the team has approved.',
+          'Keep project memory with the workspace instead of one person.',
+          'Control which members and agents can reach sensitive nodes or actions.',
+        ],
+      },
+    ],
+  },
+  {
+    question: 'Will Consuelo replace my existing stack?',
+    answer:
+      'No. Consuelo connects to the tools and integrations you already use, so you can add a shared agent workspace without rebuilding everything at once.',
+    details: [
+      {
+        type: 'paragraph',
+        text: 'Adopt Consuelo from the edge inward. Connect one agent, tool, or node first, then expand as the shared workspace becomes useful. Your existing systems can remain the systems of record.',
+      },
+      {
+        type: 'paragraph',
+        text: 'The goal is to give every agent one consistent way to work with your stack, not force your stack into a new shape.',
+      },
+    ],
+  },
+  {
+    question: 'How does pricing work?',
+    answer:
+      'Consuelo OS can run on your own hardware for free. Paid Consuelo Cloud plans add managed infrastructure and capacity, so you can choose between operating nodes yourself and having Consuelo keep the home node online.',
+    details: [
+      {
+        type: 'list',
+        items: [
+          'Local: run Consuelo OS on hardware you operate.',
+          'Cloud: pay for managed nodes and the capacity your workspace needs.',
+          'Hybrid: keep a managed home node and add your own computers when work needs local access.',
+        ],
+      },
+    ],
+    linkLabel: 'View pricing',
+    linkHref: '/pricing',
+  },
+];
+
+export const homeMercuryPromo: HomeMercuryPromoContent = {
+  eyebrow: 'Mercury',
+  title: 'Managed telephony and AI without the setup work.',
+  intro: 'Mercury handles hosted dialing, AI models, and infrastructure so your team can start executing instead of configuring providers.',
+  primaryLabel: 'Learn about Mercury',
+  primaryHref: siteLinks.mercury,
+  secondaryLabel: '',
+  secondaryHref: '',
+};
+
+export const homeMercuryHighlights: HomeMercuryHighlight[] = [];
+
+export const homeMemoryMoments: HomeMemoryMoment[] = [
+  {
+    day: 'MON',
+    time: '09:14',
+    kind: 'decision',
+    title: 'Launch order',
+    detail: 'Canary before production',
+  },
+  {
+    day: 'TUE',
+    time: '13:05',
+    kind: 'artifact',
+    title: 'Release brief',
+    detail: 'Attached to Project Meridian',
+  },
+  {
+    day: 'THU',
+    time: '16:32',
+    kind: 'context',
+    title: 'Project owner',
+    detail: 'Maya · Northstar rollout',
+  },
+  {
+    day: 'FRI',
+    time: '11:08',
+    kind: 'retrieved',
+    title: 'Context resurfaced',
+    detail: '3 facts · 1 decision · 1 artifact',
+  },
+];
+
+export const homeObserveAnchor = '2026-08-31T18:00:00.000Z';
+
+const homeObserveCallPattern = [
+  [0, 0, 0, 0, 0, 0, 1, 2, 4, 5, 7, 6, 4, 3, 5, 8, 9, 5, 4, 3, 1, 0, 0, 0],
+  [0, 0, 0, 0, 0, 1, 1, 3, 5, 7, 6, 4, 3, 5, 7, 10, 8, 6, 5, 2, 2, 1, 0, 0],
+  [0, 0, 0, 0, 0, 0, 2, 3, 4, 6, 8, 7, 5, 4, 6, 9, 11, 8, 4, 3, 2, 0, 0, 0],
+  [0, 0, 0, 0, 0, 1, 2, 4, 6, 5, 7, 9, 6, 5, 8, 10, 8, 5, 4, 2, 1, 1, 0, 0],
+  [0, 0, 0, 0, 0, 0, 1, 2, 5, 8, 9, 7, 5, 4, 6, 8, 7, 4, 3, 2, 1, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 1, 2, 4, 5, 3, 2, 2, 3, 4, 5, 3, 2, 1, 0, 0, 0, 0],
+  [0, 0, 0, 0, 0, 0, 0, 1, 3, 5, 6, 5, 4, 3, 5, 7, 8, 5, 3, 2, 1, 0, 0, 0],
+] as const;
+
+export const homeObserveTraceRows: HomeObserveTraceRow[] = homeObserveCallPattern.flatMap(
+  (hours, dayIndex) => hours.flatMap((calls, hour) =>
+    Array.from({ length: calls }, (_, callIndex) => {
+      const date = new Date(Date.UTC(2026, 7, 25 + dayIndex, hour, callIndex * 3));
+      const tokens = 180 + ((dayIndex * 97 + hour * 53 + callIndex * 31) % 1320);
+      return {
+        startedAt: date.toISOString(),
+        tokens,
+        cost: Number((tokens * 0.0000018).toFixed(6)),
+      };
+    }),
+  ),
+);
+
+export const homeObserveTrace: HomeObserveTrace = {
+  time: '14:08:31',
+  agent: 'Codex',
+  tool: 'browser.open',
+  node: 'Local node',
+  duration: '1.8 s',
+  result: 'SUCCESS',
+  summary: 'Opened the release dashboard and verified the canary state.',
+};
+
+export const homeWorkflowRules: HomeWorkflowRule[] = [
+  { label: 'Branch isolation', value: 'REQUIRED', detail: 'Every change starts away from the shared stream.' },
+  { label: 'Test-first', value: 'REQUIRED', detail: 'Changed behavior gets a failing contract before implementation.' },
+  { label: 'Strict review', value: 'ON', detail: 'Review and verification gate publication.' },
+  { label: 'Main release', value: 'HUMAN', detail: 'The stream can move fast; production still needs approval.' },
+];
+
+export const homeWorkflowStages: HomeWorkflowStage[] = [
+  { label: 'START', tool: 'session.start', detail: 'task branch isolated', status: 'READY' },
+  { label: 'WORK', tool: 'fs.write', detail: 'changes scoped to task', status: 'DONE' },
+  { label: 'TEST', tool: 'code.call', detail: 'focused contract passes', status: '14 / 14' },
+  { label: 'REVIEW', tool: 'review.run', detail: 'strict review is clean', status: '0 ISSUES' },
+  { label: 'VERIFY', tool: 'verify', detail: 'publish safety gate', status: 'VALID' },
+  { label: 'PUBLISH', tool: 'task.push', detail: 'promote to stream', status: 'READY' },
+];
+
+export const homeSecurityResources: HomeSecurityResource[] = [
+  { kind: 'tool', name: 'browser.open', state: 'ENABLED', detail: 'Available to approved agents' },
+  { kind: 'node', name: 'Cloud node', state: 'SCOPED', detail: 'Workspace-owned execution target' },
+  { kind: 'secret', name: 'DEPLOY_TOKEN', state: 'STORED', detail: 'Value is never rendered back' },
+];
+
+export const homeSwitchAgents: HomeSwitchAgent[] = [
+  { label: 'ChatGPT', role: 'GENERAL' },
+  { label: 'Codex', role: 'CODE' },
+  { label: 'Claude', role: 'RESEARCH' },
+  { label: 'OpenCode', role: 'LOCAL' },
+];
+
+export const homeFeaturePreviewItems: HomeFeaturePreviewItem[] = [
+  {
+    number: 1,
+    label: 'FILES',
+    title: 'Your files.\nWithin reach.',
+    body: 'Give your agents secure access to the files you choose. Read documents, organize folders and save work back to your computer, from the AI you already use.',
+    ctaLabel: 'GET STARTED',
+    ctaHref: siteLinks.login,
+    imageAlt: 'Screen recording of a live Consuelo OS agent session',
+    assetSrc: '/images/home/connect.svg',
+    evidence: {
+      figureNumber: '01',
+      meta: 'Recorded with Consuelo OS',
+      caption: 'ChatGPT, Grok, Codex and OpenCode, connected to the same workspace.',
+      videoSrc: '/media/home/connect-live-session.mp4',
+      posterSrc: '/media/home/connect-live-session-poster.webp',
+      sequence: [
+        { label: 'ChatGPT' },
+        { label: 'Grok' },
+        { label: 'Codex' },
+        { label: 'OpenCode' },
+      ],
+    },
+  },
+  {
+    number: 2,
+    label: 'YOUR COMPUTER',
+    title: 'More than\nreading files.',
+    body: 'Give your agent a way to run commands on your computer. Process data, build a website or work on a codebase. Consuelo connects it to your terminal so it can do the work, too.',
+    ctaLabel: 'CONNECT YOUR COMPUTER',
+    ctaHref: siteLinks.docs,
+  },
+  {
+    number: 3,
+    label: 'TOOLS',
+    title: 'Connect once.\nUse with every agent.',
+    body: 'Connect the apps you use or build a tool for the work you repeat. Make it available to your approved agents through Consuelo, without setting it up again in every AI app.',
+    ctaLabel: 'EXPLORE THE TOOLS',
+    ctaHref: siteLinks.docs,
+  },
+];
+
+export const homeWorkspaceClose = {
+  eyebrow: 'ONE WORKSPACE FOR PEOPLE AND AGENTS',
+  title: 'Work solo.\nBring your team.',
+  description: 'Start with one agent on your computer. Connect more agents and invite teammates into the same workspace when you are ready.',
+  primaryLabel: 'GET STARTED',
+  primaryHref: siteLinks.login,
+  secondaryLabel: 'EXPLORE CONSUELO CLOUD',
+  secondaryHref: siteLinks.pricing,
+};
+
+export const homeFooterSignup: HomeFooterSignup = {
+  eyebrow: 'Be the first to know when we release new products',
+  title: 'Join the waitlist for early access.',
+  intro: 'We will send the important launches, not a pile of filler.',
+  buttonLabel: 'Subscribe',
+};

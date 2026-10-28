@@ -1,4 +1,7 @@
 export type ErrorCode =
+  | "CAPABILITY_NOT_SUPPORTED"
+  | "WAIT_TIMEOUT"
+  | "IDEMPOTENCY_CONFLICT"
   | "OK"
   | "VALIDATION_ERROR"
   | "AMBIGUOUS_TASK_SELECTION"
@@ -7,6 +10,9 @@ export type ErrorCode =
   | "TIMEOUT"
   | "PARSE_ERROR"
   | "NOT_FOUND"
+  | "TASK_SESSION_REQUIRED"
+  | "TASK_SESSION_NOT_FOUND"
+  | "WORK_SESSION_NOT_FOUND"
   | "DRY_RUN";
 
 export type ToolResult<TData = unknown> = {
@@ -18,6 +24,7 @@ export type ToolResult<TData = unknown> = {
   exitCode: number;
   durationMs: number;
   traceId: string;
+  parentTraceId?: string;
   requestId?: string;
   apiVersion: "1.0.0";
 };
@@ -30,6 +37,29 @@ export type BatchStep = {
 };
 
 declare const workspace: {
+  artifacts: {
+    check: (input: { requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    generateDemo: (input: { requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    generateDigitalEguide: (input: { requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; template?: "research" | "spec" | "plan"; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    generateEmail: (input: { requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    generateImageBrief: (input: { requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    generateMotionFrame: (input: { requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    generateWebsite: (input: { requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    getDesignSystem: (input: { requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    listDesignSystems: (input: { requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    listSkills: (input: { requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    odBuild: (input: { requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    publish: (input: { target?: string; portlessName?: string; path?: string; name?: string; category?: string; template?: "research" | "spec" | "plan"; tailscaleBin?: string; requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    railwayCheck: (input: { requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    refresh: (input: { tailscaleBin?: string; requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    renderHyperframes: (input: { requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    run: (input: { requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    uiBg: (input: { requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    uiLogs: (input: { requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    uiStatus: (input: { requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    uiStop: (input: { requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    upstreamStatus: (input: { requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+  };
   browser: {
     app: (input: { headed?: boolean; full?: boolean; preset?: "desktop" | "mobile" | "tablet" | "ipad" | "iphone"; device?: string; provider?: string; width?: number; height?: number; colorScheme?: "dark" | "light" | "no-preference"; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     click: (input: { ref: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
@@ -43,35 +73,44 @@ declare const workspace: {
     fill: (input: { ref: string; text: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     find: (input: { by: "role" | "text" | "label" | "placeholder" | "alt" | "title" | "testid"; value: string; action: "click" | "fill" | "type" | "hover" | "focus" | "check" | "text"; text?: string; name?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     get: (input: { target: "text" | "html" | "value" | "attribute" | "title" | "url"; selector?: string; attribute?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
-    login: (input: { name: string; headed?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    headed: (input: { url: string; provider?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     network: (input: { args: string[]; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     open: (input: { url: string; headed?: boolean; full?: boolean; preset?: "desktop" | "mobile" | "tablet" | "ipad" | "iphone"; device?: string; provider?: string; width?: number; height?: number; colorScheme?: "dark" | "light" | "no-preference"; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     raw: (input: { args: string[]; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
-    reauth: (input: { name: string; headed?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     run: (input: { command?: string; url?: string; args?: string[]; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     screenshot: (input: { name?: string; full?: boolean; preset?: "desktop" | "mobile" | "tablet" | "ipad" | "iphone"; device?: string; provider?: string; width?: number; height?: number; colorScheme?: "dark" | "light" | "no-preference"; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     snap: (input: { requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    status: (input: { requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     tabs: (input: { action?: "list" | "new" | "select" | "switch" | "close"; target?: string; url?: string; label?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     test: (input: { url: string; headed?: boolean; full?: boolean; preset?: "desktop" | "mobile" | "tablet" | "ipad" | "iphone"; device?: string; provider?: string; width?: number; height?: number; colorScheme?: "dark" | "light" | "no-preference"; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     trace: (input: { action: "start" | "stop"; path?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     wait: (input: { target?: string; text?: string; url?: string; load?: string; conditionScript?: string; download?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   };
   code: {
-    call: (input: { language: string; code?: string; codeFile?: string; stdin?: string; stdinFile?: string; mode: "read" | "edit" | "verify"; cwd?: string; timeout?: number; maxResultChars?: number; taskWorktree?: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    call: (input: { language: string; code?: string; codeFile?: string; stdin?: string; stdinFile?: string; mode: "read" | "edit" | "verify"; cwd?: string; timeout?: number; maxResultChars?: number; taskWorktree?: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string; workSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     run: (input: { code: string; mode?: "read" | "edit" | "verify"; timeout?: number; memoryLimit?: number; maxOperations?: number; maxResultChars?: number; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   };
-  design: {
-    publish: (input: { target?: string; portlessName?: string; path?: string; name?: string; category?: string; template?: "research" | "spec" | "plan"; tailscaleBin?: string; requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
-    refresh: (input: { tailscaleBin?: string; requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+  dailySchedules: {
+    publish: (input: { kind: "security-scan" | "security-workpad" | "self-healing-workpad"; sourceFile?: string; content?: string; format?: "auto" | "json" | "markdown" | "text"; date?: string; title?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+  };
+  deployment: {
+    context: (input: { provider: "railway" | "vercel" | "cloudflare"; action: "auth" | "current"; timeout?: number; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    deploy: (input: { provider: "railway" | "vercel" | "cloudflare"; action: "deploy" | "redeploy" | "promote"; target?: string; projectId?: string; serviceId?: string; source?: string; deploymentId?: string; environment?: string; wait?: boolean; approved?: boolean; approvalReason?: string; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    detect: (input: { provider: "railway" | "vercel" | "cloudflare"; timeout?: number; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    environment: (input: { provider: "railway" | "vercel" | "cloudflare"; action: "list" | "set" | "delete"; name?: string; value?: string; scope?: string; projectId?: string; environment?: string; serviceId?: string; skipDeploys?: boolean; approved?: boolean; approvalReason?: string; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    list: (input: { provider: "railway" | "vercel" | "cloudflare"; resource: "projects" | "services" | "deployments" | "domains"; projectId?: string; environment?: string; serviceId?: string; cursor?: string; limit?: number; timeout?: number; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    logs: (input: { provider: "railway" | "vercel" | "cloudflare"; deploymentId?: string; serviceId?: string; environment?: string; cursor?: string; limit?: number; since?: string; until?: string; filter?: string; kind?: "runtime" | "build"; latest?: boolean; timeout?: number; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    raw: (input: { provider: "railway" | "vercel" | "cloudflare"; args: string[]; approved?: boolean; approvalReason?: string; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    status: (input: { provider: "railway" | "vercel" | "cloudflare"; deploymentId: string; serviceId?: string; environment?: string; timeout?: number; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   };
   fs: {
-    apply_patch: (input: { patchText?: string; patchFile?: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    apply_patch: (input: { patchText?: string; patchFile?: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string; workSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     http: (input: { url: string; method?: "get" | "post" | "put" | "patch" | "delete" | "head"; headers?: Record<string, string>; body?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
-    list: (input: { path?: string; pattern?: string; depth?: number; tree?: boolean; dirs?: boolean; files?: boolean; branch?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
-    read: (input: ({ path: string; files?: never; offset?: number; limit?: number; from?: number; to?: number; branch?: string; requestId?: string; taskSession?: string } | { files: Array<{ path: string; offset?: number; limit?: number; from?: number; to?: number }>; path?: never; offset?: never; limit?: never; from?: never; to?: never; branch?: string; requestId?: string; taskSession?: string })) => Promise<ToolResult<({ type: "text-page"; path: string; mime: string; encoding: "utf8"; offset: number; limit: number; content: string; truncated: boolean; next?: number; totalLines?: number } | { type: "binary"; path: string; mime?: string; sizeBytes: number; message: string } | { type: "media"; path: string; mime: "image/png" | "image/jpeg" | "image/gif" | "image/webp"; sizeBytes: number; encoding: "base64"; content: string }) | { type: "error"; code: string; path?: string; message: string } | { results: Array<{ path: string; ok: true; page: ({ type: "text-page"; path: string; mime: string; encoding: "utf8"; offset: number; limit: number; content: string; truncated: boolean; next?: number; totalLines?: number } | { type: "binary"; path: string; mime?: string; sizeBytes: number; message: string } | { type: "media"; path: string; mime: "image/png" | "image/jpeg" | "image/gif" | "image/webp"; sizeBytes: number; encoding: "base64"; content: string }) } | { path: string; ok: false; error: { type: "error"; code: string; path?: string; message: string } }> }>>;
-    search: (input: { pattern: string; path?: string; paths?: string[]; include?: string; context?: number; maxResults?: number; branch?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ type: "search-results"; pattern: string; root: string; matches: Array<{ type: "match"; path: string; line: number; text: string; before?: Array<{ line: number; text: string }>; after?: Array<{ line: number; text: string }> }>; truncated: boolean; limit: number; reads?: Array<{ path: string; ok: true; ranges: Array<{ from: number; to: number }>; page: ({ type: "text-page"; path: string; mime: string; encoding: "utf8"; offset: number; limit: number; content: string; truncated: boolean; next?: number; totalLines?: number } | { type: "binary"; path: string; mime?: string; sizeBytes: number; message: string } | { type: "media"; path: string; mime: "image/png" | "image/jpeg" | "image/gif" | "image/webp"; sizeBytes: number; encoding: "base64"; content: string }) } | { path: string; ok: false; ranges: Array<{ from: number; to: number }>; error: { type: "error"; code: string; path?: string; message: string } }> }>>;
-    trash: (input: { path: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
-    write: (input: { path: string; content?: string; contentFile?: string; force?: boolean; append?: boolean; mkdirs?: boolean; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    list: (input: { path?: string; pattern?: string; depth?: number; tree?: boolean; dirs?: boolean; files?: boolean; branch?: string; requestId?: string; taskSession?: string; workSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    read: (input: ({ path: string; files?: never; offset?: number; limit?: number; from?: number; to?: number; full?: boolean; branch?: string; requestId?: string; taskSession?: string; workSession?: string } | { files: Array<{ path: string; offset?: number; limit?: number; from?: number; to?: number; full?: boolean }>; path?: never; offset?: never; limit?: never; from?: never; to?: never; full?: never; branch?: string; requestId?: string; taskSession?: string; workSession?: string })) => Promise<ToolResult<({ type: "text-full"; path: string; mime: string; encoding: "utf8"; sizeBytes: number; lines: number; content: string } | { type: "text-page"; path: string; mime: string; encoding: "utf8"; offset: number; limit: number; content: string; truncated: boolean; next?: number; totalLines?: number } | { type: "binary"; path: string; mime?: string; sizeBytes: number; message: string } | { type: "media"; path: string; mime: "image/png" | "image/jpeg" | "image/gif" | "image/webp"; sizeBytes: number; encoding: "base64"; content: string }) | { type: "error"; code: string; path?: string; message: string } | { results: Array<{ path: string; ok: true; page: ({ type: "text-full"; path: string; mime: string; encoding: "utf8"; sizeBytes: number; lines: number; content: string } | { type: "text-page"; path: string; mime: string; encoding: "utf8"; offset: number; limit: number; content: string; truncated: boolean; next?: number; totalLines?: number } | { type: "binary"; path: string; mime?: string; sizeBytes: number; message: string } | { type: "media"; path: string; mime: "image/png" | "image/jpeg" | "image/gif" | "image/webp"; sizeBytes: number; encoding: "base64"; content: string }) } | { path: string; ok: false; error: { type: "error"; code: string; path?: string; message: string } }> }>>;
+    search: (input: { pattern: string; path?: string; paths?: string[]; include?: string; context?: number; maxResults?: number; branch?: string; requestId?: string; taskSession?: string; workSession?: string }) => Promise<ToolResult<{ type: "search-results"; pattern: string; root: string; matches: Array<{ type: "match"; path: string; line: number; text: string; before?: Array<{ line: number; text: string }>; after?: Array<{ line: number; text: string }> }>; truncated: boolean; limit: number; reads?: Array<{ path: string; ok: true; ranges: Array<{ from: number; to: number }>; page: ({ type: "text-page"; path: string; mime: string; encoding: "utf8"; offset: number; limit: number; content: string; truncated: boolean; next?: number; totalLines?: number } | { type: "binary"; path: string; mime?: string; sizeBytes: number; message: string } | { type: "media"; path: string; mime: "image/png" | "image/jpeg" | "image/gif" | "image/webp"; sizeBytes: number; encoding: "base64"; content: string }) } | { path: string; ok: false; ranges: Array<{ from: number; to: number }>; error: { type: "error"; code: string; path?: string; message: string } }> }>>;
+    trash: (input: { path: string; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string; workSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    write: (input: { path: string; content?: string; contentFile?: string; force?: boolean; append?: boolean; mkdirs?: boolean; branch?: string; dryRun?: boolean; requestId?: string; taskSession?: string; workSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   };
   generate: {
     docs: (input: { requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
@@ -80,6 +119,10 @@ declare const workspace: {
   git: {
     diff: (input: { branch?: string; base?: string; head?: string; paths?: string[]; stat?: boolean; files?: boolean; hunks?: boolean; patch?: boolean; nameOnly?: boolean; context?: number; maxBytes?: number; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     status: (input: { requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+  };
+  lifecycle: {
+    status: (input: { requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    update: (input: { channel?: "stable" | "beta" | "canary" | "dev" | "nightly"; version?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   };
   linear: {
     createIssue: (input: { title: string; description?: string; team?: string; state?: string; labels?: string[]; priority?: number; assignee?: string; project?: string; cycle?: string; parent?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
@@ -136,6 +179,9 @@ declare const workspace: {
     scene: {
       detect: (input: Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     };
+    screenshot: {
+      render: (input: { input: string; out: string; width?: number; height?: number; theme?: "dark" | "light"; accent?: string; background?: string; padding?: number; fit?: "contain" | "cover"; pattern?: "grid" | "lines" | "none"; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ schema: "media.screenshot-result.v1"; ok: true; id: string; source: { path: string }; output: { path: string; width: number; height: number; format: "png"; fileSizeBytes: number }; template: { theme: "dark" | "light"; accent: string; background: string; padding: number; fit: "contain" | "cover"; pattern: "grid" | "lines" | "none" }; toolVersions: Record<string, string>; deterministic: true }>>;
+    };
     sports-science: {
       metrics: (input: Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     };
@@ -152,38 +198,20 @@ declare const workspace: {
     install: (input: Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     probe: (input: Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     qa: (input: Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    svg: (input: { action: "create" | "inspect" | "render" | "measure" | "edit" | "verify" | "snapshot" | "restore"; input?: string; output?: string; svg?: string; svgFile?: string; document?: Record<string, unknown>; operations?: Array<Record<string, unknown>>; checks?: Array<Record<string, unknown>>; render?: { format?: "png"; width?: number; height?: number; scale?: number; background?: string; colorScheme?: "light" | "dark" | "no-preference" }; selectors?: string[]; snapshot?: boolean; snapshotName?: string; restoreFrom?: string; timeout?: number; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     transcribe: (input: Record<string, unknown>) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   };
-  office: {
-    check: (input: { requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
-    generateDemo: (input: { requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
-    generateDigitalEguide: (input: { requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; template?: "research" | "spec" | "plan"; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
-    generateEmail: (input: { requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
-    generateImageBrief: (input: { requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
-    generateMotionFrame: (input: { requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
-    generateWebsite: (input: { requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
-    getDesignSystem: (input: { requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
-    listDesignSystems: (input: { requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
-    listSkills: (input: { requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
-    odBuild: (input: { requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
-    railwayCheck: (input: { requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
-    renderHyperframes: (input: { requestId?: string; taskSession?: string; dryRun?: boolean; live?: boolean; name?: string; prompt?: string; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
-    run: (input: { requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
-    uiBg: (input: { requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
-    uiLogs: (input: { requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
-    uiStatus: (input: { requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
-    uiStop: (input: { requestId?: string; taskSession?: string; dryRun?: boolean; timeout?: number }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
-    upstreamStatus: (input: { requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
-  };
-  railway: {
-    logs: (input: { service?: string; build?: boolean; errors?: boolean; network?: boolean; raw?: boolean; status?: boolean; filter?: string; lines?: number; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
-    redeploy: (input: { service?: string; all?: boolean; wait?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+  monitor: {
+    errors: (input: { requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   };
   research: {
-    ingest: (input: { source: string; question?: string; mode?: "quick" | "standard" | "deep"; visual?: boolean; slidesMax?: number; videoMode?: "auto" | "transcript" | "understand"; keep?: boolean; outDir?: string; summarizeBin?: string; contextTitle?: string; contextCategory?: string; noContextSave?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    ingest: (input: { source: string; question?: string; mode?: "quick" | "standard" | "deep"; visual?: boolean; slidesMax?: number; videoMode?: "auto" | "transcript" | "understand"; keep?: boolean; outDir?: string; summarizeBin?: string; memoryTitle?: string; memoryCategory?: string; noMemorySave?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   };
   review: {
     run: (input: { branch?: string; fix?: boolean; all?: boolean; base?: string; strict?: boolean; mine?: boolean; noTests?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+  };
+  security: {
+    scan: (input: { requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   };
   sentry: {
     config: (input: { verify?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
@@ -194,8 +222,12 @@ declare const workspace: {
     projects: (input: { limit?: number; cursor?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     trace: (input: { traceId: string; project?: string; query?: string; statsPeriod?: string; dataset?: string; field?: string[]; cursor?: string; limit?: number; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   };
+  session: {
+    start: (input: ({ kind: "task"; stream?: string; area?: string; title?: string; workflow?: "task" | "artifacts" | "media"; bodyFile?: string; startFrom?: "main" | "stream"; dryRun?: boolean; requestId?: string; taskSession?: string } | { kind: "work"; path?: string; title?: string; dryRun?: boolean; requestId?: string; taskSession?: string })) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+  };
   stream: {
     context: (input: { area: string; stream?: string; repo?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    create: (input: { area: string; sourceBranch?: string; repo?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     list: (input: { repo?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     sync: (input: { area: string; stream?: string; repo?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   };
@@ -205,42 +237,41 @@ declare const workspace: {
     ensureSynced: (input: { branch?: string; pr?: string | number; github?: string; requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ synced: boolean; branch: string; area: string; behind?: number; action?: string }>>;
     finish: (input: { branch?: string; pr?: string | number; github?: string; requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     init: (input: { area: string; branch: string; pr?: string | number; github?: string; worktree?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
-    intent: (input: { action: "start" | "dispatch"; workflow?: "task" | "office" | "design" | "sites" | "media"; area?: string; title?: string; eventFile?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     merge: (input: { pr?: string | number; github?: string; wait?: boolean; squash?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
-    pr: (input: { branch?: string; pr?: string | number; github?: string; taskOnly?: boolean; draft?: boolean; ready?: boolean; bodyTemplate?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    pr: (input: { branch?: string; repo?: string; pr?: string | number; github?: string; taskOnly?: boolean; draft?: boolean; ready?: boolean; bodyTemplate?: string; ackWorkpadIncomplete?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
     prs: (input: { branch?: string; pr?: string | number; github?: string; requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
-    push: (input: { branch?: string; pr?: string | number; github?: string; message: string; changed?: boolean; files?: string[]; approved?: boolean; reason?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
-    start: (input: { stream?: string; area?: string; title?: string; description?: string; bodyFile?: string; startFrom?: "main" | "stream"; pr?: string | number; github?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    push: (input: { branch?: string; repo?: string; pr?: string | number; github?: string; message: string; changed?: boolean; files?: string[]; approved?: boolean; reason?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+    start: (input: { stream?: string; area?: string; title?: string; workflow?: "task" | "artifacts" | "media"; description?: string; pr?: string | number; github?: string; bodyFile?: string; startFrom?: "main" | "stream"; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   };
   taskMeta: {
     smoke: (input: { requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   };
   tools: {
-    search: (input: { query: string; limit?: number; category?: string; readOnly?: boolean; mutating?: boolean; noDocs?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ query: string; limit: number; searchedCount: number; returnedCount: number; filters: Record<string, unknown>; totalMatches: number; confidence: "high" | "medium" | "low"; ambiguous: boolean; detectedIntent?: string; recommended?: string; matches: Array<{ name: string; methodPath?: string[]; category?: string; score: number; scoreParts?: Record<string, number>; description?: string; capabilities: Record<string, unknown>; sessionRequired: boolean; inputSchema?: string; outputSchema?: string; inputSignature?: string; outputSignature?: string; exampleInput?: Record<string, unknown>; usage: { workspaceCall: string; script?: string; subcommand?: string; arguments: Array<Record<string, unknown>> }; docs?: { heading: string; snippet: string; source: string }; why: string[] }>; alternatives?: Array<{ intent: string; tools: string[] }>; guidance: string | Record<string, unknown>; catalog: { source: string[]; catalogHash: string; toolCount: number; searchedCount: number; cardVersion: string; embeddingConfigId: string; cardsEmbedded: number; cardsReused: number; embeddingError?: string } }>>;
+    search: (input: { query: string; limit?: number; category?: string; readOnly?: boolean; mutating?: boolean; detail?: "compact" | "full"; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ query: string; confidence: "high" | "medium" | "low"; ambiguous: boolean; retrievalMode: "exact" | "deterministic" | "semantic-fallback" | "abstain"; recommended?: string; matches: Array<{ name: string; category?: string; description?: string; capabilities: { readOnly: boolean; mutating: boolean }; inputSignature?: string; sessionRequired?: boolean }>; diagnostics?: Record<string, unknown> }>>;
   };
   website: {
     deploy: (input: { preview?: boolean; buildOnly?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
-  };
-  worker: {
-    call: (input: { provider: "cdx" | "pi" | "opc" | "mini"; profile?: string; mode?: "check" | "step" | "work"; policy?: "read" | "safe" | "edit" | "ship"; instructionPath: string; cwd?: string; taskSession?: string; timeoutMs?: number; workspaceOnly?: boolean | "preferred" | "strict"; approval?: Record<string, unknown>; requestId?: string }) => Promise<ToolResult<{ provider: "cdx" | "pi" | "opc"; requestedProvider?: "cdx" | "pi" | "opc" | "mini"; profile?: string; mode: "check" | "step" | "work"; policy: "read" | "safe" | "edit" | "ship"; status: "completed" | "failed" | "not_configured" | "not_supported" | "timed_out" | "approval_required"; cwd: string; instructionPath: string; command: string[]; stdout: string; stderr: string; exitCode: number; durationMs: number; audit: { taskSession?: string; branch?: string; workspaceOnly: "preferred" | "strict" | false; rawShellUsed: boolean } }>>;
   };
   aiReview: (input: { pr?: number; noPost?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   audit: (input: { scripts?: boolean; docs?: boolean; index?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   batch: (input: { steps: Array<{ tool: string; input?: Record<string, unknown>; args?: Record<string, unknown>; parallel?: boolean }>; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ results: Array<ToolResult<unknown>>; completed: number }>>;
   checkFiles: (input: { branch?: string; files: string[]; stopOnFirstError?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   confidenceScore: (input: { requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
-  confirm: (input: { verify?: boolean; runtime?: boolean; test?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
-  context: (input: { operation: "search" | "find" | "get" | "list" | "save" | "categories" | "trace"; keyword?: string; index?: number; category?: string; limit?: number; title?: string; file?: string; text?: boolean; byTitle?: boolean; traceId?: string; tool?: string; status?: "all" | "ok" | "error" | "blocked" | "timeout"; since?: string; until?: string; contains?: string; contextTaskSession?: string; branch?: string; raw?: boolean; db?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+  confirm: (input: { verify?: boolean; test?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   decideNext: (input: { context?: string; markRead?: string; markRelevant?: string; markIrrelevant?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   doctor: (input: { requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   editFlow: (input: { branch?: string; searchPattern: string; searchPaths: string[]; from: number; to: number; contentFile: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   exploit: (input: { query?: string; target?: string; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
-  explore: (input: { query: string; limit?: number; changedOnly?: boolean; reindex?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+  explore: (input: { query: string; limit?: number; changedOnly?: boolean; reindex?: boolean; detail?: "compact" | "full"; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   gh: (input: { action: string; args?: string[]; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   github: (input: { operation: "pr.view" | "pr.checks" | "pr.reviews" | "pr.files" | "pr.diff" | "pr.list" | "pr.merge" | "branch.compare" | "repo.view" | "raw"; repo?: string; pr?: number; branch?: string; base?: string; head?: string; preset?: "summary" | "review" | "merge" | "checks" | "files" | "full"; fields?: string[]; limit?: number; state?: "open" | "closed" | "merged" | "all"; body?: string; bodyFile?: string; wait?: boolean; squash?: boolean; full?: boolean; mergeMethod?: "merge" | "squash" | "rebase"; rawArgs?: string[]; args?: string[]; reason?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+  google: (input: { action: "status" | "connect" | "run"; args?: string[]; account?: string; mode?: "read" | "write"; approved?: boolean; approvalReason?: string; timeoutMs?: number; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+  memory: (input: { operation: "search" | "find" | "get" | "list" | "save" | "categories" | "trace"; keyword?: string; index?: number; category?: string; limit?: number; title?: string; file?: string; text?: boolean; byTitle?: boolean; traceId?: string; tool?: string; status?: "all" | "ok" | "error" | "blocked" | "timeout"; since?: string; until?: string; contains?: string; memoryTaskSession?: string; branch?: string; raw?: boolean; db?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   prReview: (input: { pr?: number; stdout?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+  release: (input: { pr: number; repo?: string; channel?: "dev" | "canary" | "beta" | "stable"; mergeMethod?: "merge" | "squash" | "rebase"; releaseOnly?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   server: (input: { action: "status" | "consuelo-reload" | "reload" | "restart" | "stop" | "start" | "logs"; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   status: (input: { requestId?: string; taskSession?: string; dryRun?: boolean }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
+  subagent: (input: { action?: "run" | "start" | "status" | "wait" | "logs" | "cancel"; provider?: "codex" | "pi" | "opencode" | "grok"; model?: string; reasoningEffort?: "minimal" | "low" | "medium" | "high" | "xhigh"; bundle?: "core" | "media"; policy?: "read" | "edit"; instructionPath?: string; cwd?: string; runId?: string; waitMs?: number; taskSession?: string; timeoutMs?: number; outputFormat?: "text" | "json"; workspaceOnly?: boolean | "preferred" | "strict"; requestId?: string }) => Promise<ToolResult<{ action?: "run" | "start" | "status" | "wait" | "logs" | "cancel"; runId?: string; requestId?: string; provider: "codex" | "pi" | "opencode" | "grok"; model?: string; reasoningEffort?: "minimal" | "low" | "medium" | "high" | "xhigh"; bundle: "core" | "media"; outputFormat: "text" | "json"; mode: "work"; policy: "read" | "edit"; status: "starting" | "running" | "completed" | "failed" | "cancelled" | "completion_unknown" | "not_configured" | "not_supported" | "timed_out"; capabilities?: { modelSelection: boolean; reasoningEffort: boolean; strictWorkspaceOnly: boolean; edit: boolean; detachedExecution: boolean }; unsupportedCapabilities?: string[]; cwd: string; instructionPath: string; command: string[]; stdout: string; stderr: string; exitCode: number; finalMessage?: string; summary?: { traceId: string; compact: string; filesRead: string[]; filesEdited: string[]; toolsCalled: string[]; traceEvents: Array<{ tool: string; status: string; input?: string; output?: string; traceId?: string }> }; rawLogPath?: string; stdoutLogPath?: string; stderrLogPath?: string; stdoutChars?: number; stderrChars?: number; usage?: { inputTokens?: number; cachedInputTokens?: number; outputTokens?: number; reasoningOutputTokens?: number }; durationMs: number; audit: { taskSession?: string; branch?: string; workspaceOnly: "preferred" | "strict" | false; rawShellUsed: boolean } }>>;
   tmp: (input: { action: string; name?: string; content?: string; ext?: string; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   verify: (input: { branch?: string; base?: string; noStamp?: boolean; dryRun?: boolean; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;
   wait: (input: { seconds?: number; duration?: string; detached?: boolean; status?: string; list?: boolean; reason?: string; deploy?: boolean; pr?: number; requestId?: string; taskSession?: string }) => Promise<ToolResult<{ raw?: string; [key: string]: unknown } | null>>;

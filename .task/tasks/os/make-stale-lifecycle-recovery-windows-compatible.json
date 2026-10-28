@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/make-stale-lifecycle-recovery-windows-compatible",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2423,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2423",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-make-stale-lifecycle-recovery-windows-compatible",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_8ebfef14bd90",
+  "tmuxSession": "opensaas-os-make-stale-lifecycle-recovery-windows-compatible-8ebfef14",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-make-stale-lifecycle-recovery-windows-compatible/.task/session.json",
+  "createdAt": "2026-09-08T15:15:24.542Z"
+}

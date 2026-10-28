@@ -1,0 +1,58 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/security/fix-existing-workspace-node-route-provisioning",
+  "base": "HEAD",
+  "headSha": "3dedd4918ffd388f201921349dd552b581dacb05",
+  "changeHash": "2d3ead665f79ee048718db30d53bc1324018e2f71968a32c229458a84ba0ec5c",
+  "changedFiles": [
+    ".github/workflows/consuelo-production-release.yaml",
+    "packages/os/scripts/lib/workspace-cloudflare-provisioning.ts",
+    "packages/os/tests/cloudflare-provisioning-contract.test.ts",
+    "packages/os/tests/os-device-authority-architecture.test.ts",
+    "packages/workspace/tests/website-deploy.test.js"
+  ],
+  "verifiedAt": "2026-07-14T18:22:06.670Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".github/workflows/consuelo-production-release.yaml",
+        ".task/security/fix-existing-workspace-node-route-provisioning/current.json",
+        ".task/security/fix-existing-workspace-node-route-provisioning/session.json",
+        ".task/security/fix-existing-workspace-node-route-provisioning/verify.json",
+        ".task/security/fix-existing-workspace-node-route-provisioning/workpad.md",
+        ".task/tasks/security/fix-existing-workspace-node-route-provisioning.json",
+        "packages/os/scripts/lib/workspace-cloudflare-provisioning.ts",
+        "packages/os/tests/cloudflare-provisioning-contract.test.ts",
+        "packages/os/tests/os-device-authority-architecture.test.ts",
+        "packages/workspace/tests/website-deploy.test.js"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

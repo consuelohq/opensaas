@@ -1,0 +1,149 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/collaborate/harden-artifact-share-upgrade-path",
+  "base": "origin/task/collaborate/harden-artifact-share-upgrade-path",
+  "headSha": "b894475d817fb1cba0afdf9dd70699455ead0b64",
+  "changeHash": "6a06d9213ba24629dab563df93bdd604b820d4f0a658ff241f7443906d8b3a4a",
+  "changedFiles": [
+    "packages/os/scripts/server/routes/artifacts.ts",
+    "packages/os/tests/artifact-sharing-links.test.ts"
+  ],
+  "verifiedAt": "2026-09-21T12:12:52.288Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/collaborate/harden-artifact-share-upgrade-path/evidence-log.json",
+        ".task/collaborate/harden-artifact-share-upgrade-path/read-log.json",
+        ".task/collaborate/harden-artifact-share-upgrade-path/workpad.md",
+        ".task/tasks/collaborate/harden-artifact-share-upgrade-path.json",
+        "packages/os/scripts/server/routes/artifacts.ts",
+        "packages/os/tests/artifact-sharing-links.test.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "os-internal-workspace-shell",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Internal workspace shell, Sites root, and trace/config chrome changes must prove the workspace root always converges on Home across daemon refreshes, the shared route switcher stays consistent, disabled agent surfaces remain re-enableable, and syntax stays valid. These tests share process.env and local MCP daemons, so files run serially to prevent cross-file agent-verification interference.",
+          "matchedFiles": [
+            "packages/os/scripts/server/routes/artifacts.ts",
+            "packages/os/tests/artifact-sharing-links.test.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "OS internal workspace shell contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "--no-file-parallelism",
+            "tests/artifacts.test.ts",
+            "tests/artifacts-edge-routing.test.ts",
+            "tests/artifacts-hono-routes.test.ts",
+            "tests/artifact-sharing-links.test.ts",
+            "tests/settings-site.test.ts",
+            "tests/settings-control-plane.test.ts",
+            "tests/launcher-nodes-materialization.test.ts",
+            "tests/observability-traces-site.test.ts",
+            "tests/workspace-chrome.test.ts",
+            "tests/sites-cli.test.ts",
+            "tests/launcher-local-customization.test.ts",
+            "tests/install-state.test.ts",
+            "tests/local-agent-connectivity.test.ts",
+            "tests/internal-launcher-regressions.test.ts"
+          ],
+          "ruleId": "os-internal-workspace-shell",
+          "critical": true
+        },
+        {
+          "name": "OS internal workspace shell syntax",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "ruleId": "os-internal-workspace-shell",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "OS internal workspace shell contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "--no-file-parallelism",
+            "tests/artifacts.test.ts",
+            "tests/artifacts-edge-routing.test.ts",
+            "tests/artifacts-hono-routes.test.ts",
+            "tests/artifact-sharing-links.test.ts",
+            "tests/settings-site.test.ts",
+            "tests/settings-control-plane.test.ts",
+            "tests/launcher-nodes-materialization.test.ts",
+            "tests/observability-traces-site.test.ts",
+            "tests/workspace-chrome.test.ts",
+            "tests/sites-cli.test.ts",
+            "tests/launcher-local-customization.test.ts",
+            "tests/install-state.test.ts",
+            "tests/local-agent-connectivity.test.ts",
+            "tests/internal-launcher-regressions.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-internal-workspace-shell",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 23614,
+          "outputTail": "s pages with immutable versions and stale base-version protection \u001b[33m 634\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m keeps reserved page versions protected and returns structured publish errors \u001b[33m 487\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m patches reader sections with auto-merge, same-section conflict, and leases \u001b[33m 946\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/settings-site.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 139\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/observability-traces-site.test.ts \u001b[2m(\u001b[22m\u001b[2m14 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 54\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/artifacts.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 43\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/artifact-sharing-links.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 65\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/internal-launcher-regressions.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 13\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/artifacts-hono-routes.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 74\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/settings-control-plane.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 123\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/workspace-chrome.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/launcher-local-customization.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 84\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/launcher-nodes-materialization.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 49\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/artifacts-edge-routing.test.ts \u001b[2m(\u001b[22m\u001b[2m1 test\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m14 passed\u001b[39m\u001b[22m\u001b[90m (14)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m100 passed\u001b[39m\u001b[22m\u001b[90m (100)\u001b[39m\n\u001b[2m   Start at \u001b[22m 08:12:27\n\u001b[2m   Duration \u001b[22m 22.60s\u001b[2m (transform 308ms, setup 65ms, import 1.45s, tests 20.15s, environment 1ms)\u001b[22m\n\n$ vitest run --no-file-parallelism tests/artifacts.test.ts tests/artifacts-edge-routing.test.ts tests/artifacts-hono-routes.test.ts tests/artifact-sharing-links.test.ts tests/settings-site.test.ts tests/settings-control-plane.test.ts tests/launcher-nodes-materialization.test.ts tests/observability-traces-site.test.ts tests/workspace-chrome.test.ts tests/sites-cli.test.ts tests/launcher-local-customization.test.ts tests/install-state.test.ts tests/local-agent-connectivity.test.ts tests/internal-launcher-regressions.test.ts\n786 |   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);\n787 | }\n788 | \n789 | export function readManagedComponentState(home: string): ManagedComponentState {\n790 |   const root = componentsRoot(home);\n791 |   const provenanceEnvelope = readJson(join(root, PROVENANCE_FILE));\n                                   ^\nSyntaxError: JSON Parse error: Expected '}'\n      at readManagedComponentState (/Users/kokayi/.consuelo/node/tasks/worktrees/task-collaborate-harden-artifact-share-upgrade-path/packages/os/scripts/lib/managed-components.ts:791:30)\n      at readExistingState (/Users/kokayi/.consuelo/node/tasks/worktrees/task-collaborate-harden-artifact-share-upgrade-path/packages/os/scripts/lib/managed-component-install.ts:315:17)\n      at provisionManagedComponentIndexes (/Users/kokayi/.consuelo/node/tasks/worktrees/task-collaborate-harden-artifact-share-upgrade-path/packages/os/scripts/lib/managed-component-install.ts:479:20)\n      at provisionLocalOs (/Users/kokayi/.consuelo/node/tasks/worktrees/task-collaborate-harden-artifact-share-upgrade-path/packages/os/scripts/lib/install-state.ts:1978:19)\n      at /Users/kokayi/.consuelo/node/tasks/worktrees/task-collaborate-harden-artifact-share-upgrade-path/packages/os/[eval]:3:43\n\nBun v1.3.14 (macOS arm64)\n(node:73914) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n(node:73917) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+        },
+        {
+          "name": "OS internal workspace shell syntax",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "cwd": ".",
+          "ruleId": "os-internal-workspace-shell",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 2026,
+          "outputTail": "workspace script syntax checks passed\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

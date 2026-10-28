@@ -1,0 +1,9 @@
+{
+  "files": [
+    ".task/website/retune-landing-typography-and-complete-footer-illustration-fill/workpad.md",
+    "packages/consuelo-website/scripts/generate-footer-art.ts",
+    "packages/consuelo-website/tests/homepage-mobile-layout.test.mjs",
+    "packages/workspace/senior-engineer.md"
+  ],
+  "updatedAt": "2026-07-16T06:13:49.711Z"
+}

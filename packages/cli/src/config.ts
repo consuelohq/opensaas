@@ -1,10 +1,20 @@
-import * as fs from 'node:fs';
-import * as path from 'node:path';
-import * as os from 'node:os';
+import { chmodSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { homedir } from 'node:os';
+import { join, resolve } from 'node:path';
 
-const CONFIG_DIR = path.join(os.homedir(), '.consuelo');
-const GLOBAL_CONFIG_FILE = path.join(CONFIG_DIR, 'config.json');
-const PROJECT_CONFIG_FILE = path.resolve('consuelo.config.json');
+const CONFIG_DIR = join(homedir(), '.consuelo');
+const GLOBAL_CONFIG_FILE = join(CONFIG_DIR, 'config.json');
+const PROJECT_CONFIG_FILE = resolve('consuelo.config.json');
+
+export interface CliOsAuth {
+  authorityOrigin: string;
+  accessToken: string;
+  refreshToken?: string;
+  expiresAt?: number;
+  scope: string[];
+  email: string;
+  workspaceHost: string;
+}
 
 // backward-compat — existing commands use this
 export interface CliConfig {
@@ -17,6 +27,7 @@ export interface CliConfig {
   apiUrl?: string;
   apiKey?: string;
   workspaceId?: string;
+  osAuth?: CliOsAuth;
   apiKeyScope?: 'read-only' | 'full';
   apiKeyRoleId?: string;
 }
@@ -66,17 +77,19 @@ const DEFAULT_CONFIG: ConsuloConfig = {
 // backward-compat — other commands depend on these
 export const loadConfig = (): CliConfig => {
   try {
-    return JSON.parse(fs.readFileSync(GLOBAL_CONFIG_FILE, 'utf-8'));
+    return JSON.parse(readFileSync(GLOBAL_CONFIG_FILE, 'utf-8'));
   } catch (_err: unknown) {
     return {};
   }
 };
 
 export const saveConfig = (config: CliConfig): void => {
-  fs.mkdirSync(CONFIG_DIR, { recursive: true, mode: 0o700 });
-  fs.writeFileSync(GLOBAL_CONFIG_FILE, JSON.stringify(config, null, 2), {
+  mkdirSync(CONFIG_DIR, { recursive: true, mode: 0o700 });
+  chmodSync(CONFIG_DIR, 0o700);
+  writeFileSync(GLOBAL_CONFIG_FILE, JSON.stringify(config, null, 2), {
     mode: 0o600,
   });
+  chmodSync(GLOBAL_CONFIG_FILE, 0o600);
 };
 
 // new config system
@@ -85,7 +98,7 @@ const configPath = (scope: ConfigScope): string =>
 
 export const loadFullConfig = (scope: ConfigScope): Partial<ConsuloConfig> => {
   try {
-    return JSON.parse(fs.readFileSync(configPath(scope), 'utf-8'));
+    return JSON.parse(readFileSync(configPath(scope), 'utf-8'));
   } catch (_err: unknown) {
     return {};
   }
@@ -97,8 +110,8 @@ export const saveFullConfig = (
 ): void => {
   const filePath = configPath(scope);
   if (scope === 'global')
-    fs.mkdirSync(CONFIG_DIR, { recursive: true, mode: 0o700 });
-  fs.writeFileSync(filePath, JSON.stringify(config, null, 2), { mode: 0o600 });
+    mkdirSync(CONFIG_DIR, { recursive: true, mode: 0o700 });
+  writeFileSync(filePath, JSON.stringify(config, null, 2), { mode: 0o600 });
 };
 
 export const getDefaultConfig = (): ConsuloConfig =>

@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/recover-managed-release-source-with-local-trust",
+  "events": [
+    {
+      "id": "0cfed257-150b-4247-b655-16bfbc5427d6",
+      "occurred_at": "2026-09-08T15:02:08.281Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/platforms/linux.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/recover-managed-release-source-with-local-trust",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/recover-managed-release-source-with-local-trust"
+      }
+    },
+    {
+      "id": "5172111e-456e-43cf-865f-a89f0129f7db",
+      "occurred_at": "2026-09-08T15:02:38.909Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/workspace-node-registry-routing.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/recover-managed-release-source-with-local-trust",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/recover-managed-release-source-with-local-trust"
+      }
+    },
+    {
+      "id": "d766cd2b-e7eb-49a7-8a7e-4c834beb5f2b",
+      "occurred_at": "2026-09-08T15:04:27.286Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/recover-managed-release-source-with-local-trust/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/recover-managed-release-source-with-local-trust",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/recover-managed-release-source-with-local-trust"
+      }
+    },
+    {
+      "id": "fd617ef2-767e-437b-9995-b5aa43778d10",
+      "occurred_at": "2026-09-08T15:05:49.772Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/recover-managed-release-source-with-local-trust/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/recover-managed-release-source-with-local-trust",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/recover-managed-release-source-with-local-trust"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-09-08T15:05:49.867Z"
+}

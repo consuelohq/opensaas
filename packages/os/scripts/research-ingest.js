@@ -29,9 +29,9 @@ function help() {
     '  --keep                  write to ~/Documents/consuelo-research',
     '  --out-dir <path>        override output root',
     '  --summarize-bin <path>  summarize executable',
-    '  --context-title <text>  context title for autosave',
-    '  --context-category <name> context category (default: research)',
-    '  --no-context-save       skip automatic context save',
+    '  --memory-title <text>  memory title for autosave',
+    '  --memory-category <name> memory category (default: research)',
+    '  --no-memory-save       skip automatic memory save',
     '  --json                  print manifest JSON',
     '  --dry-run               print planned command only',
     `default output root: ${TEMP_ROOT}`,
@@ -57,7 +57,7 @@ function positiveInteger(value, flag) {
 }
 
 function parseArgs(argv) {
-  const options = { mode: 'standard', visual: false, keep: false, json: false, dryRun: false, summarizeBin: 'summarize', videoMode: 'auto', contextCategory: 'research', contextSave: true };
+  const options = { mode: 'standard', visual: false, keep: false, json: false, dryRun: false, summarizeBin: 'summarize', videoMode: 'auto', memoryCategory: 'research', memorySave: true };
 
   for (let i = 0; i < argv.length; i += 1) {
     const arg = argv[i];
@@ -70,9 +70,9 @@ function parseArgs(argv) {
     else if (arg === '--keep') options.keep = true;
     else if (arg === '--out-dir') options.outDir = readValue(argv, ++i, arg);
     else if (arg === '--summarize-bin') options.summarizeBin = readValue(argv, ++i, arg);
-    else if (arg === '--context-title') options.contextTitle = readValue(argv, ++i, arg);
-    else if (arg === '--context-category') options.contextCategory = readValue(argv, ++i, arg);
-    else if (arg === '--no-context-save') options.contextSave = false;
+    else if (arg === '--memory-title') options.memoryTitle = readValue(argv, ++i, arg);
+    else if (arg === '--memory-category') options.memoryCategory = readValue(argv, ++i, arg);
+    else if (arg === '--no-memory-save') options.memorySave = false;
     else if (arg === '--json') options.json = true;
     else if (arg === '--dry-run') options.dryRun = true;
     else if (arg.startsWith('--')) throw new Error(`unknown flag: ${arg}`);
@@ -111,8 +111,8 @@ function slidesFor(mode) {
   return mode === 'quick' ? 4 : mode === 'deep' ? 16 : 8;
 }
 
-function contextTitle(options) {
-  if (options.contextTitle) return options.contextTitle;
+function memoryTitle(options) {
+  if (options.memoryTitle) return options.memoryTitle;
 
   const titleSource = options.source
     .replace(/^https?:\/\//, '')
@@ -128,13 +128,13 @@ function readTextFile(filePath) {
   return fs.readFileSync(filePath, 'utf8');
 }
 
-function buildContextBundle(manifest) {
+function buildMemoryBundle(manifest) {
   const packetText = readTextFile(manifest.packetPath);
   const extractedText = readTextFile(manifest.extractedPath);
   const manifestText = readTextFile(manifest.manifestPath);
 
   return [
-    `# ${manifest.context.title}`,
+    `# ${manifest.memory.title}`,
     '',
     `Source: ${manifest.source}`,
     `Created: ${manifest.createdAt}`,
@@ -163,35 +163,35 @@ function buildContextBundle(manifest) {
   ].join('\n');
 }
 
-function saveContextBundle(options, manifest) {
-  if (!manifest.context.enabled) return null;
+function saveMemoryBundle(options, manifest) {
+  if (!manifest.memory.enabled) return null;
 
-  const bundleText = buildContextBundle(manifest);
-  fs.writeFileSync(manifest.context.bundlePath, bundleText, 'utf8');
+  const bundleText = buildMemoryBundle(manifest);
+  fs.writeFileSync(manifest.memory.bundlePath, bundleText, 'utf8');
 
-  const contextArgs = [
+  const memoryArgs = [
     'run',
-    'context',
+    'memory',
     '--',
     'save',
-    manifest.context.title,
-    manifest.context.bundlePath,
+    manifest.memory.title,
+    manifest.memory.bundlePath,
     '--category',
-    manifest.context.category,
+    manifest.memory.category,
   ];
 
-  const result = spawnSync('bun', contextArgs, {
+  const result = spawnSync('bun', memoryArgs, {
     encoding: 'utf8',
     maxBuffer: 1024 * 1024 * 20,
   });
 
-  if (result.error) throw new Error(`failed to run context save: ${result.error.message}`);
+  if (result.error) throw new Error(`failed to run memory save: ${result.error.message}`);
   if (result.status !== 0) {
-    throw new Error(`context save failed with exit code ${result.status}: ${result.stderr || result.stdout}`);
+    throw new Error(`memory save failed with exit code ${result.status}: ${result.stderr || result.stdout}`);
   }
 
   return {
-    command: ['bun', ...contextArgs],
+    command: ['bun', ...memoryArgs],
     stdout: result.stdout || '',
     stderr: result.stderr || '',
     status: result.status,
@@ -371,11 +371,11 @@ function main() {
       temporary: !options.keep && !options.outDir,
       extractArgs: [options.summarizeBin, ...summarizeArgs(options, outDir, 'extract')],
       summaryFallbackArgs: [options.summarizeBin, ...summarizeArgs(options, outDir, 'summary')],
-      contextSave: {
-        enabled: options.contextSave,
-        title: contextTitle(options),
-        category: options.contextCategory,
-        bundlePath: path.join(outDir, 'context-bundle.md'),
+      memorySave: {
+        enabled: options.memorySave,
+        title: memoryTitle(options),
+        category: options.memoryCategory,
+        bundlePath: path.join(outDir, 'memory-bundle.md'),
       },
     };
     out(options.json ? JSON.stringify(plan, null, 2) : outDir);
@@ -415,11 +415,11 @@ function main() {
     manifestPath: path.join(outDir, 'manifest.json'),
     summaryJsonPath: path.join(outDir, 'summary.json'),
     slidesDir: options.visual ? path.join(outDir, 'slides') : undefined,
-    context: {
-      enabled: options.contextSave,
-      title: contextTitle(options),
-      category: options.contextCategory,
-      bundlePath: path.join(outDir, 'context-bundle.md'),
+    memory: {
+      enabled: options.memorySave,
+      title: memoryTitle(options),
+      category: options.memoryCategory,
+      bundlePath: path.join(outDir, 'memory-bundle.md'),
     },
     selectedRun: selected.kind,
     fallbackUsed,
@@ -438,7 +438,7 @@ function main() {
   fs.writeFileSync(manifest.packetPath, packet(manifest, text), 'utf8');
   fs.writeFileSync(manifest.manifestPath, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
 
-  saveContextBundle(options, manifest);
+  saveMemoryBundle(options, manifest);
 
   out(options.json ? JSON.stringify(manifest, null, 2) : manifest.packetPath);
 }

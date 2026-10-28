@@ -20,7 +20,7 @@ import { captureError } from '../sentry.js';
 import { validateTwilio, validateGroq } from '../validators/index.js';
 import { generateEnv } from '../generators/env.js';
 import { generateDockerCompose } from '../generators/docker.js';
-import { authenticateHosted } from '../auth.js';
+import { applyHostedAuthResult, authenticateHosted } from '../auth.js';
 
 import {
   provisionDockerPostgres,
@@ -186,10 +186,7 @@ async function runNonInteractive(template: Template): Promise<void> {
 }
 
 const handleHostedSetup = async (template: Template): Promise<void> => {
-  log.info('hosted mode requires authentication with consuelo');
-  log.info(
-    'you can create an API key in Settings → Developers after signing in',
-  );
+  log.info('hosted mode requires authentication with Consuelo OS');
   log.info('');
 
   const shouldAuth = await confirm({
@@ -200,23 +197,18 @@ const handleHostedSetup = async (template: Template): Promise<void> => {
   if (isCancel(shouldAuth) || !shouldAuth) {
     generateEnv({ deploymentType: 'hosted', template });
     success('configured for hosted mode');
-    log.info('run `consuelo auth:login` later to connect your workspace');
+    log.info('run `consuelo login` later to connect your workspace');
     return;
   }
 
   const spin = spinner('opening browser for authentication...').start();
 
   try {
-    const result = await authenticateHosted({ scope: 'full' });
+    const result = await authenticateHosted();
     spin.stop();
 
     const config = loadConfig();
-    saveConfig({
-      ...config,
-      apiKey: result.apiKey,
-      workspaceId: result.workspaceId,
-      managed: true,
-    });
+    saveConfig(applyHostedAuthResult(config, result, { managed: true }));
 
     success(`authenticated as ${result.email}`);
     generateEnv({ deploymentType: 'hosted', template });
@@ -226,7 +218,7 @@ const handleHostedSetup = async (template: Template): Promise<void> => {
     generateEnv({ deploymentType: 'hosted', template });
     const message = err instanceof Error ? err.message : 'unknown error';
     log.warn(`could not authenticate: ${message}`);
-    log.info('run `consuelo auth:login` later to connect your workspace');
+    log.info('run `consuelo login` later to connect your workspace');
     captureError(err, { command: 'init' });
   }
 };
@@ -423,15 +415,11 @@ const promptAuthLogin = async (): Promise<void> => {
   const spin = spinner('opening browser for authentication...').start();
 
   try {
-    const result = await authenticateHosted({ scope: 'full' });
+    const result = await authenticateHosted();
     spin.stop();
 
     const config = loadConfig();
-    saveConfig({
-      ...config,
-      apiKey: result.apiKey,
-      workspaceId: result.workspaceId,
-    });
+    saveConfig(applyHostedAuthResult(config, result));
 
     success(`authenticated as ${result.email}`);
   } catch (err: unknown) {
@@ -447,8 +435,10 @@ function printNextSteps(deploymentType: 'hosted' | 'self-hosted'): void {
     log.info('1. consuelo status');
     log.info('2. https://consuelohq.com');
   } else {
-    log.info('1. docker-compose up');
-    log.info('2. http://localhost:3000');
-    log.info('3. https://consuelohq.com');
+    log.info('1. docker compose up -d db redis');
+    log.info('2. configure the dialer-server environment');
+    log.info(
+      '3. start the standalone dialer-server from the Consuelo source checkout',
+    );
   }
 }

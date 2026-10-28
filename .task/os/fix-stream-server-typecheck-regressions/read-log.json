@@ -1,0 +1,20 @@
+{
+  "files": [
+    "packages/dialer-server/src/runtime/railway.ts",
+    "packages/dialer/package.json",
+    "packages/dialer/src/application/adapter-application.spec.ts",
+    "packages/dialer/src/application/start-dialer-call.ts",
+    "packages/dialer/src/dialer.ts",
+    "packages/dialer/src/errors/dialer-errors.ts",
+    "packages/dialer/src/index.ts",
+    "packages/dialer/src/ports/parallel-compatibility.ts",
+    "packages/twenty-server/src/engine/core-modules/consuelo-api/controllers/parallel.controller.ts",
+    "packages/twenty-server/src/engine/core-modules/consuelo-api/infrastructure/twenty-dialer-call-start.infrastructure.ts",
+    "packages/twenty-server/src/engine/core-modules/consuelo-api/infrastructure/twenty-parallel.infrastructure.ts",
+    "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-adapter-boundary.contract.spec.ts",
+    "packages/twenty-server/src/engine/core-modules/consuelo-api/services/dialer-call-start.service.spec.ts",
+    "packages/twenty-server/tsconfig.json",
+    "tsconfig.json"
+  ],
+  "updatedAt": "2026-08-14T00:39:51.612Z"
+}

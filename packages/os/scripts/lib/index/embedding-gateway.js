@@ -1,4 +1,7 @@
 const crypto = require('crypto');
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
 
 const {
   DEFAULT_API_MODEL,
@@ -13,10 +16,25 @@ const APPROVED_EMBEDDING_MODEL = DEFAULT_API_MODEL;
 const MAX_GATEWAY_BATCH_SIZE = 32;
 const MAX_GATEWAY_TEXT_CHARS = 4_000;
 const MAX_GATEWAY_TOTAL_CHARS = 128_000;
-const GATEWAY_TIMEOUT_MS = 60_000;
+const GATEWAY_QUERY_TIMEOUT_MS = 4_000;
+const GATEWAY_DOCUMENT_TIMEOUT_MS = 8_000;
+const INSTALL_ID_PATTERN = /^ins_[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+let cachedInstallId = null;
 
 function getErrorMessage(error) {
   return error instanceof Error ? error.message : String(error);
+}
+
+class EmbeddingGatewayUnavailableError extends Error {
+  constructor(message, options = {}) {
+    super(message, options);
+    this.name = 'EmbeddingGatewayUnavailableError';
+    this.semanticUnavailable = true;
+  }
+}
+
+function isGatewayUnavailableStatus(status) {
+  return status === 408 || status === 429 || status >= 500;
 }
 
 function sha256(value) {
@@ -27,8 +45,89 @@ function normalizeKind(kind) {
   return kind === 'query' ? 'query' : 'document';
 }
 
+function resolveGatewayTimeoutMs(kind, requestedTimeoutMs) {
+  const defaultTimeoutMs = normalizeKind(kind) === 'query'
+    ? GATEWAY_QUERY_TIMEOUT_MS
+    : GATEWAY_DOCUMENT_TIMEOUT_MS;
+  if (!Number.isFinite(requestedTimeoutMs) || requestedTimeoutMs <= 0) {
+    return defaultTimeoutMs;
+  }
+  return Math.max(1, Math.min(defaultTimeoutMs, Math.floor(requestedTimeoutMs)));
+}
+
+function getConsueloHome() {
+  const raw = process.env.CONSUELO_HOME
+    || process.env.CONSUELO_OS_HOME
+    || path.join(os.homedir(), '.consuelo');
+  const expanded = raw === '~'
+    ? os.homedir()
+    : raw.startsWith('~/')
+      ? path.join(os.homedir(), raw.slice(2))
+      : raw;
+  const resolved = path.resolve(expanded);
+  if (path.basename(resolved) === 'os' && path.basename(path.dirname(resolved)) === '.consuelo') {
+    return path.dirname(resolved);
+  }
+  return resolved;
+}
+
+function isInstallId(value) {
+  return typeof value === 'string' && INSTALL_ID_PATTERN.test(value.trim().toLowerCase());
+}
+
+function readPersistedInstallId(filePath) {
+  try {
+    const value = fs.readFileSync(filePath, 'utf8').trim().toLowerCase();
+    return isInstallId(value) ? value : null;
+  } catch {
+    return null;
+  }
+}
+
+function persistInstallId(filePath, installId) {
+  const directory = path.dirname(filePath);
+  fs.mkdirSync(directory, { recursive: true, mode: 0o700 });
+  try { fs.chmodSync(directory, 0o700); } catch { /* Best effort on non-POSIX filesystems. */ }
+
+  try {
+    fs.writeFileSync(filePath, `${installId}\n`, {
+      encoding: 'utf8',
+      flag: 'wx',
+      mode: 0o600,
+    });
+    try { fs.chmodSync(filePath, 0o600); } catch { /* Best effort on non-POSIX filesystems. */ }
+    return installId;
+  } catch (error) {
+    if (error && error.code === 'EEXIST') {
+      const existing = readPersistedInstallId(filePath);
+      if (existing) return existing;
+      throw new Error('persisted embedding install identity is invalid', { cause: error });
+    }
+    throw error;
+  }
+}
+
 function getInstallId() {
-  return process.env.CONSUELO_INSTALL_ID || process.env.CONSUELO_OS_INSTALL_ID || null;
+  const inherited = process.env.CONSUELO_INSTALL_ID || process.env.CONSUELO_OS_INSTALL_ID;
+  if (isInstallId(inherited)) return inherited.trim().toLowerCase();
+  if (cachedInstallId) return cachedInstallId;
+
+  const filePath = path.join(getConsueloHome(), 'node', 'identity', 'install-id');
+  const existing = readPersistedInstallId(filePath);
+  if (existing) {
+    cachedInstallId = existing;
+    return cachedInstallId;
+  }
+
+  const generated = `ins_${crypto.randomUUID().toLowerCase()}`;
+  try {
+    cachedInstallId = persistInstallId(filePath, generated);
+  } catch {
+    // Persistence is an optimization for pseudonymous telemetry correlation, not an availability
+    // dependency. Keep one stable process-local identity when the filesystem is unavailable.
+    cachedInstallId = generated;
+  }
+  return cachedInstallId;
 }
 
 function assertGatewayBatch(texts) {
@@ -121,25 +220,54 @@ async function requestGatewayEmbeddings(texts, options = {}, runtime = {}) {
     installId: runtime.installId,
     repoHash: runtime.repoHash,
   });
+  const timeoutMs = resolveGatewayTimeoutMs(options.kind, options.timeoutMs);
 
-  const response = await fetchImpl(gatewayUrl, {
-    method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-      'x-consuelo-embedding-model': payload.model,
-      ...(payload.installId ? { 'x-consuelo-install-id': payload.installId } : {}),
-      ...(payload.repoHash ? { 'x-consuelo-repo-hash': payload.repoHash } : {}),
-    },
-    body: JSON.stringify(payload),
-    signal: AbortSignal.timeout(GATEWAY_TIMEOUT_MS),
-  });
-
-  if (!response.ok) {
-    const details = await response.text().catch((error) => getErrorMessage(error));
-    throw new Error(`embedding gateway failed (${response.status}): ${details.slice(0, 240)}`);
+  let response;
+  try {
+    response = await fetchImpl(gatewayUrl, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-consuelo-embedding-model': payload.model,
+        ...(payload.installId ? { 'x-consuelo-install-id': payload.installId } : {}),
+        ...(payload.repoHash ? { 'x-consuelo-repo-hash': payload.repoHash } : {}),
+      },
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(timeoutMs),
+    });
+  } catch (error) {
+    throw new EmbeddingGatewayUnavailableError(
+      `embedding gateway request failed: ${getErrorMessage(error)}`,
+      { cause: error },
+    );
   }
 
-  const body = await response.json();
+  if (!response.ok) {
+    let details;
+    try {
+      details = await response.text();
+    } catch (error) {
+      throw new EmbeddingGatewayUnavailableError(
+        `embedding gateway response body failed: ${getErrorMessage(error)}`,
+        { cause: error },
+      );
+    }
+    const message = `embedding gateway failed (${response.status}): ${details.slice(0, 240)}`;
+    if (isGatewayUnavailableStatus(response.status)) {
+      throw new EmbeddingGatewayUnavailableError(message);
+    }
+    throw new Error(message);
+  }
+
+  let body;
+  try {
+    body = await response.json();
+  } catch (error) {
+    throw new EmbeddingGatewayUnavailableError(
+      `embedding gateway response body failed: ${getErrorMessage(error)}`,
+      { cause: error },
+    );
+  }
   const rows = parseEmbeddingRows(body);
   if (rows.length !== texts.length) {
     throw new Error(`embedding gateway returned ${rows.length} embeddings for ${texts.length} inputs`);
@@ -156,5 +284,6 @@ module.exports = {
   MAX_GATEWAY_TOTAL_CHARS,
   createGatewayEmbeddingAudit,
   createGatewayEmbeddingPayload,
+  getInstallId,
   requestGatewayEmbeddings,
 };

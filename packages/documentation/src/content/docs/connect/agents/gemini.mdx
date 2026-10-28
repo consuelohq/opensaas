@@ -1,0 +1,38 @@
+---
+title: Gemini
+description: Connect Gemini CLI to the local Consuelo OS MCP command.
+status: preview
+verifiedAt: 2026-07-13
+evidence:
+  - source: packages/os/scripts/lib/local-agent-connectivity.ts
+    tests:
+      - packages/os/tests/local-agent-connectivity.test.ts
+      - packages/os/tests/install-state.test.ts
+    runtime: Gemini native configuration and MCP verification behavior were exercised by focused tests on 2026-07-13.
+---
+Gemini CLI uses `~/.gemini/settings.json`. Consuelo adds `consuelo-os` under `mcpServers` and leaves unrelated Gemini settings intact.
+
+## Connect
+
+```bash
+export CONSUELO_HOME="${CONSUELO_HOME:-$HOME/.consuelo}"
+cd "$CONSUELO_HOME"
+bun ./scripts/install.ts --yes --mode local --home "$CONSUELO_HOME" --connect-agent gemini --skip-daemons
+```
+
+The generated server runs the installed `consuelo-os-mcp` command with the active Consuelo home.
+
+## Verify
+
+The local installer calls the same MCP command Gemini CLI will use. `verified` means initialization and `tools/list` succeeded with at least one tool. Restart Gemini CLI after setup and inspect its MCP server list.
+
+## Troubleshooting
+
+- Gemini CLI must have created `~/.gemini` or its settings file before automatic detection.
+- Fix malformed JSON before retrying.
+- Rerun the command if the generated path references a previous Consuelo home.
+- A `configured` record needs a fresh verification pass before it should be trusted.
+
+## Disconnect
+
+Remove `mcpServers["consuelo-os"]` from `~/.gemini/settings.json`, then restart Gemini CLI.

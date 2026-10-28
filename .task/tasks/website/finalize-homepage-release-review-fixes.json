@@ -1,0 +1,20 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/finalize-homepage-release-review-fixes",
+  "baseBranch": "stream/website",
+  "sourceBranch": "stream/website",
+  "startFrom": "stream",
+  "prNumber": 2617,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2617",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2617",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2617/finalize-homepage-release-review-fixes",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2617",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2617/finalize-homepage-release-review-fixes",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-finalize-homepage-release-review-fixes",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_7fba40f7aa4c",
+  "tmuxSession": "opensaas-website-finalize-homepage-release-review-fixes-7fba40f7",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-finalize-homepage-release-review-fixes/.task/website/finalize-homepage-release-review-fixes/session.json",
+  "createdAt": "2026-09-29T21:06:44.825Z"
+}

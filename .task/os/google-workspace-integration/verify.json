@@ -1,0 +1,1086 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/google-workspace-integration",
+  "base": "origin/stream/os",
+  "headSha": "1df33eb1fa55bbe68bda2e0daf42d1788b6deaec",
+  "changeHash": "cf4db7958346f6e256ed54d734962ba9bcd8325d44f418b19aedf6007afc2fb7",
+  "changedFiles": [
+    "packages/os/TOOLS.md",
+    "packages/os/cloudflare/os-device-authority/src/app.ts",
+    "packages/os/cloudflare/os-device-authority/src/routes/github-source-control.ts",
+    "packages/os/cloudflare/os-device-authority/src/routes/google-oauth.ts",
+    "packages/os/cloudflare/os-device-authority/src/routes/google-workspace.ts",
+    "packages/os/cloudflare/os-device-authority/src/services/grants.ts",
+    "packages/os/cloudflare/os-device-authority/src/types.ts",
+    "packages/os/cloudflare/os-device-authority/src/worker.ts",
+    "packages/os/manifests/generated/core.manifest.json",
+    "packages/os/manifests/generated/tool.manifest.json",
+    "packages/os/manifests/manifest.config.ts",
+    "packages/os/package.json",
+    "packages/os/scripts/google.ts",
+    "packages/os/scripts/install.ts",
+    "packages/os/scripts/lib/facade/schemas.ts",
+    "packages/os/scripts/lib/google-workspace-auth.ts",
+    "packages/os/scripts/lib/install-state.ts",
+    "packages/os/scripts/lib/managed-cloud-node-enrollment.ts",
+    "packages/os/scripts/lib/managed-gog.ts",
+    "packages/os/scripts/lib/workspace-device-authorization.ts",
+    "packages/os/scripts/lib/workspace-device-login-client.ts",
+    "packages/os/skills/google/SKILL.md",
+    "packages/os/skills/google/skill.json",
+    "packages/os/skills/skills.json",
+    "packages/os/src/generated/workspace.d.ts",
+    "packages/os/tests/facade/__snapshots__/facade.test.ts.snap",
+    "packages/os/tests/fixtures/tool-package-baseline.json",
+    "packages/os/tests/google-skill.test.ts",
+    "packages/os/tests/google-tool.test.ts",
+    "packages/os/tests/google-workspace-auth.test.ts",
+    "packages/os/tests/managed-gog.test.ts",
+    "packages/os/tests/native-google-device-approval.test.ts",
+    "packages/os/tests/tool-manifest.test.ts",
+    "packages/os/tests/tool-package-layout.test.ts",
+    "packages/os/tools/google/handler.ts",
+    "packages/os/tools/google/manifest.ts",
+    "packages/os/tools/google/schema.ts",
+    "packages/os/tools/google/service.ts",
+    "packages/os/tools/registry.ts",
+    "packages/workspace/test-selection.registry.json",
+    "packages/workspace/test-selection.rules.json"
+  ],
+  "verifiedAt": "2026-08-26T05:38:33.817Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/google-workspace-integration/current.json",
+        ".task/os/google-workspace-integration/evidence-log.json",
+        ".task/os/google-workspace-integration/read-log.json",
+        ".task/os/google-workspace-integration/session.json",
+        ".task/os/google-workspace-integration/verify.json",
+        ".task/os/google-workspace-integration/workpad.md",
+        ".task/tasks/os/google-workspace-integration.json",
+        "packages/os/TOOLS.md",
+        "packages/os/cloudflare/os-device-authority/src/app.ts",
+        "packages/os/cloudflare/os-device-authority/src/routes/github-source-control.ts",
+        "packages/os/cloudflare/os-device-authority/src/routes/google-oauth.ts",
+        "packages/os/cloudflare/os-device-authority/src/routes/google-workspace.ts",
+        "packages/os/cloudflare/os-device-authority/src/services/grants.ts",
+        "packages/os/cloudflare/os-device-authority/src/types.ts",
+        "packages/os/cloudflare/os-device-authority/src/worker.ts",
+        "packages/os/manifests/generated/core.manifest.json",
+        "packages/os/manifests/generated/tool.manifest.json",
+        "packages/os/manifests/manifest.config.ts",
+        "packages/os/package.json",
+        "packages/os/scripts/google.ts",
+        "packages/os/scripts/install.ts",
+        "packages/os/scripts/lib/facade/schemas.ts",
+        "packages/os/scripts/lib/google-workspace-auth.ts",
+        "packages/os/scripts/lib/install-state.ts",
+        "packages/os/scripts/lib/managed-cloud-node-enrollment.ts",
+        "packages/os/scripts/lib/managed-gog.ts",
+        "packages/os/scripts/lib/workspace-device-authorization.ts",
+        "packages/os/scripts/lib/workspace-device-login-client.ts",
+        "packages/os/skills/google/SKILL.md",
+        "packages/os/skills/google/skill.json",
+        "packages/os/skills/skills.json",
+        "packages/os/src/generated/workspace.d.ts",
+        "packages/os/tests/facade/__snapshots__/facade.test.ts.snap",
+        "packages/os/tests/fixtures/tool-package-baseline.json",
+        "packages/os/tests/google-skill.test.ts",
+        "packages/os/tests/google-tool.test.ts",
+        "packages/os/tests/google-workspace-auth.test.ts",
+        "packages/os/tests/managed-gog.test.ts",
+        "packages/os/tests/native-google-device-approval.test.ts",
+        "packages/os/tests/tool-manifest.test.ts",
+        "packages/os/tests/tool-package-layout.test.ts",
+        "packages/os/tools/google/handler.ts",
+        "packages/os/tools/google/manifest.ts",
+        "packages/os/tools/google/schema.ts",
+        "packages/os/tools/google/service.ts",
+        "packages/os/tools/registry.ts",
+        "packages/workspace/test-selection.registry.json",
+        "packages/workspace/test-selection.rules.json"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-test-selection",
+          "critical": true,
+          "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy.",
+          "matchedFiles": [
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "trace-site-pagination",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Current OS Trace gateway and Trace Burn changes must prove authenticated history paging, canonical TraceStore resolution, safe redaction, and OS-owned virtual-list/browser behavior.",
+          "matchedFiles": [
+            "packages/os/package.json"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-release-surface-freshness",
+          "critical": true,
+          "exclusive": true,
+          "reason": "OS release orchestration, GitHub CLI resolution, signed runtime publication/promotion, exact local update handoff, default workspace-shell snapshots, and Workspace Edge migrations must prove the focused freshness path without selecting unrelated package-wide OS tests.",
+          "matchedFiles": [
+            "packages/os/package.json"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-lifecycle-update-handoff",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Lifecycle updater, managed ingress dependency convergence, Caddy topology reload decisions, immutable release handoff, worker drain/load-balancer evacuation, detached activation, platform restart, and discoverable lifecycle-tool changes must run the exact lifecycle/facade/tool contracts without selecting unrelated package-wide OS tests.",
+          "matchedFiles": [
+            "packages/os/TOOLS.md",
+            "packages/os/manifests/generated/tool.manifest.json",
+            "packages/os/scripts/lib/facade/schemas.ts",
+            "packages/os/src/generated/workspace.d.ts",
+            "packages/os/tests/facade/__snapshots__/facade.test.ts.snap",
+            "packages/os/tests/fixtures/tool-package-baseline.json",
+            "packages/os/tests/tool-manifest.test.ts",
+            "packages/os/tests/tool-package-layout.test.ts",
+            "packages/os/tools/registry.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-device-approval-canonical-identity",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Native OS device-approval and canonical-identity changes must prove the exact auth, tenant, and control-plane contracts without selecting unsafe unrelated package-wide OS tests.",
+          "matchedFiles": [
+            "packages/os/cloudflare/os-device-authority/src/routes/google-oauth.ts",
+            "packages/os/tests/native-google-device-approval.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-managed-cloud-one-click-provisioning",
+          "critical": true,
+          "exclusive": true,
+          "reason": "One-click managed-cloud control-plane, launcher, provisioning-runner, enrollment, and Worker changes must prove their focused security and lifecycle contracts without selecting the historically red unrelated OS package suite.",
+          "matchedFiles": [
+            "packages/os/cloudflare/os-device-authority/src/app.ts",
+            "packages/os/cloudflare/os-device-authority/src/types.ts",
+            "packages/os/cloudflare/os-device-authority/src/worker.ts",
+            "packages/os/scripts/lib/managed-cloud-node-enrollment.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-bundled-skill-contract",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Bundled skill instructions, metadata, registry output, and skill-routing contracts must run the focused skill lifecycle suite without selecting unrelated historically red package-wide OS tests.",
+          "matchedFiles": [
+            "packages/os/skills/google/SKILL.md",
+            "packages/os/skills/google/skill.json",
+            "packages/os/skills/skills.json"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-google-workspace",
+          "critical": true,
+          "reason": "Google Workspace runtime, first-use OAuth, signed node bootstrap, tool policy, installer, and bundled-skill changes must prove the focused Google and shared OS contracts without selecting the historically noisy unrelated package-wide OS suite.",
+          "matchedFiles": [
+            "packages/os/cloudflare/os-device-authority/src/routes/google-workspace.ts",
+            "packages/os/cloudflare/os-device-authority/src/services/grants.ts",
+            "packages/os/manifests/manifest.config.ts",
+            "packages/os/scripts/google.ts",
+            "packages/os/scripts/install.ts",
+            "packages/os/scripts/lib/google-workspace-auth.ts",
+            "packages/os/scripts/lib/install-state.ts",
+            "packages/os/scripts/lib/managed-gog.ts",
+            "packages/os/scripts/lib/workspace-device-authorization.ts",
+            "packages/os/scripts/lib/workspace-device-login-client.ts",
+            "packages/os/tests/google-skill.test.ts",
+            "packages/os/tests/google-tool.test.ts",
+            "packages/os/tests/google-workspace-auth.test.ts",
+            "packages/os/tests/managed-gog.test.ts",
+            "packages/os/tools/google/handler.ts",
+            "packages/os/tools/google/manifest.ts",
+            "packages/os/tools/google/schema.ts",
+            "packages/os/tools/google/service.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-github-source-control",
+          "critical": true,
+          "exclusive": true,
+          "reason": "GitHub App source-control onboarding, installation handoff, workspace repository materialization, and Diffs credential brokering must prove their focused security and UX contracts without selecting the historically red unrelated OS package suite.",
+          "matchedFiles": [
+            "packages/os/cloudflare/os-device-authority/src/app.ts",
+            "packages/os/cloudflare/os-device-authority/src/routes/github-source-control.ts",
+            "packages/os/cloudflare/os-device-authority/src/types.ts",
+            "packages/os/cloudflare/os-device-authority/src/worker.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "server-ci-task-contract",
+          "critical": true,
+          "reason": "Server CI changes must scope lint and typecheck to directly changed Twenty server runtime files while retaining dependency propagation.",
+          "matchedFiles": [
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "os-work-session-fs",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Work-session filesystem authority must prove trusted session-root routing, escape resistance, generated tool contracts, and unchanged task-session filesystem behavior without selecting unrelated package-wide OS tests.",
+          "matchedFiles": [
+            "packages/os/TOOLS.md",
+            "packages/os/manifests/generated/core.manifest.json",
+            "packages/os/manifests/generated/tool.manifest.json",
+            "packages/os/scripts/lib/facade/schemas.ts",
+            "packages/os/src/generated/workspace.d.ts",
+            "packages/os/tests/fixtures/tool-package-baseline.json",
+            "packages/os/tests/tool-manifest.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "auto:@consuelo/os:package-test",
+          "critical": false,
+          "reason": "Auto-discovered package test script for packages/os.",
+          "matchedFiles": [
+            "packages/os/cloudflare/os-device-authority/src/routes/google-workspace.ts",
+            "packages/os/cloudflare/os-device-authority/src/services/grants.ts",
+            "packages/os/manifests/manifest.config.ts",
+            "packages/os/scripts/google.ts",
+            "packages/os/scripts/install.ts",
+            "packages/os/scripts/lib/google-workspace-auth.ts",
+            "packages/os/scripts/lib/install-state.ts",
+            "packages/os/scripts/lib/managed-gog.ts",
+            "packages/os/scripts/lib/workspace-device-authorization.ts",
+            "packages/os/scripts/lib/workspace-device-login-client.ts",
+            "packages/os/tests/google-skill.test.ts",
+            "packages/os/tests/google-tool.test.ts",
+            "packages/os/tests/google-workspace-auth.test.ts",
+            "packages/os/tests/managed-gog.test.ts",
+            "packages/os/tools/google/handler.ts",
+            "packages/os/tools/google/manifest.ts",
+            "packages/os/tools/google/schema.ts",
+            "packages/os/tools/google/service.ts"
+          ],
+          "origin": "auto"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true
+        },
+        {
+          "name": "OS trace gateway and Trace Burn contracts",
+          "command": [
+            "bun",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "--root",
+            "packages/os",
+            "tests/trace-sites-history-endpoint-contract.test.ts",
+            "tests/trace-sites-gateway-read-layer.test.ts",
+            "tests/trace-history-redaction.test.ts",
+            "tests/trace-site-inspector-os-owned.test.ts",
+            "tests/observability-traces-site.test.ts",
+            "tests/redaction.test.ts",
+            "tests/runtime-bundle-managed-site-assets.test.ts"
+          ],
+          "ruleId": "trace-site-pagination",
+          "critical": true
+        },
+        {
+          "name": "OS canonical TraceStore runtime boundary",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/trace-sites-runtime-boundary.test.ts"
+          ],
+          "ruleId": "trace-site-pagination",
+          "critical": true
+        },
+        {
+          "name": "OS trace persistence and session search contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "--root",
+            "packages/os",
+            "tests/trace-persistence.test.ts",
+            "tests/trace-search-query.test.ts"
+          ],
+          "ruleId": "trace-site-pagination",
+          "critical": true
+        },
+        {
+          "name": "OS release freshness contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/os-device-authority-release-contract.test.ts",
+            "tests/distribution/release-channel-workflows.test.ts",
+            "tests/distribution/release-channels.test.ts",
+            "tests/github-cli-resolution.test.ts",
+            "tests/release-orchestrator.test.ts",
+            "tests/release-local-platform-bundle.test.ts",
+            "tests/release-script-promotion-correlation.test.ts",
+            "tests/release-script-security.test.ts",
+            "tests/release-tool-surface.test.ts"
+          ],
+          "ruleId": "os-release-surface-freshness",
+          "critical": true
+        },
+        {
+          "name": "Workspace production release contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/website-deploy.test.js"
+          ],
+          "ruleId": "os-release-surface-freshness",
+          "critical": true
+        },
+        {
+          "name": "Workspace Edge release dry run",
+          "command": [
+            "bun",
+            "run",
+            "os:release-workspace-edge",
+            "--",
+            "--dry-run"
+          ],
+          "ruleId": "os-release-surface-freshness",
+          "critical": true
+        },
+        {
+          "name": "OS lifecycle update handoff contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/lifecycle-engine.test.ts",
+            "packages/os/tests/lifecycle-restart-contract.test.ts",
+            "packages/os/tests/lifecycle-ingress-continuity.test.ts",
+            "packages/os/tests/linux-ingress-continuity.test.ts",
+            "packages/os/tests/daemon-bun-path.test.ts",
+            "packages/os/tests/system-daemon-reliability.test.ts",
+            "packages/os/tests/worker-pool-lifecycle.test.ts",
+            "packages/os/tests/health-readiness.test.ts",
+            "packages/os/tests/lifecycle-facade.test.ts",
+            "packages/os/tests/native-lifecycle-operation.test.ts",
+            "packages/os/tests/lifecycle-tool-surface.test.ts",
+            "packages/os/tests/cli-update-routing.test.ts",
+            "packages/os/tests/linux-platform.test.ts",
+            "packages/os/tests/windows-platform.test.ts",
+            "packages/os/tests/tool-manifest.test.ts",
+            "packages/os/tests/tool-package-layout.test.ts",
+            "packages/os/tests/caddy-worker-pool-reconciliation.test.ts",
+            "packages/os/tests/runtime-ingress-dependency-convergence.test.ts",
+            "packages/os/tests/caddy-worker-pool-migration.test.ts"
+          ],
+          "ruleId": "os-lifecycle-update-handoff",
+          "critical": true
+        },
+        {
+          "name": "OS lifecycle syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "ruleId": "os-lifecycle-update-handoff",
+          "critical": true
+        },
+        {
+          "name": "OS lifecycle facade snapshots",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/facade/facade.test.ts",
+            "-t",
+            "lifecycle\\.(status|update)"
+          ],
+          "ruleId": "os-lifecycle-update-handoff",
+          "critical": true
+        },
+        {
+          "name": "OS canonical device approval contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/canonical-device-identity.test.ts",
+            "tests/install-control-plane.test.ts",
+            "tests/install-control-plane-d1.test.ts",
+            "tests/oauth-device-page-contract.test.ts",
+            "tests/internal-dashboard-integration.test.ts",
+            "tests/native-google-device-approval.test.ts",
+            "tests/os-device-authority-worker.test.ts"
+          ],
+          "ruleId": "os-device-approval-canonical-identity",
+          "critical": true
+        },
+        {
+          "name": "OS one-click managed cloud contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/managed-cloud-one-click-provisioning.test.ts",
+            "tests/managed-cloud-one-click-runner.test.ts",
+            "tests/launcher-nodes-control-plane.test.ts",
+            "tests/settings-site.test.ts",
+            "tests/cloudflare-worker-release-readiness.test.ts",
+            "tests/os-device-authority-architecture.test.ts",
+            "tests/os-device-authority-release-contract.test.ts",
+            "tests/managed-cloud-node-enrollment.test.ts",
+            "tests/managed-cloud-node-enrollment-cli.test.ts",
+            "tests/platform-managed-cloud-node.test.ts",
+            "tests/managed-cloud-pricing.test.ts",
+            "tests/managed-cloud-public-pricing.test.ts",
+            "tests/managed-cloud-node-instance-contract.test.ts",
+            "tests/managed-cloud-node-contract.test.ts"
+          ],
+          "ruleId": "os-managed-cloud-one-click-provisioning",
+          "critical": true
+        },
+        {
+          "name": "OS device authority Worker contract",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/os-device-authority-worker.test.ts"
+          ],
+          "ruleId": "os-managed-cloud-one-click-provisioning",
+          "critical": true
+        },
+        {
+          "name": "OS bundled skill contracts",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/os",
+            "test",
+            "--",
+            "tests/branch-skill.test.ts",
+            "tests/cli-skill-routing.test.ts",
+            "tests/onboarding-skills.test.ts",
+            "tests/skill-selection-cli.test.ts",
+            "tests/skills-registry.test.ts"
+          ],
+          "ruleId": "os-bundled-skill-contract",
+          "critical": true
+        },
+        {
+          "name": "OS Google Workspace contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/managed-gog.test.ts",
+            "tests/google-tool.test.ts",
+            "tests/google-skill.test.ts",
+            "tests/google-workspace-auth.test.ts",
+            "tests/native-google-device-approval.test.ts",
+            "tests/os-device-authority-worker.test.ts",
+            "tests/install-state.test.ts",
+            "tests/tool-manifest.test.ts",
+            "tests/tool-package-layout.test.ts"
+          ],
+          "ruleId": "os-google-workspace",
+          "critical": true
+        },
+        {
+          "name": "OS GitHub source-control contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/github-source-control-authority.test.ts",
+            "tests/source-control-config.test.ts",
+            "tests/settings-hono-routes.test.ts",
+            "tests/settings-site.test.ts",
+            "tests/diffs-hono-routes.test.ts",
+            "tests/settings-sites-gateway-endpoints.test.ts",
+            "tests/os-device-authority-worker.test.ts"
+          ],
+          "ruleId": "os-github-source-control",
+          "critical": true
+        },
+        {
+          "name": "changed server task selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "TypeORM CLI compatibility contract",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "OS work-session filesystem authority contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/work-session-fs.test.ts",
+            "packages/os/tests/fs-write.test.ts",
+            "packages/os/tests/session-start-foundation.test.ts",
+            "packages/os/tests/tool-manifest.test.ts"
+          ],
+          "ruleId": "os-work-session-fs",
+          "critical": true
+        },
+        {
+          "name": "OS task-session filesystem compatibility contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/facade/facade.test.ts",
+            "-t",
+            "fs\\.(apply_patch|write)"
+          ],
+          "ruleId": "os-work-session-fs",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 3665,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-google-workspace-integration\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/test-selection.test.js \u001b[2m(\u001b[22m\u001b[2m47 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 3264\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m discovers and seeds the existing test inventory \u001b[33m 1544\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m47 passed\u001b[39m\u001b[22m\u001b[90m (47)\u001b[39m\n\u001b[2m   Start at \u001b[22m 01:37:39\n\u001b[2m   Duration \u001b[22m 3.38s\u001b[2m (transform 18ms, setup 0ms, import 28ms, tests 3.26s, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS trace gateway and Trace Burn contracts",
+          "command": [
+            "bun",
+            "node_modules/vitest/vitest.mjs",
+            "run",
+            "--root",
+            "packages/os",
+            "tests/trace-sites-history-endpoint-contract.test.ts",
+            "tests/trace-sites-gateway-read-layer.test.ts",
+            "tests/trace-history-redaction.test.ts",
+            "tests/trace-site-inspector-os-owned.test.ts",
+            "tests/observability-traces-site.test.ts",
+            "tests/redaction.test.ts",
+            "tests/runtime-bundle-managed-site-assets.test.ts"
+          ],
+          "ruleId": "trace-site-pagination",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 502,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-google-workspace-integration/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/redaction.test.ts \u001b[2m(\u001b[22m\u001b[2m6 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 4\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/trace-sites-gateway-read-layer.test.ts \u001b[2m(\u001b[22m\u001b[2m10 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 8\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/trace-history-redaction.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 6\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/trace-sites-history-endpoint-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 7\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/trace-site-inspector-os-owned.test.ts \u001b[2m(\u001b[22m\u001b[2m16 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 9\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/observability-traces-site.test.ts \u001b[2m(\u001b[22m\u001b[2m13 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 39\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/runtime-bundle-managed-site-assets.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 127\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m7 passed\u001b[39m\u001b[22m\u001b[90m (7)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m54 passed\u001b[39m\u001b[22m\u001b[90m (54)\u001b[39m\n\u001b[2m   Start at \u001b[22m 01:37:43\n\u001b[2m   Duration \u001b[22m 276ms\u001b[2m (transform 486ms, setup 0ms, import 568ms, tests 199ms, environment 2ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS canonical TraceStore runtime boundary",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/trace-sites-runtime-boundary.test.ts"
+          ],
+          "ruleId": "trace-site-pagination",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 325,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-google-workspace-integration/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/trace-sites-runtime-boundary.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m3 passed\u001b[39m\u001b[22m\u001b[90m (3)\u001b[39m\n\u001b[2m   Start at \u001b[22m 01:37:43\n\u001b[2m   Duration \u001b[22m 91ms\u001b[2m (transform 17ms, setup 0ms, import 24ms, tests 3ms, environment 0ms)\u001b[22m\n\n$ vitest run tests/trace-sites-runtime-boundary.test.ts\n"
+        },
+        {
+          "name": "OS trace persistence and session search contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "--root",
+            "packages/os",
+            "tests/trace-persistence.test.ts",
+            "tests/trace-search-query.test.ts"
+          ],
+          "ruleId": "trace-site-pagination",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 3350,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-google-workspace-integration/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/trace-search-query.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 13\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/trace-persistence.test.ts \u001b[2m(\u001b[22m\u001b[2m12 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 2971\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m persists a silent facade success with redacted input and serves it through the Hono read backend \u001b[33m 378\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m persists code.call and batch parent envelopes alongside nested child traces \u001b[33m 841\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m persists durable Codex child events once under the originating trace across later attachments \u001b[33m 637\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m16 passed\u001b[39m\u001b[22m\u001b[90m (16)\u001b[39m\n\u001b[2m   Start at \u001b[22m 01:37:43\n\u001b[2m   Duration \u001b[22m 3.15s\u001b[2m (transform 75ms, setup 0ms, import 133ms, tests 2.98s, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS release freshness contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/os-device-authority-release-contract.test.ts",
+            "tests/distribution/release-channel-workflows.test.ts",
+            "tests/distribution/release-channels.test.ts",
+            "tests/github-cli-resolution.test.ts",
+            "tests/release-orchestrator.test.ts",
+            "tests/release-local-platform-bundle.test.ts",
+            "tests/release-script-promotion-correlation.test.ts",
+            "tests/release-script-security.test.ts",
+            "tests/release-tool-surface.test.ts"
+          ],
+          "ruleId": "os-release-surface-freshness",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1101,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-google-workspace-integration/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/release-script-security.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/github-cli-resolution.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/release-local-platform-bundle.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/release-orchestrator.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 4\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/release-script-promotion-correlation.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/distribution/release-channel-workflows.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 28\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/distribution/release-channels.test.ts \u001b[2m(\u001b[22m\u001b[2m23 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 28\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/release-tool-surface.test.ts \u001b[2m(\u001b[22m\u001b[2m6 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 25\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-release-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m18 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 519\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should stop release before remote mutation when readiness fails \u001b[33m 309\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m9 passed\u001b[39m\u001b[22m\u001b[90m (9)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m71 passed\u001b[39m\u001b[22m\u001b[90m (71)\u001b[39m\n\u001b[2m   Start at \u001b[22m 01:37:47\n\u001b[2m   Duration \u001b[22m 918ms\u001b[2m (transform 861ms, setup 0ms, import 992ms, tests 613ms, environment 1ms)\u001b[22m\n\n$ vitest run tests/os-device-authority-release-contract.test.ts tests/distribution/release-channel-workflows.test.ts tests/distribution/release-channels.test.ts tests/github-cli-resolution.test.ts tests/release-orchestrator.test.ts tests/release-local-platform-bundle.test.ts tests/release-script-promotion-correlation.test.ts tests/release-script-security.test.ts tests/release-tool-surface.test.ts\n"
+        },
+        {
+          "name": "Workspace production release contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/website-deploy.test.js"
+          ],
+          "ruleId": "os-release-surface-freshness",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 520,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-google-workspace-integration\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/website-deploy.test.js \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 221\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m3 passed\u001b[39m\u001b[22m\u001b[90m (3)\u001b[39m\n\u001b[2m   Start at \u001b[22m 01:37:48\n\u001b[2m   Duration \u001b[22m 292ms\u001b[2m (transform 9ms, setup 0ms, import 13ms, tests 221ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "Workspace Edge release dry run",
+          "command": [
+            "bun",
+            "run",
+            "os:release-workspace-edge",
+            "--",
+            "--dry-run"
+          ],
+          "ruleId": "os-release-surface-freshness",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 625,
+          "outputTail": "release=consuelo-workspace-edge\n$ bun run --cwd packages/os cloudflare:workspace-edge:deploy:dry-run\n\n ⛅️ wrangler 4.114.0 (update available 4.126.0)\n───────────────────────────────────────────────\nTotal Upload: 216.39 KiB / gzip: 47.18 KiB\nYour Worker has access to the following bindings:\nBinding                                                                                                 Resource            \nenv.OS_DEVICE_AUTHORITY (OsDeviceGrantDurableObject, defined in consuelo-os-device-authority)           Durable Object      \nenv.WORKSPACE_ROUTE_REGISTRY (consuelo-workspace-route-registry)                                        D1 Database         \nenv.SITES_SNAPSHOTS (consuelo-sites-snapshots)                                                          R2 Bucket           \n\n--dry-run: exiting now.\nConsuelo Workspace Edge dry run complete\n$ bun packages/workspace/scripts/os-release-workspace-edge.ts --dry-run\n$ wrangler deploy --config cloudflare/workspace-edge/wrangler.toml --dry-run\n"
+        },
+        {
+          "name": "OS lifecycle update handoff contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/lifecycle-engine.test.ts",
+            "packages/os/tests/lifecycle-restart-contract.test.ts",
+            "packages/os/tests/lifecycle-ingress-continuity.test.ts",
+            "packages/os/tests/linux-ingress-continuity.test.ts",
+            "packages/os/tests/daemon-bun-path.test.ts",
+            "packages/os/tests/system-daemon-reliability.test.ts",
+            "packages/os/tests/worker-pool-lifecycle.test.ts",
+            "packages/os/tests/health-readiness.test.ts",
+            "packages/os/tests/lifecycle-facade.test.ts",
+            "packages/os/tests/native-lifecycle-operation.test.ts",
+            "packages/os/tests/lifecycle-tool-surface.test.ts",
+            "packages/os/tests/cli-update-routing.test.ts",
+            "packages/os/tests/linux-platform.test.ts",
+            "packages/os/tests/windows-platform.test.ts",
+            "packages/os/tests/tool-manifest.test.ts",
+            "packages/os/tests/tool-package-layout.test.ts",
+            "packages/os/tests/caddy-worker-pool-reconciliation.test.ts",
+            "packages/os/tests/runtime-ingress-dependency-convergence.test.ts",
+            "packages/os/tests/caddy-worker-pool-migration.test.ts"
+          ],
+          "ruleId": "os-lifecycle-update-handoff",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 7098,
+          "outputTail": "tem-daemon-reliability.test.ts \u001b[2m(\u001b[22m\u001b[2m14 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 3588\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should persist probe failures and restart only when the failure threshold is reached \u001b[33m 603\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should kickstart launchd when canonical rolling recovery rejects an unhealthy pool \u001b[33m 704\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should bootstrap a missing Caddy label when the HA ingress is unavailable \u001b[33m 304\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should open a recovery circuit when restart attempts exceed the bounded window \u001b[33m 495\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should keep external health recovery scoped to the external launchd label \u001b[33m 510\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should reconcile signed public route state before escalating a locally healthy node to restart \u001b[33m 562\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/health-readiness.test.ts \u001b[2m(\u001b[22m\u001b[2m13 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 5405\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m preserves a real in-flight response when the worker exits after draining \u001b[33m 1287\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m preserves a slow app response stream while a real Bun worker drains \u001b[33m 1526\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m preserves a real MCP tool call when the worker receives the graceful drain signal \u001b[33m 2559\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m19 passed\u001b[39m\u001b[22m\u001b[90m (19)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m214 passed\u001b[39m\u001b[22m\u001b[90m (214)\u001b[39m\n\u001b[2m   Start at \u001b[22m 01:37:49\n\u001b[2m   Duration \u001b[22m 6.76s\u001b[2m (transform 3.18s, setup 0ms, import 6.42s, tests 14.55s, environment 1ms)\u001b[22m\n\n(node:31091) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n{\"level\":\"info\",\"tool\":\"lifecycle.status\",\"branch\":\"\",\"command\":\"workspace lifecycle.status\",\"implementationCommand\":\"bun run lifecycle -- status --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-26T05:37:51.427Z\"}\n{\"level\":\"warn\",\"event\":\"trace.persistence_failed\",\"code\":\"TRACE_PERSISTENCE_FAILED\",\"message\":\"Cannot find module 'bun:sqlite'\\nRequire stack:\\n- /Users/kokayi/.[REDACTED_SECRET].ts\",\"ts\":\"2026-08-26T05:37:51.428Z\"}\n{\"level\":\"info\",\"tool\":\"lifecycle.update\",\"branch\":\"\",\"command\":\"workspace lifecycle.update '{\\\"channel\\\":\\\"canary\\\"}'\",\"implementationCommand\":\"bun run lifecycle -- update --channel canary --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-26T05:37:51.430Z\"}\n{\"level\":\"info\",\"tool\":\"lifecycle.update\",\"branch\":\"\",\"command\":\"workspace lifecycle.update '{\\\"channel\\\":\\\"canary\\\",\\\"version\\\":\\\"1.2.3\\\"}'\",\"implementationCommand\":\"bun run lifecycle -- update --channel canary --version 1.2.3 --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-26T05:37:51.432Z\"}\n{\"level\":\"error\",\"tool\":\"lifecycle.update\",\"command\":\"workspace lifecycle.update\",\"implementationCommand\":\"workspace lifecycle.update\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-26T05:37:51.433Z\"}\n{\"level\":\"info\",\"tool\":\"lifecycle.update\",\"command\":\"workspace lifecycle.update\",\"implementationCommand\":\"workspace lifecycle.update\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"DRY_RUN\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-26T05:37:51.434Z\"}\n"
+        },
+        {
+          "name": "OS lifecycle syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "ruleId": "os-lifecycle-update-handoff",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1870,
+          "outputTail": "workspace script syntax checks passed\n"
+        },
+        {
+          "name": "OS lifecycle facade snapshots",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/facade/facade.test.ts",
+            "-t",
+            "lifecycle\\.(status|update)"
+          ],
+          "ruleId": "os-lifecycle-update-handoff",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 799,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-google-workspace-integration\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/facade/facade.test.ts \u001b[2m(\u001b[22m\u001b[2m719 tests\u001b[22m\u001b[2m | \u001b[22m\u001b[33m710 skipped\u001b[39m\u001b[2m)\u001b[22m\u001b[32m 15\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m9 passed\u001b[39m\u001b[22m\u001b[2m | \u001b[22m\u001b[33m710 skipped\u001b[39m\u001b[90m (719)\u001b[39m\n\u001b[2m   Start at \u001b[22m 01:37:58\n\u001b[2m   Duration \u001b[22m 550ms\u001b[2m (transform 224ms, setup 0ms, import 460ms, tests 15ms, environment 0ms)\u001b[22m\n\n{\"level\":\"info\",\"tool\":\"lifecycle.status\",\"branch\":\"\",\"command\":\"workspace lifecycle.status\",\"implementationCommand\":\"bun run lifecycle -- status --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-26T05:37:59.032Z\"}\n{\"level\":\"warn\",\"event\":\"trace.persistence_failed\",\"code\":\"TRACE_PERSISTENCE_FAILED\",\"message\":\"Cannot find module 'bun:sqlite'\\nRequire stack:\\n- /Users/kokayi/.[REDACTED_SECRET].ts\",\"ts\":\"2026-08-26T05:37:59.033Z\"}\n{\"level\":\"info\",\"tool\":\"lifecycle.update\",\"branch\":\"\",\"command\":\"workspace lifecycle.update '{\\\"channel\\\":\\\"stable\\\"}'\",\"implementationCommand\":\"bun run lifecycle -- update --channel stable --json\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-26T05:37:59.035Z\"}\n{\"level\":\"error\",\"tool\":\"lifecycle.status\",\"branch\":\"\",\"command\":\"workspace lifecycle.status\",\"implementationCommand\":\"bun run lifecycle -- status --json\",\"durationMs\":0,\"exitCode\":2,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"COMMAND_FAILED\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-26T05:37:59.037Z\"}\n{\"level\":\"error\",\"tool\":\"lifecycle.update\",\"branch\":\"\",\"command\":\"workspace lifecycle.update '{\\\"channel\\\":\\\"stable\\\"}'\",\"implementationCommand\":\"bun run lifecycle -- update --channel stable --json\",\"durationMs\":0,\"exitCode\":2,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"COMMAND_FAILED\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-26T05:37:59.038Z\"}\n{\"level\":\"error\",\"tool\":\"lifecycle.status\",\"branch\":\"\",\"command\":\"workspace lifecycle.status\",\"implementationCommand\":\"bun run lifecycle -- status --json\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"TIMEOUT\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-26T05:37:59.040Z\"}\n{\"level\":\"error\",\"tool\":\"lifecycle.update\",\"branch\":\"\",\"command\":\"workspace lifecycle.update '{\\\"channel\\\":\\\"stable\\\"}'\",\"implementationCommand\":\"bun run lifecycle -- update --channel stable --json\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"TIMEOUT\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-26T05:37:59.041Z\"}\n{\"level\":\"info\",\"tool\":\"lifecycle.update\",\"command\":\"workspace lifecycle.update\",\"implementationCommand\":\"workspace lifecycle.update\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"DRY_RUN\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-26T05:37:59.042Z\"}\n"
+        },
+        {
+          "name": "OS canonical device approval contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/canonical-device-identity.test.ts",
+            "tests/install-control-plane.test.ts",
+            "tests/install-control-plane-d1.test.ts",
+            "tests/oauth-device-page-contract.test.ts",
+            "tests/internal-dashboard-integration.test.ts",
+            "tests/native-google-device-approval.test.ts",
+            "tests/os-device-authority-worker.test.ts"
+          ],
+          "ruleId": "os-device-approval-canonical-identity",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 786,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-google-workspace-integration/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/oauth-device-page-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/install-control-plane-d1.test.ts \u001b[2m(\u001b[22m\u001b[2m6 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 12\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/install-control-plane.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 17\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/canonical-device-identity.test.ts \u001b[2m(\u001b[22m\u001b[2m14 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 13\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/native-google-device-approval.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 27\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/internal-dashboard-integration.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 43\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-worker.test.ts \u001b[2m(\u001b[22m\u001b[2m33 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 94\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m7 passed\u001b[39m\u001b[22m\u001b[90m (7)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m78 passed\u001b[39m\u001b[22m\u001b[90m (78)\u001b[39m\n\u001b[2m   Start at \u001b[22m 01:37:59\n\u001b[2m   Duration \u001b[22m 532ms\u001b[2m (transform 1.05s, setup 0ms, import 1.38s, tests 208ms, environment 0ms)\u001b[22m\n\n$ vitest run tests/canonical-device-identity.test.ts tests/install-control-plane.test.ts \"tests/install-control-plane-d1.test.ts\" tests/oauth-device-page-contract.test.ts tests/internal-dashboard-integration.test.ts tests/native-google-device-approval.test.ts tests/os-device-authority-worker.test.ts\n"
+        },
+        {
+          "name": "OS one-click managed cloud contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/managed-cloud-one-click-provisioning.test.ts",
+            "tests/managed-cloud-one-click-runner.test.ts",
+            "tests/launcher-nodes-control-plane.test.ts",
+            "tests/settings-site.test.ts",
+            "tests/cloudflare-worker-release-readiness.test.ts",
+            "tests/os-device-authority-architecture.test.ts",
+            "tests/os-device-authority-release-contract.test.ts",
+            "tests/managed-cloud-node-enrollment.test.ts",
+            "tests/managed-cloud-node-enrollment-cli.test.ts",
+            "tests/platform-managed-cloud-node.test.ts",
+            "tests/managed-cloud-pricing.test.ts",
+            "tests/managed-cloud-public-pricing.test.ts",
+            "tests/managed-cloud-node-instance-contract.test.ts",
+            "tests/managed-cloud-node-contract.test.ts"
+          ],
+          "ruleId": "os-managed-cloud-one-click-provisioning",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1577,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-google-workspace-integration/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/managed-cloud-node-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 49\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/platform-managed-cloud-node.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 77\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-node-instance-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 25\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-public-pricing.test.ts \u001b[2m(\u001b[22m\u001b[2m6 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 34\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-pricing.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 6\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/cloudflare-worker-release-readiness.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-architecture.test.ts \u001b[2m(\u001b[22m\u001b[2m25 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 46\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-one-click-provisioning.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 51\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-node-enrollment-cli.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 809\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m parses explicit home, onboarding, and status paths \u001b[33m 804\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/launcher-nodes-control-plane.test.ts \u001b[2m(\u001b[22m\u001b[2m7 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 61\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-node-enrollment.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 788\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m persists one owner-only node keypair and reuses it across enrollment retries \u001b[33m 774\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-one-click-runner.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 4\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/settings-site.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 161\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-release-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m18 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 540\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m14 passed\u001b[39m\u001b[22m\u001b[90m (14)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m105 passed\u001b[39m\u001b[22m\u001b[90m (105)\u001b[39m\n\u001b[2m   Start at \u001b[22m 01:38:00\n\u001b[2m   Duration \u001b[22m 1.38s\u001b[2m (transform 3.76s, setup 0ms, import 4.40s, tests 2.65s, environment 1ms)\u001b[22m\n\n$ vitest run tests/managed-cloud-one-click-provisioning.test.ts tests/managed-cloud-one-click-runner.test.ts tests/launcher-nodes-control-plane.test.ts tests/settings-site.test.ts tests/cloudflare-worker-release-readiness.test.ts tests/os-device-authority-architecture.test.ts tests/os-device-authority-release-contract.test.ts tests/managed-cloud-node-enrollment.test.ts tests/managed-cloud-node-enrollment-cli.test.ts tests/platform-managed-cloud-node.test.ts tests/managed-cloud-pricing.test.ts tests/managed-cloud-public-pricing.test.ts tests/managed-cloud-node-instance-contract.test.ts tests/managed-cloud-node-contract.test.ts\n"
+        },
+        {
+          "name": "OS device authority Worker contract",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/os-device-authority-worker.test.ts"
+          ],
+          "ruleId": "os-managed-cloud-one-click-provisioning",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 699,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-google-workspace-integration\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/os-device-authority-worker.test.ts \u001b[2m(\u001b[22m\u001b[2m33 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 74\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m33 passed\u001b[39m\u001b[22m\u001b[90m (33)\u001b[39m\n\u001b[2m   Start at \u001b[22m 01:38:01\n\u001b[2m   Duration \u001b[22m 456ms\u001b[2m (transform 257ms, setup 0ms, import 316ms, tests 74ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS bundled skill contracts",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/os",
+            "test",
+            "--",
+            "tests/branch-skill.test.ts",
+            "tests/cli-skill-routing.test.ts",
+            "tests/onboarding-skills.test.ts",
+            "tests/skill-selection-cli.test.ts",
+            "tests/skills-registry.test.ts"
+          ],
+          "ruleId": "os-bundled-skill-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 3110,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-google-workspace-integration/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/branch-skill.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/cli-skill-routing.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/skills-registry.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 19\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/onboarding-skills.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 11\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/skill-selection-cli.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 2388\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m adds branch through config, managed index, visible Skills, and steering discovery \u001b[33m 464\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m removes a clean bundled skill from config, managed index, visible Skills, and steering discovery \u001b[33m 453\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m deselects but preserves a locally modified bundled skill for explicit review \u001b[33m 496\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m interactive add offers only unselected bundled skills and uses skill names as labels \u001b[33m 513\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m interactive remove offers only selected bundled skills \u001b[33m 460\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m5 passed\u001b[39m\u001b[22m\u001b[90m (5)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m22 passed\u001b[39m\u001b[22m\u001b[90m (22)\u001b[39m\n\u001b[2m   Start at \u001b[22m 01:38:02\n\u001b[2m   Duration \u001b[22m 2.93s\u001b[2m (transform 326ms, setup 0ms, import 617ms, tests 2.42s, environment 0ms)\u001b[22m\n\n$ vitest run tests/branch-skill.test.ts tests/cli-skill-routing.test.ts tests/onboarding-skills.test.ts tests/skill-selection-cli.test.ts tests/skills-registry.test.ts\n"
+        },
+        {
+          "name": "OS Google Workspace contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/managed-gog.test.ts",
+            "tests/google-tool.test.ts",
+            "tests/google-skill.test.ts",
+            "tests/google-workspace-auth.test.ts",
+            "tests/native-google-device-approval.test.ts",
+            "tests/os-device-authority-worker.test.ts",
+            "tests/install-state.test.ts",
+            "tests/tool-manifest.test.ts",
+            "tests/tool-package-layout.test.ts"
+          ],
+          "ruleId": "os-google-workspace",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 16215,
+          "outputTail": "laces an expired ChatGPT MCP credential during reprovisioning \u001b[33m 916\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m reports existing generated security assets as existing on reprovision \u001b[33m 896\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should reuse the active workspace and node when reprovisioning without a new bootstrap \u001b[33m 944\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m should reject a noninteractive update when the active workspace conflicts with installed state \u001b[33m 895\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m creates the approved local home shape and preserves existing config \u001b[33m 1085\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m writes approved node identity into flattened node config \u001b[33m 397\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m writes an OpenCode MCP config that exposes Consuelo tools \u001b[33m 392\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m preserves credentials for previously configured agents during partial reconfiguration \u001b[33m 744\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m replaces expired local-agent credentials during reprovisioning \u001b[33m 767\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m materializes the canonical Artifacts site from persisted route-addressed artifacts \u001b[33m 710\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m preserves local user skills while refreshing the installed registry \u001b[33m 389\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m drops unknown legacy skill selections without mapping them to another skill \u001b[33m 354\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m installs every full-manifest tool even when only one skill is selected \u001b[33m 345\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m preserves local user tools while refreshing the installed registry \u001b[33m 604\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m materializes only selected bundled skills on fresh install \u001b[33m 577\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m uses default selected bundled skills when no selectedSkills option is provided \u001b[33m 381\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m configures Codex natively without writing a legacy sidecar or claiming verification \u001b[33m 1340\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m reports intent and task hook runtime modules in doctor checks \u001b[33m 650\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m9 passed\u001b[39m\u001b[22m\u001b[90m (9)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m96 passed\u001b[39m\u001b[22m\u001b[90m (96)\u001b[39m\n\u001b[2m   Start at \u001b[22m 01:38:05\n\u001b[2m   Duration \u001b[22m 16.01s\u001b[2m (transform 2.77s, setup 0ms, import 4.25s, tests 16.88s, environment 1ms)\u001b[22m\n\n$ vitest run tests/managed-gog.test.ts tests/google-tool.test.ts tests/google-skill.test.ts tests/google-workspace-auth.test.ts tests/native-google-device-approval.test.ts tests/os-device-authority-worker.test.ts tests/install-state.test.ts tests/tool-manifest.test.ts tests/tool-package-layout.test.ts\n786 |   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);\n787 | }\n788 | \n789 | export function readManagedComponentState(home: string): ManagedComponentState {\n790 |   const root = componentsRoot(home);\n791 |   const provenanceEnvelope = readJson(join(root, PROVENANCE_FILE));\n                                   ^\nSyntaxError: JSON Parse error: Expected '}'\n      at readManagedComponentState (/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-google-workspace-integration/packages/os/scripts/lib/managed-components.ts:791:30)\n      at readExistingState (/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-google-workspace-integration/packages/os/scripts/lib/managed-component-install.ts:316:17)\n      at provisionManagedComponentIndexes (/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-google-workspace-integration/packages/os/scripts/lib/managed-component-install.ts:480:20)\n      at provisionLocalOs (/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-google-workspace-integration/packages/os/scripts/lib/install-state.ts:1965:19)\n      at /Users/kokayi/.consuelo/node/tasks/worktrees/task-os-google-workspace-integration/packages/os/[eval]:3:43\n\nBun v1.3.14 (macOS arm64)\n"
+        },
+        {
+          "name": "OS GitHub source-control contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/github-source-control-authority.test.ts",
+            "tests/source-control-config.test.ts",
+            "tests/settings-hono-routes.test.ts",
+            "tests/settings-site.test.ts",
+            "tests/diffs-hono-routes.test.ts",
+            "tests/settings-sites-gateway-endpoints.test.ts",
+            "tests/os-device-authority-worker.test.ts"
+          ],
+          "ruleId": "os-github-source-control",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 2852,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-google-workspace-integration/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/source-control-config.test.ts \u001b[2m(\u001b[22m\u001b[2m7 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 112\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-worker.test.ts \u001b[2m(\u001b[22m\u001b[2m33 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 82\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/github-source-control-authority.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 114\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/settings-site.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 642\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m reports selected bundled skills and installed local skills only \u001b[33m 305\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/settings-sites-gateway-endpoints.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 667\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m keeps legacy settings gateway routes and scopes as compatibility aliases \u001b[33m 315\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/diffs-hono-routes.test.ts \u001b[2m(\u001b[22m\u001b[2m10 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 199\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/settings-hono-routes.test.ts \u001b[2m(\u001b[22m\u001b[2m12 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 545\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m7 passed\u001b[39m\u001b[22m\u001b[90m (7)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m80 passed\u001b[39m\u001b[22m\u001b[90m (80)\u001b[39m\n\u001b[2m   Start at \u001b[22m 01:38:22\n\u001b[2m   Duration \u001b[22m 2.14s\u001b[2m (transform 3.89s, setup 0ms, import 5.46s, tests 2.36s, environment 0ms)\u001b[22m\n\n$ vitest run tests/github-source-control-authority.test.ts tests/source-control-config.test.ts tests/settings-hono-routes.test.ts tests/settings-site.test.ts tests/diffs-hono-routes.test.ts tests/settings-sites-gateway-endpoints.test.ts tests/os-device-authority-worker.test.ts\n(node:33123) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n(node:33119) ExperimentalWarning: SQLite is an experimental feature and might change at any time\n(Use `node --trace-warnings ...` to show where the warning was created)\n"
+        },
+        {
+          "name": "changed server task selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 99,
+          "outputTail": "No changed Twenty server runtime files require lint or typecheck.\nRunning server lint and baseline-aware typecheck for 1 directly changed file(s).\nTwenty server typecheck matched 1 known baseline diagnostic(s).\nRunning server lint and baseline-aware typecheck for 1 directly changed file(s).\nNo changed Twenty server schema files require GraphQL generation.\nNo changed Twenty server runtime files require migration generation.\nNo changesgeneratedTwenty server migration drift matched 2 known baseline operation(s).\ngeneratedgenerated✔ parseCliArguments resolves comparison SHAs (0.6695ms)\n✔ parseCliArguments selects GraphQL generation mode (0.060542ms)\n✔ parseCliArguments selects migration generation mode (0.057083ms)\n✔ filterServerTaskFiles excludes root and config-only triggers (0.096541ms)\n✔ filterGraphqlGenerationFiles keeps only server schema and generated files (0.071375ms)\n✔ buildEslintArguments selects the owning project config and stdin filename (0.057333ms)\n✔ ESLint diagnostic comparison tracks new error multiplicity without line numbers (0.184792ms)\n✔ runChangedFileLint accepts base-existing errors and rejects a new changed-file error (17.496ms)\n✔ runChangedFileLint allows explicit lint baseline debt but rejects diagnostics beyond it (0.710417ms)\n✔ buildTypecheckArguments uses standard TypeScript without emitting (0.12375ms)\n✔ TypeScript diagnostic baseline comparison rejects only new diagnostic keys (0.326791ms)\n✔ runChangedServerTask skips Nx for config-only changes (0.33775ms)\n✔ runChangedServerTask executes lint and baseline-aware typecheck for server runtime changes (0.094708ms)\n✔ runChangedServerTask rejects a new TypeScript diagnostic outside the baseline (0.099083ms)\n✔ server lint configuration resolves the existing workspace rules project (2.778708ms)\n✔ runGraphqlGenerationCheck skips generation without schema changes (0.118125ms)\n✔ runGraphqlGenerationCheck generates and verifies committed outputs (0.244792ms)\n✔ runMigrationGenerationCheck skips generation without server runtime changes (0.091417ms)\n✔ runMigrationGenerationCheck accepts a no-change TypeORM exit (0.0975ms)\n✔ runMigrationGenerationCheck accepts and removes exact known migration drift (0.183ms)\n✔ runMigrationGenerationCheck rejects changed drift beyond the baseline (0.115208ms)\n✔ runMigrationGenerationCheck rejects and removes generated drift (0.104292ms)\nℹ tests 22\nℹ suites 0\nℹ pass 22\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 67.782833\n"
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 2417,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/workspace/tests/github-workflow-policy.test.js:\n(pass) GitHub workflow policy > does not include retired automation workflows [0.39ms]\n(pass) GitHub workflow policy > does not reference retired CI credentials or the disabled Chromatic job [8.74ms]\n(pass) GitHub workflow policy > does not retain privileged allowlist entries for deleted workflows [0.22ms]\n(pass) GitHub workflow policy > runs typecheck and test from the filtered frontend file set [0.05ms]\n(pass) GitHub workflow policy > installs Bun and scopes shared tasks to changed frontend files [0.05ms]\n(pass) GitHub workflow policy > scopes native OS distribution tests to relevant changed files [0.04ms]\n(pass) GitHub workflow policy > runs Docker Compose CI with the pgvector PostgreSQL image required by migrations [0.03ms]\n(pass) GitHub workflow policy > uses available hosted runners for the Server and Front build pipelines [0.06ms]\n(pass) GitHub workflow policy > builds Consuelo backend workspace dependencies before server typecheck [0.04ms]\n(pass) GitHub workflow policy > installs Bun before the Server unit-test job runs Bun package tests [0.03ms]\n(pass) GitHub workflow policy > allows enough time for Danger dependency installation and execution [0.02ms]\n(pass) GitHub workflow policy > explicitly allowlists the API breaking-changes workflow write permissions [0.03ms]\n\n 12 pass\n 0 fail\n 53 expect() calls\nRan 12 tests across 1 file. [2.41s]\n"
+        },
+        {
+          "name": "TypeORM CLI compatibility contract",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 3306,
+          "outputTail": "✔ Twenty server uses the Node 24-compatible TypeORM ts-node wrapper (0.309625ms)\n✔ the configured TypeORM wrapper resolves from the installed package (3238.542708ms)\nℹ tests 2\nℹ suites 0\nℹ pass 2\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 3276.924958\n"
+        },
+        {
+          "name": "OS work-session filesystem authority contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/work-session-fs.test.ts",
+            "packages/os/tests/fs-write.test.ts",
+            "packages/os/tests/session-start-foundation.test.ts",
+            "packages/os/tests/tool-manifest.test.ts"
+          ],
+          "ruleId": "os-work-session-fs",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 2191,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-google-workspace-integration\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/session-start-foundation.test.ts \u001b[2m(\u001b[22m\u001b[2m10 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 68\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/tool-manifest.test.ts \u001b[2m(\u001b[22m\u001b[2m17 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 89\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/fs-write.test.ts \u001b[2m(\u001b[22m\u001b[2m13 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 465\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/work-session-fs.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 1188\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m4 passed\u001b[39m\u001b[22m\u001b[90m (4)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m49 passed\u001b[39m\u001b[22m\u001b[90m (49)\u001b[39m\n\u001b[2m   Start at \u001b[22m 01:38:30\n\u001b[2m   Duration \u001b[22m 1.83s\u001b[2m (transform 1.11s, setup 0ms, import 1.75s, tests 1.81s, environment 0ms)\u001b[22m\n\n{\"level\":\"warn\",\"event\":\"trace.persistence_failed\",\"code\":\"TRACE_PERSISTENCE_FAILED\",\"message\":\"Cannot find module 'bun:sqlite'\\nRequire stack:\\n- /Users/kokayi/.[REDACTED_SECRET].ts\",\"ts\":\"2026-08-26T05:38:31.303Z\"}\n"
+        },
+        {
+          "name": "OS task-session filesystem compatibility contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/facade/facade.test.ts",
+            "-t",
+            "fs\\.(apply_patch|write)"
+          ],
+          "ruleId": "os-work-session-fs",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1047,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-google-workspace-integration\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/facade/facade.test.ts \u001b[2m(\u001b[22m\u001b[2m719 tests\u001b[22m\u001b[2m | \u001b[22m\u001b[33m712 skipped\u001b[39m\u001b[2m)\u001b[22m\u001b[33m 371\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m7 passed\u001b[39m\u001b[22m\u001b[2m | \u001b[22m\u001b[33m712 skipped\u001b[39m\u001b[90m (719)\u001b[39m\n\u001b[2m   Start at \u001b[22m 01:38:32\n\u001b[2m   Duration \u001b[22m 820ms\u001b[2m (transform 191ms, setup 0ms, import 384ms, tests 371ms, environment 0ms)\u001b[22m\n\n{\"level\":\"error\",\"tool\":\"fs.patch\",\"command\":\"workspace fs.patch\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"NOT_FOUND\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-26T05:38:32.983Z\"}\n{\"level\":\"warn\",\"event\":\"trace.persistence_failed\",\"code\":\"TRACE_PERSISTENCE_FAILED\",\"message\":\"Cannot find module 'bun:sqlite'\\nRequire stack:\\n- /Users/kokayi/.[REDACTED_SECRET].ts\",\"ts\":\"2026-08-26T05:38:32.984Z\"}\n{\"level\":\"error\",\"tool\":\"fs.apply_patch\",\"command\":\"workspace fs.apply_patch\",\"implementationCommand\":\"workspace fs.apply_patch\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-26T05:38:32.987Z\"}\n{\"level\":\"error\",\"tool\":\"fs.write\",\"command\":\"workspace fs.write\",\"implementationCommand\":\"workspace fs.write\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-26T05:38:32.988Z\"}\n{\"level\":\"info\",\"tool\":\"fs.apply_patch\",\"branch\":\"task/workspace-agents/test\",\"command\":\"workspace fs.apply_patch '{\\\"taskSession\\\":\\\"tsk_apply_patch_test\\\",\\\"dryRun\\\":true,\\\"patchText\\\":\\\"*** Begin Patch\\\\n*** End Patch\\\",\\\"branch\\\":\\\"task/workspace-agents/test\\\",\\\"taskWorktree\\\":\\\"/[REDACTED_SECRET]\\\"}'\",\"implementationCommand\":\"bun run task:fs -- --branch task/workspace-agents/test apply-patch --patch-text *** Begin Patch\\n*** End Patch --dry-run\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-26T05:38:33.252Z\"}\n{\"level\":\"info\",\"tool\":\"fs.write\",\"branch\":\"task/workspace-agents/test\",\"command\":\"workspace fs.write '{\\\"taskSession\\\":\\\"tsk_fs_write_test\\\",\\\"path\\\":\\\"tmp/example.txt\\\",\\\"contentFile\\\":\\\"/tmp/payload.txt\\\",\\\"force\\\":true,\\\"mkdirs\\\":true,\\\"branch\\\":\\\"task/workspace-agents/test\\\",\\\"taskWorktree\\\":\\\"/[REDACTED_SECRET]\\\"}'\",\"implementationCommand\":\"bun run task:fs -- --branch task/workspace-agents/test write tmp/example.txt --content-file /tmp/payload.txt --force --mkdirs\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-26T05:38:33.301Z\"}\n{\"level\":\"info\",\"tool\":\"fs.write\",\"branch\":\"task/workspace-agents/test\",\"command\":\"workspace fs.write '{\\\"taskSession\\\":\\\"tsk_fs_write_append_test\\\",\\\"path\\\":\\\"tmp/example.txt\\\",\\\"content\\\":\\\"payload\\\",\\\"append\\\":true,\\\"branch\\\":\\\"task/workspace-agents/test\\\",\\\"taskWorktree\\\":\\\"/[REDACTED_SECRET]\\\"}'\",\"implementationCommand\":\"bun run task:fs -- --branch task/workspace-agents/test write tmp/example.txt --content payload --append\",\"durationMs\":0,\"exitCode\":0,\"traceId\":\"trc_abc123def456\",\"ok\":true,\"code\":\"OK\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-08-26T05:38:33.351Z\"}\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

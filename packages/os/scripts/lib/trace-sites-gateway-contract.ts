@@ -47,6 +47,7 @@ export type TraceGatewaySessionScope = {
   userId: string;
   workspaceId: string;
   workspaceHost: string;
+  nodeId?: string;
   allowedSites: string[];
   traceRead: boolean;
   traceWrite: boolean;
@@ -119,6 +120,7 @@ export type TraceIngestValidation = {
 export type TraceReadQuery = {
   workspaceId?: string;
   workspaceHost?: string;
+  nodeId?: string;
   site?: string;
   cursor?: string;
   limit?: number;
@@ -271,7 +273,7 @@ const TRACE_SITES_ARCHITECTURE_MODES: Record<TraceSourceMode, TraceSitesArchitec
     requiresConsueloNetwork: false,
     emitsThroughGateway: false,
     implementedForTraceSites: false,
-    outOfScopeReason: 'Future installer/settings mode; hosted Sites require a configured bridge before hydration.',
+    outOfScopeReason: 'Future installer/configuration mode; hosted Sites require a configured bridge before hydration.',
   },
 };
 

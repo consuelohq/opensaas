@@ -1,0 +1,8 @@
+{
+  "files": [
+    "packages/os/scripts/lib/subagent/runtime.ts",
+    "packages/os/scripts/subagent.ts",
+    "packages/os/scripts/task-push.js"
+  ],
+  "updatedAt": "2026-07-20T17:43:40.952Z"
+}

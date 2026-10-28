@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-workspace-edge-contract-runner",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2526,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2526",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-workspace-edge-contract-runner",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_050b99ea7f3b",
+  "tmuxSession": "opensaas-os-fix-workspace-edge-contract-runner-050b99ea",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-workspace-edge-contract-runner/.task/session.json",
+  "createdAt": "2026-09-21T19:56:33.380Z"
+}

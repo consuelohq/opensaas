@@ -1,10 +1,18 @@
 import { createToolResult, createTraceId, getErrorMessage } from './errors';
 import { executeTool, getToolManifestEntry } from './executor';
-import type { BatchResult, BatchStep, ExecuteToolOptions, ToolInput, ToolResult } from './types';
+import type {
+  BatchExecutionContext,
+  BatchResult,
+  BatchStep,
+  ExecuteToolOptions,
+  ToolInput,
+  ToolResult,
+} from './types';
 
 export async function runBatch(
   steps: BatchStep[],
   options: ExecuteToolOptions = {},
+  executionContext: BatchExecutionContext = {},
 ): Promise<BatchResult> {
   const startedAt = Date.now();
   const traceId = createTraceId(options.randomUUID);
@@ -15,7 +23,9 @@ export async function runBatch(
     while (index < steps.length) {
       const parallelGroup = collectParallelGroup(steps, index);
       if (parallelGroup.length > 1) {
-        const groupResults = await Promise.all(parallelGroup.map((step) => runStep(step, null, results, options)));
+        const groupResults = await Promise.all(parallelGroup.map((step) =>
+          runStep(step, null, results, options, executionContext, traceId)
+        ));
         results.push(...groupResults);
         const failed = groupResults.find((result) => !result.ok);
         if (failed) break;
@@ -24,7 +34,14 @@ export async function runBatch(
       }
 
       const previous = results.length > 0 ? results[results.length - 1] : null;
-      const result = await runStep(steps[index], previous, results, options);
+      const result = await runStep(
+        steps[index],
+        previous,
+        results,
+        options,
+        executionContext,
+        traceId,
+      );
       results.push(result);
       index += 1;
       if (!result.ok) break;
@@ -117,20 +134,75 @@ async function runStep(
   previous: ToolResult<unknown> | null,
   results: ToolResult<unknown>[],
   options: ExecuteToolOptions,
+  executionContext: BatchExecutionContext,
+  parentTraceId: string,
 ): Promise<ToolResult<unknown>> {
   const input = step.input ?? step.args ?? {};
   const args = typeof input === "function"
     ? input(previous, results)
     : input;
+  const boundInput = bindExecutionContext(args as ToolInput, executionContext, parentTraceId);
+  if (!boundInput.ok) {
+    return decorateStepResult(
+      createToolResult({
+        ok: false,
+        code: 'VALIDATION_ERROR',
+        message: boundInput.message,
+        data: null,
+        durationMs: 0,
+        traceId: createTraceId(options.randomUUID),
+        now: options.now,
+      }),
+      args,
+      step,
+      parentTraceId,
+    );
+  }
   const batchOptions: ExecuteToolOptions = {
     ...options,
     logMode: options.logMode ?? "errors",
   };
-  const result = await executeTool(step.tool, args as ToolInput, batchOptions);
+  const result = await executeTool(step.tool, boundInput.input, batchOptions);
+  return decorateStepResult(result, args, step, parentTraceId);
+}
+
+function bindExecutionContext(
+  input: ToolInput,
+  executionContext: BatchExecutionContext,
+  parentTraceId: string,
+): { ok: true; input: ToolInput } | { ok: false; message: string } {
+  const boundInput: ToolInput = { ...input, parentTraceId };
+  const contextEntries = Object.entries(executionContext) as Array<[
+    keyof BatchExecutionContext,
+    string | undefined,
+  ]>;
+
+  for (const [key, inheritedValue] of contextEntries) {
+    if (!inheritedValue) continue;
+    const childValue = boundInput[key];
+    if (typeof childValue === 'string' && childValue !== inheritedValue) {
+      return {
+        ok: false,
+        message: `child ${key} conflicts with the outer batch task context`,
+      };
+    }
+    if (childValue === undefined) boundInput[key] = inheritedValue;
+  }
+
+  return { ok: true, input: boundInput };
+}
+
+function decorateStepResult(
+  result: ToolResult<unknown>,
+  args: unknown,
+  step: BatchStep,
+  parentTraceId: string,
+): ToolResult<unknown> {
   const inputTokens = estimateTokens(args);
   const outputTokens = estimateTokens(result);
   return {
     ...result,
+    parentTraceId,
     inputTokens,
     outputTokens,
     totalTokens: inputTokens + outputTokens,

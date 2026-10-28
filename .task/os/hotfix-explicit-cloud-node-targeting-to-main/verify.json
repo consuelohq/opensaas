@@ -1,0 +1,54 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/hotfix-explicit-cloud-node-targeting-to-main",
+  "base": "origin/main",
+  "headSha": "0f4e2c6178556eb6eada077bf8b4632a7ef763c8",
+  "changeHash": "883bfdde9ec73b31d199a3c1a446daec16806133a4ec59c3e8cd1feaf5ced88e",
+  "changedFiles": [
+    "packages/workspace/server.py",
+    "packages/workspace/tests/server_call_test.py"
+  ],
+  "verifiedAt": "2026-08-15T01:36:17.560Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/hotfix-explicit-cloud-node-targeting-to-main/current.json",
+        ".task/os/hotfix-explicit-cloud-node-targeting-to-main/evidence-log.json",
+        ".task/os/hotfix-explicit-cloud-node-targeting-to-main/read-log.json",
+        ".task/os/hotfix-explicit-cloud-node-targeting-to-main/session.json",
+        ".task/os/hotfix-explicit-cloud-node-targeting-to-main/verify.json",
+        ".task/os/hotfix-explicit-cloud-node-targeting-to-main/workpad.md",
+        ".task/tasks/os/hotfix-explicit-cloud-node-targeting-to-main.json",
+        "packages/workspace/server.py",
+        "packages/workspace/tests/server_call_test.py"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "pass",
+      "zeroSuiteReason": "no testable source files changed",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

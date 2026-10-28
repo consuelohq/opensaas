@@ -1,0 +1,152 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/fix-workspace-edge-contract-runner",
+  "events": [
+    {
+      "id": "22852fe1-21e1-4665-9776-b4eacf13932e",
+      "occurred_at": "2026-09-21T19:57:00.064Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/test-selection.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-workspace-edge-contract-runner",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-workspace-edge-contract-runner"
+      }
+    },
+    {
+      "id": "7a3576a5-b163-4525-9b97-f93ae0700a2c",
+      "occurred_at": "2026-09-21T19:57:00.842Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/test-selection.rules.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-workspace-edge-contract-runner",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-workspace-edge-contract-runner"
+      }
+    },
+    {
+      "id": "b1e1b8b1-8bb6-429e-871a-322ceb1823cb",
+      "occurred_at": "2026-09-21T19:57:08.395Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/test-selection.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-workspace-edge-contract-runner",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-workspace-edge-contract-runner"
+      }
+    },
+    {
+      "id": "85897b24-1647-4634-bec8-044cf2d2c157",
+      "occurred_at": "2026-09-21T19:57:09.088Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/test-selection.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-workspace-edge-contract-runner",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-workspace-edge-contract-runner"
+      }
+    },
+    {
+      "id": "098123f7-0e46-464f-be6e-e3e1efc6a765",
+      "occurred_at": "2026-09-21T19:57:09.760Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/helpers/bun-sqlite-vitest.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-workspace-edge-contract-runner",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-workspace-edge-contract-runner"
+      }
+    },
+    {
+      "id": "fc4f0432-1e62-4130-8d2f-537a2de73d17",
+      "occurred_at": "2026-09-21T19:57:24.088Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-workspace-edge-contract-runner",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-workspace-edge-contract-runner"
+      }
+    },
+    {
+      "id": "d25f328d-db6c-4e18-bbd5-9273d7a79a63",
+      "occurred_at": "2026-09-21T19:57:31.660Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/test-environment-contract.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-workspace-edge-contract-runner",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-workspace-edge-contract-runner"
+      }
+    },
+    {
+      "id": "a1c74daa-7d3b-4a4e-9264-f8a501fe2092",
+      "occurred_at": "2026-09-21T19:57:32.365Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/test-selection.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-workspace-edge-contract-runner",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-workspace-edge-contract-runner"
+      }
+    },
+    {
+      "id": "8496dbd3-e0ee-48d3-8e70-bd30fd2a7f9b",
+      "occurred_at": "2026-09-21T20:00:56.023Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/fix-workspace-edge-contract-runner/verify.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-workspace-edge-contract-runner",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-workspace-edge-contract-runner"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-09-21T20:00:56.245Z"
+}

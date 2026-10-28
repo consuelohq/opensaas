@@ -1,0 +1,12 @@
+{
+  "files": [
+    ".task/os/repair-os-reliability-rollout-gaps/workpad.md",
+    "packages/os/package.json",
+    "packages/os/scripts/lib/security-gateway.ts",
+    "packages/os/tests/distribution/lifecycle-contract.test.ts",
+    "packages/os/tests/distribution/release-publication-preparer.test.ts",
+    "packages/os/tests/tool-scope-authorization.test.ts",
+    "packages/workspace/senior-engineer.md"
+  ],
+  "updatedAt": "2026-08-12T03:57:40.297Z"
+}

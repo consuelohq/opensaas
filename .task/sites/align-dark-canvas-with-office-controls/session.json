@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_72b531274920",
+  "tmuxSession": "opensaas-sites-align-dark-canvas-with-office-controls-72b53127",
+  "area": "sites",
+  "stream": "stream/sites",
+  "taskBranch": "task/sites/align-dark-canvas-with-office-controls",
+  "branch": "task/sites/align-dark-canvas-with-office-controls",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-align-dark-canvas-with-office-controls",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-align-dark-canvas-with-office-controls",
+  "prNumber": 1268,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1268",
+  "createdAt": "2026-06-28T15:06:39.892Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-align-dark-canvas-with-office-controls/.task/sites/align-dark-canvas-with-office-controls/session.json"
+}

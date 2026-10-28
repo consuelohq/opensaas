@@ -1,0 +1,16 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/prototype-feature-story-stage-remember-observe",
+  "baseBranch": "stream/website",
+  "sourceBranch": "stream/website",
+  "startFrom": "stream",
+  "prNumber": 2354,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2354",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-prototype-feature-story-stage-remember-observe",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_b2c2cb1bbafa",
+  "tmuxSession": "opensaas-website-prototype-feature-story-stage-remember-observe-b2c2cb1b",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-prototype-feature-story-stage-remember-observe/.task/session.json",
+  "createdAt": "2026-09-01T00:55:46.486Z"
+}

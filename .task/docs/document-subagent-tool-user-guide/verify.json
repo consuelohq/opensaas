@@ -1,0 +1,55 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/docs/document-subagent-tool-user-guide",
+  "base": "origin/task/docs/document-subagent-tool-user-guide",
+  "headSha": "acfaf01be832635684f3aef8ccbaa9ea08556f7f",
+  "changeHash": "e4ca8e03d03488c97f3fb915b44aa07619b2d97c29b0216c01c243e669e368d6",
+  "changedFiles": [
+    "packages/documentation/astro.config.mjs",
+    "packages/documentation/scripts/validate-documentation.mjs",
+    "packages/documentation/src/content/docs/os/tools/overview.mdx",
+    "packages/documentation/src/content/docs/os/tools/subagents.mdx"
+  ],
+  "verifiedAt": "2026-07-02T20:53:00.474Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/docs/document-subagent-tool-user-guide/current.json",
+        ".task/docs/document-subagent-tool-user-guide/session.json",
+        ".task/docs/document-subagent-tool-user-guide/workpad.md",
+        ".task/tasks/docs/document-subagent-tool-user-guide.json",
+        "packages/documentation/astro.config.mjs",
+        "packages/documentation/scripts/validate-documentation.mjs",
+        "packages/documentation/src/content/docs/os/tools/overview.mdx",
+        "packages/documentation/src/content/docs/os/tools/subagents.mdx"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

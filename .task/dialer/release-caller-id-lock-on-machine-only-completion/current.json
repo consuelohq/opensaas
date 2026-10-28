@@ -1,0 +1,19 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/release-caller-id-lock-on-machine-only-completion",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 1761,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1761",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1761",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1761/release-caller-id-lock-on-machine-only-completion",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1761",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1761/release-caller-id-lock-on-machine-only-completion",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-release-caller-id-lock-on-machine-only-completion",
+  "taskSession": "tsk_97d4382239a0",
+  "tmuxSession": "opensaas-dialer-release-caller-id-lock-on-machine-only-completio-97d43822",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-release-caller-id-lock-on-machine-only-completion/.task/dialer/release-caller-id-lock-on-machine-only-completion/session.json",
+  "createdAt": "2026-08-03T22:01:52.616Z"
+}

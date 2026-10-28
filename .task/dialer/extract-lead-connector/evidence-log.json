@@ -1,0 +1,88 @@
+{
+  "version": 1,
+  "worktree_id": "task/dialer/extract-lead-connector",
+  "events": [
+    {
+      "id": "c54ac3e0-8f57-448f-992e-3f8013ed12d3",
+      "occurred_at": "2026-07-24T01:05:23.287Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/api/src/routes/ghl.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/extract-lead-connector",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/extract-lead-connector"
+      }
+    },
+    {
+      "id": "4957d455-cc9d-4f56-9cdb-c9e67b50df74",
+      "occurred_at": "2026-07-24T01:06:01.278Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/extract-lead-connector",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/extract-lead-connector"
+      }
+    },
+    {
+      "id": "4927a320-71c6-49eb-afea-2a91d6370ce8",
+      "occurred_at": "2026-07-24T01:06:14.417Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/dialer-server/tsconfig.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/extract-lead-connector",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/extract-lead-connector"
+      }
+    },
+    {
+      "id": "2a451d17-91ac-4dc8-b544-2d2bd32e4deb",
+      "occurred_at": "2026-07-24T01:10:05.581Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/lead-connector/src/application.contract.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/extract-lead-connector",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/extract-lead-connector"
+      }
+    },
+    {
+      "id": "3cbad9fc-2ebe-41b2-a062-2c0f46159146",
+      "occurred_at": "2026-07-24T01:11:32.090Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/api/jest.config.mjs",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/extract-lead-connector",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/extract-lead-connector"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-07-24T01:11:32.144Z"
+}

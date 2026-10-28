@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/finish-internal-home-copy-and-users-installs-navigation",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2410,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2410",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-finish-internal-home-copy-and-users-installs-navigation",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_ee2286c743ef",
+  "tmuxSession": "opensaas-os-finish-internal-home-copy-and-users-installs-nav-ee2286c7",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-finish-internal-home-copy-and-users-installs-navigation/.task/session.json",
+  "createdAt": "2026-09-08T14:25:31.097Z"
+}

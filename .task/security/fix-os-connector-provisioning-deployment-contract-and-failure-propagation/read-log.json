@@ -1,0 +1,13 @@
+{
+  "files": [
+    ".task/security/fix-os-connector-provisioning-deployment-contract-and-failure-propagation/workpad.md",
+    "packages/os/AGENTS.md",
+    "packages/os/cloudflare/os-device-authority/src/index.ts",
+    "packages/os/cloudflare/os-device-authority/wrangler.toml",
+    "packages/os/tests/os-device-authority-release-contract.test.ts",
+    "packages/os/tests/os-device-authority-worker.test.ts",
+    "packages/os/tests/platform-cloudflare-provisioning-contract.test.ts",
+    "packages/workspace/package.json"
+  ],
+  "updatedAt": "2026-07-10T21:00:09.990Z"
+}

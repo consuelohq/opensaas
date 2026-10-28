@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/hotfix-mac-menu-stability-lifecycle-status-and-singleton",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1971,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1971",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1971",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1971/hotfix-mac-menu-stability-lifecycle-status-and-singleton",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1971",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1971/hotfix-mac-menu-stability-lifecycle-status-and-singleton",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-hotfix-mac-menu-stability-lifecycle-status-and-singleton",
+  "taskSession": "tsk_9956a187bcb3",
+  "tmuxSession": "opensaas-os-hotfix-mac-menu-stability-lifecycle-status-and-s-9956a187",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-hotfix-mac-menu-stability-lifecycle-status-and-singleton/.task/os/hotfix-mac-menu-stability-lifecycle-status-and-singleton/session.json",
+  "createdAt": "2026-08-14T21:42:35.070Z"
+}

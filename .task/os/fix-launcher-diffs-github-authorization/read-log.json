@@ -1,0 +1,12 @@
+{
+  "files": [
+    ".task/os/fix-launcher-diffs-github-authorization/workpad.md",
+    "packages/os/cloudflare/os-device-authority/src/routes/github-source-control.ts",
+    "packages/os/cloudflare/os-device-authority/src/services/github-source-control.ts",
+    "packages/os/cloudflare/os-device-authority/src/utils.ts",
+    "packages/os/cloudflare/os-device-authority/wrangler.toml",
+    "packages/os/scripts/lib/cloudflare-worker-release-readiness.ts",
+    "packages/os/scripts/server/routes/diffs.ts"
+  ],
+  "updatedAt": "2026-09-01T01:19:05.934Z"
+}

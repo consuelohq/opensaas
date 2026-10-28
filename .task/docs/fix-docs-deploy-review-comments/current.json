@@ -1,0 +1,19 @@
+{
+  "area": "docs",
+  "stream": "stream/docs",
+  "taskBranch": "task/docs/fix-docs-deploy-review-comments",
+  "baseBranch": "stream/docs",
+  "sourceBranch": "stream/docs",
+  "startFrom": "stream",
+  "prNumber": 1349,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1349",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1349",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1349/fix-docs-deploy-review-comments",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1349",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1349/fix-docs-deploy-review-comments",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-fix-docs-deploy-review-comments",
+  "taskSession": "tsk_8641f62175b9",
+  "tmuxSession": "opensaas-docs-fix-docs-deploy-review-comments-8641f621",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-docs-fix-docs-deploy-review-comments/.task/docs/fix-docs-deploy-review-comments/session.json",
+  "createdAt": "2026-07-03T09:16:51.876Z"
+}

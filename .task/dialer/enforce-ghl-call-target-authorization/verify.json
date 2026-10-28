@@ -1,0 +1,144 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/dialer/enforce-ghl-call-target-authorization",
+  "base": "origin/stream/dialer",
+  "headSha": "806272a0a6a188f187fb23ab8eb2b07faa486eaa",
+  "changeHash": "e278a0fdeecd1dab2811c51b19c919ba31d91d099d46783755bc4165a6707037",
+  "changedFiles": [
+    "packages/dialer-server/src/app.contract.test.ts",
+    "packages/dialer-server/src/commercial-target-authorization.ts",
+    "packages/dialer-server/src/contracts.ts",
+    "packages/dialer-server/src/lead-connector-application.ts",
+    "packages/dialer-server/src/routes/call-sessions.ts",
+    "packages/lead-connector/src/application.contract.test.ts",
+    "packages/lead-connector/src/application/resources.ts",
+    "packages/lead-connector/src/index.ts"
+  ],
+  "verifiedAt": "2026-08-10T02:46:18.076Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/dialer/enforce-ghl-call-target-authorization/current.json",
+        ".task/dialer/enforce-ghl-call-target-authorization/evidence-log.json",
+        ".task/dialer/enforce-ghl-call-target-authorization/read-log.json",
+        ".task/dialer/enforce-ghl-call-target-authorization/session.json",
+        ".task/dialer/enforce-ghl-call-target-authorization/workpad.md",
+        ".task/tasks/dialer/enforce-ghl-call-target-authorization.json",
+        "packages/dialer-server/src/app.contract.test.ts",
+        "packages/dialer-server/src/commercial-target-authorization.ts",
+        "packages/dialer-server/src/contracts.ts",
+        "packages/dialer-server/src/lead-connector-application.ts",
+        "packages/dialer-server/src/routes/call-sessions.ts",
+        "packages/lead-connector/src/application.contract.test.ts",
+        "packages/lead-connector/src/application/resources.ts",
+        "packages/lead-connector/src/index.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "dialer-server-package",
+          "critical": true,
+          "reason": "Dialer server changes must prove Hono transport, Twilio boundary, and standalone lifecycle contracts.",
+          "matchedFiles": [
+            "packages/dialer-server/src/app.contract.test.ts",
+            "packages/dialer-server/src/commercial-target-authorization.ts",
+            "packages/dialer-server/src/contracts.ts",
+            "packages/dialer-server/src/lead-connector-application.ts",
+            "packages/dialer-server/src/routes/call-sessions.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "lead-connector-package",
+          "critical": true,
+          "reason": "LeadConnector provider changes must prove OAuth, token, resource, webhook, architecture, and branding contracts.",
+          "matchedFiles": [
+            "packages/lead-connector/src/application.contract.test.ts",
+            "packages/lead-connector/src/application/resources.ts",
+            "packages/lead-connector/src/index.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "dialer-server Hono contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-server/src"
+          ],
+          "ruleId": "dialer-server-package",
+          "critical": true
+        },
+        {
+          "name": "LeadConnector provider contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/lead-connector/src"
+          ],
+          "ruleId": "lead-connector-package",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "dialer-server Hono contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-server/src"
+          ],
+          "ruleId": "dialer-server-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 390,
+          "outputTail": "er/src/runtime/embed-session.test.ts:\n(pass) dialer-server embed sessions > issues a short-lived token that authenticates the original workspace and user [0.29ms]\n(pass) dialer-server embed sessions > rejects expired, malformed, and tampered tokens [0.09ms]\n(pass) dialer-server embed sessions > binds sessions to installation and location and revalidates them on every request [0.10ms]\n\npackages/dialer-server/src/runtime/twilio-provider-mode.test.ts:\n(pass) Twilio provider test mode > selects test credentials without exposing the live credential pair [0.03ms]\n(pass) Twilio provider test mode > requires and preserves the exact no-carrier Twilio test From number [0.04ms]\n(pass) Twilio provider test mode > passes the magic From number unchanged into the provider group request [0.04ms]\n(pass) Twilio provider test mode > does not claim carrier delivery or callbacks for test credentials [0.01ms]\n\npackages/dialer-server/src/runtime/railway.test.ts:\n(pass) LeadConnector dialer learning > records an atomic attempt and outcome for every completed carrier leg [0.14ms]\n(pass) LeadConnector dialer learning > does not fail carrier callback handling when learning persistence is unavailable [0.05ms]\n(pass) Railway dialer-server runtime composition > selects the test dialer for follow-up operations on test-mode groups [0.12ms]\n(pass) Railway dialer-server runtime composition > keeps existing groups without a provider mode on the live dialer [0.03ms]\n(pass) Railway dialer-server runtime composition > fails closed when a test-mode group outlives its test credentials [0.03ms]\n(pass) Railway dialer-server runtime composition > composes durable LeadConnector configuration and encrypted installation storage [1.30ms]\n(pass) Railway dialer-server runtime composition > ranks predictive LeadConnector targets with shared model data before fanout [2.43ms]\n(pass) Railway dialer-server runtime composition > ranks predictive targets from LeadConnector learned outcomes without Twenty model rows [0.48ms]\n(pass) Railway dialer-server runtime composition > starts a mock standalone call session without Twenty or the compatibility API [0.38ms]\n\npackages/dialer-server/src/runtime/lead-connector-learning.test.ts:\n(pass) LeadConnector learning initialization > creates the attempt ledger before the outcome model tables [1.01ms]\n\npackages/dialer-server/src/call-operations/application.test.ts:\n(pass) Effect call-operations transcription application > keeps inbound and outbound buffers separate and persists provider metadata only [1.18ms]\n(pass) Effect call-operations transcription application > processes duplicate frames once and flushes a terminal remainder once [0.19ms]\n(pass) Effect call-operations transcription application > keeps transcript rows idempotent when a provider stream reconnects [0.22ms]\n(pass) Effect call-operations transcription application > marks transcription failed on provider timeout without failing the call boundary [22.44ms]\n(pass) Effect call-operations transcription application > does not begin provider work when workspace transcription is disabled [0.07ms]\n\npackages/dialer-server/src/call-operations/persistence.test.ts:\n(pass) call-operations persistence > initializes canonical workspace settings, sessions, legs, segments, and transfer-compatible events [0.82ms]\n(pass) call-operations persistence > uses a workspace-scoped idempotent insert for transcript metadata [0.14ms]\n(pass) call-operations persistence > atomically upserts the canonical session and all provider legs [0.11ms]\n(pass) call-operations persistence > persists recording provider metadata without retaining a raw recording URL [0.06ms]\n\npackages/dialer-server/src/call-operations/groq.test.ts:\n(pass) Groq speech-to-text adapter > uses the OpenAI-compatible audio endpoint and returns provider-grounded metadata [0.24ms]\n(pass) Groq speech-to-text adapter > fails closed when credentials are absent [0.07ms]\n\n 129 pass\n 0 fail\n 652 expect() calls\nRan 129 tests across 26 files. [383.00ms]\n"
+        },
+        {
+          "name": "LeadConnector provider contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/lead-connector/src"
+          ],
+          "ruleId": "lead-connector-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 489,
+          "outputTail": "w > reveals wrap-up only after the call reaches a terminal state [0.02ms]\n\npackages/lead-connector/src/embed/click-to-call-runtime.test.ts:\n(pass) LeadConnector click-to-call runtime > anchors beside Smart Lists and relays supported Custom JS user context [10.08ms]\n(pass) LeadConnector click-to-call runtime > remounts and reauthenticates after GHL replaces route DOM [10.11ms]\n(pass) LeadConnector click-to-call runtime > refreshes signed context on a route change without replacing a connected iframe [6.65ms]\n(pass) LeadConnector click-to-call runtime > anchors beside the native Opportunities list control without duplication [2.20ms]\n\npackages/lead-connector/src/embed/embed-build.contract.test.ts:\n(pass) LeadConnector embed build > content-versions every application asset reference with its exact digest [22.80ms]\n\npackages/lead-connector/src/embed/architecture.contract.test.ts:\n(pass) LeadConnector browser architecture and branding > contains no forbidden branding or server/runtime dependencies in browser source and public assets [1.35ms]\n(pass) LeadConnector browser architecture and branding > builds a browser-only bundle without forbidden dependencies or branding [7.65ms]\n(pass) LeadConnector browser architecture and branding > targets the actual approved live or sandbox custom-page origin for click-to-call messages [0.10ms]\n(pass) LeadConnector browser architecture and branding > owns one route-aware launcher and one compact overlay iframe lifecycle [0.08ms]\n(pass) LeadConnector browser architecture and branding > authenticates the overlay through the supported Custom JS session context API [0.05ms]\n(pass) LeadConnector browser architecture and branding > anchors the launcher beside native Contacts and Opportunities controls [0.08ms]\n(pass) LeadConnector browser architecture and branding > publishes a separate wrapped Marketplace artifact while keeping the public script executable [0.19ms]\n(pass) LeadConnector browser architecture and branding > creates the iframe on demand and preserves a busy session across route changes [0.06ms]\n(pass) LeadConnector browser architecture and branding > keeps comma-separated selector literals safe for Marketplace editor persistence [0.22ms]\n(pass) LeadConnector browser architecture and branding > wires progressive commercial billing forms and confirmation actions to the controller [0.05ms]\n(pass) LeadConnector browser architecture and branding > restarts the trusted parent bootstrap exchange when authentication is retried [0.03ms]\n\npackages/lead-connector/src/embed/agent-voice.test.ts:\n(pass) LeadConnector browser agent voice > gets microphone permission, registers the device, and resolves after the agent call is accepted [0.33ms]\n(pass) LeadConnector browser agent voice > rejects if the media call fails before acceptance and disconnects the partial leg [0.15ms]\n\npackages/lead-connector/src/embed/idle-refresh.test.ts:\n(pass) LeadConnector idle refresh scheduling > uses focus and visible transitions without polling and fully cleans up across remounts [0.14ms]\n\npackages/lead-connector/src/deployment/custom-menu.test.ts:\n(pass) LeadConnector custom menu deployment contract > targets one sandbox location in iframe mode with microphone permission [0.05ms]\n(pass) LeadConnector custom menu deployment contract > updates an existing sandbox menu instead of creating duplicates [0.23ms]\n\npackages/lead-connector/src/deployment/commercial-artifacts.test.ts:\n(pass) commercial deployment artifacts > installs an admin-only GHL menu at /admin with microphone permission [0.03ms]\n(pass) commercial deployment artifacts > builds independently versioned marketplace JavaScript and CSS artifacts [0.04ms]\n(pass) commercial deployment artifacts > centers a responsive modal backdrop while preserving a stable native launcher [0.06ms]\n(pass) commercial deployment artifacts > removes obsolete metering workspace and build references [0.65ms]\n\n 109 pass\n 0 fail\n 946 expect() calls\nRan 109 tests across 22 files. [481.00ms]\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

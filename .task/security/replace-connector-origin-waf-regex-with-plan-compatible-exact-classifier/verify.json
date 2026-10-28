@@ -1,0 +1,68 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/security/replace-connector-origin-waf-regex-with-plan-compatible-exact-classifier",
+  "base": "origin/main",
+  "headSha": "f7edd35535d5bc59a095ee3ab901daff7e41d430",
+  "changeHash": "4940b70d08e75bf8549d6f2d1cd206f39abb9e83b4197fa5c6c8cdd710863d3b",
+  "changedFiles": [
+    "packages/os/scripts/lib/connector-origin-hostname.ts",
+    "packages/os/scripts/lib/managed-os-mcp-origin-class-migration.ts",
+    "packages/os/scripts/lib/workspace-cloudflare-provisioning.ts",
+    "packages/os/tests/cloudflare-provisioning-contract.test.ts",
+    "packages/os/tests/connector-origin-hostname.test.ts",
+    "packages/os/tests/managed-os-mcp-origin-class-migration.test.ts"
+  ],
+  "verifiedAt": "2026-07-13T18:53:35.997Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/security/replace-connector-origin-waf-regex-with-plan-compatible-exact-classifier/current.json",
+        ".task/security/replace-connector-origin-waf-regex-with-plan-compatible-exact-classifier/evidence-log.json",
+        ".task/security/replace-connector-origin-waf-regex-with-plan-compatible-exact-classifier/read-log.json",
+        ".task/security/replace-connector-origin-waf-regex-with-plan-compatible-exact-classifier/session.json",
+        ".task/security/replace-connector-origin-waf-regex-with-plan-compatible-exact-classifier/workpad.md",
+        ".task/tasks/security/replace-connector-origin-waf-regex-with-plan-compatible-exact-classifier.json",
+        "packages/os/scripts/lib/connector-origin-hostname.ts",
+        "packages/os/scripts/lib/managed-os-mcp-origin-class-migration.ts",
+        "packages/os/scripts/lib/workspace-cloudflare-provisioning.ts",
+        "packages/os/tests/cloudflare-provisioning-contract.test.ts",
+        "packages/os/tests/connector-origin-hostname.test.ts",
+        "packages/os/tests/managed-os-mcp-origin-class-migration.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [
+      {
+        "category": "database-script",
+        "file": "packages/os/scripts/lib/managed-os-mcp-origin-class-migration.ts",
+        "severity": "warning",
+        "message": "database reset/migration/sync script changed"
+      }
+    ],
+    "findings": []
+  },
+  "commandVersion": 2
+}

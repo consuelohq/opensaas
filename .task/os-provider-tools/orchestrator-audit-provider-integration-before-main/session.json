@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_97647df58502",
+  "tmuxSession": "opensaas-os-provider-tools-orchestrator-audit-provider-integration-before-m-97647df5",
+  "area": "os-provider-tools",
+  "stream": "stream/os-provider-tools",
+  "taskBranch": "task/os-provider-tools/orchestrator-audit-provider-integration-before-main",
+  "branch": "task/os-provider-tools/orchestrator-audit-provider-integration-before-main",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-provider-tools-orchestrator-audit-provider-integration-before-main",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-provider-tools-orchestrator-audit-provider-integration-before-main",
+  "prNumber": 1618,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1618",
+  "createdAt": "2026-07-24T04:16:53.492Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-provider-tools-orchestrator-audit-provider-integration-before-main/.task/os-provider-tools/orchestrator-audit-provider-integration-before-main/session.json"
+}

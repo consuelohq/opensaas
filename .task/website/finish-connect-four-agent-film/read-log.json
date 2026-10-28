@@ -1,0 +1,7 @@
+{
+  "files": [
+    "packages/consuelo-website/scripts/generate-footer-art.ts",
+    "packages/consuelo-website/src/data/home-content.ts"
+  ],
+  "updatedAt": "2026-08-31T23:14:09.451Z"
+}

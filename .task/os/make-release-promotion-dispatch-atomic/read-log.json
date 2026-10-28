@@ -1,0 +1,11 @@
+{
+  "files": [
+    ".task/os/make-release-promotion-dispatch-atomic/workpad.md",
+    "packages/os/scripts/lib/consuelo-home.ts",
+    "packages/os/scripts/release.ts",
+    "packages/os/tests/release-script-promotion-correlation.test.ts",
+    "packages/workspace/scripts/test-selection.js",
+    "packages/workspace/test-selection.rules.json"
+  ],
+  "updatedAt": "2026-08-26T18:14:55.983Z"
+}

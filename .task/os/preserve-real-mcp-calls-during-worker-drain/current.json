@@ -1,0 +1,20 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/preserve-real-mcp-calls-during-worker-drain",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2156,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2156",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2156",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2156/preserve-real-mcp-calls-during-worker-drain",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2156",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2156/preserve-real-mcp-calls-during-worker-drain",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-preserve-real-mcp-calls-during-worker-drain",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_7da9b58b4153",
+  "tmuxSession": "opensaas-os-preserve-real-mcp-calls-during-worker-drain-7da9b58b",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-preserve-real-mcp-calls-during-worker-drain/.task/os/preserve-real-mcp-calls-during-worker-drain/session.json",
+  "createdAt": "2026-08-17T01:22:39.752Z"
+}

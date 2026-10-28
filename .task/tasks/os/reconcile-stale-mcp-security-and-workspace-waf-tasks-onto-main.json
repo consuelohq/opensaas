@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/reconcile-stale-mcp-security-and-workspace-waf-tasks-onto-main",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1898,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1898",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1898",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1898/reconcile-stale-mcp-security-and-workspace-waf-tasks-onto-main",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1898",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1898/reconcile-stale-mcp-security-and-workspace-waf-tasks-onto-main",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-reconcile-stale-mcp-security-and-workspace-waf-tasks-onto-main",
+  "taskSession": "tsk_cdedbbd01adf",
+  "tmuxSession": "opensaas-os-reconcile-stale-mcp-security-and-workspace-waf-t-cdedbbd0",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-reconcile-stale-mcp-security-and-workspace-waf-tasks-onto-main/.task/os/reconcile-stale-mcp-security-and-workspace-waf-tasks-onto-main/session.json",
+  "createdAt": "2026-08-12T23:25:24.418Z"
+}

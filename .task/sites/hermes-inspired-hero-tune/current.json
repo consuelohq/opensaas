@@ -1,0 +1,19 @@
+{
+  "area": "sites",
+  "stream": "stream/sites",
+  "taskBranch": "task/sites/hermes-inspired-hero-tune",
+  "baseBranch": "stream/sites",
+  "sourceBranch": "stream/sites",
+  "startFrom": "stream",
+  "prNumber": 1252,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1252",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1252",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1252/hermes-inspired-hero-tune",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1252",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1252/hermes-inspired-hero-tune",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-hermes-inspired-hero-tune",
+  "taskSession": "tsk_f042848cfaab",
+  "tmuxSession": "opensaas-sites-hermes-inspired-hero-tune-f042848c",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-hermes-inspired-hero-tune/.task/sites/hermes-inspired-hero-tune/session.json",
+  "createdAt": "2026-06-28T03:37:26.832Z"
+}

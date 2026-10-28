@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_a6d5cfe987c3",
+  "tmuxSession": "opensaas-workspace-agents-unify-task-intent-and-task-start-tooling-a6d5cfe9",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/unify-task-intent-and-task-start-tooling",
+  "branch": "task/workspace-agents/unify-task-intent-and-task-start-tooling",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-unify-task-intent-and-task-start-tooling",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-unify-task-intent-and-task-start-tooling",
+  "prNumber": 1382,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1382",
+  "createdAt": "2026-07-10T01:55:20.697Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-unify-task-intent-and-task-start-tooling/.task/workspace-agents/unify-task-intent-and-task-start-tooling/session.json"
+}

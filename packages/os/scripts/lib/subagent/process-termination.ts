@@ -1,0 +1,60 @@
+import type { ChildProcess } from 'node:child_process';
+
+type SignalableProvider = Pick<ChildProcess, 'pid' | 'kill'>;
+type GroupKill = (pid: number, signal: NodeJS.Signals) => boolean;
+type ScheduleTimeout = (callback: () => void, delayMs: number) => unknown;
+type ProviderSignal = (provider: SignalableProvider, signal: NodeJS.Signals) => boolean;
+export type ProviderTerminationOutcome = 'timed_out' | 'cancelled';
+export type ProviderExitOutcome = ProviderTerminationOutcome | 'completed' | 'failed';
+
+export function preserveFirstTerminationOutcome(
+  current: ProviderTerminationOutcome | undefined,
+  next: ProviderTerminationOutcome,
+): ProviderTerminationOutcome {
+  return current ?? next;
+}
+
+export function providerExitCodeForOutcome(
+  outcome: ProviderTerminationOutcome | undefined,
+  exitCode: number | null,
+): number {
+  if (outcome === 'timed_out' && (exitCode === null || exitCode === 0)) return 124;
+  return exitCode ?? 1;
+}
+
+export function providerOutcomeForClose(
+  requestedOutcome: ProviderTerminationOutcome | undefined,
+  setupFailureMessage: string | undefined,
+  exitCode: number | null,
+): ProviderExitOutcome {
+  if (setupFailureMessage) return 'failed';
+  return requestedOutcome ?? (exitCode === 0 ? 'completed' : 'failed');
+}
+
+export function scheduleProviderProcessEscalation(
+  provider: SignalableProvider,
+  delayMs = 250,
+  schedule: ScheduleTimeout = (callback, delay) => setTimeout(callback, delay),
+  signal: ProviderSignal = signalProviderProcess,
+): void {
+  schedule(() => {
+    signal(provider, 'SIGKILL');
+  }, delayMs);
+}
+
+export function signalProviderProcess(
+  provider: SignalableProvider,
+  signal: NodeJS.Signals,
+  platform: NodeJS.Platform = process.platform,
+  groupKill: GroupKill = process.kill,
+): boolean {
+  if (provider.pid && platform !== 'win32') {
+    try {
+      groupKill(-provider.pid, signal);
+      return true;
+    } catch {
+      // Fall through to signalling the direct child when process groups are unavailable.
+    }
+  }
+  try { return provider.kill(signal); } catch { return false; }
+}

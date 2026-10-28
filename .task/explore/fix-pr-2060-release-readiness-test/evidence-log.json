@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/explore/fix-pr-2060-release-readiness-test",
+  "events": [
+    {
+      "id": "7653cd55-ea74-4037-b4e6-5911d37a1da7",
+      "occurred_at": "2026-08-29T04:45:00.078Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/cloudflare-worker-release-readiness.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/explore/fix-pr-2060-release-readiness-test",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/explore/fix-pr-2060-release-readiness-test"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-29T04:45:00.243Z"
+}

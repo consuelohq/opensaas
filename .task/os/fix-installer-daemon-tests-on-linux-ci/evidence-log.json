@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/fix-installer-daemon-tests-on-linux-ci",
+  "events": [
+    {
+      "id": "cb78601a-790c-4b66-a1f9-29948d920d7c",
+      "occurred_at": "2026-09-21T15:51:19.197Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/install-system-daemons.sh",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-installer-daemon-tests-on-linux-ci",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-installer-daemon-tests-on-linux-ci"
+      }
+    },
+    {
+      "id": "8edd2993-6df1-46fa-8ca7-190b114f50d4",
+      "occurred_at": "2026-09-21T15:51:58.663Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/install-system-daemons.sh",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-installer-daemon-tests-on-linux-ci",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-installer-daemon-tests-on-linux-ci"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-09-21T15:51:58.767Z"
+}

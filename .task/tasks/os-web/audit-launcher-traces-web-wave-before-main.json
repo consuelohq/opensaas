@@ -1,0 +1,19 @@
+{
+  "area": "os-web",
+  "stream": "stream/os-web",
+  "taskBranch": "task/os-web/audit-launcher-traces-web-wave-before-main",
+  "baseBranch": "stream/os-web",
+  "sourceBranch": "stream/os-web",
+  "startFrom": "stream",
+  "prNumber": 1649,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1649",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1649",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1649/audit-launcher-traces-web-wave-before-main",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1649",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1649/audit-launcher-traces-web-wave-before-main",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-web-audit-launcher-traces-web-wave-before-main",
+  "taskSession": "tsk_1230e4254219",
+  "tmuxSession": "opensaas-os-web-audit-launcher-traces-web-wave-before-main-1230e425",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-web-audit-launcher-traces-web-wave-before-main/.task/os-web/audit-launcher-traces-web-wave-before-main/session.json",
+  "createdAt": "2026-07-25T01:10:12.299Z"
+}

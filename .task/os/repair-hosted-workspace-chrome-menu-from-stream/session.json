@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_2cabfc0a2bd0",
+  "tmuxSession": "opensaas-os-repair-hosted-workspace-chrome-menu-from-stream-2cabfc0a",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/repair-hosted-workspace-chrome-menu-from-stream",
+  "branch": "task/os/repair-hosted-workspace-chrome-menu-from-stream",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-repair-hosted-workspace-chrome-menu-from-stream",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-repair-hosted-workspace-chrome-menu-from-stream",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2398,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2398",
+  "createdAt": "2026-09-05T03:34:20.197Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-repair-hosted-workspace-chrome-menu-from-stream/.task/os/repair-hosted-workspace-chrome-menu-from-stream/session.json"
+}

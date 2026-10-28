@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_88479e83313a",
+  "tmuxSession": "opensaas-os-foundation-two-remove-grok-and-resolve-open-review-comments-88479e83",
+  "area": "os-foundation-two",
+  "stream": "stream/os-foundation-two",
+  "taskBranch": "task/os-foundation-two/remove-grok-and-resolve-open-review-comments",
+  "branch": "task/os-foundation-two/remove-grok-and-resolve-open-review-comments",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-foundation-two-remove-grok-and-resolve-open-review-comments",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-foundation-two-remove-grok-and-resolve-open-review-comments",
+  "prNumber": 1680,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1680",
+  "createdAt": "2026-07-27T20:10:33.951Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-foundation-two-remove-grok-and-resolve-open-review-comments/.task/os-foundation-two/remove-grok-and-resolve-open-review-comments/session.json"
+}

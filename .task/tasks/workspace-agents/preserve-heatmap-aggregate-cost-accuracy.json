@@ -1,0 +1,16 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/preserve-heatmap-aggregate-cost-accuracy",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 2390,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2390",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-preserve-heatmap-aggregate-cost-accuracy",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_9a2e3b88b1d1",
+  "tmuxSession": "opensaas-workspace-agents-preserve-heatmap-aggregate-cost-accuracy-9a2e3b88",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-preserve-heatmap-aggregate-cost-accuracy/.task/session.json",
+  "createdAt": "2026-09-05T00:39:37.458Z"
+}

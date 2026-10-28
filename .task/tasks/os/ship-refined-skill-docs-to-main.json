@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/ship-refined-skill-docs-to-main",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1878,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1878",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1878",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1878/ship-refined-skill-docs-to-main",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1878",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1878/ship-refined-skill-docs-to-main",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-ship-refined-skill-docs-to-main",
+  "taskSession": "tsk_273c7e2f0b5b",
+  "tmuxSession": "opensaas-os-ship-refined-skill-docs-to-main-273c7e2f",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-ship-refined-skill-docs-to-main/.task/os/ship-refined-skill-docs-to-main/session.json",
+  "createdAt": "2026-08-12T03:55:59.638Z"
+}

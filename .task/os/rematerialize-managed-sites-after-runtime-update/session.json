@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_465ccb73d61d",
+  "tmuxSession": "opensaas-os-rematerialize-managed-sites-after-runtime-update-465ccb73",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/rematerialize-managed-sites-after-runtime-update",
+  "branch": "task/os/rematerialize-managed-sites-after-runtime-update",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-rematerialize-managed-sites-after-runtime-update",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-rematerialize-managed-sites-after-runtime-update",
+  "prNumber": 1885,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1885",
+  "createdAt": "2026-08-12T04:52:05.475Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-rematerialize-managed-sites-after-runtime-update/.task/os/rematerialize-managed-sites-after-runtime-update/session.json"
+}

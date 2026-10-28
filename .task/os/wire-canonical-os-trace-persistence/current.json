@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/wire-canonical-os-trace-persistence",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1517,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1517",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1517",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1517/wire-canonical-os-trace-persistence",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1517",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1517/wire-canonical-os-trace-persistence",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-wire-canonical-os-trace-persistence",
+  "taskSession": "tsk_b03a8a027a84",
+  "tmuxSession": "opensaas-os-wire-canonical-os-trace-persistence-b03a8a02",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-wire-canonical-os-trace-persistence/.task/os/wire-canonical-os-trace-persistence/session.json",
+  "createdAt": "2026-07-15T22:44:06.784Z"
+}

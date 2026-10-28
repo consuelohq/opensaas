@@ -1,0 +1,16 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/retain-github-install-state-through-all-completion-paths",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 2287,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2287",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-retain-github-install-state-through-all-completion-paths",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_cdbde96281a1",
+  "tmuxSession": "opensaas-workspace-agents-retain-github-install-state-through-all-completi-cdbde962",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-retain-github-install-state-through-all-completion-paths/.task/session.json",
+  "createdAt": "2026-08-29T06:05:41.336Z"
+}

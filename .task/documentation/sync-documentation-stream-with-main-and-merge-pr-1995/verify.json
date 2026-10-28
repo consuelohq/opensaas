@@ -1,0 +1,64 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/documentation/sync-documentation-stream-with-main-and-merge-pr-1995",
+  "base": "origin/main",
+  "headSha": "23a72851fe9676d484a1acc361baced4d4789d1d",
+  "changeHash": "d7ad0e4989a28456e2a8ef9f06fdb7c4c20fd205576edf432539866168b25c31",
+  "changedFiles": [
+    "packages/documentation/scripts/test-foundation-browser.mjs",
+    "packages/documentation/src/components/PageTitle.astro",
+    "packages/documentation/src/components/Sidebar.astro",
+    "packages/documentation/src/styles/docs.css",
+    "packages/documentation/tests/foundation.test.ts"
+  ],
+  "verifiedAt": "2026-08-15T03:29:26.800Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/documentation/refine-desktop-docs-homepage-toward-vercel/current.json",
+        ".task/documentation/refine-desktop-docs-homepage-toward-vercel/session.json",
+        ".task/documentation/refine-desktop-docs-homepage-toward-vercel/verify.json",
+        ".task/documentation/refine-desktop-docs-homepage-toward-vercel/workpad.md",
+        ".task/documentation/sync-documentation-stream-with-main-and-merge-pr-1995/current.json",
+        ".task/documentation/sync-documentation-stream-with-main-and-merge-pr-1995/evidence-log.json",
+        ".task/documentation/sync-documentation-stream-with-main-and-merge-pr-1995/read-log.json",
+        ".task/documentation/sync-documentation-stream-with-main-and-merge-pr-1995/session.json",
+        ".task/documentation/sync-documentation-stream-with-main-and-merge-pr-1995/workpad.md",
+        ".task/tasks/documentation/refine-desktop-docs-homepage-toward-vercel.json",
+        ".task/tasks/documentation/sync-documentation-stream-with-main-and-merge-pr-1995.json",
+        "packages/documentation/scripts/test-foundation-browser.mjs",
+        "packages/documentation/src/components/PageTitle.astro",
+        "packages/documentation/src/components/Sidebar.astro",
+        "packages/documentation/src/styles/docs.css",
+        "packages/documentation/tests/foundation.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

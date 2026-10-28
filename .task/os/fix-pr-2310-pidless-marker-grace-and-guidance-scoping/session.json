@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_5d1c772cf8b5",
+  "tmuxSession": "opensaas-os-fix-pr-2310-pidless-marker-grace-and-guidance-sc-5d1c772c",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-pr-2310-pidless-marker-grace-and-guidance-scoping",
+  "branch": "task/os/fix-pr-2310-pidless-marker-grace-and-guidance-scoping",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-pr-2310-pidless-marker-grace-and-guidance-scoping",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-pr-2310-pidless-marker-grace-and-guidance-scoping",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2338,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2338",
+  "createdAt": "2026-08-31T21:17:10.727Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-pr-2310-pidless-marker-grace-and-guidance-scoping/.task/os/fix-pr-2310-pidless-marker-grace-and-guidance-scoping/session.json"
+}

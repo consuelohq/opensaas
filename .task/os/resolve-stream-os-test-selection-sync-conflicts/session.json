@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_79aedac472b0",
+  "tmuxSession": "opensaas-os-resolve-stream-os-test-selection-sync-conflicts-79aedac4",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/resolve-stream-os-test-selection-sync-conflicts",
+  "branch": "task/os/resolve-stream-os-test-selection-sync-conflicts",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-resolve-stream-os-test-selection-sync-conflicts",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-resolve-stream-os-test-selection-sync-conflicts",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2456,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2456",
+  "createdAt": "2026-09-11T04:41:45.690Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-resolve-stream-os-test-selection-sync-conflicts/.task/os/resolve-stream-os-test-selection-sync-conflicts/session.json"
+}

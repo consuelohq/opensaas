@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/recover-managed-release-source-with-local-trust",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2421,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2421",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-recover-managed-release-source-with-local-trust",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_49c13fdb4d4c",
+  "tmuxSession": "opensaas-os-recover-managed-release-source-with-local-trust-49c13fdb",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-recover-managed-release-source-with-local-trust/.task/session.json",
+  "createdAt": "2026-09-08T15:02:47.189Z"
+}

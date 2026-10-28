@@ -1,0 +1,19 @@
+{
+  "area": "os-native",
+  "stream": "stream/os-native",
+  "taskBranch": "task/os-native/resolve-windows-platform-review-findings",
+  "baseBranch": "stream/os-native",
+  "sourceBranch": "stream/os-native",
+  "startFrom": "stream",
+  "prNumber": 1655,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1655",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1655",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1655/resolve-windows-platform-review-findings",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1655",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1655/resolve-windows-platform-review-findings",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-native-resolve-windows-platform-review-findings",
+  "taskSession": "tsk_608d61e8500b",
+  "tmuxSession": "opensaas-os-native-resolve-windows-platform-review-findings-608d61e8",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-native-resolve-windows-platform-review-findings/.task/os-native/resolve-windows-platform-review-findings/session.json",
+  "createdAt": "2026-07-25T02:45:45.585Z"
+}

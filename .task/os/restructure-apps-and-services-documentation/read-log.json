@@ -1,0 +1,15 @@
+{
+  "files": [
+    ".task/os/restructure-apps-and-services-documentation/workpad.md",
+    "packages/documentation/evidence/secure-claims.md",
+    "packages/documentation/package.json",
+    "packages/documentation/scripts/validate-documentation.mjs",
+    "packages/documentation/src/content/docs/secure/credential-detection.mdx",
+    "packages/documentation/src/content/docs/secure/credentials.mdx",
+    "packages/documentation/src/content/docs/secure/index.mdx",
+    "packages/documentation/src/lib/docs-navigation.ts",
+    "packages/documentation/src/lib/legacy-redirects.mjs",
+    "packages/documentation/tests/secure.test.ts"
+  ],
+  "updatedAt": "2026-07-14T18:04:26.027Z"
+}

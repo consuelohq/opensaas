@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_4fe724f12465",
+  "tmuxSession": "opensaas-security-address-local-os-hono-review-findings-4fe724f1",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/address-local-os-hono-review-findings",
+  "branch": "task/security/address-local-os-hono-review-findings",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-address-local-os-hono-review-findings",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-address-local-os-hono-review-findings",
+  "prNumber": 1408,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1408",
+  "createdAt": "2026-07-11T04:27:57.620Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-address-local-os-hono-review-findings/.task/security/address-local-os-hono-review-findings/session.json"
+}

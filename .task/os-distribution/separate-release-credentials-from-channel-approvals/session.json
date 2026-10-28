@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_b23940265b80",
+  "tmuxSession": "opensaas-os-distribution-separate-release-credentials-from-channel-approv-b2394026",
+  "area": "os-distribution",
+  "stream": "stream/os-distribution",
+  "taskBranch": "task/os-distribution/separate-release-credentials-from-channel-approvals",
+  "branch": "task/os-distribution/separate-release-credentials-from-channel-approvals",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-separate-release-credentials-from-channel-approvals",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-separate-release-credentials-from-channel-approvals",
+  "prNumber": 1630,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1630",
+  "createdAt": "2026-07-24T06:51:31.262Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-separate-release-credentials-from-channel-approvals/.task/os-distribution/separate-release-credentials-from-channel-approvals/session.json"
+}

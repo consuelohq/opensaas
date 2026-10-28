@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/allow-safe-os-process-inspection",
+  "baseBranch": "stream/security",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1525,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1525",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1525",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1525/allow-safe-os-process-inspection",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1525",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1525/allow-safe-os-process-inspection",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-allow-safe-os-process-inspection",
+  "taskSession": "tsk_8aec45f6f273",
+  "tmuxSession": "opensaas-security-allow-safe-os-process-inspection-8aec45f6",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-allow-safe-os-process-inspection/.task/security/allow-safe-os-process-inspection/session.json",
+  "createdAt": "2026-07-16T13:31:25.441Z"
+}

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_3b47d80fb4a5",
+  "tmuxSession": "opensaas-workspace-agents-fix-taskless-read-only-fs-routing-and-benchmark--3b47d80f",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/fix-taskless-read-only-fs-routing-and-benchmark-code-mode",
+  "branch": "task/workspace-agents/fix-taskless-read-only-fs-routing-and-benchmark-code-mode",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-taskless-read-only-fs-routing-and-benchmark-code-mode",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-taskless-read-only-fs-routing-and-benchmark-code-mode",
+  "prNumber": 1540,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1540",
+  "createdAt": "2026-07-21T03:07:33.613Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-fix-taskless-read-only-fs-routing-and-benchmark-code-mode/.task/workspace-agents/fix-taskless-read-only-fs-routing-and-benchmark-code-mode/session.json"
+}

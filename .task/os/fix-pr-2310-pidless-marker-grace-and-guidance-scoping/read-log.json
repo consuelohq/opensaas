@@ -1,0 +1,9 @@
+{
+  "files": [
+    "packages/os/scripts/lib/subagent/lifecycle.ts",
+    "packages/os/skills/task/SKILL.md",
+    "packages/os/tests/session-integration-guidance.test.ts",
+    "packages/os/tests/subagent-lifecycle-regressions.test.ts"
+  ],
+  "updatedAt": "2026-08-31T21:26:10.422Z"
+}

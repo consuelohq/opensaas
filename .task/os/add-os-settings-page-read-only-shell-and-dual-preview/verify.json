@@ -1,0 +1,74 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/add-os-settings-page-read-only-shell-and-dual-preview",
+  "base": "HEAD",
+  "headSha": "c6d669ade458d07d0235e10317b05cd7c045206e",
+  "changeHash": "f9f6b4e13f31189c140db5435b524b00a70ca5f6f0b08bf520cc66edc099fcf1",
+  "changedFiles": [
+    "packages/os/scripts/lib/install-edge-site-publisher.ts",
+    "packages/os/scripts/lib/launcher-onboarding.ts",
+    "packages/os/scripts/lib/settings-site.ts",
+    "packages/os/scripts/lib/settings-snapshot.ts",
+    "packages/os/scripts/lib/sites.ts",
+    "packages/os/scripts/lib/workspace-edge-route-seed.ts",
+    "packages/os/tests/install-edge-site-publisher.test.ts",
+    "packages/os/tests/launcher-onboarding.test.ts",
+    "packages/os/tests/settings-site.test.ts",
+    "packages/os/tests/workspace-edge-route-seed-contract.test.ts"
+  ],
+  "verifiedAt": "2026-07-02T20:30:32.923Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/add-os-settings-page-read-only-shell-and-dual-preview/current.json",
+        ".task/os/add-os-settings-page-read-only-shell-and-dual-preview/session.json",
+        ".task/os/add-os-settings-page-read-only-shell-and-dual-preview/workpad.md",
+        ".task/tasks/os/add-os-settings-page-read-only-shell-and-dual-preview.json",
+        "packages/os/scripts/lib/install-edge-site-publisher.ts",
+        "packages/os/scripts/lib/launcher-onboarding.ts",
+        "packages/os/scripts/lib/settings-site.ts",
+        "packages/os/scripts/lib/settings-snapshot.ts",
+        "packages/os/scripts/lib/sites.ts",
+        "packages/os/scripts/lib/workspace-edge-route-seed.ts",
+        "packages/os/tests/install-edge-site-publisher.test.ts",
+        "packages/os/tests/launcher-onboarding.test.ts",
+        "packages/os/tests/settings-site.test.ts",
+        "packages/os/tests/workspace-edge-route-seed-contract.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [
+      {
+        "category": "database-script",
+        "file": "packages/os/scripts/lib/workspace-edge-route-seed.ts",
+        "severity": "warning",
+        "message": "database reset/migration/sync script changed"
+      }
+    ],
+    "findings": []
+  },
+  "commandVersion": 2
+}

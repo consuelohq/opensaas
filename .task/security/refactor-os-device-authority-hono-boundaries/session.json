@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_352c00087675",
+  "tmuxSession": "opensaas-security-refactor-os-device-authority-hono-boundaries-352c0008",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/refactor-os-device-authority-hono-boundaries",
+  "branch": "task/security/refactor-os-device-authority-hono-boundaries",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-refactor-os-device-authority-hono-boundaries",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-refactor-os-device-authority-hono-boundaries",
+  "prNumber": 1396,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1396",
+  "createdAt": "2026-07-11T02:00:56.029Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-refactor-os-device-authority-hono-boundaries/.task/security/refactor-os-device-authority-hono-boundaries/session.json"
+}

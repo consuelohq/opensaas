@@ -29,8 +29,8 @@ Plan guides use the canonical Consuelo reader renderer. Run commands from the re
 Do not hand-author a new page shell. Produce structured content for the plan, then render through:
 
 ```bash
-bun run wiki:render -- --template plan --input <content.json> --out <index.html>
-bun run wiki:validate -- --input <index.html>
+bun run artifact:render -- --template plan --input <content.json> --out <index.html>
+bun run artifact:validate -- --input <index.html>
 ```
 
 Use the `plan` renderer template for plans. Do not create a separate roadmap template; roadmap content is plan content.
@@ -303,7 +303,7 @@ Use:
 * **validation cards** for test/proof obligations
 * **acceptance checklist** for pass/fail criteria
 * **handoff panel** for next-agent continuity
-* **metadata footer** for source truth, generated date, template, Open Design path, and design wiki link
+* **metadata footer** for source truth, generated date, template, Open Design path, and Artifacts catalog link
 
 Keep unresolved questions visible. A good plan does not hide uncertainty; it manages it.
 

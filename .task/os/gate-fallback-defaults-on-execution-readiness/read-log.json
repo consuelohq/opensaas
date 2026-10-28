@@ -1,0 +1,9 @@
+{
+  "files": [
+    "packages/os/cloudflare/os-device-authority/src/services/connectors.ts",
+    "packages/os/cloudflare/os-device-authority/src/services/nodes.ts",
+    "packages/os/tests/workspace-node-registry-routing.test.ts",
+    "packages/workspace/scripts/task-cleanup.js"
+  ],
+  "updatedAt": "2026-08-29T06:47:05.067Z"
+}

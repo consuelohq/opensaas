@@ -1,5 +1,5 @@
 
-type TraceRow = {
+export type TraceSitesGatewayLiveStreamRow = {
   id: string;
   traceId?: string;
   cursor: string;
@@ -7,10 +7,13 @@ type TraceRow = {
   toolName?: string;
   status?: string;
   startedAt?: string;
+  [key: string]: unknown;
 };
 
-type SnapshotResult = { cursor: string; rows: TraceRow[] };
-type GatewayRequest = {
+type TraceRow = TraceSitesGatewayLiveStreamRow;
+
+export type TraceSitesGatewayLiveStreamSnapshotResult = { cursor: string; rows: TraceRow[] };
+export type TraceSitesGatewayLiveStreamRequest = {
   method?: string;
   url: string;
   host?: string;
@@ -22,12 +25,12 @@ type GatewayRequest = {
   now?: string;
 };
 
-type GatewayBackend = {
-  readInitialSnapshot: (input: { cursor: string; request: GatewayRequest }) => Promise<SnapshotResult>;
-  readAfterCursor: (cursor: string, request: GatewayRequest) => Promise<SnapshotResult>;
+export type TraceSitesGatewayLiveStreamBackend = {
+  readInitialSnapshot: (input: { cursor: string; request: TraceSitesGatewayLiveStreamRequest }) => Promise<TraceSitesGatewayLiveStreamSnapshotResult>;
+  readAfterCursor: (cursor: string, request: TraceSitesGatewayLiveStreamRequest) => Promise<TraceSitesGatewayLiveStreamSnapshotResult>;
 };
 
-type EndpointOptions = {
+export type TraceSitesGatewayLiveStreamEndpointOptions = {
   auth?: { browserStreamAuth?: string };
   stream?: {
     keepAliveMs?: number;
@@ -35,7 +38,7 @@ type EndpointOptions = {
     maxDurationMs?: number;
     maxBufferedEvents?: number;
   };
-  backend: GatewayBackend;
+  backend: TraceSitesGatewayLiveStreamBackend;
 };
 
 type SseEvent = {
@@ -56,7 +59,7 @@ function jsonResponse(status: number, body: unknown): Response {
   });
 }
 
-function getCursor(url: string): string {
+export function getTraceSitesGatewayLiveStreamCursor(url: string): string {
   try {
     return new URL(url).searchParams.get('cursor') ?? 'cur_000';
   } catch (_error: unknown) {
@@ -89,9 +92,9 @@ function makeStream(events: SseEvent[]): ReadableStream<Uint8Array> {
   });
 }
 
-export function createTraceSitesGatewayLiveStreamEndpoint(options: EndpointOptions) {
+export function createTraceSitesGatewayLiveStreamEndpoint(options: TraceSitesGatewayLiveStreamEndpointOptions) {
   return {
-    async handle(request: GatewayRequest): Promise<Response> {
+    async handle(request: TraceSitesGatewayLiveStreamRequest): Promise<Response> {
       try {
         if (options.auth?.browserStreamAuth === 'custom-headers') {
           return jsonResponse(400, {
@@ -110,7 +113,7 @@ export function createTraceSitesGatewayLiveStreamEndpoint(options: EndpointOptio
           });
         }
 
-        const requestedCursor = getCursor(request.url);
+        const requestedCursor = getTraceSitesGatewayLiveStreamCursor(request.url);
         const seen = new Set<string>();
         const snapshot = await options.backend.readInitialSnapshot({ cursor: requestedCursor, request });
         const snapshotRows = dedupeRows(snapshot.rows, seen);

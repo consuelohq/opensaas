@@ -1,0 +1,19 @@
+{
+  "area": "workspace-agent",
+  "stream": "stream/workspace-agent",
+  "taskBranch": "task/workspace-agent/fix-remaining-cleanup-and-workflow-bundle-review-debt",
+  "baseBranch": "stream/workspace-agent",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2130,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2130",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2130",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2130/fix-remaining-cleanup-and-workflow-bundle-review-debt",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2130",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2130/fix-remaining-cleanup-and-workflow-bundle-review-debt",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agent-fix-remaining-cleanup-and-workflow-bundle-review-debt",
+  "taskSession": "tsk_1c81ec78e6d1",
+  "tmuxSession": "opensaas-workspace-agent-fix-remaining-cleanup-and-workflow-bundle-review-1c81ec78",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agent-fix-remaining-cleanup-and-workflow-bundle-review-debt/.task/workspace-agent/fix-remaining-cleanup-and-workflow-bundle-review-debt/session.json",
+  "createdAt": "2026-08-16T05:07:00.371Z"
+}

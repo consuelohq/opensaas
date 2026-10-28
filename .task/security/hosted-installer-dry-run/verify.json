@@ -1,0 +1,52 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/security/hosted-installer-dry-run",
+  "base": "origin/task/security/hosted-installer-dry-run",
+  "headSha": "10410b690d399d1d34df69173efab48f114eb113",
+  "changeHash": "996fbf93a73b290536398fbaef14d618548e1caca1f06af2078a35fd03a6ea7e",
+  "changedFiles": [
+    "packages/os/scripts/bootstrap.sh",
+    "packages/os/tests/installer-runtime-dependencies.test.ts"
+  ],
+  "verifiedAt": "2026-07-11T00:41:13.982Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/security/hosted-installer-dry-run/current.json",
+        ".task/security/hosted-installer-dry-run/session.json",
+        ".task/security/hosted-installer-dry-run/verify.json",
+        ".task/security/hosted-installer-dry-run/workpad.md",
+        ".task/tasks/security/hosted-installer-dry-run.json",
+        "packages/os/scripts/bootstrap.sh",
+        "packages/os/tests/installer-runtime-dependencies.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -3,11 +3,13 @@ import IconMail from "@/assets/icons/IconMail.svg";
 import IconGitHub from "@/assets/icons/IconGitHub.svg";
 import IconBrandX from "@/assets/icons/IconBrandX.svg";
 import IconLinkedin from "@/assets/icons/IconLinkedin.svg";
+import IconDiscord from "@/assets/icons/IconDiscord.svg";
 import IconWhatsapp from "@/assets/icons/IconWhatsapp.svg";
 import IconFacebook from "@/assets/icons/IconFacebook.svg";
 import IconTelegram from "@/assets/icons/IconTelegram.svg";
 import IconPinterest from "@/assets/icons/IconPinterest.svg";
 import { SITE } from "@/config";
+import { siteLinks } from "@/data/site-links";
 
 interface Social {
   name: string;
@@ -19,13 +21,19 @@ interface Social {
 export const SOCIALS: Social[] = [
   {
     name: "GitHub",
-    href: "https://github.com/consuelohq",
+    href: siteLinks.github,
     linkTitle: `${SITE.title} on GitHub`,
     icon: IconGitHub,
   },
   {
+    name: "Discord",
+    href: siteLinks.discord,
+    linkTitle: `Join ${SITE.title} on Discord`,
+    icon: IconDiscord,
+  },
+  {
     name: "X",
-    href: "https://x.com/consuelohq",
+    href: siteLinks.x,
     linkTitle: `${SITE.title} on X`,
     icon: IconBrandX,
   },

@@ -1,0 +1,16 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/fix-launcher-heatmap-hydration-and-history",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 2386,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2386",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-fix-launcher-heatmap-hydration-and-history",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_977d9ba1e138",
+  "tmuxSession": "opensaas-workspace-agents-fix-launcher-heatmap-hydration-and-history-977d9ba1",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-fix-launcher-heatmap-hydration-and-history/.task/session.json",
+  "createdAt": "2026-09-05T00:25:00.079Z"
+}

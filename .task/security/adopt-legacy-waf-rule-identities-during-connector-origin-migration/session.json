@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_b828c4a80591",
+  "tmuxSession": "opensaas-security-adopt-legacy-waf-rule-identities-during-connecto-b828c4a8",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/adopt-legacy-waf-rule-identities-during-connector-origin-migration",
+  "branch": "task/security/adopt-legacy-waf-rule-identities-during-connector-origin-migration",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-adopt-legacy-waf-rule-identities-during-connector-origin-migration",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-adopt-legacy-waf-rule-identities-during-connector-origin-migration",
+  "prNumber": 1457,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1457",
+  "createdAt": "2026-07-13T17:57:53.295Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-adopt-legacy-waf-rule-identities-during-connector-origin-migration/.task/security/adopt-legacy-waf-rule-identities-during-connector-origin-migration/session.json"
+}

@@ -1,0 +1,99 @@
+---
+import {
+  homeOverview,
+  homeOverviewFeatures,
+} from '../../data/home-content';
+
+type Props = {
+  sectionId?: string;
+};
+
+const { sectionId } = Astro.props as Props;
+---
+
+<section class="launch-section" id={sectionId}>
+  <div class="launch-content launch-content--wide launch-overview">
+    <div class="launch-overview__intro">
+      <p class="launch-eyebrow">{homeOverview.eyebrow}</p>
+      {homeOverview.title && <h2 class="launch-overview__title">{homeOverview.title}</h2>}
+      <p class="launch-copy">{homeOverview.intro}</p>
+    </div>
+
+    <div class="launch-overview__body">
+      <div class="launch-overview__list">
+        {homeOverviewFeatures.map((feature) => (
+          <div class="launch-overview__item">
+            <span class="launch-overview__marker launch-mono" aria-hidden="true">[*]</span>
+            <p class="launch-copy">
+              <strong>{feature.title}</strong>
+              <span class="launch-overview__text">{feature.text}</span>
+            </p>
+          </div>
+        ))}
+      </div>
+
+      <a class="launch-button launch-mono launch-overview__cta" href={homeOverview.ctaHref}>{homeOverview.ctaLabel} →</a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .launch-overview {
+    display: grid;
+    gap: 1.35rem;
+  }
+
+  .launch-overview__intro,
+  .launch-overview__body,
+  .launch-overview__list {
+    display: grid;
+    gap: 0.85rem;
+  }
+
+  .launch-overview__intro,
+  .launch-overview__body {
+    max-width: 58rem;
+  }
+
+  .launch-overview__title {
+    margin: 0;
+    font-size: clamp(1rem, 0.9rem + 0.3vw, 1.15rem);
+    letter-spacing: -0.06em;
+    line-height: 1.06;
+  }
+
+  .launch-overview__item {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.8rem;
+    align-items: start;
+  }
+
+  .launch-overview__marker {
+    color: var(--launch-muted);
+    font-size: 0.74rem;
+    padding-top: 0.25rem;
+  }
+
+  .launch-overview__item p {
+    /* normal inline flow */
+  }
+
+  .launch-overview__item strong {
+    color: var(--launch-fg);
+    font-weight: 700;
+    margin-right: 0.35rem;
+  }
+
+  .launch-overview__cta {
+    width: fit-content;
+  }
+</style>
+
+<style>
+  @media (max-width: 760px) {
+    .launch-overview__list {
+      gap: 1.25rem;
+    }
+  }
+</style>

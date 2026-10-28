@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_8aec45f6f273",
+  "tmuxSession": "opensaas-security-allow-safe-os-process-inspection-8aec45f6",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/allow-safe-os-process-inspection",
+  "branch": "task/security/allow-safe-os-process-inspection",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-allow-safe-os-process-inspection",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-allow-safe-os-process-inspection",
+  "prNumber": 1525,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1525",
+  "createdAt": "2026-07-16T13:31:25.440Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-allow-safe-os-process-inspection/.task/security/allow-safe-os-process-inspection/session.json"
+}

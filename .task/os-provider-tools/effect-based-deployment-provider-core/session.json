@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_f8724b5cbfc8",
+  "tmuxSession": "opensaas-os-provider-tools-effect-based-deployment-provider-core-f8724b5c",
+  "area": "os-provider-tools",
+  "stream": "stream/os-provider-tools",
+  "taskBranch": "task/os-provider-tools/effect-based-deployment-provider-core",
+  "branch": "task/os-provider-tools/effect-based-deployment-provider-core",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-provider-tools-effect-based-deployment-provider-core",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-provider-tools-effect-based-deployment-provider-core",
+  "prNumber": 1582,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1582",
+  "createdAt": "2026-07-23T02:52:14.815Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-provider-tools-effect-based-deployment-provider-core/.task/os-provider-tools/effect-based-deployment-provider-core/session.json"
+}

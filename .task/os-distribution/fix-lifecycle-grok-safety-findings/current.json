@@ -1,0 +1,19 @@
+{
+  "area": "os-distribution",
+  "stream": "stream/os-distribution",
+  "taskBranch": "task/os-distribution/fix-lifecycle-grok-safety-findings",
+  "baseBranch": "stream/os-distribution",
+  "sourceBranch": "stream/os-distribution",
+  "startFrom": "stream",
+  "prNumber": 1605,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1605",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1605",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1605/fix-lifecycle-grok-safety-findings",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1605",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1605/fix-lifecycle-grok-safety-findings",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-fix-lifecycle-grok-safety-findings",
+  "taskSession": "tsk_6b13ad118f4c",
+  "tmuxSession": "opensaas-os-distribution-fix-lifecycle-grok-safety-findings-6b13ad11",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-distribution-fix-lifecycle-grok-safety-findings/.task/os-distribution/fix-lifecycle-grok-safety-findings/session.json",
+  "createdAt": "2026-07-23T21:32:48.708Z"
+}

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_4d71ba0f1063",
+  "tmuxSession": "opensaas-os-distribution-simplify-foundation-grok-review-workflow-4d71ba0f",
+  "area": "os-distribution",
+  "stream": "stream/os-distribution",
+  "taskBranch": "task/os-distribution/simplify-foundation-grok-review-workflow",
+  "branch": "task/os-distribution/simplify-foundation-grok-review-workflow",
+  "worktreePath": "/Users/kokayi/Dev/opensaas-worktrees/task-os-distribution-simplify-foundation-grok-review-workflow",
+  "worktree": "/Users/kokayi/Dev/opensaas-worktrees/task-os-distribution-simplify-foundation-grok-review-workflow",
+  "prNumber": 1552,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1552",
+  "createdAt": "2026-07-22T18:24:02.089Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/Dev/opensaas-worktrees/task-os-distribution-simplify-foundation-grok-review-workflow/.task/os-distribution/simplify-foundation-grok-review-workflow/session.json"
+}

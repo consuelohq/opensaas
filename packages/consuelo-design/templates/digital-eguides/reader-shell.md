@@ -11,8 +11,8 @@ packages/consuelo-design/scripts/render-consuelo-reader.ts
 Use the renderer through the repo scripts:
 
 ```bash
-bun run wiki:render -- --template <spec|plan|guide> --input <content.json> --out <index.html>
-bun run wiki:validate -- --input <index.html>
+bun run artifact:render -- --template <spec|plan|guide> --input <content.json> --out <index.html>
+bun run artifact:validate -- --input <index.html>
 ```
 
 Rules:

@@ -1,0 +1,13 @@
+{
+  "files": [
+    ".task/security/refactor-local-os-server-onto-hono/workpad.md",
+    "packages/os/scripts/consuelo-reload.js",
+    "packages/os/scripts/server/routes/call.ts",
+    "packages/os/scripts/start-consuelo-daemon.sh",
+    "packages/os/tests/os-device-authority-architecture.test.ts",
+    "packages/os/tests/os-raw-steering.test.ts",
+    "packages/os/tests/security-gateway.test.ts",
+    "packages/workspace/scripts/review.js"
+  ],
+  "updatedAt": "2026-07-11T03:55:29.938Z"
+}

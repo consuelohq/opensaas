@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/fix-stream-os-script-parity-after-main-sync",
+  "events": [
+    {
+      "id": "aca2dbf0-3d04-478c-8899-8d86d67f121d",
+      "occurred_at": "2026-09-21T15:40:05.068Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/audit/fixtures/script-parity-classifications.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-stream-os-script-parity-after-main-sync",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-stream-os-script-parity-after-main-sync"
+      }
+    },
+    {
+      "id": "530f4d41-3e40-4c78-838c-fce433f8188d",
+      "occurred_at": "2026-09-21T15:40:29.926Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/audit/fixtures/script-parity-classifications.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-stream-os-script-parity-after-main-sync",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-stream-os-script-parity-after-main-sync"
+      }
+    },
+    {
+      "id": "135f76a9-47b6-47fe-9ac4-5c4022a72a2e",
+      "occurred_at": "2026-09-21T15:41:30.524Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/audit/fixtures/script-parity-classifications.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-stream-os-script-parity-after-main-sync",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-stream-os-script-parity-after-main-sync"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-09-21T15:41:30.625Z"
+}

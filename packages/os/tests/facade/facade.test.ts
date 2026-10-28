@@ -1,4 +1,5 @@
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
@@ -6,9 +7,15 @@ import { describe, expect, it } from 'vitest';
 
 import { getCurrentTask, resolveTaskBranch } from '../../scripts/lib/facade/branch-resolver';
 import { runBatch } from '../../scripts/lib/facade/batch';
-import { executeTool, getToolManifestEntry, manifestEntries } from '../../scripts/lib/facade/executor';
+import {
+  executeTool,
+  getToolManifestEntry,
+  manifestEntries,
+  resolveInternalExecutionInput,
+} from '../../scripts/lib/facade/executor';
 import { getInputSchema } from '../../scripts/lib/facade/schemas';
 import type { CommandArgument, CommandPlan, ToolInput, ToolRunner } from '../../scripts/lib/facade/types';
+import { redactDeploymentTraceInput } from '../../tools/deployment-provider/redaction';
 
 const TEST_BRANCH = 'task/workspace-agents/test';
 const TEST_UUID = 'abc123def4567890abc123def4567890';
@@ -62,8 +69,12 @@ function failingRunner(): ToolRunner {
 
 function timeoutRunner(): ToolRunner {
   return async () => {
-    throw { timedOut: true, message: 'timed out' };
+    throw Object.assign(new Error('timed out'), { timedOut: true });
   };
+}
+
+function longText(prefix: string, length = 5000): string {
+  return `${prefix}${'x'.repeat(length)}`;
 }
 
 function passthroughRunner(): ToolRunner {
@@ -92,20 +103,63 @@ function exampleInput(entryName: string): ToolInput {
   return input;
 }
 
-function writeTaskSession(tempRoot: string, taskSession: string, branch: string = TEST_BRANCH): void {
+function writeTaskSession(
+  tempRoot: string,
+  taskSession: string,
+  branch: string = TEST_BRANCH,
+  worktree: string = tempRoot,
+): void {
   mkdirSync(join(tempRoot, '.task'), { recursive: true });
   writeFileSync(join(tempRoot, '.task', 'session.json'), JSON.stringify({
     taskSession,
     tmuxSession: 'opensaas-test',
     branch,
-    worktree: tempRoot,
+    worktree,
   }, null, 2));
+}
+
+function runGit(cwd: string, args: string[]): void {
+  const result = spawnSync('git', args, { cwd, encoding: 'utf8' });
+  if (result.status !== 0) throw new Error(`git ${args.join(' ')} failed: ${result.stderr}`);
+}
+
+function createLinkedTaskSession(
+  prefix: string,
+  taskSession: string,
+  branch: string = TEST_BRANCH,
+): { container: string; mainRepo: string; worktree: string } {
+  const container = mkdtempSync(join(tmpdir(), prefix));
+  const mainRepo = join(container, 'main');
+  const worktree = join(container, 'task');
+  mkdirSync(mainRepo, { recursive: true });
+  runGit(mainRepo, ['init', '-b', 'main']);
+  runGit(mainRepo, ['config', 'user.email', 'tests@consuelo.local']);
+  runGit(mainRepo, ['config', 'user.name', 'Consuelo Tests']);
+  writeFileSync(join(mainRepo, 'README.md'), 'initial\n');
+  runGit(mainRepo, ['add', 'README.md']);
+  runGit(mainRepo, ['commit', '-m', 'initial']);
+  runGit(mainRepo, ['worktree', 'add', '-b', branch, worktree]);
+  writeTaskSession(mainRepo, taskSession, branch, worktree);
+  return { container, mainRepo, worktree };
 }
 
 const SNAPSHOT_EXCLUDED_TOOLS = new Set(['fs.read', 'fs.search']);
 
 function executableEntries() {
   return manifestEntries.filter((entry) => !entry.command.internal && entry.sessionRequired !== true && !SNAPSHOT_EXCLUDED_TOOLS.has(entry.name));
+}
+
+function runnableEntries() {
+  return executableEntries().filter((entry) => {
+    const schema = getInputSchema(entry.inputSchema);
+    return schema?.safeParse(exampleInput(entry.name)).success === true;
+  });
+}
+
+function syntheticDryRunEntries() {
+  return runnableEntries().filter(
+    (entry) => entry.capabilities.mutating && !entry.command.dryRunFlag,
+  );
 }
 
 describe('typed facade executor', () => {
@@ -134,18 +188,147 @@ describe('typed facade executor', () => {
     expect(data.manifestEntry?.command?.subcommand).toBe('apply-patch');
   });
 
-  it('keeps generic unknown tool messages compact', async () => {
+  it('keeps generic unknown tool failures compact but recoverable', async () => {
     const result = await executeTool('missing.tool', {}, stableOptions(successfulRunner()));
 
     expect(result.ok).toBe(false);
     expect(result.code).toBe('NOT_FOUND');
-    expect(result.message).toBe('unknown tool: missing.tool');
-    expect(result.data).toBeNull();
+    expect(result.message).toContain('unknown tool: missing.tool');
+    expect(result.message).toContain('tool-manifest mismatch');
+    expect(result.data).toMatchObject({
+      requestedTool: 'missing.tool',
+      autoRetry: false,
+      toolsSearchCall: {
+        tool: 'tools.search',
+      },
+    });
   });
 
-  it('plans canonical context search through the context runtime', async () => {
+  it('fails deployment mutations closed before generic command execution', async () => {
     const plans: CommandPlan[] = [];
-    const result = await executeTool('context', {
+    const result = await executeTool('deployment.deploy', {
+      provider: 'vercel',
+      action: 'deploy',
+      target: 'production',
+    }, stableOptions(successfulRunner(), plans));
+
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('APPROVAL_REQUIRED');
+    expect(result.data).toMatchObject({
+      provider: 'vercel',
+      approval: { required: true },
+    });
+    expect(plans).toHaveLength(0);
+  });
+
+  it('redacts provider secrets and arbitrary raw argv before trace persistence', () => {
+    const secret = 'cf_api_token_should_never_reach_a_trace';
+    const environmentInput = redactDeploymentTraceInput('deployment.environment', {
+      provider: 'cloudflare',
+      action: 'set',
+      name: 'API_TOKEN',
+      value: secret,
+    });
+    const rawInput = redactDeploymentTraceInput('deployment.raw', {
+      provider: 'railway',
+      args: ['variables', '--set', `API_TOKEN=${secret}`],
+    });
+
+    expect(environmentInput.value).toBe('[REDACTED_SECRET]');
+    expect(rawInput.args).toEqual(['[REDACTED_RAW_PAYLOAD]']);
+    expect(JSON.stringify({ environmentInput, rawInput })).not.toContain(secret);
+  });
+
+  it('uses a tool timeoutMs input as the outer facade deadline', async () => {
+    let observedTimeoutMs = 0;
+    const result = await executeTool('google', {
+      action: 'connect',
+      account: 'person@example.com',
+      timeoutMs: 600_000,
+    }, stableOptions(async (_plan, timeoutMs) => {
+      observedTimeoutMs = timeoutMs;
+      return { stdout: JSON.stringify({ ok: true }), stderr: '', exitCode: 0 };
+    }));
+
+    expect(result.ok).toBe(true);
+    expect(observedTimeoutMs).toBe(600_000);
+  });
+
+  it('uses a call execution timeout without adding timeout to typed tool input', async () => {
+    let observedTimeoutMs = 0;
+    const result = await executeTool('session.start', {
+      kind: 'work',
+      path: '/tmp/session-runtime-scope',
+    }, {
+      ...stableOptions(async (_plan, timeoutMs) => {
+        observedTimeoutMs = timeoutMs;
+        return { stdout: JSON.stringify({ ok: true }), stderr: '', exitCode: 0 };
+      }),
+      timeoutMs: 12_000,
+    });
+
+    expect(result.code).not.toBe('VALIDATION_ERROR');
+    expect(observedTimeoutMs).toBe(12_000);
+  });
+
+  it('routes the effective call timeout into timeout-aware internal adapters', () => {
+    const deploymentEntry = getToolManifestEntry('deployment.detect');
+    const subagentEntry = getToolManifestEntry('subagent');
+    expect(deploymentEntry).not.toBeNull();
+    expect(subagentEntry).not.toBeNull();
+
+    const deploymentInput = { provider: 'vercel' };
+    const resolvedDeployment = resolveInternalExecutionInput(
+      deploymentEntry!,
+      deploymentInput,
+      { timeoutMs: 12_000 },
+    );
+    expect(resolvedDeployment).toMatchObject({ provider: 'vercel', timeoutMs: 12_000 });
+    expect(deploymentInput).toEqual({ provider: 'vercel' });
+
+    expect(resolveInternalExecutionInput(
+      deploymentEntry!,
+      { provider: 'vercel', timeout: 9_000 },
+      {},
+    )).toMatchObject({ timeout: 9_000, timeoutMs: 9_000 });
+
+    const subagentInput = { provider: 'codex', action: 'run' };
+    const resolvedSubagent = resolveInternalExecutionInput(
+      subagentEntry!,
+      subagentInput,
+      { timeoutMs: 7_000 },
+    );
+    expect(resolvedSubagent).toMatchObject({
+      provider: 'codex',
+      action: 'run',
+      timeoutMs: 7_000,
+    });
+    expect(subagentInput).toEqual({ provider: 'codex', action: 'run' });
+  });
+
+  it('uses a call execution timeout for internal runner-backed tools', async () => {
+    let observedTimeoutMs = 0;
+    const result = await executeTool('task.ensureSynced', {
+      branch: TEST_BRANCH,
+    }, {
+      ...stableOptions(async (_plan, timeoutMs) => {
+        observedTimeoutMs = timeoutMs;
+        return {
+          stdout: JSON.stringify({ aheadBehind: { behind: 0 } }),
+          stderr: '',
+          exitCode: 0,
+        };
+      }),
+      timeoutMs: 4_000,
+    });
+
+    expect(result.ok).toBe(true);
+    expect(observedTimeoutMs).toBe(4_000);
+  });
+
+  it('plans canonical memory search through the memory runtime', async () => {
+    const plans: CommandPlan[] = [];
+    const result = await executeTool('memory', {
       operation: 'search',
       keyword: 'workspace',
       limit: 1,
@@ -155,7 +338,7 @@ describe('typed facade executor', () => {
     expect(result.code).toBe('OK');
     expect(plans).toHaveLength(1);
     expect(plans[0].args).toEqual(expect.arrayContaining([
-      'context',
+      'memory',
       '--',
       'search',
       'workspace',
@@ -165,9 +348,9 @@ describe('typed facade executor', () => {
     ]));
   });
 
-  it('plans canonical context trace through the context runtime', async () => {
+  it('plans canonical memory trace through the memory runtime', async () => {
     const plans: CommandPlan[] = [];
-    const result = await executeTool('context', {
+    const result = await executeTool('memory', {
       operation: 'trace',
       status: 'error',
       limit: 1,
@@ -177,7 +360,7 @@ describe('typed facade executor', () => {
     expect(result.code).toBe('OK');
     expect(plans).toHaveLength(1);
     expect(plans[0].args).toEqual(expect.arrayContaining([
-      'context',
+      'memory',
       '--',
       'trace',
       '--status',
@@ -188,14 +371,24 @@ describe('typed facade executor', () => {
     ]));
   });
 
-  it('rejects canonical context calls without an operation', async () => {
-    const result = await executeTool('context', {
+  it('rejects canonical memory calls without an operation', async () => {
+    const result = await executeTool('memory', {
       keyword: 'workspace',
     }, stableOptions(successfulRunner()));
 
     expect(result.ok).toBe(false);
     expect(result.code).toBe('VALIDATION_ERROR');
     expect(result.message).toContain('operation');
+  });
+
+  it('does not expose the retired standalone context tool', async () => {
+    const result = await executeTool('context', {
+      operation: 'search',
+      keyword: 'workspace',
+    }, stableOptions(successfulRunner()));
+
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('NOT_FOUND');
   });
 
   it.each(executableEntries().map((entry) => entry.name))('returns a success envelope for %s', async (toolName) => {
@@ -208,10 +401,33 @@ describe('typed facade executor', () => {
     expect(result).toMatchSnapshot();
   });
 
-  it.each(executableEntries().map((entry) => entry.name))('returns a timeout envelope for %s', async (toolName) => {
+  it.each(runnableEntries().map((entry) => entry.name))('returns a timeout envelope for %s', async (toolName) => {
     const result = await executeTool(toolName, exampleInput(toolName), stableOptions(timeoutRunner()));
     expect(result.code).toBe('TIMEOUT');
     expect(result.ok).toBe(false);
+  });
+
+  it('should retry retry-safe facade tools when the first attempt times out', async () => {
+    let attempts = 0;
+    const plans: CommandPlan[] = [];
+    const result = await executeTool('status', exampleInput('status'), stableOptions(async () => {
+      attempts += 1;
+      if (attempts === 1) {
+        throw Object.assign(new Error('first attempt timed out'), {
+          timedOut: true,
+        });
+      }
+      return {
+        stdout: JSON.stringify({ value: 'retried' }),
+        stderr: '',
+        exitCode: 0,
+      };
+    }, plans));
+
+    expect(result.ok).toBe(true);
+    expect(result.code).toBe('OK');
+    expect(attempts).toBe(2);
+    expect(plans).toHaveLength(2);
   });
 
 
@@ -247,6 +463,65 @@ describe('typed facade executor', () => {
     ]));
   });
 
+  it('plans media.screenshot.render facade calls with configurable social-card arguments', async () => {
+    const schema = getInputSchema('MediaScreenshotRenderInput');
+    expect(schema).not.toBeNull();
+    expect(schema?.safeParse({
+      input: 'chatgpt.png',
+      out: 'chatgpt-x.png',
+      width: 1600,
+      height: 900,
+      theme: 'dark',
+      accent: '#0000F2',
+      background: '#08080A',
+      padding: 120,
+      fit: 'contain',
+      pattern: 'grid',
+    }).success).toBe(true);
+
+    const plans: CommandPlan[] = [];
+    const result = await executeTool('media.screenshot.render', {
+      input: 'chatgpt.png',
+      out: 'chatgpt-x.png',
+      width: 1600,
+      height: 900,
+      theme: 'dark',
+      accent: '#0000F2',
+      background: '#08080A',
+      padding: 120,
+      fit: 'contain',
+      pattern: 'grid',
+    }, stableOptions(successfulRunner(), plans));
+
+    expect(result.ok).toBe(true);
+    expect(plans).toHaveLength(1);
+    expect(plans[0].args).toEqual(expect.arrayContaining([
+      'media',
+      'screenshot:render',
+      '--input',
+      'chatgpt.png',
+      '--out',
+      'chatgpt-x.png',
+      '--width',
+      '1600',
+      '--height',
+      '900',
+      '--theme',
+      'dark',
+      '--accent',
+      '#0000F2',
+      '--background',
+      '#08080A',
+      '--padding',
+      '120',
+      '--fit',
+      'contain',
+      '--pattern',
+      'grid',
+      '--json',
+    ]));
+  });
+
   it.each(manifestEntries.map((entry) => entry.name))('validates input for %s', async (toolName) => {
     const entry = manifestEntries.find((item) => item.name === toolName);
     if (!entry) throw new Error(`missing entry: ${toolName}`);
@@ -257,9 +532,15 @@ describe('typed facade executor', () => {
     expect(result.code).toBe('VALIDATION_ERROR');
   });
 
-  it.each(manifestEntries.filter((entry) => entry.name !== 'worker.call' && entry.capabilities.mutating && !entry.command.dryRunFlag && entry.sessionRequired !== true).map((entry) => entry.name))('supports synthetic dry-run for %s', async (toolName) => {
+  it.each(syntheticDryRunEntries().map((entry) => entry.name))('supports synthetic dry-run for %s', async (toolName) => {
     const plans: CommandPlan[] = [];
-    const result = await executeTool(toolName, { ...exampleInput(toolName), dryRun: true }, stableOptions(successfulRunner(), plans));
+    const input = { ...exampleInput(toolName), dryRun: true };
+    const entry = getToolManifestEntry(toolName);
+    const schema = entry ? getInputSchema(entry.inputSchema) : null;
+    const parsed = schema?.safeParse(input);
+    expect(parsed?.success, `${toolName} must accept dryRun when it advertises synthetic dry-run behavior`).toBe(true);
+    expect(parsed && parsed.success ? (parsed.data as ToolInput).dryRun : undefined).toBe(true);
+    const result = await executeTool(toolName, input, stableOptions(successfulRunner(), plans));
     expect(result.code).toBe('DRY_RUN');
     expect(plans).toHaveLength(0);
   });
@@ -438,6 +719,17 @@ describe('typed facade executor', () => {
     }
   });
 
+  it('plans exact full-file fs reads', async () => {
+    const plans: CommandPlan[] = [];
+    const result = await executeTool('fs.read', {
+      path: 'AGENTS.md',
+      full: true,
+    }, stableOptions(successfulRunner(), plans));
+
+    expect(result.ok).toBe(true);
+    expect(plans[0].args).toContain('--full');
+  });
+
   it('plans fs.search path alias through paths argument', async () => {
     const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-search-path-'));
     try {
@@ -549,7 +841,7 @@ describe('typed facade executor', () => {
 
         expect(result.ok).toBe(false);
         expect(result.code).toBe('VALIDATION_ERROR');
-        expect(result.message).toContain('top-level pagination fields cannot be used with files');
+        expect(result.message).toContain('top-level read fields cannot be used with files');
       }
       expect(plans).toHaveLength(0);
     } finally {
@@ -597,6 +889,109 @@ describe('typed facade executor', () => {
     expect(plans[1].args).not.toContain('--branch');
   });
 
+  it('runs taskless read-only fs tools from the caller repo when task selection is ambiguous', async () => {
+    const plans: CommandPlan[] = [];
+    const ambiguousBranchResolver = () => ({
+      ok: false as const,
+      code: 'AMBIGUOUS_TASK_SELECTION' as const,
+      message: 'multiple active task worktrees found',
+      candidates: [
+        { branch: TEST_BRANCH, area: 'workspace-agents', worktree: '/tmp/a' },
+        { branch: 'task/workspace-agents/other', area: 'workspace-agents', worktree: '/tmp/b' },
+      ],
+    });
+    const options = {
+      ...stableOptions(successfulRunner(), plans),
+      branchResolver: ambiguousBranchResolver,
+      currentTask: null,
+      candidates: ambiguousBranchResolver().candidates,
+    };
+
+    const readResult = await executeTool('fs.read', { path: 'AGENTS.md' }, options);
+    const searchResult = await executeTool('fs.search', {
+      pattern: 'workspace',
+      paths: ['AGENTS.md'],
+      maxResults: 3,
+    }, options);
+    const listResult = await executeTool('fs.list', { path: '.', depth: 1 }, options);
+
+    expect(readResult.ok).toBe(true);
+    expect(searchResult.ok).toBe(true);
+    expect(listResult.ok).toBe(true);
+    expect(plans).toHaveLength(3);
+    for (const plan of plans) {
+      expect(plan.args).not.toContain('--branch');
+      expect(plan.args[1]).toBe('fs');
+    }
+  });
+
+  it('does not hide ambiguous routing when read-only fs receives an explicit branch', async () => {
+    const plans: CommandPlan[] = [];
+    const result = await executeTool('fs.read', {
+      branch: TEST_BRANCH,
+      path: 'AGENTS.md',
+    }, {
+      ...stableOptions(successfulRunner(), plans),
+      branchResolver: () => ({
+        ok: false,
+        code: 'AMBIGUOUS_TASK_SELECTION',
+        message: 'explicit branch was ambiguous',
+        candidates: [
+          { branch: TEST_BRANCH, area: 'workspace-agents', worktree: '/tmp/a' },
+          { branch: TEST_BRANCH, area: 'workspace-agents', worktree: '/tmp/b' },
+        ],
+      }),
+      currentTask: null,
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.code).toBe('AMBIGUOUS_TASK_SELECTION');
+    expect(plans).toHaveLength(0);
+  });
+
+  it('resolves taskSession from the durable registry when local session files are unavailable', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'workspace-durable-session-'));
+    const repo = join(root, 'repo');
+    const worktree = join(root, 'task');
+    const home = join(root, 'home');
+    const branch = 'task/workspace-agents/durable-session';
+    const taskSession = 'tsk_durable_session';
+    try {
+      mkdirSync(repo, { recursive: true });
+      for (const args of [
+        ['init', '-q'],
+        ['config', 'user.email', 'tests@consuelo.local'],
+        ['config', 'user.name', 'Consuelo Tests'],
+      ]) {
+        const result = spawnSync('git', args, { cwd: repo, encoding: 'utf8' });
+        if (result.status !== 0) throw new Error(result.stderr);
+      }
+      writeFileSync(join(repo, 'README.md'), 'fixture\n');
+      for (const args of [['add', 'README.md'], ['commit', '-qm', 'fixture'], ['worktree', 'add', '-qb', branch, worktree]]) {
+        const result = spawnSync('git', args, { cwd: repo, encoding: 'utf8' });
+        if (result.status !== 0) throw new Error(result.stderr);
+      }
+      const registryRoot = join(home, 'node', 'tasks', 'registry');
+      mkdirSync(registryRoot, { recursive: true });
+      writeFileSync(join(registryRoot, `${taskSession}.json`), JSON.stringify({ taskSession, taskBranch: branch, branch, worktreePath: worktree, worktree }, null, 2));
+
+      const plans: CommandPlan[] = [];
+      const result = await executeTool('fs.read', { taskSession, path: 'README.md' }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: repo,
+        env: { ...process.env, CONSUELO_HOME: home, WORKSPACE_WORKTREE_ROOT: join(root, 'legacy-empty') },
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      expect(plans[0].env.TASK_BRANCH).toBe(branch);
+      expect(plans[0].env.TASK_WORKTREE).toBe(worktree);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it('uses options.env worktree root for taskSession discovery', async () => {
     const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-session-env-'));
     const worktreeRoot = join(tempRoot, 'custom-worktrees');
@@ -624,6 +1019,54 @@ describe('typed facade executor', () => {
 
       expect(result.ok).toBe(true);
       expect(plans[0].env.TASK_BRANCH).toBe('task/workspace-agents/env-root');
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('resolves task.current from an explicit surviving taskSession', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-current-session-'));
+    const branch = 'task/os/session-current';
+    try {
+      writeTaskSession(tempRoot, 'tsk_current_session', branch);
+      const result = await executeTool('task.current', {
+        taskSession: 'tsk_current_session',
+      }, {
+        ...stableOptions(successfulRunner()),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      expect(result.data).toMatchObject({ branch, area: 'os', worktree: tempRoot });
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('runs session-scoped task lifecycle commands from the task worktree', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-lifecycle-session-'));
+    const worktreeRoot = join(tempRoot, 'worktrees');
+    const worktree = join(worktreeRoot, 'task-os-lifecycle-session');
+    const plans: CommandPlan[] = [];
+    try {
+      mkdirSync(worktree, { recursive: true });
+      writeTaskSession(worktree, 'tsk_lifecycle_session', 'task/os/lifecycle-session');
+      const result = await executeTool('task.push', {
+        taskSession: 'tsk_lifecycle_session',
+        message: 'fix(os): lifecycle session fixture',
+        changed: true,
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: process.cwd(),
+        env: { ...process.env, WORKSPACE_WORKTREE_ROOT: worktreeRoot },
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      expect(plans[0].cwd).toBe(worktree);
     } finally {
       rmSync(tempRoot, { recursive: true, force: true });
     }
@@ -657,6 +1100,77 @@ describe('typed facade executor', () => {
       expect(plans[0].env.TASK_BRANCH).toBe('task/workspace-agents/session-test');
       expect(plans[0].args).toContain('--branch');
       expect(plans[0].args).toContain('task/workspace-agents/session-test');
+    } finally {
+      if (previousRoot === undefined) delete process.env.WORKSPACE_WORKTREE_ROOT;
+      else process.env.WORKSPACE_WORKTREE_ROOT = previousRoot;
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+
+  it('should accept task metadata aliases when taskSession is absent', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-session-task-id-alias-'));
+    const branch = 'task/workspace-agents/session-task-id-alias';
+    const previousRoot = process.env.WORKSPACE_WORKTREE_ROOT;
+    process.env.WORKSPACE_WORKTREE_ROOT = join(tempRoot, 'worktrees');
+    try {
+      mkdirSync(join(tempRoot, '.task'), { recursive: true });
+      writeFileSync(join(tempRoot, '.task', 'session.json'), JSON.stringify({
+        id: 'tsk_task_id_alias',
+        taskId: 'task-id-alias',
+        taskBranch: branch,
+        worktree: tempRoot,
+      }, null, 2));
+
+      const plans: CommandPlan[] = [];
+      const result = await executeTool('fs.read', {
+        taskSession: 'task-id-alias',
+        path: 'AGENTS.md',
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      expect(plans[0].env.TASK_BRANCH).toBe(branch);
+      expect(plans[0].env.TASK_WORKTREE).toBe(tempRoot);
+    } finally {
+      if (previousRoot === undefined) delete process.env.WORKSPACE_WORKTREE_ROOT;
+      else process.env.WORKSPACE_WORKTREE_ROOT = previousRoot;
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('should accept a task branch as a taskSession alias when metadata exists', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-session-branch-alias-'));
+    const branch = 'task/workspace-agents/session-branch-alias';
+    const previousRoot = process.env.WORKSPACE_WORKTREE_ROOT;
+    process.env.WORKSPACE_WORKTREE_ROOT = join(tempRoot, 'worktrees');
+    try {
+      mkdirSync(join(tempRoot, '.task'), { recursive: true });
+      writeFileSync(join(tempRoot, '.task', 'session.json'), JSON.stringify({
+        taskSession: 'tsk_branch_alias',
+        tmuxSession: 'opensaas-test',
+        branch,
+        worktree: tempRoot,
+      }, null, 2));
+
+      const plans: CommandPlan[] = [];
+      const result = await executeTool('fs.read', {
+        taskSession: branch,
+        path: 'AGENTS.md',
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      expect(plans[0].env.TASK_BRANCH).toBe(branch);
+      expect(plans[0].env.TASK_WORKTREE).toBe(tempRoot);
     } finally {
       if (previousRoot === undefined) delete process.env.WORKSPACE_WORKTREE_ROOT;
       else process.env.WORKSPACE_WORKTREE_ROOT = previousRoot;
@@ -699,6 +1213,313 @@ describe('typed facade executor', () => {
     }
   });
 
+  it('should preserve documentation opportunities when compacting review.run full-json output', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'os-review-docs-compact-'));
+    try {
+      writeTaskSession(tempRoot, 'tsk_review_docs_compact', TEST_BRANCH);
+      const plans: CommandPlan[] = [];
+      const result = await executeTool('review.run', {
+        taskSession: 'tsk_review_docs_compact',
+        noTests: true,
+      }, {
+        ...stableOptions(async () => ({
+          stdout: JSON.stringify({
+            base: 'origin/main',
+            branch: TEST_BRANCH,
+            files: 1,
+            affectedProjects: [],
+            yours: [],
+            preExisting: [],
+            documentationOpportunities: [{
+              rule: 'DOCS_OPPORTUNITY',
+              surface: 'skills',
+              sourceFiles: ['packages/os/scripts/lib/skill-selection.ts'],
+              docs: ['packages/documentation/src/content/docs/build/skills/install-a-skill.mdx'],
+              blocking: false,
+              reason: 'Skill lifecycle changed.',
+              suggestedAction: 'Invoke documentation-writer.',
+            }],
+            testResults: [],
+            confidence: null,
+          }),
+          stderr: '',
+          exitCode: 0,
+        }), plans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      const data = result.data as {
+        checksRun: string[];
+        summary: { documentationOpportunities: number };
+        documentationOpportunities: Array<{ surface: string; blocking: boolean }>;
+      };
+      expect(data.checksRun).toContain('documentation_opportunities');
+      expect(data.summary.documentationOpportunities).toBe(1);
+      expect(data.documentationOpportunities).toEqual([
+        expect.objectContaining({ surface: 'skills', blocking: false }),
+      ]);
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('should not claim documentation opportunity checks ran when legacy review output omits them', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'os-review-docs-absent-'));
+    try {
+      writeTaskSession(tempRoot, 'tsk_review_docs_absent', TEST_BRANCH);
+      const result = await executeTool('review.run', {
+        taskSession: 'tsk_review_docs_absent',
+        noTests: true,
+      }, {
+        ...stableOptions(async () => ({
+          stdout: JSON.stringify({
+            base: 'origin/main',
+            branch: TEST_BRANCH,
+            files: 1,
+            affectedProjects: [],
+            yours: [],
+            preExisting: [],
+            testResults: [],
+            confidence: null,
+          }),
+          stderr: '',
+          exitCode: 0,
+        })),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      const data = result.data as { checksRun: string[] };
+      expect(data.checksRun).not.toContain('documentation_opportunities');
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('should compact full verify packets when raw tails are large', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-verify-compact-'));
+    try {
+      writeTaskSession(tempRoot, 'tsk_verify_compact_full', TEST_BRANCH);
+      const files = Array.from({ length: 25 }, (_, index) => `packages/os/src/file-${index}.ts`);
+      const result = await executeTool('verify', {
+        taskSession: 'tsk_verify_compact_full',
+        noStamp: true,
+      }, {
+        ...stableOptions(async () => ({
+          stdout: JSON.stringify({
+            branch: TEST_BRANCH,
+            base: 'origin/main',
+            headSha: 'abc123',
+            files,
+            review: {
+              skipped: false,
+              passed: false,
+              status: 1,
+              stderr: `\u001b[31m${longText('review-error')}`,
+              data: {
+                schema: 'review.summary.v1',
+                mustFix: [],
+                preExistingDigest: { sample: [] },
+                testSummary: {
+                  failures: [{ name: 'suite', outputTail: `\u001b[31m${longText('tail')}` }],
+                },
+              },
+            },
+            db: {
+              skipped: false,
+              passed: false,
+              risks: files.map((file) => ({ category: 'migration', file })),
+              groupedRisks: {},
+              findings: files.map((file) => ({ severity: 'error', rule: 'DB', message: longText('db'), files: [file] })),
+            },
+            docs: {
+              skipped: false,
+              passed: false,
+              files,
+              commands: [{ command: ['bun', 'docs'], passed: false, status: 1, stdout: longText('docs-out'), stderr: longText('docs-err') }],
+            },
+            passed: false,
+            publishValid: false,
+            mode: 'full',
+            stampPath: null,
+          }),
+          stderr: '',
+          exitCode: 1,
+        })),
+        cwd: tempRoot,
+      });
+
+      expect(result.ok).toBe(false);
+      const data = result.data as Record<string, unknown>;
+      expect(data.schema).toBe('verify.summary.v1');
+      expect(data.files).toEqual(expect.objectContaining({ total: 25, truncated: true, omitted: 15 }));
+      expect(JSON.stringify(data)).not.toContain('\u001b[31m');
+      expect(JSON.stringify(data)).not.toContain('x'.repeat(1000));
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+
+  it('preserves pending verify identity and same-session continuation instructions', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-verify-pending-'));
+    const taskSession = 'tsk_verify_pending_summary';
+    const pending = {
+      status: 'VERIFY_PENDING',
+      pending: true,
+      passed: false,
+      publishValid: false,
+      runKey: 'verify-run-identity',
+      branch: TEST_BRANCH,
+      base: 'origin/stream/tooling-reliability',
+      headSha: 'pending-head',
+      phase: 'running',
+      startedAt: '2026-10-28T03:03:43.000Z',
+      workerPid: 1234,
+      retryAfterSeconds: 5,
+      stamp: { written: false, path: null, publishValid: false },
+      message: 'Verification is running outside the agent turn.',
+      nextAction: 'Call verify again with the same task session to read pending or completed state; do not sleep inside this turn.',
+    };
+    try {
+      writeTaskSession(tempRoot, taskSession, TEST_BRANCH);
+      const workpadPath = join(tempRoot, '.task', 'workspace-agents', 'test', 'workpad.md');
+      const workpad = '## workspace-owned: validation evidence\n\n- none yet\n';
+      mkdirSync(join(tempRoot, '.task', 'workspace-agents', 'test'), { recursive: true });
+      writeFileSync(workpadPath, workpad);
+      const result = await executeTool('verify', { taskSession }, {
+        ...stableOptions(async () => ({
+          stdout: JSON.stringify(pending), stderr: '', exitCode: 0,
+        })),
+        cwd: tempRoot,
+      });
+
+      expect(result.ok).toBe(true);
+      expect(result.data).toEqual(expect.objectContaining(pending));
+      expect(readFileSync(workpadPath, 'utf8')).toBe(workpad);
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('keeps bounded verify failure reasons and selected-suite evidence', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-verify-failure-'));
+    const taskSession = 'tsk_verify_failure_summary';
+    const failedSuites = Array.from({ length: 25 }, (_, index) => ({
+      id: 'suite-' + index,
+      command: ['bun', 'test', 'tests/suite-' + index + '.test.ts'],
+      status: 1,
+      outputTail: '\u001b[31m' + longText('suite failed'),
+    }));
+    try {
+      writeTaskSession(tempRoot, taskSession, TEST_BRANCH);
+      const result = await executeTool('verify', { taskSession }, {
+        ...stableOptions(async () => ({
+          stdout: JSON.stringify({
+            branch: TEST_BRANCH, base: 'origin/main', headSha: 'failed-head',
+            passed: false, publishValid: false, mode: 'full', stampPath: null,
+            because: { lines: ['registry selected 25 suites and failed', ...Array(20).fill(longText('reason'))] },
+            testSelection: {
+              skipped: false, passed: false, status: 1,
+              stderr: '\u001b[31m' + longText('registry stderr'),
+              data: { selectedSuites: failedSuites, failedSuites },
+            },
+            message: '\u001b[31m' + longText('verification failed'),
+            nextAction: longText('fix failed suite'),
+          }), stderr: '', exitCode: 1,
+        })),
+        cwd: tempRoot,
+      });
+
+      expect(result.ok).toBe(false);
+      const data = result.data as {
+        passed: boolean; publishValid: boolean; message: string; nextAction: string;
+        because: { lines: unknown };
+        testSelection: {
+          passed: boolean; status: number; stderr: string;
+          data: { failedSuites: { sample: { id: string; outputTail: string }[] } };
+        };
+      };
+      expect(data.passed).toBe(false);
+      expect(data.publishValid).toBe(false);
+      expect(data.because.lines).toEqual(expect.objectContaining({
+        total: 21, sample: expect.arrayContaining(['registry selected 25 suites and failed']),
+        truncated: true, omitted: 11,
+      }));
+      expect(data.testSelection).toEqual(expect.objectContaining({ passed: false, status: 1 }));
+      expect(data.testSelection.data.failedSuites).toEqual(expect.objectContaining({
+        total: 25, truncated: true, omitted: 15,
+      }));
+      expect(data.testSelection.data.failedSuites.sample[0].id).toBe('suite-0');
+      expect(data.testSelection.data.failedSuites.sample[0].outputTail.length).toBeLessThan(660);
+      expect(data.testSelection.stderr.length).toBeLessThan(660);
+      expect(data.message.length).toBeLessThan(660);
+      expect(data.nextAction.length).toBeLessThan(660);
+      expect(JSON.stringify(data)).not.toContain('\u001b[31m');
+      expect(JSON.stringify(data)).not.toContain('x'.repeat(1000));
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('preserves completed verify publication evidence without inventing pending state', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-verify-success-'));
+    const taskSession = 'tsk_verify_success_summary';
+    const completed = {
+      branch: TEST_BRANCH, base: 'origin/stream/tooling-reliability',
+      headSha: 'verified-head', passed: true, publishValid: true, mode: 'full',
+      stampPath: '.task/tooling-reliability/verification/verify.json',
+      stamp: { written: true, path: '.task/tooling-reliability/verification/verify.json', publishValid: true },
+    };
+    try {
+      writeTaskSession(tempRoot, taskSession, TEST_BRANCH);
+      const result = await executeTool('verify', { taskSession }, {
+        ...stableOptions(async () => ({
+          stdout: JSON.stringify(completed), stderr: '', exitCode: 0,
+        })),
+        cwd: tempRoot,
+      });
+
+      expect(result.ok).toBe(true);
+      expect(result.data).toEqual(expect.objectContaining(completed));
+      expect((result.data as Record<string, unknown>).pending).toBeUndefined();
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('runs task-scoped verify from the resolved task worktree instead of controller cwd', async () => {
+    const controllerRoot = mkdtempSync(join(tmpdir(), 'workspace-verify-controller-'));
+    const taskWorktree = mkdtempSync(join(tmpdir(), 'workspace-verify-task-'));
+    const taskSession = 'tsk_verify_task_worktree_routing';
+    try {
+      writeTaskSession(controllerRoot, taskSession, TEST_BRANCH, taskWorktree);
+      const plans: CommandPlan[] = [];
+      const result = await executeTool('verify', {
+        taskSession,
+        noStamp: true,
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: controllerRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      expect(plans).toHaveLength(1);
+      expect(plans[0].cwd).toBe(taskWorktree);
+      expect(plans[0].env?.TASK_WORKTREE).toBe(taskWorktree);
+    } finally {
+      rmSync(controllerRoot, { recursive: true, force: true });
+      rmSync(taskWorktree, { recursive: true, force: true });
+    }
+  });
+
   it('passes the taskSession worktree to audit', async () => {
     const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-audit-session-'));
     try {
@@ -733,23 +1554,21 @@ describe('typed facade executor', () => {
   });
 
   it('allows matching taskSession and branch for code.call', async () => {
-    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-code-call-session-'));
+    const task = createLinkedTaskSession('workspace-code-call-session-', 'tsk_code_call');
     try {
-      writeTaskSession(tempRoot, 'tsk_code_call', TEST_BRANCH);
       const result = await executeTool('code.call', {
         taskSession: 'tsk_code_call',
         branch: TEST_BRANCH,
         language: 'python',
         mode: 'read',
         code: 'import os\nprint(os.environ["TASK_BRANCH"])\nprint(os.environ["TASK_WORKTREE"])',
-        cwd: tempRoot,
-      }, { ...stableOptions(successfulRunner()), cwd: tempRoot });
+      }, { ...stableOptions(successfulRunner()), cwd: task.mainRepo });
 
       expect(result.ok).toBe(true);
       expect(result.code).toBe('OK');
-      expect(result.data?.stdout?.trim().split('\n')).toEqual([TEST_BRANCH, tempRoot]);
+      expect(result.data?.stdout?.trim().split('\n')).toEqual([TEST_BRANCH, task.worktree]);
     } finally {
-      rmSync(tempRoot, { recursive: true, force: true });
+      rmSync(task.container, { recursive: true, force: true });
     }
   });
 
@@ -816,24 +1635,43 @@ describe('typed facade executor', () => {
     }
   });
 
-  it('runs code.call edit mode inside an explicit task worktree', async () => {
-    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-code-call-edit-session-'));
+  it('applies a call execution timeout to the internal code.call runtime', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-code-call-envelope-timeout-'));
     try {
-      writeTaskSession(tempRoot, 'tsk_code_call_edit', TEST_BRANCH);
+      const result = await executeTool('code.call', {
+        language: 'python',
+        mode: 'read',
+        code: 'import time\ntime.sleep(2)',
+        cwd: tempRoot,
+      }, {
+        ...stableOptions(successfulRunner()),
+        cwd: tempRoot,
+        timeoutMs: 50,
+      });
+
+      expect(result.ok).toBe(false);
+      expect(result.code).toBe('TIMEOUT');
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('runs code.call edit mode inside an explicit task worktree', async () => {
+    const task = createLinkedTaskSession('workspace-code-call-edit-session-', 'tsk_code_call_edit');
+    try {
       const result = await executeTool('code.call', {
         taskSession: 'tsk_code_call_edit',
         language: 'python',
         mode: 'edit',
         code: 'from pathlib import Path\nPath("edited.txt").write_text("changed")\nprint("edited")',
-        cwd: tempRoot,
-      }, { ...stableOptions(successfulRunner()), cwd: tempRoot });
+      }, { ...stableOptions(successfulRunner()), cwd: task.mainRepo });
 
       expect(result.ok).toBe(true);
       expect(result.code).toBe('OK');
       expect(result.data?.stdout?.trim()).toBe('edited');
       expect(result.data?.filesChanged).toContain('edited.txt');
     } finally {
-      rmSync(tempRoot, { recursive: true, force: true });
+      rmSync(task.container, { recursive: true, force: true });
     }
   });
 
@@ -992,7 +1830,7 @@ describe('batch facade tool', () => {
     const plans: CommandPlan[] = [];
     const result = await executeTool('batch', {
       steps: [
-        { tool: 'context.find', input: { keyword: 'workspace', limit: 1 } },
+        { tool: 'memory', input: { operation: 'find', keyword: 'workspace', limit: 1 } },
       ],
     }, stableOptions(successfulRunner(), plans));
 
@@ -1002,12 +1840,168 @@ describe('batch facade tool', () => {
     expect(plans).toHaveLength(1);
   });
 
+  it('inherits the outer task session for sequential child tools', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-batch-session-'));
+    const taskSession = 'tsk_batch_session';
+    const plans: CommandPlan[] = [];
+
+    try {
+      writeTaskSession(tempRoot, taskSession);
+      const result = await executeTool('batch', {
+        taskSession,
+        steps: [
+          { tool: 'fs.read', input: { path: 'packages/os/package.json' } },
+        ],
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+        branchResolver: ({ explicitBranch }) => explicitBranch
+          ? { ok: true as const, branch: explicitBranch, source: 'explicit' }
+          : {
+              ok: false as const,
+              code: 'AMBIGUOUS_TASK_SELECTION' as const,
+              message: 'missing inherited batch context',
+              candidates: [],
+            },
+      });
+
+      expect(result.ok).toBe(true);
+      expect(result.data.completed).toBe(1);
+      expect(result.data.results[0].parentTraceId).toBe(result.traceId);
+      expect(plans).toHaveLength(1);
+      expect(plans[0].args).toContain(TEST_BRANCH);
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('accepts a session id, task id, metadata id, or branch as the outer batch handle', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-batch-session-alias-'));
+    const metadata = {
+      taskSession: 'tsk_batch_alias',
+      taskId: 'task_batch_alias',
+      id: 'meta_batch_alias',
+      branch: TEST_BRANCH,
+      worktree: tempRoot,
+    };
+    const plans: CommandPlan[] = [];
+
+    try {
+      mkdirSync(join(tempRoot, '.task'), { recursive: true });
+      writeFileSync(
+        join(tempRoot, '.task', 'session.json'),
+        JSON.stringify(metadata, null, 2),
+      );
+
+      for (const taskSession of [
+        metadata.taskSession,
+        metadata.taskId,
+        metadata.id,
+        metadata.branch,
+      ]) {
+        const result = await executeTool('batch', {
+          taskSession,
+          steps: [
+            { tool: 'fs.read', input: { path: 'packages/os/package.json' } },
+          ],
+        }, {
+          ...stableOptions(successfulRunner(), plans),
+          cwd: tempRoot,
+          currentTask: null,
+          candidates: [],
+        });
+
+        expect(result.ok).toBe(true);
+        expect(result.data.results[0].parentTraceId).toBe(result.traceId);
+      }
+
+      expect(plans).toHaveLength(4);
+      expect(plans.every((plan) => plan.args.includes(TEST_BRANCH))).toBe(true);
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('inherits task context for parallel child tools', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-batch-parallel-session-'));
+    const taskSession = 'tsk_batch_parallel_session';
+    const plans: CommandPlan[] = [];
+
+    try {
+      writeTaskSession(tempRoot, taskSession);
+      const result = await executeTool('batch', {
+        taskSession,
+        steps: [
+          { tool: 'fs.read', input: { path: 'packages/os/package.json' }, parallel: true },
+          { tool: 'fs.read', input: { path: 'packages/cli/package.json' }, parallel: true },
+        ],
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+        branchResolver: ({ explicitBranch }) => explicitBranch
+          ? { ok: true as const, branch: explicitBranch, source: 'explicit' }
+          : {
+              ok: false as const,
+              code: 'AMBIGUOUS_TASK_SELECTION' as const,
+              message: 'missing inherited batch context',
+              candidates: [],
+            },
+      });
+
+      expect(result.ok).toBe(true);
+      expect(plans).toHaveLength(2);
+      expect(plans.every((plan) => plan.args.includes(TEST_BRANCH))).toBe(true);
+      expect(result.data.results.every((child) => child.parentTraceId === result.traceId)).toBe(true);
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('rejects child task context that conflicts with the outer batch', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-batch-conflict-'));
+    const taskSession = 'tsk_batch_conflict';
+    const plans: CommandPlan[] = [];
+
+    try {
+      writeTaskSession(tempRoot, taskSession);
+      const result = await executeTool('batch', {
+        taskSession,
+        steps: [
+          {
+            tool: 'fs.read',
+            input: {
+              branch: 'task/workspace-agents/other',
+              path: 'packages/os/package.json',
+            },
+          },
+        ],
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: tempRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(false);
+      expect(result.data.completed).toBe(1);
+      expect(result.data.results[0].code).toBe('VALIDATION_ERROR');
+      expect(result.data.results[0].message).toContain('conflicts with the outer batch task context');
+      expect(plans).toHaveLength(0);
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
   it('validates BatchInput step shape', () => {
     const schema = getInputSchema('BatchInput');
 
     expect(schema).not.toBeNull();
     expect(schema?.safeParse({
-      steps: [{ tool: 'context.find', input: { keyword: 'workspace', limit: 1 } }],
+      steps: [{ tool: 'memory', input: { operation: 'find', keyword: 'workspace', limit: 1 } }],
     }).success).toBe(true);
     expect(schema?.safeParse({ steps: [] }).success).toBe(false);
     expect(schema?.safeParse({ steps: [{ input: {} }] }).success).toBe(false);

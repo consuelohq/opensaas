@@ -1,0 +1,13 @@
+{
+  "files": [
+    ".task/os/fix-diffs-cache-freshness-and-progressive-loading/workpad.md",
+    "packages/diff-cockpit/src/index.ts",
+    "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+    "packages/os/scripts/server/logger.ts",
+    "packages/os/scripts/server/services/diffs-gateway.ts",
+    "packages/os/scripts/server/services/diffs-local-cache.ts",
+    "packages/os/scripts/server/vendor/diff-cockpit.ts",
+    "packages/os/tests/diffs-hono-routes.test.ts"
+  ],
+  "updatedAt": "2026-09-21T03:42:19.250Z"
+}

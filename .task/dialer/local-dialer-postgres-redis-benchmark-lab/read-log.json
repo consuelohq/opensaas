@@ -1,0 +1,16 @@
+{
+  "files": [
+    ".task/dialer/local-dialer-postgres-redis-benchmark-lab/current.json",
+    ".task/dialer/local-dialer-postgres-redis-benchmark-lab/evidence-log.json",
+    ".task/dialer/local-dialer-postgres-redis-benchmark-lab/read-log.json",
+    ".task/dialer/local-dialer-postgres-redis-benchmark-lab/workpad.md",
+    "packages/dialer-server/package.json",
+    "packages/dialer-server/scripts/local-dialer-lab.ts",
+    "packages/dialer-server/src/lab/local-dialer-lab.ts",
+    "packages/dialer-server/src/lab/local-service-harness.ts",
+    "packages/dialer/src/infrastructure/redis/redis-parallel-store.ts",
+    "packages/dialer/src/types.ts",
+    "packages/workspace/TOOLS.md"
+  ],
+  "updatedAt": "2026-08-15T03:13:12.900Z"
+}

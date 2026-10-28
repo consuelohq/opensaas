@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/reject-routed-nodes-without-registry-records",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2280,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2280",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-reject-routed-nodes-without-registry-records",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_0c6501338ce8",
+  "tmuxSession": "opensaas-os-reject-routed-nodes-without-registry-records-0c650133",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-reject-routed-nodes-without-registry-records/.task/session.json",
+  "createdAt": "2026-08-29T04:32:37.947Z"
+}

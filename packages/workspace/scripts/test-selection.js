@@ -6,6 +6,8 @@ const { spawnSync } = require('child_process');
 const DEFAULT_RULES = 'packages/workspace/test-selection.rules.json';
 const DEFAULT_REGISTRY = 'packages/workspace/test-selection.registry.json';
 const REPORT_DIR = '/tmp/opensaas-test-reports';
+const GIT_OUTPUT_MAX_BUFFER = 64 * 1024 * 1024;
+const TEST_SUITE_OUTPUT_MAX_BUFFER = 64 * 1024 * 1024;
 const SKIP_DIRS = new Set(['.git', 'node_modules', '.next', 'dist', 'build', 'coverage', '.turbo', '.cache', '.task', 'tmp', 'node-jiti', '.astro']);
 const TEST_FILE_RE = /(^|\/)(__tests__|tests|test|spec|e2e|integration|unit)(\/|$)|\.(test|spec|e2e|integration)\.[cm]?[jt]sx?$/i;
 const JS_TS_RE = /\.[cm]?[jt]sx?$/i;
@@ -152,8 +154,11 @@ function matchesPattern(file, pattern) {
   return globToRegExp(pattern).test(file);
 }
 
-function commandKey(command) {
-  return JSON.stringify(command);
+function commandKey(test) {
+  const cwdKey = Object.prototype.hasOwnProperty.call(test, 'cwd')
+    ? ['present', test.cwd]
+    : ['absent'];
+  return JSON.stringify([cwdKey, test.command]);
 }
 
 function normalizeRule(rule, source = 'explicit') {
@@ -162,12 +167,13 @@ function normalizeRule(rule, source = 'explicit') {
     source: rule.source || [],
     tests: rule.tests || [],
     critical: Boolean(rule.critical),
+    ...(rule.exclusive ? { exclusive: true } : {}),
     reason: rule.reason || '',
     origin: source,
   };
 }
 
-function createAutoRules(tests, projects, packageScripts) {
+function createAutoRules(tests, projects, packageScripts, explicitRules = []) {
   const testsByGroup = new Map();
   for (const test of tests) {
     const groups = new Set([test.group, ...groupCandidatesFor(test.path)]);
@@ -183,7 +189,7 @@ function createAutoRules(tests, projects, packageScripts) {
     rules.push(normalizeRule({
       id: `auto:${project.name}:test`,
       source: [`${project.root}/**`],
-      tests: [{ name: `${project.name} test`, command: ['npx', 'nx', 'test', project.name] }],
+      tests: [{ name: `${project.name} test`, command: ['npx', 'nx', 'test', project.name, '--coverage=false'] }],
       critical: false,
       reason: `Auto-discovered Nx test target for ${project.root}.`,
     }, 'auto'));
@@ -191,12 +197,13 @@ function createAutoRules(tests, projects, packageScripts) {
   for (const pkg of packageScripts) {
     if (!pkg.scripts.test) continue;
     if (pkg.root === 'packages/workspace') continue;
+    if (explicitRules.some((rule) => rule.source.includes(`${pkg.root}/**`))) continue;
     if (rules.some((rule) => rule.source.includes(`${pkg.root}/**`))) continue;
     if (!testsByGroup.has(pkg.root)) continue;
     rules.push(normalizeRule({
       id: `auto:${pkg.name}:package-test`,
       source: [`${pkg.root}/**`],
-      tests: [{ name: `${pkg.name} package test`, command: ['bun', '--cwd', pkg.root, 'run', 'test'] }],
+      tests: [{ name: `${pkg.name} package test`, command: ['bun', 'run', '--cwd', pkg.root, 'test'] }],
       critical: false,
       reason: `Auto-discovered package test script for ${pkg.root}.`,
     }, 'auto'));
@@ -215,7 +222,7 @@ function buildRegistry(root) {
   const projects = discoverProjects(root);
   const packageScripts = discoverPackageScripts(root);
   const explicitRules = loadRules(root);
-  const autoRules = createAutoRules(tests, projects, packageScripts);
+  const autoRules = createAutoRules(tests, projects, packageScripts, explicitRules);
   const rules = [...explicitRules, ...autoRules];
   const mappedTests = new Set();
   for (const test of tests) {
@@ -256,12 +263,21 @@ function changedFiles(root, args) {
   const explicit = valuesFor(args, 'changed-file');
   if (explicit.length) return explicit;
   const base = valueFor(args, 'base') || 'origin/main';
-  const committed = spawnSync('git', ['diff', '--name-only', `${base}...HEAD`], { cwd: root, encoding: 'utf8' });
-  const working = spawnSync('git', ['diff', '--name-only'], { cwd: root, encoding: 'utf8' });
-  const staged = spawnSync('git', ['diff', '--name-only', '--cached'], { cwd: root, encoding: 'utf8' });
-  const untracked = spawnSync('git', ['ls-files', '--others', '--exclude-standard'], { cwd: root, encoding: 'utf8' });
+  const committed = spawnSync('git', ['diff', '--name-only', `${base}...HEAD`], {
+    cwd: root,
+    encoding: 'utf8',
+    maxBuffer: GIT_OUTPUT_MAX_BUFFER,
+  });
   const files = new Set();
-  for (const result of [committed, working, staged, untracked]) {
+  const results = [committed];
+  if (!args['committed-only']) {
+    results.push(
+      spawnSync('git', ['diff', '--name-only'], { cwd: root, encoding: 'utf8', maxBuffer: GIT_OUTPUT_MAX_BUFFER }),
+      spawnSync('git', ['diff', '--name-only', '--cached'], { cwd: root, encoding: 'utf8', maxBuffer: GIT_OUTPUT_MAX_BUFFER }),
+      spawnSync('git', ['ls-files', '--others', '--exclude-standard'], { cwd: root, encoding: 'utf8', maxBuffer: GIT_OUTPUT_MAX_BUFFER }),
+    );
+  }
+  for (const result of results) {
     if (result.status !== 0) continue;
     for (const line of result.stdout.split(/\r?\n/)) if (line.trim()) files.add(line.trim());
   }
@@ -282,19 +298,64 @@ function docsOnly(files) {
 }
 
 function sourceCodeFiles(files) {
-  return files.filter((file) => /\.(ts|tsx|js|jsx|mjs|cjs|json|yml|yaml)$/i.test(file) && !file.startsWith('.task/'));
+  return files.filter((file) => /\.(ts|tsx|js|jsx|mjs|cjs|json|yml|yaml|sh|bash|zsh)$/i.test(file) && !file.startsWith('.task/'));
 }
 
-function select(registry, files) {
+function suiteSupportsPlatform(suite, platform) {
+  if (suite.platforms === undefined) return true;
+  return Array.isArray(suite.platforms) && suite.platforms.includes(platform);
+}
+
+function select(registry, files, platform = process.platform) {
+  const matches = registry.rules
+    .map((rule) => ({
+      rule,
+      matchedFiles: files.filter((file) =>
+        rule.source.some((pattern) => matchesPattern(file, pattern)),
+      ),
+    }))
+    .filter((entry) => entry.matchedFiles.length > 0);
+  const explicitCriticalFiles = new Set(
+    matches
+      .filter(
+        ({ rule }) => rule.origin === 'explicit' && rule.critical === true,
+      )
+      .flatMap(({ matchedFiles }) => matchedFiles),
+  );
   const matchedRules = [];
   const suites = [];
   const seen = new Set();
-  for (const rule of registry.rules) {
-    const matchedFiles = files.filter((file) => rule.source.some((pattern) => matchesPattern(file, pattern)));
+  const exclusivelyOwnedFiles = new Set(
+    matches
+      .filter(({ rule }) => rule.exclusive === true)
+      .flatMap(({ matchedFiles }) => matchedFiles),
+  );
+
+  for (const { rule, matchedFiles: rawMatchedFiles } of matches) {
+    const matchedFiles = rule.exclusive
+      ? rawMatchedFiles
+      : rawMatchedFiles.filter((file) => !exclusivelyOwnedFiles.has(file));
     if (matchedFiles.length === 0) continue;
-    matchedRules.push({ id: rule.id, critical: rule.critical, reason: rule.reason, matchedFiles, origin: rule.origin });
+    if (rule.origin === 'auto' && docsOnly(matchedFiles)) continue;
+    matchedRules.push({
+      id: rule.id,
+      critical: rule.critical,
+      ...(rule.exclusive ? { exclusive: true } : {}),
+      reason: rule.reason,
+      matchedFiles,
+      origin: rule.origin,
+    });
+    const autoPackageCodeFiles =
+      rule.origin === 'auto' && rule.id.endsWith(':package-test')
+        ? sourceCodeFiles(matchedFiles)
+        : [];
+    const fullyCoveredByExplicitCriticalRule =
+      autoPackageCodeFiles.length > 0 &&
+      autoPackageCodeFiles.every((file) => explicitCriticalFiles.has(file));
+    if (fullyCoveredByExplicitCriticalRule) continue;
     for (const test of rule.tests) {
-      const key = commandKey(test.command);
+      if (!suiteSupportsPlatform(test, platform)) continue;
+      const key = commandKey(test);
       if (seen.has(key)) continue;
       seen.add(key);
       suites.push({ ...test, ruleId: rule.id, critical: rule.critical });
@@ -317,22 +378,174 @@ function select(registry, files) {
       zeroSuiteReason = 'no testable source files changed';
     }
   }
-  return { changedFiles: files, matchedRules, selectedSuites: suites, level, zeroSuiteReason };
+  return { changedFiles: files, matchedRules, selectedSuites: suites, level, zeroSuiteReason, platform };
 }
 function testSuiteTimeoutMs() {
   const value = Number.parseInt(process.env.TEST_SUITE_TIMEOUT_MS || '', 10);
   return Number.isFinite(value) && value > 0 ? value : 300000;
 }
 
-function runSuites(root, suites) {
+function resolveSuiteCwd(root, suite) {
+  let configured = '.';
+  if (suite.cwd !== undefined) {
+    if (typeof suite.cwd !== 'string' || !suite.cwd.trim()) {
+      throw new Error('suite cwd must be a non-blank repository-relative string');
+    }
+    configured = suite.cwd.trim();
+  }
+  const resolved = path.resolve(root, configured);
+  const relative = path.relative(root, resolved);
+  const escapesRoot = relative === '..'
+    || relative.startsWith(`..${path.sep}`)
+    || path.isAbsolute(relative);
+  if (escapesRoot) {
+    throw new Error(`suite cwd must stay within repository: ${configured}`);
+  }
+  return resolved;
+}
+
+function suiteNeedsOsDependencies(suite) {
+  const command = Array.isArray(suite?.command) ? suite.command : [];
+  return String(suite?.ruleId || '').startsWith('os-')
+    || command.some((argument) => argument === 'packages/os' || String(argument).startsWith('packages/os/'));
+}
+
+function osDependenciesAreReady(root) {
+  const osRoot = path.join(root, 'packages', 'os');
+  const packageJsonPath = path.join(osRoot, 'package.json');
+  const nodeModulesPath = path.join(osRoot, 'node_modules');
+  if (!fs.existsSync(packageJsonPath) || !fs.existsSync(nodeModulesPath)) return false;
+
+  const packageJson = readJson(packageJsonPath, {});
+  const requiresTreeSitter = Boolean(
+    packageJson?.dependencies?.['tree-sitter']
+      || packageJson?.devDependencies?.['tree-sitter'],
+  );
+  return !requiresTreeSitter
+    || fs.existsSync(path.join(nodeModulesPath, 'tree-sitter', 'package.json'));
+}
+
+function prepareOsDependencies(root, suites) {
+  if (!suites.some(suiteNeedsOsDependencies) || osDependenciesAreReady(root)) return null;
+
+  const osRoot = path.join(root, 'packages', 'os');
+  const command = ['bun', 'install', '--frozen-lockfile'];
+  const started = Date.now();
+  const result = spawnSync(command[0], command.slice(1), {
+    cwd: osRoot,
+    encoding: 'utf8',
+    maxBuffer: 1024 * 1024 * 8,
+    timeout: testSuiteTimeoutMs(),
+    env: process.env,
+  });
+  const timedOut = result.error && result.error.code === 'ETIMEDOUT';
+  const signaled = Boolean(result.signal);
+  if (result.status === 0 && !timedOut && !signaled) return null;
+
+  const output = `${result.stdout || ''}${result.stderr || ''}${timedOut ? '\n[test-selection] OS dependency install timed out\n' : ''}${signaled ? `\n[test-selection] OS dependency install terminated by signal ${result.signal}\n` : ''}`;
+  return {
+    name: 'OS test dependency preparation',
+    command,
+    ruleId: 'os-dependency-preflight',
+    critical: true,
+    status: 'failed',
+    exitCode: result.status,
+    signal: result.signal || null,
+    error: result.error ? { code: result.error.code, message: result.error.message } : null,
+    durationMs: Date.now() - started,
+    outputTail: output.slice(-4000),
+  };
+}
+
+function suiteNeedsWebsiteDependencies(suite) {
+  const packagePath = 'packages/consuelo-website';
+  const command = Array.isArray(suite?.command) ? suite.command : [];
+  return suite?.cwd === packagePath
+    || command.some((argument) => argument === packagePath || String(argument).startsWith(`${packagePath}/`));
+}
+
+function websiteDependenciesAreReady(root) {
+  const websiteRoot = path.join(root, 'packages', 'consuelo-website');
+  const packageJsonPath = path.join(websiteRoot, 'package.json');
+  const nodeModulesPath = path.join(websiteRoot, 'node_modules');
+  if (!fs.existsSync(packageJsonPath) || !fs.existsSync(nodeModulesPath)) return false;
+
+  const packageJson = readJson(packageJsonPath, {});
+  const requiresAstro = Boolean(
+    packageJson?.dependencies?.astro || packageJson?.devDependencies?.astro,
+  );
+  return !requiresAstro || fs.existsSync(path.join(nodeModulesPath, 'astro', 'package.json'));
+}
+
+function prepareWebsiteDependencies(root, suites) {
+  if (!suites.some(suiteNeedsWebsiteDependencies) || websiteDependenciesAreReady(root)) return null;
+
+  const websiteRoot = path.join(root, 'packages', 'consuelo-website');
+  const command = ['bun', 'install', '--frozen-lockfile'];
+  const started = Date.now();
+  const result = spawnSync(command[0], command.slice(1), {
+    cwd: websiteRoot,
+    encoding: 'utf8',
+    maxBuffer: 1024 * 1024 * 8,
+    timeout: testSuiteTimeoutMs(),
+    env: process.env,
+  });
+  const timedOut = result.error && result.error.code === 'ETIMEDOUT';
+  const signaled = Boolean(result.signal);
+  if (result.status === 0 && !timedOut && !signaled) return null;
+
+  const output = `${result.stdout || ''}${result.stderr || ''}${timedOut ? '\n[test-selection] website dependency install timed out\n' : ''}${signaled ? `\n[test-selection] website dependency install terminated by signal ${result.signal}\n` : ''}`;
+  return {
+    name: 'Website test dependency preparation',
+    command,
+    ruleId: 'website-dependency-preflight',
+    critical: true,
+    status: 'failed',
+    exitCode: result.status,
+    signal: result.signal || null,
+    error: result.error ? { code: result.error.code, message: result.error.message } : null,
+    durationMs: Date.now() - started,
+    outputTail: output.slice(-4000),
+  };
+}
+
+function runSuites(root, suites, base) {
+  for (const prepareDependencies of [prepareOsDependencies, prepareWebsiteDependencies]) {
+    const dependencyFailure = prepareDependencies(root, suites);
+    if (dependencyFailure) return [dependencyFailure];
+  }
+
   const results = [];
   for (const suite of suites) {
     const started = Date.now();
+    let cwd;
+    try {
+      cwd = resolveSuiteCwd(root, suite);
+    } catch (error) {
+      results.push({
+        name: suite.name,
+        command: suite.command,
+        cwd: suite.cwd || '.',
+        ruleId: suite.ruleId,
+        critical: suite.critical,
+        status: 'failed',
+        exitCode: null,
+        signal: null,
+        error: {
+          code: 'INVALID_SUITE_CWD',
+          message: error instanceof Error ? error.message : 'invalid suite cwd',
+        },
+        durationMs: Date.now() - started,
+        outputTail: '',
+      });
+      continue;
+    }
     const result = spawnSync(suite.command[0], suite.command.slice(1), {
-      cwd: root,
+      cwd,
       encoding: 'utf8',
-      maxBuffer: 1024 * 1024 * 8,
+      maxBuffer: TEST_SUITE_OUTPUT_MAX_BUFFER,
       timeout: testSuiteTimeoutMs(),
+      env: { ...process.env, NX_BASE: base, BASE_REF: base },
     });
     const timedOut = result.error && result.error.code === 'ETIMEDOUT';
     const signaled = Boolean(result.signal);
@@ -340,6 +553,7 @@ function runSuites(root, suites) {
     results.push({
       name: suite.name,
       command: suite.command,
+      cwd: suite.cwd || '.',
       ruleId: suite.ruleId,
       critical: suite.critical,
       status: result.status === 0 && !timedOut && !signaled ? 'passed' : 'failed',
@@ -360,7 +574,7 @@ function parseArgs(argv) {
     const raw = rest[i];
     if (!raw.startsWith('--')) { args._.push(raw); continue; }
     const [key, inline] = raw.slice(2).split('=', 2);
-    if (['json', 'run', 'no-run'].includes(key)) args[key] = true;
+    if (['json', 'run', 'no-run', 'committed-only'].includes(key)) args[key] = true;
     else {
       const value = inline !== undefined ? inline : rest[++i];
       if (args[key] === undefined) args[key] = value;
@@ -436,6 +650,7 @@ function markdownReport(registry, check) {
 function main() {
   const root = process.cwd();
   const args = parseArgs(process.argv.slice(2));
+  const platform = valueFor(args, 'platform') || process.platform;
   const registryPath = path.resolve(root, valueFor(args, 'registry') || DEFAULT_REGISTRY);
   if (args.command === 'generate') {
     const registry = buildRegistry(root);
@@ -448,7 +663,7 @@ function main() {
   if (args.command === 'nightly') {
     const outDir = valueFor(args, 'out-dir') || REPORT_DIR;
     fs.mkdirSync(outDir, { recursive: true });
-    const check = { ...select(registry, changedFiles(root, args)), runResults: [] };
+    const check = { ...select(registry, changedFiles(root, args), platform), runResults: [] };
     const date = new Date().toISOString().slice(0, 10);
     const jsonPath = path.join(outDir, `nightly-${date}.json`);
     const markdownPath = path.join(outDir, `nightly-${date}.md`);
@@ -460,13 +675,16 @@ function main() {
     print({ ...payload, jsonPath, markdownPath, latestJsonPath: path.join(outDir, 'latest.json'), latestMarkdownPath: path.join(outDir, 'latest.md') }, args.json);
     return;
   }
+  const base = valueFor(args, 'base') || 'origin/main';
   const files = changedFiles(root, args);
-  const selected = select(registry, files);
+  const selected = select(registry, files, platform);
   const run = args.run && !args['no-run'];
-  const runResults = run ? runSuites(root, selected.selectedSuites) : [];
+  const runResults = run ? runSuites(root, selected.selectedSuites, base) : [];
   const failedSuites = runResults.filter((result) => result.status !== 'passed');
   const passed = selected.level !== 'fail' && failedSuites.length === 0;
   const result = { kind: 'selection', passed, ...selected, run, runResults, failedSuites };
+  const out = valueFor(args, 'out');
+  if (out) writeJson(path.resolve(root, out), result);
   print(result, args.json);
   if (!passed) process.exit(1);
 }

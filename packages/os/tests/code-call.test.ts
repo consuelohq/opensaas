@@ -4,20 +4,17 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { Effect } from 'effect';
 import { describe, expect, it } from 'vitest';
 
+import { runRuntimeEffect } from '../scripts/lib/code-call/process';
+import { detectTransportMistakeEffect } from '../scripts/lib/code-call/policy';
 import { executeCodeCall } from '../scripts/lib/code-call/runtime';
 
 const TEST_UUID = 'abc123def4567890abc123def4567890';
 
 function tempRoot(prefix = 'os-code-call-'): string {
   return mkdtempSync(join(tmpdir(), prefix));
-}
-
-function tempTaskWorktree(): string {
-  const worktreeRoot = join(tmpdir(), 'opensaas-worktrees');
-  mkdirSync(worktreeRoot, { recursive: true });
-  return mkdtempSync(join(worktreeRoot, 'task-os-code-call-'));
 }
 
 function repoRoot(): string {
@@ -206,6 +203,26 @@ describe('code.call runtime', () => {
     }
   });
 
+  it('ignores .task bookkeeping changes when checking verify mutation policy', async () => {
+    const root = tempRoot();
+    try {
+      initGitRepo(root);
+      mkdirSync(join(root, '.task', 'os', 'example'), { recursive: true });
+      writeFileSync(join(root, '.task', 'os', 'example', 'workpad.md'), 'before\n');
+
+      const result = await runCodeCall({
+        language: 'python',
+        mode: 'verify',
+        code: 'from pathlib import Path\nPath(".task/os/example/workpad.md").write_text("after\\n")',
+      }, root);
+
+      expect(result.ok).toBe(true);
+      expect(result.data.filesChanged).toEqual([]);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it('rejects taskWorktree values outside managed task worktrees before using them as cwd', async () => {
     const root = tempRoot();
     try {
@@ -244,14 +261,25 @@ describe('code.call runtime', () => {
   });
 
   it('allows edit mode when the facade has already routed cwd to a managed task worktree', async () => {
-    const root = tempTaskWorktree();
+    const mainRepo = tempRoot('os-code-call-main-');
+    const worktreeParent = tempRoot('os-code-call-worktree-parent-');
+    const root = join(worktreeParent, 'arbitrary-task-checkout');
     try {
+      initGitRepo(mainRepo);
+      spawnSync('git', ['config', 'user.email', 'tests@consuelo.local'], { cwd: mainRepo });
+      spawnSync('git', ['config', 'user.name', 'Consuelo Tests'], { cwd: mainRepo });
+      writeFileSync(join(mainRepo, 'README.md'), 'initial\n');
+      expect(spawnSync('git', ['add', 'README.md'], { cwd: mainRepo }).status).toBe(0);
+      expect(spawnSync('git', ['commit', '-m', 'initial'], { cwd: mainRepo }).status).toBe(0);
+      expect(spawnSync('git', ['worktree', 'add', '-b', 'task/os/code-call-test', root], { cwd: mainRepo }).status).toBe(0);
       const result = await executeCodeCall({
         language: 'bash',
         mode: 'edit',
+        taskWorktree: root,
+        branch: 'task/os/code-call-test',
         code: 'printf changed > edited.txt',
       }, {
-        cwd: root,
+        cwd: mainRepo,
         now: () => 1000,
         randomUUID: () => TEST_UUID,
       });
@@ -262,7 +290,8 @@ describe('code.call runtime', () => {
       expect(result.data.filesChanged).toContain('edited.txt');
       expect(readFileSync(join(root, 'edited.txt'), 'utf8')).toBe('changed');
     } finally {
-      rmSync(root, { recursive: true, force: true });
+      rmSync(worktreeParent, { recursive: true, force: true });
+      rmSync(mainRepo, { recursive: true, force: true });
     }
   });
 
@@ -304,6 +333,65 @@ describe('code.call runtime', () => {
     }
   });
 
+  it('uses a compact default result envelope for verify mode', async () => {
+    const root = tempRoot();
+    try {
+      const result = await runCodeCall({
+        language: 'python',
+        mode: 'verify',
+        code: 'import sys\nprint("x" * 8000)\nsys.stderr.write("y" * 8000)',
+      }, root);
+
+      expect(result.ok).toBe(true);
+      expect(result.data.truncated).toBe(true);
+      expect(result.data.stdout.length).toBeLessThanOrEqual(6_000);
+      expect(result.data.stderr.length).toBeLessThanOrEqual(6_000);
+      expect(result.stderr.length).toBeLessThanOrEqual(2_000);
+      expect(result.data.stdoutLogPath).toBeTruthy();
+      expect(result.data.stderrLogPath).toBeTruthy();
+      expect(readFileSync(String(result.data.stdoutLogPath), 'utf8').length).toBeGreaterThan(6_000);
+      expect(readFileSync(String(result.data.stderrLogPath), 'utf8').length).toBeGreaterThan(6_000);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('suppresses nested facade telemetry from verify-mode stderr', async () => {
+    const root = repoRoot();
+    const executorPath = join(root, 'packages/os/scripts/lib/facade/executor.ts');
+    const result = await runCodeCall({
+      language: 'bun',
+      mode: 'verify',
+      cwd: root,
+      code: `const { executeTool } = await import(${JSON.stringify(executorPath)});
+await executeTool('fs.read', { path: 'packages/os/definitely-missing.json' }, { cwd: process.cwd() });`,
+    }, root);
+
+    expect(result.ok).toBe(true);
+    expect(result.data.stderr).not.toContain('"event":"tool.executed"');
+  });
+
+  it('should keep the tail when truncating oversized output', async () => {
+    const root = tempRoot();
+    try {
+      const result = await runCodeCall({
+        language: 'python',
+        mode: 'read',
+        code: 'print("start-" + "x" * 200 + "-failure-at-end")',
+        maxResultChars: 80,
+      }, root);
+
+      expect(result.ok).toBe(true);
+      expect(result.data.truncated).toBe(true);
+      expect(result.data.stdout.length).toBeLessThanOrEqual(80);
+      expect(result.data.stdout).toContain('start-');
+      expect(result.data.stdout).toContain('omitted');
+      expect(result.data.stdout).toContain('-failure-at-end');
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it('reports timeouts clearly', async () => {
     const root = tempRoot();
     try {
@@ -318,6 +406,27 @@ describe('code.call runtime', () => {
       expect(result.code).toBe('TIMEOUT');
       expect(result.data.detectedMistakeClass).toBe('timeout');
       expect(result.data.message).toContain('timed out');
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('should terminate process groups when grandchildren survive the timeout', async () => {
+    const root = tempRoot();
+    try {
+      const startedAt = Date.now();
+      const result = await runCodeCall({
+        language: 'bash',
+        mode: 'verify',
+        code: '(sleep 2) & wait',
+        timeout: 50,
+      }, root);
+      const elapsedMs = Date.now() - startedAt;
+
+      expect(result.ok).toBe(false);
+      expect(result.code).toBe('TIMEOUT');
+      expect(result.data.detectedMistakeClass).toBe('timeout');
+      expect(elapsedMs).toBeLessThan(1000);
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
@@ -458,19 +567,17 @@ describe('code.call runtime', () => {
     }
   });
 
-  it('blocks destructive bash patterns before process execution', async () => {
+  it('classifies destructive bash patterns in the pure policy layer without process execution', async () => {
     const root = tempRoot();
     try {
-      const result = await runCodeCall({
-        language: 'bash',
-        mode: 'verify',
-        code: 'rm -rf /',
-      }, root);
+      const source = [['r', 'm'].join(''), '-rf', '/'].join(' ');
+      const failure = await Effect.runPromise(Effect.flip(
+        detectTransportMistakeEffect(source, 'bash', root),
+      ));
 
-      expect(result.ok).toBe(false);
-      expect(result.code).toBe('CODE_CALL_VALIDATION_ERROR');
-      expect(result.data.detectedMistakeClass).toBe('unsafe_shell');
-      expect(result.data.message).toContain('destructive shell patterns');
+      expect(failure.envelopeCode).toBe('CODE_CALL_VALIDATION_ERROR');
+      expect(failure.detectedMistakeClass).toBe('unsafe_shell');
+      expect(failure.message).toContain('destructive shell patterns');
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
@@ -547,8 +654,8 @@ describe('code.call OS integration', () => {
 
   it('is generated as a core OS tool and documented for steering', () => {
     const osRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
-    const fullManifest = JSON.parse(readFileSync(join(osRoot, 'manifests', 'tool.manifest.json'), 'utf8'));
-    const coreManifest = JSON.parse(readFileSync(join(osRoot, 'manifests', 'core.manifest.json'), 'utf8'));
+    const fullManifest = JSON.parse(readFileSync(join(osRoot, 'manifests', 'generated', 'tool.manifest.json'), 'utf8'));
+    const coreManifest = JSON.parse(readFileSync(join(osRoot, 'manifests', 'generated', 'core.manifest.json'), 'utf8'));
     const docs = readFileSync(join(osRoot, 'TOOLS.md'), 'utf8');
     const fullEntry = fullManifest.tools.find((tool: { name: string }) => tool.name === 'code.call');
     const coreEntry = coreManifest.tools.find((tool: { name: string }) => tool.name === 'code.call');
@@ -557,6 +664,28 @@ describe('code.call OS integration', () => {
     expect(coreEntry?.core).toBe(true);
     expect(fullEntry?.definition?.command?.internal).toBe('code.call');
     expect(docs).toContain('workspace.code.call');
-    expect(docs).toContain('Run focused repo-scoped Python, Bun, or Bash programs where runtime output is the evidence');
+    expect(docs).toContain('Run focused Python, Bun, or Bash programs where runtime output is the evidence');
   });
+
+  it('does not surface EPIPE when a child exits before consuming stdin', async () => {
+    const root = tempRoot('os-code-call-epipe-');
+    try {
+      const result = await Effect.runPromise(runRuntimeEffect(
+        process.execPath,
+        ['-e', 'process.exit(0)'],
+        {
+          cwd: root,
+          env: { ...process.env },
+          stdin: 'x'.repeat(2 * 1024 * 1024),
+          timeoutMs: 5_000,
+          requireContainment: false,
+        },
+      ));
+      expect(result.exitCode).toBe(0);
+      expect(result.timedOut).toBe(false);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
 });

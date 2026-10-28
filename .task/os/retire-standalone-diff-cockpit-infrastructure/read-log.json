@@ -1,0 +1,8 @@
+{
+  "files": [
+    ".task/os/retire-standalone-diff-cockpit-infrastructure/verify.json",
+    "packages/diff-cockpit/tests/diff-cockpit.test.ts",
+    "packages/workspace/scripts/verify.js"
+  ],
+  "updatedAt": "2026-08-31T23:31:08.400Z"
+}

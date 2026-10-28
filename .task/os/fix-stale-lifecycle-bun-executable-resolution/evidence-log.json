@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/fix-stale-lifecycle-bun-executable-resolution",
+  "events": [
+    {
+      "id": "d7dae525-724a-451c-92b1-63ea2b23cb17",
+      "occurred_at": "2026-09-08T14:39:35.323Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/workspace-node-registry-routing.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/fix-stale-lifecycle-bun-executable-resolution",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/fix-stale-lifecycle-bun-executable-resolution"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-09-08T14:39:35.436Z"
+}

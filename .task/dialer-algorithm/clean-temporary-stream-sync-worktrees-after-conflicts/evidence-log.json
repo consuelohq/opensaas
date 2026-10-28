@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "worktree_id": "task/dialer-algorithm/clean-temporary-stream-sync-worktrees-after-conflicts",
+  "events": [
+    {
+      "id": "95e4f7fb-34a0-440f-b773-ec56ac183ef9",
+      "occurred_at": "2026-08-16T02:40:56.771Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/stream-sync.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer-algorithm/clean-temporary-stream-sync-worktrees-after-conflicts",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer-algorithm/clean-temporary-stream-sync-worktrees-after-conflicts"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-08-16T02:40:56.828Z"
+}

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_918578b97bf5",
+  "tmuxSession": "opensaas-workspace-agents-add-ko-social-persona-guide-918578b9",
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/add-ko-social-persona-guide",
+  "branch": "task/workspace-agents/add-ko-social-persona-guide",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-ko-social-persona-guide",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-ko-social-persona-guide",
+  "prNumber": 1365,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1365",
+  "createdAt": "2026-07-04T17:18:09.038Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-add-ko-social-persona-guide/.task/workspace-agents/add-ko-social-persona-guide/session.json"
+}

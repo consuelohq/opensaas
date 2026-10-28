@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_af52a5ebd6d1",
+  "tmuxSession": "opensaas-sites-april-changelog-data-af52a5eb",
+  "area": "sites",
+  "stream": "stream/sites",
+  "taskBranch": "task/sites/april-changelog-data",
+  "branch": "task/sites/april-changelog-data",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-april-changelog-data",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-april-changelog-data",
+  "prNumber": 1302,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1302",
+  "createdAt": "2026-06-30T23:31:58.859Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-april-changelog-data/.task/sites/april-changelog-data/session.json"
+}

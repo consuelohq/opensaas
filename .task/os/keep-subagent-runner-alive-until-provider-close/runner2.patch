@@ -1,0 +1,18 @@
+*** Begin Patch
+*** Update File: packages/os/scripts/lib/subagent/runner.ts
+@@
+ } catch (error: unknown) {
+   if (provider && !finished) {
+     signalProviderProcess(provider, 'SIGTERM');
+     scheduleProviderProcessEscalation(provider, 250);
+   }
+   finish('failed', 1, null, error instanceof Error ? error.message : String(error));
+ }
++
++process.on('beforeExit', () => {
++  if (finished) return;
++  if (provider && provider.exitCode === null && !provider.killed) {
++    setImmediate(() => undefined);
++    return;
++  }\n+  const exitCode = provider?.exitCode ?? 1;
++  finish(\n+    exitCode === 0 ? 'completed' : 'failed',\n+    exitCode,\n+    null,\n+    'runner event loop drained before provider close',\n+  );\n+});\n*** End Patch\n

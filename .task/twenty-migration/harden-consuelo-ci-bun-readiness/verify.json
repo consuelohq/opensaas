@@ -1,0 +1,383 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/twenty-migration/harden-consuelo-ci-bun-readiness",
+  "base": "origin/stream/twenty-migration",
+  "headSha": "b2c41afa3277a0a7d753e956cfe930336ca06077",
+  "changeHash": "15d1b65df8f56b2ee60c8fb4cef878a1abc814caa592e5688e4f29d1139cfec3",
+  "changedFiles": [
+    ".github/actions/consuelo-ci-setup/action.yaml",
+    ".github/workflows/consuelo-ci.yaml",
+    "packages/os/scripts/ci-plan.ts",
+    "packages/os/tests/ci-plan.test.ts",
+    "packages/os/tests/local-os-server-review-findings.test.ts",
+    "packages/workspace/scripts/ci/check-github-workflows.cjs",
+    "packages/workspace/test-selection.registry.json",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/github-workflow-policy.test.js",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "verifiedAt": "2026-08-15T03:13:05.599Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".github/actions/consuelo-ci-setup/action.yaml",
+        ".github/workflows/consuelo-ci.yaml",
+        ".task/tasks/twenty-migration/harden-consuelo-ci-bun-readiness.json",
+        ".task/twenty-migration/harden-consuelo-ci-bun-readiness/current.json",
+        ".task/twenty-migration/harden-consuelo-ci-bun-readiness/evidence-log.json",
+        ".task/twenty-migration/harden-consuelo-ci-bun-readiness/read-log.json",
+        ".task/twenty-migration/harden-consuelo-ci-bun-readiness/session.json",
+        ".task/twenty-migration/harden-consuelo-ci-bun-readiness/workpad.md",
+        "packages/os/scripts/ci-plan.ts",
+        "packages/os/tests/ci-plan.test.ts",
+        "packages/os/tests/local-os-server-review-findings.test.ts",
+        "packages/workspace/scripts/ci/check-github-workflows.cjs",
+        "packages/workspace/test-selection.registry.json",
+        "packages/workspace/test-selection.rules.json",
+        "packages/workspace/tests/github-workflow-policy.test.js",
+        "packages/workspace/tests/test-selection.test.js"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-test-selection",
+          "critical": true,
+          "reason": "Test-selection logic must prove discovery, mapping, and zero-suite policy.",
+          "matchedFiles": [
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "consuelo-ci-immutable-base",
+          "critical": true,
+          "reason": "Consuelo pull-request verification must use an immutable base commit and preserve the focused local OS server review contracts without selecting the broad OS package suite.",
+          "matchedFiles": [
+            ".github/workflows/consuelo-ci.yaml",
+            "packages/os/tests/local-os-server-review-findings.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "consuelo-ci-planner",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Consuelo CI planner changes have a focused routing contract and must not select the broad OS package suite.",
+          "matchedFiles": [
+            "packages/os/scripts/ci-plan.ts",
+            "packages/os/tests/ci-plan.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "native-os-workflow-contract",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Native OS distribution workflow and selector changes must run their exact cross-platform contracts without selecting unrelated full OS package tests.",
+          "matchedFiles": [
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "server-ci-task-contract",
+          "critical": true,
+          "reason": "Server CI changes must scope lint and typecheck to directly changed Twenty server runtime files while retaining dependency propagation.",
+          "matchedFiles": [
+            "packages/workspace/test-selection.registry.json",
+            "packages/workspace/test-selection.rules.json"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "auto:@consuelo/os:package-test",
+          "critical": false,
+          "reason": "Auto-discovered package test script for packages/os.",
+          "matchedFiles": [
+            "packages/os/tests/local-os-server-review-findings.test.ts"
+          ],
+          "origin": "auto"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true
+        },
+        {
+          "name": "Consuelo CI immutable base and local server review contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/local-os-server-review-findings.test.ts"
+          ],
+          "ruleId": "consuelo-ci-immutable-base",
+          "critical": true
+        },
+        {
+          "name": "Consuelo CI planner contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/ci-plan.test.ts"
+          ],
+          "ruleId": "consuelo-ci-planner",
+          "critical": true
+        },
+        {
+          "name": "native OS selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-os-native-tests.test.mjs"
+          ],
+          "ruleId": "native-os-workflow-contract",
+          "critical": true
+        },
+        {
+          "name": "native Windows workflow contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/windows-platform.test.ts",
+            "packages/os/tests/windows-bootstrap-source.test.ts"
+          ],
+          "ruleId": "native-os-workflow-contract",
+          "critical": true
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "ruleId": "native-os-workflow-contract",
+          "critical": true
+        },
+        {
+          "name": "changed GitHub workflow security checks",
+          "command": [
+            "node",
+            "packages/workspace/scripts/ci/check-github-workflows.cjs"
+          ],
+          "ruleId": "native-os-workflow-contract",
+          "critical": true
+        },
+        {
+          "name": "changed server task selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        },
+        {
+          "name": "TypeORM CLI compatibility contract",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace test selection tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/test-selection.test.js"
+          ],
+          "ruleId": "workspace-test-selection",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 2512,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-twenty-migration-harden-consuelo-ci-bun-readiness\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/test-selection.test.js \u001b[2m(\u001b[22m\u001b[2m34 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 2109\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m discovers and seeds the existing test inventory \u001b[33m 1097\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m34 passed\u001b[39m\u001b[22m\u001b[90m (34)\u001b[39m\n\u001b[2m   Start at \u001b[22m 23:13:00\n\u001b[2m   Duration \u001b[22m 2.19s\u001b[2m (transform 12ms, setup 0ms, import 19ms, tests 2.11s, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "Consuelo CI immutable base and local server review contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/local-os-server-review-findings.test.ts"
+          ],
+          "ruleId": "consuelo-ci-immutable-base",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 358,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-twenty-migration-harden-consuelo-ci-bun-readiness/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/local-os-server-review-findings.test.ts \u001b[2m(\u001b[22m\u001b[2m20 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 23\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m20 passed\u001b[39m\u001b[22m\u001b[90m (20)\u001b[39m\n\u001b[2m   Start at \u001b[22m 23:13:03\n\u001b[2m   Duration \u001b[22m 161ms\u001b[2m (transform 44ms, setup 0ms, import 79ms, tests 23ms, environment 0ms)\u001b[22m\n\n$ vitest run tests/local-os-server-review-findings.test.ts\n{\"level\":\"warn\",\"event\":\"trace.persistence_failed\",\"code\":\"TRACE_PERSISTENCE_FAILED\",\"message\":\"Cannot find module 'bun:sqlite'\\nRequire stack:\\n- /[REDACTED_SECRET].ts\",\"ts\":\"2026-08-15T03:13:03.397Z\"}\n"
+        },
+        {
+          "name": "Consuelo CI planner contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/ci-plan.test.ts"
+          ],
+          "ruleId": "consuelo-ci-planner",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 355,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-twenty-migration-harden-consuelo-ci-bun-readiness\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/ci-plan.test.ts \u001b[2m(\u001b[22m\u001b[2m13 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m13 passed\u001b[39m\u001b[22m\u001b[90m (13)\u001b[39m\n\u001b[2m   Start at \u001b[22m 23:13:03\n\u001b[2m   Duration \u001b[22m 88ms\u001b[2m (transform 22ms, setup 0ms, import 28ms, tests 2ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "native OS selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-os-native-tests.test.mjs"
+          ],
+          "ruleId": "native-os-workflow-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 63,
+          "outputTail": "Running focused-artifact native OS test plan.\n✔ parseCliArguments resolves comparison SHAs (0.850834ms)\n✔ parseCliArguments uses event SHAs when nx-set-shas leaves the base empty (0.060167ms)\n✔ parseCliArguments ignores zero SHAs and falls back to fetched Git history (0.04325ms)\n✔ filterRelevantNativeFiles keeps only OS native-test ownership paths (0.060916ms)\n✔ selectNativeTestPlan uses the focused artifact contract for the exact metering cleanup (0.067417ms)\n✔ selectNativeTestPlan retains the full distribution suite for every broader change (0.040667ms)\n✔ runSelectedNativeTests executes the selected Bun test command (0.331667ms)\nℹ tests 7\nℹ suites 0\nℹ pass 7\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 36.204\n"
+        },
+        {
+          "name": "native Windows workflow contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/windows-platform.test.ts",
+            "packages/os/tests/windows-bootstrap-source.test.ts"
+          ],
+          "ruleId": "native-os-workflow-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 376,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-twenty-migration-harden-consuelo-ci-bun-readiness\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/windows-bootstrap-source.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 4\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/windows-platform.test.ts \u001b[2m(\u001b[22m\u001b[2m18 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 14\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m27 passed\u001b[39m\u001b[22m\u001b[90m (27)\u001b[39m\n\u001b[2m   Start at \u001b[22m 23:13:04\n\u001b[2m   Duration \u001b[22m 117ms\u001b[2m (transform 59ms, setup 0ms, import 74ms, tests 17ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "GitHub workflow policy tests",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "ruleId": "native-os-workflow-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 169,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/workspace/tests/github-workflow-policy.test.js:\n(pass) GitHub workflow policy > delegates Consuelo routing to the Bun-native CI planner [8.94ms]\n(pass) GitHub workflow policy > uses one package-manager-neutral Consuelo CI setup boundary [0.13ms]\n(pass) GitHub workflow policy > includes local composite actions in workflow security policy [0.05ms]\n(pass) GitHub workflow policy > keeps OS-only Consuelo lanes off the root Yarn install [2.05ms]\n(pass) GitHub workflow policy > scopes legacy Twenty pull-request CI to Twenty-owned paths [11.85ms]\n(pass) GitHub workflow policy > does not include retired automation workflows [0.09ms]\n(pass) GitHub workflow policy > does not reference retired CI credentials or the disabled Chromatic job [1.36ms]\n(pass) GitHub workflow policy > does not retain privileged allowlist entries for deleted workflows [0.05ms]\n(pass) GitHub workflow policy > runs typecheck and test from the filtered frontend file set [0.04ms]\n(pass) GitHub workflow policy > installs Bun and scopes shared tasks to changed frontend files [0.05ms]\n(pass) GitHub workflow policy > scopes native OS distribution tests to relevant changed files [0.04ms]\n(pass) GitHub workflow policy > runs Docker Compose CI with the pgvector PostgreSQL image required by migrations [0.03ms]\n(pass) GitHub workflow policy > uses available hosted runners for the Server and Front build pipelines [0.06ms]\n(pass) GitHub workflow policy > builds Consuelo backend workspace dependencies before server typecheck [0.04ms]\n(pass) GitHub workflow policy > installs Bun before the Server unit-test job runs Bun package tests [0.03ms]\n(pass) GitHub workflow policy > allows enough time for Danger dependency installation and execution [0.03ms]\n(pass) GitHub workflow policy > explicitly allowlists the API breaking-changes workflow write permissions [0.03ms]\n\n 17 pass\n 0 fail\n 134 expect() calls\nRan 17 tests across 1 file. [162.00ms]\n"
+        },
+        {
+          "name": "changed GitHub workflow security checks",
+          "command": [
+            "node",
+            "packages/workspace/scripts/ci/check-github-workflows.cjs"
+          ],
+          "ruleId": "native-os-workflow-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 36,
+          "outputTail": "{\n  \"ok\": true,\n  \"baseRef\": \"origin/stream/twenty-migration\",\n  \"changedWorkflowFiles\": [],\n  \"changedActionFiles\": [],\n  \"findings\": []\n}\n"
+        },
+        {
+          "name": "changed server task selector tests",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/run-changed-server-task.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 66,
+          "outputTail": "No changed Twenty server runtime files require lint or typecheck.\nRunning server lint and baseline-aware typecheck for 1 directly changed file(s).\nTwenty server typecheck matched 1 known baseline diagnostic(s).\nRunning server lint and baseline-aware typecheck for 1 directly changed file(s).\nNo changed Twenty server schema files require GraphQL generation.\nNo changed Twenty server runtime files require migration generation.\nNo changesgeneratedTwenty server migration drift matched 2 known baseline operation(s).\ngeneratedgenerated✔ parseCliArguments resolves comparison SHAs (0.639875ms)\n✔ parseCliArguments selects GraphQL generation mode (0.05225ms)\n✔ parseCliArguments selects migration generation mode (0.0555ms)\n✔ filterServerTaskFiles excludes root and config-only triggers (0.078166ms)\n✔ filterGraphqlGenerationFiles keeps only server schema and generated files (0.067208ms)\n✔ buildEslintArguments selects the owning project config and stdin filename (0.053667ms)\n✔ ESLint diagnostic comparison tracks new error multiplicity without line numbers (0.174958ms)\n✔ runChangedFileLint accepts base-existing errors and rejects a new changed-file error (0.860125ms)\n✔ runChangedFileLint allows explicit lint baseline debt but rejects diagnostics beyond it (0.704042ms)\n✔ buildTypecheckArguments uses standard TypeScript without emitting (0.082541ms)\n✔ TypeScript diagnostic baseline comparison rejects only new diagnostic keys (0.181833ms)\n✔ runChangedServerTask skips Nx for config-only changes (0.287791ms)\n✔ runChangedServerTask executes lint and baseline-aware typecheck for server runtime changes (0.075542ms)\n✔ runChangedServerTask rejects a new TypeScript diagnostic outside the baseline (0.083167ms)\n✔ server lint configuration resolves the existing workspace rules project (0.372042ms)\n✔ runGraphqlGenerationCheck skips generation without schema changes (0.071625ms)\n✔ runGraphqlGenerationCheck generates and verifies committed outputs (0.149ms)\n✔ runMigrationGenerationCheck skips generation without server runtime changes (0.061417ms)\n✔ runMigrationGenerationCheck accepts a no-change TypeORM exit (0.085166ms)\n✔ runMigrationGenerationCheck accepts and removes exact known migration drift (0.164459ms)\n✔ runMigrationGenerationCheck rejects changed drift beyond the baseline (0.104916ms)\n✔ runMigrationGenerationCheck rejects and removes generated drift (0.098959ms)\nℹ tests 22\nℹ suites 0\nℹ pass 22\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 41.947708\n"
+        },
+        {
+          "name": "TypeORM CLI compatibility contract",
+          "command": [
+            "node",
+            "--test",
+            "packages/workspace/tests/typeorm-cli-contract.test.mjs"
+          ],
+          "ruleId": "server-ci-task-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 876,
+          "outputTail": "✔ Twenty server uses the Node 24-compatible TypeORM ts-node wrapper (0.288125ms)\n✔ the configured TypeORM wrapper resolves from the installed package (817.70775ms)\nℹ tests 2\nℹ suites 0\nℹ pass 2\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 851.283666\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

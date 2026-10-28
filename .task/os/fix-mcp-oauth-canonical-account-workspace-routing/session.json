@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_ba77979d08a3",
+  "tmuxSession": "opensaas-os-fix-mcp-oauth-canonical-account-workspace-routin-ba77979d",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-mcp-oauth-canonical-account-workspace-routing",
+  "branch": "task/os/fix-mcp-oauth-canonical-account-workspace-routing",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-mcp-oauth-canonical-account-workspace-routing",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-mcp-oauth-canonical-account-workspace-routing",
+  "prNumber": 1976,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1976",
+  "createdAt": "2026-08-14T23:08:51.224Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-fix-mcp-oauth-canonical-account-workspace-routing/.task/os/fix-mcp-oauth-canonical-account-workspace-routing/session.json"
+}

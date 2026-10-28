@@ -1,0 +1,150 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace-agents/promote-pr-review-collector-to-github-reviews",
+  "base": "origin/stream/workspace-agents",
+  "headSha": "2c28ea7a7629cbb9bce2ee1c5ca4b3ff483f5f0a",
+  "changeHash": "250766770805e1721edf1163c8ad24771d1aef7b5cf4e1f4f8ab12285825d233",
+  "changedFiles": [
+    "packages/workspace/TOOLS.md",
+    "packages/workspace/manifests/core-manifest.json",
+    "packages/workspace/manifests/tool-manifest.json",
+    "packages/workspace/scripts/github.js",
+    "packages/workspace/scripts/lib/pr-review-collector.js",
+    "packages/workspace/scripts/pr-review.js",
+    "packages/workspace/scripts/tools-search.ts",
+    "packages/workspace/tests/github-pr-reviews.test.ts",
+    "packages/workspace/tests/pr-review.test.js",
+    "packages/workspace/tests/tools-search-v2.test.ts",
+    "packages/workspace/tooling/tool-manifest.json"
+  ],
+  "verifiedAt": "2026-07-03T09:40:40.901Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/workspace-agents/promote-pr-review-collector-to-github-reviews.json",
+        ".task/workspace-agents/promote-pr-review-collector-to-github-reviews/current.json",
+        ".task/workspace-agents/promote-pr-review-collector-to-github-reviews/session.json",
+        ".task/workspace-agents/promote-pr-review-collector-to-github-reviews/workpad.md",
+        "packages/workspace/TOOLS.md",
+        "packages/workspace/manifests/core-manifest.json",
+        "packages/workspace/manifests/tool-manifest.json",
+        "packages/workspace/scripts/github.js",
+        "packages/workspace/scripts/lib/pr-review-collector.js",
+        "packages/workspace/scripts/pr-review.js",
+        "packages/workspace/scripts/tools-search.ts",
+        "packages/workspace/tests/github-pr-reviews.test.ts",
+        "packages/workspace/tests/pr-review.test.js",
+        "packages/workspace/tests/tools-search-v2.test.ts",
+        "packages/workspace/tooling/tool-manifest.json"
+      ],
+      "matchedRules": [
+        {
+          "id": "workspace-facade",
+          "critical": true,
+          "reason": "Workspace facade and manifest changes must prove typed tool input contracts.",
+          "matchedFiles": [
+            "packages/workspace/tooling/tool-manifest.json"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "workspace-audit-docs",
+          "critical": false,
+          "reason": "Workspace script/docs changes should keep audit behavior covered.",
+          "matchedFiles": [
+            "packages/workspace/TOOLS.md"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "workspace facade input contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/facade/facade.test.ts",
+            "--test-name-pattern",
+            "validates input"
+          ],
+          "ruleId": "workspace-facade",
+          "critical": true
+        },
+        {
+          "name": "workspace audit tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/audit/audit.test.ts"
+          ],
+          "ruleId": "workspace-audit-docs",
+          "critical": false
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "workspace facade input contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/workspace/tests/facade/facade.test.ts",
+            "--test-name-pattern",
+            "validates input"
+          ],
+          "ruleId": "workspace-facade",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 212,
+          "outputTail": "r task.current\n(pass) typed facade executor > validates input for task.ensureSynced [0.06ms]\n{\"level\":\"error\",\"tool\":\"task.exec\",\"command\":\"workspace task.exec\",\"implementationCommand\":\"workspace task.exec\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-07-03T09:40:40.225Z\"}\n(pass) typed facade executor > validates input for task.exec [0.12ms]\n(pass) typed facade executor > validates input for task.finish\n{\"level\":\"error\",\"tool\":\"task.init\",\"command\":\"workspace task.init\",\"implementationCommand\":\"workspace task.init\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-07-03T09:40:40.225Z\"}\n(pass) typed facade executor > validates input for task.init [0.23ms]\n(pass) typed facade executor > validates input for task.merge [0.10ms]\n(pass) typed facade executor > validates input for task.pr [0.11ms]\n(pass) typed facade executor > validates input for task.prs\n{\"level\":\"error\",\"tool\":\"task.push\",\"command\":\"workspace task.push\",\"implementationCommand\":\"workspace task.push\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-07-03T09:40:40.226Z\"}\n(pass) typed facade executor > validates input for task.push [0.26ms]\n{\"level\":\"error\",\"tool\":\"task.start\",\"command\":\"workspace task.start\",\"implementationCommand\":\"workspace task.start\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-07-03T09:40:40.226Z\"}\n(pass) typed facade executor > validates input for task.start [0.25ms]\n(pass) typed facade executor > validates input for taskMeta.smoke\n{\"level\":\"error\",\"tool\":\"tmp\",\"command\":\"workspace tmp\",\"implementationCommand\":\"workspace tmp\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-07-03T09:40:40.226Z\"}\n(pass) typed facade executor > validates input for tmp [0.24ms]\n{\"level\":\"error\",\"tool\":\"tools.search\",\"command\":\"workspace tools.search\",\"implementationCommand\":\"workspace tools.search\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":true,\"mutating\":false},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-07-03T09:40:40.227Z\"}\n(pass) typed facade executor > validates input for tools.search [0.25ms]\n(pass) typed facade executor > validates input for verify [0.09ms]\n(pass) typed facade executor > validates input for wait [0.14ms]\n(pass) typed facade executor > validates input for website.deploy [0.08ms]\n{\"level\":\"error\",\"tool\":\"subagent\",\"command\":\"workspace subagent\",\"implementationCommand\":\"workspace subagent\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-07-03T09:40:40.227Z\"}\n(pass) typed facade executor > validates input for subagent [0.32ms]\n{\"level\":\"error\",\"tool\":\"media.svg\",\"command\":\"workspace media.svg\",\"implementationCommand\":\"workspace media:svg\",\"durationMs\":0,\"exitCode\":1,\"traceId\":\"trc_abc123def456\",\"ok\":false,\"code\":\"VALIDATION_ERROR\",\"capabilities\":{\"readOnly\":false,\"mutating\":true},\"event\":\"tool.executed\",\"message\":\"tool.executed\",\"ts\":\"2026-07-03T09:40:40.228Z\"}\n(pass) typed facade executor > validates input for media.svg [0.35ms]\n\n 126 pass\n 434 filtered out\n 0 fail\n 59 expect() calls\nRan 126 tests across 1 file. [204.00ms]\n"
+        },
+        {
+          "name": "workspace audit tests",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/audit/audit.test.ts"
+          ],
+          "ruleId": "workspace-audit-docs",
+          "critical": false,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 479,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-workspace-agents-promote-pr-review-collector-to-github-reviews\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/audit/audit.test.ts \u001b[2m(\u001b[22m\u001b[2m1 test\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 86\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m   Start at \u001b[22m 05:40:40\n\u001b[2m   Duration \u001b[22m 209ms\u001b[2m (transform 54ms, setup 0ms, import 59ms, tests 86ms, environment 0ms)\u001b[22m\n\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

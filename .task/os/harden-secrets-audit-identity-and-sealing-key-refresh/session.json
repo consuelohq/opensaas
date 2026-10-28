@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_3437cdc0c9c6",
+  "tmuxSession": "opensaas-os-harden-secrets-audit-identity-and-sealing-key-re-3437cdc0",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/harden-secrets-audit-identity-and-sealing-key-refresh",
+  "branch": "task/os/harden-secrets-audit-identity-and-sealing-key-refresh",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-harden-secrets-audit-identity-and-sealing-key-refresh",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-harden-secrets-audit-identity-and-sealing-key-refresh",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2199,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2199",
+  "createdAt": "2026-08-26T05:01:00.802Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-harden-secrets-audit-identity-and-sealing-key-refresh/.task/os/harden-secrets-audit-identity-and-sealing-key-refresh/session.json"
+}

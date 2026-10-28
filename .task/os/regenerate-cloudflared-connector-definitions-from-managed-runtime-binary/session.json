@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_7aa12e2fc3f9",
+  "tmuxSession": "opensaas-os-regenerate-cloudflared-connector-definitions-fro-7aa12e2f",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/regenerate-cloudflared-connector-definitions-from-managed-runtime-binary",
+  "branch": "task/os/regenerate-cloudflared-connector-definitions-from-managed-runtime-binary",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-regenerate-cloudflared-connector-definitions-from-managed-runtime-binary",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-regenerate-cloudflared-connector-definitions-from-managed-runtime-binary",
+  "prNumber": 2124,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2124",
+  "createdAt": "2026-08-16T04:11:16.932Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-regenerate-cloudflared-connector-definitions-from-managed-runtime-binary/.task/os/regenerate-cloudflared-connector-definitions-from-managed-runtime-binary/session.json"
+}

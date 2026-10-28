@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_a4cc61341039",
+  "tmuxSession": "opensaas-os-anchor-caddy-worker-topology-to-stable-pool-base-a4cc6134",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/anchor-caddy-worker-topology-to-stable-pool-base",
+  "branch": "task/os/anchor-caddy-worker-topology-to-stable-pool-base",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-anchor-caddy-worker-topology-to-stable-pool-base",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-anchor-caddy-worker-topology-to-stable-pool-base",
+  "prNumber": 2110,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2110",
+  "createdAt": "2026-08-16T03:16:39.531Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-anchor-caddy-worker-topology-to-stable-pool-base/.task/os/anchor-caddy-worker-topology-to-stable-pool-base/session.json"
+}

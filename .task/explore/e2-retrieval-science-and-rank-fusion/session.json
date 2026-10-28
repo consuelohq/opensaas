@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_19b844a60485",
+  "tmuxSession": "opensaas-explore-e2-retrieval-science-and-rank-fusion-19b844a6",
+  "area": "explore",
+  "stream": "stream/explore",
+  "taskBranch": "task/explore/e2-retrieval-science-and-rank-fusion",
+  "branch": "task/explore/e2-retrieval-science-and-rank-fusion",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-explore-e2-retrieval-science-and-rank-fusion",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-explore-e2-retrieval-science-and-rank-fusion",
+  "prNumber": 2061,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2061",
+  "createdAt": "2026-08-15T10:28:32.766Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-explore-e2-retrieval-science-and-rank-fusion/.task/explore/e2-retrieval-science-and-rank-fusion/session.json"
+}

@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/fix-fresh-install-launcher-and-ux",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2537,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2537",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-fresh-install-launcher-and-ux",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_5d949817ef85",
+  "tmuxSession": "opensaas-os-fix-fresh-install-launcher-and-ux-5d949817",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-fresh-install-launcher-and-ux/.task/session.json",
+  "createdAt": "2026-09-22T19:55:20.008Z"
+}

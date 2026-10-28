@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/launcher-nodes-ui-and-pricing-ux",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 1890,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1890",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1890",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1890/launcher-nodes-ui-and-pricing-ux",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1890",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1890/launcher-nodes-ui-and-pricing-ux",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-launcher-nodes-ui-and-pricing-ux",
+  "taskSession": "tsk_cf51f00b8469",
+  "tmuxSession": "opensaas-os-launcher-nodes-ui-and-pricing-ux-cf51f00b",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-launcher-nodes-ui-and-pricing-ux/.task/os/launcher-nodes-ui-and-pricing-ux/session.json",
+  "createdAt": "2026-08-12T14:14:46.067Z"
+}

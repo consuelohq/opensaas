@@ -1,0 +1,16 @@
+{
+  "area": "explore",
+  "stream": "stream/explore",
+  "taskBranch": "task/explore/bound-interactive-explore-embedding-failure-latency",
+  "baseBranch": "stream/explore",
+  "sourceBranch": "stream/explore",
+  "startFrom": "stream",
+  "prNumber": 2412,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2412",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-explore-bound-interactive-explore-embedding-failure-latency",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_0e8ccbc4acc1",
+  "tmuxSession": "opensaas-explore-bound-interactive-explore-embedding-failure-late-0e8ccbc4",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-explore-bound-interactive-explore-embedding-failure-latency/.task/session.json",
+  "createdAt": "2026-09-08T14:34:32.708Z"
+}

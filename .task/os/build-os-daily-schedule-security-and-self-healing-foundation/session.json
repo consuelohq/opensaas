@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_12049b349491",
+  "tmuxSession": "opensaas-os-build-os-daily-schedule-security-and-self-healin-12049b34",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/build-os-daily-schedule-security-and-self-healing-foundation",
+  "branch": "task/os/build-os-daily-schedule-security-and-self-healing-foundation",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-build-os-daily-schedule-security-and-self-healing-foundation",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-build-os-daily-schedule-security-and-self-healing-foundation",
+  "prNumber": 1933,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1933",
+  "createdAt": "2026-08-14T01:21:28.153Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-build-os-daily-schedule-security-and-self-healing-foundation/.task/os/build-os-daily-schedule-security-and-self-healing-foundation/session.json"
+}

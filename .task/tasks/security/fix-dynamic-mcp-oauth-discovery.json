@@ -1,0 +1,19 @@
+{
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/fix-dynamic-mcp-oauth-discovery",
+  "baseBranch": "stream/security",
+  "sourceBranch": "stream/security",
+  "startFrom": "stream",
+  "prNumber": 1291,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1291",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1291",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1291/fix-dynamic-mcp-oauth-discovery",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1291",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1291/fix-dynamic-mcp-oauth-discovery",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-dynamic-mcp-oauth-discovery",
+  "taskSession": "tsk_626ef91a35ce",
+  "tmuxSession": "opensaas-security-fix-dynamic-mcp-oauth-discovery-626ef91a",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-dynamic-mcp-oauth-discovery/.task/security/fix-dynamic-mcp-oauth-discovery/session.json",
+  "createdAt": "2026-06-30T19:47:28.381Z"
+}

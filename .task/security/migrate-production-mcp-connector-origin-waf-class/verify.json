@@ -1,0 +1,64 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/security/migrate-production-mcp-connector-origin-waf-class",
+  "base": "origin/task/security/migrate-production-mcp-connector-origin-waf-class",
+  "headSha": "5d49b0cadffad795af7cdaf3231fdeda00a34b67",
+  "changeHash": "34d1b955d083988cba0789229ee664299a86f7b1f99242faf36467ef0e27ebd8",
+  "changedFiles": [
+    ".github/workflows/consuelo-production-release.yaml",
+    "packages/os/scripts/lib/managed-os-mcp-origin-class-migration.ts",
+    "packages/os/scripts/migrate-managed-os-mcp-origin-class.ts",
+    "packages/os/tests/managed-os-mcp-origin-class-migration.test.ts"
+  ],
+  "verifiedAt": "2026-07-11T20:45:30.947Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".github/workflows/consuelo-production-release.yaml",
+        ".task/security/migrate-production-mcp-connector-origin-waf-class/current.json",
+        ".task/security/migrate-production-mcp-connector-origin-waf-class/evidence-log.json",
+        ".task/security/migrate-production-mcp-connector-origin-waf-class/read-log.json",
+        ".task/security/migrate-production-mcp-connector-origin-waf-class/session.json",
+        ".task/security/migrate-production-mcp-connector-origin-waf-class/workpad.md",
+        ".task/tasks/security/migrate-production-mcp-connector-origin-waf-class.json",
+        "packages/os/scripts/lib/managed-os-mcp-origin-class-migration.ts",
+        "packages/os/scripts/migrate-managed-os-mcp-origin-class.ts",
+        "packages/os/tests/managed-os-mcp-origin-class-migration.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [
+      {
+        "category": "database-script",
+        "file": "packages/os/scripts/lib/managed-os-mcp-origin-class-migration.ts",
+        "severity": "warning",
+        "message": "database reset/migration/sync script changed"
+      }
+    ],
+    "findings": []
+  },
+  "commandVersion": 2
+}

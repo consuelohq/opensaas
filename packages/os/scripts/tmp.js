@@ -31,7 +31,7 @@ function printHelp() {
     '  list                       list temp files',
     '  path <name>                print full path to a temp file',
     '  clean                      remove all temp files',
-    '  save <name> <title>        write temp file to supabase memories',
+    '  save <name> <title>        write temp file to local project memory',
     '  checklist <name> [items]   create a checklist. add items and check off as you go.',
     '',
     'options:',
@@ -80,25 +80,33 @@ function atomicWrite(dest, content) {
 }
 
 async function readStdin() {
-  const chunks = [];
-  for await (const chunk of process.stdin) chunks.push(chunk);
-  return Buffer.concat(chunks).toString('utf8');
+  try {
+    const chunks = [];
+    for await (const chunk of process.stdin) chunks.push(chunk);
+    return Buffer.concat(chunks).toString('utf8');
+  } catch (error) {
+    throw error;
+  }
 }
 
 async function cmdWrite(name, content, args) {
-  ensureDir();
-  let data;
-  if (args.stdin) {
-    data = await readStdin();
-  } else if (content) {
-    data = content;
-  } else {
-    throw new Error('provide content as argument or use --stdin');
-  }
+  try {
+    ensureDir();
+    let data;
+    if (args.stdin) {
+      data = await readStdin();
+    } else if (content) {
+      data = content;
+    } else {
+      throw new Error('provide content as argument or use --stdin');
+    }
 
-  const dest = filePath(name, args.ext);
-  const result = atomicWrite(dest, data);
-  writeStdout(`${result.path}  (${result.bytes} bytes)`);
+    const dest = filePath(name, args.ext);
+    const result = atomicWrite(dest, data);
+    writeStdout(`${result.path}  (${result.bytes} bytes)`);
+  } catch (error) {
+    throw error;
+  }
 }
 
 function cmdRead(name, args) {
@@ -151,9 +159,9 @@ async function cmdSave(name, title, args) {
   const fp = filePath(name, args.ext);
   if (!fs.existsSync(fp)) throw new Error(`not found: ${fp}`);
 
-  // shell out to context save
+  // shell out to memory save
   const { execFileSync } = require('child_process');
-  const scriptPath = path.join(__dirname, 'context.js');
+  const scriptPath = path.join(__dirname, 'memory.js');
   const result = execFileSync('bun', [scriptPath, 'save', title, fp, '--category', 'handoff'], {
     encoding: 'utf8',
     stdio: ['pipe', 'pipe', 'pipe'],
@@ -177,41 +185,45 @@ function cmdChecklist(name, items, args) {
 }
 
 async function main() {
-  const args = parseArgs(process.argv.slice(2));
-  if (args.help || args.positional.length === 0) { printHelp(); return; }
+  try {
+    const args = parseArgs(process.argv.slice(2));
+    if (args.help || args.positional.length === 0) { printHelp(); return; }
 
-  const command = args.positional[0];
+    const command = args.positional[0];
 
-  switch (command) {
-    case 'write':
-      if (!args.positional[1]) throw new Error('usage: bun run tmp -- write <name> <content>');
-      await cmdWrite(args.positional[1], args.positional.slice(2).join(' '), args);
-      break;
-    case 'read':
-      if (!args.positional[1]) throw new Error('usage: bun run tmp -- read <name>');
-      cmdRead(args.positional[1], args);
-      break;
-    case 'path':
-      if (!args.positional[1]) throw new Error('usage: bun run tmp -- path <name>');
-      cmdPath(args.positional[1], args);
-      break;
-    case 'list':
-    case 'ls':
-      cmdList();
-      break;
-    case 'clean':
-      cmdClean();
-      break;
-    case 'save':
-      if (!args.positional[1] || !args.positional[2]) throw new Error('usage: bun run tmp -- save <name> <title>');
-      await cmdSave(args.positional[1], args.positional[2], args);
-      break;
-    case 'checklist':
-      if (!args.positional[1]) throw new Error('usage: bun run tmp -- checklist <name> [item1] [item2] ...');
-      cmdChecklist(args.positional[1], args.positional.slice(2), args);
-      break;
-    default:
-      throw new Error(`unknown command: ${command}. run --help for usage.`);
+    switch (command) {
+      case 'write':
+        if (!args.positional[1]) throw new Error('usage: bun run tmp -- write <name> <content>');
+        await cmdWrite(args.positional[1], args.positional.slice(2).join(' '), args);
+        break;
+      case 'read':
+        if (!args.positional[1]) throw new Error('usage: bun run tmp -- read <name>');
+        cmdRead(args.positional[1], args);
+        break;
+      case 'path':
+        if (!args.positional[1]) throw new Error('usage: bun run tmp -- path <name>');
+        cmdPath(args.positional[1], args);
+        break;
+      case 'list':
+      case 'ls':
+        cmdList();
+        break;
+      case 'clean':
+        cmdClean();
+        break;
+      case 'save':
+        if (!args.positional[1] || !args.positional[2]) throw new Error('usage: bun run tmp -- save <name> <title>');
+        await cmdSave(args.positional[1], args.positional[2], args);
+        break;
+      case 'checklist':
+        if (!args.positional[1]) throw new Error('usage: bun run tmp -- checklist <name> [item1] [item2] ...');
+        cmdChecklist(args.positional[1], args.positional.slice(2), args);
+        break;
+      default:
+        throw new Error(`unknown command: ${command}. run --help for usage.`);
+    }
+  } catch (error) {
+    throw error;
   }
 }
 

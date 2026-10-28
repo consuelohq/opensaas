@@ -1,0 +1,166 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/refine-production-auth-login-visual-parity",
+  "base": "stream/os",
+  "headSha": "40e29e285794c28e083de7a9eb8532e2c690399e",
+  "changeHash": "6057df94707c4204140e60649554dc4ee1bb6fae4ba76f977830de05a9b4c5eb",
+  "changedFiles": [
+    "packages/os/cloudflare/os-device-authority/src/routes/web-auth.ts",
+    "packages/os/tests/os-universal-login.test.ts"
+  ],
+  "verifiedAt": "2026-08-14T10:16:51.206Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/refine-production-auth-login-visual-parity/current.json",
+        ".task/os/refine-production-auth-login-visual-parity/evidence-log.json",
+        ".task/os/refine-production-auth-login-visual-parity/read-log.json",
+        ".task/os/refine-production-auth-login-visual-parity/session.json",
+        ".task/os/refine-production-auth-login-visual-parity/verify.json",
+        ".task/os/refine-production-auth-login-visual-parity/workpad.md",
+        ".task/tasks/os/refine-production-auth-login-visual-parity.json",
+        "packages/os/cloudflare/os-device-authority/src/routes/web-auth.ts",
+        "packages/os/tests/os-universal-login.test.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "os-cloud-first-auth-onboarding",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Cloud-first Consuelo OS login, canonical signup, workspace trial, and provisioning handoff changes must prove the exact browser auth, managed-cloud, installer-lifecycle, launcher, Worker, and syntax contracts without selecting unrelated package-wide OS tests.",
+          "matchedFiles": [
+            "packages/os/cloudflare/os-device-authority/src/routes/web-auth.ts",
+            "packages/os/tests/os-universal-login.test.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "OS cloud-first auth onboarding contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/os-universal-login.test.ts",
+            "tests/cloud-first-web-onboarding.test.ts",
+            "tests/managed-cloud-one-click-provisioning.test.ts",
+            "tests/managed-cloud-one-click-runner.test.ts",
+            "tests/managed-cloud-node-enrollment.test.ts",
+            "tests/managed-cloud-node-lifecycle-onboarding.test.ts",
+            "tests/launcher-nodes-control-plane.test.ts",
+            "tests/managed-cloud-pricing.test.ts"
+          ],
+          "ruleId": "os-cloud-first-auth-onboarding",
+          "critical": true
+        },
+        {
+          "name": "OS cloud-first auth onboarding Worker contract",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/os-device-authority-worker.test.ts"
+          ],
+          "ruleId": "os-cloud-first-auth-onboarding",
+          "critical": true
+        },
+        {
+          "name": "OS cloud-first auth onboarding syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "ruleId": "os-cloud-first-auth-onboarding",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "OS cloud-first auth onboarding contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/os-universal-login.test.ts",
+            "tests/cloud-first-web-onboarding.test.ts",
+            "tests/managed-cloud-one-click-provisioning.test.ts",
+            "tests/managed-cloud-one-click-runner.test.ts",
+            "tests/managed-cloud-node-enrollment.test.ts",
+            "tests/managed-cloud-node-lifecycle-onboarding.test.ts",
+            "tests/launcher-nodes-control-plane.test.ts",
+            "tests/managed-cloud-pricing.test.ts"
+          ],
+          "ruleId": "os-cloud-first-auth-onboarding",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 766,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-refine-production-auth-login-visual-parity/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/managed-cloud-pricing.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 5\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-one-click-provisioning.test.ts \u001b[2m(\u001b[22m\u001b[2m4 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 23\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/cloud-first-web-onboarding.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 28\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/launcher-nodes-control-plane.test.ts \u001b[2m(\u001b[22m\u001b[2m7 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 26\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-universal-login.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 37\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-node-lifecycle-onboarding.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 423\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m builds deterministic noninteractive installer args from the cloud descriptor \u001b[33m 419\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-node-enrollment.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 415\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m persists one owner-only node keypair and reuses it across enrollment retries \u001b[33m 401\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/managed-cloud-one-click-runner.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m8 passed\u001b[39m\u001b[22m\u001b[90m (8)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m46 passed\u001b[39m\u001b[22m\u001b[90m (46)\u001b[39m\n\u001b[2m   Start at \u001b[22m 06:16:48\n\u001b[2m   Duration \u001b[22m 563ms\u001b[2m (transform 1.57s, setup 0ms, import 1.80s, tests 959ms, environment 1ms)\u001b[22m\n\n$ vitest run tests/os-universal-login.test.ts tests/cloud-first-web-onboarding.test.ts tests/managed-cloud-one-click-provisioning.test.ts tests/managed-cloud-one-click-runner.test.ts tests/managed-cloud-node-enrollment.test.ts tests/managed-cloud-node-lifecycle-onboarding.test.ts tests/launcher-nodes-control-plane.test.ts tests/managed-cloud-pricing.test.ts\n"
+        },
+        {
+          "name": "OS cloud-first auth onboarding Worker contract",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/os-device-authority-worker.test.ts"
+          ],
+          "ruleId": "os-cloud-first-auth-onboarding",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 605,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-refine-production-auth-login-visual-parity\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/os-device-authority-worker.test.ts \u001b[2m(\u001b[22m\u001b[2m26 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 56\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m26 passed\u001b[39m\u001b[22m\u001b[90m (26)\u001b[39m\n\u001b[2m   Start at \u001b[22m 06:16:49\n\u001b[2m   Duration \u001b[22m 334ms\u001b[2m (transform 184ms, setup 0ms, import 224ms, tests 56ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "OS cloud-first auth onboarding syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "ruleId": "os-cloud-first-auth-onboarding",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1497,
+          "outputTail": "workspace script syntax checks passed\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

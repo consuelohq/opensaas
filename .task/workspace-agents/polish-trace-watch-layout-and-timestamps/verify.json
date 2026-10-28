@@ -1,0 +1,99 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/workspace-agents/polish-trace-watch-layout-and-timestamps",
+  "base": "stream/workspace-agents",
+  "headSha": "7b50e8ff84ce1bb85be227314cf01d8e1bde9632",
+  "changeHash": "5220eb63e5f41dcfba89fc00bff0583fed2659a823d18255f15885170b0e7ac8",
+  "changedFiles": [
+    "packages/workspace/scripts/trace-home/model.ts",
+    "packages/workspace/scripts/trace-home/text-renderer.ts",
+    "packages/workspace/tests/trace-home.test.ts",
+    "packages/workspace/tests/trace-watch.test.ts",
+    "scripts/operator/trace-watch.ts"
+  ],
+  "verifiedAt": "2026-06-24T03:48:06.391Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/workspace-agents/polish-trace-watch-layout-and-timestamps.json",
+        ".task/workspace-agents/polish-trace-watch-layout-and-timestamps/current.json",
+        ".task/workspace-agents/polish-trace-watch-layout-and-timestamps/session.json",
+        ".task/workspace-agents/polish-trace-watch-layout-and-timestamps/workpad.md",
+        "packages/workspace/scripts/trace-home/model.ts",
+        "packages/workspace/scripts/trace-home/text-renderer.ts",
+        "packages/workspace/tests/trace-home.test.ts",
+        "packages/workspace/tests/trace-watch.test.ts",
+        "scripts/operator/trace-watch.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "trace-watch",
+          "critical": true,
+          "reason": "Trace renderer changes must compile.",
+          "matchedFiles": [
+            "scripts/operator/trace-watch.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "trace watch build",
+          "command": [
+            "bun",
+            "build",
+            "scripts/operator/trace-watch.ts",
+            "--target=bun",
+            "--outfile=/tmp/trace-watch-test-selection.js"
+          ],
+          "ruleId": "trace-watch",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "trace watch build",
+          "command": [
+            "bun",
+            "build",
+            "scripts/operator/trace-watch.ts",
+            "--target=bun",
+            "--outfile=/tmp/trace-watch-test-selection.js"
+          ],
+          "ruleId": "trace-watch",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 18,
+          "outputTail": "Bundled 1 module in 13ms\n\n  trace-watch-test-selection.js  38.88 KB  (entry point)\n\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

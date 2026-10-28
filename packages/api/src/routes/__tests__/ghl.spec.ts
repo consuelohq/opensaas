@@ -166,11 +166,11 @@ beforeEach(() => {
 });
 
 // ===========================================================
-// POST /v1/integrations/ghl/oauth — start OAuth flow
+// POST /v1/integrations/leadconnector/oauth — start OAuth flow
 // ===========================================================
 
-describe('POST /v1/integrations/ghl/oauth', () => {
-  const route = () => findRoute('POST', '/v1/integrations/ghl/oauth');
+describe('POST /v1/integrations/leadconnector/oauth', () => {
+  const route = () => findRoute('POST', '/v1/integrations/leadconnector/oauth');
 
   it('returns redirect URL with PKCE state', async () => {
     mockAuth.getAuthUrl.mockReturnValue({
@@ -197,7 +197,9 @@ describe('POST /v1/integrations/ghl/oauth', () => {
     delete process.env.GHL_CLIENT_SECRET;
     const freshRoutes = ghlRoutes();
     const oauthRoute = freshRoutes.find(
-      (rt) => rt.method === 'POST' && rt.path === '/v1/integrations/ghl/oauth',
+      (rt) =>
+        rt.method === 'POST' &&
+        rt.path === '/v1/integrations/leadconnector/oauth',
     )!;
     const res = await executeHandler(oauthRoute.handler, authReq());
     expect(res.statusCode).toBe(503);
@@ -210,11 +212,12 @@ describe('POST /v1/integrations/ghl/oauth', () => {
 });
 
 // ===========================================================
-// GET /v1/integrations/ghl/callback — handle OAuth callback
+// GET /v1/integrations/leadconnector/callback — handle OAuth callback
 // ===========================================================
 
-describe('GET /v1/integrations/ghl/callback', () => {
-  const route = () => findRoute('GET', '/v1/integrations/ghl/callback');
+describe('GET /v1/integrations/leadconnector/callback', () => {
+  const route = () =>
+    findRoute('GET', '/v1/integrations/leadconnector/callback');
 
   it('returns 400 when error param present', async () => {
     const res = await exec(
@@ -265,11 +268,11 @@ describe('GET /v1/integrations/ghl/callback', () => {
 });
 
 // ===========================================================
-// GET /v1/integrations/ghl/status — connection status
+// GET /v1/integrations/leadconnector/status — connection status
 // ===========================================================
 
-describe('GET /v1/integrations/ghl/status', () => {
-  const route = () => findRoute('GET', '/v1/integrations/ghl/status');
+describe('GET /v1/integrations/leadconnector/status', () => {
+  const route = () => findRoute('GET', '/v1/integrations/leadconnector/status');
 
   it('returns connection status', async () => {
     const status = {
@@ -297,11 +300,12 @@ describe('GET /v1/integrations/ghl/status', () => {
 });
 
 // ===========================================================
-// DELETE /v1/integrations/ghl/connection — disconnect
+// DELETE /v1/integrations/leadconnector/connection — disconnect
 // ===========================================================
 
-describe('DELETE /v1/integrations/ghl/connection', () => {
-  const route = () => findRoute('DELETE', '/v1/integrations/ghl/connection');
+describe('DELETE /v1/integrations/leadconnector/connection', () => {
+  const route = () =>
+    findRoute('DELETE', '/v1/integrations/leadconnector/connection');
 
   it('disconnects GHL integration', async () => {
     mockAuth.disconnect.mockResolvedValue(undefined);
@@ -324,11 +328,11 @@ describe('DELETE /v1/integrations/ghl/connection', () => {
 });
 
 // ===========================================================
-// POST /v1/integrations/ghl/push — push data to GHL
+// POST /v1/integrations/leadconnector/push — push data to GHL
 // ===========================================================
 
-describe('POST /v1/integrations/ghl/push', () => {
-  const route = () => findRoute('POST', '/v1/integrations/ghl/push');
+describe('POST /v1/integrations/leadconnector/push', () => {
+  const route = () => findRoute('POST', '/v1/integrations/leadconnector/push');
 
   beforeEach(() => mockConnected());
 
@@ -389,11 +393,12 @@ describe('POST /v1/integrations/ghl/push', () => {
 });
 
 // ===========================================================
-// GET /v1/integrations/ghl/pipelines — list pipelines
+// GET /v1/integrations/leadconnector/pipelines — list pipelines
 // ===========================================================
 
-describe('GET /v1/integrations/ghl/pipelines', () => {
-  const route = () => findRoute('GET', '/v1/integrations/ghl/pipelines');
+describe('GET /v1/integrations/leadconnector/pipelines', () => {
+  const route = () =>
+    findRoute('GET', '/v1/integrations/leadconnector/pipelines');
 
   beforeEach(() => mockConnected());
 
@@ -424,12 +429,12 @@ describe('GET /v1/integrations/ghl/pipelines', () => {
 });
 
 // ===========================================================
-// PUT /v1/integrations/ghl/pipelines/mappings — update mappings
+// PUT /v1/integrations/leadconnector/pipelines/mappings — update mappings
 // ===========================================================
 
-describe('PUT /v1/integrations/ghl/pipelines/mappings', () => {
+describe('PUT /v1/integrations/leadconnector/pipelines/mappings', () => {
   const route = () =>
-    findRoute('PUT', '/v1/integrations/ghl/pipelines/mappings');
+    findRoute('PUT', '/v1/integrations/leadconnector/pipelines/mappings');
 
   beforeEach(() => mockConnected());
 
@@ -489,11 +494,12 @@ describe('PUT /v1/integrations/ghl/pipelines/mappings', () => {
 });
 
 // ===========================================================
-// POST /v1/integrations/ghl/pipelines/sync — sync opportunities
+// POST /v1/integrations/leadconnector/pipelines/sync — sync opportunities
 // ===========================================================
 
-describe('POST /v1/integrations/ghl/pipelines/sync', () => {
-  const route = () => findRoute('POST', '/v1/integrations/ghl/pipelines/sync');
+describe('POST /v1/integrations/leadconnector/pipelines/sync', () => {
+  const route = () =>
+    findRoute('POST', '/v1/integrations/leadconnector/pipelines/sync');
 
   beforeEach(() => mockConnected());
 
@@ -536,11 +542,12 @@ describe('POST /v1/integrations/ghl/pipelines/sync', () => {
 });
 
 // ===========================================================
-// POST /v1/integrations/ghl/import — initial import
+// POST /v1/integrations/leadconnector/import — initial import
 // ===========================================================
 
-describe('POST /v1/integrations/ghl/import', () => {
-  const route = () => findRoute('POST', '/v1/integrations/ghl/import');
+describe('POST /v1/integrations/leadconnector/import', () => {
+  const route = () =>
+    findRoute('POST', '/v1/integrations/leadconnector/import');
 
   beforeEach(() => mockConnected());
 
@@ -598,11 +605,11 @@ describe('POST /v1/integrations/ghl/import', () => {
 });
 
 // ===========================================================
-// POST /v1/integrations/ghl/sync — incremental sync
+// POST /v1/integrations/leadconnector/sync — incremental sync
 // ===========================================================
 
-describe('POST /v1/integrations/ghl/sync', () => {
-  const route = () => findRoute('POST', '/v1/integrations/ghl/sync');
+describe('POST /v1/integrations/leadconnector/sync', () => {
+  const route = () => findRoute('POST', '/v1/integrations/leadconnector/sync');
 
   beforeEach(() => mockConnected());
 
@@ -646,11 +653,12 @@ describe('POST /v1/integrations/ghl/sync', () => {
 });
 
 // ===========================================================
-// GET /v1/integrations/ghl/sync/log — get sync logs
+// GET /v1/integrations/leadconnector/sync/log — get sync logs
 // ===========================================================
 
-describe('GET /v1/integrations/ghl/sync/log', () => {
-  const route = () => findRoute('GET', '/v1/integrations/ghl/sync/log');
+describe('GET /v1/integrations/leadconnector/sync/log', () => {
+  const route = () =>
+    findRoute('GET', '/v1/integrations/leadconnector/sync/log');
 
   it('returns sync logs with defaults', async () => {
     const logs = [{ id: 'log-1', type: 'import', status: 'completed' }];
@@ -685,11 +693,11 @@ describe('GET /v1/integrations/ghl/sync/log', () => {
 });
 
 // ===========================================================
-// POST /v1/webhooks/ghl — receive GHL webhook events
+// POST /v1/webhooks/leadconnector — receive GHL webhook events
 // ===========================================================
 
-describe('POST /v1/webhooks/ghl', () => {
-  const route = () => findRoute('POST', '/v1/webhooks/ghl');
+describe('POST /v1/webhooks/leadconnector', () => {
+  const route = () => findRoute('POST', '/v1/webhooks/leadconnector');
 
   it('processes valid webhook payload', async () => {
     const res = await exec(

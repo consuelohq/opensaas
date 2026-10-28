@@ -1,0 +1,16 @@
+{
+  "area": "workspace-agents",
+  "stream": "stream/workspace-agents",
+  "taskBranch": "task/workspace-agents/sync-scientific-rigor-guidance-artifacts",
+  "baseBranch": "stream/workspace-agents",
+  "sourceBranch": "stream/workspace-agents",
+  "startFrom": "stream",
+  "prNumber": 2429,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2429",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-sync-scientific-rigor-guidance-artifacts",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_8dc75a0fec7f",
+  "tmuxSession": "opensaas-workspace-agents-sync-scientific-rigor-guidance-artifacts-8dc75a0f",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-workspace-agents-sync-scientific-rigor-guidance-artifacts/.task/session.json",
+  "createdAt": "2026-09-10T00:40:38.000Z"
+}

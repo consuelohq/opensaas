@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_34327b5c9131",
+  "tmuxSession": "opensaas-os-renew-release-promotion-repository-lock-34327b5c",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/renew-release-promotion-repository-lock",
+  "branch": "task/os/renew-release-promotion-repository-lock",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-renew-release-promotion-repository-lock",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-renew-release-promotion-repository-lock",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2229,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2229",
+  "createdAt": "2026-08-26T18:43:55.289Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-renew-release-promotion-repository-lock/.task/os/renew-release-promotion-repository-lock/session.json"
+}

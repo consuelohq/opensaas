@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_772ffe0e785c",
+  "tmuxSession": "opensaas-os-refine-production-auth-login-visual-parity-772ffe0e",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/refine-production-auth-login-visual-parity",
+  "branch": "task/os/refine-production-auth-login-visual-parity",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-refine-production-auth-login-visual-parity",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-refine-production-auth-login-visual-parity",
+  "prNumber": 1958,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1958",
+  "createdAt": "2026-08-14T10:00:44.573Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-refine-production-auth-login-visual-parity/.task/os/refine-production-auth-login-visual-parity/session.json"
+}

@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_1d02efd73acc",
+  "tmuxSession": "opensaas-security-fix-os-connector-provisioning-deployment-contrac-1d02efd7",
+  "area": "security",
+  "stream": "stream/security",
+  "taskBranch": "task/security/fix-os-connector-provisioning-deployment-contract-and-failure-propagation",
+  "branch": "task/security/fix-os-connector-provisioning-deployment-contract-and-failure-propagation",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-os-connector-provisioning-deployment-contract-and-failure-propagation",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-os-connector-provisioning-deployment-contract-and-failure-propagation",
+  "prNumber": 1383,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1383",
+  "createdAt": "2026-07-10T20:50:23.053Z",
+  "tmuxCreated": false,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-security-fix-os-connector-provisioning-deployment-contract-and-failure-propagation/.task/security/fix-os-connector-provisioning-deployment-contract-and-failure-propagation/session.json"
+}

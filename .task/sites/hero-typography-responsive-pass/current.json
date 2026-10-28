@@ -1,0 +1,19 @@
+{
+  "area": "sites",
+  "stream": "stream/sites",
+  "taskBranch": "task/sites/hero-typography-responsive-pass",
+  "baseBranch": "stream/sites",
+  "sourceBranch": "stream/sites",
+  "startFrom": "stream",
+  "prNumber": 1262,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1262",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1262",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1262/hero-typography-responsive-pass",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1262",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1262/hero-typography-responsive-pass",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-hero-typography-responsive-pass",
+  "taskSession": "tsk_a6d5d9c4ceed",
+  "tmuxSession": "opensaas-sites-hero-typography-responsive-pass-a6d5d9c4",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-sites-hero-typography-responsive-pass/.task/sites/hero-typography-responsive-pass/session.json",
+  "createdAt": "2026-06-28T05:30:04.962Z"
+}

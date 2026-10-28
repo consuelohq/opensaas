@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_3633063cc11c",
+  "tmuxSession": "opensaas-os-remove-legacy-os-brain-launchers-3633063c",
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/remove-legacy-os-brain-launchers",
+  "branch": "task/os/remove-legacy-os-brain-launchers",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-remove-legacy-os-brain-launchers",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-remove-legacy-os-brain-launchers",
+  "prNumber": 1407,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1407",
+  "createdAt": "2026-07-11T04:09:02.287Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-remove-legacy-os-brain-launchers/.task/os/remove-legacy-os-brain-launchers/session.json"
+}

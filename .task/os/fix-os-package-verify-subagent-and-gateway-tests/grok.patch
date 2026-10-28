@@ -1,0 +1,10 @@
+*** Begin Patch
+*** Update File: packages/os/tests/subagent-orchestration-contract.test.ts
+@@
+       const result = await executeTool('subagent', input({
+         provider: 'grok',
+         requestId: 'req_grok_durable',
+         instructionPath,
++        timeoutMs: 20_000,
+       }), options(worktree, env));
+*** End Patch

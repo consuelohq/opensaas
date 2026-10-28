@@ -1,0 +1,79 @@
+---
+title: Snowflake
+description: Use Snowflake CLI and scoped SQL today while native Snowflake tools are planned.
+status: preview
+verifiedAt: 2026-07-14
+evidence:
+  - source: packages/os/manifests/generated/tool.manifest.json
+    tests:
+      - packages/os/tests/tool-manifest.test.ts
+    runtime: 'The current OS tool manifest was inspected on 2026-07-14; no native `snowflake` provider family is currently published.'
+---
+
+> **Native Consuelo tool: Planned**  
+> **Available today: Yes — through the official Snowflake CLI and APIs.**
+
+Use Snowflake when you need to test connections, inspect databases and schemas, run bounded queries, manage development objects, and operate Snowflake workloads.
+
+Consuelo plans to provide a focused `snowflake` tool family. You do not need to wait for that native wrapper: an agent can use the official interface locally now, then turn the smallest proven workflow into a typed OS tool.
+
+## Ask your agent
+
+```text
+Set up Snowflake for this workspace using the official interface linked below.
+Keep authentication on the local node and never print the credential.
+Start with one read-only verification command.
+Then create a typed Consuelo tool exposing only the operations I approve.
+Separate read methods from write methods, add structured errors and focused tests,
+and require approval for external, destructive, billing, permission, or deployment changes.
+```
+
+## Install and authenticate
+
+Follow Snowflake’s CLI installation guide, create a named connection, and prefer SSO, key-pair authentication, or another organization-approved method over a password embedded in a script.
+
+Store service credentials with [Apple Keychain and API keys](/secure/apple-keychain-and-api-keys/) or another local process-owned mechanism. Do not put a token in steering, a skill file, a conversation, or a command argument that may be logged.
+
+## Verify before building a tool
+
+Run `snow connection test -c <connection>` and a bounded read such as `snow sql -q "select current_version()" -c <connection>`.
+
+A successful login is not enough. Confirm the selected account, team, project, region, or workspace before the tool can act.
+
+## Proposed Consuelo methods
+
+```text
+snowflake.connections.test
+snowflake.databases.list
+snowflake.query
+snowflake.stages.list
+snowflake.apps.deploy
+```
+
+Useful typed inputs:
+
+```text
+connection
+database
+schema
+warehouse
+role
+query
+limit
+dryRun
+approval
+```
+
+The native wrapper should return structured results, redact secret material, expose exact provider errors, and make account or project selection explicit.
+
+## Writes and approvals
+
+DDL, DML, stage uploads, task execution, role changes, and application deployment require explicit approval. A query tool should default to read-only statements and a result limit.
+
+## Native Consuelo roadmap
+
+The planned tool will wrap proven provider operations rather than hide the underlying contract. Until it ships, the official CLI or API remains the source of truth for authentication, flags, limits, and provider behavior.
+
+## Official documentation
+
+[Snowflake official documentation](https://docs.snowflake.com/en/developer-guide/snowflake-cli/index)

@@ -1,0 +1,64 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/security/fix-persistent-os-runtime-and-connector-launchagent-installation",
+  "base": "HEAD",
+  "headSha": "c633f981f4f1d62b5f905c1a08d05193a0b16bf6",
+  "changeHash": "d36a6dd50957919ae027b1c604ec51963643d7437c918194db217bf0ccdc9c54",
+  "changedFiles": [
+    "packages/os/AGENTS.md",
+    "packages/os/scripts/bootstrap.sh",
+    "packages/os/scripts/generate-system-daemons.sh",
+    "packages/os/scripts/install-system-daemons.sh",
+    "packages/os/scripts/start-consuelo-daemon.sh",
+    "packages/os/scripts/uninstall-system-daemons.sh",
+    "packages/os/tests/bootstrap-source.test.ts",
+    "packages/os/tests/installer-runtime-dependencies.test.ts"
+  ],
+  "verifiedAt": "2026-07-14T17:48:06.677Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/security/fix-persistent-os-runtime-and-connector-launchagent-installation/current.json",
+        ".task/security/fix-persistent-os-runtime-and-connector-launchagent-installation/session.json",
+        ".task/security/fix-persistent-os-runtime-and-connector-launchagent-installation/verify.json",
+        ".task/security/fix-persistent-os-runtime-and-connector-launchagent-installation/workpad.md",
+        ".task/tasks/security/fix-persistent-os-runtime-and-connector-launchagent-installation.json",
+        "packages/os/AGENTS.md",
+        "packages/os/scripts/bootstrap.sh",
+        "packages/os/scripts/generate-system-daemons.sh",
+        "packages/os/scripts/install-system-daemons.sh",
+        "packages/os/scripts/start-consuelo-daemon.sh",
+        "packages/os/scripts/uninstall-system-daemons.sh",
+        "packages/os/tests/bootstrap-source.test.ts",
+        "packages/os/tests/installer-runtime-dependencies.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

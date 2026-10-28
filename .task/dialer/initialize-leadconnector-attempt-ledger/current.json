@@ -1,0 +1,19 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/initialize-leadconnector-attempt-ledger",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 1756,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1756",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1756",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1756/initialize-leadconnector-attempt-ledger",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1756",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1756/initialize-leadconnector-attempt-ledger",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-initialize-leadconnector-attempt-ledger",
+  "taskSession": "tsk_b6a73011ab31",
+  "tmuxSession": "opensaas-dialer-initialize-leadconnector-attempt-ledger-b6a73011",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-initialize-leadconnector-attempt-ledger/.task/dialer/initialize-leadconnector-attempt-ledger/session.json",
+  "createdAt": "2026-08-03T16:39:02.339Z"
+}

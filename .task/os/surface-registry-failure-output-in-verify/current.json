@@ -1,0 +1,19 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/surface-registry-failure-output-in-verify",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 1968,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1968",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/1968",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1968/surface-registry-failure-output-in-verify",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/1968",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/1968/surface-registry-failure-output-in-verify",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-surface-registry-failure-output-in-verify",
+  "taskSession": "tsk_d6bfe5aa47a8",
+  "tmuxSession": "opensaas-os-surface-registry-failure-output-in-verify-d6bfe5aa",
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-os-surface-registry-failure-output-in-verify/.task/os/surface-registry-failure-output-in-verify/session.json",
+  "createdAt": "2026-08-14T20:48:20.582Z"
+}

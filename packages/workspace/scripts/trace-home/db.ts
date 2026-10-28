@@ -46,7 +46,7 @@ function runSql(db: string, sql: string): TraceHomeLoadResult {
   if (!text) return { rows: [] };
   try {
     return { rows: JSON.parse(text) as TraceHomeRow[] };
-  } catch (error) {
+  } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
     return { rows: [], transientError: `failed to parse sqlite JSON output: ${compactError(message)}` };
   }
@@ -62,7 +62,7 @@ export function loadRowsResult(db: string, limit: number): TraceHomeLoadResult {
   const safeLimit = Math.max(1, Math.min(500, Math.floor(limit)));
   const table = hasTable(db, 'tool_traces') ? 'tool_traces' : 'traces';
   const sql = table === 'tool_traces'
-    ? `SELECT rowid AS rownum, id AS record_id, ts, trace_id, tool, task_session, branch, worktree, status, code, exit_code, duration_ms, input_tokens, output_tokens, total_tokens, input_json, resolved_input_json, substr(coalesce(result_json, ''), 1, 4000) AS result_json, NULL AS nested_operations_json, NULL AS batch_results_json, substr(coalesce(stderr, ''), 1, 4000) AS stderr FROM tool_traces ORDER BY rowid DESC LIMIT ${safeLimit};`
+    ? `SELECT rowid AS rownum, id AS record_id, ts, trace_id, tool, task_session, branch, worktree, status, code, exit_code, duration_ms, input_tokens, output_tokens, total_tokens, input_json, resolved_input_json, substr(coalesce(result_json, ''), 1, 4000) AS result_json, CASE WHEN tool = 'code.run' THEN coalesce(json_extract(result_json, '$.data.operations'), json_extract(result_json, '$.data.data.operations')) ELSE NULL END AS nested_operations_json, CASE WHEN tool = 'batch' THEN coalesce(json_extract(result_json, '$.data.results'), json_extract(result_json, '$.data.data.results')) ELSE NULL END AS batch_results_json, substr(coalesce(stderr, ''), 1, 4000) AS stderr FROM tool_traces ORDER BY rowid DESC LIMIT ${safeLimit};`
     : `SELECT rowid AS rownum, id AS record_id, ts, trace_id, tool, task_session, branch, worktree, status, code, exit_code, duration_ms, input_tokens, output_tokens, total_tokens, input_json, resolved_input_json, substr(coalesce(result_json, ''), 1, 4000) AS result_json, nested_operations_json, batch_results_json, substr(coalesce(stderr, ''), 1, 4000) AS stderr FROM traces ORDER BY rowid DESC LIMIT ${safeLimit};`;
   const result = runSql(db, sql);
   return { rows: result.rows.reverse(), transientError: result.transientError };

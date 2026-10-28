@@ -1,0 +1,60 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/security/adopt-legacy-waf-rule-identities-during-connector-origin-migration",
+  "base": "origin/main",
+  "headSha": "96469c51015dfd5f41f7c8092d52ffa422f574d2",
+  "changeHash": "eab5ef29d53dbbee9b4d95e095c231b279c7b2643b542ee9c59a6ea4f2d8158c",
+  "changedFiles": [
+    "packages/os/scripts/lib/managed-os-mcp-origin-class-migration.ts",
+    "packages/os/tests/managed-os-mcp-origin-class-migration.test.ts"
+  ],
+  "verifiedAt": "2026-07-13T18:03:12.532Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/security/adopt-legacy-waf-rule-identities-during-connector-origin-migration/current.json",
+        ".task/security/adopt-legacy-waf-rule-identities-during-connector-origin-migration/evidence-log.json",
+        ".task/security/adopt-legacy-waf-rule-identities-during-connector-origin-migration/read-log.json",
+        ".task/security/adopt-legacy-waf-rule-identities-during-connector-origin-migration/session.json",
+        ".task/security/adopt-legacy-waf-rule-identities-during-connector-origin-migration/workpad.md",
+        ".task/tasks/security/adopt-legacy-waf-rule-identities-during-connector-origin-migration.json",
+        "packages/os/scripts/lib/managed-os-mcp-origin-class-migration.ts",
+        "packages/os/tests/managed-os-mcp-origin-class-migration.test.ts"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "warn",
+      "zeroSuiteReason": "changed code selected zero suites; add a discoverable test or explicit rule when this is not intentional",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [
+      {
+        "category": "database-script",
+        "file": "packages/os/scripts/lib/managed-os-mcp-origin-class-migration.ts",
+        "severity": "warning",
+        "message": "database reset/migration/sync script changed"
+      }
+    ],
+    "findings": []
+  },
+  "commandVersion": 2
+}

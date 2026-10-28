@@ -1,0 +1,15 @@
+{
+  "taskSession": "tsk_bf1916543d1d",
+  "tmuxSession": "opensaas-dialer-lead-connector-e2e-cutover-bf191654",
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/lead-connector-e2e-cutover",
+  "branch": "task/dialer/lead-connector-e2e-cutover",
+  "worktreePath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-lead-connector-e2e-cutover",
+  "worktree": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-lead-connector-e2e-cutover",
+  "prNumber": 1612,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/1612",
+  "createdAt": "2026-07-24T02:53:00.643Z",
+  "tmuxCreated": true,
+  "sessionPath": "/private/var/folders/vl/1zvhm0bj28d1dbvbcb12b39r0000gn/T/opensaas-worktrees/task-dialer-lead-connector-e2e-cutover/.task/dialer/lead-connector-e2e-cutover/session.json"
+}
