@@ -290,17 +290,17 @@ suite('RD6 callback telephony with real Postgres and simulated carrier', () => {
   it('dials the rep first, customer second, and converges duplicate worker ticks', async () => {
     await requestCallback();
     await service.tick();
-    expect(offerTargets).toEqual(['client:alice']);
+    expect(offerTargets).toEqual(['client:user_alice']);
     expect((await callbacks.read('workspace', 'callback-one'))!.state.attempts).toHaveLength(0);
 
     const { repSid } = await acceptLatestRep();
     await service.tick();
     expect(redirects).toContain(repSid);
-    expect(offerTargets).toEqual(['client:alice', '+18285550123']);
+    expect(offerTargets).toEqual(['client:user_alice', '+18285550123']);
     expect((await callbacks.read('workspace', 'callback-one'))!.state.status).toBe('dialing');
 
     await Promise.all([service.tick(), service.tick()]);
-    expect(offerTargets).toEqual(['client:alice', '+18285550123']);
+    expect(offerTargets).toEqual(['client:user_alice', '+18285550123']);
     const customerSid = [...calls.keys()].find((sid) => sid.startsWith('customer-call-'))!;
     const join = await service.handle(
       'number-one',
@@ -562,7 +562,7 @@ suite('RD6 callback telephony with real Postgres and simulated carrier', () => {
       "SELECT status FROM dialer_telephony_effects WHERE workspace_id='workspace' AND kind='offer'",
     );
     expect(result.rows.map((row) => row.status)).toEqual(['failed']);
-    expect(offerTargets).toEqual(['client:alice']);
+    expect(offerTargets).toEqual(['client:user_alice']);
   });
 
   it('retains capacity when a rep create outcome is ambiguous', async () => {
@@ -575,7 +575,7 @@ suite('RD6 callback telephony with real Postgres and simulated carrier', () => {
       "SELECT status,call_sid FROM dialer_telephony_effects WHERE workspace_id='workspace' AND kind='offer'",
     );
     expect(effects.rows).toEqual([{ status: 'unknown', call_sid: null }]);
-    expect(offerTargets).toEqual(['client:alice']);
+    expect(offerTargets).toEqual(['client:user_alice']);
   });
 
   it('recovers the no-answer result after capacity released but callback result was not committed', async () => {
@@ -649,7 +649,7 @@ suite('RD6 callback telephony with real Postgres and simulated carrier', () => {
     // its 1-second cooldown, not only the callback's 10-second retry delay.
     seconds += 14;
     await service.tick();
-    expect(offerTargets.filter((target) => target === 'client:alice')).toHaveLength(2);
+    expect(offerTargets.filter((target) => target === 'client:user_alice')).toHaveLength(2);
     const accepted = await acceptLatestRep();
     expect(accepted.repSid).not.toBe(repSid);
     loseCustomerResponse = true;

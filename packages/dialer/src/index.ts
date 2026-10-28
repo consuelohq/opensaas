@@ -6,6 +6,7 @@ export { TwilioProvider } from './providers/twilio.js';
 export type { DialerProvider } from './providers/base.js';
 
 // Services
+export { createAgentVoiceIdentity } from './services/voice-identity.js';
 export {
   LocalPresenceService,
   extractAreaCode,
