@@ -100,6 +100,74 @@ test('verify human output identifies failed registry suites', () => {
 });
 
 
+test('verify single-flights identical full-gate executions', () => {
+  const verifySource = fs.readFileSync(
+    path.resolve('packages/workspace/scripts/verify.js'),
+    'utf8',
+  );
+  expect(verifySource).toContain("require('./lib/verify-run-state')");
+  expect(verifySource).toContain('makeVerifyRunIdentity({');
+  expect(verifySource).toContain("verifyRun.mode === 'replay'");
+  expect(verifySource).toContain('finishVerifyRun(verifyRun');
+  expect(verifySource).toContain('abortVerifyRun(');
+});
+
+test('agent JSON verify uses a detached resumable boundary instead of owning the long gate', () => {
+  const verifySource = fs.readFileSync(
+    path.resolve('packages/workspace/scripts/verify.js'),
+    'utf8',
+  );
+
+  expect(verifySource).toContain("verifyRun.mode === 'launch'");
+  expect(verifySource).toContain("verifyRun.mode === 'pending'");
+  expect(verifySource).toContain("'--foreground'");
+  expect(verifySource).toContain('detached: true');
+  expect(verifySource).toContain('child.unref()');
+  expect(verifySource).toContain('VERIFY_PENDING');
+});
+
+test('synchronous verify consumers opt into foreground completion', () => {
+  for (const relativePath of [
+    'packages/workspace/scripts/stream-sync.js',
+    'packages/os/scripts/stream-sync.js',
+    'packages/workspace/scripts/confirm.js',
+    'packages/os/scripts/confirm.js',
+  ]) {
+    const source = fs.readFileSync(path.resolve(relativePath), 'utf8');
+    expect(source, relativePath).toContain("'--foreground'");
+  }
+});
+
+test('synchronous verify boundaries fail closed when an identical run is still pending', () => {
+  for (const relativePath of [
+    'packages/workspace/scripts/verify.js',
+    'packages/os/scripts/verify.js',
+  ]) {
+    const source = fs.readFileSync(path.resolve(relativePath), 'utf8');
+    expect(source, relativePath).toContain("if (args.foreground) process.exitCode = 1;");
+  }
+
+  for (const relativePath of [
+    'packages/workspace/scripts/confirm.js',
+    'packages/os/scripts/confirm.js',
+  ]) {
+    const source = fs.readFileSync(path.resolve(relativePath), 'utf8');
+    expect(source, relativePath).toContain("data.pending !== true");
+    expect(source, relativePath).toContain("data.status !== 'VERIFY_PENDING'");
+    expect(source, relativePath).toContain("data.passed === true");
+  }
+
+  for (const relativePath of [
+    'packages/workspace/scripts/stream-sync.js',
+    'packages/os/scripts/stream-sync.js',
+  ]) {
+    const source = fs.readFileSync(path.resolve(relativePath), 'utf8');
+    expect(source, relativePath).toContain("data?.pending !== true");
+    expect(source, relativePath).toContain("data?.status !== 'VERIFY_PENDING'");
+    expect(source, relativePath).toContain("data?.passed === true");
+  }
+});
+
 test('verify keeps review semantic-only because selected suites own test execution', () => {
   const verifySource = fs.readFileSync(
     path.resolve('packages/workspace/scripts/verify.js'),

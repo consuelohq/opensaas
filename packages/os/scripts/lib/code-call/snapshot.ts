@@ -32,6 +32,7 @@ function parsePorcelain(root: string, stdout: string): Map<string, string> {
     if (!line.trim()) continue;
     const rawPath = line.slice(3).replace(/^"|"$/g, '');
     const normalizedPath = rawPath.includes(' -> ') ? rawPath.split(' -> ').at(-1) || rawPath : rawPath;
+    if (normalizedPath === '.task' || normalizedPath.startsWith('.task/')) continue;
     files.set(normalizedPath, gitContentMarker(root, normalizedPath, line.slice(0, 2)));
   }
   return files;
@@ -60,7 +61,7 @@ function captureDirectorySnapshotUnsafe(root: string): Snapshot {
   let count = 0;
   const walk = (directory: string): void => {
     for (const entry of readdirSync(directory, { withFileTypes: true })) {
-      if (entry.name === '.git' || entry.name === 'node_modules') continue;
+      if (entry.name === '.git' || entry.name === 'node_modules' || entry.name === '.task') continue;
       const absolute = path.join(directory, entry.name);
       const relative = path.relative(root, absolute);
       count += 1;

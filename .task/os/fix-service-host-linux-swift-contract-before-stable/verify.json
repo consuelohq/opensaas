@@ -1,0 +1,158 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/fix-service-host-linux-swift-contract-before-stable",
+  "base": "origin/task/os/fix-service-host-linux-swift-contract-before-stable",
+  "headSha": "485fdcd7703bc8fc68abefb6422c3e36fb76bfce",
+  "changeHash": "570c9e34196ac7f7eb713e3601d164bf80b3b60d48e92ecd5c357f5bab54ad1c",
+  "changedFiles": [
+    "packages/os/native/macos/Sources/ConsueloServiceHost/main.swift",
+    "packages/os/tests/macos-platform.test.ts"
+  ],
+  "verifiedAt": "2026-09-24T16:55:25.823Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/fix-service-host-linux-swift-contract-before-stable/evidence-log.json",
+        ".task/os/fix-service-host-linux-swift-contract-before-stable/read-log.json",
+        ".task/os/fix-service-host-linux-swift-contract-before-stable/workpad.md",
+        ".task/tasks/os/fix-service-host-linux-swift-contract-before-stable.json",
+        "packages/os/native/macos/Sources/ConsueloServiceHost/main.swift",
+        "packages/os/tests/macos-platform.test.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "os-macos-menu-app",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Native macOS menu, lifecycle presentation, and alpha packaging changes must run the focused Swift and platform contracts without selecting the broad OS package suite.",
+          "matchedFiles": [
+            "packages/os/native/macos/Sources/ConsueloServiceHost/main.swift",
+            "packages/os/tests/macos-platform.test.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "macOS menu Swift contracts",
+          "command": [
+            "swift",
+            "run",
+            "--package-path",
+            "packages/os/native/macos",
+            "--scratch-path",
+            "/tmp/consuelo-os-macos-contract-tests",
+            "ConsueloMacContractTests"
+          ],
+          "ruleId": "os-macos-menu-app",
+          "critical": true
+        },
+        {
+          "name": "macOS menu platform contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/macos-platform.test.ts"
+          ],
+          "ruleId": "os-macos-menu-app",
+          "critical": true
+        },
+        {
+          "name": "macOS alpha package syntax",
+          "command": [
+            "bash",
+            "-n",
+            "packages/os/scripts/testing/macos-alpha-package.sh"
+          ],
+          "ruleId": "os-macos-menu-app",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "macOS menu Swift contracts",
+          "command": [
+            "swift",
+            "run",
+            "--package-path",
+            "packages/os/native/macos",
+            "--scratch-path",
+            "/tmp/consuelo-os-macos-contract-tests",
+            "ConsueloMacContractTests"
+          ],
+          "cwd": ".",
+          "ruleId": "os-macos-menu-app",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 5209,
+          "outputTail": "ConsueloMac contract tests passed\n[0/1] Planning build\nBuilding for debugging...\n[0/5] Write sources\n[2/5] Write swift-version--1AB21518FC5DEDBE.txt\n[4/12] Compiling ConsueloMacCore UnixSocketLifecycleTransport.swift\n[5/12] Compiling ConsueloMacCore Presentation.swift\n[6/12] Compiling ConsueloMacCore Safety.swift\n[7/12] Compiling ConsueloMacCore LifecycleModels.swift\n[8/12] Compiling ConsueloMacCore LifecycleClient.swift\n[9/12] Emitting module ConsueloMacCore\n[10/12] Compiling ConsueloMacCore FramedJSONCodec.swift\n[11/14] Compiling ConsueloMacContractTests main.swift\n[12/14] Emitting module ConsueloMacContractTests\n[12/15] Write Objects.LinkFileList\n[13/15] Linking ConsueloMacContractTests\n[14/15] Applying ConsueloMacContractTests\nBuild of product 'ConsueloMacContractTests' complete! (1.76s)\n"
+        },
+        {
+          "name": "macOS menu platform contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/macos-platform.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-macos-menu-app",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 500,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-fix-service-host-linux-swift-contract-before-stable\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/macos-platform.test.ts \u001b[2m(\u001b[22m\u001b[2m6 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 5\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m6 passed\u001b[39m\u001b[22m\u001b[90m (6)\u001b[39m\n\u001b[2m   Start at \u001b[22m 12:55:25\n\u001b[2m   Duration \u001b[22m 139ms\u001b[2m (transform 55ms, setup 0ms, import 60ms, tests 5ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "macOS alpha package syntax",
+          "command": [
+            "bash",
+            "-n",
+            "packages/os/scripts/testing/macos-alpha-package.sh"
+          ],
+          "cwd": ".",
+          "ruleId": "os-macos-menu-app",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 8,
+          "outputTail": ""
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

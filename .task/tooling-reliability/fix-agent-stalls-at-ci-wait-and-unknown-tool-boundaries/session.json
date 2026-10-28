@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_4285019a0e7f",
+  "tmuxSession": "opensaas-tooling-reliability-fix-agent-stalls-at-ci-wait-and-unknown-tool-bou-4285019a",
+  "area": "tooling-reliability",
+  "stream": "stream/tooling-reliability",
+  "taskBranch": "task/tooling-reliability/fix-agent-stalls-at-ci-wait-and-unknown-tool-boundaries",
+  "branch": "task/tooling-reliability/fix-agent-stalls-at-ci-wait-and-unknown-tool-boundaries",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-tooling-reliability-fix-agent-stalls-at-ci-wait-and-unknown-tool-boundaries",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-tooling-reliability-fix-agent-stalls-at-ci-wait-and-unknown-tool-boundaries",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2592,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2592",
+  "createdAt": "2026-09-26T13:14:09.756Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-tooling-reliability-fix-agent-stalls-at-ci-wait-and-unknown-tool-boundaries/.task/tooling-reliability/fix-agent-stalls-at-ci-wait-and-unknown-tool-boundaries/session.json"
+}

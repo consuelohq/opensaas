@@ -24,16 +24,16 @@ export const toolSchemas = [
       name: 'release',
       methodPath: ['release'],
       description:
-        'release a Consuelo OS main-targeting review PR end-to-end: pass the stream review PR that targets main, not a task PR that targets a stream; verify and merge it to main, wait for the exact merged SHA runtime publication, promote that exact immutable bundle through dev/canary/beta/stable as requested, then by default update this node to the exact released version and verify it; use when Ko says release, deploy this PR, release to canary, or release and update',
+        'start or resume a durable Consuelo OS release operation: use for release to canary or another channel; pass the main-targeting review PR for the stream, receive an operation id immediately, then use status/logs/attach/resume without keeping one MCP call open; the worker verifies and merges to main, resolves the exact merged SHA immutable runtime release even if dev advances, promotes through dev/canary/beta/stable as requested, then by default updates this node to the exact released version and verifies it',
       category: 'release',
       underlying: 'workspace release',
       capabilities: {
         readOnly: false,
         mutating: true,
         deterministic: false,
-        safeToRetry: false,
+        safeToRetry: true,
       },
-      defaultTimeout: 14_400_000,
+      defaultTimeout: 30_000,
       inputSchema: 'ReleaseInput',
       outputSchema: 'RawOutput',
       search: {

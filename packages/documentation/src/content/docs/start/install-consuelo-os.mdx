@@ -2,7 +2,7 @@
 title: Install Consuelo OS
 description: Install the local Consuelo OS runtime on a supported Mac and verify it is ready.
 status: preview
-verifiedAt: 2026-08-16
+verifiedAt: 2026-09-22
 evidence:
   - source: packages/os/scripts/bootstrap.sh
     tests:
@@ -81,7 +81,7 @@ The hosted bootstrap downloads a temporary copy of the current OS source, instal
 
 ## Background service
 
-The background service keeps the local OS available after the terminal closes. Interactive setup recommends installing it. A non-interactive install only creates LaunchAgents when `--install-daemons` is passed.
+The background service keeps the local OS available after the terminal closes. On current macOS releases, launchd registers one primary `com.consuelo.system` service. That first-party Consuelo process owns the Bun supervisor, Caddy, Cloudflared connector, heartbeat, and watchdog process tree instead of registering those implementation details as separate background items. Interactive setup recommends installing it. A non-interactive install only creates the service when `--install-daemons` is passed.
 
 To run the hosted installer non-interactively with the service enabled:
 
@@ -89,13 +89,13 @@ To run the hosted installer non-interactively with the service enabled:
 curl -fsSL https://install.consuelohq.com/os | bash -s -- --yes --install-daemons
 ```
 
-Skipping the service does not remove the OS files. It only skips user LaunchAgent setup.
+Skipping the service does not remove the OS files. It only skips user background-service setup. During an update from an older release, Consuelo retains the old sidecar definitions only as rollback material and retires their installed LaunchAgents after the new supervised process tree is healthy.
 
 ## Updates after installation
 
 The lifecycle updater stages and verifies a new runtime before switching `runtime/current`. Before refreshing service definitions, the activated runtime reconciles the checksum-pinned Caddy and Cloudflared binaries into Consuelo-managed paths. A stale global or Homebrew binary is not considered current merely because it exists.
 
-Routine updates keep the loaded Caddy and Cloudflared processes running while the two local OS workers are replaced one at a time. Before a worker closes its listener, it marks `/ready` unavailable and stays available for ordinary requests during a short propagation window so the local load balancer can stop choosing it for new work. Request accounting remains active until each response body finishes streaming or the client cancels it, so a worker does not exit merely because its handler has already returned a response object. After the replacement worker becomes directly ready, Consuelo waits another propagation window for Caddy to mark it healthy before draining the next worker, so the rolling handoff keeps at least one admitted upstream available.
+Routine updates keep the supervisor-owned Caddy and Cloudflared processes running while the two local OS workers are replaced one at a time. The one-time migration from legacy sidecar LaunchAgents replaces the supervisor only after the existing HA worker pool is healthy, then verifies the new supervised Caddy process before retiring those legacy jobs. Before a worker closes its listener, it marks `/ready` unavailable and stays available for ordinary requests during a short propagation window so the local load balancer can stop choosing it for new work. Request accounting remains active until each response body finishes streaming or the client cancels it, so a worker does not exit merely because its handler has already returned a response object. After the replacement worker becomes directly ready, Consuelo waits another propagation window for Caddy to mark it healthy before draining the next worker, so the rolling handoff keeps at least one admitted upstream available.
 
 Activation and automatic rollback reconcile services from the exact immutable runtime release being activated, not whichever release the mutable `runtime/current` link happens to reference later. Recovery-capable operations still try the rolling path first and use supervisor replacement only if rolling recovery cannot restore a healthy pool.
 

@@ -1,16 +1,18 @@
 #!/usr/bin/env bun
 
-// task-merge.js — merge a PR and optionally wait for the railway deploy
+// task-merge.js — merge a PR with an optional bounded GitHub CI preflight
 //
 // usage:
 //   bun run task:merge -- --pr 171                # merge PR #171
-//   bun run task:merge -- --pr 171 --wait         # merge + wait for deploy
+//   bun run task:merge -- --pr 171 --wait         # merge only when current GitHub checks are green
+//   bun run task:merge -- --pr 171 --wait-deploy  # merge + explicitly wait for Railway deploy
 //   bun run task:merge                            # merge PR from .task/current.json
-//   bun run task:merge -- --wait                  # merge current task PR + wait
+//   bun run task:merge -- --wait                  # bounded CI preflight for current task PR
 
 const { execSync } = require('child_process');
 const { getToken, githubRequest, mergePullRequest } = require('./lib/github.js');
 const { findTaskMeta } = require('./lib/task-meta.js');
+const { summarizeCheckRuns } = require('./lib/task-merge-readiness.js');
 
 const DEFAULT_REPO = 'consuelohq/opensaas';
 const DEFAULT_SERVICE = 'opensaas';
@@ -24,6 +26,7 @@ function parseArgs(argv) {
     switch (argv[i]) {
       case '--pr': args.prNumber = parseInt(argv[++i], 10); break;
       case '--wait': args.wait = true; break;
+      case '--wait-deploy': args.waitDeploy = true; break;
       case '--timeout': { const t = argv[++i]; args.timeoutMs = (parseInt(t, 10) || 30) * 60 * 1000; break; }
       case '--squash': args.mergeMethod = 'squash'; break;
       case '--repo': args.repo = argv[++i]; break;
@@ -33,7 +36,8 @@ function parseArgs(argv) {
         writeStdout('usage: bun run task:merge -- [options]');
         writeStdout('');
         writeStdout('  --pr <number>     PR number to merge (default: from .task/current.json)');
-        writeStdout('  --wait            after merge, wait for railway deploy to complete');
+        writeStdout('  --wait            merge only when the current GitHub check-runs are terminal-success; returns pending instead of polling');
+        writeStdout('  --wait-deploy     after merge, explicitly wait for Railway deploy to complete');
         writeStdout('  --squash          squash merge (default: merge commit)');
         writeStdout('  --json            output json');
         process.exit(0);
@@ -48,6 +52,69 @@ function parseArgs(argv) {
 async function getPullRequest(token, repo, prNumber) {
   const [owner, name] = repo.split('/');
   return githubRequest({ token, endpoint: `/repos/${owner}/${name}/pulls/${prNumber}` });
+}
+
+async function getPullRequestCheckSummary(token, repo, pr) {
+  const [owner, name] = repo.split('/');
+  const headSha = pr?.head?.sha;
+  if (!headSha) {
+    return {
+      state: 'pending',
+      total: 0,
+      pending: ['GitHub has not exposed the PR head SHA yet'],
+      failed: [],
+      passed: [],
+      headSha: null,
+    };
+  }
+  try {
+    const response = await githubRequest({
+      token,
+      endpoint: `/repos/${owner}/${name}/commits/${headSha}/check-runs?per_page=100`,
+    });
+    return {
+      ...summarizeCheckRuns(response?.check_runs),
+      headSha,
+    };
+  } catch (error) {
+    return {
+      state: 'pending',
+      total: 0,
+      pending: ['GitHub check-run readiness could not be read'],
+      failed: [],
+      passed: [],
+      headSha,
+      error: error instanceof Error ? error.message : 'unknown GitHub readiness error',
+    };
+  }
+}
+
+function ciGatePayload(prNumber, pr, ci) {
+  if (ci.state === 'failed') {
+    return {
+      prNumber,
+      merged: false,
+      blocked: true,
+      waiting: false,
+      status: 'CHECKS_FAILED',
+      ci,
+      message: 'GitHub checks failed; PR was not merged.',
+    };
+  }
+  return {
+    prNumber,
+    merged: false,
+    blocked: false,
+    waiting: true,
+    status: 'CHECKS_PENDING',
+    ci,
+    retryAfterSeconds: 15,
+    message: ci.total === 0
+      ? 'GitHub check-runs have not appeared yet; PR was not merged.'
+      : 'GitHub checks are still running; PR was not merged.',
+    nextAction: `Retry task.merge with wait=true for PR #${prNumber}; do not hold the agent turn open between retries.`,
+    headSha: pr?.head?.sha || null,
+  };
 }
 
 function getDeploys(service) {
@@ -128,22 +195,26 @@ async function main() {
   }
 
   // fetch PR
-  const pr = await getPullRequest(token, args.repo, prNumber);
+  let pr;
+  try {
+    pr = await getPullRequest(token, args.repo, prNumber);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'unknown GitHub error';
+    throw new Error(`failed to read PR #${prNumber} before merge: ${message}`, { cause: error });
+  }
   writeStdout(`PR #${prNumber}: ${pr.title}`);
   writeStdout(`${pr.head.ref} → ${pr.base.ref}`);
 
   if (pr.merged_at) {
     writeStdout(`already merged at ${pr.merged_at}`);
     const mergeSha = pr.merge_commit_sha;
-    if (args.wait && mergeSha) {
+    if (args.waitDeploy && mergeSha) {
       writeStdout(`merge commit: ${mergeSha.slice(0, 8)}`);
       const result = await waitForDeploy(args.service, mergeSha, prNumber, args.timeoutMs);
       if (args.json) writeStdout(JSON.stringify({ prNumber, merged: true, alreadyMerged: true, mergeSha, deploy: result }, null, 2));
       return;
     }
-    if (args.wait && mergeSha) {
-      writeStdout(`\nnext: bun run wait -- --deploy ${mergeSha.slice(0, 8)}`);
-    }
+    if (args.json) writeStdout(JSON.stringify({ prNumber, merged: true, alreadyMerged: true, mergeSha }, null, 2));
     return;
   }
 
@@ -152,8 +223,22 @@ async function main() {
     process.exit(1);
   }
 
+  if (args.wait) {
+    const ci = await getPullRequestCheckSummary(token, args.repo, pr);
+    if (ci.state !== 'passed') {
+      const payload = ciGatePayload(prNumber, pr, ci);
+      if (args.json) writeStdout(JSON.stringify(payload, null, 2));
+      else {
+        writeStdout(payload.message);
+        if (payload.nextAction) writeStdout(payload.nextAction);
+      }
+      return;
+    }
+    writeStdout(`GitHub checks are green (${ci.passed.length}/${ci.total}); merging...`);
+  }
+
   // merge
-  writeStdout('merging...');
+  if (!args.wait) writeStdout('merging...');
   const mergeResult = await mergePullRequest({
     token,
     repository: args.repo,
@@ -165,18 +250,17 @@ async function main() {
   const mergeSha = mergeResult.sha;
   writeStdout(`✓ merged — commit ${mergeSha.slice(0, 8)}`);
 
-  if (args.json && !args.wait) {
+  if (args.json && !args.waitDeploy) {
     writeStdout(JSON.stringify({ prNumber, merged: true, mergeSha, title: pr.title }, null, 2));
     return;
   }
 
-  if (args.wait) {
+  if (args.waitDeploy) {
     writeStdout('');
-    const result = await waitForDeploy(args.service, mergeSha, prNumber);
+    const result = await waitForDeploy(args.service, mergeSha, prNumber, args.timeoutMs);
     if (args.json) writeStdout(JSON.stringify({ prNumber, merged: true, mergeSha, title: pr.title, deploy: result }, null, 2));
   } else {
-    writeStdout(`\nnext: bun run task:merge -- --pr ${prNumber} --wait`);
-    writeStdout(`  or: bun run wait -- --deploy ${mergeSha.slice(0, 8)}`);
+    writeStdout(`\nnext: bun run wait -- --deploy ${mergeSha.slice(0, 8)}`);
   }
 }
 

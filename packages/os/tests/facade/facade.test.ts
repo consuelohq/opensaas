@@ -1,4 +1,4 @@
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -188,13 +188,20 @@ describe('typed facade executor', () => {
     expect(data.manifestEntry?.command?.subcommand).toBe('apply-patch');
   });
 
-  it('keeps generic unknown tool messages compact', async () => {
+  it('keeps generic unknown tool failures compact but recoverable', async () => {
     const result = await executeTool('missing.tool', {}, stableOptions(successfulRunner()));
 
     expect(result.ok).toBe(false);
     expect(result.code).toBe('NOT_FOUND');
-    expect(result.message).toBe('unknown tool: missing.tool');
-    expect(result.data).toBeNull();
+    expect(result.message).toContain('unknown tool: missing.tool');
+    expect(result.message).toContain('tool-manifest mismatch');
+    expect(result.data).toMatchObject({
+      requestedTool: 'missing.tool',
+      autoRetry: false,
+      toolsSearchCall: {
+        tool: 'tools.search',
+      },
+    });
   });
 
   it('fails deployment mutations closed before generic command execution', async () => {
@@ -1355,6 +1362,161 @@ describe('typed facade executor', () => {
       expect(JSON.stringify(data)).not.toContain('x'.repeat(1000));
     } finally {
       rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+
+  it('preserves pending verify identity and same-session continuation instructions', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-verify-pending-'));
+    const taskSession = 'tsk_verify_pending_summary';
+    const pending = {
+      status: 'VERIFY_PENDING',
+      pending: true,
+      passed: false,
+      publishValid: false,
+      runKey: 'verify-run-identity',
+      branch: TEST_BRANCH,
+      base: 'origin/stream/tooling-reliability',
+      headSha: 'pending-head',
+      phase: 'running',
+      startedAt: '2026-10-28T03:03:43.000Z',
+      workerPid: 1234,
+      retryAfterSeconds: 5,
+      stamp: { written: false, path: null, publishValid: false },
+      message: 'Verification is running outside the agent turn.',
+      nextAction: 'Call verify again with the same task session to read pending or completed state; do not sleep inside this turn.',
+    };
+    try {
+      writeTaskSession(tempRoot, taskSession, TEST_BRANCH);
+      const workpadPath = join(tempRoot, '.task', 'workspace-agents', 'test', 'workpad.md');
+      const workpad = '## workspace-owned: validation evidence\n\n- none yet\n';
+      mkdirSync(join(tempRoot, '.task', 'workspace-agents', 'test'), { recursive: true });
+      writeFileSync(workpadPath, workpad);
+      const result = await executeTool('verify', { taskSession }, {
+        ...stableOptions(async () => ({
+          stdout: JSON.stringify(pending), stderr: '', exitCode: 0,
+        })),
+        cwd: tempRoot,
+      });
+
+      expect(result.ok).toBe(true);
+      expect(result.data).toEqual(expect.objectContaining(pending));
+      expect(readFileSync(workpadPath, 'utf8')).toBe(workpad);
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('keeps bounded verify failure reasons and selected-suite evidence', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-verify-failure-'));
+    const taskSession = 'tsk_verify_failure_summary';
+    const failedSuites = Array.from({ length: 25 }, (_, index) => ({
+      id: 'suite-' + index,
+      command: ['bun', 'test', 'tests/suite-' + index + '.test.ts'],
+      status: 1,
+      outputTail: '\u001b[31m' + longText('suite failed'),
+    }));
+    try {
+      writeTaskSession(tempRoot, taskSession, TEST_BRANCH);
+      const result = await executeTool('verify', { taskSession }, {
+        ...stableOptions(async () => ({
+          stdout: JSON.stringify({
+            branch: TEST_BRANCH, base: 'origin/main', headSha: 'failed-head',
+            passed: false, publishValid: false, mode: 'full', stampPath: null,
+            because: { lines: ['registry selected 25 suites and failed', ...Array(20).fill(longText('reason'))] },
+            testSelection: {
+              skipped: false, passed: false, status: 1,
+              stderr: '\u001b[31m' + longText('registry stderr'),
+              data: { selectedSuites: failedSuites, failedSuites },
+            },
+            message: '\u001b[31m' + longText('verification failed'),
+            nextAction: longText('fix failed suite'),
+          }), stderr: '', exitCode: 1,
+        })),
+        cwd: tempRoot,
+      });
+
+      expect(result.ok).toBe(false);
+      const data = result.data as {
+        passed: boolean; publishValid: boolean; message: string; nextAction: string;
+        because: { lines: unknown };
+        testSelection: {
+          passed: boolean; status: number; stderr: string;
+          data: { failedSuites: { sample: { id: string; outputTail: string }[] } };
+        };
+      };
+      expect(data.passed).toBe(false);
+      expect(data.publishValid).toBe(false);
+      expect(data.because.lines).toEqual(expect.objectContaining({
+        total: 21, sample: expect.arrayContaining(['registry selected 25 suites and failed']),
+        truncated: true, omitted: 11,
+      }));
+      expect(data.testSelection).toEqual(expect.objectContaining({ passed: false, status: 1 }));
+      expect(data.testSelection.data.failedSuites).toEqual(expect.objectContaining({
+        total: 25, truncated: true, omitted: 15,
+      }));
+      expect(data.testSelection.data.failedSuites.sample[0].id).toBe('suite-0');
+      expect(data.testSelection.data.failedSuites.sample[0].outputTail.length).toBeLessThan(660);
+      expect(data.testSelection.stderr.length).toBeLessThan(660);
+      expect(data.message.length).toBeLessThan(660);
+      expect(data.nextAction.length).toBeLessThan(660);
+      expect(JSON.stringify(data)).not.toContain('\u001b[31m');
+      expect(JSON.stringify(data)).not.toContain('x'.repeat(1000));
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('preserves completed verify publication evidence without inventing pending state', async () => {
+    const tempRoot = mkdtempSync(join(tmpdir(), 'workspace-verify-success-'));
+    const taskSession = 'tsk_verify_success_summary';
+    const completed = {
+      branch: TEST_BRANCH, base: 'origin/stream/tooling-reliability',
+      headSha: 'verified-head', passed: true, publishValid: true, mode: 'full',
+      stampPath: '.task/tooling-reliability/verification/verify.json',
+      stamp: { written: true, path: '.task/tooling-reliability/verification/verify.json', publishValid: true },
+    };
+    try {
+      writeTaskSession(tempRoot, taskSession, TEST_BRANCH);
+      const result = await executeTool('verify', { taskSession }, {
+        ...stableOptions(async () => ({
+          stdout: JSON.stringify(completed), stderr: '', exitCode: 0,
+        })),
+        cwd: tempRoot,
+      });
+
+      expect(result.ok).toBe(true);
+      expect(result.data).toEqual(expect.objectContaining(completed));
+      expect((result.data as Record<string, unknown>).pending).toBeUndefined();
+    } finally {
+      rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it('runs task-scoped verify from the resolved task worktree instead of controller cwd', async () => {
+    const controllerRoot = mkdtempSync(join(tmpdir(), 'workspace-verify-controller-'));
+    const taskWorktree = mkdtempSync(join(tmpdir(), 'workspace-verify-task-'));
+    const taskSession = 'tsk_verify_task_worktree_routing';
+    try {
+      writeTaskSession(controllerRoot, taskSession, TEST_BRANCH, taskWorktree);
+      const plans: CommandPlan[] = [];
+      const result = await executeTool('verify', {
+        taskSession,
+        noStamp: true,
+      }, {
+        ...stableOptions(successfulRunner(), plans),
+        cwd: controllerRoot,
+        currentTask: null,
+        candidates: [],
+      });
+
+      expect(result.ok).toBe(true);
+      expect(plans).toHaveLength(1);
+      expect(plans[0].cwd).toBe(taskWorktree);
+      expect(plans[0].env?.TASK_WORKTREE).toBe(taskWorktree);
+    } finally {
+      rmSync(controllerRoot, { recursive: true, force: true });
+      rmSync(taskWorktree, { recursive: true, force: true });
     }
   });
 

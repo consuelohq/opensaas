@@ -115,6 +115,30 @@ function authorityCookie(value: string, maxAgeSeconds: number): string {
   ].join('; ');
 }
 
+export async function createAuthoritySessionCookie(input: {
+  runtime: DeviceAuthorityRuntime;
+  accountId: string;
+  email: string;
+  cloudOnboardingEligible: boolean;
+}): Promise<string> {
+  try {
+    const token = rand('was', 32);
+    const nowMs = input.runtime.now();
+    await input.runtime.store.putAuthoritySession({
+      tokenHash: await hash(token),
+      accountId: input.accountId,
+      email: input.email,
+      cloudOnboardingEligible: input.cloudOnboardingEligible,
+      csrfToken: rand('csrf', 24),
+      issuedAt: nowMs,
+      expiresAt: nowMs + AUTHORITY_SESSION_TTL_MS,
+    });
+    return authorityCookie(token, AUTHORITY_SESSION_TTL_MS / 1000);
+  } catch {
+    throw new Error('authority session creation failed');
+  }
+}
+
 function csrfCookie(value: string, maxAgeSeconds: number): string {
   return [
     `${WORKSPACE_CSRF_COOKIE}=${encodeURIComponent(value)}`,
@@ -406,16 +430,11 @@ export async function completeWebGoogleLogin(input: {
   cloudOnboardingEligible: boolean;
 }): Promise<Response> {
   try {
-    const token = rand('was', 32);
-    const nowMs = input.runtime.now();
-    await input.runtime.store.putAuthoritySession({
-      tokenHash: await hash(token),
+    const sessionCookie = await createAuthoritySessionCookie({
+      runtime: input.runtime,
       accountId: input.accountId,
       email: input.email,
       cloudOnboardingEligible: input.cloudOnboardingEligible,
-      csrfToken: rand('csrf', 24),
-      issuedAt: nowMs,
-      expiresAt: nowMs + AUTHORITY_SESSION_TTL_MS,
     });
     const location = new URL('/auth/workspaces', input.runtime.origin);
     location.searchParams.set(
@@ -426,7 +445,7 @@ export async function completeWebGoogleLogin(input: {
       location.searchParams.set('target_host', PRIVATE_INTERNAL_SITE_HOST);
     }
     return redirectWithCookies(location.toString(), [
-      authorityCookie(token, AUTHORITY_SESSION_TTL_MS / 1000),
+      sessionCookie,
     ]);
   } catch {
     return json({ error: 'login_unavailable' }, { status: 503 });
@@ -596,8 +615,13 @@ async function handleWebAuthRequest(
     );
     const returnPath = normalizeAuthReturnPath(url.searchParams.get('return_to'));
     const requestedTargetHost = url.searchParams.get('target_host')?.trim().toLowerCase() ?? '';
+    const requestedWorkspaceHostRaw =
+      url.searchParams.get('workspace_host')?.trim() ?? '';
     if (requestedTargetHost && requestedTargetHost !== PRIVATE_INTERNAL_SITE_HOST) {
       return json({ error: 'handoff_target_denied' }, { status: 403 });
+    }
+    if (requestedTargetHost && requestedWorkspaceHostRaw) {
+      return json({ error: 'handoff_target_ambiguous' }, { status: 400 });
     }
     if (requestedTargetHost === PRIVATE_INTERNAL_SITE_HOST) {
       const membership = memberships.find(
@@ -606,6 +630,27 @@ async function handleWebAuthRequest(
       if (!membership) {
         return json({ error: 'workspace_access_denied' }, { status: 403 });
       }
+      return issueHandoff({ runtime, session, membership, returnPath });
+    }
+    if (requestedWorkspaceHostRaw) {
+      let requestedWorkspaceHost: string;
+      try {
+        requestedWorkspaceHost = canonicalWorkspaceHost(requestedWorkspaceHostRaw);
+      } catch {
+        return json({ error: 'invalid_workspace_host' }, { status: 400 });
+      }
+      const membership = memberships.find(
+        (candidate) =>
+          candidate.workspaceHost.toLowerCase() === requestedWorkspaceHost,
+      );
+      if (!membership) {
+        return json({ error: 'workspace_access_denied' }, { status: 403 });
+      }
+      const onboarding = await pendingCloudOnboardingResponse({
+        runtime,
+        membership,
+      });
+      if (onboarding) return onboarding;
       return issueHandoff({ runtime, session, membership, returnPath });
     }
     const choice = resolveMembershipChoice(memberships);

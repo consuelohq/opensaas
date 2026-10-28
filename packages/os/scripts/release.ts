@@ -1,7 +1,13 @@
 #!/usr/bin/env bun
 
 import { spawnSync } from 'node:child_process';
-import { randomUUID } from 'node:crypto';
+import {
+  createPublicKey,
+  randomUUID,
+  verify as verifyBytes,
+} from 'node:crypto';
+import { mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import path, { dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -21,6 +27,20 @@ import {
   resolveGitHubCliPath,
 } from './lib/github-cli';
 import { selectReleasePlatformBundleId } from './lib/release-platform-bundle';
+import { resolveConsueloHomeLayout } from './lib/consuelo-home';
+import {
+  resolveImmutableReleaseIdentityFromEvidence,
+  type ImmutableReleaseTag,
+} from './lib/release-immutable';
+import {
+  createReleaseOperationManager,
+  type ReleaseOperationRequest,
+} from './lib/release-operation';
+import {
+  canonicalBundleSignatureJson,
+  type BundleSignaturePayload,
+  type DetachedReleaseSignature,
+} from './lib/distribution/release-channels';
 import {
   RELEASE_PROMOTION_LOCK_BRANCH,
   RELEASE_PROMOTION_LOCK_PATH,
@@ -43,11 +63,48 @@ const [RUNTIME_PUBLISH_WORKFLOW, RUNTIME_PROMOTE_WORKFLOW, RUNTIME_ROLLBACK_WORK
   RELEASE_STATE_WORKFLOWS;
 const DEFAULT_RELEASE_BASE_URL = 'https://install.consuelohq.com/os/releases';
 const PACKAGE_ROOT = path.resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const RELEASE_SCRIPT_PATH = fileURLToPath(import.meta.url);
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function clean(value: unknown): string {
   return String(value ?? '').trim();
+}
+
+function trustedReleasePublicKeys(env: NodeJS.ProcessEnv = process.env): Record<string, string> {
+  const keys: Record<string, string> = {};
+  const raw = clean(env.CONSUELO_OS_RELEASE_TRUSTED_PUBLIC_KEYS);
+  if (raw) {
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      throw new Error('CONSUELO_OS_RELEASE_TRUSTED_PUBLIC_KEYS is not valid JSON');
+    }
+    if (!parsed || Array.isArray(parsed) || typeof parsed !== 'object') {
+      throw new Error('CONSUELO_OS_RELEASE_TRUSTED_PUBLIC_KEYS must be a JSON object');
+    }
+    for (const [keyId, publicKey] of Object.entries(parsed as Record<string, unknown>)) {
+      if (!keyId.trim() || typeof publicKey !== 'string' || !publicKey.trim()) {
+        throw new Error('CONSUELO_OS_RELEASE_TRUSTED_PUBLIC_KEYS contains an invalid key');
+      }
+      keys[keyId] = publicKey;
+    }
+  }
+  const keyId = clean(env.CONSUELO_OS_RELEASE_SIGNING_KEY_ID);
+  const publicKey = clean(env.CONSUELO_OS_RELEASE_SIGNING_PUBLIC_KEY);
+  if (keyId || publicKey) {
+    if (!keyId || !publicKey) {
+      throw new Error(
+        'CONSUELO_OS_RELEASE_SIGNING_KEY_ID and CONSUELO_OS_RELEASE_SIGNING_PUBLIC_KEY must be configured together',
+      );
+    }
+    keys[keyId] = publicKey;
+  }
+  if (Object.keys(keys).length === 0) {
+    throw new Error('trusted Consuelo OS release public keys are required');
+  }
+  return keys;
 }
 
 function safeErrorText(value: unknown): string {
@@ -69,6 +126,7 @@ function parseJson<T>(value: string, context: string): T {
 
 function parseArgs(argv: string[]) {
   const parsed: {
+    action: 'start' | 'status' | 'logs' | 'attach' | 'resume';
     pr?: number;
     repo: string;
     channel: ReleaseChannel;
@@ -76,13 +134,17 @@ function parseArgs(argv: string[]) {
     releaseOnly: boolean;
     dryRun: boolean;
     json: boolean;
+    operationId?: string;
+    tailLines: number;
   } = {
+    action: 'start',
     repo: DEFAULT_REPO,
     channel: 'canary',
     mergeMethod: 'merge',
     releaseOnly: false,
     dryRun: false,
     json: false,
+    tailLines: 80,
   };
 
   const next = (index: number, flag: string) => {
@@ -93,7 +155,14 @@ function parseArgs(argv: string[]) {
 
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
-    if (arg === '--pr') {
+    if (arg === '--action') {
+      const value = next(index, arg) as typeof parsed.action;
+      if (!['start', 'status', 'logs', 'attach', 'resume'].includes(value)) {
+        throw new Error(`unsupported release action: ${value}`);
+      }
+      parsed.action = value;
+      index += 1;
+    } else if (arg === '--pr') {
       parsed.pr = Number(next(index, arg));
       index += 1;
     } else if (arg === '--repo') {
@@ -115,13 +184,20 @@ function parseArgs(argv: string[]) {
       index += 1;
     } else if (arg === '--release-only') {
       parsed.releaseOnly = true;
+    } else if (arg === '--operation-id') {
+      parsed.operationId = next(index, arg);
+      index += 1;
+    } else if (arg === '--tail-lines') {
+      parsed.tailLines = Number(next(index, arg));
+      index += 1;
     } else if (arg === '--dry-run') {
       parsed.dryRun = true;
     } else if (arg === '--json') {
       parsed.json = true;
     } else if (arg === '--help' || arg === '-h') {
       process.stdout.write(
-        'release --pr <number> [--channel dev|canary|beta|stable] [--merge-method merge|squash|rebase] [--release-only] [--dry-run] [--json]\n',
+        'release [--action start] --pr <number> [--channel dev|canary|beta|stable] [--merge-method merge|squash|rebase] [--release-only] [--dry-run] [--json]\n' +
+        'release --action status|logs|attach|resume --operation-id <release-id> [--tail-lines <1-500>] [--json]\n',
       );
       process.exit(0);
     } else {
@@ -129,10 +205,21 @@ function parseArgs(argv: string[]) {
     }
   }
 
-  if (!Number.isInteger(parsed.pr) || Number(parsed.pr) <= 0) {
-    throw new Error('release requires --pr <positive-number>');
+  if (!Number.isInteger(parsed.tailLines) || parsed.tailLines < 1 || parsed.tailLines > 500) {
+    throw new Error('release --tail-lines must be an integer from 1 to 500');
   }
-  return parsed as typeof parsed & { pr: number };
+  if (parsed.action === 'start') {
+    if (!Number.isInteger(parsed.pr) || Number(parsed.pr) <= 0) {
+      throw new Error('release start requires --pr <positive-number>');
+    }
+    if (parsed.operationId) throw new Error('release start does not accept --operation-id');
+  } else {
+    if (!parsed.operationId || !/^release-[a-f0-9]{8,64}$/.test(parsed.operationId)) {
+      throw new Error(`release ${parsed.action} requires --operation-id <release-id>`);
+    }
+    if (parsed.pr !== undefined) throw new Error(`release ${parsed.action} does not accept --pr`);
+  }
+  return parsed;
 }
 
 function commandOutput(command: string, args: string[], timeout = 30_000): string {
@@ -384,6 +471,32 @@ function createAdapter(repo: string, ghPath: string): ReleaseAdapter {
     return rows.map((row) => ({ name: clean(row.name) || 'unnamed check', bucket: checkBucket(row.bucket) }));
   };
 
+  const listRequiredChecks = (pr: number): ReleaseCheck[] => {
+    const result = commandOutputAllowingStatus(
+      ghPath,
+      [
+        'pr',
+        'checks',
+        String(pr),
+        '--repo',
+        repo,
+        '--required',
+        '--json',
+        'name,bucket,state,workflow,link',
+      ],
+      [0, 1, 8],
+    );
+    if (!result.stdout) return [];
+    const rows = parseJson<Array<{ name?: string; bucket?: string }>>(
+      result.stdout,
+      'gh pr checks --required',
+    );
+    return rows.map((row) => ({
+      name: clean(row.name) || 'unnamed required check',
+      bucket: checkBucket(row.bucket),
+    }));
+  };
+
   const inspectPr = async (pr: number): Promise<ReleasePr> => {
     const view = ghJson<{
       number: number;
@@ -391,6 +504,7 @@ function createAdapter(repo: string, ghPath: string): ReleaseAdapter {
       baseRefName: string;
       isDraft: boolean;
       mergeStateStatus?: string;
+      mergeable?: string;
       reviewDecision?: string;
       mergeCommit?: { oid?: string } | null;
     }>([
@@ -398,7 +512,7 @@ function createAdapter(repo: string, ghPath: string): ReleaseAdapter {
       'view',
       String(pr),
       '--json',
-      'number,state,baseRefName,isDraft,mergeStateStatus,reviewDecision,mergeCommit',
+      'number,state,baseRefName,isDraft,mergeStateStatus,mergeable,reviewDecision,mergeCommit',
     ]);
     const state = clean(view.state).toUpperCase();
     return {
@@ -407,8 +521,10 @@ function createAdapter(repo: string, ghPath: string): ReleaseAdapter {
       baseRefName: clean(view.baseRefName),
       isDraft: Boolean(view.isDraft),
       mergeStateStatus: clean(view.mergeStateStatus),
+      mergeable: clean(view.mergeable),
       reviewDecision: clean(view.reviewDecision),
       checks: state === 'OPEN' ? listChecks(pr) : [],
+      requiredChecks: state === 'OPEN' ? listRequiredChecks(pr) : [],
       ...(clean(view.mergeCommit?.oid) ? { mergeSha: clean(view.mergeCommit?.oid) } : {}),
     };
   };
@@ -478,6 +594,134 @@ function createAdapter(repo: string, ghPath: string): ReleaseAdapter {
     };
   };
 
+  const resolveImmutableRelease = (mergeSha: string): ReleaseIdentity | null => {
+    const tagRows = commandOutput(
+      ghPath,
+      [
+        'api',
+        '--paginate',
+        `repos/${repo}/tags?per_page=100`,
+        '--jq',
+        '.[] | [.name, .commit.sha] | @tsv',
+      ],
+      120_000,
+    );
+    const tags: ImmutableReleaseTag[] = tagRows
+      .split(/\r?\n/)
+      .filter(Boolean)
+      .map((line) => {
+        const [name = '', sha = ''] = line.split('\t');
+        return { name: clean(name), sha: clean(sha) };
+      });
+    const exactTags = tags.filter(
+      (tag) => tag.sha.toLowerCase() === mergeSha.toLowerCase()
+        && /^consuelo-os-v\d+\.\d+\.\d+$/.test(tag.name),
+    );
+    if (exactTags.length === 0) return null;
+    if (exactTags.length !== 1) {
+      throw new Error(`multiple immutable Consuelo OS releases point at ${mergeSha}`);
+    }
+
+    const tempDirectory = mkdtempSync(path.join(tmpdir(), 'consuelo-release-signatures-'));
+    try {
+      commandOutput(
+        ghPath,
+        [
+          'release',
+          'download',
+          exactTags[0]!.name,
+          '--repo',
+          repo,
+          '--pattern',
+          '*.sig',
+          '--dir',
+          tempDirectory,
+          '--clobber',
+        ],
+        120_000,
+      );
+      const expectedVersion = exactTags[0]!.name.slice('consuelo-os-v'.length);
+      const trustedKeys = trustedReleasePublicKeys();
+      let expectedReleaseFingerprint = '';
+      const observedPlatforms = new Set<string>();
+      const signaturePayloads = readdirSync(tempDirectory)
+        .filter((name) => name.endsWith('.sig'))
+        .sort()
+        .map((name) => {
+          const signature = parseJson<
+            Partial<DetachedReleaseSignature> & { payload?: BundleSignaturePayload }
+          >(
+            readFileSync(path.join(tempDirectory, name), 'utf8'),
+            `immutable release signature ${name}`,
+          );
+          if (
+            signature.algorithm !== 'ed25519'
+            || !signature.keyId?.trim()
+            || !signature.signature?.trim()
+            || !signature.payload
+          ) {
+            throw new Error(`immutable release signature ${name} is incomplete`);
+          }
+          const publicKeyPem = trustedKeys[signature.keyId];
+          if (!publicKeyPem) {
+            throw new Error(`immutable release signature key is not trusted: ${signature.keyId}`);
+          }
+          let publicKey;
+          try {
+            publicKey = createPublicKey(publicKeyPem);
+          } catch {
+            throw new Error(`immutable release signing key is not usable: ${signature.keyId}`);
+          }
+          if (
+            publicKey.asymmetricKeyType !== 'ed25519'
+            || !verifyBytes(
+              null,
+              Buffer.from(canonicalBundleSignatureJson(signature.payload)),
+              publicKey,
+              Buffer.from(signature.signature, 'base64url'),
+            )
+          ) {
+            throw new Error(`immutable release signature verification failed for ${name}`);
+          }
+          const payload = signature.payload;
+          const platformKey = `${payload.platform}-${payload.architecture}`;
+          if (observedPlatforms.has(platformKey)) {
+            throw new Error(`duplicate immutable release signature platform: ${platformKey}`);
+          }
+          observedPlatforms.add(platformKey);
+          if (payload.sourceCommit.toLowerCase() !== mergeSha.toLowerCase()) {
+            throw new Error(`immutable release signature source commit mismatch for ${platformKey}`);
+          }
+          if (payload.version !== expectedVersion) {
+            throw new Error(`immutable release signature version mismatch for ${platformKey}`);
+          }
+          if (!/^sha256:[a-f0-9]{64}$/.test(payload.bundleId)) {
+            throw new Error(`immutable release platform bundle ID is invalid for ${platformKey}`);
+          }
+          if (!/^sha256:[a-f0-9]{64}$/.test(payload.releaseFingerprint)) {
+            throw new Error(`immutable release fingerprint is invalid for ${platformKey}`);
+          }
+          if (
+            expectedReleaseFingerprint
+            && payload.releaseFingerprint !== expectedReleaseFingerprint
+          ) {
+            throw new Error('immutable release signatures disagree on the release fingerprint');
+          }
+          expectedReleaseFingerprint = payload.releaseFingerprint;
+          return payload;
+        });
+      return resolveImmutableReleaseIdentityFromEvidence({
+        mergeSha,
+        platform: process.platform === 'win32' ? 'windows' : process.platform,
+        architecture: process.arch,
+        tags,
+        signaturePayloads,
+      });
+    } finally {
+      rmSync(tempDirectory, { recursive: true, force: true });
+    }
+  };
+
   const lifecycleJson = <T>(args: string[], timeout = 120_000): T =>
     parseJson<T>(
       commandOutput(process.execPath, [path.join(PACKAGE_ROOT, 'scripts/lifecycle.ts'), ...args, '--json'], timeout),
@@ -492,7 +736,9 @@ function createAdapter(repo: string, ghPath: string): ReleaseAdapter {
         while (Date.now() < deadline) {
           const current = await inspectPr(pr);
           if (current.checks.some((check) => check.bucket === 'fail')) return current;
-          if (!current.checks.some((check) => check.bucket === 'pending')) return current;
+          if (!(current.requiredChecks ?? current.checks).some((check) => check.bucket === 'pending')) {
+            return current;
+          }
           await sleep(5_000);
         }
         throw new Error(`timed out waiting for PR #${pr} checks`);
@@ -561,6 +807,8 @@ function createAdapter(repo: string, ghPath: string): ReleaseAdapter {
           if (release?.sourceCommit === mergeSha) return release;
           await sleep(3_000);
         }
+        const immutableRelease = resolveImmutableRelease(mergeSha);
+        if (immutableRelease) return immutableRelease;
         const runs = ghJson<Array<{ databaseId: number; headSha?: string }>>([
           'run',
           'list',
@@ -770,21 +1018,134 @@ function createAdapter(repo: string, ghPath: string): ReleaseAdapter {
   };
 }
 
-async function main(): Promise<void> {
-  const args = parseArgs(process.argv.slice(2));
+function releaseOperationManager() {
+  return createReleaseOperationManager({
+    home: resolveConsueloHomeLayout().home,
+    executable: process.execPath,
+    scriptPath: RELEASE_SCRIPT_PATH,
+  });
+}
+
+async function executeRelease(request: ReleaseOperationRequest) {
   const ghPath = resolveGitHubCliPath();
   assertGitHubCliAuthenticated(ghPath);
-  const result = await orchestrateRelease(
+  return orchestrateRelease(
     {
-      pr: args.pr,
-      channel: args.channel,
-      mergeMethod: args.mergeMethod,
-      releaseOnly: args.releaseOnly,
-      dryRun: args.dryRun,
+      pr: request.pr,
+      channel: request.channel,
+      mergeMethod: request.mergeMethod,
+      releaseOnly: request.releaseOnly,
+      dryRun: request.dryRun,
     },
-    createAdapter(args.repo, ghPath),
+    createAdapter(request.repo, ghPath),
   );
-  process.stdout.write(`${JSON.stringify({ ok: true, result })}\n`);
+}
+
+async function runOperationWorker(operationId: string): Promise<void> {
+  if (!/^release-[a-f0-9]{24}$/.test(operationId)) {
+    throw new Error('release operation worker received an invalid operation id');
+  }
+  const manager = releaseOperationManager();
+  const state = manager.status(operationId);
+  if (!state) throw new Error(`release operation not found: ${operationId}`);
+  manager.appendLog(
+    operationId,
+    `starting release PR #${state.request.pr} -> ${state.request.channel}`,
+  );
+  try {
+    const result = await executeRelease(state.request);
+    const current = manager.status(operationId) ?? state;
+    manager.writeState({
+      ...current,
+      phase: 'succeeded',
+      workerPid: undefined,
+      message: 'release completed',
+      result,
+      updatedAt: new Date().toISOString(),
+    });
+    manager.appendLog(
+      operationId,
+      `release completed${result.version ? ` at ${result.channel} ${result.version}` : ''}`,
+    );
+  } catch (error: unknown) {
+    const message = safeErrorText(error instanceof Error ? error.message : error);
+    const current = manager.status(operationId) ?? state;
+    manager.writeState({
+      ...current,
+      phase: 'failed',
+      workerPid: undefined,
+      message: message || 'release operation failed',
+      updatedAt: new Date().toISOString(),
+    });
+    manager.appendLog(operationId, `release failed: ${message || 'unknown error'}`);
+    throw error;
+  }
+}
+
+async function main(): Promise<void> {
+  try {
+    const argv = process.argv.slice(2);
+    if (argv[0] === '--operation-worker') {
+      if (argv.length !== 2 || !argv[1]) {
+        throw new Error('release operation worker requires exactly one operation id');
+      }
+      await runOperationWorker(argv[1]);
+      return;
+    }
+
+    const args = parseArgs(argv);
+    const manager = releaseOperationManager();
+    if (args.action === 'start') {
+      const request: ReleaseOperationRequest = {
+        repo: args.repo,
+        pr: Number(args.pr),
+        channel: args.channel,
+        mergeMethod: args.mergeMethod,
+        releaseOnly: args.releaseOnly,
+        dryRun: args.dryRun,
+      };
+      const started = await manager.start(request);
+      process.stdout.write(`${JSON.stringify({
+        ok: true,
+        result: {
+          accepted: true,
+          operationId: started.operationId,
+          reused: started.reused,
+          phase: started.state.phase,
+        },
+      })}\n`);
+      return;
+    }
+
+    const operationId = args.operationId!;
+    if (args.action === 'resume') {
+      const resumed = await manager.resume(operationId);
+      process.stdout.write(`${JSON.stringify({ ok: true, result: resumed })}\n`);
+      return;
+    }
+    const state = manager.status(operationId);
+    if (!state) throw new Error(`release operation not found: ${operationId}`);
+    if (args.action === 'logs') {
+      process.stdout.write(`${JSON.stringify({
+        ok: true,
+        result: manager.logs(operationId, args.tailLines),
+      })}\n`);
+      return;
+    }
+    if (args.action === 'attach') {
+      process.stdout.write(`${JSON.stringify({
+        ok: true,
+        result: {
+          state,
+          logs: manager.logs(operationId, args.tailLines).lines,
+        },
+      })}\n`);
+      return;
+    }
+    process.stdout.write(`${JSON.stringify({ ok: true, result: state })}\n`);
+  } catch (error: unknown) {
+    throw error;
+  }
 }
 
 main().catch((error: unknown) => {

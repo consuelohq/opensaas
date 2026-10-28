@@ -13,7 +13,7 @@ public final class MenuBarInstanceLock: @unchecked Sendable {
         _ = close(descriptor)
     }
 
-    public static func acquire(name: String = "com.consuelohq.os.menubar.alpha") -> MenuBarInstanceLock? {
+    public static func acquire(name: String = "com.consuelohq.os.menubar") -> MenuBarInstanceLock? {
         let safeName = name.map { character in
             character.isLetter || character.isNumber || character == "." || character == "-" ? character : "_"
         }

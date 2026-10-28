@@ -16,6 +16,7 @@ export function registerMcpProxyRoutes(
       routeRegistry: runtime.workspaceRouteRegistry,
       internalSigningSecret: runtime.workspaceEdgeInternalSigningSecret,
       operationalLogger: runtime.operationalLogger,
+      defer: runtime.defer,
       fetchImpl: runtime.fetchImpl,
     });
   app.all('/mcp', (context) => proxy(context.req.raw));

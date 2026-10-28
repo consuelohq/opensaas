@@ -725,6 +725,14 @@
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
     },
+    "scripts/lib/macos-supervised-heartbeat.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned macOS heartbeat ownership boundary keeps the signed workspace heartbeat inside the supervised runtime and intentionally has no workspace counterpart."
+    },
+    "scripts/lib/macos-supervised-sidecars.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned macOS sidecar supervisor manages Caddy and Cloudflared child lifecycle for installed runtimes and intentionally has no workspace counterpart."
+    },
     "scripts/lib/managed-cloud-node-enrollment.ts": {
       "status": "os-only-needs-review",
       "reason": "scripts/lib/managed-cloud-node-enrollment.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
@@ -1018,6 +1026,14 @@
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
     },
+    "scripts/lib/release-immutable.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned immutable release-evidence resolver pins release operations to exact merged source and publication state; no workspace counterpart is intended."
+    },
+    "scripts/lib/release-operation.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned durable release-operation state persists bounded resumable release progress and intentionally has no workspace counterpart."
+    },
     "scripts/lib/release-orchestrator.ts": {
       "status": "os-only-needs-review",
       "reason": "scripts/lib/release-orchestrator.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
@@ -1045,6 +1061,14 @@
     "scripts/lib/runtime-state.ts": {
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
+    },
+    "scripts/lib/runtime-tool-providers/swamp.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned Swamp runtime-provider adapter for optional local tool discovery and execution; it has no workspace-script counterpart."
+    },
+    "scripts/lib/runtime-tool-registry.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned effective runtime tool registry that merges optional provider tools without mutating the generated manifest; it has no workspace-script counterpart."
     },
     "scripts/lib/search/explore-output.js": {
       "status": "os-only-needs-review",
@@ -1420,8 +1444,8 @@
       "reason": "Same relative path exists in both script trees with content drift; a later PR must review before syncing or porting."
     },
     "scripts/lib/verify-run-state.js": {
-      "status": "os-only-intentional",
-      "reason": "scripts/lib/verify-run-state.js is an intentional OS-owned runtime, build, support, or test asset with no workspace counterpart."
+      "status": "same",
+      "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
     },
     "scripts/lib/windows-platform.ts": {
       "status": "os-only-needs-review",
@@ -1502,6 +1526,10 @@
     "scripts/lib/workspace-node-heartbeat-scheduler.ts": {
       "status": "os-only-needs-review",
       "reason": "scripts/lib/workspace-node-heartbeat-scheduler.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+    },
+    "scripts/lib/workspace-node-registration-client.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned lifecycle client uses the enrolled node signing key to revoke standalone node registration before destructive local uninstall; it intentionally has no workspace script counterpart."
     },
     "scripts/lib/workspace-node-snapshot-cache.ts": {
       "status": "os-only-needs-review",
@@ -1972,6 +2000,10 @@
     "scripts/tools-search-benchmark.ts": {
       "status": "os-only-needs-review",
       "reason": "scripts/tools-search-benchmark.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+    },
+    "scripts/tools-search-jev-benchmark.ts": {
+      "status": "os-only-needs-review",
+      "reason": "scripts/tools-search-jev-benchmark.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
     },
     "scripts/tools-search.ts": {
       "status": "os-only-needs-review",

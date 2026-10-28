@@ -5,8 +5,9 @@ import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 
-import { applyManifestOverlay, readManifestOverlay, resolveOverlayHome } from './lib/manifest-overlay';
 import { outputTypeSignatures, schemaTypeSignatures } from './lib/facade/schemas';
+import { readEffectiveFullManifest } from './lib/manifest';
+import { runtimeProviderInputSignature } from './lib/runtime-tool-registry';
 
 const require = createRequire(import.meta.url);
 
@@ -58,6 +59,9 @@ type ToolManifestEntry = {
   exampleInput?: Record<string, unknown>;
   sessionRequired?: boolean;
   search?: SearchMetadata;
+  runtimeProvider?: {
+    inputSchema: JsonObject;
+  };
 };
 
 type CanonicalManifestEntry = {
@@ -149,7 +153,6 @@ type EmbeddingDiagnostics = {
 };
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const manifestPath = path.join(packageRoot, 'manifests', 'generated', 'tool.manifest.json');
 const toolsDocPath = path.join(packageRoot, 'TOOLS.md');
 const TOOL_CARD_VERSION = 'tools-search-card-v3';
 const DEFAULT_LIMIT = 3;
@@ -249,14 +252,10 @@ function isObject(value: unknown): value is JsonObject {
 }
 
 function readCanonicalManifest(): CanonicalToolManifest {
-  const parsed = JSON.parse(fs.readFileSync(manifestPath, 'utf8')) as unknown;
-  if (!isObject(parsed) || !Array.isArray(parsed.tools)) {
-    throw new Error(`${manifestPath}: expected generated tool manifest with tools array`);
-  }
-  const manifest = parsed as CanonicalToolManifest;
-  const home = resolveOverlayHome();
-  if (!fs.existsSync(path.join(home, 'config.json'))) return manifest;
-  return applyManifestOverlay(manifest, readManifestOverlay(home));
+  return readEffectiveFullManifest(undefined, {
+    cwd: process.env.CONSUELO_TOOL_CALLER_CWD ?? process.cwd(),
+    env: process.env,
+  }) as unknown as CanonicalToolManifest;
 }
 
 function stringField(value: unknown): string | undefined {
@@ -632,12 +631,17 @@ function compactCapabilities(capabilities: ToolCapability | undefined): Pick<Too
 function toCompactMatch(item: ScoredTool): Record<string, unknown> {
   const entry = item.card.entry;
   const inputSchema = entry.inputSchema;
+  const runtimeSignature = runtimeProviderInputSignature(entry);
   return {
     name: entry.name,
     ...(entry.category ? { category: entry.category } : {}),
     ...(entry.description ? { description: entry.description } : {}),
     capabilities: compactCapabilities(entry.capabilities),
-    ...(inputSchema && schemaTypeSignatures[inputSchema] ? { inputSignature: schemaTypeSignatures[inputSchema] } : {}),
+    ...(runtimeSignature
+      ? { inputSignature: runtimeSignature }
+      : inputSchema && schemaTypeSignatures[inputSchema]
+        ? { inputSignature: schemaTypeSignatures[inputSchema] }
+        : {}),
     ...(entry.sessionRequired === true ? { sessionRequired: true } : {}),
   };
 }

@@ -76,6 +76,12 @@
   color: var(--site-color-ink);
 }
 
+.site-button--editorial {
+  border-radius: 0;
+  font: 650 var(--site-text-xs) / 1 var(--site-font-mono);
+  letter-spacing: var(--site-tracking-control);
+}
+
 .site-card {
   border: 1px solid var(--site-color-line);
   border-radius: var(--site-radius-card);

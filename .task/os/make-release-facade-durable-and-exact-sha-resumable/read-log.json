@@ -1,0 +1,21 @@
+{
+  "files": [
+    ".task/os/make-release-facade-durable-and-exact-sha-resumable/workpad.md",
+    "packages/documentation/AUTHORING.md",
+    "packages/documentation/src/content/docs/reference/tools.mdx",
+    "packages/os/definitely-missing.json",
+    "packages/os/manifests/generated/tool.manifest.json",
+    "packages/os/scripts/generate-tool-manifest.ts",
+    "packages/os/scripts/lib/consuelo-home.ts",
+    "packages/os/scripts/lib/facade/schemas.ts",
+    "packages/os/scripts/lib/release-operation.ts",
+    "packages/os/scripts/lib/release-orchestrator.ts",
+    "packages/os/scripts/release.ts",
+    "packages/os/tests/release-orchestrator.test.ts",
+    "packages/os/tests/tool-manifest.test.ts",
+    "packages/workspace/scripts/test-selection.js",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "updatedAt": "2026-09-23T23:16:30.553Z"
+}

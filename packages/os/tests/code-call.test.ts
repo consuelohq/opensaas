@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
@@ -203,6 +203,26 @@ describe('code.call runtime', () => {
     }
   });
 
+  it('ignores .task bookkeeping changes when checking verify mutation policy', async () => {
+    const root = tempRoot();
+    try {
+      initGitRepo(root);
+      mkdirSync(join(root, '.task', 'os', 'example'), { recursive: true });
+      writeFileSync(join(root, '.task', 'os', 'example', 'workpad.md'), 'before\n');
+
+      const result = await runCodeCall({
+        language: 'python',
+        mode: 'verify',
+        code: 'from pathlib import Path\nPath(".task/os/example/workpad.md").write_text("after\\n")',
+      }, root);
+
+      expect(result.ok).toBe(true);
+      expect(result.data.filesChanged).toEqual([]);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it('rejects taskWorktree values outside managed task worktrees before using them as cwd', async () => {
     const root = tempRoot();
     try {
@@ -311,6 +331,44 @@ describe('code.call runtime', () => {
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
+  });
+
+  it('uses a compact default result envelope for verify mode', async () => {
+    const root = tempRoot();
+    try {
+      const result = await runCodeCall({
+        language: 'python',
+        mode: 'verify',
+        code: 'import sys\nprint("x" * 8000)\nsys.stderr.write("y" * 8000)',
+      }, root);
+
+      expect(result.ok).toBe(true);
+      expect(result.data.truncated).toBe(true);
+      expect(result.data.stdout.length).toBeLessThanOrEqual(6_000);
+      expect(result.data.stderr.length).toBeLessThanOrEqual(6_000);
+      expect(result.stderr.length).toBeLessThanOrEqual(2_000);
+      expect(result.data.stdoutLogPath).toBeTruthy();
+      expect(result.data.stderrLogPath).toBeTruthy();
+      expect(readFileSync(String(result.data.stdoutLogPath), 'utf8').length).toBeGreaterThan(6_000);
+      expect(readFileSync(String(result.data.stderrLogPath), 'utf8').length).toBeGreaterThan(6_000);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('suppresses nested facade telemetry from verify-mode stderr', async () => {
+    const root = repoRoot();
+    const executorPath = join(root, 'packages/os/scripts/lib/facade/executor.ts');
+    const result = await runCodeCall({
+      language: 'bun',
+      mode: 'verify',
+      cwd: root,
+      code: `const { executeTool } = await import(${JSON.stringify(executorPath)});
+await executeTool('fs.read', { path: 'packages/os/definitely-missing.json' }, { cwd: process.cwd() });`,
+    }, root);
+
+    expect(result.ok).toBe(true);
+    expect(result.data.stderr).not.toContain('"event":"tool.executed"');
   });
 
   it('should keep the tail when truncating oversized output', async () => {

@@ -112,6 +112,43 @@ describe('test selection registry', () => {
     ).toEqual(['bun', 'run', '--cwd', 'packages/os', 'test']);
   }, 15_000);
 
+  it('preserves explicit selector ownership after registry regeneration', () => {
+    const out = path.join(os.tmpdir(), `test-selection-regenerated-${Date.now()}.json`);
+    const generated = json(run(['generate', '--out', out, '--json']));
+    expect(generated.summary.testFileCount).toBeGreaterThan(0);
+
+    const regeneratedRegistry = JSON.parse(fs.readFileSync(out, 'utf8'));
+    const committedRegistry = JSON.parse(fs.readFileSync(
+      path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../test-selection.registry.json'),
+      'utf8',
+    ));
+    const normalizeExplicit = (registry) => registry.rules
+      .filter((rule) => rule.origin === 'explicit')
+      .map(({ origin, ...rule }) => rule);
+
+    expect(normalizeExplicit(regeneratedRegistry)).toEqual(
+      normalizeExplicit(committedRegistry),
+    );
+
+    const selection = json(run([
+      'check',
+      '--registry',
+      out,
+      '--changed-file',
+      'packages/workspace/scripts/confirm.js',
+      '--changed-file',
+      'packages/os/scripts/confirm.js',
+      '--json',
+    ]));
+    const matchedRuleIds = selection.matchedRules.map((rule) => rule.id);
+    const suiteNames = selection.selectedSuites.map((suite) => suite.name);
+    expect(matchedRuleIds).toContain('workspace-publish-gate');
+    expect(suiteNames).toContain('workspace verification stamp tests');
+    expect(suiteNames).not.toContain('@consuelo/os package test');
+
+    fs.rmSync(out, { force: true });
+  }, 15_000);
+
   it('routes current OS Trace inspector changes only to existing OS-owned suites', () => {
     const rulesPath = path.resolve(
       path.dirname(fileURLToPath(import.meta.url)),
@@ -232,6 +269,52 @@ describe('test selection registry', () => {
     expect(data.selectedSuites.map((suite) => suite.name)).toContain(
       'workspace stream sync runtime contracts',
     );
+  });
+
+  it('keeps agent-boundary tooling changes on focused suites instead of the broad OS package test', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/task-merge.js',
+      '--changed-file',
+      'packages/os/scripts/lib/task-merge-readiness.js',
+      '--changed-file',
+      'packages/os/scripts/stream-sync.js',
+      '--changed-file',
+      'packages/os/tests/facade/not-found-recovery.test.ts',
+      '--json',
+    ]));
+
+    expect(data.matchedRules.map((rule) => rule.id)).toEqual(
+      expect.arrayContaining([
+        'workspace-task-merge-agent-boundary',
+        'workspace-stream-sync-runtime',
+        'os-mcp-call-timeout-envelope',
+      ]),
+    );
+    expect(data.selectedSuites.map((suite) => suite.name)).toContain(
+      'workspace task merge agent-boundary contracts',
+    );
+    expect(data.selectedSuites.map((suite) => suite.name)).not.toContain(
+      '@consuelo/os package test',
+    );
+  });
+
+  it('routes synchronous confirm verification changes through the focused publish gate', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/workspace/scripts/confirm.js',
+      '--changed-file',
+      'packages/os/scripts/confirm.js',
+      '--json',
+    ]));
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('workspace-publish-gate');
+    expect(suiteNames).toContain('workspace verification stamp tests');
+    expect(suiteNames).not.toContain('@consuelo/os package test');
   });
 
   it('suppresses a broad auto package suite when explicit critical coverage fully owns the changed code', () => {
@@ -637,6 +720,113 @@ describe('test selection registry', () => {
     expect(suiteNames).not.toContain('@consuelo/os package test');
   });
 
+  it('routes verify self-hosting regression through a focused facade suite', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/lib/facade/executor.ts',
+      '--changed-file',
+      'packages/os/tests/facade/facade.test.ts',
+      '--json',
+    ]));
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+    const commands = data.selectedSuites.map((suite) => suite.command);
+
+    expect(suiteNames).not.toContain('@consuelo/os package test');
+    expect(commands.some((command) =>
+      command.includes('packages/os/tests/facade/facade.test.ts')
+      && command.includes('runs task-scoped verify from the resolved task worktree instead of controller cwd')
+    )).toBe(true);
+  });
+
+  it('runs the owned NOT_FOUND recovery test from the exclusive MCP selector', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/tests/facade/not-found-recovery.test.ts',
+      '--json',
+    ]));
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const commands = data.selectedSuites.map((suite) => suite.command);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-mcp-call-timeout-envelope');
+    expect(suiteNames).not.toContain('@consuelo/os package test');
+    expect(commands.some((command) =>
+      command.includes('packages/os/tests/facade/not-found-recovery.test.ts')
+    )).toBe(true);
+  });
+
+  it('routes the bounded OS syntax runner through its focused contract', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/check-syntax.js',
+      '--changed-file',
+      'packages/os/tests/check-syntax-runner.test.ts',
+      '--json',
+    ]));
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-bounded-js-syntax-runner');
+    expect(suiteNames).toEqual(expect.arrayContaining([
+      'OS bounded JavaScript syntax runner contract',
+      'OS JavaScript syntax sweep',
+    ]));
+    expect(suiteNames).not.toContain('@consuelo/os package test');
+  });
+
+  it('keeps syntax-runner changes on a bounded focused contract', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/check-syntax.js',
+      '--changed-file',
+      'packages/workspace/scripts/check-syntax.js',
+      '--changed-file',
+      'packages/os/tests/check-syntax-runner.test.ts',
+      '--json',
+    ]));
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-bounded-js-syntax-runner');
+    expect(suiteNames).toEqual(expect.arrayContaining([
+      'OS bounded JavaScript syntax runner contract',
+      'OS JavaScript syntax sweep',
+    ]));
+    expect(suiteNames).not.toContain('@consuelo/os package test');
+  });
+
+  it('routes MCP response-completion boundary changes through focused contracts', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/cloudflare/os-device-authority/src/routes/mcp-proxy.ts',
+      '--changed-file',
+      'packages/os/cloudflare/os-device-authority/src/services/mcp-proxy.ts',
+      '--changed-file',
+      'packages/os/scripts/server/mcp-request-receipts.ts',
+      '--changed-file',
+      'packages/os/scripts/server/mcp-request-recovery.ts',
+      '--changed-file',
+      'packages/os/tests/mcp-request-recovery.test.ts',
+      '--changed-file',
+      'packages/os/scripts/server/routes/mcp.ts',
+      '--json',
+    ]));
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-mcp-response-completion-boundary');
+    expect(suiteNames).toEqual(expect.arrayContaining([
+      'OS MCP response receipt contracts',
+      'OS MCP post-upstream completion contracts',
+    ]));
+    expect(suiteNames).not.toContain('@consuelo/os package test');
+  });
+
   it('uses focused launcher copy interaction contracts instead of the broad OS package suite', () => {
     const result = run([
       'check',
@@ -687,6 +877,10 @@ describe('test selection registry', () => {
     const result = run([
       'check',
       '--changed-file',
+      'packages/os/scripts/lib/release-operation.ts',
+      '--changed-file',
+      'packages/os/scripts/lib/release-immutable.ts',
+      '--changed-file',
       '.github/workflows/consuelo-os-runtime-publish.yaml',
       '--changed-file',
       'packages/os/package.json',
@@ -698,6 +892,10 @@ describe('test selection registry', () => {
       'packages/workspace/scripts/os-release-device-auth.ts',
       '--changed-file',
       'packages/os/tests/production-release-mcp-security.test.ts',
+      '--changed-file',
+      'packages/os/tests/release-operation.test.ts',
+      '--changed-file',
+      'packages/os/tests/release-immutable.test.ts',
       '--json',
     ]);
     const data = json(result);
@@ -719,6 +917,8 @@ describe('test selection registry', () => {
     expect(releaseSuite?.command).toContain(
       'tests/production-release-mcp-security.test.ts',
     );
+    expect(releaseSuite?.command).toContain('tests/release-operation.test.ts');
+    expect(releaseSuite?.command).toContain('tests/release-immutable.test.ts');
   });
 
   it('uses focused OS Explore retrieval contracts instead of the broad OS package suite', () => {
@@ -1992,6 +2192,8 @@ describe('test selection registry', () => {
   it('routes native macOS menu changes through focused Mac contracts', () => {
     const data = json(run([
       'check',
+      '--platform',
+      'darwin',
       '--changed-file',
       'packages/os/native/macos/Sources/ConsueloMacCore/Presentation.swift',
       '--changed-file',
@@ -2009,6 +2211,29 @@ describe('test selection registry', () => {
     );
     expect(data.selectedSuites.map((suite) => suite.name)).toEqual([
       'macOS menu Swift contracts',
+      'macOS menu platform contracts',
+      'macOS alpha package syntax',
+    ]);
+  });
+
+  it('does not run macOS Swift menu contracts on Linux verify', () => {
+    const data = json(run([
+      'check',
+      '--platform',
+      'linux',
+      '--changed-file',
+      'packages/os/native/macos/Sources/ConsueloMacCore/Presentation.swift',
+      '--changed-file',
+      'packages/os/scripts/testing/macos-alpha-package.sh',
+      '--changed-file',
+      'packages/os/tests/macos-platform.test.ts',
+      '--json',
+    ]));
+
+    expect(data.matchedRules.map((rule) => rule.id)).toContain(
+      'os-macos-menu-app',
+    );
+    expect(data.selectedSuites.map((suite) => suite.name)).toEqual([
       'macOS menu platform contracts',
       'macOS alpha package syntax',
     ]);

@@ -4,6 +4,7 @@ import path from 'node:path';
 
 import { resolveConsueloHomeLayout } from '../lib/consuelo-home';
 import { startDefaultNativeLifecycleEndpoint } from '../lib/native-lifecycle-endpoint';
+import { shouldRunMacosSupervisedHeartbeat } from '../lib/macos-supervised-heartbeat';
 import { resolveWorkerGracefulDrainSignal } from '../lib/worker-pool';
 import { startWorkspaceNodeHeartbeatScheduler } from '../lib/workspace-node-heartbeat-scheduler';
 import { sendWorkspaceNodeHeartbeatFromConfig } from '../workspace-node-heartbeat';
@@ -103,7 +104,13 @@ if (import.meta.main) {
   const lifecycleEndpoint = process.platform === 'darwin' && !supervisedWorker
     ? await startDefaultNativeLifecycleEndpoint()
     : undefined;
-  const heartbeatScheduler = process.platform === 'win32' && !supervisedWorker
+  const ownsWorkspaceHeartbeat = (process.platform === 'win32' && !supervisedWorker)
+    || shouldRunMacosSupervisedHeartbeat({
+      supervisedWorker,
+      heartbeatOwner: process.env.CONSUELO_OS_HEARTBEAT_OWNER,
+      workerId: process.env.CONSUELO_OS_WORKER_ID,
+    });
+  const heartbeatScheduler = ownsWorkspaceHeartbeat
     ? startWorkspaceNodeHeartbeatScheduler({
         configPath: path.join(resolveConsueloHomeLayout().nodeSecurityGeneratedDir, 'workspace-node-heartbeat.json'),
         send: sendWorkspaceNodeHeartbeatFromConfig,

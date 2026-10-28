@@ -1,5 +1,6 @@
 ---
 import { homeHeroRotatingAssistant, INSTALL_COMMAND } from '../../data/home-content';
+import CloudField from '../visuals/CloudField.astro';
 
 type Props = {
   sectionId?: string;
@@ -11,12 +12,7 @@ const [primaryAssistant, secondaryAssistant] = heroCopy.assistants;
 ---
 
 <section class="os-hero" id={sectionId} data-section="hero">
-  <div class="os-hero__atmosphere" aria-hidden="true">
-    <img class="os-hero__cloud os-hero__cloud--1" src="/images/home/dither/cloud-1.png" alt="" width="900" height="450" loading="eager" />
-    <img class="os-hero__cloud os-hero__cloud--2" src="/images/home/dither/cloud-2.png" alt="" width="1020" height="390" loading="eager" />
-    <img class="os-hero__cloud os-hero__cloud--3" src="/images/home/dither/cloud-3.png" alt="" width="800" height="450" loading="eager" />
-    <img class="os-hero__cloud os-hero__cloud--4" src="/images/home/dither/cloud-4.png" alt="" width="950" height="400" loading="eager" />
-  </div>
+  <CloudField />
 
   <div class="os-hero__content">
     <h1 data-hero-heading aria-label={heroCopy.ariaLabel}>
@@ -431,55 +427,6 @@ const [primaryAssistant, secondaryAssistant] = heroCopy.assistants;
     transform: translate(0, 0);
   }
 
-  .os-hero__atmosphere {
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    overflow: hidden;
-    pointer-events: none;
-    mask-image: linear-gradient(to bottom, black 78%, transparent 100%);
-    -webkit-mask-image: linear-gradient(to bottom, black 78%, transparent 100%);
-  }
-
-  .os-hero__cloud {
-    position: absolute;
-    max-width: none;
-    image-rendering: pixelated;
-  }
-
-  .os-hero__cloud--1 {
-    top: 5%;
-    left: -10%;
-    opacity: 0.42;
-  }
-
-  .os-hero__cloud--2 {
-    bottom: 22%;
-    left: -12%;
-    opacity: 0.45;
-  }
-
-  .os-hero__cloud--3 {
-    top: 2%;
-    right: -16%;
-    opacity: 0.34;
-  }
-
-  .os-hero__cloud--4 {
-    bottom: 8%;
-    right: -14%;
-    opacity: 0.4;
-  }
-
-  .os-hero::after {
-    position: absolute;
-    z-index: 1;
-    inset: 18% 0 7%;
-    background: radial-gradient(circle at 50% 48%, rgba(0, 0, 242, 0.64), transparent 54%);
-    content: '';
-    pointer-events: none;
-  }
-
   @media (max-width: 720px) {
     .os-hero {
       min-height: 90svh;
@@ -523,29 +470,6 @@ const [primaryAssistant, secondaryAssistant] = heroCopy.assistants;
       font-size: 0.64rem;
     }
 
-    .os-hero__cloud--1 {
-      top: 3%;
-      left: -30%;
-      width: 480px;
-      height: 240px;
-    }
-
-    .os-hero::after {
-      inset: 16% -25% 8%;
-      background: radial-gradient(circle at 50% 48%, rgba(0, 0, 242, 0.74), transparent 58%);
-    }
-
-    .os-hero__cloud--3 {
-      top: 8%;
-      right: -34%;
-      width: 400px;
-      height: 225px;
-    }
-
-    .os-hero__cloud--2,
-    .os-hero__cloud--4 {
-      display: none;
-    }
   }
 
   @media (min-width: 721px) and (max-width: 1100px) {

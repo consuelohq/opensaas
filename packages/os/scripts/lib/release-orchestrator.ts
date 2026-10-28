@@ -11,8 +11,10 @@ export type ReleasePr = {
   baseRefName: string;
   isDraft: boolean;
   mergeStateStatus: string;
+  mergeable?: string;
   reviewDecision: string;
   checks: ReleaseCheck[];
+  requiredChecks?: ReleaseCheck[];
   mergeSha?: string;
 };
 
@@ -159,13 +161,16 @@ function ensurePrReady(pr: ReleasePr): void {
   }
   const failed = pr.checks.find((check) => check.bucket === 'fail');
   if (failed) throw new Error(`release refuses failed check ${failed.name}`);
-  if (pr.mergeStateStatus && pr.mergeStateStatus !== 'CLEAN') {
+  if (pr.mergeable && pr.mergeable !== 'MERGEABLE') {
+    throw new Error(`release requires a mergeable PR (found ${pr.mergeable})`);
+  }
+  if (!pr.mergeable && pr.mergeStateStatus && pr.mergeStateStatus !== 'CLEAN') {
     throw new Error(`release requires a clean merge state (found ${pr.mergeStateStatus})`);
   }
 }
 
 function hasPendingChecks(pr: ReleasePr): boolean {
-  return pr.checks.some((check) => check.bucket === 'pending');
+  return (pr.requiredChecks ?? pr.checks).some((check) => check.bucket === 'pending');
 }
 
 function sameRelease(

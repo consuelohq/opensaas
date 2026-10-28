@@ -204,7 +204,7 @@ describe('Consuelo OS hosted onboarding flow', () => {
     expect(bootstrap).toContain('DEFAULT_OS_HOME="${CONSUELO_DEFAULT_HOME:-$HOME/.consuelo}"');
     expect(bootstrap).toContain('OS_HOME="$(resolve_os_home)"');
     expect(bootstrap).toContain(`printf '%s\\n' "$OS_HOME/runtime/current"`);
-    expect(bootstrap).toContain('log "Home: $os_home"');
+    expect(bootstrap).toContain('local bin_dir="$OS_HOME/bin"');
     expect(bootstrap).not.toContain('OS_HOME="${CONSUELO_HOME:-$HOME/.consuelo/os}"');
   });
 
@@ -513,8 +513,8 @@ describe('Consuelo OS hosted onboarding flow', () => {
     expect(bootstrap).toContain('DEFAULT_OS_HOME="${CONSUELO_DEFAULT_HOME:-$HOME/.consuelo}"');
     expect(bootstrap).toContain('OS_HOME="$(resolve_os_home)"');
     expect(bootstrap).toContain('local os_home="$OS_HOME"');
-    expect(bootstrap).toContain('log "Consuelo OS setup complete"');
-    expect(bootstrap).toContain('log "Home: $os_home"');
+    expect(bootstrap).toContain('log "Consuelo OS installed"');
+    expect(bootstrap).not.toContain('log "Home: $os_home"');
     expect(bootstrap).not.toContain('$HOME/.consuelo/source/opensaas');
     expect(bootstrap).not.toContain('REPO_DIR/packages/os run doctor');
     expect(bootstrap).not.toContain('log "Source: $REPO_DIR"');
