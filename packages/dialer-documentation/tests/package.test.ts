@@ -14,6 +14,8 @@ describe('standalone Dialer documentation', () => {
     expect(existsSync(resolve(root, 'package.json'))).toBe(true);
     const pkg = JSON.parse(read('package.json'));
     expect(pkg.name).toBe('consuelo-dialer-documentation');
+    expect(pkg.scripts.build).toContain('generate:social-card');
+    expect(existsSync(resolve(root, 'public/dialer-docs-social.svg'))).toBe(true);
     const config = JSON.parse(read('wrangler.jsonc'));
     expect(config.name).toBe('consuelo-dialer-docs');
     expect(config.routes ?? []).toEqual([]);

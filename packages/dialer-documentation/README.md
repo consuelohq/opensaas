@@ -14,7 +14,7 @@ bun run --cwd packages/dialer-documentation test:browser
 bun run --cwd packages/dialer-documentation dev --host 127.0.0.1
 ```
 
-English MDX under `src/content/docs` is the editorial source. Navigation, breadcrumbs and footer are driven by `src/lib/docs-navigation.ts`. Search, theme selection, mobile sheets, Markdown page actions and automatic language translation retain the existing shell implementation.
+English MDX under `src/content/docs` is the editorial source. Navigation, breadcrumbs and footer are driven by `src/lib/docs-navigation.ts`. Search, theme selection, mobile sheets, Markdown page actions and automatic language translation retain the existing shell implementation. The social card is generated from its committed SVG during build; no generated binary is needed in Git.
 
 ## Preview and cutover
 

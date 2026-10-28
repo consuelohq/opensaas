@@ -54,3 +54,11 @@ The full gate automatically ran Nx test with --coverage=false, which Bun does no
 ## Publication and next owner
 
 Publish the exact task source to stream/dialer, then deploy only the isolated preview with DOCS_SITE_URL set to its workers.dev origin. Branch 3 joins Branch 1, owns final routing/redirects/shared release wiring and protects OS authentication. Preserve both branches' additive test-selection rules when resolving metadata conflicts. Do not attach docs.consuelohq.com until OS docs and URL collisions have been migrated. No carrier, recording or billing mutation is authorized by this docs task.
+
+## Publication binary defect and repair contract
+
+The first task.push completed remotely despite its transport timeout: local and remote SHA 4558a56dca61205e986a25f8fd599750e3ebe82e match. Readback exposed binary corruption in the publication helper: the PNG local header 89504e47 became efbfbd504e47 in the remote blob (48,666 local bytes vs 85,657 committed bytes); unused starter houston.webp also changed from 98,506 to 177,518 bytes. No preview deployment occurred from that commit.
+
+Repair by keeping the authored SVG and generating its PNG during build (ignored output), and removing the unused starter image. This makes a clean clone reproducible with text sources and avoids publishing any binary through the defective helper. Add a focused contract requiring the generator in build before changing the build script. Do not alter the OS publisher in this docs task. The typed status helper also ignored the task session and returned stale root state; scoped code.call confirmed the real task worktree instead.
+
+Binary-repair verification passed at 2026-10-28T21:24:37.921Z, full/publishValid. New build generates the 48,666-byte PNG from SVG; four tests/72 assertions passed. There are no intended binary source files in the task delta.

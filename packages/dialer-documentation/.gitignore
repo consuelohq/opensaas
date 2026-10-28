@@ -22,3 +22,6 @@ pnpm-debug.log*
 
 # Cloudflare local build/dev state
 .wrangler/
+
+# Reproducible social card, generated from the committed SVG during build
+/public/dialer-docs-social.png
