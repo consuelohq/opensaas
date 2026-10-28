@@ -1,3 +1,4 @@
+import { spawnSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
@@ -113,6 +114,39 @@ describe('GitHub workflow policy', () => {
     expect(command).toContain('tests/security-gateway.test.ts');
     expect(command).toContain('tests/workspace-gateway-contract.test.ts');
     expect(command).toContain('--testTimeout 15000');
+  });
+
+  test('does not deploy dialer for CI-only workflow edits while preserving runtime release triggers', () => {
+    const workflow = readWorkflow('consuelo-production-release.yaml');
+    const classifier = workflow.jobs['dialer-changes'].steps.find((step) => step.id === 'classify');
+    const pattern = classifier?.run?.match(/grep -Eq '([^']+)'/)?.[1];
+    expect(pattern, 'dialer source selection uses an explicit release allowlist').toBeTruthy();
+
+    function triggersDialer(file) {
+      return spawnSync('grep', ['-Eq', pattern], { input: file + '\n', encoding: 'utf8' }).status === 0;
+    }
+
+    for (const file of [
+      '.github/workflows/consuelo-ci.yaml',
+      '.github/workflows/consuelo-production-release.yaml',
+      '.github/workflows/ci-docs.yaml',
+      '.task/ci/review/workpad.md',
+    ]) {
+      expect(triggersDialer(file), file).toBe(false);
+    }
+    for (const file of [
+      'packages/dialer/src/index.ts',
+      'packages/dialer-server/src/index.ts',
+      'packages/lead-connector/src/index.ts',
+      'packages/logger/src/index.ts',
+      'packages/contacts/src/index.ts',
+      '.github/workflows/consuelo-dialer-rollback.yaml',
+      'package.json', 'bun.lock', 'bunfig.toml', '.bun-version', 'nx.json', 'tsconfig.json',
+    ]) {
+      expect(triggersDialer(file), file).toBe(true);
+    }
+    expect(classifier.run).toContain('all|dialer) echo "release=true"');
+    expect(workflow.jobs['release-dialer'].if).toBe("needs.dialer-changes.outputs.release == 'true'");
   });
 
   test('uses shallow parent-aware checkouts for pull-request CI without removing verification jobs', () => {
