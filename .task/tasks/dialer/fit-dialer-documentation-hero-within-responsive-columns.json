@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/fit-dialer-documentation-hero-within-responsive-columns",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 2652,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2652",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-fit-dialer-documentation-hero-within-responsive-columns",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_81338e76a1d2",
+  "tmuxSession": "opensaas-dialer-fit-dialer-documentation-hero-within-responsive--81338e76",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-fit-dialer-documentation-hero-within-responsive-columns/.task/session.json",
+  "createdAt": "2026-10-28T21:34:12.044Z"
+}
