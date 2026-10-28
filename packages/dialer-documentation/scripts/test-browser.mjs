@@ -41,6 +41,17 @@ try {
   assert.equal(await page.getByRole('link', { name: 'Consuelo Dialer docs', exact: true }).getAttribute('href'), '/');
   assert.equal(await page.locator('.docs-home-actions a').first().getAttribute('href'), '/start/');
   assert.equal(await page.locator('[data-home-install-command]').count(), 0);
+  const assertHomeFit = async (name) => {
+    try {
+      const bounds = await page.locator('.docs-home-copy').evaluate((element) => ({
+        scroll: element.scrollWidth, available: element.clientWidth,
+      }));
+      assert.ok(bounds.scroll <= bounds.available + 1, name + ' home hero overflows its column: ' + JSON.stringify(bounds));
+    } catch (cause) {
+      throw new Error('Homepage fit check failed at ' + name, { cause });
+    }
+  };
+  await assertHomeFit('desktop');
   await page.screenshot({ path: resolve(evidence, 'home-light.png'), fullPage: true });
   const header = page.getByRole('banner');
   for (const [label, value] of [['Use light appearance', 'light'], ['Use dark appearance', 'dark']]) {
@@ -78,6 +89,9 @@ try {
   ];
   for (const [name, width, height] of viewports) {
     await page.setViewportSize({ width, height });
+    await page.goto(origin, { waitUntil: 'networkidle' });
+    await assertHomeFit(name);
+    await page.screenshot({ path: resolve(evidence, 'home-' + name + '.png') });
     await page.goto(origin + '/inbound/readiness/', { waitUntil: 'networkidle' });
     assert.equal(await page.locator('h1').textContent(), 'Go ready for inbound calls');
     const bounds = await page.evaluate(() => ({ scroll: document.documentElement.scrollWidth, client: document.documentElement.clientWidth }));
