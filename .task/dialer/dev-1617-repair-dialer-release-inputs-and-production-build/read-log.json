@@ -1,0 +1,13 @@
+{
+  "files": [
+    ".github/workflows/consuelo-production-release.yaml",
+    ".task/dialer/dev-1617-repair-dialer-release-inputs-and-production-build/workpad.md",
+    "packages/dialer-server/scripts/local-dialer-lab.ts",
+    "packages/dialer-server/src/lab/learning-rollback-scenario.ts",
+    "packages/dialer-server/src/lab/local-dialer-lab.integration.test.ts",
+    "packages/lead-connector/src/deployment/release-workflow.contract.test.ts",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "updatedAt": "2026-10-28T02:49:25.387Z"
+}

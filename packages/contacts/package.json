@@ -27,6 +27,8 @@
     "groq-sdk": "^0.37.0"
   },
   "dependencies": {
+    "@consuelo/logger": "workspace:*",
+    "@sentry/node": "^10.38.0",
     "libphonenumber-js": "^1.10.26"
   },
   "exports": {

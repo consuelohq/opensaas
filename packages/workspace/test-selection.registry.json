@@ -2,9 +2,9 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 691,
-    "mappedTestCount": 609,
-    "unmappedTestCount": 82,
+    "testFileCount": 694,
+    "mappedTestCount": 610,
+    "unmappedTestCount": 84,
     "ruleCount": 77,
     "explicitRuleCount": 64,
     "autoRuleCount": 13,
@@ -19,13 +19,13 @@
       "packages/dialer/src/services": 18,
       "packages/lead-connector/src/embed": 15,
       "packages/consuelo-design/upstream/open-design": 14,
-      "packages/consuelo-website/tests": 13,
+      "packages/consuelo-website/tests": 14,
       "packages/os/tests/distribution": 13,
       "packages/dialer-server/src/inbound": 12,
       "packages/documentation/tests": 11,
       "packages/api/src/routes": 10,
       "packages/dialer-server/src/runtime": 10,
-      "packages/lead-connector/src": 7,
+      "packages/lead-connector/src": 8,
       "packages/lead-connector/src/deployment": 6,
       "packages/consuelo-design/upstream/open-design/apps/web/src/components": 5,
       "packages/dialer-server/src/lab": 5,
@@ -59,6 +59,7 @@
       "packages/consuelo-design/upstream/open-design/packages/sidecar/src": 1,
       "packages/consuelo-design/upstream/open-design/tools/dev/src": 1,
       "packages/consuelo-design/upstream/open-design/tools/pack/src": 1,
+      "packages/consuelo-dialer-website/tests": 1,
       "packages/dialer-server/src/database": 1,
       "packages/dialer-server/src/release": 1,
       "packages/dialer-server/src/routes": 1,
@@ -97,7 +98,7 @@
       "tests": 1
     },
     "byKind": {
-      "test": 627,
+      "test": 630,
       "spec": 29,
       "__tests__": 11,
       "integration": 9,
@@ -2295,12 +2296,23 @@
       ],
       "tests": [
         {
+          "name": "dialer-server logger prerequisite",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/logger",
+            "build"
+          ]
+        },
+        {
           "name": "dialer-server contacts prerequisite",
           "command": [
-            "yarn",
-            "nx",
+            "bun",
             "run",
-            "@consuelo/contacts:build"
+            "--cwd",
+            "packages/contacts",
+            "build"
           ]
         },
         {
@@ -3431,6 +3443,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/consuelo-dialer-website/tests/dialer-landing.test.mjs",
+      "group": "packages/consuelo-dialer-website/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/consuelo-website/tests/blog-refresh.test.mjs",
       "group": "packages/consuelo-website/tests",
       "kind": "test"
@@ -3467,6 +3484,11 @@
     },
     {
       "path": "packages/consuelo-website/tests/install-command.test.ts",
+      "group": "packages/consuelo-website/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/consuelo-website/tests/leadconnector-oauth-callback.test.mjs",
       "group": "packages/consuelo-website/tests",
       "kind": "test"
     },
@@ -4137,6 +4159,11 @@
     },
     {
       "path": "packages/lead-connector/src/infrastructure.contract.test.ts",
+      "group": "packages/lead-connector/src",
+      "kind": "test"
+    },
+    {
+      "path": "packages/lead-connector/src/marketplace-oauth.contract.test.ts",
       "group": "packages/lead-connector/src",
       "kind": "test"
     },
@@ -6485,12 +6512,14 @@
     "cron_jobs/tests/cron_jobs.test.ts",
     "packages/agent/src/pi-extensions/__tests__/crm-tools.test.ts",
     "packages/consuelo-design/scripts/render-consuelo-reader.test.ts",
+    "packages/consuelo-dialer-website/tests/dialer-landing.test.mjs",
     "packages/consuelo-website/tests/blog-refresh.test.mjs",
     "packages/consuelo-website/tests/blog-toc-responsive.test.mjs",
     "packages/consuelo-website/tests/brand-assets.test.mjs",
     "packages/consuelo-website/tests/footer-art.test.mjs",
     "packages/consuelo-website/tests/homepage-mobile-layout.test.mjs",
     "packages/consuelo-website/tests/homepage-responsive.test.mjs",
+    "packages/consuelo-website/tests/leadconnector-oauth-callback.test.mjs",
     "packages/consuelo-website/tests/os-launcher-links.test.mjs",
     "packages/consuelo-website/tests/pricing-interactions.test.mjs",
     "packages/consuelo-website/tests/site-header.test.mjs",

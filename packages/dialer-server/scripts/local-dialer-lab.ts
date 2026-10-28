@@ -1,4 +1,5 @@
 #!/usr/bin/env bun
+import { CALLBACK_BOOKING_ATTEMPTS_MIGRATION_ID } from '../src/inbound/callback-booking-attempt-migration';
 import { CALLBACK_MIGRATION_ID } from '../src/inbound/callback-migration';
 import { CALLBACK_BOOKING_EVENTS_MIGRATION_ID } from '../src/inbound/callback-booking-event-migration';
 import { CUSTOMER_ENTRY_MIGRATION_ID } from '../src/inbound/customer-entry-migration';
@@ -332,6 +333,7 @@ const main = async () => {
     const rowsBeforeRollback = await countObservations();
     const inbound = await runInboundJournalScenarios(pool);
     const simulation = await runInboundSimulationScenarios({ pool, redis, databaseUrl, seed });
+    await rollbackDialerDatabaseMigration(database, CALLBACK_BOOKING_ATTEMPTS_MIGRATION_ID);
     await rollbackDialerDatabaseMigration(database, CALLBACK_BOOKING_EVENTS_MIGRATION_ID);
     await rollbackDialerDatabaseMigration(database, CUSTOMER_ENTRY_MIGRATION_ID);
     await rollbackDialerDatabaseMigration(database, CALLBACK_MIGRATION_ID);

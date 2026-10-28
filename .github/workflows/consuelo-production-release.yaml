@@ -319,6 +319,10 @@ jobs:
               exit 1
             fi
           done
+          if [[ "$(bun -e 'process.stdout.write(String((process.env.DIALER_EDGE_PROXY_SECRET ?? "").trim().length))')" -lt 24 ]]; then
+            echo "::error::DIALER_EDGE_PROXY_SECRET must contain at least 24 characters after trimming"
+            exit 1
+          fi
 
       - name: Verify approved Marketplace bootstrap source
         env:

@@ -1,3 +1,4 @@
+import { CALLBACK_BOOKING_ATTEMPTS_MIGRATION_ID } from '../inbound/callback-booking-attempt-migration';
 import { CALLBACK_MIGRATION_ID } from '../inbound/callback-migration';
 import { CALLBACK_BOOKING_EVENTS_MIGRATION_ID } from '../inbound/callback-booking-event-migration';
 import { CUSTOMER_ENTRY_MIGRATION_ID } from '../inbound/customer-entry-migration';
@@ -94,6 +95,7 @@ describeIntegration('local dialer lab service integration', () => {
     expect(result.migration.applied).toContain(CALLBACK_MIGRATION_ID);
     expect(result.migration.applied).toContain(CUSTOMER_ENTRY_MIGRATION_ID);
     expect(result.migration.applied).toContain(CALLBACK_BOOKING_EVENTS_MIGRATION_ID);
+    expect(result.migration.applied).toContain(CALLBACK_BOOKING_ATTEMPTS_MIGRATION_ID);
       expect(result.migration.learningRollbackChainVerified).toBe(true);
     expect(result.migration.applied).toContain('20260910_006_inbound_journal');
     expect(result.isolation.postgresPort).not.toBe(result.isolation.redisPort);
