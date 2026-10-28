@@ -37,6 +37,7 @@ const controller = createLeadConnectorEmbedController({
 });
 let refreshTimer: ReturnType<typeof setInterval> | null = null;
 let inboundRefreshTimer: ReturnType<typeof setInterval> | null = null;
+let inboundHeartbeatTimer: ReturnType<typeof setInterval> | null = null;
 let bootstrapTimer: ReturnType<typeof setTimeout> | null = null;
 
 const failBootstrap = (): void => {
@@ -131,6 +132,19 @@ const updateRefresh = (): void => {
   if ((!state.sessionToken || surface !== 'admin') && inboundRefreshTimer) {
     clearInterval(inboundRefreshTimer);
     inboundRefreshTimer = null;
+  }
+  // Keep this timer independent of stopRefresh(), which runs on idle redraws.
+  if (surface === 'admin' && state.sessionToken && !inboundHeartbeatTimer) {
+    inboundHeartbeatTimer = setInterval(() => {
+      const operator = controller.getState().inboundOperator;
+      if (operator.rep.ready && !operator.pendingAction) {
+        void controller.heartbeatInbound();
+      }
+    }, 30_000);
+  }
+  if ((!state.sessionToken || surface !== 'admin') && inboundHeartbeatTimer) {
+    clearInterval(inboundHeartbeatTimer);
+    inboundHeartbeatTimer = null;
   }
 };
 

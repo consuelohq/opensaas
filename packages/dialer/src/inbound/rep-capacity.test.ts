@@ -64,6 +64,53 @@ const offer = (state = ready()) =>
 const fence = { assignmentId: 'assignment-a', generation: 1 };
 
 describe('shared rep capacity authority', () => {
+  it('renews presence only for an already-ready healthy inbound rep without changing ownership', () => {
+    let state = ready();
+    expect(isRepCapacityEligible(state, at(61))).toBe(false);
+    state = apply(state, { type: 'heartbeat' }, 70);
+    expect(state.presenceAt).toBe(at(70));
+    expect(isRepCapacityEligible(state, at(71))).toBe(true);
+    state = apply(state, { type: 'readiness', ready: false, endpoints: [] }, 72);
+    expect(() => apply(state, { type: 'heartbeat' }, 73)).toThrow();
+    expect(isRepCapacityEligible(state, at(73))).toBe(false);
+  });
+
+  it('reserves fenced outbound capacity even when inbound is away and presence is stale', () => {
+    let state = apply(null, { type: 'register', repId: 'alice', policy });
+    state = apply(state, {
+      type: 'offer', direction: 'outbound',
+      assignmentId: 'outbound-a', requestId: 'request-a',
+      endpointIds: ['outbound-browser'],
+    }, 90);
+    expect(state.ready).toBe(false);
+    expect(state.endpoints).toEqual([]);
+    expect(state.owner?.direction).toBe('outbound');
+    expect(state.generation).toBe(1);
+    expect(() => apply(state, {
+      type: 'offer', direction: 'outbound',
+      assignmentId: 'outbound-b', requestId: 'request-b',
+      endpointIds: ['outbound-browser'],
+    }, 91)).toThrow();
+    state = apply(state, {
+      type: 'dispatch', assignmentId: 'outbound-a', generation: 1,
+      commandId: 'outbound-command',
+    }, 91);
+    state = apply(state, {
+      type: 'accept', assignmentId: 'outbound-a', generation: 1,
+      endpointId: 'outbound-browser',
+    }, 92);
+    expect(state.owner?.phase).toBe('connecting');
+    state = apply(state, {
+      type: 'unknown', assignmentId: 'outbound-a', generation: 1,
+    }, 93);
+    expect(state.owner?.phase).toBe('unknown');
+    expect(() => apply(state, {
+      type: 'accept', assignmentId: 'outbound-a', generation: 2,
+      endpointId: 'outbound-browser',
+    }, 94)).toThrow();
+    expect(isRepCapacityEligible(state, at(94))).toBe(false);
+  });
+
   it('prevents an outbound assignment from taking an inbound reservation', () => {
     const state = offer();
     expect(() =>

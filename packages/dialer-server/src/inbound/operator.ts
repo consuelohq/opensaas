@@ -335,6 +335,8 @@ export const createInboundOperator = (
                 healthy: known?.healthy ?? true,
               };
             });
+            if (input.ready && !endpoints.some((endpoint) => endpoint.healthy))
+              throw new Error('Readiness requires a healthy configured endpoint');
             await executeRepCapacityOnClient(
               client,
               {
@@ -364,6 +366,49 @@ export const createInboundOperator = (
       throw new Error('Async operation rejected with a non-Error cause', {
         cause,
       });
+    }
+  };
+  const heartbeat = async (identity: DialerIdentity, _raw?: unknown) => {
+    try {
+      const previous = await state(identity);
+      await withInboundTransaction(pool, identity.workspaceId, async (client) => {
+        try {
+          const rep = (await readTelephonyCapacity(
+            client, identity.workspaceId, previous.capacityId,
+          ))!;
+          // A lease renewal can never change manual away into ready.
+          if (
+            !rep.ready ||
+            !rep.endpoints.some((endpoint) =>
+              endpoint.healthy && options.endpoints.some((configured) =>
+                configured.workspaceId === identity.workspaceId &&
+                configured.repId === identity.userId &&
+                configured.endpointId === endpoint.endpointId &&
+                configured.kind === endpoint.kind,
+              ),
+            )
+          )
+            throw new Error('Only a ready rep with a configured healthy endpoint can renew presence');
+          await executeRepCapacityOnClient(
+            client,
+            {
+              workspaceId: identity.workspaceId,
+              capacityId: rep.capacityId,
+              expectedVersion: rep.version,
+              operationId: 'operator-heartbeat:' + randomUUID(),
+              action: { type: 'heartbeat' },
+            },
+            { clock: options.clock },
+          );
+        } catch (cause: unknown) {
+          if (cause instanceof Error) throw cause;
+          throw new Error('Inbound presence renewal rejected with a non-Error cause', { cause });
+        }
+      });
+      return snapshot(identity);
+    } catch (cause: unknown) {
+      if (cause instanceof Error) throw cause;
+      throw new Error('Operator heartbeat failed with a non-Error cause', { cause });
     }
   };
   const accept = async (
@@ -545,5 +590,5 @@ export const createInboundOperator = (
       });
     }
   };
-  return { snapshot, readiness, accept, decline, wrapUp };
+  return { snapshot, readiness, heartbeat, accept, decline, wrapUp };
 };

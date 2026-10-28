@@ -36,6 +36,17 @@ type OutboundBinding = {
   conference_name: string | null;
   status: 'creating' | 'succeeded' | 'unknown' | 'ended';
 };
+// An outbound session owns a shared slot, even when inbound is disabled for
+// the rep. This matches the default rep policy used by runtime registration.
+const OUTBOUND_REP_POLICY = {
+  offerMilliseconds: 12_000,
+  presenceMilliseconds: 120_000,
+  wrapUpMilliseconds: 30_000,
+  cooldownMilliseconds: 5_000,
+  escalationMilliseconds: 30_000,
+} as const;
+const OUTBOUND_BROWSER_SLOT = 'outbound-browser';
+
 export const createOutboundCapacity = (options: {
   pool: Pool;
   carrier: InboundCarrier;
@@ -79,14 +90,22 @@ export const createOutboundCapacity = (options: {
             'SELECT snapshot FROM dialer_rep_capacity WHERE workspace_id=$1 AND rep_id=$2',
             [input.workspaceId, input.userId],
           )
-        ).rows[0]?.snapshot;
-        const endpoint = previous?.endpoints.find(
-          (item) => item.kind === 'browser' && item.healthy,
-        );
-        if (!previous || !endpoint)
-          throw new Error(
-            'Outbound rep needs a registered healthy browser capacity slot',
-          );
+        ).rows[0]?.snapshot ??
+          (await executeRepCapacityOnClient(
+            client,
+            {
+              workspaceId: input.workspaceId,
+              capacityId: input.userId,
+              expectedVersion: 0,
+              operationId: 'outbound-register:' + input.userId,
+              action: {
+                type: 'register',
+                repId: input.userId,
+                policy: OUTBOUND_REP_POLICY,
+              },
+            },
+            { clock: options.clock },
+          )).state;
         const requestId = telephonyId(input.sessionId, 'outbound-request');
         const assignmentId = telephonyId(
           input.sessionId,
@@ -125,7 +144,7 @@ export const createOutboundCapacity = (options: {
                 assignmentId,
                 requestId,
                 direction: 'outbound',
-                endpointIds: [endpoint.endpointId],
+                endpointIds: [OUTBOUND_BROWSER_SLOT],
               },
             },
             { clock: options.clock },
@@ -166,7 +185,7 @@ export const createOutboundCapacity = (options: {
               type: 'accept',
               assignmentId,
               generation: state.generation,
-              endpointId: endpoint.endpointId,
+              endpointId: OUTBOUND_BROWSER_SLOT,
             },
           },
           { clock: options.clock },

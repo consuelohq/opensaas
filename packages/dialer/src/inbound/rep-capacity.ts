@@ -72,6 +72,8 @@ export const applyRepCapacityAction = (
       action.endpoints.length
     )
       reject('Duplicate endpoint');
+    if (action.ready && !action.endpoints.some((endpoint) => endpoint.healthy))
+      reject('Ready requires a healthy endpoint');
     return {
       ...state,
       ready: action.ready,
@@ -79,13 +81,27 @@ export const applyRepCapacityAction = (
       presenceAt: event.at,
     };
   }
+  if (action.type === 'heartbeat') {
+    if (!state.ready || !state.endpoints.some((endpoint) => endpoint.healthy))
+      reject('Only a ready rep with a healthy endpoint can renew presence');
+    return { ...state, presenceAt: event.at };
+  }
   if (action.type === 'offer') {
-    if (!isRepCapacityEligible(state, event.at))
+    // Outbound occupies the same fenced slot but does not opt a rep into inbound.
+    // Its browser leg is created by the outbound runtime, not configured inbound.
+    if (action.direction === 'outbound') {
+      if (state.owner || (state.cooldownUntil && event.at < state.cooldownUntil))
+        reject('Rep capacity is occupied or cooling down');
+      if (action.endpointIds.length !== 1)
+        reject('Outbound requires exactly one browser slot');
+    } else if (!isRepCapacityEligible(state, event.at))
       reject('Rep has no eligible capacity');
     if (new Set(action.endpointIds).size !== action.endpointIds.length)
       reject('Duplicate offered endpoint');
     const endpoints = action.endpointIds.map((endpointId) => {
-      const device = state.endpoints.find(
+      const device = action.direction === 'outbound'
+        ? { endpointId, kind: 'browser' as const, healthy: true }
+        : state.endpoints.find(
         (e) => e.endpointId === endpointId && e.healthy,
       );
       if (!device) return reject('Offered endpoint is not healthy');
@@ -149,13 +165,14 @@ export const applyRepCapacityAction = (
       reject('Endpoint has no valid offer');
     if (action.type === 'accept') {
       if (
-        !present(state, event.at) ||
+        (owner.direction === 'inbound' && !present(state, event.at)) ||
+        (owner.direction === 'inbound' &&
         !state.endpoints.some(
           (e) =>
             e.endpointId === action.endpointId &&
             e.kind === endpoint?.kind &&
             e.healthy,
-        )
+        ))
       )
         reject('Endpoint is no longer available');
       return retain({

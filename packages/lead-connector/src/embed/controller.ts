@@ -6,6 +6,7 @@ import {
   reduceInboundOperatorState,
   type InboundOperatorApi,
   type InboundOperatorConfiguration,
+  type InboundOperatorSnapshot,
   type InboundOperatorState,
 } from './inbound-operator.js';
 import {
@@ -46,6 +47,8 @@ export const createLeadConnectorEmbedController = (input: {
   let resourceRefresh: Promise<void> | null = null;
   let commercialRefresh: Promise<void> | null = null;
   let inboundRefresh: Promise<void> | null = null;
+  let inboundHeartbeat: Promise<void> | null = null;
+  let browserVoicePrepared = false;
   let pendingInboundAcceptance: { key: string; attemptId: string } | null = null;
   const listeners = new Set<(state: LeadConnectorEmbedState) => void>();
 
@@ -99,6 +102,15 @@ export const createLeadConnectorEmbedController = (input: {
     );
   };
 
+  const activeReadyBrowser = (
+    snapshot: Pick<InboundOperatorState, 'rep'>,
+  ): boolean =>
+    snapshot.rep.ready &&
+    snapshot.rep.endpoints.some(
+      (endpoint) =>
+        endpoint.kind === 'browser' && endpoint.active && endpoint.healthy,
+    );
+
   const runInbound = async <T>(
     operation: () => Promise<T>,
   ): Promise<T | null> => {
@@ -129,9 +141,69 @@ export const createLeadConnectorEmbedController = (input: {
     }
   };
 
+  const recoverInboundBrowser = async (
+    snapshot: InboundOperatorSnapshot,
+    error: unknown,
+    eventType: 'SNAPSHOT_LOADED' | 'RECONNECTED',
+  ): Promise<void> => {
+    try {
+      browserVoicePrepared = false;
+      input.voice.rejectIncoming();
+      // Never renew the previous page's device. Preserve healthy active phones.
+      const phones = snapshot.rep.endpoints.filter(
+        (endpoint) => endpoint.kind === 'phone' && endpoint.active && endpoint.healthy,
+      );
+      const recovered = await runInbound(() =>
+        input.inboundOperatorApi!.setReadiness({
+          ready: phones.length > 0,
+          endpoints: phones.map((endpoint) => ({
+            endpointId: endpoint.endpointId, kind: endpoint.kind,
+          })),
+        }),
+      );
+      if (recovered) {
+        dispatchInbound({ type: eventType, snapshot: recovered });
+        return;
+      }
+    } catch (cause: unknown) {
+      error = cause instanceof Error
+        ? cause
+        : new Error('Browser recovery rejected with a non-Error cause', { cause });
+    } finally {
+      browserVoicePrepared = false;
+    }
+    dispatchInbound({
+      type: 'RECOVERY_REQUIRED',
+      code: 'INBOUND_BROWSER_MEDIA_FAILED',
+      message:
+        (error instanceof Error ? error.message + '. ' : '') +
+        'Browser calling is unavailable. Reconnect to restore readiness.',
+    });
+  };
+
+  const projectInboundSnapshot = async (
+    snapshot: InboundOperatorSnapshot,
+    eventType: 'SNAPSHOT_LOADED' | 'RECONNECTED',
+  ): Promise<void> => {
+    if (activeReadyBrowser(snapshot) && !browserVoicePrepared) {
+      try {
+        await input.voice.prepare();
+        browserVoicePrepared = true;
+      } catch (error: unknown) {
+        await recoverInboundBrowser(snapshot, error, eventType);
+        return;
+      }
+    } else if (!activeReadyBrowser(snapshot)) {
+      browserVoicePrepared = false;
+    }
+    if (!snapshotHasBrowserWork(snapshot)) input.voice.rejectIncoming();
+    dispatchInbound({ type: eventType, snapshot });
+  };
+
   const loadInboundOperator = (): Promise<void> => {
     if (!input.inboundOperatorApi || !state.sessionToken)
       return Promise.resolve();
+    if (inboundHeartbeat) return inboundHeartbeat;
     if (inboundRefresh) return inboundRefresh;
     dispatchInbound({ type: 'SNAPSHOT_LOADING' });
     inboundRefresh = (async () => {
@@ -139,10 +211,7 @@ export const createLeadConnectorEmbedController = (input: {
         const snapshot = await runInbound(() =>
           input.inboundOperatorApi!.getSnapshot(),
         );
-        if (snapshot) {
-          if (!snapshotHasBrowserWork(snapshot)) input.voice.rejectIncoming();
-          dispatchInbound({ type: 'SNAPSHOT_LOADED', snapshot });
-        }
+        if (snapshot) await projectInboundSnapshot(snapshot, 'SNAPSHOT_LOADED');
       } finally {
         inboundRefresh = null;
       }
@@ -460,6 +529,40 @@ export const createLeadConnectorEmbedController = (input: {
     loadCallOperations,
     loadCommercial,
     loadInboundOperator,
+    heartbeatInbound: (): Promise<void> => {
+      if (
+        !input.inboundOperatorApi ||
+        !state.sessionToken ||
+        !state.inboundOperator.rep.ready ||
+        state.inboundOperator.pendingAction ||
+        ['reconnecting', 'error'].includes(state.inboundOperator.phase)
+      )
+        return Promise.resolve();
+      if (inboundHeartbeat) return inboundHeartbeat;
+      inboundHeartbeat = (async () => {
+        try {
+          if (activeReadyBrowser(state.inboundOperator)) {
+            try {
+              // Recheck the actual device before renewing authority's lease.
+              await input.voice.prepare();
+              browserVoicePrepared = true;
+            } catch (error: unknown) {
+              await recoverInboundBrowser(
+                state.inboundOperator, error, 'SNAPSHOT_LOADED',
+              );
+              return;
+            }
+          }
+          const snapshot = await runInbound(() =>
+            input.inboundOperatorApi!.heartbeat(),
+          );
+          if (snapshot) await projectInboundSnapshot(snapshot, 'SNAPSHOT_LOADED');
+        } finally {
+          inboundHeartbeat = null;
+        }
+      })();
+      return inboundHeartbeat;
+    },
     setInboundReadiness: async (inputValue: {
       ready: boolean;
       endpoints: Array<{ endpointId: string; kind: 'browser' | 'phone' }>;
@@ -471,7 +574,9 @@ export const createLeadConnectorEmbedController = (input: {
           inputValue.endpoints.some((endpoint) => endpoint.kind === 'browser');
         if (browserReady) {
           await input.voice.prepare();
+          browserVoicePrepared = true;
         } else {
+          browserVoicePrepared = false;
           input.voice.rejectIncoming();
         }
         dispatchInbound({ type: 'ACTION_STARTED', action: 'readiness' });
@@ -622,10 +727,7 @@ export const createLeadConnectorEmbedController = (input: {
         const snapshot = await runInbound(() =>
           input.inboundOperatorApi!.reconnect(),
         );
-        if (snapshot) {
-          if (!snapshotHasBrowserWork(snapshot)) input.voice.rejectIncoming();
-          dispatchInbound({ type: 'RECONNECTED', snapshot });
-        }
+        if (snapshot) await projectInboundSnapshot(snapshot, 'RECONNECTED');
       } catch (error: unknown) {
         dispatchInbound({
           type: 'FAILED',

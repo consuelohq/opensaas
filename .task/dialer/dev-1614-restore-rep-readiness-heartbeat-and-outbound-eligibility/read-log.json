@@ -1,0 +1,12 @@
+{
+  "files": [
+    ".task/dialer/dev-1614-restore-rep-readiness-heartbeat-and-outbound-eligibility/workpad.md",
+    "packages/dialer-server/src/inbound/operator.ts",
+    "packages/dialer-server/src/inbound/rep-capacity-projection.ts",
+    "packages/dialer-server/src/inbound/rep-capacity.integration.test.ts",
+    "packages/dialer/src/inbound/lifecycle.ts",
+    "packages/os/skills/task/SKILL.md",
+    "packages/workspace/scripts/verify.js"
+  ],
+  "updatedAt": "2026-10-28T02:54:09.387Z"
+}

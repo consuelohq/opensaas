@@ -220,6 +220,101 @@ suite('inbound runtime with real Postgres and simulated carrier', () => {
       Direction: 'inbound',
       To: 'fixture-did',
     });
+  it('rejects empty/offline ready selections and renews an active rep after the presence lease expires', async () => {
+    const operator = createInboundOperator({
+      pool, numbers: [number],
+      endpoints: [{
+        workspaceId: 'workspace', repId: 'alice',
+        endpointId: 'browser', kind: 'browser', address: 'alice',
+      }],
+      carrier, publicUrl: 'https://voice.example', authToken: 'secret', clock,
+    }, service);
+    const identity = { workspaceId: 'workspace', userId: 'alice' };
+    await expect(operator.readiness(identity, {
+      ready: true, endpoints: [],
+    })).rejects.toThrow();
+    let state = (await capacity.read('workspace', 'slot'))!;
+    expect(state.ready).toBe(true);
+    state = (await capacity.execute({
+      workspaceId: 'workspace', capacityId: 'slot',
+      operationId: 'offline', expectedVersion: state.version,
+      action: {
+        type: 'readiness', ready: false,
+        endpoints: [{ endpointId: 'browser', kind: 'browser', healthy: false }],
+      },
+    })).state;
+    await expect(operator.readiness(identity, {
+      ready: true, endpoints: [{ endpointId: 'browser', kind: 'browser' }],
+    })).rejects.toThrow();
+    await expect(operator.heartbeat(identity)).rejects.toThrow();
+    state = (await capacity.execute({
+      workspaceId: 'workspace', capacityId: 'slot',
+      operationId: 'restored', expectedVersion: state.version,
+      action: {
+        type: 'readiness', ready: true,
+        endpoints: [{ endpointId: 'browser', kind: 'browser', healthy: true }],
+      },
+    })).state;
+    milliseconds += 130_000;
+    expect((await operator.snapshot(identity)).rep.presence).toBe('offline');
+    const resumed = await operator.heartbeat(identity);
+    expect(resumed.rep.ready).toBe(true);
+    expect(resumed.rep.presence).toBe('online');
+    expect((await capacity.read('workspace', 'slot'))!.presenceAt).toBe(clock());
+    expect(resumed.queue.serviceableCount).toBeGreaterThan(0);
+  });
+
+  it('reserves concurrent outbound sessions for a rep with no inbound provisioning or media endpoint', async () => {
+    const outbound = createOutboundCapacity({ pool, carrier, accountSid: 'account', clock });
+    const results = await Promise.allSettled([
+      outbound.begin({ workspaceId: 'workspace', userId: 'bob', sessionId: 'bob-a', plannedCalls: 1 }),
+      outbound.begin({ workspaceId: 'workspace', userId: 'bob', sessionId: 'bob-b', plannedCalls: 1 }),
+    ]);
+    expect(results.filter((result) => result.status === 'fulfilled')).toHaveLength(1);
+    expect(results.filter((result) => result.status === 'rejected')).toHaveLength(1);
+    const state = (await pool.query<{ snapshot: import('@consuelo/dialer').RepCapacityState }>(
+      'SELECT snapshot FROM dialer_rep_capacity WHERE workspace_id=$1 AND rep_id=$2',
+      ['workspace', 'bob'],
+    )).rows[0]?.snapshot;
+    expect(state?.ready).toBe(false);
+    expect(state?.endpoints).toEqual([]);
+    expect(state?.owner?.direction).toBe('outbound');
+    expect(state?.owner?.phase).toBe('connecting');
+    const ownedSession = results[0]!.status === 'fulfilled' ? 'bob-a' : 'bob-b';
+    await outbound.unknown('workspace', ownedSession);
+    const unknown = (await pool.query<{ snapshot: import('@consuelo/dialer').RepCapacityState }>(
+      'SELECT snapshot FROM dialer_rep_capacity WHERE workspace_id=$1 AND rep_id=$2',
+      ['workspace', 'bob'],
+    )).rows[0]!.snapshot;
+    expect(unknown.owner?.phase).toBe('unknown');
+    await expect(outbound.begin({
+      workspaceId: 'workspace', userId: 'bob', sessionId: 'bob-c', plannedCalls: 1,
+    })).rejects.toThrow();
+    expect((await pool.query('SELECT * FROM dialer_telephony_outbound WHERE workspace_id=$1 AND session_id=$2',
+      ['workspace', 'bob-c'])).rowCount).toBe(0);
+  });
+
+  it('reserves outbound with stale, away inbound capacity without enabling inbound routing', async () => {
+    const rep = (await capacity.read('workspace', 'slot'))!;
+    await capacity.execute({
+      workspaceId: 'workspace', capacityId: 'slot', operationId: 'away-for-outbound',
+      expectedVersion: rep.version, action: { type: 'readiness', ready: false, endpoints: [] },
+    });
+    milliseconds += 130_000;
+    const outbound = createOutboundCapacity({ pool, carrier, accountSid: 'account', clock });
+    await outbound.begin({
+      workspaceId: 'workspace', userId: 'alice',
+      sessionId: 'away-outbound', plannedCalls: 1,
+    });
+    const occupied = (await capacity.read('workspace', 'slot'))!;
+    expect(occupied.ready).toBe(false);
+    expect(occupied.endpoints).toEqual([]);
+    expect(occupied.owner?.direction).toBe('outbound');
+    await incoming();
+    await tick();
+    expect(offers).toBe(0);
+  });
+
   it('enforces independent number limits within the same workspace under concurrent admission', async () => {
     const numbers = [
       { ...number, maxActiveRequests: 1 },
@@ -450,9 +545,16 @@ suite('inbound runtime with real Postgres and simulated carrier', () => {
       baseUrl: 'https://voice.example',
       fetch: async (input, init) => app.request(String(input), init),
     });
+    expect((await app.request('/v1/inbound/operator/heartbeat', {
+      method: 'POST',
+      body: '{}',
+    })).status).toBe(401);
     api.setSessionToken('fixture-session');
     const snapshot = await api.getSnapshot();
     expect(snapshot.rep.repId).toBe('alice');
+    const renewed = await api.heartbeat();
+    expect(renewed.rep.ready).toBe(true);
+    expect(renewed.rep.presence).toBe('online');
     expect(snapshot.offers.length).toBe(1);
     const offer = snapshot.offers[0]!;
     const secondTab = createLeadConnectorInboundOperatorApi({

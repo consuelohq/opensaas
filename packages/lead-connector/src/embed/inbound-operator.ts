@@ -104,6 +104,7 @@ export type InboundOperatorApi = {
     ready: boolean;
     endpoints: Array<{ endpointId: string; kind: InboundOperatorEndpointKind }>;
   }) => Promise<InboundOperatorSnapshot>;
+  heartbeat: () => Promise<InboundOperatorSnapshot>;
   acceptOffer: (input: {
     assignmentId: string;
     generation: number;
@@ -321,6 +322,11 @@ export const createLeadConnectorInboundOperatorApi = (options: {
       request<InboundOperatorSnapshot>(
         '/v1/inbound/operator/readiness',
         toJson(input),
+      ),
+    heartbeat: () =>
+      request<InboundOperatorSnapshot>(
+        '/v1/inbound/operator/heartbeat',
+        toJson({}),
       ),
     acceptOffer: (input) =>
       request<InboundOperatorActionResult>(
