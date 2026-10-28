@@ -60,7 +60,9 @@ const renderOffers = (state: InboundOperatorState): string => {
       );
       const endpoint =
         eligible.find((candidate) => candidate.kind === 'browser') ?? eligible[0];
-      const disabled = Boolean(state.pendingAction) || !endpoint;
+      const acceptDisabled = Boolean(state.pendingAction) || !endpoint;
+      // Decline is an assignment-level fenced action, not a media action.
+      const declineDisabled = Boolean(state.pendingAction);
       return (
         '<article class="inbound-offer" data-assignment-id="' +
         escapeHtml(offer.assignmentId) +
@@ -81,13 +83,13 @@ const renderOffers = (state: InboundOperatorState): string => {
         '" data-endpoint-id="' +
         escapeHtml(endpoint?.endpointId ?? '') +
         '"' +
-        (disabled ? ' disabled' : '') +
+        (acceptDisabled ? ' disabled' : '') +
         '>Accept</button><button type="button" class="button button--secondary" data-action="inbound-decline" data-assignment-id="' +
         escapeHtml(offer.assignmentId) +
         '" data-generation="' +
         escapeHtml(offer.generation) +
         '"' +
-        (disabled ? ' disabled' : '') +
+        (declineDisabled ? ' disabled' : '') +
         '>Decline</button></div>' +
         '</article>'
       );
@@ -110,10 +112,14 @@ const renderWrapUp = (state: InboundOperatorState): string => {
 export const renderInboundOperatorPanel = (
   state: InboundOperatorState,
 ): string => {
-  const readyLabel = state.rep.ready
+  const readyLabel = state.rep.ready &&
+    state.rep.endpoints.some((endpoint) => endpoint.active !== false && endpoint.healthy)
     ? 'Ready for inbound'
     : 'Away from inbound';
-  const canToggle = !state.pendingAction && !state.rep.assignment;
+  const canToggle =
+    !state.pendingAction &&
+    !state.rep.assignment &&
+    (state.rep.ready || state.rep.endpoints.some((endpoint) => endpoint.healthy));
   const hoursLabel = phaseLabel(state.queue.businessHours);
   const overflowLabel = phaseLabel(state.queue.overflow);
   const recovery =

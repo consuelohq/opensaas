@@ -40,6 +40,7 @@ export const RepCapacityActionSchema = Schema.Union(
     ready: Schema.Boolean,
     endpoints: Schema.Array(endpoint).pipe(Schema.maxItems(8)),
   }),
+  Schema.Struct({ type: Schema.Literal('heartbeat') }),
   Schema.Struct({
     type: Schema.Literal('offer'),
     assignmentId: id,

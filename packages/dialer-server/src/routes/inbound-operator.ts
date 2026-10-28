@@ -41,6 +41,7 @@ export const createInboundOperatorRoutes = (
   );
   for (const [path, operation] of [
     ['readiness', operator.readiness],
+    ['heartbeat', operator.heartbeat],
     ['offers/accept', operator.accept],
     ['offers/decline', operator.decline],
     ['wrap-up', operator.wrapUp],

@@ -227,6 +227,14 @@ export const projectRepCapacity = async (
         await move('capacity', event.capacityId, 'connecting');
         capacity = current.get('capacity:' + event.capacityId)!;
       }
+      if (
+        !next.owner &&
+        !next.ready &&
+        ['reserved', 'connecting', 'unknown'].includes(capacity.state)
+      ) {
+        await move('capacity', event.capacityId, 'available', 'reconciled_ended');
+        capacity = current.get('capacity:' + event.capacityId)!;
+      }
       if (capacity.state !== desired) {
         const item = await move(
           'capacity',

@@ -77,7 +77,8 @@ const lifecycles: Record<InboundKind, Lifecycle> = {
     initial: 'available',
     edges: {
       available: ['reserved', 'unavailable'],
-      unavailable: ['available'],
+      // Outbound-only reps can occupy the shared slot without enabling inbound.
+      unavailable: ['available', 'reserved'],
       reserved: ['connecting', 'available'],
       connecting: ['connected', 'unknown', 'available'],
       unknown: ['connected', 'available'],

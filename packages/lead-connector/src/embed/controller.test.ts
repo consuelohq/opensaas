@@ -89,6 +89,7 @@ const createInboundApi = (): InboundOperatorApi => {
     setSessionToken: mock(() => undefined),
     getSnapshot: mock(async () => offering),
     setReadiness: mock(async () => offering),
+    heartbeat: mock(async () => offering),
     acceptOffer: mock(async () => ({
       accepted: true,
       status: 'accepted' as const,
@@ -324,6 +325,66 @@ const createApi = () =>
   }) satisfies LeadConnectorEmbedApi;
 
 describe('LeadConnector embed controller', () => {
+  it('re-registers a restored ready browser endpoint before claiming readiness', async () => {
+    const inboundOperatorApi = createInboundApi();
+    const voice = createVoice();
+    const restored = createInboundSnapshot(null);
+    restored.rep.endpoints = [{
+      endpointId: 'browser', kind: 'browser', healthy: true,
+      active: true, label: 'Browser',
+    }];
+    inboundOperatorApi.getSnapshot = mock(async () => restored);
+    let registered = false;
+    voice.prepare = mock(async () => { registered = true; });
+    inboundOperatorApi.heartbeat = mock(async () => {
+      expect(registered).toBe(true);
+      return restored;
+    });
+    const controller = createLeadConnectorEmbedController({
+      api: createApi(), voice, inboundOperatorApi,
+    });
+    const projected: boolean[] = [];
+    controller.subscribe((state) => {
+      if (state.inboundOperator.rep.ready) projected.push(registered);
+    });
+    await controller.authenticate('opaque-parent-ciphertext');
+    expect(voice.prepare).toHaveBeenCalledTimes(1);
+    expect(projected.length).toBeGreaterThan(0);
+    expect(projected.every(Boolean)).toBe(true);
+    await controller.loadInboundOperator();
+    expect(voice.prepare).toHaveBeenCalledTimes(1);
+    await controller.heartbeatInbound();
+    expect(inboundOperatorApi.heartbeat).toHaveBeenCalledTimes(1);
+  });
+
+  it('fails closed when a previously ready browser cannot be restored after reload', async () => {
+    const inboundOperatorApi = createInboundApi();
+    const voice = createVoice();
+    const restored = createInboundSnapshot(null);
+    restored.rep.endpoints = [{
+      endpointId: 'browser', kind: 'browser', healthy: true,
+      active: true, label: 'Browser',
+    }];
+    inboundOperatorApi.getSnapshot = mock(async () => restored);
+    inboundOperatorApi.setReadiness = mock(async (value) => {
+      expect(value).toEqual({ ready: false, endpoints: [] });
+      return {
+        ...restored,
+        rep: { ...restored.rep, ready: false, presence: 'away' as const,
+          endpoints: [{ ...restored.rep.endpoints[0]!, active: false }] },
+      };
+    });
+    voice.prepare = mock(async () => { throw new Error('Device registration failed'); });
+    const controller = createLeadConnectorEmbedController({
+      api: createApi(), voice, inboundOperatorApi,
+    });
+    await controller.authenticate('opaque-parent-ciphertext');
+    expect(inboundOperatorApi.setReadiness).toHaveBeenCalledTimes(1);
+    expect(controller.getState().inboundOperator.rep.ready).toBe(false);
+    await controller.heartbeatInbound();
+    expect(inboundOperatorApi.heartbeat).not.toHaveBeenCalled();
+  });
+
   it('prepares browser media before advertising browser readiness and fails closed when preparation is denied', async () => {
     const api = createApi();
     const inboundOperatorApi = createInboundApi();

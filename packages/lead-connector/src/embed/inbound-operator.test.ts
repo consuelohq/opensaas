@@ -175,6 +175,23 @@ describe('inbound operator state', () => {
     const html = renderInboundOperatorPanel(state);
     expect(html).toContain('data-endpoint-id="browser-1"');
   });
+
+  test('blocks Go ready with no healthy devices but permits declining unanswerable fenced offers', () => {
+    const absent = reduceInboundOperatorState(
+      createInitialInboundOperatorState(),
+      { type: 'SNAPSHOT_LOADED', snapshot: {
+        ...snapshot,
+        rep: { ...snapshot.rep, ready: false, assignment: null,
+          capacityPhase: null, endpoints: snapshot.rep.endpoints.map((endpoint) =>
+            ({ ...endpoint, healthy: false, active: false })) },
+      } },
+    );
+    const html = renderInboundOperatorPanel(absent);
+    expect(html).toMatch(/data-action="inbound-readiness"[^>]*disabled/);
+    expect(html).toMatch(/data-action="inbound-accept"[^>]*disabled/);
+    expect(html).toMatch(/data-action="inbound-decline"[^>]*data-generation="7"[^>]*>Decline/);
+    expect(html).not.toMatch(/data-action="inbound-decline"[^>]*disabled/);
+  });
 });
 
 describe('inbound operator adapter', () => {
