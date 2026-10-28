@@ -119,13 +119,28 @@ describe('GitHub workflow policy', () => {
     const workflow = readWorkflow('consuelo-ci.yaml');
     for (const jobName of ['consuelo-changes', 'workflow-security', 'verify']) {
       const checkout = workflow.jobs[jobName].steps.find((step) => step.uses === 'actions/checkout@v4');
-      expect(checkout?.with?.['fetch-depth'], jobName).toBe(2);
+      expect(checkout?.with?.['fetch-depth'], jobName).toBe(
+        "${{ github.event_name != 'workflow_dispatch' && 2 || 0 }}",
+      );
     }
     for (const jobName of [
       'workflow-security', 'verify', 'os-contracts', 'dialer', 'sites-gateway-cloudflare',
     ]) {
       expect(workflow.jobs[jobName], jobName).toBeDefined();
     }
+  });
+
+  test('keeps full Git ancestry for manual planner and both downstream diff consumers', () => {
+    const workflow = readWorkflow('consuelo-ci.yaml');
+    for (const jobName of ['consuelo-changes', 'workflow-security', 'verify']) {
+      const checkout = workflow.jobs[jobName].steps.find((step) => step.uses === 'actions/checkout@v4');
+      const depth = checkout?.with?.['fetch-depth'];
+      expect(depth, jobName).toContain("github.event_name != 'workflow_dispatch'");
+      expect(depth, jobName).toContain('2 || 0');
+    }
+    expect(workflow.jobs['workflow-security'].steps.some((step) =>
+      step.run?.includes('check-github-workflows.cjs'))).toBe(true);
+    expect(workflow.jobs.verify.steps.some((step) => step.run?.includes('bun run verify'))).toBe(true);
   });
 
   test('runs focused package, container, and security-contract lanes without full Git history', () => {

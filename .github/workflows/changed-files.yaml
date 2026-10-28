@@ -36,7 +36,7 @@ jobs:
               .filter(Boolean);
             const supported = (pattern) => {
               const literal = pattern.endsWith('/**') ? pattern.slice(0, -3) : pattern;
-              return !['*', '?', '[', ']', '{', '}'].some((token) => literal.includes(token));
+              return !['*', '?', '[', ']', '{', '}', '!', '(', ')', '\\'].some((token) => literal.includes(token));
             };
             const matches = (file) => {
               const paths = [file.filename, file.previous_filename]

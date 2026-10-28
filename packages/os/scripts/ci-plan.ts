@@ -133,7 +133,7 @@ function parseArgs(argv: string[]): CliArgs {
   return args;
 }
 
-function runGit(args: string[], cwd?: string): string {
+function runGit(args: string[], cwd?: string, rawOutput = false): string {
   const result = spawnSync('git', args, {
     cwd,
     encoding: 'utf8',
@@ -143,7 +143,8 @@ function runGit(args: string[], cwd?: string): string {
     const detail = String(result.stderr || result.stdout || '').trim();
     throw new Error(`git ${args.join(' ')} failed${detail ? `: ${detail}` : ''}`);
   }
-  return String(result.stdout || '').trim();
+  const output = String(result.stdout || '');
+  return rawOutput ? output : output.trim();
 }
 
 function tryGit(args: string[]): string | undefined {
@@ -213,10 +214,13 @@ export function readChangedFiles(baseSha: string, cwd?: string): string[] {
   const output = runGit([
     'diff',
     '--name-only',
+    '-z',
     '--no-renames',
     `${baseSha}...HEAD`,
-  ], cwd);
-  return output.split(/\r?\n/).map((file) => file.trim()).filter(Boolean);
+  ], cwd, true);
+  // Git quotes non-ASCII and control characters without NUL-delimited filenames.
+  // Do not trim: whitespace can be part of a tracked path.
+  return output.split('\0').filter(Boolean);
 }
 
 function writeGithubOutput(name: string, value: string | boolean): void {

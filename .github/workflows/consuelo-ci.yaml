@@ -34,9 +34,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          # GitHub PR merge refs contain the base as HEAD^1. Retain both
-          # parents for the diff planner without fetching the entire history.
-          fetch-depth: 2
+          # PR/merge-group refs contain the base at HEAD^1 (depth 2).
+          # Manual runs can compare old feature ancestry or any supplied base.
+          fetch-depth: ${{ github.event_name != 'workflow_dispatch' && 2 || 0 }}
 
       - name: Setup Consuelo CI planner
         uses: ./.github/actions/consuelo-ci-setup
@@ -65,7 +65,8 @@ jobs:
         if: needs.consuelo-changes.outputs.workflow_security == 'true'
         with:
           ref: ${{ needs.consuelo-changes.outputs.head_sha }}
-          fetch-depth: 2
+          # Manual comparisons require the planner-provided base SHA in this job.
+          fetch-depth: ${{ github.event_name != 'workflow_dispatch' && 2 || 0 }}
 
       - name: Review changed GitHub automation
         if: needs.consuelo-changes.outputs.workflow_security == 'true'
@@ -85,7 +86,8 @@ jobs:
         if: needs.consuelo-changes.outputs.verify == 'true'
         with:
           ref: ${{ needs.consuelo-changes.outputs.head_sha }}
-          fetch-depth: 2
+          # Manual verification must resolve the same immutable comparison base.
+          fetch-depth: ${{ github.event_name != 'workflow_dispatch' && 2 || 0 }}
 
       - name: Setup Consuelo verification
         if: needs.consuelo-changes.outputs.verify == 'true'
