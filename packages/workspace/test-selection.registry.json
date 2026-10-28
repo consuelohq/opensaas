@@ -5,8 +5,8 @@
     "testFileCount": 709,
     "mappedTestCount": 626,
     "unmappedTestCount": 83,
-    "ruleCount": 82,
-    "explicitRuleCount": 69,
+    "ruleCount": 81,
+    "explicitRuleCount": 68,
     "autoRuleCount": 13,
     "projectCount": 9,
     "packageTestScriptCount": 20,
@@ -2923,32 +2923,6 @@
       "critical": true,
       "exclusive": true,
       "reason": "M4 OS reference and snapshot cleanup must prove deleted Twenty topology stays absent and large-diff code.call snapshots remain safe without selecting the broad OS package suite.",
-      "origin": "explicit"
-    },
-    {
-      "id": "workspace-task-merge-agent-boundary",
-      "source": [
-        "packages/workspace/scripts/task-merge.js",
-        "packages/workspace/scripts/lib/task-merge-readiness.js",
-        "packages/os/scripts/task-merge.js",
-        "packages/os/scripts/lib/task-merge-readiness.js",
-        "packages/workspace/tests/task-merge-readiness.test.ts"
-      ],
-      "tests": [
-        {
-          "name": "workspace task merge agent-boundary contracts",
-          "command": [
-            "bun",
-            "x",
-            "vitest",
-            "run",
-            "packages/workspace/tests/task-merge-readiness.test.ts"
-          ]
-        }
-      ],
-      "critical": true,
-      "exclusive": true,
-      "reason": "Agent-facing PR merge readiness must stay bounded, fail closed on unreadable or failed GitHub checks, and keep deployment polling behind an explicit operator path.",
       "origin": "explicit"
     },
     {
