@@ -1,6 +1,10 @@
+import { execFileSync } from 'node:child_process';
+import { mkdtempSync, mkdirSync, rmSync, unlinkSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-import { classifyConsueloChanges } from '../scripts/ci-plan';
+import { classifyConsueloChanges, readChangedFiles } from '../scripts/ci-plan';
 
 describe('Consuelo CI plan', () => {
   it('routes every Consuelo-owned package through verify without waking product lanes unnecessarily', () => {
@@ -75,5 +79,40 @@ describe('Consuelo CI plan', () => {
       dialer: true,
       sitesGatewayCloudflare: false,
     });
+  });
+
+  it('detects deletion-only PRs from a two-commit shallow checkout', () => {
+    const root = mkdtempSync(join(tmpdir(), 'consuelo-ci-deletions-'));
+    const source = join(root, 'source');
+    const checkout = join(root, 'checkout');
+    const deletedPath = 'packages/dialer-server/src/removed.ts';
+
+    function git(cwd: string, ...args: string[]): string {
+      return execFileSync('git', args, { cwd, encoding: 'utf8' }).trim();
+    }
+
+    try {
+      mkdirSync(join(source, 'packages/dialer-server/src'), { recursive: true });
+      git(source, 'init', '-b', 'main');
+      git(source, 'config', 'user.email', 'ci@example.invalid');
+      git(source, 'config', 'user.name', 'CI Fixture');
+      writeFileSync(join(source, deletedPath), 'export const removed = true;\n');
+      git(source, 'add', '.');
+      git(source, 'commit', '-m', 'base');
+      git(source, 'checkout', '-b', 'pr');
+      unlinkSync(join(source, deletedPath));
+      git(source, 'add', '-u');
+      git(source, 'commit', '-m', 'delete dialer source');
+      git(source, 'checkout', 'main');
+      git(source, 'merge', '--no-ff', '--no-edit', 'pr');
+      git(root, 'clone', '--depth', '2', '--branch', 'main', `file://${source}`, checkout);
+
+      const base = git(checkout, 'rev-parse', 'HEAD^1');
+      const changed = readChangedFiles(base, checkout);
+      expect(changed).toEqual([deletedPath]);
+      expect(classifyConsueloChanges(changed)).toMatchObject({ verify: true, dialer: true });
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
   });
 });

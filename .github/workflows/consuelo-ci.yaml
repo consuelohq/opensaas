@@ -34,7 +34,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          # GitHub PR merge refs contain the base as HEAD^1. Retain both
+          # parents for the diff planner without fetching the entire history.
+          fetch-depth: 2
 
       - name: Setup Consuelo CI planner
         uses: ./.github/actions/consuelo-ci-setup
@@ -63,7 +65,7 @@ jobs:
         if: needs.consuelo-changes.outputs.workflow_security == 'true'
         with:
           ref: ${{ needs.consuelo-changes.outputs.head_sha }}
-          fetch-depth: 0
+          fetch-depth: 2
 
       - name: Review changed GitHub automation
         if: needs.consuelo-changes.outputs.workflow_security == 'true'
@@ -83,7 +85,7 @@ jobs:
         if: needs.consuelo-changes.outputs.verify == 'true'
         with:
           ref: ${{ needs.consuelo-changes.outputs.head_sha }}
-          fetch-depth: 0
+          fetch-depth: 2
 
       - name: Setup Consuelo verification
         if: needs.consuelo-changes.outputs.verify == 'true'
@@ -111,7 +113,7 @@ jobs:
         if: needs.consuelo-changes.outputs.os_contracts == 'true'
         with:
           ref: ${{ needs.consuelo-changes.outputs.head_sha }}
-          fetch-depth: 0
+          fetch-depth: 1
 
       - name: Setup OS contract tests
         if: needs.consuelo-changes.outputs.os_contracts == 'true'
@@ -143,7 +145,7 @@ jobs:
         if: needs.consuelo-changes.outputs.dialer == 'true'
         with:
           ref: ${{ needs.consuelo-changes.outputs.head_sha }}
-          fetch-depth: 0
+          fetch-depth: 1
 
       - name: Setup dialer CI
         if: needs.consuelo-changes.outputs.dialer == 'true'
@@ -196,7 +198,7 @@ jobs:
         if: needs.consuelo-changes.outputs.sites_gateway_cloudflare == 'true'
         with:
           ref: ${{ needs.consuelo-changes.outputs.head_sha }}
-          fetch-depth: 0
+          fetch-depth: 1
 
       - name: Setup Sites Gateway tests
         if: needs.consuelo-changes.outputs.sites_gateway_cloudflare == 'true'

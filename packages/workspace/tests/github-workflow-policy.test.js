@@ -104,6 +104,53 @@ describe('GitHub workflow policy', () => {
     }
   });
 
+  test('uses shallow parent-aware checkouts for pull-request CI without removing verification jobs', () => {
+    const workflow = readWorkflow('consuelo-ci.yaml');
+    for (const jobName of ['consuelo-changes', 'workflow-security', 'verify']) {
+      const checkout = workflow.jobs[jobName].steps.find((step) => step.uses === 'actions/checkout@v4');
+      expect(checkout?.with?.['fetch-depth'], jobName).toBe(2);
+    }
+    for (const jobName of [
+      'workflow-security', 'verify', 'os-contracts', 'dialer', 'sites-gateway-cloudflare',
+    ]) {
+      expect(workflow.jobs[jobName], jobName).toBeDefined();
+    }
+  });
+
+  test('runs focused package, container, and security-contract lanes without full Git history', () => {
+    const workflow = readWorkflow('consuelo-ci.yaml');
+    for (const jobName of ['os-contracts', 'dialer', 'sites-gateway-cloudflare']) {
+      const checkout = workflow.jobs[jobName].steps.find((step) => step.uses === 'actions/checkout@v4');
+      expect(checkout?.with?.['fetch-depth'], jobName).toBe(1);
+    }
+    const dialer = workflow.jobs.dialer.steps;
+    expect(dialer.some((step) => step.run?.includes('bun test packages/dialer/src'))).toBe(true);
+    expect(dialer.some((step) => step.run?.includes('packages/dialer-server typecheck'))).toBe(true);
+    expect(dialer.some((step) => step.run?.includes('packages/dialer-server build'))).toBe(true);
+    expect(dialer.some((step) => step.run?.includes('docker build'))).toBe(true);
+  });
+
+  test('keeps docs and website status contracts while removing irrelevant checkout work', () => {
+    const docs = readWorkflow('ci-docs.yaml');
+    const website = readWorkflow('ci-website.yaml');
+
+    for (const workflow of [docs, website]) {
+      expect(workflow.permissions).toMatchObject({ contents: 'read', 'pull-requests': 'read' });
+      expect(workflow.jobs['changed-files-check'].uses).toBe('./.github/workflows/changed-files.yaml');
+    }
+    expect(docs.jobs['docs-check'].steps.some((step) =>
+      step.uses === 'styfle/cancel-workflow-action@0.11.0')).toBe(false);
+    expect(docs.jobs['docs-check'].steps.find((step) =>
+      step.uses === 'actions/checkout@v4')?.with?.['fetch-depth']).not.toBe(0);
+
+    expect(website.jobs.website.needs).toContain('changed-files-check');
+    const websiteCheckout = website.jobs.website.steps.find((step) => step.uses === 'actions/checkout@v4');
+    expect(websiteCheckout?.if).toContain('needs.changed-files-check.outputs.any_changed');
+    expect(website.jobs['ci-website-status-check'].needs).toContain('changed-files-check');
+    expect(website.jobs.website.steps.some((step) =>
+      step.run === 'bun run --cwd packages/consuelo-website build')).toBe(true);
+  });
+
   test('runs real Swamp compatibility outside blocking pull-request CI', () => {
     const source = readFileSync(
       join(workflowDir, 'consuelo-swamp-compat.yaml'),
@@ -162,12 +209,14 @@ describe('GitHub workflow policy', () => {
       'utf8',
     );
 
-    expect(osDistributionWorkflow).toContain(
-      '- name: Resolve OS test comparison SHAs\n        uses: nrwl/nx-set-shas@v4',
-    );
-    expect(osDistributionWorkflow).toContain(
-      '- uses: actions/checkout@v4\n        with:\n          fetch-depth: 0',
-    );
+    const distribution = readWorkflow('consuelo-os-distribution-environments.yaml');
+    const native = distribution.jobs['native-runtime'];
+    expect(native.strategy.matrix.include.map((entry) => entry.name)).toEqual([
+      'linux', 'macos', 'macos-intel', 'windows',
+    ]);
+    expect(native.steps.some((step) => step.uses === 'nrwl/nx-set-shas@v4')).toBe(false);
+    expect(native.steps.find((step) => step.uses === 'actions/checkout@v4')
+      ?.with?.['fetch-depth']).toBe("${{ github.event_name == 'pull_request' && 2 || 0 }}");
     expect(osDistributionWorkflow).toContain(
       'NATIVE_TEST_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}',
     );

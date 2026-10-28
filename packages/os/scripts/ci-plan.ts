@@ -133,8 +133,9 @@ function parseArgs(argv: string[]): CliArgs {
   return args;
 }
 
-function runGit(args: string[]): string {
+function runGit(args: string[], cwd?: string): string {
   const result = spawnSync('git', args, {
+    cwd,
     encoding: 'utf8',
     stdio: ['ignore', 'pipe', 'pipe'],
   });
@@ -208,13 +209,13 @@ function fetchRemoteRefIfNeeded(baseRef: string): void {
   ]);
 }
 
-function readChangedFiles(baseSha: string): string[] {
+export function readChangedFiles(baseSha: string, cwd?: string): string[] {
   const output = runGit([
     'diff',
     '--name-only',
-    '--diff-filter=ACMR',
+    '--no-renames',
     `${baseSha}...HEAD`,
-  ]);
+  ], cwd);
   return output.split(/\r?\n/).map((file) => file.trim()).filter(Boolean);
 }
 
