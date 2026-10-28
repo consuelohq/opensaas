@@ -2,16 +2,16 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 709,
-    "mappedTestCount": 626,
+    "testFileCount": 712,
+    "mappedTestCount": 629,
     "unmappedTestCount": 83,
-    "ruleCount": 81,
-    "explicitRuleCount": 68,
+    "ruleCount": 82,
+    "explicitRuleCount": 69,
     "autoRuleCount": 13,
     "projectCount": 9,
     "packageTestScriptCount": 20,
     "byGroup": {
-      "packages/os/tests": 326,
+      "packages/os/tests": 327,
       "packages/workspace/tests": 65,
       "packages/os/tests/media": 34,
       "packages/consuelo-design/upstream/open-design/apps/daemon": 21,
@@ -22,9 +22,9 @@
       "packages/consuelo-website/tests": 14,
       "packages/os/tests/distribution": 13,
       "packages/dialer-server/src/inbound": 12,
+      "packages/dialer-server/src/runtime": 11,
       "packages/documentation/tests": 11,
       "packages/api/src/routes": 10,
-      "packages/dialer-server/src/runtime": 10,
       "packages/lead-connector/src": 8,
       "packages/lead-connector/src/deployment": 6,
       "packages/consuelo-design/upstream/open-design/apps/web/src/components": 5,
@@ -83,6 +83,7 @@
       "packages/os/tools/media": 1,
       "packages/os/tools/memory": 1,
       "packages/os/tools/monitor": 1,
+      "packages/os/tools/posthog": 1,
       "packages/os/tools/railway": 1,
       "packages/os/tools/review": 1,
       "packages/os/tools/security": 1,
@@ -98,7 +99,7 @@
       "tests": 1
     },
     "byKind": {
-      "test": 645,
+      "test": 648,
       "spec": 29,
       "__tests__": 11,
       "integration": 9,
@@ -2821,6 +2822,35 @@
       "origin": "explicit"
     },
     {
+      "id": "os-posthog-api-tool",
+      "source": [
+        "packages/os/tools/posthog/**",
+        "packages/os/scripts/posthog.ts",
+        "packages/os/scripts/lib/posthog-client.ts",
+        "packages/os/tests/posthog-tool.test.ts",
+        "packages/os/docs/posthog.md"
+      ],
+      "tests": [
+        {
+          "name": "OS PostHog provider, manifest and facade contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/posthog-tool.test.ts",
+            "tools/posthog/handler.test.ts",
+            "tests/tool-manifest.test.ts",
+            "tests/facade/facade.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "PostHog provider edits have a focused credential/ingestion/query/manifest and typed-facade regression suite. Preserve all other critical shared-contract checks without running an unrelated whole-OS browser package suite.",
+      "origin": "explicit"
+    },
+    {
       "id": "os-script-parity-audit",
       "source": [
         "packages/os/tests/audit/script-parity-audit.test.ts",
@@ -3942,6 +3972,11 @@
     },
     {
       "path": "packages/dialer-server/src/runtime/twilio-provider-mode.test.ts",
+      "group": "packages/dialer-server/src/runtime",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-server/src/runtime/twilio-signature.test.ts",
       "group": "packages/dialer-server/src/runtime",
       "kind": "test"
     },
@@ -5631,6 +5666,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/posthog-tool.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/pr-review-collector.test.js",
       "group": "packages/os/tests",
       "kind": "test"
@@ -6353,6 +6393,11 @@
     {
       "path": "packages/os/tools/monitor/handler.test.ts",
       "group": "packages/os/tools/monitor",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tools/posthog/handler.test.ts",
+      "group": "packages/os/tools/posthog",
       "kind": "test"
     },
     {
