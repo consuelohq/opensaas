@@ -57,6 +57,7 @@ export type CreateDeviceAuthorityHandlerInput = {
   stripeSyntheticWorkspaceIds?: string;
   checkoutObservability?: CheckoutObservability;
   operationalLogger?: DeviceAuthorityLogger;
+  defer?: DeviceAuthorityRuntime['defer'];
   installControlPlaneRepository?: DeviceAuthorityRuntime['installControlPlaneRepository'];
   installDiagnosticBundleStore?: DeviceAuthorityRuntime['installDiagnosticBundleStore'];
   installTelemetryObserver?: DeviceAuthorityRuntime['installTelemetryObserver'];

@@ -1,0 +1,14 @@
+{
+  "files": [
+    "packages/os/definitely-missing.json",
+    "packages/os/scripts/generate-docs.ts",
+    "packages/os/scripts/generate-types.ts",
+    "packages/os/scripts/lib/posthog-client.ts",
+    "packages/os/tests/audit/fixtures/script-parity-classifications.json",
+    "packages/workspace/scripts/test-selection.js",
+    "packages/workspace/test-selection.registry.json",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "updatedAt": "2026-10-28T18:22:27.812Z"
+}

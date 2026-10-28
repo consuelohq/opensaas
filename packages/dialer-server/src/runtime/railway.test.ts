@@ -262,7 +262,9 @@ describe('LeadConnector dialer learning', () => {
 
     expect(recorded).toBe(true);
     expect(writes).toHaveLength(1);
-    expect(writes[0].text).toContain('INSERT INTO dialer_learning_observations');
+    expect(writes[0].text).toContain(
+      'INSERT INTO dialer_learning_observations',
+    );
     expect(writes[0].text).toContain(
       'ON CONFLICT (workspace_id, group_id, position) DO NOTHING',
     );
@@ -309,13 +311,16 @@ describe('LeadConnector dialer learning', () => {
 
 describe('Railway dialer-server runtime composition', () => {
   it('finalizes predictive actions only after provider initiation and only for created legs', async () => {
-    const source = await readFile(new URL('./railway.ts', import.meta.url), 'utf8');
+    const source = await readFile(
+      new URL('./railway.ts', import.meta.url),
+      'utf8',
+    );
     const liveStart = source.indexOf('initiateProviderCalls: (input) =>');
     const liveEnd = source.indexOf('const parallel:', liveStart);
     expect(liveStart).toBeGreaterThanOrEqual(0);
     expect(liveEnd).toBeGreaterThan(liveStart);
     const liveBlock = source.slice(liveStart, liveEnd);
-    const initiateIndex = liveBlock.indexOf('dialer.parallel.initiateGroup');
+    const initiateIndex = liveBlock.indexOf('startProviderGroup(');
     const finalizeIndex = liveBlock.indexOf('finalizeSelectedDecisionRecords');
     expect(initiateIndex).toBeGreaterThanOrEqual(0);
     expect(finalizeIndex).toBeGreaterThanOrEqual(0);
@@ -335,7 +340,7 @@ describe('Railway dialer-server runtime composition', () => {
     ];
     expect(
       selectSuccessfullyCreatedTargets(selected, [
-        { contactId: 'contact-b', callSid: 'CA_created' },
+        { position: 2, callSid: 'CA_created' },
       ]).map((target) => target.contactId),
     ).toEqual(['contact-b']);
   });
@@ -517,4 +522,12 @@ describe('Railway dialer-server runtime composition', () => {
       calls: [{ contactId: 'contact-1', status: 'mocked' }],
     });
   });
+});
+
+it('attributes a partially created group by target position when contacts repeat', () => {
+  const targets = [{ contactId: 'same-contact', decisionId: 'first' },
+    { contactId: 'same-contact', decisionId: 'second' }];
+  expect(selectSuccessfullyCreatedTargets(targets, [{
+    callSid: 'first-call', position: 1,
+  }])).toEqual([targets[0]!]);
 });

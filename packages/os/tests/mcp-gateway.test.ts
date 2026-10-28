@@ -868,9 +868,11 @@ describe('MCP gateway server route', () => {
     }));
 
     expect(response.status).toBe(200);
+    const requestId = response.headers.get('x-consuelo-request-id');
+    expect(requestId).toMatch(/^[a-zA-Z0-9._:-]{8,128}$/);
     expect(executeFacadeTool).toHaveBeenCalledWith(
       'explore',
-      { query: 'status' },
+      { query: 'status', requestId },
       {
         requestedNodeId: 'node_cloud_test',
         resolvedNodeId: 'node_cloud_test',
@@ -880,6 +882,145 @@ describe('MCP gateway server route', () => {
       },
       { timeoutMs: 12_000 },
     );
+  });
+
+  it('preserves an explicit facade requestId instead of replacing it with the transport receipt id', async () => {
+    const config = createConfig();
+    const token = issueMcpToken(config, ['route:/mcp:read', 'mcp:call']);
+    const executeFacadeTool = vi.fn(async () => ({ ok: true, code: 'OK' }));
+    const app = createMcpRoutes({
+      getSteering: async () => '# OS steering',
+      executeFacadeTool,
+    });
+    const body = JSON.stringify({
+      jsonrpc: '2.0',
+      id: 'explicit-request-id-call',
+      method: 'tools/call',
+      params: {
+        name: 'call',
+        arguments: {
+          tool: 'explore',
+          input: { query: 'status', requestId: 'caller-request-1234' },
+        },
+      },
+    });
+    const signed = signMachineRequest({
+      config,
+      token,
+      method: 'POST',
+      path: '/mcp',
+      body,
+      timestamp: new Date().toISOString(),
+      nonce: 'nonce-explicit-request-id-call',
+    });
+
+    const response = await app.request(new Request('http://127.0.0.1:46321/mcp', {
+      method: 'POST',
+      headers: signed.headers,
+      body,
+    }));
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get('x-consuelo-request-id')).not.toBe('caller-request-1234');
+    expect(executeFacadeTool).toHaveBeenCalledWith(
+      'explore',
+      { query: 'status', requestId: 'caller-request-1234' },
+      undefined,
+    );
+  });
+
+  it('replays an explicit requestId for a mutating facade call without executing twice', async () => {
+    const config = createConfig();
+    const token = issueMcpToken(config, ['route:/mcp:read', 'mcp:call']);
+    const executeFacadeTool = vi.fn(async () => ({ ok: true, code: 'OK', data: { written: true } }));
+    const app = createMcpRoutes({
+      getSteering: async () => '# OS steering',
+      executeFacadeTool,
+    });
+    const body = JSON.stringify({
+      jsonrpc: '2.0',
+      id: 'mutating-request-replay',
+      method: 'tools/call',
+      params: {
+        name: 'call',
+        arguments: {
+          tool: 'fs.write',
+          taskSession: 'tsk_replay',
+          input: {
+            path: 'tmp/replay.txt',
+            content: 'one',
+            requestId: 'caller-mutation-1234',
+          },
+        },
+      },
+    });
+    const request = (nonce: string) => {
+      const signed = signMachineRequest({
+        config,
+        token,
+        method: 'POST',
+        path: '/mcp',
+        body,
+        timestamp: new Date().toISOString(),
+        nonce,
+      });
+      return new Request('http://127.0.0.1:46321/mcp', {
+        method: 'POST',
+        headers: signed.headers,
+        body,
+      });
+    };
+
+    const first = await app.request(request('nonce-mutation-replay-1'));
+    const second = await app.request(request('nonce-mutation-replay-2'));
+
+    expect(first.status).toBe(200);
+    expect(second.status).toBe(200);
+    expect(await second.json()).toEqual(await first.json());
+    expect(executeFacadeTool).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps transport-generated request ids correlation-only when callers omit requestId', async () => {
+    const config = createConfig();
+    const token = issueMcpToken(config, ['route:/mcp:read', 'mcp:call']);
+    const executeFacadeTool = vi.fn(async () => ({ ok: true, code: 'OK' }));
+    const app = createMcpRoutes({
+      getSteering: async () => '# OS steering',
+      executeFacadeTool,
+    });
+    const body = JSON.stringify({
+      jsonrpc: '2.0',
+      id: 'mutation-without-id',
+      method: 'tools/call',
+      params: {
+        name: 'call',
+        arguments: {
+          tool: 'fs.write',
+          taskSession: 'tsk_no_replay',
+          input: { path: 'tmp/no-replay.txt', content: 'one' },
+        },
+      },
+    });
+    const request = (nonce: string) => {
+      const signed = signMachineRequest({
+        config,
+        token,
+        method: 'POST',
+        path: '/mcp',
+        body,
+        timestamp: new Date().toISOString(),
+        nonce,
+      });
+      return new Request('http://127.0.0.1:46321/mcp', {
+        method: 'POST',
+        headers: signed.headers,
+        body,
+      });
+    };
+
+    expect((await app.request(request('nonce-no-replay-1'))).status).toBe(200);
+    expect((await app.request(request('nonce-no-replay-2'))).status).toBe(200);
+    expect(executeFacadeTool).toHaveBeenCalledTimes(2);
   });
 
   it('should serve modern MCP discovery without creating a transport session', async () => {

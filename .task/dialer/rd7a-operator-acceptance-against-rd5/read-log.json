@@ -1,0 +1,10 @@
+{
+  "files": [
+    "areas/dialer/rd/receipts/RD7A.md",
+    "packages/dialer-server/src/inbound/operator.ts",
+    "packages/lead-connector/src/embed/controller.test.ts",
+    "packages/lead-connector/src/embed/controller.ts",
+    "packages/lead-connector/src/embed/inbound-operator-view.ts"
+  ],
+  "updatedAt": "2026-09-13T20:30:22.106Z"
+}

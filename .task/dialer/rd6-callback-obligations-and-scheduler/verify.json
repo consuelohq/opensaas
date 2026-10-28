@@ -1,0 +1,288 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/dialer/rd6-callback-obligations-and-scheduler",
+  "base": "origin/stream/dialer",
+  "headSha": "e12e5e18dcc822aae1f34da941b65699addc8298",
+  "changeHash": "1a19634a33daa2361ce00200292626ffdc9acce35be04850b70ee8a95e301d30",
+  "changedFiles": [
+    "areas/dialer/rd/receipts/RD6.md",
+    "packages/dialer-server/scripts/local-dialer-lab.ts",
+    "packages/dialer-server/src/database/migrations.test.ts",
+    "packages/dialer-server/src/database/migrations.ts",
+    "packages/dialer-server/src/inbound/README.md",
+    "packages/dialer-server/src/inbound/callback-migration.ts",
+    "packages/dialer-server/src/inbound/callback-recipient-cipher.test.ts",
+    "packages/dialer-server/src/inbound/callback-recipient-cipher.ts",
+    "packages/dialer-server/src/inbound/callback-telephony.integration.test.ts",
+    "packages/dialer-server/src/inbound/callback-telephony.ts",
+    "packages/dialer-server/src/inbound/callbacks.integration.test.ts",
+    "packages/dialer-server/src/inbound/callbacks.ts",
+    "packages/dialer-server/src/inbound/rep-capacity-commands.ts",
+    "packages/dialer-server/src/inbound/rep-capacity-projection.ts",
+    "packages/dialer-server/src/inbound/rep-capacity.integration.test.ts",
+    "packages/dialer-server/src/inbound/routing.integration.test.ts",
+    "packages/dialer-server/src/inbound/telephony-admission.ts",
+    "packages/dialer-server/src/inbound/telephony-commands.ts",
+    "packages/dialer-server/src/inbound/telephony-config.ts",
+    "packages/dialer-server/src/inbound/telephony-contracts.ts",
+    "packages/dialer-server/src/inbound/telephony-endpoints.ts",
+    "packages/dialer-server/src/inbound/telephony-reconciliation.ts",
+    "packages/dialer-server/src/inbound/telephony-store.ts",
+    "packages/dialer-server/src/inbound/telephony-twiml.ts",
+    "packages/dialer-server/src/inbound/telephony.integration.test.ts",
+    "packages/dialer-server/src/inbound/telephony.test.ts",
+    "packages/dialer-server/src/inbound/telephony.ts",
+    "packages/dialer-server/src/lab/learning-rollback-scenario.ts",
+    "packages/dialer-server/src/lab/local-dialer-lab.integration.test.ts",
+    "packages/dialer-server/src/runtime/inbound.ts",
+    "packages/dialer-server/tsconfig.json",
+    "packages/dialer/src/inbound/callback-contracts.ts",
+    "packages/dialer/src/inbound/callback-ports.ts",
+    "packages/dialer/src/inbound/callback-scheduler.test.ts",
+    "packages/dialer/src/inbound/callback-scheduler.ts",
+    "packages/dialer/src/inbound/index.ts",
+    "packages/dialer/src/inbound/lifecycle.ts"
+  ],
+  "verifiedAt": "2026-09-13T20:56:59.734Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/dialer/rd6-callback-obligations-and-scheduler/current.json",
+        ".task/dialer/rd6-callback-obligations-and-scheduler/evidence-log.json",
+        ".task/dialer/rd6-callback-obligations-and-scheduler/read-log.json",
+        ".task/dialer/rd6-callback-obligations-and-scheduler/session.json",
+        ".task/dialer/rd6-callback-obligations-and-scheduler/verify.json",
+        ".task/dialer/rd6-callback-obligations-and-scheduler/workpad.md",
+        ".task/tasks/dialer/rd6-callback-obligations-and-scheduler.json",
+        "areas/dialer/rd/receipts/RD6.md",
+        "packages/dialer-server/scripts/local-dialer-lab.ts",
+        "packages/dialer-server/src/database/migrations.test.ts",
+        "packages/dialer-server/src/database/migrations.ts",
+        "packages/dialer-server/src/inbound/README.md",
+        "packages/dialer-server/src/inbound/callback-migration.ts",
+        "packages/dialer-server/src/inbound/callback-recipient-cipher.test.ts",
+        "packages/dialer-server/src/inbound/callback-recipient-cipher.ts",
+        "packages/dialer-server/src/inbound/callback-telephony.integration.test.ts",
+        "packages/dialer-server/src/inbound/callback-telephony.ts",
+        "packages/dialer-server/src/inbound/callbacks.integration.test.ts",
+        "packages/dialer-server/src/inbound/callbacks.ts",
+        "packages/dialer-server/src/inbound/rep-capacity-commands.ts",
+        "packages/dialer-server/src/inbound/rep-capacity-projection.ts",
+        "packages/dialer-server/src/inbound/rep-capacity.integration.test.ts",
+        "packages/dialer-server/src/inbound/routing.integration.test.ts",
+        "packages/dialer-server/src/inbound/telephony-admission.ts",
+        "packages/dialer-server/src/inbound/telephony-commands.ts",
+        "packages/dialer-server/src/inbound/telephony-config.ts",
+        "packages/dialer-server/src/inbound/telephony-contracts.ts",
+        "packages/dialer-server/src/inbound/telephony-endpoints.ts",
+        "packages/dialer-server/src/inbound/telephony-reconciliation.ts",
+        "packages/dialer-server/src/inbound/telephony-store.ts",
+        "packages/dialer-server/src/inbound/telephony-twiml.ts",
+        "packages/dialer-server/src/inbound/telephony.integration.test.ts",
+        "packages/dialer-server/src/inbound/telephony.test.ts",
+        "packages/dialer-server/src/inbound/telephony.ts",
+        "packages/dialer-server/src/lab/learning-rollback-scenario.ts",
+        "packages/dialer-server/src/lab/local-dialer-lab.integration.test.ts",
+        "packages/dialer-server/src/runtime/inbound.ts",
+        "packages/dialer-server/tsconfig.json",
+        "packages/dialer/src/inbound/callback-contracts.ts",
+        "packages/dialer/src/inbound/callback-ports.ts",
+        "packages/dialer/src/inbound/callback-scheduler.test.ts",
+        "packages/dialer/src/inbound/callback-scheduler.ts",
+        "packages/dialer/src/inbound/index.ts",
+        "packages/dialer/src/inbound/lifecycle.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "os-stream-instructions",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Stream instruction storage and resolver changes must prove repository area guidance is preferred when present, OS stream fallback remains available for product-owned streams, and Dialer project context never ships as customer runtime content.",
+          "matchedFiles": [
+            "areas/dialer/rd/receipts/RD6.md"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "dialer-package",
+          "critical": true,
+          "reason": "Dialer changes are call-path critical and must run package specs.",
+          "matchedFiles": [
+            "packages/dialer/src/inbound/callback-contracts.ts",
+            "packages/dialer/src/inbound/callback-ports.ts",
+            "packages/dialer/src/inbound/callback-scheduler.test.ts",
+            "packages/dialer/src/inbound/callback-scheduler.ts",
+            "packages/dialer/src/inbound/index.ts",
+            "packages/dialer/src/inbound/lifecycle.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "dialer-server-package",
+          "critical": true,
+          "reason": "Dialer server changes must prove Hono transport, Twilio boundary, and standalone lifecycle contracts.",
+          "matchedFiles": [
+            "packages/dialer-server/scripts/local-dialer-lab.ts",
+            "packages/dialer-server/src/database/migrations.test.ts",
+            "packages/dialer-server/src/database/migrations.ts",
+            "packages/dialer-server/src/inbound/README.md",
+            "packages/dialer-server/src/inbound/callback-migration.ts",
+            "packages/dialer-server/src/inbound/callback-recipient-cipher.test.ts",
+            "packages/dialer-server/src/inbound/callback-recipient-cipher.ts",
+            "packages/dialer-server/src/inbound/callback-telephony.integration.test.ts",
+            "packages/dialer-server/src/inbound/callback-telephony.ts",
+            "packages/dialer-server/src/inbound/callbacks.integration.test.ts",
+            "packages/dialer-server/src/inbound/callbacks.ts",
+            "packages/dialer-server/src/inbound/rep-capacity-commands.ts",
+            "packages/dialer-server/src/inbound/rep-capacity-projection.ts",
+            "packages/dialer-server/src/inbound/rep-capacity.integration.test.ts",
+            "packages/dialer-server/src/inbound/routing.integration.test.ts",
+            "packages/dialer-server/src/inbound/telephony-admission.ts",
+            "packages/dialer-server/src/inbound/telephony-commands.ts",
+            "packages/dialer-server/src/inbound/telephony-config.ts",
+            "packages/dialer-server/src/inbound/telephony-contracts.ts",
+            "packages/dialer-server/src/inbound/telephony-endpoints.ts",
+            "packages/dialer-server/src/inbound/telephony-reconciliation.ts",
+            "packages/dialer-server/src/inbound/telephony-store.ts",
+            "packages/dialer-server/src/inbound/telephony-twiml.ts",
+            "packages/dialer-server/src/inbound/telephony.integration.test.ts",
+            "packages/dialer-server/src/inbound/telephony.test.ts",
+            "packages/dialer-server/src/inbound/telephony.ts",
+            "packages/dialer-server/src/lab/learning-rollback-scenario.ts",
+            "packages/dialer-server/src/lab/local-dialer-lab.integration.test.ts",
+            "packages/dialer-server/src/runtime/inbound.ts",
+            "packages/dialer-server/tsconfig.json"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "OS stream instruction contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/scripts/lib/stream-instructions.test.ts",
+            "packages/os/tests/dialer-stream-instructions.test.ts",
+            "packages/workspace/tests/dialer-validation-runbook.test.ts"
+          ],
+          "ruleId": "os-stream-instructions",
+          "critical": true
+        },
+        {
+          "name": "dialer specs",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer/src"
+          ],
+          "ruleId": "dialer-package",
+          "critical": true
+        },
+        {
+          "name": "dialer-server Hono contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-server/src"
+          ],
+          "ruleId": "dialer-server-package",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "run": true,
+      "runResults": [
+        {
+          "name": "OS stream instruction contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/scripts/lib/stream-instructions.test.ts",
+            "packages/os/tests/dialer-stream-instructions.test.ts",
+            "packages/workspace/tests/dialer-validation-runbook.test.ts"
+          ],
+          "ruleId": "os-stream-instructions",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 326,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-rd6-callback-obligations-and-scheduler\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/os/tests/dialer-stream-instructions.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 1\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/workspace/scripts/lib/stream-instructions.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/workspace/tests/dialer-validation-runbook.test.ts \u001b[2m(\u001b[22m\u001b[2m6 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m3 passed\u001b[39m\u001b[22m\u001b[90m (3)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m11 passed\u001b[39m\u001b[22m\u001b[90m (11)\u001b[39m\n\u001b[2m   Start at \u001b[22m 16:56:57\n\u001b[2m   Duration \u001b[22m 89ms\u001b[2m (transform 52ms, setup 0ms, import 70ms, tests 5ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "dialer specs",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer/src"
+          ],
+          "ruleId": "dialer-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1630,
+          "outputTail": "ss) CallTimingModel > should return optimal retry time when enough observations exist [0.04ms]\n(pass) CallTimingModel > prefers a timing bin with stronger lower-bound evidence over a lucky tiny raw rate [0.03ms]\n(pass) CallTimingModel > breaks exact timing-evidence ties by stable calendar coordinates [0.03ms]\n\npackages/dialer/src/services/retry-decision-model.contract.spec.ts:\n(pass) mature retry decision contract > separates whether to retry from the learned preferred timing window [0.21ms]\n(pass) mature retry decision contract > keeps retrying within the cap when stopping evidence is missing [0.05ms]\n(pass) mature retry decision contract > stops on answered calls, the attempt cap, or observed negative expected value [0.06ms]\n\npackages/dialer/src/services/contextual-response-model.spec.ts:\n(pass) ContextualResponseModel > learns a regularized contextual response signal without changing the D3 policy contract [24.11ms]\n(pass) ContextualResponseModel > keeps candidate-specific opportunity economics separate from response probability [0.04ms]\n(pass) ContextualResponseModel > matches the penalized Bernoulli objective gradient by finite differences [0.18ms]\n(pass) ContextualResponseModel > keeps regularization strength stable when the empirical sample is replicated [64.33ms]\n(pass) ContextualResponseModel > does not regularize the intercept and keeps extreme encoded values finite [0.11ms]\n(pass) ContextualResponseModel > encodes missing spacing differently from a real zero-minute spacing [0.01ms]\n\npackages/dialer/src/services/predictive-selection-science.spec.ts:\n(pass) scientific predictive selection contract > uses calibrated upper probability evidence for exploration rather than an arbitrary sample-size bonus [0.61ms]\n(pass) scientific predictive selection contract > does not change an otherwise identical priority because a contact is older than 48 hours [0.10ms]\n(pass) scientific predictive selection contract > preserves FIFO for a decision set when any candidate lacks comparable hazard evidence [0.09ms]\n(pass) uses aggregate attempt evidence rather than a peak slot for an unobserved calling time [0.09ms]\n\npackages/dialer/src/services/parallel-lifecycle.contract.spec.ts:\n(pass) parallel dial lifecycle contract > keeps customer legs muted without provider hold music until the agent starts the conference [1.10ms]\n(pass) parallel dial lifecycle contract > retains a callback that arrives while later legs are still being created [2.01ms]\n(pass) parallel dial lifecycle contract > keeps exactly one durable winner under simultaneous human callbacks [3.49ms]\n(pass) parallel dial lifecycle contract > claims telemetry emission exactly once under concurrent callbacks [3.41ms]\n(pass) parallel dial lifecycle contract > records failed loser cleanup and clears it after reconciliation succeeds [2.46ms]\n(pass) parallel dial lifecycle contract > does not persist a false winner-unmute failure before the participant enters [0.81ms]\n(pass) parallel dial lifecycle contract > records failed winner unmute and clears it after reconciliation succeeds [0.92ms]\n(pass) parallel dial lifecycle contract > completes the group when the selected winner hangs up [2.04ms]\n(pass) parallel dial lifecycle contract > persists workspace ownership and rejects cross-workspace access [3.65ms]\n(pass) parallel dial lifecycle contract > ignores an answered callback after the same leg is terminal [3.26ms]\n\npackages/dialer/src/infrastructure/redis/redis-parallel-store.test.ts:\n(pass) RedisParallelStore > registers calls and reverse mappings atomically and cleans the full group [1.38ms]\n(pass) RedisParallelStore > claims one winner and one telemetry emission and serializes group operations [4.69ms]\n(pass) RedisParallelStore > renews an owned group lock while a long operation is running [181.13ms]\n(pass) RedisParallelStore > deletes known group keys when the persisted group JSON is malformed [0.42ms]\n\n 261 pass\n 0 fail\n 609 expect() calls\nRan 261 tests across 29 files. [1.61s]\n"
+        },
+        {
+          "name": "dialer-server Hono contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-server/src"
+          ],
+          "ruleId": "dialer-server-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 511,
+          "outputTail": "ed carrier > reconciles outbound participants and holds wrap-up in the shared authority\n(skip) inbound runtime with real Postgres and simulated carrier > rejects identity changes during live work but allows admission to be disabled\n(skip) inbound runtime with real Postgres and simulated carrier > returns a bounded fallback and never creates a callback without explicit choice\n(skip) inbound runtime with real Postgres and simulated carrier > admits signed public requests and serves the real RD7A authenticated adapter\n(skip) inbound runtime with real Postgres and simulated carrier > commits only one winner across concurrent browser and phone acceptance\n(skip) inbound runtime with real Postgres and simulated carrier > protects and drains an uncertain bridge without reporting connection\n(skip) inbound runtime with real Postgres and simulated carrier > restarts after bridge claim and dispatches each pending effect once\n(skip) inbound runtime with real Postgres and simulated carrier > does not promise a callback when RD6 activation is disabled on the number\n(skip) inbound runtime with real Postgres and simulated carrier > accepts late voicemail completion and deletes it on its retention deadline\n(skip) inbound runtime with real Postgres and simulated carrier > rolls an empty telephony schema down and up while protecting immutable facts\n(skip) inbound runtime with real Postgres and simulated carrier > shares capacity with outbound and retains partial creation uncertainty\n(skip) inbound runtime with real Postgres and simulated carrier > admits a duplicate incoming call once and never redials the caller\n(skip) inbound runtime with real Postgres and simulated carrier > connects only after acceptance and both unmuted participants, then wraps up\n(skip) inbound runtime with real Postgres and simulated carrier > protects unknown create outcomes across restart and never creates another offer\n(skip) inbound runtime with real Postgres and simulated carrier > rejects stale and cross-rep acceptance and cleans an abandoned caller\n(skip) inbound runtime with real Postgres and simulated carrier > persists explicit voicemail selection without recording an ordinary call\n(skip) inbound runtime with real Postgres and simulated carrier > refuses rollback while a live caller or uncertain effect exists\n(skip) inbound runtime with real Postgres and simulated carrier > (unnamed)\n(skip) RD6 callbacks with real Postgres > does not reserve early and creates one attempt only after rep acceptance\n(skip) RD6 callbacks with real Postgres > releases no-answer capacity, retries on policy backoff, and preserves original entry\n(skip) RD6 callbacks with real Postgres > blocks rollback until callback obligations are terminal and retained recipients are purged\n(skip) RD6 callbacks with real Postgres > records calendar unavailability truthfully and purges recipients after retention\n(skip) transactional inbound routing > commits one reservation for duplicate ticks and replays immutable decision evidence\n(skip) transactional inbound routing > does not split a reservation from its evidence when persistence fails\n(skip) transactional inbound routing > expires safe offers, moves to another rep and bounds attempts across recreation\n(skip) transactional inbound routing > protects dispatched offers through expiry and escalation without reoffering\n(skip) transactional inbound routing > does not resurrect abandoned callers and records unserviceable predecessors\n(skip) transactional inbound routing > keeps callback not-before, config versions, fallback and replay after restart\n(skip) transactional inbound routing > preserves one owner under independent routing worker processes\n(skip) transactional inbound routing > rejects future request evidence without reserving capacity\n(skip) transactional inbound routing > rejects rollback with active routing and preserves older journal after safe down/up\n\n 189 pass\n 48 skip\n 0 fail\n 1054 expect() calls\nRan 237 tests across 47 files. [499.00ms]\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [
+      {
+        "category": "database-script",
+        "file": "packages/dialer-server/src/database/migrations.test.ts",
+        "severity": "warning",
+        "message": "database reset/migration/sync script changed"
+      },
+      {
+        "category": "database-script",
+        "file": "packages/dialer-server/src/database/migrations.ts",
+        "severity": "warning",
+        "message": "database reset/migration/sync script changed"
+      }
+    ],
+    "findings": []
+  },
+  "commandVersion": 2
+}

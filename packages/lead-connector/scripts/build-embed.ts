@@ -21,7 +21,12 @@ const result = await Bun.build({
   outdir: outputDirectory,
   target: 'browser',
   minify: true,
-  naming: '[name].[ext]',
+  splitting: true,
+  naming: {
+    entry: '[name].[ext]',
+    chunk: 'chunks/[name]-[hash].[ext]',
+    asset: '[name].[ext]',
+  },
 });
 if (!result.success) {
   for (const log of result.logs) process.stderr.write(`${log.message}\n`);

@@ -1,5 +1,6 @@
 import {
   beginLeadConnectorOAuth,
+  completeLeadConnectorMarketplaceOAuth,
   completeLeadConnectorOAuth,
   disableLeadConnectorInstallation,
   exchangeLeadConnectorEmbedContext,
@@ -12,6 +13,7 @@ import {
   searchLeadConnectorOpportunities,
   validateLeadConnectorEmbedIdentity,
   type LeadConnectorClockService,
+  type LeadConnectorCompanyCredentialStoreService,
   type LeadConnectorConfiguration,
   type LeadConnectorHttpTransportService,
   type LeadConnectorInstallationStoreService,
@@ -28,6 +30,7 @@ import type { LeadConnectorServerApplication } from './contracts';
 
 type LeadConnectorRuntime =
   | LeadConnectorClockService
+  | LeadConnectorCompanyCredentialStoreService
   | LeadConnectorConfiguration
   | LeadConnectorHttpTransportService
   | LeadConnectorInstallationStoreService
@@ -47,6 +50,8 @@ export const createEffectLeadConnectorApplication = (
     beginLeadConnectorOAuth(input).pipe(Effect.provide(layer)),
   completeOAuth: (input) =>
     completeLeadConnectorOAuth(input).pipe(Effect.provide(layer)),
+  completeMarketplaceOAuth: (input) =>
+    completeLeadConnectorMarketplaceOAuth(input).pipe(Effect.provide(layer)),
   processWebhook: (input) =>
     processLeadConnectorWebhook(input).pipe(Effect.provide(layer)),
   disableInstallation: (workspaceId) =>

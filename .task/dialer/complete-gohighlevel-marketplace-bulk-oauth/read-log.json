@@ -1,0 +1,8 @@
+{
+  "files": [
+    ".github/workflows/consuelo-production-release.yaml",
+    ".task/dialer/complete-gohighlevel-marketplace-bulk-oauth/workpad.md",
+    "packages/lead-connector/src/application/marketplace-oauth.ts"
+  ],
+  "updatedAt": "2026-10-08T16:03:15.937Z"
+}

@@ -98,11 +98,11 @@ function runCommand(repoRoot, command, commandArgs) {
 }
 
 function runVerify(repoRoot) {
-  const result = runCommand(repoRoot, 'bun', ['run', 'verify', '--', '--json', '--quiet']);
+  const result = runCommand(repoRoot, 'bun', ['run', 'verify', '--', '--foreground', '--json', '--quiet']);
   const data = parseJson(result.stdout);
 
   return {
-    passed: result.passed && data !== null && data.passed !== false,
+    passed: result.passed && data !== null && data.pending !== true && data.status !== 'VERIFY_PENDING' && data.passed === true,
     status: result.status,
     failed_checks: data
       ? [

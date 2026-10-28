@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/dev-1617-repair-dialer-release-inputs-and-production-build",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 2630,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2630",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1617-repair-dialer-release-inputs-and-production-build",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_1adbbf09b332",
+  "tmuxSession": "opensaas-dialer-dev-1617-repair-dialer-release-inputs-and-produc-1adbbf09",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1617-repair-dialer-release-inputs-and-production-build/.task/session.json",
+  "createdAt": "2026-10-28T02:33:28.092Z"
+}

@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/rd7a-operator-acceptance-against-rd5",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 2475,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2475",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-rd7a-operator-acceptance-against-rd5",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_ea83bf9a3416",
+  "tmuxSession": "opensaas-dialer-rd7a-operator-acceptance-against-rd5-ea83bf9a",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-rd7a-operator-acceptance-against-rd5/.task/session.json",
+  "createdAt": "2026-09-13T20:13:01.860Z"
+}

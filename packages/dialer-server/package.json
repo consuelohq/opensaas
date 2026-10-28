@@ -20,6 +20,7 @@
     "lab:verify": "CONSUELO_RUN_LOCAL_DIALER_LAB_INTEGRATION=1 bun test ./src/lab/local-dialer-lab.integration.test.ts"
   },
   "dependencies": {
+    "@consuelo/contacts": "workspace:*",
     "@consuelo/dialer": "workspace:*",
     "@consuelo/lead-connector": "workspace:*",
     "effect": "^3.21.3",

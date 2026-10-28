@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/preserve-public-twilio-webhook-urls-through-the-leadconnector-edge-proxy",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2637,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2637",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-preserve-public-twilio-webhook-urls-through-the-leadconnector-edge-proxy",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_60223a64ac9f",
+  "tmuxSession": "opensaas-dialer-preserve-public-twilio-webhook-urls-through-the--60223a64",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-preserve-public-twilio-webhook-urls-through-the-leadconnector-edge-proxy/.task/session.json",
+  "createdAt": "2026-10-28T17:20:35.669Z"
+}

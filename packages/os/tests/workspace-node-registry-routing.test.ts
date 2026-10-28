@@ -4622,6 +4622,308 @@ describe('multi-node connector routing', () => {
     }
   });
 
+  it('persists task.start creation affinity before returning the response', async () => {
+    const backingStore = createMemoryDeviceGrantStore();
+    await seedWorkspace(backingStore);
+    await authorizeWorkspace(backingStore, 'central-start-affinity-token', {
+      scopes: ['route:/mcp:read', 'mcp:call'],
+    });
+    const taskSession = 'tsk_creation_affinity';
+    let releaseClaim = () => {};
+    const claimGate = new Promise<void>((resolve) => { releaseClaim = resolve; });
+    const upstreams: string[] = [];
+    const store = {
+      ...backingStore,
+      async claimWorkspaceTaskAffinity(input: Parameters<typeof backingStore.claimWorkspaceTaskAffinity>[0]) {
+        if (input.taskSession === taskSession) await claimGate;
+        return backingStore.claimWorkspaceTaskAffinity(input);
+      },
+    };
+    const db = createInMemoryWorkspaceRouteD1();
+    await seedRoutes(db);
+    const deferred: Promise<unknown>[] = [];
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      origin,
+      now: () => baseNow,
+      workspaceRouteRegistry: db,
+      defer: (promise) => deferred.push(promise),
+      fetchImpl: async (request) => {
+        upstreams.push(request.url);
+        const payload = await request.clone().json() as {
+          params?: { arguments?: { tool?: string } };
+        };
+        if (payload.params?.arguments?.tool === 'task.start') {
+          return Response.json({
+            jsonrpc: '2.0',
+            id: 50,
+            result: {
+              content: [{
+                type: 'text',
+                text: JSON.stringify({ ok: true, code: 'OK', data: { taskSession } }),
+              }],
+              isError: false,
+            },
+          });
+        }
+        return Response.json({
+          jsonrpc: '2.0',
+          id: 51,
+          result: { content: [{ type: 'text', text: JSON.stringify({ ok: true, code: 'OK' }) }], isError: false },
+        });
+      },
+    });
+
+    const startPromise = handler(new Request(`${origin}/mcp`, {
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer central-start-affinity-token',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0', id: 50, method: 'tools/call',
+        params: {
+          name: 'call',
+          arguments: {
+            tool: 'task.start',
+            nodeId: 'node-member',
+            input: { area: 'os', title: 'Creation affinity' },
+          },
+        },
+      }),
+    }));
+
+    const beforeClaim = await Promise.race([
+      startPromise.then(() => 'response'),
+      new Promise<'waiting'>((resolve) => setTimeout(() => resolve('waiting'), 30)),
+    ]);
+    expect(beforeClaim).toBe('waiting');
+    expect(deferred).toHaveLength(0);
+
+    releaseClaim();
+    const startResponse = await startPromise;
+    expect(startResponse.status).toBe(200);
+    await expect(backingStore.byWorkspaceTaskAffinity({ accountId, workspaceHost, taskSession }))
+      .resolves.toMatchObject({ ownerNodeId: 'node-member' });
+
+    const followup = await handler(new Request(`${origin}/mcp`, {
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer central-start-affinity-token',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0', id: 51, method: 'tools/call',
+        params: {
+          name: 'call',
+          arguments: { tool: 'fs.read', taskSession, input: { path: 'README.md' } },
+        },
+      }),
+    }));
+    expect(followup.status).toBe(200);
+    expect(upstreams).toEqual([
+      'https://member.connector.test/mcp',
+      'https://member.connector.test/mcp',
+    ]);
+  });
+
+  it('persists session.start work affinity before returning the response', async () => {
+    const backingStore = createMemoryDeviceGrantStore();
+    await seedWorkspace(backingStore);
+    await authorizeWorkspace(backingStore, 'central-work-start-affinity-token', {
+      scopes: ['route:/mcp:read', 'mcp:call'],
+    });
+    const workSession = 'wrk_creation_affinity';
+    let releaseClaim = () => {};
+    const claimGate = new Promise<void>((resolve) => { releaseClaim = resolve; });
+    const upstreams: string[] = [];
+    const store = {
+      ...backingStore,
+      async claimWorkspaceSessionAffinity(input: Parameters<typeof backingStore.claimWorkspaceSessionAffinity>[0]) {
+        if (input.sessionId === workSession) await claimGate;
+        return backingStore.claimWorkspaceSessionAffinity(input);
+      },
+    };
+    const db = createInMemoryWorkspaceRouteD1();
+    await seedRoutes(db);
+    const deferred: Promise<unknown>[] = [];
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      origin,
+      now: () => baseNow,
+      workspaceRouteRegistry: db,
+      defer: (promise) => deferred.push(promise),
+      fetchImpl: async (request) => {
+        upstreams.push(request.url);
+        const payload = await request.clone().json() as {
+          params?: { arguments?: { tool?: string } };
+        };
+        if (payload.params?.arguments?.tool === 'session.start') {
+          return Response.json({
+            jsonrpc: '2.0',
+            id: 52,
+            result: {
+              content: [{
+                type: 'text',
+                text: JSON.stringify({ ok: true, code: 'OK', data: { workSession } }),
+              }],
+              isError: false,
+            },
+          });
+        }
+        return Response.json({
+          jsonrpc: '2.0',
+          id: 53,
+          result: { content: [{ type: 'text', text: JSON.stringify({ ok: true, code: 'OK' }) }], isError: false },
+        });
+      },
+    });
+
+    const startPromise = handler(new Request(`${origin}/mcp`, {
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer central-work-start-affinity-token',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0', id: 52, method: 'tools/call',
+        params: {
+          name: 'call',
+          arguments: {
+            tool: 'session.start',
+            nodeId: 'node-member',
+            input: { kind: 'work', title: 'Creation work affinity' },
+          },
+        },
+      }),
+    }));
+
+    const beforeClaim = await Promise.race([
+      startPromise.then(() => 'response'),
+      new Promise<'waiting'>((resolve) => setTimeout(() => resolve('waiting'), 30)),
+    ]);
+    expect(beforeClaim).toBe('waiting');
+    expect(deferred).toHaveLength(0);
+
+    releaseClaim();
+    const startResponse = await startPromise;
+    expect(startResponse.status).toBe(200);
+    await expect(backingStore.byWorkspaceSessionAffinity({
+      accountId,
+      workspaceHost,
+      sessionKind: 'work',
+      sessionId: workSession,
+      nowMs: baseNow,
+    })).resolves.toMatchObject({ ownerNodeId: 'node-member' });
+
+    const followup = await handler(new Request(`${origin}/mcp`, {
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer central-work-start-affinity-token',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0', id: 53, method: 'tools/call',
+        params: {
+          name: 'call',
+          arguments: { tool: 'fs.read', workSession, input: { path: 'README.md' } },
+        },
+      }),
+    }));
+    expect(followup.status).toBe(200);
+    expect(upstreams).toEqual([
+      'https://member.connector.test/mcp',
+      'https://member.connector.test/mcp',
+    ]);
+  });
+
+  it('returns a completed MCP response before post-upstream affinity bookkeeping settles', async () => {
+    const backingStore = createMemoryDeviceGrantStore();
+    await seedWorkspace(backingStore);
+    await authorizeWorkspace(backingStore, 'central-post-upstream-detached-token', {
+      scopes: ['route:/mcp:read', 'mcp:call'],
+    });
+    const taskSession = 'tsk_post_upstream_detached';
+    const affinity = {
+      accountId,
+      workspaceId,
+      workspaceHost,
+      taskSession,
+      ownerNodeId: 'node-home',
+      createdAt: baseNow,
+      updatedAt: baseNow,
+      expiresAt: baseNow + 60_000,
+    };
+    await backingStore.claimWorkspaceTaskAffinity(affinity);
+
+    let releaseBookkeeping = () => {};
+    const bookkeepingGate = new Promise<void>((resolve) => {
+      releaseBookkeeping = resolve;
+    });
+    const store = {
+      ...backingStore,
+      async claimWorkspaceTaskAffinity() {
+        await bookkeepingGate;
+        return { status: 'existing' as const, affinity };
+      },
+    };
+    const db = createInMemoryWorkspaceRouteD1();
+    await seedRoutes(db);
+    const deferred: Promise<unknown>[] = [];
+    let forwardedRequestId: string | null = null;
+    const handler = createOsDeviceAuthorityHandler({
+      store,
+      origin,
+      now: () => baseNow,
+      workspaceRouteRegistry: db,
+      defer: (promise) => deferred.push(promise),
+      fetchImpl: async (request) => {
+        forwardedRequestId = request.headers.get('x-consuelo-request-id');
+        return Response.json({
+          jsonrpc: '2.0',
+          id: 49,
+          result: {
+            content: [{
+              type: 'text',
+              text: JSON.stringify({ ok: true, code: 'OK', data: {} }),
+            }],
+            isError: false,
+          },
+        });
+      },
+    });
+
+    const responsePromise = handler(new Request(`${origin}/mcp`, {
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer central-post-upstream-detached-token',
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0', id: 49, method: 'tools/call',
+        params: {
+          name: 'call',
+          arguments: {
+            tool: 'fs.read',
+            input: { path: 'README.md' },
+            taskSession,
+          },
+        },
+      }),
+    }));
+
+    const completion = await Promise.race([
+      responsePromise.then(() => 'response'),
+      new Promise<'timeout'>((resolve) => setTimeout(() => resolve('timeout'), 40)),
+    ]);
+    expect(completion).toBe('response');
+    expect(forwardedRequestId).toMatch(/^[a-zA-Z0-9._:-]{8,128}$/);
+    expect(deferred).toHaveLength(1);
+
+    releaseBookkeeping();
+    await Promise.all(deferred);
+  });
+
   it('keeps OAuth discovery and direct MCP probing available when the connected default node is stale', async () => {
     const db = createInMemoryWorkspaceRouteD1();
     await seedRoutes(db, baseNow - heartbeatTtlMs * 4);

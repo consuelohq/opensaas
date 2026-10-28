@@ -1,0 +1,16 @@
+{
+  "taskSession": "tsk_8e4497306e3c",
+  "tmuxSession": "opensaas-dialer-rd6-callback-obligations-and-scheduler-8e449730",
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/rd6-callback-obligations-and-scheduler",
+  "branch": "task/dialer/rd6-callback-obligations-and-scheduler",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-rd6-callback-obligations-and-scheduler",
+  "worktree": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-rd6-callback-obligations-and-scheduler",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "prNumber": 2474,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2474",
+  "createdAt": "2026-09-13T20:11:49.275Z",
+  "tmuxCreated": true,
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-rd6-callback-obligations-and-scheduler/.task/dialer/rd6-callback-obligations-and-scheduler/session.json"
+}

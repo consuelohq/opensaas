@@ -2,6 +2,7 @@ import type { LeadConnectorContact } from '../contracts/index.js';
 import { resolveLeadConnectorContactName } from './contact-label.js';
 import type { LeadConnectorSurface } from './surface.js';
 import type { LeadConnectorEmbedState } from './state-machine.js';
+import { renderInboundOperatorPanel } from './inbound-operator-view.js';
 
 const escapeHtml = (value: unknown): string =>
   String(value ?? '')
@@ -214,7 +215,12 @@ const renderCallSetup = (
               options: [
                 ...(caller?.predictive === false
                   ? []
-                  : [{ value: 'predictive', label: 'Predictive Dialer (recommended)' }]),
+                  : [
+                      {
+                        value: 'predictive',
+                        label: 'Predictive Dialer (recommended)',
+                      },
+                    ]),
                 { value: 'single', label: 'Single (one call at a time)' },
               ],
             })}
@@ -263,10 +269,15 @@ const renderWrapUp = (state: LeadConnectorEmbedState): string => {
 };
 
 const renderTransferControls = (state: LeadConnectorEmbedState): string => {
-  if (state.transfer.status === 'consulting' && state.transfer.type === 'warm') {
-    return '<div class="transfer-controls transfer-controls--consulting" aria-label="Warm transfer consultation"><p><strong>Warm consultation</strong><span>' +
+  if (
+    state.transfer.status === 'consulting' &&
+    state.transfer.type === 'warm'
+  ) {
+    return (
+      '<div class="transfer-controls transfer-controls--consulting" aria-label="Warm transfer consultation"><p><strong>Warm consultation</strong><span>' +
       maskPhone(state.transfer.target ?? '') +
-      '</span></p><button type="button" class="button button--primary" data-action="complete-transfer">Complete transfer</button><button type="button" class="button button--secondary" data-action="cancel-transfer">Cancel transfer</button></div>';
+      '</span></p><button type="button" class="button button--primary" data-action="complete-transfer">Complete transfer</button><button type="button" class="button button--secondary" data-action="cancel-transfer">Cancel transfer</button></div>'
+    );
   }
   if (state.transfer.status === 'initiating') {
     return '<div class="transfer-controls" role="status">Starting transfer\u2026</div>';
@@ -277,7 +288,10 @@ const renderTransferControls = (state: LeadConnectorEmbedState): string => {
       : state.transfer.status === 'cancelled'
         ? '<p class="transfer-outcome">Transfer cancelled. Customer restored.</p>'
         : '';
-  return outcome + '<form class="transfer-controls" data-form="transfer" aria-label="Transfer controls"><label>Transfer number<input name="to" type="tel" inputmode="tel" autocomplete="tel" placeholder="+15551234567" pattern="\\+[1-9][0-9]{7,14}" required /></label><label>Transfer type<select name="type"><option value="warm">Warm consultation</option><option value="cold">Cold transfer</option></select></label><button type="submit" class="button button--secondary" data-action="initiate-transfer">Start transfer</button></form>';
+  return (
+    outcome +
+    '<form class="transfer-controls" data-form="transfer" aria-label="Transfer controls"><label>Transfer number<input name="to" type="tel" inputmode="tel" autocomplete="tel" placeholder="+15551234567" pattern="\\+[1-9][0-9]{7,14}" required /></label><label>Transfer type<select name="type"><option value="warm">Warm consultation</option><option value="cold">Cold transfer</option></select></label><button type="submit" class="button button--secondary" data-action="initiate-transfer">Start transfer</button></form>'
+  );
 };
 
 const renderOverlayStage = (state: LeadConnectorEmbedState): string => {
@@ -479,7 +493,8 @@ const commercialQuantity = (
   code: string,
 ): number => {
   const item = items.find(
-    (candidate) => String(candidate.item_code ?? candidate.itemCode ?? '') === code,
+    (candidate) =>
+      String(candidate.item_code ?? candidate.itemCode ?? '') === code,
   );
   const quantity = Number(item?.quantity ?? 0);
   return Number.isSafeInteger(quantity) && quantity >= 0 ? quantity : 0;
@@ -515,7 +530,9 @@ const renderCommercialAdmin = (state: LeadConnectorEmbedState): string => {
       const planCode = String(
         commercialValue(seat, 'plan_code', 'planCode') ?? 'standard',
       );
-      const status = String(commercialValue(seat, 'status', 'status') ?? 'active');
+      const status = String(
+        commercialValue(seat, 'status', 'status') ?? 'active',
+      );
       return `<tr><td>${escapeHtml(userId)}</td><td>${escapeHtml(phaseLabel(planCode))}</td><td>${escapeHtml(phaseLabel(status))}</td></tr>`;
     })
     .join('');
@@ -535,16 +552,23 @@ const renderCommercialAdmin = (state: LeadConnectorEmbedState): string => {
     .join('');
   const searchResults = state.commercialNumberSearchResults
     .map((number) => {
-      const phoneNumber = String(number.phoneNumber ?? number.phone_number ?? '');
+      const phoneNumber = String(
+        number.phoneNumber ?? number.phone_number ?? '',
+      );
       const location = [number.city, number.state].filter(Boolean).join(', ');
       return `<li><div><strong>${escapeHtml(maskPhone(phoneNumber))}</strong><span>${escapeHtml(location || 'US local number')} · ${money(dashboard.catalog.additionalNumberPriceCents)}/month when an add-on slot is required</span></div><button type="button" class="button button--secondary" data-action="provision-number" data-phone-number="${escapeHtml(phoneNumber)}">Provision</button></li>`;
     })
     .join('');
   const connectedMinutes = Number(
-    commercialValue(dashboard.usage, 'connected_minutes', 'connectedMinutes') ?? 0,
+    commercialValue(dashboard.usage, 'connected_minutes', 'connectedMinutes') ??
+      0,
   );
   const providerCostMicros = Number(
-    commercialValue(dashboard.usage, 'provider_cost_micros', 'providerCostMicros') ?? 0,
+    commercialValue(
+      dashboard.usage,
+      'provider_cost_micros',
+      'providerCostMicros',
+    ) ?? 0,
   );
   const plans = (['single', 'standard', 'power'] as const)
     .map((code) => {
@@ -585,8 +609,7 @@ const renderCommercialAdmin = (state: LeadConnectorEmbedState): string => {
     quantities.single * dashboard.catalog.plans.single.priceCents +
     quantities.standard * dashboard.catalog.plans.standard.priceCents +
     quantities.power * dashboard.catalog.plans.power.priceCents +
-    quantities.additionalNumber *
-      dashboard.catalog.additionalNumberPriceCents;
+    quantities.additionalNumber * dashboard.catalog.additionalNumberPriceCents;
   const quantityFields = `
     <label>Single seats<input name="single" type="number" min="0" step="1" value="${quantities.single}" /></label>
     <label>Standard seats<input name="standard" type="number" min="0" step="1" value="${hasSubscription ? quantities.standard : Math.max(1, quantities.standard)}" /></label>
@@ -626,6 +649,7 @@ const renderAdmin = (state: LeadConnectorEmbedState): string => `
   <main class="surface-shell admin-shell" data-surface="admin" data-phase="${escapeHtml(state.phase)}">
     <header class="operator-header"><div><p class="eyebrow">Workspace administration</p><h1>Dialer settings</h1><p class="lede">Manage subscriptions, seats, caller IDs, usage, and billing for this location.</p></div></header>
     ${renderError(state)}
+    ${renderInboundOperatorPanel(state.inboundOperator)}
     ${renderCommercialAdmin(state)}
     ${renderAdminCallOperations(state)}
   </main>

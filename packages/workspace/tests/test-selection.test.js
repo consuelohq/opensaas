@@ -112,6 +112,43 @@ describe('test selection registry', () => {
     ).toEqual(['bun', 'run', '--cwd', 'packages/os', 'test']);
   }, 15_000);
 
+  it('preserves explicit selector ownership after registry regeneration', () => {
+    const out = path.join(os.tmpdir(), `test-selection-regenerated-${Date.now()}.json`);
+    const generated = json(run(['generate', '--out', out, '--json']));
+    expect(generated.summary.testFileCount).toBeGreaterThan(0);
+
+    const regeneratedRegistry = JSON.parse(fs.readFileSync(out, 'utf8'));
+    const committedRegistry = JSON.parse(fs.readFileSync(
+      path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../test-selection.registry.json'),
+      'utf8',
+    ));
+    const normalizeExplicit = (registry) => registry.rules
+      .filter((rule) => rule.origin === 'explicit')
+      .map(({ origin, ...rule }) => rule);
+
+    expect(normalizeExplicit(regeneratedRegistry)).toEqual(
+      normalizeExplicit(committedRegistry),
+    );
+
+    const selection = json(run([
+      'check',
+      '--registry',
+      out,
+      '--changed-file',
+      'packages/workspace/scripts/confirm.js',
+      '--changed-file',
+      'packages/os/scripts/confirm.js',
+      '--json',
+    ]));
+    const matchedRuleIds = selection.matchedRules.map((rule) => rule.id);
+    const suiteNames = selection.selectedSuites.map((suite) => suite.name);
+    expect(matchedRuleIds).toContain('workspace-publish-gate');
+    expect(suiteNames).toContain('workspace verification stamp tests');
+    expect(suiteNames).not.toContain('@consuelo/os package test');
+
+    fs.rmSync(out, { force: true });
+  }, 15_000);
+
   it('routes current OS Trace inspector changes only to existing OS-owned suites', () => {
     const rulesPath = path.resolve(
       path.dirname(fileURLToPath(import.meta.url)),
@@ -261,6 +298,23 @@ describe('test selection registry', () => {
     expect(data.selectedSuites.map((suite) => suite.name)).not.toContain(
       '@consuelo/os package test',
     );
+  });
+
+  it('routes synchronous confirm verification changes through the focused publish gate', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/workspace/scripts/confirm.js',
+      '--changed-file',
+      'packages/os/scripts/confirm.js',
+      '--json',
+    ]));
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('workspace-publish-gate');
+    expect(suiteNames).toContain('workspace verification stamp tests');
+    expect(suiteNames).not.toContain('@consuelo/os package test');
   });
 
   it('suppresses a broad auto package suite when explicit critical coverage fully owns the changed code', () => {
@@ -663,6 +717,113 @@ describe('test selection registry', () => {
       || name === 'OS MCP admission syntax contracts'
       || name === 'OS ChatGPT node-routing syntax contracts'
     )).toBe(true);
+    expect(suiteNames).not.toContain('@consuelo/os package test');
+  });
+
+  it('routes verify self-hosting regression through a focused facade suite', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/lib/facade/executor.ts',
+      '--changed-file',
+      'packages/os/tests/facade/facade.test.ts',
+      '--json',
+    ]));
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+    const commands = data.selectedSuites.map((suite) => suite.command);
+
+    expect(suiteNames).not.toContain('@consuelo/os package test');
+    expect(commands.some((command) =>
+      command.includes('packages/os/tests/facade/facade.test.ts')
+      && command.includes('runs task-scoped verify from the resolved task worktree instead of controller cwd')
+    )).toBe(true);
+  });
+
+  it('runs the owned NOT_FOUND recovery test from the exclusive MCP selector', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/tests/facade/not-found-recovery.test.ts',
+      '--json',
+    ]));
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const commands = data.selectedSuites.map((suite) => suite.command);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-mcp-call-timeout-envelope');
+    expect(suiteNames).not.toContain('@consuelo/os package test');
+    expect(commands.some((command) =>
+      command.includes('packages/os/tests/facade/not-found-recovery.test.ts')
+    )).toBe(true);
+  });
+
+  it('routes the bounded OS syntax runner through its focused contract', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/check-syntax.js',
+      '--changed-file',
+      'packages/os/tests/check-syntax-runner.test.ts',
+      '--json',
+    ]));
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-bounded-js-syntax-runner');
+    expect(suiteNames).toEqual(expect.arrayContaining([
+      'OS bounded JavaScript syntax runner contract',
+      'OS JavaScript syntax sweep',
+    ]));
+    expect(suiteNames).not.toContain('@consuelo/os package test');
+  });
+
+  it('keeps syntax-runner changes on a bounded focused contract', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/check-syntax.js',
+      '--changed-file',
+      'packages/workspace/scripts/check-syntax.js',
+      '--changed-file',
+      'packages/os/tests/check-syntax-runner.test.ts',
+      '--json',
+    ]));
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-bounded-js-syntax-runner');
+    expect(suiteNames).toEqual(expect.arrayContaining([
+      'OS bounded JavaScript syntax runner contract',
+      'OS JavaScript syntax sweep',
+    ]));
+    expect(suiteNames).not.toContain('@consuelo/os package test');
+  });
+
+  it('routes MCP response-completion boundary changes through focused contracts', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/cloudflare/os-device-authority/src/routes/mcp-proxy.ts',
+      '--changed-file',
+      'packages/os/cloudflare/os-device-authority/src/services/mcp-proxy.ts',
+      '--changed-file',
+      'packages/os/scripts/server/mcp-request-receipts.ts',
+      '--changed-file',
+      'packages/os/scripts/server/mcp-request-recovery.ts',
+      '--changed-file',
+      'packages/os/tests/mcp-request-recovery.test.ts',
+      '--changed-file',
+      'packages/os/scripts/server/routes/mcp.ts',
+      '--json',
+    ]));
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-mcp-response-completion-boundary');
+    expect(suiteNames).toEqual(expect.arrayContaining([
+      'OS MCP response receipt contracts',
+      'OS MCP post-upstream completion contracts',
+    ]));
     expect(suiteNames).not.toContain('@consuelo/os package test');
   });
 
@@ -1129,22 +1290,32 @@ describe('test selection registry', () => {
     ]);
   });
 
-  it('selects the Hono dialer-server suite for standalone server changes', () => {
-    const result = run([
-      'check',
-      '--changed-file',
-      'packages/dialer-server/src/app.ts',
-      '--json',
-    ]);
-    const data = json(result);
-    const serverSuite = data.selectedSuites.find(
-      (suite) => suite.ruleId === 'dialer-server-package',
+  it.each([
+    'packages/dialer-server/src/app.ts',
+    'packages/contacts/src/utils.ts',
+  ])('builds shared runtime exports before server tests when %s changes', (changedFile) => {
+    const data = json(run(['check', '--changed-file', changedFile, '--json']));
+    const prerequisite = data.selectedSuites.findIndex(
+      (suite) => suite.name === 'dialer-server contacts prerequisite',
     );
-
-    expect(serverSuite?.command).toEqual([
-      'bun',
-      'test',
-      'packages/dialer-server/src',
+    const server = data.selectedSuites.findIndex(
+      (suite) => suite.name === 'dialer-server Hono contracts',
+    );
+    expect(prerequisite).toBeGreaterThanOrEqual(0);
+    expect(server).toBeGreaterThan(prerequisite);
+    const logger = data.selectedSuites.findIndex(
+      (suite) => suite.name === 'dialer-server logger prerequisite',
+    );
+    expect(logger).toBeGreaterThanOrEqual(0);
+    expect(prerequisite).toBeGreaterThan(logger);
+    expect(data.selectedSuites[logger].command).toEqual([
+      'bun', 'run', '--cwd', 'packages/logger', 'build',
+    ]);
+    expect(data.selectedSuites[prerequisite].command).toEqual([
+      'bun', 'run', '--cwd', 'packages/contacts', 'build',
+    ]);
+    expect(data.selectedSuites[server].command).toEqual([
+      'bun', 'test', 'packages/dialer-server/src',
     ]);
   });
 
@@ -2396,4 +2567,61 @@ describe('test selection registry', () => {
     expect(suiteNames).not.toContain('@consuelo/os package test');
   });
 
+  it('keeps the RD8 Dialer steering reconciliation on focused OS contracts', () => {
+    const changedFiles = [
+      'packages/os/SCRIPTS.md',
+      'packages/os/scripts/lib/distribution/runtime-bundle.ts',
+      'packages/os/scripts/lib/managed-component-install.ts',
+      'packages/os/scripts/lib/streams/creation.ts',
+      'packages/os/streams/dialer/AGENTS.md',
+      'packages/os/tests/audit/fixtures/script-parity-classifications.json',
+      'packages/os/tests/dialer-stream-instructions.test.ts',
+      'packages/os/tests/distribution/release-publication-preparer.test.ts',
+      'packages/os/tests/distribution/runtime-bundle.test.ts',
+      'packages/os/tests/fixtures/skills/task-workspace.SKILL.md',
+      'packages/os/tests/lifecycle-engine.test.ts',
+      'packages/os/tests/lifecycle-retention-uninstall.test.ts',
+      'packages/os/tests/managed-components.test.ts',
+      'packages/os/tests/stream-service.test.ts',
+    ];
+    const args = ['check'];
+    for (const changedFile of changedFiles) args.push('--changed-file', changedFile);
+    args.push('--json');
+    const data = json(run(args));
+    const matchedRuleIds = data.matchedRules.map((rule) => rule.id);
+    const suiteNames = data.selectedSuites.map((suite) => suite.name);
+
+    expect(matchedRuleIds).toContain('os-stream-guidance-ownership');
+    expect(matchedRuleIds).toContain('os-bundled-skill-contract');
+    expect(matchedRuleIds).toContain('os-script-parity-audit');
+    expect(suiteNames).toContain('OS stream guidance ownership contracts');
+    expect(suiteNames).toContain('OS bundled skill contracts');
+    expect(suiteNames).toContain('OS script parity audit contracts');
+    expect(suiteNames).not.toContain('@consuelo/os package test');
+  });
+
+});
+
+
+describe('PostHog API tool CI selection', () => {
+  it('keeps new PostHog API tool changes on focused suites instead of the broad OS package test', () => {
+    const data = json(run([
+      'check',
+      '--changed-file', 'packages/os/package.json',
+      '--changed-file', 'packages/os/tools/posthog/manifest.ts',
+      '--changed-file', 'packages/os/scripts/lib/posthog-client.ts',
+      '--changed-file', 'packages/os/scripts/posthog.ts',
+      '--changed-file', 'packages/os/docs/posthog.md',
+      '--json',
+    ]));
+    const ids = data.matchedRules.map((rule) => rule.id);
+    expect(ids).toContain('os-posthog-api-tool');
+    expect(ids).not.toContain('auto:@consuelo/os:package-test');
+    const selected = data.selectedSuites.find((suite) => suite.ruleId === 'os-posthog-api-tool');
+    expect(selected?.command).toEqual(expect.arrayContaining([
+      'tests/posthog-tool.test.ts',
+      'tools/posthog/handler.test.ts',
+      'tests/tool-manifest.test.ts',
+    ]));
+  });
 });

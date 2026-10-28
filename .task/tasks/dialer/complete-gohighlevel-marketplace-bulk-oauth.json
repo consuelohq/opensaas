@@ -1,0 +1,20 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/complete-gohighlevel-marketplace-bulk-oauth",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 2623,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2623",
+  "githubPrUrl": "https://github.com/consuelohq/opensaas/pull/2623",
+  "graphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2623/complete-gohighlevel-marketplace-bulk-oauth",
+  "taskPrUrl": "https://github.com/consuelohq/opensaas/pull/2623",
+  "taskGraphitePrUrl": "https://app.graphite.com/github/pr/consuelohq/opensaas/2623/complete-gohighlevel-marketplace-bulk-oauth",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-complete-gohighlevel-marketplace-bulk-oauth",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_50ac14eba42b",
+  "tmuxSession": "opensaas-dialer-complete-gohighlevel-marketplace-bulk-oauth-50ac14eb",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-complete-gohighlevel-marketplace-bulk-oauth/.task/dialer/complete-gohighlevel-marketplace-bulk-oauth/session.json",
+  "createdAt": "2026-10-08T16:00:24.936Z"
+}

@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/rd7b-customer-entry-and-booking-ui",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 2477,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2477",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-rd7b-customer-entry-and-booking-ui",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_c64f22a3e47b",
+  "tmuxSession": "opensaas-dialer-rd7b-customer-entry-and-booking-ui-c64f22a3",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-rd7b-customer-entry-and-booking-ui/.task/session.json",
+  "createdAt": "2026-09-13T21:03:14.620Z"
+}

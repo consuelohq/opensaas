@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/rd3-shared-rep-capacity-offer-fencing-and-wrap-up",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 2454,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2454",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-rd3-shared-rep-capacity-offer-fencing-and-wrap-up",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_c25c239ad74d",
+  "tmuxSession": "opensaas-dialer-rd3-shared-rep-capacity-offer-fencing-and-wrap-u-c25c239a",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-rd3-shared-rep-capacity-offer-fencing-and-wrap-up/.task/session.json",
+  "createdAt": "2026-09-10T15:52:45.530Z"
+}
