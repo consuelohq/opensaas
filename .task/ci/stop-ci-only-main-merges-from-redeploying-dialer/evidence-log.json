@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "worktree_id": "task/ci/stop-ci-only-main-merges-from-redeploying-dialer",
+  "events": [
+    {
+      "id": "95283733-9f70-476e-bba4-58de4c25e698",
+      "occurred_at": "2026-10-28T18:16:20.412Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".github/workflows/consuelo-production-release.yaml",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/ci/stop-ci-only-main-merges-from-redeploying-dialer",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/ci/stop-ci-only-main-merges-from-redeploying-dialer"
+      }
+    },
+    {
+      "id": "59b7f240-197f-4c2e-8496-c7f01c2da42f",
+      "occurred_at": "2026-10-28T18:16:59.236Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/lead-connector/src/deployment/release-workflow.contract.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/ci/stop-ci-only-main-merges-from-redeploying-dialer",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/ci/stop-ci-only-main-merges-from-redeploying-dialer"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-10-28T18:16:59.356Z"
+}
