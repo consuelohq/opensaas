@@ -1,0 +1,16 @@
+{
+  "files": [
+    "/tmp/consuelo-dialer-website-dev1636/home-568x320.png",
+    "packages/dialer-website/scripts/test-marketing-browser.mjs",
+    "packages/dialer-website/src/components/site/CloudField.astro",
+    "packages/dialer-website/src/components/visuals/CloudField.astro",
+    "packages/dialer-website/src/layouts/MarketingLayout.astro",
+    "packages/dialer-website/src/lib/site-smooth-scroll.ts",
+    "packages/dialer-website/src/pages/get-started.astro",
+    "packages/dialer-website/src/pages/pricing.astro",
+    "packages/dialer-website/tests/interaction-lifecycle.test.ts",
+    "packages/os/tools/linear/manifest.ts",
+    "packages/os/tools/linear/schema.ts"
+  ],
+  "updatedAt": "2026-10-29T18:43:28.572Z"
+}
