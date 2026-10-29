@@ -1,4 +1,7 @@
-/docs /guides 302
+/docs https://docs.consuelohq.com/ 301
+/docs/ https://docs.consuelohq.com/ 301
+/guides https://docs.consuelohq.com/ 301
+/guides/ https://docs.consuelohq.com/ 301
 /faq /#faq 302
 
 /blog https://os.consuelohq.com/about/blog/ 302

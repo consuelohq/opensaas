@@ -1,6 +1,7 @@
 ---
 import MarketingLayout from '../../layouts/MarketingLayout.astro';
 import SiteHeader from './SiteHeader.astro';
+import { siteLinks } from '../../data/site-links';
 type Props = { title: string; description: string; eyebrow?: string };
 const {title,description,eyebrow='CONSUELO DIALER'} = Astro.props;
 ---
@@ -9,7 +10,7 @@ const {title,description,eyebrow='CONSUELO DIALER'} = Astro.props;
  <main class="info-page">
   <header class="info-page__hero"><p>{eyebrow}</p><h1>{title}</h1><p class="info-page__intro">{description}</p></header>
   <article class="info-page__body"><slot /></article>
-  <footer><a href="/">Consuelo Dialer</a><a href="/pricing">Pricing</a><a href="/guides">Docs</a><a href="/contact">Contact</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a></footer>
+  <footer><a href="/">Consuelo Dialer</a><a href="/pricing">Pricing</a><a href={siteLinks.docs}>Docs</a><a href="/contact">Contact</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a></footer>
  </main>
 </MarketingLayout>
 <style>
