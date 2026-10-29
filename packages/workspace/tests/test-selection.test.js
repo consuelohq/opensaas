@@ -302,6 +302,10 @@ describe('test selection registry', () => {
       '--changed-file',
       'packages/os/scripts/lib/task-merge-readiness.js',
       '--changed-file',
+      'packages/os/scripts/lib/github.js',
+      '--changed-file',
+      'packages/workspace/scripts/lib/github.js',
+      '--changed-file',
       'packages/os/scripts/stream-sync.js',
       '--changed-file',
       'packages/os/tests/facade/not-found-recovery.test.ts',
@@ -317,6 +321,9 @@ describe('test selection registry', () => {
     );
     expect(data.selectedSuites.map((suite) => suite.name)).toContain(
       'workspace task merge agent-boundary contracts',
+    );
+    expect(data.selectedSuites.map((suite) => suite.name)).toContain(
+      'workspace task merge GitHub transport contracts',
     );
     expect(data.selectedSuites.map((suite) => suite.name)).not.toContain(
       '@consuelo/os package test',

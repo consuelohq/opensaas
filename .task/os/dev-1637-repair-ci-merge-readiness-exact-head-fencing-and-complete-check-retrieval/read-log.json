@@ -1,0 +1,9 @@
+{
+  "files": [
+    ".task/os/dev-1637-repair-ci-merge-readiness-exact-head-fencing-and-complete-check-retrieval/workpad.md",
+    "packages/workspace/scripts/lib/github.js",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "updatedAt": "2026-10-29T21:31:05.619Z"
+}
