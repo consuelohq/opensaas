@@ -1,4 +1,5 @@
 ---
+import { withSiteBase } from '../lib/public-path';
 import { render, type CollectionEntry } from "astro:content";
 import Layout from "@/layouts/Layout.astro";
 import Footer from "@/components/Footer.astro";
@@ -54,7 +55,7 @@ if (!ogImageUrl && SITE.dynamicOgImage) {
 
 // Resolve OG image URL (or fallback to SITE.ogImage / default `og.png`)
 const ogImage = ogImageUrl
-  ? new URL(ogImageUrl, Astro.url.origin).href
+  ? new URL(withSiteBase(ogImageUrl), Astro.url.origin).href
   : undefined;
 
 const layoutProps = {
@@ -137,7 +138,7 @@ const nextPost =
       {
         prevPost && (
           <a
-            href={getPath(prevPost.id, prevPost.filePath)}
+            href={withSiteBase(getPath(prevPost.id, prevPost.filePath))}
             class="flex w-full gap-1 hover:opacity-75"
           >
             <IconChevronLeft class="inline-block flex-none rtl:rotate-180" />
@@ -151,7 +152,7 @@ const nextPost =
       {
         nextPost && (
           <a
-            href={getPath(nextPost.id, nextPost.filePath)}
+            href={withSiteBase(getPath(nextPost.id, nextPost.filePath))}
             class="flex w-full justify-end gap-1 text-end hover:opacity-75 sm:col-start-2"
           >
             <div>

@@ -1,0 +1,16 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/mount-os-public-pages-and-switch-dialer-domains-without-auth-changes",
+  "baseBranch": "stream/website",
+  "sourceBranch": "stream/website",
+  "startFrom": "stream",
+  "prNumber": 2661,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2661",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-mount-os-public-pages-and-switch-dialer-domains-without-auth-changes",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_cab671a47882",
+  "tmuxSession": "opensaas-website-mount-os-public-pages-and-switch-dialer-domains--cab671a4",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-mount-os-public-pages-and-switch-dialer-domains-without-auth-changes/.task/session.json",
+  "createdAt": "2026-10-29T04:14:59.536Z"
+}

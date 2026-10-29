@@ -1,0 +1,16 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/keep-os-support-links-on-the-mounted-os-documentation",
+  "baseBranch": "stream/website",
+  "sourceBranch": "stream/website",
+  "startFrom": "stream",
+  "prNumber": 2664,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2664",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-keep-os-support-links-on-the-mounted-os-documentation",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_02e49015ccea",
+  "tmuxSession": "opensaas-website-keep-os-support-links-on-the-mounted-os-document-02e49015",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-keep-os-support-links-on-the-mounted-os-documentation/.task/session.json",
+  "createdAt": "2026-10-29T04:57:13.608Z"
+}

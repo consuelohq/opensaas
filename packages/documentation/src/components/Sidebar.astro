@@ -1,4 +1,5 @@
 ---
+import { withDocsBase } from '../lib/public-path';
 import MobileMenuFooter from 'virtual:starlight/components/MobileMenuFooter';
 import SidebarSublist from '@astrojs/starlight/components/SidebarSublist.astro';
 import {
@@ -25,7 +26,7 @@ const mobileNavigation = expandCurrentSidebarPath(routeSidebar);
 {
   navigation.mode === 'section' ? (
     <nav aria-label={`${navigation.sectionLabel} documentation`} class="section-sidebar">
-      <a class="all-docs" href="/">← All documentation</a>
+      <a class="all-docs" href={withDocsBase("/")}>← All documentation</a>
       <SidebarSublist sublist={navigation.entries} />
     </nav>
   ) : (
@@ -33,7 +34,7 @@ const mobileNavigation = expandCurrentSidebarPath(routeSidebar);
       <ul class="global-section-list">
         {globalSectionLinks.map((section) => (
           <li>
-            <a class="global-section-link" href={section.href}>
+            <a class="global-section-link" href={withDocsBase(section.href)}>
               <span>{section.label}</span>
               <svg aria-hidden="true" viewBox="0 0 24 24">
                 <path d="m9 18 6-6-6-6" />

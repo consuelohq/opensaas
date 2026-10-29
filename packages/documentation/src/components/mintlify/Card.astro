@@ -1,11 +1,12 @@
 ---
+import { withDocsBase } from '../../lib/public-path';
 const { title, href, icon, img } = Astro.props;
 const isExternal = typeof href === 'string' && /^https?:\/\//.test(href);
 ---
 
 {href ? (
-  <a class="mintlify-card" href={href} target={isExternal ? '_blank' : undefined} rel={isExternal ? 'noreferrer' : undefined}>
-    {img && <img src={img} alt="" loading="lazy" />}
+  <a class="mintlify-card" href={withDocsBase(href)} target={isExternal ? '_blank' : undefined} rel={isExternal ? 'noreferrer' : undefined}>
+    {img && <img src={withDocsBase(img)} alt="" loading="lazy" />}
     <div class="mintlify-card-heading">
       {icon && <span aria-hidden="true" class="mintlify-card-icon">{icon}</span>}
       {title && <strong>{title}</strong>}
@@ -14,7 +15,7 @@ const isExternal = typeof href === 'string' && /^https?:\/\//.test(href);
   </a>
 ) : (
   <div class="mintlify-card">
-    {img && <img src={img} alt="" loading="lazy" />}
+    {img && <img src={withDocsBase(img)} alt="" loading="lazy" />}
     <div class="mintlify-card-heading">
       {icon && <span aria-hidden="true" class="mintlify-card-icon">{icon}</span>}
       {title && <strong>{title}</strong>}

@@ -1,0 +1,16 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/preserve-os-feed-and-blog-return-bookmarks-through-cutover",
+  "baseBranch": "stream/website",
+  "sourceBranch": "stream/website",
+  "startFrom": "stream",
+  "prNumber": 2669,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2669",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-preserve-os-feed-and-blog-return-bookmarks-through-cutover",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_9044fc75889f",
+  "tmuxSession": "opensaas-website-preserve-os-feed-and-blog-return-bookmarks-throu-9044fc75",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-preserve-os-feed-and-blog-return-bookmarks-through-cutover/.task/session.json",
+  "createdAt": "2026-10-29T05:31:00.711Z"
+}

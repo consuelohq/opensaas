@@ -1,4 +1,5 @@
 ---
+import { withSiteBase } from '../lib/public-path';
 import SiteHeader from '../components/site/SiteHeader.astro'
 import { pricingAccountLink, pricingHero, pricingPlans } from '../data/pricing-content'
 import MarketingLayout from '../layouts/MarketingLayout.astro'
@@ -18,13 +19,13 @@ const description = pricingHero.subtitle
 		<section class="pricing-page__panel" aria-label="Consuelo pricing plans">
 			<div class="pricing-page__account" aria-label="Already have an account?">
 				<span>{pricingAccountLink.prompt}</span>
-				<a href={pricingAccountLink.href}>{pricingAccountLink.label}</a>
+				<a href={withSiteBase(pricingAccountLink.href)}>{pricingAccountLink.label}</a>
 			</div>
 
 			<div class="pricing-page__cards">
 				{
 					pricingPlans.map((plan) => (
-						<a class="pricing-plan" href={plan.href} aria-label={`Choose ${plan.name} plan`}>
+						<a class="pricing-plan" href={withSiteBase(plan.href)} aria-label={`Choose ${plan.name} plan`}>
 							<header class="pricing-plan__header">
 								<div class="pricing-plan__label-row">
 									<p class="pricing-plan__label">{plan.name}</p>
@@ -37,7 +38,7 @@ const description = pricingHero.subtitle
 							<figure class="pricing-plan__image">
 								<img
 									class="pricing-plan__art"
-									src={plan.imageSrc}
+									src={withSiteBase(plan.imageSrc)}
 									alt={plan.imageLabel}
 									width="1200"
 									height="900"

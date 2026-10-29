@@ -5,7 +5,7 @@ export type SiteLink = {
 
 export const siteLinks = {
   app: 'https://app.consuelohq.com',
-  docs: 'https://docs.consuelohq.com',
+  docs: import.meta.env.PUBLIC_DOCS_URL ?? 'https://docs.consuelohq.com',
   github: 'https://github.com/consuelohq/opensaas',
   changelog: '/changelog',
   mercury: '/mercury',
@@ -14,8 +14,8 @@ export const siteLinks = {
   login: 'https://os.consuelohq.com/',
   free: 'https://app.consuelohq.com',
   newsletter: 'mailto:support@consuelohq.com?subject=Consuelo%20newsletter',
-  discordDocs: 'https://docs.consuelohq.com/user-guide/discord-bot/overview',
-  slackDocs: 'https://docs.consuelohq.com',
+  discordDocs: (import.meta.env.PUBLIC_DOCS_URL ?? 'https://docs.consuelohq.com') + '/user-guide/discord-bot/overview',
+  slackDocs: import.meta.env.PUBLIC_DOCS_URL ?? 'https://docs.consuelohq.com',
   privacy: '/privacy',
   terms: '/terms',
   discord: 'https://discord.gg/87YtkVUBvc',

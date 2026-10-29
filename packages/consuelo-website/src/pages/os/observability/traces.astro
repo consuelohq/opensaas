@@ -1,4 +1,5 @@
 ---
+import { withSiteBase } from '../../../lib/public-path';
 import { buildObservabilityTracesClientScript } from '../../../../../os/scripts/lib/observability-traces-site';
 import MarketingLayout from '../../../layouts/MarketingLayout.astro';
 
@@ -30,7 +31,7 @@ const traceClientScript = buildObservabilityTracesClientScript();
               lightweight OS surface.
             </p>
             <nav class="traces-nav site-cluster" aria-label="Observability sections">
-              <a class="site-badge" aria-current="page" href="/os/observability/traces">Traces</a>
+              <a class="site-badge" aria-current="page" href={withSiteBase("/os/observability/traces")}>Traces</a>
               <span class="site-badge" aria-disabled="true">Runs</span>
               <span class="site-badge" aria-disabled="true">Costs</span>
               <span class="site-badge" aria-disabled="true">Failures</span>

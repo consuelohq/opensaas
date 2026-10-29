@@ -1,10 +1,11 @@
 ---
+import { withDocsBase } from '../../lib/public-path';
 const { videoId, title = 'Video' } = Astro.props;
 const src = `https://player.vimeo.com/video/${videoId}?autoplay=1&loop=1&autopause=0&background=1&app_id=58479`;
 ---
 
 <div class="vimeo-embed">
-  <iframe src={src} allow="autoplay; fullscreen; picture-in-picture; clipboard-write" title={title} loading="lazy"></iframe>
+  <iframe src={withDocsBase(src)} allow="autoplay; fullscreen; picture-in-picture; clipboard-write" title={title} loading="lazy"></iframe>
 </div>
 
 <style>

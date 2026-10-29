@@ -6,7 +6,7 @@
 <script>
   import { resolvePreferredTranslationLanguage, sourceLanguage } from '../../lib/translation/languages';
 
-  const translationEndpoint = '/api/docs/translate';
+  const translationEndpoint = import.meta.env.BASE_URL.replace(/\/$/, '') + '/api/docs/translate';
   let translationRequestId = 0;
 
   const escapeHtml = (value: string) => value

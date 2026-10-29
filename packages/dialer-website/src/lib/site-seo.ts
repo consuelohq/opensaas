@@ -1,3 +1,4 @@
+const production = import.meta.env.PUBLIC_SITE_CHANNEL === 'production';
 import { homepageSeo } from './homepage-seo';
 
 export type StructuredData = {
@@ -10,7 +11,7 @@ export type FaqItem = {
 };
 
 export const siteMetadata = {
-  siteUrl: 'https://consuelo-dialer-website-preview.pages.dev',
+  siteUrl: production ? 'https://consuelohq.com' : 'https://consuelo-dialer-website-preview.pages.dev',
   siteName: 'Consuelo Dialer',
   defaultTitle: homepageSeo.title,
   defaultDescription: homepageSeo.description,
@@ -18,11 +19,11 @@ export const siteMetadata = {
   blogDescription:
     'Product updates, implementation notes, and technical writing from the Consuelo team.',
   defaultOgImage: homepageSeo.image,
-  robots: 'noindex,nofollow',
+  robots: production ? 'index,follow,max-image-preview:large' : 'noindex,nofollow',
   themeColorLight: '#0000F2',
   themeColorDark: '#0000F2',
   twitterHandle: '@consuelohq',
-  docsUrl: 'https://consuelo-dialer-website-preview.pages.dev/guides',
+  docsUrl: production ? 'https://docs.consuelohq.com' : 'https://consuelo-dialer-website-preview.pages.dev/guides',
   appUrl: 'https://app.gohighlevel.com/',
   githubUrl: 'https://github.com/consuelohq/opensaas',
 } as const;

@@ -1,14 +1,23 @@
 // @ts-check
-import { defineConfig } from 'astro/config';
+import { defineConfig, sessionDrivers } from 'astro/config';
 import cloudflare from '@astrojs/cloudflare';
 import starlight from '@astrojs/starlight';
 import { legacyRedirects } from './src/lib/legacy-redirects.mjs';
 import { docsSidebar } from './src/lib/docs-navigation';
+import { prefixMarkdownUrls } from './src/lib/markdown-base.mjs';
+
+const base = process.env.DOCS_BASE_PATH ?? '/';
+if (!['/', '/docs'].includes(base)) throw new Error('Unsupported OS documentation base');
 
 export default defineConfig({
-  site: 'https://docs.consuelohq.com',
-  redirects: legacyRedirects,
+  site: process.env.DOCS_SITE_URL ?? 'https://docs.consuelohq.com',
+  base,
+  outDir: process.env.DOCS_OUT_DIR ?? './dist',
+  ...(base === '/docs' ? { session: { driver: sessionDrivers.memory() } } : {}),
+  markdown: { rehypePlugins: [[prefixMarkdownUrls, { base }]] },
+  redirects: Object.fromEntries(Object.entries(legacyRedirects).map(([from, to]) => [from, base === '/' || !to.startsWith('/') ? to : base + to])),
   adapter: cloudflare({
+    configPath: process.env.DOCS_WRANGLER_CONFIG ?? './wrangler.jsonc',
     imageService: 'compile',
     prerenderEnvironment: 'node',
   }),

@@ -1,0 +1,11 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "consuelo-os-website-preview",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./.public-assets",
+    "not_found_handling": "404-page"
+  },
+  "workers_dev": true,
+  "routes": []
+}

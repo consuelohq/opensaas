@@ -1,4 +1,5 @@
 ---
+import { withSiteBase } from '../../../lib/public-path';
 // Basic Card
 // ------------
 // Description: The basic card component
@@ -38,7 +39,7 @@ const { title = '', subtitle, titleSize = 'lg', image, icon, link, type, classes
 	{
 		image && (
 			<Image
-				src={image}
+				src={withSiteBase(image)}
 				alt={title}
 				class={type === 'image-bottom' ? 'order-2' : ''}
 				width={600}

@@ -1,3 +1,4 @@
+import { withSiteBase } from '../lib/public-path';
 export const prerender = true;
 
 import type { APIContext } from "astro";
@@ -17,11 +18,11 @@ export async function GET(context: APIContext) {
     return rss({
       title: SITE.title,
       description: SITE.desc,
-      site: context.site?.toString() || SITE.website,
+      site: new URL(withSiteBase('/'), context.site?.toString() || SITE.website).toString(),
       items: sortedPosts.map(post => ({
         title: post.data.title,
         description: post.data.description,
-        link: `/blog/${post.id}/`,
+        link: withSiteBase(`/blog/${post.id}/`),
         pubDate: post.data.pubDatetime,
       })),
     });

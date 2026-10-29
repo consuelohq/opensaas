@@ -2,16 +2,16 @@
 title: Tool List
 description: Alphabetical list of every tool in the current Consuelo OS generated manifest.
 status: preview
-verifiedAt: 2026-08-14
+verifiedAt: 2026-10-29
 evidence:
   - source: packages/os/manifests/generated/tool.manifest.json
     tests:
       - packages/os/tests/tool-manifest.test.ts
       - packages/os/tests/tools-search-v2.test.ts
-    runtime: Generated from all 159 named tools in the checked-in manifest and reconciled with the current subagent schema on 2026-08-14.
+    runtime: Generated from all 166 named tools in the checked-in manifest and reconciled with the current checked-in tool manifest on 2026-10-29.
 ---
 
-This page lists all **159 tools** in the current generated Consuelo OS manifest, alphabetically. Use **On this page** as the fast index: every tool below is a real heading, so you can jump directly to it.
+This page lists all **166 tools** in the current generated Consuelo OS manifest, alphabetically. Use **On this page** as the fast index: every tool below is a real heading, so you can jump directly to it.
 
 For discovery by capability instead of name, use `tools.search`. For the calling model and result envelope, see [How tools work](/build/tools/how-tools-work/).
 
@@ -489,6 +489,12 @@ typed GitHub facade with semantic PR operations; use operation pr.reviews for no
 
 Category: `github` · Access: `mutating`
 
+## `google`
+
+use Gmail, Calendar, Drive, Docs, Sheets, and Contacts through the managed Google Workspace runtime; first use can open Google OAuth and saved authorization is reused
+
+Category: `google` · Access: `mutating`
+
 ## `http`
 
 make HTTP requests through the workspace http wrapper (wraps xh)
@@ -765,11 +771,41 @@ analyze the last 24 hours of canonical Consuelo OS tool traces and classify poli
 
 Category: `observability` · Access: `read-only`
 
+## `posthog.capture`
+
+explicitly capture a privacy-checked event to PostHog using the project token; does not capture events automatically
+
+Category: `posthog` · Access: `mutating`
+
+## `posthog.config`
+
+check PostHog region and credential configuration (never returns keys); credentials are per-node environment variables or macOS Keychain
+
+Category: `posthog` · Access: `read-only`
+
+## `posthog.projects`
+
+list accessible PostHog projects using the locally configured personal API key
+
+Category: `posthog` · Access: `read-only`
+
+## `posthog.query`
+
+run one bounded read-only HogQL query using a personal API key and PostHog project id
+
+Category: `posthog` · Access: `read-only`
+
 ## `prReview`
 
 legacy wrapper for GitHub PR review feedback; prefer OS github with operation pr.reviews for normalized actionable review comments
 
 Category: `review` · Access: `read-only`
+
+## `release`
+
+start or resume a durable Consuelo OS release operation: use for release to canary or another channel; pass the main-targeting review PR for the stream, receive an operation id immediately, then use status/logs/attach/resume without keeping one MCP call open; the worker verifies and merges to main, resolves the exact merged SHA immutable runtime release even if dev advances, promotes through dev/canary/beta/stable as requested, then by default updates this node to the exact released version and verifies it
+
+Category: `release` · Access: `mutating`
 
 ## `research.ingest`
 
@@ -836,6 +872,12 @@ Category: `sentry` · Access: `read-only`
 manage the workspace MCP server reload/status lifecycle
 
 Category: `utilities` · Access: `mutating`
+
+## `session.start`
+
+Canonical session constructor. Use kind=task for managed repo work that needs a branch/worktree/PR, or kind=work for scoped ordinary filesystem work on the owning node. For work sessions, omit path to create an isolated local work directory automatically.
+
+Category: `session lifecycle` · Access: `mutating`
 
 ## `status`
 
@@ -968,4 +1010,3 @@ Category: `utilities` · Access: `read-only`
 deploy the Consuelo website
 
 Category: `utilities` · Access: `mutating`
-
