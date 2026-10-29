@@ -199,9 +199,9 @@ export const TRACE_INSPECTOR_READING_STYLE = `<style id="consuelo-trace-inspecto
 #tbmLiveTraceModal .trxShell .trxRow:hover { background: transparent !important; box-shadow: none !important; }
 #tbmLiveTraceModal .tiInspector .tiPeer.active,
 #tbmLiveTraceModal .tiInspector .tiPeer:hover { background: transparent !important; box-shadow: none !important; }
-#tbmLiveTraceModal .trxToolName,
+#tbmLiveTraceModal .trxRow > div,
 #tbmLiveTraceModal .tiPeerMain b { display: inline-block; transition: transform 120ms ease, filter 120ms ease; }
-#tbmLiveTraceModal .trxRow:is(:hover,.selected) .trxToolName,
+#tbmLiveTraceModal .trxRow:is(:hover,.selected) > div,
 #tbmLiveTraceModal .tiPeer:is(:hover,.active) .tiPeerMain b { transform: translateY(-.5px); filter: brightness(1.12); }
 #tbmLiveTraceModal .tiPeer.active .tiPeerMain b { font-weight: 650; }
 #tbmLiveTraceModal .trxFilterSection,
@@ -211,10 +211,38 @@ export const TRACE_INSPECTOR_READING_STYLE = `<style id="consuelo-trace-inspecto
 #tbmLiveTraceModal .trxFilterPanel [data-trace-filter-close] { margin-left: auto; width: 28px; height: 28px; font-size: 20px; line-height: 1; }
 .tiTimestamp { font: inherit; color: inherit; font-variant-numeric: tabular-nums; }
 @media (prefers-color-scheme: light) {
-  #tbmLiveTraceModal .trxRow:is(:hover,.selected) .trxToolName,
+  #tbmLiveTraceModal .trxRow:is(:hover,.selected) > div,
   #tbmLiveTraceModal .tiPeer:is(:hover,.active) .tiPeerMain b { filter: brightness(.9); }
 }
 @media (prefers-reduced-motion: reduce) {
-  #tbmLiveTraceModal .trxToolName, #tbmLiveTraceModal .tiPeerMain b { transition: none; transform: none !important; }
+  #tbmLiveTraceModal .trxRow > div, #tbmLiveTraceModal .tiPeerMain b { transition: none; transform: none !important; }
 }
+
+/* A continuous table and reading surface; spacing and type carry the hierarchy. */
+#tbmLiveTraceModal .trxShell .trxTable { width: 100% !important; padding: 0 !important; box-sizing: border-box !important; }
+#tbmLiveTraceModal .trxShell .trxHead,
+#tbmLiveTraceModal .trxShell .trxRow { width: 100% !important; border: 0 !important; box-shadow: none !important; }
+#tbmLiveTraceModal .trxShell .trxHead { background: var(--trace-bg) !important; }
+#tbmLiveTraceModal .trxShell .trxRow:not(:focus-visible) { outline: none !important; }
+#tbmLiveTraceModal .trxShell .trxRow:focus-visible { outline: 2px solid var(--ti-blue); outline-offset: -2px; }
+#tbmLiveTraceModal .trxShell .trxRow.is-error > div:not(.trxBranch),
+#tbmLiveTraceModal .trxShell .trxRow.is-error > div:not(.trxBranch) * { color: var(--ti-red) !important; text-shadow: none !important; }
+#tbmLiveTraceModal .trxShell .trxTablePane { border: 0 !important; }
+#tbmLiveTraceModal .trxShell .trxRailInner { padding: 0 !important; gap: 0 !important; }
+#tbmLiveTraceModal .trxShell .tiDivider {
+  width: 10px !important; min-width: 10px !important; margin-inline: -5px !important;
+  border: 0 !important; background: transparent !important;
+}
+#tbmLiveTraceModal .trxShell .tiDivider::before { display: none !important; }
+#tbmLiveTraceModal .trxShell .tiDivider::after { left: 4px; width: 2px; }
+#tbmLiveTraceModal .tiInspector .tiToolbar,
+#tbmLiveTraceModal .tiInspector .tiSidebar,
+#tbmLiveTraceModal .tiInspector .tiPeer,
+#tbmLiveTraceModal .tiInspector .tiSection > header,
+#tbmLiveTraceModal .tiInspector .tiResultCard,
+#tbmLiveTraceModal .tiInspector .tiDiagnostics,
+#tbmLiveTraceModal .tiInspector .tiCallError { border: 0 !important; box-shadow: none !important; }
+#tbmLiveTraceModal .tiInspector .tiPeerMeter { display: none; }
+#tbmLiveTraceModal .tiInspector .tiReading { margin-bottom: 22px; }
+#tbmLiveTraceModal .tiInspector .tiReading > header h3 { font-size: 15px; }
 </style>`;
