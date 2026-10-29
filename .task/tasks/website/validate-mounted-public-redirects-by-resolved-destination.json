@@ -1,0 +1,16 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/validate-mounted-public-redirects-by-resolved-destination",
+  "baseBranch": "stream/website",
+  "sourceBranch": "stream/website",
+  "startFrom": "stream",
+  "prNumber": 2672,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2672",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-validate-mounted-public-redirects-by-resolved-destination",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_f3d7b4305770",
+  "tmuxSession": "opensaas-website-validate-mounted-public-redirects-by-resolved-de-f3d7b430",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-validate-mounted-public-redirects-by-resolved-destination/.task/session.json",
+  "createdAt": "2026-10-29T06:50:47.982Z"
+}

@@ -52,7 +52,7 @@ try {
     for (const path of ['/about/login/device', '/about/login/device/']) {
       const redirect = await context.request.get(website + path + '?' + query, { maxRedirects: 0 });
       assert.equal(redirect.status(), 302);
-      assert.equal(redirect.headers().location, 'https://os.consuelohq.com/login/device?' + query);
+      assert.equal(new URL(redirect.headers().location, redirect.url()).href, 'https://os.consuelohq.com/login/device?' + query);
     }
     const rss = await context.request.get(website + '/about/rss.xml');
     assert.equal(rss.status(), 200);
