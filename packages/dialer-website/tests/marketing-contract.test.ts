@@ -5,6 +5,13 @@ import { pricingPlans } from '../src/data/pricing-content';
 const root = resolve(import.meta.dir, '..');
 const page = (path = '') => readFileSync(resolve(root, 'dist', path, 'index.html'), 'utf8');
 describe('Dialer marketing delivery', () => {
+  it('redirects legacy device login to the canonical OS authority without duplicating its UI', () => {
+    expect(existsSync(resolve(root, 'src/pages/login/device.astro'))).toBe(false);
+    const redirects = readFileSync(resolve(root, 'public/_redirects'), 'utf8');
+    for (const path of ['/login/device', '/login/device/']) {
+      expect(redirects).toContain(`${path} https://os.consuelohq.com/login/device 302`);
+    }
+  });
   it('publishes paid product metadata without an inherited free offer', () => {
     const entries = [...page().matchAll(/<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g)]
       .flatMap((match) => { const value = JSON.parse(match[1]); return value['@graph'] ?? [value]; });

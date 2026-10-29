@@ -6,3 +6,6 @@
 /changelog https://os.consuelohq.com/about/changelog/ 302
 /changelog/* https://os.consuelohq.com/about/changelog/:splat 302
 /os/* https://os.consuelohq.com/about/os/:splat 302
+
+/login/device https://os.consuelohq.com/login/device 302
+/login/device/ https://os.consuelohq.com/login/device 302

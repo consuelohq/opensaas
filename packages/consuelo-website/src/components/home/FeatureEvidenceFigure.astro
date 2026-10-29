@@ -32,7 +32,7 @@ const posterSrc = evidence.posterSrc ?? imageSrc;
           playsinline
           class="feature-evidence__video"
           preload="metadata"
-          poster={posterSrc}
+          poster={withSiteBase(posterSrc)}
         >
           <source src={withSiteBase(evidence.videoSrc)} />
         </video>
