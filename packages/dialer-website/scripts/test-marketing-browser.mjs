@@ -22,7 +22,13 @@ const server = createServer((request, response) => {
 });
 await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
 const base = process.env.DIALER_MARKETING_BASE_URL || 'http://127.0.0.1:' + server.address().port;
-const executablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || (existsSync('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome') ? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' : undefined);
+const executablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || [
+ '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+ '/usr/bin/google-chrome',
+ '/opt/google/chrome/chrome',
+ '/usr/bin/chromium',
+ '/usr/bin/chromium-browser',
+].find(candidate => existsSync(candidate));
 const browser = await chromium.launch({ executablePath });
 const emit = (value) => process.stdout.write(JSON.stringify(value) + '\n');
 const allSizes = [[320,568],[375,812],[430,932],[568,320],[667,375],[768,1024],[1024,768],[1440,960]];
