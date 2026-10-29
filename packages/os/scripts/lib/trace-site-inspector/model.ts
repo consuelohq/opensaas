@@ -18,6 +18,15 @@ export type BranchSummary = {
   outputTokens: number;
   totalTokens: number;
   peers: TraceRecord[];
+  records: TraceRecord[];
+  usage: TraceTokenUsage;
+};
+
+export type TokenCount = { value: number | null; estimated: boolean };
+export type TraceTokenUsage = {
+  input: TokenCount;
+  output: TokenCount;
+  total: TokenCount;
 };
 
 export type TraceErrorInsight = {
@@ -64,7 +73,9 @@ export function branchName(row: TraceRecord | null | undefined): string {
   });
 }
 
-export function sessionDisplayName(row: TraceRecord | null | undefined): string {
+export function sessionDisplayName(
+  row: TraceRecord | null | undefined,
+): string {
   const session = branchName(row);
   const workPath = sessionValue(row?.workPath);
   if (!workPath || session.includes(' + ')) return session;
@@ -74,7 +85,8 @@ export function sessionDisplayName(row: TraceRecord | null | undefined): string 
 
 function sessionValue(value: unknown): string {
   const candidate = clean(value);
-  if (!candidate || candidate === 'no-branch' || candidate === '(no branch)') return '';
+  if (!candidate || candidate === 'no-branch' || candidate === '(no branch)')
+    return '';
   return candidate;
 }
 
@@ -92,12 +104,14 @@ export function traceNodeId(row: TraceRecord | null | undefined): string {
 export function traceNodeLabel(row: TraceRecord | null | undefined): string {
   if (!row) return '';
   const metadata = asRecord(row.metadata);
-  return clean(
-    row.resolvedNodeName ??
-      row.nodeName ??
-      metadata?.resolvedNodeName ??
-      metadata?.nodeName,
-  ) || traceNodeId(row);
+  return (
+    clean(
+      row.resolvedNodeName ??
+        row.nodeName ??
+        metadata?.resolvedNodeName ??
+        metadata?.nodeName,
+    ) || traceNodeId(row)
+  );
 }
 
 export function traceRouteSource(row: TraceRecord | null | undefined): string {
@@ -111,7 +125,11 @@ export function traceRouteLabel(row: TraceRecord | null | undefined): string {
   if (!source) return '';
   if (source === 'default') return 'Default';
   if (source === 'explicit') return 'Explicit';
-  if (source === 'task' || source === 'task_affinity' || source === 'task-affinity') {
+  if (
+    source === 'task' ||
+    source === 'task_affinity' ||
+    source === 'task-affinity'
+  ) {
     return 'Task';
   }
   return source
@@ -124,6 +142,8 @@ export function isFailure(row: TraceRecord | null | undefined): boolean {
   if (!row) return false;
   if (row.ok === false) return true;
   if (FAILURE_STATUS.test(clean(row.status))) return true;
+  const exitCode = optionalNumber(row.exitCode ?? row.exit_code);
+  if (exitCode !== null && exitCode !== 0) return true;
   const code = clean(row.code);
   return Boolean(code && code !== 'OK' && code !== 'SUCCESS');
 }
@@ -150,16 +170,131 @@ export function branchSummary(
     .filter((row) => branchName(row) === branch)
     .sort((a, b) => timestamp(b) - timestamp(a));
 
+  const anonymous = new Map<TraceRecord, string>();
+  const identity = (row: TraceRecord): string => {
+    const key =
+      clean(row.traceId ?? row.trace_id ?? row.trace) || stableTraceKey(row);
+    if (key) return key;
+    if (!anonymous.has(row)) anonymous.set(row, `anonymous:${anonymous.size}`);
+    return anonymous.get(row)!;
+  };
+  const embedded = new Set(
+    peers.flatMap((row) => childTraceRecords(row).map(identity)),
+  );
+  const roots = peers.filter((row) => !embedded.has(identity(row)));
+  const calls = new Map<string, TraceRecord>();
+  for (const row of roots.flatMap((root) => [
+    root,
+    ...childTraceRecords(root),
+  ])) {
+    const key = identity(row);
+    if (!calls.has(key) || isBatchChild(row)) calls.set(key, row);
+  }
+  const records = [...calls.values()];
+  const failedAncestors = new Set<string>();
+  for (const row of records.filter(isFailure)) {
+    const parent = clean(row.__traceParentKey);
+    const path = clean(row.__tracePath).split('/');
+    if (!parent) continue;
+    failedAncestors.add(parent);
+    for (let length = 1; length < path.length; length++) {
+      failedAncestors.add(`${parent}::path:${path.slice(0, length).join('/')}`);
+    }
+  }
+  const usages = roots.map(traceTokenUsage);
+  const sumUsage = (field: keyof TraceTokenUsage): TokenCount => ({
+    value:
+      !usages.length || usages.some((usage) => usage[field].value === null)
+        ? null
+        : usages.reduce((sum, usage) => sum + (usage[field].value ?? 0), 0),
+    estimated: usages.some((usage) => usage[field].estimated),
+  });
+
   return {
     branch,
-    calls: peers.length,
-    failures: peers.filter(isFailure).length,
-    durationMs: peers.reduce((sum, row) => sum + number(row.durationMs), 0),
-    inputTokens: peers.reduce((sum, row) => sum + number(row.inputTokens), 0),
-    outputTokens: peers.reduce((sum, row) => sum + number(row.outputTokens), 0),
-    totalTokens: peers.reduce((sum, row) => sum + totalTokens(row), 0),
+    calls: records.length,
+    failures: records.filter(
+      (row) =>
+        isFailure(row) &&
+        !failedAncestors.has(
+          isBatchChild(row)
+            ? `${clean(row.__traceParentKey)}::path:${clean(row.__tracePath)}`
+            : stableTraceKey(row),
+        ) &&
+        !childTraceRecords(row).some(isFailure),
+    ).length,
+    durationMs: roots.reduce((sum, row) => sum + number(row.durationMs), 0),
+    inputTokens: roots.reduce(
+      (sum, row) => sum + number(row.inputTokens ?? row.input_tokens),
+      0,
+    ),
+    outputTokens: roots.reduce(
+      (sum, row) => sum + number(row.outputTokens ?? row.output_tokens),
+      0,
+    ),
+    totalTokens: roots.reduce((sum, row) => sum + totalTokens(row), 0),
     peers,
+    records,
+    usage: {
+      input: sumUsage('input'),
+      output: sumUsage('output'),
+      total: sumUsage('total'),
+    },
   };
+}
+
+export function traceTokenUsage(row: TraceRecord): TraceTokenUsage {
+  const provenance = asRecord(row.tokenCountsRecorded);
+  const recorded = (value: unknown): number | null => {
+    const parsed = optionalNumber(value);
+    return parsed !== null && parsed >= 0 ? parsed : null;
+  };
+  const count = (value: unknown, payload: unknown): TokenCount => {
+    const saved = recorded(value);
+    if (saved !== null) return { value: saved, estimated: false };
+    const available =
+      payload !== undefined && payload !== null && payload !== '';
+    return {
+      value: available ? estimatePayloadTokens(payload) : null,
+      estimated: available,
+    };
+  };
+  const input = count(
+    provenance?.input === false
+      ? undefined
+      : (row.inputTokens ?? row.input_tokens),
+    row.rawResolvedInputJson ??
+      row.rawInputJson ??
+      row.resolvedInputObj ??
+      row.inputObj ??
+      row.input,
+  );
+  const output = count(
+    provenance?.output === false
+      ? undefined
+      : (row.outputTokens ?? row.output_tokens),
+    row.rawResultJson ??
+      row.outputObj ??
+      row.output ??
+      row.summary ??
+      row.rawStderr,
+  );
+  const savedTotal = recorded(
+    provenance?.total === false
+      ? undefined
+      : (row.tokens ?? row.totalTokens ?? row.total_tokens),
+  );
+  const total: TokenCount =
+    savedTotal !== null
+      ? { value: savedTotal, estimated: false }
+      : {
+          value:
+            input.value !== null && output.value !== null
+              ? input.value + output.value
+              : null,
+          estimated: input.estimated || output.estimated,
+        };
+  return { input, output, total };
 }
 
 export function extractTraceError(row: TraceRecord): TraceErrorInsight {
@@ -305,7 +440,8 @@ export function childTraceRecords(parent: TraceRecord): TraceChildRecord[] {
           record.traceName ??
           record.facadeTool ??
           record.label,
-      ) || 'child';
+      ) ||
+      'child';
     const segment = `${siblingIndex}:${childTool}`;
     const path = parentPath ? `${parentPath}/${segment}` : segment;
     const nativeKey = stableTraceKey(record);
@@ -327,8 +463,11 @@ export function childTraceRecords(parent: TraceRecord): TraceChildRecord[] {
       taskSession: mergedRecord.taskSession ?? parent.taskSession,
       worktree: mergedRecord.worktree ?? parent.worktree,
       workSession:
-        mergedRecord.workSession ?? parent.workSession ?? parentMetadata?.workSession,
-      workPath: mergedRecord.workPath ?? parent.workPath ?? parentMetadata?.workPath,
+        mergedRecord.workSession ??
+        parent.workSession ??
+        parentMetadata?.workSession,
+      workPath:
+        mergedRecord.workPath ?? parent.workPath ?? parentMetadata?.workPath,
       requestedNodeId:
         mergedRecord.requestedNodeId ??
         parent.requestedNodeId ??
@@ -349,7 +488,9 @@ export function childTraceRecords(parent: TraceRecord): TraceChildRecord[] {
         parent.defaultNodeId ??
         parentMetadata?.defaultNodeId,
       routeSource:
-        mergedRecord.routeSource ?? parent.routeSource ?? parentMetadata?.routeSource,
+        mergedRecord.routeSource ??
+        parent.routeSource ??
+        parentMetadata?.routeSource,
       startTime: mergedRecord.startTime ?? parent.startTime,
       displayTime: mergedRecord.displayTime ?? parent.displayTime,
       status,
@@ -408,7 +549,7 @@ export function childTraceRecords(parent: TraceRecord): TraceChildRecord[] {
     const nestedParsed = parseMaybeJson(
       record.children ??
         data?.children ??
-        (childTool === 'batch' ? record.results ?? data?.results : undefined),
+        (childTool === 'batch' ? (record.results ?? data?.results) : undefined),
     );
     if (Array.isArray(nestedParsed)) {
       nestedParsed.forEach((nested, index) =>
@@ -440,10 +581,18 @@ export function totalTokens(row: TraceRecord): number {
   // still useful without changing how token totals are presented in the UI.
   return (
     estimatePayloadTokens(
-      row.rawResolvedInputJson ?? row.rawInputJson ?? row.resolvedInputObj ?? row.inputObj ?? row.input,
+      row.rawResolvedInputJson ??
+        row.rawInputJson ??
+        row.resolvedInputObj ??
+        row.inputObj ??
+        row.input,
     ) +
     estimatePayloadTokens(
-      row.rawResultJson ?? row.outputObj ?? row.output ?? row.summary ?? row.rawStderr,
+      row.rawResultJson ??
+        row.outputObj ??
+        row.output ??
+        row.summary ??
+        row.rawStderr,
     )
   );
 }
