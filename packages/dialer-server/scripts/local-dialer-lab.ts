@@ -21,7 +21,8 @@ import Redis from 'ioredis';
 import { Pool } from 'pg';
 
 import { migrateDialerDatabase, rollbackDialerDatabaseMigration,
-  DIALER_DATABASE_LEARNING_INTEGRITY_MIGRATION_ID } from '../src/database/migrations';
+  DIALER_DATABASE_LEARNING_INTEGRITY_MIGRATION_ID,
+  DIALER_DATABASE_LEAD_CONNECTOR_COMPANY_CREDENTIALS_MIGRATION_ID } from '../src/database/migrations';
 import {
   createSyntheticDialerFixture,
   resolveLabScale,
@@ -333,6 +334,13 @@ const main = async () => {
     const rowsBeforeRollback = await countObservations();
     const inbound = await runInboundJournalScenarios(pool);
     const simulation = await runInboundSimulationScenarios({ pool, redis, databaseUrl, seed });
+    // Preserve the 014 company-credential table. The following historical
+    // rollback test is confined to this disposable local database; remove
+    // only its ledger entry to exercise the pre-014 down chain.
+    await database.query(
+      'DELETE FROM consuelo_dialer_schema_migrations WHERE migration_id = $1',
+      [DIALER_DATABASE_LEAD_CONNECTOR_COMPANY_CREDENTIALS_MIGRATION_ID],
+    );
     await rollbackDialerDatabaseMigration(database, CALLBACK_BOOKING_ATTEMPTS_MIGRATION_ID);
     await rollbackDialerDatabaseMigration(database, CALLBACK_BOOKING_EVENTS_MIGRATION_ID);
     await rollbackDialerDatabaseMigration(database, CUSTOMER_ENTRY_MIGRATION_ID);

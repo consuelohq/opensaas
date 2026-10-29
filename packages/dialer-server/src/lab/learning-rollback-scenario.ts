@@ -10,6 +10,7 @@ import {
   migrateDialerDatabase,
   rollbackDialerDatabaseMigration,
   DIALER_DATABASE_LEARNING_INTEGRITY_MIGRATION_ID,
+  DIALER_DATABASE_LEAD_CONNECTOR_COMPANY_CREDENTIALS_MIGRATION_ID,
   DIALER_DATABASE_CONTEXTUAL_SCIENCE_HARDENING_MIGRATION_ID,
   DIALER_DATABASE_CONTEXTUAL_SCIENCE_MIGRATION_ID,
   DIALER_DATABASE_PREDICTIVE_LEARNING_MIGRATION_ID,
@@ -43,6 +44,18 @@ export const verifyLearningRollbackChain = async (
     );
     const originalLedger = await client.query<{ migration_id: string }>(
       'SELECT migration_id FROM consuelo_dialer_schema_migrations ORDER BY migration_id',
+    );
+    // The real upgrade is forward-only. The following historical rollback
+    // exercise runs exclusively inside this rolled-back local transaction.
+    await assert.rejects(() =>
+      rollbackDialerDatabaseMigration(
+        database,
+        DIALER_DATABASE_LEAD_CONNECTOR_COMPANY_CREDENTIALS_MIGRATION_ID,
+      ),
+    );
+    await client.query(
+      'DELETE FROM consuelo_dialer_schema_migrations WHERE migration_id = $1',
+      [DIALER_DATABASE_LEAD_CONNECTOR_COMPANY_CREDENTIALS_MIGRATION_ID],
     );
     await client.query('SAVEPOINT newer_migration_guard');
     await assert.rejects(() =>
