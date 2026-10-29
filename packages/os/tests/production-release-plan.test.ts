@@ -4,9 +4,10 @@ import { createConsueloReleasePlan } from '../scripts/production-release-plan';
 const none = { docs: false, website: false, os: false };
 const push = (files: string[]) => createConsueloReleasePlan({ eventName: 'push', files });
 describe('production surface release isolation', () => {
-  it('keeps website and Dialer docs edits out of OS authentication releases', () => {
-    expect(push(['packages/dialer-website/src/pages/index.astro'])).toEqual({ ...none, website: true });
-    expect(push(['packages/dialer-documentation/src/content/docs/index.mdx'])).toEqual({ ...none, docs: true });
+  it('keeps preview-only packages out of production delivery jobs', () => {
+    expect(push(['packages/dialer-website/src/pages/index.astro'])).toEqual(none);
+    expect(push(['packages/dialer-documentation/src/content/docs/index.mdx'])).toEqual(none);
+    expect(push(['packages/documentation/src/content/docs/index.mdx'])).toEqual({ ...none, docs: true });
     expect(push(['packages/consuelo-website/src/pages/index.astro'])).toEqual({ ...none, website: true });
   });
   it('keeps runtime surfaces independent and combines simultaneous changes', () => {

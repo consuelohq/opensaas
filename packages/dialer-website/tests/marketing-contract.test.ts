@@ -1,9 +1,21 @@
 import { describe, expect, it } from 'bun:test';
 import { readFileSync, existsSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { pricingPlans } from '../src/data/pricing-content';
 const root = resolve(import.meta.dir, '..');
 const page = (path = '') => readFileSync(resolve(root, 'dist', path, 'index.html'), 'utf8');
 describe('Dialer marketing delivery', () => {
+  it('publishes paid product metadata without an inherited free offer', () => {
+    const entries = [...page().matchAll(/<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g)]
+      .flatMap((match) => { const value = JSON.parse(match[1]); return value['@graph'] ?? [value]; });
+    const application = entries.find((entry) => entry['@type'] === 'SoftwareApplication');
+    expect(application?.name).toBe('Consuelo Dialer');
+    if (application?.offers) {
+      const listedPrices = pricingPlans.map((plan) => Number(plan.price.replace('$', '')));
+      expect(listedPrices).toContain(Number(application.offers.price));
+    }
+  });
+
   it('ships decodable generated application icons', async () => {
     const sharp = (await import('sharp')).default;
     for (const [name, size] of [['favicon-32x32.png', 32], ['apple-touch-icon.png', 180]] as const) {

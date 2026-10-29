@@ -23,8 +23,9 @@ export function createConsueloReleasePlan(input: { eventName: string; target?: s
     if (crossCutting.has(file) || /^tsconfig[^/]*\.json$/.test(file)) {
       return { docs: true, website: true, os: true };
     }
-    if (file.startsWith('packages/documentation/') || file.startsWith('packages/dialer-documentation/')) plan.docs = true;
-    if (file.startsWith('packages/consuelo-website/') || file.startsWith('packages/dialer-website/')) plan.website = true;
+    // Preview packages have no production job until the public-domain cutover.
+    if (file.startsWith('packages/documentation/')) plan.docs = true;
+    if (file.startsWith('packages/consuelo-website/')) plan.website = true;
     if ((file.startsWith('packages/os/') && !file.startsWith('packages/os/tests/')
       && file !== 'packages/os/scripts/production-release-plan.ts')
       || file.startsWith('packages/cli/')

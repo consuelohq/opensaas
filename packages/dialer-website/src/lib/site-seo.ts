@@ -73,17 +73,12 @@ export const getSoftwareApplicationSchema = (
 ): StructuredData => ({
   '@type': 'SoftwareApplication',
   '@id': `${siteMetadata.siteUrl}/#application`,
-  name: 'Consuelo OS',
-  applicationCategory: 'DeveloperApplication',
-  operatingSystem: 'macOS, Linux, Web',
+  name: siteMetadata.siteName,
+  applicationCategory: 'BusinessApplication',
+  operatingSystem: 'Web',
   url: siteMetadata.siteUrl,
   description: siteMetadata.defaultDescription,
   author: { '@id': `${siteMetadata.siteUrl}/#organization` },
-  offers: {
-    '@type': 'Offer',
-    price: '0',
-    priceCurrency: 'USD',
-  },
   ...overrides,
 });
 
