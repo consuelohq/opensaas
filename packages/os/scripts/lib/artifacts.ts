@@ -195,12 +195,17 @@ const CONSUELO_MARK_PATH = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   '../../assets/consuelo-mark.png',
 );
+const CONSUELO_MARK_DARK_PATH = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '../../assets/consuelo-mark-white.png',
+);
 
-function consueloMarkDataUri(): string {
-  if (!fs.existsSync(CONSUELO_MARK_PATH)) {
-    throw new Error(`Consuelo mark asset is missing: ${CONSUELO_MARK_PATH}`);
+function consueloMarkDataUri(theme: 'light' | 'dark' = 'light'): string {
+  const asset = theme === 'dark' ? CONSUELO_MARK_DARK_PATH : CONSUELO_MARK_PATH;
+  if (!fs.existsSync(asset)) {
+    throw new Error(`Consuelo mark asset is missing: ${asset}`);
   }
-  return `data:image/png;base64,${fs.readFileSync(CONSUELO_MARK_PATH).toString('base64')}`;
+  return `data:image/png;base64,${fs.readFileSync(asset).toString('base64')}`;
 }
 
 function nowIso(value?: string): string {
@@ -425,14 +430,17 @@ function renderArtifactsIndex(
   chromeOptions: WorkspaceChromeOptions = {},
 ): string {
   const logoDataUri = consueloMarkDataUri();
+  const darkLogoDataUri = consueloMarkDataUri('dark');
   const entries = catalog.entries
     .filter((entry) => !entry.path.startsWith('/daily-schedules/'))
     .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt));
   const cards = entries.map((entry) => `
-        <article class="post-item" data-template="${escapeHtml(displayFilter(entry))}" data-category="${escapeHtml(entry.category)}">
-          <h3><a href="${escapeHtml(entry.url)}">${escapeHtml(entry.title)}</a></h3>
+        <article class="post-item" data-artifact-row data-template="${escapeHtml(displayFilter(entry))}" data-category="${escapeHtml(entry.category)}">
+          <div class="post-summary">
+            <h3><a href="${escapeHtml(entry.url)}">${escapeHtml(entry.title)}</a></h3>
+            <p>${escapeHtml(entry.path)}</p>
+          </div>
           <div class="post-meta">▣ Updated <time datetime="${escapeHtml(entry.updatedAt)}">${escapeHtml(new Date(entry.updatedAt).toLocaleDateString('en-US'))}</time> · ${entry.versionCount} version${entry.versionCount === 1 ? '' : 's'}</div>
-          <p>${escapeHtml(entry.path)}</p>
           <div class="post-actions"><button type="button" data-share-artifact data-artifact-id="${escapeHtml(entry.id)}" data-artifact-title="${escapeHtml(entry.title)}">Share</button></div>
         </article>`).join('');
   const searchData = JSON.stringify(entries.map((entry) => ({
@@ -460,6 +468,7 @@ function renderArtifactsIndex(
   <meta property="og:url" content="/artifacts" />
   <meta name="twitter:card" content="summary" />
   <link rel="icon" type="image/png" href="${logoDataUri}" />
+  <link rel="icon" type="image/png" media="(prefers-color-scheme: dark)" href="${darkLogoDataUri}" />
   <link rel="apple-touch-icon" href="${logoDataUri}" />
   <style>
     :root { color-scheme: light; --paper:#f6efe4; --surface:#fff9f0; --ink:#251d17; --muted:#6f6256; --quiet:#9b8d7f; --line:#decfbc; --soft:#efe3d2; --accent:#78533d; --accent-strong:#e98262; --accent-soft:#ead5bd; --shadow:0 18px 60px rgba(55,37,20,.14); --site-color-paper:var(--paper); --site-color-ink:var(--ink); --site-color-canvas:#e9e4dc; }
@@ -471,34 +480,38 @@ function renderArtifactsIndex(
     body { font-family:"Geist Mono","Geist",ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace; }
     ::selection { background:var(--accent-soft); color:var(--ink); }
     .shell { width:100%; max-width:none; margin:0 auto; padding:0 clamp(20px, 3.2vw, 70px) 50px; }
-    .topbar { position:sticky; top:0; z-index:20; display:flex; align-items:center; justify-content:space-between; gap:18px; min-height:74px; border-bottom:1px solid var(--line); background:color-mix(in srgb,var(--paper) 86%,transparent); backdrop-filter:blur(18px); }
+    .topbar { position:sticky; top:0; z-index:20; display:flex; align-items:center; justify-content:space-between; gap:18px; min-height:74px; background:color-mix(in srgb,var(--paper) 86%,transparent); backdrop-filter:blur(18px); }
     .brand { display:inline-flex; align-items:center; gap:10px; color:var(--ink); font-size:18px; font-weight:800; text-decoration:none; }
+    .brand picture { display:inline-flex; align-items:center; }
     .brand img { width:24px; height:24px; object-fit:contain; }
     .nav, .filter-row, .search-row { display:flex; align-items:center; gap:9px; flex-wrap:wrap; font-size:14px; }
     .nav a, .post-item h3 a { color:inherit; text-decoration:none; }
     .nav a:hover, .brand:hover, .post-item h3 a:hover, button:hover { color:var(--accent-strong); text-decoration-line:underline; text-decoration-style:dotted; text-underline-offset:4px; }
-    header.hero { padding:58px 0 28px; border-bottom:1px solid var(--line); }
+    header.hero { padding:48px 0 28px; }
     h1 { margin:0 0 20px; font-size:48px; line-height:.98; letter-spacing:-.06em; font-weight:850; }
     .lead { margin:0 0 20px; color:var(--muted); font-size:15px; line-height:1.7; max-width:62ch; }
     .filter-label { color:var(--muted); }
     button { appearance:none; border:0; background:transparent; color:var(--ink); padding:0; font:inherit; cursor:pointer; }
     button.active { color:var(--accent-strong); font-weight:800; }
     button.active::before { content:"["; color:var(--quiet); } button.active::after { content:"]"; color:var(--quiet); }
-    .search-row { margin-top:18px; padding:10px 12px; border:1px solid var(--line); border-radius:14px; background:var(--surface); box-shadow:var(--shadow); }
+    .search-row { margin-top:18px; padding:10px 12px; border-radius:10px; background:var(--surface); }
     .search-input { min-width:0; flex:1 1 220px; border:0; border-bottom:1px solid var(--line); padding:2px 0 5px; background:transparent; color:var(--ink); font:inherit; outline:none; }
-    .section { padding:44px 0 34px; border-bottom:1px solid var(--line); }
+    .section { padding:26px 0 34px; }
     h2 { margin:0 0 24px; font-size:25px; letter-spacing:-.04em; }
-    .post-list { display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap:16px; align-items:start; }
-    .post-item { min-width:0; min-height:164px; border:1px solid var(--line); border-radius:11px; padding:21px 23px; background:var(--surface); overflow-wrap:anywhere; }
+    .post-list { display:grid; grid-template-columns:1fr; gap:6px; }
+    .post-item { display:grid; grid-template-columns:minmax(0,1fr) minmax(180px,280px) 72px; gap:16px; align-items:center; min-width:0; padding:14px 0; background:transparent; overflow-wrap:anywhere; }
+    .post-item:hover { background: transparent; }
+    .post-summary { min-width:0; }
     .post-item h3 { margin:0 0 6px; font-size:17px; line-height:1.45; }
-    .post-meta, .post-item p { margin:0 0 4px; color:var(--quiet); font-size:13px; line-height:1.5; }
-    .post-actions { margin-top:8px; }
+    .post-meta, .post-item p { margin:0; color:var(--quiet); font-size:13px; line-height:1.5; }
+    .post-actions { text-align:right; }
     .post-actions button { color:var(--muted); font-size:13px; }
     .post-actions button[aria-busy="true"] { cursor:wait; opacity:.62; }
     .empty { color:var(--quiet); }
     footer { padding:24px 0 0; color:var(--muted); font-size:13px; }
     [hidden] { display:none !important; }
-    @media (max-width:680px) { .shell { padding-inline:18px; } .post-list { grid-template-columns:1fr; } .topbar { align-items:flex-start; flex-direction:column; padding:20px 0; } header.hero { padding-top:44px; } h1 { font-size:42px; } }
+    @media (max-width:760px) { .post-item { grid-template-columns:minmax(0,1fr) auto; gap:3px 12px; padding:15px 0; } .post-summary { grid-column:1; grid-row:1; } .post-meta { grid-column:1; grid-row:2; } .post-actions { grid-column:2; grid-row:1 / span 2; align-self:center; } }
+    @media (max-width:680px) { .shell { padding-inline:18px; } .topbar { align-items:flex-start; flex-direction:column; padding:20px 0; } header.hero { padding-top:44px; } h1 { font-size:42px; } }
   </style>
 </head>
 <body>
@@ -508,7 +521,10 @@ function renderArtifactsIndex(
       <div class="shell">
         <div class="topbar">
           <a class="brand" href="/artifacts">
-            <img data-consuelo-logo src="${logoDataUri}" alt="Consuelo" width="24" height="24" />
+            <picture class="brand-mark">
+              <source media="(prefers-color-scheme: dark)" srcset="${darkLogoDataUri}" />
+              <img data-consuelo-logo src="${logoDataUri}" alt="Consuelo" width="24" height="24" />
+            </picture>
             <span>Consuelo Artifacts</span>
           </a>
           <nav class="nav" aria-label="Primary"><a href="#recently-updated">Recently Updated</a><button type="button" data-search-toggle>Search</button></nav>

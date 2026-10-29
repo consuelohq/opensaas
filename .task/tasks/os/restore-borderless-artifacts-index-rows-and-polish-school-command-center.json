@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/restore-borderless-artifacts-index-rows-and-polish-school-command-center",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2659,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2659",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-restore-borderless-artifacts-index-rows-and-polish-school-command-center",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_2959b9e92e58",
+  "tmuxSession": "opensaas-os-restore-borderless-artifacts-index-rows-and-poli-2959b9e9",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-restore-borderless-artifacts-index-rows-and-polish-school-command-center/.task/session.json",
+  "createdAt": "2026-10-29T03:10:38.494Z"
+}

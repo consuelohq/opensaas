@@ -375,6 +375,9 @@ describe('runtime bundle contract', () => {
     expect(classifyRuntimeBundlePath('assets/consuelo-mark.png')).toBe(
       'runtime',
     );
+    expect(classifyRuntimeBundlePath('assets/consuelo-mark-white.png')).toBe(
+      'runtime',
+    );
     expect(
       classifyRuntimeBundlePath('manifests/schemas/tool-manifest.schema.json'),
     ).toBe('source-only');
@@ -918,6 +921,10 @@ describe('runtime bundle contract', () => {
         }),
         expect.objectContaining({
           path: 'assets/consuelo-mark.png',
+          role: 'runtime',
+        }),
+        expect.objectContaining({
+          path: 'assets/consuelo-mark-white.png',
           role: 'runtime',
         }),
         expect.objectContaining({
