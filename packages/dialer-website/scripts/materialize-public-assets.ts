@@ -1,6 +1,7 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import sharp from 'sharp';
 
 const packageRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 const assets = [
@@ -26,4 +27,9 @@ for (const asset of assets) {
   const outputPath = join(packageRoot, asset.output);
   await mkdir(dirname(outputPath), { recursive: true });
   await writeFile(outputPath, bytes);
+}
+
+// Generate icons from SVG so publication never rewrites binary source bytes.
+for (const [name, size] of [['favicon-32x32.png', 32], ['apple-touch-icon.png', 180]] as const) {
+  await sharp(join(packageRoot, 'public/favicon.svg')).resize(size, size).png().toFile(join(packageRoot, 'public', name));
 }

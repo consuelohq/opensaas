@@ -2,16 +2,16 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 716,
-    "mappedTestCount": 632,
-    "unmappedTestCount": 84,
-    "ruleCount": 85,
-    "explicitRuleCount": 71,
+    "testFileCount": 717,
+    "mappedTestCount": 634,
+    "unmappedTestCount": 83,
+    "ruleCount": 86,
+    "explicitRuleCount": 72,
     "autoRuleCount": 14,
     "projectCount": 10,
     "packageTestScriptCount": 22,
     "byGroup": {
-      "packages/os/tests": 327,
+      "packages/os/tests": 328,
       "packages/workspace/tests": 66,
       "packages/os/tests/media": 34,
       "packages/consuelo-design/upstream/open-design/apps/daemon": 21,
@@ -101,7 +101,7 @@
       "tests": 1
     },
     "byKind": {
-      "test": 652,
+      "test": 653,
       "spec": 29,
       "__tests__": 11,
       "integration": 9,
@@ -3030,10 +3030,58 @@
             "test",
             "packages/dialer-website/tests/marketing-contract.test.ts"
           ]
+        },
+        {
+          "name": "Dialer website rendered browser contracts",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/dialer-website",
+            "test:browser"
+          ]
         }
       ],
       "critical": true,
       "reason": "The independently Bun-owned Dialer website must install its locked dependencies, materialize brand assets and prove its rendered navigation, pricing and isolated preview boundary.",
+      "origin": "explicit"
+    },
+    {
+      "id": "public-production-release-isolation",
+      "source": [
+        ".github/workflows/consuelo-production-release.yaml",
+        "packages/os/scripts/production-release-plan.ts",
+        "packages/os/tests/production-release-plan.test.ts",
+        "packages/workspace/tests/docs-production-release.test.js"
+      ],
+      "tests": [
+        {
+          "name": "Public production release isolation contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/production-release-plan.test.ts",
+            "packages/workspace/tests/docs-production-release.test.js",
+            "packages/workspace/tests/website-deploy.test.js",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ]
+        },
+        {
+          "name": "Preserved MCP production release security contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/production-release-mcp-security.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Website and docs release changes must preserve the existing Dialer release classifier and keep unrelated pushes from redeploying OS authentication; manual release and MCP security controls remain explicit.",
       "origin": "explicit"
     },
     {
@@ -5803,6 +5851,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/production-release-plan.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/provider-cutover.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -6952,7 +7005,6 @@
     "packages/workspace/tests/deploy-wrappers.test.js",
     "packages/workspace/tests/dialer-scenario-workspace-selection.test.ts",
     "packages/workspace/tests/dialer-validation-runbook.test.ts",
-    "packages/workspace/tests/docs-production-release.test.js",
     "packages/workspace/tests/durable-task-worktrees.test.ts",
     "packages/workspace/tests/embedding-config.test.js",
     "packages/workspace/tests/explore-ranker.test.js",

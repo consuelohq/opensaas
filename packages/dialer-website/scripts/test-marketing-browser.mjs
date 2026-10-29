@@ -117,6 +117,17 @@ try {
  await motionPage.evaluate(()=>window.scrollTo(0,document.documentElement.scrollHeight));
  await motionPage.waitForFunction(()=>!document.querySelector('[data-cloud-reveal]').hasAttribute('inert'));
  await motion.close();
+ const fragmentContext = await browser.newContext({viewport:{width:1440,height:960},reducedMotion:'no-preference'});
+ const fragmentPage = await fragmentContext.newPage();
+ for (const from of [null, '/pricing']) {
+  if (from) await fragmentPage.goto(base+from,{waitUntil:'networkidle'});
+  await fragmentPage.goto(base+'/#features',{waitUntil:'networkidle'});
+  await fragmentPage.waitForFunction(() => {
+   const target=document.getElementById('features');
+   return target && scrollY>100 && target.getBoundingClientRect().top<innerHeight;
+  }, undefined, {timeout:5000});
+ }
+ await fragmentContext.close();
  emit({flow:'pricing-to-setup',querySafety:'pass',internalLinks:linkCount,motion:'pass',artifacts:artifactRoot});
 } finally {
  emit({cleanup:'closing browser'});

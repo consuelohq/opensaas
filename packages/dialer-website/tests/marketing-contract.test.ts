@@ -4,6 +4,15 @@ import { resolve } from 'node:path';
 const root = resolve(import.meta.dir, '..');
 const page = (path = '') => readFileSync(resolve(root, 'dist', path, 'index.html'), 'utf8');
 describe('Dialer marketing delivery', () => {
+  it('ships decodable generated application icons', async () => {
+    const sharp = (await import('sharp')).default;
+    for (const [name, size] of [['favicon-32x32.png', 32], ['apple-touch-icon.png', 180]] as const) {
+      const metadata = await sharp(resolve(root, 'dist', name)).metadata();
+      expect(metadata.format).toBe('png');
+      expect(metadata.width).toBe(size);
+      expect(metadata.height).toBe(size);
+    }
+  });
   it('has its own package and an isolated preview deployment', () => {
     const pkg = JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf8'));
     const config = JSON.parse(readFileSync(resolve(root, 'wrangler.jsonc'), 'utf8'));
