@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/dev-1631-dialer-docs-foundation",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2682,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2682",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1631-dialer-docs-foundation",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_761485f66b70",
+  "tmuxSession": "opensaas-dialer-dev-1631-dialer-docs-foundation-761485f6",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1631-dialer-docs-foundation/.task/session.json",
+  "createdAt": "2026-10-29T18:43:15.520Z"
+}
