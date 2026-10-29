@@ -470,7 +470,7 @@ function renderArtifactsIndex(
     html { scroll-behavior:smooth; }
     body { font-family:"Geist Mono","Geist",ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace; }
     ::selection { background:var(--accent-soft); color:var(--ink); }
-    .shell { max-width:720px; margin:0 auto; padding:0 22px 40px; }
+    .shell { width:100%; max-width:none; margin:0 auto; padding:0 clamp(20px, 3.2vw, 70px) 50px; }
     .topbar { position:sticky; top:0; z-index:20; display:flex; align-items:center; justify-content:space-between; gap:18px; min-height:74px; border-bottom:1px solid var(--line); background:color-mix(in srgb,var(--paper) 86%,transparent); backdrop-filter:blur(18px); }
     .brand { display:inline-flex; align-items:center; gap:10px; color:var(--ink); font-size:18px; font-weight:800; text-decoration:none; }
     .brand img { width:24px; height:24px; object-fit:contain; }
@@ -488,7 +488,8 @@ function renderArtifactsIndex(
     .search-input { min-width:0; flex:1 1 220px; border:0; border-bottom:1px solid var(--line); padding:2px 0 5px; background:transparent; color:var(--ink); font:inherit; outline:none; }
     .section { padding:44px 0 34px; border-bottom:1px solid var(--line); }
     h2 { margin:0 0 24px; font-size:25px; letter-spacing:-.04em; }
-    .post-list { display:grid; gap:26px; }
+    .post-list { display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap:16px; align-items:start; }
+    .post-item { min-width:0; min-height:164px; border:1px solid var(--line); border-radius:11px; padding:21px 23px; background:var(--surface); overflow-wrap:anywhere; }
     .post-item h3 { margin:0 0 6px; font-size:17px; line-height:1.45; }
     .post-meta, .post-item p { margin:0 0 4px; color:var(--quiet); font-size:13px; line-height:1.5; }
     .post-actions { margin-top:8px; }
@@ -497,7 +498,7 @@ function renderArtifactsIndex(
     .empty { color:var(--quiet); }
     footer { padding:24px 0 0; color:var(--muted); font-size:13px; }
     [hidden] { display:none !important; }
-    @media (max-width:680px) { .shell { padding-inline:18px; } .topbar { align-items:flex-start; flex-direction:column; padding:20px 0; } header.hero { padding-top:44px; } h1 { font-size:42px; } }
+    @media (max-width:680px) { .shell { padding-inline:18px; } .post-list { grid-template-columns:1fr; } .topbar { align-items:flex-start; flex-direction:column; padding:20px 0; } header.hero { padding-top:44px; } h1 { font-size:42px; } }
   </style>
 </head>
 <body>

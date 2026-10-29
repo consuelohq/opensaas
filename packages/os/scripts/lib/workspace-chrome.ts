@@ -249,8 +249,8 @@ export function workspaceWindowShellStyles(): string {
   return `
     * { box-sizing: border-box; }
     html { background: var(--site-color-canvas); }
-    body { margin: 0; min-height: 100vh; padding: 14px; background: var(--site-color-canvas); color: var(--site-color-ink); }
-    .workspace-window { width: min(1880px, calc(100vw - 28px)); min-height: calc(100vh - 28px); margin: 0 auto; overflow: clip; border: 1px solid rgba(241, 231, 213, 0.16); border-radius: 18px; background: var(--site-color-paper); box-shadow: 0 34px 110px rgba(0, 0, 0, 0.42); display: grid; grid-template-rows: 42px minmax(0, 1fr); }
+    body { margin: 0; min-height: 100dvh; padding: 14px; background: var(--site-color-canvas); color: var(--site-color-ink); }
+    .workspace-window { width: calc(100vw - 28px); min-height: calc(100dvh - 28px); margin: 0 auto; overflow: clip; border: 1px solid rgba(241, 231, 213, 0.16); border-radius: 18px; background: var(--site-color-paper); box-shadow: 0 34px 110px rgba(0, 0, 0, 0.42); display: grid; grid-template-rows: 42px minmax(0, 1fr); }
     .trxChrome { position: relative; z-index: 70; display: grid; grid-template-columns: minmax(84px, 1fr) auto minmax(84px, 1fr); align-items: center; height: 42px; padding: 0 14px; border-bottom: 1px solid rgba(241, 231, 213, 0.10); background: #151411; color: #d8d0c1; view-transition-name: workspace-chrome; }
     .trxDots { display: flex; align-items: center; gap: 8px; justify-self: start; }
     .trxDot { width: 12px; height: 12px; padding: 0; border: 0; border-radius: 50%; cursor: pointer; box-shadow: inset 0 0 0 1px rgba(0,0,0,.22); }
@@ -261,9 +261,10 @@ export function workspaceWindowShellStyles(): string {
     .trxChromeActions { justify-self: end; min-width: 72px; text-align: right; }
     .trxClock { color: #918a7f; font: 600 12px/1 ui-monospace, SFMono-Regular, Menlo, monospace; font-variant-numeric: tabular-nums; }
     .workspace-view { min-width: 0; min-height: 0; background: var(--site-color-paper); view-transition-name: workspace-body; }
-    @media (max-width: 900px) {
+    /* iPads can report >1200 CSS px in landscape; touch capability closes that gap. */
+    @media (max-width: 1200px), (any-pointer: coarse) {
       body { padding: 0; }
-      .workspace-window { width: 100vw; min-height: 100dvh; border: 0; border-radius: 0; }
+      .workspace-window { width: 100vw; min-height: 100dvh; border: 0; border-radius: 0; box-shadow: none; }
     }
   `;
 }
