@@ -1,3 +1,4 @@
+import { formatTokenCount } from './reading-view';
 import {
   Virtualizer,
   elementScroll,
@@ -18,6 +19,7 @@ import {
   stableTraceKey,
   traceParentKey,
   totalTokens,
+  traceTokenUsage,
   type TraceChildRecord,
   type TraceRecord,
 } from './model';
@@ -917,7 +919,7 @@ function appendRootCells(button: HTMLElement, row: TraceRecord): void {
     cell.append(icon, name);
   });
   appendCell(button, 'trxLatency', formatDuration(row.durationMs, row.latency));
-  appendCell(button, 'trxTokens', formatCompact(totalTokens(row)));
+  appendCell(button, 'trxTokens', formatTokenCount(traceTokenUsage(row).total));
   appendCell(
     button,
     'trxBranch',
@@ -977,7 +979,11 @@ function appendChildCells(
     'trxLatency',
     formatDuration(child.durationMs, child.latency),
   );
-  appendCell(button, 'trxTokens', formatCompact(totalTokens(child)));
+  appendCell(
+    button,
+    'trxTokens',
+    formatTokenCount(traceTokenUsage(child).total),
+  );
   appendCell(
     button,
     'trxBranch',

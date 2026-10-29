@@ -278,7 +278,10 @@ function summarizeInput(
       stripped &&
       stripped !== existing &&
       !looksLikeSourceCode(stripped) &&
-      isUsefulDisplayValue(stripped)
+      isUsefulDisplayValue(stripped) &&
+      !/^(?:inspect source|inspect file contents|read complete|edit source|run verification)$/i.test(
+        stripped,
+      )
     ) {
       return normalizeSeparators(stripped);
     }
@@ -288,7 +291,10 @@ function summarizeInput(
       !visibleInput ||
       visibleInput === code ||
       looksLikeSourceCode(visibleInput) ||
-      !isUsefulDisplayValue(visibleInput)
+      !isUsefulDisplayValue(visibleInput) ||
+      /^(?:inspect source|inspect file contents|read complete|edit source|run verification)$/i.test(
+        visibleInput,
+      )
         ? codeSummary
         : visibleInput;
     return isUsefulDisplayValue(candidate)
@@ -315,7 +321,11 @@ function summarizeInput(
     const action = tool.split('.').at(-1) || 'status';
     if (action === 'status') return 'runtime status';
     if (action === 'update') {
-      return [clean(input?.channel), clean(input?.version)].filter(Boolean).join(' · ') || 'update runtime';
+      return (
+        [clean(input?.channel), clean(input?.version)]
+          .filter(Boolean)
+          .join(' · ') || 'update runtime'
+      );
     }
     return lifecycleInputLabel(action, input);
   }
@@ -395,7 +405,10 @@ function summarizeInput(
     return clean(input?.query) || 'explore workspace';
   }
   if (tool === 'memory') {
-    return clean(input?.keyword ?? input?.query ?? input?.operation) || 'memory request';
+    return (
+      clean(input?.keyword ?? input?.query ?? input?.operation) ||
+      'memory request'
+    );
   }
   if (tool === 'subagent') {
     const provider = clean(input?.provider);
@@ -497,7 +510,20 @@ function summarizeOutput(
   if (tool === 'fs.write') return 'write complete';
   if (tool === 'fs.list') return 'list complete';
   if (tool === 'fs.trash') return 'trash complete';
-  if (tool === 'fs.search' || tool === 'tools.search') return 'search complete';
+  if (tool === 'fs.search' || tool === 'tools.search') {
+    const matches = data?.results ?? data?.tools ?? data?.matches;
+    if (Array.isArray(matches)) {
+      const noun = tool === 'tools.search' ? 'tool' : 'match';
+      return (
+        matches.length +
+        ' ' +
+        noun +
+        (matches.length === 1 ? '' : 's') +
+        ' found'
+      );
+    }
+    return 'search complete';
+  }
   if (tool === 'status') return 'status loaded';
   if (tool === 'stream.context') return 'context loaded';
   if (tool === 'git.diff') return 'diff complete';
@@ -507,7 +533,9 @@ function summarizeOutput(
     if (action === 'update') {
       const lifecycleResult = record(data?.result ?? result?.result);
       const version = clean(
-        lifecycleResult?.resultingVersion ?? lifecycleResult?.version ?? input?.version,
+        lifecycleResult?.resultingVersion ??
+          lifecycleResult?.version ??
+          input?.version,
       );
       return version ? `updated ${version}` : 'update complete';
     }
@@ -529,7 +557,9 @@ function summarizeOutput(
   if (tool === 'verify') return 'verification passed';
   if (tool === 'release') {
     const releaseResult = record(data?.result ?? result?.result);
-    const version = clean(releaseResult?.version ?? data?.version ?? result?.version);
+    const version = clean(
+      releaseResult?.version ?? data?.version ?? result?.version,
+    );
     return version ? `released ${version}` : 'release complete';
   }
   if (tool === 'session.start') return 'session started';
@@ -557,10 +587,12 @@ function summarizeOutput(
   if (tool === 'task.finish') return 'task finished · worktree removed';
   if (tool === 'github') {
     const summary = record(data?.summary ?? result?.summary);
-    const state = clean(summary?.state);
-    const number = clean(summary?.number);
+    const subject = record(summary?.pr ?? summary?.pullRequest) ?? summary;
+    const state = clean(subject?.state);
+    const number = clean(subject?.number);
+    const title = clean(subject?.title);
     return (
-      [state.toLowerCase(), number ? `#${number}` : '']
+      [state.toLowerCase(), number ? `#${number}` : '', title]
         .filter(Boolean)
         .join(' · ') || 'GitHub request complete'
     );
@@ -589,7 +621,11 @@ function summarizeOutput(
 
 function resolvedInput(row: TraceRecord): Record<string, unknown> | null {
   const parsed = parseMaybeJson(
-    row.rawResolvedInputJson ?? row.rawInputJson ?? row.inputObj ?? row.input,
+    row.rawResolvedInputJson ||
+      row.rawInputJson ||
+      row.resolvedInputObj ||
+      row.inputObj ||
+      row.input,
   );
   return record(parsed) ?? record(row.input);
 }
@@ -660,6 +696,19 @@ function summarizeCode(code: string, mode: string): string {
     }
     if (Number.isFinite(milliseconds)) return `wait ${milliseconds}ms`;
   }
+  const subjects = codeFileTargets(code);
+  if (subjects.length > 1)
+    return `${mode === 'edit' ? 'edit' : 'read'} ${subjects.length} files · ${subjects.join(', ')}`;
+  if (subjects.length === 1)
+    return `${mode === 'edit' ? 'edit' : mode === 'verify' ? 'verify' : 'read'} ${subjects[0]}`;
+  const commands = codeCommands(code);
+  if (commands.length)
+    return [...new Set(commands.map(summarizeSpawnedCommand))].join(' · ');
+  const shellLines = code
+    .split(/\n|&&/)
+    .map((line) => summarizeShellCode(line, mode))
+    .filter(Boolean);
+  if (shellLines.length) return [...new Set(shellLines)].join(' · ');
   const fileTarget = codeFileTarget(code);
   if (fileTarget) {
     const verb =
@@ -697,6 +746,11 @@ function isWorkpadActivity(
   row: TraceRecord,
   input: Record<string, unknown> | null,
 ): boolean {
+  if (clean(row.name ?? row.traceName ?? row.tool) === 'code.call') {
+    const targets = codeFileTargets(clean(input?.code));
+    if (targets.length)
+      return targets.every((path) => fileName(path) === 'workpad.md');
+  }
   const values = [
     row.input,
     row.summary,
@@ -724,7 +778,9 @@ function spawnedCommand(code: string): string[] {
     if (call?.[1]) {
       const variable = escapeRegExp(call[1]);
       array = code.match(
-        new RegExp(`(?:const|let|var)\\s+${variable}\\s*=\\s*\\[([\\s\\S]{0,2400}?)\\]\\s*;`),
+        new RegExp(
+          `(?:const|let|var)\\s+${variable}\\s*=\\s*\\[([\\s\\S]{0,2400}?)\\]\\s*;`,
+        ),
       )?.[1];
     }
   }
@@ -778,6 +834,55 @@ function commandProgram(command: string): string {
   const summary = summarizeCommandText(command);
   const first = summary.split(/\s+/)[0] || 'command';
   return fileName(first);
+}
+
+function codeFileTargets(code: string): string[] {
+  const paths = new Set<string>();
+  const add = (value: string) => {
+    if (looksLikeFilePath(value)) paths.add(value);
+  };
+  for (const match of code.matchAll(
+    /(?:Bun\.file|readFileSync|readFile|open|Path)\(\s*['"]([^'"]+)['"]/g,
+  ))
+    add(match[1]);
+  for (const binding of code.matchAll(
+    /\b(?:const\s+|let\s+|var\s+)?([a-zA-Z_$][\w$]*)\s*=\s*(['"][^'"\n]+['"]|\[[^\]]*\])/g,
+  )) {
+    const variable = escapeRegExp(binding[1]);
+    const direct = new RegExp(
+      '(?:Bun\\.file|readFileSync|readFile|open|Path)\\(\\s*' +
+        variable +
+        '\\b',
+    ).test(code);
+    const iteration =
+      new RegExp('\\b(?:in|of)\\s+' + variable + '\\b').test(code) &&
+      /(?:Bun\.file|readFile|open|Path)\(/.test(code);
+    if (direct || iteration)
+      for (const item of binding[2].matchAll(/['"]([^'"]+)['"]/g)) add(item[1]);
+  }
+  return displayPaths([...paths]);
+}
+
+function displayPaths(paths: string[]): string[] {
+  const names = paths.map(fileName);
+  return paths.map((path, index) =>
+    names.filter((name) => name === names[index]).length > 1
+      ? path.replaceAll('\\', '/').split('/').slice(-2).join('/')
+      : names[index],
+  );
+}
+
+function codeCommands(code: string): string[][] {
+  const commands: string[][] = [];
+  for (const array of code.matchAll(
+    /\[\s*['"](?:git|rg|grep|cat|sed|head|tail|bun|bunx|npm|yarn|python3?|node|curl)['"]\s*,[^\]]*\]/g,
+  )) {
+    const args = [...array[0].matchAll(/['"]((?:\\.|[^'"\\])*)['"]/g)].map(
+      (match) => match[1],
+    );
+    if (args.length) commands.push(args);
+  }
+  return commands;
 }
 
 function codeFileTarget(
@@ -957,10 +1062,19 @@ function summarizePaths(
   input: Record<string, unknown> | null,
 ): string {
   if (!input) return '';
-  const paths = stringArray(input.paths ?? input.files);
+  const source = parseMaybeJson(input.paths ?? input.files ?? input.filesJson);
+  const paths = Array.isArray(source)
+    ? source
+        .map((item) =>
+          typeof item === 'string'
+            ? item
+            : clean(record(item)?.path ?? record(item)?.file),
+        )
+        .filter(Boolean)
+    : [];
   const single = clean(input.path ?? input.file);
   if (single) paths.unshift(single);
-  const unique = [...new Set(paths)].map(fileName).filter(isUsefulDisplayValue);
+  const unique = displayPaths([...new Set(paths)]).filter(isUsefulDisplayValue);
   if (!unique.length) return '';
   if (unique.length === 1) return `${verb} ${unique[0]}`;
   return `${verb} ${unique.length} files · ${unique.join(', ')}`;

@@ -25,7 +25,7 @@ describe('trace inspector reading and metrics', () => {
       input_json: '"' + 'x'.repeat(40) + '"',
       result_json: '"' + 'y'.repeat(40) + '"',
     });
-    expect(traceTokenUsage(missing).total.estimated).toBe(true);
+    expect(traceTokenUsage(missing).total.value).toBeNull();
     const zero = sanitizeTraceHistoryRowForTest({
       rowid: 2,
       input_tokens: 0,
@@ -57,15 +57,15 @@ describe('trace inspector reading and metrics', () => {
     ).toEqual({ value: 20, estimated: false });
   });
 
-  it('estimates historical payload directions and marks them explicitly', () => {
+  it('keeps absent historical usage unknown instead of estimating payload size', () => {
     const usage = traceTokenUsage({
       rawInputJson: 'x'.repeat(40),
       rawResultJson: 'y'.repeat(80),
     });
-    expect(usage.input).toEqual({ value: 10, estimated: true });
-    expect(usage.output).toEqual({ value: 20, estimated: true });
-    expect(usage.total).toEqual({ value: 30, estimated: true });
-    expect(formatTokenCount(usage.total)).toBe('≈30');
+    expect(usage.input).toEqual({ value: null, estimated: false });
+    expect(usage.output).toEqual({ value: null, estimated: false });
+    expect(usage.total).toEqual({ value: null, estimated: false });
+    expect(formatTokenCount(usage.total)).toBe('—');
   });
 
   it('does not invent a directional split from a recorded total or invent a missing count', () => {
@@ -218,7 +218,7 @@ describe('trace inspector reading and metrics', () => {
         { rawResultJson: JSON.stringify(result) },
         'output',
       ),
-    ).toEqual(result.data);
+    ).toEqual({ stdout: 'hello' });
     const domain = { data: { records: [1, 2] }, page: 2 };
     expect(inspectorReadingValue({ outputObj: domain }, 'output')).toEqual(
       domain,

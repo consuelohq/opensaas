@@ -2208,6 +2208,10 @@
     "scripts/workspace.ts": {
       "status": "same",
       "reason": "Byte-identical in packages/workspace and packages/os; keep monitored so later drift becomes visible."
+    },
+    "scripts/lib/trace-site-inspector/tool-presentation.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned semantic trace presentation keeps captured tool inputs and results readable without vendor template changes."
     }
   },
   "highRiskScripts": [
