@@ -44,6 +44,44 @@ function callout(label: string, body: string): string {
   return [`> [!${label}]`, ...lines.map((line) => (line ? `> ${line}` : '>'))].join('\n');
 }
 
+function convertStarlightDirectives(source: string): string {
+  const lines = source.split(/\r?\n/);
+  const output: string[] = [];
+  let fence: { marker: string; length: number } | undefined;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const fenceMatch = line.match(/^\s{0,3}(`{3,}|~{3,})/);
+    if (fence) {
+      output.push(line);
+      if (fenceMatch && fenceMatch[1][0] === fence.marker
+        && fenceMatch[1].length >= fence.length && /^\s{0,3}(`{3,}|~{3,})\s*$/.test(line)) fence = undefined;
+      continue;
+    }
+    if (fenceMatch) {
+      fence = { marker: fenceMatch[1][0], length: fenceMatch[1].length };
+      output.push(line);
+      continue;
+    }
+
+    const directive = line.match(/^\s*:::(note|warning)(?:\[([^\]\r\n]+)\])?\s*$/i);
+    if (directive) {
+      let end = i + 1;
+      while (end < lines.length && !/^\s*:::\s*$/.test(lines[end])) end++;
+      if (end < lines.length) {
+        const title = directive[2]?.trim();
+        const body = [...(title ? [`**${title}**`] : []), ...lines.slice(i + 1, end)].join('\n');
+        output.push(callout(directive[1].toUpperCase(), body));
+        i = end;
+        continue;
+      }
+    }
+    output.push(line);
+  }
+
+  return output.join('\n');
+}
+
 export function normalizeMdxToMarkdown(source: string): string {
   const { body: withoutFrontmatter, title } = stripFrontmatter(source);
   let markdown = removeRuntimeImports(withoutFrontmatter);
@@ -53,6 +91,7 @@ export function normalizeMdxToMarkdown(source: string): string {
     (_match, name: string, body: string) =>
       callout(name === 'Warning' ? 'WARNING' : name === 'AgentContext' ? 'TIP' : 'NOTE', body),
   );
+  markdown = convertStarlightDirectives(markdown);
 
   markdown = markdown.replace(
     /<Card\s+([^>]*?)>([\s\S]*?)<\/Card>/g,
