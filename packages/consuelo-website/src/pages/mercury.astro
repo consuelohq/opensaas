@@ -1,4 +1,5 @@
 ---
+import { withSiteBase } from '../lib/public-path';
 import SiteFooter from '../components/site/SiteFooter.astro';
 import SiteHeader from '../components/site/SiteHeader.astro';
 import { mercuryFaqItems } from '../data/mercury-content';
@@ -40,10 +41,10 @@ const steps = [
       <p class="launch-copy">Mercury handles hosted dialing, AI models, and infrastructure so your team can start executing instead of configuring providers.</p>
       <div class="mercury-hero__icons">
         {icons.map((icon) => (
-          <img src={icon.src} alt={icon.alt} width="20" height="20" class="mercury-hero__icon" />
+          <img src={withSiteBase(icon.src)} alt={icon.alt} width="20" height="20" class="mercury-hero__icon" />
         ))}
       </div>
-      <a class="launch-button launch-button--sm launch-mono" href={siteLinks.app}>Get started with Mercury ↗</a>
+      <a class="launch-button launch-button--sm launch-mono" href={withSiteBase(siteLinks.app)}>Get started with Mercury ↗</a>
       <p class="launch-copy mercury-hero__pricing">$20 pay as you go balance (+$1.23 card processing fee)</p>
       <p class="launch-copy mercury-hero__note">Use with any plan. Set monthly spend limits. Cancel any time.</p>
     </div>
@@ -72,7 +73,7 @@ const steps = [
           <span class="mercury-step__n launch-mono">[{step.n}]</span>
           {step.text}{' '}
           {step.link && step.href && (
-            <a class="launch-inline-link" href={step.href}>{step.link}</a>
+            <a class="launch-inline-link" href={withSiteBase(step.href)}>{step.link}</a>
           )}
           {step.after && (
             <span class="mercury-step__after">{' '}{step.after}</span>
@@ -86,7 +87,7 @@ const steps = [
     <div class="launch-content launch-content--wide mercury-block">
       <p class="mercury-block__eyebrow launch-mono">Your privacy is important to us</p>
       <details class="mercury-expandable">
-        <summary class="mercury-expandable__trigger launch-mono" style="color: var(--launch-muted)">All Mercury providers are hosted in the US. Providers follow a zero-retention policy and do not use your data for model training, with the <a class="launch-inline-link" href={siteLinks.docs}>following exceptions</a>.</summary>
+        <summary class="mercury-expandable__trigger launch-mono" style="color: var(--launch-muted)">All Mercury providers are hosted in the US. Providers follow a zero-retention policy and do not use your data for model training, with the <a class="launch-inline-link" href={withSiteBase(siteLinks.docs)}>following exceptions</a>.</summary>
       </details>
     </div>
   </section>

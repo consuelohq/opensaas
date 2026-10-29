@@ -1,4 +1,5 @@
 ---
+import { withSiteBase } from '../../lib/public-path';
 // Button
 // ------------
 // Description: Buttons are interactive elements activated by a user with a mouse, keyboard, or tap
@@ -39,7 +40,7 @@ const {
 {
 	type === 'link' || link ? (
 		<a
-			href={link}
+			href={withSiteBase(link)}
 			target={link?.startsWith('http') ? '_blank' : '_self'}
 			class:list={[
 				'button',

@@ -1,0 +1,20 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "consuelo-os-docs-preview",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "assets": {
+    "directory": "./dist-os/client",
+    "binding": "ASSETS"
+  },
+  "services": [
+    {
+      "binding": "LEGACY_TRANSLATION",
+      "service": "consuelo-docs"
+    }
+  ],
+  "workers_dev": true,
+  "routes": []
+}

@@ -58,7 +58,9 @@ describe('Dialer marketing delivery', () => {
     for (const route of ['pricing', 'get-started', 'guides', 'how-it-works', 'contact', 'privacy', 'terms']) {
       expect(existsSync(resolve(root, 'dist', route, 'index.html'))).toBe(true);
     }
-    expect(readFileSync(resolve(root, 'dist', 'robots.txt'), 'utf8')).toContain('Disallow: /');
-    expect(page()).toContain('noindex');
+    const production = process.env.PUBLIC_SITE_CHANNEL === 'production';
+    expect(readFileSync(resolve(root, 'dist', 'robots.txt'), 'utf8')).toContain(production ? 'Allow: /' : 'Disallow: /');
+    expect(page()).toContain(production ? 'index,follow' : 'noindex');
+    expect(page()).toContain(`rel="canonical" href="${production ? 'https://consuelohq.com' : 'https://consuelo-dialer-website-preview.pages.dev'}/"`);
   });
 });

@@ -1,4 +1,5 @@
 ---
+import { withSiteBase } from '../lib/public-path';
 import SiteFooter from '../components/site/SiteFooter.astro';
 import SiteHeader from '../components/site/SiteHeader.astro';
 import MarketingLayout from '../layouts/MarketingLayout.astro';
@@ -39,7 +40,7 @@ const description = 'Get help with Consuelo OS, Consuelo Cloud, and the Consuelo
             <p class="site-eyebrow">Sales and implementation</p>
             <h2>Plan a rollout or implementation.</h2>
             <p>Use the contact route for workspace design, onboarding, managed infrastructure, or a broader deployment conversation.</p>
-            <a class="site-button site-button--secondary" href="/contact">Contact Consuelo</a>
+            <a class="site-button site-button--secondary" href={withSiteBase("/contact")}>Contact Consuelo</a>
           </article>
         </div>
       </div>

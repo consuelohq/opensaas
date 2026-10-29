@@ -1,5 +1,8 @@
-<a class="consuelo-site-title" href="/" aria-label="Docs">
-  <img aria-hidden="true" alt="" height="28" src="/favicon.svg" width="28" />
+---
+import { withDocsBase } from '../lib/public-path';
+---
+<a class="consuelo-site-title" href={withDocsBase("/")} aria-label="Docs">
+  <img aria-hidden="true" alt="" height="28" src={withDocsBase("/favicon.svg")} width="28" />
   <span class="consuelo-site-title-slash" aria-hidden="true">/</span>
   <span class="consuelo-site-title-label" translate="no">Docs</span>
 </a>

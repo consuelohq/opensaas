@@ -1,4 +1,5 @@
 ---
+import { withSiteBase } from '../../../../lib/public-path';
 // Card
 // ------------
 // Description: the basic card foundation. Contains the background, shadow and border radius
@@ -16,7 +17,7 @@ const { link, classes } = Astro.props
 
 {
 	link ? (
-		<a href={link} class:list={['card', { [`${classes}`]: classes }]}>
+		<a href={withSiteBase(link)} class:list={['card', { [`${classes}`]: classes }]}>
 			<slot />
 		</a>
 	) : (

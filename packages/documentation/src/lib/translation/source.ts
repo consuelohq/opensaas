@@ -1,3 +1,4 @@
+import { stripDocsBase } from '../public-path';
 import { extractTranslationSegments } from './text';
 
 const docsModules = import.meta.glob<string>('../../content/docs/**/*.{md,mdx}', {
@@ -18,7 +19,7 @@ export type DocumentationTranslationSource = {
 export function normalizeDocumentationPath(pathname: string | null): string | null {
   if (!pathname) return null;
   const withoutOrigin = pathname.startsWith('http') ? new URL(pathname).pathname : pathname;
-  const clean = withoutOrigin.split('?')[0]?.split('#')[0]?.replace(/^\/+/, '').replace(/\/+$/, '') ?? '';
+  const clean = stripDocsBase(withoutOrigin).split('?')[0]?.split('#')[0]?.replace(/^\/+/, '').replace(/\/+$/, '') ?? '';
   if (clean.startsWith('api/') || clean.startsWith('_astro/')) return null;
   return clean === '' ? 'index' : clean;
 }

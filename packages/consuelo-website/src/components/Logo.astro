@@ -1,4 +1,5 @@
 ---
+import { withSiteBase } from '../lib/public-path';
 type Props = {
   class?: string;
   width?: number;
@@ -8,7 +9,7 @@ const { class: className = '', width = 120, height } = Astro.props;
 ---
 
 <span class:list={['logo', className]}>
-  <img src="/images/logo/logo.svg" alt="Consuelo" width={width} height={height} class="logo-img" />
+  <img src={withSiteBase("/images/logo/logo.svg")} alt="Consuelo" width={width} height={height} class="logo-img" />
 </span>
 
 <style>

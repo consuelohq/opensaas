@@ -1,4 +1,5 @@
 ---
+import { withSiteBase } from '../../lib/public-path';
 export const prerender = true;
 import { getCollection } from "astro:content";
 import Layout from "@/layouts/Layout.astro";
@@ -63,7 +64,7 @@ const recentPosts = sortedPosts
     }
 
 <div class="my-8 text-center">
-  <LinkButton href="/blog/posts/">
+  <LinkButton href={withSiteBase("/blog/posts/")}>
     All Posts
     <IconArrowRight class="inline-block rtl:-rotate-180" />
   </LinkButton>

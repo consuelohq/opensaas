@@ -22,3 +22,5 @@ pnpm-debug.log*
 
 # Cloudflare local build/dev state
 .wrangler/
+
+/dist-os/

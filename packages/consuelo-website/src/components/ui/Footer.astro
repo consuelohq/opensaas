@@ -1,4 +1,5 @@
 ---
+import { withSiteBase } from '../../lib/public-path';
 // Footer
 // ------------
 // Description: the website footer is the section of content
@@ -21,9 +22,9 @@ const { footerAbout, footerColumns, subFooter } = footerNavigationData
 		<div class="footer__container">
 			<div class="footer__cols">
 				<div class="footer__col">
-					<a aria-label="webiste logo" aria-current="page" class="footer__main-brand" href="/">
-						<img src={footerAbout.logo.src} alt={footerAbout.logo.alt} width="32" height="32" class="block dark:hidden" />
-						{footerAbout.logo.darkSrc && <img src={footerAbout.logo.darkSrc} alt={footerAbout.logo.alt} width="32" height="32" class="hidden dark:block" />}
+					<a aria-label="webiste logo" aria-current="page" class="footer__main-brand" href={withSiteBase("/")}>
+						<img src={withSiteBase(footerAbout.logo.src)} alt={footerAbout.logo.alt} width="32" height="32" class="block dark:hidden" />
+						{footerAbout.logo.darkSrc && <img src={withSiteBase(footerAbout.logo.darkSrc)} alt={footerAbout.logo.alt} width="32" height="32" class="hidden dark:block" />}
 						{footerAbout.logo.text}
 					</a>
 					<p>
@@ -37,7 +38,7 @@ const { footerAbout, footerColumns, subFooter } = footerNavigationData
 							<ul>
 								{column.subCategories.map((subCategory) => (
 									<li>
-										<a href={subCategory.subCategoryLink}> {subCategory.subCategory} </a>
+										<a href={withSiteBase(subCategory.subCategoryLink)}> {subCategory.subCategory} </a>
 									</li>
 								))}
 							</ul>
@@ -58,7 +59,7 @@ const { footerAbout, footerColumns, subFooter } = footerNavigationData
 						{
 							socialLinks.map((social) => (
 								<li>
-									<a href={social.link} aria-label={social.name}>
+									<a href={withSiteBase(social.link)} aria-label={social.name}>
 										<Icon name={social.icon} />
 									</a>
 								</li>

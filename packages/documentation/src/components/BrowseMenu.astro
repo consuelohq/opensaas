@@ -1,10 +1,12 @@
 ---
+import { withDocsBase } from '../lib/public-path';
 import { globalSectionLinks } from '../lib/docs-navigation';
 
 const osHref = 'https://os.consuelohq.com/';
+const website = (import.meta.env.PUBLIC_OS_WEBSITE_URL ?? 'https://consuelohq.com').replace(/\/$/, '');
 const learnLinks = [
-  { label: 'Changelog', href: 'https://consuelohq.com/changelog', external: true },
-  { label: 'Blog', href: 'https://consuelohq.com/blog', external: true },
+  { label: 'Changelog', href: website + '/changelog', external: true },
+  { label: 'Blog', href: website + '/blog', external: true },
   { label: 'Community', href: 'https://discord.gg/87YtkVUBvc', external: true },
   { label: 'Templates', href: '/build/skills/bundled/', external: false },
 ] as const;
@@ -41,7 +43,7 @@ const learnLinks = [
           </summary>
           <ul>
             {globalSectionLinks.map((item) => (
-              <li><a href={item.href}>{item.label}</a></li>
+              <li><a href={withDocsBase(item.href)}>{item.label}</a></li>
             ))}
           </ul>
         </details>
@@ -55,7 +57,7 @@ const learnLinks = [
             {learnLinks.map((item) => (
               <li>
                 <a
-                  href={item.href}
+                  href={withDocsBase(item.href)}
                   target={item.external ? '_blank' : undefined}
                   rel={item.external ? 'noopener noreferrer' : undefined}
                 >
@@ -68,10 +70,10 @@ const learnLinks = [
         </details>
 
         <section class="docs-browse-getting-started" aria-labelledby="docs-browse-getting-started">
-          <a id="docs-browse-getting-started" class="getting-started-link" href={osHref}>Getting started</a>
+          <a id="docs-browse-getting-started" class="getting-started-link" href={withDocsBase(osHref)}>Getting started</a>
           <div class="docs-browse-actions">
-            <a href={osHref}>Sign up</a>
-            <a href={osHref}>Log in</a>
+            <a href={withDocsBase(osHref)}>Sign up</a>
+            <a href={withDocsBase(osHref)}>Log in</a>
           </div>
         </section>
       </div>

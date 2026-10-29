@@ -1,4 +1,5 @@
 ---
+import { withSiteBase } from '../../lib/public-path';
 import { homeFaqItems } from '../../data/home-content';
 ---
 
@@ -36,7 +37,7 @@ import { homeFaqItems } from '../../data/home-content';
               <p>{item.answer}</p>
             )}
             {item.linkHref && item.linkLabel && (
-              <a class="home-faq__link" href={item.linkHref}>{item.linkLabel} →</a>
+              <a class="home-faq__link" href={withSiteBase(item.linkHref)}>{item.linkLabel} →</a>
             )}
           </div>
         </details>

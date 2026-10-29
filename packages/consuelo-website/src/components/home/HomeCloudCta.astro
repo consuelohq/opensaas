@@ -1,4 +1,5 @@
 ---
+import { withSiteBase } from '../../lib/public-path';
 import { homeWorkspaceClose } from '../../data/home-content';
 ---
 
@@ -16,8 +17,8 @@ import { homeWorkspaceClose } from '../../data/home-content';
     </h2>
     <p class="cloud-cta__description">{homeWorkspaceClose.description}</p>
     <div class="cloud-cta__actions">
-      <a class="cloud-cta__primary" href={homeWorkspaceClose.primaryHref}>{homeWorkspaceClose.primaryLabel}</a>
-      <a class="cloud-cta__secondary" href={homeWorkspaceClose.secondaryHref}>{homeWorkspaceClose.secondaryLabel}</a>
+      <a class="cloud-cta__primary" href={withSiteBase(homeWorkspaceClose.primaryHref)}>{homeWorkspaceClose.primaryLabel}</a>
+      <a class="cloud-cta__secondary" href={withSiteBase(homeWorkspaceClose.secondaryHref)}>{homeWorkspaceClose.secondaryLabel}</a>
     </div>
   </div>
 

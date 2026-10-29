@@ -11,7 +11,7 @@
     "dev": "astro dev",
     "build": "bun scripts/materialize-public-assets.ts && astro check && astro build",
     "preview": "astro preview",
-    "test": "bun test tests/marketing-contract.test.ts",
+    "test": "bun test tests",
     "test:browser": "node scripts/test-marketing-browser.mjs",
     "generate:social-card": "bun scripts/generate-social-card.ts",
     "astro": "astro"

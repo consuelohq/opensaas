@@ -112,7 +112,7 @@ try {
    }
    linkCount++;
   }
-  assert.match(await page.locator('meta[name="robots"]').getAttribute('content'),/noindex/);
+  assert.match(await page.locator('meta[name="robots"]').getAttribute('content'),process.env.PUBLIC_SITE_CHANNEL === 'production' ? /index,follow/ : /noindex/);
  }
  await page.goto(base+'/pricing',{waitUntil:'networkidle'});
  await page.screenshot({path:join(artifactRoot,'pricing-1440x960.png'),fullPage:true});
