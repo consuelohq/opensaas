@@ -1,0 +1,20 @@
+{
+  "files": [
+    ".task/dialer/dev-1623-customer-upgrade-migration/workpad.md",
+    "areas/dialer/AGENTS.md",
+    "packages/dialer-server/package.json",
+    "packages/dialer-server/scripts/local-dialer-lab.ts",
+    "packages/dialer-server/src/database/migrations.test.ts",
+    "packages/dialer-server/src/embed-bootstrap.contract.test.ts",
+    "packages/dialer-server/src/inbound/telephony.integration.test.ts",
+    "packages/dialer-server/src/lab/learning-rollback-scenario.ts",
+    "packages/lead-connector/src/application/embed-bootstrap.ts",
+    "packages/lead-connector/src/application/marketplace-oauth.ts",
+    "packages/lead-connector/src/infrastructure/persistent-stores.ts",
+    "packages/lead-connector/src/ports/index.ts",
+    "packages/lead-connector/src/user-context-decoder.contract.test.ts",
+    "packages/os/skills/task/SKILL.md",
+    "packages/workspace/senior-engineer.md"
+  ],
+  "updatedAt": "2026-10-29T19:55:12.017Z"
+}
