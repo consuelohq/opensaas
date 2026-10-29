@@ -27,7 +27,21 @@ describe('Dialer marketing delivery', () => {
     const displaced = routes(resolve(root, '../consuelo-website/src/pages')).filter(route => route !== '/404' && !route.includes('[') && !owned.has(route));
     expect(displaced.length).toBeGreaterThan(5);
     expect(displaced.filter(route => !matches(route))).toEqual([]);
-    for (const route of ['/tags/ai/', '/og/example.png', '/sitemap-index.xml', '/sitemap-0.xml']) expect(matches(route), route).toBe(true);
+    for (const route of ['/tags/ai/', '/og/example.png']) expect(matches(route), route).toBe(true);
+  });
+  it('publishes product-owned sitemaps without authentication or OS URLs', () => {
+    const production = process.env.PUBLIC_SITE_CHANNEL === 'production';
+    const origin = production ? 'https://consuelohq.com' : 'https://consuelo-dialer-website-preview.pages.dev';
+    const index = readFileSync(resolve(root, 'dist/sitemap-index.xml'), 'utf8');
+    const sitemap = readFileSync(resolve(root, 'dist/sitemap-0.xml'), 'utf8');
+    expect(index).toContain(origin + '/sitemap-0.xml');
+    const paths = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(match => new URL(match[1]).pathname.replace(/\/$/, '') || '/');
+    for (const path of ['/', '/pricing', '/get-started', '/guides']) expect(paths).toContain(path);
+    expect(paths.some(path => /^\/(calls|login|about|404)(\/|\.|$)/.test(path))).toBe(false);
+    expect(sitemap).not.toContain('os.consuelohq.com');
+    expect(readFileSync(resolve(root, 'public/_redirects'), 'utf8')).not.toMatch(/^\/sitemap-(?:index|0)\.xml\s/m);
+    const robots = readFileSync(resolve(root, 'dist/robots.txt'), 'utf8');
+    if (production) expect(robots).toContain('Sitemap: https://consuelohq.com/sitemap-index.xml');
   });
   it('publishes paid product metadata without an inherited free offer', () => {
     const entries = [...page().matchAll(/<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g)]
