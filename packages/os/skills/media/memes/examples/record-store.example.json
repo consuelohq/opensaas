@@ -1,0 +1,67 @@
+{
+  "source": {
+    "path": "sources/clean-movie.jpg",
+    "url": "https://gcp-na-images.contentstack.com/v3/assets/bltea6093859af6183b/blt799f9b34ce89ba63/69887ce50a4a2279ee9c84dd/500-days-of-summer_55cc0128.jpg",
+    "crop": [
+      560,
+      0,
+      3480,
+      2560
+    ]
+  },
+  "canvas": {
+    "width": 1200,
+    "height": 1200
+  },
+  "layers": [
+    {
+      "type": "image",
+      "path": "sources/codex.png",
+      "x": 101,
+      "y": 632,
+      "width": 245,
+      "height": 245
+    },
+    {
+      "type": "image",
+      "path": "sources/grok.png",
+      "x": 832,
+      "y": 643,
+      "width": 216,
+      "height": 216,
+      "corner_radius": 37
+    },
+    {
+      "type": "text",
+      "text": "He was a",
+      "x": 53,
+      "y": 568,
+      "size": 58,
+      "stroke_width": 4
+    },
+    {
+      "type": "text",
+      "text": "She was a",
+      "x": 805,
+      "y": 568,
+      "size": 58,
+      "stroke_width": 4
+    },
+    {
+      "type": "text",
+      "text": "boy",
+      "x": 279,
+      "y": 861,
+      "size": 58,
+      "stroke_width": 4
+    },
+    {
+      "type": "text",
+      "text": "girl",
+      "x": 929,
+      "y": 869,
+      "size": 58,
+      "stroke_width": 4
+    }
+  ]
+}

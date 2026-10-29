@@ -1,0 +1,29 @@
+{
+  "name": "media",
+  "title": "Media",
+  "description": "Use for Consuelo OS media work such as source-preserving image edits, memes, SVG logo overlays, screenshots, clip preparation, and export. Routes meme requests to the nested memes subskill.",
+  "trigger": "Use when a user wants to find, download, inspect, edit, compose, validate, or export image, meme, SVG, screenshot, audio, or video assets on their OS-connected computer; use the memes subskill for static meme edits.",
+  "entrypoint": "SKILL.md",
+  "load": {
+    "type": "resource",
+    "path": "packages/os/skills/media/SKILL.md"
+  },
+  "permission": "guidance",
+  "requiresApproval": false,
+  "subskills": [
+    "memes"
+  ],
+  "capabilities": [
+    "media",
+    "image-editing",
+    "memes",
+    "asset-retrieval",
+    "svg",
+    "quality-assurance"
+  ],
+  "tools": [
+    "os.get_steering",
+    "os.call"
+  ],
+  "status": "active"
+}
