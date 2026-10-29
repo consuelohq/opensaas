@@ -1,0 +1,16 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/redirect-legacy-device-login-to-canonical-os-authority",
+  "baseBranch": "stream/website",
+  "sourceBranch": "stream/website",
+  "startFrom": "stream",
+  "prNumber": 2665,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2665",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-redirect-legacy-device-login-to-canonical-os-authority",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_b282d472cf18",
+  "tmuxSession": "opensaas-website-redirect-legacy-device-login-to-canonical-os-aut-b282d472",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-redirect-legacy-device-login-to-canonical-os-authority/.task/session.json",
+  "createdAt": "2026-10-29T05:03:18.284Z"
+}

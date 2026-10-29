@@ -14,7 +14,7 @@ try {
     page.setDefaultTimeout(10000);
     const errors = [];
     page.on('pageerror', e => errors.push(e.message));
-    page.on('response', r => { if ((r.url().startsWith(website + '/about/') || r.url().startsWith(docs + '/docs/')) && r.status() >= 400) errors.push(r.status() + ' ' + r.url()); });
+    page.on('response', r => { if ((r.url().startsWith(website + '/') || r.url().startsWith(docs + '/')) && r.status() >= 400) errors.push(r.status() + ' ' + r.url()); });
     for (const route of ['/about/', '/about/pricing/', '/about/blog/']) {
       const response = await page.goto(website + route, { waitUntil: 'domcontentloaded' });
       assert.equal(response.status(), 200);
@@ -22,7 +22,7 @@ try {
       await page.waitForFunction(() => [...document.images].every(i => i.complete));
       assert.match(await page.locator('link[rel=canonical]').getAttribute('href'), /^https:\/\/os\.consuelohq\.com\/about/);
       assert.deepEqual(await page.locator('img').evaluateAll(images => images.filter(i => !i.complete || !i.naturalWidth).map(i => i.src)), []);
-      assert.deepEqual(await page.locator('a[href],img[src]').evaluateAll(nodes => nodes.map(n => n.getAttribute('href') || n.getAttribute('src')).filter(v => v.startsWith('/') && !v.startsWith('//') && !v.startsWith('/about/'))), []);
+      assert.deepEqual(await page.locator('a[href],img[src],video[poster],source[src]').evaluateAll(nodes => nodes.map(n => n.getAttribute('href') || n.getAttribute('src') || n.getAttribute('poster')).filter(v => v.startsWith('/') && !v.startsWith('//') && !v.startsWith('/about/'))), []);
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1), false);
     }
     await page.goto(docs + '/docs/', { waitUntil: 'domcontentloaded' });
