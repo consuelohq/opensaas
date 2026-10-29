@@ -2,17 +2,17 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 712,
-    "mappedTestCount": 629,
+    "testFileCount": 714,
+    "mappedTestCount": 631,
     "unmappedTestCount": 83,
-    "ruleCount": 82,
-    "explicitRuleCount": 69,
+    "ruleCount": 83,
+    "explicitRuleCount": 70,
     "autoRuleCount": 13,
     "projectCount": 9,
     "packageTestScriptCount": 20,
     "byGroup": {
-      "packages/os/tests": 327,
-      "packages/workspace/tests": 65,
+      "packages/os/tests": 328,
+      "packages/workspace/tests": 66,
       "packages/os/tests/media": 34,
       "packages/consuelo-design/upstream/open-design/apps/daemon": 21,
       "packages/dialer-server/src": 19,
@@ -99,7 +99,7 @@
       "tests": 1
     },
     "byKind": {
-      "test": 648,
+      "test": 650,
       "spec": 29,
       "__tests__": 11,
       "integration": 9,
@@ -162,6 +162,8 @@
         "packages/os/tests/verify-run-state.test.js",
         "packages/workspace/scripts/review.js",
         "packages/workspace/scripts/task-push.js",
+        "packages/os/scripts/task-push.js",
+        "packages/workspace/tests/task-push-binary.test.ts",
         "packages/workspace/scripts/lib/verification.js",
         "packages/workspace/scripts/confirm.js",
         "packages/os/scripts/confirm.js"
@@ -176,12 +178,45 @@
             "run",
             "packages/workspace/tests/verification.test.js",
             "packages/workspace/tests/verify-run-state.test.js",
-            "packages/os/tests/verify-run-state.test.js"
+            "packages/os/tests/verify-run-state.test.js",
+            "packages/workspace/tests/task-push-binary.test.ts",
+            "packages/workspace/tests/task-push-local-sync.test.ts",
+            "packages/os/tests/task-push-local-sync.test.ts",
+            "packages/workspace/tests/task-push-session.test.ts"
           ]
         }
       ],
       "critical": true,
       "reason": "Review, verify, and task push changes must prove publish-gate behavior.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-task-push-binary-publication",
+      "source": [
+        "packages/os/scripts/task-push.js"
+      ],
+      "tests": [
+        {
+          "name": "OS task.push exact-byte GitHub blob and local-sync contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/task-push-binary.test.ts",
+            "packages/workspace/tests/task-push-local-sync.test.ts",
+            "packages/os/tests/task-push-local-sync.test.ts",
+            "packages/workspace/tests/github.test.ts",
+            "packages/os/tests/github.test.ts",
+            "packages/workspace/tests/verification.test.js",
+            "packages/workspace/tests/verify-run-state.test.js",
+            "packages/os/tests/verify-run-state.test.js"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "OS task.push byte-transport edits require strict blob, GitHub, publish-gate and local-sync regressions without selecting unrelated package-wide daemon tests.",
       "origin": "explicit"
     },
     {
@@ -6231,6 +6266,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/workspace-fluid-layout.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/workspace-gateway-contract.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -6682,6 +6722,11 @@
     },
     {
       "path": "packages/workspace/tests/task-pr-repository-recovery.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/workspace/tests/task-push-binary.test.ts",
       "group": "packages/workspace/tests",
       "kind": "test"
     },

@@ -149,6 +149,29 @@ describe('test selection registry', () => {
     fs.rmSync(out, { force: true });
   }, 15_000);
 
+  it('routes OS task.push binary changes to critical transport tests instead of unrelated package-wide daemon tests', () => {
+    const data = json(run([
+      'check',
+      '--changed-file',
+      'packages/os/scripts/task-push.js',
+      '--json',
+    ]));
+    const ids = data.matchedRules.map((rule) => rule.id);
+    const transportSuite = data.selectedSuites.find(
+      (suite) => suite.ruleId === 'os-task-push-binary-publication',
+    );
+
+    expect(ids).toContain('os-task-push-binary-publication');
+    expect(ids).not.toContain('auto:@consuelo/os:package-test');
+    expect(transportSuite?.critical).toBe(true);
+    expect(transportSuite?.command).toEqual(expect.arrayContaining([
+      'packages/workspace/tests/task-push-binary.test.ts',
+      'packages/workspace/tests/task-push-local-sync.test.ts',
+      'packages/os/tests/task-push-local-sync.test.ts',
+      'packages/workspace/tests/verification.test.js',
+    ]));
+  });
+
   it('routes current OS Trace inspector changes only to existing OS-owned suites', () => {
     const rulesPath = path.resolve(
       path.dirname(fileURLToPath(import.meta.url)),

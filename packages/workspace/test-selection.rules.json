@@ -53,6 +53,8 @@
         "packages/os/tests/verify-run-state.test.js",
         "packages/workspace/scripts/review.js",
         "packages/workspace/scripts/task-push.js",
+        "packages/os/scripts/task-push.js",
+        "packages/workspace/tests/task-push-binary.test.ts",
         "packages/workspace/scripts/lib/verification.js",
         "packages/workspace/scripts/confirm.js",
         "packages/os/scripts/confirm.js"
@@ -67,12 +69,44 @@
             "run",
             "packages/workspace/tests/verification.test.js",
             "packages/workspace/tests/verify-run-state.test.js",
-            "packages/os/tests/verify-run-state.test.js"
+            "packages/os/tests/verify-run-state.test.js",
+            "packages/workspace/tests/task-push-binary.test.ts",
+            "packages/workspace/tests/task-push-local-sync.test.ts",
+            "packages/os/tests/task-push-local-sync.test.ts",
+            "packages/workspace/tests/task-push-session.test.ts"
           ]
         }
       ],
       "critical": true,
       "reason": "Review, verify, and task push changes must prove publish-gate behavior."
+    },
+    {
+      "id": "os-task-push-binary-publication",
+      "critical": true,
+      "exclusive": true,
+      "source": [
+        "packages/os/scripts/task-push.js"
+      ],
+      "tests": [
+        {
+          "name": "OS task.push exact-byte GitHub blob and local-sync contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/task-push-binary.test.ts",
+            "packages/workspace/tests/task-push-local-sync.test.ts",
+            "packages/os/tests/task-push-local-sync.test.ts",
+            "packages/workspace/tests/github.test.ts",
+            "packages/os/tests/github.test.ts",
+            "packages/workspace/tests/verification.test.js",
+            "packages/workspace/tests/verify-run-state.test.js",
+            "packages/os/tests/verify-run-state.test.js"
+          ]
+        }
+      ],
+      "reason": "OS task.push byte-transport edits require strict blob, GitHub, publish-gate and local-sync regressions without selecting unrelated package-wide daemon tests."
     },
     {
       "id": "workspace-task-session",
