@@ -36,7 +36,8 @@ describe('Dialer marketing delivery', () => {
     const sitemap = readFileSync(resolve(root, 'dist/sitemap-0.xml'), 'utf8');
     expect(index).toContain(origin + '/sitemap-0.xml');
     const paths = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(match => new URL(match[1]).pathname.replace(/\/$/, '') || '/');
-    for (const path of ['/', '/pricing', '/get-started', '/guides']) expect(paths).toContain(path);
+    for (const path of ['/', '/pricing', '/get-started']) expect(paths).toContain(path);
+    expect(paths).not.toContain('/guides');
     expect(paths.some(path => /^\/(calls|login|about|404)(\/|\.|$)/.test(path))).toBe(false);
     expect(sitemap).not.toContain('os.consuelohq.com');
     expect(readFileSync(resolve(root, 'public/_redirects'), 'utf8')).not.toMatch(/^\/sitemap-(?:index|0)\.xml\s/m);
@@ -93,8 +94,17 @@ describe('Dialer marketing delivery', () => {
     expect(page('get-started')).toContain('data-selected-plan');
   });
   it('ships real destinations for public navigation and a preview indexing boundary', () => {
-    for (const route of ['pricing', 'get-started', 'guides', 'how-it-works', 'contact', 'privacy', 'terms']) {
+    for (const route of ['pricing', 'get-started', 'how-it-works', 'contact', 'privacy', 'terms']) {
       expect(existsSync(resolve(root, 'dist', route, 'index.html'))).toBe(true);
+    }
+    for (const route of ['', 'pricing', 'get-started', 'how-it-works', 'contact', 'privacy', 'terms', 'support']) {
+      expect(page(route)).toContain('href="https://docs.consuelohq.com/"');
+      expect(page(route)).not.toMatch(/href="\/guides(?:[\/?#"])/);
+    }
+    expect(existsSync(resolve(root, 'dist/guides/index.html'))).toBe(false);
+    const redirects = readFileSync(resolve(root, 'public/_redirects'), 'utf8');
+    for (const route of ['/guides', '/guides/', '/docs', '/docs/']) {
+      expect(redirects).toContain(`${route} https://docs.consuelohq.com/ 301`);
     }
     const production = process.env.PUBLIC_SITE_CHANNEL === 'production';
     expect(readFileSync(resolve(root, 'dist', 'robots.txt'), 'utf8')).toContain(production ? 'Allow: /' : 'Disallow: /');

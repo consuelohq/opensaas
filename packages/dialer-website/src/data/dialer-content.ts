@@ -1,3 +1,5 @@
+import { siteLinks } from './site-links';
+
 type DetailBlock = {type:'paragraph';text:string} | {type:'list';items:string[]} | {type:'steps';items:{label:string;text:string}[]};
 type HomeFaqItem = {question:string;answer:string;details?:DetailBlock[];linkLabel?:string;linkHref?:string};
 export const dialerHero = {
@@ -9,7 +11,7 @@ export const dialerHero = {
 export const homeFeaturePreviewItems = [
   { number: 1, label: 'OUTBOUND', title: 'Work the list.\nReach the person.', body: 'Call multiple leads at once and connect a live answer to your rep. Local presence selects an available number for the area you are calling. Spend the call on the customer, with their context already in reach.', ctaLabel: 'Explore outbound calling', ctaHref: '/how-it-works#outbound' },
   { number: 2, label: 'INBOUND · CONTROLLED ROLLOUT', title: 'Give incoming calls\na clear next step.', body: 'Route a caller to an eligible rep based on availability and queue rules. When the team cannot answer, callback and voicemail policies give the caller another way forward. Inbound is being introduced through controlled onboarding.', ctaLabel: 'See how inbound works', ctaHref: '/how-it-works#inbound' },
-  { number: 3, label: 'GOHIGHLEVEL', title: 'Keep the call\nwith the customer.', body: 'Open Consuelo inside GoHighLevel. Work from contacts and opportunity queues, see call history, and move from one conversation to the next without a separate calling workspace.', ctaLabel: 'See the setup guide', ctaHref: '/guides' },
+  { number: 3, label: 'GOHIGHLEVEL', title: 'Keep the call\nwith the customer.', body: 'Open Consuelo inside GoHighLevel. Work from contacts and opportunity queues, see call history, and move from one conversation to the next without a separate calling workspace.', ctaLabel: 'See the setup guide', ctaHref: siteLinks.docs + 'start/install/' },
   { number: 4, label: 'CALL ANALYTICS', title: 'See what happens\nafter you dial.', body: 'Review call outcomes and activity alongside the people you reached. Use the record of a call to decide who needs a follow-up and what your team should work next.', ctaLabel: 'Explore call history', ctaHref: '/how-it-works#analytics' },
   { number: 5, label: 'AI ASSISTANCE', title: 'Learn from\nthe calls you make.', body: 'Optional transcripts give reps and managers a conversation they can review. Live coaching and feedback on uploaded transcripts are in development; they are not included as available features in this preview.', ctaLabel: 'See transcription details', ctaHref: '/how-it-works#transcripts' },
 ];
@@ -23,7 +25,7 @@ export const homeFaqItems: HomeFaqItem[] = [
   { question: 'What happens if nobody can answer an incoming call?', answer: 'Queue policies can limit waiting and offer callbacks or voicemail when configured. Inbound, callback execution, and voicemail are enabled and validated during controlled onboarding; they are not automatically active for every installation.' },
   { question: 'Are AI coaching and transcripts included?', answer: 'Standard and Power support optional recording and transcription when enabled for the workspace. Live on-call coaching and feedback on uploaded transcripts are in development. Recording and transcription must follow your company policy and the permissions configured for the call.' },
   { question: 'How are the monthly plans priced?', answer: 'Single is $59, Standard is $99, and Power is $159 per seat per month in USD. One phone number is included per seat; additional numbers are $1.99 per month each within plan limits. Single includes 1,388 connected minutes. Review usage and setup with us before subscribing.', linkLabel: 'Compare plans', linkHref: '/pricing' },
-  { question: 'Can I build on the dialer outside GoHighLevel?', answer: 'The Dialer SDK and standalone service separate calling and routing logic from the CRM interface. GoHighLevel is the first embedded interface. Other integrations require their own setup; this preview does not claim one-click support for other CRMs.', linkLabel: 'Read the developer overview', linkHref: '/guides#developers' },
+  { question: 'Can I build on the dialer outside GoHighLevel?', answer: 'The Dialer SDK and standalone service separate calling and routing logic from the CRM interface. GoHighLevel is the first embedded interface. Other integrations require their own setup; this preview does not claim one-click support for other CRMs.', linkLabel: 'Read the developer overview', linkHref: siteLinks.docs + 'reference/sdk/' },
 ];
 export const homeWorkspaceClose = {
   eyebrow: 'CONSUELO DIALER',

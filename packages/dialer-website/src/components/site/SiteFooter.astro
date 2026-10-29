@@ -1,2 +1,5 @@
-<footer class="dialer-footer"><a href="/">CONSUELO DIALER</a><nav aria-label="Footer"><a href="/pricing">Pricing</a><a href="/guides">Docs</a><a href="/contact">Contact</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a></nav></footer>
+---
+import { siteLinks } from '../../data/site-links';
+---
+<footer class="dialer-footer"><a href="/">CONSUELO DIALER</a><nav aria-label="Footer"><a href="/pricing">Pricing</a><a href={siteLinks.docs}>Docs</a><a href="/contact">Contact</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a></nav></footer>
 <style>.dialer-footer { display:flex; flex-wrap:wrap; justify-content:space-between; gap:var(--site-space-5); padding:var(--site-space-7) var(--site-frame-inset); font:650 var(--site-text-sm)/var(--site-leading-body) var(--site-font-mono); }.dialer-footer nav { display:flex;flex-wrap:wrap;gap:var(--site-space-5); }.dialer-footer a { color:inherit; }</style>
