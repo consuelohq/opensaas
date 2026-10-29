@@ -2786,6 +2786,16 @@
       ],
       "tests": [
         {
+          "name": "dialer documentation locked dependencies",
+          "command": [
+            "bun",
+            "install",
+            "--cwd",
+            "packages/dialer-documentation",
+            "--frozen-lockfile"
+          ]
+        },
+        {
           "name": "dialer documentation contracts",
           "command": [
             "bun",
@@ -2812,9 +2822,36 @@
             "packages/dialer-documentation",
             "test:translation"
           ]
+        },
+        {
+          "name": "dialer documentation preview build",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/dialer-documentation",
+            "build"
+          ]
+        },
+        {
+          "name": "dialer documentation preview lifecycle cleanup",
+          "command": [
+            "bun",
+            "packages/dialer-documentation/scripts/test-preview-lifecycle.mjs"
+          ]
+        },
+        {
+          "name": "dialer documentation rendered browser interactions",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/dialer-documentation",
+            "test:browser"
+          ]
         }
       ],
-      "reason": "Dialer docs changes must preserve isolated deployment, curated navigation, valid internal links and server-only translation behavior."
+      "reason": "Dialer docs changes must preserve isolated deployment, curated navigation, valid internal links, server-only translation, and rendered browser actions after a locked install and build."
     },
     {
       "id": "dialer-website-package",
