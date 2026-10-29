@@ -1,0 +1,48 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/trace-site-makeover/correct-trace-routing-documentation-claims",
+  "base": "origin/main",
+  "headSha": "b6a04307c5c68e37d0c71db967a1cd6df1bc6f03",
+  "changeHash": "4706879980246991b909dc955556381eaf14fdd4d6db4cb2667bc6c2abd01a36",
+  "changedFiles": [
+    "packages/documentation/src/content/docs/observe/traces.mdx"
+  ],
+  "verifiedAt": "2026-10-29T20:28:38.952Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/trace-site-makeover/correct-trace-routing-documentation-claims.json",
+        ".task/trace-site-makeover/correct-trace-routing-documentation-claims/workpad.md",
+        "packages/documentation/src/content/docs/observe/traces.mdx"
+      ],
+      "matchedRules": [],
+      "selectedSuites": [],
+      "level": "pass",
+      "zeroSuiteReason": "changed files are docs or task metadata",
+      "platform": "darwin",
+      "run": true,
+      "runResults": [],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
