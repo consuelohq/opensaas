@@ -1,4 +1,5 @@
 ---
+import { withSiteBase } from '../lib/public-path';
 import SiteFooter from '../components/site/SiteFooter.astro';
 import SiteHeader from '../components/site/SiteHeader.astro';
 import MarketingLayout from '../layouts/MarketingLayout.astro';
@@ -14,7 +15,7 @@ const description = 'Page not found';
       <h1 class="not-found-hero__logo launch-mono">404</h1>
       <h2 class="not-found-hero__subtitle">this page couldn't be found</h2>
       <p class="launch-copy">the page you are looking for doesn't exist or has been moved.</p>
-      <a class="launch-button launch-button--sm launch-mono" href="/">return home ↗</a>
+      <a class="launch-button launch-button--sm launch-mono" href={withSiteBase("/")}>return home ↗</a>
     </div>
   </section>
 

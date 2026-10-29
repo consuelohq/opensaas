@@ -10,6 +10,7 @@ export default defineConfig({
   session: { driver: sessionDrivers.memory() },
   redirects: legacyRedirects,
   adapter: cloudflare({
+    configPath: process.env.DOCS_WRANGLER_CONFIG ?? './wrangler.jsonc',
     imageService: 'compile',
     prerenderEnvironment: 'node',
   }),

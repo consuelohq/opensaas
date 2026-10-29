@@ -1,4 +1,5 @@
 ---
+import { withSiteBase } from '../../lib/public-path';
 import { homePlatformCards } from '../../data/home-content';
 
 type Props = {
@@ -22,7 +23,7 @@ const isExternalHref = (href: string) => href.startsWith('http');
         <article class="home-platforms__card" data-platform-card={card.id}>
           <img
             class="home-platforms__art"
-            src={card.imageSrc}
+            src={withSiteBase(card.imageSrc)}
             alt=""
             aria-hidden="true"
             loading="lazy"
@@ -36,7 +37,7 @@ const isExternalHref = (href: string) => href.startsWith('http');
 
             <a
               class="home-platforms__cta"
-              href={card.ctaHref}
+              href={withSiteBase(card.ctaHref)}
               {...(isExternalHref(card.ctaHref)
                 ? { target: '_blank', rel: 'noopener noreferrer' }
                 : {})}

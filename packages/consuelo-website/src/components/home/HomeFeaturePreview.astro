@@ -1,4 +1,5 @@
 ---
+import { withSiteBase } from '../../lib/public-path';
 import { homeFeaturePreviewItems } from '../../data/home-content';
 import CloudField from '../visuals/CloudField.astro';
 import FeatureEvidenceFigure from './FeatureEvidenceFigure.astro';
@@ -20,7 +21,7 @@ const { sectionId = 'features' } = Astro.props as Props;
     </div>
 
     <div class="product-panel__identity">
-      <img src="/images/home/consuelo-mark.svg" alt="" width="58" height="58" />
+      <img src={withSiteBase("/images/home/consuelo-mark.svg")} alt="" width="58" height="58" />
       <p>CONSUELO OS</p>
       <a href="https://os.consuelohq.com">MEMBER? SIGN IN</a>
     </div>
@@ -54,7 +55,7 @@ const { sectionId = 'features' } = Astro.props as Props;
                 <h3>{item.title.split('\n').map((line) => <span>{line}</span>)}</h3>
                 <p class="product-panel__description">{item.body}</p>
                 <div class="product-story__actions">
-                  <a class="site-button site-button--editorial" href={item.ctaHref}>
+                  <a class="site-button site-button--editorial" href={withSiteBase(item.ctaHref)}>
                     {item.ctaLabel}
                     <svg viewBox="0 0 6 9" fill="currentColor" aria-hidden="true">
                       <rect x="0" y="0" width="1" height="9" />

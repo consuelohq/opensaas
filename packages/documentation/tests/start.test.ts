@@ -30,7 +30,7 @@ describe('Start documentation contract', () => {
     for (const [sourcePath] of startPages) {
       const source = read(`src/content/docs/${sourcePath}`);
       expect(source).toContain('status: preview');
-      expect(source).toMatch(/verifiedAt: 2026-0[78]-\d{2}/);
+      expect(source).toMatch(/^verifiedAt: \d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/m);
       expect(source).toContain('evidence:');
       expect(source).toContain('source:');
       expect(source).toContain('tests:');

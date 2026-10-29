@@ -1,4 +1,5 @@
 ---
+import { withSiteBase } from '../lib/public-path';
 import type { CollectionEntry } from "astro:content";
 import IconEdit from "@/assets/icons/IconEdit.svg";
 import { SITE } from "@/config";
@@ -19,7 +20,7 @@ const showEditPost =
 {
   showEditPost && (
     <a
-      href={href}
+      href={withSiteBase(href)}
       target="_blank"
       rel="noopener noreferrer"
       class:list={[

@@ -88,6 +88,10 @@ export function sourcePathToMarkdownSlug(sourcePath: string): string {
 }
 
 export function pagePathToMarkdownHref(pathname: string): string {
-  const clean = pathname.split(/[?#]/)[0].replace(/^\/+|\/+$/g, '');
-  return `/${clean || 'index'}.md`;
+  const absolute = /^https?:\/\//.test(pathname) ? new URL(pathname) : undefined;
+  const path = absolute?.pathname ?? pathname.split(/[?#]/)[0];
+  const clean = path.replace(/^\/+|\/+$/g, '');
+  const output = `/${clean === 'docs' && absolute ? 'docs/index' : clean || 'index'}.md`;
+  if (absolute) { absolute.pathname = output; return absolute.toString(); }
+  return output;
 }

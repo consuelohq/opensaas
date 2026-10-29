@@ -1,3 +1,4 @@
+import { withDocsBase, stripDocsBase, publicBase } from './public-path';
 const DOCS_ROOT_PATTERN = /(?:^|\/)(?:src\/)?content\/docs\//;
 
 function stripFrontmatter(source: string): { body: string; title?: string } {
@@ -77,6 +78,12 @@ export function normalizeMdxToMarkdown(source: string): string {
   markdown = markdown.replace(/\n{3,}/g, '\n\n').trim();
   const proseWithoutFences = markdown.replace(/```[\s\S]*?```|~~~[\s\S]*?~~~/g, '');
   if (title && !/^#\s+/m.test(proseWithoutFences)) markdown = `# ${title}\n\n${markdown}`.trim();
+  let fence: string | undefined;
+  markdown = markdown.split('\n').map((line) => {
+    const marker = line.match(/^\s*(`{3,}|~{3,})/);
+    if (marker) { fence = fence ? undefined : marker[1][0]; return line; }
+    return fence ? line : line.replace(/(\]\()\/(?!\/)([^)]*)(\))/g, (_all, open, path, close) => `${open}${withDocsBase('/' + path)}${close}`);
+  }).join('\n');
   return `${markdown}\n`;
 }
 
@@ -87,7 +94,7 @@ export function sourcePathToMarkdownSlug(sourcePath: string): string {
   return relative.replace(/\.(md|mdx)$/, '').replace(/\/index$/, '') || 'index';
 }
 
-export function pagePathToMarkdownHref(pathname: string): string {
-  const clean = pathname.split(/[?#]/)[0].replace(/^\/+|\/+$/g, '');
-  return `/${clean || 'index'}.md`;
+export function pagePathToMarkdownHref(pathname: string, base = publicBase): string {
+  const clean = stripDocsBase(pathname, base).split(/[?#]/)[0].replace(/^\/+|\/+$/g, '');
+  return withDocsBase(`/${clean || 'index'}.md`, base);
 }

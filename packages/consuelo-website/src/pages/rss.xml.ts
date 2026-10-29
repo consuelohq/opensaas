@@ -1,3 +1,4 @@
+import { withSiteBase } from '../lib/public-path';
 export const prerender = true;
 
 import type { APIContext } from "astro";
@@ -21,7 +22,7 @@ export async function GET(context: APIContext) {
       items: sortedPosts.map(post => ({
         title: post.data.title,
         description: post.data.description,
-        link: `/blog/${post.id}/`,
+        link: withSiteBase(`/blog/${post.id}/`),
         pubDate: post.data.pubDatetime,
       })),
     });

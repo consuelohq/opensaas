@@ -1,4 +1,5 @@
 ---
+import { withSiteBase } from '../lib/public-path';
 import {
   formatTitle,
   getOrganizationSchema,
@@ -63,10 +64,10 @@ const structuredData = {
 
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-<link rel="icon" href="/favicon-32x32.png" sizes="32x32" type="image/png" />
-<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-<link rel="manifest" href="/site.webmanifest" />
+<link rel="icon" href={withSiteBase("/favicon.svg")} type="image/svg+xml" />
+<link rel="icon" href={withSiteBase("/favicon-32x32.png")} sizes="32x32" type="image/png" />
+<link rel="apple-touch-icon" href={withSiteBase("/apple-touch-icon.png")} />
+<link rel="manifest" href={withSiteBase("/site.webmanifest")} />
 <title>{fullTitle}</title>
 <meta name="description" content={description} />
 <meta name="application-name" content={siteMetadata.siteName} />
@@ -74,7 +75,7 @@ const structuredData = {
 <meta name="robots" content={robots} />
 <meta name="color-scheme" content={colorScheme} />
 <meta name="apple-mobile-web-app-status-bar-style" content={appleStatusBarStyle} />
-<link rel="canonical" href={canonicalUrl} />
+<link rel="canonical" href={withSiteBase(canonicalUrl)} />
 <meta property="og:type" content={type} />
 <meta property="og:locale" content="en_US" />
 <meta property="og:site_name" content={siteMetadata.siteName} />

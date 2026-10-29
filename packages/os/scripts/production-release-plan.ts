@@ -5,7 +5,9 @@ export type ConsueloReleasePlan = { docs: boolean; website: boolean; os: boolean
 const emptyPlan = (): ConsueloReleasePlan => ({ docs: false, website: false, os: false });
 const crossCutting = new Set(['package.json', 'bun.lock', 'bunfig.toml', '.bun-version', 'nx.json']);
 
-export function createConsueloReleasePlan(input: { eventName: string; target?: string; files: string[] }): ConsueloReleasePlan {
+export function createConsueloReleasePlan(input: { eventName: string; target?: string; phase?: string; files: string[] }): ConsueloReleasePlan {
+  const phase = input.phase ?? 'legacy';
+  if (!['legacy', 'os-mounted', 'dialer'].includes(phase)) throw new Error('Unknown public-site release phase');
   const plan = emptyPlan();
   // Public content must not rotate the deployed auth/runtime surface as a side effect.
   if (input.eventName === 'workflow_dispatch') {
@@ -24,8 +26,8 @@ export function createConsueloReleasePlan(input: { eventName: string; target?: s
       return { docs: true, website: true, os: true };
     }
     // Preview packages have no production job until the public-domain cutover.
-    if (file.startsWith('packages/documentation/')) plan.docs = true;
-    if (file.startsWith('packages/consuelo-website/')) plan.website = true;
+    if (file.startsWith('packages/documentation/') || (phase === 'dialer' && file.startsWith('packages/dialer-documentation/'))) plan.docs = true;
+    if (file.startsWith('packages/consuelo-website/') || (phase === 'dialer' && file.startsWith('packages/dialer-website/'))) plan.website = true;
     if ((file.startsWith('packages/os/') && !file.startsWith('packages/os/tests/')
       && file !== 'packages/os/scripts/production-release-plan.ts')
       || file.startsWith('packages/cli/')
@@ -53,7 +55,7 @@ function main(): void {
     if (!/^[a-f0-9]{40}$/.test(before)) throw new Error('Invalid production release base');
     files = git(['diff', '--name-only', '-z', '--no-renames', before, head]).split('\0').filter(Boolean);
   }
-  const plan = createConsueloReleasePlan({ eventName, target: process.env.CONSUELO_RELEASE_TARGET, files });
+  const plan = createConsueloReleasePlan({ eventName, target: process.env.CONSUELO_RELEASE_TARGET, phase: process.env.CONSUELO_PUBLIC_SITE_PHASE, files });
   const output = process.env.GITHUB_OUTPUT;
   if (output) appendFileSync(output, `docs=${plan.docs}\nwebsite=${plan.website}\nos=${plan.os}\n`);
   process.stdout.write(`${JSON.stringify({ files, plan })}\n`);
