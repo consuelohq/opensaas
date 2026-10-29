@@ -38,6 +38,9 @@ function cleanSegment(segment: string): string {
       .trim())
     .filter(Boolean)
     .join(' ')
+    .replace(/(`+)([\s\S]*?)\1/g, '$2')
+    .replace(/(\*\*|__)(?=\S)(.+?\S)\1/g, '$2')
+    .replace(/(^|[\s(])([*_])(?=\S)(.+?\S)\2(?=$|[\s.,!?:;)])/g, '$1$3')
     .replace(/\s+/g, ' ')
     .trim();
 }

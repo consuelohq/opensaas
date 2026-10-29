@@ -1,6 +1,7 @@
 import { existsSync } from 'node:fs';
 import { spawn, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { createServer } from 'node:net';
 import { chromium } from 'playwright';
 
 const packageRoot = fileURLToPath(new URL('../..', import.meta.url));
@@ -37,6 +38,25 @@ export function startDocumentationServer({ port, force = false }) {
   });
 }
 
+export async function startDocumentationPreviewServer({ port }) {
+  try {
+    if (!Number.isInteger(port) || port < 1 || port > 65535) {
+      throw new RangeError('Preview port must be an integer from 1 through 65535');
+    }
+    await new Promise((resolve, reject) => {
+      const probe = createServer();
+      probe.once('error', reject);
+      probe.listen(port, '127.0.0.1', () => probe.close(resolve));
+    });
+    return spawn(nodeExecutable, [fileURLToPath(new URL('./preview-server.mjs', import.meta.url)), String(port)], {
+      cwd: packageRoot, stdio: ['ignore', 'pipe', 'pipe', 'ipc'], detached: process.platform !== 'win32',
+    });
+  } catch (error) {
+    if (error?.code === 'EADDRINUSE') throw error;
+    throw new Error(`Unable to start documentation preview on port ${port}: ${error.message}`, { cause: error });
+  }
+}
+
 function waitForExit(server, timeoutMs) {
   if (server.exitCode !== null || server.signalCode !== null) return Promise.resolve(true);
   return new Promise((resolve) => {
@@ -58,6 +78,11 @@ function isMissingProcess(error) {
 
 export async function stopDocumentationServer(server) {
   if (!server || server.exitCode !== null || server.signalCode !== null) return;
+
+  if (server.connected) {
+    server.send('stop');
+    if (await waitForExit(server, 10000)) return;
+  }
 
   try {
     if (process.platform !== 'win32' && server.pid) process.kill(-server.pid, 'SIGTERM');
