@@ -19,7 +19,7 @@ describe('shared workspace full-bleed layout', () => {
     expect(chrome).toContain('aria-current="page" href="/artifacts"');
   });
 
-  it('uses a responsive, available-width Artifacts gallery instead of a 720px strip', () => {
+  it('renders the Artifacts archive as full-width unboxed rows, not a card gallery', () => {
     const home = mkdtempSync(join(tmpdir(), 'consuelo-fluid-artifacts-'));
     try {
       const source = join(home, 'seed.html');
@@ -27,7 +27,18 @@ describe('shared workspace full-bleed layout', () => {
       publishArtifact({ home, target: source, path: '/fluid', title: 'Fluid', category: 'school', now: '2026-10-28T00:00:00.000Z' });
       const page = readFileSync(join(home, 'sites', 'artifacts', 'index.html'), 'utf8');
       expect(page).toContain('.shell { width:100%; max-width:none;');
-      expect(page).toContain('.post-list { display:grid; grid-template-columns:repeat(auto-fit, minmax(min(100%, 300px), 1fr));');
+      expect(page).toContain('.post-list { display:grid; grid-template-columns:1fr;');
+      expect(page).toContain('.post-item { display:grid;');
+      expect(page).toContain('data-artifact-row');
+      expect(page).toContain('.post-item:hover { background: transparent; }');
+      expect(page).not.toContain('grid-template-columns:repeat(auto-fit, minmax(min(100%, 300px), 1fr))');
+      expect(page).toContain('<picture class="brand-mark">');
+      const lightSrc = page.match(/<img data-consuelo-logo src="data:image\/png;base64,([^"]+)"/)?.[1];
+      const darkSrc = page.match(/<source media="\(prefers-color-scheme: dark\)" srcset="data:image\/png;base64,([^"]+)"/)?.[1];
+      for (const source of [lightSrc, darkSrc]) {
+        expect(source).toBeTruthy();
+        expect(Buffer.from(source!, 'base64').subarray(0, 8).toString('hex')).toBe('89504e470d0a1a0a');
+      }
       expect(page).toContain('href="/artifacts/fluid"');
       expect(page).toContain('data-share-artifact');
       expect(page).toContain('data-workspace-chrome');

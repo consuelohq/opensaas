@@ -203,6 +203,7 @@ const DEFAULT_DISCOVERY_PATHS = [
   'package.json',
   'bun.lock',
   'assets/consuelo-mark.png',
+  'assets/consuelo-mark-white.png',
   'assets/vendor/observability-traces-v38',
   'scripts',
   'src',
@@ -405,7 +406,9 @@ export function classifyRuntimeBundlePath(
     return 'source-only';
   }
   if (filePath === 'package.json' || filePath === 'bun.lock') return 'runtime';
-  if (filePath === 'assets/consuelo-mark.png') return 'runtime';
+  if (filePath === 'assets/consuelo-mark.png' || filePath === 'assets/consuelo-mark-white.png') {
+    return 'runtime';
+  }
   if (filePath.startsWith('assets/vendor/observability-traces-v38/')) {
     return 'managed-site-template';
   }
