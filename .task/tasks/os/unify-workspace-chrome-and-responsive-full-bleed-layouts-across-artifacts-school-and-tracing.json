@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/unify-workspace-chrome-and-responsive-full-bleed-layouts-across-artifacts-school-and-tracing",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2657,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2657",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-unify-workspace-chrome-and-responsive-full-bleed-layouts-across-artifacts-school-and-tracing",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_940d08ef8ac6",
+  "tmuxSession": "opensaas-os-unify-workspace-chrome-and-responsive-full-bleed-940d08ef",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-unify-workspace-chrome-and-responsive-full-bleed-layouts-across-artifacts-school-and-tracing/.task/session.json",
+  "createdAt": "2026-10-29T02:54:13.528Z"
+}
