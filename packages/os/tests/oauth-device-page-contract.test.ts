@@ -1,40 +1,26 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
-const devicePage = readFileSync(
-  new URL(
-    '../../consuelo-website/src/pages/login/device.astro',
-    import.meta.url,
-  ),
-  'utf8',
-);
+const publicPackages = ['consuelo-website', 'dialer-website'];
 const installer = readFileSync(
   new URL('../scripts/install.ts', import.meta.url),
   'utf8',
 );
 
 describe('device login page static-hosting contract', () => {
-  it('renders the user code from the browser URL instead of Astro build-time params', () => {
-    expect(devicePage).toContain('data-device-code');
-    expect(devicePage).toContain('window.location.search');
-    expect(devicePage).toContain('URLSearchParams');
-    expect(devicePage).toContain("get('user_code')");
-    expect(devicePage).not.toContain("Astro.url.searchParams.get('user_code')");
-    expect(devicePage).not.toContain("{formattedCode || 'Waiting for code'}");
+  it('preserves both legacy device URLs as canonical authority redirects', () => {
+    for (const packageName of publicPackages) {
+      const redirects = readFileSync(new URL(`../../${packageName}/public/_redirects`, import.meta.url), 'utf8');
+      for (const path of ['/login/device', '/login/device/']) {
+        expect(redirects).toContain(`${path} https://os.consuelohq.com/login/device 302`);
+      }
+    }
   });
 
-  it('starts Google-backed approval directly through Consuelo OS Device Authority', () => {
-    expect(devicePage).toContain('Authorize this device');
-    expect(devicePage).toContain('Approve with Google');
-    expect(devicePage).toContain('https://os.consuelohq.com/login/google/start');
-    expect(devicePage).toContain('user_code=');
-    expect(devicePage).toContain('encodeURIComponent(normalizedUserCode)');
-    expect(devicePage).not.toContain('/auth/google');
-    expect(devicePage).not.toContain('action=os-device-approval');
-    expect(devicePage).not.toContain('osDeviceUserCode');
-    expect(devicePage).not.toContain(
-      'approval will become active once the hosted approval endpoint is deployed',
-    );
+  it('keeps authentication UI out of both static marketing packages', () => {
+    for (const packageName of publicPackages) {
+      expect(existsSync(new URL(`../../${packageName}/src/pages/login/device.astro`, import.meta.url))).toBe(false);
+    }
   });
 
   it('installer only opens browser after the live device endpoint starts a session', () => {

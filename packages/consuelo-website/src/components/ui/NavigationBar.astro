@@ -1,4 +1,5 @@
 ---
+import { withSiteBase } from '../../lib/public-path';
 // Header - Navigation bar
 // ------------
 // Description: navigation bars offer a persistent and convenient way to switch between primary destinations in an app.
@@ -38,9 +39,9 @@ const savedNavActions = navActions.map((action) => ({
 	<div class="header__container">
 		<nav aria-label="main navigation" role="navigation" class="header__nav">
 			<!-- Logo -->
-			<a href="/" class="header__logo">
-				<img src={logo.src} alt={logo.alt} width="48" height="48" class="block dark:hidden" />
-				{logo.darkSrc && <img src={logo.darkSrc} alt={logo.alt} width="48" height="48" class="hidden dark:block" />}
+			<a href={withSiteBase("/")} class="header__logo">
+				<img src={withSiteBase(logo.src)} alt={logo.alt} width="48" height="48" class="block dark:hidden" />
+				{logo.darkSrc && <img src={withSiteBase(logo.darkSrc)} alt={logo.alt} width="48" height="48" class="hidden dark:block" />}
 				<span>{logo.text}</span>
 			</a>
 
@@ -65,7 +66,7 @@ const savedNavActions = navActions.map((action) => ({
 						<li role="none" class="header__menu-item">
 							{!item.submenu ? (
 								<a
-									href={item.link}
+									href={withSiteBase(item.link)}
 									role="menuitem"
 									class={`header__menu-link ${isActivePath(item.link) ? 'active' : ''}`}
 								>
@@ -85,7 +86,7 @@ const savedNavActions = navActions.map((action) => ({
 									{item.submenu.map((subItem) => (
 										<li role="none" class="header__submenu-item">
 											<a
-												href={subItem.link}
+												href={withSiteBase(subItem.link)}
 												role="menuitem"
 												class={`header__menu-link ${isActivePath(subItem.link) ? 'active' : ''}`}
 											>

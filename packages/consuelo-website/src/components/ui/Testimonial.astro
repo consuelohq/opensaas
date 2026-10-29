@@ -1,4 +1,5 @@
 ---
+import { withSiteBase } from '../../lib/public-path';
 // Testimonial
 // ------------
 // Description: the testimonial component is a ui element that displays a quote from a customer or client.
@@ -84,7 +85,7 @@ const {
 						{
 							cite && (
 								<cite class="testimonial__figcaption--cite">
-									{link ? <a href={link}>{cite}</a> : <span>{cite}</span>}
+									{link ? <a href={withSiteBase(link)}>{cite}</a> : <span>{cite}</span>}
 								</cite>
 							)
 						}

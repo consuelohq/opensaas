@@ -1,3 +1,4 @@
+import { withDocsBase, stripDocsBase, publicBase } from './public-path';
 export type DocsSidebarEntry =
   | {
       type: 'link';
@@ -97,6 +98,7 @@ const buildItems: SidebarItem[] = [
           { label: 'Branch', slug: 'build/skills/bundled/branch' },
           { label: 'Browser', slug: 'build/skills/bundled/browser' },
           { label: 'Debugger', slug: 'build/skills/bundled/debugger' },
+          { label: 'Google Workspace', slug: 'build/skills/bundled/google' },
           { label: 'Handoff', slug: 'build/skills/bundled/handoff' },
           { label: 'Research Ingest', slug: 'build/skills/bundled/research-ingest' },
           { label: 'Senior Engineer', slug: 'build/skills/bundled/senior-engineer' },
@@ -307,8 +309,8 @@ function sectionForTargetSlug(targetSlug: string) {
   );
 }
 
-export function getBreadcrumbs(pathname: string): DocsBreadcrumb[] {
-  const targetSlug = pathname.split('?')[0]?.split('#')[0]?.replace(/^\/+|\/+$/g, '') ?? '';
+export function getBreadcrumbs(pathname: string, base = publicBase): DocsBreadcrumb[] {
+  const targetSlug = stripDocsBase(pathname, base).split('?')[0]?.split('#')[0]?.replace(/^\/+|\/+$/g, '') ?? '';
   if (!targetSlug) return [];
 
   const section = sectionForTargetSlug(targetSlug);
@@ -316,7 +318,7 @@ export function getBreadcrumbs(pathname: string): DocsBreadcrumb[] {
 
   const sectionCrumb: DocsBreadcrumb = {
     label: section.label,
-    href: `/${section.slug}/`,
+    href: withDocsBase(`/${section.slug}/`, base),
   };
   if (targetSlug === section.slug) return [{ ...sectionCrumb, current: true }];
 
@@ -328,7 +330,7 @@ export function getBreadcrumbs(pathname: string): DocsBreadcrumb[] {
 
   return [
     sectionCrumb,
-    ...trail.filter((crumb) => crumb.label !== 'Overview'),
+    ...trail.filter((crumb) => crumb.label !== 'Overview').map((crumb) => ({ ...crumb, ...(crumb.href ? { href: withDocsBase(crumb.href, base) } : {}) })),
   ];
 }
 
@@ -386,10 +388,11 @@ export function expandCurrentSidebarPath(entries: DocsSidebarEntry[]): DocsSideb
 export function selectSectionSidebar(
   entries: DocsSidebarEntry[],
   pathname: string,
+  base = publicBase,
 ):
   | { mode: 'global'; entries: DocsSidebarEntry[] }
   | { mode: 'section'; sectionLabel: string; entries: DocsSidebarEntry[] } {
-  const targetSlug = pathname.split('?')[0]?.split('#')[0]?.replace(/^\/+|\/+$/g, '') ?? '';
+  const targetSlug = stripDocsBase(pathname, base).split('?')[0]?.split('#')[0]?.replace(/^\/+|\/+$/g, '') ?? '';
   const section = targetSlug ? sectionForTargetSlug(targetSlug) : undefined;
   if (!section) return { mode: 'global', entries };
 

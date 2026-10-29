@@ -3,13 +3,18 @@ import { defineConfig, sessionDrivers } from 'astro/config';
 import cloudflare from '@astrojs/cloudflare';
 import starlight from '@astrojs/starlight';
 import { legacyRedirects } from './src/lib/legacy-redirects.mjs';
+import { pagePathToMarkdownHref } from './src/lib/markdown-pages';
 import { docsSidebar } from './src/lib/docs-navigation';
 
 export default defineConfig({
   site: process.env.DOCS_SITE_URL ?? 'https://docs.consuelohq.com',
   session: { driver: sessionDrivers.memory() },
-  redirects: legacyRedirects,
+  redirects: {
+    ...legacyRedirects,
+    ...Object.fromEntries(Object.entries(legacyRedirects).map(([from, to]) => [from.replace(/\/$/, '') + '.md', { destination: pagePathToMarkdownHref(to), status: 308 }])),
+  },
   adapter: cloudflare({
+    configPath: process.env.DOCS_WRANGLER_CONFIG ?? './wrangler.jsonc',
     imageService: 'compile',
     prerenderEnvironment: 'node',
   }),

@@ -95,8 +95,8 @@ test('GitHub Actions production release uses dedicated Cloudflare credentials fo
   expect(workflow).toContain("needs.deploy-docs.result == 'skipped'");
   expect(workflow).toContain("needs.deploy-website.result == 'success'");
   expect(workflow).toContain("needs.deploy-website.result == 'skipped'");
-  expect(workflow).toContain('bun run docs:deploy -- --json');
-  expect(workflow).toContain('bun run website:deploy -- --branch main --json');
+  expect(workflow).toContain('bun packages/dialer-website/scripts/release-public-sites.mjs --surface docs --deploy');
+  expect(workflow).toContain('bun packages/dialer-website/scripts/release-public-sites.mjs --surface website --deploy');
   expect(workflow).toContain('bun install --global wrangler@4.105.0');
   expect(workflow).toContain('bun run os:release');
   expect(workflow).toContain('bun run os:release -- --device-auth-only');
@@ -119,7 +119,9 @@ test('GitHub Actions production release uses dedicated Cloudflare credentials fo
   expect(osReleaseScript).toContain('CLOUDFLARE_WORKSPACE_EDGE_API_TOKEN');
   expect(osReleaseScript).toContain('CLOUDFLARE_API_TOKEN: workspaceEdgeToken');
   expect(workflow).toContain('Missing GitHub Actions variable CLOUDFLARE_ACCOUNT_ID');
-  expect(workflow).toContain('Missing GitHub Actions secret CLOUDFLARE_PAGES_API_TOKEN');
+  const publicRelease = readFileSync(join(repoRoot, 'packages/dialer-website/scripts/release-public-sites.mjs'), 'utf8');
+  expect(publicRelease).toContain('Missing Cloudflare token for');
+  expect(publicRelease).toContain('Missing CLOUDFLARE_ACCOUNT_ID');
   expect(workflow).toContain('Missing GitHub Actions secret CLOUDFLARE_OS_RELEASE_API_TOKEN');
   expect(workflow).toContain('Missing GitHub Actions secret CLOUDFLARE_WORKSPACE_EDGE_API_TOKEN');
   expect(workflow).toContain(
@@ -146,7 +148,7 @@ test('GitHub Actions production release uses dedicated Cloudflare credentials fo
   expect(osReleaseIndex).toBeGreaterThan(-1);
   expect(osReleaseIndex).toBeLessThan(provisioningSecretSyncIndex);
   expect(workflow).toContain('CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}');
-  expect(workflow).toContain('CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_PAGES_API_TOKEN }}');
+  expect(workflow).toContain('CLOUDFLARE_PAGES_API_TOKEN: ${{ secrets.CLOUDFLARE_PAGES_API_TOKEN }}');
   expect(workflow).toContain('CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_OS_RELEASE_API_TOKEN }}');
   expect(workflow).not.toContain('secrets.CLOUDFLARE_ACCOUNT_ID');
   expect(workflow).not.toContain('secrets.CLOUDFLARE_API_TOKEN');

@@ -1,0 +1,27 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "consuelo-dialer-docs-production",
+  "compatibility_date": "2026-07-02",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "main": "@astrojs/cloudflare/entrypoints/server",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS"
+  },
+  "observability": {
+    "enabled": true
+  },
+  "vars": {
+    "DOCS_TRANSLATION_PROVIDER": "google"
+  },
+  "routes": [
+    {
+      "pattern": "docs.consuelohq.com/*",
+      "zone_name": "consuelohq.com"
+    }
+  ],
+  "workers_dev": false,
+  "preview_urls": true
+}

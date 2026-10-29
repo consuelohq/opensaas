@@ -101,6 +101,7 @@ jobs:
           CONSUELO_RELEASE_TARGET: ${{ inputs.target }}
           CONSUELO_RELEASE_BEFORE: ${{ github.event.before }}
           CONSUELO_RELEASE_HEAD: ${{ github.sha }}
+          CONSUELO_PUBLIC_SITE_PHASE: ${{ vars.CONSUELO_PUBLIC_SITE_PHASE || 'legacy' }}
 
   deploy-docs:
     name: Consuelo / docs deploy
@@ -116,22 +117,10 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
 
-      - name: Install documentation dependencies
-        run: bun install --frozen-lockfile
-        working-directory: packages/documentation
-
-      - name: Deploy Consuelo docs
-        run: |
-          if [ -z "${CLOUDFLARE_ACCOUNT_ID:-}" ]; then
-            echo "::error::Missing GitHub Actions variable CLOUDFLARE_ACCOUNT_ID"
-            exit 1
-          fi
-          if [ -z "${CLOUDFLARE_API_TOKEN:-}" ]; then
-            echo "::error::Missing GitHub Actions secret CLOUDFLARE_DOCS_API_TOKEN or CLOUDFLARE_OS_RELEASE_API_TOKEN"
-            exit 1
-          fi
-          bun run docs:deploy -- --json
+      - name: Deploy public documentation for the active phase
+        run: bun packages/dialer-website/scripts/release-public-sites.mjs --surface docs --deploy
         env:
+          CONSUELO_PUBLIC_SITE_PHASE: ${{ vars.CONSUELO_PUBLIC_SITE_PHASE || 'legacy' }}
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_DOCS_API_TOKEN || secrets.CLOUDFLARE_OS_RELEASE_API_TOKEN }}
 
@@ -149,24 +138,13 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
 
-      - name: Install website dependencies
-        run: bun install --frozen-lockfile
-        working-directory: packages/consuelo-website
-
-      - name: Deploy Consuelo website
-        run: |
-          if [ -z "${CLOUDFLARE_ACCOUNT_ID:-}" ]; then
-            echo "::error::Missing GitHub Actions variable CLOUDFLARE_ACCOUNT_ID"
-            exit 1
-          fi
-          if [ -z "${CLOUDFLARE_API_TOKEN:-}" ]; then
-            echo "::error::Missing GitHub Actions secret CLOUDFLARE_PAGES_API_TOKEN"
-            exit 1
-          fi
-          bun run website:deploy -- --branch main --json
+      - name: Deploy public websites for the active phase
+        run: bun packages/dialer-website/scripts/release-public-sites.mjs --surface website --deploy
         env:
+          CONSUELO_PUBLIC_SITE_PHASE: ${{ vars.CONSUELO_PUBLIC_SITE_PHASE || 'legacy' }}
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_PAGES_API_TOKEN }}
+          CLOUDFLARE_PAGES_API_TOKEN: ${{ secrets.CLOUDFLARE_PAGES_API_TOKEN }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_DOCS_API_TOKEN || secrets.CLOUDFLARE_OS_RELEASE_API_TOKEN }}
 
   release-os:
     name: Consuelo / OS release

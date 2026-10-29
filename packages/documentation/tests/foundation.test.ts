@@ -303,8 +303,8 @@ describe('foundation source contract', () => {
     expect(config).toContain("favicon: '/favicon.svg'");
     expect(config).toContain("Head: './src/components/Head.astro'");
     expect(config).toContain("SiteTitle: './src/components/SiteTitle.astro'");
-    expect(siteTitle).toContain('src="/favicon.svg"');
-    expect(siteTitle).toContain('href="/"');
+    expect(siteTitle).toContain('src={withDocsBase("/favicon.svg")}');
+    expect(siteTitle).toContain('href={withDocsBase("/")}');
     expect(siteTitle).toContain('consuelo-site-title-slash');
     expect(siteTitle).toContain('>Docs<');
     expect(siteTitle).not.toContain('>Consuelo OS<');
@@ -325,8 +325,8 @@ describe('foundation source contract', () => {
     expect(browseMenu).toContain('data-docs-build-trigger');
     expect(browseMenu).toContain('data-docs-browse-overlay');
     expect(browseMenu).toContain("from 'gsap'");
-    expect(browseMenu).toContain('https://consuelohq.com/changelog');
-    expect(browseMenu).toContain('https://consuelohq.com/blog');
+    expect(browseMenu).toContain("website + '/changelog'");
+    expect(browseMenu).toContain("website + '/blog'");
     expect(browseMenu).toContain('https://discord.gg/87YtkVUBvc');
     expect(browseMenu).toContain('/build/skills/bundled/');
     expect(browseMenu).toContain('https://os.consuelohq.com/');
@@ -361,7 +361,7 @@ describe('foundation source contract', () => {
     expect(css).toContain('.sl-markdown-content .sl-anchor-link');
     expect(css).toContain('display: none');
     expect(pageTitle).toContain('isHome');
-    for (const href of ['/start/', '/connect/', '/tools/']) expect(pageTitle).toContain(`href="${href}"`);
+    for (const href of ['/start/', '/connect/', '/tools/']) expect(pageTitle).toContain(`href={withDocsBase("${href}")}`);
     expect(pageTitle).not.toContain('docs-home-kicker');
     expect(pageTitle).not.toContain('Consuelo OS documentation');
     expect(pageTitle).toContain('<span class="docs-home-title-line">Digital workers</span>');

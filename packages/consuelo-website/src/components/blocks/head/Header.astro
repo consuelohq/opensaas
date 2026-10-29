@@ -1,4 +1,5 @@
 ---
+import { withSiteBase } from '../../../lib/public-path';
 // Imports
 import { ClientRouter } from 'astro:transitions'
 import GoogleAnalytics from '../../scripts/googleAnalytics.astro'
@@ -39,7 +40,7 @@ const {
 		canonicalUrl={canonical ? Astro.url.href : undefined}
 		robots={noindex ? 'noindex,nofollow' : undefined}
 	/>
-	<link rel="sitemap" href="/sitemap-index.xml" />
+	<link rel="sitemap" href={withSiteBase("/sitemap-index.xml")} />
 	<meta name="generator" content={Astro.generator} />
 	{posthogKey && (
 		<script define:vars={{ posthogKey, posthogHost }}>

@@ -1,4 +1,5 @@
 ---
+import { withSiteBase } from '../lib/public-path';
 import { ghlMarketplaceUrl } from '../data/site-links';
 ---
 
@@ -11,6 +12,6 @@ import { ghlMarketplaceUrl } from '../data/site-links';
     <title>Redirecting to GoHighLevel</title>
   </head>
   <body style="font-family: system-ui, sans-serif; background: #141010; color: #fff; display: grid; place-items: center; min-height: 100vh; margin: 0; padding: 24px;">
-    <p>redirecting to the GoHighLevel install flow. <a href={ghlMarketplaceUrl} style="color: inherit;">continue manually</a>.</p>
+    <p>redirecting to the GoHighLevel install flow. <a href={withSiteBase(ghlMarketplaceUrl)} style="color: inherit;">continue manually</a>.</p>
   </body>
 </html>

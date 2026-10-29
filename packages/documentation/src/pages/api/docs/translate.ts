@@ -1,3 +1,4 @@
+import { stripDocsBase } from '../../../lib/public-path';
 import type { APIRoute } from 'astro';
 import { env as cloudflareEnv } from 'cloudflare:workers';
 import { createTranslationCacheKey, getCachedTranslation, setCachedTranslation } from '../../../lib/translation/cache';
@@ -28,6 +29,18 @@ type TranslationFailure = {
 
 export const GET: APIRoute = async ({ request }) => {
   const url = new URL(request.url);
+  const service = (cloudflareEnv as unknown as { LEGACY_TRANSLATION?: { fetch(request: Request): Promise<Response> } }).LEGACY_TRANSLATION;
+  if (import.meta.env.BASE_URL.replace(/\/$/, '') === '/docs' && service) {
+    const target = new URL('/api/docs/translate', 'https://docs.consuelohq.com');
+    target.search = url.search;
+    const path = target.searchParams.get('path');
+    if (path?.startsWith('/')) target.searchParams.set('path', stripDocsBase(path));
+    try {
+      return await service.fetch(new Request(target, { method: 'GET' }));
+    } catch {
+      return json<TranslationFailure>({ ok: false, error: { code: 'translation_unavailable', message: 'Translation service is temporarily unavailable.' } }, 503);
+    }
+  }
   const requestedPath = url.searchParams.get('path');
   const targetLanguage = getSupportedTranslationLanguage(url.searchParams.get('lang'));
 

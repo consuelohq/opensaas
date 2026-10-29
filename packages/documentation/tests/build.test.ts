@@ -21,6 +21,7 @@ const buildPages = [
   ['build/skills/bundled/branch.mdx', 'Branch'],
   ['build/skills/bundled/browser.mdx', 'Browser'],
   ['build/skills/bundled/debugger.mdx', 'Debugger'],
+  ['build/skills/bundled/google.mdx', 'Google Workspace'],
   ['build/skills/bundled/handoff.mdx', 'Handoff'],
   ['build/skills/bundled/research-ingest.mdx', 'Research Ingest'],
   ['build/skills/bundled/senior-engineer.mdx', 'Senior Engineer'],

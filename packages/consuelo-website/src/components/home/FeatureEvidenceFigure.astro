@@ -1,4 +1,5 @@
 ---
+import { withSiteBase } from '../../lib/public-path';
 import type { HomeFeatureEvidence } from '../../data/home-content';
 
 type Props = {
@@ -15,7 +16,7 @@ const posterSrc = evidence.posterSrc ?? imageSrc;
   <div class="feature-evidence__stage">
     <img
       class="feature-evidence__poster"
-      src={posterSrc}
+      src={withSiteBase(posterSrc)}
       alt={imageAlt}
       width="2032"
       height="1192"
@@ -31,9 +32,9 @@ const posterSrc = evidence.posterSrc ?? imageSrc;
           playsinline
           class="feature-evidence__video"
           preload="metadata"
-          poster={posterSrc}
+          poster={withSiteBase(posterSrc)}
         >
-          <source src={evidence.videoSrc} />
+          <source src={withSiteBase(evidence.videoSrc)} />
         </video>
       )
     }

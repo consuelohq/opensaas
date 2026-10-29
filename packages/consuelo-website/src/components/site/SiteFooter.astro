@@ -1,4 +1,5 @@
 ---
+import { withSiteBase } from '../../lib/public-path';
 import { homeFooterSignup } from '../../data/home-content';
 import { siteLinks } from '../../data/site-links';
 import { footerLinks } from '../../data/site-navigation';
@@ -31,15 +32,15 @@ const { sectionId } = Astro.props as Props;
 <footer class="launch-section">
   <div class="launch-footer-links launch-mono">
     {footerLinks.map((link) => (
-      <a href={link.href}>{link.label}</a>
+      <a href={withSiteBase(link.href)}>{link.label}</a>
     ))}
   </div>
   <div class="launch-content launch-content--wide launch-footer-meta launch-mono">
     <span>©2026 Consuelo</span>
-    <a href="/blog">Blog</a>
-    <a href={siteLinks.github} class="desktop-only-link">GitHub</a>
-    <a href={siteLinks.privacy}>Privacy</a>
-    <a href={siteLinks.terms}>Terms</a>
+    <a href={withSiteBase("/blog")}>Blog</a>
+    <a href={withSiteBase(siteLinks.github)} class="desktop-only-link">GitHub</a>
+    <a href={withSiteBase(siteLinks.privacy)}>Privacy</a>
+    <a href={withSiteBase(siteLinks.terms)}>Terms</a>
     <LanguageSelector />
   </div>
 </footer>

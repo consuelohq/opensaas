@@ -1,3 +1,4 @@
+import { siteLinks } from './site-links';
 import docsConfigJson from './docs-navigation-source.json';
 
 type DocsPage =
@@ -43,7 +44,7 @@ export type DocMenuTab = {
   groups: DocMenuGroup[];
 };
 
-const docsBaseUrl = 'https://docs.consuelohq.com';
+const docsBaseUrl = siteLinks.docs.replace(/\/$/, '');
 const docsConfig = docsConfigJson as DocsConfig;
 
 const englishNavigation = docsConfig.navigation.languages.find(

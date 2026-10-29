@@ -1,4 +1,6 @@
 ---
+import { siteLinks as publicSiteLinks } from '../../data/site-links';
+import { withSiteBase } from '../../lib/public-path';
 import MarketingLayout from '../../layouts/MarketingLayout.astro';
 import '../../styles/tokens.css';
 import '../../styles/primitives.css';
@@ -15,11 +17,11 @@ const siteLinks = [
   { label: 'Observability', href: workspaceUrl('/observability') },
   { label: 'Code review', href: workspaceUrl('/diffs') },
 ];
-const guideLinks = [{ label: 'Documentation', href: 'https://docs.consuelohq.com/' }];
+const guideLinks = [{ label: 'Documentation', href: publicSiteLinks.docs }];
 const writingLinks = [
   {
     label: 'Decision loops',
-    href: 'https://consuelohq.com/blog/software-is-becoming-decision-infrastructure/#the-future-interface-is-what-should-we-do-next',
+    href: '/blog/software-is-becoming-decision-infrastructure/#the-future-interface-is-what-should-we-do-next',
   },
 ];
 const configurationLinks = [
@@ -38,7 +40,7 @@ const description = 'Connect ChatGPT and workspace agents to Consuelo OS.';
       <div class="os-launcher__hero">
         <h1>Welcome to Consuelo OS</h1>
         <p>
-          Here is the URL to connect <a href={chatGptConnectorsUrl} target="_blank" rel="noopener noreferrer">ChatGPT</a> to your workspace.
+          Here is the URL to connect <a href={withSiteBase(chatGptConnectorsUrl)} target="_blank" rel="noopener noreferrer">ChatGPT</a> to your workspace.
         </p>
         <button class="os-launcher__url-copy" type="button" aria-label="Copy MCP URL" data-copy-mcp>
           <code id="mcp-url">{mcpUrl}</code>
@@ -48,7 +50,7 @@ const description = 'Connect ChatGPT and workspace agents to Consuelo OS.';
           <div><dt>Contact</dt><dd><a href="mailto:support@consuelohq.com">support@consuelohq.com</a></dd></div>
           <div><dt>Location</dt><dd>USA</dd></div>
           <div><dt>Status</dt><dd>Online</dd></div>
-          <div><dt>Open position</dt><dd><a href="/careers/systems-engineer">Systems Engineer</a></dd></div>
+          <div><dt>Open position</dt><dd><a href={withSiteBase("/careers/systems-engineer")}>Systems Engineer</a></dd></div>
         </dl>
       </div>
     </section>
@@ -60,19 +62,19 @@ const description = 'Connect ChatGPT and workspace agents to Consuelo OS.';
         </section>
         <section>
           <h2>Sites</h2>
-          <ul>{siteLinks.map((item) => <li><a href={item.href}>{item.label}</a></li>)}</ul>
+          <ul>{siteLinks.map((item) => <li><a href={withSiteBase(item.href)}>{item.label}</a></li>)}</ul>
         </section>
         <section>
           <h2>Guides and Tips</h2>
-          <ul>{guideLinks.map((item) => <li><a href={item.href}>{item.label}</a></li>)}</ul>
+          <ul>{guideLinks.map((item) => <li><a href={withSiteBase(item.href)}>{item.label}</a></li>)}</ul>
         </section>
         <section>
           <h2>Writing</h2>
-          <ul>{writingLinks.map((item) => <li><a href={item.href}>{item.label}</a></li>)}</ul>
+          <ul>{writingLinks.map((item) => <li><a href={withSiteBase(item.href)}>{item.label}</a></li>)}</ul>
         </section>
         <section>
           <h2>Configuration</h2>
-          <ul>{configurationLinks.map((item) => <li><a href={item.href}>{item.label}</a></li>)}</ul>
+          <ul>{configurationLinks.map((item) => <li><a href={withSiteBase(item.href)}>{item.label}</a></li>)}</ul>
         </section>
       </div>
       <section class="os-launcher__status" aria-label="Local agents">
