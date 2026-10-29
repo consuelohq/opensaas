@@ -193,4 +193,28 @@ export const TRACE_INSPECTOR_READING_STYLE = `<style id="consuelo-trace-inspecto
   .tiMobileCalls { display: grid; gap: 4px; margin: 12px; color: var(--ti-muted); font-size: 12px; }
   .tiMobileCalls select { min-width: 0; width: 100%; padding: 8px; color: var(--ti-text); background: var(--ti-panel); border: 1px solid var(--ti-line); border-radius: 5px; font-size: 13px; }
 }
+
+/* Selection is carried by typography, without painted row blocks. */
+#tbmLiveTraceModal .trxShell .trxRow.selected,
+#tbmLiveTraceModal .trxShell .trxRow:hover { background: transparent !important; box-shadow: none !important; }
+#tbmLiveTraceModal .tiInspector .tiPeer.active,
+#tbmLiveTraceModal .tiInspector .tiPeer:hover { background: transparent !important; box-shadow: none !important; }
+#tbmLiveTraceModal .trxToolName,
+#tbmLiveTraceModal .tiPeerMain b { display: inline-block; transition: transform 120ms ease, filter 120ms ease; }
+#tbmLiveTraceModal .trxRow:is(:hover,.selected) .trxToolName,
+#tbmLiveTraceModal .tiPeer:is(:hover,.active) .tiPeerMain b { transform: translateY(-.5px); filter: brightness(1.12); }
+#tbmLiveTraceModal .tiPeer.active .tiPeerMain b { font-weight: 650; }
+#tbmLiveTraceModal .trxFilterSection,
+#tbmLiveTraceModal .trxFilterHeader,
+#tbmLiveTraceModal .trxFilterPanel > footer { border: 0 !important; box-shadow: none !important; }
+#tbmLiveTraceModal .trxFilterPanel > footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+#tbmLiveTraceModal .trxFilterPanel [data-trace-filter-close] { margin-left: auto; width: 28px; height: 28px; font-size: 20px; line-height: 1; }
+.tiTimestamp { font: inherit; color: inherit; font-variant-numeric: tabular-nums; }
+@media (prefers-color-scheme: light) {
+  #tbmLiveTraceModal .trxRow:is(:hover,.selected) .trxToolName,
+  #tbmLiveTraceModal .tiPeer:is(:hover,.active) .tiPeerMain b { filter: brightness(.9); }
+}
+@media (prefers-reduced-motion: reduce) {
+  #tbmLiveTraceModal .trxToolName, #tbmLiveTraceModal .tiPeerMain b { transition: none; transform: none !important; }
+}
 </style>`;

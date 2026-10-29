@@ -439,6 +439,7 @@ class TraceVirtualListController {
         (candidate) => stableTraceKey(candidate) === key,
       );
     if (!row) return;
+    key = stableTraceKey(row) || key;
     inspectorStore.dispatch({ type: 'select', key, row });
     target.__traceSelectedKey = key;
     target.__traceKeyboardKey = key;
@@ -1066,7 +1067,7 @@ function ensureTraceTableControls(): void {
     panel = document.createElement('aside');
     panel.className = 'trxFilterPanel';
     panel.setAttribute('aria-label', 'Trace filters');
-    panel.innerHTML = `<header class="trxFilterHeader"><div><span>Filters</span><strong>Trace view</strong></div><div class="trxFilterHeaderActions"><button type="button" data-trace-font-toggle aria-label="Use original trace font" aria-pressed="true">Aa</button><button type="button" data-trace-filter-close aria-label="Close filters">×</button></div></header><label class="trxFilterSearch"><span aria-hidden="true"><svg viewBox="0 0 16 16" width="13" height="13"><circle cx="7" cy="7" r="4.25" fill="none" stroke="currentColor" stroke-width="1.5"></circle><path d="m10.2 10.2 3 3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path></svg></span><input type="search" data-filter-search placeholder="Search filter values" aria-label="Search filter values"></label><div class="trxFilterContent" data-trace-filter-content></div><footer><button type="button" data-clear-filters>Clear filters</button></footer>`;
+    panel.innerHTML = `<header class="trxFilterHeader"><div><span>Filters</span><strong>Trace view</strong></div><div class="trxFilterHeaderActions"><button type="button" data-trace-font-toggle aria-label="Use original trace font" aria-pressed="true">Aa</button></div></header><label class="trxFilterSearch"><span aria-hidden="true"><svg viewBox="0 0 16 16" width="13" height="13"><circle cx="7" cy="7" r="4.25" fill="none" stroke="currentColor" stroke-width="1.5"></circle><path d="m10.2 10.2 3 3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path></svg></span><input type="search" data-filter-search placeholder="Search filter values" aria-label="Search filter values"></label><div class="trxFilterContent" data-trace-filter-content></div><footer><button type="button" data-clear-filters>Clear filters</button><button type="button" data-trace-filter-close aria-label="Close filters">×</button></footer>`;
     pane.append(panel);
   }
   panel.hidden = !filterPanelOpen;
