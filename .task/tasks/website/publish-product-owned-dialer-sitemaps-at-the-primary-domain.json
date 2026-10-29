@@ -1,0 +1,16 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/publish-product-owned-dialer-sitemaps-at-the-primary-domain",
+  "baseBranch": "stream/website",
+  "sourceBranch": "stream/website",
+  "startFrom": "stream",
+  "prNumber": 2671,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2671",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-publish-product-owned-dialer-sitemaps-at-the-primary-domain",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_ad2efa2c84d5",
+  "tmuxSession": "opensaas-website-publish-product-owned-dialer-sitemaps-at-the-pri-ad2efa2c",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-publish-product-owned-dialer-sitemaps-at-the-primary-domain/.task/session.json",
+  "createdAt": "2026-10-29T06:08:26.334Z"
+}
