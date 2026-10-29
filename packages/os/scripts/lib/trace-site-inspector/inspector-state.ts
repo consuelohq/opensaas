@@ -9,6 +9,7 @@ import {
 
 export type InspectorDisplayMode = 'formatted' | 'json' | 'workpad';
 export type InspectorLayout = 'split' | 'collapsed' | 'fullscreen';
+export type InspectorReadingSection = 'output' | 'input' | 'details';
 
 export type InspectorState = {
   selectedKey: string;
@@ -18,6 +19,7 @@ export type InspectorState = {
   displayMode: InspectorDisplayMode;
   callQuery: string;
   callRailCollapsed: boolean;
+  activeSection: InspectorReadingSection;
 };
 
 export type InspectorSection = {
@@ -39,6 +41,7 @@ export type InspectorEvent =
   | { type: 'toggle-call-rail' }
   | { type: 'resize'; width: number }
   | { type: 'set-display-mode'; mode: InspectorDisplayMode }
+  | { type: 'set-section'; section: InspectorReadingSection }
   | { type: 'set-call-query'; query: string };
 
 const DEFAULT_WIDTH = 680;
@@ -56,6 +59,7 @@ export function createInspectorState(
     displayMode: 'formatted',
     callQuery: '',
     callRailCollapsed: false,
+    activeSection: 'output',
     ...input,
   };
 }
@@ -90,9 +94,7 @@ export function reduceInspectorState(
     case 'rows-added': {
       if (!state.selectedKey) return state;
       const refreshed = findSelectedRow(event.rows, state.selectedKey);
-      return refreshed
-        ? { ...state, selectedRow: refreshed }
-        : { ...state };
+      return refreshed ? { ...state, selectedRow: refreshed } : { ...state };
     }
     case 'rows-replaced': {
       if (!state.selectedKey) return state;
@@ -129,6 +131,8 @@ export function reduceInspectorState(
       };
     case 'set-display-mode':
       return { ...state, displayMode: event.mode };
+    case 'set-section':
+      return { ...state, activeSection: event.section };
     case 'set-call-query':
       return { ...state, callQuery: event.query.trim().toLowerCase() };
   }
