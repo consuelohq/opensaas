@@ -24,6 +24,17 @@ const number = (overrides: Record<string, unknown> = {}) => ({
 });
 
 describe('inbound telephony customer-entry configuration', () => {
+  it('defaults and bounds the phone offer budget independently of browser capacity policy', () => {
+    const base = JSON.parse(config([number()]));
+    expect(parseTelephonyConfig(JSON.stringify(base), 'AC-account').phoneOfferMilliseconds).toBe(40_000);
+    for (const phoneOfferMilliseconds of [25_000, 80_000]) {
+      expect(parseTelephonyConfig(JSON.stringify({ ...base, phoneOfferMilliseconds }), 'AC-account').phoneOfferMilliseconds).toBe(phoneOfferMilliseconds);
+    }
+    for (const phoneOfferMilliseconds of [0, 12_000, 24_999, 80_001, 30_000.5, '40000', null]) {
+      expect(() => parseTelephonyConfig(JSON.stringify({ ...base, phoneOfferMilliseconds }), 'AC-account')).toThrow();
+    }
+  });
+
   it('requires explicit public identity and abuse bounds', () => {
     const parsed = parseTelephonyConfig(config([number()]), 'AC-account');
     expect(parsed.numbers[0]?.customerEntry).toEqual({

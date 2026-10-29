@@ -36,7 +36,9 @@ import {
 export const createInboundTelephony = (options: TelephonyOptions) => {
   const { pool } = options;
   const capacity = createPostgresRepCapacity(pool, { clock: options.clock });
-  const routing = createPostgresInboundRouting(pool, { clock: options.clock });
+  const routing = createPostgresInboundRouting(pool, {
+    clock: options.clock, phoneOfferMilliseconds: options.phoneOfferMilliseconds,
+  });
   const journal = createPostgresInboundJournal(pool);
   const callbacks = options.callbackRecipientCipher
     ? createPostgresCallbacks({

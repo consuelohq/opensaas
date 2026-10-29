@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/dev-1629-give-phone-offers-time-for-acceptance",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 2649,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2649",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1629-give-phone-offers-time-for-acceptance",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_9225a04ce34d",
+  "tmuxSession": "opensaas-dialer-dev-1629-give-phone-offers-time-for-acceptance-9225a04c",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1629-give-phone-offers-time-for-acceptance/.task/session.json",
+  "createdAt": "2026-10-28T21:18:20.148Z"
+}

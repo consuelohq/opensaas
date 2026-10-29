@@ -1,0 +1,22 @@
+---
+title: Server configuration
+description: Configure the standalone runtime without exposing credentials.
+status: preview
+---
+
+The Bun/Hono server uses PostgreSQL and Redis and owns its schema bootstrap. It does not require the removed legacy CRM application.
+
+| Area | Configuration to verify |
+| --- | --- |
+| Data | PostgreSQL and Redis connectivity. |
+| Twilio | Account credentials, owned caller numbers and voice-token application credentials. |
+| Public callbacks | `DIALER_SERVER_PUBLIC_URL` matches the public origin used for signed callbacks. |
+| Inbound preview | `DIALER_INBOUND_ENABLED` and `DIALER_INBOUND_CONFIG_JSON`, with number, workspace, queue, rep and device mappings. |
+| Callbacks | `DIALER_CALLBACK_RECIPIENT_SECRET` when enabled. |
+| Customer entry | `DIALER_CUSTOMER_ENTRY_SECRET` for the customer-entry capability boundary. |
+| Transcription | `GROQ_API_KEY`, model and explicit workspace authorization. |
+| Billing | Stripe prices and Single, Standard and Power entitlements. |
+
+Keep credentials server-side. Apply supported migrations when upgrading; a new-install bootstrap does not prove an existing database was upgraded.
+
+Check [availability](/start/availability/) and perform controlled end-to-end validation before routing production traffic to a new number. This docs package does not activate these settings.

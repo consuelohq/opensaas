@@ -64,6 +64,31 @@ const offer = (state = ready()) =>
 const fence = { assignmentId: 'assignment-a', generation: 1 };
 
 describe('shared rep capacity authority', () => {
+  it('replays a per-offer budget without rewriting the registered policy or extending existing ownership', () => {
+    const start = events.length;
+    const offered = apply(ready(), {
+      type: 'offer', direction: 'inbound', assignmentId: 'assignment-a',
+      requestId: 'request-a', endpointIds: ['phone'], offerMilliseconds: 40_000,
+    }, 1);
+    expect(offered.policy.offerMilliseconds).toBe(12_000);
+    expect(offered.owner?.offerExpiresAt).toBe(at(41));
+    const accepted = apply(offered, { type: 'accept', ...fence, endpointId: 'phone' }, 16);
+    expect(accepted.owner?.phase).toBe('connecting');
+    expect(replayRepCapacityEvents(events.slice(start))).toEqual(accepted);
+    expect(() => apply(offered, { type: 'accept', ...fence, endpointId: 'phone' }, 41)).toThrow();
+    expect(offered.owner?.offerExpiresAt).toBe(at(41));
+    expect(offer().owner?.offerExpiresAt).toBe(at(13));
+  });
+
+  it('rejects invalid offer budgets before reserving capacity', () => {
+    for (const offerMilliseconds of [0, -1, 1.5, Number.NaN, Number.POSITIVE_INFINITY, 2_147_483_648]) {
+      expect(() => apply(ready(), {
+        type: 'offer', direction: 'inbound', assignmentId: 'assignment-a',
+        requestId: 'request-a', endpointIds: ['phone'], offerMilliseconds,
+      }, 1)).toThrow();
+    }
+  });
+
   it('renews presence only for an already-ready healthy inbound rep without changing ownership', () => {
     let state = ready();
     expect(isRepCapacityEligible(state, at(61))).toBe(false);

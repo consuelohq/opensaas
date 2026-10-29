@@ -1,0 +1,217 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/dialer/dev-1629-give-phone-offers-time-for-acceptance",
+  "base": "origin/stream/dialer",
+  "headSha": "be18d394fa596127e5d9205a125c253845536be8",
+  "changeHash": "2ebf2d553b07291c9e84417c57ae626d904818c03a6dbac023f712fd3a7e82f4",
+  "changedFiles": [
+    "packages/dialer-server/src/inbound/ROUTING.md",
+    "packages/dialer-server/src/inbound/phone-offer-policy.ts",
+    "packages/dialer-server/src/inbound/routing.ts",
+    "packages/dialer-server/src/inbound/telephony-admission.ts",
+    "packages/dialer-server/src/inbound/telephony-commands.ts",
+    "packages/dialer-server/src/inbound/telephony-config.test.ts",
+    "packages/dialer-server/src/inbound/telephony-config.ts",
+    "packages/dialer-server/src/inbound/telephony.integration.test.ts",
+    "packages/dialer-server/src/inbound/telephony.ts",
+    "packages/dialer/src/inbound/rep-capacity-contracts.ts",
+    "packages/dialer/src/inbound/rep-capacity.test.ts",
+    "packages/dialer/src/inbound/rep-capacity.ts"
+  ],
+  "verifiedAt": "2026-10-28T21:29:55.825Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/dialer/dev-1629-give-phone-offers-time-for-acceptance/workpad.md",
+        ".task/tasks/dialer/dev-1629-give-phone-offers-time-for-acceptance.json",
+        "packages/dialer-server/src/inbound/ROUTING.md",
+        "packages/dialer-server/src/inbound/phone-offer-policy.ts",
+        "packages/dialer-server/src/inbound/routing.ts",
+        "packages/dialer-server/src/inbound/telephony-admission.ts",
+        "packages/dialer-server/src/inbound/telephony-commands.ts",
+        "packages/dialer-server/src/inbound/telephony-config.test.ts",
+        "packages/dialer-server/src/inbound/telephony-config.ts",
+        "packages/dialer-server/src/inbound/telephony.integration.test.ts",
+        "packages/dialer-server/src/inbound/telephony.ts",
+        "packages/dialer/src/inbound/rep-capacity-contracts.ts",
+        "packages/dialer/src/inbound/rep-capacity.test.ts",
+        "packages/dialer/src/inbound/rep-capacity.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "dialer-package",
+          "critical": true,
+          "reason": "Dialer changes are call-path critical and must run package specs.",
+          "matchedFiles": [
+            "packages/dialer/src/inbound/rep-capacity-contracts.ts",
+            "packages/dialer/src/inbound/rep-capacity.test.ts",
+            "packages/dialer/src/inbound/rep-capacity.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "dialer-server-package",
+          "critical": true,
+          "reason": "Dialer server and shared phone-normalization changes must build contacts runtime exports before proving Hono transport, Twilio boundary, and standalone lifecycle contracts.",
+          "matchedFiles": [
+            "packages/dialer-server/src/inbound/ROUTING.md",
+            "packages/dialer-server/src/inbound/phone-offer-policy.ts",
+            "packages/dialer-server/src/inbound/routing.ts",
+            "packages/dialer-server/src/inbound/telephony-admission.ts",
+            "packages/dialer-server/src/inbound/telephony-commands.ts",
+            "packages/dialer-server/src/inbound/telephony-config.test.ts",
+            "packages/dialer-server/src/inbound/telephony-config.ts",
+            "packages/dialer-server/src/inbound/telephony.integration.test.ts",
+            "packages/dialer-server/src/inbound/telephony.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "dialer specs",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer/src"
+          ],
+          "ruleId": "dialer-package",
+          "critical": true
+        },
+        {
+          "name": "dialer-server logger prerequisite",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/logger",
+            "build"
+          ],
+          "ruleId": "dialer-server-package",
+          "critical": true
+        },
+        {
+          "name": "dialer-server contacts prerequisite",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/contacts",
+            "build"
+          ],
+          "ruleId": "dialer-server-package",
+          "critical": true
+        },
+        {
+          "name": "dialer-server Hono contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-server/src"
+          ],
+          "ruleId": "dialer-server-package",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "platform": "darwin",
+      "run": true,
+      "runResults": [
+        {
+          "name": "dialer specs",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer/src"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1879,
+          "outputTail": "und evidence over a lucky tiny raw rate [0.03ms]\n(pass) CallTimingModel > breaks exact timing-evidence ties by stable calendar coordinates [0.03ms]\n\npackages/dialer/src/services/retry-decision-model.contract.spec.ts:\n(pass) mature retry decision contract > separates whether to retry from the learned preferred timing window [0.23ms]\n(pass) mature retry decision contract > keeps retrying within the cap when stopping evidence is missing [0.05ms]\n(pass) mature retry decision contract > stops on answered calls, the attempt cap, or observed negative expected value [0.06ms]\n\npackages/dialer/src/services/contextual-response-model.spec.ts:\n(pass) ContextualResponseModel > learns a regularized contextual response signal without changing the D3 policy contract [24.64ms]\n(pass) ContextualResponseModel > keeps candidate-specific opportunity economics separate from response probability [0.05ms]\n(pass) ContextualResponseModel > matches the penalized Bernoulli objective gradient by finite differences [0.22ms]\n(pass) ContextualResponseModel > keeps regularization strength stable when the empirical sample is replicated [76.51ms]\n(pass) ContextualResponseModel > does not regularize the intercept and keeps extreme encoded values finite [0.12ms]\n(pass) ContextualResponseModel > encodes missing spacing differently from a real zero-minute spacing [0.02ms]\n\npackages/dialer/src/services/predictive-selection-science.spec.ts:\n(pass) scientific predictive selection contract > uses calibrated upper probability evidence for exploration rather than an arbitrary sample-size bonus [0.61ms]\n(pass) scientific predictive selection contract > does not change an otherwise identical priority because a contact is older than 48 hours [0.10ms]\n(pass) scientific predictive selection contract > preserves FIFO for a decision set when any candidate lacks comparable hazard evidence [0.09ms]\n(pass) uses aggregate attempt evidence rather than a peak slot for an unobserved calling time [0.09ms]\n\npackages/dialer/src/services/parallel-lifecycle.contract.spec.ts:\n(pass) parallel dial lifecycle contract > keeps customer legs muted without provider hold music until the agent starts the conference [0.80ms]\n(pass) parallel dial lifecycle contract > retains a callback that arrives while later legs are still being created [1.99ms]\n(pass) parallel dial lifecycle contract > keeps exactly one durable winner under simultaneous human callbacks [3.49ms]\n(pass) parallel dial lifecycle contract > claims telemetry emission exactly once under concurrent callbacks [3.25ms]\n(pass) parallel dial lifecycle contract > records failed loser cleanup and clears it after reconciliation succeeds [2.45ms]\n(pass) parallel dial lifecycle contract > does not persist a false winner-unmute failure before the participant enters [0.75ms]\n(pass) parallel dial lifecycle contract > records failed winner unmute and clears it after reconciliation succeeds [0.89ms]\n(pass) parallel dial lifecycle contract > completes the group when the selected winner hangs up [2.02ms]\n(pass) parallel dial lifecycle contract > persists workspace ownership and rejects cross-workspace access [3.46ms]\n(pass) parallel dial lifecycle contract > ignores an answered callback after the same leg is terminal [3.25ms]\n\npackages/dialer/src/infrastructure/redis/redis-parallel-store.test.ts:\n(pass) RedisParallelStore > registers calls and reverse mappings atomically and cleans the full group [0.35ms]\n(pass) RedisParallelStore > claims one winner and one telemetry emission and serializes group operations [4.67ms]\n(pass) RedisParallelStore > renews an owned group lock while a long operation is running [183.80ms]\n(pass) RedisParallelStore > deletes known group keys when the persisted group JSON is malformed [0.22ms]\n\npackages/dialer/src/infrastructure/twilio/create-outcome.test.ts:\n(pass) recognizes rejected requests while keeping timeouts and server failures unknown [0.09ms]\n\n 268 pass\n 0 fail\n 652 expect() calls\nRan 268 tests across 31 files. [1.87s]\n"
+        },
+        {
+          "name": "dialer-server logger prerequisite",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/logger",
+            "build"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-server-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 820,
+          "outputTail": "$ bun x tsc\n"
+        },
+        {
+          "name": "dialer-server contacts prerequisite",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/contacts",
+            "build"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-server-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 774,
+          "outputTail": "$ bun x tsc\n"
+        },
+        {
+          "name": "dialer-server Hono contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-server/src"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-server-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1148,
+          "outputTail": " > rejects stale and cross-rep acceptance and cleans an abandoned caller\n(skip) inbound runtime with real Postgres and simulated carrier > persists explicit voicemail selection without recording an ordinary call\n(skip) inbound runtime with real Postgres and simulated carrier > refuses rollback while a live caller or uncertain effect exists\n(skip) inbound runtime with real Postgres and simulated carrier > (unnamed)\n(skip) RD7B customer entry with real Postgres > persists CRM owner enrichment for public callbacks without exposing it publicly\n(skip) RD7B customer entry with real Postgres > deduplicates public requests, persists explicit permission, and survives restart\n(skip) RD7B customer entry with real Postgres > projects append-only booking cancellation into customer responses after restart\n(skip) RD7B customer entry with real Postgres > reports uncertain booking cancellation without repeating provider effects on read or retry\n(skip) RD7B customer entry with real Postgres > keeps one revision and booking when a committed reschedule response is retried\n(skip) RD7B customer entry with real Postgres > uses server-authored service windows for reschedule and cancels the RD6 obligation\n(skip) RD6 callbacks with real Postgres > refuses to start without the callback secret or configured number while durable work remains\n(skip) RD6 callbacks with real Postgres > marks all terminal callback telephony sessions ended in the same transaction\n(skip) RD6 callbacks with real Postgres > claims and fences the callback revision before provider cancellation, blocking competing routing\n(skip) RD6 callbacks with real Postgres > preserves the routing fence across unknown calendar cancellation and resumes the same claim after restart\n(skip) RD6 callbacks with real Postgres > retains the encrypted recipient through a later rescheduled window and purges afterward\n(skip) RD6 callbacks with real Postgres > does not reserve early and creates one attempt only after rep acceptance\n(skip) RD6 callbacks with real Postgres > releases no-answer capacity, retries on policy backoff, and preserves original entry\n(skip) RD6 callbacks with real Postgres > blocks rollback until callback obligations are terminal and retained recipients are purged\n(skip) RD6 callbacks with real Postgres > records calendar unavailability truthfully and purges recipients after retention\n(skip) RD6 callbacks with real Postgres > claims calendar creation once across concurrency and reconciles its unknown outcome after restart\n(skip) RD6 callbacks with real Postgres > rejects stale management before cancelling the newly selected revision\n(skip) RD6 callbacks with real Postgres > reconciles a lost calendar cancellation after restart and restores management without duplicate effects\n(skip) RD6 callbacks with real Postgres > does not repeat a provider cancellation after an uncertain dispatched effect\n(skip) transactional inbound routing > commits one reservation for duplicate ticks and replays immutable decision evidence\n(skip) transactional inbound routing > does not split a reservation from its evidence when persistence fails\n(skip) transactional inbound routing > expires safe offers, moves to another rep and bounds attempts across recreation\n(skip) transactional inbound routing > protects dispatched offers through expiry and escalation without reoffering\n(skip) transactional inbound routing > does not resurrect abandoned callers and records unserviceable predecessors\n(skip) transactional inbound routing > keeps callback not-before, config versions, fallback and replay after restart\n(skip) transactional inbound routing > preserves one owner under independent routing worker processes\n(skip) transactional inbound routing > rejects future request evidence without reserving capacity\n(skip) transactional inbound routing > rejects rollback with active routing and preserves older journal after safe down/up\n\n 225 pass\n 89 skip\n 0 fail\n 1207 expect() calls\nRan 314 tests across 57 files. [1141.00ms]\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}
