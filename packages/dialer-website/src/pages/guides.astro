@@ -1,0 +1,11 @@
+---
+import InfoPage from '../components/site/InfoPage.astro';
+---
+<InfoPage title="Your first calling workflow." description="A short setup guide for Consuelo Dialer in GoHighLevel.">
+ <h2>What you need</h2><ul><li>A GoHighLevel location and an administrator who can authorize its integration.</li><li>The reps who will make or receive calls, with browser audio or forwarding phones configured for the selected rollout.</li><li>A calling plan and phone numbers provisioned for your team.</li></ul>
+ <h2>Set up the location</h2><ol><li><a href="/get-started">Request onboarding</a>. Confirm outbound and inbound needs before selecting a plan.</li><li>Authorize the correct Marketplace integration for your location. Use the setup link provided during onboarding.</li><li>Open Consuelo Dialer from the location menu and confirm that contacts and calling queues load.</li><li>Configure numbers, caller ID, rep endpoints and availability for the enabled features.</li><li>Run a controlled call test before opening the workflow to the whole team.</li></ol>
+ <h2>Make a call</h2><p>Open a contact or a calling queue, choose the calling settings permitted by your plan, and start with a small test. Review the outcome in call history and confirm the next lead or follow-up.</p>
+ <h2>Receive calls</h2><p>Inbound is enabled through controlled onboarding. A rep must have a configured, healthy endpoint and be ready for inbound. Agree on waiting limits and what happens if the team cannot answer.</p>
+ <h2 id="developers">Build on the SDK</h2><p>The provider-neutral Dialer package owns calling and routing semantics. The standalone Bun/Hono service composes PostgreSQL, Redis and provider adapters; LeadConnector is the CRM integration boundary.</p><p><a href="https://github.com/consuelohq/opensaas/tree/main/packages/dialer">Dialer SDK source</a> · <a href="https://github.com/consuelohq/opensaas/tree/main/packages/dialer-server">Standalone server source</a></p>
+ <h2>Need a hand?</h2><p><a href="/contact">Contact the team</a>. Do not send passwords, API secrets or customer call recordings in an onboarding email.</p>
+</InfoPage>

@@ -2,16 +2,16 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 714,
-    "mappedTestCount": 630,
-    "unmappedTestCount": 84,
-    "ruleCount": 84,
-    "explicitRuleCount": 70,
+    "testFileCount": 717,
+    "mappedTestCount": 634,
+    "unmappedTestCount": 83,
+    "ruleCount": 86,
+    "explicitRuleCount": 72,
     "autoRuleCount": 14,
     "projectCount": 10,
-    "packageTestScriptCount": 21,
+    "packageTestScriptCount": 22,
     "byGroup": {
-      "packages/os/tests": 327,
+      "packages/os/tests": 328,
       "packages/workspace/tests": 66,
       "packages/os/tests/media": 34,
       "packages/consuelo-design/upstream/open-design/apps/daemon": 21,
@@ -46,6 +46,7 @@
       "packages/consuelo-design/upstream/open-design/apps/web/src/state": 2,
       "packages/consuelo-design/upstream/open-design/apps/web/src/utils": 2,
       "packages/contacts/src": 2,
+      "packages/dialer-documentation/tests": 2,
       "packages/diff-cockpit/tests": 2,
       "packages/os/tests/audit": 2,
       "packages/os/tests/fixtures": 2,
@@ -60,10 +61,10 @@
       "packages/consuelo-design/upstream/open-design/tools/dev/src": 1,
       "packages/consuelo-design/upstream/open-design/tools/pack/src": 1,
       "packages/consuelo-dialer-website/tests": 1,
-      "packages/dialer-documentation/tests": 1,
       "packages/dialer-server/src/database": 1,
       "packages/dialer-server/src/release": 1,
       "packages/dialer-server/src/routes": 1,
+      "packages/dialer-website/tests": 1,
       "packages/dialer/src": 1,
       "packages/dialer/src/infrastructure/redis": 1,
       "packages/dialer/src/infrastructure/twilio": 1,
@@ -100,7 +101,7 @@
       "tests": 1
     },
     "byKind": {
-      "test": 650,
+      "test": 653,
       "spec": 29,
       "__tests__": 11,
       "integration": 9,
@@ -2996,6 +2997,94 @@
       "origin": "explicit"
     },
     {
+      "id": "dialer-website-package",
+      "source": [
+        "packages/dialer-website/**"
+      ],
+      "tests": [
+        {
+          "name": "Dialer website dependency prerequisite",
+          "command": [
+            "bun",
+            "install",
+            "--cwd",
+            "packages/dialer-website",
+            "--frozen-lockfile",
+            "--ignore-scripts"
+          ]
+        },
+        {
+          "name": "Dialer website build",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/dialer-website",
+            "build"
+          ]
+        },
+        {
+          "name": "Dialer website delivery contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-website/tests/marketing-contract.test.ts"
+          ]
+        },
+        {
+          "name": "Dialer website rendered browser contracts",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/dialer-website",
+            "test:browser"
+          ]
+        }
+      ],
+      "critical": true,
+      "reason": "The independently Bun-owned Dialer website must install its locked dependencies, materialize brand assets and prove its rendered navigation, pricing and isolated preview boundary.",
+      "origin": "explicit"
+    },
+    {
+      "id": "public-production-release-isolation",
+      "source": [
+        ".github/workflows/consuelo-production-release.yaml",
+        "packages/os/scripts/production-release-plan.ts",
+        "packages/os/tests/production-release-plan.test.ts",
+        "packages/workspace/tests/docs-production-release.test.js"
+      ],
+      "tests": [
+        {
+          "name": "Public production release isolation contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/production-release-plan.test.ts",
+            "packages/workspace/tests/docs-production-release.test.js",
+            "packages/workspace/tests/website-deploy.test.js",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ]
+        },
+        {
+          "name": "Preserved MCP production release security contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/production-release-mcp-security.test.ts"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "Website and docs release changes must preserve the existing Dialer release classifier and keep unrelated pushes from redeploying OS authentication; manual release and MCP security controls remain explicit.",
+      "origin": "explicit"
+    },
+    {
       "id": "auto:@consuelo/cli:package-test",
       "source": [
         "packages/cli/**"
@@ -3782,6 +3871,11 @@
       "kind": "spec"
     },
     {
+      "path": "packages/dialer-documentation/tests/markdown.test.ts",
+      "group": "packages/dialer-documentation/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/dialer-documentation/tests/package.test.ts",
       "group": "packages/dialer-documentation/tests",
       "kind": "test"
@@ -4069,6 +4163,11 @@
     {
       "path": "packages/dialer-server/src/twilio-boundary.test.ts",
       "group": "packages/dialer-server/src",
+      "kind": "test"
+    },
+    {
+      "path": "packages/dialer-website/tests/marketing-contract.test.ts",
+      "group": "packages/dialer-website/tests",
       "kind": "test"
     },
     {
@@ -5752,6 +5851,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/production-release-plan.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/provider-cutover.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
@@ -6901,7 +7005,6 @@
     "packages/workspace/tests/deploy-wrappers.test.js",
     "packages/workspace/tests/dialer-scenario-workspace-selection.test.ts",
     "packages/workspace/tests/dialer-validation-runbook.test.ts",
-    "packages/workspace/tests/docs-production-release.test.js",
     "packages/workspace/tests/durable-task-worktrees.test.ts",
     "packages/workspace/tests/embedding-config.test.js",
     "packages/workspace/tests/explore-ranker.test.js",
@@ -7177,6 +7280,15 @@
       "scripts": {
         "test": "bun test src",
         "validate:provider-test": "bun ./scripts/validate-provider-test.ts"
+      }
+    },
+    {
+      "name": "consuelo-dialer-website",
+      "root": "packages/dialer-website",
+      "file": "packages/dialer-website/package.json",
+      "scripts": {
+        "test": "bun test tests/marketing-contract.test.ts",
+        "test:browser": "node scripts/test-marketing-browser.mjs"
       }
     },
     {

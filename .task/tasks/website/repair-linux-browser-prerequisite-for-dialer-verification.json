@@ -1,0 +1,16 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/repair-linux-browser-prerequisite-for-dialer-verification",
+  "baseBranch": "stream/website",
+  "sourceBranch": "stream/website",
+  "startFrom": "stream",
+  "prNumber": 2658,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2658",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-repair-linux-browser-prerequisite-for-dialer-verification",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_e93f92efb288",
+  "tmuxSession": "opensaas-website-repair-linux-browser-prerequisite-for-dialer-ver-e93f92ef",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-repair-linux-browser-prerequisite-for-dialer-verification/.task/session.json",
+  "createdAt": "2026-10-29T03:09:57.317Z"
+}

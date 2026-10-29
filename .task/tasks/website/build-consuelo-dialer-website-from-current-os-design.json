@@ -1,0 +1,16 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/build-consuelo-dialer-website-from-current-os-design",
+  "baseBranch": "stream/website",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2647,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2647",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-build-consuelo-dialer-website-from-current-os-design",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_9b24c61e3574",
+  "tmuxSession": "opensaas-website-build-consuelo-dialer-website-from-current-os-de-9b24c61e",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-build-consuelo-dialer-website-from-current-os-design/.task/session.json",
+  "createdAt": "2026-10-28T21:01:48.175Z"
+}
