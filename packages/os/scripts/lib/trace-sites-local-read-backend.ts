@@ -1,4 +1,5 @@
 import { existsSync } from 'node:fs';
+import { readRecordedTraceUsage } from './trace-token-usage';
 
 import type {
   TraceSitesGatewayCachedAggregate,
@@ -906,10 +907,48 @@ function cleanString(value: unknown): string {
   return String(value ?? '').trim();
 }
 
+function historyRowsWithSavedStepUsage(db: TraceDatabase, rows: TraceRow[]): TraceRow[] {
+  const parents=[...new Set(rows.flatMap(row=>[
+    cleanString(row.mcp_trace_id),
+    row.tool==='batch'?cleanString(row.trace_id):'',
+  ]).filter(Boolean))];
+  if(!parents.length)return rows;
+  const sql=[
+    // A trace may be mirrored by multiple sources; count each saved step once.
+    'SELECT DISTINCT parent.trace_id AS parent_id, child.key AS child_index,',
+    "json_extract(child.value, '$.traceId') AS child_id,",
+    "json_extract(child.value, '$.inputTokens') AS input_tokens,",
+    "json_extract(child.value, '$.outputTokens') AS output_tokens,",
+    "json_extract(child.value, '$.totalTokens') AS total_tokens",
+    'FROM tool_traces parent,',
+    "json_each(CASE WHEN json_valid(parent.result_json) THEN parent.result_json ELSE '{}' END, '$.data.results') child",
+    "WHERE parent.tool = 'batch' AND child.type = 'object'",
+    'AND parent.trace_id IN ('+parents.map(()=>'?').join(',')+')',
+  ].join(' ');
+  const saved=db.query(sql).all(...parents) as Array<{
+    parent_id:string;child_id:string;input_tokens:number|null;output_tokens:number|null;total_tokens:number|null;
+  }>;
+  const children=new Map<string,ReturnType<typeof readRecordedTraceUsage>>();
+  const grouped=new Map<string,Record<string,unknown>[]>();
+  for(const item of saved){
+    const usage=readRecordedTraceUsage(item);
+    if(item.child_id)children.set(item.parent_id+'\0'+item.child_id,usage);
+    const list=grouped.get(item.parent_id)??[];list.push(item);grouped.set(item.parent_id,list);
+  }
+  return rows.map(row=>{
+    const own=grouped.get(cleanString(row.trace_id));
+    const usage=row.tool==='batch'&&own
+      ? readRecordedTraceUsage({name:'batch',batchResultsJson:own})
+      : children.get(cleanString(row.mcp_trace_id)+'\0'+cleanString(row.trace_id));
+    return usage?{...row,input_tokens:row.input_tokens??usage.input,output_tokens:row.output_tokens??usage.output,total_tokens:row.total_tokens??usage.total}:row;
+  });
+}
+
 function historyRowsWithSessionNames(
   db: TraceDatabase,
   rows: TraceRow[],
 ): TraceSitesGatewayHistoryRow[] {
+  rows = historyRowsWithSavedStepUsage(db, rows);
   const unresolved = rows.filter(
     (row) =>
       !cleanString(row.work_path) &&

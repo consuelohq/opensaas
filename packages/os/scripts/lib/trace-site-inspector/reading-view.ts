@@ -72,14 +72,16 @@ function inlineMarkdown(text: string): string {
       if (part.startsWith('\x60') && part.endsWith('\x60'))
         return '<code>' + escapeTraceHtml(part.slice(1, -1)) + '</code>';
       return escapeTraceHtml(part)
-        .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (original, label, url) =>
-          /^(?:https?:\/\/|mailto:|\/(?!\/)|#)/i.test(url)
-            ? '<a href="' +
-              url +
-              '" target="_blank" rel="noopener noreferrer">' +
-              label +
-              '</a>'
-            : original,
+        .replace(
+          /\[([^\]]+)\]\((?:&lt;)?([^)\s]+?)(?:&gt;)?\)/g,
+          (original, label, url) =>
+            /^(?:https?:\/\/|mailto:|\/(?!\/)|#)/i.test(url)
+              ? '<a href="' +
+                url +
+                '" target="_blank" rel="noopener noreferrer">' +
+                label +
+                '</a>'
+              : original,
         )
         .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
         .replace(/(?:^|(?<=\s))\*([^*]+)\*/g, '<em>$1</em>');
@@ -222,6 +224,32 @@ export function renderTraceMarkdown(text: string): string {
 function valueMarkup(value: unknown, key: string, markdown = false): string {
   const text = serialized(value);
   if (markdown) return renderTraceMarkdown(text);
+  if (
+    /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/.test(
+      text,
+    ) &&
+    !Number.isNaN(Date.parse(text))
+  ) {
+    const label = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/New_York',
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      second: '2-digit',
+      timeZoneName: 'short',
+    }).format(new Date(text));
+    return (
+      '<time class="tiTimestamp" datetime="' +
+      escapeTraceHtml(text) +
+      '" title="' +
+      escapeTraceHtml(text) +
+      '">' +
+      escapeTraceHtml(label) +
+      '</time>'
+    );
+  }
   const code =
     /^(?:code|stdout|stderr|command|script|sql|diff|patch|patchText|stack|path|file|cwd|snapshot|preview|.*Json|.*Id)$/i.test(
       key,
@@ -346,8 +374,9 @@ export function renderInspectorPayload(
           Boolean(priority?.includes(key)) ||
           /error|reason|message|cause|detail/i.test(key);
         const markdown =
-          key === 'content' &&
-          (options.markdown ||
+          /^(?:content|description|body|markdown|document)$/i.test(key) &&
+          (/^(?:description|body|markdown|document)$/i.test(key) ||
+            options.markdown ||
             options.profile?.family === 'steering' ||
             String(fields.mime ?? '').includes('markdown') ||
             /\.mdx?$/i.test(String(fields.path ?? '')));
@@ -464,7 +493,7 @@ export function renderInspectorReading(
     error +
     section('input', prepared.input) +
     section('output', prepared.output) +
-    '<details class="tiDiagnostics" data-ti-disclosure="call-details" data-ti-section="details"><summary>Call details</summary><div class="tiSectionBody">' +
+    '<details class="tiDiagnostics" data-ti-disclosure="call-details" data-ti-section="details" open><summary>Call details</summary><div class="tiSectionBody">' +
     renderInspectorPayload(details) +
     '</div></details>'
   );
