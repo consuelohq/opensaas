@@ -22,7 +22,7 @@ The distinct Worker is `consuelo-dialer-docs`. Wrangler routes are empty, there 
 
 Build with `DOCS_SITE_URL` set to the preview origin to produce matching canonicals and social metadata. Its fallback is the agreed final `https://docs.consuelohq.com` destination, not permission to attach that domain. Runtime translation uses Google when a separate secret is configured; without it English remains readable and the translation endpoint reports unavailability.
 
-`bun run deploy:preview` builds and deploys the isolated Worker through the generated `dist/server/wrangler.json`. For local/test translation use `DOCS_TRANSLATION_PROVIDER=passthrough`; do not publish passthrough as a translated product.
+`DOCS_SITE_URL=https://<isolated-preview-origin> bun run deploy:preview` rejects missing, invalid and production origins, marks generated pages noindex, then builds and deploys the isolated Worker through the generated `dist/server/wrangler.json`. For local/test translation use `DOCS_TRANSLATION_PROVIDER=passthrough`; do not publish passthrough as a translated product.
 
 Branch 3 owns final domains, redirects, production secrets/bindings and shared release wiring. It must migrate OS docs, resolve old URL collisions and protect OS authentication before attaching the Dialer custom domain. Do not invoke the OS `docs:deploy` command for this package, reuse its KV ID, move its current custom domain, or alter `calls.consuelohq.com`.
 

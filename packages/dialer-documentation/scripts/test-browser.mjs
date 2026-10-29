@@ -1,11 +1,10 @@
 import assert from 'node:assert/strict';
-import { spawn } from 'node:child_process';
 import { existsSync, mkdirSync, readdirSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium, webkit } from 'playwright';
-import { launchDocumentationBrowser, stopDocumentationServer } from './lib/documentation-browser-test.mjs';
+import { launchDocumentationBrowser, startDocumentationPreviewServer, stopDocumentationServer } from './lib/documentation-browser-test.mjs';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 const port = Number(process.env.DOCS_TEST_PORT ?? 4397);
@@ -13,9 +12,7 @@ const origin = 'http://127.0.0.1:' + port;
 const evidence = process.env.DOCS_EVIDENCE_DIR ?? resolve(tmpdir(), 'consuelo-dialer-docs-' + process.pid);
 mkdirSync(evidence, { recursive: true });
 assert.ok(existsSync(resolve(root, 'dist/client/index.html')), 'Build before browser checks');
-const server = spawn('node', [resolve(root, 'node_modules/astro/bin/astro.mjs'), 'preview', '--host', '127.0.0.1', '--port', String(port)], {
-  cwd: root, detached: process.platform !== 'win32', stdio: ['ignore', 'pipe', 'pipe'],
-});
+const server = await startDocumentationPreviewServer({ port });
 let output = '';
 server.stdout.on('data', (chunk) => { output = (output + chunk).slice(-10000); });
 server.stderr.on('data', (chunk) => { output = (output + chunk).slice(-10000); });
@@ -36,6 +33,13 @@ try {
   page.on('pageerror', (error) => errors.push(error.message));
   await page.goto(origin, { waitUntil: 'networkidle' });
   assert.match(await page.title(), /Consuelo Dialer/);
+  if (process.env.DOCS_SITE_URL) {
+    assert.equal(await page.locator('link[rel=canonical]').getAttribute('href'), process.env.DOCS_SITE_URL.replace(/\/$/, '') + '/');
+    assert.equal(await page.locator('meta[property="og:image"]').getAttribute('content'), process.env.DOCS_SITE_URL.replace(/\/$/, '') + '/dialer-docs-social.png');
+    const sitemap = await context.request.get(origin + '/sitemap-0.xml');
+    assert.match(await sitemap.text(), new RegExp(process.env.DOCS_SITE_URL.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  }
+  if (process.env.PUBLIC_DOCS_PREVIEW === '1') assert.equal(await page.locator('meta[name=robots]').getAttribute('content'), 'noindex,nofollow');
   assert.equal(await page.locator('main h1').count(), 1);
   assert.equal(await page.locator('#starlight__sidebar .global-sidebar-desktop a.global-section-link').count(), 8);
   assert.equal(await page.getByRole('link', { name: 'Consuelo Dialer docs', exact: true }).getAttribute('href'), '/');
@@ -131,8 +135,9 @@ try {
     const md = await context.request.get(origin + '/' + slug + '.md');
     assert.equal(md.status(), 200, slug + ' Markdown');
   }
-  const absent = await context.request.get(origin + '/start/install-consuelo-os/');
-  assert.equal(absent.status(), 404, 'An inherited OS page must not resolve');
+  const legacy = await context.request.get(origin + '/start/install-consuelo-os/', { maxRedirects: 0 });
+  assert.equal(legacy.status(), 301, 'Legacy OS routes retain the shipped permanent redirect');
+  assert.equal(legacy.headers().location, 'https://os.consuelohq.com/docs/start/install-consuelo-os/');
   const badTranslation = await context.request.get(origin + '/api/docs/translate?path=%2Fmissing%2F&lang=es');
   assert.equal(badTranslation.status(), 404, 'Unknown source cannot translate');
 
@@ -140,7 +145,8 @@ try {
   let translatedPath;
   await spanish.route('**/api/docs/translate?**', async (route) => {
     translatedPath = new URL(route.request().url()).searchParams.get('path');
-    await route.fulfill({ json: { ok: true, cached: false, provider: 'passthrough', sourceLanguage: 'en', targetLanguage: 'es', route: '/start/', title: 'Guía para empezar', segments: ['Traducción de prueba.'] } });
+    const language = new URL(route.request().url()).searchParams.get('lang');
+    await route.fulfill({ json: { ok: true, cached: false, provider: 'passthrough', sourceLanguage: 'en', targetLanguage: language, route: '/start/', title: language === 'ar' ? 'دليل البدء' : 'Guía para empezar', segments: [language === 'ar' ? 'ابدأ الاتصال؛ الفريق جاهز.' : 'Traducción de prueba.'] } });
   });
   const translatedPage = await spanish.newPage();
   await translatedPage.goto(origin + '/start/', { waitUntil: 'networkidle' });
@@ -148,6 +154,17 @@ try {
   assert.equal(translatedPath, '/start/');
   assert.equal(await translatedPage.locator('html').getAttribute('lang'), 'es');
   assert.match(await translatedPage.locator('[data-docs-runtime-translation-panel]').textContent(), /Guía para empezar/);
+  assert.equal(await translatedPage.locator('[data-docs-runtime-translation-panel]').getAttribute('dir'), 'ltr');
+  await translatedPage.evaluate(() => {
+    Object.defineProperty(navigator, 'languages', { configurable: true, value: ['ar'] });
+    document.dispatchEvent(new Event('astro:page-load'));
+  });
+  await translatedPage.waitForFunction(() => document.querySelector('[data-docs-runtime-translation-panel]')?.getAttribute('dir') === 'rtl');
+  assert.match(await translatedPage.locator('[data-docs-runtime-translation-panel]').textContent(), /ابدأ الاتصال؛ الفريق جاهز\./);
+  assert.equal(await translatedPage.locator('[data-docs-runtime-translation-panel]').evaluate((element) => getComputedStyle(element).textAlign), 'start');
+  await translatedPage.evaluate(() => { Object.defineProperty(navigator, 'languages', { configurable: true, value: ['en-US'] }); document.dispatchEvent(new Event('astro:page-load')); });
+  await translatedPage.locator('[data-docs-runtime-translation-panel]').waitFor({ state: 'detached' });
+  assert.equal(await translatedPage.locator('html').getAttribute('lang'), 'en');
   await spanish.close();
 
   // Safari/WebKit receives the same responsive layout if the engine is installed.

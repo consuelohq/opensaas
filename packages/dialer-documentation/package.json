@@ -12,7 +12,7 @@
     "test": "bun test tests",
     "test:translation": "bun scripts/test-translation.mjs",
     "test:browser": "bun scripts/test-browser.mjs",
-    "deploy:preview": "bun run build && bunx wrangler deploy --config dist/server/wrangler.json",
+    "deploy:preview": "bun scripts/deploy-preview.mjs",
     "generate:social-card": "bun scripts/generate-social-card.mjs"
   },
   "dependencies": {
