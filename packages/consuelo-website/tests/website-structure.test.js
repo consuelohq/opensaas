@@ -124,7 +124,7 @@ describe('Consuelo website structure', () => {
     const support = readSource('src/pages/support.astro');
     expect(support).toContain('title="Support"');
     expect(support).toContain('support@consuelohq.com');
-    expect(support).toContain('https://docs.consuelohq.com');
+    expect(support).toContain('siteLinks.docs');
     expect(support).toContain('href={withSiteBase("/contact")}');
     expect(support).not.toContain('404');
 
@@ -668,4 +668,13 @@ describe('Consuelo website structure', () => {
     expect(agentRules).not.toContain('means start/create/open a live Open Design working session');
     expect(agentRules).not.toContain('If a command says `generate website`, it should start or reuse Open Design');
   });
+  test('should keep mounted OS support and launcher guides on configured documentation', () => {
+    const support = readSource('src/pages/support.astro');
+    const launcher = readSource('src/pages/os/launcher.astro');
+    expect(support).toContain('href={siteLinks.docs}');
+    expect(launcher).toContain('href: publicSiteLinks.docs');
+    expect(launcher).toContain("href: '/blog/software-is-becoming-decision-infrastructure/");
+    expect(launcher).not.toContain('https://docs.consuelohq.com/');
+  });
+
 });

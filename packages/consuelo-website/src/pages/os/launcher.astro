@@ -1,4 +1,5 @@
 ---
+import { siteLinks as publicSiteLinks } from '../../data/site-links';
 import { withSiteBase } from '../../lib/public-path';
 import MarketingLayout from '../../layouts/MarketingLayout.astro';
 import '../../styles/tokens.css';
@@ -16,11 +17,11 @@ const siteLinks = [
   { label: 'Observability', href: workspaceUrl('/observability') },
   { label: 'Code review', href: workspaceUrl('/diffs') },
 ];
-const guideLinks = [{ label: 'Documentation', href: 'https://docs.consuelohq.com/' }];
+const guideLinks = [{ label: 'Documentation', href: publicSiteLinks.docs }];
 const writingLinks = [
   {
     label: 'Decision loops',
-    href: 'https://consuelohq.com/blog/software-is-becoming-decision-infrastructure/#the-future-interface-is-what-should-we-do-next',
+    href: '/blog/software-is-becoming-decision-infrastructure/#the-future-interface-is-what-should-we-do-next',
   },
 ];
 const configurationLinks = [
