@@ -46,7 +46,7 @@ export function extractTranslationSegments(rawMdx: string): string[] {
 }
 
 function cleanSegment(segment: string): string {
-  return segment
+  const text = segment
     .split('\n')
     .map((line) => line
       .replace(headingMarkerPattern, '')
@@ -55,9 +55,21 @@ function cleanSegment(segment: string): string {
       .trim())
     .filter(Boolean)
     .join(' ')
-    .replace(/(`+)([\s\S]*?)\1/g, '$2')
-    .replace(/(\*\*|__)(?=\S)(.+?\S)\1/g, '$2')
-    .replace(/(^|[\s(])([*_])(?=\S)(.+?\S)\2(?=$|[\s.,!?:;)])/g, '$1$3')
     .replace(/\s+/g, ' ')
     .trim();
+  return stripEmphasisOutsideCode(text);
+}
+
+
+function stripEmphasisOutsideCode(text: string): string {
+  const strip = (prose: string) => prose
+    .replace(/(\*\*|__)(?=\S)(.+?\S)\1/g, '$2')
+    .replace(/(^|[\s(])([*_])(?=\S)(.+?\S)\2(?=$|[\s.,!?:;)])/g, '$1$3');
+  let result = '';
+  let cursor = 0;
+  for (const span of text.matchAll(/(`+)([\s\S]*?)\1/g)) {
+    result += strip(text.slice(cursor, span.index)) + span[2];
+    cursor = span.index + span[0].length;
+  }
+  return result + strip(text.slice(cursor));
 }
