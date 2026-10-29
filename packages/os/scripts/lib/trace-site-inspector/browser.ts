@@ -373,7 +373,7 @@ function headerMetricsMarkup(branch: ReturnType<typeof branchSummary>): string {
     <details class="tiUsageDetails"><summary>${escapeHtml(formatTokenCount(usage.total))} tokens</summary><div>
       <span>Input <b>${escapeHtml(formatTokenCount(usage.input))}</b></span>
       <span>Output <b>${escapeHtml(formatTokenCount(usage.output))}</b></span>
-      <small>Loaded calls only. Approximate counts are payload estimates; a dash means not recorded.</small>
+      <small>Recorded counts for loaded calls. A dash means usage was not recorded for every call.</small>
     </div></details>`;
 }
 
@@ -382,7 +382,7 @@ function selectedMetaMarkup(row: TraceRecord): string {
   return `<span class="tiCallStatus ${status}" aria-hidden="true">${status === 'error' ? '×' : '✤'}</span>
     <strong>${escapeHtml(formatTraceTableRow(row).toolLabel)}</strong><span class="tiSelectedStatus">${status === 'error' ? 'Failed' : 'Success'}</span>
     <span>${escapeHtml(clean(row.latency) || formatDuration(row.durationMs))}</span>
-    <span title="${traceTokenUsage(row).total.estimated ? 'Estimated from payload size' : 'Recorded token usage'}">${escapeHtml(formatTokenCount(traceTokenUsage(row).total))} tokens</span>`;
+    <span title="Recorded token usage">${escapeHtml(formatTokenCount(traceTokenUsage(row).total))} tokens</span>`;
 }
 
 function headerMetricsSignature(
@@ -408,11 +408,7 @@ function selectedContentMarkup(row: TraceRecord): string {
   const state = inspectorStore.getSnapshot();
   if (state.displayMode === 'json') return jsonMarkup(row);
   if (state.displayMode === 'workpad') return workpadMarkup(row);
-  const insight = isFailure(row) ? extractTraceError(row) : null;
-  const failure = insight
-    ? `<div class="tiCallError" role="status"><strong>${escapeHtml(insight.code)}</strong><p>${escapeHtml(insight.detail)}</p></div>`
-    : '';
-  return failure + renderInspectorReading(row, state.activeSection);
+  return renderInspectorReading(row);
 }
 
 function selectedContentSignature(row: TraceRecord): string {
@@ -420,7 +416,6 @@ function selectedContentSignature(row: TraceRecord): string {
     inspectorContentSignature(row, inspectorStore.getSnapshot().displayMode),
     traceNodeLabel(row),
     traceRouteLabel(row),
-    inspectorStore.getSnapshot().activeSection,
   ].join(':');
 }
 
@@ -433,8 +428,8 @@ function inspectorMarkup(row: TraceRecord): string {
   return `<div class="tiInspector ${state.callRailCollapsed ? 'is-call-rail-collapsed' : ''}" data-ti-trace-key="${escapeHtml(key)}" data-ti-display-mode="${state.displayMode}">
     <header class="tiToolbar">
       <div class="tiToolbarIdentity">
-        <div class="tiHeaderMetrics" aria-label="Loaded call summary" data-ti-metrics-signature="${escapeHtml(headerMetricsSignature(branch))}">${headerMetricsMarkup(branch)}</div>
         <div class="tiSelectedMeta">${selectedMetaMarkup(row)}</div>
+        <div class="tiHeaderMetrics" aria-label="Loaded call summary" data-ti-metrics-signature="${escapeHtml(headerMetricsSignature(branch))}">${headerMetricsMarkup(branch)}</div>
       </div>
       <div class="tiToolbarActions">
         <div class="tiModeSwitch" role="group" aria-label="Trace display mode">
@@ -634,7 +629,22 @@ function render(): void {
     const contentSignature = selectedContentSignature(row);
     if (existing.dataset.tiContentSignature !== contentSignature) {
       const content = existing.querySelector<HTMLElement>('.tiContent');
-      if (content) content.innerHTML = selectedContentMarkup(row);
+      if (content) {
+        const open = new Map(
+          [
+            ...content.querySelectorAll<HTMLDetailsElement>(
+              'details[data-ti-disclosure]',
+            ),
+          ].map((node) => [node.dataset.tiDisclosure, node.open]),
+        );
+        content.innerHTML = selectedContentMarkup(row);
+        for (const node of content.querySelectorAll<HTMLDetailsElement>(
+          'details[data-ti-disclosure]',
+        )) {
+          if (open.has(node.dataset.tiDisclosure))
+            node.open = open.get(node.dataset.tiDisclosure)!;
+        }
+      }
       const selectedMeta =
         existing.querySelector<HTMLElement>('.tiSelectedMeta');
       if (selectedMeta) selectedMeta.innerHTML = selectedMetaMarkup(row);
@@ -664,7 +674,9 @@ function render(): void {
   }
 
   const panelScroll =
-    inspector.querySelector<HTMLElement>('.tiPreview')?.scrollTop ?? 0;
+    existing?.dataset.tiTraceKey === state.selectedKey
+      ? (inspector.querySelector<HTMLElement>('.tiPreview')?.scrollTop ?? 0)
+      : 0;
   const callScroll =
     inspector.querySelector<HTMLElement>('.tiPeerList')?.scrollTop ?? 0;
   const searchFocused =
@@ -962,35 +974,6 @@ if (!(window as TraceWindow).__traceInspectorInstalled) {
       return;
     }
 
-    if (
-      event.target instanceof HTMLElement &&
-      event.target.matches('[data-ti-section-tab]') &&
-      ['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)
-    ) {
-      event.preventDefault();
-      const sections = ['output', 'input', 'details'] as const;
-      const current = sections.indexOf(
-        inspectorStore.getSnapshot().activeSection,
-      );
-      const index =
-        event.key === 'Home'
-          ? 0
-          : event.key === 'End'
-            ? 2
-            : (current + (event.key === 'ArrowRight' ? 1 : 2)) %
-              sections.length;
-      const section = sections[index];
-      inspectorStore.dispatch({ type: 'set-section', section });
-      const preview = document.querySelector<HTMLElement>('.tiPreview');
-      if (preview) preview.scrollTop = 0;
-      requestAnimationFrame(() =>
-        document
-          .querySelector<HTMLElement>('[data-ti-section-tab="' + section + '"]')
-          ?.focus({ preventScroll: true }),
-      );
-      return;
-    }
-
     const moveUp = event.key === 'ArrowUp' || event.key.toLowerCase() === 'k';
     const moveDown =
       event.key === 'ArrowDown' || event.key.toLowerCase() === 'j';
@@ -1047,21 +1030,6 @@ if (!(window as TraceWindow).__traceInspectorInstalled) {
       (window as TraceWindow).__traceVirtualList?.select(peer.dataset.traceKey);
       return;
     }
-    const tab = target.closest<HTMLElement>('[data-ti-section-tab]');
-    const section = tab?.dataset.tiSectionTab;
-    if (section === 'output' || section === 'input' || section === 'details') {
-      event.preventDefault();
-      event.stopPropagation();
-      inspectorStore.dispatch({ type: 'set-section', section });
-      const preview = document.querySelector<HTMLElement>('.tiPreview');
-      if (preview) preview.scrollTop = 0;
-      requestAnimationFrame(() =>
-        document
-          .querySelector<HTMLElement>('[data-ti-section-tab="' + section + '"]')
-          ?.focus({ preventScroll: true }),
-      );
-      return;
-    }
     const mode = target.closest<HTMLElement>('[data-ti-mode]');
     if (
       mode?.dataset.tiMode === 'formatted' ||
@@ -1101,9 +1069,12 @@ if (!(window as TraceWindow).__traceInspectorInstalled) {
       event.preventDefault();
       event.stopPropagation();
       const state = inspectorStore.getSnapshot();
-      const reading = copy.closest('.tiReading') && state.selectedRow;
+      const section =
+        copy.closest<HTMLElement>('.tiReading')?.dataset.tiSection;
+      const reading =
+        (section === 'input' || section === 'output') && state.selectedRow;
       const value = reading
-        ? inspectorReadingValue(reading, state.activeSection)
+        ? inspectorReadingValue(reading, section as 'input' | 'output')
         : null;
       const copyText = reading
         ? typeof value === 'string'

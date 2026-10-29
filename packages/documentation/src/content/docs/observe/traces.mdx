@@ -2,7 +2,7 @@
 title: Traces
 description: Follow trace IDs across current local records and the authenticated Trace Sites gateway.
 status: preview
-verifiedAt: 2026-08-26
+verifiedAt: 2026-10-29
 evidence:
   - source: packages/os/scripts/server/routes/traces.ts
     tests:
@@ -34,6 +34,16 @@ evidence:
 ---
 
 A trace ID is the thread you follow through related evidence. In the current implementation it can connect a request to an OS run, execution events, a tool call, an artifact version, or an error. Which records exist depends on the surface that handled the work.
+
+## Read a tool call
+
+Open a row to read its **Input** followed by **Output** on one page. File targets, search queries, browser URLs, and other useful parameters stay expanded. Common tools arrange their results around the files, search matches, pull requests, or command output they returned. Errors appear above the call content.
+
+**Call details** holds transport and runtime metadata. **JSON** preserves the captured record when you need the original structure. Copy buttons copy the input or output for their own section.
+
+Token badges show whole recorded counts. A dash means that the count was not recorded; the inspector does not rebuild it from character counts. These are the counts saved by the producing tool, rather than a guarantee of provider billing usage.
+
+New steering calls save a redacted Markdown snapshot of the guidance returned at execution time. Older calls that did not save the body explain that it is unavailable; they never substitute today's steering for historical guidance.
 
 For multi-node work, a trace should answer one extra question: **why did this call run on that node?**
 

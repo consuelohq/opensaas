@@ -3,7 +3,7 @@ import {
   isFailure,
   parseMaybeJson,
   stableTraceKey,
-  totalTokens,
+  traceTokenUsage,
   type TraceRecord,
 } from './model';
 
@@ -173,7 +173,7 @@ export function inspectorSections(row: TraceRecord): InspectorSection[] {
     durationMs: row.durationMs ?? null,
     inputTokens: row.inputTokens ?? null,
     outputTokens: row.outputTokens ?? null,
-    totalTokens: totalTokens(row),
+    totalTokens: traceTokenUsage(row).total.value,
     cost: row.cost ?? null,
     metadata: row.metadata ?? null,
   };

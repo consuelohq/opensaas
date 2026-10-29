@@ -1,0 +1,16 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/dev-1636-fix-dialer-website-lifecycle-and-analytics-followups",
+  "baseBranch": "stream/website",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2678,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2678",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-dev-1636-fix-dialer-website-lifecycle-and-analytics-followups",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_39eaada1bf24",
+  "tmuxSession": "opensaas-website-dev-1636-fix-dialer-website-lifecycle-and-analyt-39eaada1",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-dev-1636-fix-dialer-website-lifecycle-and-analytics-followups/.task/session.json",
+  "createdAt": "2026-10-29T18:35:17.821Z"
+}
