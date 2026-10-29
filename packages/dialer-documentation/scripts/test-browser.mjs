@@ -65,6 +65,13 @@ try {
   }
   await header.getByRole('button', { name: 'Use system appearance', exact: true }).click();
   assert.equal(await page.evaluate(() => localStorage.getItem('starlight-theme')), null);
+  await header.getByRole('button', { name: 'Use light appearance', exact: true }).click();
+  assert.equal(
+    await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--docs-muted').trim()),
+    '#6b625c',
+    'The rendered light theme must use the WCAG-tested muted text color',
+  );
+  await header.getByRole('button', { name: 'Use system appearance', exact: true }).click();
 
   // Production Pagefind results must use the new content, not the inherited OS index.
   await page.getByRole('button', { name: /Search/ }).first().click();
@@ -85,6 +92,43 @@ try {
   assert.equal(await page.getByRole('link', { name: /View as Markdown/ }).getAttribute('href'), '/outbound/local-presence.md');
   await page.keyboard.press('Escape');
   assert.equal(await page.locator('.page-actions details').getAttribute('open'), null);
+
+  // Navigate to another docs page, then emulate Starlight swapping in a new page-actions
+  // element before astro:page-load. The initializer must bind exactly once per element.
+  await page.locator('#starlight__sidebar a[href="/outbound/queues/"]').first().click();
+  await page.waitForURL(origin + '/outbound/queues/');
+  const queuesMarkdown = await (await context.request.get(origin + '/outbound/queues.md')).text();
+  const queueHeading = queuesMarkdown.match(/^# .+/)?.[0];
+  assert.ok(queueHeading, 'Queues page must have a Markdown heading');
+  await page.evaluate(() => {
+    const originalActions = document.querySelector('.page-actions');
+    if (!originalActions) throw new Error('Missing page actions after docs navigation');
+    const newActions = originalActions.cloneNode(true);
+    originalActions.replaceWith(newActions);
+    for (const link of newActions.querySelectorAll('a[data-page-action]')) {
+      link.addEventListener('click', (event) => event.preventDefault(), { capture: true });
+    }
+    const nativeFetch = window.fetch.bind(window);
+    window.__docsPageCopyRequests = 0;
+    window.fetch = (...args) => {
+      if (String(args[0]).endsWith('/outbound/queues.md')) window.__docsPageCopyRequests++;
+      return nativeFetch(...args);
+    };
+    document.dispatchEvent(new Event('astro:page-load'));
+    document.dispatchEvent(new Event('astro:page-load'));
+  });
+  await page.getByRole('button', { name: 'Copy page', exact: true }).first().click();
+  await page.waitForFunction(() => document.querySelector('.page-actions')?.getAttribute('data-copy-state') === 'success');
+  assert.ok((await page.evaluate(() => navigator.clipboard.readText())).startsWith(queueHeading), 'Copy after navigation returns new page Markdown');
+  assert.equal(await page.evaluate(() => window.__docsPageCopyRequests), 1, 'Repeated page-load events do not double-bind actions');
+  for (const [action, label] of [['chatgpt', 'ChatGPT'], ['claude', 'Claude']]) {
+    await page.getByLabel('More page actions', { exact: true }).click();
+    await page.locator(`[data-page-action="${action}"]`).click();
+    await page.waitForFunction((name) => document.querySelector('.page-actions .action-status')?.textContent?.includes('paste it into ' + name), label);
+    assert.ok((await page.evaluate(() => navigator.clipboard.readText())).startsWith(queueHeading), label + ' action copies new page Markdown');
+  }
+  assert.equal(await page.evaluate(() => window.__docsPageCopyRequests), 3, 'Each copy-before-open action fetches Markdown exactly once');
+  await page.goto(origin + '/outbound/local-presence/', { waitUntil: 'networkidle' });
 
   const viewports = [
     ['phone-small', 320, 568], ['phone', 390, 844], ['landscape-small', 568, 320],
