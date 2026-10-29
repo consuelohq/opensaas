@@ -22,6 +22,11 @@ export function createConsueloReleasePlan(input: { eventName: string; target?: s
   }
   if (input.eventName !== 'push') throw new Error('Unsupported production release event');
   for (const file of input.files) {
+    if (file === 'packages/dialer-website/scripts/release-public-sites.mjs') {
+      plan.docs = true;
+      plan.website = true;
+      continue;
+    }
     if (crossCutting.has(file) || /^tsconfig[^/]*\.json$/.test(file)) {
       return { docs: true, website: true, os: true };
     }
