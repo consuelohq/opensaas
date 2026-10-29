@@ -19,6 +19,18 @@ import {
 } from '../scripts/lib/tool-scope-authorization';
 
 describe('central MCP proxy scope enforcement', () => {
+  test('keeps PostHog reads scoped to their tool and event capture execution-scoped', async () => {
+    for (const tool of ['posthog.config', 'posthog.projects', 'posthog.query', 'posthog.capture']) {
+      const request = new Request('https://os.consuelohq.com/mcp', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'tools/call',
+          params: { name: 'call', arguments: { tool, input: {} } } }),
+      });
+      await expect(centralMcpOperationScope(request)).resolves.toBe(
+        tool === 'posthog.capture' ? 'mcp:call' : 'tool:' + tool + ':read',
+      );
+    }
+  });
   test('should require call scope when a POST body cannot be classified', async () => {
     for (const body of ['not-json', '[]', 'null']) {
       const request = new Request('https://os.consuelohq.com/mcp', {

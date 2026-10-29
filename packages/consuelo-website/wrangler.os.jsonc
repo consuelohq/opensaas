@@ -1,0 +1,16 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "consuelo-os-website",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./.public-assets",
+    "not_found_handling": "404-page"
+  },
+  "workers_dev": false,
+  "routes": [
+    {
+      "pattern": "os.consuelohq.com/about*",
+      "zone_name": "consuelohq.com"
+    }
+  ]
+}

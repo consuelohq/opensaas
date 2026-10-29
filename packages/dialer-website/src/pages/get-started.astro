@@ -1,0 +1,24 @@
+---
+import { siteLinks } from '../data/site-links';
+import InfoPage from '../components/site/InfoPage.astro';
+---
+<InfoPage title="Put Consuelo to work." description="Set up a calling workflow for your GoHighLevel team." eyebrow="EARLY ACCESS">
+ <h2>Start with your team.</h2>
+ <p data-selected-plan>Tell us how your team calls today. We will help you choose a plan and confirm setup availability.</p>
+ <ol><li><strong>Choose your calling motion.</strong> Start with outbound, discuss inbound routing, or plan for both.</li><li><strong>Connect your GoHighLevel location.</strong> An administrator will need to authorize the integration and set up your reps and numbers.</li><li><strong>Test the call flow.</strong> Check rep readiness, answering, routing and cleanup before your team starts using it.</li></ol>
+ <a class="setup-action" data-setup-request href="mailto:support@consuelohq.com?subject=Set%20up%20Consuelo%20Dialer">REQUEST SETUP →</a>
+ <p>This opens an email to support@consuelohq.com. No subscription or payment is started from this preview.</p>
+ <h2>Already installed?</h2><p><a href="https://app.gohighlevel.com/">Open GoHighLevel</a>, choose your location, and select Consuelo Dialer from its menu.</p>
+ <h2>Before you choose a plan</h2><p><a href="/pricing">Compare pricing</a> or <a href={siteLinks.docs + 'start/'}>read the setup guide</a>. Inbound is in controlled rollout. Live coaching and transcript-upload feedback are in development.</p>
+</InfoPage>
+<script>
+ const plans = {single: 'Single — $59 per seat / month',standard: 'Standard — $99 per seat / month',power: 'Power — $159 per seat / month'} as const;
+ const requested = new URLSearchParams(location.search).get('plan');
+ if (requested && Object.hasOwn(plans, requested)) {
+  const plan = plans[requested as keyof typeof plans];
+  const selected = document.querySelector('[data-selected-plan]');
+  const request = document.querySelector<HTMLAnchorElement>('[data-setup-request]');
+  if (selected) selected.textContent = 'You selected ' + plan + '. We will confirm your team configuration and availability before any subscription starts.';
+  if (request) request.href = 'mailto:support@consuelohq.com?' + new URLSearchParams({subject: 'Set up Consuelo Dialer — ' + plan}).toString();
+ }
+</script>

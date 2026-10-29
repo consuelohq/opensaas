@@ -1,4 +1,5 @@
 ---
+import { withSiteBase } from '../../lib/public-path';
 type Props = {
   imageSrc: string;
   imageAlt: string;
@@ -15,7 +16,7 @@ const { imageSrc, imageAlt, videoSrc, posterSrc } = Astro.props as Props;
       <>
         <img
           class="feature-media__poster"
-          src={posterSrc ?? imageSrc}
+          src={withSiteBase(posterSrc ?? imageSrc)}
           alt={imageAlt}
           width="1200"
           height="900"
@@ -23,11 +24,11 @@ const { imageSrc, imageAlt, videoSrc, posterSrc } = Astro.props as Props;
           decoding="async"
         />
         <video autoplay muted loop playsinline class="feature-media__video" preload="metadata" poster={posterSrc ?? imageSrc}>
-          <source src={videoSrc} />
+          <source src={withSiteBase(videoSrc)} />
         </video>
       </>
     ) : (
-      <img src={imageSrc} alt={imageAlt} width="1200" height="900" loading="lazy" decoding="async" />
+      <img src={withSiteBase(imageSrc)} alt={imageAlt} width="1200" height="900" loading="lazy" decoding="async" />
     )
   }
 </div>

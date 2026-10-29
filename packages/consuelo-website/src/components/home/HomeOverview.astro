@@ -1,4 +1,5 @@
 ---
+import { withSiteBase } from '../../lib/public-path';
 import {
   homeOverview,
   homeOverviewFeatures,
@@ -32,7 +33,7 @@ const { sectionId } = Astro.props as Props;
         ))}
       </div>
 
-      <a class="launch-button launch-mono launch-overview__cta" href={homeOverview.ctaHref}>{homeOverview.ctaLabel} →</a>
+      <a class="launch-button launch-mono launch-overview__cta" href={withSiteBase(homeOverview.ctaHref)}>{homeOverview.ctaLabel} →</a>
     </div>
   </div>
 </section>

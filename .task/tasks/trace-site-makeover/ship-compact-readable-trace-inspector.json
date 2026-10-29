@@ -1,0 +1,16 @@
+{
+  "area": "trace-site-makeover",
+  "stream": "stream/trace-site-makeover",
+  "taskBranch": "task/trace-site-makeover/ship-compact-readable-trace-inspector",
+  "baseBranch": "stream/trace-site-makeover",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2667,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2667",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-trace-site-makeover-ship-compact-readable-trace-inspector",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_7b9e65b06af7",
+  "tmuxSession": "opensaas-trace-site-makeover-ship-compact-readable-trace-inspector-7b9e65b0",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-trace-site-makeover-ship-compact-readable-trace-inspector/.task/session.json",
+  "createdAt": "2026-10-29T05:24:18.500Z"
+}

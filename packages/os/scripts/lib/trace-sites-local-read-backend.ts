@@ -287,7 +287,7 @@ async function readNewerTracePage(
       ? rowidToCursor(rows[rows.length - 1].rowid)
       : rowidToCursor(afterRowid);
     return {
-      rows: rows.map(historyRowFromTraceRow).reverse(),
+      rows: historyRowsWithSessionNames(db, rows).reverse(),
       nextCursor,
     };
   } finally {
@@ -320,7 +320,7 @@ async function readTraceHistoryPage(
       .all(beforeRowid, ...search.values, pageSize + 1) as TraceRow[];
     const pageRows = rows.slice(0, pageSize);
     return {
-      rows: pageRows.map(historyRowFromTraceRow),
+      rows: historyRowsWithSessionNames(db, pageRows),
       ...(input.cursor === 'latest' ? { liveCursor: rowidToCursor(beforeRowid - 1) } : {}),
       nextCursor:
         rows.length > pageSize && pageRows.length > 0
@@ -677,6 +677,11 @@ function historyRowFromTraceRow(row: TraceRow): TraceSitesGatewayHistoryRow {
     inputTokens,
     outputTokens,
     cost: costEstimate?.cost ?? 0,
+    tokenCountsRecorded: {
+      input: row.input_tokens !== null && row.input_tokens !== undefined,
+      output: row.output_tokens !== null && row.output_tokens !== undefined,
+      total: row.total_tokens !== null && row.total_tokens !== undefined,
+    },
     costLabel: costEstimate?.costLabel ?? '—',
     trace: traceId,
     traceId,
@@ -901,14 +906,66 @@ function cleanString(value: unknown): string {
   return String(value ?? '').trim();
 }
 
-function traceSessionValue(
-  row: TraceRow,
-  fallback: string,
-): string {
-  return resolveTraceSessionIdentity({
-    workPath: sanitizeLocalTraceText(cleanString(row.work_path)),
-    branch: cleanString(row.branch),
-    taskSession: cleanString(row.task_session),
-    workSession: cleanString(row.work_session),
-  }, fallback);
+function historyRowsWithSessionNames(
+  db: TraceDatabase,
+  rows: TraceRow[],
+): TraceSitesGatewayHistoryRow[] {
+  const unresolved = rows.filter(
+    (row) =>
+      !cleanString(row.work_path) &&
+      !cleanString(row.work_session) &&
+      cleanString(row.task_session) &&
+      !traceSessionValue(row, '').startsWith('task/'),
+  );
+  const sessions = [
+    ...new Set(unresolved.map((row) => cleanString(row.task_session))),
+  ];
+  const labels = new Map<string, string>();
+  if (sessions.length) {
+    // Indexed lookup by exact task session also works when its labelled row is on another page.
+    // Ambiguous historical sessions keep their ID rather than borrowing an unrelated branch.
+    const matches = db
+      .query(
+        'SELECT task_session, min(branch) AS branch FROM tool_traces WHERE task_session IN (' +
+          sessions.map(() => '?').join(',') +
+          ") AND branch LIKE 'task/%' GROUP BY task_session HAVING count(DISTINCT branch) = 1",
+      )
+      .all(...sessions) as Array<{ task_session: string; branch: string }>;
+    for (const match of matches) labels.set(match.task_session, match.branch);
+  }
+  return rows.map((row) =>
+    historyRowFromTraceRow(
+      unresolved.includes(row) && labels.has(cleanString(row.task_session))
+        ? { ...row, branch: labels.get(cleanString(row.task_session)) }
+        : row,
+    ),
+  );
+}
+
+function traceSessionValue(row: TraceRow, fallback: string): string {
+  let context: Record<string, unknown> = {};
+  for (const source of [row.resolved_input_json, row.input_json]) {
+    try {
+      const parsed = JSON.parse(source || '{}');
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed))
+        context = { ...parsed, ...context };
+    } catch {
+      /* Old or truncated payloads cannot provide identity. */
+    }
+  }
+  const contextMatches =
+    !context.taskSession ||
+    !row.task_session ||
+    context.taskSession === row.task_session;
+  return resolveTraceSessionIdentity(
+    {
+      workPath: sanitizeLocalTraceText(cleanString(row.work_path)),
+      branch:
+        cleanString(row.branch) ||
+        (contextMatches ? cleanString(context.branch) : ''),
+      taskSession: cleanString(row.task_session),
+      workSession: cleanString(row.work_session),
+    },
+    fallback,
+  );
 }

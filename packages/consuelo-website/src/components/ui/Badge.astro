@@ -1,4 +1,5 @@
 ---
+import { withSiteBase } from '../../lib/public-path';
 // Badge
 // ------------
 // Description: A badge is a visual indicator that draws attention to an interface element. It enhances the component to which it is attached with additional information.
@@ -23,7 +24,7 @@ const { name, link, type = 'neutral', classes } = Astro.props
 {
 	link ? (
 		<a
-			href={link}
+			href={withSiteBase(link)}
 			class:list={['badge', { [`${classes}`]: classes }, { [`badge--${type}`]: type }]}
 		>
 			{name}

@@ -1,0 +1,16 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/prepare-authentication-safe-dialer-domain-cutover",
+  "baseBranch": "stream/website",
+  "sourceBranch": "stream/website",
+  "startFrom": "stream",
+  "prNumber": 2655,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2655",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-prepare-authentication-safe-dialer-domain-cutover",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_a6d011c41eb2",
+  "tmuxSession": "opensaas-website-prepare-authentication-safe-dialer-domain-cutove-a6d011c4",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-prepare-authentication-safe-dialer-domain-cutover/.task/session.json",
+  "createdAt": "2026-10-29T02:36:43.598Z"
+}

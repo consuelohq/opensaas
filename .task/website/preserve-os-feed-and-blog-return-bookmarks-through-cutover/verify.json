@@ -1,0 +1,192 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/website/preserve-os-feed-and-blog-return-bookmarks-through-cutover",
+  "base": "origin/stream/website",
+  "headSha": "dae66629739fe60638dee9045ea5ec62493679d2",
+  "changeHash": "ba48c0d86cf13dd8430fb96a929da09934afaeb85b2b6bea6a7838556c4a31c4",
+  "changedFiles": [
+    "packages/consuelo-website/src/components/BackButton.astro",
+    "packages/consuelo-website/src/pages/blog/index.astro",
+    "packages/dialer-website/public/_redirects",
+    "packages/dialer-website/scripts/test-public-mounts.mjs",
+    "packages/dialer-website/tests/marketing-contract.test.ts"
+  ],
+  "verifiedAt": "2026-10-29T05:36:48.847Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/website/preserve-os-feed-and-blog-return-bookmarks-through-cutover.json",
+        ".task/website/preserve-os-feed-and-blog-return-bookmarks-through-cutover/workpad.md",
+        "packages/consuelo-website/src/components/BackButton.astro",
+        "packages/consuelo-website/src/pages/blog/index.astro",
+        "packages/dialer-website/public/_redirects",
+        "packages/dialer-website/scripts/test-public-mounts.mjs",
+        "packages/dialer-website/tests/marketing-contract.test.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "dialer-website-package",
+          "critical": true,
+          "reason": "The independently Bun-owned Dialer website must install its locked dependencies, materialize brand assets and prove its rendered navigation, pricing and isolated preview boundary.",
+          "matchedFiles": [
+            "packages/dialer-website/public/_redirects",
+            "packages/dialer-website/scripts/test-public-mounts.mjs",
+            "packages/dialer-website/tests/marketing-contract.test.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "Dialer website dependency prerequisite",
+          "command": [
+            "bun",
+            "install",
+            "--cwd",
+            "packages/dialer-website",
+            "--frozen-lockfile",
+            "--ignore-scripts"
+          ],
+          "ruleId": "dialer-website-package",
+          "critical": true
+        },
+        {
+          "name": "Dialer website build",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/dialer-website",
+            "build"
+          ],
+          "ruleId": "dialer-website-package",
+          "critical": true
+        },
+        {
+          "name": "Dialer website delivery contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-website/tests/marketing-contract.test.ts"
+          ],
+          "ruleId": "dialer-website-package",
+          "critical": true
+        },
+        {
+          "name": "Dialer website rendered browser contracts",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/dialer-website",
+            "test:browser"
+          ],
+          "ruleId": "dialer-website-package",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "platform": "darwin",
+      "run": true,
+      "runResults": [
+        {
+          "name": "Dialer website dependency prerequisite",
+          "command": [
+            "bun",
+            "install",
+            "--cwd",
+            "packages/dialer-website",
+            "--frozen-lockfile",
+            "--ignore-scripts"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-website-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 201,
+          "outputTail": "bun install v1.3.14 (0d9b296a)\n\nChecked 690 installs across 803 packages (no changes) [197.00ms]\n"
+        },
+        {
+          "name": "Dialer website build",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/dialer-website",
+            "build"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-website-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 5720,
+          "outputTail": "01:35:56 [types] Generated 199ms\n01:35:56 [check] Getting diagnostics for Astro files in /Users/kokayi/.consuelo/node/tasks/worktrees/task-website-preserve-os-feed-and-blog-return-bookmarks-through-cutover/packages/dialer-website...\n\u001b[96msrc/components/SeoHead.astro\u001b[0m:\u001b[93m100\u001b[0m:\u001b[93m9\u001b[0m - \u001b[93mwarning\u001b[0m\u001b[90m astro(4000): \u001b[0mThis script will be treated as if it has the `is:inline` directive because it contains an attribute. Therefore, features that require processing (e.g. using TypeScript or npm packages in the script) are unavailable.\n\nSee docs for more details: https://docs.astro.build/en/guides/client-side-scripts/#script-processing.\n\nAdd the `is:inline` directive explicitly to silence this hint.\n\n\u001b[7m100\u001b[0m <script type=\"application/ld+json\" set:html={JSON.stringify(structuredData)} />\n\u001b[7m   \u001b[0m \u001b[93m        ~~~~\u001b[0m\n\n\u001b[96msrc/layouts/MarketingLayout.astro\u001b[0m:\u001b[93m91\u001b[0m:\u001b[93m15\u001b[0m - \u001b[93mwarning\u001b[0m\u001b[90m astro(4000): \u001b[0mThis script will be treated as if it has the `is:inline` directive because it contains an attribute. Therefore, features that require processing (e.g. using TypeScript or npm packages in the script) are unavailable.\n\nSee docs for more details: https://docs.astro.build/en/guides/client-side-scripts/#script-processing.\n\nAdd the `is:inline` directive explicitly to silence this hint.\n\n\u001b[7m91\u001b[0m       <script define:vars={{ posthogKey, posthogHost }}>\n\u001b[7m  \u001b[0m \u001b[93m              ~~~~~~~~~~~\u001b[0m\n\nResult (44 files): \n- 0 errors\n- 0 warnings\n- 2 hints\n\n01:35:59 [types] Generated 17ms\n01:35:59 [build] output: \"static\"\n01:35:59 [build] mode: \"static\"\n01:35:59 [build] directory: /Users/kokayi/.consuelo/node/tasks/worktrees/task-website-preserve-os-feed-and-blog-return-bookmarks-through-cutover/packages/dialer-website/dist/\n01:35:59 [build] Collecting build info...\n01:35:59 [build] ✓ Completed in 32ms.\n01:35:59 [build] Building static entrypoints...\n01:35:59 [vite] ✓ built in 739ms\n01:36:00 [vite] ✓ built in 339ms\n01:36:00 [build] Rearranging server assets...\n\n generating static routes \n01:36:00   ├─ /404.html (+16ms) \n01:36:00   ├─ /calls/api/integrations/oauth/callback/index.html (+1ms) \n01:36:00   ├─ /contact/index.html (+1ms) \n01:36:00   ├─ /get-started/index.html (+1ms) \n01:36:00   ├─ /guides/index.html (+1ms) \n01:36:00   ├─ /how-it-works/index.html (+1ms) \n01:36:00   ├─ /pricing/index.html (+1ms) \n01:36:00   ├─ /privacy/index.html (+1ms) \n01:36:00   ├─ /robots.txt (+1ms) \n01:36:00   ├─ /support/index.html (+1ms) \n01:36:00   ├─ /terms/index.html (+1ms) \n01:36:00   ├─ /index.html (+2ms) \n01:36:00 ✓ Completed in 41ms.\n\n01:36:00 [build] ✓ Completed in 1.14s.\n01:36:00 [build] 11 page(s) built in 1.18s\n01:36:00 [build] Complete!\n$ bun scripts/materialize-public-assets.ts && astro check && astro build\nBrowserslist: browsers data (caniuse-lite) is 8 months old. Please run:\n  npx update-browserslist-db@latest\n  Why you should do it regularly: https://github.com/browserslist/update-db#readme\n"
+        },
+        {
+          "name": "Dialer website delivery contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-website/tests/marketing-contract.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-website-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 68,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/dialer-website/tests/marketing-contract.test.ts:\n(pass) Dialer marketing delivery > redirects legacy device login to the canonical OS authority without duplicating its UI [1.03ms]\n(pass) Dialer marketing delivery > preserves the legacy OS feed URL when Dialer owns the root [0.04ms]\n(pass) Dialer marketing delivery > publishes paid product metadata without an inherited free offer [0.50ms]\n(pass) Dialer marketing delivery > ships decodable generated application icons [27.22ms]\n(pass) Dialer marketing delivery > has its own package and an isolated preview deployment [0.62ms]\n(pass) Dialer marketing delivery > renders the Dialer funnel without OS installation or authentication links [0.32ms]\n(pass) Dialer marketing delivery > renders exactly three monthly plans and a plan-specific setup journey [0.15ms]\n(pass) Dialer marketing delivery > ships real destinations for public navigation and a preview indexing boundary [0.12ms]\n\n 8 pass\n 0 fail\n 42 expect() calls\nRan 8 tests across 1 file. [61.00ms]\n"
+        },
+        {
+          "name": "Dialer website rendered browser contracts",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/dialer-website",
+            "test:browser"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-website-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 48447,
+          "outputTail": "{\"viewport\":\"320x568\",\"passed\":true,\"cloudImages\":6}\n{\"viewport\":\"375x812\",\"passed\":true,\"cloudImages\":6}\n{\"viewport\":\"430x932\",\"passed\":true,\"cloudImages\":6}\n{\"viewport\":\"568x320\",\"passed\":true,\"cloudImages\":6}\n{\"viewport\":\"667x375\",\"passed\":true,\"cloudImages\":6}\n{\"viewport\":\"768x1024\",\"passed\":true,\"cloudImages\":6}\n{\"viewport\":\"1024x768\",\"passed\":true,\"cloudImages\":6}\n{\"viewport\":\"1440x960\",\"passed\":true,\"cloudImages\":6}\n{\"flow\":\"pricing-to-setup\",\"querySafety\":\"pass\",\"internalLinks\":79,\"motion\":\"pass\",\"artifacts\":\"/tmp/consuelo-dialer-website-browser\"}\n{\"cleanup\":\"closing browser\"}\n{\"cleanup\":\"closing server\"}\n{\"cleanup\":\"complete\"}\n$ node scripts/test-marketing-browser.mjs\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

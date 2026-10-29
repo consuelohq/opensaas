@@ -1,3 +1,4 @@
+import { withSiteBase } from './public-path';
 import { homepageSeo } from './homepage-seo';
 
 export type StructuredData = {
@@ -10,7 +11,7 @@ export type FaqItem = {
 };
 
 export const siteMetadata = {
-  siteUrl: 'https://consuelohq.com',
+  siteUrl: (import.meta.env.PUBLIC_SITE_ORIGIN ?? 'https://consuelohq.com').replace(/\/$/, '') + (import.meta.env.BASE_URL === '/' ? '' : import.meta.env.BASE_URL.replace(/\/$/, '')),
   siteName: 'Consuelo',
   defaultTitle: homepageSeo.title,
   defaultDescription: homepageSeo.description,
@@ -22,7 +23,7 @@ export const siteMetadata = {
   themeColorLight: '#0000F2',
   themeColorDark: '#0000F2',
   twitterHandle: '@consuelohq',
-  docsUrl: 'https://docs.consuelohq.com',
+  docsUrl: import.meta.env.PUBLIC_DOCS_URL ?? 'https://docs.consuelohq.com',
   appUrl: 'https://app.consuelohq.com',
   githubUrl: 'https://github.com/consuelohq/opensaas',
 } as const;
@@ -42,11 +43,11 @@ export const resolveCanonicalUrl = (pathOrUrl?: string) => {
     return siteMetadata.siteUrl;
   }
 
-  return new URL(pathOrUrl, siteMetadata.siteUrl).toString();
+  return new URL(withSiteBase(pathOrUrl), siteMetadata.siteUrl).toString();
 };
 
 export const resolveImageUrl = (image?: string) => {
-  return new URL(image ?? siteMetadata.defaultOgImage, siteMetadata.siteUrl).toString();
+  return new URL(withSiteBase(image ?? siteMetadata.defaultOgImage), siteMetadata.siteUrl).toString();
 };
 
 export const getOrganizationSchema = (): StructuredData => ({

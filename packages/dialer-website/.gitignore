@@ -1,0 +1,50 @@
+# build output
+dist/
+.wrangler/
+# generated types
+.astro/
+
+# dependencies
+node_modules/
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+
+# environment variables
+.env
+.env.production
+
+# macOS-specific files
+.DS_Store
+
+# jetbrains setting folder
+.idea/
+
+# dither asset generation (sources/previews are not committed)
+scripts/sources/
+scripts/preview-sheet.png
+
+# Generated from the committed SVG source during dev/build.
+public/generated/
+
+# Binary assets are materialized from text sources during build.
+/public/consuelo-os-og-20260714.png
+/public/consuelo-os-og-20260929.png
+/public/images/clouds/*.webp
+
+/public/consuelo-*-og-20260929-clouds.png
+
+/public/consuelo-os-og-20260929-files.png
+/public/consuelo-*-og-20260929-clouds-v2.png
+
+# Dialer share assets are restored from committed encoded sources.
+/public/consuelo-dialer-og-20261028.png
+/public/consuelo-dialer-pricing-og-20261028.png
+
+# Application icons are generated from the committed SVG.
+/public/favicon-32x32.png
+/public/apple-touch-icon.png

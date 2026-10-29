@@ -1,4 +1,5 @@
 ---
+import { withSiteBase } from '../../lib/public-path';
 import { homeMercuryPromo } from '../../data/home-content';
 
 type Props = {
@@ -22,10 +23,10 @@ const icons = [
     <p class="launch-copy">{homeMercuryPromo.intro}</p>
     <div class="launch-mercury-promo__icons">
       {icons.map((icon) => (
-        <img src={icon.src} alt={icon.alt} width="24" height="24" class="launch-mercury-promo__icon" />
+        <img src={withSiteBase(icon.src)} alt={icon.alt} width="24" height="24" class="launch-mercury-promo__icon" />
       ))}
     </div>
-    <a class="launch-mercury-promo__link launch-mono" href={homeMercuryPromo.primaryHref}>
+    <a class="launch-mercury-promo__link launch-mono" href={withSiteBase(homeMercuryPromo.primaryHref)}>
       {homeMercuryPromo.primaryLabel} ↗
     </a>
   </div>

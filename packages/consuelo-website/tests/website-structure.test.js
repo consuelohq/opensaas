@@ -100,11 +100,6 @@ describe('Consuelo website structure', () => {
         '../data/mercury-content',
         '../data/site-links',
       ],
-      'src/pages/login/device.astro': [
-        '../../layouts/MarketingLayout.astro',
-        '../../components/site/SiteHeader.astro',
-        '../../components/site/SiteFooter.astro',
-      ],
     };
 
     for (const [route, imports] of Object.entries(routeImports)) {
@@ -124,8 +119,8 @@ describe('Consuelo website structure', () => {
     const support = readSource('src/pages/support.astro');
     expect(support).toContain('title="Support"');
     expect(support).toContain('support@consuelohq.com');
-    expect(support).toContain('https://docs.consuelohq.com');
-    expect(support).toContain('href="/contact"');
+    expect(support).toContain('siteLinks.docs');
+    expect(support).toContain('href={withSiteBase("/contact")}');
     expect(support).not.toContain('404');
 
     const redirects = readSource('public/_redirects');
@@ -222,28 +217,19 @@ describe('Consuelo website structure', () => {
     expect(homepage).not.toContain('HomePlatformCards');
   });
 
-  test('should expose auth and the released installer when rendering the hero', () => {
+  test('should expose auth and the platform installer when rendering the hero', async () => {
     const hero = readSource('src/components/home/HomeHero.astro');
-    const content = readSource('src/data/home-content.ts');
-
-    expect(hero).toContain('<span data-hero-line>YOUR WORKSPACE,</span>');
-    expect(hero).toContain('<span data-hero-line>CONNECTED TO</span>');
-    expect(hero).toContain('<span data-hero-line>EVERY AGENT</span>');
-    expect(hero).toContain('Build it once. Use it from ChatGPT, Codex, Claude, and whatever comes next.');
-    expect(hero).toContain('OPEN SOURCE');
-    expect(hero).toContain('MIT LICENSE');
-    expect(hero).toContain('SIGN IN');
-    expect(hero).not.toContain('DOWNLOAD LOCALLY');
-    expect(content).toContain("export const INSTALL_COMMAND = 'curl -fsSL https://install.consuelohq.com/os | bash'");
-    expect(content).toContain('value: INSTALL_COMMAND');
-    expect(hero).toContain("import { INSTALL_COMMAND } from '../../data/home-content'");
-    expect(hero).toContain('<span data-copy-label>COPY</span>');
-    expect(hero).toContain('class="os-hero__button-arrow"');
-    expect(hero).toContain('viewBox="0 0 6 9"');
-    expect(hero).not.toContain('PixelArrow');
+    const { homeHeroRotatingAssistant, INSTALL_COMMAND } = await import(pathToFileURL(join(sourceRoot, 'data/home-content.ts')).href);
+    const { installCommandForPlatform } = await import(pathToFileURL(join(sourceRoot, 'lib/install-command.ts')).href);
+    expect(homeHeroRotatingAssistant.assistants).toEqual(['ChatGPT', 'Claude']);
+    expect(homeHeroRotatingAssistant.signInLabel).toBe('SIGN IN');
+    expect(hero).toContain('href="https://os.consuelohq.com"');
+    expect(INSTALL_COMMAND).toContain('https://install.consuelohq.com/os');
+    expect(installCommandForPlatform('MacIntel')).toBe(INSTALL_COMMAND);
+    expect(installCommandForPlatform('Win32')).toBe('irm https://install.consuelohq.com/os.ps1 | iex');
     expect(hero).toContain('data-copy-install');
     expect(hero).toContain('if (!navigator.clipboard)');
-    expect(hero).toContain('await navigator.clipboard.writeText(INSTALL_COMMAND)');
+    expect(hero).toContain('await navigator.clipboard.writeText(command)');
     expect(hero).toContain('catch');
     expect(hero).toContain("label.textContent = 'COPIED'");
     expect(hero).toContain('prefers-reduced-motion: reduce');
@@ -423,22 +409,16 @@ describe('Consuelo website structure', () => {
     expect(aggregate.days.at(-1).buckets[14].level).toBe(5);
   });
 
-  test('should expose the approved navigation when rendering the OS header', () => {
+  test('should expose the approved navigation when rendering the OS header', async () => {
     const header = readSource('src/components/site/SiteHeader.astro');
-
-    expect(header).toContain('CONSUELO');
-    expect(header).toContain('.os-header__wordmark span:last-child');
-    expect(header).toContain('justify-self: center;');
-    expect(header).toContain('DOCS');
-    expect(header).toContain('PRICING');
-    expect(header).toContain('CLOUD');
+    const { osSiteHeaderLinks } = await import(pathToFileURL(join(sourceRoot, 'data/site-navigation.ts')).href);
+    expect(osSiteHeaderLinks.desktop.map(link => link.label)).toEqual(['CONSUELO', 'DOCS', 'PRICING', 'CLOUD']);
+    expect(osSiteHeaderLinks.mobile.map(link => link.label)).toEqual(['DOCS', 'CLOUD']);
+    expect(osSiteHeaderLinks.cloudHref).toBe('https://os.consuelohq.com');
+    expect(header).toContain('osSiteHeaderLinks');
+    expect(header).toContain('withSiteBase');
     expect(header).toContain('aria-label="Discord"');
     expect(header).toContain('aria-label="GitHub"');
-    expect(header).toContain('data-mobile-menu-toggle');
-    expect(header).toContain("menu.querySelectorAll('a')");
-    expect(header).toContain('closeMenu');
-    expect(header).not.toContain('PORTAL');
-    expect(header).not.toContain('INSTALL');
     expect(header).not.toContain('position: sticky;');
     expect(header).not.toContain('position: fixed;');
   });
@@ -526,8 +506,10 @@ describe('Consuelo website structure', () => {
     expect(privacyRoute).not.toContain('rely on <strong>consent</strong>');
     expect(privacyRoute).toContain('analytics data to improve our website and product experience');
 
-    const deviceRoute = readSource('src/pages/login/device.astro');
-    expect(deviceRoute).not.toContain('analyticsEnabled={false}');
+    expectNoFile('src/pages/login/device.astro');
+    const redirects = readSource('public/_redirects');
+    expect(redirects).toContain('/login/device https://os.consuelohq.com/login/device 302');
+    expect(redirects).toContain('/login/device/ https://os.consuelohq.com/login/device 302');
 
     expectNoFile('src/components/CookieConsent.tsx');
     expectNoFile('src/components/ui/Toast.astro');
@@ -552,7 +534,7 @@ describe('Consuelo website structure', () => {
 
     const backButton = readSource('src/components/BackButton.astro');
     expect(backButton).toContain('./site/LanguageSelector.astro');
-    expect(backButton).toContain('href="/blog"');
+    expect(backButton).toContain('href={withSiteBase("/blog")}');
   });
 
   test('should expose package-level design context when agents work on the website', () => {
@@ -673,15 +655,23 @@ describe('Consuelo website structure', () => {
     expect(route).not.toMatch(/#[0-9a-f]{3,8}\b/i);
   });
 
-  test('should keep the design operator contract on office headless defaults', () => {
+  test('should keep the design operator contract on artifacts headless defaults', () => {
     const agentRules = readRepo('areas/consuelo-design/AGENTS.md');
-    expect(agentRules).toContain('Default `office.generate*` behavior');
-    expect(agentRules).toContain('For `office.generateDigitalEguide`, use:');
-    expect(agentRules).toContain('`generate <workflow>` returns a headless work order by default');
-    expect(agentRules).toContain('Only `generate <workflow> --live` or an explicit `live: true` input starts a live Open Design working session');
-    expect(agentRules).toContain('Only the live UI path should use project.pendingPrompt.');
+    expect(agentRules).toContain('Default `artifacts.generate*` behavior');
+    expect(agentRules).toContain('For `artifacts.generateDigitalEguide`, use:');
+    expect(agentRules).toContain('Default to headless artifact execution.');
+    expect(agentRules).toContain('Only `live: true` should return an Open Design UI project with `pendingPrompt`');
     expect(agentRules).not.toContain('consueloDesign.generateDigitalEguide');
     expect(agentRules).not.toContain('means start/create/open a live Open Design working session');
     expect(agentRules).not.toContain('If a command says `generate website`, it should start or reuse Open Design');
   });
+  test('should keep mounted OS support and launcher guides on configured documentation', () => {
+    const support = readSource('src/pages/support.astro');
+    const launcher = readSource('src/pages/os/launcher.astro');
+    expect(support).toContain('href={siteLinks.docs}');
+    expect(launcher).toContain('href: publicSiteLinks.docs');
+    expect(launcher).toContain("href: '/blog/software-is-becoming-decision-infrastructure/");
+    expect(launcher).not.toContain('https://docs.consuelohq.com/');
+  });
+
 });

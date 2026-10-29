@@ -1,0 +1,16 @@
+{
+  "area": "trace-site-makeover",
+  "stream": "stream/trace-site-makeover",
+  "taskBranch": "task/trace-site-makeover/make-trace-inputs-outputs-and-summaries-tool-aware",
+  "baseBranch": "stream/trace-site-makeover",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2676,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2676",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-trace-site-makeover-make-trace-inputs-outputs-and-summaries-tool-aware",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_00059bc21537",
+  "tmuxSession": "opensaas-trace-site-makeover-make-trace-inputs-outputs-and-summaries-tool-awa-00059bc2",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-trace-site-makeover-make-trace-inputs-outputs-and-summaries-tool-aware/.task/session.json",
+  "createdAt": "2026-10-29T17:35:54.085Z"
+}

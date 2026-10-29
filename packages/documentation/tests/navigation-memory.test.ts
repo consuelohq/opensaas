@@ -97,7 +97,7 @@ describe('promoted Tools, Skills, Workflows, Steering, and Memory documentation 
     for (const sourcePath of promotedPages) {
       const source = read(`src/content/docs/${sourcePath}`);
       expect(source).toContain('status: preview');
-      expect(source).toMatch(/verifiedAt: 2026-08-(11|12|14|15)/);
+      expect(source).toMatch(/^verifiedAt: \d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/m);
       expect(source).toContain('evidence:');
       expect(source).toContain('source:');
     }

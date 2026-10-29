@@ -1,0 +1,357 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/website/complete-os-namespace-and-shared-public-release-contracts",
+  "base": "origin/stream/website",
+  "headSha": "bfde19e46afee8b77c6b5d39369fe60441efb845",
+  "changeHash": "3b0b956fc4b9abb0e2919d9432b01208a2afaf3d3ecfa4923b484ebc0ae3c5c4",
+  "changedFiles": [
+    "packages/consuelo-website/public/_redirects",
+    "packages/consuelo-website/src/pages/login/device.astro",
+    "packages/consuelo-website/src/pages/rss.xml.ts",
+    "packages/consuelo-website/tests/website-structure.test.js",
+    "packages/dialer-website/scripts/release-public-sites.mjs",
+    "packages/dialer-website/scripts/test-public-mounts.mjs",
+    "packages/os/scripts/production-release-plan.ts",
+    "packages/os/tests/oauth-device-page-contract.test.ts",
+    "packages/os/tests/production-release-plan.test.ts"
+  ],
+  "verifiedAt": "2026-10-29T05:23:30.968Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/website/complete-os-namespace-and-shared-public-release-contracts.json",
+        ".task/website/complete-os-namespace-and-shared-public-release-contracts/workpad.md",
+        "packages/consuelo-website/public/_redirects",
+        "packages/consuelo-website/src/pages/login/device.astro",
+        "packages/consuelo-website/src/pages/rss.xml.ts",
+        "packages/consuelo-website/tests/website-structure.test.js",
+        "packages/dialer-website/scripts/release-public-sites.mjs",
+        "packages/dialer-website/scripts/test-public-mounts.mjs",
+        "packages/os/scripts/production-release-plan.ts",
+        "packages/os/tests/oauth-device-page-contract.test.ts",
+        "packages/os/tests/production-release-plan.test.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "os-device-approval-canonical-identity",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Native OS device-approval and canonical-identity changes must prove the exact auth, tenant, and control-plane contracts without selecting unsafe unrelated package-wide OS tests.",
+          "matchedFiles": [
+            "packages/consuelo-website/src/pages/login/device.astro",
+            "packages/os/tests/oauth-device-page-contract.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "dialer-website-package",
+          "critical": true,
+          "reason": "The independently Bun-owned Dialer website must install its locked dependencies, materialize brand assets and prove its rendered navigation, pricing and isolated preview boundary.",
+          "matchedFiles": [
+            "packages/dialer-website/scripts/release-public-sites.mjs",
+            "packages/dialer-website/scripts/test-public-mounts.mjs"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "public-production-release-isolation",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Website and docs release changes must preserve the existing Dialer release classifier and keep unrelated pushes from redeploying OS authentication; manual release and MCP security controls remain explicit.",
+          "matchedFiles": [
+            "packages/os/scripts/production-release-plan.ts",
+            "packages/os/tests/production-release-plan.test.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "OS canonical device approval contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/canonical-device-identity.test.ts",
+            "tests/install-control-plane.test.ts",
+            "tests/install-control-plane-d1.test.ts",
+            "tests/oauth-device-page-contract.test.ts",
+            "tests/internal-dashboard-integration.test.ts",
+            "tests/native-google-device-approval.test.ts",
+            "tests/os-device-authority-worker.test.ts"
+          ],
+          "ruleId": "os-device-approval-canonical-identity",
+          "critical": true
+        },
+        {
+          "name": "OS canonical device approval syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "ruleId": "os-device-approval-canonical-identity",
+          "critical": true
+        },
+        {
+          "name": "Dialer website dependency prerequisite",
+          "command": [
+            "bun",
+            "install",
+            "--cwd",
+            "packages/dialer-website",
+            "--frozen-lockfile",
+            "--ignore-scripts"
+          ],
+          "ruleId": "dialer-website-package",
+          "critical": true
+        },
+        {
+          "name": "Dialer website build",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/dialer-website",
+            "build"
+          ],
+          "ruleId": "dialer-website-package",
+          "critical": true
+        },
+        {
+          "name": "Dialer website delivery contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-website/tests/marketing-contract.test.ts"
+          ],
+          "ruleId": "dialer-website-package",
+          "critical": true
+        },
+        {
+          "name": "Dialer website rendered browser contracts",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/dialer-website",
+            "test:browser"
+          ],
+          "ruleId": "dialer-website-package",
+          "critical": true
+        },
+        {
+          "name": "Public production release isolation contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/production-release-plan.test.ts",
+            "packages/workspace/tests/docs-production-release.test.js",
+            "packages/workspace/tests/website-deploy.test.js",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "ruleId": "public-production-release-isolation",
+          "critical": true
+        },
+        {
+          "name": "Preserved MCP production release security contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/production-release-mcp-security.test.ts"
+          ],
+          "ruleId": "public-production-release-isolation",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "platform": "darwin",
+      "run": true,
+      "runResults": [
+        {
+          "name": "OS canonical device approval contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/canonical-device-identity.test.ts",
+            "tests/install-control-plane.test.ts",
+            "tests/install-control-plane-d1.test.ts",
+            "tests/oauth-device-page-contract.test.ts",
+            "tests/internal-dashboard-integration.test.ts",
+            "tests/native-google-device-approval.test.ts",
+            "tests/os-device-authority-worker.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-device-approval-canonical-identity",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 641,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-complete-os-namespace-and-shared-public-release-contracts/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/oauth-device-page-contract.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/install-control-plane-d1.test.ts \u001b[2m(\u001b[22m\u001b[2m6 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 11\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/install-control-plane.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 14\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/canonical-device-identity.test.ts \u001b[2m(\u001b[22m\u001b[2m14 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 13\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/native-google-device-approval.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 38\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/os-device-authority-worker.test.ts \u001b[2m(\u001b[22m\u001b[2m34 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 78\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/internal-dashboard-integration.test.ts \u001b[2m(\u001b[22m\u001b[2m11 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 43\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m7 passed\u001b[39m\u001b[22m\u001b[90m (7)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m82 passed\u001b[39m\u001b[22m\u001b[90m (82)\u001b[39m\n\u001b[2m   Start at \u001b[22m 01:22:35\n\u001b[2m   Duration \u001b[22m 483ms\u001b[2m (transform 922ms, setup 72ms, import 1.17s, tests 199ms, environment 1ms)\u001b[22m\n\n$ vitest run tests/canonical-device-identity.test.ts tests/install-control-plane.test.ts \"tests/install-control-plane-d1.test.ts\" tests/oauth-device-page-contract.test.ts tests/internal-dashboard-integration.test.ts tests/native-google-device-approval.test.ts tests/os-device-authority-worker.test.ts\n"
+        },
+        {
+          "name": "OS canonical device approval syntax contracts",
+          "command": [
+            "node",
+            "packages/os/scripts/check-syntax.js"
+          ],
+          "cwd": ".",
+          "ruleId": "os-device-approval-canonical-identity",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 1853,
+          "outputTail": "workspace script syntax checks passed\n"
+        },
+        {
+          "name": "Dialer website dependency prerequisite",
+          "command": [
+            "bun",
+            "install",
+            "--cwd",
+            "packages/dialer-website",
+            "--frozen-lockfile",
+            "--ignore-scripts"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-website-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 139,
+          "outputTail": "bun install v1.3.14 (0d9b296a)\n\nChecked 690 installs across 803 packages (no changes) [133.00ms]\n"
+        },
+        {
+          "name": "Dialer website build",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/dialer-website",
+            "build"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-website-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 5819,
+          "outputTail": "01:22:39 [types] Generated 26ms\n01:22:39 [check] Getting diagnostics for Astro files in /Users/kokayi/.consuelo/node/tasks/worktrees/task-website-complete-os-namespace-and-shared-public-release-contracts/packages/dialer-website...\n\u001b[96msrc/components/SeoHead.astro\u001b[0m:\u001b[93m100\u001b[0m:\u001b[93m9\u001b[0m - \u001b[93mwarning\u001b[0m\u001b[90m astro(4000): \u001b[0mThis script will be treated as if it has the `is:inline` directive because it contains an attribute. Therefore, features that require processing (e.g. using TypeScript or npm packages in the script) are unavailable.\n\nSee docs for more details: https://docs.astro.build/en/guides/client-side-scripts/#script-processing.\n\nAdd the `is:inline` directive explicitly to silence this hint.\n\n\u001b[7m100\u001b[0m <script type=\"application/ld+json\" set:html={JSON.stringify(structuredData)} />\n\u001b[7m   \u001b[0m \u001b[93m        ~~~~\u001b[0m\n\n\u001b[96msrc/layouts/MarketingLayout.astro\u001b[0m:\u001b[93m91\u001b[0m:\u001b[93m15\u001b[0m - \u001b[93mwarning\u001b[0m\u001b[90m astro(4000): \u001b[0mThis script will be treated as if it has the `is:inline` directive because it contains an attribute. Therefore, features that require processing (e.g. using TypeScript or npm packages in the script) are unavailable.\n\nSee docs for more details: https://docs.astro.build/en/guides/client-side-scripts/#script-processing.\n\nAdd the `is:inline` directive explicitly to silence this hint.\n\n\u001b[7m91\u001b[0m       <script define:vars={{ posthogKey, posthogHost }}>\n\u001b[7m  \u001b[0m \u001b[93m              ~~~~~~~~~~~\u001b[0m\n\nResult (44 files): \n- 0 errors\n- 0 warnings\n- 2 hints\n\n01:22:42 [types] Generated 17ms\n01:22:42 [build] output: \"static\"\n01:22:42 [build] mode: \"static\"\n01:22:42 [build] directory: /Users/kokayi/.consuelo/node/tasks/worktrees/task-website-complete-os-namespace-and-shared-public-release-contracts/packages/dialer-website/dist/\n01:22:42 [build] Collecting build info...\n01:22:42 [build] ✓ Completed in 32ms.\n01:22:42 [build] Building static entrypoints...\n01:22:43 [vite] ✓ built in 788ms\n01:22:43 [vite] ✓ built in 359ms\n01:22:43 [build] Rearranging server assets...\n\n generating static routes \n01:22:43   ├─ /404.html (+19ms) \n01:22:43   ├─ /calls/api/integrations/oauth/callback/index.html (+1ms) \n01:22:43   ├─ /contact/index.html (+1ms) \n01:22:43   ├─ /get-started/index.html (+1ms) \n01:22:43   ├─ /guides/index.html (+1ms) \n01:22:43   ├─ /how-it-works/index.html (+1ms) \n01:22:43   ├─ /pricing/index.html (+1ms) \n01:22:43   ├─ /privacy/index.html (+1ms) \n01:22:43   ├─ /robots.txt (+1ms) \n01:22:43   ├─ /support/index.html (+1ms) \n01:22:43   ├─ /terms/index.html (+1ms) \n01:22:43   ├─ /index.html (+2ms) \n01:22:43 ✓ Completed in 45ms.\n\n01:22:43 [build] ✓ Completed in 1.22s.\n01:22:43 [build] 11 page(s) built in 1.25s\n01:22:43 [build] Complete!\n$ bun scripts/materialize-public-assets.ts && astro check && astro build\nBrowserslist: browsers data (caniuse-lite) is 8 months old. Please run:\n  npx update-browserslist-db@latest\n  Why you should do it regularly: https://github.com/browserslist/update-db#readme\n"
+        },
+        {
+          "name": "Dialer website delivery contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-website/tests/marketing-contract.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-website-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 65,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/dialer-website/tests/marketing-contract.test.ts:\n(pass) Dialer marketing delivery > redirects legacy device login to the canonical OS authority without duplicating its UI [0.10ms]\n(pass) Dialer marketing delivery > publishes paid product metadata without an inherited free offer [0.27ms]\n(pass) Dialer marketing delivery > ships decodable generated application icons [27.21ms]\n(pass) Dialer marketing delivery > has its own package and an isolated preview deployment [0.23ms]\n(pass) Dialer marketing delivery > renders the Dialer funnel without OS installation or authentication links [0.10ms]\n(pass) Dialer marketing delivery > renders exactly three monthly plans and a plan-specific setup journey [0.11ms]\n(pass) Dialer marketing delivery > ships real destinations for public navigation and a preview indexing boundary [0.10ms]\n\n 7 pass\n 0 fail\n 41 expect() calls\nRan 7 tests across 1 file. [59.00ms]\n"
+        },
+        {
+          "name": "Dialer website rendered browser contracts",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/dialer-website",
+            "test:browser"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-website-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 46302,
+          "outputTail": "{\"viewport\":\"320x568\",\"passed\":true,\"cloudImages\":6}\n{\"viewport\":\"375x812\",\"passed\":true,\"cloudImages\":6}\n{\"viewport\":\"430x932\",\"passed\":true,\"cloudImages\":6}\n{\"viewport\":\"568x320\",\"passed\":true,\"cloudImages\":6}\n{\"viewport\":\"667x375\",\"passed\":true,\"cloudImages\":6}\n{\"viewport\":\"768x1024\",\"passed\":true,\"cloudImages\":6}\n{\"viewport\":\"1024x768\",\"passed\":true,\"cloudImages\":6}\n{\"viewport\":\"1440x960\",\"passed\":true,\"cloudImages\":6}\n{\"flow\":\"pricing-to-setup\",\"querySafety\":\"pass\",\"internalLinks\":79,\"motion\":\"pass\",\"artifacts\":\"/tmp/consuelo-dialer-website-browser\"}\n{\"cleanup\":\"closing browser\"}\n{\"cleanup\":\"closing server\"}\n{\"cleanup\":\"complete\"}\n$ node scripts/test-marketing-browser.mjs\n"
+        },
+        {
+          "name": "Public production release isolation contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/os/tests/production-release-plan.test.ts",
+            "packages/workspace/tests/docs-production-release.test.js",
+            "packages/workspace/tests/website-deploy.test.js",
+            "packages/workspace/tests/github-workflow-policy.test.js"
+          ],
+          "cwd": ".",
+          "ruleId": "public-production-release-isolation",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 540,
+          "outputTail": "\n\u001b[1m\u001b[46m RUN \u001b[49m\u001b[22m \u001b[36mv4.0.18 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-complete-os-namespace-and-shared-public-release-contracts\u001b[39m\n\n \u001b[32m✓\u001b[39m packages/workspace/tests/docs-production-release.test.js \u001b[2m(\u001b[22m\u001b[2m1 test\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/os/tests/production-release-plan.test.ts \u001b[2m(\u001b[22m\u001b[2m8 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/workspace/tests/github-workflow-policy.test.js \u001b[2m(\u001b[22m\u001b[2m15 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 70\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m packages/workspace/tests/website-deploy.test.js \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 238\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m4 passed\u001b[39m\u001b[22m\u001b[90m (4)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m27 passed\u001b[39m\u001b[22m\u001b[90m (27)\u001b[39m\n\u001b[2m   Start at \u001b[22m 01:23:30\n\u001b[2m   Duration \u001b[22m 331ms\u001b[2m (transform 103ms, setup 0ms, import 156ms, tests 312ms, environment 0ms)\u001b[22m\n\n"
+        },
+        {
+          "name": "Preserved MCP production release security contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/production-release-mcp-security.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "public-production-release-isolation",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 339,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-complete-os-namespace-and-shared-public-release-contracts/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/production-release-mcp-security.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m1 passed\u001b[39m\u001b[22m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m3 passed\u001b[39m\u001b[22m\u001b[90m (3)\u001b[39m\n\u001b[2m   Start at \u001b[22m 01:23:30\n\u001b[2m   Duration \u001b[22m 84ms\u001b[2m (transform 14ms, setup 16ms, import 4ms, tests 2ms, environment 0ms)\u001b[22m\n\n$ vitest run tests/production-release-mcp-security.test.ts\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

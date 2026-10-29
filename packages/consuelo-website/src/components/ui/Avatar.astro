@@ -1,4 +1,5 @@
 ---
+import { withSiteBase } from '../../lib/public-path';
 // Avatar
 // ------------
 // Description: the avatar component is used to represent a user or entity.
@@ -22,10 +23,10 @@ const { size = 'base', link = '#', radius, image, classes } = Astro.props
 ---
 
 <a
-	href={link}
+	href={withSiteBase(link)}
 	class:list={['avatar', { ['avatar--' + `${size}`]: size }, , { [`${classes}`]: classes }]}
 >
-	<img src={image.src} alt={image.alt} title={image.alt} class={radius} />
+	<img src={withSiteBase(image.src)} alt={image.alt} title={image.alt} class={radius} />
 </a>
 
 <style>

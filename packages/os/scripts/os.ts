@@ -642,6 +642,7 @@ function finishSteeringExecution(args: {
     durationMs,
     input: args.reason !== undefined ? { reason: args.reason } : {},
     result: {
+      content: args.steering,
       decision: args.decision,
       chars: args.steering.length,
       message: args.name === 'refresh_steering' ? 'steering refreshed' : 'steering loaded',

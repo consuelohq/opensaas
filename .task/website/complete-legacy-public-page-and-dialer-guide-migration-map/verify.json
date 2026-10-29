@@ -1,0 +1,333 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/website/complete-legacy-public-page-and-dialer-guide-migration-map",
+  "base": "origin/stream/website",
+  "headSha": "7c76bad134a0024f7b927e153c7ae386ecaa35e9",
+  "changeHash": "33e7ba34a5aa2588d090dab4f3bc075e8c73e6b66ae0fe72d3a10757d50b70fe",
+  "changedFiles": [
+    "packages/dialer-documentation/astro.config.mjs",
+    "packages/dialer-documentation/src/lib/legacy-redirects.mjs",
+    "packages/dialer-documentation/tests/markdown.test.ts",
+    "packages/dialer-website/public/_redirects",
+    "packages/dialer-website/tests/marketing-contract.test.ts"
+  ],
+  "verifiedAt": "2026-10-29T06:00:45.346Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/website/complete-legacy-public-page-and-dialer-guide-migration-map.json",
+        ".task/website/complete-legacy-public-page-and-dialer-guide-migration-map/workpad.md",
+        "packages/dialer-documentation/astro.config.mjs",
+        "packages/dialer-documentation/src/lib/legacy-redirects.mjs",
+        "packages/dialer-documentation/tests/markdown.test.ts",
+        "packages/dialer-website/public/_redirects",
+        "packages/dialer-website/tests/marketing-contract.test.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "dialer-documentation-package",
+          "critical": true,
+          "reason": "Dialer docs changes must preserve isolated deployment, curated navigation, valid internal links and server-only translation behavior.",
+          "matchedFiles": [
+            "packages/dialer-documentation/astro.config.mjs",
+            "packages/dialer-documentation/src/lib/legacy-redirects.mjs",
+            "packages/dialer-documentation/tests/markdown.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "dialer-website-package",
+          "critical": true,
+          "reason": "The independently Bun-owned Dialer website must install its locked dependencies, materialize brand assets and prove its rendered navigation, pricing and isolated preview boundary.",
+          "matchedFiles": [
+            "packages/dialer-website/public/_redirects",
+            "packages/dialer-website/tests/marketing-contract.test.ts"
+          ],
+          "origin": "explicit"
+        },
+        {
+          "id": "auto:dialer-documentation:test",
+          "critical": false,
+          "reason": "Auto-discovered Nx test target for packages/dialer-documentation.",
+          "matchedFiles": [
+            "packages/dialer-documentation/astro.config.mjs",
+            "packages/dialer-documentation/src/lib/legacy-redirects.mjs",
+            "packages/dialer-documentation/tests/markdown.test.ts"
+          ],
+          "origin": "auto"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "dialer documentation contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-documentation/tests"
+          ],
+          "ruleId": "dialer-documentation-package",
+          "critical": true
+        },
+        {
+          "name": "dialer documentation links and metadata",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/dialer-documentation",
+            "validate"
+          ],
+          "ruleId": "dialer-documentation-package",
+          "critical": true
+        },
+        {
+          "name": "dialer documentation translation contracts",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/dialer-documentation",
+            "test:translation"
+          ],
+          "ruleId": "dialer-documentation-package",
+          "critical": true
+        },
+        {
+          "name": "Dialer website dependency prerequisite",
+          "command": [
+            "bun",
+            "install",
+            "--cwd",
+            "packages/dialer-website",
+            "--frozen-lockfile",
+            "--ignore-scripts"
+          ],
+          "ruleId": "dialer-website-package",
+          "critical": true
+        },
+        {
+          "name": "Dialer website build",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/dialer-website",
+            "build"
+          ],
+          "ruleId": "dialer-website-package",
+          "critical": true
+        },
+        {
+          "name": "Dialer website delivery contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-website/tests/marketing-contract.test.ts"
+          ],
+          "ruleId": "dialer-website-package",
+          "critical": true
+        },
+        {
+          "name": "Dialer website rendered browser contracts",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/dialer-website",
+            "test:browser"
+          ],
+          "ruleId": "dialer-website-package",
+          "critical": true
+        },
+        {
+          "name": "dialer-documentation test",
+          "command": [
+            "npx",
+            "nx",
+            "test",
+            "dialer-documentation",
+            "--coverage=false"
+          ],
+          "ruleId": "auto:dialer-documentation:test",
+          "critical": false
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "platform": "darwin",
+      "run": true,
+      "runResults": [
+        {
+          "name": "dialer documentation contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-documentation/tests"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-documentation-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 33,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/dialer-documentation/tests/markdown.test.ts:\n(pass) keeps integrator code examples while removing presentation imports from Markdown [0.59ms]\n(pass) keeps migrated OS Markdown destinations on the OS origin and mounted index [0.04ms]\n(pass) keeps retired Dialer guide bookmarks in curated Dialer documentation [0.67ms]\n\npackages/dialer-documentation/tests/package.test.ts:\n(pass) standalone Dialer documentation > has independent package and deployment identities without production bindings [0.27ms]\n(pass) standalone Dialer documentation > connects every Dialer sidebar, footer and breadcrumb to authored content [1.11ms]\n(pass) standalone Dialer documentation > keeps OS onboarding out of public pages and preserves honest feature boundaries [3.31ms]\n\n 6 pass\n 0 fail\n 89 expect() calls\nRan 6 tests across 2 files. [29.00ms]\n"
+        },
+        {
+          "name": "dialer documentation links and metadata",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/dialer-documentation",
+            "validate"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-documentation-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 26,
+          "outputTail": "Validated 31 Dialer pages, all sidebar/footer destinations and internal content links.\n$ bun scripts/validate-documentation.mjs\n"
+        },
+        {
+          "name": "dialer documentation translation contracts",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/dialer-documentation",
+            "test:translation"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-documentation-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 25,
+          "outputTail": "{\n  \"ok\": true\n}\n$ bun scripts/test-translation.mjs\n"
+        },
+        {
+          "name": "Dialer website dependency prerequisite",
+          "command": [
+            "bun",
+            "install",
+            "--cwd",
+            "packages/dialer-website",
+            "--frozen-lockfile",
+            "--ignore-scripts"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-website-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 184,
+          "outputTail": "bun install v1.3.14 (0d9b296a)\n\nChecked 690 installs across 803 packages (no changes) [179.00ms]\n"
+        },
+        {
+          "name": "Dialer website build",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/dialer-website",
+            "build"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-website-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 5742,
+          "outputTail": "01:59:52 [types] Generated 196ms\n01:59:52 [check] Getting diagnostics for Astro files in /Users/kokayi/.consuelo/node/tasks/worktrees/task-website-complete-legacy-public-page-and-dialer-guide-migration-map/packages/dialer-website...\n\u001b[96msrc/components/SeoHead.astro\u001b[0m:\u001b[93m100\u001b[0m:\u001b[93m9\u001b[0m - \u001b[93mwarning\u001b[0m\u001b[90m astro(4000): \u001b[0mThis script will be treated as if it has the `is:inline` directive because it contains an attribute. Therefore, features that require processing (e.g. using TypeScript or npm packages in the script) are unavailable.\n\nSee docs for more details: https://docs.astro.build/en/guides/client-side-scripts/#script-processing.\n\nAdd the `is:inline` directive explicitly to silence this hint.\n\n\u001b[7m100\u001b[0m <script type=\"application/ld+json\" set:html={JSON.stringify(structuredData)} />\n\u001b[7m   \u001b[0m \u001b[93m        ~~~~\u001b[0m\n\n\u001b[96msrc/layouts/MarketingLayout.astro\u001b[0m:\u001b[93m91\u001b[0m:\u001b[93m15\u001b[0m - \u001b[93mwarning\u001b[0m\u001b[90m astro(4000): \u001b[0mThis script will be treated as if it has the `is:inline` directive because it contains an attribute. Therefore, features that require processing (e.g. using TypeScript or npm packages in the script) are unavailable.\n\nSee docs for more details: https://docs.astro.build/en/guides/client-side-scripts/#script-processing.\n\nAdd the `is:inline` directive explicitly to silence this hint.\n\n\u001b[7m91\u001b[0m       <script define:vars={{ posthogKey, posthogHost }}>\n\u001b[7m  \u001b[0m \u001b[93m              ~~~~~~~~~~~\u001b[0m\n\nResult (44 files): \n- 0 errors\n- 0 warnings\n- 2 hints\n\n01:59:55 [types] Generated 17ms\n01:59:55 [build] output: \"static\"\n01:59:55 [build] mode: \"static\"\n01:59:55 [build] directory: /Users/kokayi/.consuelo/node/tasks/worktrees/task-website-complete-legacy-public-page-and-dialer-guide-migration-map/packages/dialer-website/dist/\n01:59:55 [build] Collecting build info...\n01:59:55 [build] ✓ Completed in 31ms.\n01:59:55 [build] Building static entrypoints...\n01:59:56 [vite] ✓ built in 741ms\n01:59:56 [vite] ✓ built in 340ms\n01:59:56 [build] Rearranging server assets...\n\n generating static routes \n01:59:56   ├─ /404.html (+14ms) \n01:59:56   ├─ /calls/api/integrations/oauth/callback/index.html (+1ms) \n01:59:56   ├─ /contact/index.html (+1ms) \n01:59:56   ├─ /get-started/index.html (+1ms) \n01:59:56   ├─ /guides/index.html (+1ms) \n01:59:56   ├─ /how-it-works/index.html (+1ms) \n01:59:56   ├─ /pricing/index.html (+1ms) \n01:59:56   ├─ /privacy/index.html (+1ms) \n01:59:56   ├─ /robots.txt (+0ms) \n01:59:56   ├─ /support/index.html (+1ms) \n01:59:56   ├─ /terms/index.html (+1ms) \n01:59:56   ├─ /index.html (+2ms) \n01:59:56 ✓ Completed in 39ms.\n\n01:59:56 [build] ✓ Completed in 1.14s.\n01:59:56 [build] 11 page(s) built in 1.18s\n01:59:56 [build] Complete!\n$ bun scripts/materialize-public-assets.ts && astro check && astro build\nBrowserslist: browsers data (caniuse-lite) is 8 months old. Please run:\n  npx update-browserslist-db@latest\n  Why you should do it regularly: https://github.com/browserslist/update-db#readme\n"
+        },
+        {
+          "name": "Dialer website delivery contracts",
+          "command": [
+            "bun",
+            "test",
+            "packages/dialer-website/tests/marketing-contract.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-website-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 56,
+          "outputTail": "bun test v1.3.14 (0d9b296a)\n\npackages/dialer-website/tests/marketing-contract.test.ts:\n(pass) Dialer marketing delivery > redirects legacy device login to the canonical OS authority without duplicating its UI [0.14ms]\n(pass) Dialer marketing delivery > preserves the legacy OS feed URL when Dialer owns the root [0.03ms]\n(pass) Dialer marketing delivery > preserves every displaced static OS page through the migration map [0.94ms]\n(pass) Dialer marketing delivery > publishes paid product metadata without an inherited free offer [0.24ms]\n(pass) Dialer marketing delivery > ships decodable generated application icons [21.10ms]\n(pass) Dialer marketing delivery > has its own package and an isolated preview deployment [0.58ms]\n(pass) Dialer marketing delivery > renders the Dialer funnel without OS installation or authentication links [0.12ms]\n(pass) Dialer marketing delivery > renders exactly three monthly plans and a plan-specific setup journey [0.12ms]\n(pass) Dialer marketing delivery > ships real destinations for public navigation and a preview indexing boundary [0.12ms]\n\n 9 pass\n 0 fail\n 48 expect() calls\nRan 9 tests across 1 file. [51.00ms]\n"
+        },
+        {
+          "name": "Dialer website rendered browser contracts",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/dialer-website",
+            "test:browser"
+          ],
+          "cwd": ".",
+          "ruleId": "dialer-website-package",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 47590,
+          "outputTail": "{\"viewport\":\"320x568\",\"passed\":true,\"cloudImages\":6}\n{\"viewport\":\"375x812\",\"passed\":true,\"cloudImages\":6}\n{\"viewport\":\"430x932\",\"passed\":true,\"cloudImages\":6}\n{\"viewport\":\"568x320\",\"passed\":true,\"cloudImages\":6}\n{\"viewport\":\"667x375\",\"passed\":true,\"cloudImages\":6}\n{\"viewport\":\"768x1024\",\"passed\":true,\"cloudImages\":6}\n{\"viewport\":\"1024x768\",\"passed\":true,\"cloudImages\":6}\n{\"viewport\":\"1440x960\",\"passed\":true,\"cloudImages\":6}\n{\"flow\":\"pricing-to-setup\",\"querySafety\":\"pass\",\"internalLinks\":79,\"motion\":\"pass\",\"artifacts\":\"/tmp/consuelo-dialer-website-browser\"}\n{\"cleanup\":\"closing browser\"}\n{\"cleanup\":\"closing server\"}\n{\"cleanup\":\"complete\"}\n$ node scripts/test-marketing-browser.mjs\n"
+        },
+        {
+          "name": "dialer-documentation test",
+          "command": [
+            "npx",
+            "nx",
+            "test",
+            "dialer-documentation",
+            "--coverage=false"
+          ],
+          "cwd": ".",
+          "ruleId": "auto:dialer-documentation:test",
+          "critical": false,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 805,
+          "outputTail": "\n> nx run dialer-documentation:test --coverage=false\n\n> bun run test\r\n\r\n\u001b[0m\u001b[1mbun test \u001b[0m\u001b[2mv1.3.14 (0d9b296a)\u001b[0m\n\n\n\n NX   Successfully ran target test for project dialer-documentation\n\n\n\u001b[0m\u001b[2m\u001b[35m$\u001b[0m \u001b[2m\u001b[1mbun test tests\u001b[0m\n\u001b[0m\ntests/markdown.test.ts:\n\u001b[0m\u001b[32m✓\u001b[0m\u001b[0m\u001b[1m keeps integrator code examples while removing presentation imports from Markdown\u001b[0m \u001b[0m\u001b[2m[0.57ms\u001b[0m\u001b[2m]\u001b[0m\n\u001b[0m\u001b[32m✓\u001b[0m\u001b[0m\u001b[1m keeps migrated OS Markdown destinations on the OS origin and mounted index\u001b[0m \u001b[0m\u001b[2m[0.03ms\u001b[0m\u001b[2m]\u001b[0m\n\u001b[0m\u001b[32m✓\u001b[0m\u001b[0m\u001b[1m keeps retired Dialer guide bookmarks in curated Dialer documentation\u001b[0m \u001b[0m\u001b[2m[2.92ms\u001b[0m\u001b[2m]\u001b[0m\n\u001b[0m\ntests/package.test.ts:\n\u001b[0m\u001b[32m✓\u001b[0m \u001b[0mstandalone Dialer documentation\u001b[2m >\u001b[0m\u001b[1m has independent package and deployment identities without production bindings\u001b[0m \u001b[0m\u001b[2m[\u001b[1m42.04ms\u001b[0m\u001b[2m]\u001b[0m\n\u001b[0m\u001b[32m✓\u001b[0m \u001b[0mstandalone Dialer documentation\u001b[2m >\u001b[0m\u001b[1m connects every Dialer sidebar, footer and breadcrumb to authored content\u001b[0m \u001b[0m\u001b[2m[4.07ms\u001b[0m\u001b[2m]\u001b[0m\n\u001b[0m\u001b[32m✓\u001b[0m \u001b[0mstandalone Dialer documentation\u001b[2m >\u001b[0m\u001b[1m keeps OS onboarding out of public pages and preserves honest feature boundaries\u001b[0m \u001b[0m\u001b[2m[\u001b[1m20.84ms\u001b[0m\u001b[2m]\u001b[0m\n\n\u001b[0m\u001b[32m 6 pass\u001b[0m\n\u001b[0m\u001b[2m 0 fail\u001b[0m\n 89 expect() calls\nRan 6 tests across 2 files. \u001b[0m\u001b[2m[\u001b[1m82.00ms\u001b[0m\u001b[2m]\u001b[0m\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

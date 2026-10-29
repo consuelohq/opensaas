@@ -1,0 +1,170 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/website/keep-os-support-links-on-the-mounted-os-documentation",
+  "base": "origin/stream/website",
+  "headSha": "5f6bd06c8780c9691e787546fe082c92a4f9f86e",
+  "changeHash": "d29cb878dcee4a3521427948d43de716fcb520af506b5ef6295aaadb780c93ee",
+  "changedFiles": [
+    "packages/consuelo-website/src/data/docs-navigation.ts",
+    "packages/consuelo-website/src/pages/os/launcher.astro",
+    "packages/consuelo-website/src/pages/support.astro",
+    "packages/consuelo-website/tests/website-structure.test.js"
+  ],
+  "verifiedAt": "2026-10-29T04:58:39.399Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/tasks/website/keep-os-support-links-on-the-mounted-os-documentation.json",
+        ".task/website/keep-os-support-links-on-the-mounted-os-documentation/workpad.md",
+        "packages/consuelo-website/src/data/docs-navigation.ts",
+        "packages/consuelo-website/src/pages/os/launcher.astro",
+        "packages/consuelo-website/src/pages/support.astro",
+        "packages/consuelo-website/tests/website-structure.test.js"
+      ],
+      "matchedRules": [
+        {
+          "id": "os-launcher-copy-interaction",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Launcher onboarding copy-interaction changes must prove generated UI behavior, Sites materialization, and Astro source validity without selecting the historically red unrelated OS package suite.",
+          "matchedFiles": [
+            "packages/consuelo-website/src/pages/os/launcher.astro"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "OS launcher copy interaction contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/launcher-onboarding.test.ts",
+            "tests/launcher-astro-source.test.ts"
+          ],
+          "ruleId": "os-launcher-copy-interaction",
+          "critical": true
+        },
+        {
+          "name": "OS launcher Sites materialization contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/sites-cli.test.ts",
+            "-t",
+            "launcher"
+          ],
+          "ruleId": "os-launcher-copy-interaction",
+          "critical": true
+        },
+        {
+          "name": "Consuelo website launcher Astro check",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/consuelo-website",
+            "astro",
+            "--",
+            "check"
+          ],
+          "ruleId": "os-launcher-copy-interaction",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "platform": "darwin",
+      "run": true,
+      "runResults": [
+        {
+          "name": "OS launcher copy interaction contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/launcher-onboarding.test.ts",
+            "tests/launcher-astro-source.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-launcher-copy-interaction",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 445,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-keep-os-support-links-on-the-mounted-os-documentation/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/launcher-astro-source.test.ts \u001b[2m(\u001b[22m\u001b[2m1 test\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 2\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/launcher-onboarding.test.ts \u001b[2m(\u001b[22m\u001b[2m6 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m2 passed\u001b[39m\u001b[22m\u001b[90m (2)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m7 passed\u001b[39m\u001b[22m\u001b[90m (7)\u001b[39m\n\u001b[2m   Start at \u001b[22m 00:58:28\n\u001b[2m   Duration \u001b[22m 114ms\u001b[2m (transform 46ms, setup 41ms, import 21ms, tests 5ms, environment 0ms)\u001b[22m\n\n$ vitest run tests/launcher-onboarding.test.ts tests/launcher-astro-source.test.ts\n"
+        },
+        {
+          "name": "OS launcher Sites materialization contracts",
+          "command": [
+            "bun",
+            "--cwd",
+            "packages/os",
+            "test",
+            "tests/sites-cli.test.ts",
+            "-t",
+            "launcher"
+          ],
+          "cwd": ".",
+          "ruleId": "os-launcher-copy-interaction",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 275,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-keep-os-support-links-on-the-mounted-os-documentation/packages/os\u001b[39m\n\n \u001b[2m\u001b[90m↓\u001b[39m\u001b[22m tests/sites-cli.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m | \u001b[22m\u001b[33m9 skipped\u001b[39m\u001b[2m)\u001b[22m\n\n\u001b[2m Test Files \u001b[22m \u001b[33m1 skipped\u001b[39m\u001b[90m (1)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[33m9 skipped\u001b[39m\u001b[90m (9)\u001b[39m\n\u001b[2m   Start at \u001b[22m 00:58:28\n\u001b[2m   Duration \u001b[22m 80ms\u001b[2m (transform 17ms, setup 11ms, import 13ms, tests 0ms, environment 0ms)\u001b[22m\n\n$ vitest run tests/sites-cli.test.ts -t launcher\n"
+        },
+        {
+          "name": "Consuelo website launcher Astro check",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/consuelo-website",
+            "astro",
+            "--",
+            "check"
+          ],
+          "cwd": ".",
+          "ruleId": "os-launcher-copy-interaction",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 10748,
+          "outputTail": ".g. using TypeScript or npm packages in the script) are unavailable.\n\nSee docs for more details: https://docs.astro.build/en/guides/client-side-scripts/#script-processing.\n\nAdd the `is:inline` directive explicitly to silence this hint.\n\n\u001b[7m101\u001b[0m <script type=\"application/ld+json\" set:html={JSON.stringify(structuredData)} />\n\u001b[7m   \u001b[0m \u001b[93m        ~~~~\u001b[0m\n\n\u001b[96msrc/components/blocks/CTA/BasicDark.astro\u001b[0m:\u001b[93m20\u001b[0m:\u001b[93m1\u001b[0m - \u001b[93mwarning\u001b[0m\u001b[90m ts(6133): \u001b[0m'badge' is declared but its value is never read.\n\n\u001b[7m20\u001b[0m import badge from '../../../assets/badge.svg'\n\u001b[7m  \u001b[0m \u001b[93m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\u001b[0m\n\u001b[96msrc/components/blocks/CTA/BasicDark.astro\u001b[0m:\u001b[93m15\u001b[0m:\u001b[93m1\u001b[0m - \u001b[93mwarning\u001b[0m\u001b[90m ts(6133): \u001b[0m'Image' is declared but its value is never read.\n\n\u001b[7m15\u001b[0m import { Image } from 'astro:assets'\n\u001b[7m  \u001b[0m \u001b[93m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\u001b[0m\n\n\u001b[96msrc/components/blocks/head/Header.astro\u001b[0m:\u001b[93m65\u001b[0m:\u001b[93m11\u001b[0m - \u001b[93mwarning\u001b[0m\u001b[90m astro(4000): \u001b[0mThis script will be treated as if it has the `is:inline` directive because it contains an attribute. Therefore, features that require processing (e.g. using TypeScript or npm packages in the script) are unavailable.\n\nSee docs for more details: https://docs.astro.build/en/guides/client-side-scripts/#script-processing.\n\nAdd the `is:inline` directive explicitly to silence this hint.\n\n\u001b[7m65\u001b[0m   <script define:vars={{ sentryDsn }}>\n\u001b[7m  \u001b[0m \u001b[93m          ~~~~~~~~~~~\u001b[0m\n\u001b[96msrc/components/blocks/head/Header.astro\u001b[0m:\u001b[93m46\u001b[0m:\u001b[93m11\u001b[0m - \u001b[93mwarning\u001b[0m\u001b[90m astro(4000): \u001b[0mThis script will be treated as if it has the `is:inline` directive because it contains an attribute. Therefore, features that require processing (e.g. using TypeScript or npm packages in the script) are unavailable.\n\nSee docs for more details: https://docs.astro.build/en/guides/client-side-scripts/#script-processing.\n\nAdd the `is:inline` directive explicitly to silence this hint.\n\n\u001b[7m46\u001b[0m   <script define:vars={{ posthogKey, posthogHost }}>\n\u001b[7m  \u001b[0m \u001b[93m          ~~~~~~~~~~~\u001b[0m\n\n\u001b[96msrc/components/blocks/hero/HomeCTA.astro\u001b[0m:\u001b[93m2\u001b[0m:\u001b[93m1\u001b[0m - \u001b[93mwarning\u001b[0m\u001b[90m ts(6133): \u001b[0m'withSiteBase' is declared but its value is never read.\n\n\u001b[7m2\u001b[0m import { withSiteBase } from '../../../lib/public-path';\n\u001b[7m \u001b[0m \u001b[93m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\u001b[0m\n\n\u001b[96msrc/components/blocks/socialproof/Basic.astro\u001b[0m:\u001b[93m2\u001b[0m:\u001b[93m1\u001b[0m - \u001b[93mwarning\u001b[0m\u001b[90m ts(6133): \u001b[0m'withSiteBase' is declared but its value is never read.\n\n\u001b[7m2\u001b[0m import { withSiteBase } from '../../../lib/public-path';\n\u001b[7m \u001b[0m \u001b[93m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\u001b[0m\n\n\u001b[96msrc/components/site/SiteFooter.astro\u001b[0m:\u001b[93m48\u001b[0m:\u001b[93m9\u001b[0m - \u001b[93mwarning\u001b[0m\u001b[90m astro(4000): \u001b[0mThis script will be treated as if it has the `is:inline` directive because it contains an attribute. Therefore, features that require processing (e.g. using TypeScript or npm packages in the script) are unavailable.\n\nSee docs for more details: https://docs.astro.build/en/guides/client-side-scripts/#script-processing.\n\nAdd the `is:inline` directive explicitly to silence this hint.\n\n\u001b[7m48\u001b[0m <script define:vars={{ siteLinks }}>\n\u001b[7m  \u001b[0m \u001b[93m        ~~~~~~~~~~~\u001b[0m\n\n\u001b[96msrc/layouts/MarketingLayout.astro\u001b[0m:\u001b[93m92\u001b[0m:\u001b[93m15\u001b[0m - \u001b[93mwarning\u001b[0m\u001b[90m astro(4000): \u001b[0mThis script will be treated as if it has the `is:inline` directive because it contains an attribute. Therefore, features that require processing (e.g. using TypeScript or npm packages in the script) are unavailable.\n\nSee docs for more details: https://docs.astro.build/en/guides/client-side-scripts/#script-processing.\n\nAdd the `is:inline` directive explicitly to silence this hint.\n\n\u001b[7m92\u001b[0m       <script define:vars={{ posthogKey, posthogHost }}>\n\u001b[7m  \u001b[0m \u001b[93m              ~~~~~~~~~~~\u001b[0m\n\nResult (214 files): \n- 0 errors\n- 0 warnings\n- 25 hints\n\n$ astro check\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

@@ -76,9 +76,37 @@ jobs:
             echo "release=false" >> "$GITHUB_OUTPUT"
           fi
 
+  public-changes:
+    name: Consuelo / public and OS release changes
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      docs: ${{ steps.classify.outputs.docs }}
+      website: ${{ steps.classify.outputs.website }}
+      os: ${{ steps.classify.outputs.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Bun for release classification
+        uses: oven-sh/setup-bun@v2
+
+      - name: Classify public and OS release changes
+        id: classify
+        run: bun packages/os/scripts/production-release-plan.ts
+        env:
+          CONSUELO_RELEASE_EVENT: ${{ github.event_name }}
+          CONSUELO_RELEASE_TARGET: ${{ inputs.target }}
+          CONSUELO_RELEASE_BEFORE: ${{ github.event.before }}
+          CONSUELO_RELEASE_HEAD: ${{ github.sha }}
+          CONSUELO_PUBLIC_SITE_PHASE: ${{ vars.CONSUELO_PUBLIC_SITE_PHASE || 'legacy' }}
+
   deploy-docs:
     name: Consuelo / docs deploy
-    if: github.event_name == 'push' || inputs.target == 'all' || inputs.target == 'docs'
+    needs: public-changes
+    if: needs.public-changes.outputs.docs == 'true'
     environment: consuelo / production
     timeout-minutes: 15
     runs-on: ubuntu-latest
@@ -89,28 +117,17 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
 
-      - name: Install documentation dependencies
-        run: bun install --frozen-lockfile
-        working-directory: packages/documentation
-
-      - name: Deploy Consuelo docs
-        run: |
-          if [ -z "${CLOUDFLARE_ACCOUNT_ID:-}" ]; then
-            echo "::error::Missing GitHub Actions variable CLOUDFLARE_ACCOUNT_ID"
-            exit 1
-          fi
-          if [ -z "${CLOUDFLARE_API_TOKEN:-}" ]; then
-            echo "::error::Missing GitHub Actions secret CLOUDFLARE_DOCS_API_TOKEN or CLOUDFLARE_OS_RELEASE_API_TOKEN"
-            exit 1
-          fi
-          bun run docs:deploy -- --json
+      - name: Deploy public documentation for the active phase
+        run: bun packages/dialer-website/scripts/release-public-sites.mjs --surface docs --deploy
         env:
+          CONSUELO_PUBLIC_SITE_PHASE: ${{ vars.CONSUELO_PUBLIC_SITE_PHASE || 'legacy' }}
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_DOCS_API_TOKEN || secrets.CLOUDFLARE_OS_RELEASE_API_TOKEN }}
 
   deploy-website:
     name: Consuelo / website deploy
-    if: github.event_name == 'push' || inputs.target == 'all' || inputs.target == 'website'
+    needs: public-changes
+    if: needs.public-changes.outputs.website == 'true'
     environment: consuelo / production
     timeout-minutes: 15
     runs-on: ubuntu-latest
@@ -121,31 +138,20 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
 
-      - name: Install website dependencies
-        run: bun install --frozen-lockfile
-        working-directory: packages/consuelo-website
-
-      - name: Deploy Consuelo website
-        run: |
-          if [ -z "${CLOUDFLARE_ACCOUNT_ID:-}" ]; then
-            echo "::error::Missing GitHub Actions variable CLOUDFLARE_ACCOUNT_ID"
-            exit 1
-          fi
-          if [ -z "${CLOUDFLARE_API_TOKEN:-}" ]; then
-            echo "::error::Missing GitHub Actions secret CLOUDFLARE_PAGES_API_TOKEN"
-            exit 1
-          fi
-          bun run website:deploy -- --branch main --json
+      - name: Deploy public websites for the active phase
+        run: bun packages/dialer-website/scripts/release-public-sites.mjs --surface website --deploy
         env:
+          CONSUELO_PUBLIC_SITE_PHASE: ${{ vars.CONSUELO_PUBLIC_SITE_PHASE || 'legacy' }}
           CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_PAGES_API_TOKEN }}
+          CLOUDFLARE_PAGES_API_TOKEN: ${{ secrets.CLOUDFLARE_PAGES_API_TOKEN }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_DOCS_API_TOKEN || secrets.CLOUDFLARE_OS_RELEASE_API_TOKEN }}
 
   release-os:
     name: Consuelo / OS release
-    needs: [deploy-docs, deploy-website]
+    needs: [public-changes, deploy-docs, deploy-website]
     if: >-
       always() &&
-      (github.event_name == 'push' || inputs.target == 'all' || inputs.target == 'os' || inputs.target == 'os-device-auth') &&
+      needs.public-changes.outputs.os == 'true' &&
       (needs.deploy-docs.result == 'success' || needs.deploy-docs.result == 'skipped') &&
       (needs.deploy-website.result == 'success' || needs.deploy-website.result == 'skipped')
     environment: consuelo / production
