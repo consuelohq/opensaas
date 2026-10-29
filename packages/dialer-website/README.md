@@ -4,7 +4,7 @@ Branch 1 public marketing preview, cloned from packages/consuelo-website at main
 
 ## Run
 
-Use Bun in this directory: bun install; bun run build; bun run preview -- --host 127.0.0.1. Run bun test tests/marketing-contract.test.ts and bun run test:browser. Browser checks default to bundled Playwright Chromium; set PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH to an existing browser when needed.
+Use Bun in this directory: bun install; bun run build; bun run preview -- --host 127.0.0.1. Run bun test tests/marketing-contract.test.ts and bun run test:browser. Browser checks reuse installed Chrome/Chromium on macOS and Linux, then fall back to bundled Playwright Chromium. Set PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH for an explicit executable; install Playwright Chromium if neither is present.
 
 ## Deploy preview
 
