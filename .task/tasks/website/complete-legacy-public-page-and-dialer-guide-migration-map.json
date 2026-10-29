@@ -1,0 +1,16 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/complete-legacy-public-page-and-dialer-guide-migration-map",
+  "baseBranch": "stream/website",
+  "sourceBranch": "stream/website",
+  "startFrom": "stream",
+  "prNumber": 2670,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2670",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-complete-legacy-public-page-and-dialer-guide-migration-map",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_55a602da1b46",
+  "tmuxSession": "opensaas-website-complete-legacy-public-page-and-dialer-guide-mig-55a602da",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-complete-legacy-public-page-and-dialer-guide-migration-map/.task/session.json",
+  "createdAt": "2026-10-29T05:46:22.406Z"
+}

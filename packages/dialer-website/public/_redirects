@@ -11,3 +11,15 @@
 /login/device/ https://os.consuelohq.com/login/device 302
 
 /rss.xml https://os.consuelohq.com/about/rss.xml 302
+
+/mercury https://os.consuelohq.com/about/mercury/ 302
+/mercury/ https://os.consuelohq.com/about/mercury/ 302
+/features https://os.consuelohq.com/about/features/ 302
+/features/ https://os.consuelohq.com/about/features/ 302
+/tags https://os.consuelohq.com/about/tags/ 302
+/tags/* https://os.consuelohq.com/about/tags/:splat 302
+/og/* https://os.consuelohq.com/about/og/:splat 302
+/sitemap-index.xml https://os.consuelohq.com/about/sitemap-index.xml 302
+/sitemap-0.xml https://os.consuelohq.com/about/sitemap-0.xml 302
+/ghl /get-started 302
+/ghl/ /get-started 302
