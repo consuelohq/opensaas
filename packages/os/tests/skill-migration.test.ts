@@ -20,6 +20,7 @@ function applyReplacements(source: string, replacements: Replacement[]): string 
 const migrationCases = [
   'task',
   'senior-engineer',
+  'media',
   'research-ingest',
   'browser',
   'handoff',

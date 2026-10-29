@@ -152,6 +152,35 @@
       "subskills": []
     },
     {
+      "name": "media",
+      "title": "Media",
+      "description": "Use for Consuelo OS media work such as source-preserving image edits, memes, SVG logo overlays, screenshots, clip preparation, and export. Routes meme requests to the nested memes subskill.",
+      "trigger": "Use when a user wants to find, download, inspect, edit, compose, validate, or export image, meme, SVG, screenshot, audio, or video assets on their OS-connected computer; use the memes subskill for static meme edits.",
+      "entrypoint": "SKILL.md",
+      "load": {
+        "type": "resource",
+        "path": "skills/media/SKILL.md"
+      },
+      "permission": "guidance",
+      "requiresApproval": false,
+      "status": "active",
+      "capabilities": [
+        "media",
+        "image-editing",
+        "memes",
+        "asset-retrieval",
+        "svg",
+        "quality-assurance"
+      ],
+      "tools": [
+        "os.get_steering",
+        "os.call"
+      ],
+      "subskills": [
+        "memes"
+      ]
+    },
+    {
       "name": "research-ingest",
       "title": "Research Ingest",
       "description": "use this skill when ko sends a youtube, podcast, article, paper, pdf, media link, or local source and wants to learn from it, discuss it, turn it into notes, compare it with other sources, or save it as durable research. this skill governs the research ingest workflow: run the workspace research ingest tool, create packet/extracted/manifest artifacts, automatically save their full text to memory, then reason from the saved bundle. use for research packets, source ingestion, podcast/video learning, durable memory, and follow-up analysis from ingested sources..",

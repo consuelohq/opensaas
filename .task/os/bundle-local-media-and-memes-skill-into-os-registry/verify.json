@@ -1,0 +1,141 @@
+{
+  "result": "pass",
+  "publishValid": true,
+  "mode": "full",
+  "branch": "task/os/bundle-local-media-and-memes-skill-into-os-registry",
+  "base": "origin/stream/os",
+  "headSha": "05add7c9d151b053e24b2a66f49cf5c8e6784468",
+  "changeHash": "5dacd7f2f686829c22762898277f35201425e05f17976ea147b3ddabd20dd84c",
+  "changedFiles": [
+    "packages/os/skills/media/SKILL.md",
+    "packages/os/skills/media/memes/SKILL.md",
+    "packages/os/skills/media/memes/compose.py",
+    "packages/os/skills/media/memes/examples/record-store.example.json",
+    "packages/os/skills/media/memes/tests/test_compose.py",
+    "packages/os/skills/media/skill.json",
+    "packages/os/skills/media/tooling.md",
+    "packages/os/skills/skills.json",
+    "packages/os/tests/fixtures/skills/media-os-replacements.json",
+    "packages/os/tests/fixtures/skills/media-workspace.SKILL.md",
+    "packages/os/tests/skill-migration.test.ts",
+    "packages/os/tests/skills-registry.test.ts"
+  ],
+  "verifiedAt": "2026-10-29T02:47:05.055Z",
+  "review": {
+    "skipped": false,
+    "passed": true,
+    "status": 0
+  },
+  "testSelection": {
+    "skipped": false,
+    "passed": true,
+    "status": 0,
+    "data": {
+      "kind": "selection",
+      "passed": true,
+      "changedFiles": [
+        ".task/os/bundle-local-media-and-memes-skill-into-os-registry/evidence-log.json",
+        ".task/os/bundle-local-media-and-memes-skill-into-os-registry/read-log.json",
+        ".task/os/bundle-local-media-and-memes-skill-into-os-registry/workpad.md",
+        ".task/tasks/os/bundle-local-media-and-memes-skill-into-os-registry.json",
+        "packages/os/skills/media/SKILL.md",
+        "packages/os/skills/media/memes/SKILL.md",
+        "packages/os/skills/media/memes/compose.py",
+        "packages/os/skills/media/memes/examples/record-store.example.json",
+        "packages/os/skills/media/memes/tests/test_compose.py",
+        "packages/os/skills/media/skill.json",
+        "packages/os/skills/media/tooling.md",
+        "packages/os/skills/skills.json",
+        "packages/os/tests/fixtures/skills/media-os-replacements.json",
+        "packages/os/tests/fixtures/skills/media-workspace.SKILL.md",
+        "packages/os/tests/skill-migration.test.ts",
+        "packages/os/tests/skills-registry.test.ts"
+      ],
+      "matchedRules": [
+        {
+          "id": "os-bundled-skill-contract",
+          "critical": true,
+          "exclusive": true,
+          "reason": "Bundled skill instructions, metadata, registry output, and skill-routing contracts must run the focused skill lifecycle suite without selecting unrelated historically red package-wide OS tests.",
+          "matchedFiles": [
+            "packages/os/skills/media/SKILL.md",
+            "packages/os/skills/media/memes/SKILL.md",
+            "packages/os/skills/media/memes/compose.py",
+            "packages/os/skills/media/memes/examples/record-store.example.json",
+            "packages/os/skills/media/memes/tests/test_compose.py",
+            "packages/os/skills/media/skill.json",
+            "packages/os/skills/media/tooling.md",
+            "packages/os/skills/skills.json",
+            "packages/os/tests/fixtures/skills/media-os-replacements.json",
+            "packages/os/tests/fixtures/skills/media-workspace.SKILL.md",
+            "packages/os/tests/skill-migration.test.ts",
+            "packages/os/tests/skills-registry.test.ts"
+          ],
+          "origin": "explicit"
+        }
+      ],
+      "selectedSuites": [
+        {
+          "name": "OS bundled skill contracts",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/os",
+            "test",
+            "--",
+            "tests/branch-skill.test.ts",
+            "tests/cli-skill-routing.test.ts",
+            "tests/onboarding-skills.test.ts",
+            "tests/skill-migration.test.ts",
+            "tests/skill-selection-cli.test.ts",
+            "tests/skills-registry.test.ts"
+          ],
+          "ruleId": "os-bundled-skill-contract",
+          "critical": true
+        }
+      ],
+      "level": "pass",
+      "zeroSuiteReason": null,
+      "platform": "darwin",
+      "run": true,
+      "runResults": [
+        {
+          "name": "OS bundled skill contracts",
+          "command": [
+            "bun",
+            "run",
+            "--cwd",
+            "packages/os",
+            "test",
+            "--",
+            "tests/branch-skill.test.ts",
+            "tests/cli-skill-routing.test.ts",
+            "tests/onboarding-skills.test.ts",
+            "tests/skill-migration.test.ts",
+            "tests/skill-selection-cli.test.ts",
+            "tests/skills-registry.test.ts"
+          ],
+          "cwd": ".",
+          "ruleId": "os-bundled-skill-contract",
+          "critical": true,
+          "status": "passed",
+          "exitCode": 0,
+          "signal": null,
+          "error": null,
+          "durationMs": 3394,
+          "outputTail": "\n\u001b[1m\u001b[30m\u001b[46m RUN \u001b[49m\u001b[39m\u001b[22m \u001b[36mv4.1.5 \u001b[39m\u001b[90m/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-bundle-local-media-and-memes-skill-into-os-registry/packages/os\u001b[39m\n\n \u001b[32m✓\u001b[39m tests/branch-skill.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/skill-migration.test.ts \u001b[2m(\u001b[22m\u001b[2m9 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 10\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/cli-skill-routing.test.ts \u001b[2m(\u001b[22m\u001b[2m2 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 3\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/onboarding-skills.test.ts \u001b[2m(\u001b[22m\u001b[2m3 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[32m 12\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/skills-registry.test.ts \u001b[2m(\u001b[22m\u001b[2m12 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 433\u001b[2mms\u001b[22m\u001b[39m\n \u001b[32m✓\u001b[39m tests/skill-selection-cli.test.ts \u001b[2m(\u001b[22m\u001b[2m5 tests\u001b[22m\u001b[2m)\u001b[22m\u001b[33m 2404\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m adds branch through config, managed index, visible Skills, and steering discovery \u001b[33m 522\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m removes a clean bundled skill from config, managed index, visible Skills, and steering discovery \u001b[33m 456\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m deselects but preserves a locally modified bundled skill for explicit review \u001b[33m 499\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m interactive add offers only unselected bundled skills and uses skill names as labels \u001b[33m 463\u001b[2mms\u001b[22m\u001b[39m\n     \u001b[33m\u001b[2m✓\u001b[22m\u001b[39m interactive remove offers only selected bundled skills \u001b[33m 464\u001b[2mms\u001b[22m\u001b[39m\n\n\u001b[2m Test Files \u001b[22m \u001b[1m\u001b[32m6 passed\u001b[39m\u001b[22m\u001b[90m (6)\u001b[39m\n\u001b[2m      Tests \u001b[22m \u001b[1m\u001b[32m34 passed\u001b[39m\u001b[22m\u001b[90m (34)\u001b[39m\n\u001b[2m   Start at \u001b[22m 22:47:01\n\u001b[2m   Duration \u001b[22m 3.14s\u001b[2m (transform 425ms, setup 119ms, import 928ms, tests 2.87s, environment 0ms)\u001b[22m\n\n$ vitest run tests/branch-skill.test.ts tests/cli-skill-routing.test.ts tests/onboarding-skills.test.ts tests/skill-migration.test.ts tests/skill-selection-cli.test.ts tests/skills-registry.test.ts\n"
+        }
+      ],
+      "failedSuites": []
+    }
+  },
+  "db": {
+    "skipped": false,
+    "passed": true,
+    "warnOnly": false,
+    "risks": [],
+    "findings": []
+  },
+  "commandVersion": 2
+}

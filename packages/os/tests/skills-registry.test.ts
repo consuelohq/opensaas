@@ -1,9 +1,13 @@
-import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { buildSkillsRegistry, generateSkillsRegistry } from '../scripts/generate-skills-registry';
+import { provisionManagedComponentIndexes } from '../scripts/lib/managed-component-install';
+import { readSteeringSkillCatalog } from '../scripts/lib/steering-skills';
+import { getDefaultSelectedSkillNames } from '../scripts/lib/onboarding-skills';
 
 let fixtureRoot: string;
 
@@ -142,5 +146,105 @@ describe('skills registry generator', () => {
       'local-pages',
       'edge-snapshots',
     ]);
+  });
+});
+
+const osRoot = dirname(dirname(fileURLToPath(import.meta.url)));
+const mediaSourceRoot = join(osRoot, 'skills', 'media');
+const mediaRegistryPath = join(osRoot, 'skills', 'skills.json');
+const mediaRequiredFiles = [
+  'SKILL.md',
+  'skill.json',
+  'tooling.md',
+  join('memes', 'SKILL.md'),
+  join('memes', 'compose.py'),
+  join('memes', 'examples', 'record-store.example.json'),
+  join('memes', 'tests', 'test_compose.py'),
+];
+
+function installMediaFromBundle() {
+  const home = join(fixtureRoot, 'runtime');
+  const userRoot = join(fixtureRoot, 'user', 'Consuelo');
+  mkdirSync(home, { recursive: true });
+  const actions = provisionManagedComponentIndexes({
+    home,
+    userRoot,
+    selectedSkills: ['media'],
+    dryRun: false,
+    generatedAt: '2026-10-28T22:35:00.000Z',
+  });
+  return { home, userRoot, actions };
+}
+
+describe('bundled OS Media / Memes skill', () => {
+  it('registers Media as a first-class OS skill with a resolvable Memes subskill', () => {
+    const registry = buildSkillsRegistry();
+    expect(registry.skills.find((skill) => skill.name === 'media')).toMatchObject({
+      name: 'media',
+      title: 'Media',
+      entrypoint: 'SKILL.md',
+      load: { type: 'resource', path: 'skills/media/SKILL.md' },
+      permission: 'guidance',
+      requiresApproval: false,
+      status: 'active',
+      subskills: ['memes'],
+      tools: ['os.get_steering', 'os.call'],
+    });
+    for (const relativePath of mediaRequiredFiles) {
+      expect(existsSync(join(mediaSourceRoot, relativePath)), relativePath).toBe(true);
+    }
+    const persisted = JSON.parse(readFileSync(mediaRegistryPath, 'utf8')) as {
+      skills: Array<{ name: string; subskills?: string[]; load?: { path?: string } }>;
+    };
+    expect(persisted.skills).toEqual(registry.skills);
+    expect(persisted.skills.find((skill) => skill.name === 'media')).toMatchObject({
+      subskills: ['memes'],
+      load: { path: 'skills/media/SKILL.md' },
+    });
+    expect(getDefaultSelectedSkillNames()).toContain('media');
+  });
+
+  it('installs the full nested Media/Memes tree and exposes portable steering metadata', () => {
+    const { home, userRoot, actions } = installMediaFromBundle();
+    const installed = join(userRoot, 'Skills', 'media');
+    for (const relativePath of mediaRequiredFiles) {
+      expect(existsSync(join(installed, relativePath)), relativePath).toBe(true);
+      // The installer canonically rewrites only skill.json's load.path.
+      if (relativePath !== 'skill.json') {
+        expect(readFileSync(join(installed, relativePath))).toEqual(
+          readFileSync(join(mediaSourceRoot, relativePath))
+        );
+      }
+    }
+    const installedMeta = JSON.parse(readFileSync(join(installed, 'skill.json'), 'utf8'));
+    expect(installedMeta.load.path).toBe('skills/media/SKILL.md');
+    const index = JSON.parse(readFileSync(join(home, 'components', 'installed-skills.json'), 'utf8'));
+    expect(index.selected).toEqual([expect.objectContaining({
+      id: 'media',
+      kind: 'skill',
+      ownership: 'bundled-managed',
+      subskills: ['memes'],
+    })]);
+    const steering = readSteeringSkillCatalog({ home, packageRoot: osRoot });
+    expect(steering.source).toBe('installed-selected');
+    expect(steering.skills.find((skill) => skill.name === 'media')).toMatchObject({
+      subskills: ['memes'],
+      load: { path: 'skills/media/SKILL.md' },
+    });
+    expect(actions.some((action) => action.type === 'seed_skill'
+      && action.path === installed
+      && action.status === 'created')).toBe(true);
+  });
+
+  it('preserves a pre-existing user-owned Media skill rather than overwriting it', () => {
+    const installed = join(fixtureRoot, 'user', 'Consuelo', 'Skills', 'media');
+    mkdirSync(installed, { recursive: true });
+    writeFileSync(join(installed, 'SKILL.md'), '# User-owned Media\n');
+    writeFileSync(join(installed, 'skill.json'), JSON.stringify({
+      name: 'media', title: 'Local Media', entrypoint: 'SKILL.md',
+    }) + '\n');
+    installMediaFromBundle();
+    expect(readFileSync(join(installed, 'SKILL.md'), 'utf8')).toBe('# User-owned Media\n');
+    expect(JSON.parse(readFileSync(join(installed, 'skill.json'), 'utf8')).title).toBe('Local Media');
   });
 });
