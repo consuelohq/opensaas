@@ -179,7 +179,7 @@ describe('LeadConnector infrastructure contracts', () => {
     });
   });
 
-  it('form-encodes camelCase token bodies when requested by the provider contract', async () => {
+  it('form-encodes provider OAuth keys without renaming them', async () => {
     const requests: Array<{ url: string; init?: RequestInit }> = [];
     const layer = createLeadConnectorFetchTransportLayer((async (
       url: string | URL | Request,
@@ -201,12 +201,12 @@ describe('LeadConnector infrastructure contracts', () => {
             Version: 'v3',
           },
           body: {
-            clientId: 'client-id',
-            clientSecret: 'client-secret',
-            grantType: 'authorization_code',
-            userType: 'Location',
+            client_id: 'client-id',
+            client_secret: 'client-secret',
+            grant_type: 'authorization_code',
+            user_type: 'Location',
             code: 'code-1',
-            redirectUri: 'https://dialer.example/callback',
+            redirect_uri: 'https://dialer.example/callback',
           },
         });
       }).pipe(Effect.provide(layer)),
@@ -214,12 +214,12 @@ describe('LeadConnector infrastructure contracts', () => {
 
     expect(requests[0]?.init?.body).toBe(
       new URLSearchParams({
-        clientId: 'client-id',
-        clientSecret: 'client-secret',
-        grantType: 'authorization_code',
-        userType: 'Location',
+        client_id: 'client-id',
+        client_secret: 'client-secret',
+        grant_type: 'authorization_code',
+        user_type: 'Location',
         code: 'code-1',
-        redirectUri: 'https://dialer.example/callback',
+        redirect_uri: 'https://dialer.example/callback',
       }).toString(),
     );
   });
