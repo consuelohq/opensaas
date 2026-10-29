@@ -1,0 +1,16 @@
+{
+  "area": "trace-site",
+  "stream": "stream/trace-site",
+  "taskBranch": "task/trace-site/make-trace-inspector-compact-readable-and-accurate",
+  "baseBranch": "stream/trace-site",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2662,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2662",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-trace-site-make-trace-inspector-compact-readable-and-accurate",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_854aac10b8e8",
+  "tmuxSession": "opensaas-trace-site-make-trace-inspector-compact-readable-and-accura-854aac10",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-trace-site-make-trace-inspector-compact-readable-and-accurate/.task/session.json",
+  "createdAt": "2026-10-29T04:45:33.529Z"
+}

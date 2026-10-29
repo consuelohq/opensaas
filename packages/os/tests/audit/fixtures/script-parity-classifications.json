@@ -993,10 +993,6 @@
       "status": "changed-needs-review",
       "reason": "The OS copy now lazy-loads yaml so scripts-only audit fixtures do not require index/config dependencies; keep the intentional runtime-specific divergence explicit."
     },
-    "scripts/lib/posthog-client.ts": {
-      "status": "os-only-intentional",
-      "reason": "OS-only privacy-checked PostHog provider client for optional per-node analytics; no workspace counterpart is needed."
-    },
     "scripts/lib/platform-cloudflare-provisioning.ts": {
       "status": "os-only-intentional",
       "reason": "Present only in packages/os as migration-local OS runtime, install, cloud, test, or generated-support behavior; do not delete during parity audit."
@@ -1008,6 +1004,10 @@
     "scripts/lib/platforms/linux.ts": {
       "status": "os-only-needs-review",
       "reason": "scripts/lib/platforms/linux.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
+    },
+    "scripts/lib/posthog-client.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-only privacy-checked PostHog provider client for optional per-node analytics; no workspace counterpart is needed."
     },
     "scripts/lib/pr-links.js": {
       "status": "same",
@@ -1379,6 +1379,14 @@
       "status": "os-only-needs-review",
       "reason": "scripts/lib/trace-site-inspector/pagination-browser.ts exists only in the Consuelo OS script inventory; keep it under explicit parity review until standalone-only ownership is documented as intentional or reconciled."
     },
+    "scripts/lib/trace-site-inspector/reading-styles.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned compact trace inspector reading styles layer over the preserved vendor shell; no workspace counterpart is required."
+    },
+    "scripts/lib/trace-site-inspector/reading-view.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned typed trace payload presentation and token formatting helpers; no workspace counterpart is required."
+    },
     "scripts/lib/trace-site-inspector/session-colors.ts": {
       "status": "os-only-intentional",
       "reason": "OS-owned trace inspector presentation helper assigns deterministic session colors for the observability UI; no workspace-script counterpart is intended."
@@ -1660,6 +1668,10 @@
     "scripts/prepare-release-publication.ts": {
       "status": "os-only-intentional",
       "reason": "OS-owned release publication preparer verifies and signs immutable runtime archives before channel publication."
+    },
+    "scripts/production-release-plan.ts": {
+      "status": "os-only-intentional",
+      "reason": "OS-owned selective production release planner for standalone packages that prevents public-content pushes from rotating the auth/runtime surface."
     },
     "scripts/provision-managed-os-mcp-ingress-policy.ts": {
       "status": "os-only-intentional",

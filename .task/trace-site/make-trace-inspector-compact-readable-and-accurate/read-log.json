@@ -1,0 +1,12 @@
+{
+  "files": [
+    ".task/trace-site/make-trace-inspector-compact-readable-and-accurate/workpad.md",
+    "packages/documentation/src/content/docs/observe/traces.mdx",
+    "packages/os/definitely-missing.json",
+    "packages/os/scripts/lib/observability-traces-site.ts",
+    "packages/os/scripts/lib/trace-site-inspector/browser.ts",
+    "packages/os/scripts/lib/trace-site-inspector/virtual-list-browser.ts",
+    "packages/workspace/scripts/lib/verify-run-state.js"
+  ],
+  "updatedAt": "2026-10-29T05:17:49.203Z"
+}

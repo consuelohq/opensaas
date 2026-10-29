@@ -2,6 +2,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { TRACE_INSPECTOR_READING_STYLE } from './trace-site-inspector/reading-styles';
+
 import { PRIVATE_WORKSPACE_SESSION_RECOVERY_JAVASCRIPT } from './private-workspace-session-recovery';
 import { resolveTraceSessionIdentity } from './trace-session-identity';
 import {
@@ -538,7 +540,7 @@ export function buildObservabilityTracesSite(
   html = replaceExactlyOnce(
     html,
     /<\/head>/i,
-    `${nodeObservabilityStyle}${traceWorkspaceIntegrationStyle}${traceSystemThemeStyle}${workspaceRouteStyle}${privateWorkspaceSessionRecovery}</head>`,
+    `${nodeObservabilityStyle}${traceWorkspaceIntegrationStyle}${traceSystemThemeStyle}${TRACE_INSPECTOR_READING_STYLE}${workspaceRouteStyle}${privateWorkspaceSessionRecovery}</head>`,
     'document head close',
   );
 
