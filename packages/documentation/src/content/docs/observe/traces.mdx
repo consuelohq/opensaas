@@ -62,7 +62,7 @@ Current OS trace records can preserve:
 | resolved node | Which node actually received the call? |
 | resolved node name | Which human-readable node was that? |
 | default node | What was the workspace default at the time? |
-| route source | Was the decision `task`, `work`, `explicit`, or `default`, or was it a node-local execution? |
+| route source | Was the decision `task`, `explicit`, or `default`, or was it a node-local execution? |
 
 This is the fastest way to debug a call that ran somewhere unexpected. A task can correctly resolve to its owning node even after the workspace default changes, so the current default alone is not enough to explain historical work.
 

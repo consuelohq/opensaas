@@ -1,0 +1,16 @@
+{
+  "area": "trace-site-makeover",
+  "stream": "stream/trace-site-makeover",
+  "taskBranch": "task/trace-site-makeover/correct-trace-routing-documentation-claims",
+  "baseBranch": "stream/trace-site-makeover",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2693,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2693",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-trace-site-makeover-correct-trace-routing-documentation-claims",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_d0c4e0504b16",
+  "tmuxSession": "opensaas-trace-site-makeover-correct-trace-routing-documentation-claims-d0c4e050",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-trace-site-makeover-correct-trace-routing-documentation-claims/.task/session.json",
+  "createdAt": "2026-10-29T20:27:14.446Z"
+}
