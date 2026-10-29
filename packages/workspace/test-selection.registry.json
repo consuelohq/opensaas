@@ -2,17 +2,17 @@
   "version": 1,
   "generatedBy": "packages/workspace/scripts/test-selection.js",
   "summary": {
-    "testFileCount": 717,
-    "mappedTestCount": 634,
-    "unmappedTestCount": 83,
-    "ruleCount": 86,
-    "explicitRuleCount": 72,
+    "testFileCount": 725,
+    "mappedTestCount": 641,
+    "unmappedTestCount": 84,
+    "ruleCount": 87,
+    "explicitRuleCount": 73,
     "autoRuleCount": 14,
     "projectCount": 10,
     "packageTestScriptCount": 22,
     "byGroup": {
-      "packages/os/tests": 328,
-      "packages/workspace/tests": 66,
+      "packages/os/tests": 333,
+      "packages/workspace/tests": 67,
       "packages/os/tests/media": 34,
       "packages/consuelo-design/upstream/open-design/apps/daemon": 21,
       "packages/dialer-server/src": 19,
@@ -22,8 +22,8 @@
       "packages/consuelo-website/tests": 14,
       "packages/os/tests/distribution": 13,
       "packages/dialer-server/src/inbound": 12,
+      "packages/documentation/tests": 12,
       "packages/dialer-server/src/runtime": 11,
-      "packages/documentation/tests": 11,
       "packages/api/src/routes": 10,
       "packages/lead-connector/src": 8,
       "packages/lead-connector/src/deployment": 6,
@@ -47,6 +47,7 @@
       "packages/consuelo-design/upstream/open-design/apps/web/src/utils": 2,
       "packages/contacts/src": 2,
       "packages/dialer-documentation/tests": 2,
+      "packages/dialer-website/tests": 2,
       "packages/diff-cockpit/tests": 2,
       "packages/os/tests/audit": 2,
       "packages/os/tests/fixtures": 2,
@@ -64,7 +65,6 @@
       "packages/dialer-server/src/database": 1,
       "packages/dialer-server/src/release": 1,
       "packages/dialer-server/src/routes": 1,
-      "packages/dialer-website/tests": 1,
       "packages/dialer/src": 1,
       "packages/dialer/src/infrastructure/redis": 1,
       "packages/dialer/src/infrastructure/twilio": 1,
@@ -101,7 +101,7 @@
       "tests": 1
     },
     "byKind": {
-      "test": 653,
+      "test": 661,
       "spec": 29,
       "__tests__": 11,
       "integration": 9,
@@ -164,6 +164,8 @@
         "packages/os/tests/verify-run-state.test.js",
         "packages/workspace/scripts/review.js",
         "packages/workspace/scripts/task-push.js",
+        "packages/os/scripts/task-push.js",
+        "packages/workspace/tests/task-push-binary.test.ts",
         "packages/workspace/scripts/lib/verification.js",
         "packages/workspace/scripts/confirm.js",
         "packages/os/scripts/confirm.js"
@@ -178,12 +180,45 @@
             "run",
             "packages/workspace/tests/verification.test.js",
             "packages/workspace/tests/verify-run-state.test.js",
-            "packages/os/tests/verify-run-state.test.js"
+            "packages/os/tests/verify-run-state.test.js",
+            "packages/workspace/tests/task-push-binary.test.ts",
+            "packages/workspace/tests/task-push-local-sync.test.ts",
+            "packages/os/tests/task-push-local-sync.test.ts",
+            "packages/workspace/tests/task-push-session.test.ts"
           ]
         }
       ],
       "critical": true,
       "reason": "Review, verify, and task push changes must prove publish-gate behavior.",
+      "origin": "explicit"
+    },
+    {
+      "id": "os-task-push-binary-publication",
+      "source": [
+        "packages/os/scripts/task-push.js"
+      ],
+      "tests": [
+        {
+          "name": "OS task.push exact-byte GitHub blob and local-sync contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/task-push-binary.test.ts",
+            "packages/workspace/tests/task-push-local-sync.test.ts",
+            "packages/os/tests/task-push-local-sync.test.ts",
+            "packages/workspace/tests/github.test.ts",
+            "packages/os/tests/github.test.ts",
+            "packages/workspace/tests/verification.test.js",
+            "packages/workspace/tests/verify-run-state.test.js",
+            "packages/os/tests/verify-run-state.test.js"
+          ]
+        }
+      ],
+      "critical": true,
+      "exclusive": true,
+      "reason": "OS task.push byte-transport edits require strict blob, GitHub, publish-gate and local-sync regressions without selecting unrelated package-wide daemon tests.",
       "origin": "explicit"
     },
     {
@@ -4171,6 +4206,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/dialer-website/tests/public-release.test.ts",
+      "group": "packages/dialer-website/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/dialer/src/application/adapter-application.spec.ts",
       "group": "packages/dialer/src/application",
       "kind": "spec"
@@ -4392,6 +4432,11 @@
     },
     {
       "path": "packages/documentation/tests/start.test.ts",
+      "group": "packages/documentation/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/documentation/tests/subpath.test.ts",
       "group": "packages/documentation/tests",
       "kind": "test"
     },
@@ -6246,12 +6291,37 @@
       "kind": "test"
     },
     {
+      "path": "packages/os/tests/trace-site-inspector-batch-polish.browser.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/trace-site-inspector-batch-polish.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/os/tests/trace-site-inspector-interactions.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
     {
       "path": "packages/os/tests/trace-site-inspector-os-owned.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/trace-site-inspector-reading.browser.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/trace-site-inspector-reading.test.ts",
+      "group": "packages/os/tests",
+      "kind": "test"
+    },
+    {
+      "path": "packages/os/tests/trace-site-inspector-tool-reading.test.ts",
       "group": "packages/os/tests",
       "kind": "test"
     },
@@ -6861,6 +6931,11 @@
       "kind": "test"
     },
     {
+      "path": "packages/workspace/tests/task-push-binary.test.ts",
+      "group": "packages/workspace/tests",
+      "kind": "test"
+    },
+    {
       "path": "packages/workspace/tests/task-push-local-sync.test.ts",
       "group": "packages/workspace/tests",
       "kind": "test"
@@ -6994,6 +7069,7 @@
     "packages/documentation/tests/secure.test.ts",
     "packages/documentation/tests/sites.test.ts",
     "packages/documentation/tests/start.test.ts",
+    "packages/documentation/tests/subpath.test.ts",
     "packages/workspace/scripts/lib/stream-instructions.test.ts",
     "packages/workspace/tests/browser-review-contract.test.ts",
     "packages/workspace/tests/chunker.test.js",
@@ -7287,7 +7363,7 @@
       "root": "packages/dialer-website",
       "file": "packages/dialer-website/package.json",
       "scripts": {
-        "test": "bun test tests/marketing-contract.test.ts",
+        "test": "bun test tests",
         "test:browser": "node scripts/test-marketing-browser.mjs"
       }
     },

@@ -1,0 +1,152 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/dev-1630-preserve-binary-bytes-in-task-push-publication",
+  "events": [
+    {
+      "id": "8ce7c554-c3ae-4870-951a-d6580b8b144a",
+      "occurred_at": "2026-10-29T20:14:35.562Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/task-push-local-sync.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/dev-1630-preserve-binary-bytes-in-task-push-publication",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/dev-1630-preserve-binary-bytes-in-task-push-publication"
+      }
+    },
+    {
+      "id": "90e4cdda-89c7-4133-a412-e9f196a6385f",
+      "occurred_at": "2026-10-29T20:14:39.078Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/git.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/dev-1630-preserve-binary-bytes-in-task-push-publication",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/dev-1630-preserve-binary-bytes-in-task-push-publication"
+      }
+    },
+    {
+      "id": "1617ecf0-1150-4cbb-87a1-c9cdcb182ac3",
+      "occurred_at": "2026-10-29T20:18:12.568Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/dev-1630-preserve-binary-bytes-in-task-push-publication/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/dev-1630-preserve-binary-bytes-in-task-push-publication",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/dev-1630-preserve-binary-bytes-in-task-push-publication"
+      }
+    },
+    {
+      "id": "1473551f-baa8-4473-a32f-d6ed90301c0a",
+      "occurred_at": "2026-10-29T20:21:09.069Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/linear.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/dev-1630-preserve-binary-bytes-in-task-push-publication",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/dev-1630-preserve-binary-bytes-in-task-push-publication"
+      }
+    },
+    {
+      "id": "a475602c-565e-4205-9897-7fa28efc0338",
+      "occurred_at": "2026-10-29T20:23:36.063Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/definitely-missing.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/dev-1630-preserve-binary-bytes-in-task-push-publication",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/dev-1630-preserve-binary-bytes-in-task-push-publication"
+      }
+    },
+    {
+      "id": "e744b6be-a55f-48df-88e7-90aeaf2f3e5c",
+      "occurred_at": "2026-10-29T20:24:37.337Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/task-workpad.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/dev-1630-preserve-binary-bytes-in-task-push-publication",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/dev-1630-preserve-binary-bytes-in-task-push-publication"
+      }
+    },
+    {
+      "id": "933b8cf7-f4e2-47a1-a4e6-66e08601eba1",
+      "occurred_at": "2026-10-29T20:25:12.759Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/test-selection.rules.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/dev-1630-preserve-binary-bytes-in-task-push-publication",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/dev-1630-preserve-binary-bytes-in-task-push-publication"
+      }
+    },
+    {
+      "id": "513edab6-6934-489b-8e35-42ad0beaaccf",
+      "occurred_at": "2026-10-29T20:25:33.497Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/test-selection.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/dev-1630-preserve-binary-bytes-in-task-push-publication",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/dev-1630-preserve-binary-bytes-in-task-push-publication"
+      }
+    },
+    {
+      "id": "47ff3d59-79e4-48f2-b254-0ed40b73441e",
+      "occurred_at": "2026-10-29T20:27:30.865Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/dev-1630-preserve-binary-bytes-in-task-push-publication/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/dev-1630-preserve-binary-bytes-in-task-push-publication",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/dev-1630-preserve-binary-bytes-in-task-push-publication"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-10-29T20:27:30.964Z"
+}

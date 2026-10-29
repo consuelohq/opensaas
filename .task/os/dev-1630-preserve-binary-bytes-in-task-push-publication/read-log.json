@@ -1,0 +1,16 @@
+{
+  "files": [
+    ".task/os/dev-1630-preserve-binary-bytes-in-task-push-publication/workpad.md",
+    "packages/os/definitely-missing.json",
+    "packages/os/scripts/lib/github.js",
+    "packages/os/scripts/task-push.js",
+    "packages/workspace/scripts/lib/git.js",
+    "packages/workspace/scripts/lib/task-workpad.js",
+    "packages/workspace/scripts/linear.js",
+    "packages/workspace/scripts/task-push.js",
+    "packages/workspace/test-selection.rules.json",
+    "packages/workspace/tests/task-push-local-sync.test.ts",
+    "packages/workspace/tests/test-selection.test.js"
+  ],
+  "updatedAt": "2026-10-29T20:27:30.770Z"
+}

@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/dev-1630-preserve-binary-bytes-in-task-push-publication",
+  "baseBranch": "stream/os",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2690,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2690",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-dev-1630-preserve-binary-bytes-in-task-push-publication",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_08ced18783e6",
+  "tmuxSession": "opensaas-os-dev-1630-preserve-binary-bytes-in-task-push-publ-08ced187",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-dev-1630-preserve-binary-bytes-in-task-push-publication/.task/session.json",
+  "createdAt": "2026-10-29T20:07:37.392Z"
+}
