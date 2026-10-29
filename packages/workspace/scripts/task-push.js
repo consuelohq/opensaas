@@ -332,7 +332,7 @@ function resolveFilesFromPaths(args, repoRoot) {
 
     return {
       path: repoPath,
-      content: fs.readFileSync(absolutePath, 'utf8'),
+      content: fs.readFileSync(absolutePath),
       deleted: false,
     };
   });
@@ -355,7 +355,7 @@ function resolveChangedFiles(repoRoot) {
 
     return {
       path: change.path,
-      content: fs.readFileSync(path.join(repoRoot, change.path), 'utf8'),
+      content: fs.readFileSync(path.join(repoRoot, change.path)),
       deleted: false,
     };
   });

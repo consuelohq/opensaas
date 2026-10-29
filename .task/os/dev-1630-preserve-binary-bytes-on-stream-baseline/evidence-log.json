@@ -1,0 +1,40 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/dev-1630-preserve-binary-bytes-on-stream-baseline",
+  "events": [
+    {
+      "id": "1c227b44-930b-41c1-8a28-2fcf85dd9adf",
+      "occurred_at": "2026-10-29T20:35:31.519Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/test-selection.rules.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/dev-1630-preserve-binary-bytes-on-stream-baseline",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/dev-1630-preserve-binary-bytes-on-stream-baseline"
+      }
+    },
+    {
+      "id": "3e967c17-5789-43bf-9bee-11fb27ea0ced",
+      "occurred_at": "2026-10-29T20:38:05.117Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/test-selection.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/dev-1630-preserve-binary-bytes-on-stream-baseline",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/dev-1630-preserve-binary-bytes-on-stream-baseline"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-10-29T20:38:05.208Z"
+}
