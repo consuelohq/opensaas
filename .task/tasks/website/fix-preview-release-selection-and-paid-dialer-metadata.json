@@ -1,0 +1,16 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/fix-preview-release-selection-and-paid-dialer-metadata",
+  "baseBranch": "stream/website",
+  "sourceBranch": "stream/website",
+  "startFrom": "stream",
+  "prNumber": 2660,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2660",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-fix-preview-release-selection-and-paid-dialer-metadata",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_fa5037d00cb3",
+  "tmuxSession": "opensaas-website-fix-preview-release-selection-and-paid-dialer-me-fa5037d0",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-fix-preview-release-selection-and-paid-dialer-metadata/.task/session.json",
+  "createdAt": "2026-10-29T03:22:16.422Z"
+}
