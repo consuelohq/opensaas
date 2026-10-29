@@ -1,0 +1,57 @@
+{
+  "name": "dialer-documentation",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/dialer-documentation/src",
+  "projectType": "application",
+  "tags": [
+    "scope:dialer",
+    "type:docs"
+  ],
+  "targets": {
+    "dev": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "packages/dialer-documentation",
+        "command": "bun run dev"
+      }
+    },
+    "build": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "outputs": [
+        "{projectRoot}/dist"
+      ],
+      "options": {
+        "cwd": "packages/dialer-documentation",
+        "command": "bun run build"
+      }
+    },
+    "validate": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "options": {
+        "cwd": "packages/dialer-documentation",
+        "command": "bun run validate"
+      }
+    },
+    "preview": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "packages/dialer-documentation",
+        "command": "bun run preview"
+      }
+    },
+    "test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "cwd": "packages/dialer-documentation",
+        "commands": [
+          {
+            "command": "bun run test",
+            "forwardAllArgs": false
+          }
+        ]
+      }
+    }
+  }
+}

@@ -44,3 +44,7 @@ public/generated/
 # Dialer share assets are restored from committed encoded sources.
 /public/consuelo-dialer-og-20261028.png
 /public/consuelo-dialer-pricing-og-20261028.png
+
+# Application icons are generated from the committed SVG.
+/public/favicon-32x32.png
+/public/apple-touch-icon.png

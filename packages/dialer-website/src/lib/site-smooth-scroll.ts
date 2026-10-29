@@ -26,7 +26,7 @@ export const bootSiteSmoothScroll = (): (() => void) | null => {
     history.scrollRestoration = 'manual';
   }
 
-  window.scrollTo(0, 0);
+  if (!window.location.hash) window.scrollTo(0, 0);
 
   const lenis = new Lenis({
     lerp: 0.09,
@@ -89,7 +89,7 @@ export const bootSiteSmoothScroll = (): (() => void) | null => {
   };
 
   const handlePageShow = (event: PageTransitionEvent) => {
-    if (event.persisted) {
+    if (event.persisted || window.location.hash) {
       return;
     }
 

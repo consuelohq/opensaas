@@ -1,0 +1,19 @@
+---
+title: Callbacks
+description: Let callers leave the live queue with a request to be called back.
+status: preview
+---
+
+:::note[Configuration required]
+Callbacks are a preview feature that must be enabled for the number and staffed by the team. A request is not a confirmed calendar appointment unless a scheduling integration explicitly confirms one.
+:::
+
+A callback creates durable follow-up work. The caller can leave the carrier leg rather than remain on hold. The request retains scheduling and queue-policy context so it can be evaluated when eligible.
+
+## Rep-first execution
+
+For a callback, the system contacts and confirms a rep before dialing the customer. This avoids calling a customer into an unstaffed conversation. It is a different journey from a customer calling the advertised number.
+
+If the rep does not answer, no customer call should be treated as connected. If the customer does not answer, retry behavior follows the configured limits and backoff; it does not redial indefinitely.
+
+Your administrator owns callback windows, after-hours behavior and any calendar integration. Rescheduling or cancellation must use the authorized workflow. A timeout with an uncertain provider outcome requires reconciliation before another attempt.

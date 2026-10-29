@@ -1,0 +1,33 @@
+---
+title: Dialer SDK
+description: Use the dialing library behind a trusted server boundary.
+status: preview
+---
+
+The repository package `@consuelo/dialer` contains provider-neutral behavior. The standalone server adds persistence and runtime adapters; LeadConnector supplies GoHighLevel-specific behavior.
+
+## Issue a browser voice token
+
+This example belongs on a trusted server. It does not start a call.
+
+```ts
+import { Dialer } from '@consuelo/dialer';
+
+const dialer = new Dialer({
+  credentials: {
+    accountSid: process.env.TWILIO_ACCOUNT_SID,
+    authToken: process.env.TWILIO_AUTH_TOKEN,
+    apiKey: process.env.TWILIO_API_KEY,
+    apiSecret: process.env.TWILIO_API_SECRET,
+    twimlAppSid: process.env.TWILIO_TWIML_APP_SID,
+  },
+});
+
+// Derive repId from your verified session, not from a request body.
+const voice = await dialer.getToken(repId);
+// Return the token only to that authenticated rep's browser.
+```
+
+Use the returned voice identity for browser registration and the matching inbound Client destination. The internal rep ID still owns capacity.
+
+Keep Twilio credentials out of frontend bundles. Consult the package's TypeScript types for exact options and confirm publication availability before installing outside this repository.

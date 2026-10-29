@@ -86,11 +86,11 @@ test('GitHub Actions production release uses dedicated Cloudflare credentials fo
   expect(workflow).toContain('- os');
   expect(workflow).toContain('- os-device-auth');
   expect(workflow.split('environment: consuelo / production')).toHaveLength(4);
-  expect(workflow).toContain('needs: [deploy-docs, deploy-website]');
-  expect(workflow).toContain("inputs.target == 'docs'");
-  expect(workflow).toContain("inputs.target == 'website'");
-  expect(workflow).toContain("inputs.target == 'os'");
-  expect(workflow).toContain("inputs.target == 'os-device-auth'");
+  expect(workflow).toContain('needs: [public-changes, deploy-docs, deploy-website]');
+  expect(workflow).toContain("needs.public-changes.outputs.docs == 'true'");
+  expect(workflow).toContain("needs.public-changes.outputs.website == 'true'");
+  expect(workflow).toContain("needs.public-changes.outputs.os == 'true'");
+  expect(workflow).toContain("CONSUELO_RELEASE_TARGET: ${{ inputs.target }}");
   expect(workflow).toContain("needs.deploy-docs.result == 'success'");
   expect(workflow).toContain("needs.deploy-docs.result == 'skipped'");
   expect(workflow).toContain("needs.deploy-website.result == 'success'");

@@ -1,3 +1,4 @@
+import { phoneRingTimeoutSeconds } from './phone-offer-policy';
 import { randomUUID } from 'node:crypto';
 import type { PoolClient } from 'pg';
 import { classifyTwilioCreateFailure, createAgentVoiceIdentity, type RepCapacityState, type InboundStoredCommand } from '@consuelo/dialer';
@@ -366,17 +367,13 @@ export const createTelephonyCommands = (options: TelephonyOptions) => {
               'status',
               effect.effect_id,
             ),
-            timeoutSeconds: Math.max(
-              1,
-              Math.min(
-                60,
-                Math.ceil(
+            timeoutSeconds: target.kind === 'phone'
+              ? phoneRingTimeoutSeconds(Date.parse(state.owner!.offerExpiresAt) -
+                  Date.parse(options.clock?.() ?? new Date().toISOString()))
+              : Math.max(1, Math.min(60, Math.ceil(
                   (Date.parse(state.owner!.offerExpiresAt) -
-                    Date.parse(options.clock?.() ?? new Date().toISOString())) /
-                    1000,
-                ),
-              ),
-            ),
+                    Date.parse(options.clock?.() ?? new Date().toISOString())) / 1000,
+                ))),
           });
           if (call.accountSid !== number.accountSid)
             throw new Error('Provider account mismatch');
