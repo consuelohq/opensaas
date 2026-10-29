@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
-import { readFileSync, existsSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
+import { resolve, relative } from 'node:path';
 import { pricingPlans } from '../src/data/pricing-content';
 const root = resolve(import.meta.dir, '..');
 const page = (path = '') => readFileSync(resolve(root, 'dist', path, 'index.html'), 'utf8');
@@ -14,6 +14,20 @@ describe('Dialer marketing delivery', () => {
   });
   it('preserves the legacy OS feed URL when Dialer owns the root', () => {
     expect(readFileSync(resolve(root, 'public/_redirects'), 'utf8')).toContain('/rss.xml https://os.consuelohq.com/about/rss.xml 302');
+  });
+  it('preserves every displaced static OS page through the migration map', () => {
+    const collect = (directory: string): string[] => readdirSync(directory, { withFileTypes: true }).flatMap(entry => {
+      const path = resolve(directory, entry.name);
+      return entry.isDirectory() ? collect(path) : path.endsWith('.astro') ? [path] : [];
+    });
+    const routes = (directory: string) => collect(directory).map(path => '/' + relative(directory, path).replaceAll('\\', '/').replace(/\.astro$/, '').replace(/(^|\/)index$/, '')).map(route => route.replace(/\/$/, '') || '/');
+    const owned = new Set(routes(resolve(root, 'src/pages')));
+    const patterns = readFileSync(resolve(root, 'public/_redirects'), 'utf8').split('\n').filter(line => line && !line.startsWith('#')).map(line => line.split(/\s+/)[0]);
+    const matches = (route: string) => patterns.some(pattern => pattern.includes('*') ? route.startsWith(pattern.split('*')[0]) : route === pattern);
+    const displaced = routes(resolve(root, '../consuelo-website/src/pages')).filter(route => route !== '/404' && !route.includes('[') && !owned.has(route));
+    expect(displaced.length).toBeGreaterThan(5);
+    expect(displaced.filter(route => !matches(route))).toEqual([]);
+    for (const route of ['/tags/ai/', '/og/example.png', '/sitemap-index.xml', '/sitemap-0.xml']) expect(matches(route), route).toBe(true);
   });
   it('publishes paid product metadata without an inherited free offer', () => {
     const entries = [...page().matchAll(/<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g)]

@@ -17,3 +17,21 @@ it('keeps migrated OS Markdown destinations on the OS origin and mounted index',
   expect(pagePathToMarkdownHref('https://os.consuelohq.com/docs/start/install-consuelo-os/')).toBe('https://os.consuelohq.com/docs/start/install-consuelo-os.md');
   expect(pagePathToMarkdownHref('/inbound/routing/')).toBe('/inbound/routing.md');
 });
+
+
+it('keeps retired Dialer guide bookmarks in curated Dialer documentation', async () => {
+  const { legacyRedirects } = await import('../src/lib/legacy-redirects.mjs');
+  const routes = {
+    '/user-guide/dialer/overview': '/start/',
+    '/user-guide/dialer/making-calls': '/outbound/',
+    '/user-guide/dialer/hold-mute': '/troubleshooting/audio/',
+    '/user-guide/dialer/how-tos/discord-setup': '/team/devices/',
+    '/user-guide/dialer/transfers': '/inbound/routing/',
+    '/user-guide/highlevel/overview': '/start/',
+    '/user-guide/highlevel/embedded/getting-started': '/start/install/',
+  };
+  for (const [from, to] of Object.entries(routes)) {
+    expect(legacyRedirects[from]).toBe(to);
+    expect(pagePathToMarkdownHref(legacyRedirects[from])).toBe(to.replace(/\/$/, '') + '.md');
+  }
+});
