@@ -467,17 +467,17 @@ function applyLayout(): void {
   const compactLayout = availableWidth <= 760;
   const maxWidth = compactLayout
     ? availableWidth
-    : Math.max(420, availableWidth - 8);
+    : Math.max(420, availableWidth);
   const inspectorWidth = Math.min(state.width, maxWidth);
   const tableWidth = compactLayout
     ? availableWidth
-    : Math.max(0, availableWidth - inspectorWidth - 8);
+    : Math.max(0, availableWidth - inspectorWidth);
   shell.style.setProperty('--ti-inspector-width', `${inspectorWidth}px`);
   const open = Boolean(state.selectedKey) && state.layout !== 'collapsed';
   body?.style.setProperty(
     'grid-template-columns',
     open && !compactLayout
-      ? `${Math.floor(tableWidth)}px 8px minmax(420px, ${inspectorWidth}px)`
+      ? `${Math.floor(tableWidth)}px 0px minmax(420px, ${inspectorWidth}px)`
       : 'minmax(0, 1fr)',
     'important',
   );
@@ -520,7 +520,7 @@ function ensureDivider(): void {
     const startX = event.clientX;
     const startWidth = inspectorStore.getSnapshot().width;
     const availableWidth = parent.clientWidth;
-    const maxWidth = Math.max(420, availableWidth - 8);
+    const maxWidth = Math.max(420, availableWidth);
     let moved = false;
     let pendingWidth = startWidth;
     let resizeFrame = 0;
