@@ -65,9 +65,27 @@ export function isBatchChild(row: TraceRecord | null | undefined): boolean {
 }
 
 export function branchName(row: TraceRecord | null | undefined): string {
+  const context = asRecord(
+    parseMaybeJson(
+      row?.rawResolvedInputJson ||
+        row?.rawInputJson ||
+        row?.resolvedInputObj ||
+        row?.inputObj,
+    ),
+  );
+  const matches =
+    !context?.taskSession ||
+    !row?.taskSession ||
+    context.taskSession === row.taskSession;
+  const branch = clean(row?.branch);
   return resolveTraceSessionIdentity({
     workPath: row?.workPath,
-    branch: row?.branch,
+    branch:
+      branch && !/^tsk_/.test(branch) && branch !== 'no-branch'
+        ? branch
+        : matches
+          ? context?.branch
+          : branch,
     taskSession: row?.taskSession,
     workSession: row?.workSession,
   });
@@ -249,15 +267,10 @@ export function traceTokenUsage(row: TraceRecord): TraceTokenUsage {
     const parsed = optionalNumber(value);
     return parsed !== null && parsed >= 0 ? parsed : null;
   };
-  const count = (value: unknown, payload: unknown): TokenCount => {
+  const count = (value: unknown, _payload: unknown): TokenCount => {
     const saved = recorded(value);
     if (saved !== null) return { value: saved, estimated: false };
-    const available =
-      payload !== undefined && payload !== null && payload !== '';
-    return {
-      value: available ? estimatePayloadTokens(payload) : null,
-      estimated: available,
-    };
+    return { value: null, estimated: false };
   };
   const input = count(
     provenance?.input === false
