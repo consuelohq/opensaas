@@ -1,5 +1,10 @@
 import { installTraceLiveUpdates } from './live-browser';
 import {
+  formatTokenCount,
+  inspectorReadingValue,
+  renderInspectorReading,
+} from './reading-view';
+import {
   branchSummary,
   childTraceRecords,
   clean,
@@ -7,22 +12,20 @@ import {
   extractTraceError,
   isBatchChild,
   isFailure,
-  parseMaybeJson,
   stableTraceKey,
   traceNodeLabel,
   traceRouteLabel,
   totalTokens,
+  traceTokenUsage,
   type TraceRecord,
 } from './model';
 import {
   filterInspectorCalls,
   inspectorContentSignature,
-  inspectorSections,
   inspectorStore,
   isWorkpadTrace,
   normalizeBranchBreadcrumb,
   workpadTraceValue,
-  type InspectorSection,
 } from './inspector-state';
 import { installTracePaginationTransport } from './pagination-browser';
 import { installTraceVirtualList } from './virtual-list-browser';
@@ -56,12 +59,6 @@ type TraceWindow = Window & {
   };
 };
 
-type FlatValue = {
-  path: string;
-  value: unknown;
-  depth: number;
-};
-
 let rendering = false;
 let scheduled = false;
 let callSearchFrame = 0;
@@ -89,15 +86,6 @@ function escapeHtml(value: unknown): string {
     .replaceAll('>', '&gt;')
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#039;');
-}
-
-function formatCompact(value: unknown): string {
-  const number = Number(value ?? 0);
-  if (!Number.isFinite(number)) return '0';
-  if (Math.abs(number) >= 1_000_000)
-    return `${(number / 1_000_000).toFixed(2)}M`;
-  if (Math.abs(number) >= 1_000) return `${(number / 1_000).toFixed(1)}K`;
-  return String(Math.round(number));
 }
 
 function formatDuration(value: unknown): string {
@@ -271,121 +259,8 @@ function syncRowsFromMap(): void {
   });
 }
 
-function rowSummary(row: TraceRecord): string {
-  return (
-    clean(row.summary ?? row.output ?? row.input) ||
-    'No summary recorded for this trace.'
-  );
-}
-
 function statusLabel(row: TraceRecord): string {
   return isFailure(row) ? 'error' : clean(row.status) || 'success';
-}
-
-function fact(label: string, value: unknown): string {
-  return `<div class="tiFact"><span>${escapeHtml(label)}</span><b>${escapeHtml(value ?? '—')}</b></div>`;
-}
-
-function flattenValue(
-  value: unknown,
-  path = '',
-  depth = 0,
-  output: FlatValue[] = [],
-): FlatValue[] {
-  if (output.length >= 300) return output;
-  const parsed = typeof value === 'string' ? parseMaybeJson(value) : value;
-  if (Array.isArray(parsed)) {
-    if (!parsed.length)
-      output.push({ path: path || 'value', value: [], depth });
-    for (const [index, item] of parsed.entries())
-      flattenValue(
-        item,
-        path ? `${path}.${index}` : String(index),
-        depth + 1,
-        output,
-      );
-    return output;
-  }
-  if (parsed && typeof parsed === 'object') {
-    const entries = Object.entries(parsed as Record<string, unknown>);
-    if (!entries.length)
-      output.push({ path: path || 'value', value: {}, depth });
-    for (const [key, item] of entries)
-      flattenValue(item, path ? `${path}.${key}` : key, depth + 1, output);
-    return output;
-  }
-  output.push({ path: path || 'value', value: parsed, depth });
-  return output;
-}
-
-function valueType(value: unknown): string {
-  if (value === null || value === undefined) return 'null';
-  if (typeof value === 'boolean') return 'boolean';
-  if (typeof value === 'number') return 'number';
-  return 'string';
-}
-
-function valueMarkup(value: unknown): string {
-  if (value === null || value === undefined)
-    return '<em class="tiValue tiValue-null">null</em>';
-  if (Array.isArray(value))
-    return '<em class="tiValue tiValue-null">empty array</em>';
-  if (typeof value === 'object')
-    return '<em class="tiValue tiValue-null">empty object</em>';
-  const valueText = String(value);
-  const className = `tiValue tiValue-${valueType(value)}`;
-  return valueText.includes('\n') || valueText.length > 180
-    ? `<pre class="${className}">${escapeHtml(valueText)}</pre>`
-    : `<code class="${className}">${escapeHtml(valueText)}</code>`;
-}
-
-function structuredTable(value: unknown): string {
-  const rows = flattenValue(value);
-  if (!rows.length) return '<p class="tiEmptyValue">No value recorded.</p>';
-  return `<div class="tiDataTable"><div class="tiDataHead"><span>Path</span><span>Value</span></div>
-    ${rows
-      .map(
-        (entry) => `<div class="tiDataRow">
-          <code class="tiDataPath" style="--ti-depth:${entry.depth}">${escapeHtml(entry.path)}</code>
-          <div class="tiDataValue">${valueMarkup(entry.value)}</div>
-        </div>`,
-      )
-      .join('')}
-    ${rows.length >= 300 ? '<p class="tiDataLimit">Preview limited to 300 values.</p>' : ''}
-  </div>`;
-}
-
-function sectionMarkup(section: InspectorSection): string {
-  const emptyError = section.id === 'error' && section.value === null;
-  return `<section class="tiSection tone-${section.tone}" data-ti-section="${section.id}">
-    <header><h3>${escapeHtml(section.title)}</h3><button type="button" data-ti-copy aria-label="Copy ${escapeHtml(section.title)}">Copy</button></header>
-    <div class="tiSectionBody">${emptyError ? '<p class="tiEmptyValue">No error recorded.</p>' : structuredTable(section.value)}</div>
-  </section>`;
-}
-
-function summaryMarkup(
-  row: TraceRecord,
-  branch: ReturnType<typeof branchSummary>,
-): string {
-  const failed = isFailure(row);
-  const insight = failed ? extractTraceError(row) : null;
-  return `<section class="tiSummaryHero ${failed ? 'is-error' : ''}">
-    <div>
-      <span class="tiSummaryStatus">${escapeHtml(failed ? 'Actionable failure' : 'Completed')}</span>
-      <h2>${escapeHtml(row.name ?? row.traceName ?? row.tool ?? 'trace')}</h2>
-      <p>${escapeHtml(insight?.detail || rowSummary(row))}</p>
-    </div>
-    <section class="tiFactsGrid" aria-label="Selected call metrics">
-      ${fact('Status', statusLabel(row))}
-      ${fact('Code', clean(row.code) || 'OK')}
-      ${fact('Latency', clean(row.latency) || formatDuration(row.durationMs))}
-      ${fact('Tokens', formatCompact(totalTokens(row)))}
-      ${fact('Node', traceNodeLabel(row) || '—')}
-      ${fact('Route', traceRouteLabel(row) || '—')}
-      ${fact('Branch calls', branch.calls)}
-      ${fact('Failures', branch.failures)}
-    </section>
-  </section>`;
 }
 
 function jsonMarkup(row: TraceRecord): string {
@@ -423,15 +298,20 @@ function branchPeers(
   query: string,
 ): string {
   const selectedId = stableTraceKey(selected);
-  const calls = branch.peers.flatMap((peer) => [
-    peer,
-    ...childTraceRecords(peer),
-  ]);
+  const calls = branch.records;
+  const longest = calls.reduce(
+    (max, call) => Math.max(max, Number(call.durationMs) || 0),
+    1,
+  );
   const filtered = filterInspectorCalls(calls, query);
   if (!filtered.length)
     return '<div class="tiEmptyCompact">No calls match this search.</div>';
   return filtered
     .map((peer) => {
+      const durationRatio = Math.min(
+        100,
+        Math.max(0, ((Number(peer.durationMs) || 0) / longest) * 100),
+      );
       const key = stableTraceKey(peer);
       const status = statusLabel(peer);
       const child = isBatchChild(peer);
@@ -439,8 +319,9 @@ function branchPeers(
       return `<button class="tiPeer ${child ? 'tiPeerChild' : ''} ${key === selectedId ? 'active' : ''}" type="button" data-trace-key="${escapeHtml(key)}">
         <span class="tiPeerStatus ${status === 'error' ? 'error' : 'success'}" aria-label="${escapeHtml(status)}"></span>
         <span class="tiPeerMain"><b>${escapeHtml(formatted.toolLabel)}</b><small>${escapeHtml(peerTime(peer))}</small></span>
-        <span class="tiPeerTokens">${escapeHtml(formatCompact(totalTokens(peer)))} tok</span>
+        <span class="tiPeerTokens">${escapeHtml(formatTokenCount(traceTokenUsage(peer).total))} tok</span>
         <span class="tiPeerDuration">${escapeHtml(clean(peer.latency) || formatDuration(peer.durationMs))}</span>
+        <span class="tiPeerMeter" aria-hidden="true" style="width:${durationRatio}%"></span>
       </button>`;
     })
     .join('');
@@ -471,18 +352,37 @@ function branchPeersSignature(
   ].join(':');
 }
 
+function callOptionsMarkup(
+  branch: ReturnType<typeof branchSummary>,
+  selected: TraceRecord,
+): string {
+  return branch.records
+    .map(
+      (peer) =>
+        `<option value="${escapeHtml(stableTraceKey(peer))}" ${stableTraceKey(peer) === stableTraceKey(selected) ? 'selected' : ''}>${escapeHtml(formatTraceTableRow(peer).toolLabel)} · ${escapeHtml(peerTime(peer))}</option>`,
+    )
+    .join('');
+}
+
 function headerMetricsMarkup(branch: ReturnType<typeof branchSummary>): string {
   const breadcrumb = normalizeBranchBreadcrumb(branch.branch);
-  const metric = (label: string, value: string): string =>
-    `<span class="tiHeaderMetric"><small>${escapeHtml(label)}</small><b>${escapeHtml(value)}</b></span>`;
-  return [
-    metric('Branch', breadcrumb.label),
-    metric('Total', `${formatCompact(branch.totalTokens)} tok`),
-    metric('Input', formatCompact(branch.inputTokens)),
-    metric('Output', formatCompact(branch.outputTokens)),
-    metric('Failures', String(branch.failures)),
-    metric('Call time', formatDuration(branch.durationMs)),
-  ].join('');
+  const usage = branch.usage;
+  return `<span class="tiBranchIdentity" title="${escapeHtml(branch.branch)}">${escapeHtml(breadcrumb.label)}</span>
+    <span class="tiLoadedCount">${branch.calls} calls loaded</span>
+    <span class="tiFailureCount ${branch.failures ? 'has-failures' : ''}" title="Failed operations in loaded calls; batch wrappers are not counted again">${branch.failures} failed</span>
+    <details class="tiUsageDetails"><summary>${escapeHtml(formatTokenCount(usage.total))} tokens</summary><div>
+      <span>Input <b>${escapeHtml(formatTokenCount(usage.input))}</b></span>
+      <span>Output <b>${escapeHtml(formatTokenCount(usage.output))}</b></span>
+      <small>Loaded calls only. Approximate counts are payload estimates; a dash means not recorded.</small>
+    </div></details>`;
+}
+
+function selectedMetaMarkup(row: TraceRecord): string {
+  const status = statusLabel(row);
+  return `<span class="tiCallStatus ${status}" aria-hidden="true">${status === 'error' ? '×' : '✤'}</span>
+    <strong>${escapeHtml(formatTraceTableRow(row).toolLabel)}</strong><span class="tiSelectedStatus">${status === 'error' ? 'Failed' : 'Success'}</span>
+    <span>${escapeHtml(clean(row.latency) || formatDuration(row.durationMs))}</span>
+    <span title="${traceTokenUsage(row).total.estimated ? 'Estimated from payload size' : 'Recorded token usage'}">${escapeHtml(formatTokenCount(traceTokenUsage(row).total))} tokens</span>`;
 }
 
 function headerMetricsSignature(
@@ -495,6 +395,8 @@ function headerMetricsSignature(
     branch.outputTokens,
     branch.failures,
     branch.durationMs,
+    branch.calls,
+    JSON.stringify(branch.usage),
   ].join(':');
 }
 
@@ -502,14 +404,15 @@ function searchIconMarkup(): string {
   return '<svg viewBox="0 0 16 16" width="13" height="13" aria-hidden="true"><circle cx="7" cy="7" r="4.25" fill="none" stroke="currentColor" stroke-width="1.5"></circle><path d="m10.2 10.2 3 3" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path></svg>';
 }
 
-function selectedContentMarkup(
-  row: TraceRecord,
-  branch: ReturnType<typeof branchSummary>,
-): string {
+function selectedContentMarkup(row: TraceRecord): string {
   const state = inspectorStore.getSnapshot();
   if (state.displayMode === 'json') return jsonMarkup(row);
   if (state.displayMode === 'workpad') return workpadMarkup(row);
-  return `${summaryMarkup(row, branch)}${inspectorSections(row).map(sectionMarkup).join('')}`;
+  const insight = isFailure(row) ? extractTraceError(row) : null;
+  const failure = insight
+    ? `<div class="tiCallError" role="status"><strong>${escapeHtml(insight.code)}</strong><p>${escapeHtml(insight.detail)}</p></div>`
+    : '';
+  return failure + renderInspectorReading(row, state.activeSection);
 }
 
 function selectedContentSignature(row: TraceRecord): string {
@@ -517,6 +420,7 @@ function selectedContentSignature(row: TraceRecord): string {
     inspectorContentSignature(row, inspectorStore.getSnapshot().displayMode),
     traceNodeLabel(row),
     traceRouteLabel(row),
+    inspectorStore.getSnapshot().activeSection,
   ].join(':');
 }
 
@@ -524,13 +428,13 @@ function inspectorMarkup(row: TraceRecord): string {
   const state = inspectorStore.getSnapshot();
   const key = stableTraceKey(row);
   const branch = branchSummary(allRows(), row);
-  const content = selectedContentMarkup(row, branch);
+  const content = selectedContentMarkup(row);
   const workpad = isWorkpadTrace(row);
   return `<div class="tiInspector ${state.callRailCollapsed ? 'is-call-rail-collapsed' : ''}" data-ti-trace-key="${escapeHtml(key)}" data-ti-display-mode="${state.displayMode}">
     <header class="tiToolbar">
       <div class="tiToolbarIdentity">
-        <div class="tiHeaderMetrics" aria-label="Branch metrics" data-ti-metrics-signature="${escapeHtml(headerMetricsSignature(branch))}">${headerMetricsMarkup(branch)}</div>
-        <div class="tiSelectedMeta"><strong>${escapeHtml(row.name ?? row.traceName ?? row.tool ?? 'trace')}</strong><span class="tiStatusDot ${statusLabel(row)}"></span><span>${escapeHtml(statusLabel(row))}</span><span>${escapeHtml(clean(row.latency) || formatDuration(row.durationMs))}</span><span>${escapeHtml(formatCompact(totalTokens(row)))} tok</span></div>
+        <div class="tiHeaderMetrics" aria-label="Loaded call summary" data-ti-metrics-signature="${escapeHtml(headerMetricsSignature(branch))}">${headerMetricsMarkup(branch)}</div>
+        <div class="tiSelectedMeta">${selectedMetaMarkup(row)}</div>
       </div>
       <div class="tiToolbarActions">
         <div class="tiModeSwitch" role="group" aria-label="Trace display mode">
@@ -551,6 +455,7 @@ function inspectorMarkup(row: TraceRecord): string {
         </section>
       </aside>
       <main class="tiPreview" aria-label="Trace details">
+        <label class="tiMobileCalls">Call<select data-ti-peer-select aria-label="Choose tool call">${callOptionsMarkup(branch, row)}</select></label>
         <div class="tiContent">${content}</div>
       </main>
     </div>
@@ -710,6 +615,17 @@ function render(): void {
       peers.innerHTML = branchPeers(branch, row, state.callQuery);
       peers.dataset.tiPeerSignature = peerSignature;
     }
+    const picker = existing.querySelector<HTMLSelectElement>(
+      '[data-ti-peer-select]',
+    );
+    if (
+      picker &&
+      picker.dataset.tiOptionsSignature !== peerSignature &&
+      document.activeElement !== picker
+    ) {
+      picker.innerHTML = callOptionsMarkup(branch, row);
+      picker.dataset.tiOptionsSignature = peerSignature;
+    }
     const search = existing.querySelector<HTMLInputElement>(
       '[data-ti-call-search]',
     );
@@ -718,7 +634,10 @@ function render(): void {
     const contentSignature = selectedContentSignature(row);
     if (existing.dataset.tiContentSignature !== contentSignature) {
       const content = existing.querySelector<HTMLElement>('.tiContent');
-      if (content) content.innerHTML = selectedContentMarkup(row, branch);
+      if (content) content.innerHTML = selectedContentMarkup(row);
+      const selectedMeta =
+        existing.querySelector<HTMLElement>('.tiSelectedMeta');
+      if (selectedMeta) selectedMeta.innerHTML = selectedMetaMarkup(row);
       existing.dataset.tiContentSignature = contentSignature;
     }
     const fullscreen = existing.querySelector<HTMLButtonElement>(
@@ -1043,6 +962,35 @@ if (!(window as TraceWindow).__traceInspectorInstalled) {
       return;
     }
 
+    if (
+      event.target instanceof HTMLElement &&
+      event.target.matches('[data-ti-section-tab]') &&
+      ['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)
+    ) {
+      event.preventDefault();
+      const sections = ['output', 'input', 'details'] as const;
+      const current = sections.indexOf(
+        inspectorStore.getSnapshot().activeSection,
+      );
+      const index =
+        event.key === 'Home'
+          ? 0
+          : event.key === 'End'
+            ? 2
+            : (current + (event.key === 'ArrowRight' ? 1 : 2)) %
+              sections.length;
+      const section = sections[index];
+      inspectorStore.dispatch({ type: 'set-section', section });
+      const preview = document.querySelector<HTMLElement>('.tiPreview');
+      if (preview) preview.scrollTop = 0;
+      requestAnimationFrame(() =>
+        document
+          .querySelector<HTMLElement>('[data-ti-section-tab="' + section + '"]')
+          ?.focus({ preventScroll: true }),
+      );
+      return;
+    }
+
     const moveUp = event.key === 'ArrowUp' || event.key.toLowerCase() === 'k';
     const moveDown =
       event.key === 'ArrowDown' || event.key.toLowerCase() === 'j';
@@ -1099,6 +1047,21 @@ if (!(window as TraceWindow).__traceInspectorInstalled) {
       (window as TraceWindow).__traceVirtualList?.select(peer.dataset.traceKey);
       return;
     }
+    const tab = target.closest<HTMLElement>('[data-ti-section-tab]');
+    const section = tab?.dataset.tiSectionTab;
+    if (section === 'output' || section === 'input' || section === 'details') {
+      event.preventDefault();
+      event.stopPropagation();
+      inspectorStore.dispatch({ type: 'set-section', section });
+      const preview = document.querySelector<HTMLElement>('.tiPreview');
+      if (preview) preview.scrollTop = 0;
+      requestAnimationFrame(() =>
+        document
+          .querySelector<HTMLElement>('[data-ti-section-tab="' + section + '"]')
+          ?.focus({ preventScroll: true }),
+      );
+      return;
+    }
     const mode = target.closest<HTMLElement>('[data-ti-mode]');
     if (
       mode?.dataset.tiMode === 'formatted' ||
@@ -1137,9 +1100,17 @@ if (!(window as TraceWindow).__traceInspectorInstalled) {
     if (copy) {
       event.preventDefault();
       event.stopPropagation();
-      const copyText =
-        copy.closest('.tiSection')?.querySelector('.tiSectionBody')
-          ?.textContent ?? '';
+      const state = inspectorStore.getSnapshot();
+      const reading = copy.closest('.tiReading') && state.selectedRow;
+      const value = reading
+        ? inspectorReadingValue(reading, state.activeSection)
+        : null;
+      const copyText = reading
+        ? typeof value === 'string'
+          ? value
+          : (JSON.stringify(value, null, 2) ?? '')
+        : (copy.closest('.tiSection')?.querySelector('.tiSectionBody')
+            ?.textContent ?? '');
       try {
         await navigator.clipboard.writeText(copyText);
         copy.textContent = 'Copied';
@@ -1149,6 +1120,16 @@ if (!(window as TraceWindow).__traceInspectorInstalled) {
       } catch {
         copy.textContent = 'Copy failed';
       }
+    }
+  });
+
+  document.addEventListener('change', (event) => {
+    const target = event.target;
+    if (
+      target instanceof HTMLSelectElement &&
+      target.matches('[data-ti-peer-select]')
+    ) {
+      (window as TraceWindow).__traceVirtualList?.select(target.value);
     }
   });
 

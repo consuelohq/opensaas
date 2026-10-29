@@ -677,6 +677,11 @@ function historyRowFromTraceRow(row: TraceRow): TraceSitesGatewayHistoryRow {
     inputTokens,
     outputTokens,
     cost: costEstimate?.cost ?? 0,
+    tokenCountsRecorded: {
+      input: row.input_tokens !== null && row.input_tokens !== undefined,
+      output: row.output_tokens !== null && row.output_tokens !== undefined,
+      total: row.total_tokens !== null && row.total_tokens !== undefined,
+    },
     costLabel: costEstimate?.costLabel ?? '—',
     trace: traceId,
     traceId,
