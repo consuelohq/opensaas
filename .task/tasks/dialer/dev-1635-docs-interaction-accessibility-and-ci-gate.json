@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/dev-1635-docs-interaction-accessibility-and-ci-gate",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 2691,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2691",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1635-docs-interaction-accessibility-and-ci-gate",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_e04d41f1f942",
+  "tmuxSession": "opensaas-dialer-dev-1635-docs-interaction-accessibility-and-ci-g-e04d41f1",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1635-docs-interaction-accessibility-and-ci-gate/.task/session.json",
+  "createdAt": "2026-10-29T20:09:11.769Z"
+}

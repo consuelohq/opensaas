@@ -270,12 +270,12 @@ describe('LeadConnector OAuth contracts', () => {
     );
     expect(tokenRequest.body).toEqual(
       expect.objectContaining({
-        clientId: 'client-id',
-        clientSecret: 'client-secret',
-        grantType: 'authorization_code',
+        client_id: 'client-id',
+        client_secret: 'client-secret',
+        grant_type: 'authorization_code',
         code: 'code-1',
-        redirectUri: config.redirectUri,
-        userType: 'Location',
+        redirect_uri: config.redirectUri,
+        user_type: 'Location',
       }),
     );
     expect(tokenRequest.body).not.toHaveProperty('codeVerifier');
@@ -354,11 +354,11 @@ describe('LeadConnector token and resource contracts', () => {
         url: `${config.apiBaseUrl}/oauth/token`,
         headers: expect.objectContaining({ Version: 'v3' }),
         body: expect.objectContaining({
-          clientId: 'client-id',
-          clientSecret: 'client-secret',
-          grantType: 'refresh_token',
-          refreshToken: 'refresh-old',
-          userType: 'Location',
+          client_id: 'client-id',
+          client_secret: 'client-secret',
+          grant_type: 'refresh_token',
+          refresh_token: 'refresh-old',
+          user_type: 'Location',
         }),
       }),
     );

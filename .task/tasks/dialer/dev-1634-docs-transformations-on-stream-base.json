@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/dev-1634-docs-transformations-on-stream-base",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 2689,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2689",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1634-docs-transformations-on-stream-base",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_718d81a70e5d",
+  "tmuxSession": "opensaas-dialer-dev-1634-docs-transformations-on-stream-base-718d81a7",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1634-docs-transformations-on-stream-base/.task/session.json",
+  "createdAt": "2026-10-29T20:02:03.431Z"
+}

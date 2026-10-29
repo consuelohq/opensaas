@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/dev-1619-repair-leadconnector-oauth-token-wire-fields",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 2696,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2696",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1619-repair-leadconnector-oauth-token-wire-fields",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_8310975c8848",
+  "tmuxSession": "opensaas-dialer-dev-1619-repair-leadconnector-oauth-token-wire-f-8310975c",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-dev-1619-repair-leadconnector-oauth-token-wire-fields/.task/session.json",
+  "createdAt": "2026-10-29T20:49:16.906Z"
+}

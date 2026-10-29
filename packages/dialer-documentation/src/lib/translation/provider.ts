@@ -58,8 +58,10 @@ export async function translateSegments({ segments, targetLanguage, env = global
     );
   }
 
-  const translated = payload?.data?.translations?.map((translation) => translation.translatedText) ?? [];
-  if (translated.length !== segments.length) {
+  const translations = payload?.data?.translations;
+  if (!Array.isArray(translations)
+    || translations.length !== segments.length
+    || !translations.every((translation) => translation && typeof translation.translatedText === 'string')) {
     throw new TranslationProviderError(
       'translation_provider_malformed_response',
       'Translation provider returned an unexpected response shape.',
@@ -67,7 +69,7 @@ export async function translateSegments({ segments, targetLanguage, env = global
     );
   }
 
-  return { provider: 'google', segments: translated };
+  return { provider: 'google', segments: translations.map((translation) => translation.translatedText!) };
 }
 
 type GoogleTranslateResponse = {

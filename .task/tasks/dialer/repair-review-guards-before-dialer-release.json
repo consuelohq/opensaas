@@ -1,0 +1,16 @@
+{
+  "area": "dialer",
+  "stream": "stream/dialer",
+  "taskBranch": "task/dialer/repair-review-guards-before-dialer-release",
+  "baseBranch": "stream/dialer",
+  "sourceBranch": "stream/dialer",
+  "startFrom": "stream",
+  "prNumber": 2697,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2697",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-repair-review-guards-before-dialer-release",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_4201d357f52d",
+  "tmuxSession": "opensaas-dialer-repair-review-guards-before-dialer-release-4201d357",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-dialer-repair-review-guards-before-dialer-release/.task/session.json",
+  "createdAt": "2026-10-29T21:10:42.761Z"
+}

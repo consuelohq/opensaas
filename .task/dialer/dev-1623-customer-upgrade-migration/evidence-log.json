@@ -1,0 +1,88 @@
+{
+  "version": 1,
+  "worktree_id": "task/dialer/dev-1623-customer-upgrade-migration",
+  "events": [
+    {
+      "id": "88b812d9-ee7d-4af1-931b-fe2ffe71f68e",
+      "occurred_at": "2026-10-29T19:48:37.234Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/lead-connector/src/user-context-decoder.contract.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1623-customer-upgrade-migration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1623-customer-upgrade-migration"
+      }
+    },
+    {
+      "id": "e7540dde-69da-4f5d-9cba-b9b5df73b596",
+      "occurred_at": "2026-10-29T19:50:22.951Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/lead-connector/src/ports/index.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1623-customer-upgrade-migration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1623-customer-upgrade-migration"
+      }
+    },
+    {
+      "id": "59568e2c-b390-408d-b763-1107953350c3",
+      "occurred_at": "2026-10-29T19:50:23.301Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/lead-connector/src/application/marketplace-oauth.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1623-customer-upgrade-migration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1623-customer-upgrade-migration"
+      }
+    },
+    {
+      "id": "1fa5ad9f-4e61-42da-b498-2cf71ed84ab0",
+      "occurred_at": "2026-10-29T19:51:26.849Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/dialer-server/src/lab/learning-rollback-scenario.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1623-customer-upgrade-migration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1623-customer-upgrade-migration"
+      }
+    },
+    {
+      "id": "55a08026-3315-441a-8a52-56110c4f8731",
+      "occurred_at": "2026-10-29T19:55:12.107Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/dialer/dev-1623-customer-upgrade-migration/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/dialer/dev-1623-customer-upgrade-migration",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/dialer/dev-1623-customer-upgrade-migration"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-10-29T19:55:12.198Z"
+}

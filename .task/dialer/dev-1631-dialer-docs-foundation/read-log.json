@@ -1,0 +1,16 @@
+{
+  "files": [
+    ".agents/skills/nx-run-tasks/SKILL.md",
+    ".task/dialer/dev-1631-dialer-docs-foundation/workpad.md",
+    "packages/dialer-documentation/AGENTS.md",
+    "packages/dialer-documentation/CLAIM-LEDGER.md",
+    "packages/dialer-documentation/astro.config.mjs",
+    "packages/dialer-documentation/scripts/deploy-preview.mjs",
+    "packages/dialer-documentation/scripts/lib/preview-server.mjs",
+    "packages/dialer-documentation/scripts/test-browser.mjs",
+    "packages/dialer-documentation/src/components/translation/RuntimeLanguageSelect.astro",
+    "packages/dialer-documentation/src/lib/translation/text.ts",
+    "packages/dialer-documentation/tests/foundation.test.ts"
+  ],
+  "updatedAt": "2026-10-29T19:46:25.688Z"
+}

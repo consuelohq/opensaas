@@ -57,6 +57,8 @@ export const DIALER_DATABASE_CONTEXTUAL_SCIENCE_HARDENING_MIGRATION_ID =
   '20260815_004_contextual_predictive_science_hardening';
 export const DIALER_DATABASE_LEARNING_INTEGRITY_MIGRATION_ID =
   '20260815_005_learning_observation_integrity';
+export const DIALER_DATABASE_LEAD_CONNECTOR_COMPANY_CREDENTIALS_MIGRATION_ID =
+  '20261029_014_lead_connector_company_credentials';
 
 const CREATE_MIGRATION_TABLE_SQL = `
   CREATE TABLE IF NOT EXISTS consuelo_dialer_schema_migrations (
@@ -258,7 +260,9 @@ const ROLLBACK_LEARNING_INTEGRITY_SQL = `
 type MigrationUp = (database: LeadConnectorDatabase) => Promise<void>;
 type Migration =
   | {
-      id: typeof DIALER_DATABASE_BASELINE_MIGRATION_ID;
+      id:
+        | typeof DIALER_DATABASE_BASELINE_MIGRATION_ID
+        | typeof DIALER_DATABASE_LEAD_CONNECTOR_COMPANY_CREDENTIALS_MIGRATION_ID;
       up: MigrationUp;
       down?: never;
     }
@@ -398,6 +402,22 @@ const migrations: readonly Migration[] = [
     id: CALLBACK_BOOKING_ATTEMPTS_MIGRATION_ID,
     up: (database) => database.query(CREATE_CALLBACK_BOOKING_ATTEMPTS_SQL).then(() => undefined),
     down: (database) => database.query(DROP_CALLBACK_BOOKING_ATTEMPTS_SQL).then(() => undefined),
+  },
+  {
+    id: DIALER_DATABASE_LEAD_CONNECTOR_COMPANY_CREDENTIALS_MIGRATION_ID,
+    up: async (database) => {
+      try {
+        // Migration 001 is already in the ledger on older installations.
+        // The initializer is idempotent, so this also safely adopts manually
+        // recovered credential tables without touching stored credentials.
+        await initializeLeadConnectorPersistence(database);
+      } catch (cause: unknown) {
+        throw new Error('Failed to upgrade LeadConnector company credentials schema', {
+          cause,
+        });
+      }
+    },
+    // Forward-only: deleting the table would destroy OAuth credentials.
   },
 ];
 

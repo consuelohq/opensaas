@@ -145,12 +145,12 @@ describe('LeadConnector Marketplace bulk OAuth', () => {
         method: 'POST',
         url: 'https://services.leadconnectorhq.com/oauth/token',
         body: expect.objectContaining({
-          clientId: 'client-id',
-          clientSecret: 'client-secret',
-          grantType: 'authorization_code',
+          client_id: 'client-id',
+          client_secret: 'client-secret',
+          grant_type: 'authorization_code',
           code: 'marketplace-code',
-          userType: 'Company',
-          redirectUri: config.redirectUri,
+          user_type: 'Company',
+          redirect_uri: config.redirectUri,
         }),
       }),
     );
