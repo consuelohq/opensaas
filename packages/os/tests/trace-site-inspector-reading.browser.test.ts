@@ -2,6 +2,7 @@ import { existsSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { chromium } from 'playwright';
 import { expect, it } from 'vitest';
+import { childTraceRecords } from '../scripts/lib/trace-site-inspector/model';
 import { buildObservabilityTracesSite } from '../scripts/lib/observability-traces-site';
 
 const browserTest = existsSync(chromium.executablePath()) ? it : it.skip;
@@ -136,6 +137,7 @@ browserTest(
           },
         ],
       };
+      const failedKey = childTraceRecords(batch)[0].__traceSelectionKey;
       const rows = [first, search, files, steering, batch];
       const html = buildObservabilityTracesSite();
       await page.addInitScript(() =>
@@ -263,7 +265,7 @@ browserTest(
       );
       expect(
         await page.locator('.tiDiagnostics').getAttribute('open'),
-      ).not.toBeNull();
+      ).toBeNull();
       expect(
         await page
           .locator('[data-ti-peer-select] option[value="new-live"]')
@@ -370,7 +372,7 @@ browserTest(
       expect(await output.locator('.tiMarkdown h1').textContent()).toBe(
         'Captured steering',
       );
-      await selectCall('failed-child');
+      await selectCall(failedKey);
       await page.waitForFunction(() =>
         document
           .querySelector('.tiCallError')
@@ -386,7 +388,7 @@ browserTest(
           'files-1',
           'search-1',
           'steering-1',
-          'failed-child',
+          failedKey,
         ]) {
           await page.locator('.tiPeer[data-trace-key="' + key + '"]').click();
           await page.waitForFunction(

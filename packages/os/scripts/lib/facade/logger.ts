@@ -1,4 +1,5 @@
 import { redactJson } from '../redaction';
+import { measureTracePayloadUsage } from '../trace-token-usage';
 import { currentTraceRoutingContext } from '../trace-routing-context';
 import { recordToolTraceSafely, type TraceEnvironment } from '../trace-persistence';
 import type { ToolCapabilities } from './types';
@@ -72,6 +73,9 @@ export function logToolExecution(entry: {
     });
   }
 
+  const usage = measureTracePayloadUsage(entry.input, entry.result, {
+    inputTokens: entry.inputTokens, outputTokens: entry.outputTokens, totalTokens: entry.totalTokens,
+  });
   recordToolTraceSafely({
     traceId: entry.traceId,
     mcpTraceId: entry.mcpTraceId,
@@ -91,9 +95,9 @@ export function logToolExecution(entry: {
     resolvedInput: entry.resolvedInput,
     result: entry.result,
     stderr: entry.stderr,
-    inputTokens: entry.inputTokens,
-    outputTokens: entry.outputTokens,
-    totalTokens: entry.totalTokens,
+    inputTokens: usage.input ?? undefined,
+    outputTokens: usage.output ?? undefined,
+    totalTokens: usage.total ?? undefined,
     routing: currentTraceRoutingContext(),
   }, { env: entry.env });
 }

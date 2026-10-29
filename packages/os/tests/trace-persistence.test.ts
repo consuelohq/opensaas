@@ -197,10 +197,16 @@ describe('canonical OS trace persistence', () => {
       'batch',
     ]);
     expect(new Set(output.rows?.map((row) => row.trace_id)).size).toBe(3);
+    expect(output.rows?.every(row => typeof row.input_tokens === 'number' && typeof row.output_tokens === 'number' && typeof row.total_tokens === 'number')).toBe(true);
     const batchRow = output.rows?.find((row) => row.tool === 'batch');
     const batchResult = JSON.parse(batchRow?.result_json ?? '{}') as {
       data?: { results?: Array<Record<string, unknown>> };
     };
+    const childResult = batchResult.data?.results?.[0];
+    const childRow = output.rows?.find(row => row.trace_id === childResult?.traceId);
+    expect(childRow?.input_tokens).toBe(childResult?.inputTokens);
+    expect(childRow?.output_tokens).toBe(childResult?.outputTokens);
+    expect(childRow?.total_tokens).toBe(childResult?.totalTokens);
     expect(batchResult.data?.results).toEqual([
       expect.objectContaining({
         ok: true,

@@ -705,7 +705,7 @@ function summarizeCode(code: string, mode: string): string {
   if (commands.length)
     return [...new Set(commands.map(summarizeSpawnedCommand))].join(' · ');
   const shellLines = code
-    .split(/\n|&&/)
+    .split(/\n|&&|;/)
     .map((line) => summarizeShellCode(line, mode))
     .filter(Boolean);
   if (shellLines.length) return [...new Set(shellLines)].join(' · ');
@@ -841,6 +841,12 @@ function codeFileTargets(code: string): string[] {
   const add = (value: string) => {
     if (looksLikeFilePath(value)) paths.add(value);
   };
+  if (/(?:Bun\.file|readFile|open|Path)\(/.test(code)) {
+    for (const loop of code.matchAll(/\b(?:of|in)\s*\[([^\]]*)\]/g)) {
+      for (const literal of loop[1].matchAll(/['"]([^'"]+)['"]/g))
+        add(literal[1]);
+    }
+  }
   for (const match of code.matchAll(
     /(?:Bun\.file|readFileSync|readFile|open|Path)\(\s*['"]([^'"]+)['"]/g,
   ))
@@ -937,29 +943,53 @@ function summarizeShellCode(code: string, mode: string): string {
   const trimmed = code.trim();
   if (!trimmed || trimmed.includes('\n')) return '';
   const command = trimmed.split(/\s*(?:&&|\|\||;)\s*/)[0]?.trim() ?? '';
-  if (!command) return '';
-  const program = command.match(/^([a-zA-Z0-9_.+/-]+)/)?.[1] ?? '';
+  const tokens = [
+    ...command.matchAll(/"((?:\\.|[^"\\])*)"|'([^']*)'|([^\s]+)/g),
+  ].map((match) => match[1] ?? match[2] ?? match[3]);
+  while (tokens[0] && /^[A-Za-z_][\w]*=/.test(tokens[0])) tokens.shift();
+  const program = fileName(tokens[0] ?? '');
   if (!program) return '';
-  const basename = fileName(program);
-  const fileTokens =
-    command.match(/(?:^|\s)([^\s'"<>|]+\.[a-zA-Z0-9_-]{1,16})(?=\s|$)/g) ?? [];
-  const target = fileTokens
-    .map((value) => value.trim())
-    .filter((value) => looksLikeFilePath(value))
-    .at(-1);
-  if (/^(?:rg|grep)$/.test(basename)) {
-    const query = command
-      .split(/\s+/)
+  if (/^(?:cat|head|tail|sed|awk|less|more|wc|stat)$/.test(program)) {
+    const paths = [
+      ...new Set(
+        tokens
+          .slice(1)
+          .filter(
+            (value) => !value.startsWith('-') && looksLikeFilePath(value),
+          ),
+      ),
+    ];
+    const files = displayPaths(paths);
+    if (files.length)
+      return (
+        (mode === 'edit' ? 'edit' : 'read') +
+        ' ' +
+        (files.length === 1
+          ? files[0]
+          : files.length + ' files · ' + files.join(', '))
+      );
+  }
+  if (/^(?:rg|grep)$/.test(program)) {
+    const query = tokens
       .slice(1)
       .find((value) => !value.startsWith('-') && !looksLikeFilePath(value));
-    return query
-      ? `search ${query.replace(/^['"]|['"]$/g, '')}`
-      : `search ${basename}`;
+    return query ? 'search ' + query : 'search ' + program;
   }
-  if (target && /^(?:cat|head|tail|sed|awk|less|more)$/.test(basename)) {
-    return `${mode === 'edit' ? 'edit' : 'read'} ${fileName(target)}`;
+  if (/^(?:find|fd)$/.test(program))
+    return 'search ' + tokens.slice(0, 3).join(' ');
+  if (
+    /^(?:gcloud|gh|curl|git|systemctl|journalctl|docker|kubectl|ls|pwd|tree)$/.test(
+      program,
+    )
+  ) {
+    return [
+      program,
+      ...tokens
+        .slice(1)
+        .filter((value) => !value.startsWith('-'))
+        .slice(0, 3),
+    ].join(' ');
   }
-  if (/^(?:find|fd)$/.test(basename)) return `search ${basename}`;
   return '';
 }
 

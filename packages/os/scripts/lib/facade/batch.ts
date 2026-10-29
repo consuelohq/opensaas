@@ -1,4 +1,5 @@
 import { createToolResult, createTraceId, getErrorMessage } from './errors';
+import { measureTracePayloadUsage } from '../trace-token-usage';
 import { executeTool, getToolManifestEntry } from './executor';
 import type {
   BatchExecutionContext,
@@ -100,12 +101,6 @@ function isReadOnly(toolName: string): boolean {
   return getToolManifestEntry(toolName)?.capabilities.readOnly === true;
 }
 
-function estimateTokens(value: unknown): number {
-  if (value === undefined || value === null) return 0;
-  const text = typeof value === 'string' ? value : JSON.stringify(value);
-  return Math.max(1, Math.ceil(text.length / 4));
-}
-
 function cleanText(value: unknown): string {
   return String(value || '').trim().replace(/\s+/g, ' ');
 }
@@ -163,7 +158,7 @@ async function runStep(
     logMode: options.logMode ?? "errors",
   };
   const result = await executeTool(step.tool, boundInput.input, batchOptions);
-  return decorateStepResult(result, args, step, parentTraceId);
+  return decorateStepResult(result, boundInput.input, step, parentTraceId);
 }
 
 function bindExecutionContext(
@@ -198,14 +193,13 @@ function decorateStepResult(
   step: BatchStep,
   parentTraceId: string,
 ): ToolResult<unknown> {
-  const inputTokens = estimateTokens(args);
-  const outputTokens = estimateTokens(result);
+  const usage = measureTracePayloadUsage(args, result);
   return {
     ...result,
     parentTraceId,
-    inputTokens,
-    outputTokens,
-    totalTokens: inputTokens + outputTokens,
+    inputTokens: usage.input ?? undefined,
+    outputTokens: usage.output ?? undefined,
+    totalTokens: usage.total ?? undefined,
     detail: stepDetail(args),
     changed: getToolManifestEntry(step.tool)?.capabilities.mutating === true,
   };
