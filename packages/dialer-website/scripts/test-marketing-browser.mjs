@@ -53,6 +53,9 @@ try {
   assert.equal(geometry.overflow,false,'Homepage overflow at '+width+'x'+height);
   assert.ok(geometry.headingTop >= geometry.headerBottom-1,'Header overlaps headline at '+width+'x'+height);
   assert.match(await page.locator('h1').innerText(),/Turn more leads/);
+  const docsLinks = await page.getByRole('link', {name:/^docs$/i}).all();
+  assert.ok(docsLinks.length > 0, 'Docs navigation is visible');
+  for (const link of docsLinks) assert.equal(await link.getAttribute('href'), 'https://docs.consuelohq.com/');
   assert.equal(await page.locator('.product-story__chapter').count(),5);
   const clouds = await page.locator('.cloud-field img').count();
   const badImages = await page.locator('img').evaluateAll(images=>images.filter(i=>!i.complete||i.naturalWidth===0).map(i=>i.getAttribute('src')));
@@ -90,7 +93,7 @@ try {
   assert.match(await page.locator('[data-selected-plan]').innerText(),/^Tell us/);
   assert.equal(await page.locator('img[src="x"]').count(),0);
  }
- const paths=['/','/pricing','/get-started','/guides','/how-it-works','/contact','/privacy','/terms','/support'];
+ const paths=['/','/pricing','/get-started','/how-it-works','/contact','/privacy','/terms','/support'];
  let linkCount=0;
  const checkedTargets = new Map();
  for (const path of paths) {

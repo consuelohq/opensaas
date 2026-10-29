@@ -10,4 +10,4 @@ export const osSiteHeaderLinks = {
 };
 export const siteMobileMenuLinks = [{label:'How it works',href:'/how-it-works'},{label:'Open GoHighLevel',href:siteLinks.login}];
 export const homePageSections: HomePageSection[] = [{id:'intro',label:'Intro'},{id:'features',label:'Features'},{id:'faq',label:'FAQ'}];
-export const footerLinks: SiteLink[] = [{label:'How it works',href:'/how-it-works'},{label:'Docs',href:'/guides'},{label:'Pricing',href:'/pricing'},{label:'Contact',href:'/contact'}];
+export const footerLinks: SiteLink[] = [{label:'How it works',href:'/how-it-works'},{label:'Docs',href:siteLinks.docs},{label:'Pricing',href:'/pricing'},{label:'Contact',href:'/contact'}];

@@ -1,0 +1,16 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/link-website-docs-directly-to-the-dialer-documentation",
+  "baseBranch": "stream/website",
+  "sourceBranch": "stream/website",
+  "startFrom": "stream",
+  "prNumber": 2674,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2674",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-link-website-docs-directly-to-the-dialer-documentation",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_ffcfb8d9e6cb",
+  "tmuxSession": "opensaas-website-link-website-docs-directly-to-the-dialer-documen-ffcfb8d9",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-link-website-docs-directly-to-the-dialer-documentation/.task/session.json",
+  "createdAt": "2026-10-29T17:25:08.815Z"
+}

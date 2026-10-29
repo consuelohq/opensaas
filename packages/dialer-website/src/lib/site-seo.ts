@@ -1,5 +1,6 @@
 const production = import.meta.env.PUBLIC_SITE_CHANNEL === 'production';
 import { homepageSeo } from './homepage-seo';
+import { siteLinks } from '../data/site-links';
 
 export type StructuredData = {
   [key: string]: unknown;
@@ -23,7 +24,7 @@ export const siteMetadata = {
   themeColorLight: '#0000F2',
   themeColorDark: '#0000F2',
   twitterHandle: '@consuelohq',
-  docsUrl: production ? 'https://docs.consuelohq.com' : 'https://consuelo-dialer-website-preview.pages.dev/guides',
+  docsUrl: siteLinks.docs,
   appUrl: 'https://app.gohighlevel.com/',
   githubUrl: 'https://github.com/consuelohq/opensaas',
 } as const;
