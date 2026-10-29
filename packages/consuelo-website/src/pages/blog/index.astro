@@ -74,11 +74,12 @@ const recentPosts = sortedPosts
 </Layout>
 
 <script>
+  import { withSiteBase } from '../../lib/public-path';
   document.addEventListener("astro:page-load", () => {
     const indexLayout = (document.querySelector("#main-content") as HTMLElement)
       ?.dataset?.layout;
     if (indexLayout) {
-      sessionStorage.setItem("backUrl", "/");
+      sessionStorage.setItem("backUrl", withSiteBase("/"));
     }
   });
 </script>

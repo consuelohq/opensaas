@@ -25,6 +25,12 @@ try {
       assert.deepEqual(await page.locator('a[href],img[src],video[poster],source[src]').evaluateAll(nodes => nodes.map(n => n.getAttribute('href') || n.getAttribute('src') || n.getAttribute('poster')).filter(v => v.startsWith('/') && !v.startsWith('//') && !v.startsWith('/about/'))), []);
       assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1), false);
     }
+    await page.goto(website + '/about/blog/', { waitUntil: 'domcontentloaded' });
+    await page.evaluate(() => document.dispatchEvent(new Event('astro:page-load')));
+    assert.equal(await page.evaluate(() => sessionStorage.getItem('backUrl')), '/about/');
+    await page.locator('a[href^="/about/blog/software-is-becoming-decision-infrastructure"]').first().click();
+    await page.waitForURL(/\/about\/blog\/software-is-becoming-decision-infrastructure\/?$/);
+    assert.equal(new URL(await page.locator('#back-button').getAttribute('href'), website).pathname, '/about/');
     await page.goto(docs + '/docs/', { waitUntil: 'domcontentloaded' });
     assert.match(await page.title(), /Consuelo OS/);
     await page.goto(docs + '/docs/start/install-consuelo-os/', { waitUntil: 'domcontentloaded' });

@@ -22,11 +22,12 @@ import { SITE } from "@/config";
 }
 
 <script>
+  import { withSiteBase } from '../lib/public-path';
   function updateGoBackUrl() {
     const backButton = document.querySelector("#back-button");
     const backUrl = sessionStorage.getItem("backUrl");
     if (backUrl && backButton) {
-      (backButton as HTMLAnchorElement).href = backUrl;
+      (backButton as HTMLAnchorElement).href = withSiteBase(backUrl);
     }
   }
   document.addEventListener("astro:page-load", updateGoBackUrl);

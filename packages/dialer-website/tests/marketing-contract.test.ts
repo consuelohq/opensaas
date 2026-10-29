@@ -12,6 +12,9 @@ describe('Dialer marketing delivery', () => {
       expect(redirects).toContain(`${path} https://os.consuelohq.com/login/device 302`);
     }
   });
+  it('preserves the legacy OS feed URL when Dialer owns the root', () => {
+    expect(readFileSync(resolve(root, 'public/_redirects'), 'utf8')).toContain('/rss.xml https://os.consuelohq.com/about/rss.xml 302');
+  });
   it('publishes paid product metadata without an inherited free offer', () => {
     const entries = [...page().matchAll(/<script[^>]*type="application\/ld\+json"[^>]*>([\s\S]*?)<\/script>/g)]
       .flatMap((match) => { const value = JSON.parse(match[1]); return value['@graph'] ?? [value]; });
