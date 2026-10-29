@@ -9,3 +9,5 @@
 
 /login/device https://os.consuelohq.com/login/device 302
 /login/device/ https://os.consuelohq.com/login/device 302
+
+/rss.xml https://os.consuelohq.com/about/rss.xml 302
