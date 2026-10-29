@@ -12,6 +12,11 @@ describe('production surface release isolation', () => {
     expect(createConsueloReleasePlan({ eventName: 'push', phase: 'dialer', files: ['packages/dialer-documentation/src/content/docs/index.mdx'] })).toEqual({ ...none, docs: true });
     expect(() => createConsueloReleasePlan({ eventName: 'push', phase: 'unknown', files: [] })).toThrow();
   });
+  it('releases both public surfaces for the shared orchestrator in every phase', () => {
+    for (const phase of ['legacy', 'os-mounted', 'dialer']) {
+      expect(createConsueloReleasePlan({ eventName: 'push', phase, files: ['packages/dialer-website/scripts/release-public-sites.mjs'] })).toEqual({ docs: true, website: true, os: false });
+    }
+  });
   it('keeps preview-only packages out of production delivery jobs', () => {
     expect(push(['packages/dialer-website/src/pages/index.astro'])).toEqual(none);
     expect(push(['packages/dialer-documentation/src/content/docs/index.mdx'])).toEqual(none);

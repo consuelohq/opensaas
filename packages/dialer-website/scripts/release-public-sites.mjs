@@ -33,6 +33,7 @@ export function prepareOsWebsiteAssets(cwd, preview = false) {
   cpSync(resolve(cwd, 'dist-os'), resolve(output, 'about'), { recursive: true });
   // Pages-only rewrites must not escape the namespace on the Worker.
   rmSync(resolve(output, 'about/_redirects'), { force: true });
+  writeFileSync(resolve(output, '_redirects'), '/about/login/device https://os.consuelohq.com/login/device 302\n/about/login/device/ https://os.consuelohq.com/login/device 302\n');
   cpSync(resolve(cwd, 'dist-os/404.html'), resolve(output, '404.html'));
   const headers = readFileSync(resolve(cwd, 'public/_headers'), 'utf8').replace(/^\/(.*)$/gm, '/about/$1');
   writeFileSync(resolve(output, '_headers'), headers + (preview ? '\n/about/*\n  X-Robots-Tag: noindex, nofollow\n' : ''));

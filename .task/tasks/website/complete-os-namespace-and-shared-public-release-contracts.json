@@ -1,0 +1,16 @@
+{
+  "area": "website",
+  "stream": "stream/website",
+  "taskBranch": "task/website/complete-os-namespace-and-shared-public-release-contracts",
+  "baseBranch": "stream/website",
+  "sourceBranch": "stream/website",
+  "startFrom": "stream",
+  "prNumber": 2666,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2666",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-complete-os-namespace-and-shared-public-release-contracts",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_7c71ed3b6bbe",
+  "tmuxSession": "opensaas-website-complete-os-namespace-and-shared-public-release--7c71ed3b",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-website-complete-os-namespace-and-shared-public-release-contracts/.task/session.json",
+  "createdAt": "2026-10-29T05:15:59.964Z"
+}

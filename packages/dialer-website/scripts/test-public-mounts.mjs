@@ -42,6 +42,18 @@ try {
       assert.match(await result.getAttribute('href'), /\/docs\//);
       await page.keyboard.press('Escape');
     }
+    const query = 'user_code=CONSUELO-TEST&state=route-probe&returnTo=%2Fworkspace';
+    for (const path of ['/about/login/device', '/about/login/device/']) {
+      const redirect = await context.request.get(website + path + '?' + query, { maxRedirects: 0 });
+      assert.equal(redirect.status(), 302);
+      assert.equal(redirect.headers().location, 'https://os.consuelohq.com/login/device?' + query);
+    }
+    const rss = await context.request.get(website + '/about/rss.xml');
+    assert.equal(rss.status(), 200);
+    assert.match(await rss.text(), /<channel>[\s\S]*?<link>https:\/\/os\.consuelohq\.com\/about\/<\/link>/);
+    const sitemap = await context.request.get(website + '/about/sitemap-0.xml');
+    assert.equal(sitemap.status(), 200);
+    assert.equal((await sitemap.text()).includes('/login/device'), false);
     assert.deepEqual(errors, []);
     await page.screenshot({ path: `${artifactRoot}/docs-${viewport.width}.png` });
     process.stdout.write(JSON.stringify({ viewport, mountedWebsite: true, mountedDocs: true, search: viewport.width === 1440, errors }) + '\n');

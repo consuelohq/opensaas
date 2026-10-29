@@ -100,11 +100,6 @@ describe('Consuelo website structure', () => {
         '../data/mercury-content',
         '../data/site-links',
       ],
-      'src/pages/login/device.astro': [
-        '../../layouts/MarketingLayout.astro',
-        '../../components/site/SiteHeader.astro',
-        '../../components/site/SiteFooter.astro',
-      ],
     };
 
     for (const [route, imports] of Object.entries(routeImports)) {
@@ -511,8 +506,10 @@ describe('Consuelo website structure', () => {
     expect(privacyRoute).not.toContain('rely on <strong>consent</strong>');
     expect(privacyRoute).toContain('analytics data to improve our website and product experience');
 
-    const deviceRoute = readSource('src/pages/login/device.astro');
-    expect(deviceRoute).not.toContain('analyticsEnabled={false}');
+    expectNoFile('src/pages/login/device.astro');
+    const redirects = readSource('public/_redirects');
+    expect(redirects).toContain('/login/device https://os.consuelohq.com/login/device 302');
+    expect(redirects).toContain('/login/device/ https://os.consuelohq.com/login/device 302');
 
     expectNoFile('src/components/CookieConsent.tsx');
     expectNoFile('src/components/ui/Toast.astro');
