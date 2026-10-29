@@ -1,0 +1,360 @@
+{
+  "version": 1,
+  "worktree_id": "task/os/dev-1637-repair-ci-merge-readiness-exact-head-fencing-and-complete-check-retrieval",
+  "events": [
+    {
+      "id": "2c2ef3a8-78c2-46ad-840a-3c2c59fbfec8",
+      "occurred_at": "2026-10-29T21:14:12.466Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/task-merge-readiness.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/dev-1637-repair-ci-merge-readiness-exact-head-fencing-and-complete-check-retrieval",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/dev-1637-repair-ci-merge-readiness-exact-head-fencing-and-complete-check-retrieval"
+      }
+    },
+    {
+      "id": "989fa116-3e6f-44dc-9ebd-56c931fc4b6b",
+      "occurred_at": "2026-10-29T21:14:13.770Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/lib/github.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/dev-1637-repair-ci-merge-readiness-exact-head-fencing-and-complete-check-retrieval",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/dev-1637-repair-ci-merge-readiness-exact-head-fencing-and-complete-check-retrieval"
+      }
+    },
+    {
+      "id": "e6ebcbb9-fb8e-4b54-9a6e-722717a91f2f",
+      "occurred_at": "2026-10-29T21:14:42.856Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/task-merge.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/dev-1637-repair-ci-merge-readiness-exact-head-fencing-and-complete-check-retrieval",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/dev-1637-repair-ci-merge-readiness-exact-head-fencing-and-complete-check-retrieval"
+      }
+    },
+    {
+      "id": "40b9fe28-16c2-4183-a386-75c6f37b826a",
+      "occurred_at": "2026-10-29T21:14:42.943Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/scripts/task-merge.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/dev-1637-repair-ci-merge-readiness-exact-head-fencing-and-complete-check-retrieval",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/dev-1637-repair-ci-merge-readiness-exact-head-fencing-and-complete-check-retrieval"
+      }
+    },
+    {
+      "id": "fdebc469-4bed-458c-8271-043f556102d9",
+      "occurred_at": "2026-10-29T21:14:43.210Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/task-merge-readiness.test.ts",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/dev-1637-repair-ci-merge-readiness-exact-head-fencing-and-complete-check-retrieval",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/dev-1637-repair-ci-merge-readiness-exact-head-fencing-and-complete-check-retrieval"
+      }
+    },
+    {
+      "id": "9117bd3a-38e8-4788-91ed-3fff16b56527",
+      "occurred_at": "2026-10-29T21:14:48.511Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/tests/audit/fixtures/script-parity-classifications.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/dev-1637-repair-ci-merge-readiness-exact-head-fencing-and-complete-check-retrieval",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/dev-1637-repair-ci-merge-readiness-exact-head-fencing-and-complete-check-retrieval"
+      }
+    },
+    {
+      "id": "edfb501a-77d6-4439-85b4-48a88ccb7a2a",
+      "occurred_at": "2026-10-29T21:23:42.405Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/task-merge-readiness.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/dev-1637-repair-ci-merge-readiness-exact-head-fencing-and-complete-check-retrieval",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/dev-1637-repair-ci-merge-readiness-exact-head-fencing-and-complete-check-retrieval"
+      }
+    },
+    {
+      "id": "fcfff8a4-9182-40d2-a141-1ff532049536",
+      "occurred_at": "2026-10-29T21:25:22.198Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/definitely-missing.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/dev-1637-repair-ci-merge-readiness-exact-head-fencing-and-complete-check-retrieval",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/dev-1637-repair-ci-merge-readiness-exact-head-fencing-and-complete-check-retrieval"
+      }
+    },
+    {
+      "id": "a6327729-7e45-4f1e-85f0-1f7b7a64e2a7",
+      "occurred_at": "2026-10-29T21:25:41.523Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/dev-1637-repair-ci-merge-readiness-exact-head-fencing-and-complete-check-retrieval/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/dev-1637-repair-ci-merge-readiness-exact-head-fencing-and-complete-check-retrieval",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/dev-1637-repair-ci-merge-readiness-exact-head-fencing-and-complete-check-retrieval"
+      }
+    },
+    {
+      "id": "9b716ee6-9b13-4fe5-b560-1d80575a03f8",
+      "occurred_at": "2026-10-29T21:25:48.539Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/dev-1637-repair-ci-merge-readiness-exact-head-fencing-and-complete-check-retrieval/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/dev-1637-repair-ci-merge-readiness-exact-head-fencing-and-complete-check-retrieval",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/dev-1637-repair-ci-merge-readiness-exact-head-fencing-and-complete-check-retrieval"
+      }
+    },
+    {
+      "id": "3cc821ac-17c3-4514-a703-7762905bdcac",
+      "occurred_at": "2026-10-29T21:27:47.708Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/definitely-missing.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/dev-1637-repair-ci-merge-readiness-exact-head-fencing-and-complete-check-retrieval",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/dev-1637-repair-ci-merge-readiness-exact-head-fencing-and-complete-check-retrieval"
+      }
+    },
+    {
+      "id": "a2b67aad-462a-424d-9181-a31569808557",
+      "occurred_at": "2026-10-29T21:28:23.842Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/test-selection.rules.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/dev-1637-repair-ci-merge-readiness-exact-head-fencing-and-complete-check-retrieval",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/dev-1637-repair-ci-merge-readiness-exact-head-fencing-and-complete-check-retrieval"
+      }
+    },
+    {
+      "id": "566d64aa-c3d8-4a44-b823-9d0f1d6d250c",
+      "occurred_at": "2026-10-29T21:28:25.900Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/test-selection.registry.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/dev-1637-repair-ci-merge-readiness-exact-head-fencing-and-complete-check-retrieval",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/dev-1637-repair-ci-merge-readiness-exact-head-fencing-and-complete-check-retrieval"
+      }
+    },
+    {
+      "id": "99b79e68-8534-40e9-9795-21800188eb57",
+      "occurred_at": "2026-10-29T21:28:27.208Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/test-selection.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/dev-1637-repair-ci-merge-readiness-exact-head-fencing-and-complete-check-retrieval",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/dev-1637-repair-ci-merge-readiness-exact-head-fencing-and-complete-check-retrieval"
+      }
+    },
+    {
+      "id": "4688c927-0056-42e7-89d8-53f171c4b501",
+      "occurred_at": "2026-10-29T21:28:28.541Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/os/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/dev-1637-repair-ci-merge-readiness-exact-head-fencing-and-complete-check-retrieval",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/dev-1637-repair-ci-merge-readiness-exact-head-fencing-and-complete-check-retrieval"
+      }
+    },
+    {
+      "id": "3014f735-47b2-4f1d-9d66-b183a1748c52",
+      "occurred_at": "2026-10-29T21:28:33.502Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/test-selection.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/dev-1637-repair-ci-merge-readiness-exact-head-fencing-and-complete-check-retrieval",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/dev-1637-repair-ci-merge-readiness-exact-head-fencing-and-complete-check-retrieval"
+      }
+    },
+    {
+      "id": "7f24dd24-1dbb-42b4-a315-de6c0df747a8",
+      "occurred_at": "2026-10-29T21:28:46.255Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/package.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/dev-1637-repair-ci-merge-readiness-exact-head-fencing-and-complete-check-retrieval",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/dev-1637-repair-ci-merge-readiness-exact-head-fencing-and-complete-check-retrieval"
+      }
+    },
+    {
+      "id": "eeae9c84-d5d7-4270-92d7-1adeeccdfd36",
+      "occurred_at": "2026-10-29T21:28:46.393Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/test-selection.rules.json",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/dev-1637-repair-ci-merge-readiness-exact-head-fencing-and-complete-check-retrieval",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/dev-1637-repair-ci-merge-readiness-exact-head-fencing-and-complete-check-retrieval"
+      }
+    },
+    {
+      "id": "e0e67851-faa7-449a-b02d-c11a54745f16",
+      "occurred_at": "2026-10-29T21:28:46.656Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/test-selection.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/dev-1637-repair-ci-merge-readiness-exact-head-fencing-and-complete-check-retrieval",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/dev-1637-repair-ci-merge-readiness-exact-head-fencing-and-complete-check-retrieval"
+      }
+    },
+    {
+      "id": "26d0cb43-e24f-4b0f-9823-d7103be16113",
+      "occurred_at": "2026-10-29T21:29:07.356Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/tests/test-selection.test.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/dev-1637-repair-ci-merge-readiness-exact-head-fencing-and-complete-check-retrieval",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/dev-1637-repair-ci-merge-readiness-exact-head-fencing-and-complete-check-retrieval"
+      }
+    },
+    {
+      "id": "a64a2c84-748a-4124-ab78-ec2aac6f174c",
+      "occurred_at": "2026-10-29T21:29:48.307Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": ".task/os/dev-1637-repair-ci-merge-readiness-exact-head-fencing-and-complete-check-retrieval/workpad.md",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/dev-1637-repair-ci-merge-readiness-exact-head-fencing-and-complete-check-retrieval",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/dev-1637-repair-ci-merge-readiness-exact-head-fencing-and-complete-check-retrieval"
+      }
+    },
+    {
+      "id": "9a0985c0-34f5-4924-acd7-9c3c44ef3c6f",
+      "occurred_at": "2026-10-29T21:31:05.712Z",
+      "type": "file.read",
+      "source": "task:fs",
+      "question": null,
+      "action": "read",
+      "file_path": "packages/workspace/scripts/lib/github.js",
+      "status": "observed",
+      "confidence_delta": 0.03,
+      "worktree_id": "task/os/dev-1637-repair-ci-merge-readiness-exact-head-fencing-and-complete-check-retrieval",
+      "details": {
+        "source": "task:fs",
+        "task_branch": "task/os/dev-1637-repair-ci-merge-readiness-exact-head-fencing-and-complete-check-retrieval"
+      }
+    }
+  ],
+  "hypotheses": [],
+  "updated_at": "2026-10-29T21:31:05.804Z"
+}

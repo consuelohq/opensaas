@@ -1,0 +1,16 @@
+{
+  "area": "os",
+  "stream": "stream/os",
+  "taskBranch": "task/os/dev-1637-repair-ci-merge-readiness-exact-head-fencing-and-complete-check-retrieval",
+  "baseBranch": "stream/os",
+  "sourceBranch": "stream/os",
+  "startFrom": "stream",
+  "prNumber": 2698,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2698",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-dev-1637-repair-ci-merge-readiness-exact-head-fencing-and-complete-check-retrieval",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_383cfa13b9e8",
+  "tmuxSession": "opensaas-os-dev-1637-repair-ci-merge-readiness-exact-head-fe-383cfa13",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-os-dev-1637-repair-ci-merge-readiness-exact-head-fencing-and-complete-check-retrieval/.task/session.json",
+  "createdAt": "2026-10-29T21:13:36.610Z"
+}

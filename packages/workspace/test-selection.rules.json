@@ -310,8 +310,10 @@
       "source": [
         "packages/workspace/scripts/task-merge.js",
         "packages/workspace/scripts/lib/task-merge-readiness.js",
+        "packages/workspace/scripts/lib/github.js",
         "packages/os/scripts/task-merge.js",
         "packages/os/scripts/lib/task-merge-readiness.js",
+        "packages/os/scripts/lib/github.js",
         "packages/workspace/tests/task-merge-readiness.test.ts"
       ],
       "tests": [
@@ -323,6 +325,17 @@
             "vitest",
             "run",
             "packages/workspace/tests/task-merge-readiness.test.ts"
+          ]
+        },
+        {
+          "name": "workspace task merge GitHub transport contracts",
+          "command": [
+            "bun",
+            "x",
+            "vitest",
+            "run",
+            "packages/workspace/tests/github.test.ts",
+            "packages/os/tests/github.test.ts"
           ]
         }
       ],
