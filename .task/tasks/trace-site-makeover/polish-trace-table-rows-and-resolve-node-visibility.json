@@ -1,0 +1,16 @@
+{
+  "area": "trace-site-makeover",
+  "stream": "stream/trace-site-makeover",
+  "taskBranch": "task/trace-site-makeover/polish-trace-table-rows-and-resolve-node-visibility",
+  "baseBranch": "stream/trace-site-makeover",
+  "sourceBranch": "main",
+  "startFrom": "main",
+  "prNumber": 2686,
+  "prUrl": "https://github.com/consuelohq/opensaas/pull/2686",
+  "worktreePath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-trace-site-makeover-polish-trace-table-rows-and-resolve-node-visibility",
+  "repoRoot": "/Users/kokayi/Dev/opensaas",
+  "taskSession": "tsk_ff04d5ea7084",
+  "tmuxSession": "opensaas-trace-site-makeover-polish-trace-table-rows-and-resolve-node-visibil-ff04d5ea",
+  "sessionPath": "/Users/kokayi/.consuelo/node/tasks/worktrees/task-trace-site-makeover-polish-trace-table-rows-and-resolve-node-visibility/.task/session.json",
+  "createdAt": "2026-10-29T19:43:08.463Z"
+}
