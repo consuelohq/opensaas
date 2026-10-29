@@ -11,6 +11,20 @@ it('keeps integrator code examples while removing presentation imports from Mark
   expect(pagePathToMarkdownHref('/reference/sdk/?mode=copy#example')).toBe('/reference/sdk.md');
 });
 
+it('exports Starlight note and warning directives as safe Markdown callouts outside code fences', () => {
+  const source = [
+    '---', 'title: Inbound guidance', '---',
+    ':::note[Launch preview]', 'The service is **not** generally available.', ':::',
+    ':::warning', 'Do not assume a ringing call was answered.', ':::',
+    '```md', ':::note[Literal code sample]', 'This is example markup.', ':::', '```',
+  ].join('\n');
+  const output = normalizeMdxToMarkdown(source);
+  expect(output).toContain('> [!NOTE]\n> **Launch preview**\n> The service is **not** generally available.');
+  expect(output).toContain('> [!WARNING]\n> Do not assume a ringing call was answered.');
+  expect(output).toContain('```md\n:::note[Literal code sample]\nThis is example markup.\n:::\n```');
+  expect(output).not.toContain(':::warning');
+});
+
 
 it('keeps migrated OS Markdown destinations on the OS origin and mounted index', () => {
   expect(pagePathToMarkdownHref('https://os.consuelohq.com/docs/')).toBe('https://os.consuelohq.com/docs/index.md');
