@@ -232,6 +232,26 @@ describe('DEV-1637 effective check contexts and fail-closed boundaries', () => {
     expect(summarizeCheckRuns([ok, status('UNKNOWN')]).state).not.toBe('passed');
   });
 
+  it('holds the PR merge gate pending when GraphQL returns a successful legacy status but no Actions check run', async () => {
+    const status = {
+      __typename: 'StatusContext', id: 'legacy-only', context: 'legacy/verify',
+      state: 'SUCCESS', createdAt: '2026-10-29T03:29:00Z',
+    };
+    const bot = {
+      __typename: 'CheckRun', id: 'unrelated-bot', name: 'CodeRabbit',
+      status: 'COMPLETED', conclusion: 'NEUTRAL',
+      checkSuite: { app: { databaseId: 123 }, workflowRun: null },
+    };
+    const result = await getPullRequestCheckSummary(
+      'token', 'consuelohq/opensaas', { head: { sha: HEAD } },
+      async () => checkResponse([status, bot], 2),
+    );
+    expect(result).toMatchObject({
+      state: 'pending', total: 2, headSha: HEAD, failed: [],
+    });
+    expect(result.pending).toEqual(expect.arrayContaining([expect.stringContaining('GitHub Actions')]));
+  });
+
   it('reads every page for 105 contexts and catches a failing check beyond the first 100', async () => {
     const checks = Array.from({ length: 105 }, (_, i) => ({
       __typename: 'CheckRun', id: `check-id-${i}`, name: `check-${i}`, status: 'COMPLETED',

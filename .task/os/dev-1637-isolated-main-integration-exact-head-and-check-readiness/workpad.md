@@ -15,15 +15,15 @@ started: 2026-10-30
 
 ## files changed
 
-- packages/os/scripts/lib/github.js
-- packages/workspace/scripts/lib/github.js
-- packages/os/scripts/lib/task-merge-readiness.js
-- packages/workspace/scripts/lib/task-merge-readiness.js
-- packages/os/scripts/task-merge.js
-- packages/workspace/scripts/task-merge.js
-- packages/workspace/tests/task-merge-readiness.test.ts
-- packages/workspace/test-selection.rules.json
-- packages/workspace/test-selection.registry.json (regenerated)
+- `packages/os/scripts/lib/github.js`
+- `packages/os/scripts/lib/task-merge-readiness.js`
+- `packages/os/scripts/task-merge.js`
+- `packages/workspace/scripts/lib/github.js`
+- `packages/workspace/scripts/lib/task-merge-readiness.js`
+- `packages/workspace/scripts/task-merge.js`
+- `packages/workspace/test-selection.registry.json`
+- `packages/workspace/test-selection.rules.json`
+- `packages/workspace/tests/task-merge-readiness.test.ts`
 
 ## key decisions
 
@@ -76,16 +76,27 @@ PR initial target from session bootstrap is stream/os; must be retargeted to mai
 
 ## workspace-owned: files changed
 
-- none yet
+- `packages/os/scripts/lib/github.js`
+- `packages/os/scripts/lib/task-merge-readiness.js`
+- `packages/os/scripts/task-merge.js`
+- `packages/workspace/scripts/lib/github.js`
+- `packages/workspace/scripts/lib/task-merge-readiness.js`
+- `packages/workspace/scripts/task-merge.js`
+- `packages/workspace/test-selection.registry.json`
+- `packages/workspace/test-selection.rules.json`
+- `packages/workspace/tests/task-merge-readiness.test.ts`
 
 ## workspace-owned: activity log
 
 - 2026-10-30 20:06:33 fs.write: `.task/os/dev-1637-isolated-main-integration-exact-head-and-check-readiness/workpad.md`
+- 2026-10-30 20:14:39 fs.write: `.task/os/dev-1637-isolated-main-integration-exact-head-and-check-readiness/workpad.md`
 
 ## workspace-owned: validation evidence
 
 - 2026-10-30 20:08:11 `review.run`: passed — OK
 - 2026-10-30 20:08:53 `verify`: passed — OK
+- 2026-10-30 20:16:58 `review.run`: passed — OK
+- 2026-10-30 20:17:08 `verify`: passed — OK
 
 ## Isolated main integration evidence
 - Baseline main: 8e0e256372ee90fe899722d36e8cd6fb9165b357; original DEV-1637 and review fix from verified stream/os.
@@ -96,3 +107,17 @@ PR initial target from session bootstrap is stream/os; must be retargeted to mai
 - Strict review on scoped diff: 0 issues, 0 blockers; one informational documentation opportunity.
 - GitHub main ruleset active deletion protection, no required_status_checks rule; does not change local fail-closed gate. Scoped PR must still use its exact SHA and visible CI/reviews.
 - Avoid merging broad stream PR #2656 (current conflicting) or unrelated PostHog/media/browser changes.
+
+## Hosted CI queued — bounded wait plan (2026-10-30)
+Wait reason: Manual Consuelo CI workflow_dispatch run 41121118353 on immutable scoped main PR head ec157d3a43729a286a880760f12a6275a7f6dc6c remains queued (0 runner assigned).
+Duration: poll every 15 seconds, 4 attempts (at most 60 seconds).
+Resume action: via OS code.call read run gh run view 41121118353 --repo consuelohq/opensaas --json status,conclusion,headSha,jobs,url; inspect results immediately after each wake.
+Expected signal: status completed, conclusion success, all required jobs success or justified skipped.
+Fallback: if still queued or any failure, do not merge; record exact queue/stall/error in workpad and Linear; avoid repeated dispatch/CI bypass.
+
+- 2026-10-30 20:14:39 append: `.task/os/dev-1637-isolated-main-integration-exact-head-and-check-readiness/workpad.md`
+
+## PR synchronize coverage (2026-10-30)
+- Retargeting bootstrap PR from stream/os to main did not produce an Actions pull_request check; manual workflow_dispatch run #41121118353 stayed queued with no runner across four 15-second bounded polls.
+- To exercise normal GitHub PR CI while improving coverage, added a full getPullRequestCheckSummary GraphQL response regression for green legacy status plus unrelated bot check, expecting PENDING.
+- Run green tests and full verify; push with standard task.push and immediate task.pr taskOnly, then preserve base=main. Compare exact new head and CI on PR #2708 before merge.
